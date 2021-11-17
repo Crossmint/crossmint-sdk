@@ -18,7 +18,7 @@ CrossMintButton is a button component that is used to trigger the opening of the
 
 | propName       | default     | required | description                                                                         |
 |----------------|-------------|----------|-------------------------------------------------------------------------------------|
-| candyMachineId | `undefined` | `true`   | This is the ID Candy Machine in which you would like to mint from                   |
+| candyMachineId | `undefined` | `true`   | This is the ID of the Candy Machine in which you would like to mint from                   |
 | className      | `undefined` | `false`  | Use this to add custom classNames to the button                                     |
 | disabled       | `undefined` | `false`  | Use this to specify when the button should be disabled                              |
 | onClick        | `undefined` | `false`  | Use this to add a custom onClick handler to the button                              |
