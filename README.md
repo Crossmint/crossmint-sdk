@@ -4,6 +4,11 @@ CrossMint is a service that allows you to offer wallet-less credit card checkout
 
 **CrossMint is currently in alpha. In order for CrossMint to work with your Candy Machine, you must submit your information to our form [here](https://google.com).**
 
+
+<p align="center">
+  <img src="https://github.com/Paella-Labs/mint-adapter/raw/main/usageExample.gif" alt="Usage Example" />
+</p>
+
 ## Quick Setup (Next.js)
 
 ### Install
