@@ -5,7 +5,7 @@ export default function Index(): JSX.IntrinsicAttributes {
         <div
             style={{ width: '100%', height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
         >
-            <CrossMintButton candyMachineId="sjsjsj" theme="light" />
+            <CrossMintButton candyMachineId="sjsjsj" theme="colored" />
         </div>
     );
 }

@@ -35,7 +35,7 @@ export const CrossMintButton: FC<ButtonProps> = ({
     const content = useMemo(() => {
         if (connecting) return 'Connecting ...';
         return <p>Pay with CrossMint</p>;
-    }, []);
+    }, [connecting]);
 
     return (
         <button

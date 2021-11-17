@@ -1,19 +1,15 @@
 import { AppProps } from 'next/app';
-import { FC, ReactNode } from 'react';
-import { CrossMintModalProvider, CrossMintPopupProvider } from '../../../ui/react-ui/lib';
+
+import { CrossMintProvider } from '@crossmint/mint-adapter-react-ui';
 
 // Use require instead of import, and order matters
 require('../styles/globals.css');
 require('@crossmint/mint-adapter-react-ui/styles.css');
 
-const App: FC<AppProps> = ({ Component, pageProps }) => {
+export default function App({ Component, pageProps }: AppProps): JSX.IntrinsicAttributes {
     return (
-        <CrossMintModalProvider>
-            <CrossMintPopupProvider>
-                <Component {...pageProps} />
-            </CrossMintPopupProvider>
-        </CrossMintModalProvider>
+        <CrossMintProvider>
+            <Component {...pageProps} />
+        </CrossMintProvider>
     );
-};
-
-export default App;
+}

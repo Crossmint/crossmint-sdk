@@ -3,7 +3,7 @@
 :root {
     --crossmint-main-green: #00ff85;
     --crossmint-main-blue: #00e0ff;
-    --crossmint-main-dark-gb: #1e1e1e;
+    --crossmint-main-dark-bg: #1e1e1e;
 }
 
 /* Mint Button */
@@ -30,7 +30,7 @@
 }
 
 .mint-adapter-button-trigger-dark {
-    background: var(--crossmint-main-dark-gb);
+    background: var(--crossmint-main-dark-bg);
 }
 
 .mint-adapter-button-trigger-light {
