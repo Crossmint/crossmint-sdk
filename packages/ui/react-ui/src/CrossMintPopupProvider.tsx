@@ -1,14 +1,14 @@
-import React, { FC, ReactNode, useState } from 'react';
-import { useCrossMintModal } from '.';
-import { PopupContext } from './useCrossMintPopup';
+import React, { FC, ReactNode, useState } from "react";
+import { useCrossMintModal } from ".";
+import { PopupContext } from "./useCrossMintPopup";
 
 export interface PopupProviderProps {
     development: boolean;
     children: ReactNode;
 }
 
-const PROD_URL = 'https://crossmint.io';
-const DEV_URL = 'http://localhost:3001';
+const PROD_URL = "https://crossmint.io";
+const DEV_URL = "http://localhost:3001";
 
 export const CrossMintPopupProvider: FC<PopupProviderProps> = ({ development, children }) => {
     const [connecting, setConnecting] = useState(false);
@@ -21,7 +21,7 @@ export const CrossMintPopupProvider: FC<PopupProviderProps> = ({ development, ch
             `${development ? DEV_URL : PROD_URL}/signin?callbackUrl=${encodeURIComponent(
                 `${development ? DEV_URL : PROD_URL}/checkout/mint?candyMachineId=${candyMachineId}&closeOnSuccess=true`
             )}`,
-            'popUpWindow',
+            "popUpWindow",
             createPopupString()
         );
         if (pop) {
@@ -30,7 +30,7 @@ export const CrossMintPopupProvider: FC<PopupProviderProps> = ({ development, ch
             registerListeners(pop);
         } else {
             setConnecting(false);
-            console.log('Failed to open popup window');
+            console.log("Failed to open popup window");
         }
     };
 

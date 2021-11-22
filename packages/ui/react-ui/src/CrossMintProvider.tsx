@@ -1,7 +1,7 @@
-import React, { FC, ReactNode, useState } from 'react';
-import { CrossMintModal, CrossMintModalProps } from './CrossMintModal';
-import { CrossMintPopupProvider } from './CrossMintPopupProvider';
-import { CrossMintModalContext } from './useCrossMintModal';
+import React, { FC, ReactNode, useState } from "react";
+import { CrossMintModal, CrossMintModalProps } from "./CrossMintModal";
+import { CrossMintPopupProvider } from "./CrossMintPopupProvider";
+import { CrossMintModalContext } from "./useCrossMintModal";
 // import { WalletModal, WalletModalProps } from './WalletModal';
 
 export interface CrossMintProviderProps extends CrossMintModalProps {
