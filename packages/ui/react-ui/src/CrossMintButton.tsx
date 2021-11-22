@@ -8,7 +8,7 @@ interface ButtonProps {
     onClick?: (e: MouseEvent<HTMLButtonElement>) => void;
     style?: CSSProperties;
     tabIndex?: number;
-    theme?: 'light' | 'dark' | 'colored';
+    theme?: 'light' | 'dark';
 }
 
 export const CrossMintButton: FC<ButtonProps> = ({
@@ -18,7 +18,7 @@ export const CrossMintButton: FC<ButtonProps> = ({
     onClick,
     style,
     tabIndex,
-    theme = 'colored',
+    theme = 'dark',
     ...props
 }) => {
     const { connecting, connect } = useCrossMintPopup();

@@ -41,13 +41,7 @@
 }
 
 .mint-adapter-button-trigger-light p {
-    background-color: var(--crossmint-main-green);
-    background-image: linear-gradient(to bottom right, var(--crossmint-main-green), var(--crossmint-main-blue));
-    background-size: 100%;
-    -webkit-background-clip: text;
-    -moz-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    -moz-text-fill-color: transparent;
+    color: black;
 }
 
 .mint-adapter-button-trigger-dark p {
