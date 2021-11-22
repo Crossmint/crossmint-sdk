@@ -1,5 +1,5 @@
-import React, { CSSProperties, FC, MouseEvent, MouseEventHandler, useMemo, useCallback } from 'react';
-import { useCrossMintPopup } from './useCrossMintPopup';
+import React, { CSSProperties, FC, MouseEvent, MouseEventHandler, useMemo, useCallback } from "react";
+import { useCrossMintPopup } from "./useCrossMintPopup";
 
 interface ButtonProps {
     candyMachineId: string;
@@ -8,7 +8,7 @@ interface ButtonProps {
     onClick?: (e: MouseEvent<HTMLButtonElement>) => void;
     style?: CSSProperties;
     tabIndex?: number;
-    theme?: 'light' | 'dark';
+    theme?: "light" | "dark";
 }
 
 export const CrossMintButton: FC<ButtonProps> = ({
@@ -18,7 +18,7 @@ export const CrossMintButton: FC<ButtonProps> = ({
     onClick,
     style,
     tabIndex,
-    theme = 'dark',
+    theme = "dark",
     ...props
 }) => {
     const { connecting, connect } = useCrossMintPopup();
@@ -33,7 +33,7 @@ export const CrossMintButton: FC<ButtonProps> = ({
     );
 
     const content = useMemo(() => {
-        if (connecting) return 'Connecting ...';
+        if (connecting) return <p>Connecting ...</p>;
         return <p>Buy with credit card</p>;
     }, [connecting]);
 

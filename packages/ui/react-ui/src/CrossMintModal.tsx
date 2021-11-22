@@ -1,13 +1,13 @@
-import React, { FC, useCallback, useLayoutEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
-import { useCrossMintModal } from './useCrossMintModal';
+import React, { FC, useCallback, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { useCrossMintModal } from "./useCrossMintModal";
 
 export interface CrossMintModalProps {
     className?: string;
     container?: string;
 }
 
-export const CrossMintModal: FC<CrossMintModalProps> = ({ className = '', container = 'body' }) => {
+export const CrossMintModal: FC<CrossMintModalProps> = ({ className = "", container = "body" }) => {
     const ref = useRef<HTMLDivElement>(null);
     const { setVisible } = useCrossMintModal();
 
@@ -25,7 +25,7 @@ export const CrossMintModal: FC<CrossMintModalProps> = ({ className = '', contai
         // Hack to enable fade in animation after mount
         setTimeout(() => setFadeIn(true), 0);
         // Prevent scrolling on mount
-        document.body.style.overflow = 'hidden';
+        document.body.style.overflow = "hidden";
 
         return () => {
             // Re-enable scrolling when component unmounts
@@ -40,7 +40,7 @@ export const CrossMintModal: FC<CrossMintModalProps> = ({ className = '', contai
         createPortal(
             <div
                 aria-modal="true"
-                className={`mint-adapter-modal ${fadeIn && 'mint-adapter-modal-fade-in'} ${className}`}
+                className={`mint-adapter-modal ${fadeIn && "mint-adapter-modal-fade-in"} ${className}`}
                 ref={ref}
             >
                 <div className="mint-adapter-modal-container">
