@@ -1,5 +1,4 @@
 {
-    "private": true,
     "name": "@crossmint/mint-adapter",
     "author": "Paella Labs",
     "repository": "https://github.com/Paella-Labs/mint-adapter",
@@ -52,5 +51,6 @@
         "tslib": "^2.3.0",
         "typedoc": "^0.22.2",
         "typescript": "^4.4.3"
-    }
+    },
+    "version": "0.0.1"
 }

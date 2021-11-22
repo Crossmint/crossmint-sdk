@@ -3,7 +3,6 @@
     "author": "Paella Labs",
     "repository": "https://github.com/Paella-Labs/mint-adapter",
     "version": "0.0.1",
-    "private": true,
     "files": [
         "public",
         "src",
