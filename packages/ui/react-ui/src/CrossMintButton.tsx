@@ -34,7 +34,7 @@ export const CrossMintButton: FC<ButtonProps> = ({
 
     const content = useMemo(() => {
         if (connecting) return 'Connecting ...';
-        return <p>Pay with CrossMint</p>;
+        return <p>Buy with credit card</p>;
     }, [connecting]);
 
     return (
@@ -46,6 +46,11 @@ export const CrossMintButton: FC<ButtonProps> = ({
             tabIndex={tabIndex}
             {...props}
         >
+            <img
+                className="mint-adapter-button-icon"
+                src="https://www.crossmint.io/assets/crossmint/logo.png"
+                alt="Crossmint logo"
+            />
             {content}
         </button>
     );

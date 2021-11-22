@@ -9,7 +9,10 @@
 /* Mint Button */
 
 .mint-adapter-button-trigger {
-    padding: 0.875rem 0.75rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 0.875rem 0.875rem;
     font-weight: 900;
     transition: opacity ease-in-out 0.25s;
     border-radius: 0.5rem;
@@ -37,8 +40,7 @@
     background: white;
 }
 
-.mint-adapter-button-trigger-light p,
-.mint-adapter-button-trigger-dark p {
+.mint-adapter-button-trigger-light p {
     background-color: var(--crossmint-main-green);
     background-image: linear-gradient(to bottom right, var(--crossmint-main-green), var(--crossmint-main-blue));
     background-size: 100%;
@@ -48,9 +50,19 @@
     -moz-text-fill-color: transparent;
 }
 
+.mint-adapter-button-trigger-dark p {
+    color: white;
+}
+
 .mint-adapter-button-trigger-colored {
     background-image: linear-gradient(to bottom right, var(--crossmint-main-green), var(--crossmint-main-blue));
     color: white;
+}
+
+.mint-adapter-button-icon {
+    width: 21px;
+    height: 21px;
+    margin-right: 0.875rem;
 }
 
 /* Modal */
