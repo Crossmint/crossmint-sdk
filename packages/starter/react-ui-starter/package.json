@@ -2,7 +2,7 @@
     "name": "@crossmint/mint-adapter-react-ui-starter",
     "author": "Paella Labs",
     "repository": "https://github.com/Paella-Labs/mint-adapter",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "files": [
         "public",
         "src",
@@ -17,7 +17,7 @@
         "access": "restricted"
     },
     "dependencies": {
-        "@crossmint/mint-adapter-react-ui": "^0.0.1",
+        "@crossmint/mint-adapter-react-ui": "^0.0.2",
         "@types/node": "^16.11.7",
         "@types/react": "^17.0.35",
         "@types/react-dom": "^17.0.11",
