@@ -8,7 +8,7 @@ require('@crossmint/mint-adapter-react-ui/styles.css');
 
 export default function App({ Component, pageProps }: AppProps): JSX.IntrinsicAttributes {
     return (
-        <CrossMintProvider development={true}>
+        <CrossMintProvider>
             <Component {...pageProps} />
         </CrossMintProvider>
     );
