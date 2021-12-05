@@ -9,6 +9,9 @@ interface ButtonProps {
     style?: CSSProperties;
     tabIndex?: number;
     theme?: "light" | "dark";
+    collectionTitle?: string;
+    collectionDescription?: string;
+    collectionPhoto?: string;
 }
 
 export const CrossMintButton: FC<ButtonProps> = ({
@@ -19,6 +22,9 @@ export const CrossMintButton: FC<ButtonProps> = ({
     style,
     tabIndex,
     theme = "dark",
+    collectionTitle,
+    collectionDescription,
+    collectionPhoto,
     ...props
 }) => {
     const { connecting, connect } = useCrossMintPopup();
@@ -27,7 +33,8 @@ export const CrossMintButton: FC<ButtonProps> = ({
         (event) => {
             if (onClick) onClick(event);
 
-            if (!event.defaultPrevented) connect(candyMachineId);
+            if (!event.defaultPrevented)
+                connect(candyMachineId, collectionTitle, collectionDescription, collectionPhoto);
         },
         [onClick]
     );
