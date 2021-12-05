@@ -9,7 +9,7 @@ export default function Index(): JSX.IntrinsicAttributes {
                 candyMachineId="<CANDY_MACHINE_ID>"
                 collectionTitle="<TITLE_FOR_YOUR_COLLECTION>"
                 collectionDescription="<DESCRIPTION_OF_YOUR_COLLECTION>"
-                collectionPhoto="<URL_TO_A_PHOTO>"
+                collectionPhoto="<OPT_URL_TO_PHOTO_COVER>"
             />
         </div>
     );
