@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/mint-adapter-nextjs-starter",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "author": "Paella Labs",
     "repository": "https://github.com/Paella-Labs/mint-adapter",
     "files": [
