@@ -24,7 +24,7 @@
         "clean": "lerna run clean",
         "build": "lerna run build",
         "test": "lerna run test",
-        "publish": "lerna publish from-package",
+        "publish": "lerna publish from-git",
         "deploy": "yarn deploy:docs && yarn deploy:example",
         "deploy:docs": "yarn docs && gh-pages --dist docs --dotfiles",
         "deploy:example": "gh-pages --dist packages/starter/example/out --dest example --dotfiles",
@@ -52,5 +52,5 @@
         "typedoc": "^0.22.2",
         "typescript": "^4.4.3"
     },
-    "version": "0.0.4"
+    "version": "0.0.5"
 }
