@@ -50,11 +50,18 @@ import { CrossMintButton } from "@crossmint/mint-adapter-react-ui";
 export default function Index() {
     return (
         <div className="your-container">
-            <CrossMintButton candyMachineId="<YOUR_CANDY_MACHINE_ID>" />
+            <CrossMintButton
+                candyMachineId="<CANDY_MACHINE_ID>"
+                collectionTitle="<TITLE_FOR_YOUR_COLLECTION>"
+                collectionDescription="<DESCRIPTION_OF_YOUR_COLLECTION>"
+                collectionPhoto="<OPT_URL_TO_PHOTO_COVER>"
+            />
         </div>
     );
 }
 ```
+
+See [react-ui](https://github.com/Paella-Labs/mint-adapter/tree/main/packages/ui/react-ui) for more optional customization parameters.
 
 ## Packages
 

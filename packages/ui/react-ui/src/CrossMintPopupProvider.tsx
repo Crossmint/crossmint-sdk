@@ -16,10 +16,21 @@ export const CrossMintPopupProvider: FC<PopupProviderProps> = ({ development, ch
 
     const { setVisible } = useCrossMintModal();
 
-    const createPopup = (candyMachineId: string) => {
+    const createPopup = (
+        candyMachineId: string,
+        collectionTitle?: string,
+        collectionDescription?: string,
+        collectionPhoto?: string
+    ) => {
         const pop = window.open(
             `${development ? DEV_URL : PROD_URL}/signin?callbackUrl=${encodeURIComponent(
-                `${development ? DEV_URL : PROD_URL}/checkout/mint?candyMachineId=${candyMachineId}&closeOnSuccess=true`
+                `${
+                    development ? DEV_URL : PROD_URL
+                }/checkout/mint?candyMachineId=${candyMachineId}&closeOnSuccess=false${
+                    collectionTitle ? `&collectionTitle=${collectionTitle}` : ""
+                }${collectionDescription ? `&collectionDescription=${collectionDescription}` : ""}${
+                    collectionPhoto ? `&collectionPhoto=${collectionPhoto}` : ""
+                }`
             )}`,
             "popUpWindow",
             createPopupString()
@@ -34,12 +45,17 @@ export const CrossMintPopupProvider: FC<PopupProviderProps> = ({ development, ch
         }
     };
 
-    const connect = (candyMachineId: string) => {
+    const connect = (
+        candyMachineId: string,
+        collectionTitle?: string,
+        collectionDescription?: string,
+        collectionPhoto?: string
+    ) => {
         if (connecting) return;
 
         setConnecting(true);
 
-        createPopup(candyMachineId);
+        createPopup(candyMachineId, collectionTitle, collectionDescription, collectionPhoto);
     };
 
     function registerListeners(pop: Window) {
