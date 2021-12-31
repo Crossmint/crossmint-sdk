@@ -13,7 +13,7 @@ export default function App({ Component, pageProps }: AppProps): JSX.IntrinsicAt
         <CrossMintProvider>
             <Head>
                 {/* Favicon */}
-                <link rel="shortcut icon" href="/favicon.ico" />
+                <link rel="shortcut icon" href="/crossmint-client-sdk/example/favicon.ico" />
 
                 {/* Primary Meta Tags */}
                 <title>CrossMint | The easiest way to purchase and collect NFTs</title>
