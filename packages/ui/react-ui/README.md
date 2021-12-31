@@ -1,4 +1,4 @@
-# `@crossmint/mint-adapter-react-ui`
+# `@crossmint/client-sdk-react-ui`
 
 ## Components
 

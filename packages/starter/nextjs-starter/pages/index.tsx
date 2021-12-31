@@ -1,4 +1,4 @@
-import { CrossMintButton } from "@crossmint/mint-adapter-react-ui";
+import { CrossMintButton } from "@crossmint/client-sdk-react-ui";
 
 export default function Index(): JSX.IntrinsicAttributes {
     return (

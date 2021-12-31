@@ -1,6 +1,6 @@
-import { CrossMintButton, CrossMintProvider } from "@crossmint/mint-adapter-react-ui";
+import { CrossMintButton, CrossMintProvider } from "@crossmint/client-sdk-react-ui";
 
-require("@crossmint/mint-adapter-react-ui/styles.css");
+require("@crossmint/client-sdk-react-ui/styles.css");
 
 function App() {
     return (

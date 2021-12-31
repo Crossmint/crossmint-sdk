@@ -40,13 +40,13 @@ export const CrossMintModal: FC<CrossMintModalProps> = ({ className = "", contai
         createPortal(
             <div
                 aria-modal="true"
-                className={`mint-adapter-modal ${fadeIn && "mint-adapter-modal-fade-in"} ${className}`}
+                className={`client-sdk-modal ${fadeIn && "client-sdk-modal-fade-in"} ${className}`}
                 ref={ref}
             >
-                <div className="mint-adapter-modal-container">
-                    <span className="mint-adapter-modal-loader" />
+                <div className="client-sdk-modal-container">
+                    <span className="client-sdk-modal-loader" />
                 </div>
-                <div className="mint-adapter-modal-overlay" />
+                <div className="client-sdk-modal-overlay" />
             </div>,
             portal
         )

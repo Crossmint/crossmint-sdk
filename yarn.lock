@@ -1117,11 +1117,6 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
-"@crossmint/mint-adapter-react-ui@^0.0.4":
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/@crossmint/mint-adapter-react-ui/-/mint-adapter-react-ui-0.0.4.tgz#607a0f6207ee8ec20a2754f5fc541665336a5dac"
-  integrity sha512-iy3C1ndYDqdSOt4dHq/2aeo353HemwoefLxnImJubk7wplrrokJk4IXkRGxSjCF71+MZRZdpwQnXNcL4xrz2Iw==
-
 "@csstools/convert-colors@^1.4.0":
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/@csstools/convert-colors/-/convert-colors-1.4.0.tgz#ad495dc41b12e75d588c6db8b9834f08fa131eb7"

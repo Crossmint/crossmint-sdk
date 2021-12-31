@@ -1,4 +1,4 @@
-@import url('https://cdn.rawgit.com/mfd/09b70eb47474836f25a21660282ce0fd/raw/e06a670afcb2b861ed2ac4a1ef752d062ef6b46b/Gilroy.css');
+@import url("https://cdn.rawgit.com/mfd/09b70eb47474836f25a21660282ce0fd/raw/e06a670afcb2b861ed2ac4a1ef752d062ef6b46b/Gilroy.css");
 
 :root {
     --crossmint-main-green: #00ff85;
@@ -8,7 +8,7 @@
 
 /* Mint Button */
 
-.mint-adapter-button-trigger {
+.client-sdk-button-trigger {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -16,51 +16,51 @@
     font-weight: 900;
     transition: opacity ease-in-out 0.25s;
     border-radius: 0.5rem;
-    font-family: 'Gilroy', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans',
-        'Helvetica Neue', sans-serif;
+    font-family: "Gilroy", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
+        "Helvetica Neue", sans-serif;
     outline: none;
     border: none;
     box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
 }
 
-.mint-adapter-button-trigger p {
+.client-sdk-button-trigger p {
     margin: 0;
 }
 
-.mint-adapter-button-trigger:hover:enabled {
+.client-sdk-button-trigger:hover:enabled {
     opacity: 0.6;
     cursor: pointer;
 }
 
-.mint-adapter-button-trigger-dark {
+.client-sdk-button-trigger-dark {
     background: var(--crossmint-main-dark-bg);
 }
 
-.mint-adapter-button-trigger-light {
+.client-sdk-button-trigger-light {
     background: white;
 }
 
-.mint-adapter-button-trigger-light p {
+.client-sdk-button-trigger-light p {
     color: black;
 }
 
-.mint-adapter-button-trigger-dark p {
+.client-sdk-button-trigger-dark p {
     color: white;
 }
 
-.mint-adapter-button-trigger-colored {
+.client-sdk-button-trigger-colored {
     background-image: linear-gradient(to bottom right, var(--crossmint-main-green), var(--crossmint-main-blue));
     color: white;
 }
 
-.mint-adapter-button-icon {
+.client-sdk-button-icon {
     width: 21px;
     height: 21px;
     margin-right: 0.875rem;
 }
 
 /* Modal */
-.mint-adapter-modal {
+.client-sdk-modal {
     position: fixed;
     top: 0;
     left: 0;
@@ -72,11 +72,11 @@
     z-index: 1040;
 }
 
-.mint-adapter-modal.mint-adapter-modal-fade-in {
+.client-sdk-modal.client-sdk-modal-fade-in {
     opacity: 1;
 }
 
-.mint-adapter-modal-overlay {
+.client-sdk-modal-overlay {
     background: rgba(0, 0, 0, 0.5);
     position: fixed;
     top: 0;
@@ -85,7 +85,7 @@
     right: 0;
 }
 
-.mint-adapter-modal-container {
+.client-sdk-modal-container {
     position: absolute;
     top: 0;
     left: 0;
@@ -99,7 +99,7 @@
     z-index: 1041;
 }
 
-.mint-adapter-modal-loader {
+.client-sdk-modal-loader {
     border: 3px solid transparent; /* Light grey */
     border-top: 3px solid white; /* Blue */
     border-radius: 50%;

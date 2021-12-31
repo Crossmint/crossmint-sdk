@@ -46,7 +46,7 @@ export const CrossMintButton: FC<ButtonProps> = ({
 
     return (
         <button
-            className={`mint-adapter-button-trigger mint-adapter-button-trigger-${theme}`}
+            className={`client-sdk-button-trigger client-sdk-button-trigger-${theme}`}
             disabled={disabled}
             onClick={handleClick}
             style={{ ...style }}
@@ -54,7 +54,7 @@ export const CrossMintButton: FC<ButtonProps> = ({
             {...props}
         >
             <img
-                className="mint-adapter-button-icon"
+                className="client-sdk-button-icon"
                 src="https://www.crossmint.io/assets/crossmint/logo.png"
                 alt="Crossmint logo"
             />
