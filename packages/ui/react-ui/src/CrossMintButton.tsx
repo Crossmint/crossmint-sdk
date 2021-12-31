@@ -1,7 +1,7 @@
 import React, { CSSProperties, FC, MouseEvent, MouseEventHandler, useMemo, useCallback } from "react";
 import { useCrossMintPopup } from "./useCrossMintPopup";
 
-interface ButtonProps {
+export interface ButtonProps {
     candyMachineId: string;
     className?: string;
     disabled?: boolean;

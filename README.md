@@ -81,6 +81,7 @@ These packages provide projects that you can use to start building an app with b
 
 | package                                                                                                           | description                                                             |
 | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| [example](https://github.com/CrossMint/crossmint-client-sdk/tree/main/packages/starter/example)                   | [Next.js](https://nextjs.org) project using React                       |
 | [react-ui-starter](https://github.com/CrossMint/crossmint-client-sdk/tree/main/packages/starter/react-ui-starter) | [Create React App](https://create-react-app.dev) project using React UI |
 | [nextjs-starter](https://github.com/CrossMint/crossmint-client-sdk/tree/main/packages/starter/nextjs-starter)     | [Next.js](https://nextjs.org) project using React                       |
 
