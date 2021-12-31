@@ -1,8 +1,8 @@
-# `@crossmint/mint-adapter`
+# `@crossmint/client-sdk`
 
-CrossMint simplifies the user experience on your NFT sales, by offering a fully hosted credit card checkout flow, in under 10 lines of code. CrossMint currently only supports Solana NFTs, but more blockchains are coming soon. 
+CrossMint simplifies the user experience on your NFT sales, by offering a fully hosted credit card checkout flow, in under 10 lines of code. CrossMint currently only supports Solana NFTs, but more blockchains are coming soon.
 
-To get started, all you need to do is import our client-side libraries into your minting website, pass it your Metaplex Candy Machine ID, and sit back and let us take care of the rest. 
+To get started, all you need to do is import our client-side libraries into your minting website, pass it your Metaplex Candy Machine ID, and sit back and let us take care of the rest.
 
 You’ll get the sales proceeds in SOL as if the user was paying with a Solana wallet.
 
@@ -17,23 +17,23 @@ You’ll get the sales proceeds in SOL as if the user was paying with a Solana w
 ### Install
 
 ```shell
-yarn add @crossmint/mint-adapter-react-ui
+yarn add @crossmint/client-sdk-react-ui
 ```
 
 ### Setup
 
-Require the CrossMint styles by adding `require('@crossmint/mint-adapter-react-ui/styles.css');` to your app.
+Require the CrossMint styles by adding `require('@crossmint/client-sdk-react-ui/styles.css');` to your app.
 
 Import `CrossMintProvider` and wrap your app with it at the top level.
 
 ```javascript
 import { AppProps } from "next/app";
 
-import { CrossMintProvider } from "@crossmint/mint-adapter-react-ui";
+import { CrossMintProvider } from "@crossmint/client-sdk-react-ui";
 
 // Use require instead of import, and order matters
 require("../styles/globals.css");
-require("@crossmint/mint-adapter-react-ui/styles.css");
+require("@crossmint/client-sdk-react-ui/styles.css");
 
 export default function App({ Component, pageProps }: AppProps) {
     return (
@@ -49,18 +49,16 @@ export default function App({ Component, pageProps }: AppProps) {
 Import the Pay with `CrossMintButton` into your app wherever you would like, and enter your Candy Machine ID.
 
 ```javascript
-import { CrossMintButton } from "@crossmint/mint-adapter-react-ui";
+import { CrossMintButton } from "@crossmint/client-sdk-react-ui";
 
 export default function Index() {
     return (
-        <div className="your-container">
-            <CrossMintButton
-                candyMachineId="<CANDY_MACHINE_ID>"
-                collectionTitle="<TITLE_FOR_YOUR_COLLECTION>"
-                collectionDescription="<DESCRIPTION_OF_YOUR_COLLECTION>"
-                collectionPhoto="<OPT_URL_TO_PHOTO_COVER>"
-            />
-        </div>
+        <CrossMintButton
+            candyMachineId="<CANDY_MACHINE_ID>"
+            collectionTitle="<TITLE_FOR_YOUR_COLLECTION>"
+            collectionDescription="<DESCRIPTION_OF_YOUR_COLLECTION>"
+            collectionPhoto="<OPT_URL_TO_PHOTO_COVER>"
+        />
     );
 }
 ```
@@ -73,19 +71,18 @@ See [react-ui](https://github.com/CrossMint/crossmint-client-sdk/tree/main/packa
 
 These packages provide components for common UI frameworks.
 
-| package                                                                                | description          | npm                                                                                              |
-| -------------------------------------------------------------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------ |
-| [react-ui](https://github.com/CrossMint/crossmint-client-sdk/tree/main/packages/ui/react-ui) | Components for React | [`@crossmint/mint-adapter-react-ui`](https://npmjs.com/package/@crossmint/mint-adapter-react-ui) |
+| package                                                                                      | description          | npm                                                                                          |
+| -------------------------------------------------------------------------------------------- | -------------------- | -------------------------------------------------------------------------------------------- |
+| [react-ui](https://github.com/CrossMint/crossmint-client-sdk/tree/main/packages/ui/react-ui) | Components for React | [`@crossmint/client-sdk-react-ui`](https://npmjs.com/package/@crossmint/client-sdk-react-ui) |
 
 ### Starter Projects
 
 These packages provide projects that you can use to start building an app with built-in CrossMint support.
 
-| package                                                                                                     | description                                                             | npm                                                                                                              |
-| ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| [example](https://github.com/CrossMint/crossmint-client-sdk/tree/main/packages/starter/example)                   | Demo of UI components                                                   | [`@crossmint/mint-adapter-example`](https://npmjs.com/package/@crossmint/mint-adapter-example)                   |
-| [react-ui-starter](https://github.com/CrossMint/crossmint-client-sdk/tree/main/packages/starter/react-ui-starter) | [Create React App](https://create-react-app.dev) project using React UI | [`@crossmint/mint-adapter-react-ui-starter`](https://npmjs.com/package/@crossmint/mint-adapter-react-ui-starter) |
-| [nextjs-starter](https://github.com/CrossMint/crossmint-client-sdk/tree/main/packages/starter/nextjs-starter)     | [Next.js](https://nextjs.org) project using React                       | [`@crossmint/mint-adapter-nextjs-starter`](https://npmjs.com/package/@crossmint/mint-adapter-nextjs-starter)     |
+| package                                                                                                           | description                                                             |
+| ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| [react-ui-starter](https://github.com/CrossMint/crossmint-client-sdk/tree/main/packages/starter/react-ui-starter) | [Create React App](https://create-react-app.dev) project using React UI |
+| [nextjs-starter](https://github.com/CrossMint/crossmint-client-sdk/tree/main/packages/starter/nextjs-starter)     | [Next.js](https://nextjs.org) project using React                       |
 
 ## Build from Source
 
@@ -98,7 +95,7 @@ git clone https://github.com/CrossMint/crossmint-client-sdk.git
 2. Install dependencies:
 
 ```shell
-cd mint-adapter
+cd crossmint-client-sdk
 yarn install
 ```
 
