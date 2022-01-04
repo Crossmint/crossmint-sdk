@@ -12,6 +12,8 @@ interface ButtonProps {
     collectionTitle?: string;
     collectionDescription?: string;
     collectionPhoto?: string;
+    mintTo?: string;
+    emailTo?: string;
 }
 
 export const CrossMintButton: FC<ButtonProps> = ({
@@ -25,6 +27,8 @@ export const CrossMintButton: FC<ButtonProps> = ({
     collectionTitle,
     collectionDescription,
     collectionPhoto,
+    mintTo,
+    emailTo,
     ...props
 }) => {
     const { connecting, connect } = useCrossMintPopup();
@@ -34,7 +38,7 @@ export const CrossMintButton: FC<ButtonProps> = ({
             if (onClick) onClick(event);
 
             if (!event.defaultPrevented)
-                connect(candyMachineId, collectionTitle, collectionDescription, collectionPhoto);
+                connect(candyMachineId, collectionTitle, collectionDescription, collectionPhoto, mintTo, emailTo);
         },
         [onClick]
     );

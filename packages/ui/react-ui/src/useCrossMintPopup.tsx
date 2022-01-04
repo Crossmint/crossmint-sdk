@@ -6,7 +6,9 @@ export interface PopupContextState {
         candyMachineId: string,
         collectionTitle?: string,
         collectionDescription?: string,
-        collectionPhoto?: string
+        collectionPhoto?: string,
+        mintTo?: string,
+        emailTo?: string,
     ) => void;
 
     popup: Window | null;
