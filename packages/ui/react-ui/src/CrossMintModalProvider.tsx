@@ -1,7 +1,6 @@
 import React, { FC, ReactNode, useState } from "react";
 import { CrossMintModal, CrossMintModalProps } from "./CrossMintModal";
 import { CrossMintModalContext } from "./useCrossMintModal";
-// import { WalletModal, WalletModalProps } from './WalletModal';
 
 export interface CrossMintModalProviderProps extends CrossMintModalProps {
     children: ReactNode;

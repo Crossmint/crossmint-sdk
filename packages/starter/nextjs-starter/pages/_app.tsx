@@ -8,7 +8,7 @@ require("@crossmint/client-sdk-react-ui/styles.css");
 
 export default function App({ Component, pageProps }: AppProps): JSX.IntrinsicAttributes {
     return (
-        <CrossMintProvider>
+        <CrossMintProvider clientId="<YOUR_CLIENT_ID>">
             <Component {...pageProps} />
         </CrossMintProvider>
     );

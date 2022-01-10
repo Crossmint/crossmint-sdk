@@ -1,8 +1,8 @@
 import React, { CSSProperties, FC, MouseEvent, MouseEventHandler, useMemo, useCallback } from "react";
+import { OnboardingRequestStatusResponse, useCrossMintStatus } from ".";
 import { useCrossMintPopup } from "./useCrossMintPopup";
 
 export interface ButtonProps {
-    candyMachineId: string;
     className?: string;
     disabled?: boolean;
     onClick?: (e: MouseEvent<HTMLButtonElement>) => void;
@@ -14,10 +14,10 @@ export interface ButtonProps {
     collectionPhoto?: string;
     mintTo?: string;
     emailTo?: string;
+    listingId?: string;
 }
 
 export const CrossMintButton: FC<ButtonProps> = ({
-    candyMachineId,
     className,
     disabled,
     onClick,
@@ -29,8 +29,11 @@ export const CrossMintButton: FC<ButtonProps> = ({
     collectionPhoto,
     mintTo,
     emailTo,
+    listingId,
     ...props
 }) => {
+    const { hideMintOnInactiveClient, status } = useCrossMintStatus();
+
     const { connecting, connect } = useCrossMintPopup();
 
     const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
@@ -38,7 +41,7 @@ export const CrossMintButton: FC<ButtonProps> = ({
             if (onClick) onClick(event);
 
             if (!event.defaultPrevented)
-                connect(candyMachineId, collectionTitle, collectionDescription, collectionPhoto, mintTo, emailTo);
+                connect(collectionTitle, collectionDescription, collectionPhoto, mintTo, emailTo, listingId);
         },
         [onClick]
     );
@@ -47,6 +50,10 @@ export const CrossMintButton: FC<ButtonProps> = ({
         if (connecting) return <p>Connecting ...</p>;
         return <p>Buy with credit card</p>;
     }, [connecting]);
+
+    if (hideMintOnInactiveClient && status !== OnboardingRequestStatusResponse.ACCEPTED) {
+        return null;
+    }
 
     return (
         <button

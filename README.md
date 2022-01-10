@@ -24,7 +24,7 @@ yarn add @crossmint/client-sdk-react-ui
 
 Require the CrossMint styles by adding `require('@crossmint/client-sdk-react-ui/styles.css');` to your app.
 
-Import `CrossMintProvider` and wrap your app with it at the top level.
+Import `CrossMintProvider`, wrap your app with it at the top level and pass your clientId.
 
 ```javascript
 import { AppProps } from "next/app";
@@ -37,7 +37,7 @@ require("@crossmint/client-sdk-react-ui/styles.css");
 
 export default function App({ Component, pageProps }: AppProps) {
     return (
-        <CrossMintProvider>
+        <CrossMintProvider clientId="<YOUR_CLIENT_ID>">
             <Component {...pageProps} />
         </CrossMintProvider>
     );
@@ -46,7 +46,7 @@ export default function App({ Component, pageProps }: AppProps) {
 
 ### Usage
 
-Import the Pay with `CrossMintButton` into your app wherever you would like, and enter your Candy Machine ID.
+Import the Pay with `CrossMintButton` into your app wherever you would like.
 
 ```javascript
 import { CrossMintButton } from "@crossmint/client-sdk-react-ui";
@@ -54,7 +54,6 @@ import { CrossMintButton } from "@crossmint/client-sdk-react-ui";
 export default function Index() {
     return (
         <CrossMintButton
-            candyMachineId="<CANDY_MACHINE_ID>"
             collectionTitle="<TITLE_FOR_YOUR_COLLECTION>"
             collectionDescription="<DESCRIPTION_OF_YOUR_COLLECTION>"
             collectionPhoto="<OPT_URL_TO_PHOTO_COVER>"

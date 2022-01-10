@@ -10,7 +10,7 @@ require("@crossmint/client-sdk-react-ui/styles.css");
 
 export default function App({ Component, pageProps }: AppProps): JSX.IntrinsicAttributes {
     return (
-        <CrossMintProvider>
+        <CrossMintProvider clientId="058eeac7-3751-4c66-afc3-f77270c9d636">
             <Head>
                 {/* Favicon */}
                 <link rel="shortcut icon" href="/crossmint-client-sdk/example/favicon.ico" />

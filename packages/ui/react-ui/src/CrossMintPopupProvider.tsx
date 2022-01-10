@@ -1,5 +1,5 @@
 import React, { FC, ReactNode, useState } from "react";
-import { useCrossMintModal } from ".";
+import { useCrossMintModal, useCrossMintStatus } from ".";
 import { PopupContext } from "./useCrossMintPopup";
 
 export interface PopupProviderProps {
@@ -14,30 +14,26 @@ export const CrossMintPopupProvider: FC<PopupProviderProps> = ({ development, ch
     const [connecting, setConnecting] = useState(false);
     const [popup, setPopup] = useState<Window | null>(null);
 
+    const { clientId } = useCrossMintStatus();
+
     const { setVisible } = useCrossMintModal();
 
     const createPopup = (
-        candyMachineId: string,
         collectionTitle?: string,
         collectionDescription?: string,
         collectionPhoto?: string,
         mintTo?: string,
         emailTo?: string,
+        listingId?: string
     ) => {
         const pop = window.open(
             `${development ? DEV_URL : PROD_URL}/signin?callbackUrl=${encodeURIComponent(
-                `${
-                    development ? DEV_URL : PROD_URL
-                }/checkout/mint?candyMachineId=${candyMachineId}&closeOnSuccess=false${
-                    collectionTitle ? `&collectionTitle=${collectionTitle}` : ""
-                }${
-                    collectionDescription ? `&collectionDescription=${collectionDescription}` : ""
-                }${
-                    collectionPhoto ? `&collectionPhoto=${collectionPhoto}` : ""
-                }${
-                    mintTo ? `&mintTo=${mintTo}` : ""
-                }${
-                    emailTo ? `&emailTo=${emailTo}` : ""
+                `${development ? DEV_URL : PROD_URL}/checkout/mint?clientId=${clientId}&closeOnSuccess=false${
+                    collectionTitle && `collectionTitle=${collectionTitle}`
+                }${collectionDescription && `&collectionDescription=${collectionDescription}`}${
+                    collectionPhoto && `&collectionPhoto=${collectionPhoto}`
+                }${mintTo && `&mintTo=${mintTo}`}${emailTo && `&emailTo=${emailTo}`}${
+                    listingId && `&listingId=${listingId}`
                 }`
             )}`,
             "popUpWindow",
@@ -54,18 +50,18 @@ export const CrossMintPopupProvider: FC<PopupProviderProps> = ({ development, ch
     };
 
     const connect = (
-        candyMachineId: string,
         collectionTitle?: string,
         collectionDescription?: string,
         collectionPhoto?: string,
         mintTo?: string,
         emailTo?: string,
+        listingId?: string
     ) => {
         if (connecting) return;
 
         setConnecting(true);
 
-        createPopup(candyMachineId, collectionTitle, collectionDescription, collectionPhoto, mintTo, emailTo);
+        createPopup(collectionTitle, collectionDescription, collectionPhoto, mintTo, emailTo, listingId);
     };
 
     function registerListeners(pop: Window) {

@@ -3,12 +3,12 @@ import { createContext, useContext } from "react";
 export interface PopupContextState {
     connecting: boolean;
     connect: (
-        candyMachineId: string,
         collectionTitle?: string,
         collectionDescription?: string,
         collectionPhoto?: string,
         mintTo?: string,
         emailTo?: string,
+        listingId?: string
     ) => void;
 
     popup: Window | null;

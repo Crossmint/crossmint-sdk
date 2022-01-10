@@ -1,6 +1,6 @@
 {
-    "name": "@crossmint/client-sdk-react-ui",
-    "version": "0.0.5-alpha.1",
+    "name": "@crossmint/client-sdk-base",
+    "version": "0.0.1",
     "author": "Paella Labs Inc",
     "license": "Apache-2.0",
     "repository": "https://github.com/CrossMint/crossmint-client-sdk",
@@ -10,17 +10,13 @@
     "module": "lib/esm/index.js",
     "types": "lib/esm/index.d.ts",
     "exports": {
-        ".": {
-            "import": "./lib/esm/index.js",
-            "require": "./lib/cjs/index.js"
-        },
-        "./styles.css": "./styles.css"
+        "import": "./lib/esm/index.js",
+        "require": "./lib/cjs/index.js"
     },
     "files": [
         "lib",
         "src",
-        "LICENSE",
-        "styles.css"
+        "LICENSE"
     ],
     "publishConfig": {
         "access": "public"
@@ -30,14 +26,10 @@
         "build": "yarn clean && tsc -p tsconfig.json && tsc -p tsconfig-cjs.json",
         "postbuild": "echo {\"type\":\"commonjs\"} | npx json > lib/cjs/package.json && echo {\"type\":\"module\"} | npx json > lib/esm/package.json"
     },
-    "peerDependencies": {
-        "react": "^17.0.2",
-        "react-dom": "^17.0.2"
+    "dependencies": {
+        "uuid": "^8.3.2"
     },
     "devDependencies": {
-        "@types/react": "^17.0.24",
-        "@types/react-dom": "^17.0.11",
-        "react": "^17.0.2",
-        "react-dom": "^17.0.2"
+        "@types/uuid": "^8.3.4"
     }
 }
