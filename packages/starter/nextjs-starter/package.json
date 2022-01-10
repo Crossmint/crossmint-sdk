@@ -1,5 +1,5 @@
 {
-    "version": "0.0.5",
+    "version": "0.0.6",
     "name": "@crossmint/client-sdk-nextjs-starter",
     "private": true,
     "author": "Paella Labs Inc",
@@ -25,7 +25,7 @@
         "lint": "next lint"
     },
     "dependencies": {
-        "@crossmint/client-sdk-react-ui": "^0.0.5-alpha.1",
+        "@crossmint/client-sdk-react-ui": "^0.0.5",
         "next": "^11.1.2",
         "react": "^17.0.2",
         "react-dom": "^17.0.2"
