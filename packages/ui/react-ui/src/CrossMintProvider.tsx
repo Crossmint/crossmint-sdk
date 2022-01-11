@@ -6,6 +6,7 @@ import { CrossMintModalContext } from "./useCrossMintModal";
 
 export interface CrossMintProviderProps extends CrossMintModalProps {
     clientId: string;
+    auctionId?: string;
     hideMintOnInactiveClient?: boolean;
     development?: boolean;
     children: ReactNode;
@@ -13,6 +14,7 @@ export interface CrossMintProviderProps extends CrossMintModalProps {
 
 export const CrossMintProvider: FC<CrossMintProviderProps> = ({
     clientId,
+    auctionId,
     hideMintOnInactiveClient = false,
     development = false,
     children,
@@ -21,7 +23,11 @@ export const CrossMintProvider: FC<CrossMintProviderProps> = ({
     const [visible, setVisible] = useState(false);
 
     return (
-        <CrossMintStatusProvider clientId={clientId} hideMintOnInactiveClient={hideMintOnInactiveClient}>
+        <CrossMintStatusProvider
+            clientId={clientId}
+            hideMintOnInactiveClient={hideMintOnInactiveClient}
+            auctionId={auctionId}
+        >
             <CrossMintModalContext.Provider
                 value={{
                     visible,

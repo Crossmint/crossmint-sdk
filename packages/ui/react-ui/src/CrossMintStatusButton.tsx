@@ -19,7 +19,7 @@ export const CrossMintStatusButton: FC<StatusButtonProps> = ({
     theme = "dark",
     ...props
 }) => {
-    const { status, clientId } = useCrossMintStatus();
+    const { status, clientId, auctionId } = useCrossMintStatus();
 
     const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
         (event) => {
@@ -27,7 +27,9 @@ export const CrossMintStatusButton: FC<StatusButtonProps> = ({
 
             if (status === OnboardingRequestStatusResponse.WAITING_SUBMISSION) {
                 window.open(
-                    `https://crossmint.io/developers/onboarding${clientId && `?clientId=${clientId}`}`,
+                    `https://crossmint.io/developers/onboarding${
+                        clientId && `?clientId=${clientId}${auctionId && `&auctionId=${auctionId}`}`
+                    }`,
                     "_blank"
                 );
                 return;

@@ -11,6 +11,7 @@ export enum OnboardingRequestStatusResponse {
 export interface CrossMintStatusContextState {
     status: OnboardingRequestStatusResponse;
     clientId: string;
+    auctionId?: string;
     hideMintOnInactiveClient: boolean;
 }
 

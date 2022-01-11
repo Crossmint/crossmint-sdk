@@ -3,12 +3,14 @@ import { OnboardingRequestStatusResponse, CrossMintStatusContext } from "./useCr
 
 export interface CrossMintStatusProviderProps {
     clientId: string;
+    auctionId?: string;
     hideMintOnInactiveClient: boolean;
     children: ReactNode;
 }
 
 export const CrossMintStatusProvider: FC<CrossMintStatusProviderProps> = ({
     clientId,
+    auctionId,
     hideMintOnInactiveClient,
     children,
 }) => {
@@ -46,6 +48,7 @@ export const CrossMintStatusProvider: FC<CrossMintStatusProviderProps> = ({
             value={{
                 status,
                 clientId,
+                auctionId,
                 hideMintOnInactiveClient,
             }}
         >
