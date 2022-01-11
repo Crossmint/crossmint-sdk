@@ -7,7 +7,7 @@ export interface PopupProviderProps {
     children: ReactNode;
 }
 
-const PROD_URL = "https://crossmint.io";
+const PROD_URL = "https://www.crossmint.io";
 const DEV_URL = "http://localhost:3001";
 
 export const CrossMintPopupProvider: FC<PopupProviderProps> = ({ development, children }) => {

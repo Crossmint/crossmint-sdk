@@ -19,7 +19,7 @@ export const CrossMintStatusProvider: FC<CrossMintStatusProviderProps> = ({
     );
 
     async function fetchClientIntegration() {
-        const res = await fetch(`https://crossmint.io/api/crossmint/onboardingRequests/${clientId}/status`);
+        const res = await fetch(`https://www.crossmint.io/api/crossmint/onboardingRequests/${clientId}/status`);
 
         if (res.status === 200) {
             const resData: { clientId: string; status: OnboardingRequestStatusResponse } = await res.json();
