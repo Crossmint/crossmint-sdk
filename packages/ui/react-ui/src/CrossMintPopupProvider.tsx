@@ -29,11 +29,11 @@ export const CrossMintPopupProvider: FC<PopupProviderProps> = ({ development, ch
         const pop = window.open(
             `${development ? DEV_URL : PROD_URL}/signin?callbackUrl=${encodeURIComponent(
                 `${development ? DEV_URL : PROD_URL}/checkout/mint?clientId=${clientId}&closeOnSuccess=false${
-                    collectionTitle && `collectionTitle=${collectionTitle}`
-                }${collectionDescription && `&collectionDescription=${collectionDescription}`}${
-                    collectionPhoto && `&collectionPhoto=${collectionPhoto}`
-                }${mintTo && `&mintTo=${mintTo}`}${emailTo && `&emailTo=${emailTo}`}${
-                    listingId && `&listingId=${listingId}`
+                    collectionTitle ? `collectionTitle=${collectionTitle}` : ""
+                }${collectionDescription ? `&collectionDescription=${collectionDescription}` : ""}${
+                    collectionPhoto ? `&collectionPhoto=${collectionPhoto}` : ""
+                }${mintTo ? `&mintTo=${mintTo}` : ""}${emailTo ? `&emailTo=${emailTo}` : ""}${
+                    listingId ? `&listingId=${listingId}` : ""
                 }`
             )}`,
             "popUpWindow",

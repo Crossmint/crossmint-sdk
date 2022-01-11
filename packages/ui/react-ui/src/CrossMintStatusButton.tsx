@@ -27,8 +27,8 @@ export const CrossMintStatusButton: FC<StatusButtonProps> = ({
 
             if (status === OnboardingRequestStatusResponse.WAITING_SUBMISSION) {
                 window.open(
-                    `https://crossmint.io/developers/onboarding${
-                        clientId && `?clientId=${clientId}${auctionId && `&auctionId=${auctionId}`}`
+                    `https://crossmint.io/developers/onboarding${clientId ? `?clientId=${clientId}` : ""}${
+                        auctionId ? `&auctionId=${auctionId}` : ""
                     }`,
                     "_blank"
                 );
