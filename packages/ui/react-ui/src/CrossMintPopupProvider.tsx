@@ -28,7 +28,7 @@ export const CrossMintPopupProvider: FC<PopupProviderProps> = ({ development, ch
     ) => {
         const pop = window.open(
             `${development ? DEV_URL : PROD_URL}/signin?callbackUrl=${encodeURIComponent(
-                `${development ? DEV_URL : PROD_URL}/checkout/mint?clientId=${clientId}&closeOnSuccess=false${
+                `${development ? DEV_URL : PROD_URL}/checkout/mint?clientId=${clientId}&closeOnSuccess=false&${
                     collectionTitle ? `collectionTitle=${collectionTitle}` : ""
                 }${collectionDescription ? `&collectionDescription=${collectionDescription}` : ""}${
                     collectionPhoto ? `&collectionPhoto=${collectionPhoto}` : ""
