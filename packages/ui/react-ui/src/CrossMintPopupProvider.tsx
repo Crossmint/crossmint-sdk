@@ -27,15 +27,15 @@ export const CrossMintPopupProvider: FC<PopupProviderProps> = ({ development, ch
         listingId?: string
     ) => {
         const pop = window.open(
-            `${development ? DEV_URL : PROD_URL}/signin?callbackUrl=${encodeURIComponent(
-                `${development ? DEV_URL : PROD_URL}/checkout/mint?clientId=${clientId}&closeOnSuccess=false&${
-                    collectionTitle ? `collectionTitle=${collectionTitle}` : ""
-                }${collectionDescription ? `&collectionDescription=${collectionDescription}` : ""}${
-                    collectionPhoto ? `&collectionPhoto=${collectionPhoto}` : ""
-                }${mintTo ? `&mintTo=${mintTo}` : ""}${emailTo ? `&emailTo=${emailTo}` : ""}${
-                    listingId ? `&listingId=${listingId}` : ""
-                }`
-            )}`,
+                `${development ? DEV_URL : PROD_URL}/signin?callbackUrl=${encodeURIComponent(
+                        `${development ? DEV_URL : PROD_URL}/checkout/mint?clientId=${encodeURIComponent(clientId)}&closeOnSuccess=false&${
+                                collectionTitle ? `collectionTitle=${encodeURIComponent(collectionTitle)}` : ""
+                                }${collectionDescription ? `&collectionDescription=${encodeURIComponent(collectionDescription)}` : ""}${
+                                collectionPhoto ? `&collectionPhoto=${encodeURIComponent(collectionPhoto)}` : ""
+                                }${mintTo ? `&mintTo=${encodeURIComponent(mintTo)}` : ""}${emailTo ? `&emailTo=${encodeURIComponent(emailTo)}` : ""}${
+                                listingId ? `&listingId=${encodeURIComponent(listingId)}` : ""
+                                }`
+                )}`,
             "popUpWindow",
             createPopupString()
         );
