@@ -19,6 +19,11 @@ export const CrossMintStatusProvider: FC<CrossMintStatusProviderProps> = ({
     );
 
     async function fetchClientIntegration() {
+        if (!clientId || clientId === "" || clientId === "<YOUR_CLIENT_ID>") {
+            console.warn("You must enter your own CrossMint client ID in <CrossMintProvider clientId=XXX>");
+            return;
+        }
+        
         const res = await fetch(`https://www.crossmint.io/api/crossmint/onboardingRequests/${clientId}/status`);
 
         if (res.status === 200) {
