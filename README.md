@@ -1,10 +1,13 @@
-# `@crossmint/client-sdk`
+# `@crossmint/client-sdk (beta)`
 
-CrossMint simplifies the user experience on your NFT sales, by offering a fully hosted credit card checkout flow, in under 10 lines of code. CrossMint currently only supports Solana NFTs, but more blockchains are coming soon.
+CrossMint massively simplifies the user experience on your NFT sales, by allowing your users to pay with credit card and without installing a wallet. It takes 10 lines of code and 5 min to integrate, and is free to use for the seller. You’ll get the sales proceeds in SOL/ETH as if the user was paying with their own wallet.
 
-To get started, all you need to do is import our client-side libraries into your minting website, pass it your Metaplex Candy Machine ID, and sit back and let us take care of the rest.
+Supported chains:
+* Solana
+* Polygon (coming Jan 2021)
+* Ethereum L1 (Feb 2021)
 
-You’ll get the sales proceeds in SOL as if the user was paying with a Solana wallet.
+To get started, request a client ID from our sales team (email: sales (at) crossmint.io), import our client-side libraries into your minting website, and follow the instructions below.
 
 **CrossMint is currently in Beta. In order for CrossMint to work with your Candy Machine, contact us at sales (at) crossmint.io .**
 
@@ -24,7 +27,7 @@ yarn add @crossmint/client-sdk-react-ui
 
 Require the CrossMint styles by adding `require('@crossmint/client-sdk-react-ui/styles.css');` to your app.
 
-Import `CrossMintProvider`, wrap your app with it at the top level and pass your clientId.
+Import `CrossMintProvider`, wrap your app with it at the top level and pass your clientId (reach out to sales (at) crossmint.io to get one).
 
 ```javascript
 import { AppProps } from "next/app";
