@@ -55,6 +55,11 @@ export const CrossMintButton: FC<ButtonProps> = ({
         return null;
     }
 
+    if (collectionTitle === "<TITLE_FOR_YOUR_COLLECTION>") {
+        console.warn("No collection title specified. Please add a collection title to your <CrossmintButton />");
+        collectionTitle = "";
+    }
+
     return (
         <button
             className={`client-sdk-button-trigger client-sdk-button-trigger-${theme}`}
