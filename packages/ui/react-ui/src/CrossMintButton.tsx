@@ -32,6 +32,23 @@ export const CrossMintButton: FC<ButtonProps> = ({
     listingId,
     ...props
 }) => {
+    if (collectionTitle === "<TITLE_FOR_YOUR_COLLECTION>") {
+        console.warn("No collection title specified. Please add a collection title to your <CrossmintButton />");
+        collectionTitle = "";
+    }
+
+    if (collectionDescription === "<DESCRIPTION_OF_YOUR_COLLECTION>") {
+        console.warn(
+            "No collection description specified. Please add a collection description to your <CrossmintButton />"
+        );
+        collectionDescription = "";
+    }
+
+    if (collectionPhoto === "<OPT_URL_TO_PHOTO_COVER>") {
+        console.warn("No collection photo specified. Please add a collection photo to your <CrossmintButton />");
+        collectionPhoto = "";
+    }
+
     const { hideMintOnInactiveClient, status } = useCrossMintStatus();
 
     const { connecting, connect } = useCrossMintPopup();
@@ -53,11 +70,6 @@ export const CrossMintButton: FC<ButtonProps> = ({
 
     if (hideMintOnInactiveClient && status !== OnboardingRequestStatusResponse.ACCEPTED) {
         return null;
-    }
-
-    if (collectionTitle === "<TITLE_FOR_YOUR_COLLECTION>") {
-        console.warn("No collection title specified. Please add a collection title to your <CrossmintButton />");
-        collectionTitle = "";
     }
 
     return (
