@@ -29,7 +29,6 @@ export const CrossMintStatusProvider: FC<CrossMintStatusProviderProps> = ({
         if (res.status === 200) {
             const resData: { clientId: string; status: OnboardingRequestStatusResponse } = await res.json();
 
-            console.log("resData", resData);
             setStatus(resData.status);
         } else {
             if (status !== OnboardingRequestStatusResponse.INVALID) {
