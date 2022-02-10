@@ -114,3 +114,10 @@ yarn build
 cd packages/starter/react-ui-starter
 yarn start
 ```
+
+## Publish (for the crossmint team)
+
+```shell
+yarn build
+yarn publish
+```
