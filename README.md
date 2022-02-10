@@ -4,8 +4,8 @@ CrossMint massively simplifies the user experience on your NFT sales, by allowin
 
 Supported chains:
 * Solana
-* Polygon (coming Jan 2021)
-* Ethereum L1 (Feb 2021)
+* Polygon (private beta, contact us at sales at crossmint.io)
+* Ethereum L1 (end of Feb 2021)
 
 To get started, request a client ID from our sales team (email: sales (at) crossmint.io), import our client-side libraries into your minting website, and follow the instructions below.
 
