@@ -49,7 +49,7 @@ export const CrossMintStatusButton: FC<StatusButtonProps> = ({
             case OnboardingRequestStatusResponse.ACCEPTED:
                 return <p>You're good to go!</p>;
             case OnboardingRequestStatusResponse.REJECTED:
-                return <p>You're application was rejected</p>;
+                return <p>Your application was rejected</p>;
         }
     }, [status]);
 
