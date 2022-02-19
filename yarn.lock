@@ -1117,6 +1117,14 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
+"@crossmint/client-sdk-react-ui@^0.0.5":
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/@crossmint/client-sdk-react-ui/-/client-sdk-react-ui-0.0.5.tgz#23e05d238872b557ccccb001e298ac80bdb104d2"
+  integrity sha512-3C5v1QgrclV8Z+nLg6yVAeXLi2tayeTful9NnPo3qYyIB/7Zfq4MLqb7funZGYcYLeV8S1man5JzgEdPIWVZmA==
+
+"@crossmint/client-sdk-react-ui@file:packages/ui/react-ui/package":
+  version "0.0.8-alpha.4"
+
 "@csstools/convert-colors@^1.4.0":
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/@csstools/convert-colors/-/convert-colors-1.4.0.tgz#ad495dc41b12e75d588c6db8b9834f08fa131eb7"
