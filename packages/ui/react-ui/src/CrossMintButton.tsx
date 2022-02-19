@@ -87,11 +87,9 @@ export const CrossMintButton: FC<ButtonProps> = ({
         return null;
     }
 
-    const formattedClassName = `client-sdk-button-trigger-${theme} ${className || ''}`;
-
     return (
         <Button
-            className={formattedClassName}
+            className={className}
             theme={theme}
             disabled={disabled}
             onClick={handleClick}

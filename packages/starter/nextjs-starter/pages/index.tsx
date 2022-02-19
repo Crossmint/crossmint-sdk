@@ -16,6 +16,7 @@ export default function Index() {
                 collectionDescription="<DESCRIPTION_OF_YOUR_COLLECTION>"
                 collectionPhoto="<OPT_URL_TO_PHOTO_COVER>"
                 clientId="12345"
+                className="my-crossmint-button"
             />
         </div>
     );
