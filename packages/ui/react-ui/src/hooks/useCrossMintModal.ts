@@ -52,14 +52,16 @@ const addLoadingOverlay = ():void => {
     const overlayStyles = {
         width: '100vw',
         height: '100vh',
-        'background-color': '#dfdfdf',
+        'background-color': 'rgba(0, 0, 0, 0.5)',
         position: 'fixed',
         'z-index': '99999999',
         top: '0',
         left: '0',
-        opacity: '0.5',
     };
     Object.assign(overlayEl.style, overlayStyles);
+    const loaderEl = document.createElement('div');
+    loaderEl.classList.add('client-sdk-modal-loader');
+    overlayEl.appendChild(loaderEl);
     document.body.appendChild(overlayEl);
 }
 

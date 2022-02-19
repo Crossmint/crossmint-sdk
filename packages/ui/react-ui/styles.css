@@ -107,6 +107,9 @@
     width: 35px;
     height: 35px;
     animation: crossmintSpin 1s linear infinite;
+    position: absolute;
+    top: 50%;
+    left: 50%;
 }
 
 @keyframes crossmintSpin {

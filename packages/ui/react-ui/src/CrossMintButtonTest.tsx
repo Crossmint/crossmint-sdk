@@ -21,7 +21,7 @@ export interface ButtonProps {
     development?: boolean;
     crossmintOpened?: () => any;
     crossmintClosed?: () => any;
-    showOverlay: boolean;
+    showOverlay?: boolean;
 }
 
 export const CrossMintButtonTest: FC<ButtonProps> = ({
