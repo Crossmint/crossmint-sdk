@@ -10,8 +10,6 @@ interface IProps {
     development: boolean;
     clientId: string;
     showOverlay: boolean;
-    onCrossmintOpened?: () => any;
-    onCrossmintClosed?: () => any;
 }
 
 interface IReturn {
@@ -40,10 +38,6 @@ type MintQueryParams = {
 const PROD_URL = "https://www.crossmint.io";
 const DEV_URL = "http://localhost:3001";
 
-const executeIfExists = (fn?: () => any | undefined): void => {
-    if (fn && typeof fn === "function") fn();
-};
-
 const overlayId = "__crossmint-overlay__";
 
 const addLoadingOverlay = (): void => {
@@ -66,13 +60,7 @@ const removeLoadingOverlay = (): void => {
     document.getElementById(overlayId)?.remove();
 };
 
-export default function useCrossMintModal({
-    development,
-    clientId,
-    onCrossmintOpened,
-    onCrossmintClosed,
-    showOverlay,
-}: IProps): IReturn {
+export default function useCrossMintModal({ development, clientId, showOverlay }: IProps): IReturn {
     const [connecting, setConnecting] = useState(false);
 
     const createPopup = (
@@ -109,7 +97,6 @@ export default function useCrossMintModal({
             if (showOverlay) {
                 addLoadingOverlay();
             }
-            executeIfExists(onCrossmintOpened);
         } else {
             setConnecting(false);
             console.error("Failed to open popup window");
@@ -139,7 +126,6 @@ export default function useCrossMintModal({
                 if (showOverlay) {
                     removeLoadingOverlay();
                 }
-                executeIfExists(onCrossmintClosed);
             }
         }, 500);
     }

@@ -20,8 +20,6 @@ export interface ButtonProps {
     hideMintOnInactiveClient?: boolean;
     clientId: string;
     development?: boolean;
-    onCrossmintOpened?: () => any;
-    onCrossmintClosed?: () => any;
     showOverlay?: boolean;
 }
 
@@ -42,8 +40,6 @@ export const CrossMintButton: FC<ButtonProps> = ({
     development = false,
     auctionId,
     hideMintOnInactiveClient = false,
-    onCrossmintOpened,
-    onCrossmintClosed,
     showOverlay = true,
     ...props
 }) => {
@@ -51,8 +47,6 @@ export const CrossMintButton: FC<ButtonProps> = ({
     const { connecting, connect } = useCrossMintModal({
         clientId,
         development,
-        onCrossmintOpened,
-        onCrossmintClosed,
         showOverlay,
     });
 
