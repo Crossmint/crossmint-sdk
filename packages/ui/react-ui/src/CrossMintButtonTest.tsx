@@ -21,6 +21,7 @@ export interface ButtonProps {
     development?: boolean;
     crossmintOpened?: () => any;
     crossmintClosed?: () => any;
+    showOverlay: boolean;
 }
 
 export const CrossMintButtonTest: FC<ButtonProps> = ({
@@ -42,10 +43,11 @@ export const CrossMintButtonTest: FC<ButtonProps> = ({
     hideMintOnInactiveClient = false,
     crossmintOpened,
     crossmintClosed,
+    showOverlay = true,
     ...props
 }) => {
     const status = useCrossMintStatus({ clientId });
-    const { connecting, connect } = useCrossMintModal({ clientId, development, crossmintOpened, crossmintClosed });
+    const { connecting, connect } = useCrossMintModal({ clientId, development, crossmintOpened, crossmintClosed, showOverlay });
 
     if (collectionTitle === "<TITLE_FOR_YOUR_COLLECTION>") {
         console.warn("No collection title specified. Please add a collection title to your <CrossmintButton />");

@@ -9,6 +9,7 @@ function createPopupString() {
 interface IProps {
     development: boolean;
     clientId: string;
+    showOverlay: boolean;
     crossmintOpened?: () => any,
     crossmintClosed?: () => any,
 }
@@ -43,7 +44,30 @@ const executeIfExists = (fn?: () => any | undefined):void => {
     if (fn && typeof fn === 'function') fn();
 }
 
-export default function useCrossMintModal({ development, clientId, crossmintOpened, crossmintClosed }: IProps): IReturn {
+const overlayId = '__crossmint-overlay__';
+
+const addLoadingOverlay = ():void => {
+    const overlayEl = document.createElement('div');
+    overlayEl.setAttribute('id', overlayId);
+    const overlayStyles = {
+        width: '100vw',
+        height: '100vh',
+        'background-color': '#dfdfdf',
+        position: 'fixed',
+        'z-index': '99999999',
+        top: '0',
+        left: '0',
+        opacity: '0.5',
+    };
+    Object.assign(overlayEl.style, overlayStyles);
+    document.body.appendChild(overlayEl);
+}
+
+const removeLoadingOverlay = ():void => {
+    document.getElementById(overlayId)?.remove();
+}
+
+export default function useCrossMintModal({ development, clientId, crossmintOpened, crossmintClosed, showOverlay }: IProps): IReturn {
     const [connecting, setConnecting] = useState(false);
 
     const createPopup = (
@@ -80,6 +104,9 @@ export default function useCrossMintModal({ development, clientId, crossmintOpen
         );
         if (pop) {
             registerListeners(pop);
+            if (showOverlay) {
+                addLoadingOverlay();
+            }
             executeIfExists(crossmintOpened);
         } else {
             setConnecting(false);
@@ -107,6 +134,9 @@ export default function useCrossMintModal({ development, clientId, crossmintOpen
             if (pop.closed) {
                 clearInterval(timer);
                 setConnecting(false);
+                if (showOverlay) {
+                    removeLoadingOverlay();
+                }
                 executeIfExists(crossmintClosed);
             }
         }, 500);
