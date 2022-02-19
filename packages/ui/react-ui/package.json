@@ -26,8 +26,7 @@
     "scripts": {
         "clean": "shx rm -rf lib/*",
         "build": "yarn clean && tsc -p tsconfig.json && tsc -p tsconfig-cjs.json",
-        "postbuild": "shx echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json && shx echo '{ \"type\": \"module\" }' > lib/esm/package.json",
-        "pack": "yarn build && yarn pack --filename package.tgz && tar -xf package.tgz"
+        "postbuild": "shx echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json && shx echo '{ \"type\": \"module\" }' > lib/esm/package.json"
     },
     "peerDependencies": {
         "react": "^17.0.2",

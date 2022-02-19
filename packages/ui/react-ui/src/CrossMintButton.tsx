@@ -20,8 +20,8 @@ export interface ButtonProps {
     hideMintOnInactiveClient?: boolean;
     clientId: string;
     development?: boolean;
-    crossmintOpened?: () => any;
-    crossmintClosed?: () => any;
+    onCrossmintOpened?: () => any;
+    onCrossmintClosed?: () => any;
     showOverlay?: boolean;
 }
 
@@ -42,13 +42,13 @@ export const CrossMintButton: FC<ButtonProps> = ({
     development = false,
     auctionId,
     hideMintOnInactiveClient = false,
-    crossmintOpened,
-    crossmintClosed,
+    onCrossmintOpened,
+    onCrossmintClosed,
     showOverlay = true,
     ...props
 }) => {
     const status = useCrossMintStatus({ clientId });
-    const { connecting, connect } = useCrossMintModal({ clientId, development, crossmintOpened, crossmintClosed, showOverlay });
+    const { connecting, connect } = useCrossMintModal({ clientId, development, onCrossmintOpened, onCrossmintClosed, showOverlay });
 
     if (collectionTitle === "<TITLE_FOR_YOUR_COLLECTION>") {
         console.warn("No collection title specified. Please add a collection title to your <CrossmintButton />");
@@ -69,8 +69,6 @@ export const CrossMintButton: FC<ButtonProps> = ({
 
     const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
         (event) => {
-            if (onClick) onClick(event);
-
             if (!event.defaultPrevented) {
                 connect(collectionTitle, collectionDescription, collectionPhoto, mintTo, emailTo, listingId);
             }
