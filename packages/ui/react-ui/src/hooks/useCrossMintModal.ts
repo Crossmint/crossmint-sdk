@@ -59,9 +59,6 @@ const addLoadingOverlay = ():void => {
         left: '0',
     };
     Object.assign(overlayEl.style, overlayStyles);
-    const loaderEl = document.createElement('div');
-    loaderEl.classList.add('client-sdk-modal-loader');
-    overlayEl.appendChild(loaderEl);
     document.body.appendChild(overlayEl);
 }
 
