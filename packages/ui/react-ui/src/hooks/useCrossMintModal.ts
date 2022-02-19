@@ -25,6 +25,17 @@ interface IReturn {
     ) => void;
 }
 
+type MintQueryParams = {
+    clientId: string;
+    closeOnSuccess: string;
+    collectionTitle?: string;
+    collectionDescription?: string;
+    collectionPhoto?: string;
+    mintTo?: string;
+    emailTo?: string;
+    listingId?: string;
+}
+
 const PROD_URL = "https://www.crossmint.io";
 const DEV_URL = "http://localhost:3001";
 
@@ -43,16 +54,27 @@ export default function useCrossMintModal({ development, clientId, crossmintOpen
         emailTo?: string,
         listingId?: string
     ) => {
+        const urlOrigin = development ? DEV_URL : PROD_URL;
+        const getMintQueryParams = ():string => {
+            const mintQueryParams:MintQueryParams = {
+                clientId: encodeURIComponent(clientId),
+                closeOnSuccess: 'false',
+            };
+
+            if (collectionTitle) mintQueryParams.collectionTitle = encodeURIComponent(collectionTitle);
+            if (collectionDescription) mintQueryParams.collectionDescription = encodeURIComponent(collectionDescription);
+            if (collectionPhoto) mintQueryParams.collectionPhoto = encodeURIComponent(collectionPhoto);
+            if (mintTo) mintQueryParams.mintTo = encodeURIComponent(mintTo);
+            if (emailTo) mintQueryParams.emailTo = encodeURIComponent(emailTo);
+            if (listingId) mintQueryParams.listingId = encodeURIComponent(listingId);
+
+            return new URLSearchParams(mintQueryParams).toString()
+        };
+        const callbackUrl = encodeURIComponent(`${urlOrigin}/checkout/mint?${getMintQueryParams()}`);
+        const url = `${urlOrigin}/signin?callbackUrl=${callbackUrl}`;
+
         const pop = window.open(
-                `${development ? DEV_URL : PROD_URL}/signin?callbackUrl=${encodeURIComponent(
-                        `${development ? DEV_URL : PROD_URL}/checkout/mint?clientId=${encodeURIComponent(clientId)}&closeOnSuccess=false&${
-                                collectionTitle ? `collectionTitle=${encodeURIComponent(collectionTitle)}` : ""
-                                }${collectionDescription ? `&collectionDescription=${encodeURIComponent(collectionDescription)}` : ""}${
-                                collectionPhoto ? `&collectionPhoto=${encodeURIComponent(collectionPhoto)}` : ""
-                                }${mintTo ? `&mintTo=${encodeURIComponent(mintTo)}` : ""}${emailTo ? `&emailTo=${encodeURIComponent(emailTo)}` : ""}${
-                                listingId ? `&listingId=${encodeURIComponent(listingId)}` : ""
-                                }`
-                )}`,
+            url,
             "popUpWindow",
             createPopupString()
         );
