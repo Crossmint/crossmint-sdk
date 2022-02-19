@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 function createPopupString() {
     return `height=750,width=400,left=${window.innerWidth / 2 - 200},top=${
@@ -10,8 +10,8 @@ interface IProps {
     development: boolean;
     clientId: string;
     showOverlay: boolean;
-    onCrossmintOpened?: () => any,
-    onCrossmintClosed?: () => any,
+    onCrossmintOpened?: () => any;
+    onCrossmintClosed?: () => any;
 }
 
 interface IReturn {
@@ -35,38 +35,44 @@ type MintQueryParams = {
     mintTo?: string;
     emailTo?: string;
     listingId?: string;
-}
+};
 
 const PROD_URL = "https://www.crossmint.io";
 const DEV_URL = "http://localhost:3001";
 
-const executeIfExists = (fn?: () => any | undefined):void => {
-    if (fn && typeof fn === 'function') fn();
-}
+const executeIfExists = (fn?: () => any | undefined): void => {
+    if (fn && typeof fn === "function") fn();
+};
 
-const overlayId = '__crossmint-overlay__';
+const overlayId = "__crossmint-overlay__";
 
-const addLoadingOverlay = ():void => {
-    const overlayEl = document.createElement('div');
-    overlayEl.setAttribute('id', overlayId);
+const addLoadingOverlay = (): void => {
+    const overlayEl = document.createElement("div");
+    overlayEl.setAttribute("id", overlayId);
     const overlayStyles = {
-        width: '100vw',
-        height: '100vh',
-        'background-color': 'rgba(0, 0, 0, 0.5)',
-        position: 'fixed',
-        'z-index': '99999999',
-        top: '0',
-        left: '0',
+        width: "100vw",
+        height: "100vh",
+        "background-color": "rgba(0, 0, 0, 0.5)",
+        position: "fixed",
+        "z-index": "99999999",
+        top: "0",
+        left: "0",
     };
     Object.assign(overlayEl.style, overlayStyles);
     document.body.appendChild(overlayEl);
-}
+};
 
-const removeLoadingOverlay = ():void => {
+const removeLoadingOverlay = (): void => {
     document.getElementById(overlayId)?.remove();
-}
+};
 
-export default function useCrossMintModal({ development, clientId, onCrossmintOpened, onCrossmintClosed, showOverlay }: IProps): IReturn {
+export default function useCrossMintModal({
+    development,
+    clientId,
+    onCrossmintOpened,
+    onCrossmintClosed,
+    showOverlay,
+}: IProps): IReturn {
     const [connecting, setConnecting] = useState(false);
 
     const createPopup = (
@@ -78,29 +84,26 @@ export default function useCrossMintModal({ development, clientId, onCrossmintOp
         listingId?: string
     ) => {
         const urlOrigin = development ? DEV_URL : PROD_URL;
-        const getMintQueryParams = ():string => {
-            const mintQueryParams:MintQueryParams = {
+        const getMintQueryParams = (): string => {
+            const mintQueryParams: MintQueryParams = {
                 clientId: encodeURIComponent(clientId),
-                closeOnSuccess: 'false',
+                closeOnSuccess: "false",
             };
 
             if (collectionTitle) mintQueryParams.collectionTitle = encodeURIComponent(collectionTitle);
-            if (collectionDescription) mintQueryParams.collectionDescription = encodeURIComponent(collectionDescription);
+            if (collectionDescription)
+                mintQueryParams.collectionDescription = encodeURIComponent(collectionDescription);
             if (collectionPhoto) mintQueryParams.collectionPhoto = encodeURIComponent(collectionPhoto);
             if (mintTo) mintQueryParams.mintTo = encodeURIComponent(mintTo);
             if (emailTo) mintQueryParams.emailTo = encodeURIComponent(emailTo);
             if (listingId) mintQueryParams.listingId = encodeURIComponent(listingId);
 
-            return new URLSearchParams(mintQueryParams).toString()
+            return new URLSearchParams(mintQueryParams).toString();
         };
         const callbackUrl = encodeURIComponent(`${urlOrigin}/checkout/mint?${getMintQueryParams()}`);
         const url = `${urlOrigin}/signin?callbackUrl=${callbackUrl}`;
 
-        const pop = window.open(
-            url,
-            "popUpWindow",
-            createPopupString()
-        );
+        const pop = window.open(url, "popUpWindow", createPopupString());
         if (pop) {
             registerListeners(pop);
             if (showOverlay) {

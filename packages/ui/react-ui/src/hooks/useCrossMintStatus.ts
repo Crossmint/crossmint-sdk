@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 export enum OnboardingRequestStatusResponse {
     WAITING_SUBMISSION = "waiting-submission",
@@ -19,17 +19,17 @@ interface IProps {
     clientId: string;
 }
 
-export default function useCrossMintStatus ({ clientId }:IProps) {
+export default function useCrossMintStatus({ clientId }: IProps) {
     const [status, setStatus] = useState<OnboardingRequestStatusResponse>(
         OnboardingRequestStatusResponse.WAITING_SUBMISSION
     );
-    
+
     async function fetchClientIntegration() {
         if (!clientId || clientId === "" || clientId === "<YOUR_CLIENT_ID>") {
             console.warn("You must enter your own CrossMint client ID in <CrossMintProvider clientId=XXX>");
             return;
         }
-        
+
         const res = await fetch(`https://www.crossmint.io/api/crossmint/onboardingRequests/${clientId}/status`);
 
         if (res.status === 200) {

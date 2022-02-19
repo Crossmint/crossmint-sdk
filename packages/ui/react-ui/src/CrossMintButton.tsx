@@ -48,7 +48,13 @@ export const CrossMintButton: FC<ButtonProps> = ({
     ...props
 }) => {
     const status = useCrossMintStatus({ clientId });
-    const { connecting, connect } = useCrossMintModal({ clientId, development, onCrossmintOpened, onCrossmintClosed, showOverlay });
+    const { connecting, connect } = useCrossMintModal({
+        clientId,
+        development,
+        onCrossmintOpened,
+        onCrossmintClosed,
+        showOverlay,
+    });
 
     if (collectionTitle === "<TITLE_FOR_YOUR_COLLECTION>") {
         console.warn("No collection title specified. Please add a collection title to your <CrossmintButton />");
