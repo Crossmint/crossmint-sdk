@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { LIB_VERSION } from "../version";
 
 export enum OnboardingRequestStatusResponse {
     WAITING_SUBMISSION = "waiting-submission",
@@ -30,7 +31,13 @@ export default function useCrossMintStatus({ clientId }: IProps) {
             return;
         }
 
-        const res = await fetch(`https://www.crossmint.io/api/crossmint/onboardingRequests/${clientId}/status`);
+        console.log("asasoasdasdad", process.env);
+        const res = await fetch(`https://www.crossmint.io/api/crossmint/onboardingRequests/${clientId}/status`, {
+            headers: {
+                "X-Client-Version": LIB_VERSION,
+                "X-Client-Name": "__clientName__",
+            },
+        });
 
         if (res.status === 200) {
             const resData: { clientId: string; status: OnboardingRequestStatusResponse } = await res.json();

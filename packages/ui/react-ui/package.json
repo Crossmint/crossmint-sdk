@@ -24,6 +24,7 @@
         "access": "public"
     },
     "scripts": {
+        "prebuild": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/version.ts",
         "clean": "shx rm -rf lib/*",
         "build": "yarn clean && tsc -p tsconfig.json && tsc -p tsconfig-cjs.json",
         "postbuild": "shx echo '{ \"type\": \"commonjs\" }' > lib/cjs/package.json && shx echo '{ \"type\": \"module\" }' > lib/esm/package.json"
