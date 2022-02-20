@@ -69,6 +69,8 @@ export const CrossMintButton: FC<ButtonProps> = ({
 
     const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
         (event) => {
+            if (onClick) onClick(event);
+
             if (!event.defaultPrevented) {
                 connect(collectionTitle, collectionDescription, collectionPhoto, mintTo, emailTo, listingId);
             }
