@@ -14,3 +14,27 @@ a {
 * {
   box-sizing: border-box;
 }
+
+button.my-crossmint-button {
+  background: rgb(128, 176, 240);
+}
+
+button.my-crossmint-button p {
+  color: lightcyan;
+}
+
+@keyframes spin {
+  from {
+      transform:rotate(0deg);
+  }
+  to {
+      transform:rotate(360deg);
+  }
+}
+
+button.my-crossmint-button img {
+  animation: spin;
+  animation-duration: 5000ms;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear; 
+}

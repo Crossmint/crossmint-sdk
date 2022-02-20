@@ -13,14 +13,12 @@
         ".": {
             "import": "./lib/esm/index.js",
             "require": "./lib/cjs/index.js"
-        },
-        "./styles.css": "./styles.css"
+        }
     },
     "files": [
         "lib",
         "src",
-        "LICENSE",
-        "styles.css"
+        "LICENSE"
     ],
     "publishConfig": {
         "access": "public"
@@ -37,7 +35,9 @@
     "devDependencies": {
         "@types/react": "^17.0.24",
         "@types/react-dom": "^17.0.11",
+        "@types/styled-components": "^5.1.23",
         "react": "^17.0.2",
-        "react-dom": "^17.0.2"
+        "react-dom": "^17.0.2",
+        "styled-components": "^5.3.3"
     }
 }

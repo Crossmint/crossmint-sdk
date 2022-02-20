@@ -1,19 +1,25 @@
-import React, { FC, ReactNode, useEffect, useState } from "react";
-import { OnboardingRequestStatusResponse, CrossMintStatusContext } from "./useCrossMintStatus";
+import { useState, useEffect } from "react";
 
-export interface CrossMintStatusProviderProps {
+export enum OnboardingRequestStatusResponse {
+    WAITING_SUBMISSION = "waiting-submission",
+    PENDING = "pending",
+    REJECTED = "rejected",
+    ACCEPTED = "accepted",
+    INVALID = "invalid",
+}
+
+export interface CrossMintStatusContextState {
+    status: OnboardingRequestStatusResponse;
     clientId: string;
     auctionId?: string;
     hideMintOnInactiveClient: boolean;
-    children: ReactNode;
 }
 
-export const CrossMintStatusProvider: FC<CrossMintStatusProviderProps> = ({
-    clientId,
-    auctionId,
-    hideMintOnInactiveClient,
-    children,
-}) => {
+interface IProps {
+    clientId: string;
+}
+
+export default function useCrossMintStatus({ clientId }: IProps) {
     const [status, setStatus] = useState<OnboardingRequestStatusResponse>(
         OnboardingRequestStatusResponse.WAITING_SUBMISSION
     );
@@ -23,7 +29,7 @@ export const CrossMintStatusProvider: FC<CrossMintStatusProviderProps> = ({
             console.warn("You must enter your own CrossMint client ID in <CrossMintProvider clientId=XXX>");
             return;
         }
-        
+
         const res = await fetch(`https://www.crossmint.io/api/crossmint/onboardingRequests/${clientId}/status`);
 
         if (res.status === 200) {
@@ -47,16 +53,5 @@ export const CrossMintStatusProvider: FC<CrossMintStatusProviderProps> = ({
         return () => clearInterval(interval);
     }, []);
 
-    return (
-        <CrossMintStatusContext.Provider
-            value={{
-                status,
-                clientId,
-                auctionId,
-                hideMintOnInactiveClient,
-            }}
-        >
-            {children}
-        </CrossMintStatusContext.Provider>
-    );
-};
+    return status;
+}
