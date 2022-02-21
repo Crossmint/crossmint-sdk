@@ -9,7 +9,7 @@ export interface StatusButtonProps {
     style?: CSSProperties;
     tabIndex?: number;
     clientId: string;
-    auctionId: string;
+    auctionId?: string;
     theme?: "light" | "dark";
 }
 
@@ -32,7 +32,7 @@ export const CrossMintStatusButton: FC<StatusButtonProps> = ({
 
             if (status === OnboardingRequestStatusResponse.WAITING_SUBMISSION) {
                 window.open(
-                    `https://crossmint.io/developers/onboarding${clientId ? `?clientId=${clientId}` : ""}${
+                    `https://www.crossmint.io/developers/onboarding${clientId ? `?clientId=${clientId}` : ""}${
                         auctionId ? `&auctionId=${auctionId}` : ""
                     }`,
                     "_blank"
