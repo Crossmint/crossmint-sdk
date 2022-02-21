@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { LIB_VERSION } from "../version";
+import { baseUrls, clientNames } from "../../../types";
 
 function createPopupString() {
     return `height=750,width=400,left=${window.innerWidth / 2 - 200},top=${
@@ -33,10 +35,9 @@ type MintQueryParams = {
     mintTo?: string;
     emailTo?: string;
     listingId?: string;
+    clientName: string;
+    clientVersion: string;
 };
-
-const PROD_URL = "https://www.crossmint.io";
-const DEV_URL = "http://localhost:3001";
 
 const overlayId = "__crossmint-overlay__";
 
@@ -71,11 +72,13 @@ export default function useCrossMintModal({ development, clientId, showOverlay }
         emailTo?: string,
         listingId?: string
     ) => {
-        const urlOrigin = development ? DEV_URL : PROD_URL;
+        const urlOrigin = development ? baseUrls.dev : baseUrls.prod;
         const getMintQueryParams = (): string => {
             const mintQueryParams: MintQueryParams = {
                 clientId: encodeURIComponent(clientId),
                 closeOnSuccess: "false",
+                clientName: clientNames.reactUi,
+                clientVersion: LIB_VERSION,
             };
 
             if (collectionTitle) mintQueryParams.collectionTitle = encodeURIComponent(collectionTitle);

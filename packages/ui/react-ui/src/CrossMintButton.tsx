@@ -43,7 +43,7 @@ export const CrossMintButton: FC<ButtonProps> = ({
     showOverlay = true,
     ...props
 }) => {
-    const status = useCrossMintStatus({ clientId });
+    const status = useCrossMintStatus({ clientId, development });
     const { connecting, connect } = useCrossMintModal({
         clientId,
         development,

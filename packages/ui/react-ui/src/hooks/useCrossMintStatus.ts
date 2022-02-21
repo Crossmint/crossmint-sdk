@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { LIB_VERSION } from "../version";
+import { clientNames, baseUrls, customHeaders } from "../../../types";
 
 export enum OnboardingRequestStatusResponse {
     WAITING_SUBMISSION = "waiting-submission",
@@ -18,9 +19,10 @@ export interface CrossMintStatusContextState {
 
 interface IProps {
     clientId: string;
+    development: boolean;
 }
 
-export default function useCrossMintStatus({ clientId }: IProps) {
+export default function useCrossMintStatus({ clientId, development }: IProps) {
     const [status, setStatus] = useState<OnboardingRequestStatusResponse>(
         OnboardingRequestStatusResponse.WAITING_SUBMISSION
     );
@@ -31,11 +33,12 @@ export default function useCrossMintStatus({ clientId }: IProps) {
             return;
         }
 
-        console.log("asasoasdasdad", process.env);
-        const res = await fetch(`https://www.crossmint.io/api/crossmint/onboardingRequests/${clientId}/status`, {
+        const baseUrl = development ? baseUrls.dev : baseUrls.prod;
+
+        const res = await fetch(`${baseUrl}/api/crossmint/onboardingRequests/${clientId}/status`, {
             headers: {
-                "X-Client-Version": LIB_VERSION,
-                "X-Client-Name": "__clientName__",
+                [customHeaders.clientVersion]: LIB_VERSION,
+                [customHeaders.clientName]: clientNames.reactUi,
             },
         });
 
