@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { validate } from "uuid";
 import { PublicKey } from "@solana/web3.js";
+import { LIB_VERSION } from "../version";
+import { clientNames, baseUrls, customHeaders } from "../../../types";
 
 export enum OnboardingRequestStatusResponse {
     WAITING_SUBMISSION = "waiting-submission",
@@ -19,6 +21,7 @@ export interface CrossMintStatusContextState {
 
 interface IProps {
     clientId: string;
+    development: boolean;
 }
 
 const validateClientId = (clientId: string): boolean => {
@@ -31,7 +34,7 @@ const validateClientId = (clientId: string): boolean => {
     }
 };
 
-export default function useCrossMintStatus({ clientId }: IProps) {
+export default function useCrossMintStatus({ clientId, development }: IProps) {
     const [status, setStatus] = useState<OnboardingRequestStatusResponse>(
         OnboardingRequestStatusResponse.WAITING_SUBMISSION
     );
@@ -49,7 +52,14 @@ export default function useCrossMintStatus({ clientId }: IProps) {
             return;
         }
 
-        const res = await fetch(`https://www.crossmint.io/api/crossmint/onboardingRequests/${clientId}/status`);
+        const baseUrl = development ? baseUrls.dev : baseUrls.prod;
+
+        const res = await fetch(`${baseUrl}/api/crossmint/onboardingRequests/${clientId}/status`, {
+            headers: {
+                [customHeaders.clientVersion]: LIB_VERSION,
+                [customHeaders.clientName]: clientNames.reactUi,
+            },
+        });
 
         if (res.status === 200) {
             const resData: { clientId: string; status: OnboardingRequestStatusResponse } = await res.json();
