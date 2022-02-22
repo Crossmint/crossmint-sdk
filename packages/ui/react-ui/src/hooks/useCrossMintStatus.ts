@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { validate } from "uuid";
+import { PublicKey } from "@solana/web3.js";
 
 export enum OnboardingRequestStatusResponse {
     WAITING_SUBMISSION = "waiting-submission",
@@ -19,6 +21,16 @@ interface IProps {
     clientId: string;
 }
 
+const validateClientId = (clientId: string): boolean => {
+    try {
+        const isValid = validate(clientId) || new PublicKey(clientId);
+        return !!isValid;
+    } catch (e) {
+        console.error(e);
+        return false;
+    }
+};
+
 export default function useCrossMintStatus({ clientId }: IProps) {
     const [status, setStatus] = useState<OnboardingRequestStatusResponse>(
         OnboardingRequestStatusResponse.WAITING_SUBMISSION
@@ -26,7 +38,14 @@ export default function useCrossMintStatus({ clientId }: IProps) {
 
     async function fetchClientIntegration() {
         if (!clientId || clientId === "" || clientId === "<YOUR_CLIENT_ID>") {
-            console.warn("You must enter your own CrossMint client ID in <CrossMintProvider clientId=XXX>");
+            console.error("You must enter your own Crossmint client ID in <CrossMintButton clientId=XXX>");
+            return;
+        }
+
+        if (!validateClientId(clientId)) {
+            console.error(
+                "The clientId passed to is invalid. Make sure to pass the clientId obtained from the crossmint team, with format XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXX"
+            );
             return;
         }
 
