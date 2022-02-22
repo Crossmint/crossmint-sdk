@@ -1,7 +1,7 @@
 import React, { CSSProperties, FC, MouseEvent, MouseEventHandler, useMemo, useCallback } from "react";
 import useCrossMintStatus, { OnboardingRequestStatusResponse } from "./hooks/useCrossMintStatus";
 import { Button, Img, Paragraph } from "./styles/index";
-import { baseUrls } from '../../types'
+import { baseUrls } from './hooks/types'
 
 export interface StatusButtonProps {
     className?: string;

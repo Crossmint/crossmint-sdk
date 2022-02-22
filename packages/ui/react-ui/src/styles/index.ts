@@ -1,6 +1,7 @@
-import styled, { css } from 'styled-components'
+import styled, { css } from "styled-components";
+console.log(styled);
 
-const DARK_BG = '#1e1e1e';
+const DARK_BG = "#1e1e1e";
 
 export const Button = styled.button`
     display: flex;
@@ -22,27 +23,27 @@ export const Button = styled.button`
         cursor: pointer;
     }
 
-    ${props =>
-    props.theme === 'light' 
-        ? css`
-            background: white;
-        `
-        : css`
-            background: ${DARK_BG};
-        `}
+    ${(props) =>
+        props.theme === "light"
+            ? css`
+                  background: white;
+              `
+            : css`
+                  background: ${DARK_BG};
+              `}
 `;
 
 export const Paragraph = styled.p`
     margin: 0;
 
-    ${props =>
-    props.theme === 'light' 
-        ? css`
-            color: black;
-        `
-        : css`
-            color: white;
-        `}
+    ${(props) =>
+        props.theme === "light"
+            ? css`
+                  color: black;
+              `
+            : css`
+                  color: white;
+              `}
 `;
 
 export const Img = styled.img`
