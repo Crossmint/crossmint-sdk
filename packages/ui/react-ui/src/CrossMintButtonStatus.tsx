@@ -1,6 +1,7 @@
 import React, { CSSProperties, FC, MouseEvent, MouseEventHandler, useMemo, useCallback } from "react";
 import useCrossMintStatus, { OnboardingRequestStatusResponse } from "./hooks/useCrossMintStatus";
 import { Button, Img, Paragraph } from "./styles/index";
+import { baseUrls } from '../../types'
 
 export interface StatusButtonProps {
     className?: string;
@@ -24,7 +25,7 @@ export const CrossMintStatusButton: FC<StatusButtonProps> = ({
     auctionId,
     ...props
 }) => {
-    const status = useCrossMintStatus({ clientId });
+    const status = useCrossMintStatus({ clientId, development: false });
 
     const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
         (event) => {
@@ -32,7 +33,7 @@ export const CrossMintStatusButton: FC<StatusButtonProps> = ({
 
             if (status === OnboardingRequestStatusResponse.WAITING_SUBMISSION) {
                 window.open(
-                    `https://www.crossmint.io/developers/onboarding${clientId ? `?clientId=${clientId}` : ""}${
+                    `${baseUrls.prod}/developers/onboarding${clientId ? `?clientId=${clientId}` : ""}${
                         auctionId ? `&auctionId=${auctionId}` : ""
                     }`,
                     "_blank"
@@ -70,7 +71,7 @@ export const CrossMintStatusButton: FC<StatusButtonProps> = ({
         >
             <Img
                 className="client-sdk-button-icon"
-                src="https://www.crossmint.io/assets/crossmint/logo.png"
+                src={`${baseUrls.prod}/assets/crossmint/logo.png`}
                 alt="Crossmint logo"
             />
             {content}
