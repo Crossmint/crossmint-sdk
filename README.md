@@ -6,7 +6,7 @@ Supported chains:
 
 -   Solana
 -   Polygon (private beta, contact us at sales at crossmint.io)
--   Ethereum L1 (end of Feb 2021)
+-   Ethereum L1 (end of March 2021)
 
 To get started:
 
@@ -34,7 +34,11 @@ yarn add @crossmint/client-sdk-react-ui
 
 ### 2. Set up
 
-Just import the the Pay with `CrossMintButton` into your app wherever you would like. It's that simple!
+Go to the main file where your Candy Machine button lives. For example, Home.tsx.
+
+There, just import the Pay with `CrossMintButton`, and add it in the UI.
+
+**Important**: be sure to test that the Crossmint button is visible even if a user didn't connect their wallet! Else, your users without wallets won't be able to use it.
 
 ```javascript
 import { CrossMintButton } from "@crossmint/client-sdk-react-ui";
