@@ -1,6 +1,7 @@
 import React, { CSSProperties, FC, MouseEvent, MouseEventHandler, useMemo, useCallback, useState } from "react";
 import useCrossMintStatus, { OnboardingRequestStatusResponse } from "./hooks/useCrossMintStatus";
 import useCrossMintModal from "./hooks/useCrossMintModal";
+import useIsClientSide from "./hooks/useIsClientSide";
 import { useStyles, formatProps } from "./styles";
 
 export interface ButtonProps {
@@ -49,6 +50,7 @@ export const CrossMintButton: FC<ButtonProps> = ({
         development,
         showOverlay,
     });
+    const { isClientSide } = useIsClientSide();
 
     if (collectionTitle === "<TITLE_FOR_YOUR_COLLECTION>") {
         console.warn("No collection title specified. Please add a collection title to your <CrossmintButton />");
@@ -90,20 +92,24 @@ export const CrossMintButton: FC<ButtonProps> = ({
     }
 
     return (
-        <button
-            className={`${classes.crossmintButton} ${className}`}
-            disabled={disabled}
-            onClick={handleClick}
-            style={{ ...style }}
-            tabIndex={tabIndex}
-            {...props}
-        >
-            <img
-                className={classes.crossmintImg}
-                src="https://www.crossmint.io/assets/crossmint/logo.png"
-                alt="Crossmint logo"
-            />
-            {content}
-        </button>
+        <>
+            {isClientSide && (
+                <button
+                    className={`${classes.crossmintButton} ${className}`}
+                    disabled={disabled}
+                    onClick={handleClick}
+                    style={{ ...style }}
+                    tabIndex={tabIndex}
+                    {...props}
+                >
+                    <img
+                        className={classes.crossmintImg}
+                        src="https://www.crossmint.io/assets/crossmint/logo.png"
+                        alt="Crossmint logo"
+                    />
+                    {content}
+                </button>
+            )}
+        </>
     );
 };

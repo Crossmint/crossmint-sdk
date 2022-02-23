@@ -1,7 +1,8 @@
 import React, { CSSProperties, FC, MouseEvent, MouseEventHandler, useMemo, useCallback } from "react";
 import useCrossMintStatus, { OnboardingRequestStatusResponse } from "./hooks/useCrossMintStatus";
 import { useStyles, formatProps } from "./styles";
-import { baseUrls } from './hooks/types'
+import { baseUrls } from "./hooks/types";
+import useIsClientSide from "./hooks/useIsClientSide";
 
 export interface StatusButtonProps {
     className?: string;
@@ -26,6 +27,7 @@ export const CrossMintStatusButton: FC<StatusButtonProps> = ({
     ...props
 }) => {
     const status = useCrossMintStatus({ clientId, development: false });
+    const { isClientSide } = useIsClientSide();
 
     const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
         (event) => {
@@ -62,20 +64,24 @@ export const CrossMintStatusButton: FC<StatusButtonProps> = ({
     }, [status]);
 
     return (
-        <button
-            className={`${classes.crossmintButton} ${className}`}
-            disabled={status !== OnboardingRequestStatusResponse.WAITING_SUBMISSION}
-            onClick={handleClick}
-            style={{ ...style }}
-            tabIndex={tabIndex}
-            {...props}
-        >
-            <img
-                className={classes.crossmintImg}
-                src={`${baseUrls.prod}/assets/crossmint/logo.png`}
-                alt="Crossmint logo"
-            />
-            {content}
-        </button>
+        <>
+            {isClientSide && (
+                <button
+                    className={`${classes.crossmintButton} ${className}`}
+                    disabled={status !== OnboardingRequestStatusResponse.WAITING_SUBMISSION}
+                    onClick={handleClick}
+                    style={{ ...style }}
+                    tabIndex={tabIndex}
+                    {...props}
+                >
+                    <img
+                        className={classes.crossmintImg}
+                        src={`${baseUrls.prod}/assets/crossmint/logo.png`}
+                        alt="Crossmint logo"
+                    />
+                    {content}
+                </button>
+            )}
+        </>
     );
 };
