@@ -1,6 +1,6 @@
 # `@crossmint/client-sdk (beta)`
 
-CrossMint massively simplifies the user experience on your NFT sales, by allowing your users to pay with credit card and without installing a wallet. It takes 10 lines of code and 5 min to integrate, and is free to use for the seller. You’ll get the sales proceeds in SOL/ETH as if the user was paying with their own wallet.
+The Crossmint SDK allows you to offer wallet-less credit card purchases on your NFT drop. It takes 10 lines of code and 5 min to integrate, and is free to use for the seller. You’ll get the sales proceeds in SOL/ETH as if the user was paying with their own wallet.
 
 Supported chains:
 
@@ -8,27 +8,31 @@ Supported chains:
 -   Polygon (private beta, contact us at sales at crossmint.io)
 -   Ethereum L1 (end of Feb 2021)
 
-To get started, request a client ID from our sales team (email: sales (at) crossmint.io), import our client-side libraries into your minting website, and follow the instructions below.
+To get started:
 
-**CrossMint is currently in Beta. In order for CrossMint to work with your Candy Machine, contact us at sales (at) crossmint.io .**
+1. Fill out our form in https://www.crossmint.io/developers/onboarding (we'll review your project in under 24hr!)
+2. Follow the instructions below to integrate with your code
+
+## Demo of the user experience:
 
 # REPLACE
 
 <p align="center">
   <img src="https://github.com/CrossMint/crossmint-client-sdk/raw/main/usageExample.gif?raw=true" alt="Usage Example" />
 </p>
+https://vimeo.com/671525311
 
 # REPLACE
 
 ## Quick Setup (Next.js)
 
-### Install
+### 1. Install
 
 ```shell
 yarn add @crossmint/client-sdk-react-ui
 ```
 
-### Setup
+### 2. Set up
 
 Just import the the Pay with `CrossMintButton` into your app wherever you would like. It's that simple!
 
@@ -47,7 +51,16 @@ export default function Index() {
 }
 ```
 
+Finally, make sure you replace the following values in the CrossMintButton component:
+
+-   `<TITLE_FOR_YOUR_COLLECTION>`: Example: "My NFT collection"
+-   `<DESCRIPTION_OF_YOUR_COLLECTION>`: Example: "The most fun community of 999 generative art monkeys in Solana"
+-   `<OPT_URL_TO_PHOTO_COVER>`: Full URL to an image for your collection. Example: "https://i.picsum.photos/id/542/200/300.jpg?hmac=qD8M4ejDPlEc69pGT21BzB7CDiWOcElb_Ke7V8POjm8"
+-   `<YOUR_CLIENT_ID>`: This is the clientId you received after filling in [the onboarding form](https://www.crossmint.io/developers/)
+
 See [react-ui](https://github.com/CrossMint/crossmint-client-sdk/tree/main/packages/ui/react-ui) for more optional customization parameters.
+
+---
 
 ## Packages
 
