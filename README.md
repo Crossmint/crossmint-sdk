@@ -15,9 +15,6 @@ To get started:
 
 ## Demo of the user experience:
 
-<p align="center">
-  <img src="https://github.com/CrossMint/crossmint-client-sdk/raw/main/usageExample.gif?raw=true" alt="Usage Example" />
-</p>
 https://vimeo.com/671525311
 
 ## Quick Setup (Next.js)
