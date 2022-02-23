@@ -1,6 +1,6 @@
 import React, { CSSProperties, FC, MouseEvent, MouseEventHandler, useMemo, useCallback } from "react";
 import useCrossMintStatus, { OnboardingRequestStatusResponse } from "./hooks/useCrossMintStatus";
-import { Button, Img, Paragraph } from "./styles/index";
+import { useStyles, formatProps } from "./styles";
 import { baseUrls } from './hooks/types'
 
 export interface StatusButtonProps {
@@ -44,37 +44,38 @@ export const CrossMintStatusButton: FC<StatusButtonProps> = ({
         [status]
     );
 
+    const classes = useStyles(formatProps(theme));
+
     const content = useMemo(() => {
         switch (status) {
             case OnboardingRequestStatusResponse.INVALID:
-                return <Paragraph>Invalid clientId</Paragraph>;
+                return <p className={classes.crossmintParagraph}>Invalid clientId</p>;
             case OnboardingRequestStatusResponse.WAITING_SUBMISSION:
-                return <Paragraph>Click here to setup CrossMint</Paragraph>;
+                return <p className={classes.crossmintParagraph}>Click here to setup CrossMint</p>;
             case OnboardingRequestStatusResponse.PENDING:
-                return <Paragraph>Your application is under review</Paragraph>;
+                return <p className={classes.crossmintParagraph}>Your application is under review</p>;
             case OnboardingRequestStatusResponse.ACCEPTED:
-                return <Paragraph>You're good to go!</Paragraph>;
+                return <p className={classes.crossmintParagraph}>You're good to go!</p>;
             case OnboardingRequestStatusResponse.REJECTED:
-                return <Paragraph>Your application was rejected</Paragraph>;
+                return <p className={classes.crossmintParagraph}>Your application was rejected</p>;
         }
     }, [status]);
 
     return (
-        <Button
-            className={className}
-            theme={theme}
+        <button
+            className={`${classes.crossmintButton} ${className}`}
             disabled={status !== OnboardingRequestStatusResponse.WAITING_SUBMISSION}
             onClick={handleClick}
             style={{ ...style }}
             tabIndex={tabIndex}
             {...props}
         >
-            <Img
-                className="client-sdk-button-icon"
+            <img
+                className={classes.crossmintImg}
                 src={`${baseUrls.prod}/assets/crossmint/logo.png`}
                 alt="Crossmint logo"
             />
             {content}
-        </Button>
+        </button>
     );
 };
