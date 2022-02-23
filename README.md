@@ -3,17 +3,22 @@
 CrossMint massively simplifies the user experience on your NFT sales, by allowing your users to pay with credit card and without installing a wallet. It takes 10 lines of code and 5 min to integrate, and is free to use for the seller. You’ll get the sales proceeds in SOL/ETH as if the user was paying with their own wallet.
 
 Supported chains:
-* Solana
-* Polygon (private beta, contact us at sales at crossmint.io)
-* Ethereum L1 (end of Feb 2021)
+
+-   Solana
+-   Polygon (private beta, contact us at sales at crossmint.io)
+-   Ethereum L1 (end of Feb 2021)
 
 To get started, request a client ID from our sales team (email: sales (at) crossmint.io), import our client-side libraries into your minting website, and follow the instructions below.
 
 **CrossMint is currently in Beta. In order for CrossMint to work with your Candy Machine, contact us at sales (at) crossmint.io .**
 
+# REPLACE
+
 <p align="center">
   <img src="https://github.com/CrossMint/crossmint-client-sdk/raw/main/usageExample.gif?raw=true" alt="Usage Example" />
 </p>
+
+# REPLACE
 
 ## Quick Setup (Next.js)
 
@@ -25,31 +30,7 @@ yarn add @crossmint/client-sdk-react-ui
 
 ### Setup
 
-Require the CrossMint styles by adding `require('@crossmint/client-sdk-react-ui/styles.css');` to your app.
-
-Import `CrossMintProvider`, wrap your app with it at the top level and pass your clientId (reach out to sales (at) crossmint.io to get one).
-
-```javascript
-import { AppProps } from "next/app";
-
-import { CrossMintProvider } from "@crossmint/client-sdk-react-ui";
-
-// Use require instead of import, and order matters
-require("../styles/globals.css");
-require("@crossmint/client-sdk-react-ui/styles.css");
-
-export default function App({ Component, pageProps }: AppProps) {
-    return (
-        <CrossMintProvider clientId="<YOUR_CLIENT_ID>">
-            <Component {...pageProps} />
-        </CrossMintProvider>
-    );
-}
-```
-
-### Usage
-
-Import the Pay with `CrossMintButton` into your app wherever you would like.
+Just import the the Pay with `CrossMintButton` into your app wherever you would like. It's that simple!
 
 ```javascript
 import { CrossMintButton } from "@crossmint/client-sdk-react-ui";
@@ -60,6 +41,7 @@ export default function Index() {
             collectionTitle="<TITLE_FOR_YOUR_COLLECTION>"
             collectionDescription="<DESCRIPTION_OF_YOUR_COLLECTION>"
             collectionPhoto="<OPT_URL_TO_PHOTO_COVER>"
+            clientId="<YOUR_CLIENT_ID>"
         />
     );
 }
@@ -113,6 +95,18 @@ yarn build
 ```shell
 cd packages/starter/react-ui-starter
 yarn start
+```
+
+Remember that if doing changes on the `@crossmint/client-sdk-react-ui` package, they wont be reflected into your project until you rebuild the package and install it back again:
+
+```
+# Inside `packages/ui/react-ui`. Rebuild package
+yarn build
+```
+
+```
+# Inside the starter. Eg. `packages/starter/nextjs-starter`. Install rebuilt package
+yarn
 ```
 
 ## Publish (for the crossmint team)
