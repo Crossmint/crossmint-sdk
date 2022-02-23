@@ -1,5 +1,4 @@
 import styled, { css } from "styled-components";
-console.log(styled);
 
 const DARK_BG = "#1e1e1e";
 

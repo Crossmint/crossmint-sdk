@@ -58,7 +58,8 @@ const addLoadingOverlay = (): void => {
 };
 
 const removeLoadingOverlay = (): void => {
-    document.getElementById(overlayId)?.remove();
+    const overlayEl = document.getElementById(overlayId);
+    if (overlayEl) overlayEl.remove();
 };
 
 export default function useCrossMintModal({ development, clientId, showOverlay }: IProps): IReturn {
