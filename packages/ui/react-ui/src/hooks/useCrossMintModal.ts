@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { LIB_VERSION } from "../version";
-import { baseUrls, clientNames } from "../../../types";
+import { baseUrls, clientNames } from "./types";
 
 function createPopupString() {
     return `height=750,width=400,left=${window.innerWidth / 2 - 200},top=${
@@ -58,7 +58,8 @@ const addLoadingOverlay = (): void => {
 };
 
 const removeLoadingOverlay = (): void => {
-    document.getElementById(overlayId)?.remove();
+    const overlayEl = document.getElementById(overlayId);
+    if (overlayEl) overlayEl.remove();
 };
 
 export default function useCrossMintModal({ development, clientId, showOverlay }: IProps): IReturn {

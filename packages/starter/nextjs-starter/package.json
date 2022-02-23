@@ -23,17 +23,15 @@
         "build": "yarn clean && next build",
         "start": "next start",
         "lint": "next lint",
-        "clean-install": "shx rm -rf node_modules && yarn",
-        "analyze": "ANALYZE=true yarn build"
+        "clean-install": "shx rm -rf node_modules && yarn"
     },
     "dependencies": {
-        "@crossmint/client-sdk-react-ui": "^0.0.5",
+        "@crossmint/client-sdk-react-ui": "^0.0.8-alpha.4",
         "next": "^11.1.2",
         "react": "^17.0.2",
         "react-dom": "^17.0.2"
     },
     "devDependencies": {
-        "@next/bundle-analyzer": "^12.1.0",
         "@types/react": "^17.0.24",
         "@types/react-dom": "^17.0.11",
         "eslint": "^7.32.0",

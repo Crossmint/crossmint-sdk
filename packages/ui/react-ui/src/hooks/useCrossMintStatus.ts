@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { validate } from "uuid";
-import { PublicKey } from "@solana/web3.js";
 import { LIB_VERSION } from "../version";
-import { clientNames, baseUrls, customHeaders } from "../../../types";
+import { clientNames, baseUrls, customHeaders } from "./types";
 
 export enum OnboardingRequestStatusResponse {
     WAITING_SUBMISSION = "waiting-submission",
@@ -26,7 +25,7 @@ interface IProps {
 
 const validateClientId = (clientId: string): boolean => {
     try {
-        const isValid = validate(clientId) || new PublicKey(clientId);
+        const isValid = validate(clientId);
         return !!isValid;
     } catch (e) {
         console.error(e);

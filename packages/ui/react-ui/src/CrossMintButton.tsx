@@ -1,7 +1,7 @@
 import React, { CSSProperties, FC, MouseEvent, MouseEventHandler, useMemo, useCallback, useState } from "react";
 import useCrossMintStatus, { OnboardingRequestStatusResponse } from "./hooks/useCrossMintStatus";
 import useCrossMintModal from "./hooks/useCrossMintModal";
-import { Button, Paragraph, Img } from "./styles";
+import { useStyles, formatProps } from "./styles";
 
 export interface ButtonProps {
     className?: string;
@@ -78,9 +78,11 @@ export const CrossMintButton: FC<ButtonProps> = ({
         [onClick]
     );
 
+    const classes = useStyles(formatProps(theme));
+
     const content = useMemo(() => {
-        if (connecting) return <Paragraph>Connecting ...</Paragraph>;
-        return <Paragraph>Buy with credit card</Paragraph>;
+        if (connecting) return <p className={classes.crossmintParagraph}>Connecting ...</p>;
+        return <p className={classes.crossmintParagraph}>Buy with credit card</p>;
     }, [connecting]);
 
     if (hideMintOnInactiveClient && status !== OnboardingRequestStatusResponse.ACCEPTED) {
@@ -88,21 +90,20 @@ export const CrossMintButton: FC<ButtonProps> = ({
     }
 
     return (
-        <Button
-            className={className}
-            theme={theme}
+        <button
+            className={`${classes.crossmintButton} ${className}`}
             disabled={disabled}
             onClick={handleClick}
             style={{ ...style }}
             tabIndex={tabIndex}
             {...props}
         >
-            <Img
-                className="client-sdk-button-icon"
+            <img
+                className={classes.crossmintImg}
                 src="https://www.crossmint.io/assets/crossmint/logo.png"
                 alt="Crossmint logo"
             />
             {content}
-        </Button>
+        </button>
     );
 };
