@@ -2,7 +2,7 @@ import React, { CSSProperties, FC, MouseEvent, MouseEventHandler, useMemo, useCa
 import useCrossMintStatus, { OnboardingRequestStatusResponse } from "./hooks/useCrossMintStatus";
 import { useStyles, formatProps } from "./styles";
 import { baseUrls } from "./hooks/types";
-import useIsClientSide from "./hooks/useIsClientSide";
+import { getIsClientSide } from "./utils";
 
 export interface StatusButtonProps {
     className?: string;
@@ -27,7 +27,6 @@ export const CrossMintStatusButton: FC<StatusButtonProps> = ({
     ...props
 }) => {
     const status = useCrossMintStatus({ clientId, development: false });
-    const { isClientSide } = useIsClientSide();
 
     const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
         (event) => {
@@ -62,6 +61,8 @@ export const CrossMintStatusButton: FC<StatusButtonProps> = ({
                 return <p className={classes.crossmintParagraph}>Your application was rejected</p>;
         }
     }, [status]);
+
+    const isClientSide = getIsClientSide();
 
     return (
         <>
