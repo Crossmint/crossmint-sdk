@@ -2,7 +2,7 @@ import React, { CSSProperties, FC, MouseEvent, MouseEventHandler, useMemo, useCa
 import useCrossMintStatus, { OnboardingRequestStatusResponse } from "./hooks/useCrossMintStatus";
 import useCrossMintModal from "./hooks/useCrossMintModal";
 import { useStyles, formatProps } from "./styles";
-import { getIsClientSide } from "./utils";
+import { isClientSide } from "./utils";
 
 export interface ButtonProps {
     className?: string;
@@ -89,8 +89,6 @@ export const CrossMintButton: FC<ButtonProps> = ({
     if (hideMintOnInactiveClient && status !== OnboardingRequestStatusResponse.ACCEPTED) {
         return null;
     }
-
-    const isClientSide = getIsClientSide();
 
     return (
         <>
