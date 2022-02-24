@@ -12,6 +12,7 @@ export interface StatusButtonProps {
     clientId: string;
     auctionId?: string;
     theme?: "light" | "dark";
+    development: boolean;
 }
 
 export const CrossMintStatusButton: FC<StatusButtonProps> = ({
@@ -23,17 +24,19 @@ export const CrossMintStatusButton: FC<StatusButtonProps> = ({
     theme = "dark",
     clientId,
     auctionId,
+    development = false,
     ...props
 }) => {
-    const status = useCrossMintStatus({ clientId, development: false });
+    const status = useCrossMintStatus({ clientId, development });
 
     const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
         (event) => {
             if (onClick) onClick(event);
 
             if (status === OnboardingRequestStatusResponse.WAITING_SUBMISSION) {
+                const baseUrl = development ? baseUrls.dev : baseUrls.prod;
                 window.open(
-                    `${baseUrls.prod}/developers/onboarding${clientId ? `?clientId=${clientId}` : ""}${
+                    `${baseUrl}/developers/onboarding${clientId ? `?clientId=${clientId}` : ""}${
                         auctionId ? `&auctionId=${auctionId}` : ""
                     }`,
                     "_blank"
