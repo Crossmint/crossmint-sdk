@@ -17,6 +17,8 @@ To get started:
 
 https://vimeo.com/671525311
 
+---
+
 ## Quick Setup (Next.js)
 
 ### 1. Install
@@ -59,6 +61,12 @@ See [react-ui](https://github.com/CrossMint/crossmint-client-sdk/tree/main/packa
 
 ---
 
+## Migration guide to 0.1.X version
+
+If you are already using Crossmint and you are not sure how to upgrade to the 0.1.0 version, [checkout the migration guide](https://docs.google.com/document/d/14IKpjrij7kU7Dr0I7rZkf0PyDNbXiklx2v4GuzUrFbw/edit?usp=sharing).
+
+---
+
 ## Packages
 
 ### UI
@@ -78,6 +86,8 @@ These packages provide projects that you can use to start building an app with b
 | [example](https://github.com/CrossMint/crossmint-client-sdk/tree/main/packages/starter/example)                   | [Next.js](https://nextjs.org) project using React                       |
 | [react-ui-starter](https://github.com/CrossMint/crossmint-client-sdk/tree/main/packages/starter/react-ui-starter) | [Create React App](https://create-react-app.dev) project using React UI |
 | [nextjs-starter](https://github.com/CrossMint/crossmint-client-sdk/tree/main/packages/starter/nextjs-starter)     | [Next.js](https://nextjs.org) project using React                       |
+
+---
 
 ## Build from Source
 
@@ -118,6 +128,8 @@ yarn build
 # Inside the starter. Eg. `packages/starter/nextjs-starter`. Install rebuilt package
 yarn
 ```
+
+---
 
 ## Publish (for the crossmint team)
 
