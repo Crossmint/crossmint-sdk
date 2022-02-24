@@ -1,2 +1,2 @@
-export * from "./CrossMintButton";
-export * from "./CrossMintButtonStatus";
+export * from "./CrossmintPayButton";
+export * from "./CrossmintButtonStatus";

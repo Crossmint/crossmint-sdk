@@ -1,6 +1,6 @@
 import React, { CSSProperties, FC, MouseEvent, MouseEventHandler, useMemo, useCallback, useState } from "react";
-import useCrossMintStatus, { OnboardingRequestStatusResponse } from "./hooks/useCrossMintStatus";
-import useCrossMintModal from "./hooks/useCrossMintModal";
+import useCrossMintStatus, { OnboardingRequestStatusResponse } from "./hooks/useCrossmintStatus";
+import useCrossMintModal from "./hooks/useCrossmintModal";
 import { useStyles, formatProps } from "./styles";
 
 export interface ButtonProps {
@@ -23,7 +23,7 @@ export interface ButtonProps {
     showOverlay?: boolean;
 }
 
-export const CrossMintButton: FC<ButtonProps> = ({
+export const CrossmintPayButton: FC<ButtonProps> = ({
     className,
     disabled,
     onClick,
@@ -51,19 +51,19 @@ export const CrossMintButton: FC<ButtonProps> = ({
     });
 
     if (collectionTitle === "<TITLE_FOR_YOUR_COLLECTION>") {
-        console.warn("No collection title specified. Please add a collection title to your <CrossmintButton />");
+        console.warn("No collection title specified. Please add a collection title to your <CrossmintPayButton />");
         collectionTitle = "";
     }
 
     if (collectionDescription === "<DESCRIPTION_OF_YOUR_COLLECTION>") {
         console.warn(
-            "No collection description specified. Please add a collection description to your <CrossmintButton />"
+            "No collection description specified. Please add a collection description to your <CrossmintPayButton />"
         );
         collectionDescription = "";
     }
 
     if (collectionPhoto === "<OPT_URL_TO_PHOTO_COVER>") {
-        console.warn("No collection photo specified. Please add a collection photo to your <CrossmintButton />");
+        console.warn("No collection photo specified. Please add a collection photo to your <CrossmintPayButton />");
         collectionPhoto = "";
     }
 

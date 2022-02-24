@@ -40,7 +40,7 @@ export default function useCrossMintStatus({ clientId, development }: IProps) {
 
     async function fetchClientIntegration() {
         if (!clientId || clientId === "" || clientId === "<YOUR_CLIENT_ID>") {
-            console.error("You must enter your own Crossmint client ID in <CrossMintButton clientId=XXX>");
+            console.error("You must enter your own Crossmint client ID in <CrossmintPayButton clientId=XXX>");
             return;
         }
 

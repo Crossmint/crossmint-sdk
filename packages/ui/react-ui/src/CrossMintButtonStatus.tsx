@@ -1,7 +1,7 @@
 import React, { CSSProperties, FC, MouseEvent, MouseEventHandler, useMemo, useCallback } from "react";
-import useCrossMintStatus, { OnboardingRequestStatusResponse } from "./hooks/useCrossMintStatus";
+import useCrossMintStatus, { OnboardingRequestStatusResponse } from "./hooks/useCrossmintStatus";
 import { useStyles, formatProps } from "./styles";
-import { baseUrls } from './hooks/types'
+import { baseUrls } from "./hooks/types";
 
 export interface StatusButtonProps {
     className?: string;
@@ -15,7 +15,7 @@ export interface StatusButtonProps {
     development: boolean;
 }
 
-export const CrossMintStatusButton: FC<StatusButtonProps> = ({
+export const CrossmintStatusButton: FC<StatusButtonProps> = ({
     className,
     disabled,
     onClick,
