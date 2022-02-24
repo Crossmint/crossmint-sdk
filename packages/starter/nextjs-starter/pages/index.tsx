@@ -2,7 +2,15 @@ import { CrossmintPayButton } from "@crossmint/client-sdk-react-ui";
 
 export default function Index() {
     return (
-        <div>
+        <div
+            style={{
+                width: "100%",
+                height: "100vh",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+            }}
+        >
             <CrossmintPayButton
                 collectionTitle="<TITLE_FOR_YOUR_COLLECTION>"
                 collectionDescription="<DESCRIPTION_OF_YOUR_COLLECTION>"
