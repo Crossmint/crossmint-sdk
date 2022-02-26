@@ -125,3 +125,7 @@ yarn
 yarn build
 yarn publish
 ```
+
+---
+
+## [Changelog](https://docs.google.com/document/d/1G7tknW4cSXJvF00TTHjzCH-4-4dvR1k6G8MQMNba5M8/edit?usp=sharing)
