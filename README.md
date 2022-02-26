@@ -19,6 +19,12 @@ https://vimeo.com/671525311
 
 ---
 
+## Migration guide to 0.1.0 version
+
+Version 0.1.0 introduces breaking changes. To learn how to migrate from a version lower than 0.1.0, [check out the migration guide](https://docs.google.com/document/d/14IKpjrij7kU7Dr0I7rZkf0PyDNbXiklx2v4GuzUrFbw/edit?usp=sharing).
+
+---
+
 ## Quick Setup (Next.js)
 
 ### 1. Install
@@ -58,12 +64,6 @@ Finally, make sure you replace the following values in the CrossMintButton compo
 -   `<YOUR_CLIENT_ID>`: This is the clientId you received after filling in [the onboarding form](https://www.crossmint.io/developers/)
 
 See [react-ui](https://github.com/CrossMint/crossmint-client-sdk/tree/main/packages/ui/react-ui) for more optional customization parameters.
-
----
-
-## Migration guide to 0.1.0 version
-
-If you are already using Crossmint and you are not sure how to upgrade to the 0.1.0 version, [checkout the migration guide](https://docs.google.com/document/d/14IKpjrij7kU7Dr0I7rZkf0PyDNbXiklx2v4GuzUrFbw/edit?usp=sharing).
 
 ---
 
