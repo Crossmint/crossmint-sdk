@@ -19,12 +19,14 @@ enum theme {
     dark = "dark",
 }
 
-export enum payButtonTypes {
-    solanaCandyMachine = "solana-candy-machine",
+export enum mintingContractTypes {
+    CANDY_MACHINE = "candy-machine",
+    SOLANA_AUCTION = "solana-auction",
+    ERC_721 = "erc-721",
 }
 
 export interface PayButtonConfig {
-    type: payButtonTypes;
+    type: mintingContractTypes;
 }
 
 export interface BaseButtonProps {
@@ -36,7 +38,7 @@ export interface BaseButtonProps {
     clientId: string;
     auctionId?: string;
     theme?: theme;
-    development: boolean;
+    development?: boolean;
 }
 
 export interface CrossmintPayButtonProps extends BaseButtonProps {

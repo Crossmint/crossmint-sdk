@@ -3,10 +3,10 @@ import useCrossMintStatus, { OnboardingRequestStatusResponse } from "./hooks/use
 import useCrossMintModal from "./hooks/useCrossMintModal";
 import { useStyles, formatProps } from "./styles";
 import { isClientSide } from "./utils";
-import { CrossmintPayButtonProps, PayButtonConfig, payButtonTypes } from "./types";
+import { CrossmintPayButtonProps, PayButtonConfig, mintingContractTypes } from "./types";
 
 const defaultConfig: PayButtonConfig = {
-    type: payButtonTypes.solanaCandyMachine,
+    type: mintingContractTypes.CANDY_MACHINE,
 };
 
 export const CrossMintButton: FC<CrossmintPayButtonProps> = ({
