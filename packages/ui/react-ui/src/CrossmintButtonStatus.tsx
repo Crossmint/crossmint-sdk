@@ -2,6 +2,7 @@ import React, { CSSProperties, FC, MouseEvent, MouseEventHandler, useMemo, useCa
 import useCrossMintStatus, { OnboardingRequestStatusResponse } from "./hooks/useCrossmintStatus";
 import { useStyles, formatProps } from "./styles";
 import { baseUrls } from "./hooks/types";
+import { isClientSide } from "./utils";
 
 export interface StatusButtonProps {
     className?: string;
@@ -65,20 +66,24 @@ export const CrossmintStatusButton: FC<StatusButtonProps> = ({
     }, [status]);
 
     return (
-        <button
-            className={`${classes.crossmintButton} ${className}`}
-            disabled={status !== OnboardingRequestStatusResponse.WAITING_SUBMISSION}
-            onClick={handleClick}
-            style={{ ...style }}
-            tabIndex={tabIndex}
-            {...props}
-        >
-            <img
-                className={classes.crossmintImg}
-                src={`${baseUrls.prod}/assets/crossmint/logo.png`}
-                alt="Crossmint logo"
-            />
-            {content}
-        </button>
+        <>
+            {isClientSide && (
+                <button
+                    className={`${classes.crossmintButton} ${className}`}
+                    disabled={status !== OnboardingRequestStatusResponse.WAITING_SUBMISSION}
+                    onClick={handleClick}
+                    style={{ ...style }}
+                    tabIndex={tabIndex}
+                    {...props}
+                >
+                    <img
+                        className={classes.crossmintImg}
+                        src={`${baseUrls.prod}/assets/crossmint/logo.png`}
+                        alt="Crossmint logo"
+                    />
+                    {content}
+                </button>
+            )}
+        </>
     );
 };
