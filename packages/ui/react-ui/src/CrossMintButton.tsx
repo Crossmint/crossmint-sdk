@@ -2,6 +2,7 @@ import React, { CSSProperties, FC, MouseEvent, MouseEventHandler, useMemo, useCa
 import useCrossMintStatus, { OnboardingRequestStatusResponse } from "./hooks/useCrossMintStatus";
 import useCrossMintModal from "./hooks/useCrossMintModal";
 import { useStyles, formatProps } from "./styles";
+import { isClientSide } from "./utils";
 
 export interface ButtonProps {
     className?: string;
@@ -90,20 +91,24 @@ export const CrossMintButton: FC<ButtonProps> = ({
     }
 
     return (
-        <button
-            className={`${classes.crossmintButton} ${className}`}
-            disabled={disabled}
-            onClick={handleClick}
-            style={{ ...style }}
-            tabIndex={tabIndex}
-            {...props}
-        >
-            <img
-                className={classes.crossmintImg}
-                src="https://www.crossmint.io/assets/crossmint/logo.png"
-                alt="Crossmint logo"
-            />
-            {content}
-        </button>
+        <>
+            {isClientSide && (
+                <button
+                    className={`${classes.crossmintButton} ${className}`}
+                    disabled={disabled}
+                    onClick={handleClick}
+                    style={{ ...style }}
+                    tabIndex={tabIndex}
+                    {...props}
+                >
+                    <img
+                        className={classes.crossmintImg}
+                        src="https://www.crossmint.io/assets/crossmint/logo.png"
+                        alt="Crossmint logo"
+                    />
+                    {content}
+                </button>
+            )}
+        </>
     );
 };
