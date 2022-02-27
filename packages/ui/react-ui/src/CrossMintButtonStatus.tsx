@@ -1,22 +1,10 @@
-import React, { CSSProperties, FC, MouseEvent, MouseEventHandler, useMemo, useCallback } from "react";
+import React, { FC, MouseEventHandler, useMemo, useCallback } from "react";
 import useCrossMintStatus, { OnboardingRequestStatusResponse } from "./hooks/useCrossMintStatus";
 import { useStyles, formatProps } from "./styles";
-import { baseUrls } from "./hooks/types";
+import { baseUrls, BaseButtonProps } from "./types";
 import { isClientSide } from "./utils";
 
-export interface StatusButtonProps {
-    className?: string;
-    disabled?: boolean;
-    onClick?: (e: MouseEvent<HTMLButtonElement>) => void;
-    style?: CSSProperties;
-    tabIndex?: number;
-    clientId: string;
-    auctionId?: string;
-    theme?: "light" | "dark";
-    development: boolean;
-}
-
-export const CrossMintStatusButton: FC<StatusButtonProps> = ({
+export const CrossMintStatusButton: FC<BaseButtonProps> = ({
     className,
     disabled,
     onClick,

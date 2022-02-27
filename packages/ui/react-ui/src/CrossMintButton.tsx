@@ -1,30 +1,15 @@
-import React, { CSSProperties, FC, MouseEvent, MouseEventHandler, useMemo, useCallback, useState } from "react";
+import React, { FC, MouseEventHandler, useMemo, useCallback, useState } from "react";
 import useCrossMintStatus, { OnboardingRequestStatusResponse } from "./hooks/useCrossMintStatus";
 import useCrossMintModal from "./hooks/useCrossMintModal";
 import { useStyles, formatProps } from "./styles";
 import { isClientSide } from "./utils";
+import { CrossmintPayButtonProps, mintingContractTypes } from "./types";
 
-export interface ButtonProps {
-    className?: string;
-    disabled?: boolean;
-    onClick?: (e: MouseEvent<HTMLButtonElement>) => void;
-    style?: CSSProperties;
-    tabIndex?: number;
-    theme?: "light" | "dark";
-    collectionTitle?: string;
-    collectionDescription?: string;
-    collectionPhoto?: string;
-    mintTo?: string;
-    emailTo?: string;
-    listingId?: string;
-    auctionId?: string;
-    hideMintOnInactiveClient?: boolean;
-    clientId: string;
-    development?: boolean;
-    showOverlay?: boolean;
-}
+const defaultMintConfig: any = {
+    type: mintingContractTypes.CANDY_MACHINE,
+};
 
-export const CrossMintButton: FC<ButtonProps> = ({
+export const CrossMintButton: FC<CrossmintPayButtonProps> = ({
     className,
     disabled,
     onClick,
@@ -42,6 +27,7 @@ export const CrossMintButton: FC<ButtonProps> = ({
     auctionId,
     hideMintOnInactiveClient = false,
     showOverlay = true,
+    mintConfig = defaultMintConfig,
     ...props
 }) => {
     const status = useCrossMintStatus({ clientId, development });
