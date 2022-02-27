@@ -3,9 +3,9 @@ import useCrossMintStatus, { OnboardingRequestStatusResponse } from "./hooks/use
 import useCrossMintModal from "./hooks/useCrossMintModal";
 import { useStyles, formatProps } from "./styles";
 import { isClientSide } from "./utils";
-import { CrossmintPayButtonProps, PayButtonConfig, mintingContractTypes } from "./types";
+import { CrossmintPayButtonProps, mintingContractTypes } from "./types";
 
-const defaultConfig: PayButtonConfig = {
+const defaultMintConfig: any = {
     type: mintingContractTypes.CANDY_MACHINE,
 };
 
@@ -27,7 +27,7 @@ export const CrossMintButton: FC<CrossmintPayButtonProps> = ({
     auctionId,
     hideMintOnInactiveClient = false,
     showOverlay = true,
-    config = defaultConfig,
+    mintConfig = defaultMintConfig,
     ...props
 }) => {
     const status = useCrossMintStatus({ clientId, development });
