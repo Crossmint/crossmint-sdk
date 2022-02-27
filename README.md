@@ -128,4 +128,4 @@ yarn publish
 
 ---
 
-## [Changelog](https://docs.google.com/document/d/1G7tknW4cSXJvF00TTHjzCH-4-4dvR1k6G8MQMNba5M8/edit?usp=sharing)
+## [Changelog](https://docs.google.com/document/d/e/2PACX-1vR5NzVS2msrCMZxlcfBgAT-Y8kAypeKqH_WBeNiwVTmyEzLZvJBWrKrz_966-d3jumwIBi94IXGT6Wp/pub)
