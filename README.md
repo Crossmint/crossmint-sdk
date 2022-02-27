@@ -53,16 +53,16 @@ export default function App({ Component, pageProps }: AppProps) {
 
 Go to the main file where your Candy Machine button lives. For example, Home.tsx.
 
-There, just import the Pay with `CrossMintButton`, and add it in the UI.
+There, just import the Pay with `CrossmintPayButton`, and add it in the UI.
 
 **Important**: be sure to test that the Crossmint button is visible even if a user didn't connect their wallet! Else, your users without wallets won't be able to use it.
 
 ```javascript
-import { CrossMintButton } from "@crossmint/client-sdk-react-ui";
+import { CrossmintPayButton } from "@crossmint/client-sdk-react-ui";
 
 export default function Index() {
     return (
-        <CrossMintButton
+        <CrossmintPayButton
             collectionTitle="<TITLE_FOR_YOUR_COLLECTION>"
             collectionDescription="<DESCRIPTION_OF_YOUR_COLLECTION>"
             collectionPhoto="<OPT_URL_TO_PHOTO_COVER>"
@@ -71,7 +71,7 @@ export default function Index() {
 }
 ```
 
-Finally, make sure you replace the following values in the CrossMintButton component:
+Finally, make sure you replace the following values in the CrossmintPayButton component:
 
 -   `<TITLE_FOR_YOUR_COLLECTION>`: Example: "My NFT collection"
 -   `<DESCRIPTION_OF_YOUR_COLLECTION>`: Example: "The most fun community of 999 generative art monkeys in Solana"
