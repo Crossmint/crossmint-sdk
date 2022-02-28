@@ -25,7 +25,7 @@
         "lint": "next lint"
     },
     "dependencies": {
-        "@crossmint/client-sdk-react-ui": "^0.0.5",
+        "@crossmint/client-sdk-react-ui": "^0.1.1-alpha.0",
         "next": "^11.1.2",
         "react": "^17.0.2",
         "react-dom": "^17.0.2"
@@ -33,7 +33,7 @@
     "devDependencies": {
         "@types/react": "^17.0.24",
         "@types/react-dom": "^17.0.11",
-        "eslint": "^7.32.0",
+        "eslint": "7.11.0",
         "eslint-config-next": "^11.1.2",
         "shx": "^0.3.3",
         "typescript": "^4.4.3"
