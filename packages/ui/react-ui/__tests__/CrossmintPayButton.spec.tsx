@@ -5,7 +5,7 @@ import "@testing-library/jest-dom";
 import { CrossmintPayButton } from "../src/CrossmintPayButton";
 import { LIB_VERSION } from "../src/version";
 
-// Todo: create a global service for this to be able everywhere and customize resolved/rejected responses
+// Todo: create a global service for this to work everywhere and to be able to customize resolved/rejected responses
 const fetchReturns = Promise.resolve({
     json: () => Promise.resolve({}),
 }) as any;
