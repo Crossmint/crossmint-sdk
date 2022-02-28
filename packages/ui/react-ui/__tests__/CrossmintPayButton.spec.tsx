@@ -28,6 +28,7 @@ describe("CrossmintPayButton", () => {
         await act(async () => {
             fireEvent.click(screen.getByText("Buy with credit card"));
         });
+        // Todo: make this tests a bit more maintainable
         expect(global.open).toHaveBeenCalledWith(
             `https://www.crossmint.io/signin?callbackUrl=https%3A%2F%2Fwww.crossmint.io%2Fcheckout%2Fmint%3FclientId%3D${encodeURIComponent(
                 props.clientId
