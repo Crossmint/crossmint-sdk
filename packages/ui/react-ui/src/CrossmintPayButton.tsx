@@ -59,7 +59,15 @@ export const CrossmintPayButton: FC<CrossmintPayButtonProps> = ({
             if (onClick) onClick(event);
 
             if (!event.defaultPrevented) {
-                connect(collectionTitle, collectionDescription, collectionPhoto, mintTo, emailTo, listingId);
+                connect(
+                    mintConfig,
+                    collectionTitle,
+                    collectionDescription,
+                    collectionPhoto,
+                    mintTo,
+                    emailTo,
+                    listingId
+                );
             }
         },
         [onClick]
