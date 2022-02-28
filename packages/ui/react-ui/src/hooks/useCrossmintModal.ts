@@ -79,20 +79,19 @@ export default function useCrossMintModal({ development, clientId, showOverlay }
         const urlOrigin = development ? baseUrls.dev : baseUrls.prod;
         const getMintQueryParams = (): string => {
             const mintQueryParams: MintQueryParams = {
-                clientId: encodeURIComponent(clientId),
+                clientId: clientId,
                 closeOnSuccess: "false",
                 clientName: clientNames.reactUi,
                 clientVersion: LIB_VERSION,
-                mintConfig: encodeURIComponent(JSON.stringify(mintConfig)),
+                mintConfig: JSON.stringify(mintConfig),
             };
 
-            if (collectionTitle) mintQueryParams.collectionTitle = encodeURIComponent(collectionTitle);
-            if (collectionDescription)
-                mintQueryParams.collectionDescription = encodeURIComponent(collectionDescription);
-            if (collectionPhoto) mintQueryParams.collectionPhoto = encodeURIComponent(collectionPhoto);
-            if (mintTo) mintQueryParams.mintTo = encodeURIComponent(mintTo);
-            if (emailTo) mintQueryParams.emailTo = encodeURIComponent(emailTo);
-            if (listingId) mintQueryParams.listingId = encodeURIComponent(listingId);
+            if (collectionTitle) mintQueryParams.collectionTitle = collectionTitle;
+            if (collectionDescription) mintQueryParams.collectionDescription = collectionDescription;
+            if (collectionPhoto) mintQueryParams.collectionPhoto = collectionPhoto;
+            if (mintTo) mintQueryParams.mintTo = mintTo;
+            if (emailTo) mintQueryParams.emailTo = emailTo;
+            if (listingId) mintQueryParams.listingId = listingId;
 
             return new URLSearchParams(mintQueryParams).toString();
         };
