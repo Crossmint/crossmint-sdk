@@ -1,6 +1,6 @@
 {
     "extends": "../../../tsconfig.json",
-    "include": ["src"],
+    "include": ["src", "__tests__/**/*.spec.ts"],
     "compilerOptions": {
         "noEmit": false,
         "outDir": "lib/esm"
