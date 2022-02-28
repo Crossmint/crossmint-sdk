@@ -1,11 +1,11 @@
 # `@crossmint/client-sdk (beta)`
 
-The Crossmint SDK allows you to offer wallet-less credit card purchases on your NFT drop. It takes 10 lines of code and 5 min to integrate, and is free to use for the seller. You’ll get the sales proceeds in SOL/ETH as if the user was paying with their own wallet.
+The Crossmint SDK allows you to offer wallet-less credit card purchases on your NFT drop. It takes 5 lines of code and 5 min to integrate, and is free to use for the seller. You’ll get the sales proceeds in SOL/ETH as if the user was paying with their own wallet.
 
 Supported chains:
 
 -   Solana
--   Polygon (private beta, contact us at sales at crossmint.io)
+-   Polygon (for docs: contact us at sales at crossmint.io)
 -   Ethereum L1 (end of March 2021)
 
 To get started:
@@ -19,7 +19,7 @@ https://vimeo.com/671525311
 
 ---
 
-## Migration guide to 0.1.0 version
+## Migration guide to 0.1.X versions
 
 Version 0.1.0 introduces breaking changes. To learn how to migrate from a version lower than 0.1.0, [check out the migration guide](https://docs.google.com/document/d/14IKpjrij7kU7Dr0I7rZkf0PyDNbXiklx2v4GuzUrFbw/edit?usp=sharing).
 
@@ -134,8 +134,11 @@ yarn
 ## Publish (for the crossmint team)
 
 ```shell
+cd packages/ui/react-ui
 yarn build
-yarn publish
+cd ../../..
+yarn run lerna version
+yarn run publish
 ```
 
 ---
