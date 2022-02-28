@@ -134,9 +134,7 @@ yarn
 ## Publish (for the crossmint team)
 
 ```shell
-cd packages/ui/react-ui
 yarn build
-cd ../../..
 yarn run lerna version
 yarn run publish
 ```

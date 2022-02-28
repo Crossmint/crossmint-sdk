@@ -1,7 +1,5 @@
 import { CrossmintPayButton } from "@crossmint/client-sdk-react-ui";
 
-require("@crossmint/client-sdk-react-ui/styles.css");
-
 function App() {
     return (
         <div
