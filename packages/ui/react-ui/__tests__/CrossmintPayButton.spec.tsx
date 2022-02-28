@@ -5,13 +5,13 @@ import "@testing-library/jest-dom";
 import { CrossmintPayButton } from "../src/CrossmintPayButton";
 import { LIB_VERSION } from "../src/version";
 
-// Todo: create a global service for this to work everywhere and to be able to customize resolved/rejected responses
+// TODO(#60): create a global service for this to work everywhere and to be able to customize resolved/rejected responses
 const fetchReturns = Promise.resolve({
     json: () => Promise.resolve({}),
 }) as any;
 global.fetch = jest.fn(() => fetchReturns);
 
-// Todo: make this automatically mocked in every test suite
+// TODO(#61): make this automatically mocked in every test suite
 const openReturns = {} as Window;
 global.open = jest.fn(() => openReturns);
 
@@ -28,7 +28,7 @@ describe("CrossmintPayButton", () => {
         await act(async () => {
             fireEvent.click(screen.getByText("Buy with credit card"));
         });
-        // Todo: make this tests a bit more maintainable
+        // TODO(#62): make this tests a bit more maintainable
         expect(global.open).toHaveBeenCalledWith(
             `https://www.crossmint.io/signin?callbackUrl=https%3A%2F%2Fwww.crossmint.io%2Fcheckout%2Fmint%3FclientId%3D${encodeURIComponent(
                 props.clientId
