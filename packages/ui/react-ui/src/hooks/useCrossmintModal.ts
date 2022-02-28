@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { LIB_VERSION } from "../version";
-import { baseUrls, clientNames } from "../types";
+import { baseUrls, clientNames, PayButtonConfig } from "../types";
 
 function createPopupString() {
     return `height=750,width=400,left=${window.innerWidth / 2 - 200},top=${
@@ -17,6 +17,7 @@ interface IProps {
 interface IReturn {
     connecting: boolean;
     connect: (
+        mintConfig: PayButtonConfig,
         collectionTitle?: string,
         collectionDescription?: string,
         collectionPhoto?: string,
@@ -37,6 +38,7 @@ type MintQueryParams = {
     listingId?: string;
     clientName: string;
     clientVersion: string;
+    mintConfig: string;
 };
 
 const overlayId = "__crossmint-overlay__";
@@ -66,6 +68,7 @@ export default function useCrossMintModal({ development, clientId, showOverlay }
     const [connecting, setConnecting] = useState(false);
 
     const createPopup = (
+        mintConfig: PayButtonConfig,
         collectionTitle?: string,
         collectionDescription?: string,
         collectionPhoto?: string,
@@ -80,6 +83,7 @@ export default function useCrossMintModal({ development, clientId, showOverlay }
                 closeOnSuccess: "false",
                 clientName: clientNames.reactUi,
                 clientVersion: LIB_VERSION,
+                mintConfig: encodeURIComponent(JSON.stringify(mintConfig)),
             };
 
             if (collectionTitle) mintQueryParams.collectionTitle = encodeURIComponent(collectionTitle);
@@ -108,6 +112,7 @@ export default function useCrossMintModal({ development, clientId, showOverlay }
     };
 
     const connect = (
+        mintConfig: PayButtonConfig,
         collectionTitle?: string,
         collectionDescription?: string,
         collectionPhoto?: string,
@@ -119,7 +124,7 @@ export default function useCrossMintModal({ development, clientId, showOverlay }
 
         setConnecting(true);
 
-        createPopup(collectionTitle, collectionDescription, collectionPhoto, mintTo, emailTo, listingId);
+        createPopup(mintConfig, collectionTitle, collectionDescription, collectionPhoto, mintTo, emailTo, listingId);
     };
 
     function registerListeners(pop: Window) {

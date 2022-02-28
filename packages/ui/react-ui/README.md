@@ -2,9 +2,9 @@
 
 ## Components
 
-### `CrossMintButton` _required_
+### `CrossmintPayButton` _required_
 
-CrossMintButton is a button component that is used to trigger the opening of the CrossMint popup and modal overlay.
+CrossmintPayButton is a button component that is used to trigger the opening of the CrossMint popup and modal overlay.
 
 | propName              | default     | required | description                                                                                  |
 | --------------------- | ----------- | -------- | -------------------------------------------------------------------------------------------- |
@@ -20,7 +20,7 @@ CrossMintButton is a button component that is used to trigger the opening of the
 | theme                 | `dark`      | `false`  | Use this to specify one of our default themes. Can be `light`, `dark`                        |
 | ...props              | `undefined` | `false`  | All valid html button props can be added to the button                                       |
 
-### `CrossMintButtonStatus`
+### `CrossmintStatusButton`
 
 DESCRIPTION TBD
 

@@ -14,6 +14,10 @@ export const formatProps = (theme: string): CustomStylingProps => ({
 });
 
 export const useStyles = createUseStyles({
+    "@global": {
+        "@import":
+            "url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap')",
+    },
     crossmintButton: {
         display: "flex",
         "flex-direction": "row",
@@ -22,7 +26,7 @@ export const useStyles = createUseStyles({
         "font-weight": "900",
         transition: "opacity ease-in-out 0.25s",
         "border-radius": "0.5rem",
-        "font-family": `"Gilroy", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif`,
+        "font-family": `"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif`,
         outline: "none",
         border: "none",
         "box-shadow": "0px 8px 15px rgba(0, 0, 0, 0.1)",

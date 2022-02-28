@@ -1,6 +1,6 @@
 import React, { FC, MouseEventHandler, useMemo, useCallback, useState } from "react";
-import useCrossMintStatus, { OnboardingRequestStatusResponse } from "./hooks/useCrossMintStatus";
-import useCrossMintModal from "./hooks/useCrossMintModal";
+import useCrossmintStatus, { OnboardingRequestStatusResponse } from "./hooks/useCrossmintStatus";
+import useCrossmintModal from "./hooks/useCrossmintModal";
 import { useStyles, formatProps } from "./styles";
 import { isClientSide } from "./utils";
 import { CrossmintPayButtonProps, mintingContractTypes } from "./types";
@@ -9,7 +9,7 @@ const defaultMintConfig: any = {
     type: mintingContractTypes.CANDY_MACHINE,
 };
 
-export const CrossMintButton: FC<CrossmintPayButtonProps> = ({
+export const CrossmintPayButton: FC<CrossmintPayButtonProps> = ({
     className,
     disabled,
     onClick,
@@ -30,27 +30,27 @@ export const CrossMintButton: FC<CrossmintPayButtonProps> = ({
     mintConfig = defaultMintConfig,
     ...props
 }) => {
-    const status = useCrossMintStatus({ clientId, development });
-    const { connecting, connect } = useCrossMintModal({
+    const status = useCrossmintStatus({ clientId, development });
+    const { connecting, connect } = useCrossmintModal({
         clientId,
         development,
         showOverlay,
     });
 
     if (collectionTitle === "<TITLE_FOR_YOUR_COLLECTION>") {
-        console.warn("No collection title specified. Please add a collection title to your <CrossmintButton />");
+        console.warn("No collection title specified. Please add a collection title to your <CrossmintPayButton />");
         collectionTitle = "";
     }
 
     if (collectionDescription === "<DESCRIPTION_OF_YOUR_COLLECTION>") {
         console.warn(
-            "No collection description specified. Please add a collection description to your <CrossmintButton />"
+            "No collection description specified. Please add a collection description to your <CrossmintPayButton />"
         );
         collectionDescription = "";
     }
 
     if (collectionPhoto === "<OPT_URL_TO_PHOTO_COVER>") {
-        console.warn("No collection photo specified. Please add a collection photo to your <CrossmintButton />");
+        console.warn("No collection photo specified. Please add a collection photo to your <CrossmintPayButton />");
         collectionPhoto = "";
     }
 
@@ -59,7 +59,15 @@ export const CrossMintButton: FC<CrossmintPayButtonProps> = ({
             if (onClick) onClick(event);
 
             if (!event.defaultPrevented) {
-                connect(collectionTitle, collectionDescription, collectionPhoto, mintTo, emailTo, listingId);
+                connect(
+                    mintConfig,
+                    collectionTitle,
+                    collectionDescription,
+                    collectionPhoto,
+                    mintTo,
+                    emailTo,
+                    listingId
+                );
             }
         },
         [onClick]

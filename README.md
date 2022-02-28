@@ -19,6 +19,12 @@ https://vimeo.com/671525311
 
 ---
 
+## Migration guide to 0.1.0 version
+
+Version 0.1.0 introduces breaking changes. To learn how to migrate from a version lower than 0.1.0, [check out the migration guide](https://docs.google.com/document/d/14IKpjrij7kU7Dr0I7rZkf0PyDNbXiklx2v4GuzUrFbw/edit?usp=sharing).
+
+---
+
 ## Quick Setup (Next.js)
 
 ### 1. Install
@@ -29,53 +35,33 @@ yarn add @crossmint/client-sdk-react-ui
 
 ### 2. Set up
 
-On your main App file (e.g. app.tsx):
-
-1. Require the CrossMint styles by adding `require('@crossmint/client-sdk-react-ui/styles.css');` 
-2. Import `CrossMintProvider`, wrap your app with it at the top level and pass the clientId you received after filling in [the onboarding form](https://www.crossmint.io/developers/onboarding).
-
-```javascript
-import { AppProps } from "next/app";
-import { CrossMintProvider } from "@crossmint/client-sdk-react-ui";
-// Use require instead of import, and order matters
-require("../styles/globals.css");
-require("@crossmint/client-sdk-react-ui/styles.css");
-export default function App({ Component, pageProps }: AppProps) {
-    return (
-        <CrossMintProvider clientId="<YOUR_CLIENT_ID>">
-            <Component {...pageProps} />
-        </CrossMintProvider>
-    );
-}
-```
-
-### 3. Usage
-
 Go to the main file where your Candy Machine button lives. For example, Home.tsx.
 
-There, just import the Pay with `CrossMintButton`, and add it in the UI.
+There, just import the Pay with `CrossmintPayButton`, and add it in the UI.
 
 **Important**: be sure to test that the Crossmint button is visible even if a user didn't connect their wallet! Else, your users without wallets won't be able to use it.
 
 ```javascript
-import { CrossMintButton } from "@crossmint/client-sdk-react-ui";
+import { CrossmintPayButton } from "@crossmint/client-sdk-react-ui";
 
 export default function Index() {
     return (
-        <CrossMintButton
+        <CrossmintPayButton
             collectionTitle="<TITLE_FOR_YOUR_COLLECTION>"
             collectionDescription="<DESCRIPTION_OF_YOUR_COLLECTION>"
             collectionPhoto="<OPT_URL_TO_PHOTO_COVER>"
+            clientId="<YOUR_CLIENT_ID>"
         />
     );
 }
 ```
 
-Finally, make sure you replace the following values in the CrossMintButton component:
+Finally, make sure you replace the following values in the CrossmintPayButton component:
 
 -   `<TITLE_FOR_YOUR_COLLECTION>`: Example: "My NFT collection"
 -   `<DESCRIPTION_OF_YOUR_COLLECTION>`: Example: "The most fun community of 999 generative art monkeys in Solana"
 -   `<OPT_URL_TO_PHOTO_COVER>`: Full URL to an image for your collection. Example: "https://i.picsum.photos/id/542/200/300.jpg?hmac=qD8M4ejDPlEc69pGT21BzB7CDiWOcElb_Ke7V8POjm8"
+-   `<YOUR_CLIENT_ID>`: This is the clientId you received after filling in [the onboarding form](https://www.crossmint.io/developers/)
 
 See [react-ui](https://github.com/CrossMint/crossmint-client-sdk/tree/main/packages/ui/react-ui) for more optional customization parameters.
 
@@ -151,3 +137,7 @@ yarn
 yarn build
 yarn publish
 ```
+
+---
+
+## [Changelog](https://docs.google.com/document/d/e/2PACX-1vR5NzVS2msrCMZxlcfBgAT-Y8kAypeKqH_WBeNiwVTmyEzLZvJBWrKrz_966-d3jumwIBi94IXGT6Wp/pub)

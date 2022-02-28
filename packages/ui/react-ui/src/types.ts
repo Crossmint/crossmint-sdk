@@ -26,7 +26,9 @@ export enum mintingContractTypes {
 }
 
 export interface PayButtonConfig {
-    type: mintingContractTypes;
+    type: string;
+
+    [propName: string]: any;
 }
 
 export interface BaseButtonProps {
@@ -50,5 +52,5 @@ export interface CrossmintPayButtonProps extends BaseButtonProps {
     listingId?: string;
     showOverlay?: boolean;
     hideMintOnInactiveClient?: boolean;
-    mintConfig?: any;
+    mintConfig?: PayButtonConfig;
 }

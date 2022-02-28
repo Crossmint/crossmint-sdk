@@ -1,10 +1,10 @@
 import React, { FC, MouseEventHandler, useMemo, useCallback } from "react";
-import useCrossMintStatus, { OnboardingRequestStatusResponse } from "./hooks/useCrossMintStatus";
+import useCrossmintStatus, { OnboardingRequestStatusResponse } from "./hooks/useCrossmintStatus";
 import { useStyles, formatProps } from "./styles";
 import { baseUrls, BaseButtonProps } from "./types";
 import { isClientSide } from "./utils";
 
-export const CrossMintStatusButton: FC<BaseButtonProps> = ({
+export const CrossmintStatusButton: FC<BaseButtonProps> = ({
     className,
     disabled,
     onClick,
@@ -16,7 +16,7 @@ export const CrossMintStatusButton: FC<BaseButtonProps> = ({
     development = false,
     ...props
 }) => {
-    const status = useCrossMintStatus({ clientId, development });
+    const status = useCrossmintStatus({ clientId, development });
 
     const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
         (event) => {
