@@ -5,11 +5,13 @@ import "@testing-library/jest-dom";
 import { CrossmintPayButton } from "../src/CrossmintPayButton";
 import { LIB_VERSION } from "../src/version";
 
+// Todo: create a global service for this to be able everywhere and customize resolved/rejected responses
 const fetchReturns = Promise.resolve({
     json: () => Promise.resolve({}),
 }) as any;
 global.fetch = jest.fn(() => fetchReturns);
 
+// Todo: make this automatically mocked in every test suite
 const openReturns = {} as Window;
 global.open = jest.fn(() => openReturns);
 
