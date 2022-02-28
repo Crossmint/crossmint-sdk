@@ -20,7 +20,7 @@ CrossmintPayButton is a button component that is used to trigger the opening of 
 | theme                 | `dark`      | `false`  | Use this to specify one of our default themes. Can be `light`, `dark`                        |
 | ...props              | `undefined` | `false`  | All valid html button props can be added to the button                                       |
 
-### `CrossMintButtonStatus`
+### `CrossmintStatusButton`
 
 DESCRIPTION TBD
 
