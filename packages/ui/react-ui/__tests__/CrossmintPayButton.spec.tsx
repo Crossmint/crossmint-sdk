@@ -57,7 +57,7 @@ describe("CrossmintPayButton", () => {
         );
     });
 
-    test("should call localhost onboardingRequests/{clientId}/status url when development props passed", async () => {
+    test("should call localhost onboardingRequests/{clientId}/status url when development prop passed", async () => {
         await act(async () => {
             render(<CrossmintPayButton {...defaultProps} development={true} />);
         });
