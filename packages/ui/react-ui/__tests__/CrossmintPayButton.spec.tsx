@@ -14,6 +14,11 @@ global.fetch = jest.fn(() => fetchReturns);
 // TODO(#61): make this automatically mocked in every test suite
 const openReturns = {} as Window;
 global.open = jest.fn(() => openReturns);
+global.console = {
+    log: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+} as any;
 
 const defaultProps = {
     collectionTitle: "CollectionTitle",
@@ -47,20 +52,45 @@ describe("CrossmintPayButton", () => {
         );
     });
 
-    test("should call onboardingRequests/{clientId}/status when instanciating the button", async () => {
-        await act(async () => {
-            render(<CrossmintPayButton {...defaultProps} />);
+    describe("`onboardingRequests/{clientId}/status` endpoint", () => {
+        test("should only be called when instanciating the button with `hideMintOnInactiveClient` prop", async () => {
+            await act(async () => {
+                render(<CrossmintPayButton {...defaultProps} hideMintOnInactiveClient={true} />);
+            });
+            expect(global.fetch).toHaveBeenCalledWith(
+                `https://www.crossmint.io/api/crossmint/onboardingRequests/${defaultProps.clientId}/status`,
+                { headers: { "X-Client-Name": "client-sdk-react-ui", "X-Client-Version": LIB_VERSION } }
+            );
         });
-        expect(global.fetch).toHaveBeenCalledWith(
-            `https://www.crossmint.io/api/crossmint/onboardingRequests/${defaultProps.clientId}/status`,
-            { headers: { "X-Client-Name": "client-sdk-react-ui", "X-Client-Version": LIB_VERSION } }
-        );
-    });
 
-    test("should call localhost onboardingRequests/{clientId}/status url when `development` prop passed", async () => {
-        await act(async () => {
-            render(<CrossmintPayButton {...defaultProps} development={true} />);
+        // Uncomment when #40 is done
+        /* test("should not be called when not passing `hideMintOnInactiveClient` prop", async () => {
+            await act(async () => {
+                render(<CrossmintPayButton {...defaultProps} />);
+            });
+            expect(global.fetch).not.toHaveBeenCalled();
+        }); */
+
+        test("should  be called with localhost url when `development` prop passed", async () => {
+            await act(async () => {
+                render(<CrossmintPayButton {...defaultProps} development={true} hideMintOnInactiveClient={true} />);
+            });
+            expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining("localhost:3001"), expect.anything());
         });
-        expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining("localhost:3001"), expect.anything());
+
+        test("should not be called if clientId is missformed", async () => {
+            const notUUIDString = "randomString";
+            await act(async () => {
+                render(
+                    <CrossmintPayButton
+                        {...defaultProps}
+                        clientId={notUUIDString}
+                        development={true}
+                        hideMintOnInactiveClient={true}
+                    />
+                );
+            });
+            expect(global.fetch).not.toHaveBeenCalled();
+        });
     });
 });
