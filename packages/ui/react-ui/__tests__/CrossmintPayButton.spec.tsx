@@ -78,7 +78,7 @@ describe("CrossmintPayButton", () => {
             expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining("localhost:3001"), expect.anything());
         });
 
-        test("should not be called if clientId is missformed", async () => {
+        test("should not be called if clientId is not a UUID", async () => {
             const notUUIDString = "randomString";
             await act(async () => {
                 render(
