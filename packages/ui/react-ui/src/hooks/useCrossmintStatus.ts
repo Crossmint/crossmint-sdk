@@ -1,7 +1,7 @@
+import { clientNames, baseUrls, customHeaders } from "@crossmint/client-sdk-base";
 import { useState, useEffect } from "react";
 import { validate } from "uuid";
 import { LIB_VERSION } from "../version";
-import { clientNames, baseUrls, customHeaders } from "../types";
 
 export enum OnboardingRequestStatusResponse {
     WAITING_SUBMISSION = "waiting-submission",

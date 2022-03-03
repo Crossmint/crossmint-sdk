@@ -1,10 +1,11 @@
 import React, { FC, MouseEventHandler, useMemo, useCallback } from "react";
 import useCrossmintStatus, { OnboardingRequestStatusResponse } from "./hooks/useCrossmintStatus";
 import { useStyles, formatProps } from "./styles";
-import { baseUrls, BaseButtonProps } from "./types";
+import { CrossmintStatusButtonReactProps } from "./types";
 import { isClientSide } from "./utils";
+import { baseUrls } from "@crossmint/client-sdk-base";
 
-export const CrossmintStatusButton: FC<BaseButtonProps> = ({
+export const CrossmintStatusButton: FC<CrossmintStatusButtonReactProps> = ({
     className,
     disabled,
     onClick,

@@ -1,15 +1,16 @@
-import React, { FC, MouseEventHandler, useMemo, useCallback, useState } from "react";
+import { mintingContractTypes } from "@crossmint/client-sdk-base";
+import React, { FC, MouseEventHandler, useMemo, useCallback } from "react";
 import useCrossmintStatus, { OnboardingRequestStatusResponse } from "./hooks/useCrossmintStatus";
 import useCrossmintModal from "./hooks/useCrossmintModal";
 import { useStyles, formatProps } from "./styles";
 import { isClientSide } from "./utils";
-import { CrossmintPayButtonProps, mintingContractTypes } from "./types";
+import { CrossmintPayButtonReactProps } from "./types";
 
 const defaultMintConfig: any = {
     type: mintingContractTypes.CANDY_MACHINE,
 };
 
-export const CrossmintPayButton: FC<CrossmintPayButtonProps> = ({
+export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
     className,
     disabled,
     onClick,
@@ -57,6 +58,8 @@ export const CrossmintPayButton: FC<CrossmintPayButtonProps> = ({
     const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
         (event) => {
             if (onClick) onClick(event);
+
+            if (connecting) return;
 
             if (!event.defaultPrevented) {
                 connect(
