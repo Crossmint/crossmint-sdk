@@ -1,18 +1,10 @@
-import { clientNames, baseUrls, customHeaders } from "@crossmint/client-sdk-base";
+import { clientNames, baseUrls, customHeaders, onboardingRequestStatusResponse } from "@crossmint/client-sdk-base";
 import { useState, useEffect } from "react";
 import { validate } from "uuid";
 import { LIB_VERSION } from "../version";
 
-export enum OnboardingRequestStatusResponse {
-    WAITING_SUBMISSION = "waiting-submission",
-    PENDING = "pending",
-    REJECTED = "rejected",
-    ACCEPTED = "accepted",
-    INVALID = "invalid",
-}
-
 export interface CrossMintStatusContextState {
-    status: OnboardingRequestStatusResponse;
+    status: onboardingRequestStatusResponse;
     clientId: string;
     auctionId?: string;
     hideMintOnInactiveClient: boolean;
@@ -34,8 +26,8 @@ const validateClientId = (clientId: string): boolean => {
 };
 
 export default function useCrossMintStatus({ clientId, development }: IProps) {
-    const [status, setStatus] = useState<OnboardingRequestStatusResponse>(
-        OnboardingRequestStatusResponse.WAITING_SUBMISSION
+    const [status, setStatus] = useState<onboardingRequestStatusResponse>(
+        onboardingRequestStatusResponse.WAITING_SUBMISSION
     );
 
     async function fetchClientIntegration() {
@@ -61,12 +53,12 @@ export default function useCrossMintStatus({ clientId, development }: IProps) {
         });
 
         if (res.status === 200) {
-            const resData: { clientId: string; status: OnboardingRequestStatusResponse } = await res.json();
+            const resData: { clientId: string; status: onboardingRequestStatusResponse } = await res.json();
 
             setStatus(resData.status);
         } else {
-            if (status !== OnboardingRequestStatusResponse.INVALID) {
-                setStatus(OnboardingRequestStatusResponse.INVALID);
+            if (status !== onboardingRequestStatusResponse.INVALID) {
+                setStatus(onboardingRequestStatusResponse.INVALID);
             }
         }
     }

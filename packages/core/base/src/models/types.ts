@@ -23,6 +23,14 @@ export enum mintingContractTypes {
     ERC_721 = "erc-721",
 }
 
+export enum onboardingRequestStatusResponse {
+    WAITING_SUBMISSION = "waiting-submission",
+    PENDING = "pending",
+    REJECTED = "rejected",
+    ACCEPTED = "accepted",
+    INVALID = "invalid",
+}
+
 export interface PayButtonConfig {
     type: string;
 
