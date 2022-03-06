@@ -1,6 +1,6 @@
 import { onboardingRequestStatusResponse } from "../models/types";
 
-export function useCrossmintPayButtonService() {
+export function crossmintPayButtonService() {
     const checkProps = ({ collectionTitle, collectionDescription, collectionPhoto }: any) => {
         let _collectionTitle = collectionTitle;
         let _collectionDescription = collectionDescription;

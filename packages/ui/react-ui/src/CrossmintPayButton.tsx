@@ -1,10 +1,10 @@
-import { mintingContractTypes, useCrossmintPayButtonService } from "@crossmint/client-sdk-base";
+import { mintingContractTypes, crossmintPayButtonService } from "@crossmint/client-sdk-base";
 import React, { FC, MouseEventHandler, useMemo, useCallback } from "react";
 import useCrossmintStatus from "./hooks/useCrossmintStatus";
 import { useStyles, formatProps } from "./styles";
 import { isClientSide } from "./utils";
 import { CrossmintPayButtonReactProps } from "./types";
-import { useCrossmintModalService, CrossmintModalServiceReturn } from "@crossmint/client-sdk-base";
+import { crossmintModalService, CrossmintModalServiceReturn } from "@crossmint/client-sdk-base";
 import { useState } from "react";
 import { LIB_VERSION } from "./version";
 
@@ -36,7 +36,7 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
     const [connecting, setConnecting] = useState(false);
     const status = useCrossmintStatus({ clientId, development });
 
-    const { connect } = useCrossmintModalService({
+    const { connect } = crossmintModalService({
         development,
         clientId,
         showOverlay,
@@ -44,7 +44,7 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
         libVersion: LIB_VERSION,
     });
 
-    const { checkProps, getButtonText, shouldHideButton } = useCrossmintPayButtonService();
+    const { checkProps, getButtonText, shouldHideButton } = crossmintPayButtonService();
 
     const [newCollectionTitle, newCollectionDescription, newCollectionPhoto] = checkProps({
         collectionTitle,

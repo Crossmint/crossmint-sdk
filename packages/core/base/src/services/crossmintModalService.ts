@@ -63,7 +63,7 @@ export interface CrossmintModalServiceReturn {
     ) => void;
 }
 
-export function useCrossmintModalService({
+export function crossmintModalService({
     development,
     clientId,
     libVersion,
