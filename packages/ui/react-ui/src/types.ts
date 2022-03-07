@@ -25,11 +25,6 @@ export enum mintingContractTypes {
     ERC_721 = "erc-721",
 }
 
-export enum launchpadIds {
-    // TODO Replace with the real one
-    holaplex = "12345",
-}
-
 export interface PayButtonConfig {
     type: string;
 
@@ -65,6 +60,6 @@ export interface CrossmintPayButtonProps extends BaseButtonProps {
 }
 
 export interface CrossmintStatusButtonProps extends BaseButtonProps {
-    launchpadId?: launchpadIds;
+    platformId?: string;
     mintConfig?: StatusButtonConfig;
 }

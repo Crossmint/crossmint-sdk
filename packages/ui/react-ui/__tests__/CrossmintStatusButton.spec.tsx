@@ -3,7 +3,6 @@ import { render, fireEvent, screen, act } from "@testing-library/react";
 import "@testing-library/jest-dom";
 
 import { CrossmintStatusButton } from "../src/CrossmintStatusButton";
-import { launchpadIds } from "../src/types";
 
 // TODO(#60): create a global service for this to work everywhere and to be able to customize resolved/rejected responses
 const fetchReturns = Promise.resolve({
@@ -17,7 +16,7 @@ global.open = jest.fn(() => openReturns);
 
 const defaultProps = {
     clientId: "a4e1bfcc-9884-11ec-b909-0242ac120002",
-    launchpadId: launchpadIds.holaplex,
+    platformId: "random-uuid",
     auctionId: "123456",
 };
 
@@ -33,12 +32,12 @@ describe("CrossmintPayButton", () => {
             fireEvent.click(screen.getByText("Click here to setup CrossMint"));
         });
         expect(global.open).toHaveBeenCalledWith(
-            `https://www.crossmint.io/developers/onboarding?clientId=${defaultProps.clientId}&launchpadId=${defaultProps.launchpadId}&auctionId=${defaultProps.auctionId}`,
+            `https://www.crossmint.io/developers/onboarding?clientId=${defaultProps.clientId}&platformId=${defaultProps.platformId}&auctionId=${defaultProps.auctionId}`,
             "_blank"
         );
     });
 
-    test("should not send launchpadId and auctionId if not provided", async () => {
+    test("should not send platformId and auctionId if not provided", async () => {
         render(<CrossmintStatusButton clientId={defaultProps.clientId} />);
 
         await act(async () => {

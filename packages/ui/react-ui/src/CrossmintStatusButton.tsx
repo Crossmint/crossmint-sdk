@@ -6,7 +6,7 @@ import { isClientSide } from "./utils";
 
 type OnboardingQueryParams = {
     clientId: string;
-    launchpadId?: string;
+    platformId?: string;
     auctionId?: string;
 };
 
@@ -20,7 +20,7 @@ export const CrossmintStatusButton: FC<CrossmintStatusButtonProps> = ({
     clientId,
     auctionId,
     development = false,
-    launchpadId,
+    platformId,
     ...props
 }) => {
     const status = useCrossmintStatus({ clientId, development });
@@ -30,7 +30,7 @@ export const CrossmintStatusButton: FC<CrossmintStatusButtonProps> = ({
             clientId: clientId,
         };
 
-        if (launchpadId) onboardingQueryParams.launchpadId = launchpadId;
+        if (platformId) onboardingQueryParams.platformId = platformId;
         if (auctionId) onboardingQueryParams.auctionId = auctionId;
 
         return new URLSearchParams(onboardingQueryParams).toString();
