@@ -31,6 +31,10 @@ export interface PayButtonConfig {
     [propName: string]: any;
 }
 
+export interface StatusButtonConfig {
+    [propName: string]: any;
+}
+
 export interface BaseButtonProps {
     className?: string;
     disabled?: boolean;
@@ -53,4 +57,9 @@ export interface CrossmintPayButtonProps extends BaseButtonProps {
     showOverlay?: boolean;
     hideMintOnInactiveClient?: boolean;
     mintConfig?: PayButtonConfig;
+}
+
+export interface CrossmintStatusButtonProps extends BaseButtonProps {
+    platformId?: string;
+    mintConfig?: StatusButtonConfig;
 }
