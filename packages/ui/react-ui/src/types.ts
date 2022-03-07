@@ -25,9 +25,18 @@ export enum mintingContractTypes {
     ERC_721 = "erc-721",
 }
 
+export enum launchpadIds {
+    // TODO Replace with the real one
+    holaplex = "12345",
+}
+
 export interface PayButtonConfig {
     type: string;
 
+    [propName: string]: any;
+}
+
+export interface StatusButtonConfig {
     [propName: string]: any;
 }
 
@@ -53,4 +62,9 @@ export interface CrossmintPayButtonProps extends BaseButtonProps {
     showOverlay?: boolean;
     hideMintOnInactiveClient?: boolean;
     mintConfig?: PayButtonConfig;
+}
+
+export interface CrossmintStatusButtonProps extends BaseButtonProps {
+    launchpadId?: launchpadIds;
+    mintConfig?: StatusButtonConfig;
 }

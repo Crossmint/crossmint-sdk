@@ -1,10 +1,16 @@
 import React, { FC, MouseEventHandler, useMemo, useCallback } from "react";
 import useCrossmintStatus, { OnboardingRequestStatusResponse } from "./hooks/useCrossmintStatus";
 import { useStyles, formatProps } from "./styles";
-import { baseUrls, BaseButtonProps } from "./types";
+import { baseUrls, CrossmintStatusButtonProps } from "./types";
 import { isClientSide } from "./utils";
 
-export const CrossmintStatusButton: FC<BaseButtonProps> = ({
+type OnboardingQueryParams = {
+    clientId: string;
+    launchpadId?: string;
+    auctionId?: string;
+};
+
+export const CrossmintStatusButton: FC<CrossmintStatusButtonProps> = ({
     className,
     disabled,
     onClick,
@@ -14,22 +20,33 @@ export const CrossmintStatusButton: FC<BaseButtonProps> = ({
     clientId,
     auctionId,
     development = false,
+    launchpadId,
     ...props
 }) => {
     const status = useCrossmintStatus({ clientId, development });
+
+    const formatOnboardingQueryParams = () => {
+        const onboardingQueryParams: OnboardingQueryParams = {
+            clientId: clientId,
+        };
+
+        if (launchpadId) onboardingQueryParams.launchpadId = launchpadId;
+        if (auctionId) onboardingQueryParams.auctionId = auctionId;
+
+        return new URLSearchParams(onboardingQueryParams).toString();
+    };
+
+    const goToOnboarding = () => {
+        const baseUrl = development ? baseUrls.dev : baseUrls.prod;
+        window.open(`${baseUrl}/developers/onboarding?${formatOnboardingQueryParams()}`, "_blank");
+    };
 
     const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
         (event) => {
             if (onClick) onClick(event);
 
             if (status === OnboardingRequestStatusResponse.WAITING_SUBMISSION) {
-                const baseUrl = development ? baseUrls.dev : baseUrls.prod;
-                window.open(
-                    `${baseUrl}/developers/onboarding${clientId ? `?clientId=${clientId}` : ""}${
-                        auctionId ? `&auctionId=${auctionId}` : ""
-                    }`,
-                    "_blank"
-                );
+                goToOnboarding();
                 return;
             }
         },
