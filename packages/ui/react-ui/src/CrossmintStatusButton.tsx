@@ -77,7 +77,7 @@ export const CrossmintStatusButton: FC<CrossmintStatusButtonProps> = ({
         <>
             {isClientSide && (
                 <button
-                    className={`${classes.crossmintButton}${className || ""}`}
+                    className={`${classes.crossmintButton} ${className || ""}`}
                     disabled={status !== OnboardingRequestStatusResponse.WAITING_SUBMISSION}
                     onClick={handleClick}
                     style={{ ...style }}
