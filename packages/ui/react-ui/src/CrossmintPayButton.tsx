@@ -88,7 +88,7 @@ export const CrossmintPayButton: FC<CrossmintPayButtonProps> = ({
         <>
             {isClientSide && (
                 <button
-                    className={`${classes.crossmintButton} ${className}`}
+                    className={`${classes.crossmintButton} ${className || ""}`}
                     disabled={disabled}
                     onClick={handleClick}
                     style={{ ...style }}
