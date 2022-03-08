@@ -8,6 +8,7 @@ type OnboardingQueryParams = {
     clientId: string;
     platformId?: string;
     auctionId?: string;
+    mintConfig?: string;
 };
 
 export const CrossmintStatusButton: FC<CrossmintStatusButtonProps> = ({
@@ -21,6 +22,7 @@ export const CrossmintStatusButton: FC<CrossmintStatusButtonProps> = ({
     auctionId,
     development = false,
     platformId,
+    mintConfig,
     ...props
 }) => {
     const status = useCrossmintStatus({ clientId, development });
@@ -32,6 +34,7 @@ export const CrossmintStatusButton: FC<CrossmintStatusButtonProps> = ({
 
         if (platformId) onboardingQueryParams.platformId = platformId;
         if (auctionId) onboardingQueryParams.auctionId = auctionId;
+        if (mintConfig) onboardingQueryParams.mintConfig = JSON.stringify(mintConfig);
 
         return new URLSearchParams(onboardingQueryParams).toString();
     };

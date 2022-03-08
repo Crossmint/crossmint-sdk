@@ -18,6 +18,9 @@ const defaultProps = {
     clientId: "a4e1bfcc-9884-11ec-b909-0242ac120002",
     platformId: "random-uuid",
     auctionId: "123456",
+    mintConfig: {
+        example: "12345",
+    },
 };
 
 afterEach(() => {
@@ -31,8 +34,9 @@ describe("CrossmintPayButton", () => {
         await act(async () => {
             fireEvent.click(screen.getByText("Click here to setup CrossMint"));
         });
+        const mintConfig = "%7B%22example%22%3A%2212345%22%7D";
         expect(global.open).toHaveBeenCalledWith(
-            `https://www.crossmint.io/developers/onboarding?clientId=${defaultProps.clientId}&platformId=${defaultProps.platformId}&auctionId=${defaultProps.auctionId}`,
+            `https://www.crossmint.io/developers/onboarding?clientId=${defaultProps.clientId}&platformId=${defaultProps.platformId}&auctionId=${defaultProps.auctionId}&mintConfig=${mintConfig}`,
             "_blank"
         );
     });
