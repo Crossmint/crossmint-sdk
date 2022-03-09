@@ -1,9 +1,9 @@
 import React, { FC, MouseEventHandler, useMemo, useCallback, useState } from "react";
-import useCrossmintStatus, { OnboardingRequestStatusResponse } from "./hooks/useCrossmintStatus";
-import useCrossmintModal from "./hooks/useCrossmintModal";
-import { useStyles, formatProps } from "./styles";
-import { isClientSide } from "./utils";
-import { CrossmintPayButtonProps, mintingContractTypes } from "./types";
+import useCrossmintStatus, { OnboardingRequestStatusResponse } from "./hooks/useCrossmintStatus.js";
+import useCrossmintModal from "./hooks/useCrossmintModal.js";
+import { useStyles, formatProps } from "./styles/index.js";
+import { isClientSide } from "./utils.js";
+import { CrossmintPayButtonProps, mintingContractTypes } from "./types.js";
 
 const defaultMintConfig: any = {
     type: mintingContractTypes.CANDY_MACHINE,

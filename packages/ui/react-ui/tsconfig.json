@@ -3,6 +3,7 @@
     "include": ["src", "__tests__/**/*.spec.ts"],
     "compilerOptions": {
         "noEmit": false,
+        "declarationDir": "lib/types",
         "outDir": "lib/esm"
     }
 }

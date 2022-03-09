@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { validate } from "uuid";
-import { LIB_VERSION } from "../version";
-import { clientNames, baseUrls, customHeaders } from "../types";
+import { LIB_VERSION } from "../version.js";
+import { clientNames, baseUrls, customHeaders } from "../types.js";
 
 export enum OnboardingRequestStatusResponse {
     WAITING_SUBMISSION = "waiting-submission",

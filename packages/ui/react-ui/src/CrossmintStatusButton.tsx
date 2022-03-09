@@ -1,8 +1,8 @@
 import React, { FC, MouseEventHandler, useMemo, useCallback } from "react";
-import useCrossmintStatus, { OnboardingRequestStatusResponse } from "./hooks/useCrossmintStatus";
-import { useStyles, formatProps } from "./styles";
-import { baseUrls, CrossmintStatusButtonProps } from "./types";
-import { isClientSide } from "./utils";
+import useCrossmintStatus, { OnboardingRequestStatusResponse } from "./hooks/useCrossmintStatus.js";
+import { useStyles, formatProps } from "./styles/index.js";
+import { baseUrls, CrossmintStatusButtonProps } from "./types.js";
+import { isClientSide } from "./utils.js";
 
 type OnboardingQueryParams = {
     clientId: string;

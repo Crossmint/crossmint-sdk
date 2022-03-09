@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { LIB_VERSION } from "../version";
-import { baseUrls, clientNames, PayButtonConfig } from "../types";
+import { LIB_VERSION } from "../version.js";
+import { baseUrls, clientNames, PayButtonConfig } from "../types.js";
 
 function createPopupString() {
     return `height=750,width=400,left=${window.innerWidth / 2 - 200},top=${

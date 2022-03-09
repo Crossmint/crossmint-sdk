@@ -1,2 +1,2 @@
-export * from "./CrossmintPayButton";
-export * from "./CrossmintStatusButton";
+export * from "./CrossmintPayButton.js";
+export * from "./CrossmintStatusButton.js";
