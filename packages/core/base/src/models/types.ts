@@ -37,6 +37,10 @@ export interface PayButtonConfig {
     [propName: string]: any;
 }
 
+interface StatusButtonConfig {
+    [propName: string]: any;
+}
+
 export interface BaseButtonProps {
     className?: string;
     disabled?: boolean;
@@ -45,6 +49,8 @@ export interface BaseButtonProps {
     auctionId?: string;
     theme?: theme;
     development?: boolean;
+    platformId?: string;
+    mintConfig?: StatusButtonConfig;
 }
 
 export interface CrossmintPayButtonProps extends BaseButtonProps {
@@ -58,3 +64,10 @@ export interface CrossmintPayButtonProps extends BaseButtonProps {
     hideMintOnInactiveClient?: boolean;
     mintConfig?: PayButtonConfig;
 }
+
+export type OnboardingQueryParams = {
+    clientId: string;
+    platformId?: string;
+    auctionId?: string;
+    mintConfig?: string;
+};

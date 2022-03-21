@@ -3,7 +3,7 @@ import useCrossmintStatus from "./hooks/useCrossmintStatus";
 import { useStyles, formatProps } from "./styles";
 import { CrossmintStatusButtonReactProps } from "./types";
 import { isClientSide } from "./utils";
-import { baseUrls, onboardingRequestStatusResponse } from "@crossmint/client-sdk-base";
+import { baseUrls, onboardingRequestStatusResponse, OnboardingQueryParams } from "@crossmint/client-sdk-base";
 
 export const CrossmintStatusButton: FC<CrossmintStatusButtonReactProps> = ({
     className,
@@ -15,22 +15,35 @@ export const CrossmintStatusButton: FC<CrossmintStatusButtonReactProps> = ({
     clientId,
     auctionId,
     development = false,
+    platformId,
+    mintConfig,
     ...props
 }) => {
     const status = useCrossmintStatus({ clientId, development });
+
+    const formatOnboardingQueryParams = () => {
+        const onboardingQueryParams: OnboardingQueryParams = {
+            clientId: clientId,
+        };
+
+        if (platformId) onboardingQueryParams.platformId = platformId;
+        if (auctionId) onboardingQueryParams.auctionId = auctionId;
+        if (mintConfig) onboardingQueryParams.mintConfig = JSON.stringify(mintConfig);
+
+        return new URLSearchParams(onboardingQueryParams).toString();
+    };
+
+    const goToOnboarding = () => {
+        const baseUrl = development ? baseUrls.dev : baseUrls.prod;
+        window.open(`${baseUrl}/developers/onboarding?${formatOnboardingQueryParams()}`, "_blank");
+    };
 
     const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
         (event) => {
             if (onClick) onClick(event);
 
             if (status === onboardingRequestStatusResponse.WAITING_SUBMISSION) {
-                const baseUrl = development ? baseUrls.dev : baseUrls.prod;
-                window.open(
-                    `${baseUrl}/developers/onboarding${clientId ? `?clientId=${clientId}` : ""}${
-                        auctionId ? `&auctionId=${auctionId}` : ""
-                    }`,
-                    "_blank"
-                );
+                goToOnboarding();
                 return;
             }
         },
