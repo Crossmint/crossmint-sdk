@@ -54,7 +54,7 @@ export interface CrossmintPayButtonProps extends BaseButtonProps {
     showOverlay?: boolean;
     hideMintOnInactiveClient?: boolean;
     mintConfig?: PayButtonConfig;
-    callbackWebhook?: string;
+    webhookPassedArgs?: any;
 }
 
 export interface CrossmintStatusButtonProps extends BaseButtonProps {

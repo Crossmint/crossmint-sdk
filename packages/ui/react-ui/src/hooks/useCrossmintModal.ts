@@ -39,7 +39,7 @@ type MintQueryParams = {
     clientName: string;
     clientVersion: string;
     mintConfig: string;
-    callbackWebhook?: string;
+    webhookPassedArgs?: string;
 };
 
 const overlayId = "__crossmint-overlay__";
@@ -76,7 +76,7 @@ export default function useCrossMintModal({ development, clientId, showOverlay }
         mintTo?: string,
         emailTo?: string,
         listingId?: string,
-        callbackWebhook?: string
+        webhookPassedArgs?: any
     ) => {
         const urlOrigin = development ? baseUrls.dev : baseUrls.prod;
         const getMintQueryParams = (): string => {
@@ -94,7 +94,7 @@ export default function useCrossMintModal({ development, clientId, showOverlay }
             if (mintTo) mintQueryParams.mintTo = mintTo;
             if (emailTo) mintQueryParams.emailTo = emailTo;
             if (listingId) mintQueryParams.listingId = listingId;
-            if (callbackWebhook) mintQueryParams.callbackWebhook = callbackWebhook;
+            if (webhookPassedArgs) mintQueryParams.webhookPassedArgs = JSON.stringify(webhookPassedArgs);
 
             return new URLSearchParams(mintQueryParams).toString();
         };
@@ -121,7 +121,7 @@ export default function useCrossMintModal({ development, clientId, showOverlay }
         mintTo?: string,
         emailTo?: string,
         listingId?: string,
-        callbackWebhook?: string
+        webhookPassedArgs?: any
     ) => {
         if (connecting) return;
 
@@ -135,7 +135,7 @@ export default function useCrossMintModal({ development, clientId, showOverlay }
             mintTo,
             emailTo,
             listingId,
-            callbackWebhook
+            webhookPassedArgs
         );
     };
 
