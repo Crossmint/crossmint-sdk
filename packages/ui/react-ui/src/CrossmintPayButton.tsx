@@ -30,7 +30,7 @@ export const CrossmintPayButton: FC<CrossmintPayButtonProps> = ({
     mintConfig = defaultMintConfig,
     ...props
 }) => {
-    const status = useCrossmintStatus({ clientId, development });
+    const status = useCrossmintStatus({ clientId, development, fetchStatus: hideMintOnInactiveClient });
     const { connecting, connect } = useCrossmintModal({
         clientId,
         development,

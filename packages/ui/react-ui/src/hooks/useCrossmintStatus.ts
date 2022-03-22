@@ -21,6 +21,7 @@ export interface CrossMintStatusContextState {
 interface IProps {
     clientId: string;
     development: boolean;
+    fetchStatus?: boolean;
 }
 
 const validateClientId = (clientId: string): boolean => {
@@ -33,7 +34,7 @@ const validateClientId = (clientId: string): boolean => {
     }
 };
 
-export default function useCrossMintStatus({ clientId, development }: IProps) {
+export default function useCrossMintStatus({ clientId, development, fetchStatus = true }: IProps) {
     const [status, setStatus] = useState<OnboardingRequestStatusResponse>(
         OnboardingRequestStatusResponse.WAITING_SUBMISSION
     );
@@ -72,13 +73,15 @@ export default function useCrossMintStatus({ clientId, development }: IProps) {
     }
 
     useEffect(() => {
-        fetchClientIntegration();
-
-        const interval = setInterval(() => {
+        if (fetchStatus) {
             fetchClientIntegration();
-        }, 60 * 1000);
 
-        return () => clearInterval(interval);
+            const interval = setInterval(() => {
+                fetchClientIntegration();
+            }, 60 * 1000);
+
+            return () => clearInterval(interval);
+        }
     }, []);
 
     return status;
