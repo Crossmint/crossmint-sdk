@@ -68,7 +68,9 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
     collectionPhoto = newCollectionPhoto;
 
     useEffect(() => {
-        fetchClientIntegration();
+        if (hideMintOnInactiveClient) {
+            fetchClientIntegration();
+        }
     }, [status]);
 
     const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
