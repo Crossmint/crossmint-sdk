@@ -39,6 +39,7 @@ type MintQueryParams = {
     clientName: string;
     clientVersion: string;
     mintConfig: string;
+    callbackWebhook?: string;
 };
 
 const overlayId = "__crossmint-overlay__";
@@ -74,7 +75,8 @@ export default function useCrossMintModal({ development, clientId, showOverlay }
         collectionPhoto?: string,
         mintTo?: string,
         emailTo?: string,
-        listingId?: string
+        listingId?: string,
+        callbackWebhook?: string
     ) => {
         const urlOrigin = development ? baseUrls.dev : baseUrls.prod;
         const getMintQueryParams = (): string => {
@@ -92,6 +94,7 @@ export default function useCrossMintModal({ development, clientId, showOverlay }
             if (mintTo) mintQueryParams.mintTo = mintTo;
             if (emailTo) mintQueryParams.emailTo = emailTo;
             if (listingId) mintQueryParams.listingId = listingId;
+            if (callbackWebhook) mintQueryParams.callbackWebhook = callbackWebhook;
 
             return new URLSearchParams(mintQueryParams).toString();
         };
@@ -117,13 +120,23 @@ export default function useCrossMintModal({ development, clientId, showOverlay }
         collectionPhoto?: string,
         mintTo?: string,
         emailTo?: string,
-        listingId?: string
+        listingId?: string,
+        callbackWebhook?: string
     ) => {
         if (connecting) return;
 
         setConnecting(true);
 
-        createPopup(mintConfig, collectionTitle, collectionDescription, collectionPhoto, mintTo, emailTo, listingId);
+        createPopup(
+            mintConfig,
+            collectionTitle,
+            collectionDescription,
+            collectionPhoto,
+            mintTo,
+            emailTo,
+            listingId,
+            callbackWebhook
+        );
     };
 
     function registerListeners(pop: Window) {

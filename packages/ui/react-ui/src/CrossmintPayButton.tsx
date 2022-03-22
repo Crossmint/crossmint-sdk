@@ -28,6 +28,7 @@ export const CrossmintPayButton: FC<CrossmintPayButtonProps> = ({
     hideMintOnInactiveClient = false,
     showOverlay = true,
     mintConfig = defaultMintConfig,
+    callbackWebhook,
     ...props
 }) => {
     const status = useCrossmintStatus({ clientId, development });
