@@ -6,13 +6,13 @@
     "repository": "https://github.com/CrossMint/crossmint-client-sdk",
     "type": "module",
     "sideEffects": false,
-    "main": "lib/cjs/index.js",
-    "module": "lib/esm/index.js",
-    "types": "lib/esm/index.d.ts",
+    "main": "lib/index.cjs",
+    "module": "lib/index.js",
+    "types": "lib/index.d.ts",
     "exports": {
         ".": {
-            "import": "./lib/esm/index.js",
-            "require": "./lib/cjs/index.js"
+            "import": "./lib/index.js",
+            "require": "./lib/index.cjs"
         }
     },
     "files": [
@@ -28,8 +28,7 @@
         "version": "yarn run create-version-file && git add .",
         "prebuild": "yarn run create-version-file",
         "clean": "shx rm -rf lib/*",
-        "build": "yarn clean && tsc -p tsconfig.json && tsc -p tsconfig-cjs.json",
-        "postbuild": "echo '{\"type\":\"commonjs\"}' | npx json > lib/cjs/package.json && echo '{\"type\":\"module\"}' | npx json > lib/esm/package.json",
+        "build": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./lib --minify --dts",
         "test": "jest"
     },
     "dependencies": {
@@ -48,6 +47,7 @@
         "jest": "^27.5.1",
         "node-fetch": "^3.2.0",
         "ts-jest": "^27.1.3",
-        "ts-node-dev": "^1.1.8"
+        "ts-node-dev": "^1.1.8",
+        "tsup": "^5.12.1"
     }
 }
