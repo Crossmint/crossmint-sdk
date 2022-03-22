@@ -1,9 +1,9 @@
-import React, { FC, MouseEventHandler, useMemo, useCallback } from "react";
-import useCrossmintStatus from "./hooks/useCrossmintStatus";
+import React, { FC, MouseEventHandler, useMemo, useCallback, useState, useEffect } from "react";
 import { useStyles, formatProps } from "./styles";
 import { CrossmintStatusButtonReactProps } from "./types";
 import { isClientSide } from "./utils";
-import { baseUrls, onboardingRequestStatusResponse, OnboardingQueryParams } from "@crossmint/client-sdk-base";
+import { baseUrls, onboardingRequestStatusResponse, crossmintStatusService } from "@crossmint/client-sdk-base";
+import { LIB_VERSION } from "./version";
 
 export const CrossmintStatusButton: FC<CrossmintStatusButtonReactProps> = ({
     className,
@@ -19,24 +19,17 @@ export const CrossmintStatusButton: FC<CrossmintStatusButtonReactProps> = ({
     mintConfig,
     ...props
 }) => {
-    const status = useCrossmintStatus({ clientId, development });
+    const [status, setStatus] = useState(onboardingRequestStatusResponse.WAITING_SUBMISSION);
 
-    const formatOnboardingQueryParams = () => {
-        const onboardingQueryParams: OnboardingQueryParams = {
-            clientId: clientId,
-        };
-
-        if (platformId) onboardingQueryParams.platformId = platformId;
-        if (auctionId) onboardingQueryParams.auctionId = auctionId;
-        if (mintConfig) onboardingQueryParams.mintConfig = JSON.stringify(mintConfig);
-
-        return new URLSearchParams(onboardingQueryParams).toString();
-    };
-
-    const goToOnboarding = () => {
-        const baseUrl = development ? baseUrls.dev : baseUrls.prod;
-        window.open(`${baseUrl}/developers/onboarding?${formatOnboardingQueryParams()}`, "_blank");
-    };
+    const { goToOnboarding, fetchClientIntegration, getButtonText, isButtonDisabled } = crossmintStatusService({
+        libVersion: LIB_VERSION,
+        clientId,
+        development,
+        platformId,
+        auctionId,
+        mintConfig,
+        setStatus,
+    });
 
     const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
         (event) => {
@@ -50,29 +43,28 @@ export const CrossmintStatusButton: FC<CrossmintStatusButtonReactProps> = ({
         [status]
     );
 
+    useEffect(() => {
+        fetchClientIntegration();
+
+        const interval = setInterval(() => {
+            fetchClientIntegration();
+        }, 60 * 1000);
+
+        return () => clearInterval(interval);
+    }, []);
+
     const classes = useStyles(formatProps(theme));
 
     const content = useMemo(() => {
-        switch (status) {
-            case onboardingRequestStatusResponse.INVALID:
-                return <p className={classes.crossmintParagraph}>Invalid clientId</p>;
-            case onboardingRequestStatusResponse.WAITING_SUBMISSION:
-                return <p className={classes.crossmintParagraph}>Click here to setup Crossmint</p>;
-            case onboardingRequestStatusResponse.PENDING:
-                return <p className={classes.crossmintParagraph}>Your application is under review</p>;
-            case onboardingRequestStatusResponse.ACCEPTED:
-                return <p className={classes.crossmintParagraph}>You're good to go!</p>;
-            case onboardingRequestStatusResponse.REJECTED:
-                return <p className={classes.crossmintParagraph}>Your application was rejected</p>;
-        }
+        return <p className={classes.crossmintParagraph}>{getButtonText(status)}</p>;
     }, [status]);
 
     return (
         <>
             {isClientSide && (
                 <button
-                    className={`${classes.crossmintButton} ${className}`}
-                    disabled={status !== onboardingRequestStatusResponse.WAITING_SUBMISSION}
+                    className={`${classes.crossmintButton} ${className || ""}`}
+                    disabled={isButtonDisabled(status)}
                     onClick={handleClick}
                     style={{ ...style }}
                     tabIndex={tabIndex}
