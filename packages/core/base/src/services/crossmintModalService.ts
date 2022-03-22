@@ -1,31 +1,4 @@
-import { useState } from "react";
-import { LIB_VERSION } from "../version";
-import { baseUrls, clientNames, PayButtonConfig } from "../types";
-
-function createPopupString() {
-    return `height=750,width=400,left=${window.innerWidth / 2 - 200},top=${
-        window.innerHeight / 2 - 375
-    },resizable=yes,scrollbars=yes,toolbar=yes,menubar=true,location=no,directories=no, status=yes`;
-}
-
-interface IProps {
-    development: boolean;
-    clientId: string;
-    showOverlay: boolean;
-}
-
-interface IReturn {
-    connecting: boolean;
-    connect: (
-        mintConfig: PayButtonConfig,
-        collectionTitle?: string,
-        collectionDescription?: string,
-        collectionPhoto?: string,
-        mintTo?: string,
-        emailTo?: string,
-        listingId?: string
-    ) => void;
-}
+import { PayButtonConfig, baseUrls, clientNames } from "../models/types";
 
 type MintQueryParams = {
     clientId: string;
@@ -42,6 +15,12 @@ type MintQueryParams = {
 };
 
 const overlayId = "__crossmint-overlay__";
+
+function createPopupString() {
+    return `height=750,width=400,left=${window.innerWidth / 2 - 200},top=${
+        window.innerHeight / 2 - 375
+    },resizable=yes,scrollbars=yes,toolbar=yes,menubar=true,location=no,directories=no, status=yes`;
+}
 
 const addLoadingOverlay = (): void => {
     const overlayEl = document.createElement("div");
@@ -64,9 +43,33 @@ const removeLoadingOverlay = (): void => {
     if (overlayEl) overlayEl.remove();
 };
 
-export default function useCrossMintModal({ development, clientId, showOverlay }: IProps): IReturn {
-    const [connecting, setConnecting] = useState(false);
+interface CrossmintModalServiceParams {
+    development: boolean;
+    clientId: string;
+    libVersion: string;
+    showOverlay: boolean;
+    setConnecting: (connecting: boolean) => void;
+}
 
+export interface CrossmintModalServiceReturn {
+    connect: (
+        mintConfig: PayButtonConfig,
+        collectionTitle?: string,
+        collectionDescription?: string,
+        collectionPhoto?: string,
+        mintTo?: string,
+        emailTo?: string,
+        listingId?: string
+    ) => void;
+}
+
+export function crossmintModalService({
+    development,
+    clientId,
+    libVersion,
+    showOverlay,
+    setConnecting,
+}: CrossmintModalServiceParams): CrossmintModalServiceReturn {
     const createPopup = (
         mintConfig: PayButtonConfig,
         collectionTitle?: string,
@@ -82,7 +85,7 @@ export default function useCrossMintModal({ development, clientId, showOverlay }
                 clientId: clientId,
                 closeOnSuccess: "false",
                 clientName: clientNames.reactUi,
-                clientVersion: LIB_VERSION,
+                clientVersion: libVersion,
                 mintConfig: JSON.stringify(mintConfig),
             };
 
@@ -119,8 +122,6 @@ export default function useCrossMintModal({ development, clientId, showOverlay }
         emailTo?: string,
         listingId?: string
     ) => {
-        if (connecting) return;
-
         setConnecting(true);
 
         createPopup(mintConfig, collectionTitle, collectionDescription, collectionPhoto, mintTo, emailTo, listingId);
@@ -138,5 +139,7 @@ export default function useCrossMintModal({ development, clientId, showOverlay }
         }, 500);
     }
 
-    return { connecting, connect };
+    return {
+        connect,
+    };
 }

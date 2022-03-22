@@ -32,7 +32,7 @@ describe("CrossmintPayButton", () => {
         render(<CrossmintStatusButton {...defaultProps} />);
 
         await act(async () => {
-            fireEvent.click(screen.getByText("Click here to setup CrossMint"));
+            fireEvent.click(screen.getByText("Click here to setup Crossmint"));
         });
         const mintConfig = "%7B%22example%22%3A%2212345%22%7D";
         expect(global.open).toHaveBeenCalledWith(
@@ -45,7 +45,7 @@ describe("CrossmintPayButton", () => {
         render(<CrossmintStatusButton clientId={defaultProps.clientId} />);
 
         await act(async () => {
-            fireEvent.click(screen.getByText("Click here to setup CrossMint"));
+            fireEvent.click(screen.getByText("Click here to setup Crossmint"));
         });
         expect(global.open).toHaveBeenCalledWith(
             `https://www.crossmint.io/developers/onboarding?clientId=${defaultProps.clientId}`,
