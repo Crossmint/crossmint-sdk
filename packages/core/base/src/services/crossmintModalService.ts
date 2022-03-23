@@ -45,7 +45,6 @@ const removeLoadingOverlay = (): void => {
 };
 
 interface CrossmintModalServiceParams {
-    development: boolean;
     clientId: string;
     libVersion: string;
     showOverlay: boolean;
@@ -65,7 +64,6 @@ export interface CrossmintModalServiceReturn {
 }
 
 export function crossmintModalService({
-    development,
     clientId,
     libVersion,
     showOverlay,
@@ -79,9 +77,10 @@ export function crossmintModalService({
         mintTo?: string,
         emailTo?: string,
         listingId?: string,
-        whPassThroughArgs?: any
+        whPassThroughArgs?: any,
+        testingDomain?: string
     ) => {
-        const urlOrigin = development ? baseUrls.dev : baseUrls.prod;
+        const urlOrigin = testingDomain || baseUrls.prod;
         const getMintQueryParams = (): string => {
             const mintQueryParams: MintQueryParams = {
                 clientId: clientId,

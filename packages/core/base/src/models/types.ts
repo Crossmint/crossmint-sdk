@@ -45,7 +45,6 @@ export interface BaseButtonProps {
     clientId: string;
     auctionId?: string;
     theme?: theme;
-    development?: boolean;
     platformId?: string;
     mintConfig?: StatusButtonConfig;
 }
@@ -61,6 +60,7 @@ export interface CrossmintPayButtonProps extends BaseButtonProps {
     hideMintOnInactiveClient?: boolean;
     mintConfig?: PayButtonConfig;
     whPassThroughArgs?: any;
+    testingDomain: string;
 }
 
 export type OnboardingQueryParams = {

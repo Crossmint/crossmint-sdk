@@ -10,7 +10,6 @@ import { validate } from "uuid";
 interface CrossmintStatusServiceParams {
     libVersion: string;
     clientId: string;
-    development: boolean;
     platformId?: string;
     auctionId?: string;
     mintConfig: any;
@@ -30,7 +29,6 @@ const validateClientId = (clientId: string): boolean => {
 export function crossmintStatusService({
     libVersion,
     clientId,
-    development,
     platformId,
     auctionId,
     mintConfig,
@@ -49,7 +47,7 @@ export function crossmintStatusService({
             return;
         }
 
-        const baseUrl = development ? baseUrls.dev : baseUrls.prod;
+        const baseUrl = baseUrls.prod;
 
         const res = await fetch(`${baseUrl}/api/crossmint/onboardingRequests/${clientId}/status`, {
             headers: {

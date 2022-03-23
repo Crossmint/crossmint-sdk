@@ -35,6 +35,7 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
     showOverlay = true,
     mintConfig = defaultMintConfig,
     whPassThroughArgs,
+    testingDomain,
     ...props
 }) => {
     const [connecting, setConnecting] = useState(false);
@@ -50,11 +51,11 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
     });
 
     const { connect } = crossmintModalService({
-        development,
         clientId,
         showOverlay,
         setConnecting,
         libVersion: LIB_VERSION,
+        testingDomain,
     });
 
     const { checkProps, getButtonText, shouldHideButton } = crossmintPayButtonService();
