@@ -12,10 +12,7 @@ export enum customHeaders {
     clientName = "X-Client-Name",
 }
 
-enum theme {
-    light = "light",
-    dark = "dark",
-}
+type theme = "light" | "dark";
 
 export enum mintingContractTypes {
     CANDY_MACHINE = "candy-machine",
