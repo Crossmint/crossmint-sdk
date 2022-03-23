@@ -34,6 +34,7 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
     hideMintOnInactiveClient = false,
     showOverlay = true,
     mintConfig = defaultMintConfig,
+    webhookPassedArgs,
     ...props
 }) => {
     const [connecting, setConnecting] = useState(false);
