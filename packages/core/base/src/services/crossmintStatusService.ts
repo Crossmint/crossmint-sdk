@@ -14,6 +14,7 @@ interface CrossmintStatusServiceParams {
     auctionId?: string;
     mintConfig: any;
     setStatus: any;
+    environment?: baseUrls | string;
 }
 
 const validateClientId = (clientId: string): boolean => {
@@ -33,6 +34,7 @@ export function crossmintStatusService({
     auctionId,
     mintConfig,
     setStatus,
+    environment,
 }: CrossmintStatusServiceParams) {
     async function fetchClientIntegration() {
         if (!clientId || clientId === "" || clientId === "<YOUR_CLIENT_ID>") {
@@ -47,7 +49,7 @@ export function crossmintStatusService({
             return;
         }
 
-        const baseUrl = baseUrls.prod;
+        const baseUrl = environment || baseUrls.prod;
 
         const res = await fetch(`${baseUrl}/api/crossmint/onboardingRequests/${clientId}/status`, {
             headers: {
@@ -66,7 +68,7 @@ export function crossmintStatusService({
     }
 
     const goToOnboarding = () => {
-        const baseUrl = development ? baseUrls.dev : baseUrls.prod;
+        const baseUrl = environment || baseUrls.prod;
         window.open(`${baseUrl}/developers/onboarding?${formatOnboardingQueryParams()}`, "_blank");
     };
 

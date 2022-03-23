@@ -49,6 +49,7 @@ interface CrossmintModalServiceParams {
     libVersion: string;
     showOverlay: boolean;
     setConnecting: (connecting: boolean) => void;
+    environment?: baseUrls | string;
 }
 
 export interface CrossmintModalServiceReturn {
@@ -68,6 +69,7 @@ export function crossmintModalService({
     libVersion,
     showOverlay,
     setConnecting,
+    environment,
 }: CrossmintModalServiceParams): CrossmintModalServiceReturn {
     const createPopup = (
         mintConfig: PayButtonConfig,
@@ -77,10 +79,9 @@ export function crossmintModalService({
         mintTo?: string,
         emailTo?: string,
         listingId?: string,
-        whPassThroughArgs?: any,
-        testingDomain?: string
+        whPassThroughArgs?: any
     ) => {
-        const urlOrigin = testingDomain || baseUrls.prod;
+        const urlOrigin = environment || baseUrls.prod;
         const getMintQueryParams = (): string => {
             const mintQueryParams: MintQueryParams = {
                 clientId: clientId,
