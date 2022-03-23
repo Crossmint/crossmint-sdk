@@ -63,13 +63,12 @@ describe("CrossmintPayButton", () => {
             );
         });
 
-        // Uncomment when #40 is done
-        /* test("should not be called when not passing `hideMintOnInactiveClient` prop", async () => {
+        test("should not be called when not passing `hideMintOnInactiveClient` prop", async () => {
             await act(async () => {
                 render(<CrossmintPayButton {...defaultProps} />);
             });
             expect(global.fetch).not.toHaveBeenCalled();
-        }); */
+        });
 
         test("should  be called with localhost url when `development` prop passed", async () => {
             await act(async () => {

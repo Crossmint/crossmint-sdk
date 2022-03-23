@@ -1,15 +1,21 @@
-import React, { FC, MouseEventHandler, useMemo, useCallback, useState } from "react";
-import useCrossmintStatus, { OnboardingRequestStatusResponse } from "./hooks/useCrossmintStatus";
-import useCrossmintModal from "./hooks/useCrossmintModal";
+import { mintingContractTypes, crossmintPayButtonService } from "@crossmint/client-sdk-base";
+import React, { FC, MouseEventHandler, useMemo, useCallback, useEffect } from "react";
 import { useStyles, formatProps } from "./styles";
 import { isClientSide } from "./utils";
-import { CrossmintPayButtonProps, mintingContractTypes } from "./types";
+import { CrossmintPayButtonReactProps } from "./types";
+import {
+    crossmintModalService,
+    onboardingRequestStatusResponse,
+    crossmintStatusService,
+} from "@crossmint/client-sdk-base";
+import { useState } from "react";
+import { LIB_VERSION } from "./version";
 
 const defaultMintConfig: any = {
     type: mintingContractTypes.CANDY_MACHINE,
 };
 
-export const CrossmintPayButton: FC<CrossmintPayButtonProps> = ({
+export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
     className,
     disabled,
     onClick,
@@ -31,33 +37,48 @@ export const CrossmintPayButton: FC<CrossmintPayButtonProps> = ({
     webhookPassedArgs,
     ...props
 }) => {
-    const status = useCrossmintStatus({ clientId, development });
-    const { connecting, connect } = useCrossmintModal({
+    const [connecting, setConnecting] = useState(false);
+    const [status, setStatus] = useState(onboardingRequestStatusResponse.WAITING_SUBMISSION);
+
+    const { fetchClientIntegration } = crossmintStatusService({
+        libVersion: LIB_VERSION,
         clientId,
         development,
-        showOverlay,
+        auctionId,
+        mintConfig,
+        setStatus,
     });
 
-    if (collectionTitle === "<TITLE_FOR_YOUR_COLLECTION>") {
-        console.warn("No collection title specified. Please add a collection title to your <CrossmintPayButton />");
-        collectionTitle = "";
-    }
+    const { connect } = crossmintModalService({
+        development,
+        clientId,
+        showOverlay,
+        setConnecting,
+        libVersion: LIB_VERSION,
+    });
 
-    if (collectionDescription === "<DESCRIPTION_OF_YOUR_COLLECTION>") {
-        console.warn(
-            "No collection description specified. Please add a collection description to your <CrossmintPayButton />"
-        );
-        collectionDescription = "";
-    }
+    const { checkProps, getButtonText, shouldHideButton } = crossmintPayButtonService();
 
-    if (collectionPhoto === "<OPT_URL_TO_PHOTO_COVER>") {
-        console.warn("No collection photo specified. Please add a collection photo to your <CrossmintPayButton />");
-        collectionPhoto = "";
-    }
+    const [newCollectionTitle, newCollectionDescription, newCollectionPhoto] = checkProps({
+        collectionTitle,
+        collectionPhoto,
+        collectionDescription,
+    });
+    collectionTitle = newCollectionTitle;
+    collectionDescription = newCollectionDescription;
+    collectionPhoto = newCollectionPhoto;
+
+    useEffect(() => {
+        if (hideMintOnInactiveClient) {
+            fetchClientIntegration();
+        }
+    }, [status]);
 
     const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
         (event) => {
             if (onClick) onClick(event);
+
+            if (connecting) return;
 
             if (!event.defaultPrevented) {
                 connect(
@@ -77,11 +98,10 @@ export const CrossmintPayButton: FC<CrossmintPayButtonProps> = ({
     const classes = useStyles(formatProps(theme));
 
     const content = useMemo(() => {
-        if (connecting) return <p className={classes.crossmintParagraph}>Connecting ...</p>;
-        return <p className={classes.crossmintParagraph}>Buy with credit card</p>;
+        return <p className={classes.crossmintParagraph}>{getButtonText(connecting)}</p>;
     }, [connecting]);
 
-    if (hideMintOnInactiveClient && status !== OnboardingRequestStatusResponse.ACCEPTED) {
+    if (shouldHideButton({ hideMintOnInactiveClient, status })) {
         return null;
     }
 
