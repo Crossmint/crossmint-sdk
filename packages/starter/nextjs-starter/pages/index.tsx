@@ -1,3 +1,4 @@
+import { baseUrls } from "@crossmint/client-sdk-base";
 import { CrossmintPayButton } from "@crossmint/client-sdk-react-ui";
 
 export default function Index() {
@@ -16,6 +17,7 @@ export default function Index() {
                 collectionDescription="<DESCRIPTION_OF_YOUR_COLLECTION>"
                 collectionPhoto="<OPT_URL_TO_PHOTO_COVER>"
                 clientId="7e94eb71-06c0-447f-9272-677416fee1d5"
+                environment={baseUrls.staging}
             />
         </div>
     );
