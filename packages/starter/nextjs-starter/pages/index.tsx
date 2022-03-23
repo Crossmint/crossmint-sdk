@@ -1,4 +1,3 @@
-import { baseUrls } from "@crossmint/client-sdk-base";
 import { CrossmintPayButton } from "@crossmint/client-sdk-react-ui";
 
 export default function Index() {
