@@ -29,12 +29,12 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
     emailTo,
     listingId,
     clientId,
-    development = false,
     auctionId,
     hideMintOnInactiveClient = false,
     showOverlay = true,
     mintConfig = defaultMintConfig,
     whPassThroughArgs,
+    environment,
     ...props
 }) => {
     const [connecting, setConnecting] = useState(false);
@@ -43,18 +43,18 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
     const { fetchClientIntegration } = crossmintStatusService({
         libVersion: LIB_VERSION,
         clientId,
-        development,
+        environment,
         auctionId,
         mintConfig,
         setStatus,
     });
 
     const { connect } = crossmintModalService({
-        development,
         clientId,
         showOverlay,
         setConnecting,
         libVersion: LIB_VERSION,
+        environment,
     });
 
     const { checkProps, getButtonText, shouldHideButton } = crossmintPayButtonService();

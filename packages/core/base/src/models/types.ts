@@ -4,6 +4,7 @@ export enum clientNames {
 
 export enum baseUrls {
     prod = "https://www.crossmint.io",
+    staging = "https://staging.crossmint.io/",
     dev = "http://localhost:3001",
 }
 
@@ -45,9 +46,9 @@ export interface BaseButtonProps {
     clientId: string;
     auctionId?: string;
     theme?: theme;
-    development?: boolean;
     platformId?: string;
     mintConfig?: StatusButtonConfig;
+    environment?: baseUrls | string;
 }
 
 export interface CrossmintPayButtonProps extends BaseButtonProps {

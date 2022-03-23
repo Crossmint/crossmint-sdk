@@ -14,9 +14,9 @@ export const CrossmintStatusButton: FC<CrossmintStatusButtonReactProps> = ({
     theme = "dark",
     clientId,
     auctionId,
-    development = false,
     platformId,
     mintConfig,
+    environment,
     ...props
 }) => {
     const [status, setStatus] = useState(onboardingRequestStatusResponse.WAITING_SUBMISSION);
@@ -24,7 +24,7 @@ export const CrossmintStatusButton: FC<CrossmintStatusButtonReactProps> = ({
     const { goToOnboarding, fetchClientIntegration, getButtonText, isButtonDisabled } = crossmintStatusService({
         libVersion: LIB_VERSION,
         clientId,
-        development,
+        environment,
         platformId,
         auctionId,
         mintConfig,

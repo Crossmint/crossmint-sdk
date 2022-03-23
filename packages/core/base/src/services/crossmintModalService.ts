@@ -45,11 +45,11 @@ const removeLoadingOverlay = (): void => {
 };
 
 interface CrossmintModalServiceParams {
-    development: boolean;
     clientId: string;
     libVersion: string;
     showOverlay: boolean;
     setConnecting: (connecting: boolean) => void;
+    environment?: baseUrls | string;
 }
 
 export interface CrossmintModalServiceReturn {
@@ -65,11 +65,11 @@ export interface CrossmintModalServiceReturn {
 }
 
 export function crossmintModalService({
-    development,
     clientId,
     libVersion,
     showOverlay,
     setConnecting,
+    environment,
 }: CrossmintModalServiceParams): CrossmintModalServiceReturn {
     const createPopup = (
         mintConfig: PayButtonConfig,
@@ -81,7 +81,7 @@ export function crossmintModalService({
         listingId?: string,
         whPassThroughArgs?: any
     ) => {
-        const urlOrigin = development ? baseUrls.dev : baseUrls.prod;
+        const urlOrigin = environment || baseUrls.prod;
         const getMintQueryParams = (): string => {
             const mintQueryParams: MintQueryParams = {
                 clientId: clientId,
