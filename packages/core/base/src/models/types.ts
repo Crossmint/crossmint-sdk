@@ -60,7 +60,7 @@ export interface CrossmintPayButtonProps extends BaseButtonProps {
     showOverlay?: boolean;
     hideMintOnInactiveClient?: boolean;
     mintConfig?: PayButtonConfig;
-    webhookPassedArgs?: any;
+    whPassThroughArgs?: any;
 }
 
 export type OnboardingQueryParams = {
