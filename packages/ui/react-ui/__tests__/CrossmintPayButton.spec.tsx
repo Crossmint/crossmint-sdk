@@ -1,6 +1,7 @@
 import React from "react";
 import { render, fireEvent, screen, act } from "@testing-library/react";
 import "@testing-library/jest-dom";
+import { baseUrls } from "@crossmint/client-sdk-base";
 
 import { CrossmintPayButton } from "../src/CrossmintPayButton";
 import { LIB_VERSION } from "../src/version";
@@ -70,23 +71,52 @@ describe("CrossmintPayButton", () => {
             expect(global.fetch).not.toHaveBeenCalled();
         });
 
-        test("should  be called with localhost url when `development` prop passed", async () => {
+        test("should  be called with free string url when `environment` prop passed", async () => {
             await act(async () => {
-                render(<CrossmintPayButton {...defaultProps} development={true} hideMintOnInactiveClient={true} />);
+                render(
+                    <CrossmintPayButton
+                        {...defaultProps}
+                        environment="localhost:3001"
+                        hideMintOnInactiveClient={true}
+                    />
+                );
             });
             expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining("localhost:3001"), expect.anything());
+        });
+
+        test("should be called with stating url when passing `staging` enum in `environment` prop", async () => {
+            await act(async () => {
+                render(
+                    <CrossmintPayButton
+                        {...defaultProps}
+                        environment={baseUrls.staging}
+                        hideMintOnInactiveClient={true}
+                    />
+                );
+            });
+            expect(global.fetch).toHaveBeenCalledWith(
+                expect.stringContaining("https://staging.crossmint.io"),
+                expect.anything()
+            );
+        });
+
+        test("should be called with stating url when passing `prod` enum in `environment` prop", async () => {
+            await act(async () => {
+                render(
+                    <CrossmintPayButton {...defaultProps} environment={baseUrls.prod} hideMintOnInactiveClient={true} />
+                );
+            });
+            expect(global.fetch).toHaveBeenCalledWith(
+                expect.stringContaining("https://www.crossmint.io"),
+                expect.anything()
+            );
         });
 
         test("should not be called if clientId is not a UUID", async () => {
             const notUUIDString = "randomString";
             await act(async () => {
                 render(
-                    <CrossmintPayButton
-                        {...defaultProps}
-                        clientId={notUUIDString}
-                        development={true}
-                        hideMintOnInactiveClient={true}
-                    />
+                    <CrossmintPayButton {...defaultProps} clientId={notUUIDString} hideMintOnInactiveClient={true} />
                 );
             });
             expect(global.fetch).not.toHaveBeenCalled();
