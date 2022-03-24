@@ -48,7 +48,7 @@ export interface BaseButtonProps {
     theme?: theme;
     platformId?: string;
     mintConfig?: StatusButtonConfig;
-    environment?: baseUrls | string;
+    environment?: string;
 }
 
 export interface CrossmintPayButtonProps extends BaseButtonProps {
