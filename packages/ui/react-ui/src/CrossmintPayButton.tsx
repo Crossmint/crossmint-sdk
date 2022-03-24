@@ -92,7 +92,18 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
                 );
             }
         },
-        [onClick]
+        [
+            onClick,
+            connect,
+            connecting,
+            mintConfig,
+            collectionTitle,
+            collectionDescription,
+            collectionPhoto,
+            mintTo,
+            emailTo,
+            listingId,
+        ]
     );
 
     const classes = useStyles(formatProps(theme));
