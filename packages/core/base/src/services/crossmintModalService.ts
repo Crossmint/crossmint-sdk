@@ -1,4 +1,5 @@
 import { PayButtonConfig, baseUrls, clientNames } from "../models/types";
+import { getEnvironmentBaseUrl } from "../utils/ui";
 
 type MintQueryParams = {
     clientId: string;
@@ -49,7 +50,7 @@ interface CrossmintModalServiceParams {
     libVersion: string;
     showOverlay: boolean;
     setConnecting: (connecting: boolean) => void;
-    environment?: baseUrls | string;
+    environment?: string;
 }
 
 export interface CrossmintModalServiceReturn {
@@ -81,7 +82,7 @@ export function crossmintModalService({
         listingId?: string,
         whPassThroughArgs?: any
     ) => {
-        const urlOrigin = environment || baseUrls.prod;
+        const urlOrigin = getEnvironmentBaseUrl(environment);
         const getMintQueryParams = (): string => {
             const mintQueryParams: MintQueryParams = {
                 clientId: clientId,

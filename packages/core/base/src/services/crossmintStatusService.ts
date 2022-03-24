@@ -6,6 +6,7 @@ import {
     OnboardingQueryParams,
 } from "../models/types";
 import { validate } from "uuid";
+import { getEnvironmentBaseUrl } from "../utils/ui";
 
 interface CrossmintStatusServiceParams {
     libVersion: string;
@@ -14,7 +15,7 @@ interface CrossmintStatusServiceParams {
     auctionId?: string;
     mintConfig: any;
     setStatus: any;
-    environment?: baseUrls | string;
+    environment?: string;
 }
 
 const validateClientId = (clientId: string): boolean => {
@@ -49,7 +50,7 @@ export function crossmintStatusService({
             return;
         }
 
-        const baseUrl = environment || baseUrls.prod;
+        const baseUrl = getEnvironmentBaseUrl(environment);
 
         const res = await fetch(`${baseUrl}/api/crossmint/onboardingRequests/${clientId}/status`, {
             headers: {
@@ -68,7 +69,7 @@ export function crossmintStatusService({
     }
 
     const goToOnboarding = () => {
-        const baseUrl = environment || baseUrls.prod;
+        const baseUrl = getEnvironmentBaseUrl(environment);
         window.open(`${baseUrl}/developers/onboarding?${formatOnboardingQueryParams()}`, "_blank");
     };
 

@@ -1,7 +1,6 @@
 import React from "react";
 import { render, fireEvent, screen, act } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import { baseUrls } from "@crossmint/client-sdk-base";
 
 import { CrossmintPayButton } from "../src/CrossmintPayButton";
 import { LIB_VERSION } from "../src/version";
@@ -86,13 +85,7 @@ describe("CrossmintPayButton", () => {
 
         test("should be called with stating url when passing `staging` enum in `environment` prop", async () => {
             await act(async () => {
-                render(
-                    <CrossmintPayButton
-                        {...defaultProps}
-                        environment={baseUrls.staging}
-                        hideMintOnInactiveClient={true}
-                    />
-                );
+                render(<CrossmintPayButton {...defaultProps} environment="staging" hideMintOnInactiveClient={true} />);
             });
             expect(global.fetch).toHaveBeenCalledWith(
                 expect.stringContaining("https://staging.crossmint.io"),
@@ -102,9 +95,7 @@ describe("CrossmintPayButton", () => {
 
         test("should be called with stating url when passing `prod` enum in `environment` prop", async () => {
             await act(async () => {
-                render(
-                    <CrossmintPayButton {...defaultProps} environment={baseUrls.prod} hideMintOnInactiveClient={true} />
-                );
+                render(<CrossmintPayButton {...defaultProps} environment="prod" hideMintOnInactiveClient={true} />);
             });
             expect(global.fetch).toHaveBeenCalledWith(
                 expect.stringContaining("https://www.crossmint.io"),
