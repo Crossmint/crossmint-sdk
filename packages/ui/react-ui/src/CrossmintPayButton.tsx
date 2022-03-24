@@ -59,6 +59,8 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
 
     const { checkProps, getButtonText, shouldHideButton } = crossmintPayButtonService();
 
+    console.log("test");
+
     const [newCollectionTitle, newCollectionDescription, newCollectionPhoto] = checkProps({
         collectionTitle,
         collectionPhoto,
