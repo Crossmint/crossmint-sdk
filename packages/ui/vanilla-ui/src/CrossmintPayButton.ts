@@ -1,5 +1,4 @@
 import { html, css, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import {
     mintingContractTypes,
@@ -9,63 +8,57 @@ import {
     crossmintPayButtonService,
 } from "@crossmint/client-sdk-base";
 import { LIB_VERSION } from "./version";
+import { CrossmintPayButtonLitProps } from "./types";
 
 const defaultMintConfig: any = {
     type: mintingContractTypes.CANDY_MACHINE,
 };
 
-@customElement("crossmint-pay-button")
+const propertyDefaults: CrossmintPayButtonLitProps = {
+    className: "",
+    theme: "dark",
+    disabled: false,
+    tabIndex: 0,
+    collectionTitle: "",
+    collectionDescription: "",
+    collectionPhoto: "",
+    mintTo: "",
+    emailTo: "",
+    listingId: "",
+    clientId: "",
+    auctionId: "",
+    environment: "",
+    hideMintOnInactiveClient: false,
+    showOverlay: true,
+    mintConfig: defaultMintConfig,
+    onClick: undefined,
+};
+
 export class CrossmintPayButton extends LitElement {
-    @property({ type: String })
+    /* Workaround for typescript not recognicing the properties. */
     className = "";
-
-    @property({ type: String })
-    theme = "dark";
-
-    @property({ type: Boolean })
+    theme = "light";
     disabled = false;
-
-    @property({ type: Number })
     tabIndex = 0;
-
-    @property({ type: String })
     collectionTitle = "";
-
-    @property({ type: String })
     collectionDescription = "";
-
-    @property({ type: String })
     collectionPhoto = "";
-
-    @property({ type: String })
     mintTo = "";
-
-    @property({ type: String })
     emailTo = "";
-
-    @property({ type: String })
     listingId = "";
-
-    @property({ type: String })
     clientId = "";
-
-    @property({ type: String })
     auctionId = "";
-
-    @property({ type: String })
     environment = "";
-
-    @property({ type: Boolean })
     hideMintOnInactiveClient = false;
-
-    @property({ type: Boolean })
     showOverlay = true;
-
-    @property({ type: Object })
     mintConfig = defaultMintConfig;
+    onClick = undefined;
 
-    @property({ type: Function })
-    onClick?: (e: any) => void;
+    static get properties() {
+        const properties: any = {};
+        Object.keys(propertyDefaults).forEach((key) => (properties[key] = {}));
+        return properties;
+    }
 
     static styles = css`
         button {
@@ -200,3 +193,5 @@ export class CrossmintPayButton extends LitElement {
         `;
     }
 }
+
+customElements.define("my-element", CrossmintPayButton);
