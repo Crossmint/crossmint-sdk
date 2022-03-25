@@ -8,6 +8,7 @@ import {
     crossmintModalService,
     crossmintPayButtonService,
 } from "@crossmint/client-sdk-base";
+import { LIB_VERSION } from "./version";
 
 const defaultMintConfig: any = {
     type: mintingContractTypes.CANDY_MACHINE,
@@ -64,7 +65,7 @@ export class CrossmintPayButton extends LitElement {
     mintConfig = defaultMintConfig;
 
     @property({ type: Function })
-    onClick?: (e: any) => any;
+    onClick?: (e: any) => void;
 
     static styles = css`
         button {
@@ -126,7 +127,7 @@ export class CrossmintPayButton extends LitElement {
         super.connectedCallback();
 
         this.statusService = crossmintStatusService({
-            libVersion: "0.0.1",
+            libVersion: LIB_VERSION,
             clientId: this.clientId,
             environment: this.environment,
             auctionId: this.auctionId,
@@ -139,7 +140,7 @@ export class CrossmintPayButton extends LitElement {
             clientId: this.clientId,
             showOverlay: this.showOverlay,
             setConnecting: this.setConnecting,
-            libVersion: "0.0.1",
+            libVersion: LIB_VERSION,
         });
 
         this.payButtonService = crossmintPayButtonService({ onClick: this.onClick, connecting: this.connecting });
