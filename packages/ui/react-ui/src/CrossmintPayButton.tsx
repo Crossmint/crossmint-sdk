@@ -1,14 +1,17 @@
-import { mintingContractTypes, crossmintPayButtonService } from "@crossmint/client-sdk-base";
-import React, { FC, MouseEvent, useMemo, useEffect } from "react";
-import { useStyles, formatProps } from "./styles";
-import { isClientSide } from "./utils";
-import { CrossmintPayButtonReactProps } from "./types";
+import React, { FC, MouseEvent, useEffect, useMemo } from "react";
+import { useState } from "react";
+
 import {
     crossmintModalService,
-    onboardingRequestStatusResponse,
+    crossmintPayButtonService,
     crossmintStatusService,
+    mintingContractTypes,
+    onboardingRequestStatusResponse,
 } from "@crossmint/client-sdk-base";
-import { useState } from "react";
+
+import { formatProps, useStyles } from "./styles";
+import { CrossmintPayButtonReactProps } from "./types";
+import { isClientSide } from "./utils";
 import { LIB_VERSION } from "./version";
 
 const defaultMintConfig: any = {
