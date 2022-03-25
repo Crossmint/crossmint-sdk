@@ -1,4 +1,5 @@
 import { PayButtonConfig, baseUrls, clientNames } from "../models/types";
+import { getEnvironmentBaseUrl } from "../utils/ui";
 
 type MintQueryParams = {
     clientId: string;
@@ -12,6 +13,7 @@ type MintQueryParams = {
     clientName: string;
     clientVersion: string;
     mintConfig: string;
+    whPassThroughArgs?: string;
 };
 
 const overlayId = "__crossmint-overlay__";
@@ -44,11 +46,11 @@ const removeLoadingOverlay = (): void => {
 };
 
 interface CrossmintModalServiceParams {
-    development: boolean;
     clientId: string;
     libVersion: string;
     showOverlay: boolean;
     setConnecting: (connecting: boolean) => void;
+    environment?: string;
 }
 
 export interface CrossmintModalServiceReturn {
@@ -64,11 +66,11 @@ export interface CrossmintModalServiceReturn {
 }
 
 export function crossmintModalService({
-    development,
     clientId,
     libVersion,
     showOverlay,
     setConnecting,
+    environment,
 }: CrossmintModalServiceParams): CrossmintModalServiceReturn {
     const createPopup = (
         mintConfig: PayButtonConfig,
@@ -77,9 +79,10 @@ export function crossmintModalService({
         collectionPhoto?: string,
         mintTo?: string,
         emailTo?: string,
-        listingId?: string
+        listingId?: string,
+        whPassThroughArgs?: any
     ) => {
-        const urlOrigin = development ? baseUrls.dev : baseUrls.prod;
+        const urlOrigin = getEnvironmentBaseUrl(environment);
         const getMintQueryParams = (): string => {
             const mintQueryParams: MintQueryParams = {
                 clientId: clientId,
@@ -95,6 +98,7 @@ export function crossmintModalService({
             if (mintTo) mintQueryParams.mintTo = mintTo;
             if (emailTo) mintQueryParams.emailTo = emailTo;
             if (listingId) mintQueryParams.listingId = listingId;
+            if (whPassThroughArgs) mintQueryParams.whPassThroughArgs = JSON.stringify(whPassThroughArgs);
 
             return new URLSearchParams(mintQueryParams).toString();
         };
@@ -120,11 +124,21 @@ export function crossmintModalService({
         collectionPhoto?: string,
         mintTo?: string,
         emailTo?: string,
-        listingId?: string
+        listingId?: string,
+        whPassThroughArgs?: any
     ) => {
         setConnecting(true);
 
-        createPopup(mintConfig, collectionTitle, collectionDescription, collectionPhoto, mintTo, emailTo, listingId);
+        createPopup(
+            mintConfig,
+            collectionTitle,
+            collectionDescription,
+            collectionPhoto,
+            mintTo,
+            emailTo,
+            listingId,
+            whPassThroughArgs
+        );
     };
 
     function registerListeners(pop: Window) {

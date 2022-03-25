@@ -1,5 +1,5 @@
 import { mintingContractTypes, crossmintPayButtonService } from "@crossmint/client-sdk-base";
-import React, { FC, MouseEventHandler, useMemo, useCallback, useEffect } from "react";
+import React, { FC, MouseEvent, useMemo, useEffect } from "react";
 import { useStyles, formatProps } from "./styles";
 import { isClientSide } from "./utils";
 import { CrossmintPayButtonReactProps } from "./types";
@@ -29,11 +29,12 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
     emailTo,
     listingId,
     clientId,
-    development = false,
     auctionId,
     hideMintOnInactiveClient = false,
     showOverlay = true,
     mintConfig = defaultMintConfig,
+    whPassThroughArgs,
+    environment,
     ...props
 }) => {
     const [connecting, setConnecting] = useState(false);
@@ -42,18 +43,18 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
     const { fetchClientIntegration } = crossmintStatusService({
         libVersion: LIB_VERSION,
         clientId,
-        development,
+        environment,
         auctionId,
         mintConfig,
         setStatus,
     });
 
     const { connect } = crossmintModalService({
-        development,
         clientId,
         showOverlay,
         setConnecting,
         libVersion: LIB_VERSION,
+        environment,
     });
 
     const { checkProps, getButtonText, shouldHideButton } = crossmintPayButtonService();
@@ -73,26 +74,15 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
         }
     }, [status]);
 
-    const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
-        (event) => {
-            if (onClick) onClick(event);
+    const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
+        if (onClick) onClick(event);
 
-            if (connecting) return;
+        if (connecting) return;
 
-            if (!event.defaultPrevented) {
-                connect(
-                    mintConfig,
-                    collectionTitle,
-                    collectionDescription,
-                    collectionPhoto,
-                    mintTo,
-                    emailTo,
-                    listingId
-                );
-            }
-        },
-        [onClick]
-    );
+        if (!event.defaultPrevented) {
+            connect(mintConfig, collectionTitle, collectionDescription, collectionPhoto, mintTo, emailTo, listingId);
+        }
+    };
 
     const classes = useStyles(formatProps(theme));
 
