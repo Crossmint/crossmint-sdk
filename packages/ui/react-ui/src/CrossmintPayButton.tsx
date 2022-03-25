@@ -80,7 +80,16 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
         if (connecting) return;
 
         if (!event.defaultPrevented) {
-            connect(mintConfig, collectionTitle, collectionDescription, collectionPhoto, mintTo, emailTo, listingId);
+            connect(
+                mintConfig,
+                collectionTitle,
+                collectionDescription,
+                collectionPhoto,
+                mintTo,
+                emailTo,
+                listingId,
+                whPassThroughArgs
+            );
         }
     };
 

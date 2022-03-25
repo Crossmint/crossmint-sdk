@@ -53,6 +53,20 @@ describe("CrossmintPayButton", () => {
         );
     });
 
+    test("should add the `whPassThroughArgs` prop on the window url", async () => {
+        const whPassThroughArgs = { hello: "hi" };
+        render(<CrossmintPayButton {...defaultProps} whPassThroughArgs={whPassThroughArgs} />);
+
+        await act(async () => {
+            fireEvent.click(screen.getByText("Buy with credit card"));
+        });
+        expect(global.open).toHaveBeenCalledWith(
+            expect.stringContaining("whPassThroughArgs%3D%257B%2522hello%2522%253A%2522hi%2522%257D"),
+            expect.anything(),
+            expect.anything()
+        );
+    });
+
     describe("`onboardingRequests/{clientId}/status` endpoint", () => {
         test("should only be called when instanciating the button with `hideMintOnInactiveClient` prop", async () => {
             await act(async () => {
@@ -111,10 +125,7 @@ describe("CrossmintPayButton", () => {
                     <CrossmintPayButton {...defaultProps} clientId={notUUIDString} hideMintOnInactiveClient={true} />
                 );
             });
-            expect(global.fetch).toHaveBeenCalledWith(
-                expect.stringContaining("https://staging.crossmint.io"),
-                expect.anything()
-            );
+            expect(global.fetch).not.toHaveBeenCalled();
         });
 
         test("should be called with stating url when passing `prod` enum in `environment` prop", async () => {
