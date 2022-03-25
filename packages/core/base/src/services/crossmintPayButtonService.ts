@@ -1,6 +1,11 @@
 import { onboardingRequestStatusResponse } from "../models/types";
 
-export function crossmintPayButtonService() {
+interface IProps {
+    onClick?: (e: any) => void;
+    connecting: boolean;
+}
+
+export function crossmintPayButtonService({ onClick, connecting }: IProps) {
     const checkProps = ({ collectionTitle, collectionDescription, collectionPhoto }: any) => {
         let _collectionTitle = collectionTitle;
         let _collectionDescription = collectionDescription;
@@ -27,9 +32,20 @@ export function crossmintPayButtonService() {
     const shouldHideButton = ({ hideMintOnInactiveClient, status }: any) =>
         hideMintOnInactiveClient && status !== onboardingRequestStatusResponse.ACCEPTED;
 
+    const handleClick = (event: any, cb: () => void) => {
+        if (onClick) onClick(event);
+
+        if (connecting) return;
+
+        if (!event.defaultPrevented) {
+            cb();
+        }
+    };
+
     return {
         checkProps,
         getButtonText,
         shouldHideButton,
+        handleClick,
     };
 }

@@ -1,5 +1,6 @@
 import { html, css, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
+import { classMap } from "lit/directives/class-map.js";
 import {
     mintingContractTypes,
     onboardingRequestStatusResponse,
@@ -50,8 +51,8 @@ export class CrossmintPayButton extends LitElement {
     @property({ type: String })
     auctionId = "";
 
-    @property({ type: Boolean })
-    development = false;
+    @property({ type: String })
+    environment = "";
 
     @property({ type: Boolean })
     hideMintOnInactiveClient = false;
@@ -61,6 +62,9 @@ export class CrossmintPayButton extends LitElement {
 
     @property({ type: Object })
     mintConfig = defaultMintConfig;
+
+    @property({ type: Function })
+    onClick?: (e: any) => any;
 
     static styles = css`
         button {
@@ -77,8 +81,11 @@ export class CrossmintPayButton extends LitElement {
             border: none;
             box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
             justify-content: center;
-            /* background: ({ buttonBgColor }: CustomStylingProps) => buttonBgColor, */
             background: #1e1e1e;
+            color: white;
+        }
+        button.light {
+            background: white;
         }
 
         button:hover:enabled {
@@ -96,6 +103,10 @@ export class CrossmintPayButton extends LitElement {
             color: white;
             margin: 0;
         }
+
+        button.light p {
+            color: black;
+        }
     `;
 
     connecting = false;
@@ -106,51 +117,52 @@ export class CrossmintPayButton extends LitElement {
     setStatus = (status: onboardingRequestStatusResponse) => {
         this.status = status;
     };
-
-    statusService = crossmintStatusService({
-        libVersion: "0.0.1",
-        clientId: this.clientId,
-        development: this.development,
-        auctionId: this.auctionId,
-        mintConfig: this.mintConfig,
-        setStatus: this.setStatus,
-    });
-
-    modalService = crossmintModalService({
-        development: this.development,
-        clientId: this.clientId,
-        showOverlay: this.showOverlay,
-        setConnecting: this.setConnecting,
-        libVersion: "0.0.1",
-    });
-
-    payButtonService = crossmintPayButtonService();
-
-    checkedProps = this.payButtonService.checkProps({
-        collectionTitle: this.collectionTitle,
-        collectionPhoto: this.collectionPhoto,
-        collectionDescription: this.collectionDescription,
-    });
-
-    /* this.collectionTitle = this.checkedProps[0];
-    this.collectionDescription = this.checkedProps[1];
-    this.collectionPhoto = this.checkedProps[2]; */
+    classes = { light: false };
+    statusService: any = null;
+    modalService: any = null;
+    payButtonService: any = null;
 
     connectedCallback() {
         super.connectedCallback();
 
+        this.statusService = crossmintStatusService({
+            libVersion: "0.0.1",
+            clientId: this.clientId,
+            environment: this.environment,
+            auctionId: this.auctionId,
+            mintConfig: this.mintConfig,
+            setStatus: this.setStatus,
+        });
+
+        this.modalService = crossmintModalService({
+            environment: this.environment,
+            clientId: this.clientId,
+            showOverlay: this.showOverlay,
+            setConnecting: this.setConnecting,
+            libVersion: "0.0.1",
+        });
+
+        this.payButtonService = crossmintPayButtonService({ onClick: this.onClick, connecting: this.connecting });
+
         if (this.hideMintOnInactiveClient) {
             this.statusService.fetchClientIntegration();
         }
+
+        const checkedProps = this.payButtonService.checkProps({
+            collectionTitle: this.collectionTitle,
+            collectionPhoto: this.collectionPhoto,
+            collectionDescription: this.collectionDescription,
+        });
+
+        this.collectionTitle = checkedProps[0];
+        this.collectionDescription = checkedProps[1];
+        this.collectionPhoto = checkedProps[2];
+
+        this.classes.light = this.theme === "light";
     }
 
-    handleClick(event: any) {
-        // Think how to replicate this?
-        // if (onClick) onClick(event);
-
-        if (this.connecting) return;
-
-        if (!event.defaultPrevented) {
+    handleClick = (e: any) =>
+        this.payButtonService.handleClick(e, () => {
             this.modalService.connect(
                 this.mintConfig,
                 this.collectionTitle,
@@ -160,10 +172,7 @@ export class CrossmintPayButton extends LitElement {
                 this.emailTo,
                 this.listingId
             );
-        }
-    }
-
-    content = this.payButtonService.getButtonText(this.connecting);
+        });
 
     render() {
         if (
@@ -174,16 +183,18 @@ export class CrossmintPayButton extends LitElement {
         ) {
             return html``;
         }
+        const content = this.payButtonService.getButtonText(this.connecting);
+
         return html`
             <button
-                className=""
+                class=${classMap(this.classes)}
                 ${this.disabled && "disabled"}
                 @click=${this.handleClick}
                 tabindex=${this.tabIndex}
                 {...props}
             >
                 <img src="https://www.crossmint.io/assets/crossmint/logo.png" alt="Crossmint logo" />
-                <p>${this.content}</p>
+                <p>${content}</p>
             </button>
         `;
     }

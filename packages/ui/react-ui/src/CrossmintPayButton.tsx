@@ -57,7 +57,10 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
         environment,
     });
 
-    const { checkProps, getButtonText, shouldHideButton } = crossmintPayButtonService();
+    const { checkProps, getButtonText, shouldHideButton, handleClick } = crossmintPayButtonService({
+        onClick,
+        connecting,
+    });
 
     const [newCollectionTitle, newCollectionDescription, newCollectionPhoto] = checkProps({
         collectionTitle,
@@ -74,15 +77,10 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
         }
     }, [status]);
 
-    const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
-        if (onClick) onClick(event);
-
-        if (connecting) return;
-
-        if (!event.defaultPrevented) {
+    const _handleClick = (event: MouseEvent<HTMLButtonElement>) =>
+        handleClick(event, () => {
             connect(mintConfig, collectionTitle, collectionDescription, collectionPhoto, mintTo, emailTo, listingId);
-        }
-    };
+        });
 
     const classes = useStyles(formatProps(theme));
 
@@ -100,7 +98,7 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
                 <button
                     className={`${classes.crossmintButton} ${className || ""}`}
                     disabled={disabled}
-                    onClick={handleClick}
+                    onClick={_handleClick}
                     style={{ ...style }}
                     tabIndex={tabIndex}
                     {...props}
