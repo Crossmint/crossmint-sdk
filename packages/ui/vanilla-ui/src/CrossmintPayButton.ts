@@ -128,14 +128,6 @@ export class CrossmintPayButton extends LitElement {
             setStatus: this.setStatus,
         });
 
-        this.modalService = crossmintModalService({
-            environment: this.environment,
-            clientId: this.clientId,
-            showOverlay: this.showOverlay,
-            setConnecting: this.setConnecting,
-            libVersion: LIB_VERSION,
-        });
-
         this.payButtonService = crossmintPayButtonService({ onClick: this.onClick, connecting: this.connecting });
 
         if (this.hideMintOnInactiveClient) {
@@ -155,19 +147,6 @@ export class CrossmintPayButton extends LitElement {
         this.classes.light = this.theme === "light";
     }
 
-    handleClick = (e: any) =>
-        this.payButtonService.handleClick(e, () => {
-            this.modalService.connect(
-                this.mintConfig,
-                this.collectionTitle,
-                this.collectionDescription,
-                this.collectionPhoto,
-                this.mintTo,
-                this.emailTo,
-                this.listingId
-            );
-        });
-
     render() {
         if (
             this.payButtonService.shouldHideButton({
@@ -178,12 +157,32 @@ export class CrossmintPayButton extends LitElement {
             return html``;
         }
         const content = this.payButtonService.getButtonText(this.connecting);
+        this.modalService = crossmintModalService({
+            environment: this.environment,
+            clientId: this.clientId,
+            showOverlay: this.showOverlay,
+            setConnecting: this.setConnecting,
+            libVersion: LIB_VERSION,
+        });
+
+        const handleClick = (e: any) =>
+            this.payButtonService.handleClick(e, () => {
+                this.modalService.connect(
+                    this.mintConfig,
+                    this.collectionTitle,
+                    this.collectionDescription,
+                    this.collectionPhoto,
+                    this.mintTo,
+                    this.emailTo,
+                    this.listingId
+                );
+            });
 
         return html`
             <button
                 class=${classMap(this.classes)}
                 ${this.disabled && "disabled"}
-                @click=${this.handleClick}
+                @click=${handleClick}
                 tabindex=${this.tabIndex}
                 {...props}
             >
@@ -194,4 +193,4 @@ export class CrossmintPayButton extends LitElement {
     }
 }
 
-customElements.define("my-element", CrossmintPayButton);
+customElements.define("crossmint-pay-button", CrossmintPayButton);
