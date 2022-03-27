@@ -82,7 +82,7 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
 
     const _handleClick = (event: MouseEvent<HTMLButtonElement>) =>
         handleClick(event, () => {
-            connect(mintConfig, collectionTitle, collectionDescription, collectionPhoto, mintTo, emailTo, listingId);
+            connect(mintConfig, collectionTitle, collectionDescription, collectionPhoto, mintTo, emailTo, listingId, whPassThroughArgs);
         });
 
     const classes = useStyles(formatProps(theme));

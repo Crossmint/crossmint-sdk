@@ -62,7 +62,8 @@ export interface CrossmintModalServiceReturn {
         collectionPhoto?: string,
         mintTo?: string,
         emailTo?: string,
-        listingId?: string
+        listingId?: string,
+        whPassThroughArgs?: any
     ) => void;
 }
 
