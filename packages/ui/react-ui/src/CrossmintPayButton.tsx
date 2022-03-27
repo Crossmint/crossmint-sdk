@@ -7,6 +7,7 @@ import {
     crossmintModalService,
     onboardingRequestStatusResponse,
     crossmintStatusService,
+    clientNames,
 } from "@crossmint/client-sdk-base";
 import { useState } from "react";
 import { LIB_VERSION } from "./version";
@@ -47,6 +48,7 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
         auctionId,
         mintConfig,
         setStatus,
+        clientName: clientNames.reactUi,
     });
 
     const { connect } = crossmintModalService({
@@ -55,6 +57,7 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
         setConnecting,
         libVersion: LIB_VERSION,
         environment,
+        clientName: clientNames.reactUi,
     });
 
     const { checkProps, getButtonText, shouldHideButton, handleClick } = crossmintPayButtonService({

@@ -2,7 +2,12 @@ import React, { FC, MouseEventHandler, useMemo, useCallback, useState, useEffect
 import { useStyles, formatProps } from "./styles";
 import { CrossmintStatusButtonReactProps } from "./types";
 import { isClientSide } from "./utils";
-import { baseUrls, onboardingRequestStatusResponse, crossmintStatusService } from "@crossmint/client-sdk-base";
+import {
+    baseUrls,
+    onboardingRequestStatusResponse,
+    crossmintStatusService,
+    clientNames,
+} from "@crossmint/client-sdk-base";
 import { LIB_VERSION } from "./version";
 
 export const CrossmintStatusButton: FC<CrossmintStatusButtonReactProps> = ({
@@ -29,6 +34,7 @@ export const CrossmintStatusButton: FC<CrossmintStatusButtonReactProps> = ({
         auctionId,
         mintConfig,
         setStatus,
+        clientName: clientNames.reactUi,
     });
 
     const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(

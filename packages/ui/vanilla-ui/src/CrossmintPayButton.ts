@@ -1,18 +1,18 @@
-import { html, css, LitElement } from "lit";
+import { html, LitElement } from "lit";
 import { classMap } from "lit/directives/class-map.js";
+import { property, customElement } from "lit/decorators";
 import {
     mintingContractTypes,
     onboardingRequestStatusResponse,
     crossmintStatusService,
     crossmintModalService,
     crossmintPayButtonService,
+    PayButtonConfig,
+    clientNames,
 } from "@crossmint/client-sdk-base";
 import { LIB_VERSION } from "./version";
 import { CrossmintPayButtonLitProps } from "./types";
-
-const defaultMintConfig: any = {
-    type: mintingContractTypes.CANDY_MACHINE,
-};
+import { buttonStyles } from "./styles";
 
 const propertyDefaults: CrossmintPayButtonLitProps = {
     className: "",
@@ -30,78 +30,62 @@ const propertyDefaults: CrossmintPayButtonLitProps = {
     environment: "",
     hideMintOnInactiveClient: false,
     showOverlay: true,
-    mintConfig: defaultMintConfig,
+    mintConfig: {
+        type: mintingContractTypes.CANDY_MACHINE,
+    },
     onClick: undefined,
 };
 
+@customElement("crossmint-pay-button")
 export class CrossmintPayButton extends LitElement {
-    /* Workaround for typescript not recognicing the properties. */
-    className = "";
-    theme = "light";
-    disabled = false;
-    tabIndex = 0;
-    collectionTitle = "";
-    collectionDescription = "";
-    collectionPhoto = "";
-    mintTo = "";
-    emailTo = "";
-    listingId = "";
-    clientId = "";
-    auctionId = "";
-    environment = "";
-    hideMintOnInactiveClient = false;
-    showOverlay = true;
-    mintConfig = defaultMintConfig;
-    onClick = undefined;
+    @property({ type: String })
+    theme = propertyDefaults.theme;
 
-    static get properties() {
-        const properties: any = {};
-        Object.keys(propertyDefaults).forEach((key) => (properties[key] = {}));
-        return properties;
-    }
+    @property({ type: Boolean })
+    disabled = propertyDefaults.disabled;
 
-    static styles = css`
-        button {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            padding: 0.875rem 0.875rem;
-            font-weight: 900;
-            transition: opacity ease-in-out 0.25s;
-            border-radius: 0.5rem;
-            font-family: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell,
-                Open Sans, Helvetica Neue, sans-serif;
-            outline: none;
-            border: none;
-            box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
-            justify-content: center;
-            background: #1e1e1e;
-            color: white;
-        }
-        button.light {
-            background: white;
-        }
+    @property({ type: String })
+    collectionTitle = propertyDefaults.collectionTitle;
 
-        button:hover:enabled {
-            opacity: 0.6;
-            cursor: pointer;
-        }
+    @property({ type: String })
+    collectionDescription = propertyDefaults.collectionDescription;
 
-        img {
-            width: 21px;
-            height: 21px;
-            margin-right: 0.875rem;
-        }
+    @property({ type: String })
+    collectionPhoto = propertyDefaults.collectionPhoto;
 
-        p {
-            color: white;
-            margin: 0;
-        }
+    @property({ type: String })
+    mintTo = propertyDefaults.mintTo;
 
-        button.light p {
-            color: black;
-        }
-    `;
+    @property({ type: String })
+    emailTo = propertyDefaults.emailTo;
+
+    @property({ type: String })
+    listingId = propertyDefaults.listingId;
+
+    @property({ type: String })
+    clientId = propertyDefaults.clientId;
+
+    @property({ type: String })
+    auctionId = propertyDefaults.auctionId;
+
+    @property({ type: String })
+    environment = propertyDefaults.environment;
+
+    @property({ type: Boolean })
+    hideMintOnInactiveClient = propertyDefaults.hideMintOnInactiveClient;
+
+    @property({ type: Boolean })
+    showOverlay = propertyDefaults.showOverlay;
+
+    @property({ type: Object })
+    mintConfig: PayButtonConfig = {
+        type: mintingContractTypes.CANDY_MACHINE,
+    };
+
+    @property({ type: Function })
+    onClick = propertyDefaults.onClick;
+
+    static styles = buttonStyles;
 
     connecting = false;
     setConnecting = (conn: boolean) => {
@@ -114,60 +98,64 @@ export class CrossmintPayButton extends LitElement {
     classes = { light: false };
     statusService: any = null;
     modalService: any = null;
-    payButtonService: any = null;
 
     connectedCallback() {
         super.connectedCallback();
 
-        this.statusService = crossmintStatusService({
+        const { fetchClientIntegration } = crossmintStatusService({
             libVersion: LIB_VERSION,
             clientId: this.clientId,
             environment: this.environment,
             auctionId: this.auctionId,
             mintConfig: this.mintConfig,
             setStatus: this.setStatus,
+            clientName: clientNames.vanillaUi,
         });
 
-        this.payButtonService = crossmintPayButtonService({ onClick: this.onClick, connecting: this.connecting });
-
         if (this.hideMintOnInactiveClient) {
-            this.statusService.fetchClientIntegration();
+            fetchClientIntegration();
         }
 
-        const checkedProps = this.payButtonService.checkProps({
+        const { checkProps } = crossmintPayButtonService({ onClick: this.onClick, connecting: this.connecting });
+
+        const [newCollectionTitle, newCollectionDescription, newCollectionPhoto] = checkProps({
             collectionTitle: this.collectionTitle,
             collectionPhoto: this.collectionPhoto,
             collectionDescription: this.collectionDescription,
         });
 
-        this.collectionTitle = checkedProps[0];
-        this.collectionDescription = checkedProps[1];
-        this.collectionPhoto = checkedProps[2];
-
-        this.classes.light = this.theme === "light";
+        this.collectionTitle = newCollectionTitle;
+        this.collectionDescription = newCollectionDescription;
+        this.collectionPhoto = newCollectionPhoto;
     }
 
     render() {
+        const { shouldHideButton, handleClick, getButtonText } = crossmintPayButtonService({
+            onClick: this.onClick,
+            connecting: this.connecting,
+        });
         if (
-            this.payButtonService.shouldHideButton({
+            shouldHideButton({
                 hideMintOnInactiveClient: this.hideMintOnInactiveClient,
                 status: this.status,
             })
         ) {
             return html``;
         }
-        const content = this.payButtonService.getButtonText(this.connecting);
-        this.modalService = crossmintModalService({
+        const content = getButtonText(this.connecting);
+
+        const { connect } = crossmintModalService({
             environment: this.environment,
             clientId: this.clientId,
-            showOverlay: this.showOverlay,
+            showOverlay: this.showOverlay || true,
             setConnecting: this.setConnecting,
             libVersion: LIB_VERSION,
+            clientName: clientNames.vanillaUi,
         });
 
-        const handleClick = (e: any) =>
-            this.payButtonService.handleClick(e, () => {
-                this.modalService.connect(
+        const _handleClick = (e: any) =>
+            handleClick(e, () => {
+                connect(
                     this.mintConfig,
                     this.collectionTitle,
                     this.collectionDescription,
@@ -182,9 +170,8 @@ export class CrossmintPayButton extends LitElement {
             <button
                 class=${classMap(this.classes)}
                 ${this.disabled && "disabled"}
-                @click=${handleClick}
+                @click=${_handleClick}
                 tabindex=${this.tabIndex}
-                {...props}
             >
                 <img src="https://www.crossmint.io/assets/crossmint/logo.png" alt="Crossmint logo" />
                 <p>${content}</p>
@@ -192,5 +179,3 @@ export class CrossmintPayButton extends LitElement {
         `;
     }
 }
-
-customElements.define("crossmint-pay-button", CrossmintPayButton);

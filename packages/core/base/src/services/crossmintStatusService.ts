@@ -1,10 +1,4 @@
-import {
-    clientNames,
-    baseUrls,
-    customHeaders,
-    onboardingRequestStatusResponse,
-    OnboardingQueryParams,
-} from "../models/types";
+import { clientNames, customHeaders, onboardingRequestStatusResponse, OnboardingQueryParams } from "../models/types";
 import { validate } from "uuid";
 import { getEnvironmentBaseUrl } from "../utils/ui";
 
@@ -16,6 +10,7 @@ interface CrossmintStatusServiceParams {
     mintConfig: any;
     setStatus: any;
     environment?: string;
+    clientName: clientNames;
 }
 
 const validateClientId = (clientId: string): boolean => {
@@ -36,6 +31,7 @@ export function crossmintStatusService({
     mintConfig,
     setStatus,
     environment,
+    clientName,
 }: CrossmintStatusServiceParams) {
     async function fetchClientIntegration() {
         if (!clientId || clientId === "" || clientId === "<YOUR_CLIENT_ID>") {
@@ -55,7 +51,7 @@ export function crossmintStatusService({
         const res = await fetch(`${baseUrl}/api/crossmint/onboardingRequests/${clientId}/status`, {
             headers: {
                 [customHeaders.clientVersion]: libVersion,
-                [customHeaders.clientName]: clientNames.reactUi,
+                [customHeaders.clientName]: clientName,
             },
         });
 
