@@ -36,6 +36,7 @@
         "nuke": "shx rm -rf {.,packages/*/*}/{node_modules,yarn.lock}"
     },
     "devDependencies": {
+        "@trivago/prettier-plugin-sort-imports": "^3.2.0",
         "@types/eslint": "^8.2.1",
         "@types/eslint-plugin-prettier": "^3.1.0",
         "@types/node": "^17.0.8",
