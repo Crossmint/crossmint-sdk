@@ -1,6 +1,7 @@
-import React from "react";
-import { render, fireEvent, screen, act } from "@testing-library/react";
 import "@testing-library/jest-dom";
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import React from "react";
+
 import { baseUrls } from "@crossmint/client-sdk-base";
 
 import { CrossmintPayButton } from "../src/CrossmintPayButton";

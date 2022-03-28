@@ -1,15 +1,18 @@
-import { mintingContractTypes, crossmintPayButtonService } from "@crossmint/client-sdk-base";
-import React, { FC, MouseEvent, useMemo, useEffect } from "react";
-import { useStyles, formatProps } from "./styles";
-import { isClientSide } from "./utils";
-import { CrossmintPayButtonReactProps } from "./types";
+import React, { FC, MouseEvent, useEffect, useMemo } from "react";
+import { useState } from "react";
+
 import {
     crossmintModalService,
-    onboardingRequestStatusResponse,
+    crossmintPayButtonService,
     crossmintStatusService,
     clientNames,
+    mintingContractTypes,
+    onboardingRequestStatusResponse,
 } from "@crossmint/client-sdk-base";
-import { useState } from "react";
+
+import { formatProps, useStyles } from "./styles";
+import { CrossmintPayButtonReactProps } from "./types";
+import { isClientSide } from "./utils";
 import { LIB_VERSION } from "./version";
 
 const defaultMintConfig: any = {
@@ -82,7 +85,16 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
 
     const _handleClick = (event: MouseEvent<HTMLButtonElement>) =>
         handleClick(event, () => {
-            connect(mintConfig, collectionTitle, collectionDescription, collectionPhoto, mintTo, emailTo, listingId, whPassThroughArgs);
+            connect(
+                mintConfig,
+                collectionTitle,
+                collectionDescription,
+                collectionPhoto,
+                mintTo,
+                emailTo,
+                listingId,
+                whPassThroughArgs
+            );
         });
 
     const classes = useStyles(formatProps(theme));
