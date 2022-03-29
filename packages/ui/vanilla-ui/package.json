@@ -36,7 +36,7 @@
     "url": "https://github.com/Crossmint/crossmint-client-sdk/issues"
   },
   "dependencies": {
-    "@crossmint/client-sdk-base": "0.1.0-alpha.2",
+    "@crossmint/client-sdk-base": "0.1.0",
     "lit": "^2.2.1"
   }
 }
