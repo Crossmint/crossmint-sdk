@@ -1,4 +1,4 @@
-import { PayButtonConfig, baseUrls, clientNames } from "../models/types";
+import { PayButtonConfig, clientNames } from "../models/types";
 import { getEnvironmentBaseUrl } from "../utils/ui";
 
 type MintQueryParams = {
@@ -51,6 +51,7 @@ interface CrossmintModalServiceParams {
     showOverlay: boolean;
     setConnecting: (connecting: boolean) => void;
     environment?: string;
+    clientName: clientNames;
 }
 
 export interface CrossmintModalServiceReturn {
@@ -72,6 +73,7 @@ export function crossmintModalService({
     showOverlay,
     setConnecting,
     environment,
+    clientName,
 }: CrossmintModalServiceParams): CrossmintModalServiceReturn {
     const createPopup = (
         mintConfig: PayButtonConfig,
@@ -88,7 +90,7 @@ export function crossmintModalService({
             const mintQueryParams: MintQueryParams = {
                 clientId: clientId,
                 closeOnSuccess: "false",
-                clientName: clientNames.reactUi,
+                clientName,
                 clientVersion: libVersion,
                 mintConfig: JSON.stringify(mintConfig),
             };
