@@ -1,6 +1,6 @@
-import { clientNames, customHeaders, onboardingRequestStatusResponse, OnboardingQueryParams } from "../models/types";
-import { validate } from "uuid";
+import { OnboardingQueryParams, clientNames, customHeaders, onboardingRequestStatusResponse } from "../models/types";
 import { getEnvironmentBaseUrl } from "../utils/ui";
+import validateUUID from "../utils/validateUUID";
 
 interface CrossmintStatusServiceParams {
     libVersion: string;
@@ -15,8 +15,7 @@ interface CrossmintStatusServiceParams {
 
 const validateClientId = (clientId: string): boolean => {
     try {
-        const isValid = validate(clientId);
-        return !!isValid;
+        return validateUUID(clientId);
     } catch (e) {
         console.error(e);
         return false;
