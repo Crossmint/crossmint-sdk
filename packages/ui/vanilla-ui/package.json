@@ -30,7 +30,7 @@
     "version": "yarn run create-version-file && git add .",
     "prebuild": "yarn run create-version-file",
     "clean": "shx rm -rf lib/*",
-    "build": "yarn clean && tsc"
+    "build": "yarn clean && tsup src/index.ts --format esm,cjs,iife --outDir ./lib --minify --dts"
   },
   "bugs": {
     "url": "https://github.com/Crossmint/crossmint-client-sdk/issues"

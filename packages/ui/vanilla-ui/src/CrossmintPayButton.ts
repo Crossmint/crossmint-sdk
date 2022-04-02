@@ -1,6 +1,7 @@
 import { html, LitElement } from "lit";
 import { classMap } from "lit/directives/class-map.js";
-import { property, customElement } from "lit/decorators";
+import { property } from "lit/decorators/property.js";
+import { customElement } from "lit/decorators/custom-element.js";
 import {
     mintingContractTypes,
     onboardingRequestStatusResponse,
@@ -165,6 +166,8 @@ export class CrossmintPayButton extends LitElement {
                     this.listingId
                 );
             });
+
+        this.classes.light = this.theme === "light";
 
         return html`
             <button
