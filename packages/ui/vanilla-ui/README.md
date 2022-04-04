@@ -60,6 +60,16 @@ Finally, make sure you replace the following values in the CrossmintPayButton co
 
 CrossmintPayButton is a button component that is used to trigger the opening of the Crossmint popup and modal overlay.
 
+**Important note**: Please be mindful of the casing of the props! It's important that the props use camelCase.
+
+```html
+<!-- This wont work -->
+<crossmint-pay-button client-id="<CLIENT-ID>"></crossmint-pay-button>
+
+<!-- This will work -->
+<crossmint-pay-button clientId="<CLIENT-ID>"></crossmint-pay-button>
+```
+
 | propName              | default     | required | description                                                                                  |
 | --------------------- | ----------- | -------- | -------------------------------------------------------------------------------------------- |
 | clientId              | `undefined` | `true`   | Your client integration identifier                                                           |
