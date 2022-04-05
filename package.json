@@ -7,7 +7,7 @@
     "type": "module",
     "workspaces": {
         "packages": [
-            "packages/*/*"
+            "packages/**/*"
         ],
         "nohoist": [
             "**/@babel/preset-env",
