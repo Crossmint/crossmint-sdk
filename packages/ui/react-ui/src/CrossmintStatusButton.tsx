@@ -2,9 +2,10 @@ import React, { FC, MouseEventHandler, useCallback, useEffect, useMemo, useState
 
 import {
     baseUrls,
+    clientNames,
+    crossmintStatusButtonService,
     crossmintStatusService,
     onboardingRequestStatusResponse,
-    clientNames,
 } from "@crossmint/client-sdk-base";
 
 import { formatProps, useStyles } from "./styles";
@@ -28,7 +29,7 @@ export const CrossmintStatusButton: FC<CrossmintStatusButtonReactProps> = ({
 }) => {
     const [status, setStatus] = useState(onboardingRequestStatusResponse.WAITING_SUBMISSION);
 
-    const { goToOnboarding, fetchClientIntegration, getButtonText, isButtonDisabled } = crossmintStatusService({
+    const { goToOnboarding, fetchClientIntegration } = crossmintStatusService({
         libVersion: LIB_VERSION,
         clientId,
         environment,
@@ -38,18 +39,9 @@ export const CrossmintStatusButton: FC<CrossmintStatusButtonReactProps> = ({
         setStatus,
         clientName: clientNames.reactUi,
     });
+    const { getButtonText, isButtonDisabled, handleClick } = crossmintStatusButtonService({ onClick });
 
-    const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
-        (event) => {
-            if (onClick) onClick(event);
-
-            if (status === onboardingRequestStatusResponse.WAITING_SUBMISSION) {
-                goToOnboarding();
-                return;
-            }
-        },
-        [status]
-    );
+    const _handleClick: MouseEventHandler<HTMLButtonElement> = (e) => handleClick(e, status, goToOnboarding);
 
     useEffect(() => {
         fetchClientIntegration();
@@ -73,7 +65,7 @@ export const CrossmintStatusButton: FC<CrossmintStatusButtonReactProps> = ({
                 <button
                     className={`${classes.crossmintButton} ${className || ""}`}
                     disabled={isButtonDisabled(status)}
-                    onClick={handleClick}
+                    onClick={_handleClick}
                     style={{ ...style }}
                     tabIndex={tabIndex}
                     {...props}

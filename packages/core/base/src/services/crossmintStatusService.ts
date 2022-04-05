@@ -80,28 +80,8 @@ export function crossmintStatusService({
         return new URLSearchParams(onboardingQueryParams).toString();
     };
 
-    const getButtonText = (status: onboardingRequestStatusResponse) => {
-        switch (status) {
-            case onboardingRequestStatusResponse.INVALID:
-                return "Invalid clientId";
-            case onboardingRequestStatusResponse.WAITING_SUBMISSION:
-                return "Click here to setup Crossmint";
-            case onboardingRequestStatusResponse.PENDING:
-                return "Your application is under review";
-            case onboardingRequestStatusResponse.ACCEPTED:
-                return "You're good to go!";
-            case onboardingRequestStatusResponse.REJECTED:
-                return "Your application was rejected";
-        }
-    };
-
-    const isButtonDisabled = (status: onboardingRequestStatusResponse) =>
-        status !== onboardingRequestStatusResponse.WAITING_SUBMISSION;
-
     return {
         fetchClientIntegration,
         goToOnboarding,
-        getButtonText,
-        isButtonDisabled,
     };
 }
