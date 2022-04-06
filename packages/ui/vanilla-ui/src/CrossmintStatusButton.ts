@@ -50,19 +50,13 @@ export class CrossmintStatusButton extends LitElement {
 
     static styles = buttonStyles;
 
-    connecting = false;
-    setConnecting = (conn: boolean) => {
-        this.connecting = conn;
-    };
-
     status = onboardingRequestStatusResponse.WAITING_SUBMISSION;
     setStatus = (status: onboardingRequestStatusResponse) => {
         this.status = status;
     };
 
     classes = { light: false };
-
-    statusService: any = null;
+    interval:any = null;
 
     connectedCallback() {
         super.connectedCallback();
@@ -79,9 +73,13 @@ export class CrossmintStatusButton extends LitElement {
 
         fetchClientIntegration();
 
-        /* const interval = setInterval(() => {
+        this.interval = setInterval(() => {
             fetchClientIntegration();
-        }, 60 * 1000); */
+        }, 60 * 1000);
+    }
+
+    disconnectedCallback() {
+        clearInterval(this.interval);
     }
 
     render() {
