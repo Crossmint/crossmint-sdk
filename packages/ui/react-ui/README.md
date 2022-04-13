@@ -1,5 +1,9 @@
 # `@crossmint/client-sdk-react-ui`
 
+## You can check the full documentation at [docs.crossmint.io](https://docs.crossmint.io/)
+
+---
+
 ## Quick Setup
 
 ### 1. Install

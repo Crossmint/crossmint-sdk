@@ -25,6 +25,10 @@ Version 0.1.0 introduces breaking changes. To learn how to migrate from a versio
 
 ---
 
+## You can check the full documentation at [docs.crossmint.io](https://docs.crossmint.io/)
+
+---
+
 ## Quick Setup
 
 ### [I use React or Next.js in my app](packages/ui/react-ui/README.md)
