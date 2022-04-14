@@ -1,5 +1,9 @@
 # `@crossmint/client-sdk (beta)`
 
+## You can check the full documentation at [docs.crossmint.io](https://docs.crossmint.io/)
+
+---
+
 The Crossmint SDK allows you to offer wallet-less credit card purchases on your NFT drop. It takes 5 lines of code and 5 min to integrate, and is free to use for the seller. You’ll get the sales proceeds in SOL/ETH as if the user was paying with their own wallet.
 
 Supported chains:
@@ -25,49 +29,11 @@ Version 0.1.0 introduces breaking changes. To learn how to migrate from a versio
 
 ---
 
-## Quick Setup (Next.js)
+## Quick Setup
 
-### 1. Install
+### [I use React or Next.js in my app](packages/ui/react-ui/README.md)
 
-```shell
-yarn add @crossmint/client-sdk-react-ui
-```
-
-### 2. Set up
-
-Go to the main file where your Candy Machine button lives. For example, Home.tsx.
-
-There, just import the Pay with `CrossmintPayButton`, and add it in the UI.
-
-**Important**: be sure to test that the Crossmint button is visible even if a user didn't connect their wallet! Else, your users without wallets won't be able to use it.
-
-```javascript
-import { CrossmintPayButton } from "@crossmint/client-sdk-react-ui";
-
-export default function Index() {
-    return (
-        ...
-        // Place the button somewhere where it's visible even 
-        // if the user hasn't connected their wallet
-        <CrossmintPayButton
-            collectionTitle="<TITLE_FOR_YOUR_COLLECTION>"
-            collectionDescription="<DESCRIPTION_OF_YOUR_COLLECTION>"
-            collectionPhoto="<OPT_URL_TO_PHOTO_COVER>"
-            clientId="<YOUR_CLIENT_ID>"
-        />
-        ...
-    );
-}
-```
-
-Finally, make sure you replace the following values in the CrossmintPayButton component:
-
--   `<TITLE_FOR_YOUR_COLLECTION>`: Example: "My NFT collection"
--   `<DESCRIPTION_OF_YOUR_COLLECTION>`: Example: "The most fun community of 999 generative art monkeys in Solana"
--   `<OPT_URL_TO_PHOTO_COVER>`: Full URL to an image for your collection. Example: "https://i.picsum.photos/id/542/200/300.jpg?hmac=qD8M4ejDPlEc69pGT21BzB7CDiWOcElb_Ke7V8POjm8"
--   `<YOUR_CLIENT_ID>`: This is the clientId you received after filling in [the onboarding form](https://www.crossmint.io/developers/)
-
-See [react-ui](https://github.com/CrossMint/crossmint-client-sdk/tree/main/packages/ui/react-ui) for more optional customization parameters.
+### [I use any other technology in my app](packages/ui/vanilla-ui/README.md)
 
 ---
 
@@ -77,9 +43,10 @@ See [react-ui](https://github.com/CrossMint/crossmint-client-sdk/tree/main/packa
 
 These packages provide components for common UI frameworks.
 
-| package                                                                                      | description          | npm                                                                                          |
-| -------------------------------------------------------------------------------------------- | -------------------- | -------------------------------------------------------------------------------------------- |
-| [react-ui](https://github.com/CrossMint/crossmint-client-sdk/tree/main/packages/ui/react-ui) | Components for React | [`@crossmint/client-sdk-react-ui`](https://npmjs.com/package/@crossmint/client-sdk-react-ui) |
+| package                                                                                          | description                                     | npm                                                                                            |
+| ------------------------------------------------------------------------------------------------ | ----------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| [react-ui](https://github.com/CrossMint/crossmint-client-sdk/tree/main/packages/ui/react-ui)     | Components for React                            | [`@crossmint/client-sdk-react-ui`](https://npmjs.com/package/@crossmint/client-sdk-react-ui)   |
+| [vanilla-ui](https://github.com/CrossMint/crossmint-client-sdk/tree/main/packages/ui/vanilla-ui) | Made using web components, they work everywhere | [`@crossmint/client-sdk-react-ui`](https://npmjs.com/package/@crossmint/client-sdk-vanilla-ui) |
 
 ### Starter Projects
 

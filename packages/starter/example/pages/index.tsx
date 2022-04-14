@@ -13,7 +13,7 @@ export default function Index() {
         >
             <CrossmintPayButton
                 collectionTitle="Test Collection"
-                collectionDescription="This is a CrossMint test collection!"
+                collectionDescription="This is a Crossmint test collection!"
                 collectionPhoto="https://picsum.photos/300"
                 clientId="058eeac7-3751-4c66-afc3-f77270c9d636"
             />
