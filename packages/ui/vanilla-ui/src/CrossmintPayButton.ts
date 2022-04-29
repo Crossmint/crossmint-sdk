@@ -35,6 +35,8 @@ const propertyDefaults: CrossmintPayButtonLitProps = {
         type: mintingContractTypes.CANDY_MACHINE,
     },
     onClick: undefined,
+    whPassThroughArgs: undefined,
+    paymentMethod: undefined,
 };
 
 @customElement("crossmint-pay-button")
@@ -86,6 +88,12 @@ export class CrossmintPayButton extends LitElement {
     @property({ type: Function })
     onClick = propertyDefaults.onClick;
 
+    @property({ type: Object})
+    whPassThroughArgs = propertyDefaults.whPassThroughArgs;
+
+    @property({ type: String })
+    paymentMethod = propertyDefaults.paymentMethod;
+
     static styles = buttonStyles;
 
     connecting = false;
@@ -134,6 +142,7 @@ export class CrossmintPayButton extends LitElement {
         const { shouldHideButton, handleClick, getButtonText } = crossmintPayButtonService({
             onClick: this.onClick,
             connecting: this.connecting,
+            paymentMethod: this.paymentMethod,
         });
         if (
             shouldHideButton({
@@ -163,7 +172,9 @@ export class CrossmintPayButton extends LitElement {
                     this.collectionPhoto,
                     this.mintTo,
                     this.emailTo,
-                    this.listingId
+                    this.listingId,
+                    this.whPassThroughArgs,
+                    this.paymentMethod,
                 );
             });
 

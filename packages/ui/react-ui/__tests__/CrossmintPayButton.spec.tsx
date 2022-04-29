@@ -150,5 +150,30 @@ describe("CrossmintPayButton", () => {
             });
             expect(global.fetch).not.toHaveBeenCalled();
         });
+
+        describe("paymentMethod prop", () => {
+            test("should display `Buy with Credit card` text when prop is not set", async () => {
+                render(<CrossmintPayButton {...defaultProps} />);
+                expect(screen.getByRole("button-paragraph")).toHaveTextContent("Buy with credit card");
+            });
+
+            test("should display `Buy with ETH` text when prop is set to `ETH`", async () => {
+                render(<CrossmintPayButton {...defaultProps} paymentMethod="ETH" />);
+                expect(screen.getByRole("button-paragraph")).toHaveTextContent("Buy with ETH");
+            });
+
+            test("should add `paymentMethod=ETH` query param to checkout url when prop added", async () => {
+                render(<CrossmintPayButton {...defaultProps} paymentMethod="ETH" />);
+
+                await act(async () => {
+                    fireEvent.click(screen.getByText("Buy with ETH"));
+                });
+                expect(global.open).toHaveBeenCalledWith(
+                    expect.stringContaining("paymentMethod%3DETH"),
+                    expect.anything(),
+                    expect.anything()
+                );
+            });
+        });
     });
 });

@@ -2,10 +2,10 @@ import React, { FC, MouseEvent, useEffect, useMemo } from "react";
 import { useState } from "react";
 
 import {
+    clientNames,
     crossmintModalService,
     crossmintPayButtonService,
     crossmintStatusService,
-    clientNames,
     mintingContractTypes,
     onboardingRequestStatusResponse,
 } from "@crossmint/client-sdk-base";
@@ -39,6 +39,7 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
     mintConfig = defaultMintConfig,
     whPassThroughArgs,
     environment,
+    paymentMethod,
     ...props
 }) => {
     const [connecting, setConnecting] = useState(false);
@@ -66,6 +67,7 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
     const { checkProps, getButtonText, shouldHideButton, handleClick } = crossmintPayButtonService({
         onClick,
         connecting,
+        paymentMethod,
     });
 
     const [newCollectionTitle, newCollectionDescription, newCollectionPhoto] = checkProps({
@@ -93,14 +95,19 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
                 mintTo,
                 emailTo,
                 listingId,
-                whPassThroughArgs
+                whPassThroughArgs,
+                paymentMethod
             );
         });
 
     const classes = useStyles(formatProps(theme));
 
     const content = useMemo(() => {
-        return <p className={classes.crossmintParagraph}>{getButtonText(connecting)}</p>;
+        return (
+            <p className={classes.crossmintParagraph} role="button-paragraph">
+                {getButtonText(connecting)}
+            </p>
+        );
     }, [connecting]);
 
     if (shouldHideButton({ hideMintOnInactiveClient, status })) {
