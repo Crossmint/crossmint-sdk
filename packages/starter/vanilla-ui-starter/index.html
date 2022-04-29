@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <title>Crossmint pay button</title>
-    <script src="https://unpkg.com/@crossmint/client-sdk-vanilla-ui@0.0.1-alpha.1/lib/index.global.js"></script>
+    <script src="https://unpkg.com/@crossmint/client-sdk-vanilla-ui@0.0.1/lib/index.global.js"></script>
 </head>
 <body>
     <h1>Crossmint pay button</h1>
@@ -10,7 +10,8 @@
         collectionTitle="<TITLE_FOR_YOUR_COLLECTION>"
         collectionDescription="<DESCRIPTION_OF_YOUR_COLLECTION>"
         collectionPhoto="<OPT_URL_TO_PHOTO_COVER>"
-        clientId="<YOUR_CLIENT_ID>">
+        clientId="<YOUR_CLIENT_ID>"
+        mintConfig='{"type": "candy-machine"}'>
     </crossmint-pay-button>
 </body>
 </html>
