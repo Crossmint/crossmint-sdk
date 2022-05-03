@@ -13,6 +13,8 @@ Crossmint supports [Solana](https://docs.crossmint.io/accept-credit-cards/integr
 
 ## How to mint an NFT using Crossmint
 
+Watch [our demo](https://www.youtube.com/watch?v=4NTgDFU-lms) on YouTube on how to mint an NFT using Crossmint.
+
 [![Crossmint Demo](https://img.youtube.com/vi/4NTgDFU-lms/0.jpg)](https://www.youtube.com/watch?v=4NTgDFU-lms)
 
 ## Migration guide to 0.1.X versions
