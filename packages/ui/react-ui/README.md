@@ -4,77 +4,20 @@
 
 ---
 
+If you're using React.js, or Next.js, Crossmint provides a client integration specific for you.
+
 ## Quick Setup
 
-### 1. Install
+First, add the Crossmint Client SDK to your project with the following command:
 
 ```shell
 yarn add @crossmint/client-sdk-react-ui
 ```
 
-### 2. Set up
+The next steps depend on which chain you're using for your project. For detailed integration instructions, visit our documentation for [Solana](https://docs.crossmint.io/accept-credit-cards/integration-guides/solana-candy-machine/b-i-have-an-existing-candy-machine-website/add-crossmint-for-solana-react.js-next.js), [Polygon](https://docs.crossmint.io/accept-credit-cards/integration-guides/polygon), or [Ethereum](https://docs.crossmint.io/accept-credit-cards/integration-guides/ethereum/add-crossmint-for-ethereum-react.js-next.js).
 
-Go to the main file where your Candy Machine button lives. For example, Home.tsx.
+## Migration guide to 0.1.X versions
 
-There, just import the Pay with `CrossmintPayButton`, and add it in the UI.
+Version 0.1.0 introduces breaking changes. To learn how to migrate from a version lower than 0.1.0, [check out the migration guide](https://docs.google.com/document/d/14IKpjrij7kU7Dr0I7rZkf0PyDNbXiklx2v4GuzUrFbw/edit?usp=sharing).
 
-**Important**: be sure to test that the Crossmint button is visible even if a user didn't connect their wallet! Else, your users without wallets won't be able to use it.
-
-```javascript
-import { CrossmintPayButton } from "@crossmint/client-sdk-react-ui";
-
-export default function Index() {
-    return (
-        ...
-        // Place the button somewhere where it's visible even
-        // if the user hasn't connected their wallet
-        <CrossmintPayButton
-            collectionTitle="<TITLE_FOR_YOUR_COLLECTION>"
-            collectionDescription="<DESCRIPTION_OF_YOUR_COLLECTION>"
-            collectionPhoto="<OPT_URL_TO_PHOTO_COVER>"
-            clientId="<YOUR_CLIENT_ID>"
-        />
-        ...
-    );
-}
-```
-
-Finally, make sure you replace the following values in the CrossmintPayButton component:
-
--   `<TITLE_FOR_YOUR_COLLECTION>`: Example: "My NFT collection"
--   `<DESCRIPTION_OF_YOUR_COLLECTION>`: Example: "The most fun community of 999 generative art monkeys in Solana"
--   `<OPT_URL_TO_PHOTO_COVER>`: Full URL to an image for your collection. Example: "https://i.picsum.photos/id/542/200/300.jpg?hmac=qD8M4ejDPlEc69pGT21BzB7CDiWOcElb_Ke7V8POjm8"
--   `<YOUR_CLIENT_ID>`: This is the clientId you received after filling in [the onboarding form](https://www.crossmint.io/developers/)
-
-## Components
-
-### `CrossmintPayButton` _required_
-
-CrossmintPayButton is a button component that is used to trigger the opening of the Crossmint popup and modal overlay.
-
-| propName              | default     | required | description                                                                                  |
-| --------------------- | ----------- | -------- | -------------------------------------------------------------------------------------------- |
-| clientId              | `undefined` | `true`   | Your client integration identifier                                                           |
-| collectionTitle       | `undefined` | `false`  | This will be shown to the user during the checkout process. Max length: 120                  |
-| collectionDescription | `undefined` | `false`  | This will be shown to the user during the checkout process. Max length: 24                   |
-| collectionPhoto       | `undefined` | `false`  | This will be shown to the user during the checkout process. Preferred resolution: 200x200 px |
-| className             | `undefined` | `false`  | Use this to add custom classNames to the button                                              |
-| disabled              | `undefined` | `false`  | Use this to specify when the button should be disabled                                       |
-| onClick               | `undefined` | `false`  | Use this to add a custom onClick handler to the button                                       |
-| style                 | `undefined` | `false`  | Use this to add custom CSS styles to the button                                              |
-| tabIndex              | `undefined` | `false`  | Use this to add a custom tabIndex to the button                                              |
-| theme                 | `dark`      | `false`  | Use this to specify one of our default themes. Can be `light`, `dark`                        |
-| ...props              | `undefined` | `false`  | All valid html button props can be added to the button                                       |
-
-### `CrossmintStatusButton`
-
-| propName  | default     | required | description                                                           |
-| --------- | ----------- | -------- | --------------------------------------------------------------------- |
-| clientId  | `undefined` | `true`   | Your client integration identifier                                    |
-| className | `undefined` | `false`  | Use this to add custom classNames to the button                       |
-| disabled  | `undefined` | `false`  | Use this to specify when the button should be disabled                |
-| onClick   | `undefined` | `false`  | Use this to add a custom onClick handler to the button                |
-| style     | `undefined` | `false`  | Use this to add custom CSS styles to the button                       |
-| tabIndex  | `undefined` | `false`  | Use this to add a custom tabIndex to the button                       |
-| theme     | `dark`      | `false`  | Use this to specify one of our default themes. Can be `light`, `dark` |
-| ...props  | `undefined` | `false`  | All valid html button props can be added to the button                |
+## [Changelog](https://docs.google.com/document/d/e/2PACX-1vR5NzVS2msrCMZxlcfBgAT-Y8kAypeKqH_WBeNiwVTmyEzLZvJBWrKrz_966-d3jumwIBi94IXGT6Wp/pub)
