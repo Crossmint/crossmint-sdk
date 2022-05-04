@@ -16,7 +16,7 @@ export enum customHeaders {
 
 type theme = "light" | "dark";
 
-export type paymentMethods = "ETH";
+export type paymentMethods = "FIAT" | "ETH";
 export const paymentMethodIsEth = (paymentMethod?: paymentMethods) => paymentMethod === "ETH";
 
 export enum mintingContractTypes {
