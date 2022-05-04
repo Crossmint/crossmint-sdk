@@ -1,4 +1,4 @@
-import { PayButtonConfig, clientNames } from "../models/types";
+import { PayButtonConfig, clientNames, paymentMethods } from "../models/types";
 import { getEnvironmentBaseUrl } from "../utils/ui";
 
 type MintQueryParams = {
@@ -14,6 +14,7 @@ type MintQueryParams = {
     clientVersion: string;
     mintConfig: string;
     whPassThroughArgs?: string;
+    paymentMethod?: paymentMethods;
 };
 
 const overlayId = "__crossmint-overlay__";
@@ -63,7 +64,8 @@ export interface CrossmintModalServiceReturn {
         mintTo?: string,
         emailTo?: string,
         listingId?: string,
-        whPassThroughArgs?: any
+        whPassThroughArgs?: any,
+        paymentMethod?: paymentMethods
     ) => void;
 }
 
@@ -83,7 +85,8 @@ export function crossmintModalService({
         mintTo?: string,
         emailTo?: string,
         listingId?: string,
-        whPassThroughArgs?: any
+        whPassThroughArgs?: any,
+        paymentMethod?: paymentMethods
     ) => {
         const urlOrigin = getEnvironmentBaseUrl(environment);
         const getMintQueryParams = (): string => {
@@ -102,6 +105,7 @@ export function crossmintModalService({
             if (emailTo) mintQueryParams.emailTo = emailTo;
             if (listingId) mintQueryParams.listingId = listingId;
             if (whPassThroughArgs) mintQueryParams.whPassThroughArgs = JSON.stringify(whPassThroughArgs);
+            if (paymentMethod) mintQueryParams.paymentMethod = paymentMethod;
 
             return new URLSearchParams(mintQueryParams).toString();
         };
@@ -128,7 +132,8 @@ export function crossmintModalService({
         mintTo?: string,
         emailTo?: string,
         listingId?: string,
-        whPassThroughArgs?: any
+        whPassThroughArgs?: any,
+        paymentMethod?: paymentMethods
     ) => {
         setConnecting(true);
 
@@ -140,7 +145,8 @@ export function crossmintModalService({
             mintTo,
             emailTo,
             listingId,
-            whPassThroughArgs
+            whPassThroughArgs,
+            paymentMethod
         );
     };
 

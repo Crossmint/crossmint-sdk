@@ -1,11 +1,12 @@
-import { onboardingRequestStatusResponse } from "../models/types";
+import { onboardingRequestStatusResponse, paymentMethodIsEth, paymentMethods } from "../models/types";
 
 interface IProps {
     onClick?: (e: any) => void;
     connecting: boolean;
+    paymentMethod?: paymentMethods;
 }
 
-export function crossmintPayButtonService({ onClick, connecting }: IProps) {
+export function crossmintPayButtonService({ onClick, connecting, paymentMethod }: IProps) {
     const checkProps = ({ collectionTitle, collectionDescription, collectionPhoto }: any) => {
         let _collectionTitle = collectionTitle;
         let _collectionDescription = collectionDescription;
@@ -28,7 +29,11 @@ export function crossmintPayButtonService({ onClick, connecting }: IProps) {
         return [_collectionTitle, _collectionDescription, _collectionPhoto];
     };
 
-    const getButtonText = (connecting: boolean) => (connecting ? "Connecting ..." : "Buy with credit card");
+    const getButtonText = (connecting: boolean) => {
+        if (connecting) return "Connecting...";
+        if (paymentMethodIsEth(paymentMethod)) return "Buy with ETH";
+        return "Buy with credit card";
+    };
     const shouldHideButton = ({ hideMintOnInactiveClient, status }: any) =>
         hideMintOnInactiveClient && status !== onboardingRequestStatusResponse.ACCEPTED;
 
