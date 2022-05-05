@@ -20,9 +20,9 @@ type MintQueryParams = {
 const overlayId = "__crossmint-overlay__";
 
 function createPopupString() {
-    return `height=750,width=400,left=${window.innerWidth / 2 - 200},top=${
-        window.innerHeight / 2 - 375
-    },resizable=yes,scrollbars=yes,toolbar=yes,menubar=true,location=no,directories=no, status=yes`;
+    const left = window.innerWidth / 2 - 200;
+    const top = window.innerHeight / 2 - 375;
+    return `popup=true,height=750,width=400,left=${left},top=${top},resizable=yes,scrollbars=yes,toolbar=yes,menubar=true,location=no,directories=no, status=yes`;
 }
 
 const addLoadingOverlay = (): void => {
