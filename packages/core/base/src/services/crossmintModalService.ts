@@ -111,7 +111,7 @@ export function crossmintModalService({
         };
         const callbackUrl = encodeURIComponent(`${urlOrigin}/checkout/mint?${getMintQueryParams()}`);
         const url = `${urlOrigin}/signin?callbackUrl=${callbackUrl}`;
-        console.log(createPopupString());
+
         const pop = window.open(url, "popUpWindow", createPopupString());
         if (pop) {
             registerListeners(pop);
