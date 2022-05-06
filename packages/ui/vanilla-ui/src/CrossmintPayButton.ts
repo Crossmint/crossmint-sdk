@@ -179,7 +179,7 @@ export class CrossmintPayButton extends LitElement {
             });
 
         this.classes.light = this.theme === "light";
-        console.log('this.disabled->', this.disabled);
+
         return html`
             <button
                 class=${classMap(this.classes)}
