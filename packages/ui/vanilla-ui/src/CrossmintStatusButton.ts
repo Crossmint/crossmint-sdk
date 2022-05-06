@@ -104,7 +104,7 @@ export class CrossmintStatusButton extends LitElement {
         return html`
             <button
                 class=${classMap(this.classes)}
-                ${isDisabled && "disabled"}
+                .disabled=${isDisabled}
                 @click=${_handleClick}
                 tabindex=${this.tabIndex}
             >

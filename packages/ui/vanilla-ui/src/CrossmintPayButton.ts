@@ -183,7 +183,7 @@ export class CrossmintPayButton extends LitElement {
         return html`
             <button
                 class=${classMap(this.classes)}
-                ${this.disabled && "disabled"}
+                .disabled=${this.disabled}
                 @click=${_handleClick}
                 tabindex=${this.tabIndex}
             >
