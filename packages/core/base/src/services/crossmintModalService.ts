@@ -14,7 +14,7 @@ type MintQueryParams = {
     clientVersion: string;
     mintConfig: string;
     whPassThroughArgs?: string;
-    paymentMethod?: paymentMethods;
+    paymentMethod?: string;
 };
 
 const overlayId = "__crossmint-overlay__";
@@ -105,7 +105,7 @@ export function crossmintModalService({
             if (emailTo) mintQueryParams.emailTo = emailTo;
             if (listingId) mintQueryParams.listingId = listingId;
             if (whPassThroughArgs) mintQueryParams.whPassThroughArgs = JSON.stringify(whPassThroughArgs);
-            if (paymentMethod) mintQueryParams.paymentMethod = paymentMethod;
+            if (paymentMethod) mintQueryParams.paymentMethod = paymentMethod.toLowerCase();
 
             return new URLSearchParams(mintQueryParams).toString();
         };
