@@ -118,9 +118,12 @@ export function crossmintModalService({
             if (showOverlay) {
                 addLoadingOverlay();
             }
-        } else {
-            setConnecting(false);
-            console.error("Failed to open popup window");
+            return;
+        }
+
+        const newTab = window.open(url, "_blank");
+        if (!newTab) {
+            console.error("Failed to open popup window and new tab");
         }
     };
 
