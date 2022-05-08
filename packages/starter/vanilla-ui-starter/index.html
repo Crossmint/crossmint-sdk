@@ -2,17 +2,15 @@
 <html lang="en">
 <head>
     <title>Crossmint pay button</title>
-    <script src="../../ui/vanilla-ui/lib/index.global.js"></script>
+    <script src="https://unpkg.com/@crossmint/client-sdk-vanilla-ui@0.0.1/lib/index.global.js"></script>
 </head>
 <body>
     <h1>Crossmint pay button</h1>
     <crossmint-pay-button 
-        collectionTitle="Test+Collection"
-        collectionDescription="This is a description for a Crossmint test mint"
-        collectionPhoto="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/TEIDE.JPG/2880px-TEIDE.JPG"
-        clientId="db218e78-d042-4761-83af-3c4e5e6659dd"
-        paymentMethod="ETH"
-        environment="staging"
+        collectionTitle="<TITLE_FOR_YOUR_COLLECTION>"
+        collectionDescription="<DESCRIPTION_OF_YOUR_COLLECTION>"
+        collectionPhoto="<OPT_URL_TO_PHOTO_COVER>"
+        clientId="<YOUR_CLIENT_ID>"
         mintConfig='{"type": "candy-machine"}'>
     </crossmint-pay-button>
 </body>
