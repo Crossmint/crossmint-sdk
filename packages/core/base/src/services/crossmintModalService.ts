@@ -19,10 +19,21 @@ type MintQueryParams = {
 
 const overlayId = "__crossmint-overlay__";
 
+const getChromeVersion = () => {
+    const raw = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
+    return raw ? parseInt(raw[2]) : null;
+};
+
 function createPopupString() {
     const left = window.innerWidth / 2 - 200;
     const top = window.innerHeight / 2 - 375;
-    return `popup=true,height=750,width=400,left=${left},top=${top},resizable=yes,scrollbars=yes,toolbar=yes,menubar=true,location=no,directories=no, status=yes`;
+
+    // In newer versions of chrome (>99) you need to add the `popup=true` for the new window to actually open in a popup
+    const chromeVersion = getChromeVersion();
+    const chromeVersionGreaterThan99 = chromeVersion && chromeVersion > 99;
+    const popupStringBase = chromeVersionGreaterThan99 ? "popup=true," : "";
+
+    return `${popupStringBase}height=750,width=400,left=${left},top=${top},resizable=yes,scrollbars=yes,toolbar=yes,menubar=true,location=no,directories=no, status=yes`;
 }
 
 const addLoadingOverlay = (): void => {
