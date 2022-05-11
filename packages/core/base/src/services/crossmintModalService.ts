@@ -1,4 +1,4 @@
-import { PayButtonConfig, clientNames, paymentMethods } from "../models/types";
+import { PayButtonConfig, SigninMethods, clientNames, paymentMethods } from "../models/types";
 import { getEnvironmentBaseUrl } from "../utils/ui";
 
 type MintQueryParams = {
@@ -15,6 +15,7 @@ type MintQueryParams = {
     mintConfig: string;
     whPassThroughArgs?: string;
     paymentMethod?: paymentMethods;
+    preferredSigninMethod?: SigninMethods;
 };
 
 const overlayId = "__crossmint-overlay__";
@@ -76,7 +77,8 @@ export interface CrossmintModalServiceReturn {
         emailTo?: string,
         listingId?: string,
         whPassThroughArgs?: any,
-        paymentMethod?: paymentMethods
+        paymentMethod?: paymentMethods,
+        preferredSigninMethod?: SigninMethods
     ) => void;
 }
 
@@ -97,7 +99,8 @@ export function crossmintModalService({
         emailTo?: string,
         listingId?: string,
         whPassThroughArgs?: any,
-        paymentMethod?: paymentMethods
+        paymentMethod?: paymentMethods,
+        preferredSigninMethod?: SigninMethods
     ) => {
         const urlOrigin = getEnvironmentBaseUrl(environment);
         const getMintQueryParams = (): string => {
@@ -117,6 +120,7 @@ export function crossmintModalService({
             if (listingId) mintQueryParams.listingId = listingId;
             if (whPassThroughArgs) mintQueryParams.whPassThroughArgs = JSON.stringify(whPassThroughArgs);
             if (paymentMethod) mintQueryParams.paymentMethod = paymentMethod;
+            if (preferredSigninMethod) mintQueryParams.preferredSigninMethod = preferredSigninMethod;
 
             return new URLSearchParams(mintQueryParams).toString();
         };
@@ -147,7 +151,8 @@ export function crossmintModalService({
         emailTo?: string,
         listingId?: string,
         whPassThroughArgs?: any,
-        paymentMethod?: paymentMethods
+        paymentMethod?: paymentMethods,
+        preferredSigninMethod?: SigninMethods
     ) => {
         setConnecting(true);
 
@@ -160,7 +165,8 @@ export function crossmintModalService({
             emailTo,
             listingId,
             whPassThroughArgs,
-            paymentMethod
+            paymentMethod,
+            preferredSigninMethod
         );
     };
 
