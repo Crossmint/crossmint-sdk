@@ -19,6 +19,8 @@ type theme = "light" | "dark";
 export type paymentMethods = "fiat" | "ETH";
 export const paymentMethodIsEth = (paymentMethod?: paymentMethods) => paymentMethod === "ETH";
 
+export type SigninMethods = "metamask";
+
 export enum mintingContractTypes {
     CANDY_MACHINE = "candy-machine",
     SOLANA_AUCTION = "solana-auction",
@@ -67,6 +69,7 @@ export interface CrossmintPayButtonProps extends BaseButtonProps {
     mintConfig?: PayButtonConfig;
     whPassThroughArgs?: any;
     paymentMethod?: paymentMethods;
+    preferredSigninMethod?: SigninMethods;
 }
 
 export type OnboardingQueryParams = {

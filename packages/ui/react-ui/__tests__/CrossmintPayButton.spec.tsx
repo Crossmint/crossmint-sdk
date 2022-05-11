@@ -175,5 +175,31 @@ describe("CrossmintPayButton", () => {
                 );
             });
         });
+
+        describe("preferredSigninMethod prop", () => {
+            test("should add query param when prop added", async () => {
+                render(<CrossmintPayButton {...defaultProps} preferredSigninMethod="metamask" />);
+                await act(async () => {
+                    fireEvent.click(screen.getByText("Buy with credit card"));
+                });
+                expect(global.open).toHaveBeenCalledWith(
+                    expect.stringContaining("preferredSigninMethod%3Dmetamask"),
+                    expect.anything(),
+                    expect.anything()
+                );
+            });
+
+            test("should not add query param when prop not added", async () => {
+                render(<CrossmintPayButton {...defaultProps} />);
+                await act(async () => {
+                    fireEvent.click(screen.getByText("Buy with credit card"));
+                });
+                expect(global.open).not.toHaveBeenCalledWith(
+                    expect.stringContaining("preferredSigninMethod%3Dmetamask"),
+                    expect.anything(),
+                    expect.anything()
+                );
+            });
+        });
     });
 });

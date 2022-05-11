@@ -40,6 +40,7 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
     whPassThroughArgs,
     environment,
     paymentMethod,
+    preferredSigninMethod,
     ...props
 }) => {
     const [connecting, setConnecting] = useState(false);
@@ -96,7 +97,8 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
                 emailTo,
                 listingId,
                 whPassThroughArgs,
-                paymentMethod
+                paymentMethod,
+                preferredSigninMethod
             );
         });
 
