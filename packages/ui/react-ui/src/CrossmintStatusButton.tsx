@@ -10,7 +10,7 @@ import {
 
 import { formatProps, useStyles } from "./styles";
 import { CrossmintStatusButtonReactProps } from "./types";
-import { isClientSide } from "./utils";
+import useEnvironment from "./useEnvironment";
 import { LIB_VERSION } from "./version";
 
 export const CrossmintStatusButton: FC<CrossmintStatusButtonReactProps> = ({
@@ -28,6 +28,7 @@ export const CrossmintStatusButton: FC<CrossmintStatusButtonReactProps> = ({
     ...props
 }) => {
     const [status, setStatus] = useState(onboardingRequestStatusResponse.WAITING_SUBMISSION);
+    const { isSSR } = useEnvironment();
 
     const { goToOnboarding, fetchClientIntegration } = crossmintStatusService({
         libVersion: LIB_VERSION,
@@ -61,7 +62,7 @@ export const CrossmintStatusButton: FC<CrossmintStatusButtonReactProps> = ({
 
     return (
         <>
-            {isClientSide && (
+            {!isSSR && (
                 <button
                     className={`${classes.crossmintButton} ${className || ""}`}
                     disabled={isButtonDisabled(status)}
