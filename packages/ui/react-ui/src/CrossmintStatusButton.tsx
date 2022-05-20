@@ -57,7 +57,7 @@ export const CrossmintStatusButton: FC<CrossmintStatusButtonReactProps> = ({
     const classes = useStyles(formatProps(theme));
 
     const content = useMemo(() => {
-        return <p className={classes.crossmintParagraph}>{getButtonText(status)}</p>;
+        return <span className={classes.crossmintParagraph}>{getButtonText(status)}</span>;
     }, [status]);
 
     return (

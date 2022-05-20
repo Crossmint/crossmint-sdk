@@ -107,9 +107,9 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
 
     const content = useMemo(() => {
         return (
-            <p className={classes.crossmintParagraph} role="button-paragraph">
+            <span className={classes.crossmintParagraph} role="button-paragraph">
                 {getButtonText(connecting)}
-            </p>
+            </span>
         );
     }, [connecting]);
 
