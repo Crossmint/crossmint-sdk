@@ -109,7 +109,7 @@ export class CrossmintStatusButton extends LitElement {
                 tabindex=${this.tabIndex}
             >
                 <img src="https://www.crossmint.io/assets/crossmint/logo.png" alt="Crossmint logo" />
-                <p>${content}</p>
+                <span>${content}</span>
             </button>
         `;
     }

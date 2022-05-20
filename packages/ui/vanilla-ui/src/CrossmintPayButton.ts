@@ -194,7 +194,7 @@ export class CrossmintPayButton extends LitElement {
                 part="button"
             >
                 <img src="https://www.crossmint.io/assets/crossmint/logo.png" alt="Crossmint logo" />
-                <p part="contentParagraph">${content}</p>
+                <span part="contentParagraph">${content}</span>
             </button>
         `;
     }
