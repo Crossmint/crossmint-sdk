@@ -28,7 +28,7 @@ export const CrossmintStatusButton: FC<CrossmintStatusButtonReactProps> = ({
     ...props
 }) => {
     const [status, setStatus] = useState(onboardingRequestStatusResponse.WAITING_SUBMISSION);
-    const { isSSR } = useEnvironment();
+    const { isServerSideRendering } = useEnvironment();
 
     const { goToOnboarding, fetchClientIntegration } = crossmintStatusService({
         libVersion: LIB_VERSION,
@@ -62,7 +62,7 @@ export const CrossmintStatusButton: FC<CrossmintStatusButtonReactProps> = ({
 
     return (
         <>
-            {!isSSR && (
+            {!isServerSideRendering && (
                 <button
                     className={`${classes.crossmintButton} ${className || ""}`}
                     disabled={isButtonDisabled(status)}

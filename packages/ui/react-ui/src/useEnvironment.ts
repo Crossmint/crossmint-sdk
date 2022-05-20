@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 
 export default function useEnvironment() {
-    const [isSSR, setIsSSR] = useState(true);
+    const [isServerSideRendering, setIsServerSideRendering] = useState(true);
     useEffect(() => {
-        setIsSSR(false);
+        setIsServerSideRendering(false);
     }, []);
 
-    return { isSSR };
+    return { isServerSideRendering };
 }

@@ -45,7 +45,7 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
 }) => {
     const [connecting, setConnecting] = useState(false);
     const [status, setStatus] = useState(onboardingRequestStatusResponse.WAITING_SUBMISSION);
-    const { isSSR } = useEnvironment();
+    const { isServerSideRendering } = useEnvironment();
 
     const { fetchClientIntegration } = crossmintStatusService({
         libVersion: LIB_VERSION,
@@ -119,7 +119,7 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
 
     return (
         <>
-            {!isSSR && (
+            {!isServerSideRendering && (
                 <button
                     className={`${classes.crossmintButton} ${className || ""}`}
                     disabled={disabled}
