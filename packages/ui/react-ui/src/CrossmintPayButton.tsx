@@ -12,7 +12,7 @@ import {
 
 import { formatProps, useStyles } from "./styles";
 import { CrossmintPayButtonReactProps } from "./types";
-import { isClientSide } from "./utils";
+import useEnvironment from "./useEnvironment";
 import { LIB_VERSION } from "./version";
 
 const defaultMintConfig: any = {
@@ -45,6 +45,7 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
 }) => {
     const [connecting, setConnecting] = useState(false);
     const [status, setStatus] = useState(onboardingRequestStatusResponse.WAITING_SUBMISSION);
+    const { isServerSideRendering } = useEnvironment();
 
     const { fetchClientIntegration } = crossmintStatusService({
         libVersion: LIB_VERSION,
@@ -106,9 +107,9 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
 
     const content = useMemo(() => {
         return (
-            <p className={classes.crossmintParagraph} role="button-paragraph">
+            <span className={classes.crossmintParagraph} role="button-paragraph">
                 {getButtonText(connecting)}
-            </p>
+            </span>
         );
     }, [connecting]);
 
@@ -118,7 +119,7 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
 
     return (
         <>
-            {isClientSide && (
+            {!isServerSideRendering && (
                 <button
                     className={`${classes.crossmintButton} ${className || ""}`}
                     disabled={disabled}
