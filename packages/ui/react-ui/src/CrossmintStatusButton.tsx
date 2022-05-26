@@ -8,7 +8,7 @@ import {
     onboardingRequestStatusResponse,
 } from "@crossmint/client-sdk-base";
 
-import { formatProps, useStyles } from "./styles";
+import { useStyles } from "./styles";
 import { CrossmintStatusButtonReactProps } from "./types";
 import useEnvironment from "./useEnvironment";
 import { LIB_VERSION } from "./version";
@@ -54,7 +54,8 @@ export const CrossmintStatusButton: FC<CrossmintStatusButtonReactProps> = ({
         return () => clearInterval(interval);
     }, []);
 
-    const classes = useStyles(formatProps(theme));
+    // const classes = useStyles(formatProps(theme));
+    const classes = useStyles();
 
     const content = useMemo(() => {
         return <span className={classes.crossmintParagraph}>{getButtonText(status)}</span>;

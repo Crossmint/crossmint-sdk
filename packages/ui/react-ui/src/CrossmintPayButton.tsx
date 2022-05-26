@@ -10,7 +10,7 @@ import {
     onboardingRequestStatusResponse,
 } from "@crossmint/client-sdk-base";
 
-import { formatProps, useStyles } from "./styles";
+import { useStyles } from "./styles";
 import { CrossmintPayButtonReactProps } from "./types";
 import useEnvironment from "./useEnvironment";
 import { LIB_VERSION } from "./version";
@@ -103,7 +103,8 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
             );
         });
 
-    const classes = useStyles(formatProps(theme));
+    // const classes = useStyles(formatProps(theme));
+    const classes = useStyles();
 
     const content = useMemo(() => {
         return (

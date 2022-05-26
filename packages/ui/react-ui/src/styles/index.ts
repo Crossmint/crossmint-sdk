@@ -2,16 +2,16 @@ import { createUseStyles } from "react-jss";
 
 const DARK_BG = "#1e1e1e";
 
-interface CustomStylingProps {
+/* interface CustomStylingProps {
     buttonBgColor?: string;
     paragraphColor?: string;
-}
+} */
 
-const themeIsLight = (theme: string) => theme === "light";
+/* const themeIsLight = (theme: string) => theme === "light";
 export const formatProps = (theme: string): CustomStylingProps => ({
     buttonBgColor: themeIsLight(theme) ? "white" : DARK_BG,
     paragraphColor: themeIsLight(theme) ? "black" : "white",
-});
+}); */
 
 export const useStyles = createUseStyles({
     "@global": {
@@ -31,7 +31,8 @@ export const useStyles = createUseStyles({
         border: "none",
         "box-shadow": "0px 8px 15px rgba(0, 0, 0, 0.1)",
         "justify-content": "center",
-        background: ({ buttonBgColor }: CustomStylingProps) => buttonBgColor,
+        // background: ({ buttonBgColor }: CustomStylingProps) => buttonBgColor,
+        background: DARK_BG,
 
         "&:hover:enabled": {
             opacity: "0.6",
@@ -44,7 +45,8 @@ export const useStyles = createUseStyles({
         "margin-right": "0.875rem",
     },
     crossmintParagraph: {
-        color: ({ paragraphColor }: CustomStylingProps) => paragraphColor,
+        // color: ({ paragraphColor }: CustomStylingProps) => paragraphColor,
+        color: "white",
         margin: "0",
     },
 });
