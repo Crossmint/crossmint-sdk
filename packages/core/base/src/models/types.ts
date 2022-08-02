@@ -16,8 +16,9 @@ export enum customHeaders {
 
 type theme = "light" | "dark";
 
-export type paymentMethods = "fiat" | "ETH";
+export type paymentMethods = "fiat" | "ETH" | "SOL";
 export const paymentMethodIsEth = (paymentMethod?: paymentMethods) => paymentMethod === "ETH";
+export const paymentMethodIsSol = (paymentMethod?: paymentMethods) => paymentMethod === "SOL";
 
 export type SigninMethods = "metamask" | "solana";
 

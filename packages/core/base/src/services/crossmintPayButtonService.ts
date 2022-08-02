@@ -1,4 +1,9 @@
-import { onboardingRequestStatusResponse, paymentMethodIsEth, paymentMethods } from "../models/types";
+import {
+    onboardingRequestStatusResponse,
+    paymentMethodIsEth,
+    paymentMethodIsSol,
+    paymentMethods,
+} from "../models/types";
 
 interface IProps {
     onClick?: (e: any) => void;
@@ -30,9 +35,17 @@ export function crossmintPayButtonService({ onClick, connecting, paymentMethod }
     };
 
     const getButtonText = (connecting: boolean) => {
-        if (connecting) return "Connecting...";
-        if (paymentMethodIsEth(paymentMethod)) return "Buy with ETH";
-        return "Buy with credit card";
+        if (connecting) {
+            return "Connecting...";
+        }
+        switch (paymentMethod) {
+            case "ETH":
+                return "Buy with ETH";
+            case "SOL":
+                return "Buy with SOL";
+            default:
+                return "Buy with credit card";
+        }
     };
     const shouldHideButton = ({ hideMintOnInactiveClient, status }: any) =>
         hideMintOnInactiveClient && status !== onboardingRequestStatusResponse.ACCEPTED;

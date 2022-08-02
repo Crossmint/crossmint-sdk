@@ -162,6 +162,11 @@ describe("CrossmintPayButton", () => {
                 expect(screen.getByRole("button-paragraph")).toHaveTextContent("Buy with ETH");
             });
 
+            test("should display `Buy with SOL` text when prop is set to `SOL`", async () => {
+                render(<CrossmintPayButton {...defaultProps} paymentMethod="SOL" />);
+                expect(screen.getByRole("button-paragraph")).toHaveTextContent("Buy with SOL");
+            });
+
             test("should add `paymentMethod=ETH` query param to checkout url when prop added", async () => {
                 render(<CrossmintPayButton {...defaultProps} paymentMethod="ETH" />);
 
@@ -170,6 +175,19 @@ describe("CrossmintPayButton", () => {
                 });
                 expect(global.open).toHaveBeenCalledWith(
                     expect.stringContaining("paymentMethod%3DETH"),
+                    expect.anything(),
+                    expect.anything()
+                );
+            });
+
+            test("should add `paymentMethod=SOL` query param to checkout url when prop added", async () => {
+                render(<CrossmintPayButton {...defaultProps} paymentMethod="SOL" />);
+
+                await act(async () => {
+                    fireEvent.click(screen.getByText("Buy with SOL"));
+                });
+                expect(global.open).toHaveBeenCalledWith(
+                    expect.stringContaining("paymentMethod%3DSOL"),
                     expect.anything(),
                     expect.anything()
                 );
