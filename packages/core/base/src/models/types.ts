@@ -19,8 +19,7 @@ type theme = "light" | "dark";
 export type paymentMethods = "fiat" | "ETH";
 export const paymentMethodIsEth = (paymentMethod?: paymentMethods) => paymentMethod === "ETH";
 
-// TODO: Add more signin methods when needed
-export type SigninMethods = "metamask";
+export type SigninMethods = "metamask" | "solana";
 
 export enum mintingContractTypes {
     CANDY_MACHINE = "candy-machine",
