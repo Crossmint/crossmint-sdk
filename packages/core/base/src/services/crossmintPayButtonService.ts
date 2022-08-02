@@ -38,13 +38,14 @@ export function crossmintPayButtonService({ onClick, connecting, paymentMethod }
         if (connecting) {
             return "Connecting...";
         }
-        if (paymentMethodIsEth(paymentMethod)) {
-            return "Buy with ETH";
+        switch (paymentMethod) {
+            case "ETH":
+                return "Buy with ETH";
+            case "SOL":
+                return "Buy with SOL";
+            default:
+                return "Buy with credit card";
         }
-        if (paymentMethodIsSol(paymentMethod)) {
-            return "Buy with SOL";
-        }
-        return "Buy with credit card";
     };
     const shouldHideButton = ({ hideMintOnInactiveClient, status }: any) =>
         hideMintOnInactiveClient && status !== onboardingRequestStatusResponse.ACCEPTED;
