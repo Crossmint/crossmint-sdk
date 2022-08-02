@@ -177,13 +177,25 @@ describe("CrossmintPayButton", () => {
         });
 
         describe("preferredSigninMethod prop", () => {
-            test("should add query param when prop added", async () => {
+            test("should add query param when prop added with value metamask", async () => {
                 render(<CrossmintPayButton {...defaultProps} preferredSigninMethod="metamask" />);
                 await act(async () => {
                     fireEvent.click(screen.getByText("Buy with credit card"));
                 });
                 expect(global.open).toHaveBeenCalledWith(
                     expect.stringContaining("preferredSigninMethod%3Dmetamask"),
+                    expect.anything(),
+                    expect.anything()
+                );
+            });
+
+            test("should add query param when prop added with value solana", async () => {
+                render(<CrossmintPayButton {...defaultProps} preferredSigninMethod="solana" />);
+                await act(async () => {
+                    fireEvent.click(screen.getByText("Buy with credit card"));
+                });
+                expect(global.open).toHaveBeenCalledWith(
+                    expect.stringContaining("preferredSigninMethod%3Dsolana"),
                     expect.anything(),
                     expect.anything()
                 );
