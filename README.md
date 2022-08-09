@@ -69,6 +69,8 @@ yarn
 
 ```shell
 yarn build
+yarn test
 yarn run lerna version
+yarn build
 yarn run publish
 ```
