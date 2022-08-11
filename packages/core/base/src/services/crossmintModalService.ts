@@ -37,7 +37,7 @@ function createPopupString() {
     return `${popupStringBase}height=750,width=400,left=${left},top=${top},resizable=yes,scrollbars=yes,toolbar=yes,menubar=true,location=no,directories=no, status=yes`;
 }
 
-const addLoadingOverlay = (): void => {
+const addLoadingOverlay = (dissmissableOverlayOnClick?: boolean): void => {
     const overlayEl = document.createElement("div");
     overlayEl.setAttribute("id", overlayId);
     const overlayStyles = {
@@ -51,6 +51,12 @@ const addLoadingOverlay = (): void => {
     };
     Object.assign(overlayEl.style, overlayStyles);
     document.body.appendChild(overlayEl);
+
+    if (dissmissableOverlayOnClick) {
+        overlayEl.addEventListener("click", () => {
+            removeLoadingOverlay();
+        });
+    }
 };
 
 const removeLoadingOverlay = (): void => {
@@ -62,6 +68,7 @@ interface CrossmintModalServiceParams {
     clientId: string;
     libVersion: string;
     showOverlay: boolean;
+    dismissOverlayOnClick?: boolean;
     setConnecting: (connecting: boolean) => void;
     environment?: string;
     clientName: clientNames;
@@ -86,6 +93,7 @@ export function crossmintModalService({
     clientId,
     libVersion,
     showOverlay,
+    dismissOverlayOnClick,
     setConnecting,
     environment,
     clientName,
@@ -131,7 +139,7 @@ export function crossmintModalService({
         if (pop) {
             registerListeners(pop);
             if (showOverlay) {
-                addLoadingOverlay();
+                addLoadingOverlay(dismissOverlayOnClick);
             }
             return;
         }

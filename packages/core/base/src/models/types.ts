@@ -66,6 +66,7 @@ export interface CrossmintPayButtonProps extends BaseButtonProps {
     emailTo?: string;
     listingId?: string;
     showOverlay?: boolean;
+    dismissOverlayOnClick?: boolean;
     hideMintOnInactiveClient?: boolean;
     mintConfig?: PayButtonConfig;
     whPassThroughArgs?: any;

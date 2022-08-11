@@ -41,6 +41,7 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
     environment,
     paymentMethod,
     preferredSigninMethod,
+    dismissOverlayOnClick,
     ...props
 }) => {
     const [connecting, setConnecting] = useState(false);
@@ -60,6 +61,7 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
     const { connect } = crossmintModalService({
         clientId,
         showOverlay,
+        dismissOverlayOnClick,
         setConnecting,
         libVersion: LIB_VERSION,
         environment,
