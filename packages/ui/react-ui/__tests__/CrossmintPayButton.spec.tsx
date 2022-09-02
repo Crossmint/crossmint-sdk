@@ -174,7 +174,7 @@ describe("CrossmintPayButton", () => {
                     fireEvent.click(screen.getByText("Buy with ETH"));
                 });
                 expect(global.open).toHaveBeenCalledWith(
-                    expect.stringContaining("paymentMethod%3DETH"),
+                    expect.stringContaining("paymentMethod%3Deth"),
                     expect.anything(),
                     expect.anything()
                 );
@@ -187,7 +187,7 @@ describe("CrossmintPayButton", () => {
                     fireEvent.click(screen.getByText("Buy with SOL"));
                 });
                 expect(global.open).toHaveBeenCalledWith(
-                    expect.stringContaining("paymentMethod%3DSOL"),
+                    expect.stringContaining("paymentMethod%3Dsol"),
                     expect.anything(),
                     expect.anything()
                 );

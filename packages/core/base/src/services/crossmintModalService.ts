@@ -127,7 +127,7 @@ export function crossmintModalService({
             if (emailTo) mintQueryParams.emailTo = emailTo;
             if (listingId) mintQueryParams.listingId = listingId;
             if (whPassThroughArgs) mintQueryParams.whPassThroughArgs = JSON.stringify(whPassThroughArgs);
-            if (paymentMethod) mintQueryParams.paymentMethod = paymentMethod;
+            if (paymentMethod) mintQueryParams.paymentMethod = paymentMethod.toLowerCase() as paymentMethods;
             if (preferredSigninMethod) mintQueryParams.preferredSigninMethod = preferredSigninMethod;
 
             return new URLSearchParams(mintQueryParams).toString();
