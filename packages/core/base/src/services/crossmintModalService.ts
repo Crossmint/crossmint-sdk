@@ -46,7 +46,7 @@ function createPopupString(width: number, height: number) {
     const chromeVersionGreaterThan99 = chromeVersion && chromeVersion > 99;
     const popupStringBase = chromeVersionGreaterThan99 ? "popup=true," : "";
 
-    return `${popupStringBase}height=750,width=400,left=${getLeft()},top=${getTop()},resizable=yes,scrollbars=yes,toolbar=yes,menubar=true,location=no,directories=no, status=yes`;
+    return `${popupStringBase}height=${height},width=${width},left=${getLeft()},top=${getTop()},resizable=yes,scrollbars=yes,toolbar=yes,menubar=true,location=no,directories=no, status=yes`;
 }
 
 const addLoadingOverlay = (dissmissableOverlayOnClick?: boolean): void => {
