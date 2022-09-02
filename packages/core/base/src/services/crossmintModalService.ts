@@ -20,21 +20,33 @@ type MintQueryParams = {
 
 const overlayId = "__crossmint-overlay__";
 
+const POPUP_WIDTH = 400;
+const POPUP_HEIGHT = 750;
+
 const getChromeVersion = () => {
     const raw = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
     return raw ? parseInt(raw[2]) : null;
 };
 
-function createPopupString() {
-    const left = window.innerWidth / 2 - 200;
-    const top = window.innerHeight / 2 - 375;
+function createPopupString(width: number, height: number) {
+    function getLeft() {
+        return window?.top != null
+            ? window.top.outerWidth / 2 + window.top.screenX - width / 2
+            : window.outerWidth / 2 + window.screenX - width / 2;
+    }
+
+    function getTop() {
+        return window?.top != null
+            ? window.top.outerHeight / 2 + window.top.screenY - height / 2
+            : window.outerHeight / 2 + window.screenY - height / 2;
+    }
 
     // In newer versions of chrome (>99) you need to add the `popup=true` for the new window to actually open in a popup
     const chromeVersion = getChromeVersion();
     const chromeVersionGreaterThan99 = chromeVersion && chromeVersion > 99;
     const popupStringBase = chromeVersionGreaterThan99 ? "popup=true," : "";
 
-    return `${popupStringBase}height=750,width=400,left=${left},top=${top},resizable=yes,scrollbars=yes,toolbar=yes,menubar=true,location=no,directories=no, status=yes`;
+    return `${popupStringBase}height=750,width=400,left=${getLeft()},top=${getTop()},resizable=yes,scrollbars=yes,toolbar=yes,menubar=true,location=no,directories=no, status=yes`;
 }
 
 const addLoadingOverlay = (dissmissableOverlayOnClick?: boolean): void => {
@@ -135,7 +147,7 @@ export function crossmintModalService({
         const callbackUrl = encodeURIComponent(`${urlOrigin}/checkout/mint?${getMintQueryParams()}`);
         const url = `${urlOrigin}/signin?callbackUrl=${callbackUrl}`;
 
-        const pop = window.open(url, "popUpWindow", createPopupString());
+        const pop = window.open(url, "popUpWindow", createPopupString(POPUP_WIDTH, POPUP_HEIGHT));
         if (pop) {
             registerListeners(pop);
             if (showOverlay) {
