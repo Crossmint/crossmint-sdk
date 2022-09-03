@@ -59,9 +59,6 @@ export interface BaseButtonProps {
 }
 
 export interface CrossmintPayButtonProps extends BaseButtonProps {
-    collectionTitle?: string;
-    collectionDescription?: string;
-    collectionPhoto?: string;
     mintTo?: string;
     emailTo?: string;
     listingId?: string;

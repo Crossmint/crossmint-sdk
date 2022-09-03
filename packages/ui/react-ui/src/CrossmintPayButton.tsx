@@ -26,9 +26,6 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
     style,
     tabIndex,
     theme = "dark",
-    collectionTitle,
-    collectionDescription,
-    collectionPhoto,
     mintTo,
     emailTo,
     listingId,
@@ -68,20 +65,11 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
         clientName: clientNames.reactUi,
     });
 
-    const { checkProps, getButtonText, shouldHideButton, handleClick } = crossmintPayButtonService({
+    const { getButtonText, shouldHideButton, handleClick } = crossmintPayButtonService({
         onClick,
         connecting,
         paymentMethod,
     });
-
-    const [newCollectionTitle, newCollectionDescription, newCollectionPhoto] = checkProps({
-        collectionTitle,
-        collectionPhoto,
-        collectionDescription,
-    });
-    collectionTitle = newCollectionTitle;
-    collectionDescription = newCollectionDescription;
-    collectionPhoto = newCollectionPhoto;
 
     useEffect(() => {
         if (hideMintOnInactiveClient) {
@@ -91,18 +79,7 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
 
     const _handleClick = (event: MouseEvent<HTMLButtonElement>) =>
         handleClick(event, () => {
-            connect(
-                mintConfig,
-                collectionTitle,
-                collectionDescription,
-                collectionPhoto,
-                mintTo,
-                emailTo,
-                listingId,
-                whPassThroughArgs,
-                paymentMethod,
-                preferredSigninMethod
-            );
+            connect(mintConfig, mintTo, emailTo, listingId, whPassThroughArgs, paymentMethod, preferredSigninMethod);
         });
 
     const classes = useStyles(formatProps(theme));

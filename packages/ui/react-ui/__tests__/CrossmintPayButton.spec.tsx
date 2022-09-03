@@ -23,9 +23,6 @@ global.console = {
 } as any;
 
 const defaultProps = {
-    collectionTitle: "CollectionTitle",
-    collectionDescription: "CollectionDescription",
-    collectionPhoto: "CollectionPhoto",
     clientId: "a4e1bfcc-9884-11ec-b909-0242ac120002",
 };
 
@@ -44,11 +41,7 @@ describe("CrossmintPayButton", () => {
         expect(global.open).toHaveBeenCalledWith(
             `https://www.crossmint.io/signin?callbackUrl=https%3A%2F%2Fwww.crossmint.io%2Fcheckout%2Fmint%3FclientId%3D${encodeURIComponent(
                 defaultProps.clientId
-            )}%26closeOnSuccess%3Dfalse%26clientName%3Dclient-sdk-react-ui%26clientVersion%3D${LIB_VERSION}%26mintConfig%3D%257B%2522type%2522%253A%2522candy-machine%2522%257D%26collectionTitle%3D${encodeURIComponent(
-                defaultProps.collectionTitle
-            )}%26collectionDescription%3D${encodeURIComponent(
-                defaultProps.collectionDescription
-            )}%26collectionPhoto%3D${encodeURIComponent(defaultProps.collectionPhoto)}`,
+            )}%26closeOnSuccess%3Dfalse%26clientName%3Dclient-sdk-react-ui%26clientVersion%3D${LIB_VERSION}%26mintConfig%3D%257B%2522type%2522%253A%2522candy-machine%2522%257D`,
             "popUpWindow",
             "height=750,width=400,left=312,top=9,resizable=yes,scrollbars=yes,toolbar=yes,menubar=true,location=no,directories=no, status=yes"
         );
