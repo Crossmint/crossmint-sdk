@@ -1,42 +1,42 @@
 {
-  "name": "@crossmint/client-sdk-vanilla-ui",
-  "version": "0.0.4-alpha.0",
-  "description": "Crossmint client SDK for vanilla JS (no framework required), using web-components",
-  "homepage": "https://github.com/Crossmint/crossmint-client-sdk#readme",
-  "author": "Paella Inc",
-  "license": "Apache-2.0",
-  "repository": "https://github.com/Crossmint/crossmint-client-sdk",
-  "type": "module",
-  "sideEffects": false,
-  "main": "lib/index.cjs",
-  "module": "lib/index.js",
-  "types": "lib/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./lib/index.js",
-      "require": "./lib/index.cjs"
+    "name": "@crossmint/client-sdk-vanilla-ui",
+    "version": "0.1.0",
+    "description": "Crossmint client SDK for vanilla JS (no framework required), using web-components",
+    "homepage": "https://github.com/Crossmint/crossmint-client-sdk#readme",
+    "author": "Paella Inc",
+    "license": "Apache-2.0",
+    "repository": "https://github.com/Crossmint/crossmint-client-sdk",
+    "type": "module",
+    "sideEffects": false,
+    "main": "lib/index.cjs",
+    "module": "lib/index.js",
+    "types": "lib/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./lib/index.js",
+            "require": "./lib/index.cjs"
+        }
+    },
+    "files": [
+        "lib",
+        "src",
+        "LICENSE"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
+    "scripts": {
+        "create-version-file": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/version.ts",
+        "version": "yarn run create-version-file && git add .",
+        "prebuild": "yarn run create-version-file",
+        "clean": "shx rm -rf lib/*",
+        "build": "yarn clean && tsup src/index.ts --format esm,cjs,iife --outDir ./lib --minify --dts"
+    },
+    "bugs": {
+        "url": "https://github.com/Crossmint/crossmint-client-sdk/issues"
+    },
+    "dependencies": {
+        "@crossmint/client-sdk-base": "^0.1.4-alpha.0",
+        "lit": "^2.2.1"
     }
-  },
-  "files": [
-    "lib",
-    "src",
-    "LICENSE"
-  ],
-  "publishConfig": {
-    "access": "public"
-  },
-  "scripts": {
-    "create-version-file": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/version.ts",
-    "version": "yarn run create-version-file && git add .",
-    "prebuild": "yarn run create-version-file",
-    "clean": "shx rm -rf lib/*",
-    "build": "yarn clean && tsup src/index.ts --format esm,cjs,iife --outDir ./lib --minify --dts"
-  },
-  "bugs": {
-    "url": "https://github.com/Crossmint/crossmint-client-sdk/issues"
-  },
-  "dependencies": {
-    "@crossmint/client-sdk-base": "^0.1.4-alpha.0",
-    "lit": "^2.2.1"
-  }
 }

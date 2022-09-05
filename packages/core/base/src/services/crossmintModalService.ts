@@ -4,9 +4,6 @@ import { getEnvironmentBaseUrl } from "../utils/ui";
 type MintQueryParams = {
     clientId: string;
     closeOnSuccess: string;
-    collectionTitle?: string;
-    collectionDescription?: string;
-    collectionPhoto?: string;
     mintTo?: string;
     emailTo?: string;
     listingId?: string;
@@ -89,9 +86,6 @@ interface CrossmintModalServiceParams {
 export interface CrossmintModalServiceReturn {
     connect: (
         mintConfig: PayButtonConfig,
-        collectionTitle?: string,
-        collectionDescription?: string,
-        collectionPhoto?: string,
         mintTo?: string,
         emailTo?: string,
         listingId?: string,
@@ -112,9 +106,6 @@ export function crossmintModalService({
 }: CrossmintModalServiceParams): CrossmintModalServiceReturn {
     const createPopup = (
         mintConfig: PayButtonConfig,
-        collectionTitle?: string,
-        collectionDescription?: string,
-        collectionPhoto?: string,
         mintTo?: string,
         emailTo?: string,
         listingId?: string,
@@ -132,9 +123,6 @@ export function crossmintModalService({
                 mintConfig: JSON.stringify(mintConfig),
             };
 
-            if (collectionTitle) mintQueryParams.collectionTitle = collectionTitle;
-            if (collectionDescription) mintQueryParams.collectionDescription = collectionDescription;
-            if (collectionPhoto) mintQueryParams.collectionPhoto = collectionPhoto;
             if (mintTo) mintQueryParams.mintTo = mintTo;
             if (emailTo) mintQueryParams.emailTo = emailTo;
             if (listingId) mintQueryParams.listingId = listingId;
@@ -164,9 +152,6 @@ export function crossmintModalService({
 
     const connect = (
         mintConfig: PayButtonConfig,
-        collectionTitle?: string,
-        collectionDescription?: string,
-        collectionPhoto?: string,
         mintTo?: string,
         emailTo?: string,
         listingId?: string,
@@ -176,18 +161,7 @@ export function crossmintModalService({
     ) => {
         setConnecting(true);
 
-        createPopup(
-            mintConfig,
-            collectionTitle,
-            collectionDescription,
-            collectionPhoto,
-            mintTo,
-            emailTo,
-            listingId,
-            whPassThroughArgs,
-            paymentMethod,
-            preferredSigninMethod
-        );
+        createPopup(mintConfig, mintTo, emailTo, listingId, whPassThroughArgs, paymentMethod, preferredSigninMethod);
     };
 
     function registerListeners(pop: Window) {

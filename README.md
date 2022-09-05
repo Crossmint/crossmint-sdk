@@ -21,6 +21,10 @@ Watch [our demo](https://www.youtube.com/watch?v=4NTgDFU-lms) on YouTube on how 
 
 Version 0.1.0 introduces breaking changes. To learn how to migrate from a version lower than 0.1.0, [check out the migration guide](https://docs.google.com/document/d/14IKpjrij7kU7Dr0I7rZkf0PyDNbXiklx2v4GuzUrFbw/edit?usp=sharing).
 
+## Migration guide to 0.2.X versions
+
+Version 0.2.0 introduces breaking changes. To learn how to migrate from a version lower than 0.2.0, [check out the migration guide](https://docs.google.com/document/d/1mA0W-iAs0nHHW0ANX0TfZ5qrzxPGxNchPj13W6cHc-Y/edit?usp=sharing).
+
 ## [Changelog](https://docs.google.com/document/d/e/2PACX-1vR5NzVS2msrCMZxlcfBgAT-Y8kAypeKqH_WBeNiwVTmyEzLZvJBWrKrz_966-d3jumwIBi94IXGT6Wp/pub)
 
 ---

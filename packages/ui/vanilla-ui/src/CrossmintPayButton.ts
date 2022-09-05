@@ -20,9 +20,6 @@ const propertyDefaults: CrossmintPayButtonLitProps = {
     theme: "dark",
     disabled: false,
     tabIndex: 0,
-    collectionTitle: "",
-    collectionDescription: "",
-    collectionPhoto: "",
     mintTo: "",
     emailTo: "",
     listingId: "",
@@ -48,15 +45,6 @@ export class CrossmintPayButton extends LitElement {
 
     @property({ type: Boolean })
     disabled = propertyDefaults.disabled;
-
-    @property({ type: String })
-    collectionTitle = propertyDefaults.collectionTitle;
-
-    @property({ type: String })
-    collectionDescription = propertyDefaults.collectionDescription;
-
-    @property({ type: String })
-    collectionPhoto = propertyDefaults.collectionPhoto;
 
     @property({ type: String })
     mintTo = propertyDefaults.mintTo;
@@ -132,18 +120,6 @@ export class CrossmintPayButton extends LitElement {
         if (this.hideMintOnInactiveClient) {
             fetchClientIntegration();
         }
-
-        const { checkProps } = crossmintPayButtonService({ onClick: this.onClick, connecting: this.connecting });
-
-        const [newCollectionTitle, newCollectionDescription, newCollectionPhoto] = checkProps({
-            collectionTitle: this.collectionTitle,
-            collectionPhoto: this.collectionPhoto,
-            collectionDescription: this.collectionDescription,
-        });
-
-        this.collectionTitle = newCollectionTitle;
-        this.collectionDescription = newCollectionDescription;
-        this.collectionPhoto = newCollectionPhoto;
     }
 
     render() {
@@ -176,9 +152,6 @@ export class CrossmintPayButton extends LitElement {
             handleClick(e, () => {
                 connect(
                     this.mintConfig,
-                    this.collectionTitle,
-                    this.collectionDescription,
-                    this.collectionPhoto,
                     this.mintTo,
                     this.emailTo,
                     this.listingId,
