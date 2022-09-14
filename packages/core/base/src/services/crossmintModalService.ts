@@ -3,7 +3,6 @@ import { getEnvironmentBaseUrl } from "../utils/ui";
 
 type MintQueryParams = {
     clientId: string;
-    closeOnSuccess: string;
     mintTo?: string;
     emailTo?: string;
     listingId?: string;
@@ -117,7 +116,6 @@ export function crossmintModalService({
         const getMintQueryParams = (): string => {
             const mintQueryParams: MintQueryParams = {
                 clientId: clientId,
-                closeOnSuccess: "false",
                 clientName,
                 clientVersion: libVersion,
                 mintConfig: JSON.stringify(mintConfig),
