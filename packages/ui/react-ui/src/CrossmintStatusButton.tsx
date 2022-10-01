@@ -73,7 +73,7 @@ export const CrossmintStatusButton: FC<CrossmintStatusButtonReactProps> = ({
                 >
                     <img
                         className={classes.crossmintImg}
-                        src={`${baseUrls.prod}/assets/crossmint/logo.png`}
+                        src={`${baseUrls.prod}/assets/crossmint/logo.svg`}
                         alt="Crossmint logo"
                     />
                     {content}
