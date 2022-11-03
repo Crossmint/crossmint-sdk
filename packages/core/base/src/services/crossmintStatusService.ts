@@ -22,6 +22,15 @@ const validateClientId = (clientId: string): boolean => {
     }
 };
 
+function isJsonString(str: string) {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
+}
+
 export function crossmintStatusService({
     libVersion,
     clientId,
@@ -32,6 +41,12 @@ export function crossmintStatusService({
     environment,
     clientName,
 }: CrossmintStatusServiceParams) {
+    if (mintConfig != null && typeof mintConfig === "string" && !isJsonString(mintConfig)) {
+        throw new Error(
+            `mintConfig is not a valid json. Check out our docs: https://docs.crossmint.io/docs/payments-introduction`
+        );
+    }
+
     async function fetchClientIntegration() {
         if (!clientId || clientId === "" || clientId === "<YOUR_CLIENT_ID>") {
             console.error("You must enter your own Crossmint client ID in <CrossmintPayButton clientId=XXX>");

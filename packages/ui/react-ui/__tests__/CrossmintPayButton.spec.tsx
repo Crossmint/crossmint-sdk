@@ -225,4 +225,13 @@ describe("CrossmintPayButton", () => {
             });
         });
     });
+
+    describe("when entering a wrong mint config JSON", () => {
+        const mintConfig = '{"wrong": "json",}' as any;
+        test("should throw an error", () => {
+            expect(() => render(<CrossmintPayButton {...defaultProps} mintConfig={mintConfig} />)).toThrowError(
+                "mintConfig is not a valid json. Check out our docs: https://docs.crossmint.io/docs/payments-introduction"
+            );
+        });
+    });
 });
