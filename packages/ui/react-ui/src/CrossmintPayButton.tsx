@@ -109,7 +109,7 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
                 >
                     <img
                         className={classes.crossmintImg}
-                        src="https://www.crossmint.io/assets/crossmint/logo.svg"
+                        src="https://www.crossmint.com/assets/crossmint/logo.svg"
                         alt="Crossmint logo"
                     />
                     {content}

@@ -171,7 +171,7 @@ export class CrossmintPayButton extends LitElement {
                 tabindex=${this.tabIndex}
                 part="button"
             >
-                <img src="https://www.crossmint.io/assets/crossmint/logo.svg" alt="Crossmint logo" />
+                <img src="https://www.crossmint.com/assets/crossmint/logo.svg" alt="Crossmint logo" />
                 <span part="contentParagraph">${content}</span>
             </button>
         `;

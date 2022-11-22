@@ -1,6 +1,6 @@
-import React from "react";
-import { render, fireEvent, screen, act } from "@testing-library/react";
 import "@testing-library/jest-dom";
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import React from "react";
 
 import { CrossmintStatusButton } from "../src/CrossmintStatusButton";
 
@@ -36,7 +36,7 @@ describe("CrossmintPayButton", () => {
         });
         const mintConfig = "%7B%22example%22%3A%2212345%22%7D";
         expect(global.open).toHaveBeenCalledWith(
-            `https://www.crossmint.io/developers/onboarding?clientId=${defaultProps.clientId}&platformId=${defaultProps.platformId}&auctionId=${defaultProps.auctionId}&mintConfig=${mintConfig}`,
+            `https://www.crossmint.com/developers/onboarding?clientId=${defaultProps.clientId}&platformId=${defaultProps.platformId}&auctionId=${defaultProps.auctionId}&mintConfig=${mintConfig}`,
             "_blank"
         );
     });
@@ -48,7 +48,7 @@ describe("CrossmintPayButton", () => {
             fireEvent.click(screen.getByText("Click here to setup Crossmint"));
         });
         expect(global.open).toHaveBeenCalledWith(
-            `https://www.crossmint.io/developers/onboarding?clientId=${defaultProps.clientId}`,
+            `https://www.crossmint.com/developers/onboarding?clientId=${defaultProps.clientId}`,
             "_blank"
         );
     });

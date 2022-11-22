@@ -108,7 +108,7 @@ export class CrossmintStatusButton extends LitElement {
                 @click=${_handleClick}
                 tabindex=${this.tabIndex}
             >
-                <img src="https://www.crossmint.io/assets/crossmint/logo.svg" alt="Crossmint logo" />
+                <img src="https://www.crossmint.com/assets/crossmint/logo.svg" alt="Crossmint logo" />
                 <span>${content}</span>
             </button>
         `;

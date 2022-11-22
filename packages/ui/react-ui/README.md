@@ -1,6 +1,6 @@
 # `@crossmint/client-sdk-react-ui`
 
-## You can check the full documentation at [docs.crossmint.io](https://docs.crossmint.io/)
+## You can check the full documentation at [docs.crossmint.com](https://docs.crossmint.com/)
 
 ---
 
@@ -14,7 +14,7 @@ First, add the Crossmint Client SDK to your project with the following command:
 yarn add @crossmint/client-sdk-react-ui
 ```
 
-The next steps depend on which chain you're using for your project. For detailed integration instructions, visit our documentation for [Solana](https://docs.crossmint.io/accept-credit-cards/integration-guides/solana-candy-machine/b-i-have-an-existing-candy-machine-website/add-crossmint-for-solana-react.js-next.js), [Polygon](https://docs.crossmint.io/accept-credit-cards/integration-guides/polygon), or [Ethereum](https://docs.crossmint.io/accept-credit-cards/integration-guides/ethereum/add-crossmint-for-ethereum-react.js-next.js).
+The next steps depend on which chain you're using for your project. For detailed integration instructions, visit our documentation for [Solana](https://docs.crossmint.com/accept-credit-cards/integration-guides/solana-candy-machine/b-i-have-an-existing-candy-machine-website/add-crossmint-for-solana-react.js-next.js), [Polygon](https://docs.crossmint.com/accept-credit-cards/integration-guides/polygon), or [Ethereum](https://docs.crossmint.com/accept-credit-cards/integration-guides/ethereum/add-crossmint-for-ethereum-react.js-next.js).
 
 ## Migration guide to 0.1.X versions
 

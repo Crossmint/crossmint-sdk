@@ -1,6 +1,6 @@
 # `@crossmint/client-sdk (beta)`
 
-## You can check the full documentation at [docs.crossmint.io](https://docs.crossmint.io/)
+## You can check the full documentation at [docs.crossmint.com](https://docs.crossmint.com/)
 
 ---
 
@@ -8,8 +8,8 @@ The Crossmint SDK allows you to offer wallet-less credit card purchases on your 
 
 ## Get Started
 
-Crossmint supports [Solana](https://docs.crossmint.io/accept-credit-cards/integration-guides/solana-candy-machine), [Polygon](https://docs.crossmint.io/accept-credit-cards/integration-guides/polygon)
-, and [Ethereum](https://docs.crossmint.io/accept-credit-cards/integration-guides/ethereum). To get started and for full integration instructions visit [our documentation](https://docs.crossmint.io/).
+Crossmint supports [Solana](https://docs.crossmint.com/accept-credit-cards/integration-guides/solana-candy-machine), [Polygon](https://docs.crossmint.com/accept-credit-cards/integration-guides/polygon)
+, and [Ethereum](https://docs.crossmint.com/accept-credit-cards/integration-guides/ethereum). To get started and for full integration instructions visit [our documentation](https://docs.crossmint.com/).
 
 ## How to mint an NFT using Crossmint
 
