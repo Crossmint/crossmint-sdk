@@ -69,6 +69,7 @@ export interface CrossmintPayButtonProps extends BaseButtonProps {
     whPassThroughArgs?: any;
     paymentMethod?: paymentMethods;
     preferredSigninMethod?: SigninMethods;
+    prepay?: boolean;
 }
 
 export type OnboardingQueryParams = {

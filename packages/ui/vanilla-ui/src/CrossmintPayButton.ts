@@ -36,6 +36,7 @@ const propertyDefaults: CrossmintPayButtonLitProps = {
     paymentMethod: undefined,
     preferredSigninMethod: undefined,
     dismissOverlayOnClick: false,
+    prepay: false,
 };
 
 @customElement("crossmint-pay-button")
@@ -89,6 +90,9 @@ export class CrossmintPayButton extends LitElement {
 
     @property({ type: Boolean })
     dismissOverlayOnClick = propertyDefaults.dismissOverlayOnClick;
+
+    @property({ type: Boolean })
+    prepay = propertyDefaults.prepay;
 
     static styles = buttonStyles;
 
@@ -158,6 +162,7 @@ export class CrossmintPayButton extends LitElement {
                     this.whPassThroughArgs,
                     this.paymentMethod,
                     this.preferredSigninMethod,
+                    this.prepay,
                 );
             });
 

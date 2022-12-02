@@ -12,6 +12,7 @@ type MintQueryParams = {
     whPassThroughArgs?: string;
     paymentMethod?: paymentMethods;
     preferredSigninMethod?: SigninMethods;
+    prepay?: string;
 };
 
 const overlayId = "__crossmint-overlay__";
@@ -90,7 +91,8 @@ export interface CrossmintModalServiceReturn {
         listingId?: string,
         whPassThroughArgs?: any,
         paymentMethod?: paymentMethods,
-        preferredSigninMethod?: SigninMethods
+        preferredSigninMethod?: SigninMethods,
+        prepay?: boolean
     ) => void;
 }
 
@@ -110,7 +112,8 @@ export function crossmintModalService({
         listingId?: string,
         whPassThroughArgs?: any,
         paymentMethod?: paymentMethods,
-        preferredSigninMethod?: SigninMethods
+        preferredSigninMethod?: SigninMethods,
+        prepay?: boolean
     ) => {
         const urlOrigin = getEnvironmentBaseUrl(environment);
         const getMintQueryParams = (): string => {
@@ -127,6 +130,7 @@ export function crossmintModalService({
             if (whPassThroughArgs) mintQueryParams.whPassThroughArgs = JSON.stringify(whPassThroughArgs);
             if (paymentMethod) mintQueryParams.paymentMethod = paymentMethod.toLowerCase() as paymentMethods;
             if (preferredSigninMethod) mintQueryParams.preferredSigninMethod = preferredSigninMethod;
+            if (prepay) mintQueryParams.prepay = "true";
 
             return new URLSearchParams(mintQueryParams).toString();
         };
@@ -155,11 +159,21 @@ export function crossmintModalService({
         listingId?: string,
         whPassThroughArgs?: any,
         paymentMethod?: paymentMethods,
-        preferredSigninMethod?: SigninMethods
+        preferredSigninMethod?: SigninMethods,
+        prepay?: boolean
     ) => {
         setConnecting(true);
 
-        createPopup(mintConfig, mintTo, emailTo, listingId, whPassThroughArgs, paymentMethod, preferredSigninMethod);
+        createPopup(
+            mintConfig,
+            mintTo,
+            emailTo,
+            listingId,
+            whPassThroughArgs,
+            paymentMethod,
+            preferredSigninMethod,
+            prepay
+        );
     };
 
     function registerListeners(pop: Window) {
