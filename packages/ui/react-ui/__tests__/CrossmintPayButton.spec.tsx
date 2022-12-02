@@ -225,4 +225,19 @@ describe("CrossmintPayButton", () => {
             });
         });
     });
+
+    describe("when passing the prepay prop", () => {
+        test("should pass the prepay query param", async () => {
+            render(<CrossmintPayButton {...defaultProps} prepay />);
+
+            await act(async () => {
+                fireEvent.click(screen.getByText("Buy with credit card"));
+            });
+            expect(global.open).toHaveBeenCalledWith(
+                expect.stringContaining("prepay%3Dtrue"),
+                expect.anything(),
+                expect.anything()
+            );
+        });
+    });
 });

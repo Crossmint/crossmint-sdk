@@ -39,6 +39,7 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
     paymentMethod,
     preferredSigninMethod,
     dismissOverlayOnClick,
+    prepay,
     ...props
 }) => {
     const [connecting, setConnecting] = useState(false);
@@ -79,7 +80,16 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
 
     const _handleClick = (event: MouseEvent<HTMLButtonElement>) =>
         handleClick(event, () => {
-            connect(mintConfig, mintTo, emailTo, listingId, whPassThroughArgs, paymentMethod, preferredSigninMethod);
+            connect(
+                mintConfig,
+                mintTo,
+                emailTo,
+                listingId,
+                whPassThroughArgs,
+                paymentMethod,
+                preferredSigninMethod,
+                prepay
+            );
         });
 
     const classes = useStyles(formatProps(theme));
