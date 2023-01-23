@@ -13,6 +13,7 @@ type MintQueryParams = {
     paymentMethod?: paymentMethods;
     preferredSigninMethod?: SigninMethods;
     prepay?: string;
+    accesslistId?: string;
 };
 
 const overlayId = "__crossmint-overlay__";
@@ -92,7 +93,8 @@ export interface CrossmintModalServiceReturn {
         whPassThroughArgs?: any,
         paymentMethod?: paymentMethods,
         preferredSigninMethod?: SigninMethods,
-        prepay?: boolean
+        prepay?: boolean,
+        accesslistId?: string
     ) => void;
 }
 
@@ -113,7 +115,8 @@ export function crossmintModalService({
         whPassThroughArgs?: any,
         paymentMethod?: paymentMethods,
         preferredSigninMethod?: SigninMethods,
-        prepay?: boolean
+        prepay?: boolean,
+        accesslistId?: string
     ) => {
         const urlOrigin = getEnvironmentBaseUrl(environment);
         const getMintQueryParams = (): string => {
@@ -131,6 +134,7 @@ export function crossmintModalService({
             if (paymentMethod) mintQueryParams.paymentMethod = paymentMethod.toLowerCase() as paymentMethods;
             if (preferredSigninMethod) mintQueryParams.preferredSigninMethod = preferredSigninMethod;
             if (prepay) mintQueryParams.prepay = "true";
+            if (accesslistId) mintQueryParams.accesslistId = accesslistId;
 
             return new URLSearchParams(mintQueryParams).toString();
         };
@@ -160,7 +164,8 @@ export function crossmintModalService({
         whPassThroughArgs?: any,
         paymentMethod?: paymentMethods,
         preferredSigninMethod?: SigninMethods,
-        prepay?: boolean
+        prepay?: boolean,
+        accesslistId?: string
     ) => {
         setConnecting(true);
 
@@ -172,7 +177,8 @@ export function crossmintModalService({
             whPassThroughArgs,
             paymentMethod,
             preferredSigninMethod,
-            prepay
+            prepay,
+            accesslistId
         );
     };
 
