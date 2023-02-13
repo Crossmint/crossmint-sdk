@@ -40,6 +40,7 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
     preferredSigninMethod,
     dismissOverlayOnClick,
     prepay,
+    locale="en-US",
     ...props
 }) => {
     const [connecting, setConnecting] = useState(false);
@@ -70,6 +71,7 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
         onClick,
         connecting,
         paymentMethod,
+        locale,
     });
 
     useEffect(() => {

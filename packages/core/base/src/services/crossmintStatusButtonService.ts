@@ -1,22 +1,24 @@
-import { onboardingRequestStatusResponse } from "../models/types";
+import {Locale, onboardingRequestStatusResponse} from "../models/types";
+import {t} from "../utils/i18n";
 
 interface CrossmintStatusButtonServiceProps {
     onClick?: (e: any) => void;
+    locale: Locale;
 }
 
-export function crossmintStatusButtonService({ onClick }: CrossmintStatusButtonServiceProps) {
+export function crossmintStatusButtonService({ onClick, locale }: CrossmintStatusButtonServiceProps) {
     const getButtonText = (status: onboardingRequestStatusResponse) => {
         switch (status) {
             case onboardingRequestStatusResponse.INVALID:
-                return "Invalid clientId";
+                return t("crossmintStatusButtonService.INVALID", locale)
             case onboardingRequestStatusResponse.WAITING_SUBMISSION:
-                return "Click here to setup Crossmint";
+                return t("crossmintStatusButtonService.WAITING_SUBMISSION", locale)
             case onboardingRequestStatusResponse.PENDING:
-                return "Your application is under review";
+                return t("crossmintStatusButtonService.PENDING", locale)
             case onboardingRequestStatusResponse.ACCEPTED:
-                return "You're good to go!";
+                return t("crossmintStatusButtonService.ACCEPTED", locale)
             case onboardingRequestStatusResponse.REJECTED:
-                return "Your application was rejected";
+                return t("crossmintStatusButtonService.REJECTED", locale)
         }
     };
 
