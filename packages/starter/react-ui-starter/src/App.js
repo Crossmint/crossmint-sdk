@@ -7,6 +7,7 @@ function App() {
         >
             <CrossmintPayButton
                 clientId="<YOUR_CLIENT_ID>"
+                locale={'es-ES'}
             />
         </div>
     );

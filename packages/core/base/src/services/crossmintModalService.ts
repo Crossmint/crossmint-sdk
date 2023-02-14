@@ -1,4 +1,4 @@
-import { PayButtonConfig, SigninMethods, clientNames, paymentMethods } from "../models/types";
+import {PayButtonConfig, SigninMethods, clientNames, paymentMethods, Locale, Currency} from "../models/types";
 import { getEnvironmentBaseUrl } from "../utils/ui";
 
 type MintQueryParams = {
@@ -13,6 +13,8 @@ type MintQueryParams = {
     paymentMethod?: paymentMethods;
     preferredSigninMethod?: SigninMethods;
     prepay?: string;
+    locale: Locale;
+    currency: Currency;
 };
 
 const overlayId = "__crossmint-overlay__";
@@ -81,6 +83,8 @@ interface CrossmintModalServiceParams {
     setConnecting: (connecting: boolean) => void;
     environment?: string;
     clientName: clientNames;
+    locale: Locale;
+    currency: Currency;
 }
 
 export interface CrossmintModalServiceReturn {
@@ -104,6 +108,8 @@ export function crossmintModalService({
     setConnecting,
     environment,
     clientName,
+    locale,
+    currency,
 }: CrossmintModalServiceParams): CrossmintModalServiceReturn {
     const createPopup = (
         mintConfig: PayButtonConfig,
@@ -122,6 +128,8 @@ export function crossmintModalService({
                 clientName,
                 clientVersion: libVersion,
                 mintConfig: JSON.stringify(mintConfig),
+                locale,
+                currency,
             };
 
             if (mintTo) mintQueryParams.mintTo = mintTo;

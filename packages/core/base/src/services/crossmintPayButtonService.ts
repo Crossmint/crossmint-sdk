@@ -1,4 +1,4 @@
-import {Locale, onboardingRequestStatusResponse, paymentMethods} from "../models/types";
+import {Currency, Locale, onboardingRequestStatusResponse, paymentMethods} from "../models/types";
 import {t} from "../utils/i18n";
 
 interface IProps {

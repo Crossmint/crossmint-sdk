@@ -47,6 +47,7 @@ interface StatusButtonConfig {
 }
 
 export type Locale = "en-US" | "es-ES";
+export type Currency = "USD" | "EUR"
 
 export interface BaseButtonProps {
     className?: string;
@@ -59,6 +60,7 @@ export interface BaseButtonProps {
     mintConfig?: StatusButtonConfig;
     environment?: string;
     locale?: Locale;
+    currency?: Currency;
 }
 
 export interface CrossmintPayButtonProps extends BaseButtonProps {

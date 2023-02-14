@@ -11,7 +11,7 @@ export default function Index() {
                 alignItems: "center",
             }}
         >
-            <CrossmintPayButton clientId="7e94eb71-06c0-447f-9272-677416fee1d5" locale={'es-ES'} />
+            <CrossmintPayButton clientId="7e94eb71-06c0-447f-9272-677416fee1d5"/>
         </div>
     );
 }

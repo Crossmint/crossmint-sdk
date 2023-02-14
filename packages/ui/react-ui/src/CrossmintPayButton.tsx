@@ -41,6 +41,7 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
     dismissOverlayOnClick,
     prepay,
     locale="en-US",
+    currency="USD",
     ...props
 }) => {
     const [connecting, setConnecting] = useState(false);
@@ -65,6 +66,8 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
         libVersion: LIB_VERSION,
         environment,
         clientName: clientNames.reactUi,
+        locale,
+        currency,
     });
 
     const { getButtonText, shouldHideButton, handleClick } = crossmintPayButtonService({

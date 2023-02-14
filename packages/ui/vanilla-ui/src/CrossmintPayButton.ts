@@ -37,7 +37,8 @@ const propertyDefaults: CrossmintPayButtonLitProps = {
     preferredSigninMethod: undefined,
     dismissOverlayOnClick: false,
     prepay: false,
-    locale: 'en-US'
+    locale: 'en-US',
+    currency: 'USD'
 };
 
 @customElement("crossmint-pay-button")
@@ -98,6 +99,9 @@ export class CrossmintPayButton extends LitElement {
     @property({type: String})
     locale = propertyDefaults.locale;
 
+    @property({type: String})
+    currency = propertyDefaults.currency;
+
     static styles = buttonStyles;
 
     connecting = false;
@@ -155,6 +159,8 @@ export class CrossmintPayButton extends LitElement {
             setConnecting: this.setConnecting,
             libVersion: LIB_VERSION,
             clientName: clientNames.vanillaUi,
+            locale: this.locale || "en-US",
+            currency: this.currency || "USD"
         });
 
         const _handleClick = (e: any) =>

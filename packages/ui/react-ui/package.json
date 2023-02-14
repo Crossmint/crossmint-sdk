@@ -32,7 +32,7 @@
         "test": "jest"
     },
     "dependencies": {
-        "@crossmint/client-sdk-base": "^0.2.1-alpha.0",
+        "@crossmint/client-sdk-base": "file:../../core/base",
         "react-jss": "10.9.2",
         "uuid": "^8.3.2"
     },
@@ -42,7 +42,7 @@
     },
     "devDependencies": {
         "@types/jest": "^27.4.1",
-        "@types/react": "^17.0.24",
+        "@types/react": "17.0.34",
         "@types/react-dom": "^17.0.11",
         "jest": "^27.5.1",
         "node-fetch": "^3.2.0",
