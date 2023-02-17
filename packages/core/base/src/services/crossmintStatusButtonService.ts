@@ -1,5 +1,5 @@
-import {Locale, onboardingRequestStatusResponse} from "../models/types";
-import {t} from "../utils/i18n";
+import { Locale, onboardingRequestStatusResponse } from "../models/types";
+import { t } from "../utils/i18n";
 
 interface CrossmintStatusButtonServiceProps {
     onClick?: (e: any) => void;
@@ -10,15 +10,15 @@ export function crossmintStatusButtonService({ onClick, locale }: CrossmintStatu
     const getButtonText = (status: onboardingRequestStatusResponse) => {
         switch (status) {
             case onboardingRequestStatusResponse.INVALID:
-                return t("crossmintStatusButtonService.INVALID", locale)
+                return t("crossmintStatusButtonService.INVALID", locale);
             case onboardingRequestStatusResponse.WAITING_SUBMISSION:
-                return t("crossmintStatusButtonService.WAITING_SUBMISSION", locale)
+                return t("crossmintStatusButtonService.WAITING_SUBMISSION", locale);
             case onboardingRequestStatusResponse.PENDING:
-                return t("crossmintStatusButtonService.PENDING", locale)
+                return t("crossmintStatusButtonService.PENDING", locale);
             case onboardingRequestStatusResponse.ACCEPTED:
-                return t("crossmintStatusButtonService.ACCEPTED", locale)
+                return t("crossmintStatusButtonService.ACCEPTED", locale);
             case onboardingRequestStatusResponse.REJECTED:
-                return t("crossmintStatusButtonService.REJECTED", locale)
+                return t("crossmintStatusButtonService.REJECTED", locale);
         }
     };
 

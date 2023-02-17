@@ -1,4 +1,4 @@
-import {PayButtonConfig, SigninMethods, clientNames, paymentMethods, Locale, Currency} from "../models/types";
+import { PayButtonConfig, SigninMethods, clientNames, paymentMethods, Locale, Currency } from "../models/types";
 import { getEnvironmentBaseUrl } from "../utils/ui";
 
 type MintQueryParams = {
@@ -96,21 +96,21 @@ export interface CrossmintModalServiceReturn {
         whPassThroughArgs?: any,
         paymentMethod?: paymentMethods,
         preferredSigninMethod?: SigninMethods,
-        prepay?: boolean
+        prepay?: boolean,
     ) => void;
 }
 
 export function crossmintModalService({
-    clientId,
-    libVersion,
-    showOverlay,
-    dismissOverlayOnClick,
-    setConnecting,
-    environment,
-    clientName,
-    locale,
-    currency,
-}: CrossmintModalServiceParams): CrossmintModalServiceReturn {
+                                          clientId,
+                                          libVersion,
+                                          showOverlay,
+                                          dismissOverlayOnClick,
+                                          setConnecting,
+                                          environment,
+                                          clientName,
+                                          locale,
+                                          currency,
+                                      }: CrossmintModalServiceParams): CrossmintModalServiceReturn {
     const createPopup = (
         mintConfig: PayButtonConfig,
         mintTo?: string,
@@ -119,7 +119,7 @@ export function crossmintModalService({
         whPassThroughArgs?: any,
         paymentMethod?: paymentMethods,
         preferredSigninMethod?: SigninMethods,
-        prepay?: boolean
+        prepay?: boolean,
     ) => {
         const urlOrigin = getEnvironmentBaseUrl(environment);
         const getMintQueryParams = (): string => {
@@ -168,7 +168,7 @@ export function crossmintModalService({
         whPassThroughArgs?: any,
         paymentMethod?: paymentMethods,
         preferredSigninMethod?: SigninMethods,
-        prepay?: boolean
+        prepay?: boolean,
     ) => {
         setConnecting(true);
 
@@ -180,12 +180,12 @@ export function crossmintModalService({
             whPassThroughArgs,
             paymentMethod,
             preferredSigninMethod,
-            prepay
+            prepay,
         );
     };
 
     function registerListeners(pop: Window) {
-        const timer = setInterval(function () {
+        const timer = setInterval(function() {
             if (pop.closed) {
                 clearInterval(timer);
                 setConnecting(false);

@@ -1,7 +1,7 @@
-import {html, LitElement} from "lit";
-import {classMap} from "lit/directives/class-map.js";
-import {property} from "lit/decorators/property.js";
-import {customElement} from "lit/decorators/custom-element.js";
+import { html, LitElement } from "lit";
+import { classMap } from "lit/directives/class-map.js";
+import { property } from "lit/decorators/property.js";
+import { customElement } from "lit/decorators/custom-element.js";
 import {
     mintingContractTypes,
     onboardingRequestStatusResponse,
@@ -11,9 +11,9 @@ import {
     PayButtonConfig,
     clientNames,
 } from "@crossmint/client-sdk-base";
-import {LIB_VERSION} from "./version";
-import {CrossmintPayButtonLitProps} from "./types";
-import {buttonStyles} from "./styles";
+import { LIB_VERSION } from "./version";
+import { CrossmintPayButtonLitProps } from "./types";
+import { buttonStyles } from "./styles";
 
 const propertyDefaults: CrossmintPayButtonLitProps = {
     className: "",
@@ -37,69 +37,69 @@ const propertyDefaults: CrossmintPayButtonLitProps = {
     preferredSigninMethod: undefined,
     dismissOverlayOnClick: false,
     prepay: false,
-    locale: 'en-US',
-    currency: 'USD'
+    locale: "en-US",
+    currency: "USD",
 };
 
 @customElement("crossmint-pay-button")
 export class CrossmintPayButton extends LitElement {
-    @property({type: String})
+    @property({ type: String })
     theme = propertyDefaults.theme;
 
-    @property({type: Boolean})
+    @property({ type: Boolean })
     disabled = propertyDefaults.disabled;
 
-    @property({type: String})
+    @property({ type: String })
     mintTo = propertyDefaults.mintTo;
 
-    @property({type: String})
+    @property({ type: String })
     emailTo = propertyDefaults.emailTo;
 
-    @property({type: String})
+    @property({ type: String })
     listingId = propertyDefaults.listingId;
 
-    @property({type: String})
+    @property({ type: String })
     clientId = propertyDefaults.clientId;
 
-    @property({type: String})
+    @property({ type: String })
     auctionId = propertyDefaults.auctionId;
 
-    @property({type: String})
+    @property({ type: String })
     environment = propertyDefaults.environment;
 
-    @property({type: Boolean})
+    @property({ type: Boolean })
     hideMintOnInactiveClient = propertyDefaults.hideMintOnInactiveClient;
 
-    @property({type: Boolean})
+    @property({ type: Boolean })
     showOverlay = propertyDefaults.showOverlay;
 
-    @property({type: Object})
+    @property({ type: Object })
     mintConfig: PayButtonConfig = {
         type: mintingContractTypes.CANDY_MACHINE,
     };
 
-    @property({type: Function})
+    @property({ type: Function })
     onClick = propertyDefaults.onClick;
 
-    @property({type: Object})
+    @property({ type: Object })
     whPassThroughArgs = propertyDefaults.whPassThroughArgs;
 
-    @property({type: String})
+    @property({ type: String })
     paymentMethod = propertyDefaults.paymentMethod;
 
-    @property({type: String})
+    @property({ type: String })
     preferredSigninMethod = propertyDefaults.preferredSigninMethod;
 
-    @property({type: Boolean})
+    @property({ type: Boolean })
     dismissOverlayOnClick = propertyDefaults.dismissOverlayOnClick;
 
-    @property({type: Boolean})
+    @property({ type: Boolean })
     prepay = propertyDefaults.prepay;
 
-    @property({type: String})
+    @property({ type: String })
     locale = propertyDefaults.locale;
 
-    @property({type: String})
+    @property({ type: String })
     currency = propertyDefaults.currency;
 
     static styles = buttonStyles;
@@ -112,14 +112,14 @@ export class CrossmintPayButton extends LitElement {
     setStatus = (status: onboardingRequestStatusResponse) => {
         this.status = status;
     };
-    classes = {light: false};
+    classes = { light: false };
     statusService: any = null;
     modalService: any = null;
 
     connectedCallback() {
         super.connectedCallback();
 
-        const {fetchClientIntegration} = crossmintStatusService({
+        const { fetchClientIntegration } = crossmintStatusService({
             libVersion: LIB_VERSION,
             clientId: this.clientId,
             environment: this.environment,
@@ -135,7 +135,7 @@ export class CrossmintPayButton extends LitElement {
     }
 
     render() {
-        const {shouldHideButton, handleClick, getButtonText} = crossmintPayButtonService({
+        const { shouldHideButton, handleClick, getButtonText } = crossmintPayButtonService({
             onClick: this.onClick,
             connecting: this.connecting,
             paymentMethod: this.paymentMethod,
@@ -151,7 +151,7 @@ export class CrossmintPayButton extends LitElement {
         }
         const content = getButtonText(this.connecting);
 
-        const {connect} = crossmintModalService({
+        const { connect } = crossmintModalService({
             environment: this.environment,
             clientId: this.clientId,
             showOverlay: this.showOverlay || true,
@@ -160,7 +160,7 @@ export class CrossmintPayButton extends LitElement {
             libVersion: LIB_VERSION,
             clientName: clientNames.vanillaUi,
             locale: this.locale || "en-US",
-            currency: this.currency || "USD"
+            currency: this.currency || "USD",
         });
 
         const _handleClick = (e: any) =>
@@ -181,13 +181,13 @@ export class CrossmintPayButton extends LitElement {
 
         return html`
             <button
-                class=${classMap(this.classes)}
-                .disabled=${this.disabled}
-                @click=${_handleClick}
-                tabindex=${this.tabIndex}
+                class="${classMap(this.classes)}"
+                .disabled="${this.disabled}"
+                @click="${_handleClick}"
+                tabindex="${this.tabIndex}"
                 part="button"
             >
-                <img src="https://www.crossmint.io/assets/crossmint/logo.svg" alt="Crossmint logo"/>
+                <img src="https://www.crossmint.io/assets/crossmint/logo.svg" alt="Crossmint logo" />
                 <span part="contentParagraph">${content}</span>
             </button>
         `;

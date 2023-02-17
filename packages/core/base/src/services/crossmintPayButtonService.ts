@@ -1,5 +1,5 @@
-import {Currency, Locale, onboardingRequestStatusResponse, paymentMethods} from "../models/types";
-import {t} from "../utils/i18n";
+import { Locale, onboardingRequestStatusResponse, paymentMethods } from "../models/types";
+import { t } from "../utils/i18n";
 
 interface IProps {
     onClick?: (e: any) => void;
@@ -8,21 +8,21 @@ interface IProps {
     locale: Locale;
 }
 
-export function crossmintPayButtonService({onClick, connecting, paymentMethod, locale}: IProps) {
+export function crossmintPayButtonService({ onClick, connecting, paymentMethod, locale }: IProps) {
     const getButtonText = (connecting: boolean) => {
         if (connecting) {
-            return t("crossmintPayButtonService.CONNECTING", locale)
+            return t("crossmintPayButtonService.CONNECTING", locale);
         }
         switch (paymentMethod) {
             case "ETH":
-                return t("crossmintPayButtonService.BUY_WITH_ETH", locale)
+                return t("crossmintPayButtonService.BUY_WITH_ETH", locale);
             case "SOL":
-                return t("crossmintPayButtonService.BUY_WITH_SOL", locale)
+                return t("crossmintPayButtonService.BUY_WITH_SOL", locale);
             default:
-                return t("crossmintPayButtonService.BUY_WITH_CREDIT_CARD", locale)
+                return t("crossmintPayButtonService.BUY_WITH_CREDIT_CARD", locale);
         }
     };
-    const shouldHideButton = ({hideMintOnInactiveClient, status}: any) =>
+    const shouldHideButton = ({ hideMintOnInactiveClient, status }: any) =>
         hideMintOnInactiveClient && status !== onboardingRequestStatusResponse.ACCEPTED;
 
     const handleClick = (event: any, cb: () => void) => {

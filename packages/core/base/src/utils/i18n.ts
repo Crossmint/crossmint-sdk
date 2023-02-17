@@ -1,4 +1,5 @@
-import {Locale} from "../models/types";
+import { Locale } from "../models/types";
+import { NestedPaths, TypeFromPath } from "../models/system";
 
 const enUS = {
     crossmintPayButtonService: {
@@ -12,9 +13,9 @@ const enUS = {
         WAITING_SUBMISSION: "Click here to setup Crossmint",
         PENDING: "Your application is under review",
         ACCEPTED: "You're good to go!",
-        REJECTED: "Your application was rejected"
+        REJECTED: "Your application was rejected",
     },
-}
+};
 
 const esES = {
     crossmintPayButtonService: {
@@ -28,15 +29,16 @@ const esES = {
         WAITING_SUBMISSION: "Haga clic aquí para configurar Crossmint",
         PENDING: "Su solicitud está en revisión",
         ACCEPTED: "¡Está listo para usar Crossmint!",
-        REJECTED: "Su solicitud fue rechazada"
-    }
-}
+        REJECTED: "Su solicitud fue rechazada",
+    },
+};
 
 const localeMap = {
     "en-US": enUS,
     "es-ES": esES,
-}
-export function t(wordingKey: string, locale: Locale) {
+};
+
+export function t<K extends NestedPaths<typeof enUS>>(wordingKey: K, locale: Locale): TypeFromPath<typeof enUS, K>  {
     const localeWording = localeMap[locale];
     return wordingKey.split(".").reduce((obj: any, i) => obj[i], localeWording);
 }

@@ -14,20 +14,20 @@ import useEnvironment from "./useEnvironment";
 import { LIB_VERSION } from "./version";
 
 export const CrossmintStatusButton: FC<CrossmintStatusButtonReactProps> = ({
-    className,
-    disabled,
-    onClick,
-    style,
-    tabIndex,
-    theme = "dark",
-    clientId,
-    auctionId,
-    platformId,
-    mintConfig,
-    environment,
-    locale="en-US",
-    ...props
-}) => {
+                                                                               className,
+                                                                               disabled,
+                                                                               onClick,
+                                                                               style,
+                                                                               tabIndex,
+                                                                               theme = "dark",
+                                                                               clientId,
+                                                                               auctionId,
+                                                                               platformId,
+                                                                               mintConfig,
+                                                                               environment,
+                                                                               locale = "en-US",
+                                                                               ...props
+                                                                           }) => {
     const [status, setStatus] = useState(onboardingRequestStatusResponse.WAITING_SUBMISSION);
     const { isServerSideRendering } = useEnvironment();
 
@@ -41,7 +41,7 @@ export const CrossmintStatusButton: FC<CrossmintStatusButtonReactProps> = ({
         setStatus,
         clientName: clientNames.reactUi,
     });
-    const { getButtonText, isButtonDisabled, handleClick } = crossmintStatusButtonService({ onClick,locale });
+    const { getButtonText, isButtonDisabled, handleClick } = crossmintStatusButtonService({ onClick, locale });
 
     const _handleClick: MouseEventHandler<HTMLButtonElement> = (e) => handleClick(e, status, goToOnboarding);
 

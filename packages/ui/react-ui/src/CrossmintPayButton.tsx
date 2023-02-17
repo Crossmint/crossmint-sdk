@@ -20,30 +20,30 @@ const defaultMintConfig: any = {
 };
 
 export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
-    className,
-    disabled,
-    onClick,
-    style,
-    tabIndex,
-    theme = "dark",
-    mintTo,
-    emailTo,
-    listingId,
-    clientId,
-    auctionId,
-    hideMintOnInactiveClient = false,
-    showOverlay = true,
-    mintConfig = defaultMintConfig,
-    whPassThroughArgs,
-    environment,
-    paymentMethod,
-    preferredSigninMethod,
-    dismissOverlayOnClick,
-    prepay,
-    locale="en-US",
-    currency="USD",
-    ...props
-}) => {
+                                                                         className,
+                                                                         disabled,
+                                                                         onClick,
+                                                                         style,
+                                                                         tabIndex,
+                                                                         theme = "dark",
+                                                                         mintTo,
+                                                                         emailTo,
+                                                                         listingId,
+                                                                         clientId,
+                                                                         auctionId,
+                                                                         hideMintOnInactiveClient = false,
+                                                                         showOverlay = true,
+                                                                         mintConfig = defaultMintConfig,
+                                                                         whPassThroughArgs,
+                                                                         environment,
+                                                                         paymentMethod,
+                                                                         preferredSigninMethod,
+                                                                         dismissOverlayOnClick,
+                                                                         prepay,
+                                                                         locale = "en-US",
+                                                                         currency = "USD",
+                                                                         ...props
+                                                                     }) => {
     const [connecting, setConnecting] = useState(false);
     const [status, setStatus] = useState(onboardingRequestStatusResponse.WAITING_SUBMISSION);
     const { isServerSideRendering } = useEnvironment();
@@ -93,7 +93,7 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
                 whPassThroughArgs,
                 paymentMethod,
                 preferredSigninMethod,
-                prepay
+                prepay,
             );
         });
 
