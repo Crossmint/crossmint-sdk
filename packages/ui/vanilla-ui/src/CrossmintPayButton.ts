@@ -181,10 +181,10 @@ export class CrossmintPayButton extends LitElement {
 
         return html`
             <button
-                class="${classMap(this.classes)}"
-                .disabled="${this.disabled}"
-                @click="${_handleClick}"
-                tabindex="${this.tabIndex}"
+                class=${classMap(this.classes)}
+                .disabled=${this.disabled}
+                @click=${_handleClick}
+                tabindex=${this.tabIndex}
                 part="button"
             >
                 <img src="https://www.crossmint.io/assets/crossmint/logo.svg" alt="Crossmint logo" />
