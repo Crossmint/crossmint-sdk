@@ -40,8 +40,10 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
     preferredSigninMethod,
     dismissOverlayOnClick,
     prepay,
+    locale = "en-US",
+    currency = "USD",
     ...props
-}) => {
+  }) => {
     const [connecting, setConnecting] = useState(false);
     const [status, setStatus] = useState(onboardingRequestStatusResponse.WAITING_SUBMISSION);
     const { isServerSideRendering } = useEnvironment();
@@ -64,12 +66,15 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
         libVersion: LIB_VERSION,
         environment,
         clientName: clientNames.reactUi,
+        locale,
+        currency,
     });
 
     const { getButtonText, shouldHideButton, handleClick } = crossmintPayButtonService({
         onClick,
         connecting,
         paymentMethod,
+        locale,
     });
 
     useEffect(() => {
@@ -88,7 +93,7 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
                 whPassThroughArgs,
                 paymentMethod,
                 preferredSigninMethod,
-                prepay
+                prepay,
             );
         });
 

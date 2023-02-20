@@ -37,6 +37,8 @@ const propertyDefaults: CrossmintPayButtonLitProps = {
     preferredSigninMethod: undefined,
     dismissOverlayOnClick: false,
     prepay: false,
+    locale: "en-US",
+    currency: "USD",
 };
 
 @customElement("crossmint-pay-button")
@@ -79,7 +81,7 @@ export class CrossmintPayButton extends LitElement {
     @property({ type: Function })
     onClick = propertyDefaults.onClick;
 
-    @property({ type: Object})
+    @property({ type: Object })
     whPassThroughArgs = propertyDefaults.whPassThroughArgs;
 
     @property({ type: String })
@@ -93,6 +95,12 @@ export class CrossmintPayButton extends LitElement {
 
     @property({ type: Boolean })
     prepay = propertyDefaults.prepay;
+
+    @property({ type: String })
+    locale = propertyDefaults.locale;
+
+    @property({ type: String })
+    currency = propertyDefaults.currency;
 
     static styles = buttonStyles;
 
@@ -131,6 +139,7 @@ export class CrossmintPayButton extends LitElement {
             onClick: this.onClick,
             connecting: this.connecting,
             paymentMethod: this.paymentMethod,
+            locale: this.locale || "en-US",
         });
         if (
             shouldHideButton({
@@ -150,6 +159,8 @@ export class CrossmintPayButton extends LitElement {
             setConnecting: this.setConnecting,
             libVersion: LIB_VERSION,
             clientName: clientNames.vanillaUi,
+            locale: this.locale || "en-US",
+            currency: this.currency || "USD",
         });
 
         const _handleClick = (e: any) =>

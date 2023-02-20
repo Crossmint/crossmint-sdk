@@ -23,6 +23,7 @@ const propertyDefaults: CrossmintStatusButtonLitProps = {
     platformId: "",
     mintConfig: {},
     onClick: undefined,
+    locale: "en-US",
 };
 
 @customElement("crossmint-status-button")
@@ -47,6 +48,9 @@ export class CrossmintStatusButton extends LitElement {
 
     @property({ type: Function })
     onClick = propertyDefaults.onClick;
+
+    @property({type: String})
+    locale = propertyDefaults.locale;
 
     static styles = buttonStyles;
 
@@ -83,7 +87,7 @@ export class CrossmintStatusButton extends LitElement {
     }
 
     render() {
-        const { getButtonText, isButtonDisabled, handleClick } = crossmintStatusButtonService({ onClick: this.onClick});
+        const { getButtonText, isButtonDisabled, handleClick } = crossmintStatusButtonService({ onClick: this.onClick, locale: this.locale || "en-US"});
         const { goToOnboarding } = crossmintStatusService({
             libVersion: LIB_VERSION,
             clientId: this.clientId,

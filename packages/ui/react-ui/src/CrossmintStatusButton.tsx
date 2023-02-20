@@ -1,4 +1,4 @@
-import React, { FC, MouseEventHandler, useCallback, useEffect, useMemo, useState } from "react";
+import React, { FC, MouseEventHandler, useEffect, useMemo, useState } from "react";
 
 import {
     baseUrls,
@@ -25,8 +25,9 @@ export const CrossmintStatusButton: FC<CrossmintStatusButtonReactProps> = ({
     platformId,
     mintConfig,
     environment,
+    locale = "en-US",
     ...props
-}) => {
+  }) => {
     const [status, setStatus] = useState(onboardingRequestStatusResponse.WAITING_SUBMISSION);
     const { isServerSideRendering } = useEnvironment();
 
@@ -40,7 +41,7 @@ export const CrossmintStatusButton: FC<CrossmintStatusButtonReactProps> = ({
         setStatus,
         clientName: clientNames.reactUi,
     });
-    const { getButtonText, isButtonDisabled, handleClick } = crossmintStatusButtonService({ onClick });
+    const { getButtonText, isButtonDisabled, handleClick } = crossmintStatusButtonService({ onClick, locale });
 
     const _handleClick: MouseEventHandler<HTMLButtonElement> = (e) => handleClick(e, status, goToOnboarding);
 
