@@ -47,7 +47,7 @@ interface StatusButtonConfig {
 }
 
 export type Locale = "en-US" | "es-ES";
-export type Currency = "USD" | "EUR"
+export type Currency = "USD" | "EUR";
 
 export interface BaseButtonProps {
     className?: string;
@@ -70,7 +70,7 @@ export interface CrossmintPayButtonProps extends BaseButtonProps {
     showOverlay?: boolean;
     dismissOverlayOnClick?: boolean;
     hideMintOnInactiveClient?: boolean;
-    mintConfig?: PayButtonConfig;
+    mintConfig?: PayButtonConfig | PayButtonConfig[];
     whPassThroughArgs?: any;
     paymentMethod?: paymentMethods;
     preferredSigninMethod?: SigninMethods;
