@@ -1,5 +1,5 @@
 {
-    "version": "0.1.6-alpha.0",
+    "version": "0.1.6-alpha.1",
     "name": "@crossmint/client-sdk-react-ui-starter",
     "private": true,
     "author": "Paella Labs Inc",
@@ -16,7 +16,7 @@
         "yarn.lock"
     ],
     "dependencies": {
-        "@crossmint/client-sdk-react-ui": "^0.2.2-alpha.0",
+        "@crossmint/client-sdk-react-ui": "^0.2.2-alpha.1",
         "@types/node": "^16.11.7",
         "@types/react": "17.0.34",
         "@types/react-dom": "^17.0.11",
