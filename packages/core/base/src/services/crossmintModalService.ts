@@ -15,6 +15,9 @@ type MintQueryParams = {
     prepay?: string;
     locale: Locale;
     currency: Currency;
+    layout?: string;
+    successCallbackURL? : string;
+    failureCallbackURL?: string;
 };
 
 const overlayId = "__crossmint-overlay__";
@@ -85,6 +88,9 @@ interface CrossmintModalServiceParams {
     clientName: clientNames;
     locale: Locale;
     currency: Currency;
+    layout?: string;
+    successCallbackURL? : string;
+    failureCallbackURL?: string;
 }
 
 export interface CrossmintModalServiceReturn {
@@ -110,6 +116,9 @@ export function crossmintModalService({
                                           clientName,
                                           locale,
                                           currency,
+                                          layout,
+                                          successCallbackURL,
+                                          failureCallbackURL
                                       }: CrossmintModalServiceParams): CrossmintModalServiceReturn {
     const createPopup = (
         mintConfig: PayButtonConfig,
@@ -129,7 +138,7 @@ export function crossmintModalService({
                 clientVersion: libVersion,
                 mintConfig: JSON.stringify(mintConfig),
                 locale,
-                currency,
+                currency
             };
 
             if (mintTo) mintQueryParams.mintTo = mintTo;
@@ -139,6 +148,9 @@ export function crossmintModalService({
             if (paymentMethod) mintQueryParams.paymentMethod = paymentMethod.toLowerCase() as paymentMethods;
             if (preferredSigninMethod) mintQueryParams.preferredSigninMethod = preferredSigninMethod;
             if (prepay) mintQueryParams.prepay = "true";
+            if (layout) mintQueryParams.layout = layout ?? "popUpWindow";
+            if (successCallbackURL) mintQueryParams.successCallbackURL = successCallbackURL;
+            if (failureCallbackURL) mintQueryParams.failureCallbackURL = failureCallbackURL;
 
             return new URLSearchParams(mintQueryParams).toString();
         };

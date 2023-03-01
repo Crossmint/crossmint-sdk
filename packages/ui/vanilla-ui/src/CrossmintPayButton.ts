@@ -39,6 +39,9 @@ const propertyDefaults: CrossmintPayButtonLitProps = {
     prepay: false,
     locale: "en-US",
     currency: "USD",
+    layout: "popUpWindow",
+    successCallbackURL: "",
+    failureCallbackURL: ""
 };
 
 @customElement("crossmint-pay-button")
@@ -102,6 +105,15 @@ export class CrossmintPayButton extends LitElement {
     @property({ type: String })
     currency = propertyDefaults.currency;
 
+    @property({ type: String })
+    layout = propertyDefaults.layout;
+
+    @property({ type: String })
+    successCallbackURL = propertyDefaults.successCallbackURL;
+
+    @property({ type: String })
+    failureCallbackURL = propertyDefaults.failureCallbackURL;
+
     static styles = buttonStyles;
 
     connecting = false;
@@ -161,6 +173,9 @@ export class CrossmintPayButton extends LitElement {
             clientName: clientNames.vanillaUi,
             locale: this.locale || "en-US",
             currency: this.currency || "USD",
+            layout: this.layout || "popUpWindow",
+            successCallbackURL: this.successCallbackURL ,
+            failureCallbackURL: this.failureCallbackURL,
         });
 
         const _handleClick = (e: any) =>
@@ -174,6 +189,9 @@ export class CrossmintPayButton extends LitElement {
                     this.paymentMethod,
                     this.preferredSigninMethod,
                     this.prepay,
+                    this.layout,
+                    this.successCallbackURL,
+                    this.failureCallbackURL,
                 );
             });
 

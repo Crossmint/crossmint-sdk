@@ -42,6 +42,9 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
     prepay,
     locale = "en-US",
     currency = "USD",
+    layout = "popUpWindow",
+    successCallbackURL = "https://www.crossmint.com/console/",
+    failureCallbackURL = "",
     ...props
   }) => {
     const [connecting, setConnecting] = useState(false);
@@ -68,6 +71,9 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
         clientName: clientNames.reactUi,
         locale,
         currency,
+        layout,
+        successCallbackURL,
+        failureCallbackURL,
     });
 
     const { getButtonText, shouldHideButton, handleClick } = crossmintPayButtonService({
