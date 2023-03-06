@@ -143,7 +143,7 @@ export function crossmintModalService({
             return new URLSearchParams(mintQueryParams).toString();
         };
         const callbackUrl = encodeURIComponent(`${urlOrigin}/checkout/mint?${getMintQueryParams()}`);
-        const url = `${urlOrigin}/signin?callbackUrl=${callbackUrl}`;
+        const url = `${urlOrigin}/signin?callbackUrl=${callbackUrl}&locale=${locale}&currency=${currency}`;
 
         const pop = window.open(url, "popUpWindow", createPopupString(POPUP_WIDTH, POPUP_HEIGHT));
         if (pop) {
