@@ -48,7 +48,7 @@ interface StatusButtonConfig {
 }
 
 export type Locale = "en-US" | "es-ES";
-export type Currency = "USD" | "EUR";
+export type Currency = "USD" | "EUR" | "AUD";
 
 export interface BaseButtonProps {
     className?: string;
