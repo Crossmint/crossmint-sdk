@@ -135,7 +135,7 @@ export function crossmintModalService({
                 clientVersion: libVersion,
                 mintConfig: JSON.stringify(mintConfig),
                 locale,
-                currency
+                currency,
             };
 
             if (mintTo) mintQueryParams.mintTo = mintTo;
