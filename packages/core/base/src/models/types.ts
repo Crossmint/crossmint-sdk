@@ -76,8 +76,7 @@ export interface CrossmintPayButtonProps extends BaseButtonProps {
     paymentMethod?: paymentMethods;
     preferredSigninMethod?: SigninMethods;
     prepay?: boolean;
-    layout?: string;
-    successCallbackURL? : string;
+    successCallbackURL?: string;
     failureCallbackURL?: string;
 }
 
