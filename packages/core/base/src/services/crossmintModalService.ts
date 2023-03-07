@@ -15,7 +15,6 @@ type MintQueryParams = {
     prepay?: string;
     locale: Locale;
     currency: Currency;
-    layout?: string;
     successCallbackURL? : string;
     failureCallbackURL?: string;
 };
@@ -88,7 +87,6 @@ interface CrossmintModalServiceParams {
     clientName: clientNames;
     locale: Locale;
     currency: Currency;
-    layout?: string;
     successCallbackURL? : string;
     failureCallbackURL?: string;
 }
@@ -116,7 +114,6 @@ export function crossmintModalService({
                                           clientName,
                                           locale,
                                           currency,
-                                          layout,
                                           successCallbackURL,
                                           failureCallbackURL
                                       }: CrossmintModalServiceParams): CrossmintModalServiceReturn {
@@ -148,7 +145,6 @@ export function crossmintModalService({
             if (paymentMethod) mintQueryParams.paymentMethod = paymentMethod.toLowerCase() as paymentMethods;
             if (preferredSigninMethod) mintQueryParams.preferredSigninMethod = preferredSigninMethod;
             if (prepay) mintQueryParams.prepay = "true";
-            if (layout) mintQueryParams.layout = layout ?? "popUpWindow";
             if (successCallbackURL) mintQueryParams.successCallbackURL = successCallbackURL;
             if (failureCallbackURL) mintQueryParams.failureCallbackURL = failureCallbackURL;
 
