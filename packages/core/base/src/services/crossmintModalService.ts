@@ -15,6 +15,8 @@ type MintQueryParams = {
     prepay?: string;
     locale: Locale;
     currency: Currency;
+    successCallbackURL? : string;
+    failureCallbackURL?: string;
 };
 
 const overlayId = "__crossmint-overlay__";
@@ -85,6 +87,8 @@ interface CrossmintModalServiceParams {
     clientName: clientNames;
     locale: Locale;
     currency: Currency;
+    successCallbackURL? : string;
+    failureCallbackURL?: string;
 }
 
 export interface CrossmintModalServiceReturn {
@@ -110,6 +114,8 @@ export function crossmintModalService({
                                           clientName,
                                           locale,
                                           currency,
+                                          successCallbackURL,
+                                          failureCallbackURL
                                       }: CrossmintModalServiceParams): CrossmintModalServiceReturn {
     const createPopup = (
         mintConfig: PayButtonConfig,
@@ -139,6 +145,8 @@ export function crossmintModalService({
             if (paymentMethod) mintQueryParams.paymentMethod = paymentMethod.toLowerCase() as paymentMethods;
             if (preferredSigninMethod) mintQueryParams.preferredSigninMethod = preferredSigninMethod;
             if (prepay) mintQueryParams.prepay = "true";
+            if (successCallbackURL) mintQueryParams.successCallbackURL = successCallbackURL;
+            if (failureCallbackURL) mintQueryParams.failureCallbackURL = failureCallbackURL;
 
             return new URLSearchParams(mintQueryParams).toString();
         };
