@@ -4,7 +4,7 @@ import React from "react";
 
 import { CrossmintNFTCollectionView } from "../src/CrossmintNFTCollectionView";
 
-const wallets = [{ chain: "solana", address: "12345" }];
+const wallets = [{ chain: "solana", publicKey: "12345" }];
 
 describe("when only passing mandatory fields", () => {
     test("should add them to the iframe query params", () => {

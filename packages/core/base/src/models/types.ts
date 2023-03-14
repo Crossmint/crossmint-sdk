@@ -88,7 +88,7 @@ export type OnboardingQueryParams = {
 
 export interface Wallet {
     chain: string;
-    address: string;
+    publicKey: string;
 }
 
 interface Colors {
