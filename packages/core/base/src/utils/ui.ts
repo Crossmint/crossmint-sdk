@@ -47,12 +47,11 @@ function getNFTLocator(address: string, chain: string, tokenId?: string): string
 
 export function getNFTCollectionViewSrc(props: NFTCollectionViewProps, clientVersion: string) {
     const baseUrl = getEnvironmentBaseUrl(props.environment);
-    const { wallets, projectId } = props;
+    const { wallets } = props;
     const walletsStringify = JSON.stringify(wallets);
 
     const queryParams = new URLSearchParams({
         wallets: walletsStringify,
-        projectId,
         clientVersion,
         ...(props.uiConfig != null ? { uiConfig: JSON.stringify(props.uiConfig) } : {}),
     });
@@ -61,9 +60,7 @@ export function getNFTCollectionViewSrc(props: NFTCollectionViewProps, clientVer
 
 export function getNFTDetailSrc(props: NFTDetailProps, clientVersion: string) {
     const baseUrl = getEnvironmentBaseUrl(props.environment);
-    const { projectId } = props;
     const queryParams = new URLSearchParams({
-        projectId,
         clientVersion,
         ...(props.uiConfig != null ? { uiConfig: JSON.stringify(props.uiConfig) } : {}),
     });

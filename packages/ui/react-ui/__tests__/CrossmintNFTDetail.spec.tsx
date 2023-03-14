@@ -8,18 +8,17 @@ const nft = { chain: "ethereum", address: "0x12345", tokenId: "12" };
 
 describe("when only passing mandatory fields", () => {
     test("should add them to the iframe query params", () => {
-        render(<CrossmintNFTDetail nft={nft} projectId="12345" />);
+        render(<CrossmintNFTDetail nft={nft} />);
         const iframe = screen.getByRole("nft-details");
         const src = iframe.getAttribute("src");
         expect(src).toContain("/sdk/wallets/tokens/eth:0x12345:12");
-        expect(src).toContain("projectId=12345");
         expect(src).toContain("clientVersion=");
     });
 });
 
 describe("when not setting any environment", () => {
     test("should default to production", () => {
-        render(<CrossmintNFTDetail nft={nft} projectId="12345" />);
+        render(<CrossmintNFTDetail nft={nft} />);
         const iframe = screen.getByRole("nft-details");
         const src = iframe.getAttribute("src");
         expect(src).toContain("https://www.crossmint.com/");
@@ -28,7 +27,7 @@ describe("when not setting any environment", () => {
 
 describe("when setting the environment to staging", () => {
     test("should use the staging url", () => {
-        render(<CrossmintNFTDetail nft={nft} projectId="12345" environment="staging" />);
+        render(<CrossmintNFTDetail nft={nft} environment="staging" />);
         const iframe = screen.getByRole("nft-details");
         const src = iframe.getAttribute("src");
         expect(src).toContain("https://staging.crossmint.com/");

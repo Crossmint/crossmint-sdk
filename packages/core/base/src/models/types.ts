@@ -105,7 +105,6 @@ interface UIConfig {
 }
 
 interface CommonProps {
-    projectId: string;
     uiConfig?: UIConfig;
     environment?: string;
 }
