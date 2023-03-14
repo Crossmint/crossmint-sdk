@@ -11,7 +11,7 @@ describe("when only passing mandatory fields", () => {
         render(<CrossmintNFTCollectionView wallets={wallets} projectId="12345" />);
         const iframe = screen.getByRole("nft-collection-view");
         const src = iframe.getAttribute("src");
-        expect(src).toContain("wallets=%5B%7B%22chain%22%3A%22solana%22%2C%22address%22%3A%2212345%22%7D%5D");
+        expect(src).toContain("wallets=%5B%7B%22chain%22%3A%22solana%22%2C%22publicKey%22%3A%2212345%22%7D%5D");
         expect(src).toContain("projectId=12345");
         expect(src).toContain("clientVersion=");
     });
