@@ -24,8 +24,8 @@ The next steps depend on which chain you're using for your project. For detailed
 
 We offer two components to help you quickly get up and running with your project using Crossmint wallets:
 
--   Pass your user wallets to `CrossmintNFTCollectionView` to displat a grid of NFTs ready to display.
--   `CrossmintNFTDetail` will give you an NFT detail page. You only need to pass the NFT details.
+-   `CrossmintNFTCollectionView` - Display a grid of NFTs.
+-   `CrossmintNFTDetail` - Display a card showing all NFT related details.
 
 Visit [our documentation](https://docs.crossmint.com/docs/wallet-ui-components) for integration instructions.
 
