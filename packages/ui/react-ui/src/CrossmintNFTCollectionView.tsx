@@ -25,6 +25,6 @@ export function CrossmintNFTCollectionView(props: NFTCollectionViewProps) {
                 padding: "0",
             }}
             role="nft-collection-view"
-        ></iframe>
+        />
     );
 }

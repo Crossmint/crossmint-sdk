@@ -21,6 +21,6 @@ export function CrossmintNFTDetail(props: NFTDetailProps) {
                 padding: "0",
             }}
             role="nft-details"
-        ></iframe>
+        />
     );
 }
