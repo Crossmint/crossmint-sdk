@@ -14,7 +14,20 @@ First, add the Crossmint Client SDK to your project with the following command:
 yarn add @crossmint/client-sdk-react-ui
 ```
 
+### I'm using Payments
+
 The next steps depend on which chain you're using for your project. For detailed integration instructions, visit our documentation for [Solana](https://docs.crossmint.io/accept-credit-cards/integration-guides/solana-candy-machine/b-i-have-an-existing-candy-machine-website/add-crossmint-for-solana-react.js-next.js), [Polygon](https://docs.crossmint.io/accept-credit-cards/integration-guides/polygon), or [Ethereum](https://docs.crossmint.io/accept-credit-cards/integration-guides/ethereum/add-crossmint-for-ethereum-react.js-next.js).
+
+---
+
+### I'm using Wallets
+
+We offer two components to help you quickly get up and running with your project using Crossmint wallets:
+
+-   Pass your user wallets to `CrossmintNFTCollectionView` to displat a grid of NFTs ready to display.
+-   `CrossmintNFTDetail` will give you an NFT detail page. You only need to pass the NFT details.
+
+Visit [our documentation](https://docs.crossmint.com/docs/wallet-ui-components) for integration instructions.
 
 ## Migration guide to 0.1.X versions
 
