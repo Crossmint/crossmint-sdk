@@ -4,8 +4,8 @@ export enum clientNames {
 }
 
 export enum baseUrls {
-    prod = "https://www.crossmint.io",
-    staging = "https://staging.crossmint.io/",
+    prod = "https://www.crossmint.com",
+    staging = "https://staging.crossmint.com",
     dev = "http://localhost:3001",
 }
 
@@ -35,7 +35,6 @@ export enum onboardingRequestStatusResponse {
     ACCEPTED = "accepted",
     INVALID = "invalid",
 }
-
 
 export interface PayButtonConfig {
     type: string;
@@ -86,3 +85,46 @@ export type OnboardingQueryParams = {
     auctionId?: string;
     mintConfig?: string;
 };
+
+export interface Wallet {
+    chain: string;
+    address: string;
+}
+
+interface Colors {
+    textPrimary?: string;
+    textSecondary?: string;
+    accent?: string;
+    background?: string;
+    backgroundSecondary?: string;
+    border?: string;
+}
+
+interface UIConfig {
+    colors?: Colors;
+}
+
+interface CommonProps {
+    projectId: string;
+    uiConfig?: UIConfig;
+    environment?: string;
+}
+
+export interface NFTCollectionViewProps extends CommonProps {
+    wallets: Wallet[];
+}
+
+export interface NFT {
+    address: string;
+    chain: string;
+    tokenId?: string;
+}
+
+export interface NFTDetailProps extends CommonProps {
+    nft: NFT;
+}
+
+export enum Environments {
+    PRODUCTION = "production",
+    STAGING = "staging",
+}
