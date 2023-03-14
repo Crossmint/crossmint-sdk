@@ -39,7 +39,7 @@ describe("CrossmintPayButton", () => {
         });
         // TODO(#62): make this tests a bit more maintainable
         expect(global.open).toHaveBeenCalledWith(
-            `https://www.crossmint.io/signin?callbackUrl=https%3A%2F%2Fwww.crossmint.io%2Fcheckout%2Fmint%3FclientId%3D${encodeURIComponent(
+            `https://www.crossmint.com/signin?callbackUrl=https%3A%2F%2Fwww.crossmint.com%2Fcheckout%2Fmint%3FclientId%3D${encodeURIComponent(
                 defaultProps.clientId
             )}%26clientName%3Dclient-sdk-react-ui%26clientVersion%3D${LIB_VERSION}%26mintConfig%3D%257B%2522type%2522%253A%2522candy-machine%2522%257D%26locale%3Den-US%26currency%3DUSD&locale=en-US&currency=USD`,
             "popUpWindow",
@@ -67,7 +67,7 @@ describe("CrossmintPayButton", () => {
                 render(<CrossmintPayButton {...defaultProps} hideMintOnInactiveClient={true} />);
             });
             expect(global.fetch).toHaveBeenCalledWith(
-                `https://www.crossmint.io/api/crossmint/onboardingRequests/${defaultProps.clientId}/status`,
+                `https://www.crossmint.com/api/crossmint/onboardingRequests/${defaultProps.clientId}/status`,
                 { headers: { "X-Client-Name": "client-sdk-react-ui", "X-Client-Version": LIB_VERSION } }
             );
         });
@@ -97,7 +97,7 @@ describe("CrossmintPayButton", () => {
                 render(<CrossmintPayButton {...defaultProps} environment="staging" hideMintOnInactiveClient={true} />);
             });
             expect(global.fetch).toHaveBeenCalledWith(
-                expect.stringContaining("https://staging.crossmint.io"),
+                expect.stringContaining("https://staging.crossmint.com"),
                 expect.anything()
             );
         });
@@ -107,7 +107,7 @@ describe("CrossmintPayButton", () => {
                 render(<CrossmintPayButton {...defaultProps} environment="prod" hideMintOnInactiveClient={true} />);
             });
             expect(global.fetch).toHaveBeenCalledWith(
-                expect.stringContaining("https://www.crossmint.io"),
+                expect.stringContaining("https://www.crossmint.com"),
                 expect.anything()
             );
         });
@@ -129,7 +129,7 @@ describe("CrossmintPayButton", () => {
                 );
             });
             expect(global.fetch).toHaveBeenCalledWith(
-                expect.stringContaining("https://www.crossmint.io"),
+                expect.stringContaining("https://www.crossmint.com"),
                 expect.anything()
             );
         });
