@@ -88,7 +88,7 @@ export type OnboardingQueryParams = {
 
 export interface Wallet {
     chain: string;
-    address: string;
+    publicKey: string;
 }
 
 interface Colors {
@@ -105,7 +105,6 @@ interface UIConfig {
 }
 
 interface CommonProps {
-    projectId: string;
     uiConfig?: UIConfig;
     environment?: string;
 }
