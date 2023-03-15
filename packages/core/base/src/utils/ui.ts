@@ -1,4 +1,4 @@
-import { ChainLocators, NFT, NFTCollectionViewProps, NFTDetailProps, baseUrls } from "../models/types";
+import { NFT, NFTCollectionViewProps, NFTDetailProps, baseUrls } from "../models/types";
 
 export const getEnvironmentBaseUrl = (environment = ""): string => {
     const productionValues = ["prod", "production"];
@@ -14,13 +14,13 @@ function getNFTLocator(nft: NFT) {
 
     switch (nft.chain) {
         case "solana":
-            return `${ChainLocators.solana}:${nft.mintHash}`;
+            return `${nft.chain}:${nft.mintHash}`;
         case "polygon":
         case "ethereum":
         case "bsc":
-            return `${ChainLocators[nft.chain]}:${nft.contractAddress}:${nft.tokenId}`;
+            return `${nft.chain}:${nft.contractAddress}:${nft.tokenId}`;
         case "cardano":
-            return `${ChainLocators[nft.chain]}:${nft.assetId}`;
+            return `${nft.chain}:${nft.assetId}`;
         default:
             throw new Error(`Invalid chain type ${JSON.stringify(nft)}`);
     }
