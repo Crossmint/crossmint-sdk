@@ -13,7 +13,7 @@ describe("when only passing mandatory fields", () => {
         render(<CrossmintNFTDetail nft={nft} />);
         const iframe = screen.getByRole("nft-details");
         const src = iframe.getAttribute("src");
-        expect(src).toContain("/sdk/wallets/tokens/eth:0x12345:12");
+        expect(src).toContain("/sdk/wallets/tokens/ethereum:0x12345:12");
         expect(src).toContain("clientVersion=");
     });
 });
