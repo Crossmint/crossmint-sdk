@@ -1,6 +1,6 @@
 # `@crossmint/client-sdk-react-ui`
 
-## You can check the full documentation at [docs.crossmint.io](https://docs.crossmint.io/)
+## You can check the full documentation at [docs.crossmint.com](https://docs.crossmint.com/)
 
 ---
 
@@ -14,7 +14,23 @@ First, add the Crossmint Client SDK to your project with the following command:
 yarn add @crossmint/client-sdk-react-ui
 ```
 
-The next steps depend on which chain you're using for your project. For detailed integration instructions, visit our documentation for [Solana](https://docs.crossmint.io/accept-credit-cards/integration-guides/solana-candy-machine/b-i-have-an-existing-candy-machine-website/add-crossmint-for-solana-react.js-next.js), [Polygon](https://docs.crossmint.io/accept-credit-cards/integration-guides/polygon), or [Ethereum](https://docs.crossmint.io/accept-credit-cards/integration-guides/ethereum/add-crossmint-for-ethereum-react.js-next.js).
+### Add payment button to your site
+
+The next steps depend on which chain you're using for your project. For detailed integration instructions, visit our documentation for [Solana](https://docs.crossmint.com/accept-credit-cards/integration-guides/solana-candy-machine/b-i-have-an-existing-candy-machine-website/add-crossmint-for-solana-react.js-next.js), [Polygon](https://docs.crossmint.com/accept-credit-cards/integration-guides/polygon), or [Ethereum](https://docs.crossmint.com/accept-credit-cards/integration-guides/ethereum/add-crossmint-for-ethereum-react.js-next.js).
+
+---
+
+### Wallet UI Components
+
+We offer two components to help you quickly get up and running with your project using Crossmint wallets:
+
+-   `CrossmintNFTCollectionView` - Display a grid of NFTs.
+    ![Wallet Collection Component](https://user-images.githubusercontent.com/20989060/223705873-79197f38-4fb6-4773-98b9-82ef80f24aef.png)
+
+-   `CrossmintNFTDetail` - Display a card showing all NFT related details.
+    ![NFT Detail Component](https://user-images.githubusercontent.com/20989060/223704647-8b99ae40-6ebf-4cd6-bc20-c41c5fd13db0.png)
+
+Visit [our documentation](https://docs.crossmint.com/docs/wallet-ui-components) for integration instructions.
 
 ## Migration guide to 0.1.X versions
 
