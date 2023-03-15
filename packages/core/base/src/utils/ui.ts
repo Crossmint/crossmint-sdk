@@ -7,7 +7,7 @@ export const getEnvironmentBaseUrl = (environment = ""): string => {
     return environment;
 };
 
-function getNFTLocator(nft: NFT): string {
+function getNFTLocator(nft: NFT) {
     if (typeof nft === "string") {
         return nft;
     }
