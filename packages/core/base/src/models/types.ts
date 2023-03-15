@@ -1,3 +1,6 @@
+export const EVM_CHAINS = ["ethereum", "polygon", "bsc"] as const;
+export type EVMChain = (typeof EVM_CHAINS)[number];
+
 export enum clientNames {
     reactUi = "client-sdk-react-ui",
     vanillaUi = "client-sdk-vanilla-ui",
@@ -13,6 +16,15 @@ export enum customHeaders {
     clientVersion = "X-Client-Version",
     clientName = "X-Client-Name",
 }
+
+export enum ChainLocators {
+    solana = "sol",
+    ethereum = "eth",
+    polygon = "poly",
+    cardano = "ada",
+    bsc = "bsc",
+}
+export type EVMChainLocators = ChainLocators.bsc | ChainLocators.ethereum | ChainLocators.polygon;
 
 type theme = "light" | "dark";
 
@@ -113,17 +125,34 @@ export interface NFTCollectionViewProps extends CommonProps {
     wallets: Wallet[];
 }
 
-export interface NFT {
-    address: string;
-    chain: string;
-    tokenId?: string;
+export interface CardanoNFT {
+    chain: "cardano";
+    assetId: string;
 }
+
+export interface EVMNFT {
+    chain: EVMChain;
+    contractAddress: string;
+    tokenId: string;
+}
+
+export interface SolanaNFT {
+    mintHash: string;
+    chain: "solana";
+}
+
+export type NFTLocator<T extends ChainLocators> = `${T}:${string}${T extends EVMChainLocators ? `:${string}` : ""}`;
+
+export type NFT =
+    | CardanoNFT
+    | EVMNFT
+    | SolanaNFT
+    | NFTLocator<ChainLocators.solana>
+    | NFTLocator<ChainLocators.ethereum>
+    | NFTLocator<ChainLocators.polygon>
+    | NFTLocator<ChainLocators.bsc>
+    | NFTLocator<ChainLocators.cardano>;
 
 export interface NFTDetailProps extends CommonProps {
     nft: NFT;
-}
-
-export enum Environments {
-    PRODUCTION = "production",
-    STAGING = "staging",
 }
