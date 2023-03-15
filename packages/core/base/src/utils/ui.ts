@@ -1,4 +1,4 @@
-import { Environments, NFTCollectionViewProps, NFTDetailProps, baseUrls } from "../models/types";
+import { ChainLocators, NFT, NFTCollectionViewProps, NFTDetailProps, baseUrls } from "../models/types";
 
 export const getEnvironmentBaseUrl = (environment = ""): string => {
     const productionValues = ["prod", "production"];
@@ -7,41 +7,22 @@ export const getEnvironmentBaseUrl = (environment = ""): string => {
     return environment;
 };
 
-function blockchainTypeToLocatorStr(chain: string) {
-    switch (chain) {
-        case "solana":
-            return "sol";
-        case "ethereum":
-            return "eth";
-        case "polygon":
-            return "poly";
-        case "cardano":
-            return "ada";
-        case "bsc":
-            return "bsc";
-        default:
-            throw new Error(`Invalid chain type ${chain}`);
+function getNFTLocator(nft: NFT) {
+    if (typeof nft === "string") {
+        return nft;
     }
-}
 
-function getNFTLocator(address: string, chain: string, tokenId?: string): string {
-    const chainLocator = blockchainTypeToLocatorStr(chain);
-
-    switch (chain) {
+    switch (nft.chain) {
         case "solana":
-            return `${chainLocator}:${address}`;
+            return `${ChainLocators.solana}:${nft.mintHash}`;
+        case "polygon":
         case "ethereum":
-            if (tokenId == null) {
-                throw new Error(
-                    `Missing or invalid tokenId when trying to get locator for NFT from contract ${address}`
-                );
-            }
-            return `${chainLocator}:${address}:${tokenId}`;
-        // address in this context is actually an AssetId
+        case "bsc":
+            return `${ChainLocators[nft.chain]}:${nft.contractAddress}:${nft.tokenId}`;
         case "cardano":
-            return `${chainLocator}:${address}`;
+            return `${ChainLocators[nft.chain]}:${nft.assetId}`;
         default:
-            throw new Error(`Invalid chain type ${chain}`);
+            throw new Error(`Invalid chain type ${JSON.stringify(nft)}`);
     }
 }
 
@@ -64,6 +45,6 @@ export function getNFTDetailSrc(props: NFTDetailProps, clientVersion: string) {
         clientVersion,
         ...(props.uiConfig != null ? { uiConfig: JSON.stringify(props.uiConfig) } : {}),
     });
-    const tokenLocator = getNFTLocator(props.nft.address, props.nft.chain, props.nft.tokenId);
+    const tokenLocator = getNFTLocator(props.nft);
     return `${baseUrl}/sdk/wallets/tokens/${tokenLocator}?${queryParams.toString()}`;
 }

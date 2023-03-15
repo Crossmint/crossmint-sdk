@@ -2,9 +2,11 @@ import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 import React from "react";
 
+import { NFT } from "@crossmint/client-sdk-base";
+
 import { CrossmintNFTDetail } from "../src/CrossmintNFTDetail";
 
-const nft = { chain: "ethereum", address: "0x12345", tokenId: "12" };
+const nft: NFT = { chain: "ethereum", contractAddress: "0x12345", tokenId: "12" };
 
 describe("when only passing mandatory fields", () => {
     test("should add them to the iframe query params", () => {
