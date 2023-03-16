@@ -1,3 +1,5 @@
+import { CheckoutEvents } from "./events";
+
 export const EVM_CHAINS = ["ethereum", "polygon", "bsc"] as const;
 export const ALL_CHAINS = ["solana", "cardano", ...EVM_CHAINS] as const;
 export type EVMChain = (typeof EVM_CHAINS)[number];
@@ -66,6 +68,7 @@ export interface BaseButtonProps {
     environment?: string;
     locale?: Locale;
     currency?: Currency;
+    onEvent?: (event: CheckoutEvents, metadata?: any) => void;
 }
 
 export interface CrossmintPayButtonProps extends BaseButtonProps {

@@ -45,7 +45,7 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
     successCallbackURL = "",
     failureCallbackURL = "",
     ...props
-  }) => {
+}) => {
     const [connecting, setConnecting] = useState(false);
     const [status, setStatus] = useState(onboardingRequestStatusResponse.WAITING_SUBMISSION);
     const { isServerSideRendering } = useEnvironment();
@@ -72,6 +72,7 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
         currency,
         successCallbackURL,
         failureCallbackURL,
+        onEvent: props.onEvent,
     });
 
     const { getButtonText, shouldHideButton, handleClick } = crossmintPayButtonService({
@@ -97,7 +98,7 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
                 whPassThroughArgs,
                 paymentMethod,
                 preferredSigninMethod,
-                prepay,
+                prepay
             );
         });
 
