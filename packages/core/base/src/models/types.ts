@@ -68,7 +68,6 @@ export interface BaseButtonProps {
     environment?: string;
     locale?: Locale;
     currency?: Currency;
-    onEvent?: (event: CheckoutEvents, metadata?: any) => void;
 }
 
 export interface CrossmintPayButtonProps extends BaseButtonProps {
@@ -85,6 +84,7 @@ export interface CrossmintPayButtonProps extends BaseButtonProps {
     prepay?: boolean;
     successCallbackURL?: string;
     failureCallbackURL?: string;
+    onEvent?: (event: CheckoutEvents, metadata?: any) => void;
 }
 
 export type OnboardingQueryParams = {
