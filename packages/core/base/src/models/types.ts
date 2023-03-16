@@ -52,7 +52,7 @@ interface StatusButtonConfig {
 }
 
 export type Locale = "en-US" | "es-ES";
-export type Currency = "USD" | "EUR" | "AUD" | "GBP";
+export type Currency = "USD" | "EUR" | "GBP" | "AUD" | "SGD" | "HKD" | "CAD" | "CHF" | "CNY" | "JPY" | "KRW" | "NZD"
 
 export interface BaseButtonProps {
     className?: string;
