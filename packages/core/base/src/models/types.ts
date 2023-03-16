@@ -52,7 +52,7 @@ interface StatusButtonConfig {
 }
 
 export type Locale = "en-US" | "es-ES";
-export type Currency = "USD" | "EUR" | "AUD";
+export type Currency = "USD" | "EUR" | "AUD" | "GBP";
 
 export interface BaseButtonProps {
     className?: string;
