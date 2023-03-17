@@ -1,10 +1,10 @@
-import { Locale, onboardingRequestStatusResponse, paymentMethods } from "../models/types";
+import { Locale, PaymentMethod, onboardingRequestStatusResponse } from "../models/types";
 import { t } from "../utils/i18n";
 
 interface IProps {
     onClick?: (e: any) => void;
     connecting: boolean;
-    paymentMethod?: paymentMethods;
+    paymentMethod?: PaymentMethod;
     locale: Locale;
 }
 

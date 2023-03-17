@@ -21,9 +21,9 @@ export enum customHeaders {
 
 type theme = "light" | "dark";
 
-export type paymentMethods = "fiat" | "ETH" | "SOL";
-export const paymentMethodIsEth = (paymentMethod?: paymentMethods) => paymentMethod === "ETH";
-export const paymentMethodIsSol = (paymentMethod?: paymentMethods) => paymentMethod === "SOL";
+export type PaymentMethod = "fiat" | "ETH" | "SOL";
+export const paymentMethodIsEth = (paymentMethod?: PaymentMethod) => paymentMethod === "ETH";
+export const paymentMethodIsSol = (paymentMethod?: PaymentMethod) => paymentMethod === "SOL";
 
 export type SigninMethods = "metamask" | "solana";
 
@@ -52,7 +52,7 @@ interface StatusButtonConfig {
 }
 
 export type Locale = "en-US" | "es-ES";
-export type Currency = "USD" | "EUR" | "GBP" | "AUD" | "SGD" | "HKD" | "CAD" | "CHF" | "CNY" | "JPY" | "KRW" | "NZD"
+export type Currency = "USD" | "EUR" | "GBP" | "AUD" | "SGD" | "HKD" | "CAD" | "CHF" | "CNY" | "JPY" | "KRW" | "NZD";
 
 export interface BaseButtonProps {
     className?: string;
@@ -77,7 +77,7 @@ export interface CrossmintPayButtonProps extends BaseButtonProps {
     hideMintOnInactiveClient?: boolean;
     mintConfig?: PayButtonConfig | PayButtonConfig[];
     whPassThroughArgs?: any;
-    paymentMethod?: paymentMethods;
+    paymentMethod?: PaymentMethod;
     preferredSigninMethod?: SigninMethods;
     prepay?: boolean;
     successCallbackURL?: string;
