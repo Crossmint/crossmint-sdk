@@ -4,7 +4,7 @@ export interface PaymentElement {
     clientId: string;
     mintArgs: Record<string, any>;
     recipient?: string;
-    pamentMethod: PaymentMethod;
+    paymentMethod: PaymentMethod;
     currency: Currency;
     locale: Locale;
     // TODO: Use checkout event type when it's ready;
