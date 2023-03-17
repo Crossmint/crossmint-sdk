@@ -40,7 +40,7 @@ const propertyDefaults: CrossmintPayButtonLitProps = {
     locale: "en-US",
     currency: "USD",
     successCallbackURL: "",
-    failureCallbackURL: ""
+    failureCallbackURL: "",
 };
 
 @customElement("crossmint-pay-button")

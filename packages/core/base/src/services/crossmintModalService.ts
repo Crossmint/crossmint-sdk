@@ -1,4 +1,5 @@
-import { PayButtonConfig, SigninMethods, clientNames, paymentMethods, Locale, Currency } from "../models/types";
+import { CheckoutEvents } from "../models/events";
+import { Currency, Locale, PayButtonConfig, SigninMethods, clientNames, paymentMethods } from "../models/types";
 import { getEnvironmentBaseUrl } from "../utils/ui";
 
 type MintQueryParams = {
@@ -15,7 +16,7 @@ type MintQueryParams = {
     prepay?: string;
     locale: Locale;
     currency: Currency;
-    successCallbackURL? : string;
+    successCallbackURL?: string;
     failureCallbackURL?: string;
 };
 
@@ -87,8 +88,10 @@ interface CrossmintModalServiceParams {
     clientName: clientNames;
     locale: Locale;
     currency: Currency;
-    successCallbackURL? : string;
+    successCallbackURL?: string;
     failureCallbackURL?: string;
+    // TODO: Enable when events are ready in crossbit-main and docs are updated
+    // onEvent?: (event: CheckoutEvents, metadata?: any) => void;
 }
 
 export interface CrossmintModalServiceReturn {
@@ -100,23 +103,23 @@ export interface CrossmintModalServiceReturn {
         whPassThroughArgs?: any,
         paymentMethod?: paymentMethods,
         preferredSigninMethod?: SigninMethods,
-        prepay?: boolean,
+        prepay?: boolean
     ) => void;
 }
 
 export function crossmintModalService({
-                                          clientId,
-                                          libVersion,
-                                          showOverlay,
-                                          dismissOverlayOnClick,
-                                          setConnecting,
-                                          environment,
-                                          clientName,
-                                          locale,
-                                          currency,
-                                          successCallbackURL,
-                                          failureCallbackURL
-                                      }: CrossmintModalServiceParams): CrossmintModalServiceReturn {
+    clientId,
+    libVersion,
+    showOverlay,
+    dismissOverlayOnClick,
+    setConnecting,
+    environment,
+    clientName,
+    locale,
+    currency,
+    successCallbackURL,
+    failureCallbackURL,
+}: CrossmintModalServiceParams): CrossmintModalServiceReturn {
     const createPopup = (
         mintConfig: PayButtonConfig,
         mintTo?: string,
@@ -125,7 +128,7 @@ export function crossmintModalService({
         whPassThroughArgs?: any,
         paymentMethod?: paymentMethods,
         preferredSigninMethod?: SigninMethods,
-        prepay?: boolean,
+        prepay?: boolean
     ) => {
         const urlOrigin = getEnvironmentBaseUrl(environment);
         const getMintQueryParams = (): string => {
@@ -176,7 +179,7 @@ export function crossmintModalService({
         whPassThroughArgs?: any,
         paymentMethod?: paymentMethods,
         preferredSigninMethod?: SigninMethods,
-        prepay?: boolean,
+        prepay?: boolean
     ) => {
         setConnecting(true);
 
@@ -188,20 +191,34 @@ export function crossmintModalService({
             whPassThroughArgs,
             paymentMethod,
             preferredSigninMethod,
-            prepay,
+            prepay
         );
     };
 
     function registerListeners(pop: Window) {
-        const timer = setInterval(function() {
+        function messageEventListener(message: MessageEvent<any>) {
+            if (message.origin !== getEnvironmentBaseUrl(environment)) {
+                return;
+            }
+
+            // TODO: Enable when events are ready in crossbit-main and docs are updated
+            /* if (onEvent != null) {
+                onEvent(message.data.name, message.data);
+            } */
+        }
+
+        const timer = setInterval(function () {
             if (pop.closed) {
                 clearInterval(timer);
                 setConnecting(false);
                 if (showOverlay) {
                     removeLoadingOverlay();
                 }
+                window.removeEventListener("message", messageEventListener);
             }
         }, 500);
+
+        window.addEventListener("message", messageEventListener);
     }
 
     return {
