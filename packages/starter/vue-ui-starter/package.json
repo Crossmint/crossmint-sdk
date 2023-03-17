@@ -10,8 +10,8 @@
         "type-check": "vue-tsc --noEmit"
     },
     "dependencies": {
-        "vue": "^3.2.47",
-        "@crossmint/client-sdk-vue-ui": "^0.0.0"
+        "@crossmint/client-sdk-vue-ui": "^0.0.0",
+        "vue": "^3.2.47"
     },
     "devDependencies": {
         "@types/node": "^18.14.2",
