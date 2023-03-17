@@ -1,5 +1,5 @@
 import { CheckoutEvents } from "../models/events";
-import { Currency, Locale, PayButtonConfig, SigninMethods, clientNames, paymentMethods } from "../models/types";
+import { Currency, Locale, PayButtonConfig, PaymentMethod, SigninMethods, clientNames } from "../models/types";
 import { getEnvironmentBaseUrl } from "../utils/ui";
 
 type MintQueryParams = {
@@ -11,7 +11,7 @@ type MintQueryParams = {
     clientVersion: string;
     mintConfig: string;
     whPassThroughArgs?: string;
-    paymentMethod?: paymentMethods;
+    paymentMethod?: PaymentMethod;
     preferredSigninMethod?: SigninMethods;
     prepay?: string;
     locale: Locale;
@@ -101,7 +101,7 @@ export interface CrossmintModalServiceReturn {
         emailTo?: string,
         listingId?: string,
         whPassThroughArgs?: any,
-        paymentMethod?: paymentMethods,
+        paymentMethod?: PaymentMethod,
         preferredSigninMethod?: SigninMethods,
         prepay?: boolean
     ) => void;
@@ -126,7 +126,7 @@ export function crossmintModalService({
         emailTo?: string,
         listingId?: string,
         whPassThroughArgs?: any,
-        paymentMethod?: paymentMethods,
+        paymentMethod?: PaymentMethod,
         preferredSigninMethod?: SigninMethods,
         prepay?: boolean
     ) => {
@@ -145,7 +145,7 @@ export function crossmintModalService({
             if (emailTo) mintQueryParams.emailTo = emailTo;
             if (listingId) mintQueryParams.listingId = listingId;
             if (whPassThroughArgs) mintQueryParams.whPassThroughArgs = JSON.stringify(whPassThroughArgs);
-            if (paymentMethod) mintQueryParams.paymentMethod = paymentMethod.toLowerCase() as paymentMethods;
+            if (paymentMethod) mintQueryParams.paymentMethod = paymentMethod.toLowerCase() as PaymentMethod;
             if (preferredSigninMethod) mintQueryParams.preferredSigninMethod = preferredSigninMethod;
             if (prepay) mintQueryParams.prepay = "true";
             if (successCallbackURL) mintQueryParams.successCallbackURL = successCallbackURL;
@@ -177,7 +177,7 @@ export function crossmintModalService({
         emailTo?: string,
         listingId?: string,
         whPassThroughArgs?: any,
-        paymentMethod?: paymentMethods,
+        paymentMethod?: PaymentMethod,
         preferredSigninMethod?: SigninMethods,
         prepay?: boolean
     ) => {
