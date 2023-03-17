@@ -1,42 +1,27 @@
 import vue from "@vitejs/plugin-vue";
-import { URL, fileURLToPath } from "node:url";
-import * as path from "path";
+import { resolve } from "path";
 import { defineConfig } from "vite";
 
-// https://vitejs.dev/config/
 export default defineConfig({
     plugins: [vue()],
     build: {
-        cssCodeSplit: true,
         lib: {
-            // Could also be a dictionary or array of multiple entry points
-            entry: "src/main.ts",
-            name: "crossmintClientSdkVueUi",
-            formats: ["es", "cjs", "umd"],
-            fileName: (format) => `index.${format}.js`,
+            entry: resolve(__dirname, "./src/main.ts"),
+            name: "CrossmintVueSDKUi",
+            fileName: "index",
         },
         rollupOptions: {
-            // make sure to externalize deps that should not be bundled
+            // make sure to externalize deps that shouldn't be bundled
             // into your library
-            input: {
-                main: path.resolve(__dirname, "src/main.ts"),
-            },
             external: ["vue"],
             output: {
-                assetFileNames: (assetInfo) => {
-                    if (assetInfo.name === "main.css") return "index.css";
-                    return assetInfo.name || "";
-                },
-                exports: "named",
+                // Provide global variables to use in the UMD build
+                // for externalized deps
                 globals: {
                     vue: "Vue",
                 },
+                exports: "named",
             },
-        },
-    },
-    resolve: {
-        alias: {
-            "@": fileURLToPath(new URL("./src", import.meta.url)),
         },
     },
 });
