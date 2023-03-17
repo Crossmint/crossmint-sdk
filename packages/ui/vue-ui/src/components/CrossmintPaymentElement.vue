@@ -5,7 +5,7 @@ interface hola {
 }
 
 const saludo: hola = {
-    adios: "adios",
+    adios: "adios!!!!",
 };
 console.log(saludo);
 </script>
