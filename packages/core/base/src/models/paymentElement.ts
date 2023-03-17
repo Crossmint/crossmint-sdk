@@ -1,12 +1,22 @@
-import { Currency, Locale, PaymentMethod } from "./types";
+import { CheckoutEvents } from "./events";
+import { Currency, Locale, PaymentMethod, UIConfig } from "./types";
+
+export type Recipient =
+    | {
+          email: string;
+          mintTo?: string;
+      }
+    | {
+          mintTo: string;
+      };
 
 export interface PaymentElement {
     clientId: string;
     mintArgs: Record<string, any>;
-    recipient?: string;
+    recipient?: Recipient;
     paymentMethod: PaymentMethod;
     currency: Currency;
     locale: Locale;
-    // TODO: Use checkout event type when it's ready;
-    onEvent: (event: string, metadata: Record<string, any>) => void;
+    uiConfig: UIConfig;
+    onEvent: (event: CheckoutEvents, metadata: Record<string, any>) => void;
 }
