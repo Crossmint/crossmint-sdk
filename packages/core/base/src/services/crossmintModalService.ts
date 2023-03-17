@@ -1,3 +1,4 @@
+import { CheckoutEvents } from "../models/events";
 import { Currency, Locale, PayButtonConfig, PaymentMethod, SigninMethods, clientNames } from "../models/types";
 import { getEnvironmentBaseUrl } from "../utils/ui";
 
@@ -89,6 +90,8 @@ interface CrossmintModalServiceParams {
     currency: Currency;
     successCallbackURL?: string;
     failureCallbackURL?: string;
+    // TODO: Enable when events are ready in crossbit-main and docs are updated
+    // onEvent?: (event: CheckoutEvents, metadata?: any) => void;
 }
 
 export interface CrossmintModalServiceReturn {
@@ -193,6 +196,17 @@ export function crossmintModalService({
     };
 
     function registerListeners(pop: Window) {
+        function messageEventListener(message: MessageEvent<any>) {
+            if (message.origin !== getEnvironmentBaseUrl(environment)) {
+                return;
+            }
+
+            // TODO: Enable when events are ready in crossbit-main and docs are updated
+            /* if (onEvent != null) {
+                onEvent(message.data.name, message.data);
+            } */
+        }
+
         const timer = setInterval(function () {
             if (pop.closed) {
                 clearInterval(timer);
@@ -200,8 +214,11 @@ export function crossmintModalService({
                 if (showOverlay) {
                     removeLoadingOverlay();
                 }
+                window.removeEventListener("message", messageEventListener);
             }
         }, 500);
+
+        window.addEventListener("message", messageEventListener);
     }
 
     return {
