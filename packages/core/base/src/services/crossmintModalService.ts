@@ -90,7 +90,8 @@ interface CrossmintModalServiceParams {
     currency: Currency;
     successCallbackURL?: string;
     failureCallbackURL?: string;
-    onEvent?: (event: CheckoutEvents, metadata?: any) => void;
+    // TODO: Enable when events are ready in crossbit-main and docs are updated
+    // onEvent?: (event: CheckoutEvents, metadata?: any) => void;
 }
 
 export interface CrossmintModalServiceReturn {
@@ -118,7 +119,6 @@ export function crossmintModalService({
     currency,
     successCallbackURL,
     failureCallbackURL,
-    onEvent,
 }: CrossmintModalServiceParams): CrossmintModalServiceReturn {
     const createPopup = (
         mintConfig: PayButtonConfig,
@@ -211,9 +211,10 @@ export function crossmintModalService({
                 return;
             }
 
-            if (onEvent != null) {
+            // TODO: Enable when events are ready in crossbit-main and docs are updated
+            /* if (onEvent != null) {
                 onEvent(message.data.name, message.data);
-            }
+            } */
         });
     }
 

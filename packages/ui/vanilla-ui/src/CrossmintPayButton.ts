@@ -41,7 +41,6 @@ const propertyDefaults: CrossmintPayButtonLitProps = {
     currency: "USD",
     successCallbackURL: "",
     failureCallbackURL: "",
-    onEvent: undefined,
 };
 
 @customElement("crossmint-pay-button")
@@ -111,9 +110,6 @@ export class CrossmintPayButton extends LitElement {
     @property({ type: String })
     failureCallbackURL = propertyDefaults.failureCallbackURL;
 
-    @property({ type: Function })
-    onEvent = propertyDefaults.onEvent;
-
     static styles = buttonStyles;
 
     connecting = false;
@@ -175,7 +171,6 @@ export class CrossmintPayButton extends LitElement {
             currency: this.currency || "USD",
             successCallbackURL: this.successCallbackURL ,
             failureCallbackURL: this.failureCallbackURL,
-            onEvent: this.onEvent,
         });
 
         const _handleClick = (e: any) =>

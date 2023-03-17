@@ -72,7 +72,6 @@ export const CrossmintPayButton: FC<CrossmintPayButtonReactProps> = ({
         currency,
         successCallbackURL,
         failureCallbackURL,
-        onEvent: props.onEvent,
     });
 
     const { getButtonText, shouldHideButton, handleClick } = crossmintPayButtonService({
