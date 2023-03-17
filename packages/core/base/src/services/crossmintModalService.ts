@@ -196,17 +196,7 @@ export function crossmintModalService({
     };
 
     function registerListeners(pop: Window) {
-        const timer = setInterval(function () {
-            if (pop.closed) {
-                clearInterval(timer);
-                setConnecting(false);
-                if (showOverlay) {
-                    removeLoadingOverlay();
-                }
-            }
-        }, 500);
-
-        window.addEventListener("message", (message) => {
+        function messageEventListener(message: MessageEvent<any>) {
             if (message.origin !== getEnvironmentBaseUrl(environment)) {
                 return;
             }
@@ -215,7 +205,20 @@ export function crossmintModalService({
             /* if (onEvent != null) {
                 onEvent(message.data.name, message.data);
             } */
-        });
+        }
+
+        const timer = setInterval(function () {
+            if (pop.closed) {
+                clearInterval(timer);
+                setConnecting(false);
+                if (showOverlay) {
+                    removeLoadingOverlay();
+                }
+                window.removeEventListener("message", messageEventListener);
+            }
+        }, 500);
+
+        window.addEventListener("message", messageEventListener);
     }
 
     return {
