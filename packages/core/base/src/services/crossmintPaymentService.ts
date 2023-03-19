@@ -20,7 +20,7 @@ export function crossmintPaymentService({ clientId, uiConfig, recipient, environ
         return `${baseUrl}/sdk/paymentElement?${params.toString()}`;
     }
 
-    function listenToEvents(cb: (event: any) => void) {
+    function listenToEvents(cb: (event: MessageEvent<any>) => void) {
         window.addEventListener("message", (event) => {
             if (event.origin !== baseUrl) {
                 return;
