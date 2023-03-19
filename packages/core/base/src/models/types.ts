@@ -109,7 +109,7 @@ interface Colors {
     border?: string;
 }
 
-interface UIConfig {
+export interface UIConfig {
     colors?: Colors;
 }
 
