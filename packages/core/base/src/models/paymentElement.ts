@@ -19,6 +19,6 @@ export interface PaymentElement {
     paymentMethod?: PaymentMethod;
     currency?: Currency;
     locale?: Locale;
-    uiConfig: UIConfig;
+    uiConfig?: UIConfig;
     onEvent?<K extends keyof CheckoutEventMap>(event: K, payload: CheckoutEventMap[K]): this;
 }

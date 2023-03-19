@@ -1,15 +1,23 @@
 <script setup lang="ts">
-import type { CheckoutEventMap, Currency, Locale, PaymentMethod } from "@crossmint/client-sdk-base";
+import type {
+    CheckoutEventMap,
+    Currency,
+    Locale,
+    PaymentMethod,
+    Recipient,
+    UIConfig,
+} from "@crossmint/client-sdk-base";
 
 // TODO: Looks like you cannot import the interface directly from the package
 // https://github.com/vuejs/core/issues/4294#issuecomment-970861525
 export interface PaymentElement {
     clientId: string;
     mintArgs?: Record<string, any>;
-    recipient?: string;
+    recipient?: Recipient;
     paymentMethod?: PaymentMethod;
     currency?: Currency;
     locale?: Locale;
+    uiConfig?: UIConfig;
     onEvent?<K extends keyof CheckoutEventMap>(event: K, payload: CheckoutEventMap[K]): this;
 }
 
