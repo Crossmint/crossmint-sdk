@@ -1,17 +1,24 @@
 <script setup lang="ts">
-console.log("hola");
-interface hola {
-    adios: string;
+import type { CheckoutEventMap, Currency, Locale, PaymentMethod } from "@crossmint/client-sdk-base";
+
+// TODO: Looks like you cannot import the interface directly from the package
+// https://github.com/vuejs/core/issues/4294#issuecomment-970861525
+export interface PaymentElement {
+    clientId: string;
+    mintArgs?: Record<string, any>;
+    recipient?: string;
+    paymentMethod?: PaymentMethod;
+    currency?: Currency;
+    locale?: Locale;
+    onEvent?<K extends keyof CheckoutEventMap>(event: K, payload: CheckoutEventMap[K]): this;
 }
 
-const saludo: hola = {
-    adios: "adios!!!!",
-};
-console.log(saludo);
+const props = withDefaults(defineProps<PaymentElement>(), {});
+console.log(props);
 </script>
 
 <template>
-    <p>Hola!!!!!!</p>
+    <p>Hola!!!!!! {{ JSON.stringify(props) }}</p>
 </template>
 
 <style scoped>
