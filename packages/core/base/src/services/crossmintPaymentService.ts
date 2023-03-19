@@ -20,14 +20,11 @@ export function crossmintPaymentService({ clientId, uiConfig, recipient, environ
         return `${baseUrl}/sdk/paymentElement?${params.toString()}`;
     }
 
-    // TODO: Type to expect from crossbit main
-    function listenToEvents(cb: (event: any) => void) {
+    function listenToEvents(cb: (event: Event) => void) {
         window.addEventListener("message", (event) => {
             if (event.origin !== baseUrl) {
                 return;
             }
-
-            console.log("listenToEvents", event);
 
             cb(event);
         });
