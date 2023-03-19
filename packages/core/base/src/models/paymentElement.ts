@@ -4,7 +4,7 @@ import { Currency, Locale, PaymentMethod } from "./types";
 // packages/ui/vue-ui/src/components/CrossmintPaymentElement.vue
 export interface PaymentElement {
     clientId: string;
-    mintArgs: Record<string, any>;
+    mintArgs?: Record<string, any>;
     recipient?: string;
     paymentMethod?: PaymentMethod;
     currency?: Currency;
