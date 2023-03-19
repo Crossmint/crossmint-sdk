@@ -20,7 +20,7 @@ export function crossmintPaymentService({ clientId, uiConfig, recipient, environ
         return `${baseUrl}/sdk/paymentElement?${params.toString()}`;
     }
 
-    function listenToEvents(cb: (event: Event) => void) {
+    function listenToEvents(cb: (event: any) => void) {
         window.addEventListener("message", (event) => {
             if (event.origin !== baseUrl) {
                 return;
@@ -35,12 +35,12 @@ export function crossmintPaymentService({ clientId, uiConfig, recipient, environ
             return;
         }
 
-        const iframe = document.getElementById("iframe-crossmint-payment-element") as any;
+        const iframe = document.getElementById("iframe-crossmint-payment-element") as HTMLIFrameElement;
         if (iframe == null) {
             return;
         }
 
-        iframe.contentWindow.postMessage({ type: "queryParamsUpdate", payload: recipient }, baseUrl);
+        iframe.contentWindow?.postMessage({ type: "queryParamsUpdate", payload: recipient }, baseUrl);
     }
 
     return {
