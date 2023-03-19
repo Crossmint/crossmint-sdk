@@ -35,9 +35,7 @@ listenToEvents((event: any) => props.onEvent?.(event.data.type, event.data.paylo
 
 watch(
     () => props.recipient,
-    () => {
-        emitRecipient(props.recipient);
-    },
+    () => emitRecipient(props.recipient),
     { deep: true }
 );
 </script>
