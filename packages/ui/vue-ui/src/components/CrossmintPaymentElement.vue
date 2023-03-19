@@ -31,8 +31,6 @@ const { getIframeUrl, listenToEvents, emitRecipient } = crossmintPaymentService(
 
 const iframeUrl = getIframeUrl();
 
-console.log("props", props);
-
 // TODO: Type event
 listenToEvents((event: any) => {
     props.onEvent?.(event.type, event.payload);
@@ -41,14 +39,14 @@ listenToEvents((event: any) => {
 watch(
     () => props.recipient,
     () => {
-        console.log("watch recipient", props.recipient);
         emitRecipient(props.recipient);
-    }
+    },
+    { deep: true }
 );
 </script>
 
 <template>
-    <iframe :src="iframeUrl"></iframe>
+    <iframe :src="iframeUrl" id="iframe-crossmint-payment-element"></iframe>
 </template>
 
 <style scoped>

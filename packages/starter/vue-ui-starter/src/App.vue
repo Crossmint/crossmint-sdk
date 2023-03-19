@@ -6,10 +6,6 @@ import "@crossmint/client-sdk-vue-ui/dist/index.css";
 
 const email = ref("");
 
-const recipient = ref({
-    email,
-});
-
 function onEvent(event: any) {
     console.log("onEvent", event);
 }
@@ -25,7 +21,7 @@ function onEvent(event: any) {
             <CrossmintPaymentElement
                 environment="http://localhost:3000"
                 clientId="db218e78-d042-4761-83af-3c4e5e6659dd"
-                :recipient="recipient"
+                :recipient="{ email }"
                 :on-event="onEvent"
             />
         </div>
