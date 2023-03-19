@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { watch } from "vue";
+
 import type {
     CheckoutEventMap,
     Currency,
@@ -7,6 +9,7 @@ import type {
     Recipient,
     UIConfig,
 } from "@crossmint/client-sdk-base";
+import { crossmintPaymentService } from "@crossmint/client-sdk-base";
 
 // TODO: Looks like you cannot import the interface directly from the package
 // https://github.com/vuejs/core/issues/4294#issuecomment-970861525
@@ -18,19 +21,42 @@ export interface PaymentElement {
     currency?: Currency;
     locale?: Locale;
     uiConfig?: UIConfig;
-    onEvent?<K extends keyof CheckoutEventMap>(event: K, payload: CheckoutEventMap[K]): this;
+    environment?: string;
+    onEvent?<K extends keyof CheckoutEventMap>(event: K, payload: CheckoutEventMap[K]): any;
 }
 
 const props = withDefaults(defineProps<PaymentElement>(), {});
-console.log(props);
+
+const { getIframeUrl, listenToEvents, emitRecipient } = crossmintPaymentService(props);
+
+const iframeUrl = getIframeUrl();
+
+console.log("props", props);
+
+// TODO: Type event
+listenToEvents((event: any) => {
+    props.onEvent?.(event.type, event.payload);
+});
+
+watch(
+    () => props.recipient,
+    () => {
+        console.log("watch recipient", props.recipient);
+        emitRecipient(props.recipient);
+    }
+);
 </script>
 
 <template>
-    <p>Hola!!!!!! {{ JSON.stringify(props) }}</p>
+    <iframe :src="iframeUrl"></iframe>
 </template>
 
 <style scoped>
-p {
-    color: red;
+iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    margin: 0;
+    padding: 0;
 }
 </style>

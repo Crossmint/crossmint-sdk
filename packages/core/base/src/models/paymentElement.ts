@@ -20,5 +20,8 @@ export interface PaymentElement {
     currency?: Currency;
     locale?: Locale;
     uiConfig?: UIConfig;
+    environment?: string;
     onEvent?<K extends keyof CheckoutEventMap>(event: K, payload: CheckoutEventMap[K]): this;
 }
+
+export const RecipientEvent = "recipient:updated";

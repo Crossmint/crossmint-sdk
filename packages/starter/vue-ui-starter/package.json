@@ -1,5 +1,5 @@
 {
-    "name": "client-sdk-vue-ui-starter",
+    "name": "@crossmint/client-sdk-vue-ui-starter",
     "version": "0.0.0",
     "private": true,
     "scripts": {
