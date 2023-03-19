@@ -1,3 +1,4 @@
+import { CheckoutEventMap } from "./events";
 import { Currency, Locale, PaymentMethod } from "./types";
 
 // TODO: Remmeber to update this same interface in the Vue component aswell.
@@ -9,6 +10,5 @@ export interface PaymentElement {
     paymentMethod?: PaymentMethod;
     currency?: Currency;
     locale?: Locale;
-    // TODO: Use checkout event type when it's ready;
-    onEvent?: (event: string, metadata: Record<string, any>) => void;
+    onEvent?<K extends keyof CheckoutEventMap>(event: K, payload: CheckoutEventMap[K]): this;
 }

@@ -9,3 +9,10 @@ export enum CheckoutEvents {
     MINTING_COMPLETED = "minting:completed",
     MINTING_FAILED = "minting:failed",
 }
+
+// TODO: Prepare payloads when ready
+export type CheckoutEventMap = {
+    [CheckoutEvents.PAYMENT_READY]: {
+        example: string;
+    };
+};
