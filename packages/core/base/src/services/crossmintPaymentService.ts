@@ -36,11 +36,7 @@ export function crossmintPaymentService({ clientId, uiConfig, recipient, environ
         }
 
         const iframe = document.getElementById("iframe-crossmint-payment-element") as HTMLIFrameElement;
-        if (iframe == null) {
-            return;
-        }
-
-        iframe.contentWindow?.postMessage({ type: "queryParamsUpdate", payload: recipient }, baseUrl);
+        iframe?.contentWindow?.postMessage({ type: "queryParamsUpdate", payload: recipient }, baseUrl);
     }
 
     return {
