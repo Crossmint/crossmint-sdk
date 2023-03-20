@@ -2,7 +2,7 @@ import { CheckoutEventMap } from "./events";
 import { Currency, Locale, PaymentMethod, UIConfig } from "./types";
 
 export type Recipient = {
-    email?: string;
+    emailTo?: string;
     mintTo?: string;
 };
 
