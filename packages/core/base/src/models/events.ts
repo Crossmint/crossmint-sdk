@@ -1,5 +1,6 @@
 export enum CheckoutEvents {
     PAYMENT_READY = "payment:ready",
+    PAYMENT_QUOTE_CHANGED = "payment:quote-changed",
     PAYMENT_STARTED = "payment:started",
     PAYMENT_FAILED = "payment:failed",
     PAYMENT_COMPLETED = "payment:completed",
