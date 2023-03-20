@@ -1,15 +1,41 @@
 <script setup lang="ts">
+import { ref } from "vue";
+
 import { CrossmintPaymentElement } from "@crossmint/client-sdk-vue-ui";
 import "@crossmint/client-sdk-vue-ui/dist/index.css";
 
-function onEvent() {
-    console.log("onEvent");
+const emailTo = ref("");
+
+function onEvent(event: any) {
+    console.log("onEvent", event);
 }
 </script>
 
 <template>
-    <p>Hola</p>
-    <CrossmintPaymentElement clientId="12345" :mint-args="{}" :on-event="onEvent" />
+    <div class="container">
+        <div class="form">
+            <label for="email">
+                Email
+                <input type="email" name="email" v-model="emailTo" />
+            </label>
+            <CrossmintPaymentElement
+                environment="http://localhost:3000"
+                clientId="db218e78-d042-4761-83af-3c4e5e6659dd"
+                :recipient="{ emailTo }"
+                :on-event="onEvent"
+            />
+        </div>
+    </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.container {
+    width: 100vw;
+    height: 100vh;
+}
+
+.form {
+    max-width: 500px;
+    margin: 0 auto;
+}
+</style>
