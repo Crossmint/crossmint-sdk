@@ -1,4 +1,5 @@
-import { PaymentElement, Recipient } from "../models/paymentElement";
+import { PaymentElementSDKEvents } from "../models/events";
+import { PaymentElement } from "../models/paymentElement";
 import { getEnvironmentBaseUrl } from "../utils";
 
 export function crossmintPaymentService({ clientId, uiConfig, recipient, environment, mintArgs }: PaymentElement) {
@@ -34,18 +35,14 @@ export function crossmintPaymentService({ clientId, uiConfig, recipient, environ
         });
     }
 
-    function emitRecipient(recipient?: Recipient) {
-        if (recipient == null) {
-            return;
-        }
-
+    function emitQueryParams(payload: Partial<Record<keyof Omit<PaymentElement, "onEvent" | "environment">, any>>) {
         const iframe = document.getElementById("iframe-crossmint-payment-element") as HTMLIFrameElement;
-        iframe?.contentWindow?.postMessage({ type: "queryParamsUpdate", payload: recipient }, baseUrl);
+        iframe?.contentWindow?.postMessage({ type: PaymentElementSDKEvents.PARAMS_UPDATE, payload }, baseUrl);
     }
 
     return {
         getIframeUrl,
         listenToEvents,
-        emitRecipient,
+        emitQueryParams,
     };
 }

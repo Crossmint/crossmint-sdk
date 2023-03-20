@@ -27,15 +27,17 @@ export interface PaymentElement {
 
 const props = withDefaults(defineProps<PaymentElement>(), {});
 
-const { getIframeUrl, listenToEvents, emitRecipient } = crossmintPaymentService(props);
+const { getIframeUrl, listenToEvents, emitQueryParams } = crossmintPaymentService(props);
 
 const iframeUrl = getIframeUrl();
 
 listenToEvents((event) => props.onEvent?.(event.data.type, event.data.payload));
 
 watch(
-    () => props.recipient,
-    () => emitRecipient(props.recipient),
+    [props.recipient, props.mintArgs, props.locale],
+    () => {
+        emitQueryParams({ recipient: props.recipient, mintArgs: props.mintArgs, locale: props.locale });
+    },
     { deep: true }
 );
 </script>

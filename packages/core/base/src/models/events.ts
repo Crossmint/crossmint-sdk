@@ -10,6 +10,10 @@ export enum CheckoutEvents {
     MINTING_FAILED = "minting:failed",
 }
 
+export enum PaymentElementSDKEvents {
+    PARAMS_UPDATE = "params-update",
+}
+
 // TODO: Prepare payloads when ready
 export type CheckoutEventMap = {
     [CheckoutEvents.PAYMENT_READY]: {
