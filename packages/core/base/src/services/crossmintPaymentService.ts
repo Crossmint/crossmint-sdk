@@ -1,7 +1,7 @@
 import { PaymentElement, Recipient } from "../models/paymentElement";
 import { getEnvironmentBaseUrl } from "../utils";
 
-export function crossmintPaymentService({ clientId, uiConfig, recipient, environment }: PaymentElement) {
+export function crossmintPaymentService({ clientId, uiConfig, recipient, environment, mintArgs }: PaymentElement) {
     const baseUrl = getEnvironmentBaseUrl(environment);
 
     function getIframeUrl() {
@@ -15,6 +15,10 @@ export function crossmintPaymentService({ clientId, uiConfig, recipient, environ
 
         if (recipient != null) {
             params.append("recipient", JSON.stringify(recipient));
+        }
+
+        if (mintArgs != null) {
+            params.append("mintArgs", JSON.stringify(mintArgs));
         }
 
         return `${baseUrl}/sdk/paymentElement?${params.toString()}`;
