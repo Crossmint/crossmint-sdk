@@ -1,10 +1,15 @@
-import { CheckoutEventMap } from "./events";
+import { CheckoutEventMap, CheckoutEvents, CrossmintEvent } from "./events";
 import { Currency, Locale, PaymentMethod, UIConfig } from "./types";
 
 export type Recipient = {
-    emailTo?: string;
-    mintTo?: string;
+    email?: string;
+    wallet?: string;
 };
+
+export interface CrossmintPaymentElementEvent<K extends keyof CheckoutEventMap> extends CrossmintEvent {
+    type: K;
+    payload: CheckoutEventMap[K];
+}
 
 // TODO: Remmeber to update this same interface in the Vue component aswell.
 // packages/ui/vue-ui/src/components/CrossmintPaymentElement.vue
@@ -17,5 +22,5 @@ export interface PaymentElement {
     locale?: Locale;
     uiConfig?: UIConfig;
     environment?: string;
-    onEvent?<K extends keyof CheckoutEventMap>(event: K, payload: CheckoutEventMap[K]): this;
+    onEvent?<K extends keyof CheckoutEventMap>(event: CrossmintPaymentElementEvent<K>): this;
 }

@@ -1,3 +1,14 @@
+export interface CrossmintEvent {
+    type: string;
+    payload: Record<string, any>;
+}
+
+export interface CrossmintEventErrorPayload {
+    error: boolean;
+    message: string;
+    code: string;
+}
+
 export enum CheckoutEvents {
     PAYMENT_READY = "payment:ready",
     PAYMENT_QUOTE_CHANGED = "payment:quote-changed",
