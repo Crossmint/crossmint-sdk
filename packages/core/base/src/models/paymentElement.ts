@@ -6,7 +6,7 @@ export type Recipient = {
     wallet?: string;
 };
 
-export interface CrossmintPaymentElementEvent<K extends keyof CheckoutEventMap> extends CrossmintEvent {
+export interface CrossmintCheckoutEvent<K extends keyof CheckoutEventMap> extends CrossmintEvent {
     type: K;
     payload: CheckoutEventMap[K];
 }
@@ -22,7 +22,7 @@ export interface PaymentElement {
     locale?: Locale;
     uiConfig?: UIConfig;
     environment?: string;
-    onEvent?<K extends keyof CheckoutEventMap>(event: CrossmintPaymentElementEvent<K>): this;
+    onEvent?<K extends keyof CheckoutEventMap>(event: CrossmintCheckoutEvent<K>): this;
 }
 
 export interface FiatPrice {
@@ -58,7 +58,7 @@ interface PaymentRejectedPayload extends CrossmintEventErrorPayload {
     orderIdentifier: string;
 }
 
-export type CheckoutEventMap = {
+export type PaymentEventMap = {
     [CheckoutEvents.PAYMENT_READY]: PaymentPricePayload;
     [CheckoutEvents.PAYMENT_QUOTE_CHANGED]: PaymentPricePayload;
     [CheckoutEvents.PAYMENT_STARTED]: BasePayload;
@@ -66,3 +66,5 @@ export type CheckoutEventMap = {
     [CheckoutEvents.PAYMENT_COMPLETED]: BasePayload;
     [CheckoutEvents.PAYMENT_REJECTED]: PaymentRejectedPayload;
 };
+
+export type CheckoutEventMap = PaymentEventMap;

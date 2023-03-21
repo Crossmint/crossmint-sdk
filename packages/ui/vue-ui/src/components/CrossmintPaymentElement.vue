@@ -3,7 +3,7 @@ import { watch } from "vue";
 
 import type {
     CheckoutEventMap,
-    CrossmintPaymentElementEvent,
+    CrossmintCheckoutEvent,
     Currency,
     Locale,
     PaymentMethod,
@@ -23,7 +23,7 @@ export interface PaymentElement {
     locale?: Locale;
     uiConfig?: UIConfig;
     environment?: string;
-    onEvent?<K extends keyof CheckoutEventMap>(event: CrossmintPaymentElementEvent<K>): any;
+    onEvent?<K extends keyof CheckoutEventMap>(event: CrossmintCheckoutEvent<K>): any;
 }
 
 const props = withDefaults(defineProps<PaymentElement>(), {});
