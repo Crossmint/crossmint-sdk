@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-import type { CrossmintEvent } from "@crossmint/client-sdk-base";
+import type { CheckoutEventMap, CrossmintCheckoutEvent } from "@crossmint/client-sdk-base";
 import { CrossmintPaymentElement } from "@crossmint/client-sdk-vue-ui";
 import "@crossmint/client-sdk-vue-ui/dist/index.css";
 
 const email = ref("");
 
-function onEvent(event: CrossmintEvent) {
+function onEvent<K extends keyof CheckoutEventMap>(event: CrossmintCheckoutEvent<K>) {
     console.log("onEvent", event);
 }
 </script>
