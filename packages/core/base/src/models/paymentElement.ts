@@ -1,4 +1,4 @@
-import { CheckoutEventMap, CheckoutEvents, CrossmintEvent } from "./events";
+import { CheckoutEvents, CrossmintEvent, CrossmintEventErrorPayload } from "./events";
 import { Currency, Locale, PaymentMethod, UIConfig } from "./types";
 
 export type Recipient = {
@@ -24,3 +24,45 @@ export interface PaymentElement {
     environment?: string;
     onEvent?<K extends keyof CheckoutEventMap>(event: CrossmintPaymentElementEvent<K>): this;
 }
+
+export interface FiatPrice {
+    amount: number;
+    currency: Currency;
+}
+
+interface QuoteBreakdown {
+    unitPrice: FiatPrice;
+    totalGasFees?: FiatPrice;
+    totalCrossmintFees: FiatPrice;
+}
+
+interface Quote {
+    totalPrice: FiatPrice;
+    priceBreakdown: QuoteBreakdown;
+}
+
+interface OrderItem {
+    quoute: Quote;
+}
+
+interface BasePayload {
+    orderIdentifier: string;
+}
+
+interface PaymentPricePayload extends BasePayload {
+    items: OrderItem[];
+    totalQuote: Quote;
+}
+
+interface PaymentRejectedPayload extends CrossmintEventErrorPayload {
+    orderIdentifier: string;
+}
+
+export type CheckoutEventMap = {
+    [CheckoutEvents.PAYMENT_READY]: PaymentPricePayload;
+    [CheckoutEvents.PAYMENT_QUOTE_CHANGED]: PaymentPricePayload;
+    [CheckoutEvents.PAYMENT_STARTED]: BasePayload;
+    [CheckoutEvents.PAYMENT_FAILED]: CrossmintEventErrorPayload;
+    [CheckoutEvents.PAYMENT_COMPLETED]: BasePayload;
+    [CheckoutEvents.PAYMENT_REJECTED]: PaymentRejectedPayload;
+};

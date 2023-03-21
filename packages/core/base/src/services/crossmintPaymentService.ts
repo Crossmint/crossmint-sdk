@@ -1,5 +1,5 @@
-import { CheckoutEventMap, PaymentElementSDKEvents } from "../models/events";
-import { CrossmintPaymentElementEvent, PaymentElement } from "../models/paymentElement";
+import { PaymentElementSDKEvents } from "../models/events";
+import { CheckoutEventMap, CrossmintPaymentElementEvent, PaymentElement } from "../models/paymentElement";
 import { getEnvironmentBaseUrl } from "../utils";
 
 export function crossmintPaymentService({ clientId, uiConfig, recipient, environment, mintArgs }: PaymentElement) {

@@ -4,9 +4,10 @@ export interface CrossmintEvent {
 }
 
 export interface CrossmintEventErrorPayload {
-    error: boolean;
-    message: string;
-    code: string;
+    error: {
+        message: string;
+        code: string;
+    };
 }
 
 export enum CheckoutEvents {
@@ -25,10 +26,3 @@ export enum CheckoutEvents {
 export enum PaymentElementSDKEvents {
     PARAMS_UPDATE = "params-update",
 }
-
-// TODO: Prepare payloads when ready
-export type CheckoutEventMap = {
-    [CheckoutEvents.PAYMENT_READY]: {
-        example: string;
-    };
-};
