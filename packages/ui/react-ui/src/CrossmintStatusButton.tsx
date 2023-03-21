@@ -13,7 +13,7 @@ import { CrossmintStatusButtonReactProps } from "./types";
 import useEnvironment from "./useEnvironment";
 import { LIB_VERSION } from "./version";
 
-export const CrossmintStatusButton: FC<CrossmintStatusButtonReactProps> = ({
+export function CrossmintStatusButton({
     className,
     disabled,
     onClick,
@@ -27,7 +27,7 @@ export const CrossmintStatusButton: FC<CrossmintStatusButtonReactProps> = ({
     environment,
     locale = "en-US",
     ...props
-  }) => {
+}: CrossmintStatusButtonReactProps) {
     const [status, setStatus] = useState(onboardingRequestStatusResponse.WAITING_SUBMISSION);
     const { isServerSideRendering } = useEnvironment();
 
@@ -82,4 +82,4 @@ export const CrossmintStatusButton: FC<CrossmintStatusButtonReactProps> = ({
             )}
         </>
     );
-};
+}

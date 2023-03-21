@@ -96,7 +96,7 @@ interface CrossmintModalServiceParams {
 
 export interface CrossmintModalServiceReturn {
     connect: (
-        mintConfig: PayButtonConfig,
+        mintConfig: PayButtonConfig | PayButtonConfig[],
         mintTo?: string,
         emailTo?: string,
         listingId?: string,
@@ -121,7 +121,7 @@ export function crossmintModalService({
     failureCallbackURL,
 }: CrossmintModalServiceParams): CrossmintModalServiceReturn {
     const createPopup = (
-        mintConfig: PayButtonConfig,
+        mintConfig: PayButtonConfig | PayButtonConfig[],
         mintTo?: string,
         emailTo?: string,
         listingId?: string,
@@ -172,7 +172,7 @@ export function crossmintModalService({
     };
 
     const connect = (
-        mintConfig: PayButtonConfig,
+        mintConfig: PayButtonConfig | PayButtonConfig[],
         mintTo?: string,
         emailTo?: string,
         listingId?: string,
