@@ -1,4 +1,4 @@
-import { CheckoutEvents, CrossmintEvent, CrossmintEventErrorPayload } from "./events";
+import { CheckoutEvents, CrossmintEventErrorPayload } from "./events";
 import { Currency, Locale, PaymentMethod, UIConfig } from "./types";
 
 export type Recipient = {
@@ -6,7 +6,7 @@ export type Recipient = {
     wallet?: string;
 };
 
-export interface CrossmintCheckoutEvent<K extends keyof CheckoutEventMap> extends CrossmintEvent {
+export interface CrossmintCheckoutEvent<K extends keyof CheckoutEventMap> {
     type: K;
     payload: CheckoutEventMap[K];
 }
