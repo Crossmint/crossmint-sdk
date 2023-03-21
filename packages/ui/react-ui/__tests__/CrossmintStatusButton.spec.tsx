@@ -1,3 +1,5 @@
+// TODO: I was encountering some weird issues with typescript compilation errors on the tests. Disabling it for now
+// https://stackoverflow.com/questions/71831601/ts2786-component-cannot-be-used-as-a-jsx-component
 // @ts-nocheck
 import "@testing-library/jest-dom";
 import { act, fireEvent, render, screen } from "@testing-library/react";
