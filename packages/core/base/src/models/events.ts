@@ -1,8 +1,3 @@
-export interface CrossmintEvent {
-    type: string;
-    payload: Record<string, any>;
-}
-
 export interface CrossmintEventErrorPayload {
     error: {
         message: string;
