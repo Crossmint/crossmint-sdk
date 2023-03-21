@@ -1,42 +1,31 @@
 <script setup lang="ts">
-import { ref } from "vue";
-
-import type { CrossmintEvent } from "@crossmint/client-sdk-base";
-import { CrossmintPaymentElement } from "@crossmint/client-sdk-vue-ui";
-import "@crossmint/client-sdk-vue-ui/dist/index.css";
-
-const email = ref("");
-
-function onEvent(event: CrossmintEvent) {
-    console.log("onEvent", event);
-}
 </script>
 
 <template>
     <div class="container">
-        <div class="form">
-            <label for="email">
-                Email
-                <input type="email" name="email" v-model="email" />
-            </label>
-            <CrossmintPaymentElement
-                environment="http://localhost:3000"
-                clientId="db218e78-d042-4761-83af-3c4e5e6659dd"
-                :recipient="{ email }"
-                :on-event="onEvent"
-            />
+        <img src="https://fortunescrown.com/wp-content/uploads/2022/03/NFTs.jpg" alt="nft pic">
+        <div class="text">
+            <p>Cool monkey</p>
+            <button>
+                <router-link to="/checkout">
+                    Buy with CC
+                </router-link>
+            </button>
         </div>
     </div>
 </template>
 
 <style scoped>
 .container {
-    width: 100vw;
-    height: 100vh;
+    display: flex;
 }
 
-.form {
-    max-width: 500px;
-    margin: 0 auto;
+img {
+    width: 200px;
+    height: 200px;
+}
+
+.text {
+    margin-left: 10px;
 }
 </style>
