@@ -22,7 +22,7 @@ export enum MintingEvents {
 }
 
 export const CheckoutEvents = { ...PaymentEvents, ...MintingEvents };
-export type CheckoutEvents = typeof CheckoutEvents;
+export type CheckoutEvents = PaymentEvents | MintingEvents;
 
 export enum PaymentElementSDKEvents {
     PARAMS_UPDATE = "params-update",
