@@ -14,22 +14,23 @@ const quantity = ref(1);
 
 const itemEthPrice = 0.01;
 const totalItemsEthPrice = itemEthPrice * quantity.value;
-const totalFiatItemPrice = ref(null);
+const totalFiatItemPrice = ref<number | null>(null);
 
 const itemEthFee = 0.0001 * quantity.value;
-const totalCrossmintFees = ref(null);
+const totalCrossmintFees = ref<number | null>(null);
 
 const totalEthPrice = totalItemsEthPrice + itemEthFee;
-const totalFiatPrice = ref(null);
+const totalFiatPrice = ref<number | null>(null);
 
 const isPaying = ref(true);
 
 function onEvent<K extends keyof CheckoutEventMap>(event: CrossmintCheckoutEvent<K>) {
     switch (event.type) {
         case CheckoutEvents.PAYMENT_READY:
-            totalFiatItemPrice.value = (event.payload as any).totalQuote.priceBreakdown.unitPrice.amount;
-            totalCrossmintFees.value = (event.payload as any).totalQuote.priceBreakdown.totalCrossmintFees.amount;
-            totalFiatPrice.value = (event.payload as any).totalQuote.totalPrice.amount;
+            const { totalQuote } = event.payload as CheckoutEventMap[CheckoutEvents.PAYMENT_READY];
+            totalFiatItemPrice.value = totalQuote.priceBreakdown.unitPrice.amount;
+            totalCrossmintFees.value = totalQuote.priceBreakdown.totalCrossmintFees.amount;
+            totalFiatPrice.value = totalQuote.totalPrice.amount;
             isPaying.value = false;
             break;
         case CheckoutEvents.PAYMENT_STARTED:
