@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
+import { CheckoutEvents } from "@crossmint/client-sdk-base";
 import type { CheckoutEventMap, CrossmintCheckoutEvent } from "@crossmint/client-sdk-base";
 import { CrossmintPaymentElement } from "@crossmint/client-sdk-vue-ui";
 import "@crossmint/client-sdk-vue-ui/dist/index.css";
+
+import { router } from "../main";
 
 const email = ref("");
 const wallet = ref("");
@@ -19,13 +22,32 @@ const totalCrossmintFees = ref(null);
 const totalEthPrice = totalItemsEthPrice + itemEthFee;
 const totalFiatPrice = ref(null);
 
+const isPaying = ref(true);
+
 function onEvent<K extends keyof CheckoutEventMap>(event: CrossmintCheckoutEvent<K>) {
-    console.log("onEvent", event);
+    switch (event.type) {
+        case CheckoutEvents.PAYMENT_READY:
+            totalFiatItemPrice.value = (event.payload as any).totalQuote.priceBreakdown.unitPrice.amount;
+            totalCrossmintFees.value = (event.payload as any).totalQuote.priceBreakdown.totalCrossmintFees.amount;
+            totalFiatPrice.value = (event.payload as any).totalQuote.totalPrice.amount;
+            isPaying.value = false;
+            break;
+        case CheckoutEvents.PAYMENT_STARTED:
+            isPaying.value = true;
+            break;
+        case CheckoutEvents.PAYMENT_COMPLETED:
+            // GO TO MINTING PAGE
+            router.push("/minting");
+            break;
+        default:
+            break;
+    }
 }
 </script>
 
 <template>
     <div class="container">
+        <h1 v-if="isPaying">LOADING...</h1>
         <div class="form">
             <div className="form-item-container">
                 <label for="quantity">
@@ -46,7 +68,7 @@ function onEvent<K extends keyof CheckoutEventMap>(event: CrossmintCheckoutEvent
             <div class="price-container">
                 <p>Mint fee x{{ quantity }}</p>
                 <div class="price-value">
-                    <p>{{ itemEthFee }}</p>
+                    <p>{{ itemEthFee }}ETH</p>
                     <p>~${{ totalCrossmintFees }}</p>
                 </div>
             </div>
