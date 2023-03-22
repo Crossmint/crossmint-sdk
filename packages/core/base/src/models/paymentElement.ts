@@ -41,12 +41,7 @@ interface Quote {
     priceBreakdown: QuoteBreakdown;
 }
 
-interface OrderItem {
-    quoute: Quote;
-}
-
 interface PaymentPricePayload {
-    items: OrderItem[];
     totalQuote: Quote;
 }
 
@@ -54,19 +49,23 @@ interface PaymentRejectedPayload extends CrossmintEventErrorPayload {
     orderIdentifier: string;
 }
 
-type PaymentStartedPayload = Record<string, never>;
+type EmptyObject = Record<string, never>;
 
 interface PaymentCompletedPayload {
     orderIdentifier: string;
 }
 
-export type PaymentEventMap = {
+export interface PaymentEventMap {
     [CheckoutEvents.PAYMENT_READY]: PaymentPricePayload;
     [CheckoutEvents.PAYMENT_QUOTE_CHANGED]: PaymentPricePayload;
-    [CheckoutEvents.PAYMENT_STARTED]: PaymentStartedPayload;
+    [CheckoutEvents.PAYMENT_STARTED]: EmptyObject;
     [CheckoutEvents.PAYMENT_FAILED]: CrossmintEventErrorPayload;
     [CheckoutEvents.PAYMENT_COMPLETED]: PaymentCompletedPayload;
+    [CheckoutEvents.PAYMENT_CANCELED]: EmptyObject;
     [CheckoutEvents.PAYMENT_REJECTED]: PaymentRejectedPayload;
-};
+    [CheckoutEvents.MINTING_STARTED]: EmptyObject;
+    [CheckoutEvents.MINTING_COMPLETED]: EmptyObject;
+    [CheckoutEvents.MINTING_FAILED]: EmptyObject;
+}
 
 export type CheckoutEventMap = PaymentEventMap;
