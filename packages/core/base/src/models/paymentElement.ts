@@ -1,4 +1,4 @@
-import { CheckoutEvents, CrossmintEventErrorPayload } from "./events";
+import { CheckoutEvents, CrossmintEventErrorPayload, PaymentElementSDKEvents } from "./events";
 import { Currency, Locale, PaymentMethod, UIConfig } from "./types";
 
 export type Recipient = {
@@ -6,7 +6,7 @@ export type Recipient = {
     wallet?: string;
 };
 
-export interface CrossmintCheckoutEvent<K extends keyof CheckoutEventMap> {
+export interface CrossmintCheckoutEvent<K extends CheckoutEvents = CheckoutEvents> {
     type: K;
     payload: CheckoutEventMap[K];
 }
@@ -66,4 +66,10 @@ export interface CheckoutEventMap {
     [CheckoutEvents.MINTING_STARTED]: EmptyObject;
     [CheckoutEvents.MINTING_COMPLETED]: EmptyObject;
     [CheckoutEvents.MINTING_FAILED]: EmptyObject;
+}
+
+export type ParamsUpdatePayload = Partial<Record<keyof Omit<PaymentElement, "onEvent" | "environment">, any>>;
+
+export interface SDKEventMap {
+    [PaymentElementSDKEvents.PARAMS_UPDATE]: ParamsUpdatePayload;
 }

@@ -35,7 +35,7 @@ const iframeUrl = getIframeUrl();
 listenToEvents((event) => props.onEvent?.(event.data));
 
 watch(
-    [props.recipient, props.mintArgs, props.locale],
+    () => [props.recipient, props.mintArgs, props.locale],
     () => {
         emitQueryParams({ recipient: props.recipient, mintArgs: props.mintArgs, locale: props.locale });
     },
