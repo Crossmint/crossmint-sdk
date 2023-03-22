@@ -22,7 +22,7 @@ export interface PaymentElement {
     locale?: Locale;
     uiConfig?: UIConfig;
     environment?: string;
-    onEvent?<K extends keyof CheckoutEventMap>(event: CrossmintCheckoutEvent<K>): this;
+    onEvent?(event: CrossmintCheckoutEvent): this;
 }
 
 export interface FiatPrice {
