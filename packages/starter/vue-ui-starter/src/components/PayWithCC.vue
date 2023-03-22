@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-import { CheckoutEvents } from "@crossmint/client-sdk-base";
 import type { CheckoutEventMap, CrossmintCheckoutEvent } from "@crossmint/client-sdk-base";
 import { CrossmintPaymentElement } from "@crossmint/client-sdk-vue-ui";
 import "@crossmint/client-sdk-vue-ui/dist/index.css";
@@ -36,7 +35,7 @@ function onEvent<K extends keyof CheckoutEventMap>(event: CrossmintCheckoutEvent
         case "payment:started":
             isPaying.value = true;
             break;
-        case "payment:complete":
+        case "payment:completed":
             router.push("/minting");
             break;
         default:
