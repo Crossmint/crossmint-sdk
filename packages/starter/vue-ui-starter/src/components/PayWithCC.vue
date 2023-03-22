@@ -36,7 +36,6 @@ function onEvent<K extends keyof CheckoutEventMap>(event: CrossmintCheckoutEvent
             isPaying.value = true;
             break;
         case CheckoutEvents.PAYMENT_COMPLETED:
-            // GO TO MINTING PAGE
             router.push("/minting");
             break;
         default:
