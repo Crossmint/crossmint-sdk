@@ -23,7 +23,7 @@ export interface PaymentElement {
     locale?: Locale;
     uiConfig?: UIConfig;
     environment?: string;
-    onEvent?<K extends keyof CheckoutEventMap>(event: CrossmintCheckoutEvent<K>): any;
+    onEvent?(event: CrossmintCheckoutEvent): any;
 }
 
 const props = withDefaults(defineProps<PaymentElement>(), {});

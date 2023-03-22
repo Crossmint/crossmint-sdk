@@ -23,7 +23,7 @@ const totalFiatPrice = ref<number | null>(null);
 
 const isPaying = ref(true);
 
-function onEvent<K extends keyof CheckoutEventMap>(event: CrossmintCheckoutEvent<K>) {
+function onEvent(event: CrossmintCheckoutEvent) {
     switch (event.type) {
         case "payment:ready":
             const { totalQuote } = event.payload as CheckoutEventMap["payment:ready"];
