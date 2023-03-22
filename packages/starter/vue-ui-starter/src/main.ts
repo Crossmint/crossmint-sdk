@@ -1,5 +1,5 @@
-import { createApp } from "vue";
 import { createRouter, createWebHashHistory } from "vue-router";
+import { createApp } from "vue/dist/vue.esm-bundler";
 
 import App from "./App.vue";
 import Minting from "./components/Minting.vue";
