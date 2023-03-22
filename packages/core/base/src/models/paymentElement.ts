@@ -55,7 +55,7 @@ interface PaymentCompletedPayload {
     orderIdentifier: string;
 }
 
-export interface PaymentEventMap {
+export interface CheckoutEventMap {
     [CheckoutEvents.PAYMENT_READY]: PaymentPricePayload;
     [CheckoutEvents.PAYMENT_QUOTE_CHANGED]: PaymentPricePayload;
     [CheckoutEvents.PAYMENT_STARTED]: EmptyObject;
@@ -67,5 +67,3 @@ export interface PaymentEventMap {
     [CheckoutEvents.MINTING_COMPLETED]: EmptyObject;
     [CheckoutEvents.MINTING_FAILED]: EmptyObject;
 }
-
-export type CheckoutEventMap = PaymentEventMap;
