@@ -45,6 +45,12 @@ export const CheckoutTransactionEvents = {
 } as const;
 export type CheckoutTransactionEvents = (typeof CheckoutTransactionEvents)[keyof typeof CheckoutTransactionEvents];
 
+export const CheckoutErrorEvents = {
+    ...CheckoutPaymentErrorEvents,
+    ...CheckoutTransactionErrorEvents,
+} as const;
+export type CheckoutErrorEvents = (typeof CheckoutErrorEvents)[keyof typeof CheckoutErrorEvents];
+
 export const CheckoutEvents = {
     ...CheckoutPaymentEvents,
     ...CheckoutOrderEvents,
