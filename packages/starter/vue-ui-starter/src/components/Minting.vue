@@ -13,6 +13,9 @@ listenToMintingEvents({ orderIdentifier: "dab03499-76b9-4dd5-b702-2ea89940ec9c" 
         case "transaction:fulfillment.failed":
             console.log("Transaction failed", event.payload);
             break;
+        case "order:process.started":
+            console.log("Minting started", event.payload);
+            break;
     }
 });
 </script>
