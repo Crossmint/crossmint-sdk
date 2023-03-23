@@ -16,8 +16,8 @@ export const CheckoutEvents = {
     PAYMENT_PROCESS_CANCELED: "payment:process.canceled",
     PAYMENT_PROCESS_REJECTED: "payment:process.rejected",
     MINTING_PROCESS_STARTED: "minting:process.started",
-    TRANSACTION_MINT_SUCCEEDED: "transaction:mint.succeeded",
-    TRANSACTION_MINT_FAILED: "transaction:mint.failed",
+    TRANSACTION_FULFILLMENT_SUCCEEDED: "transaction:fulfillment.succeeded",
+    TRANSACTION_FULFILLMENT_FAILED: "transaction:fulfillment.failed",
     MINTING_PROCESS_FINISHED: "minting:process.finished",
 } as const;
 export type CheckoutEvents = (typeof CheckoutEvents)[keyof typeof CheckoutEvents];

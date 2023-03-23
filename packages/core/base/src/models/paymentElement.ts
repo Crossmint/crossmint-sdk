@@ -64,8 +64,8 @@ export interface CheckoutEventMap {
     [CheckoutEvents.PAYMENT_PROCESS_CANCELED]: EmptyObject;
     [CheckoutEvents.PAYMENT_PROCESS_REJECTED]: PaymentRejectedPayload;
     [CheckoutEvents.MINTING_PROCESS_STARTED]: EmptyObject;
-    [CheckoutEvents.TRANSACTION_MINT_SUCCEEDED]: EmptyObject;
-    [CheckoutEvents.TRANSACTION_MINT_FAILED]: EmptyObject;
+    [CheckoutEvents.TRANSACTION_FULFILLMENT_SUCCEEDED]: EmptyObject;
+    [CheckoutEvents.TRANSACTION_FULFILLMENT_FAILED]: EmptyObject;
     [CheckoutEvents.MINTING_PROCESS_FINISHED]: EmptyObject;
 }
 
