@@ -8,16 +8,17 @@ export interface CrossmintEventErrorPayload {
 }
 
 export const CheckoutEvents = {
-    PAYMENT_READY: "payment:ready",
-    PAYMENT_QUOTE_CHANGED: "payment:quote-changed",
-    PAYMENT_STARTED: "payment:started",
-    PAYMENT_FAILED: "payment:failed",
-    PAYMENT_COMPLETED: "payment:completed",
-    PAYMENT_CANCELED: "payment:canceled",
-    PAYMENT_REJECTED: "payment:rejected",
-    MINTING_STARTED: "minting:started",
-    MINTING_COMPLETED: "minting:completed",
-    MINTING_FAILED: "minting:failed",
+    PAYMENT_PREPARATION_SUCCEEDED: "payment:preparation.succeeded",
+    QUOTE_STATUS_CHANGED: "quote:status.changed",
+    PAYMENT_PROCESS_STARTED: "payment:process.started",
+    PAYMENT_PREPARATION_FAILED: "payment:preparation.failed",
+    PAYMENT_PROCESS_SUCCEEDED: "payment:process.succeeded",
+    PAYMENT_PROCESS_CANCELED: "payment:process.canceled",
+    PAYMENT_PROCESS_REJECTED: "payment:process.rejected",
+    ORDER_PROCESS_STARTED: "order:process.started",
+    TRANSACTION_FULFILLMENT_SUCCEEDED: "transaction:fulfillment.succeeded",
+    TRANSACTION_FULFILLMENT_FAILED: "transaction:fulfillment.failed",
+    ORDER_PROCESS_FINISHED: "order:process.finished",
 } as const;
 export type CheckoutEvents = (typeof CheckoutEvents)[keyof typeof CheckoutEvents];
 

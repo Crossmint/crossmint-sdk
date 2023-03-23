@@ -56,16 +56,17 @@ interface PaymentCompletedPayload {
 }
 
 export interface CheckoutEventMap {
-    [CheckoutEvents.PAYMENT_READY]: PaymentPricePayload;
-    [CheckoutEvents.PAYMENT_QUOTE_CHANGED]: PaymentPricePayload;
-    [CheckoutEvents.PAYMENT_STARTED]: EmptyObject;
-    [CheckoutEvents.PAYMENT_FAILED]: CrossmintEventErrorPayload;
-    [CheckoutEvents.PAYMENT_COMPLETED]: PaymentCompletedPayload;
-    [CheckoutEvents.PAYMENT_CANCELED]: EmptyObject;
-    [CheckoutEvents.PAYMENT_REJECTED]: PaymentRejectedPayload;
-    [CheckoutEvents.MINTING_STARTED]: EmptyObject;
-    [CheckoutEvents.MINTING_COMPLETED]: EmptyObject;
-    [CheckoutEvents.MINTING_FAILED]: EmptyObject;
+    [CheckoutEvents.PAYMENT_PREPARATION_SUCCEEDED]: PaymentPricePayload;
+    [CheckoutEvents.QUOTE_STATUS_CHANGED]: PaymentPricePayload;
+    [CheckoutEvents.PAYMENT_PROCESS_STARTED]: EmptyObject;
+    [CheckoutEvents.PAYMENT_PREPARATION_FAILED]: CrossmintEventErrorPayload;
+    [CheckoutEvents.PAYMENT_PROCESS_SUCCEEDED]: PaymentCompletedPayload;
+    [CheckoutEvents.PAYMENT_PROCESS_CANCELED]: EmptyObject;
+    [CheckoutEvents.PAYMENT_PROCESS_REJECTED]: PaymentRejectedPayload;
+    [CheckoutEvents.ORDER_PROCESS_STARTED]: EmptyObject;
+    [CheckoutEvents.TRANSACTION_FULFILLMENT_SUCCEEDED]: EmptyObject;
+    [CheckoutEvents.TRANSACTION_FULFILLMENT_FAILED]: EmptyObject;
+    [CheckoutEvents.ORDER_PROCESS_FINISHED]: EmptyObject;
 }
 
 export type ParamsUpdatePayload = Partial<Record<keyof Omit<PaymentElement, "onEvent" | "environment">, any>>;

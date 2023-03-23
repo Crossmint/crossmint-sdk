@@ -25,17 +25,17 @@ const isPaying = ref(true);
 
 function onEvent(event: CrossmintCheckoutEvent) {
     switch (event.type) {
-        case "payment:ready":
-            const { totalQuote } = event.payload as CheckoutEventMap["payment:ready"];
+        case "payment:preparation.succeeded":
+            const { totalQuote } = event.payload as CheckoutEventMap["payment:preparation.succeeded"];
             totalFiatItemPrice.value = totalQuote.priceBreakdown.unitPrice.amount;
             totalCrossmintFees.value = totalQuote.priceBreakdown.totalCrossmintFees.amount;
             totalFiatPrice.value = totalQuote.totalPrice.amount;
             isPaying.value = false;
             break;
-        case "payment:started":
+        case "payment:process.started":
             isPaying.value = true;
             break;
-        case "payment:completed":
+        case "payment:process.succeeded":
             router.push("/minting");
             break;
         default:
