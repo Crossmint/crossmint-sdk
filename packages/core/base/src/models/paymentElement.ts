@@ -55,6 +55,34 @@ interface PaymentCompletedPayload {
     orderIdentifier: string;
 }
 
+interface TransactionBase {
+    transactionIdentifier: string;
+    price: FiatPrice;
+}
+
+interface EvmTransaction {
+    contractAddress: string;
+    tokenIds: string[];
+}
+
+interface SolanaTransaction {
+    mintHash: string;
+}
+
+type TransactionFulfillmentSucceededPayload = TransactionBase & {
+    txId: string;
+} & (EvmTransaction | SolanaTransaction);
+
+interface TransactionFulfillmentFailed extends TransactionBase {
+    error: CrossmintEventErrorPayload;
+}
+
+interface OrderProcessFinished {
+    successfulTransactionIdentifiers: string[];
+    failedTransactionIdentifiers: string[];
+    totalPrice: FiatPrice;
+}
+
 export interface CheckoutEventMap {
     [CheckoutEvents.PAYMENT_PREPARATION_SUCCEEDED]: PaymentPricePayload;
     [CheckoutEvents.QUOTE_STATUS_CHANGED]: PaymentPricePayload;
@@ -64,9 +92,9 @@ export interface CheckoutEventMap {
     [CheckoutEvents.PAYMENT_PROCESS_CANCELED]: EmptyObject;
     [CheckoutEvents.PAYMENT_PROCESS_REJECTED]: PaymentRejectedPayload;
     [CheckoutEvents.ORDER_PROCESS_STARTED]: EmptyObject;
-    [CheckoutEvents.TRANSACTION_FULFILLMENT_SUCCEEDED]: EmptyObject;
-    [CheckoutEvents.TRANSACTION_FULFILLMENT_FAILED]: EmptyObject;
-    [CheckoutEvents.ORDER_PROCESS_FINISHED]: EmptyObject;
+    [CheckoutEvents.TRANSACTION_FULFILLMENT_SUCCEEDED]: TransactionFulfillmentSucceededPayload;
+    [CheckoutEvents.TRANSACTION_FULFILLMENT_FAILED]: TransactionFulfillmentFailed;
+    [CheckoutEvents.ORDER_PROCESS_FINISHED]: OrderProcessFinished;
 }
 
 export type ParamsUpdatePayload = Partial<Record<keyof Omit<PaymentElement, "onEvent" | "environment">, any>>;
