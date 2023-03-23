@@ -67,7 +67,6 @@ export const PaymentElementSDKEvents = {
 export type PaymentElementSDKEvents = (typeof PaymentElementSDKEvents)[keyof typeof PaymentElementSDKEvents];
 
 export interface ListenToMintingEventsProps {
-    clientId: string;
     orderIdentifier: string;
 }
 
