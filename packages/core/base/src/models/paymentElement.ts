@@ -63,10 +63,10 @@ export interface CheckoutEventMap {
     [CheckoutEvents.PAYMENT_PROCESS_SUCCEEDED]: PaymentCompletedPayload;
     [CheckoutEvents.PAYMENT_PROCESS_CANCELED]: EmptyObject;
     [CheckoutEvents.PAYMENT_PROCESS_REJECTED]: PaymentRejectedPayload;
-    [CheckoutEvents.MINTING_PROCESS_STARTED]: EmptyObject;
+    [CheckoutEvents.ORDER_PROCESS_STARTED]: EmptyObject;
     [CheckoutEvents.TRANSACTION_FULFILLMENT_SUCCEEDED]: EmptyObject;
     [CheckoutEvents.TRANSACTION_FULFILLMENT_FAILED]: EmptyObject;
-    [CheckoutEvents.MINTING_PROCESS_FINISHED]: EmptyObject;
+    [CheckoutEvents.ORDER_PROCESS_FINISHED]: EmptyObject;
 }
 
 export type ParamsUpdatePayload = Partial<Record<keyof Omit<PaymentElement, "onEvent" | "environment">, any>>;
