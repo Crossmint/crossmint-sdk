@@ -1,10 +1,12 @@
 import { CheckoutEventMap, CrossmintCheckoutEvent } from "./paymentElement";
 
+export interface CrossmintEventError {
+    message: string;
+    code: string;
+}
+
 export interface CrossmintEventErrorPayload {
-    error: {
-        message: string;
-        code: string;
-    };
+    error: CrossmintEventError;
 }
 
 export const CheckoutPaymentErrorEvents = {

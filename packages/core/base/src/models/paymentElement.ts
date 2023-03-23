@@ -1,4 +1,4 @@
-import { CheckoutEvents, CrossmintEventErrorPayload, PaymentElementSDKEvents } from "./events";
+import { CheckoutEvents, CrossmintEventError, CrossmintEventErrorPayload, PaymentElementSDKEvents } from "./events";
 import { Currency, Locale, PaymentMethod, UIConfig } from "./types";
 
 export type Recipient = {
@@ -74,7 +74,7 @@ type TransactionFulfillmentSucceededPayload = TransactionBase & {
 } & (EvmTransaction | SolanaTransaction);
 
 interface TransactionFulfillmentFailed extends TransactionBase {
-    error: CrossmintEventErrorPayload;
+    error: CrossmintEventError;
 }
 
 interface OrderProcessFinished {
