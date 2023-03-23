@@ -60,17 +60,18 @@ interface TransactionBase {
     price: FiatPrice;
 }
 
-// TODO: Improve this type so that it can be used for both EVM and Solana
-interface TransactionFulfillmentSucceededPayload extends TransactionBase {
-    // EVM
-    contractAddress?: string;
-    tokenIds?: string[];
-
-    // Solana
-    mintHash?: string;
-
-    txId: string;
+interface EvmTransaction {
+    contractAddress: string;
+    tokenIds: string[];
 }
+
+interface SolanaTransaction {
+    mintHash: string;
+}
+
+type TransactionFulfillmentSucceededPayload = TransactionBase & {
+    txId: string;
+} & (EvmTransaction | SolanaTransaction);
 
 interface TransactionFulfillmentFailed extends TransactionBase {
     error: CrossmintEventErrorPayload;
