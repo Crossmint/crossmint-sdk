@@ -36,7 +36,8 @@ function onEvent(event: CrossmintCheckoutEvent) {
             isPaying.value = true;
             break;
         case "payment:process.succeeded":
-            router.push("/minting");
+            const { orderIdentifier } = event.payload as CheckoutEventMap["payment:process.succeeded"];
+            router.push(`/minting?orderIdentifier=${orderIdentifier}`);
             break;
         default:
             break;
