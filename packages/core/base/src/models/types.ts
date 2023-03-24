@@ -1,5 +1,3 @@
-import { CheckoutEvents } from "./events";
-
 export const EVM_CHAINS = ["ethereum", "polygon", "bsc"] as const;
 export const ALL_CHAINS = ["solana", "cardano", ...EVM_CHAINS] as const;
 export type EVMChain = (typeof EVM_CHAINS)[number];
