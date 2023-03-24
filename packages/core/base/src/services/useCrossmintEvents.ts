@@ -43,6 +43,11 @@ export function useCrossmintEvents({ environment }: { environment?: string } = {
                 emittedEvents.includes(event.type) ? handleDuplicateEvent(event) : emitEvent(event);
             }
         }, 5000);
+
+        // When history changes, clear the interval
+        window.onpopstate = () => {
+            clearInterval(timer);
+        };
     }
 
     async function fetchOrderStatus({
