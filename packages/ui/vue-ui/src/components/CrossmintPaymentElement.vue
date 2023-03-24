@@ -2,7 +2,6 @@
 import { watch } from "vue";
 
 import type {
-    CheckoutEventMap,
     CrossmintCheckoutEvent,
     Currency,
     Locale,
