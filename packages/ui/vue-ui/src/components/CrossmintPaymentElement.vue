@@ -5,6 +5,7 @@ import type {
     CrossmintCheckoutEvent,
     Currency,
     Locale,
+    MintConfig,
     PaymentMethod,
     Recipient,
     UIConfig,
@@ -15,7 +16,7 @@ import { crossmintPaymentService } from "@crossmint/client-sdk-base";
 // https://github.com/vuejs/core/issues/4294#issuecomment-970861525
 export interface PaymentElement {
     clientId: string;
-    mintConfig?: Record<string, any>;
+    mintConfig?: MintConfig;
     recipient?: Recipient;
     paymentMethod?: PaymentMethod;
     currency?: Currency;
