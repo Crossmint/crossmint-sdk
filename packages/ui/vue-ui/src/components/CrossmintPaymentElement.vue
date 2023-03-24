@@ -15,7 +15,7 @@ import { crossmintPaymentService } from "@crossmint/client-sdk-base";
 // https://github.com/vuejs/core/issues/4294#issuecomment-970861525
 export interface PaymentElement {
     clientId: string;
-    mintArgs?: Record<string, any>;
+    mintConfig?: Record<string, any>;
     recipient?: Recipient;
     paymentMethod?: PaymentMethod;
     currency?: Currency;
@@ -34,9 +34,9 @@ const iframeUrl = getIframeUrl();
 listenToEvents((event) => props.onEvent?.(event.data));
 
 watch(
-    () => [props.recipient, props.mintArgs, props.locale],
+    () => [props.recipient, props.mintConfig, props.locale],
     () => {
-        emitQueryParams({ recipient: props.recipient, mintArgs: props.mintArgs, locale: props.locale });
+        emitQueryParams({ recipient: props.recipient, mintConfig: props.mintConfig, locale: props.locale });
     },
     { deep: true }
 );

@@ -15,7 +15,7 @@ export interface CrossmintCheckoutEvent<K extends CheckoutEvents = CheckoutEvent
 // packages/ui/vue-ui/src/components/CrossmintPaymentElement.vue
 export interface PaymentElement {
     clientId: string;
-    mintArgs?: Record<string, any>;
+    mintConfig?: Record<string, any>;
     recipient?: Recipient;
     paymentMethod?: PaymentMethod;
     currency?: Currency;
