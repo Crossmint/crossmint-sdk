@@ -53,5 +53,6 @@ iframe {
     border: none;
     margin: 0;
     padding: 0;
+    height: 96px;
 }
 </style>
