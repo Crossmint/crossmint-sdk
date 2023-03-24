@@ -8,31 +8,39 @@ export function useCrossmintEvents({ environment }: { environment?: string } = {
         const succeededTransactionIdentifiers: string[] = [];
         const failedTransactionIdentifiers: string[] = [];
 
+        function emitEvent(event: CrossmintCheckoutEvent<any>) {
+            cb(event);
+            emittedEvents.push(event.type);
+            if (event.type === CheckoutEvents.ORDER_PROCESS_FINISHED) {
+                clearInterval(timer);
+            }
+        }
+
+        function handleDuplicateEvent(event: CrossmintCheckoutEvent<any>) {
+            if (!event.payload.transactionIdentifier) {
+                return;
+            }
+
+            if (event.type === CheckoutEvents.TRANSACTION_FULFILLMENT_SUCCEEDED) {
+                if (succeededTransactionIdentifiers.includes(event.payload.transactionIdentifier)) {
+                    return;
+                }
+                succeededTransactionIdentifiers.push(event.payload.transactionIdentifier);
+                emitEvent(event);
+            } else if (event.type === CheckoutEvents.TRANSACTION_FULFILLMENT_FAILED) {
+                if (failedTransactionIdentifiers.includes(event.payload.transactionIdentifier)) {
+                    return;
+                }
+                failedTransactionIdentifiers.push(event.payload.transactionIdentifier);
+                emitEvent(event);
+            }
+        }
+
         const timer = setInterval(async () => {
             const events = await fetchOrderStatus({ orderIdentifier });
 
             for (const event of events) {
-                if (emittedEvents.includes(event.type)) {
-                    if (!event.payload.transactionIdentifier) {
-                        if (event.type === CheckoutEvents.TRANSACTION_FULFILLMENT_SUCCEEDED) {
-                            if (succeededTransactionIdentifiers.includes(event.payload.transactionIdentifier)) {
-                                continue;
-                            }
-                            succeededTransactionIdentifiers.push(event.payload.transactionIdentifier);
-                        } else if (event.type === CheckoutEvents.TRANSACTION_FULFILLMENT_FAILED) {
-                            if (failedTransactionIdentifiers.includes(event.payload.transactionIdentifier)) {
-                                continue;
-                            }
-                            failedTransactionIdentifiers.push(event.payload.transactionIdentifier);
-                        }
-                    }
-                    continue;
-                }
-                cb(event);
-                emittedEvents.push(event.type);
-                if (event.type === CheckoutEvents.ORDER_PROCESS_FINISHED) {
-                    clearInterval(timer);
-                }
+                emittedEvents.includes(event.type) ? handleDuplicateEvent(event) : emitEvent(event);
             }
         }, 5000);
     }
@@ -53,6 +61,7 @@ export function useCrossmintEvents({ environment }: { environment?: string } = {
             }
             return response;
         } catch (e) {
+            console.error("Error fetching order status", e);
             return [];
         }
     }
