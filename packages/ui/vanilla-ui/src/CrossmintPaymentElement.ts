@@ -60,7 +60,7 @@ export class CrossmintPaymentElement extends LitElement {
   connectedCallback() {
     super.connectedCallback();
 
-    const onEvent = this.onEvent && typeof this.onEvent === "string" ? new Function(this.onEvent)() : undefined;
+    const onEvent = getOnEventFunction(this.onEvent);
 
     const { listenToEvents } = crossmintPaymentService({ clientId: this.clientId, environment: this.environment, uiConfig: this.uiConfig, recipient: this.recipient, mintConfig: this.mintConfig });
 
@@ -91,4 +91,11 @@ export class CrossmintPaymentElement extends LitElement {
       ></iframe>
     `;
   }
+}
+
+function getOnEventFunction(onEvent?: any) {
+  if (!onEvent){
+    return undefined;
+  }
+  return typeof onEvent === "string" ? new Function(onEvent)() : onEvent;
 }
