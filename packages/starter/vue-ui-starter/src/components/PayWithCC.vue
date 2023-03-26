@@ -99,7 +99,7 @@ function onEvent(event: CrossmintCheckoutEvent) {
                 environment="http://localhost:3000"
                 clientId="db218e78-d042-4761-83af-3c4e5e6659dd"
                 :recipient="{ email, ...(wallet ? { wallet } : {}) }"
-                :on-event="onEvent"
+                @event="onEvent"
             />
         </div>
     </div>
