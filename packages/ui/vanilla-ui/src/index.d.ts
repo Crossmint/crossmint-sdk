@@ -2,6 +2,7 @@ declare global {
     namespace JSX {
         interface IntrinsicElements {
             "crossmint-pay-button": any;
+            "crossmint-payment-element": any;
         }
     }
 }

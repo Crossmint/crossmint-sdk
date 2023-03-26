@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Crossmint Payment Element</title>
+        <script src="../../ui/vanilla-ui/lib/index.global.js"></script>
+    </head>
+    <body>
+        <h1>Crossmint payment element</h1>
+        <crossmint-payment-element
+            environment="http://localhost:3000"
+            clientId="db218e78-d042-4761-83af-3c4e5e6659dd"
+            recipient='{ "email": "peg@paella.dev" }'
+            onevent="return function onEvent(event) {
+                switch(event.type) {
+                    case 'quote:status.changed':
+                        console.log('quote:status.changed', event);
+                        break;
+                    default:
+                        console.log('default', event);
+                }
+            }"
+        >
+        </crossmint-payment-element>
+    </body>
+</html>
