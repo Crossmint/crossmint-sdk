@@ -33,9 +33,9 @@ export interface FiatPrice {
 }
 
 export interface LineItemMetadata {
-    imageUrl: any;
-    description: any;
-    title: string;
+    imageUrl?: string;
+    description?: string;
+    title?: string;
     collection?: string;
 }
 
