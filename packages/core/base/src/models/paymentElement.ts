@@ -32,19 +32,23 @@ export interface FiatPrice {
     currency: Currency;
 }
 
-interface QuoteBreakdown {
-    unitPrice: FiatPrice;
-    totalGasFees?: FiatPrice;
-    totalCrossmintFees: FiatPrice;
+export interface CollectionMetadata {
+    imageUrl: any;
+    description: any;
+    title: string;
+    collection?: string;
 }
 
-interface Quote {
+export interface LineItem {
+    price: FiatPrice;
+    gasFee?: FiatPrice;
+    metadata: CollectionMetadata;
+    quantity: number;
+}
+
+export interface InitialQuoteOutput {
     totalPrice: FiatPrice;
-    priceBreakdown: QuoteBreakdown;
-}
-
-interface PaymentPricePayload {
-    totalQuote: Quote;
+    lineItems: LineItem[];
 }
 
 interface PaymentRejectedPayload extends CrossmintEventErrorPayload {
@@ -86,8 +90,8 @@ interface OrderProcessFinished {
 }
 
 export interface CheckoutEventMap {
-    [CheckoutEvents.PAYMENT_PREPARATION_SUCCEEDED]: PaymentPricePayload;
-    [CheckoutEvents.QUOTE_STATUS_CHANGED]: PaymentPricePayload;
+    [CheckoutEvents.PAYMENT_PREPARATION_SUCCEEDED]: EmptyObject;
+    [CheckoutEvents.QUOTE_STATUS_CHANGED]: InitialQuoteOutput;
     [CheckoutEvents.PAYMENT_PROCESS_STARTED]: EmptyObject;
     [CheckoutEvents.PAYMENT_PREPARATION_FAILED]: CrossmintEventErrorPayload;
     [CheckoutEvents.PAYMENT_PROCESS_SUCCEEDED]: PaymentCompletedPayload;
