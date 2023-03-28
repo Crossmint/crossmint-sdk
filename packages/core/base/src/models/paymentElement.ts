@@ -32,7 +32,7 @@ export interface FiatPrice {
     currency: Currency;
 }
 
-export interface CollectionMetadata {
+export interface LineItemMetadata {
     imageUrl: any;
     description: any;
     title: string;
@@ -42,7 +42,7 @@ export interface CollectionMetadata {
 export interface LineItem {
     price: FiatPrice;
     gasFee?: FiatPrice;
-    metadata: CollectionMetadata;
+    metadata: LineItemMetadata;
     quantity: number;
 }
 
