@@ -1,4 +1,4 @@
-import { CheckoutEventMap, CrossmintCheckoutEvent } from "./paymentElement";
+import { CrossmintCheckoutEvent } from "./paymentElement";
 
 export interface CrossmintEventError {
     message: string;
@@ -71,3 +71,12 @@ export interface ListenToMintingEventsProps {
 }
 
 export type ListenerType<T extends CheckoutEvents = CheckoutEvents> = (event: CrossmintCheckoutEvent<T>) => void;
+
+export const UiEvents = {
+    UI_HEIGHT_CHANGED: "ui:height.changed",
+} as const;
+export type UiEvents = (typeof UiEvents)[keyof typeof UiEvents];
+
+export interface UiEventMap {
+    [UiEvents.UI_HEIGHT_CHANGED]: { height: number };
+}

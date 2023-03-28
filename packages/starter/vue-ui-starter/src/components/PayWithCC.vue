@@ -97,8 +97,16 @@ function onEvent(event: CrossmintCheckoutEvent) {
 
             <CrossmintPaymentElement
                 environment="http://localhost:3000"
-                clientId="db218e78-d042-4761-83af-3c4e5e6659dd"
-                :recipient="{ email, ...(wallet ? { wallet } : {}) }"
+                clientId="6845c702-8396-4339-b17e-a2bf12d2cf6d"
+                :mint-config="{ totalPrice: '0.001', quantity: '1' }"
+                :recipient="{
+                    email,
+                    ...(wallet
+                        ? {
+                              wallet,
+                          }
+                        : {}),
+                }"
                 @event="onEvent"
             />
         </div>

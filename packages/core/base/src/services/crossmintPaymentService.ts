@@ -1,4 +1,5 @@
 import { PaymentElementSDKEvents } from "../models/events";
+import { CheckoutEvents } from "../models/events";
 import {
     CheckoutEventMap,
     CrossmintCheckoutEvent,
@@ -38,7 +39,9 @@ export function crossmintPaymentService({ clientId, uiConfig, recipient, environ
                 return;
             }
 
-            cb(event);
+            if (Object.values(CheckoutEvents).includes(event.data.type)) {
+                cb(event);
+            }
         });
     }
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch } from "vue";
+import { ref, watch } from "vue";
 
 import type {
     CrossmintCheckoutEvent,
@@ -10,7 +10,7 @@ import type {
     Recipient,
     UIConfig,
 } from "@crossmint/client-sdk-base";
-import { crossmintPaymentService } from "@crossmint/client-sdk-base";
+import { crossmintPaymentService, crossmintUiService } from "@crossmint/client-sdk-base";
 
 // TODO: Looks like you cannot import the interface directly from the package
 // https://github.com/vuejs/core/issues/4294#issuecomment-970861525
@@ -29,10 +29,25 @@ export interface PaymentElement {
 const props = withDefaults(defineProps<PaymentElement>(), {});
 
 const { getIframeUrl, listenToEvents, emitQueryParams } = crossmintPaymentService(props);
+const { listenToEvents: listenToUiEvents } = crossmintUiService({ environment: props.environment });
 
 const iframeUrl = getIframeUrl();
 
+const styleHeight = ref(200);
+
 listenToEvents((event) => props.onEvent?.(event.data));
+
+listenToUiEvents((event: MessageEvent<any>) => {
+    const { type, payload } = event.data;
+
+    switch (type) {
+        case "ui:height.changed":
+            styleHeight.value = payload.height;
+            break;
+        default:
+            return;
+    }
+});
 
 watch(
     () => [props.recipient, props.mintConfig, props.locale],
@@ -44,16 +59,20 @@ watch(
 </script>
 
 <template>
-    <iframe :src="iframeUrl" id="iframe-crossmint-payment-element"></iframe>
+    <iframe :src="iframeUrl" id="iframe-crossmint-payment-element" :style="{ height: `${styleHeight}px` }"></iframe>
 </template>
 
 <style scoped>
 iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-    margin: 0;
-    padding: 0;
-    height: 96px;
+    border: none !important;
+    padding: 0px !important;
+    width: calc(100% + 8px);
+    min-width: 100% !important;
+    overflow: hidden !important;
+    display: block !important;
+    user-select: none !important;
+    transform: translate(0px) !important;
+    opacity: 1;
+    transition: height 0.35s ease 0s, opacity 0.4s ease 0.1s;
 }
 </style>
