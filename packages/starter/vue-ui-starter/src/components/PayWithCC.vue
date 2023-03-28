@@ -16,7 +16,6 @@ const totalItemsEthPrice = itemEthPrice * quantity.value;
 const totalFiatItemPrice = ref<number | null>(null);
 
 const itemEthFee = 0.0001 * quantity.value;
-const totalCrossmintFees = ref<number | null>(null);
 
 const totalEthPrice = totalItemsEthPrice + itemEthFee;
 const totalFiatPrice = ref<number | null>(null);
@@ -25,11 +24,10 @@ const isPaying = ref(true);
 
 function onEvent(event: CrossmintCheckoutEvent) {
     switch (event.type) {
-        case "payment:preparation.succeeded":
-            const { totalQuote } = event.payload as CheckoutEventMap["payment:preparation.succeeded"];
-            totalFiatItemPrice.value = totalQuote.priceBreakdown.unitPrice.amount;
-            totalCrossmintFees.value = totalQuote.priceBreakdown.totalCrossmintFees.amount;
-            totalFiatPrice.value = totalQuote.totalPrice.amount;
+        case "quote:status.changed":
+            const { totalPrice, lineItems } = event.payload as CheckoutEventMap["quote:status.changed"];
+            totalFiatItemPrice.value = lineItems[0].price.amount;
+            totalFiatPrice.value = totalPrice.amount;
             isPaying.value = false;
             break;
         case "payment:process.started":
@@ -69,7 +67,6 @@ function onEvent(event: CrossmintCheckoutEvent) {
                 <p>Mint fee x{{ quantity }}</p>
                 <div class="price-value">
                     <p>{{ itemEthFee }}ETH</p>
-                    <p>~${{ totalCrossmintFees }}</p>
                 </div>
             </div>
 
