@@ -28,7 +28,7 @@ export interface PaymentElement {
 }
 
 export interface FiatPrice {
-    amount: number;
+    amount: number | string;
     currency: Currency;
 }
 
