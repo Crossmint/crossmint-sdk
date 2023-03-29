@@ -73,6 +73,6 @@ iframe {
     user-select: none !important;
     transform: translate(0px) !important;
     opacity: 1;
-    transition: height 0.35s ease 0s, opacity 0.4s ease 0.1s;
+    transition: ease 0s, opacity 0.4s ease 0.1s;
 }
 </style>

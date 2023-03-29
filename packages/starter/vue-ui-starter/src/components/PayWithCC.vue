@@ -13,12 +13,12 @@ const quantity = ref(1);
 
 const itemEthPrice = 0.01;
 const totalItemsEthPrice = itemEthPrice * quantity.value;
-const totalFiatItemPrice = ref<number | null>(null);
+const totalFiatItemPrice = ref<string | number | null>(null);
 
 const itemEthFee = 0.0001 * quantity.value;
 
 const totalEthPrice = totalItemsEthPrice + itemEthFee;
-const totalFiatPrice = ref<number | null>(null);
+const totalFiatPrice = ref<string | number | null>(null);
 
 const isPaying = ref(true);
 

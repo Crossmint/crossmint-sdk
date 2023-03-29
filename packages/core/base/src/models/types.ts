@@ -104,6 +104,7 @@ interface Colors {
     accent?: string;
     background?: string;
     backgroundSecondary?: string;
+    backgroundTertiary?: string;
     border?: string;
 }
 
