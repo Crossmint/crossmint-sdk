@@ -15,3 +15,8 @@ export const PaymentErrors = {
     USER_WALLET_NOT_WHITELISTED: "payments:user-wallet.not-whitelisted",
 } as const;
 export type PaymentErrors = (typeof PaymentErrors)[keyof typeof PaymentErrors];
+
+export const CrossmintErrors = {
+    ...PaymentErrors,
+};
+export type CrossmintErrors = (typeof CrossmintErrors)[keyof typeof CrossmintErrors];
