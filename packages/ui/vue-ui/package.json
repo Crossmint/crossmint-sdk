@@ -29,6 +29,7 @@
         "format": "prettier --write src/"
     },
     "dependencies": {
+        "@crossmint/client-sdk-base": "^0.2.7-alpha.10",
         "vue": "^3.2.47"
     },
     "devDependencies": {
