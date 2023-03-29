@@ -1,6 +1,5 @@
 {
     "packages": ["packages/*/*"],
-    "exclude": ["packages/starter/vue-ui-starter", "packages/ui/vue-ui"],
     "version": "independent",
     "npmClient": "yarn",
     "useWorkspaces": true
