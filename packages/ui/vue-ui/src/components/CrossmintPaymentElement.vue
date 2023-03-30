@@ -66,7 +66,7 @@ watch(
 iframe {
     border: none !important;
     padding: 0px !important;
-    width: calc(100% + 8px);
+    width: 100% !important;
     min-width: 100% !important;
     overflow: hidden !important;
     display: block !important;
