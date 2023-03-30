@@ -106,10 +106,14 @@ interface Colors {
     backgroundSecondary?: string;
     backgroundTertiary?: string;
     border?: string;
+    danger?: string;
 }
 
 export interface UIConfig {
     colors?: Colors;
+    fontSizeBase?: string;
+    spacingUnit?: string;
+    borderRadius?: string;
 }
 
 interface CommonProps {
