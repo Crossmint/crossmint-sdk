@@ -43,7 +43,7 @@ export function CrossmintPaymentElement(props: PaymentElement) {
             style={{
                 border: "none !important",
                 padding: "0px !important",
-                width: "calc(100% + 8px)",
+                width: "100% !important",
                 minWidth: "100% !important",
                 overflow: "hidden !important",
                 display: "block !important",
