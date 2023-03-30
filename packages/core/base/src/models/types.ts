@@ -107,6 +107,7 @@ interface Colors {
     backgroundTertiary?: string;
     border?: string;
     danger?: string;
+    textLink?: string;
 }
 
 export interface UIConfig {
@@ -114,6 +115,8 @@ export interface UIConfig {
     fontSizeBase?: string;
     spacingUnit?: string;
     borderRadius?: string;
+    fontWeightPrimary?: string;
+    fontWeightSecondary?: string;
 }
 
 interface CommonProps {
