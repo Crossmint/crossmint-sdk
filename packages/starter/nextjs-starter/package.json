@@ -19,7 +19,7 @@
     ],
     "scripts": {
         "clean": "shx rm -rf .next",
-        "dev": "next dev",
+        "dev": "next dev -p 3005",
         "build": "yarn clean && next build",
         "start": "next start",
         "lint": "next lint",

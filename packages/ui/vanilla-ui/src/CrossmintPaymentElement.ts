@@ -1,6 +1,6 @@
 import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
-import { crossmintPaymentService } from "@crossmint/client-sdk-base";
+import { crossmintPaymentService, crossmintUiService } from "@crossmint/client-sdk-base";
 import { customElement } from "lit/decorators/custom-element.js";
 
 import type {
@@ -57,14 +57,31 @@ export class CrossmintPaymentElement extends LitElement {
   @property({ type: Function || String })
   onEvent?: (event: any) => void = propertyDefaults.onEvent;
 
+  height: number = 0;
+
   connectedCallback() {
     super.connectedCallback();
 
     const onEvent = getOnEventFunction(this.onEvent);
 
     const { listenToEvents } = crossmintPaymentService({ clientId: this.clientId, environment: this.environment, uiConfig: this.uiConfig, recipient: this.recipient, mintConfig: this.mintConfig });
+    const { listenToEvents: listenToUiEvents } = crossmintUiService({ environment: this.environment });
 
     listenToEvents((event) => onEvent?.(event.data));
+
+    listenToUiEvents((event: MessageEvent<any>) => {
+      const { type, payload } = event.data;
+
+      switch (type) {
+          case "ui:height.changed":
+              this.height = payload.height;
+              this.requestUpdate();
+              break;
+          default:
+              return;
+      }
+  });
+
   }
 
   updated(changedProperties: Map<string, unknown>) {
@@ -87,7 +104,17 @@ export class CrossmintPaymentElement extends LitElement {
       <iframe
         src=${getIframeUrl()}
         id="iframe-crossmint-payment-element"
-        style="width: 100%; height: 100%; border: none; margin: 0; padding: 0; height: 96px;"
+        style="border: none !important;
+        padding: 0px !important;
+        width: calc(100% + 8px);
+        min-width: 100% !important;
+        overflow: hidden !important;
+        display: block !important;
+        user-select: none !important;
+        transform: translate(0px) !important;
+        opacity: 1;
+        transition: ease 0s, opacity 0.4s ease 0.1s;
+        height: ${this.height}px;"
       ></iframe>
     `;
   }
