@@ -13,6 +13,14 @@ export const PaymentErrors = {
     COLLECTION_SALE_ENDED: "payments:collection.sale-ended",
     USER_WALLET_LIMIT_REACHED: "payments:user-wallet.limit-reached",
     USER_WALLET_NOT_WHITELISTED: "payments:user-wallet.not-whitelisted",
+    PAYMENT_REJECTED_GENERIC_DECLINE: "payments:payment-rejected.generic-decline",
+    PAYMENT_REJECTED_INSUFFICIENT_FUNDS: "payments:payment-rejected.insufficient-funds",
+    PAYMENT_REJECTED_CARD_LOST: "payments:payment-rejected.card-lost",
+    PAYMENT_REJECTED_CARD_STOLEN: "payments:payment-rejected.card-stolen",
+    PAYMENT_REJECTED_CARD_EXPIRED: "payments:payment-rejected.card-expired",
+    PAYMENT_REJECTED_CARD_INCORRECT_CVC: "payments:payment-rejected.card-incorrect-cvc",
+    PAYMENT_REJECTED_PROCESSING_ERROR: "payments:payment-rejected.processing-error",
+    PAYMENT_REJECTED_CARD_INCORRECT_NUMBER: "payments:payment-rejected.card-incorrect-number",
 } as const;
 export type PaymentErrors = (typeof PaymentErrors)[keyof typeof PaymentErrors];
 
