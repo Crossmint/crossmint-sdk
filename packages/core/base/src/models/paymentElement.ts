@@ -75,13 +75,15 @@ interface SolanaTransaction {
     mintHash: string;
 }
 
+interface Verification {
+    required: boolean;
+    url?: string;
+}
+
 type TransactionFulfillmentSucceededPayload = TransactionBase & {
     txId: string;
+    verification: Verification;
 } & (EvmTransaction | SolanaTransaction);
-
-type TransactionFulfillmentVerificationPayload = TransactionFulfillmentSucceededPayload & {
-    verificationUrl: string;
-};
 
 interface TransactionFulfillmentFailed extends TransactionBase {
     error: CrossmintEventError;
@@ -105,7 +107,6 @@ export interface CheckoutEventMap {
     [CheckoutEvents.ORDER_PROCESS_STARTED]: EmptyObject;
     [CheckoutEvents.TRANSACTION_FULFILLMENT_SUCCEEDED]: TransactionFulfillmentSucceededPayload;
     [CheckoutEvents.TRANSACTION_FULFILLMENT_FAILED]: TransactionFulfillmentFailed;
-    [CheckoutEvents.TRANSACTION_FULFILLMENT_VERIFICATION]: TransactionFulfillmentVerificationPayload;
     [CheckoutEvents.ORDER_PROCESS_FINISHED]: OrderProcessFinished;
 }
 
