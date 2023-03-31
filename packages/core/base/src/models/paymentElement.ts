@@ -75,11 +75,6 @@ interface SolanaTransaction {
     mintHash: string;
 }
 
-interface Verification {
-    required: boolean;
-    url?: string;
-}
-
 type TransactionFulfillmentSucceededPayload = TransactionBase & {
     txId: string;
 } & (EvmTransaction | SolanaTransaction);
@@ -87,6 +82,8 @@ type TransactionFulfillmentSucceededPayload = TransactionBase & {
 interface TransactionFulfillmentFailed extends TransactionBase {
     error: CrossmintEventError;
 }
+
+type Verification = { required: false } | { required: true; url: string };
 
 interface OrderProcessFinished {
     successfulTransactionIdentifiers: string[];
