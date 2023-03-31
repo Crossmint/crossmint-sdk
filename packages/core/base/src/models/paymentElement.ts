@@ -82,7 +82,6 @@ interface Verification {
 
 type TransactionFulfillmentSucceededPayload = TransactionBase & {
     txId: string;
-    verification: Verification;
 } & (EvmTransaction | SolanaTransaction);
 
 interface TransactionFulfillmentFailed extends TransactionBase {
@@ -92,7 +91,7 @@ interface TransactionFulfillmentFailed extends TransactionBase {
 interface OrderProcessFinished {
     successfulTransactionIdentifiers: string[];
     failedTransactionIdentifiers: string[];
-    verificationTransactionIdentifiers: string[];
+    verification: Verification;
     totalPrice: FiatPrice;
 }
 
