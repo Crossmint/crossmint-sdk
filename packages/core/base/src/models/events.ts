@@ -43,6 +43,7 @@ export type CheckoutTransactionErrorEvents =
 
 export const CheckoutTransactionEvents = {
     TRANSACTION_FULFILLMENT_SUCCEEDED: "transaction:fulfillment.succeeded",
+    TRANSACTION_FULFILLMENT_VERIFICATION: "transaction:fulfillment.verification",
     ...CheckoutTransactionErrorEvents,
 } as const;
 export type CheckoutTransactionEvents = (typeof CheckoutTransactionEvents)[keyof typeof CheckoutTransactionEvents];

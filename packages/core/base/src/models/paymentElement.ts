@@ -79,6 +79,10 @@ type TransactionFulfillmentSucceededPayload = TransactionBase & {
     txId: string;
 } & (EvmTransaction | SolanaTransaction);
 
+type TransactionFulfillmentVerificationPayload = TransactionFulfillmentSucceededPayload & {
+    verificationUrl: string;
+};
+
 interface TransactionFulfillmentFailed extends TransactionBase {
     error: CrossmintEventError;
 }
@@ -86,6 +90,7 @@ interface TransactionFulfillmentFailed extends TransactionBase {
 interface OrderProcessFinished {
     successfulTransactionIdentifiers: string[];
     failedTransactionIdentifiers: string[];
+    verificationTransactionIdentifiers: string[];
     totalPrice: FiatPrice;
 }
 
@@ -100,6 +105,7 @@ export interface CheckoutEventMap {
     [CheckoutEvents.ORDER_PROCESS_STARTED]: EmptyObject;
     [CheckoutEvents.TRANSACTION_FULFILLMENT_SUCCEEDED]: TransactionFulfillmentSucceededPayload;
     [CheckoutEvents.TRANSACTION_FULFILLMENT_FAILED]: TransactionFulfillmentFailed;
+    [CheckoutEvents.TRANSACTION_FULFILLMENT_VERIFICATION]: TransactionFulfillmentVerificationPayload;
     [CheckoutEvents.ORDER_PROCESS_FINISHED]: OrderProcessFinished;
 }
 
