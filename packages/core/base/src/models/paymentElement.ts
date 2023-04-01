@@ -83,9 +83,12 @@ interface TransactionFulfillmentFailed extends TransactionBase {
     error: CrossmintEventError;
 }
 
+type Verification = { required: false } | { required: true; url: string };
+
 interface OrderProcessFinished {
     successfulTransactionIdentifiers: string[];
     failedTransactionIdentifiers: string[];
+    verification: Verification;
     totalPrice: FiatPrice;
 }
 
