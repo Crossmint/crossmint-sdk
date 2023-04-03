@@ -2,6 +2,8 @@ import "@testing-library/jest-dom";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import React from "react";
 
+import { describe, test, expect, afterEach, jest } from "@jest/globals";
+
 import { CrossmintStatusButton } from "../src/CrossmintStatusButton";
 
 // TODO(#60): create a global service for this to work everywhere and to be able to customize resolved/rejected responses

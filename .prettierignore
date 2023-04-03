@@ -4,3 +4,9 @@ build
 out
 .next
 *.svg
+
+node_modules/
+.dist/
+.turbo/
+*.yaml
+*.yml

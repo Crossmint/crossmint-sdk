@@ -1,0 +1,30 @@
+name: "Setup Environment"
+description: "Set up Node.js, pnpm, and install dependencies"
+
+inputs:
+    node-version:
+        description: "Node.js version"
+        required: true
+    pnpm-version:
+        description: "pnpm version"
+        required: true
+
+runs:
+    using: "composite"
+    steps:
+        - uses: actions/setup-node@v3
+          with:
+              node-version: ${{ inputs.node-version }}
+        - name: Install pnpm
+          shell: bash
+          run: |
+              npm install -g pnpm@${{ inputs.pnpm-version }}
+        - name: Cache pnpm store
+          uses: actions/cache@v3
+          with:
+              path: ~/.pnpm-store
+              key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+              restore-keys: |
+                  ${{ runner.os }}-pnpm-
+        - shell: bash
+          run: pnpm install --frozen-lockfile

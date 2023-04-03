@@ -169,7 +169,7 @@ export class CrossmintPayButton extends LitElement {
             clientName: clientNames.vanillaUi,
             locale: this.locale || "en-US",
             currency: this.currency || "USD",
-            successCallbackURL: this.successCallbackURL ,
+            successCallbackURL: this.successCallbackURL,
             failureCallbackURL: this.failureCallbackURL,
         });
 
@@ -185,7 +185,7 @@ export class CrossmintPayButton extends LitElement {
                     this.preferredSigninMethod,
                     this.prepay,
                     this.successCallbackURL,
-                    this.failureCallbackURL,
+                    this.failureCallbackURL
                 );
             });
 

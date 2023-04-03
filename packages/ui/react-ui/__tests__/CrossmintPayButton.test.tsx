@@ -4,6 +4,8 @@ import React from "react";
 
 import { baseUrls } from "@crossmint/client-sdk-base";
 
+import { describe, expect, test, jest, afterEach } from "@jest/globals";
+
 import { CrossmintPayButton } from "../src/CrossmintPayButton";
 import { LIB_VERSION } from "../src/version";
 
@@ -147,17 +149,17 @@ describe("CrossmintPayButton", () => {
         describe("paymentMethod prop", () => {
             test("should display `Buy with Credit card` text when prop is not set", async () => {
                 render(<CrossmintPayButton {...defaultProps} />);
-                expect(screen.getByRole("button-paragraph")).toHaveTextContent("Buy with credit card");
+                expect(screen.getByRole("button-paragraph").textContent).toContain("Buy with credit card");
             });
 
             test("should display `Buy with ETH` text when prop is set to `ETH`", async () => {
                 render(<CrossmintPayButton {...defaultProps} paymentMethod="ETH" />);
-                expect(screen.getByRole("button-paragraph")).toHaveTextContent("Buy with ETH");
+                expect(screen.getByRole("button-paragraph").textContent).toContain("Buy with ETH");
             });
 
             test("should display `Buy with SOL` text when prop is set to `SOL`", async () => {
                 render(<CrossmintPayButton {...defaultProps} paymentMethod="SOL" />);
-                expect(screen.getByRole("button-paragraph")).toHaveTextContent("Buy with SOL");
+                expect(screen.getByRole("button-paragraph").textContent).toContain("Buy with SOL");
             });
 
             test("should add `paymentMethod=ETH` query param to checkout url when prop added", async () => {

@@ -2,26 +2,26 @@ import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 import React from "react";
 
-import { NFT } from "@crossmint/client-sdk-base";
+import { describe, test, expect } from "@jest/globals";
 
-import { CrossmintNFTDetail } from "../src/CrossmintNFTDetail";
+import { CrossmintNFTCollectionView } from "../src/CrossmintNFTCollectionView";
 
-const nft: NFT = { chain: "ethereum", contractAddress: "0x12345", tokenId: "12" };
+const wallets = [{ chain: "solana", publicKey: "12345" }];
 
 describe("when only passing mandatory fields", () => {
     test("should add them to the iframe query params", () => {
-        render(<CrossmintNFTDetail nft={nft} />);
-        const iframe = screen.getByRole("nft-details");
+        render(<CrossmintNFTCollectionView wallets={wallets} />);
+        const iframe = screen.getByRole("nft-collection-view");
         const src = iframe.getAttribute("src");
-        expect(src).toContain("/sdk/wallets/tokens/ethereum:0x12345:12");
+        expect(src).toContain("wallets=%5B%7B%22chain%22%3A%22solana%22%2C%22publicKey%22%3A%2212345%22%7D%5D");
         expect(src).toContain("clientVersion=");
     });
 });
 
 describe("when not setting any environment", () => {
     test("should default to production", () => {
-        render(<CrossmintNFTDetail nft={nft} />);
-        const iframe = screen.getByRole("nft-details");
+        render(<CrossmintNFTCollectionView wallets={wallets} />);
+        const iframe = screen.getByRole("nft-collection-view");
         const src = iframe.getAttribute("src");
         expect(src).toContain("https://www.crossmint.com/");
     });
@@ -29,8 +29,8 @@ describe("when not setting any environment", () => {
 
 describe("when setting the environment to staging", () => {
     test("should use the staging url", () => {
-        render(<CrossmintNFTDetail nft={nft} environment="staging" />);
-        const iframe = screen.getByRole("nft-details");
+        render(<CrossmintNFTCollectionView wallets={wallets} environment="staging" />);
+        const iframe = screen.getByRole("nft-collection-view");
         const src = iframe.getAttribute("src");
         expect(src).toContain("https://staging.crossmint.com/");
     });

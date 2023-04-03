@@ -15,9 +15,9 @@ describe("CrossmintPaymentElement", () => {
         render(<CrossmintPaymentElement {...paymentElementProps} />);
         const iframe = screen.getByRole("iframe-crossmint-payment-element");
 
-        expect(iframe).toHaveAttribute("src");
-        expect(iframe).toHaveAttribute("id", "iframe-crossmint-payment-element");
-        expect(iframe).toHaveStyle({
+        (expect(iframe) as any).toHaveAttribute("src");
+        (expect(iframe) as any).toHaveAttribute("id", "iframe-crossmint-payment-element");
+        (expect(iframe) as any).toHaveStyle({
             padding: "0px !important",
             width: "100% !important",
             minWidth: "100% !important",
