@@ -93,9 +93,9 @@ function onEvent(event: CrossmintCheckoutEvent) {
             </div>
 
             <CrossmintPaymentElement
+                class="checkout-card-input"
+                clientId="be75a2b4-3de9-4aff-85cd-31f8c72588ca"
                 environment="http://localhost:3000"
-                clientId="6845c702-8396-4339-b17e-a2bf12d2cf6d"
-                :mint-config="{ totalPrice: String(0.001 * quantity), quantity: String(quantity) }"
                 :recipient="{
                     email,
                     ...(wallet
@@ -103,6 +103,28 @@ function onEvent(event: CrossmintCheckoutEvent) {
                               wallet,
                           }
                         : {}),
+                }"
+                :ui-config="{
+                    colors: {
+                        background: 'black',
+                        backgroundSecondary: 'black',
+                        backgroundTertiary: 'white',
+                        textPrimary: 'white',
+                        textSecondary: 'black',
+                        accent: 'white',
+                        border: '#404040',
+                    },
+                    borderRadius: '0px',
+                }"
+                :mint-config="{
+                    type: 'erc-1155',
+                    creatorContractAddress: '0x94850876b49e870dca6dae9a8b20175d899e2c83',
+                    claimIndex: 1065644272,
+                    mintCount: 1,
+                    merkleProofs: [],
+                    mintIndices: [0],
+                    mintFor: null,
+                    totalPrice: '0.0015',
                 }"
                 @event="onEvent"
             />
