@@ -9,13 +9,20 @@ const route = useRoute();
 
 const status = ref<string[]>([]);
 const celebrate = ref(false);
+const verificationUrl = ref("");
 
 listenToMintingEvents({ orderIdentifier: route.query.orderIdentifier?.toString()! }, (event) => {
     switch (event.type) {
         case "order:process.finished":
+            const orderFinishedPayload = event.payload as CheckoutEventMap["order:process.finished"];
             console.log("Minting is done!", event.payload);
             status.value.push("Minting is done!");
-            celebrate.value = true;
+            if (orderFinishedPayload.verification.required) {
+                verificationUrl.value = orderFinishedPayload.verification.url;
+            } else {
+                celebrate.value = true;
+            }
+
             break;
         case "transaction:fulfillment.succeeded":
             console.log("Transaction succeeded", event.payload);
@@ -43,5 +50,6 @@ listenToMintingEvents({ orderIdentifier: route.query.orderIdentifier?.toString()
             <li v-for="s in status" :key="s">{{ s }}</li>
         </ul>
         <img v-if="celebrate" src="https://media1.giphy.com/media/IwAZ6dvvvaTtdI8SD5/giphy.gif" alt="Celebrate!!" />
+        <a v-if="verificationUrl" :href="verificationUrl">Verify your purchase</a>
     </div>
 </template>
