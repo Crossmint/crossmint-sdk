@@ -1,16 +1,16 @@
 import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
-import { crossmintPaymentService, crossmintUiService } from "@crossmint/client-sdk-base";
 import { customElement } from "lit/decorators/custom-element.js";
 
+import { crossmintPaymentService, crossmintUiService } from "@crossmint/client-sdk-base";
 import type {
     Currency,
     Locale,
     MintConfig,
+    PaymentElement,
     PaymentMethod,
     Recipient,
     UIConfig,
-    PaymentElement,
 } from "@crossmint/client-sdk-base";
 
 const propertyDefaults: PaymentElement = {

@@ -1,10 +1,9 @@
+import { afterEach, describe, expect, jest, test } from "@jest/globals";
 import "@testing-library/jest-dom";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import React from "react";
 
 import { baseUrls } from "@crossmint/client-sdk-base";
-
-import { describe, expect, test, jest, afterEach } from "@jest/globals";
 
 import { CrossmintPayButton } from "../src/CrossmintPayButton";
 import { LIB_VERSION } from "../src/version";

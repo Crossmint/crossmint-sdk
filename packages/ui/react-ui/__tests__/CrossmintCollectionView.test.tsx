@@ -1,8 +1,7 @@
+import { describe, expect, test } from "@jest/globals";
 import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 import React from "react";
-
-import { describe, test, expect } from "@jest/globals";
 
 import { CrossmintNFTCollectionView } from "../src/CrossmintNFTCollectionView";
 

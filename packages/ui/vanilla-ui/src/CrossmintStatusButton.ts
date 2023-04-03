@@ -1,16 +1,18 @@
-import { html, LitElement } from "lit";
-import { classMap } from "lit/directives/class-map.js";
-import { property } from "lit/decorators/property.js";
+import { LitElement, html } from "lit";
 import { customElement } from "lit/decorators/custom-element.js";
+import { property } from "lit/decorators/property.js";
+import { classMap } from "lit/directives/class-map.js";
+
 import {
-    crossmintStatusService,
-    onboardingRequestStatusResponse,
     clientNames,
     crossmintStatusButtonService,
+    crossmintStatusService,
+    onboardingRequestStatusResponse,
 } from "@crossmint/client-sdk-base";
-import { LIB_VERSION } from "./version";
-import { CrossmintStatusButtonLitProps } from "./types";
+
 import { buttonStyles } from "./styles";
+import { CrossmintStatusButtonLitProps } from "./types";
+import { LIB_VERSION } from "./version";
 
 const propertyDefaults: CrossmintStatusButtonLitProps = {
     className: "",
@@ -49,7 +51,7 @@ export class CrossmintStatusButton extends LitElement {
     @property({ type: Function })
     onClick = propertyDefaults.onClick;
 
-    @property({type: String})
+    @property({ type: String })
     locale = propertyDefaults.locale;
 
     static styles = buttonStyles;
@@ -60,7 +62,7 @@ export class CrossmintStatusButton extends LitElement {
     };
 
     classes = { light: false };
-    interval:any = null;
+    interval: any = null;
 
     connectedCallback() {
         super.connectedCallback();
@@ -87,7 +89,10 @@ export class CrossmintStatusButton extends LitElement {
     }
 
     render() {
-        const { getButtonText, isButtonDisabled, handleClick } = crossmintStatusButtonService({ onClick: this.onClick, locale: this.locale || "en-US"});
+        const { getButtonText, isButtonDisabled, handleClick } = crossmintStatusButtonService({
+            onClick: this.onClick,
+            locale: this.locale || "en-US",
+        });
         const { goToOnboarding } = crossmintStatusService({
             libVersion: LIB_VERSION,
             clientId: this.clientId,
@@ -101,7 +106,7 @@ export class CrossmintStatusButton extends LitElement {
         const content = getButtonText(this.status);
         const isDisabled = isButtonDisabled(this.status) || this.disabled;
 
-        const _handleClick = (e:any) => handleClick(e, this.status, goToOnboarding);
+        const _handleClick = (e: any) => handleClick(e, this.status, goToOnboarding);
 
         this.classes.light = this.theme === "light";
 
