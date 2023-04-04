@@ -103,6 +103,7 @@ export class CrossmintPaymentElement extends LitElement {
     return html`
       <iframe
         src=${getIframeUrl()}
+        allow="payment *"
         id="iframe-crossmint-payment-element"
         style="border: none !important;
         padding: 0px !important;

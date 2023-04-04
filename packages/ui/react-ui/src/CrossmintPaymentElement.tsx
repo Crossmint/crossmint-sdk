@@ -41,6 +41,7 @@ export function CrossmintPaymentElement(props: PaymentElement) {
             src={iframeUrl}
             id="iframe-crossmint-payment-element"
             role="iframe-crossmint-payment-element"
+            allow="payment *"
             style={{
                 border: "none !important",
                 padding: "0px !important",

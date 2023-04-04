@@ -59,7 +59,12 @@ watch(
 </script>
 
 <template>
-    <iframe :src="iframeUrl" id="iframe-crossmint-payment-element" :style="{ height: `${styleHeight}px` }"></iframe>
+    <iframe
+        :src="iframeUrl"
+        allow="payment *"
+        id="iframe-crossmint-payment-element"
+        :style="{ height: `${styleHeight}px` }"
+    ></iframe>
 </template>
 
 <style scoped>
