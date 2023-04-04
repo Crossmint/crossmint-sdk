@@ -2,27 +2,21 @@ type Primitive = string | number | symbol;
 
 type GenericObject = Record<Primitive, unknown>;
 
-type Join<
-    L extends Primitive | undefined,
-    R extends Primitive | undefined,
-> = L extends string | number
+type Join<L extends Primitive | undefined, R extends Primitive | undefined> = L extends string | number
     ? R extends string | number
         ? `${L}.${R}`
         : L
     : R extends string | number
-        ? R
-        : undefined;
+    ? R
+    : undefined;
 
-type Union<
-    L extends unknown | undefined,
-    R extends unknown | undefined,
-> = L extends undefined
+type Union<L extends unknown | undefined, R extends unknown | undefined> = L extends undefined
     ? R extends undefined
         ? undefined
         : R
     : R extends undefined
-        ? L
-        : L | R;
+    ? L
+    : L | R;
 
 /**
  * NestedPaths
@@ -34,7 +28,7 @@ type Union<
 export type NestedPaths<
     T extends GenericObject,
     Prev extends Primitive | undefined = undefined,
-    Path extends Primitive | undefined = undefined,
+    Path extends Primitive | undefined = undefined
 > = {
     [K in keyof T]: T[K] extends GenericObject
         ? NestedPaths<T[K], Union<Prev, Path>, Join<Path, K>>
@@ -50,13 +44,13 @@ export type NestedPaths<
  */
 export type TypeFromPath<
     T extends GenericObject,
-    Path extends string, // Or, if you prefer, NestedPaths<T>
+    Path extends string // Or, if you prefer, NestedPaths<T>
 > = {
     [K in Path]: K extends keyof T
         ? T[K]
         : K extends `${infer P}.${infer S}`
-            ? T[P] extends GenericObject
-                ? TypeFromPath<T[P], S>
-                : never
-            : never;
+        ? T[P] extends GenericObject
+            ? TypeFromPath<T[P], S>
+            : never
+        : never;
 }[Path];

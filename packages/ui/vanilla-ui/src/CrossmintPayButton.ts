@@ -1,19 +1,21 @@
-import { html, LitElement } from "lit";
-import { classMap } from "lit/directives/class-map.js";
-import { property } from "lit/decorators/property.js";
+import { LitElement, html } from "lit";
 import { customElement } from "lit/decorators/custom-element.js";
+import { property } from "lit/decorators/property.js";
+import { classMap } from "lit/directives/class-map.js";
+
 import {
-    mintingContractTypes,
-    onboardingRequestStatusResponse,
-    crossmintStatusService,
-    crossmintModalService,
-    crossmintPayButtonService,
     PayButtonConfig,
     clientNames,
+    crossmintModalService,
+    crossmintPayButtonService,
+    crossmintStatusService,
+    mintingContractTypes,
+    onboardingRequestStatusResponse,
 } from "@crossmint/client-sdk-base";
-import { LIB_VERSION } from "./version";
-import { CrossmintPayButtonLitProps } from "./types";
+
 import { buttonStyles } from "./styles";
+import { CrossmintPayButtonLitProps } from "./types";
+import { LIB_VERSION } from "./version";
 
 const propertyDefaults: CrossmintPayButtonLitProps = {
     className: "",
@@ -169,7 +171,7 @@ export class CrossmintPayButton extends LitElement {
             clientName: clientNames.vanillaUi,
             locale: this.locale || "en-US",
             currency: this.currency || "USD",
-            successCallbackURL: this.successCallbackURL ,
+            successCallbackURL: this.successCallbackURL,
             failureCallbackURL: this.failureCallbackURL,
         });
 
@@ -185,7 +187,7 @@ export class CrossmintPayButton extends LitElement {
                     this.preferredSigninMethod,
                     this.prepay,
                     this.successCallbackURL,
-                    this.failureCallbackURL,
+                    this.failureCallbackURL
                 );
             });
 

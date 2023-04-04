@@ -4,14 +4,16 @@
     "author": "Paella Labs Inc",
     "license": "Apache-2.0",
     "repository": "https://github.com/CrossMint/crossmint-client-sdk",
-    "type": "module",
     "sideEffects": false,
-    "main": "lib/index.cjs",
-    "module": "lib/index.js",
+    "main": "lib/index.js",
+    "module": "lib/index.mjs",
     "types": "lib/index.d.ts",
     "exports": {
-        "import": "./lib/index.js",
-        "require": "./lib/index.cjs"
+        ".": {
+            "import": "./lib/index.mjs",
+            "require": "./lib/index.js",
+            "types": "./lib/index.d.ts"
+        }
     },
     "files": [
         "lib",
@@ -23,12 +25,12 @@
     },
     "scripts": {
         "clean": "shx rm -rf lib/*",
-        "build": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./lib --minify --dts"
+        "build": "pnpm run clean && tsup src/index.ts --format esm,cjs --outDir ./lib --minify --dts"
     },
     "dependencies": {
-        "uuid": "^8.3.2"
+        "uuid": "9.0.0"
     },
     "devDependencies": {
-        "@types/uuid": "^8.3.4"
+        "@types/uuid": "9.0.1"
     }
 }

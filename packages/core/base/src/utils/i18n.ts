@@ -1,5 +1,5 @@
-import { Locale } from "../models/types";
 import { NestedPaths, TypeFromPath } from "../models/system";
+import { Locale } from "../models/types";
 
 const enUS = {
     crossmintPayButtonService: {
@@ -38,7 +38,7 @@ const localeMap = {
     "es-ES": esES,
 };
 
-export function t<K extends NestedPaths<typeof enUS>>(wordingKey: K, locale: Locale): TypeFromPath<typeof enUS, K>  {
+export function t<K extends NestedPaths<typeof enUS>>(wordingKey: K, locale: Locale): TypeFromPath<typeof enUS, K> {
     const localeWording = localeMap[locale];
     return wordingKey.split(".").reduce((obj: any, i) => obj[i], localeWording);
 }

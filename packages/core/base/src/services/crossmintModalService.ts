@@ -103,7 +103,9 @@ export interface CrossmintModalServiceReturn {
         whPassThroughArgs?: any,
         paymentMethod?: PaymentMethod,
         preferredSigninMethod?: SigninMethods,
-        prepay?: boolean
+        prepay?: boolean,
+        successCallbackURL?: string,
+        failureCallbackURL?: string
     ) => void;
 }
 

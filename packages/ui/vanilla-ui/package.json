@@ -6,15 +6,15 @@
     "author": "Paella Inc",
     "license": "Apache-2.0",
     "repository": "https://github.com/Crossmint/crossmint-client-sdk",
-    "type": "module",
     "sideEffects": false,
-    "main": "lib/index.cjs",
-    "module": "lib/index.js",
+    "main": "lib/index.js",
+    "module": "lib/index.mjs",
     "types": "lib/index.d.ts",
     "exports": {
         ".": {
-            "import": "./lib/index.js",
-            "require": "./lib/index.cjs"
+            "import": "./lib/index.mjs",
+            "require": "./lib/index.js",
+            "types": "./lib/index.d.ts"
         }
     },
     "files": [
@@ -27,16 +27,16 @@
     },
     "scripts": {
         "create-version-file": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/version.ts",
-        "version": "yarn run create-version-file && git add .",
-        "prebuild": "yarn run create-version-file",
+        "version": "pnpm run create-version-file && git add .",
+        "prebuild": "pnpm run create-version-file",
         "clean": "shx rm -rf lib/*",
-        "build": "yarn clean && tsup src/index.ts --format esm,cjs,iife --outDir ./lib --minify --dts"
+        "build": "pnpm run clean && tsup src/index.ts --format esm,cjs,iife --outDir ./lib --minify --dts"
     },
     "bugs": {
         "url": "https://github.com/Crossmint/crossmint-client-sdk/issues"
     },
     "dependencies": {
-        "@crossmint/client-sdk-base": "^0.2.7-alpha.17",
-        "lit": "^2.2.1"
+        "@crossmint/client-sdk-base": "workspace:*",
+        "lit": "2.2.1"
     }
 }
