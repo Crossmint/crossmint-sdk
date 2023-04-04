@@ -35,6 +35,11 @@ export const CheckoutQuoteEvents = {
 } as const;
 export type CheckoutQuoteEvents = (typeof CheckoutQuoteEvents)[keyof typeof CheckoutQuoteEvents];
 
+export const CheckoutRecipientEvents = {
+    RECIPIENT_WALLET_CHANGED: "recipient:wallet.changed",
+} as const;
+export type CheckoutRecipientEvents = (typeof CheckoutRecipientEvents)[keyof typeof CheckoutRecipientEvents];
+
 export const CheckoutTransactionErrorEvents = {
     TRANSACTION_FULFILLMENT_FAILED: "transaction:fulfillment.failed",
 } as const;
@@ -57,6 +62,7 @@ export const CheckoutEvents = {
     ...CheckoutPaymentEvents,
     ...CheckoutOrderEvents,
     ...CheckoutQuoteEvents,
+    ...CheckoutRecipientEvents,
     ...CheckoutTransactionEvents,
 } as const;
 export type CheckoutEvents = (typeof CheckoutEvents)[keyof typeof CheckoutEvents];
