@@ -63,7 +63,8 @@ watch(
         :src="iframeUrl"
         allow="payment *"
         id="iframe-crossmint-payment-element"
-        :style="{ height: `${styleHeight}px` }"
+        :style="{ height: `${styleHeight}px`, display: 'none' }"
+        :onload="this.style.display = 'block';" 
     ></iframe>
 </template>
 
