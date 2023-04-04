@@ -1,0 +1,32 @@
+{
+    "folders": [
+        {
+            "name": "🌿 @crossmint/client-sdk",
+            "path": "."
+        },
+        {
+            "name": "🧬 @crossmint/client-sdk-base",
+            "path": "packages/core/base"
+        },
+        {
+            "name": "⚛️ @crossmint/client-sdk-react-ui",
+            "path": "packages/ui/react-ui"
+        },
+        {
+            "name": "⚪ @crossmint/client-sdk-vanilla-ui",
+            "path": "packages/ui/vanilla-ui"
+        },
+        {
+            "name": "🟢 @crossmint/client-sdk-vue-ui",
+            "path": "packages/ui/vue-ui"
+        },
+        {
+            "name": "🏁 Starters",
+            "path": "packages/starter"
+        }
+    ],
+    "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    }
+}
