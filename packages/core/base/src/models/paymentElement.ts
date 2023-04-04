@@ -92,6 +92,10 @@ interface OrderProcessFinished {
     totalPrice: FiatPrice;
 }
 
+interface RecipientWalletChanged {
+    wallet: string;
+}
+
 export interface CheckoutEventMap {
     [CheckoutEvents.PAYMENT_PREPARATION_SUCCEEDED]: EmptyObject;
     [CheckoutEvents.QUOTE_STATUS_CHANGED]: InitialQuoteOutput;
@@ -104,6 +108,7 @@ export interface CheckoutEventMap {
     [CheckoutEvents.TRANSACTION_FULFILLMENT_SUCCEEDED]: TransactionFulfillmentSucceededPayload;
     [CheckoutEvents.TRANSACTION_FULFILLMENT_FAILED]: TransactionFulfillmentFailed;
     [CheckoutEvents.ORDER_PROCESS_FINISHED]: OrderProcessFinished;
+    [CheckoutEvents.RECIPIENT_WALLET_CHANGED]: RecipientWalletChanged;
 }
 
 export type ParamsUpdatePayload = Partial<Record<keyof Omit<PaymentElement, "onEvent" | "environment">, any>>;
