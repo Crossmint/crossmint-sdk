@@ -124,7 +124,7 @@ function onEvent(event: CrossmintCheckoutEvent) {
                     merkleProofs: [],
                     mintIndices: [0],
                     mintFor: null,
-                    totalPrice: '0.0015',
+                    totalPrice: String(0.0015 * quantity),
                 }"
                 @event="onEvent"
             />
