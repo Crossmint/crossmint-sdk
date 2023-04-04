@@ -1,0 +1,30 @@
+name: "Setup Environment"
+description: "Set up Node.js, Yarn, and install dependencies"
+
+inputs:
+    node-version:
+        description: "Node.js version"
+        required: true
+    yarn-version:
+        description: "Yarn version"
+        required: true
+
+runs:
+    using: "composite"
+    steps:
+        - uses: actions/setup-node@v3
+          with:
+              node-version: ${{ inputs.node-version }}
+        - name: Install Yarn
+          shell: bash
+          run: |
+              npm install -g yarn@${{ inputs.yarn-version }}
+        - name: Cache Yarn cache
+          uses: actions/cache@v3
+          with:
+              path: ~/.yarn/cache
+              key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+              restore-keys: |
+                  ${{ runner.os }}-yarn-
+        - shell: bash
+          run: yarn install --frozen-lockfile
