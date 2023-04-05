@@ -99,6 +99,7 @@ interface RecipientWalletChanged {
 export interface CheckoutEventMap {
     [CheckoutEvents.PAYMENT_PREPARATION_SUCCEEDED]: EmptyObject;
     [CheckoutEvents.QUOTE_STATUS_CHANGED]: InitialQuoteOutput;
+    [CheckoutEvents.QUOTE_STATUS_INVALIDATED]: EmptyObject;
     [CheckoutEvents.PAYMENT_PROCESS_STARTED]: EmptyObject;
     [CheckoutEvents.PAYMENT_PREPARATION_FAILED]: CrossmintEventErrorPayload;
     [CheckoutEvents.PAYMENT_PROCESS_SUCCEEDED]: PaymentCompletedPayload;

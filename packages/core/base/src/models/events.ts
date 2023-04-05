@@ -32,6 +32,7 @@ export type CheckoutOrderEvents = (typeof CheckoutOrderEvents)[keyof typeof Chec
 
 export const CheckoutQuoteEvents = {
     QUOTE_STATUS_CHANGED: "quote:status.changed",
+    QUOTE_STATUS_INVALIDATED: "quote:status.invalidated",
 } as const;
 export type CheckoutQuoteEvents = (typeof CheckoutQuoteEvents)[keyof typeof CheckoutQuoteEvents];
 
