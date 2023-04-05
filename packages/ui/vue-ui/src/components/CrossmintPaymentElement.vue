@@ -33,7 +33,7 @@ const { listenToEvents: listenToUiEvents } = crossmintUiService({ environment: p
 
 const iframeUrl = getIframeUrl();
 
-const styleHeight = ref(200);
+const styleHeight = ref(0);
 
 listenToEvents((event) => props.onEvent?.(event.data));
 
