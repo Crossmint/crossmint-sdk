@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-vue-ui-starter",
-    "version": "0.0.1-alpha.21",
+    "version": "0.0.1-alpha.22",
     "private": true,
     "scripts": {
         "dev": "vite",
@@ -10,7 +10,7 @@
         "type-check": "vue-tsc --noEmit"
     },
     "dependencies": {
-        "@crossmint/client-sdk-vue-ui": "^0.0.1-alpha.21",
+        "@crossmint/client-sdk-vue-ui": "^0.0.1-alpha.22",
         "vue": "^3.2.47",
         "vue-router": "4"
     },
