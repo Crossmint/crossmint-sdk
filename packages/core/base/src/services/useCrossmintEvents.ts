@@ -1,4 +1,4 @@
-import pRetry from "p-retry";
+import { backOff } from "exponential-backoff";
 
 import { CheckoutEvents, ListenToMintingEventsProps, ListenerType } from "../models/events";
 import { CrossmintCheckoutEvent } from "../models/paymentElement";
@@ -65,7 +65,7 @@ export function useCrossmintEvents({ environment }: { environment?: string } = {
     }: {
         orderIdentifier: string;
     }): Promise<CrossmintCheckoutEvent<any>[]> {
-        return await pRetry(
+        return await backOff(
             async () => {
                 const res = await fetch(
                     `${getEnvironmentBaseUrl(environment)}/api/sdk/orders/${orderIdentifier}/status`,
@@ -81,12 +81,9 @@ export function useCrossmintEvents({ environment }: { environment?: string } = {
                 return response;
             },
             {
-                minTimeout: 650,
-                factor: 2.5, // 650ms, 1625ms, 4062.5ms, 10156.25ms, 25390.625ms
-                retries: 5,
-                onFailedAttempt(error) {
-                    console.log(`Attempt ${error.attemptNumber} to fetch order failed`);
-                },
+                startingDelay: 650,
+                timeMultiple: 2.5, // 650ms, 1625ms, 4062.5ms, 10156.25ms, 25390.625ms
+                numOfAttempts: 5,
             }
         );
     }
