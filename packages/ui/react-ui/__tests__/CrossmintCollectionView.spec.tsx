@@ -6,6 +6,8 @@ import { CrossmintNFTCollectionView } from "../src/CrossmintNFTCollectionView";
 
 const wallets = [{ chain: "solana", publicKey: "12345" }];
 
+jest.mock("p-retry");
+
 describe("when only passing mandatory fields", () => {
     test("should add them to the iframe query params", () => {
         render(<CrossmintNFTCollectionView wallets={wallets} />);
