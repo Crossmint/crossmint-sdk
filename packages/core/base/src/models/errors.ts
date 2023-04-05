@@ -22,6 +22,7 @@ export const PaymentErrors = {
     PAYMENT_REJECTED_PROCESSING_ERROR: "payments:payment-rejected.processing-error",
     PAYMENT_REJECTED_CARD_INCORRECT_NUMBER: "payments:payment-rejected.card-incorrect-number",
     TRANSACTION_ERROR_GENERIC: "payments:transaction-error.generic",
+    CONTRACT_EXECUTION_REVERTED_GENERIC: "payments:contract-execution-reverted.generic",
 } as const;
 export type PaymentErrors = (typeof PaymentErrors)[keyof typeof PaymentErrors];
 
