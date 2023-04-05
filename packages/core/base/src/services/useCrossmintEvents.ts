@@ -1,3 +1,5 @@
+import pRetry from "p-retry";
+
 import { CheckoutEvents, ListenToMintingEventsProps, ListenerType } from "../models/events";
 import { CrossmintCheckoutEvent } from "../models/paymentElement";
 import { getEnvironmentBaseUrl } from "../utils";
@@ -36,16 +38,24 @@ export function useCrossmintEvents({ environment }: { environment?: string } = {
             }
         }
 
+        let isFetching = false;
         const timer = setInterval(async () => {
+            if (isFetching) {
+                return;
+            }
+
+            isFetching = true;
             const events = await fetchOrderStatus({ orderIdentifier });
 
             for (const event of events) {
                 emittedEvents.includes(event.type) ? handleDuplicateEvent(event) : emitEvent(event);
             }
+            isFetching = false;
         }, 5000);
 
         // When history changes, clear the interval
         window.onpopstate = () => {
+            isFetching = false;
             clearInterval(timer);
         };
     }
@@ -55,20 +65,30 @@ export function useCrossmintEvents({ environment }: { environment?: string } = {
     }: {
         orderIdentifier: string;
     }): Promise<CrossmintCheckoutEvent<any>[]> {
-        try {
-            const res = await fetch(`${getEnvironmentBaseUrl(environment)}/api/sdk/orders/${orderIdentifier}/status`, {
-                method: "GET",
-                headers: {},
-            });
-            const response = await res.json();
-            if (response.error) {
-                return [];
+        return await pRetry(
+            async () => {
+                const res = await fetch(
+                    `${getEnvironmentBaseUrl(environment)}/api/sdk/orders/${orderIdentifier}/status`,
+                    {
+                        method: "GET",
+                        headers: {},
+                    }
+                );
+                const response = await res.json();
+                if (response.error) {
+                    return [];
+                }
+                return response;
+            },
+            {
+                minTimeout: 650,
+                factor: 2.5, // 650ms, 1625ms, 4062.5ms, 10156.25ms, 25390.625ms
+                retries: 5,
+                onFailedAttempt(error) {
+                    console.log(`Attempt ${error.attemptNumber} to fetch order failed`);
+                },
             }
-            return response;
-        } catch (e) {
-            console.error("Error fetching order status", e);
-            return [];
-        }
+        );
     }
 
     return {
