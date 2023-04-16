@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {onBeforeUnmount, ref, watch} from "vue";
+import { ref, watch } from "vue";
 
 import type {
     CrossmintCheckoutEvent,
@@ -10,7 +10,7 @@ import type {
     Recipient,
     UIConfig,
 } from "@crossmint/client-sdk-base";
-import {crossmintPaymentService, crossmintUiService} from "@crossmint/client-sdk-base";
+import { crossmintPaymentService, crossmintUiService } from "@crossmint/client-sdk-base";
 
 // TODO: Looks like you cannot import the interface directly from the package
 // https://github.com/vuejs/core/issues/4294#issuecomment-970861525
@@ -23,23 +23,22 @@ export interface PaymentElement {
     locale?: Locale;
     uiConfig?: UIConfig;
     environment?: string;
-
     onEvent?(event: CrossmintCheckoutEvent): any;
 }
 
 const props = withDefaults(defineProps<PaymentElement>(), {});
 
-const {getIframeUrl, listenToEvents, emitQueryParams} = crossmintPaymentService(props);
-const {listenToEvents: listenToUiEvents} = crossmintUiService({environment: props.environment});
+const { getIframeUrl, listenToEvents, emitQueryParams } = crossmintPaymentService(props);
+const { listenToEvents: listenToUiEvents } = crossmintUiService({ environment: props.environment });
 
 const iframeUrl = getIframeUrl();
 
 const styleHeight = ref(0);
 
-const clearEventListener = listenToEvents((event) => props.onEvent?.(event.data));
+listenToEvents((event) => props.onEvent?.(event.data));
 
-const clearUiListener = listenToUiEvents((event: MessageEvent<any>) => {
-    const {type, payload} = event.data;
+listenToUiEvents((event: MessageEvent<any>) => {
+    const { type, payload } = event.data;
 
     switch (type) {
         case "ui:height.changed":
@@ -53,21 +52,10 @@ const clearUiListener = listenToUiEvents((event: MessageEvent<any>) => {
 watch(
     () => [props.recipient, props.mintConfig, props.locale],
     () => {
-        emitQueryParams({recipient: props.recipient, mintConfig: props.mintConfig, locale: props.locale});
+        emitQueryParams({ recipient: props.recipient, mintConfig: props.mintConfig, locale: props.locale });
     },
-    {deep: true}
+    { deep: true }
 );
-
-onBeforeUnmount(() => {
-    if (clearEventListener) {
-        clearEventListener();
-    }
-
-    if (clearUiListener) {
-        clearUiListener();
-    }
-})
-
 </script>
 
 <template>
