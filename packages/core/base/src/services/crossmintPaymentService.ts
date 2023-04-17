@@ -1,8 +1,7 @@
 import { PaymentElementSDKEvents } from "../models/events";
 import { CheckoutEvents } from "../models/events";
 import {
-    CheckoutEventMap,
-    CrossmintCheckoutEvent,
+    EventCallbackFunction,
     ParamsUpdatePayload,
     PaymentElement,
 } from "../models/paymentElement";
@@ -17,6 +16,7 @@ export function crossmintPaymentService({
     locale,
 }: PaymentElement) {
     const baseUrl = getEnvironmentBaseUrl(environment);
+    let listeners: Array<EventCallbackFunction> = [];
 
     function getIframeUrl() {
         const params = new URLSearchParams({
@@ -43,9 +43,9 @@ export function crossmintPaymentService({
     }
 
     function listenToEvents(
-        cb: <K extends keyof CheckoutEventMap>(event: MessageEvent<CrossmintCheckoutEvent<K>>) => void
+        cb: EventCallbackFunction
     ) {
-        window.addEventListener("message", (event) => {
+        const eventListener = (event: MessageEvent) => {
             if (event.origin !== baseUrl) {
                 return;
             }
@@ -53,7 +53,17 @@ export function crossmintPaymentService({
             if (Object.values(CheckoutEvents).includes(event.data.type)) {
                 cb(event);
             }
+        };
+
+        window.addEventListener("message", eventListener);
+        listeners.push(eventListener);
+    }
+
+    function removeEventListeners() {
+        listeners.forEach((listener) => {
+            window.removeEventListener("message", listener);
         });
+        listeners = [];
     }
 
     function emitQueryParams(payload: ParamsUpdatePayload) {
@@ -65,5 +75,6 @@ export function crossmintPaymentService({
         getIframeUrl,
         listenToEvents,
         emitQueryParams,
+        removeEventListeners,
     };
 }

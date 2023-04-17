@@ -127,3 +127,5 @@ export type ParamsUpdatePayload = Partial<Record<keyof Omit<PaymentElement, "onE
 export interface SDKEventMap {
     [PaymentElementSDKEvents.PARAMS_UPDATE]: ParamsUpdatePayload;
 }
+
+export type EventCallbackFunction = <K extends keyof CheckoutEventMap>(event: MessageEvent<CrossmintCheckoutEvent<K>>) => void;
