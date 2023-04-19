@@ -55,4 +55,11 @@ describe("CrossmintPaymentElement", () => {
 
         expect(onEvent).not.toHaveBeenCalled();
     });
+
+    it("should add the `whPassThroughArgs` prop when passed", async () => {
+        render(<CrossmintPaymentElement {...paymentElementProps} whPassThroughArgs={{ hello: "hi" }} />);
+        const iframe = screen.getByRole("iframe-crossmint-payment-element");
+
+        expect(iframe.getAttribute("src")).toContain("whPassThroughArgs=%7B%22hello%22%3A%22hi%22%7D");
+    });
 });
