@@ -44,8 +44,8 @@ export function crossmintPaymentService({
 
     function listenToEvents(
         cb: <K extends keyof CheckoutEventMap>(event: MessageEvent<CrossmintCheckoutEvent<K>>) => void
-    ) {
-        window.addEventListener("message", (event) => {
+    ): () => void {
+        function _internalOnEvent(event: MessageEvent<any>) {
             if (event.origin !== baseUrl) {
                 return;
             }
@@ -53,7 +53,13 @@ export function crossmintPaymentService({
             if (Object.values(CheckoutEvents).includes(event.data.type)) {
                 cb(event);
             }
-        });
+        }
+
+        window.addEventListener("message", _internalOnEvent);
+
+        return () => {
+            window.removeEventListener("message", _internalOnEvent);
+        }
     }
 
     function emitQueryParams(payload: ParamsUpdatePayload) {

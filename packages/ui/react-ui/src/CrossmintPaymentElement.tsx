@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, {useEffect, useState} from "react";
 
-import { crossmintPaymentService, crossmintUiService } from "@crossmint/client-sdk-base";
-import type { CrossmintCheckoutEvent, PaymentElement } from "@crossmint/client-sdk-base";
+import type {CrossmintCheckoutEvent, PaymentElement} from "@crossmint/client-sdk-base";
+import {crossmintPaymentService, crossmintUiService} from "@crossmint/client-sdk-base";
 
 export function CrossmintPaymentElement(props: PaymentElement) {
     const [height, setHeight] = useState(0);
@@ -10,12 +10,18 @@ export function CrossmintPaymentElement(props: PaymentElement) {
     const [url] = useState(getIframeUrl());
 
     useEffect(() => {
-        listenToEvents((event: MessageEvent<CrossmintCheckoutEvent>) => props.onEvent?.(event.data));
+        const clearListener = listenToEvents((event: MessageEvent<CrossmintCheckoutEvent>) => props.onEvent?.(event.data));
+
+        return () => {
+            if (clearListener) {
+                clearListener();
+            }
+        }
     }, []);
 
     useEffect(() => {
-        listenToUiEvents((event: MessageEvent<any>) => {
-            const { type, payload } = event.data;
+        const clearListener = listenToUiEvents((event: MessageEvent<any>) => {
+            const {type, payload} = event.data;
 
             switch (type) {
                 case "ui:height.changed":
@@ -25,6 +31,12 @@ export function CrossmintPaymentElement(props: PaymentElement) {
                     return;
             }
         });
+
+        return () => {
+            if (clearListener) {
+                clearListener();
+            }
+        }
     }, []);
 
     useEffect(() => {
