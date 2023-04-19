@@ -53,6 +53,7 @@ export interface InitialQuoteOutput {
 
 interface PaymentRejectedPayload extends CrossmintEventErrorPayload {
     orderIdentifier: string;
+    paymentMethodType: PaymentMethodType;
 }
 
 type EmptyObject = Record<string, never>;

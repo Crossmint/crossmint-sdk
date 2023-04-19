@@ -5,8 +5,9 @@ import {crossmintPaymentService, crossmintUiService} from "@crossmint/client-sdk
 
 export function CrossmintPaymentElement(props: PaymentElement) {
     const [height, setHeight] = useState(0);
-    const {getIframeUrl, listenToEvents, emitQueryParams} = crossmintPaymentService(props);
-    const {listenToEvents: listenToUiEvents} = crossmintUiService({environment: props.environment});
+    const { getIframeUrl, listenToEvents, emitQueryParams } = crossmintPaymentService(props);
+    const { listenToEvents: listenToUiEvents } = crossmintUiService({ environment: props.environment });
+    const [url] = useState(getIframeUrl());
 
     useEffect(() => {
         const clearListener = listenToEvents((event: MessageEvent<CrossmintCheckoutEvent>) => props.onEvent?.(event.data));
@@ -16,7 +17,7 @@ export function CrossmintPaymentElement(props: PaymentElement) {
                 clearListener();
             }
         }
-    }, [listenToEvents, props.onEvent]);
+    }, []);
 
     useEffect(() => {
         const clearListener = listenToUiEvents((event: MessageEvent<any>) => {
@@ -44,13 +45,11 @@ export function CrossmintPaymentElement(props: PaymentElement) {
             mintConfig: props.mintConfig,
             locale: props.locale,
         });
-    }, [emitQueryParams, props.recipient, props.mintConfig, props.locale]);
-
-    const iframeUrl = getIframeUrl();
+    }, [props.recipient, props.mintConfig, props.locale]);
 
     return (
         <iframe
-            src={iframeUrl}
+            src={url}
             id="iframe-crossmint-payment-element"
             role="iframe-crossmint-payment-element"
             allow="payment *"
