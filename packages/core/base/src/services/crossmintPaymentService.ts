@@ -15,6 +15,7 @@ export function crossmintPaymentService({
     environment,
     mintConfig,
     locale,
+    paymentMethod,
 }: PaymentElement) {
     const baseUrl = getEnvironmentBaseUrl(environment);
 
@@ -37,6 +38,10 @@ export function crossmintPaymentService({
 
         if (locale != null) {
             params.append("locale", locale);
+        }
+
+        if (paymentMethod != null) {
+            params.append("paymentMethod", paymentMethod);
         }
 
         return `${baseUrl}/sdk/paymentElement?${params.toString()}`;

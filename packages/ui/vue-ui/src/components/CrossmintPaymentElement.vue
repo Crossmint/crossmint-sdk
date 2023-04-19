@@ -6,7 +6,7 @@ import type {
     Currency,
     Locale,
     MintConfig,
-    PaymentMethod,
+    PaymentMethodType,
     Recipient,
     UIConfig,
 } from "@crossmint/client-sdk-base";
@@ -18,7 +18,7 @@ export interface PaymentElement {
     clientId: string;
     mintConfig?: MintConfig;
     recipient?: Recipient;
-    paymentMethod?: PaymentMethod;
+    paymentMethod?: PaymentMethodType;
     currency?: Currency;
     locale?: Locale;
     uiConfig?: UIConfig;

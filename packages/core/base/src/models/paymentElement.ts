@@ -19,7 +19,7 @@ export interface PaymentElement {
     clientId: string;
     mintConfig?: MintConfig;
     recipient?: Recipient;
-    paymentMethod?: PaymentMethod;
+    paymentMethod?: PaymentMethodType;
     currency?: Currency;
     locale?: Locale;
     uiConfig?: UIConfig;

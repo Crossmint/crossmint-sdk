@@ -7,7 +7,7 @@ import type {
   Currency,
   Locale,
   MintConfig,
-  PaymentMethod,
+  PaymentMethodType,
   Recipient,
   UIConfig,
   PaymentElement
@@ -20,7 +20,7 @@ const propertyDefaults: PaymentElement = {
       email: "",
       wallet: "",
     },
-    paymentMethod: "fiat",
+    paymentMethod: "credit-card",
     currency: "USD",
     locale: "en-US",
     uiConfig: {},
@@ -40,7 +40,7 @@ export class CrossmintPaymentElement extends LitElement {
   recipient?: Recipient = propertyDefaults.recipient;
 
   @property({ type: String })
-  paymentMethod?: PaymentMethod = propertyDefaults.paymentMethod;
+  paymentMethod?: PaymentMethodType = propertyDefaults.paymentMethod;
 
   @property({ type: String })
   currency?: Currency = propertyDefaults.currency;
@@ -64,7 +64,7 @@ export class CrossmintPaymentElement extends LitElement {
 
     const onEvent = getOnEventFunction(this.onEvent);
 
-    const { listenToEvents } = crossmintPaymentService({ clientId: this.clientId, environment: this.environment, uiConfig: this.uiConfig, recipient: this.recipient, mintConfig: this.mintConfig });
+    const { listenToEvents } = crossmintPaymentService({ clientId: this.clientId, environment: this.environment, uiConfig: this.uiConfig, recipient: this.recipient, mintConfig: this.mintConfig, currency: this.currency, locale: this.locale, paymentMethod: this.paymentMethod });
     const { listenToEvents: listenToUiEvents } = crossmintUiService({ environment: this.environment });
 
     listenToEvents((event) => onEvent?.(event.data));
@@ -86,7 +86,7 @@ export class CrossmintPaymentElement extends LitElement {
 
   updated(changedProperties: Map<string, unknown>) {
     super.updated(changedProperties);
-    const { emitQueryParams } = crossmintPaymentService({ clientId: this.clientId, environment: this.environment, uiConfig: this.uiConfig, recipient: this.recipient, mintConfig: this.mintConfig });
+    const { emitQueryParams } = crossmintPaymentService({ clientId: this.clientId, environment: this.environment, uiConfig: this.uiConfig, recipient: this.recipient, mintConfig: this.mintConfig, currency: this.currency, locale: this.locale, paymentMethod: this.paymentMethod });
 
     if (
       changedProperties.has("recipient") ||
@@ -98,7 +98,7 @@ export class CrossmintPaymentElement extends LitElement {
   }
 
   render() {
-    const {getIframeUrl} = crossmintPaymentService({ clientId: this.clientId, environment: this.environment, uiConfig: this.uiConfig, recipient: this.recipient, mintConfig: this.mintConfig });
+    const {getIframeUrl} = crossmintPaymentService({ clientId: this.clientId, environment: this.environment, uiConfig: this.uiConfig, recipient: this.recipient, mintConfig: this.mintConfig, currency: this.currency, locale: this.locale, paymentMethod: this.paymentMethod });
 
     return html`
       <iframe

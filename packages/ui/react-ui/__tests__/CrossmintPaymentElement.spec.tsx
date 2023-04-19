@@ -55,4 +55,11 @@ describe("CrossmintPaymentElement", () => {
 
         expect(onEvent).not.toHaveBeenCalled();
     });
+
+    it("should add the `paymentMethod` prop when passed", async () => {
+        render(<CrossmintPaymentElement {...paymentElementProps} paymentMethod="credit-card" />);
+        const iframe = screen.getByRole("iframe-crossmint-payment-element");
+
+        expect(iframe.getAttribute("src")).toContain("paymentMethod=credit-card");
+    });
 });
