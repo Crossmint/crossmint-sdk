@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch, onUnmounted } from "vue";
 
 import type {
     CrossmintCheckoutEvent,
@@ -36,9 +36,9 @@ const iframeUrl = getIframeUrl();
 
 const styleHeight = ref(0);
 
-listenToEvents((event) => props.onEvent?.(event.data));
+const removeEventListener = listenToEvents((event) => props.onEvent?.(event.data));
 
-listenToUiEvents((event: MessageEvent<any>) => {
+const removeUIEventListener = listenToUiEvents((event: MessageEvent<any>) => {
     const { type, payload } = event.data;
 
     switch (type) {
@@ -48,6 +48,11 @@ listenToUiEvents((event: MessageEvent<any>) => {
         default:
             return;
     }
+});
+
+onUnmounted(() => {
+    removeEventListener();
+    removeUIEventListener();
 });
 
 watch(

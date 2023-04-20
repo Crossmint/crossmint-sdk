@@ -62,6 +62,9 @@ export class CrossmintPaymentElement extends LitElement {
   onEvent?: (event: any) => void = propertyDefaults.onEvent;
 
   height: number = 0;
+  removeEventListener = () => {};
+  removeUIEventListener = () => {};
+
 
   connectedCallback() {
     super.connectedCallback();
@@ -71,9 +74,9 @@ export class CrossmintPaymentElement extends LitElement {
     const { listenToEvents } = crossmintPaymentService({ clientId: this.clientId, environment: this.environment, uiConfig: this.uiConfig, recipient: this.recipient, mintConfig: this.mintConfig, whPassThroughArgs: this.whPassThroughArgs });
     const { listenToEvents: listenToUiEvents } = crossmintUiService({ environment: this.environment });
 
-    listenToEvents((event) => onEvent?.(event.data));
+    this.removeEventListener = listenToEvents((event) => onEvent?.(event.data));
 
-    listenToUiEvents((event: MessageEvent<any>) => {
+    this.removeUIEventListener = listenToUiEvents((event: MessageEvent<any>) => {
       const { type, payload } = event.data;
 
       switch (type) {
@@ -84,8 +87,14 @@ export class CrossmintPaymentElement extends LitElement {
           default:
               return;
       }
-  });
+    });
+  }
 
+  disconnectedCallback() {
+    super.disconnectedCallback();
+
+    this.removeEventListener();
+    this.removeUIEventListener();
   }
 
   updated(changedProperties: Map<string, unknown>) {
