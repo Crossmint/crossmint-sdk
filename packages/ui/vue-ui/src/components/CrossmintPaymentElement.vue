@@ -23,6 +23,7 @@ export interface PaymentElement {
     locale?: Locale;
     uiConfig?: UIConfig;
     environment?: string;
+    whPassThroughArgs?: any;
     onEvent?(event: CrossmintCheckoutEvent): any;
 }
 
@@ -50,9 +51,14 @@ listenToUiEvents((event: MessageEvent<any>) => {
 });
 
 watch(
-    () => [props.recipient, props.mintConfig, props.locale],
+    () => [props.recipient, props.mintConfig, props.locale, props.whPassThroughArgs],
     () => {
-        emitQueryParams({ recipient: props.recipient, mintConfig: props.mintConfig, locale: props.locale });
+        emitQueryParams({
+            recipient: props.recipient,
+            mintConfig: props.mintConfig,
+            locale: props.locale,
+            whPassThroughArgs: props.whPassThroughArgs,
+        });
     },
     { deep: true }
 );

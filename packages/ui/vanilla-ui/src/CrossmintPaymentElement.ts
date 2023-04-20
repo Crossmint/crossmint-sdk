@@ -25,6 +25,7 @@ const propertyDefaults: PaymentElement = {
     locale: "en-US",
     uiConfig: {},
     environment: "production",
+    whPassThroughArgs: undefined,
     onEvent: undefined,
   };
 
@@ -54,6 +55,9 @@ export class CrossmintPaymentElement extends LitElement {
   @property({ type: String })
   environment?: string = propertyDefaults.environment;
 
+  @property({ type: Object })
+  whPassThroughArgs?: string = propertyDefaults.whPassThroughArgs;
+
   @property({ type: Function || String })
   onEvent?: (event: any) => void = propertyDefaults.onEvent;
 
@@ -64,7 +68,7 @@ export class CrossmintPaymentElement extends LitElement {
 
     const onEvent = getOnEventFunction(this.onEvent);
 
-    const { listenToEvents } = crossmintPaymentService({ clientId: this.clientId, environment: this.environment, uiConfig: this.uiConfig, recipient: this.recipient, mintConfig: this.mintConfig });
+    const { listenToEvents } = crossmintPaymentService({ clientId: this.clientId, environment: this.environment, uiConfig: this.uiConfig, recipient: this.recipient, mintConfig: this.mintConfig, whPassThroughArgs: this.whPassThroughArgs });
     const { listenToEvents: listenToUiEvents } = crossmintUiService({ environment: this.environment });
 
     listenToEvents((event) => onEvent?.(event.data));
@@ -91,9 +95,10 @@ export class CrossmintPaymentElement extends LitElement {
     if (
       changedProperties.has("recipient") ||
       changedProperties.has("mintConfig") ||
-      changedProperties.has("locale")
+      changedProperties.has("locale") || 
+      changedProperties.has("whPassThroughArgs")
     ) {
-      emitQueryParams({ recipient: this.recipient, mintConfig: this.mintConfig, locale: this.locale });
+      emitQueryParams({ recipient: this.recipient, mintConfig: this.mintConfig, locale: this.locale, whPassThroughArgs: this.whPassThroughArgs });
     }
   }
 

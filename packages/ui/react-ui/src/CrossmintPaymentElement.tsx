@@ -1,7 +1,7 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 
-import type {CrossmintCheckoutEvent, PaymentElement} from "@crossmint/client-sdk-base";
-import {crossmintPaymentService, crossmintUiService} from "@crossmint/client-sdk-base";
+import type { CrossmintCheckoutEvent, PaymentElement } from "@crossmint/client-sdk-base";
+import { crossmintPaymentService, crossmintUiService } from "@crossmint/client-sdk-base";
 
 export function CrossmintPaymentElement(props: PaymentElement) {
     const [height, setHeight] = useState(0);
@@ -10,18 +10,20 @@ export function CrossmintPaymentElement(props: PaymentElement) {
     const [url] = useState(getIframeUrl());
 
     useEffect(() => {
-        const clearListener = listenToEvents((event: MessageEvent<CrossmintCheckoutEvent>) => props.onEvent?.(event.data));
+        const clearListener = listenToEvents((event: MessageEvent<CrossmintCheckoutEvent>) =>
+            props.onEvent?.(event.data)
+        );
 
         return () => {
             if (clearListener) {
                 clearListener();
             }
-        }
+        };
     }, []);
 
     useEffect(() => {
         const clearListener = listenToUiEvents((event: MessageEvent<any>) => {
-            const {type, payload} = event.data;
+            const { type, payload } = event.data;
 
             switch (type) {
                 case "ui:height.changed":
@@ -36,7 +38,7 @@ export function CrossmintPaymentElement(props: PaymentElement) {
             if (clearListener) {
                 clearListener();
             }
-        }
+        };
     }, []);
 
     useEffect(() => {
@@ -44,8 +46,9 @@ export function CrossmintPaymentElement(props: PaymentElement) {
             recipient: props.recipient,
             mintConfig: props.mintConfig,
             locale: props.locale,
+            whPassThroughArgs: props.whPassThroughArgs,
         });
-    }, [props.recipient, props.mintConfig, props.locale]);
+    }, [props.recipient, props.mintConfig, props.locale, props.whPassThroughArgs]);
 
     return (
         <iframe

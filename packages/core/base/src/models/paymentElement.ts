@@ -24,6 +24,7 @@ export interface PaymentElement {
     locale?: Locale;
     uiConfig?: UIConfig;
     environment?: string;
+    whPassThroughArgs?: any;
     onEvent?(event: CrossmintCheckoutEvent): this;
 }
 
