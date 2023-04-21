@@ -1,5 +1,5 @@
 import { CheckoutEvents, CrossmintEventError, CrossmintEventErrorPayload, PaymentElementSDKEvents } from "./events";
-import { Currency, Locale, PaymentMethod, UIConfig } from "./types";
+import { CaseInsensitive, Currency, Locale, PaymentMethod, UIConfig } from "./types";
 
 export type Recipient = {
     email?: string;
@@ -20,7 +20,7 @@ export interface PaymentElement {
     mintConfig?: MintConfig;
     recipient?: Recipient;
     paymentMethod?: PaymentMethod;
-    currency?: Currency;
+    currency?: CaseInsensitive<Currency>;
     locale?: Locale;
     uiConfig?: UIConfig;
     environment?: string;

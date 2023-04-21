@@ -67,7 +67,9 @@ export type Locale =
     | "th-TH"
     | "Klingon"
 
+
 export type Currency = "usd" | "eur" | "gbp" | "aud" | "sgd" | "hkd" | "krw"
+export type CaseInsensitive<T extends string> = T | Uppercase<T> | Lowercase<T>;
 
 export interface BaseButtonProps {
     className?: string;
@@ -80,7 +82,7 @@ export interface BaseButtonProps {
     mintConfig?: StatusButtonConfig;
     environment?: string;
     locale?: Locale;
-    currency?: Currency;
+    currency?: CaseInsensitive<Currency>;
 }
 
 export interface CrossmintPayButtonProps extends BaseButtonProps {

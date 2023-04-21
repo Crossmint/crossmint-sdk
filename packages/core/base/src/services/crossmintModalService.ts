@@ -1,5 +1,13 @@
 import { CheckoutEvents } from "../models/events";
-import { Currency, Locale, PayButtonConfig, PaymentMethod, SigninMethods, clientNames } from "../models/types";
+import {
+    Currency,
+    Locale,
+    PayButtonConfig,
+    PaymentMethod,
+    SigninMethods,
+    clientNames,
+    CaseInsensitive,
+} from "../models/types";
 import { getEnvironmentBaseUrl } from "../utils/ui";
 
 type MintQueryParams = {
@@ -87,7 +95,7 @@ interface CrossmintModalServiceParams {
     environment?: string;
     clientName: clientNames;
     locale: Locale;
-    currency: Currency;
+    currency: CaseInsensitive<Currency>;
     successCallbackURL?: string;
     failureCallbackURL?: string;
     // TODO: Enable when events are ready in crossbit-main and docs are updated
@@ -138,7 +146,7 @@ export function crossmintModalService({
                 clientVersion: libVersion,
                 mintConfig: JSON.stringify(mintConfig),
                 locale,
-                currency,
+                currency: currency.toLowerCase() as Currency,
             };
 
             if (mintTo) mintQueryParams.mintTo = mintTo;
@@ -154,7 +162,7 @@ export function crossmintModalService({
             return new URLSearchParams(mintQueryParams).toString();
         };
         const callbackUrl = encodeURIComponent(`${urlOrigin}/checkout/mint?${getMintQueryParams()}`);
-        const url = `${urlOrigin}/signin?callbackUrl=${callbackUrl}&locale=${locale}&currency=${currency}`;
+        const url = `${urlOrigin}/signin?callbackUrl=${callbackUrl}&locale=${locale}&currency=${currency.toLowerCase()}`;
 
         const pop = window.open(url, "popUpWindow", createPopupString(POPUP_WIDTH, POPUP_HEIGHT));
         if (pop) {
