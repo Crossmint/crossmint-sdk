@@ -51,8 +51,25 @@ interface StatusButtonConfig {
     [propName: string]: any;
 }
 
-export type Locale = "en-US" | "es-ES";
-export type Currency = "USD" | "EUR" | "GBP" | "AUD" | "SGD" | "HKD" | "CAD" | "CHF" | "CNY" | "JPY" | "KRW" | "NZD";
+export type Locale =
+    "en-US"
+    | "es-ES"
+    | "fr-FR"
+    | "it-IT"
+    | "ko-KR"
+    | "pt-PT"
+    | "zh-CN"
+    | "zh-TW"
+    | "de-DE"
+    | "ru-RU"
+    | "tr-TR"
+    | "uk-UA"
+    | "th-TH"
+    | "Klingon"
+
+
+export type Currency = "usd" | "eur" | "gbp" | "aud" | "sgd" | "hkd" | "krw"
+export type CaseInsensitive<T extends string> = T | Uppercase<T> | Lowercase<T>;
 
 export interface BaseButtonProps {
     className?: string;
@@ -65,7 +82,7 @@ export interface BaseButtonProps {
     mintConfig?: StatusButtonConfig;
     environment?: string;
     locale?: Locale;
-    currency?: Currency;
+    currency?: CaseInsensitive<Currency>;
 }
 
 export interface CrossmintPayButtonProps extends BaseButtonProps {

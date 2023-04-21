@@ -9,6 +9,7 @@ import type {
     PaymentMethod,
     Recipient,
     UIConfig,
+    CaseInsensitive
 } from "@crossmint/client-sdk-base";
 import { crossmintPaymentService, crossmintUiService } from "@crossmint/client-sdk-base";
 
@@ -19,7 +20,7 @@ export interface PaymentElement {
     mintConfig?: MintConfig;
     recipient?: Recipient;
     paymentMethod?: PaymentMethod;
-    currency?: Currency;
+    currency?: CaseInsensitive<Currency>;
     locale?: Locale;
     uiConfig?: UIConfig;
     environment?: string;

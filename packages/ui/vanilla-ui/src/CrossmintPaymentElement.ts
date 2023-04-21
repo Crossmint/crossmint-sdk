@@ -21,7 +21,7 @@ const propertyDefaults: PaymentElement = {
       wallet: "",
     },
     paymentMethod: "fiat",
-    currency: "USD",
+    currency: "usd",
     locale: "en-US",
     uiConfig: {},
     environment: "production",
@@ -104,7 +104,7 @@ export class CrossmintPaymentElement extends LitElement {
     if (
       changedProperties.has("recipient") ||
       changedProperties.has("mintConfig") ||
-      changedProperties.has("locale") || 
+      changedProperties.has("locale") ||
       changedProperties.has("whPassThroughArgs")
     ) {
       emitQueryParams({ recipient: this.recipient, mintConfig: this.mintConfig, locale: this.locale, whPassThroughArgs: this.whPassThroughArgs });
