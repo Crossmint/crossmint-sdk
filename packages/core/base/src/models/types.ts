@@ -66,7 +66,9 @@ export type Locale =
     | "uk-UA"
     | "th-TH"
     | "Klingon"
-export type Currency = "USD" | "EUR" | "GBP" | "AUD" | "SGD" | "HKD" | "CAD" | "CHF" | "CNY" | "JPY" | "KRW" | "NZD";
+
+type Currency = "usd" | "eur" | "gbp" | "aud" | "sgd" | "hkd" | "krw"
+
 
 export interface BaseButtonProps {
     className?: string;
