@@ -51,7 +51,21 @@ interface StatusButtonConfig {
     [propName: string]: any;
 }
 
-export type Locale = "en-US" | "es-ES";
+export type Locale =
+    "en-US"
+    | "es-ES"
+    | "fr-FR"
+    | "it-IT"
+    | "ko-KR"
+    | "pt-PT"
+    | "zh-CN"
+    | "zh-TW"
+    | "de-DE"
+    | "ru-RU"
+    | "tr-TR"
+    | "uk-UA"
+    | "th-TH"
+    | "Klingon"
 export type Currency = "USD" | "EUR" | "GBP" | "AUD" | "SGD" | "HKD" | "CAD" | "CHF" | "CNY" | "JPY" | "KRW" | "NZD";
 
 export interface BaseButtonProps {
