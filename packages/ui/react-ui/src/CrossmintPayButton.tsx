@@ -41,7 +41,7 @@ export function CrossmintPayButton({
     dismissOverlayOnClick,
     prepay,
     locale = "en-US",
-    currency = "USD",
+    currency = "usd",
     successCallbackURL = "",
     failureCallbackURL = "",
     ...props

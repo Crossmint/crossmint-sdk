@@ -38,7 +38,7 @@ const propertyDefaults: CrossmintPayButtonLitProps = {
     dismissOverlayOnClick: false,
     prepay: false,
     locale: "en-US",
-    currency: "USD",
+    currency: "usd",
     successCallbackURL: "",
     failureCallbackURL: "",
 };
@@ -168,7 +168,7 @@ export class CrossmintPayButton extends LitElement {
             libVersion: LIB_VERSION,
             clientName: clientNames.vanillaUi,
             locale: this.locale || "en-US",
-            currency: this.currency || "USD",
+            currency: this.currency || "usd",
             successCallbackURL: this.successCallbackURL ,
             failureCallbackURL: this.failureCallbackURL,
         });
