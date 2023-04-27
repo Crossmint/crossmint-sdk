@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, watch, onUnmounted } from "vue";
+import { onUnmounted, ref, watch } from "vue";
 
 import type {
+    CaseInsensitive,
     CrossmintCheckoutEvent,
     Currency,
     Locale,
@@ -9,7 +10,6 @@ import type {
     PaymentMethod,
     Recipient,
     UIConfig,
-    CaseInsensitive
 } from "@crossmint/client-sdk-base";
 import { crossmintPaymentService, crossmintUiService } from "@crossmint/client-sdk-base";
 

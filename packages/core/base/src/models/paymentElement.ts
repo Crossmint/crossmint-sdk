@@ -88,7 +88,7 @@ interface TransactionFulfillmentFailed extends TransactionBase {
 type Verification = { required: false } | { required: true; url: string };
 
 export const PaymentMethodType = {
-    // TODO: Think granularity for crypto payments
+    // TODO: Think granularity for crypto payments.
     CREDIT_CARD: "credit-card",
     GOOGLE_PAY: "google-pay",
     APPLE_PAY: "apple-pay",
