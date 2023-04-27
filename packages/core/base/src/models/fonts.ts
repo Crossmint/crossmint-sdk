@@ -9,6 +9,5 @@ export interface CustomFontSource {
     src: string;
     display?: string;
     style?: "normal" | "italic" | "oblique";
-    unicodeRange?: string;
     weight?: string;
 }
