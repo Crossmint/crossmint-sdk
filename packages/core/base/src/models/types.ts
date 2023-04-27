@@ -1,3 +1,5 @@
+import { CssFontSource, CustomFontSource } from "./fonts";
+
 export const EVM_CHAINS = ["ethereum", "polygon", "bsc"] as const;
 export const ALL_CHAINS = ["solana", "cardano", ...EVM_CHAINS] as const;
 export type EVMChain = (typeof EVM_CHAINS)[number];
@@ -52,7 +54,7 @@ interface StatusButtonConfig {
 }
 
 export type Locale =
-    "en-US"
+    | "en-US"
     | "es-ES"
     | "fr-FR"
     | "it-IT"
@@ -65,10 +67,9 @@ export type Locale =
     | "tr-TR"
     | "uk-UA"
     | "th-TH"
-    | "Klingon"
+    | "Klingon";
 
-
-export type Currency = "usd" | "eur" | "gbp" | "aud" | "sgd" | "hkd" | "krw"
+export type Currency = "usd" | "eur" | "gbp" | "aud" | "sgd" | "hkd" | "krw";
 export type CaseInsensitive<T extends string> = T | Uppercase<T> | Lowercase<T>;
 
 export interface BaseButtonProps {
@@ -134,6 +135,7 @@ export interface UIConfig {
     borderRadius?: string;
     fontWeightPrimary?: string;
     fontWeightSecondary?: string;
+    fonts?: (CssFontSource | CustomFontSource)[];
 }
 
 interface CommonProps {
