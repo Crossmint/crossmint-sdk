@@ -1,5 +1,6 @@
 export interface CssFontSource {
     cssSrc: string;
+    family: string;
 }
 
 export interface CustomFontSource {
