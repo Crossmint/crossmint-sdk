@@ -128,6 +128,8 @@ interface Colors {
     textLink?: string;
 }
 
+export type UiConfigFonts = (CssFontSource | CustomFontSource)[];
+
 export interface UIConfig {
     colors?: Colors;
     fontSizeBase?: string;
@@ -135,7 +137,7 @@ export interface UIConfig {
     borderRadius?: string;
     fontWeightPrimary?: string;
     fontWeightSecondary?: string;
-    fonts?: (CssFontSource | CustomFontSource)[];
+    fonts?: UiConfigFonts;
 }
 
 interface CommonProps {
