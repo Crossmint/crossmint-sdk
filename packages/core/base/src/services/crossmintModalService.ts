@@ -40,15 +40,23 @@ const getChromeVersion = () => {
 
 function createPopupString(width: number, height: number) {
     function getLeft() {
-        return window?.top != null
-            ? window.top.outerWidth / 2 + window.top.screenX - width / 2
-            : window.outerWidth / 2 + window.screenX - width / 2;
+        try {
+            return window?.top != null
+                ? window.top.outerWidth / 2 + window.top.screenX - width / 2
+                : window.outerWidth / 2 + window.screenX - width / 2;
+        } catch (e) {}
+
+        return window.outerWidth / 2 + window.screenX - width / 2;
     }
 
     function getTop() {
-        return window?.top != null
-            ? window.top.outerHeight / 2 + window.top.screenY - height / 2
-            : window.outerHeight / 2 + window.screenY - height / 2;
+        try {
+            return window?.top != null
+                ? window.top.outerHeight / 2 + window.top.screenY - height / 2
+                : window.outerHeight / 2 + window.screenY - height / 2;
+        } catch (e) {}
+
+        return window.outerHeight / 2 + window.screenY - height / 2;
     }
 
     // In newer versions of chrome (>99) you need to add the `popup=true` for the new window to actually open in a popup
