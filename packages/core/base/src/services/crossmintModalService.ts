@@ -98,6 +98,7 @@ interface CrossmintModalServiceParams {
     currency: CaseInsensitive<Currency>;
     successCallbackURL?: string;
     failureCallbackURL?: string;
+    loginEmail?: string;
     // TODO: Enable when events are ready in crossbit-main and docs are updated
     // onEvent?: (event: CheckoutEvents, metadata?: any) => void;
 }
@@ -127,6 +128,7 @@ export function crossmintModalService({
     currency,
     successCallbackURL,
     failureCallbackURL,
+    loginEmail = ''
 }: CrossmintModalServiceParams): CrossmintModalServiceReturn {
     const createPopup = (
         mintConfig: PayButtonConfig | PayButtonConfig[],
@@ -162,7 +164,14 @@ export function crossmintModalService({
             return new URLSearchParams(mintQueryParams).toString();
         };
         const callbackUrl = encodeURIComponent(`${urlOrigin}/checkout/mint?${getMintQueryParams()}`);
-        const url = `${urlOrigin}/signin?callbackUrl=${callbackUrl}&locale=${locale}&currency=${currency.toLowerCase()}`;
+        
+        const signinURLParams = new URLSearchParams({
+            locale,
+            currency: currency.toLowerCase() as Currency,
+            email: loginEmail
+        }).toString()
+
+        const url = `${urlOrigin}/signin?${signinURLParams}&callbackUrl=${callbackUrl}`;
 
         const pop = window.open(url, "popUpWindow", createPopupString(POPUP_WIDTH, POPUP_HEIGHT));
         if (pop) {
