@@ -13,6 +13,7 @@ export const PaymentErrors = {
     COLLECTION_SALE_ENDED: "payments:collection.sale-ended",
     USER_WALLET_LIMIT_REACHED: "payments:user-wallet.limit-reached",
     USER_WALLET_NOT_WHITELISTED: "payments:user-wallet.not-whitelisted",
+    USER_WALLET_INVALID: "payments:user-wallet.invalid",
     PAYMENT_REJECTED_GENERIC_DECLINE: "payments:payment-rejected.generic-decline",
     PAYMENT_REJECTED_INSUFFICIENT_FUNDS: "payments:payment-rejected.insufficient-funds",
     PAYMENT_REJECTED_CARD_LOST: "payments:payment-rejected.card-lost",
