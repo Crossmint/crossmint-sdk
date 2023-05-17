@@ -100,6 +100,7 @@ export interface CrossmintPayButtonProps extends BaseButtonProps {
     prepay?: boolean;
     successCallbackURL?: string;
     failureCallbackURL?: string;
+    loginEmail?: string;
     // TODO: Enable when events are ready in crossbit-main and docs are updated
     // onEvent?: (event: CheckoutEvents, metadata?: Record<string, any>) => void;
 }

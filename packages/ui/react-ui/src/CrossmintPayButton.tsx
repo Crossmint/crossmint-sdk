@@ -44,6 +44,7 @@ export function CrossmintPayButton({
     currency = "usd",
     successCallbackURL = "",
     failureCallbackURL = "",
+    loginEmail = "",
     ...props
 }: CrossmintPayButtonReactProps) {
     const [connecting, setConnecting] = useState(false);
@@ -72,6 +73,7 @@ export function CrossmintPayButton({
         currency,
         successCallbackURL,
         failureCallbackURL,
+        loginEmail
     });
 
     const { getButtonText, shouldHideButton, handleClick } = crossmintPayButtonService({

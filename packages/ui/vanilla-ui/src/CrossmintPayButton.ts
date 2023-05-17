@@ -41,6 +41,7 @@ const propertyDefaults: CrossmintPayButtonLitProps = {
     currency: "usd",
     successCallbackURL: "",
     failureCallbackURL: "",
+    loginEmail: ""
 };
 
 @customElement("crossmint-pay-button")
@@ -109,6 +110,9 @@ export class CrossmintPayButton extends LitElement {
 
     @property({ type: String })
     failureCallbackURL = propertyDefaults.failureCallbackURL;
+    
+    @property({ type: String })
+    loginEmail = propertyDefaults.loginEmail;
 
     static styles = buttonStyles;
 
@@ -171,6 +175,7 @@ export class CrossmintPayButton extends LitElement {
             currency: this.currency || "usd",
             successCallbackURL: this.successCallbackURL ,
             failureCallbackURL: this.failureCallbackURL,
+            loginEmail: this.loginEmail
         });
 
         const _handleClick = (e: any) =>
@@ -186,6 +191,7 @@ export class CrossmintPayButton extends LitElement {
                     this.prepay,
                     this.successCallbackURL,
                     this.failureCallbackURL,
+                    this.loginEmail
                 );
             });
 
