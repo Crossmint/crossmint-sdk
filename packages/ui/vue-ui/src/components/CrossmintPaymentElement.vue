@@ -2,6 +2,7 @@
 import { onUnmounted, ref, watch } from "vue";
 
 import type {
+    CardWalletPaymentMethod,
     CaseInsensitive,
     CrossmintCheckoutEvent,
     Currency,
@@ -26,6 +27,7 @@ export interface PaymentElement {
     environment?: string;
     whPassThroughArgs?: any;
     onEvent?(event: CrossmintCheckoutEvent): any;
+    cardWalletPaymentMethods?: CardWalletPaymentMethod | CardWalletPaymentMethod[] | "none";
 }
 
 const props = withDefaults(defineProps<PaymentElement>(), {});
