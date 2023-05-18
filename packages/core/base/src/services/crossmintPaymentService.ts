@@ -46,7 +46,12 @@ export function crossmintPaymentService({
         }
 
         if (cardWalletPaymentMethods != null && cardWalletPaymentMethods.length > 0) {
-            params.append("cardWalletPaymentMethods", JSON.stringify(cardWalletPaymentMethods));
+            params.append(
+                "cardWalletPaymentMethods",
+                typeof cardWalletPaymentMethods === "string"
+                    ? cardWalletPaymentMethods
+                    : JSON.stringify(cardWalletPaymentMethods)
+            );
         }
 
         return `${baseUrl}/sdk/paymentElement?${params.toString()}`;
