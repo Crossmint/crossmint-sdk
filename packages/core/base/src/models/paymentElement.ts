@@ -26,7 +26,7 @@ export interface PaymentElement {
     environment?: string;
     whPassThroughArgs?: any;
     onEvent?(event: CrossmintCheckoutEvent): this;
-    cardWalletPaymentMethods?: CardWalletPaymentMethod[] | "none";
+    cardWalletPaymentMethods?: CardWalletPaymentMethod | CardWalletPaymentMethod[] | "none";
 }
 
 export type CardWalletPaymentMethod = "apple-pay" | "google-pay";
