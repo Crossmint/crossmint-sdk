@@ -16,6 +16,7 @@ export function crossmintPaymentService({
     mintConfig,
     locale,
     whPassThroughArgs,
+    cardWalletPaymentMethods,
 }: PaymentElement) {
     const baseUrl = getEnvironmentBaseUrl(environment);
 
@@ -42,6 +43,10 @@ export function crossmintPaymentService({
 
         if (whPassThroughArgs != null) {
             params.append("whPassThroughArgs", JSON.stringify(whPassThroughArgs));
+        }
+
+        if (cardWalletPaymentMethods != null && cardWalletPaymentMethods.length > 0) {
+            params.append("cardWalletPaymentMethods", JSON.stringify(cardWalletPaymentMethods));
         }
 
         return `${baseUrl}/sdk/paymentElement?${params.toString()}`;
