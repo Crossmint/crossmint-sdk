@@ -33,7 +33,7 @@ export function CrossmintStatusButton({
 
     const { goToOnboarding, fetchClientIntegration } = crossmintStatusService({
         libVersion: LIB_VERSION,
-        clientId,
+        clientId: clientId!,
         environment,
         platformId,
         auctionId,

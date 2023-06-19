@@ -17,7 +17,8 @@ import { crossmintPaymentService, crossmintUiService } from "@crossmint/client-s
 // TODO: Looks like you cannot import the interface directly from the package
 // https://github.com/vuejs/core/issues/4294#issuecomment-970861525
 export interface PaymentElement {
-    clientId: string;
+    clientId?: string;
+    collectionId?: string;
     mintConfig?: MintConfig;
     recipient?: Recipient;
     paymentMethod?: PaymentMethod;

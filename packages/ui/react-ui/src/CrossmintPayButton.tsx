@@ -30,6 +30,7 @@ export function CrossmintPayButton({
     emailTo,
     listingId,
     clientId,
+    collectionId,
     auctionId,
     hideMintOnInactiveClient = false,
     showOverlay = true,
@@ -53,7 +54,7 @@ export function CrossmintPayButton({
 
     const { fetchClientIntegration } = crossmintStatusService({
         libVersion: LIB_VERSION,
-        clientId,
+        clientId: clientId || collectionId!,
         environment,
         auctionId,
         mintConfig,
@@ -62,7 +63,7 @@ export function CrossmintPayButton({
     });
 
     const { connect } = crossmintModalService({
-        clientId,
+        clientId: clientId || collectionId!,
         showOverlay,
         dismissOverlayOnClick,
         setConnecting,
@@ -73,7 +74,7 @@ export function CrossmintPayButton({
         currency,
         successCallbackURL,
         failureCallbackURL,
-        loginEmail
+        loginEmail,
     });
 
     const { getButtonText, shouldHideButton, handleClick } = crossmintPayButtonService({
