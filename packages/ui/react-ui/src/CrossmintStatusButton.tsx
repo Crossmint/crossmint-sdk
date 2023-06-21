@@ -13,6 +13,7 @@ import { CrossmintStatusButtonReactProps } from "./types";
 import useEnvironment from "./useEnvironment";
 import { LIB_VERSION } from "./version";
 
+// We need to deprecate this in the next major release
 export function CrossmintStatusButton({
     className,
     disabled,
@@ -21,13 +22,14 @@ export function CrossmintStatusButton({
     tabIndex,
     theme = "dark",
     clientId,
+    collectionId,
     auctionId,
     platformId,
     mintConfig,
     environment,
     locale = "en-US",
     ...props
-}: CrossmintStatusButtonReactProps) {
+}: any) {
     const [status, setStatus] = useState(onboardingRequestStatusResponse.WAITING_SUBMISSION);
     const { isServerSideRendering } = useEnvironment();
 
