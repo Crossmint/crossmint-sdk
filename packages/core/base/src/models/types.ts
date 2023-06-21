@@ -76,9 +76,6 @@ export type BaseButtonProps = {
     className?: string;
     disabled?: boolean;
     tabIndex?: number;
-    // It can be either a clientId or a collectionId
-    clientId?: string;
-    collectionId?: string;
     auctionId?: string;
     theme?: theme;
     platformId?: string;
