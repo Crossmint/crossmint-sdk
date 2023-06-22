@@ -165,4 +165,20 @@ describe("CrossmintPayButton", () => {
             );
         });
     });
+
+    describe("when passing projectId", () => {
+        test("should open window with projectId included in query params", async () => {
+            render(<CrossmintPayButton {...defaultProps} projectId="123" />);
+
+            await act(async () => {
+                fireEvent.click(screen.getByText("Buy with credit card"));
+            });
+
+            expect(global.open).toHaveBeenCalledWith(
+                expect.stringContaining(`projectId%3D123`),
+                expect.anything(),
+                expect.anything()
+            );
+        });
+    });
 });

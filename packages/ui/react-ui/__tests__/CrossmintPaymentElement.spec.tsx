@@ -69,4 +69,11 @@ describe("CrossmintPaymentElement", () => {
 
         expect(iframe.getAttribute("src")).toContain(`clientId=${paymentElementProps.clientId}`);
     });
+
+    it("should add projectId when added", () => {
+        render(<CrossmintPaymentElement collectionId={paymentElementProps.clientId} projectId="123" />);
+        const iframe = screen.getByRole("iframe-crossmint-payment-element");
+
+        expect(iframe.getAttribute("src")).toContain("projectId=123");
+    });
 });
