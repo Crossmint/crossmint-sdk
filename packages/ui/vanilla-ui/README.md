@@ -14,6 +14,6 @@ First add the Crossmint Client SDK to your project with the following command:
 yarn add @crossmint/client-sdk-vanilla-ui
 ```
 
-The next steps depend on which chain you're using for your project. For detailed integration instructions, visit our documentation for [Solana](https://docs.crossmint.io/accept-credit-cards/integration-guides/solana-candy-machine/b-i-have-an-existing-candy-machine-website/add-crossmint-for-solana-javascript), [Polygon](https://docs.crossmint.io/accept-credit-cards/integration-guides/polygon), or [Ethereum](https://docs.crossmint.io/accept-credit-cards/integration-guides/ethereum/add-crossmint-for-ethereum-javascript).
+Check our dedicated section for payments [in the docs](https://docs.crossmint.com/docs/integration-guide).
 
 ## [Changelog](https://docs.google.com/document/d/e/2PACX-1vR5NzVS2msrCMZxlcfBgAT-Y8kAypeKqH_WBeNiwVTmyEzLZvJBWrKrz_966-d3jumwIBi94IXGT6Wp/pub)
