@@ -1,9 +1,9 @@
 import { BaseButtonProps, CrossmintPayButtonProps } from "@crossmint/client-sdk-base";
 
-export interface CrossmintPayButtonLitProps extends CrossmintPayButtonProps {
+export type CrossmintPayButtonLitProps = CrossmintPayButtonProps & {
     onClick?: (e: any) => void;
-}
+};
 
-export interface CrossmintStatusButtonLitProps extends BaseButtonProps {
+export type CrossmintStatusButtonLitProps = BaseButtonProps & {
     onClick?: (e: any) => void;
-}
+};

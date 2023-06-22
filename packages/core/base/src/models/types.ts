@@ -72,11 +72,12 @@ export type Locale =
 export type Currency = "usd" | "eur" | "gbp" | "aud" | "sgd" | "hkd" | "krw";
 export type CaseInsensitive<T extends string> = T | Uppercase<T> | Lowercase<T>;
 
-export interface BaseButtonProps {
+export type CollectionId = { clientId: string } | { collectionId: string };
+
+export type BaseButtonProps = {
     className?: string;
     disabled?: boolean;
     tabIndex?: number;
-    clientId: string;
     auctionId?: string;
     theme?: theme;
     platformId?: string;
@@ -84,9 +85,9 @@ export interface BaseButtonProps {
     environment?: string;
     locale?: Locale;
     currency?: CaseInsensitive<Currency>;
-}
+} & CollectionId;
 
-export interface CrossmintPayButtonProps extends BaseButtonProps {
+export type CrossmintPayButtonProps = BaseButtonProps & {
     mintTo?: string;
     emailTo?: string;
     listingId?: string;
@@ -103,7 +104,7 @@ export interface CrossmintPayButtonProps extends BaseButtonProps {
     loginEmail?: string;
     // TODO: Enable when events are ready in crossbit-main and docs are updated
     // onEvent?: (event: CheckoutEvents, metadata?: Record<string, any>) => void;
-}
+};
 
 export type OnboardingQueryParams = {
     clientId: string;

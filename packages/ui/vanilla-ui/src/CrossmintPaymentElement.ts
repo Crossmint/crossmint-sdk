@@ -15,6 +15,7 @@ import type {
 
 const propertyDefaults: PaymentElement = {
     clientId: "",
+    collectionId: "",
     mintConfig: {},
     recipient: {
       email: "",
@@ -33,6 +34,9 @@ const propertyDefaults: PaymentElement = {
 export class CrossmintPaymentElement extends LitElement {
   @property({ type: String })
   clientId: string = propertyDefaults.clientId;
+
+  @property({ type: String })
+  collectionId: string = propertyDefaults.collectionId;
 
   @property({ type: Object })
   mintConfig?: MintConfig = propertyDefaults.mintConfig;
@@ -71,7 +75,7 @@ export class CrossmintPaymentElement extends LitElement {
 
     const onEvent = getOnEventFunction(this.onEvent);
 
-    const { listenToEvents } = crossmintPaymentService({ clientId: this.clientId, environment: this.environment, uiConfig: this.uiConfig, recipient: this.recipient, mintConfig: this.mintConfig, whPassThroughArgs: this.whPassThroughArgs });
+    const { listenToEvents } = crossmintPaymentService({ clientId: this.clientId || this.collectionId, environment: this.environment, uiConfig: this.uiConfig, recipient: this.recipient, mintConfig: this.mintConfig, whPassThroughArgs: this.whPassThroughArgs });
     const { listenToEvents: listenToUiEvents } = crossmintUiService({ environment: this.environment });
 
     this.removeEventListener = listenToEvents((event) => onEvent?.(event.data));
@@ -99,7 +103,7 @@ export class CrossmintPaymentElement extends LitElement {
 
   updated(changedProperties: Map<string, unknown>) {
     super.updated(changedProperties);
-    const { emitQueryParams } = crossmintPaymentService({ clientId: this.clientId, environment: this.environment, uiConfig: this.uiConfig, recipient: this.recipient, mintConfig: this.mintConfig });
+    const { emitQueryParams } = crossmintPaymentService({ clientId: this.clientId || this.collectionId, environment: this.environment, uiConfig: this.uiConfig, recipient: this.recipient, mintConfig: this.mintConfig });
 
     if (
       changedProperties.has("recipient") ||
@@ -112,7 +116,7 @@ export class CrossmintPaymentElement extends LitElement {
   }
 
   render() {
-    const {getIframeUrl} = crossmintPaymentService({ clientId: this.clientId, environment: this.environment, uiConfig: this.uiConfig, recipient: this.recipient, mintConfig: this.mintConfig });
+    const {getIframeUrl} = crossmintPaymentService({ clientId: this.clientId || this.collectionId, environment: this.environment, uiConfig: this.uiConfig, recipient: this.recipient, mintConfig: this.mintConfig });
 
     return html`
       <iframe

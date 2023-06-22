@@ -24,6 +24,7 @@ const propertyDefaults: CrossmintPayButtonLitProps = {
     emailTo: "",
     listingId: "",
     clientId: "",
+    collectionId: "",
     auctionId: "",
     environment: "",
     hideMintOnInactiveClient: false,
@@ -63,6 +64,9 @@ export class CrossmintPayButton extends LitElement {
 
     @property({ type: String })
     clientId = propertyDefaults.clientId;
+
+    @property({ type: String })
+    collectionId = propertyDefaults.collectionId;
 
     @property({ type: String })
     auctionId = propertyDefaults.auctionId;
@@ -133,7 +137,7 @@ export class CrossmintPayButton extends LitElement {
 
         const { fetchClientIntegration } = crossmintStatusService({
             libVersion: LIB_VERSION,
-            clientId: this.clientId,
+            clientId: this.clientId || this.collectionId,
             environment: this.environment,
             auctionId: this.auctionId,
             mintConfig: this.mintConfig,
@@ -165,7 +169,7 @@ export class CrossmintPayButton extends LitElement {
 
         const { connect } = crossmintModalService({
             environment: this.environment,
-            clientId: this.clientId,
+            clientId: this.clientId || this.collectionId,
             showOverlay: this.showOverlay || true,
             dismissOverlayOnClick: this.dismissOverlayOnClick,
             setConnecting: this.setConnecting,

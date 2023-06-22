@@ -38,25 +38,25 @@ describe("CrossmintPayButton", () => {
             fireEvent.click(screen.getByText("Buy with credit card"));
         });
 
-        const urlOrigin = 'https://www.crossmint.com'
+        const urlOrigin = "https://www.crossmint.com";
 
         const mintQueryParams = new URLSearchParams({
             clientId: defaultProps.clientId,
-            clientName: 'client-sdk-react-ui',
+            clientName: "client-sdk-react-ui",
             clientVersion: LIB_VERSION,
-            mintConfig: JSON.stringify({type: 'candy-machine'}),
-            locale: 'en-US',
-            currency: 'usd'
+            mintConfig: JSON.stringify({ type: "candy-machine" }),
+            locale: "en-US",
+            currency: "usd",
         }).toString();
 
         const callbackUrl = encodeURIComponent(`${urlOrigin}/checkout/mint?${mintQueryParams}`);
-        
+
         const signinURLParams = new URLSearchParams({
-            locale: 'en-US',
-            currency: 'usd',
-            email: ''
-        }).toString()
-        
+            locale: "en-US",
+            currency: "usd",
+            email: "",
+        }).toString();
+
         const expectedURL = `${urlOrigin}/signin?${signinURLParams}&callbackUrl=${callbackUrl}`;
         expect(global.open).toHaveBeenCalledWith(
             expectedURL,
@@ -273,7 +273,7 @@ describe("CrossmintPayButton", () => {
             );
         });
     });
-   
+
     describe("when passing the loginEmail prop", () => {
         test("should pass an email in the email query param", async () => {
             render(<CrossmintPayButton {...defaultProps} loginEmail="user@gmail.com" />);
@@ -287,7 +287,7 @@ describe("CrossmintPayButton", () => {
                 expect.anything()
             );
         });
-        
+
         test("should pass the email query param empty if loginEmail is empty", async () => {
             render(<CrossmintPayButton {...defaultProps} loginEmail="" />);
 
@@ -300,15 +300,31 @@ describe("CrossmintPayButton", () => {
                 expect.anything()
             );
         });
-        
+
         test("should pass the email query param empty if loginEmail is not present as a param", async () => {
-            render(<CrossmintPayButton {...defaultProps}/>);
+            render(<CrossmintPayButton {...defaultProps} />);
 
             await act(async () => {
                 fireEvent.click(screen.getByText("Buy with credit card"));
             });
             expect(global.open).toHaveBeenCalledWith(
                 expect.stringContaining("email=&"),
+                expect.anything(),
+                expect.anything()
+            );
+        });
+    });
+
+    describe("when passing collectionId instead of clientId", () => {
+        test("should open window with correct url", async () => {
+            render(<CrossmintPayButton collectionId={defaultProps.clientId} />);
+
+            await act(async () => {
+                fireEvent.click(screen.getByText("Buy with credit card"));
+            });
+
+            expect(global.open).toHaveBeenCalledWith(
+                expect.stringContaining(`clientId%3D${defaultProps.clientId}`),
                 expect.anything(),
                 expect.anything()
             );

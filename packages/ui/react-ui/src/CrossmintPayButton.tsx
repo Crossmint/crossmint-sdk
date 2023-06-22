@@ -1,4 +1,4 @@
-import React, { FC, MouseEvent, useEffect, useMemo } from "react";
+import React, { MouseEvent, useEffect, useMemo } from "react";
 import { useState } from "react";
 
 import {
@@ -19,41 +19,44 @@ const defaultMintConfig: any = {
     type: mintingContractTypes.CANDY_MACHINE,
 };
 
-export function CrossmintPayButton({
-    className,
-    disabled,
-    onClick,
-    style,
-    tabIndex,
-    theme = "dark",
-    mintTo,
-    emailTo,
-    listingId,
-    clientId,
-    auctionId,
-    hideMintOnInactiveClient = false,
-    showOverlay = true,
-    mintConfig = defaultMintConfig,
-    whPassThroughArgs,
-    environment,
-    paymentMethod,
-    preferredSigninMethod,
-    dismissOverlayOnClick,
-    prepay,
-    locale = "en-US",
-    currency = "usd",
-    successCallbackURL = "",
-    failureCallbackURL = "",
-    loginEmail = "",
-    ...props
-}: CrossmintPayButtonReactProps) {
+export function CrossmintPayButton(buttonProps: CrossmintPayButtonReactProps) {
+    const {
+        className,
+        disabled,
+        onClick,
+        style,
+        tabIndex,
+        theme = "dark",
+        mintTo,
+        emailTo,
+        listingId,
+        auctionId,
+        hideMintOnInactiveClient = false,
+        showOverlay = true,
+        mintConfig = defaultMintConfig,
+        whPassThroughArgs,
+        environment,
+        paymentMethod,
+        preferredSigninMethod,
+        dismissOverlayOnClick,
+        prepay,
+        locale = "en-US",
+        currency = "usd",
+        successCallbackURL = "",
+        failureCallbackURL = "",
+        loginEmail = "",
+        ...props
+    } = buttonProps;
+
+    const collectionId = "clientId" in props ? props.clientId : props.collectionId;
+
     const [connecting, setConnecting] = useState(false);
     const [status, setStatus] = useState(onboardingRequestStatusResponse.WAITING_SUBMISSION);
     const { isServerSideRendering } = useEnvironment();
 
     const { fetchClientIntegration } = crossmintStatusService({
         libVersion: LIB_VERSION,
-        clientId,
+        clientId: collectionId,
         environment,
         auctionId,
         mintConfig,
@@ -62,7 +65,7 @@ export function CrossmintPayButton({
     });
 
     const { connect } = crossmintModalService({
-        clientId,
+        clientId: collectionId,
         showOverlay,
         dismissOverlayOnClick,
         setConnecting,
@@ -73,7 +76,7 @@ export function CrossmintPayButton({
         currency,
         successCallbackURL,
         failureCallbackURL,
-        loginEmail
+        loginEmail,
     });
 
     const { getButtonText, shouldHideButton, handleClick } = crossmintPayButtonService({

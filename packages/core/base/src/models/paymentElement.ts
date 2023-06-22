@@ -1,5 +1,5 @@
 import { CheckoutEvents, CrossmintEventError, CrossmintEventErrorPayload, PaymentElementSDKEvents } from "./events";
-import { CaseInsensitive, Currency, Locale, PaymentMethod, UIConfig } from "./types";
+import { CaseInsensitive, CollectionId, Currency, Locale, PaymentMethod, UIConfig } from "./types";
 
 export type Recipient = {
     email?: string;
@@ -15,8 +15,7 @@ export type MintConfig = Record<string, any> | Record<string, any>[];
 
 // TODO: Remmeber to update this same interface in the Vue component aswell.
 // packages/ui/vue-ui/src/components/CrossmintPaymentElement.vue
-export interface PaymentElement {
-    clientId: string;
+export type PaymentElement = {
     mintConfig?: MintConfig;
     recipient?: Recipient;
     paymentMethod?: PaymentMethod;
@@ -25,9 +24,9 @@ export interface PaymentElement {
     uiConfig?: UIConfig;
     environment?: string;
     whPassThroughArgs?: any;
-    onEvent?(event: CrossmintCheckoutEvent): this;
+    onEvent?(event: CrossmintCheckoutEvent): void;
     cardWalletPaymentMethods?: CardWalletPaymentMethod | CardWalletPaymentMethod[] | "none";
-}
+} & CollectionId;
 
 export type CardWalletPaymentMethod = "apple-pay" | "google-pay";
 

@@ -33,14 +33,14 @@ export function crossmintStatusService({
     clientName,
 }: CrossmintStatusServiceParams) {
     async function fetchClientIntegration() {
-        if (!clientId || clientId === "" || clientId === "<YOUR_CLIENT_ID>") {
-            console.error("You must enter your own Crossmint client ID in <CrossmintPayButton clientId=XXX>");
+        if (!clientId || clientId === "" || clientId === "<YOUR_COLLECTION_ID>") {
+            console.error("You must enter your own Crossmint collection ID in <CrossmintPayButton collectionId=XXX>");
             return;
         }
 
         if (!validateClientId(clientId)) {
             console.error(
-                "The clientId passed to is invalid. Make sure to pass the clientId obtained from the crossmint team, with format XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXX"
+                "The collectionId passed to is invalid. Make sure to pass the collectionId obtained from the crossmint team"
             );
             return;
         }

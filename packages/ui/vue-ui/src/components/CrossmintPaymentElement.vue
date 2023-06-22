@@ -17,7 +17,8 @@ import { crossmintPaymentService, crossmintUiService } from "@crossmint/client-s
 // TODO: Looks like you cannot import the interface directly from the package
 // https://github.com/vuejs/core/issues/4294#issuecomment-970861525
 export interface PaymentElement {
-    clientId: string;
+    clientId?: string;
+    collectionId?: string;
     mintConfig?: MintConfig;
     recipient?: Recipient;
     paymentMethod?: PaymentMethod;
@@ -31,6 +32,14 @@ export interface PaymentElement {
 }
 
 const props = withDefaults(defineProps<PaymentElement>(), {});
+
+if (props.clientId && props.collectionId) {
+    throw new Error("You cannot specify both clientId and collectionId. Please remove clientId.");
+}
+
+if (!props.clientId && !props.collectionId) {
+    throw new Error("You must specify collectionId prop.");
+}
 
 const { getIframeUrl, listenToEvents, emitQueryParams } = crossmintPaymentService(props);
 const { listenToEvents: listenToUiEvents } = crossmintUiService({ environment: props.environment });
