@@ -5,9 +5,6 @@ import validateUUID from "../utils/validateUUID";
 interface CrossmintStatusServiceParams {
     libVersion: string;
     clientId: string;
-    platformId?: string;
-    auctionId?: string;
-    mintConfig: any;
     setStatus: any;
     environment?: string;
     clientName: clientNames;
@@ -25,9 +22,6 @@ const validateClientId = (clientId: string): boolean => {
 export function crossmintStatusService({
     libVersion,
     clientId,
-    platformId,
-    auctionId,
-    mintConfig,
     setStatus,
     environment,
     clientName,
@@ -63,25 +57,7 @@ export function crossmintStatusService({
         }
     }
 
-    const goToOnboarding = () => {
-        const baseUrl = getEnvironmentBaseUrl(environment);
-        window.open(`${baseUrl}/developers/onboarding?${formatOnboardingQueryParams()}`, "_blank");
-    };
-
-    const formatOnboardingQueryParams = () => {
-        const onboardingQueryParams: OnboardingQueryParams = {
-            clientId: clientId,
-        };
-
-        if (platformId) onboardingQueryParams.platformId = platformId;
-        if (auctionId) onboardingQueryParams.auctionId = auctionId;
-        if (mintConfig) onboardingQueryParams.mintConfig = JSON.stringify(mintConfig);
-
-        return new URLSearchParams(onboardingQueryParams).toString();
-    };
-
     return {
         fetchClientIntegration,
-        goToOnboarding,
     };
 }
