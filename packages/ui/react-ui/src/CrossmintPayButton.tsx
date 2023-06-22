@@ -5,9 +5,7 @@ import {
     clientNames,
     crossmintModalService,
     crossmintPayButtonService,
-    crossmintStatusService,
     mintingContractTypes,
-    onboardingRequestStatusResponse,
 } from "@crossmint/client-sdk-base";
 
 import { formatProps, useStyles } from "./styles";
@@ -31,7 +29,6 @@ export function CrossmintPayButton(buttonProps: CrossmintPayButtonReactProps) {
         emailTo,
         listingId,
         auctionId,
-        hideMintOnInactiveClient = false,
         showOverlay = true,
         mintConfig = defaultMintConfig,
         whPassThroughArgs,
@@ -51,16 +48,7 @@ export function CrossmintPayButton(buttonProps: CrossmintPayButtonReactProps) {
     const collectionId = "clientId" in props ? props.clientId : props.collectionId;
 
     const [connecting, setConnecting] = useState(false);
-    const [status, setStatus] = useState(onboardingRequestStatusResponse.WAITING_SUBMISSION);
     const { isServerSideRendering } = useEnvironment();
-
-    const { fetchClientIntegration } = crossmintStatusService({
-        libVersion: LIB_VERSION,
-        clientId: collectionId,
-        environment,
-        setStatus,
-        clientName: clientNames.reactUi,
-    });
 
     const { connect } = crossmintModalService({
         clientId: collectionId,
@@ -77,18 +65,12 @@ export function CrossmintPayButton(buttonProps: CrossmintPayButtonReactProps) {
         loginEmail,
     });
 
-    const { getButtonText, shouldHideButton, handleClick } = crossmintPayButtonService({
+    const { getButtonText, handleClick } = crossmintPayButtonService({
         onClick,
         connecting,
         paymentMethod,
         locale,
     });
-
-    useEffect(() => {
-        if (hideMintOnInactiveClient) {
-            fetchClientIntegration();
-        }
-    }, [status]);
 
     const _handleClick = (event: MouseEvent<HTMLButtonElement>) =>
         handleClick(event, () => {
@@ -113,10 +95,6 @@ export function CrossmintPayButton(buttonProps: CrossmintPayButtonReactProps) {
             </span>
         );
     }, [connecting]);
-
-    if (shouldHideButton({ hideMintOnInactiveClient, status })) {
-        return null;
-    }
 
     return (
         <>
