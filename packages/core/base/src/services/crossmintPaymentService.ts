@@ -8,16 +8,9 @@ import {
 } from "../models/paymentElement";
 import { getEnvironmentBaseUrl } from "../utils";
 
-export function crossmintPaymentService({
-    clientId,
-    uiConfig,
-    recipient,
-    environment,
-    mintConfig,
-    locale,
-    whPassThroughArgs,
-    cardWalletPaymentMethods,
-}: PaymentElement) {
+export function crossmintPaymentService(props: PaymentElement) {
+    const clientId = "clientId" in props ? props.clientId : props.collectionId;
+    const { uiConfig, recipient, environment, mintConfig, locale, whPassThroughArgs, cardWalletPaymentMethods } = props;
     const baseUrl = getEnvironmentBaseUrl(environment);
 
     function getIframeUrl() {
