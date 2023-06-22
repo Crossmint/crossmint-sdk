@@ -6,7 +6,6 @@ export * from "./models/errors";
 export * from "./services/crossmintModalService";
 export * from "./services/crossmintPayButtonService";
 export * from "./services/crossmintStatusService";
-export * from "./services/crossmintStatusButtonService";
 export * from "./services/crossmintPaymentService";
 export * from "./services/useCrossmintEvents";
 export * from "./services/crossmintUiService";
