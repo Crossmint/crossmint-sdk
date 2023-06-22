@@ -67,6 +67,6 @@ describe("CrossmintPaymentElement", () => {
         render(<CrossmintPaymentElement collectionId={paymentElementProps.clientId} />);
         const iframe = screen.getByRole("iframe-crossmint-payment-element");
 
-        expect(iframe.getAttribute("src")).toContain("whPassThroughArgs=%7B%22hello%22%3A%22hi%22%7D");
+        expect(iframe.getAttribute("src")).toContain(`clientId=${paymentElementProps.clientId}`);
     });
 });
