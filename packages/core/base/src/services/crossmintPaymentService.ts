@@ -47,6 +47,10 @@ export function crossmintPaymentService(props: PaymentElement) {
             );
         }
 
+        if (props.projectId != null) {
+            params.append("projectId", props.projectId);
+        }
+
         return `${baseUrl}/sdk/paymentElement?${params.toString()}`;
     }
 

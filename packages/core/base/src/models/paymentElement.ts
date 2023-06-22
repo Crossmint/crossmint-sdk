@@ -16,6 +16,7 @@ export type MintConfig = Record<string, any> | Record<string, any>[];
 // TODO: Remmeber to update this same interface in the Vue component aswell.
 // packages/ui/vue-ui/src/components/CrossmintPaymentElement.vue
 export type PaymentElement = {
+    projectId?: string;
     mintConfig?: MintConfig;
     recipient?: Recipient;
     paymentMethod?: PaymentMethod;
