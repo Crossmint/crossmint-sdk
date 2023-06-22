@@ -4,8 +4,6 @@ import { property } from "lit/decorators/property.js";
 import { customElement } from "lit/decorators/custom-element.js";
 import {
     mintingContractTypes,
-    onboardingRequestStatusResponse,
-    crossmintStatusService,
     crossmintModalService,
     crossmintPayButtonService,
     PayButtonConfig,
@@ -75,9 +73,6 @@ export class CrossmintPayButton extends LitElement {
     environment = propertyDefaults.environment;
 
     @property({ type: Boolean })
-    hideMintOnInactiveClient = propertyDefaults.hideMintOnInactiveClient;
-
-    @property({ type: Boolean })
     showOverlay = propertyDefaults.showOverlay;
 
     @property({ type: Object })
@@ -124,47 +119,21 @@ export class CrossmintPayButton extends LitElement {
     setConnecting = (conn: boolean) => {
         this.connecting = conn;
     };
-    status = onboardingRequestStatusResponse.WAITING_SUBMISSION;
-    setStatus = (status: onboardingRequestStatusResponse) => {
-        this.status = status;
-    };
     classes = { light: false };
-    statusService: any = null;
     modalService: any = null;
 
     connectedCallback() {
         super.connectedCallback();
-
-        const { fetchClientIntegration } = crossmintStatusService({
-            libVersion: LIB_VERSION,
-            clientId: this.clientId || this.collectionId,
-            environment: this.environment,
-            auctionId: this.auctionId,
-            mintConfig: this.mintConfig,
-            setStatus: this.setStatus,
-            clientName: clientNames.vanillaUi,
-        });
-
-        if (this.hideMintOnInactiveClient) {
-            fetchClientIntegration();
-        }
     }
 
     render() {
-        const { shouldHideButton, handleClick, getButtonText } = crossmintPayButtonService({
+        const { handleClick, getButtonText } = crossmintPayButtonService({
             onClick: this.onClick,
             connecting: this.connecting,
             paymentMethod: this.paymentMethod,
             locale: this.locale || "en-US",
         });
-        if (
-            shouldHideButton({
-                hideMintOnInactiveClient: this.hideMintOnInactiveClient,
-                status: this.status,
-            })
-        ) {
-            return html``;
-        }
+
         const content = getButtonText(this.connecting);
 
         const { connect } = crossmintModalService({
