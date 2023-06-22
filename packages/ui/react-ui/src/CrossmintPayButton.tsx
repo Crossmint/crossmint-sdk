@@ -58,8 +58,6 @@ export function CrossmintPayButton(buttonProps: CrossmintPayButtonReactProps) {
         libVersion: LIB_VERSION,
         clientId: collectionId,
         environment,
-        auctionId,
-        mintConfig,
         setStatus,
         clientName: clientNames.reactUi,
     });
