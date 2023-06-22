@@ -56,7 +56,7 @@ export function CrossmintPayButton(buttonProps: CrossmintPayButtonReactProps) {
 
     const { fetchClientIntegration } = crossmintStatusService({
         libVersion: LIB_VERSION,
-        clientId: collectionId!,
+        clientId: collectionId,
         environment,
         auctionId,
         mintConfig,
@@ -65,7 +65,7 @@ export function CrossmintPayButton(buttonProps: CrossmintPayButtonReactProps) {
     });
 
     const { connect } = crossmintModalService({
-        clientId: collectionId!,
+        clientId: collectionId,
         showOverlay,
         dismissOverlayOnClick,
         setConnecting,
