@@ -1,5 +1,5 @@
 import { CheckoutEvents, CrossmintEventError, CrossmintEventErrorPayload, PaymentElementSDKEvents } from "./events";
-import { CaseInsensitive, Currency, Locale, PaymentMethod, UIConfig } from "./types";
+import { CaseInsensitive, CollectionId, Currency, Locale, PaymentMethod, UIConfig } from "./types";
 
 export type Recipient = {
     email?: string;
@@ -24,9 +24,9 @@ export type PaymentElement = {
     uiConfig?: UIConfig;
     environment?: string;
     whPassThroughArgs?: any;
-    onEvent?(event: CrossmintCheckoutEvent): any;
+    onEvent?(event: CrossmintCheckoutEvent): void;
     cardWalletPaymentMethods?: CardWalletPaymentMethod | CardWalletPaymentMethod[] | "none";
-} & ({ collectionId: string } | { clientId: string });
+} & CollectionId;
 
 export type CardWalletPaymentMethod = "apple-pay" | "google-pay";
 

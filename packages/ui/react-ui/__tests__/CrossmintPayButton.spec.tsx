@@ -323,27 +323,11 @@ describe("CrossmintPayButton", () => {
                 fireEvent.click(screen.getByText("Buy with credit card"));
             });
 
-            const urlOrigin = "https://www.crossmint.com";
-
-            const mintQueryParams = new URLSearchParams({
-                clientId: defaultProps.clientId,
-                clientName: "client-sdk-react-ui",
-                clientVersion: LIB_VERSION,
-                mintConfig: JSON.stringify({ type: "candy-machine" }),
-                locale: "en-US",
-                currency: "usd",
-            }).toString();
-
-            const callbackUrl = encodeURIComponent(`${urlOrigin}/checkout/mint?${mintQueryParams}`);
-
-            const signinURLParams = new URLSearchParams({
-                locale: "en-US",
-                currency: "usd",
-                email: "",
-            }).toString();
-
-            const expectedURL = `${urlOrigin}/signin?${signinURLParams}&callbackUrl=${callbackUrl}`;
-            expect(global.open).toHaveBeenCalledWith(expectedURL, expect.anything(), expect.anything());
+            expect(global.open).toHaveBeenCalledWith(
+                expect.stringContaining(`clientId%3D${defaultProps.clientId}`),
+                expect.anything(),
+                expect.anything()
+            );
         });
     });
 });

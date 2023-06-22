@@ -72,6 +72,8 @@ export type Locale =
 export type Currency = "usd" | "eur" | "gbp" | "aud" | "sgd" | "hkd" | "krw";
 export type CaseInsensitive<T extends string> = T | Uppercase<T> | Lowercase<T>;
 
+export type CollectionId = { clientId: string } | { collectionId: string };
+
 export type BaseButtonProps = {
     className?: string;
     disabled?: boolean;
@@ -83,7 +85,7 @@ export type BaseButtonProps = {
     environment?: string;
     locale?: Locale;
     currency?: CaseInsensitive<Currency>;
-} & ({ clientId: string } | { collectionId: string });
+} & CollectionId;
 
 export type CrossmintPayButtonProps = BaseButtonProps & {
     mintTo?: string;
