@@ -5,9 +5,7 @@ function App() {
         <div
             style={{ width: "100%", height: "100vh", display: "flex", justifyContent: "center", alignItems: "center" }}
         >
-            <CrossmintPayButton
-                clientId="<YOUR_CLIENT_ID>"
-            />
+            <CrossmintPayButton collectionId="<COLLECTION_ID>" projectId="<PROJECT_ID>" />
         </div>
     );
 }

@@ -11,7 +11,7 @@ export default function Index() {
                 alignItems: "center",
             }}
         >
-            <CrossmintPayButton clientId="058eeac7-3751-4c66-afc3-f77270c9d636" />
+            <CrossmintPayButton collectionId="<COLLECTION_ID>" projectId="<PROJECT_ID>" />
         </div>
     );
 }
