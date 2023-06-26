@@ -42,6 +42,7 @@ export function CrossmintPayButton(buttonProps: CrossmintPayButtonReactProps) {
         successCallbackURL = "",
         failureCallbackURL = "",
         loginEmail = "",
+        projectId,
         ...props
     } = buttonProps;
 
@@ -52,6 +53,7 @@ export function CrossmintPayButton(buttonProps: CrossmintPayButtonReactProps) {
 
     const { connect } = crossmintModalService({
         clientId: collectionId,
+        projectId,
         showOverlay,
         dismissOverlayOnClick,
         setConnecting,

@@ -67,6 +67,9 @@ export class CrossmintPayButton extends LitElement {
     collectionId = propertyDefaults.collectionId;
 
     @property({ type: String })
+    projectId = propertyDefaults.projectId;
+
+    @property({ type: String })
     auctionId = propertyDefaults.auctionId;
 
     @property({ type: String })
@@ -139,6 +142,7 @@ export class CrossmintPayButton extends LitElement {
         const { connect } = crossmintModalService({
             environment: this.environment,
             clientId: this.clientId || this.collectionId,
+            projectId: this.projectId,
             showOverlay: this.showOverlay || true,
             dismissOverlayOnClick: this.dismissOverlayOnClick,
             setConnecting: this.setConnecting,

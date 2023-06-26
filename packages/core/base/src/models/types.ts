@@ -67,6 +67,7 @@ export type CaseInsensitive<T extends string> = T | Uppercase<T> | Lowercase<T>;
 export type CollectionId = { clientId: string } | { collectionId: string };
 
 export type BaseButtonProps = {
+    projectId?: string;
     className?: string;
     disabled?: boolean;
     tabIndex?: number;

@@ -1,17 +1,18 @@
 import { CheckoutEvents } from "../models/events";
 import {
+    CaseInsensitive,
     Currency,
     Locale,
     PayButtonConfig,
     PaymentMethod,
     SigninMethods,
     clientNames,
-    CaseInsensitive,
 } from "../models/types";
 import { getEnvironmentBaseUrl } from "../utils/ui";
 
 type MintQueryParams = {
     clientId: string;
+    projectId?: string;
     mintTo?: string;
     emailTo?: string;
     listingId?: string;
@@ -96,6 +97,7 @@ const removeLoadingOverlay = (): void => {
 
 interface CrossmintModalServiceParams {
     clientId: string;
+    projectId?: string;
     libVersion: string;
     showOverlay: boolean;
     dismissOverlayOnClick?: boolean;
@@ -126,6 +128,7 @@ export interface CrossmintModalServiceReturn {
 
 export function crossmintModalService({
     clientId,
+    projectId,
     libVersion,
     showOverlay,
     dismissOverlayOnClick,
@@ -136,7 +139,7 @@ export function crossmintModalService({
     currency,
     successCallbackURL,
     failureCallbackURL,
-    loginEmail = ''
+    loginEmail = "",
 }: CrossmintModalServiceParams): CrossmintModalServiceReturn {
     const createPopup = (
         mintConfig: PayButtonConfig | PayButtonConfig[],
@@ -151,7 +154,7 @@ export function crossmintModalService({
         const urlOrigin = getEnvironmentBaseUrl(environment);
         const getMintQueryParams = (): string => {
             const mintQueryParams: MintQueryParams = {
-                clientId: clientId,
+                clientId,
                 clientName,
                 clientVersion: libVersion,
                 mintConfig: JSON.stringify(mintConfig),
@@ -168,16 +171,17 @@ export function crossmintModalService({
             if (prepay) mintQueryParams.prepay = "true";
             if (successCallbackURL) mintQueryParams.successCallbackURL = successCallbackURL;
             if (failureCallbackURL) mintQueryParams.failureCallbackURL = failureCallbackURL;
+            if (projectId) mintQueryParams.projectId = projectId;
 
             return new URLSearchParams(mintQueryParams).toString();
         };
         const callbackUrl = encodeURIComponent(`${urlOrigin}/checkout/mint?${getMintQueryParams()}`);
-        
+
         const signinURLParams = new URLSearchParams({
             locale,
             currency: currency.toLowerCase() as Currency,
-            email: loginEmail
-        }).toString()
+            email: loginEmail,
+        }).toString();
 
         const url = `${urlOrigin}/signin?${signinURLParams}&callbackUrl=${callbackUrl}`;
 

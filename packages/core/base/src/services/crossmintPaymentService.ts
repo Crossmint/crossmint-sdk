@@ -10,7 +10,16 @@ import { getEnvironmentBaseUrl } from "../utils";
 
 export function crossmintPaymentService(props: PaymentElement) {
     const clientId = "clientId" in props ? props.clientId : props.collectionId;
-    const { uiConfig, recipient, environment, mintConfig, locale, whPassThroughArgs, cardWalletPaymentMethods } = props;
+    const {
+        uiConfig,
+        recipient,
+        environment,
+        mintConfig,
+        locale,
+        whPassThroughArgs,
+        cardWalletPaymentMethods,
+        projectId,
+    } = props;
     const baseUrl = getEnvironmentBaseUrl(environment);
 
     function getIframeUrl() {
@@ -45,6 +54,10 @@ export function crossmintPaymentService(props: PaymentElement) {
                     ? cardWalletPaymentMethods
                     : JSON.stringify(cardWalletPaymentMethods)
             );
+        }
+
+        if (projectId != null) {
+            params.append("projectId", projectId);
         }
 
         return `${baseUrl}/sdk/paymentElement?${params.toString()}`;
