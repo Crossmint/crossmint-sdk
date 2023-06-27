@@ -94,7 +94,8 @@ function onEvent(event: CrossmintCheckoutEvent) {
 
             <CrossmintPaymentElement
                 environment="http://localhost:3000"
-                clientId="6845c702-8396-4339-b17e-a2bf12d2cf6d"
+                collection-id="6845c702-8396-4339-b17e-a2bf12d2cf6d"
+                project-id="a3d161dd-43c8-4ba9-b7c0-a54515bf61d8"
                 :mint-config="{ totalPrice: String(0.001 * quantity), quantity: String(quantity) }"
                 :recipient="{
                     email,
