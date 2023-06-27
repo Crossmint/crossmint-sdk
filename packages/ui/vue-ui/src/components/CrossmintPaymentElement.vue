@@ -42,7 +42,17 @@ if (!props.clientId && !props.collectionId) {
     throw new Error("You must specify collectionId prop.");
 }
 
-const { getIframeUrl, listenToEvents, emitQueryParams } = crossmintPaymentService(props);
+const paymentServiceProps: any = {
+    clientId: props.clientId || props.collectionId,
+    projectId: props.projectId,
+    environment: props.environment,
+    uiConfig: props.uiConfig,
+    recipient: props.recipient,
+    mintConfig: props.mintConfig,
+    whPassThroughArgs: props.whPassThroughArgs,
+};
+
+const { getIframeUrl, listenToEvents, emitQueryParams } = crossmintPaymentService(paymentServiceProps);
 const { listenToEvents: listenToUiEvents } = crossmintUiService({ environment: props.environment });
 
 const iframeUrl = getIframeUrl();
