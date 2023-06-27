@@ -16,7 +16,7 @@ yarn add @crossmint/client-sdk-react-ui
 
 ### Add payment button to your site
 
-The next steps depend on which chain you're using for your project. For detailed integration instructions, visit our documentation for [Solana](https://docs.crossmint.com/accept-credit-cards/integration-guides/solana-candy-machine/b-i-have-an-existing-candy-machine-website/add-crossmint-for-solana-react.js-next.js), [Polygon](https://docs.crossmint.com/accept-credit-cards/integration-guides/polygon), or [Ethereum](https://docs.crossmint.com/accept-credit-cards/integration-guides/ethereum/add-crossmint-for-ethereum-react.js-next.js).
+Check our dedicated section for payments [in the docs](https://docs.crossmint.com/docs/integration-guide).
 
 ---
 
