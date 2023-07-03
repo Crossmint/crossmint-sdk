@@ -27,7 +27,17 @@ export type PaymentElement = {
     whPassThroughArgs?: any;
     onEvent?(event: CrossmintCheckoutEvent): void;
     cardWalletPaymentMethods?: CardWalletPaymentMethod | CardWalletPaymentMethod[] | "none";
+    emailInputOptions?: EmailInputOptions;
 } & CollectionId;
+
+export type EmailInputOptions =
+    | {
+          show: true;
+          useStripeLink?: boolean;
+      }
+    | {
+          show: false;
+      };
 
 export type CardWalletPaymentMethod = "apple-pay" | "google-pay";
 
@@ -109,6 +119,9 @@ interface OrderProcessFinished {
 interface RecipientWalletChanged {
     wallet: string;
 }
+interface RecipientEmailChanged {
+    email: string;
+}
 
 export interface CheckoutEventMap {
     [CheckoutEvents.PAYMENT_PREPARATION_SUCCEEDED]: EmptyObject;
@@ -124,6 +137,7 @@ export interface CheckoutEventMap {
     [CheckoutEvents.TRANSACTION_FULFILLMENT_FAILED]: TransactionFulfillmentFailed;
     [CheckoutEvents.ORDER_PROCESS_FINISHED]: OrderProcessFinished;
     [CheckoutEvents.RECIPIENT_WALLET_CHANGED]: RecipientWalletChanged;
+    [CheckoutEvents.RECIPIENT_EMAIL_CHANGED]: RecipientEmailChanged;
 }
 
 export type ParamsUpdatePayload = Partial<Record<keyof Omit<PaymentElement, "onEvent" | "environment">, any>>;
