@@ -4,7 +4,6 @@ import { crossmintPaymentService, crossmintUiService } from "@crossmint/client-s
 import { customElement } from "lit/decorators/custom-element.js";
 
 import type {
-  Currency,
   Locale,
   MintConfig,
   PaymentMethod,
@@ -14,7 +13,6 @@ import type {
 } from "@crossmint/client-sdk-base";
 
 const propertyDefaults: PaymentElement = {
-    clientId: "",
     collectionId: "",
     projectId: "",
     mintConfig: {},
@@ -34,13 +32,13 @@ const propertyDefaults: PaymentElement = {
 @customElement("crossmint-payment-element")
 export class CrossmintPaymentElement extends LitElement {
   @property({ type: String })
-  clientId: string = propertyDefaults.clientId;
+  clientId = "";
 
   @property({ type: String })
-  collectionId: string = propertyDefaults.collectionId;
+  collectionId = "";
 
   @property({ type: String })
-  projectId: string = propertyDefaults.projectId;
+  projectId: PaymentElement["projectId"] = propertyDefaults.projectId;
 
   @property({ type: Object })
   mintConfig?: MintConfig = propertyDefaults.mintConfig;
@@ -52,7 +50,7 @@ export class CrossmintPaymentElement extends LitElement {
   paymentMethod?: PaymentMethod = propertyDefaults.paymentMethod;
 
   @property({ type: String })
-  currency?: Currency = propertyDefaults.currency;
+  currency?: PaymentElement["currency"] = propertyDefaults.currency;
 
   @property({ type: String })
   locale?: Locale = propertyDefaults.locale;
@@ -69,8 +67,10 @@ export class CrossmintPaymentElement extends LitElement {
   @property({ type: Function || String })
   onEvent?: (event: any) => void = propertyDefaults.onEvent;
 
-  height: number = 0;
+  height = 0;
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   removeEventListener = () => {};
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   removeUIEventListener = () => {};
 
 

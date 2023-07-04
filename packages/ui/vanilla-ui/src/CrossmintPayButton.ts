@@ -25,7 +25,6 @@ const propertyDefaults: CrossmintPayButtonLitProps = {
     collectionId: "",
     auctionId: "",
     environment: "",
-    hideMintOnInactiveClient: false,
     showOverlay: true,
     mintConfig: {
         type: mintingContractTypes.CANDY_MACHINE,
@@ -61,10 +60,10 @@ export class CrossmintPayButton extends LitElement {
     listingId = propertyDefaults.listingId;
 
     @property({ type: String })
-    clientId = propertyDefaults.clientId;
+    clientId = "";
 
     @property({ type: String })
-    collectionId = propertyDefaults.collectionId;
+    collectionId = "";
 
     @property({ type: String })
     projectId = propertyDefaults.projectId;
@@ -166,9 +165,6 @@ export class CrossmintPayButton extends LitElement {
                     this.paymentMethod,
                     this.preferredSigninMethod,
                     this.prepay,
-                    this.successCallbackURL,
-                    this.failureCallbackURL,
-                    this.loginEmail
                 );
             });
 
