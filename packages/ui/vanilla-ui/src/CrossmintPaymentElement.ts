@@ -9,7 +9,7 @@ import type {
   PaymentMethod,
   Recipient,
   UIConfig,
-  PaymentElement
+  PaymentElement,
 } from "@crossmint/client-sdk-base";
 
 const propertyDefaults: PaymentElement = {
@@ -64,6 +64,12 @@ export class CrossmintPaymentElement extends LitElement {
   @property({ type: Object })
   whPassThroughArgs?: string = propertyDefaults.whPassThroughArgs;
 
+  @property({ type: Array || String })
+  cardWalletPaymentMethods?: PaymentElement["cardWalletPaymentMethods"] = propertyDefaults.cardWalletPaymentMethods;
+
+  @property({ type: Object })
+  emailInputOptions?: PaymentElement["emailInputOptions"] = propertyDefaults.emailInputOptions;
+
   @property({ type: Function || String })
   onEvent?: (event: any) => void = propertyDefaults.onEvent;
 
@@ -79,14 +85,21 @@ export class CrossmintPaymentElement extends LitElement {
 
     const onEvent = getOnEventFunction(this.onEvent);
 
-    const { listenToEvents } = crossmintPaymentService({ 
-      clientId: this.clientId || this.collectionId,
+    const { listenToEvents } = crossmintPaymentService({
+      clientId: this.clientId,
+      collectionId: this.collectionId,
       projectId: this.projectId,
       environment: this.environment,
       uiConfig: this.uiConfig,
       recipient: this.recipient,
       mintConfig: this.mintConfig,
-      whPassThroughArgs: this.whPassThroughArgs
+      whPassThroughArgs: this.whPassThroughArgs,
+      cardWalletPaymentMethods: this.cardWalletPaymentMethods,
+      emailInputOptions: this.emailInputOptions,
+      currency: this.currency,
+      locale: this.locale,
+      paymentMethod: this.paymentMethod,
+      onEvent: this.onEvent,
     });
     const { listenToEvents: listenToUiEvents } = crossmintUiService({ environment: this.environment });
 
@@ -115,13 +128,21 @@ export class CrossmintPaymentElement extends LitElement {
 
   updated(changedProperties: Map<string, unknown>) {
     super.updated(changedProperties);
-    const { emitQueryParams } = crossmintPaymentService({ 
-      clientId: this.clientId || this.collectionId,
+    const { emitQueryParams } = crossmintPaymentService({
+      clientId: this.clientId,
+      collectionId: this.collectionId,
       projectId: this.projectId,
       environment: this.environment,
       uiConfig: this.uiConfig,
       recipient: this.recipient,
-      mintConfig: this.mintConfig
+      mintConfig: this.mintConfig,
+      whPassThroughArgs: this.whPassThroughArgs,
+      cardWalletPaymentMethods: this.cardWalletPaymentMethods,
+      emailInputOptions: this.emailInputOptions,
+      currency: this.currency,
+      locale: this.locale,
+      paymentMethod: this.paymentMethod,
+      onEvent: this.onEvent,
     });
 
     if (
@@ -135,13 +156,21 @@ export class CrossmintPaymentElement extends LitElement {
   }
 
   render() {
-    const {getIframeUrl} = crossmintPaymentService({ 
-      clientId: this.clientId || this.collectionId,
+    const {getIframeUrl} = crossmintPaymentService({
+      clientId: this.clientId,
+      collectionId: this.collectionId,
       projectId: this.projectId,
       environment: this.environment,
       uiConfig: this.uiConfig,
       recipient: this.recipient,
-      mintConfig: this.mintConfig 
+      mintConfig: this.mintConfig,
+      whPassThroughArgs: this.whPassThroughArgs,
+      cardWalletPaymentMethods: this.cardWalletPaymentMethods,
+      emailInputOptions: this.emailInputOptions,
+      currency: this.currency,
+      locale: this.locale,
+      paymentMethod: this.paymentMethod,
+      onEvent: this.onEvent,
     });
 
     return html`
