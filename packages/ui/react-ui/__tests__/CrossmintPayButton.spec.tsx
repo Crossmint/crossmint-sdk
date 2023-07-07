@@ -181,4 +181,11 @@ describe("CrossmintPayButton", () => {
             );
         });
     });
+
+    describe("when passing getButtonText prop", () => {
+        test("should show custom text", async () => {
+            render(<CrossmintPayButton {...defaultProps} getButtonText={() => "Custom text"} />);
+            expect(screen.getByText("Custom text")).toBeInTheDocument();
+        });
+    });
 });

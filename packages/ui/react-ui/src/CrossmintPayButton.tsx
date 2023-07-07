@@ -43,6 +43,7 @@ export function CrossmintPayButton(buttonProps: CrossmintPayButtonReactProps) {
         failureCallbackURL = "",
         loginEmail = "",
         projectId,
+        getButtonText,
         ...props
     } = buttonProps;
 
@@ -67,7 +68,7 @@ export function CrossmintPayButton(buttonProps: CrossmintPayButtonReactProps) {
         loginEmail,
     });
 
-    const { getButtonText, handleClick } = crossmintPayButtonService({
+    const { getButtonText: getButtonTextInternal, handleClick } = crossmintPayButtonService({
         onClick,
         connecting,
         paymentMethod,
@@ -93,7 +94,9 @@ export function CrossmintPayButton(buttonProps: CrossmintPayButtonReactProps) {
     const content = useMemo(() => {
         return (
             <span className={classes.crossmintParagraph} role="button-paragraph">
-                {getButtonText(connecting)}
+                {getButtonText != null
+                    ? getButtonText(connecting, paymentMethod || "fiat")
+                    : getButtonTextInternal(connecting)}
             </span>
         );
     }, [connecting]);
