@@ -39,7 +39,8 @@ const propertyDefaults: CrossmintPayButtonLitProps = {
     currency: "usd",
     successCallbackURL: "",
     failureCallbackURL: "",
-    loginEmail: ""
+    loginEmail: "",
+    getButtonText: undefined,
 };
 
 @customElement("crossmint-pay-button")
@@ -111,9 +112,12 @@ export class CrossmintPayButton extends LitElement {
 
     @property({ type: String })
     failureCallbackURL = propertyDefaults.failureCallbackURL;
-    
+
     @property({ type: String })
     loginEmail = propertyDefaults.loginEmail;
+
+    @property({ type: Function })
+    getButtonText = propertyDefaults.getButtonText;
 
     static styles = buttonStyles;
 
@@ -129,14 +133,14 @@ export class CrossmintPayButton extends LitElement {
     }
 
     render() {
-        const { handleClick, getButtonText } = crossmintPayButtonService({
+        const { handleClick, getButtonText: getButtonTextInteral } = crossmintPayButtonService({
             onClick: this.onClick,
             connecting: this.connecting,
             paymentMethod: this.paymentMethod,
             locale: this.locale || "en-US",
         });
 
-        const content = getButtonText(this.connecting);
+        const content = this.getButtonText != null ? this.getButtonText(this.connecting, this.paymentMethod || "fiat") : getButtonTextInteral(this.connecting);
 
         const { connect } = crossmintModalService({
             environment: this.environment,
