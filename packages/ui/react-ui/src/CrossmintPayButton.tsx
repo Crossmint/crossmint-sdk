@@ -99,7 +99,7 @@ export function CrossmintPayButton(buttonProps: CrossmintPayButtonReactProps) {
                     : getButtonTextInternal(connecting)}
             </span>
         );
-    }, [connecting]);
+    }, [connecting, getButtonText, paymentMethod]);
 
     return (
         <>
@@ -110,7 +110,6 @@ export function CrossmintPayButton(buttonProps: CrossmintPayButtonReactProps) {
                     onClick={_handleClick}
                     style={{ ...style }}
                     tabIndex={tabIndex}
-                    {...props}
                 >
                     <img
                         className={classes.crossmintImg}
