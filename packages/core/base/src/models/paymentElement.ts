@@ -10,6 +10,9 @@ export interface CrossmintCheckoutEvent<K extends CheckoutEvents = CheckoutEvent
     type: K;
     payload: CheckoutEventMap[K];
 }
+export type CrossmintCheckoutEventUnion = {
+    [K in CheckoutEvents]: CrossmintCheckoutEvent<K>;
+}[CheckoutEvents];
 
 export type MintConfig = Record<string, any> | Record<string, any>[];
 
@@ -25,7 +28,7 @@ export type PaymentElement = {
     uiConfig?: UIConfig;
     environment?: string;
     whPassThroughArgs?: any;
-    onEvent?(event: CrossmintCheckoutEvent): void;
+    onEvent?(event: CrossmintCheckoutEventUnion): void;
     cardWalletPaymentMethods?: CardWalletPaymentMethod | CardWalletPaymentMethod[] | "none";
     emailInputOptions?: EmailInputOptions;
 } & CollectionId;

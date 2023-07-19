@@ -1,11 +1,6 @@
 import { PaymentElementSDKEvents } from "../models/events";
 import { CheckoutEvents } from "../models/events";
-import {
-    CheckoutEventMap,
-    CrossmintCheckoutEvent,
-    ParamsUpdatePayload,
-    PaymentElement,
-} from "../models/paymentElement";
+import { CrossmintCheckoutEventUnion, ParamsUpdatePayload, PaymentElement } from "../models/paymentElement";
 import { getEnvironmentBaseUrl } from "../utils";
 
 export function crossmintPaymentService(props: PaymentElement) {
@@ -67,9 +62,7 @@ export function crossmintPaymentService(props: PaymentElement) {
         return `${baseUrl}/sdk/paymentElement?${params.toString()}`;
     }
 
-    function listenToEvents(
-        cb: <K extends keyof CheckoutEventMap>(event: MessageEvent<CrossmintCheckoutEvent<K>>) => void
-    ): () => void {
+    function listenToEvents(cb: (event: MessageEvent<CrossmintCheckoutEventUnion>) => void): () => void {
         function _internalOnEvent(event: MessageEvent<any>) {
             if (event.origin !== baseUrl) {
                 return;

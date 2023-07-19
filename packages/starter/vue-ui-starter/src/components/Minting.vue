@@ -14,7 +14,7 @@ const verificationUrl = ref("");
 listenToMintingEvents({ orderIdentifier: route.query.orderIdentifier?.toString()! }, (event) => {
     switch (event.type) {
         case "order:process.finished":
-            const orderFinishedPayload = event.payload as CheckoutEventMap["order:process.finished"];
+            const orderFinishedPayload = event.payload;
             console.log("Minting is done!", event.payload);
             status.value.push("Minting is done!");
             if (orderFinishedPayload.verification.required) {
@@ -26,12 +26,12 @@ listenToMintingEvents({ orderIdentifier: route.query.orderIdentifier?.toString()
             break;
         case "transaction:fulfillment.succeeded":
             console.log("Transaction succeeded", event.payload);
-            const succeededTransactionPayload = event.payload as CheckoutEventMap["transaction:fulfillment.succeeded"];
+            const succeededTransactionPayload = event.payload;
             status.value.push(`Transaction ${succeededTransactionPayload.transactionIdentifier} succeeded`);
             break;
         case "transaction:fulfillment.failed":
             console.log("Transaction failed", event.payload);
-            const failedTransactionPayload = event.payload as CheckoutEventMap["transaction:fulfillment.failed"];
+            const failedTransactionPayload = event.payload;
             status.value.push(`Transaction ${failedTransactionPayload.transactionIdentifier} failed`);
             break;
         case "order:process.started":

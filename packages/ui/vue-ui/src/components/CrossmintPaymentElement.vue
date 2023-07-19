@@ -4,7 +4,7 @@ import { onUnmounted, ref, watch } from "vue";
 import type {
     CardWalletPaymentMethod,
     CaseInsensitive,
-    CrossmintCheckoutEvent,
+    CrossmintCheckoutEventUnion,
     Currency,
     EmailInputOptions,
     Locale,
@@ -29,7 +29,7 @@ export interface PaymentElement {
     uiConfig?: UIConfig;
     environment?: string;
     whPassThroughArgs?: any;
-    onEvent?(event: CrossmintCheckoutEvent): any;
+    onEvent?(event: CrossmintCheckoutEventUnion): any;
     cardWalletPaymentMethods?: CardWalletPaymentMethod | CardWalletPaymentMethod[] | "none";
     emailInputOptions?: EmailInputOptions;
 }

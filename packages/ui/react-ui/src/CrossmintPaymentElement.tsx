@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import type { CrossmintCheckoutEvent, PaymentElement } from "@crossmint/client-sdk-base";
+import type { PaymentElement } from "@crossmint/client-sdk-base";
 import { crossmintPaymentService, crossmintUiService } from "@crossmint/client-sdk-base";
 
 export function CrossmintPaymentElement(props: PaymentElement) {
@@ -10,9 +10,7 @@ export function CrossmintPaymentElement(props: PaymentElement) {
     const [url] = useState(getIframeUrl());
 
     useEffect(() => {
-        const clearListener = listenToEvents((event: MessageEvent<CrossmintCheckoutEvent>) =>
-            props.onEvent?.(event.data)
-        );
+        const clearListener = listenToEvents((event) => props.onEvent?.(event.data));
 
         return () => {
             if (clearListener) {
