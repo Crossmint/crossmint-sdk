@@ -10,6 +10,7 @@ import type {
   Recipient,
   UIConfig,
   PaymentElement,
+  CrossmintCheckoutEventUnion
 } from "@crossmint/client-sdk-base";
 
 const propertyDefaults: PaymentElement = {
@@ -71,7 +72,7 @@ export class CrossmintPaymentElement extends LitElement {
   emailInputOptions?: PaymentElement["emailInputOptions"] = propertyDefaults.emailInputOptions;
 
   @property({ type: Function || String })
-  onEvent?: (event: any) => void = propertyDefaults.onEvent;
+  onEvent?: (event: CrossmintCheckoutEventUnion) => void = propertyDefaults.onEvent;
 
   height = 0;
   // eslint-disable-next-line @typescript-eslint/no-empty-function

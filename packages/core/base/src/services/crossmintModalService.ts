@@ -45,7 +45,9 @@ function createPopupString(width: number, height: number) {
             return window?.top != null
                 ? window.top.outerWidth / 2 + window.top.screenX - width / 2
                 : window.outerWidth / 2 + window.screenX - width / 2;
-        } catch (e) {}
+        } catch (e) {
+            console.error(e);
+        }
 
         return window.outerWidth / 2 + window.screenX - width / 2;
     }
@@ -55,7 +57,9 @@ function createPopupString(width: number, height: number) {
             return window?.top != null
                 ? window.top.outerHeight / 2 + window.top.screenY - height / 2
                 : window.outerHeight / 2 + window.screenY - height / 2;
-        } catch (e) {}
+        } catch (e) {
+            console.error(e);
+        }
 
         return window.outerHeight / 2 + window.screenY - height / 2;
     }

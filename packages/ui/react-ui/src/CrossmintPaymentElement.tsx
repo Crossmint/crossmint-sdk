@@ -10,9 +10,7 @@ export function CrossmintPaymentElement(props: PaymentElement) {
     const [url] = useState(getIframeUrl());
 
     useEffect(() => {
-        const clearListener = listenToEvents((event: MessageEvent<CrossmintCheckoutEvent>) =>
-            props.onEvent?.(event.data)
-        );
+        const clearListener = listenToEvents((event) => props.onEvent?.(event.data));
 
         return () => {
             if (clearListener) {
