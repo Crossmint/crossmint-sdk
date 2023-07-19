@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-import type { CheckoutEventMap, CrossmintCheckoutEvent } from "@crossmint/client-sdk-base";
+import type { CheckoutEventMap, CrossmintCheckoutEvent, CrossmintCheckoutEventUnion } from "@crossmint/client-sdk-base";
 import { CrossmintPaymentElement } from "@crossmint/client-sdk-vue-ui";
 import "@crossmint/client-sdk-vue-ui/dist/index.css";
 
@@ -22,10 +22,10 @@ const totalFiatPrice = ref<string | number | null>(null);
 
 const isPaying = ref(true);
 
-function onEvent(event: CrossmintCheckoutEvent) {
+function onEvent(event: CrossmintCheckoutEventUnion) {
     switch (event.type) {
         case "quote:status.changed":
-            const { totalPrice, lineItems } = event.payload as CheckoutEventMap["quote:status.changed"];
+            const { totalPrice, lineItems } = event.payload;
             totalFiatItemPrice.value = lineItems[0].price.amount;
             totalFiatPrice.value = totalPrice.amount;
             isPaying.value = false;
@@ -34,7 +34,7 @@ function onEvent(event: CrossmintCheckoutEvent) {
             isPaying.value = true;
             break;
         case "payment:process.succeeded":
-            const { orderIdentifier } = event.payload as CheckoutEventMap["payment:process.succeeded"];
+            const { orderIdentifier } = event.payload;
             router.push(`/minting?orderIdentifier=${orderIdentifier}`);
             break;
         default:

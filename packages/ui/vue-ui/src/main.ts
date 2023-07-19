@@ -1,6 +1,6 @@
 import type { App } from "vue";
 
-import type { CheckoutEventMap, CrossmintCheckoutEvent } from "@crossmint/client-sdk-base";
+import type { CheckoutEventMap, CrossmintCheckoutEvent, CrossmintCheckoutEventUnion } from "@crossmint/client-sdk-base";
 import { CheckoutEvents, useCrossmintEvents } from "@crossmint/client-sdk-base";
 
 import { CrossmintPaymentElement } from "./components";
@@ -12,4 +12,4 @@ export default {
 };
 
 export { CrossmintPaymentElement, useCrossmintEvents, CheckoutEvents };
-export type { CrossmintCheckoutEvent, CheckoutEventMap };
+export type { CrossmintCheckoutEvent, CheckoutEventMap, CrossmintCheckoutEventUnion };

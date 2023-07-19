@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import type { CrossmintCheckoutEvent, PaymentElement } from "@crossmint/client-sdk-base";
+import type { PaymentElement } from "@crossmint/client-sdk-base";
 import { crossmintPaymentService, crossmintUiService } from "@crossmint/client-sdk-base";
 
 export function CrossmintPaymentElement(props: PaymentElement) {

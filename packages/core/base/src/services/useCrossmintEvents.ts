@@ -1,7 +1,7 @@
 import { backOff } from "exponential-backoff";
 
 import { CheckoutEvents, ListenToMintingEventsProps, ListenerType } from "../models/events";
-import { CrossmintCheckoutEvent } from "../models/paymentElement";
+import { CrossmintCheckoutEventUnion } from "../models/paymentElement";
 import { getEnvironmentBaseUrl } from "../utils";
 
 export function useCrossmintEvents({ environment }: { environment?: string } = {}) {
@@ -10,7 +10,7 @@ export function useCrossmintEvents({ environment }: { environment?: string } = {
         const succeededTransactionIdentifiers: string[] = [];
         const failedTransactionIdentifiers: string[] = [];
 
-        function emitEvent(event: CrossmintCheckoutEvent<any>) {
+        function emitEvent(event: CrossmintCheckoutEventUnion) {
             cb(event);
             emittedEvents.push(event.type);
             if (event.type === CheckoutEvents.ORDER_PROCESS_FINISHED) {
@@ -18,8 +18,8 @@ export function useCrossmintEvents({ environment }: { environment?: string } = {
             }
         }
 
-        function handleDuplicateEvent(event: CrossmintCheckoutEvent<any>) {
-            if (!event.payload.transactionIdentifier) {
+        function handleDuplicateEvent(event: CrossmintCheckoutEventUnion) {
+            if (!("transactionIdentifier" in event.payload)) {
                 return;
             }
 
@@ -64,7 +64,7 @@ export function useCrossmintEvents({ environment }: { environment?: string } = {
         orderIdentifier,
     }: {
         orderIdentifier: string;
-    }): Promise<CrossmintCheckoutEvent<any>[]> {
+    }): Promise<CrossmintCheckoutEventUnion[]> {
         return await backOff(
             async () => {
                 const res = await fetch(
