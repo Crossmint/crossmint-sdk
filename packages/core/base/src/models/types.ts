@@ -61,7 +61,7 @@ export type Locale =
     | "th-TH"
     | "Klingon";
 
-export type Currency = "usd" | "eur" | "gbp" | "aud" | "sgd" | "hkd" | "krw";
+export type Currency = "usd" | "eur" | "gbp" | "aud" | "sgd" | "hkd" | "krw" | "inr";
 export type CaseInsensitive<T extends string> = T | Uppercase<T> | Lowercase<T>;
 
 export type CollectionId = { clientId: string } | { collectionId: string };
