@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-vue-ui",
-    "version": "1.0.1-alpha.2",
+    "version": "1.0.1-alpha.3",
     "type": "module",
     "files": [
         "dist"
@@ -29,7 +29,7 @@
         "format": "prettier --write src/"
     },
     "dependencies": {
-        "@crossmint/client-sdk-base": "^1.0.1-alpha.2",
+        "@crossmint/client-sdk-base": "^1.0.1-alpha.3",
         "vue": "^3.2.47"
     },
     "devDependencies": {
