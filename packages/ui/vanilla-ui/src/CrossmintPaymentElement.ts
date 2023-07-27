@@ -28,6 +28,7 @@ const propertyDefaults: PaymentElement = {
     environment: "production",
     whPassThroughArgs: undefined,
     onEvent: undefined,
+    experimental: undefined
   };
 
 @customElement("crossmint-payment-element")
@@ -74,6 +75,9 @@ export class CrossmintPaymentElement extends LitElement {
   @property({ type: Function || String })
   onEvent?: (event: CrossmintCheckoutEventUnion) => void = propertyDefaults.onEvent;
 
+  @property({ type: Object })
+  experimental?: PaymentElement["experimental"] = propertyDefaults.experimental;
+
   height = 0;
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   removeEventListener = () => {};
@@ -100,6 +104,7 @@ export class CrossmintPaymentElement extends LitElement {
       currency: this.currency,
       locale: this.locale,
       paymentMethod: this.paymentMethod,
+      experimental: this.experimental,
       onEvent: this.onEvent,
     });
     const { listenToEvents: listenToUiEvents } = crossmintUiService({ environment: this.environment });
@@ -143,6 +148,7 @@ export class CrossmintPaymentElement extends LitElement {
       currency: this.currency,
       locale: this.locale,
       paymentMethod: this.paymentMethod,
+      experimental: this.experimental,
       onEvent: this.onEvent,
     });
 
@@ -171,6 +177,7 @@ export class CrossmintPaymentElement extends LitElement {
       currency: this.currency,
       locale: this.locale,
       paymentMethod: this.paymentMethod,
+      experimental: this.experimental,
       onEvent: this.onEvent,
     });
 
