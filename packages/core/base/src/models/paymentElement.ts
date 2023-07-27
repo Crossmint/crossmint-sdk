@@ -16,6 +16,10 @@ export type CrossmintCheckoutEventUnion = {
 
 export type MintConfig = Record<string, any> | Record<string, any>[];
 
+export type PaymentElementExperimentalOptions = {
+    useCardWalletEmail?: boolean; // Allows the recipient's email to be obtained from the card wallet. Currently only supported when `recipient.wallet` is also passed. If an email is already specified in `recipient.email` or typed by the user, it will take precedence over the email obtained from the card wallet.
+};
+
 // TODO: Remmeber to update this same interface in the Vue component aswell.
 // packages/ui/vue-ui/src/components/CrossmintPaymentElement.vue
 export type PaymentElement = {
@@ -31,6 +35,7 @@ export type PaymentElement = {
     onEvent?(event: CrossmintCheckoutEventUnion): void;
     cardWalletPaymentMethods?: CardWalletPaymentMethod | CardWalletPaymentMethod[] | "none";
     emailInputOptions?: EmailInputOptions;
+    experimental?: PaymentElementExperimentalOptions;
 } & CollectionId;
 
 export type EmailInputOptions =

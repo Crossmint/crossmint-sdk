@@ -14,6 +14,8 @@ export function crossmintPaymentService(props: PaymentElement) {
         whPassThroughArgs,
         cardWalletPaymentMethods,
         projectId,
+        emailInputOptions,
+        experimental,
     } = props;
     const baseUrl = getEnvironmentBaseUrl(environment);
 
@@ -51,12 +53,16 @@ export function crossmintPaymentService(props: PaymentElement) {
             );
         }
 
-        if (props.emailInputOptions != null) {
-            params.append("emailInputOptions", JSON.stringify(props.emailInputOptions));
+        if (emailInputOptions != null) {
+            params.append("emailInputOptions", JSON.stringify(emailInputOptions));
         }
 
         if (projectId != null) {
             params.append("projectId", projectId);
+        }
+
+        if (experimental != null) {
+            params.append("experimental", JSON.stringify(experimental));
         }
 
         return `${baseUrl}/sdk/paymentElement?${params.toString()}`;

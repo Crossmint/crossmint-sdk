@@ -9,6 +9,7 @@ import type {
     EmailInputOptions,
     Locale,
     MintConfig,
+    PaymentElementExperimentalOptions,
     PaymentMethod,
     Recipient,
     UIConfig,
@@ -32,6 +33,7 @@ export interface PaymentElement {
     onEvent?(event: CrossmintCheckoutEventUnion): any;
     cardWalletPaymentMethods?: CardWalletPaymentMethod | CardWalletPaymentMethod[] | "none";
     emailInputOptions?: EmailInputOptions;
+    experimental?: PaymentElementExperimentalOptions;
 }
 
 const props = withDefaults(defineProps<PaymentElement>(), {});
@@ -52,7 +54,9 @@ const paymentServiceProps: any = {
     recipient: props.recipient,
     mintConfig: props.mintConfig,
     whPassThroughArgs: props.whPassThroughArgs,
+    cardWalletPaymentMethods: props.cardWalletPaymentMethods,
     emailInputOptions: props.emailInputOptions,
+    experimental: props.experimental,
 };
 
 const { getIframeUrl, listenToEvents, emitQueryParams } = crossmintPaymentService(paymentServiceProps);
