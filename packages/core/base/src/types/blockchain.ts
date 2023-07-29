@@ -10,15 +10,6 @@ export interface Wallet {
     publicKey: string;
 }
 
-interface CommonProps {
-    uiConfig?: UIConfig;
-    environment?: string;
-}
-
-export interface NFTCollectionViewProps extends CommonProps {
-    wallets: Wallet[];
-}
-
 export interface EVMNFT {
     chain: EVMChain;
     contractAddress: string;
@@ -47,6 +38,14 @@ export type NFTOrNFTLocator =
     | NFTLocator<"bsc">
     | NFTLocator<"cardano">;
 
+interface CommonProps {
+    uiConfig?: UIConfig;
+    environment?: string;
+}
+
+export interface NFTCollectionViewProps extends CommonProps {
+    wallets: Wallet[];
+}
 export interface NFTDetailProps extends CommonProps {
     nft: NFTOrNFTLocator;
 }
