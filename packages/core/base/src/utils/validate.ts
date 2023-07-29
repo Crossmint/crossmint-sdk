@@ -1,4 +1,4 @@
-import { NFTCollectionViewProps, NFTDetailProps } from "../models/types";
+import { NFTCollectionViewProps, NFTDetailProps } from "../types/blockchain";
 
 export function assertValidNFTCollectionViewProps({ wallets }: NFTCollectionViewProps) {
     if (wallets.length === 0) {

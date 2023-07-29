@@ -1,6 +1,6 @@
-import { PaymentElementSDKEvents } from "../models/events";
-import { CheckoutEvents } from "../models/events";
-import { CrossmintCheckoutEventUnion, ParamsUpdatePayload, PaymentElement } from "../models/paymentElement";
+import { CrossmintCheckoutEventUnion, ParamsUpdatePayload, PaymentElementSDKEvents } from "../types/events";
+import { CheckoutEvents } from "../types/events";
+import { PaymentElement } from "../types/paymentElement";
 import { getEnvironmentBaseUrl } from "../utils";
 
 export function crossmintPaymentService(props: PaymentElement) {

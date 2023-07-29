@@ -1,21 +1,12 @@
-import React, { MouseEvent, useEffect, useMemo } from "react";
+import React, { MouseEvent, useMemo } from "react";
 import { useState } from "react";
 
-import {
-    clientNames,
-    crossmintModalService,
-    crossmintPayButtonService,
-    mintingContractTypes,
-} from "@crossmint/client-sdk-base";
+import { clientNames, crossmintModalService, crossmintPayButtonService } from "@crossmint/client-sdk-base";
 
 import { formatProps, useStyles } from "./styles";
 import { CrossmintPayButtonReactProps } from "./types";
 import useEnvironment from "./useEnvironment";
 import { LIB_VERSION } from "./version";
-
-const defaultMintConfig: any = {
-    type: mintingContractTypes.CANDY_MACHINE,
-};
 
 export function CrossmintPayButton(buttonProps: CrossmintPayButtonReactProps) {
     const {
@@ -30,7 +21,7 @@ export function CrossmintPayButton(buttonProps: CrossmintPayButtonReactProps) {
         listingId,
         auctionId,
         showOverlay = true,
-        mintConfig = defaultMintConfig,
+        mintConfig,
         whPassThroughArgs,
         environment,
         paymentMethod,

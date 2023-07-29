@@ -44,7 +44,6 @@ describe("CrossmintPayButton", () => {
             clientId: defaultProps.clientId,
             clientName: "client-sdk-react-ui",
             clientVersion: LIB_VERSION,
-            mintConfig: JSON.stringify({ type: "candy-machine" }),
             locale: "en-US",
             currency: "usd",
         }).toString();

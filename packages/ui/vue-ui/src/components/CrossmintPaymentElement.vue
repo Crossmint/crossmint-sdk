@@ -8,7 +8,7 @@ import type {
     Currency,
     EmailInputOptions,
     Locale,
-    MintConfig,
+    MintConfigs,
     PaymentElementExperimentalOptions,
     PaymentMethod,
     Recipient,
@@ -22,7 +22,7 @@ export interface PaymentElement {
     projectId?: string;
     clientId?: string;
     collectionId?: string;
-    mintConfig?: MintConfig;
+    mintConfig?: MintConfigs;
     recipient?: Recipient;
     paymentMethod?: PaymentMethod;
     currency?: CaseInsensitive<Currency>;
