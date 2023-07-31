@@ -1,4 +1,5 @@
-import { NFT, NFTCollectionViewProps, NFTDetailProps, baseUrls } from "../models/types";
+import { baseUrls } from "../types";
+import { NFTCollectionViewProps, NFTDetailProps, NFTOrNFTLocator } from "../types/blockchain";
 
 export const getEnvironmentBaseUrl = (environment = ""): string => {
     const productionValues = ["prod", "production"];
@@ -7,7 +8,7 @@ export const getEnvironmentBaseUrl = (environment = ""): string => {
     return environment;
 };
 
-function getNFTLocator(nft: NFT) {
+function getNFTLocator(nft: NFTOrNFTLocator) {
     if (typeof nft === "string") {
         return nft;
     }

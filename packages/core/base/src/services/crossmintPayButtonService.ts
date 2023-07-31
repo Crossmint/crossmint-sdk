@@ -1,4 +1,4 @@
-import { Locale, PaymentMethod } from "../models/types";
+import { Locale, PaymentMethod } from "../types";
 import { t } from "../utils/i18n";
 
 interface IProps {

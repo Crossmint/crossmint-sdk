@@ -3,10 +3,8 @@ import { classMap } from "lit/directives/class-map.js";
 import { property } from "lit/decorators/property.js";
 import { customElement } from "lit/decorators/custom-element.js";
 import {
-    mintingContractTypes,
     crossmintModalService,
     crossmintPayButtonService,
-    PayButtonConfig,
     clientNames,
 } from "@crossmint/client-sdk-base";
 import { LIB_VERSION } from "./version";
@@ -26,9 +24,6 @@ const propertyDefaults: CrossmintPayButtonLitProps = {
     auctionId: "",
     environment: "",
     showOverlay: true,
-    mintConfig: {
-        type: mintingContractTypes.CANDY_MACHINE,
-    },
     onClick: undefined,
     whPassThroughArgs: undefined,
     paymentMethod: undefined,
@@ -79,9 +74,7 @@ export class CrossmintPayButton extends LitElement {
     showOverlay = propertyDefaults.showOverlay;
 
     @property({ type: Object })
-    mintConfig: PayButtonConfig = {
-        type: mintingContractTypes.CANDY_MACHINE,
-    };
+    mintConfig = propertyDefaults.mintConfig;
 
     @property({ type: Function })
     onClick = propertyDefaults.onClick;

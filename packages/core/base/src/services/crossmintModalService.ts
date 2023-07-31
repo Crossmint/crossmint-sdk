@@ -1,13 +1,6 @@
-import { CheckoutEvents } from "../models/events";
-import {
-    CaseInsensitive,
-    Currency,
-    Locale,
-    PayButtonConfig,
-    PaymentMethod,
-    SigninMethods,
-    clientNames,
-} from "../models/types";
+import { Currency, Locale, PaymentMethod, SigninMethods, clientNames } from "../types";
+import { MintConfigs } from "../types/payButton";
+import { CaseInsensitive } from "../types/system";
 import { getEnvironmentBaseUrl } from "../utils/ui";
 
 type MintQueryParams = {
@@ -18,7 +11,7 @@ type MintQueryParams = {
     listingId?: string;
     clientName: string;
     clientVersion: string;
-    mintConfig: string;
+    mintConfig?: string;
     whPassThroughArgs?: string;
     paymentMethod?: PaymentMethod;
     preferredSigninMethod?: SigninMethods;
@@ -119,7 +112,7 @@ interface CrossmintModalServiceParams {
 
 export interface CrossmintModalServiceReturn {
     connect: (
-        mintConfig: PayButtonConfig | PayButtonConfig[],
+        mintConfig?: MintConfigs,
         mintTo?: string,
         emailTo?: string,
         listingId?: string,
@@ -146,7 +139,7 @@ export function crossmintModalService({
     loginEmail = "",
 }: CrossmintModalServiceParams): CrossmintModalServiceReturn {
     const createPopup = (
-        mintConfig: PayButtonConfig | PayButtonConfig[],
+        mintConfig?: MintConfigs,
         mintTo?: string,
         emailTo?: string,
         listingId?: string,
@@ -161,11 +154,11 @@ export function crossmintModalService({
                 clientId,
                 clientName,
                 clientVersion: libVersion,
-                mintConfig: JSON.stringify(mintConfig),
                 locale,
                 currency: currency.toLowerCase() as Currency,
             };
 
+            if (mintConfig) mintQueryParams.mintConfig = JSON.stringify(mintConfig);
             if (mintTo) mintQueryParams.mintTo = mintTo;
             if (emailTo) mintQueryParams.emailTo = emailTo;
             if (listingId) mintQueryParams.listingId = listingId;
@@ -205,7 +198,7 @@ export function crossmintModalService({
     };
 
     const connect = (
-        mintConfig: PayButtonConfig | PayButtonConfig[],
+        mintConfig?: MintConfigs,
         mintTo?: string,
         emailTo?: string,
         listingId?: string,

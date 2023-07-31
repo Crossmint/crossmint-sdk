@@ -1,7 +1,6 @@
 import { backOff } from "exponential-backoff";
 
-import { CheckoutEvents, ListenToMintingEventsProps, ListenerType } from "../models/events";
-import { CrossmintCheckoutEventUnion } from "../models/paymentElement";
+import { CheckoutEvents, CrossmintCheckoutEventUnion, ListenToMintingEventsProps, ListenerType } from "../types/events";
 import { getEnvironmentBaseUrl } from "../utils";
 
 export function useCrossmintEvents({ environment }: { environment?: string } = {}) {
