@@ -36,6 +36,12 @@ const propertyDefaults: CrossmintPayButtonLitProps = {
     failureCallbackURL: "",
     loginEmail: "",
     getButtonText: undefined,
+    checkoutProps: {
+        experimental: false,
+        display: "same-tab",
+        delivery: "all",
+        paymentMethods: ["fiat", "ETH", "SOL"],
+    }
 };
 
 @customElement("crossmint-pay-button")
@@ -112,6 +118,9 @@ export class CrossmintPayButton extends LitElement {
     @property({ type: Function })
     getButtonText = propertyDefaults.getButtonText;
 
+    @property({ type: Object })
+    checkoutProps = propertyDefaults.checkoutProps;
+
     static styles = buttonStyles;
 
     connecting = false;
@@ -131,6 +140,7 @@ export class CrossmintPayButton extends LitElement {
             connecting: this.connecting,
             paymentMethod: this.paymentMethod,
             locale: this.locale || "en-US",
+            checkoutProps: this.checkoutProps
         });
 
         const content = this.getButtonText != null ? this.getButtonText(this.connecting, this.paymentMethod || "fiat") : getButtonTextInteral(this.connecting);
@@ -162,6 +172,7 @@ export class CrossmintPayButton extends LitElement {
                     this.paymentMethod,
                     this.preferredSigninMethod,
                     this.prepay,
+                    this.checkoutProps,
                 );
             });
 

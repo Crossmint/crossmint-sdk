@@ -1,4 +1,4 @@
-import { Currency, Locale, PaymentMethod, SigninMethods, clientNames } from "../types";
+import { Currency, Locale, PaymentMethod, SigninMethods, clientNames, CheckoutProps } from "../types";
 import { MintConfigs } from "../types/payButton";
 import { CaseInsensitive } from "../types/system";
 import { getEnvironmentBaseUrl } from "../utils/ui";
@@ -20,6 +20,7 @@ type MintQueryParams = {
     currency: Currency;
     successCallbackURL?: string;
     failureCallbackURL?: string;
+    checkoutProps?: string;
 };
 
 const overlayId = "__crossmint-overlay__";
@@ -119,7 +120,8 @@ export interface CrossmintModalServiceReturn {
         whPassThroughArgs?: any,
         paymentMethod?: PaymentMethod,
         preferredSigninMethod?: SigninMethods,
-        prepay?: boolean
+        prepay?: boolean,
+        checkoutProps?: CheckoutProps
     ) => void;
 }
 
@@ -138,7 +140,7 @@ export function crossmintModalService({
     failureCallbackURL,
     loginEmail = "",
 }: CrossmintModalServiceParams): CrossmintModalServiceReturn {
-    const createPopup = (
+    const openCheckout = (
         mintConfig?: MintConfigs,
         mintTo?: string,
         emailTo?: string,
@@ -146,7 +148,8 @@ export function crossmintModalService({
         whPassThroughArgs?: any,
         paymentMethod?: PaymentMethod,
         preferredSigninMethod?: SigninMethods,
-        prepay?: boolean
+        prepay?: boolean,
+        checkoutProps?: CheckoutProps
     ) => {
         const urlOrigin = getEnvironmentBaseUrl(environment);
         const getMintQueryParams = (): string => {
@@ -169,9 +172,38 @@ export function crossmintModalService({
             if (successCallbackURL) mintQueryParams.successCallbackURL = successCallbackURL;
             if (failureCallbackURL) mintQueryParams.failureCallbackURL = failureCallbackURL;
             if (projectId) mintQueryParams.projectId = projectId;
+            if (checkoutProps && checkoutProps.experimental === true) mintQueryParams.checkoutProps = JSON.stringify(checkoutProps);
 
             return new URLSearchParams(mintQueryParams).toString();
         };
+
+        if(checkoutProps != null && checkoutProps.experimental === true) {
+            const url = `${urlOrigin}/checkout?${getMintQueryParams()}`;
+
+            switch (checkoutProps.display) {
+                case "popup": {
+                    const pop = window.open(url, "popUpWindow", createPopupString(POPUP_WIDTH, POPUP_HEIGHT));
+                    if (pop) {
+                        registerListeners(pop);
+                        if (showOverlay) {
+                            addLoadingOverlay(dismissOverlayOnClick);
+                        }
+
+                    }
+                    return;
+                }
+                case "new-tab": {
+                    window.open(url, "_blank");
+                    return;
+                }
+                case "same-tab":
+                default:{
+                    window.location.href = url;
+                    return;
+                }
+            }
+        }
+
         const callbackUrl = encodeURIComponent(`${urlOrigin}/checkout/mint?${getMintQueryParams()}`);
 
         const signinURLParams = new URLSearchParams({
@@ -205,11 +237,12 @@ export function crossmintModalService({
         whPassThroughArgs?: any,
         paymentMethod?: PaymentMethod,
         preferredSigninMethod?: SigninMethods,
-        prepay?: boolean
+        prepay?: boolean,
+        checkoutProps?: CheckoutProps
     ) => {
         setConnecting(true);
 
-        createPopup(
+        openCheckout(
             mintConfig,
             mintTo,
             emailTo,
@@ -217,7 +250,8 @@ export function crossmintModalService({
             whPassThroughArgs,
             paymentMethod,
             preferredSigninMethod,
-            prepay
+            prepay,
+            checkoutProps
         );
     };
 

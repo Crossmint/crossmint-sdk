@@ -35,6 +35,12 @@ export function CrossmintPayButton(buttonProps: CrossmintPayButtonReactProps) {
         loginEmail = "",
         projectId,
         getButtonText,
+        checkoutProps = {
+            experimental: false,
+            display: "same-tab",
+            delivery: "all",
+            paymentMethods: ["fiat", "ETH", "SOL"],
+        },
         ...props
     } = buttonProps;
 
@@ -64,6 +70,7 @@ export function CrossmintPayButton(buttonProps: CrossmintPayButtonReactProps) {
         connecting,
         paymentMethod,
         locale,
+        checkoutProps
     });
 
     const _handleClick = (event: MouseEvent<HTMLButtonElement>) =>
@@ -76,7 +83,8 @@ export function CrossmintPayButton(buttonProps: CrossmintPayButtonReactProps) {
                 whPassThroughArgs,
                 paymentMethod,
                 preferredSigninMethod,
-                prepay
+                prepay,
+                checkoutProps
             );
         });
 
