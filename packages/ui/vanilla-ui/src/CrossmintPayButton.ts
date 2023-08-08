@@ -39,7 +39,6 @@ const propertyDefaults: CrossmintPayButtonLitProps = {
     checkoutProps: {
         experimental: false,
         display: "same-tab",
-        delivery: "all",
         paymentMethods: ["fiat", "ETH", "SOL"],
     }
 };
