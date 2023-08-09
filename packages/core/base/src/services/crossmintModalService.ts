@@ -193,6 +193,7 @@ export function crossmintModalService({
         setConnecting(false);
         const newTab = window.open(url, "_blank");
         if (!newTab) {
+            window.location.assign(url);
             console.error("Failed to open popup window and new tab");
         }
     };
