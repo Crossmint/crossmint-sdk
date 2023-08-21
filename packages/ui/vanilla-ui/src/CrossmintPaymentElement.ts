@@ -167,6 +167,7 @@ function getPaymentServiceProps(_this: PaymentElement) {
       environment: _this.environment,
       uiConfig: _this.uiConfig,
       recipient: _this.recipient,
+      mintConfig: _this.mintConfig,
       whPassThroughArgs: _this.whPassThroughArgs,
       cardWalletPaymentMethods: _this.cardWalletPaymentMethods,
       emailInputOptions: _this.emailInputOptions,
@@ -179,7 +180,6 @@ function getPaymentServiceProps(_this: PaymentElement) {
 
   return {
       ...params,
-      ...(_this.mintConfig != null && Object.keys(_this.mintConfig).length > 0 ? { mintConfig: _this.mintConfig} : {}),
       ...(_this.clientId ? { clientId: _this.clientId } : {collectionId: _this.collectionId}),
   }
 }
