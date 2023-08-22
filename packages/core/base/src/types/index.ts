@@ -38,7 +38,7 @@ export type Locale =
     | "vi-VN"
     | "Klingon";
 
-export type Currency = "usd" | "eur" | "gbp" | "aud" | "sgd" | "hkd" | "krw" | "inr" | "vnd"
+export type Currency = "usd" | "eur" | "gbp" | "aud" | "sgd" | "hkd" | "krw" | "inr" | "vnd";
 
 export interface FiatPrice {
     amount: string;
