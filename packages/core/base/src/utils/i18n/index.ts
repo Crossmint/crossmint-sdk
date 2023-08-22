@@ -14,6 +14,7 @@ import trTR from "./dictionaries/trTR";
 import ukUA from "./dictionaries/ukUA";
 import zhCN from "./dictionaries/zhCN";
 import zhTW from "./dictionaries/zhTW";
+import viVN from "./dictionaries/viVN";
 
 const localeMap = {
     "en-US": enUS,
@@ -29,6 +30,7 @@ const localeMap = {
     "tr-TR": trTR,
     "uk-UA": ukUA,
     "th-TH": thTH,
+    "vi-VN": viVN,
     Klingon: Klingon,
 };
 

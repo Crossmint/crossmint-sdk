@@ -35,9 +35,10 @@ export type Locale =
     | "tr-TR"
     | "uk-UA"
     | "th-TH"
+    | "vi-VN"
     | "Klingon";
 
-export type Currency = "usd" | "eur" | "gbp" | "aud" | "sgd" | "hkd" | "krw" | "inr";
+export type Currency = "usd" | "eur" | "gbp" | "aud" | "sgd" | "hkd" | "krw" | "inr" | "vnd";
 
 export interface FiatPrice {
     amount: string;
