@@ -21,7 +21,7 @@ export function CrossmintPayButton(buttonProps: CrossmintPayButtonReactProps) {
         listingId,
         auctionId,
         showOverlay = true,
-        mintConfig,
+        mintConfig = {},
         whPassThroughArgs,
         environment,
         paymentMethod,
