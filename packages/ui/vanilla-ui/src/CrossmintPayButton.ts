@@ -36,7 +36,6 @@ const propertyDefaults: CrossmintPayButtonLitProps = {
     failureCallbackURL: "",
     loginEmail: "",
     getButtonText: undefined,
-    mintConfig: {}
 };
 
 @customElement("crossmint-pay-button")
