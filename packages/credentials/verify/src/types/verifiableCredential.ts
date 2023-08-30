@@ -1,6 +1,6 @@
 export interface VcNft {
     tokenId: string;
-    chain: String;
+    chain: string;
     contractAddress: string;
 }
 interface VerifiableCredentialCreationParams {
