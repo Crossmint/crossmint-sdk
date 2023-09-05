@@ -143,16 +143,16 @@ export class CrossmintPaymentElement extends LitElement {
                 allow="payment *"
                 id="iframe-crossmint-payment-element"
                 style="border: none !important;
-        padding: 0px !important;
-        width: 100% !important;
-        min-width: 100% !important;
-        overflow: hidden !important;
-        display: block !important;
-        user-select: none !important;
-        transform: translate(0px) !important;
-        opacity: 1;
-        transition: ease 0s, opacity 0.4s ease 0.1s;
-        height: ${this.height}px;"
+                padding: 0px !important;
+                width: 100% !important;
+                min-width: 100% !important;
+                overflow: hidden !important;
+                display: block !important;
+                user-select: none !important;
+                transform: translate(0px) !important;
+                opacity: 1;
+                transition: ease 0s, opacity 0.4s ease 0.1s;
+                height: ${this.height}px;"
             ></iframe>
         `;
     }
