@@ -1,53 +1,43 @@
 <script setup lang="ts">
 import { onUnmounted, ref, watch } from "vue";
 
-import type {
-    CardWalletPaymentMethod,
-    CaseInsensitive,
-    CrossmintCheckoutEventUnion,
-    Currency,
-    EmailInputOptions,
-    Locale,
-    MintConfigs,
-    PaymentElementExperimentalOptions,
-    PaymentMethod,
-    Recipient,
-    UIConfig,
-} from "@crossmint/client-sdk-base";
+import type { FiatPaymentElementProps } from "@crossmint/client-sdk-base";
 import { crossmintPaymentService, crossmintUiService } from "@crossmint/client-sdk-base";
 
-// TODO: Looks like you cannot import the interface directly from the package
-// https://github.com/vuejs/core/issues/4294#issuecomment-970861525
-export interface PaymentElement {
-    projectId?: string;
-    clientId?: string;
-    collectionId?: string;
-    mintConfig?: MintConfigs;
-    recipient?: Recipient;
-    paymentMethod?: PaymentMethod;
-    currency?: CaseInsensitive<Currency>;
-    locale?: Locale;
-    uiConfig?: UIConfig;
-    environment?: string;
-    whPassThroughArgs?: any;
-    onEvent?(event: CrossmintCheckoutEventUnion): any;
-    cardWalletPaymentMethods?: CardWalletPaymentMethod | CardWalletPaymentMethod[] | "none";
-    emailInputOptions?: EmailInputOptions;
-    experimental?: PaymentElementExperimentalOptions;
+const props = withDefaults(defineProps<FiatPaymentElementProps>(), {});
+
+function assertClientIdentifier(props: object) {
+    function hasClientId(props: any): props is FiatPaymentElementProps & {
+        clientId: string;
+    } {
+        return "clientId" in props && props.clientId;
+    }
+    function hasCollectionId(props: any): props is FiatPaymentElementProps & {
+        collectionId: string;
+    } {
+        return "collectionId" in props && props.collectionId;
+    }
+
+    if (hasClientId(props) && hasCollectionId(props)) {
+        throw new Error("You cannot specify both clientId and collectionId. Please remove clientId.");
+    }
+
+    let clientIdentifier: string | undefined;
+    if (hasClientId(props)) {
+        clientIdentifier = props.clientId;
+    } else if (hasCollectionId(props)) {
+        clientIdentifier = props.collectionId;
+    }
+
+    if (!clientIdentifier) {
+        throw new Error("You must specify collectionId prop.");
+    }
+
+    return clientIdentifier;
 }
 
-const props = withDefaults(defineProps<PaymentElement>(), {});
-
-if (props.clientId && props.collectionId) {
-    throw new Error("You cannot specify both clientId and collectionId. Please remove clientId.");
-}
-
-if (!props.clientId && !props.collectionId) {
-    throw new Error("You must specify collectionId prop.");
-}
-
-const paymentServiceProps: any = {
-    clientId: props.clientId || props.collectionId,
+const paymentServiceProps: Parameters<typeof crossmintPaymentService>[0] = {
+    clientId: assertClientIdentifier(props),
     projectId: props.projectId,
     environment: props.environment,
     uiConfig: props.uiConfig,

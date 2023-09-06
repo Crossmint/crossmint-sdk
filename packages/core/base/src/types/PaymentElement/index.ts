@@ -1,6 +1,6 @@
 import {
     CaseInsensitive,
-    CollectionId,
+    CollectionOrClientId,
     CryptoPaymentMethod,
     Currency,
     Locale,
@@ -23,7 +23,7 @@ export type CommonPaymentElementProps<PM extends PaymentMethod = PaymentMethod> 
     uiConfig?: UIConfig;
     whPassThroughArgs?: any;
     projectId?: string;
-} & CollectionId;
+} & CollectionOrClientId;
 
 // TODO: Remmeber to update this same interface in the Vue component aswell.
 // packages/ui/vue-ui/src/components/CrossmintPaymentElement.vue
