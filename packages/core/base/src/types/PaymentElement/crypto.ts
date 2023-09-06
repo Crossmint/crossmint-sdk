@@ -17,9 +17,9 @@ type CommonPaymentElementSignerProps = {
 
 // Signers
 export type ETHPaymentElementSigner = CommonPaymentElementSignerProps & {
-    signAndSendTransaction: (transaction: any) => Promise<any>;
+    signAndSendTransaction: (transaction: any) => Promise<string>;
 };
 
 export type SOLPaymentElementSigner = CommonPaymentElementSignerProps & {
-    signTransaction: (transaction: any) => Promise<any>;
+    signAndSendTransaction: (transaction: any) => Promise<string>;
 };
