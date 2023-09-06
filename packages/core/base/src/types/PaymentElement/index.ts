@@ -25,8 +25,6 @@ export type CommonPaymentElementProps<PM extends PaymentMethod = PaymentMethod> 
     projectId?: string;
 } & CollectionOrClientId;
 
-// TODO: Remmeber to update this same interface in the Vue component aswell.
-// packages/ui/vue-ui/src/components/CrossmintPaymentElement.vue
 export type PaymentElementProps =
     | FiatPaymentElementProps
     | { [K in CryptoPaymentMethod]: CryptoPaymentElementProps<K> }[CryptoPaymentMethod];
