@@ -6,9 +6,9 @@
     "repository": "https://github.com/CrossMint/crossmint-client-sdk",
     "type": "module",
     "sideEffects": false,
-    "main": "lib/index.cjs",
-    "module": "lib/index.js",
-    "types": "lib/index.d.ts",
+    "main": "./lib/index.cjs",
+    "module": "./lib/index.js",
+    "types": "./lib/index.d.ts",
     "exports": {
         "import": "./lib/index.js",
         "require": "./lib/index.cjs"

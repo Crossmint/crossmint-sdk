@@ -6,7 +6,7 @@ export type MintConfigs = MintConfig | MintConfig[];
 
 export type CrossmintPayButtonTheme = "light" | "dark";
 
-export type CollectionId = { clientId: string } | { collectionId: string };
+export type CollectionOrClientId = { clientId: string } | { collectionId: string };
 
 export type BaseButtonProps = {
     projectId?: string;
@@ -20,7 +20,7 @@ export type BaseButtonProps = {
     environment?: string;
     locale?: Locale;
     currency?: CaseInsensitive<Currency>;
-} & CollectionId;
+} & CollectionOrClientId;
 
 export type CrossmintPayButtonProps = BaseButtonProps & {
     mintTo?: string;
