@@ -4,7 +4,7 @@ import React from "react";
 
 import { CheckoutEvents } from "@crossmint/client-sdk-base";
 
-import { CrossmintPaymentElement } from "../src/EmbeddedCheckout";
+import { CrossmintPaymentElement } from "../src/components/embed";
 
 const embeddedCheckoutProps = {
     clientId: "db218e78-d042-4761-83af-3c4e5e6659dd",
