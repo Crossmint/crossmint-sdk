@@ -6,15 +6,15 @@
     "repository": "https://github.com/CrossMint/crossmint-client-sdk",
     "type": "module",
     "sideEffects": false,
-    "main": "./lib/index.cjs",
-    "module": "./lib/index.js",
-    "types": "./lib/index.d.ts",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
     "exports": {
-        "import": "./lib/index.js",
-        "require": "./lib/index.cjs"
+        "import": "./dist/index.js",
+        "require": "./distlib/index.cjs"
     },
     "files": [
-        "lib",
+        "dist",
         "src",
         "LICENSE"
     ],
@@ -22,8 +22,8 @@
         "access": "public"
     },
     "scripts": {
-        "clean": "shx rm -rf lib/*",
-        "build": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./lib --minify --dts"
+        "clean": "shx rm -rf dist/*",
+        "build": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --minify --dts"
     },
     "dependencies": {
         "exponential-backoff": "^3.1.1",

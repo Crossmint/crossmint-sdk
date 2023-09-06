@@ -8,6 +8,7 @@ interface CustomStylingProps {
 }
 
 const themeIsLight = (theme: string) => theme === "light";
+
 export const formatProps = (theme: string): CustomStylingProps => ({
     buttonBgColor: themeIsLight(theme) ? "white" : DARK_BG,
     paragraphColor: themeIsLight(theme) ? "black" : "white",
