@@ -1,4 +1,4 @@
-import { FiatPaymentElementProps, FiatPrice } from ".";
+import { FiatEmbeddedCheckoutProps, FiatPrice } from ".";
 import { EmptyObject } from "./system";
 
 export interface CrossmintCheckoutEvent<K extends CheckoutEvents = CheckoutEvents> {
@@ -175,7 +175,9 @@ export const PaymentElementSDKEvents = {
 } as const;
 export type PaymentElementSDKEvents = (typeof PaymentElementSDKEvents)[keyof typeof PaymentElementSDKEvents];
 
-export type ParamsUpdatePayload = Partial<Record<keyof Omit<FiatPaymentElementProps, "onEvent" | "environment">, any>>;
+export type ParamsUpdatePayload = Partial<
+    Record<keyof Omit<FiatEmbeddedCheckoutProps, "onEvent" | "environment">, any>
+>;
 
 export interface SDKEventMap {
     [PaymentElementSDKEvents.PARAMS_UPDATE]: ParamsUpdatePayload;

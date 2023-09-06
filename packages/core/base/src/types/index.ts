@@ -2,7 +2,7 @@ export * from "./blockchain";
 export * from "./errors";
 export * from "./events";
 export * from "./payButton";
-export * from "./PaymentElement";
+export * from "./EmbeddedCheckout";
 export * from "./system";
 export * from "./uiconfig";
 

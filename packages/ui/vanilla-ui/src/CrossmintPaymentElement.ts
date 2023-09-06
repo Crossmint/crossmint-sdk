@@ -8,11 +8,11 @@ import type {
     MintConfig,
     Recipient,
     UIConfig,
-    FiatPaymentElementProps,
+    FiatEmbeddedCheckoutProps,
     CrossmintCheckoutEventUnion,
 } from "@crossmint/client-sdk-base";
 
-const propertyDefaults: FiatPaymentElementProps = {
+const propertyDefaults: FiatEmbeddedCheckoutProps = {
     collectionId: "",
     projectId: "",
     mintConfig: {},
@@ -39,7 +39,7 @@ export class CrossmintPaymentElement extends LitElement {
     collectionId = "";
 
     @property({ type: String })
-    projectId: FiatPaymentElementProps["projectId"] = propertyDefaults.projectId;
+    projectId: FiatEmbeddedCheckoutProps["projectId"] = propertyDefaults.projectId;
 
     @property({ type: Object })
     mintConfig?: MintConfig = propertyDefaults.mintConfig;
@@ -51,7 +51,7 @@ export class CrossmintPaymentElement extends LitElement {
     paymentMethod?: "fiat" = propertyDefaults.paymentMethod;
 
     @property({ type: String })
-    currency?: FiatPaymentElementProps["currency"] = propertyDefaults.currency;
+    currency?: FiatEmbeddedCheckoutProps["currency"] = propertyDefaults.currency;
 
     @property({ type: String })
     locale?: Locale = propertyDefaults.locale;
@@ -66,17 +66,17 @@ export class CrossmintPaymentElement extends LitElement {
     whPassThroughArgs?: string = propertyDefaults.whPassThroughArgs;
 
     @property({ type: Array || String })
-    cardWalletPaymentMethods?: FiatPaymentElementProps["cardWalletPaymentMethods"] =
+    cardWalletPaymentMethods?: FiatEmbeddedCheckoutProps["cardWalletPaymentMethods"] =
         propertyDefaults.cardWalletPaymentMethods;
 
     @property({ type: Object })
-    emailInputOptions?: FiatPaymentElementProps["emailInputOptions"] = propertyDefaults.emailInputOptions;
+    emailInputOptions?: FiatEmbeddedCheckoutProps["emailInputOptions"] = propertyDefaults.emailInputOptions;
 
     @property({ type: Function || String })
     onEvent?: (event: CrossmintCheckoutEventUnion) => void = propertyDefaults.onEvent;
 
     @property({ type: Object })
-    experimental?: FiatPaymentElementProps["experimental"] = propertyDefaults.experimental;
+    experimental?: FiatEmbeddedCheckoutProps["experimental"] = propertyDefaults.experimental;
 
     height = 0;
     // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -165,7 +165,7 @@ function getOnEventFunction(onEvent?: any) {
     return typeof onEvent === "string" ? new Function(onEvent)() : onEvent;
 }
 
-function getPaymentServiceProps(_this: CrossmintPaymentElement): FiatPaymentElementProps {
+function getPaymentServiceProps(_this: CrossmintPaymentElement): FiatEmbeddedCheckoutProps {
     let collectionOrClientId: { collectionId: string } | { clientId: string } | undefined = undefined;
     if (_this.clientId) {
         collectionOrClientId = { clientId: _this.clientId };
