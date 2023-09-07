@@ -2,7 +2,7 @@ import * as React from "react";
 
 import { NFTDetailProps, assertValidValidateNFTDetailProps, getNFTDetailSrc } from "@crossmint/client-sdk-base";
 
-import { LIB_VERSION } from "./version";
+import { LIB_VERSION } from "../consts/version";
 
 export function CrossmintNFTDetail(props: NFTDetailProps) {
     assertValidValidateNFTDetailProps(props);

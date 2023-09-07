@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import { onUnmounted, ref, watch } from "vue";
 
-import type { FiatPaymentElementProps } from "@crossmint/client-sdk-base";
+import type { FiatEmbeddedCheckoutProps } from "@crossmint/client-sdk-base";
 import { crossmintPaymentService, crossmintUiService } from "@crossmint/client-sdk-base";
 
-const props = withDefaults(defineProps<FiatPaymentElementProps>(), {});
+const props = withDefaults(defineProps<FiatEmbeddedCheckoutProps>(), {});
 
 function assertClientIdentifier(props: object) {
-    function hasClientId(props: any): props is FiatPaymentElementProps & {
+    function hasClientId(props: any): props is FiatEmbeddedCheckoutProps & {
         clientId: string;
     } {
         return "clientId" in props && props.clientId;
     }
-    function hasCollectionId(props: any): props is FiatPaymentElementProps & {
+    function hasCollectionId(props: any): props is FiatEmbeddedCheckoutProps & {
         collectionId: string;
     } {
         return "collectionId" in props && props.collectionId;

@@ -8,13 +8,13 @@ import {
     PaymentMethod,
     UIConfig,
 } from "..";
-import { CryptoPaymentElementProps } from "./crypto";
-import { FiatPaymentElementProps } from "./fiat";
+import { CryptoEmbeddedCheckoutProps } from "./crypto";
+import { FiatEmbeddedCheckoutProps } from "./fiat";
 
 export * from "./crypto";
 export * from "./fiat";
 
-export type CommonPaymentElementProps<PM extends PaymentMethod = PaymentMethod> = {
+export type CommonEmbeddedCheckoutProps<PM extends PaymentMethod = PaymentMethod> = {
     paymentMethod?: PM;
     mintConfig?: MintConfigs;
     currency?: CaseInsensitive<Currency>;
@@ -25,6 +25,6 @@ export type CommonPaymentElementProps<PM extends PaymentMethod = PaymentMethod> 
     projectId?: string;
 } & CollectionOrClientId;
 
-export type PaymentElementProps =
-    | FiatPaymentElementProps
-    | { [K in CryptoPaymentMethod]: CryptoPaymentElementProps<K> }[CryptoPaymentMethod];
+export type CrossmintEmbeddedCheckoutProps =
+    | FiatEmbeddedCheckoutProps
+    | { [K in CryptoPaymentMethod]: CryptoEmbeddedCheckoutProps<K> }[CryptoPaymentMethod];

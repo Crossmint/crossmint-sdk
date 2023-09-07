@@ -1,6 +1,6 @@
 import { css } from "lit";
 
-export const buttonStyles = css`
+export const hostedCheckoutButtonStyles = css`
     button {
         display: flex;
         flex-direction: row;
