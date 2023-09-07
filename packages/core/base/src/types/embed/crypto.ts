@@ -17,9 +17,9 @@ type CommonEmbeddedCheckoutSignerProps = {
 
 // Signers
 export type ETHEmbeddedCheckoutSigner = CommonEmbeddedCheckoutSignerProps & {
-    signAndSendTransaction: (transaction: any) => Promise<any>;
+    signAndSendTransaction: (transaction: any) => Promise<string>;
 };
 
 export type SOLEmbeddedCheckoutSigner = CommonEmbeddedCheckoutSignerProps & {
-    signTransaction: (transaction: any) => Promise<any>;
+    signAndSendTransaction: (transaction: any) => Promise<string>;
 };
