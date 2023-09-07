@@ -1,8 +1,8 @@
 export * from "./blockchain";
 export * from "./errors";
 export * from "./events";
-export * from "./payButton";
-export * from "./PaymentElement";
+export * from "./hosted";
+export * from "./embed";
 export * from "./system";
 export * from "./uiconfig";
 
@@ -11,11 +11,12 @@ export enum clientNames {
     vanillaUi = "client-sdk-vanilla-ui",
 }
 
-export enum baseUrls {
-    prod = "https://www.crossmint.com",
-    staging = "https://staging.crossmint.com",
-    dev = "http://localhost:3001",
-}
+export const BaseUrls = {
+    prod: "https://www.crossmint.com",
+    staging: "https://staging.crossmint.com",
+    dev: "http://localhost:3001",
+} as const;
+export type BaseUrls = (typeof BaseUrls)[keyof typeof BaseUrls];
 
 export const CryptoPaymentMethod = {
     ETH: "ETH",

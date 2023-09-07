@@ -1,12 +1,12 @@
-import { Currency, Locale, PaymentMethod } from ".";
-import { CaseInsensitive } from "./system";
+import { Currency, Locale, PaymentMethod } from "..";
+import { CaseInsensitive } from "../system";
 
 export type MintConfig = Record<string, any> | Record<string, any>[];
 export type MintConfigs = MintConfig | MintConfig[];
 
 export type CrossmintPayButtonTheme = "light" | "dark";
 
-export type CollectionId = { clientId: string } | { collectionId: string };
+export type CollectionOrClientId = { clientId: string } | { collectionId: string };
 
 export type BaseButtonProps = {
     projectId?: string;
@@ -20,7 +20,7 @@ export type BaseButtonProps = {
     environment?: string;
     locale?: Locale;
     currency?: CaseInsensitive<Currency>;
-} & CollectionId;
+} & CollectionOrClientId;
 
 export type CrossmintPayButtonProps = BaseButtonProps & {
     mintTo?: string;

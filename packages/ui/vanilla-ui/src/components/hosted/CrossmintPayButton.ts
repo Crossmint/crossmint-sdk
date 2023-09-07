@@ -6,10 +6,15 @@ import {
     crossmintModalService,
     crossmintPayButtonService,
     clientNames,
+    CrossmintPayButtonProps,
 } from "@crossmint/client-sdk-base";
-import { LIB_VERSION } from "./version";
-import { CrossmintPayButtonLitProps } from "./types";
-import { buttonStyles } from "./styles";
+import { LIB_VERSION } from "../../consts/version";
+
+import { hostedCheckoutButtonStyles } from "./styles";
+
+export type CrossmintPayButtonLitProps = CrossmintPayButtonProps & {
+    onClick?: (e: any) => void;
+};
 
 const propertyDefaults: CrossmintPayButtonLitProps = {
     className: "",
@@ -112,7 +117,7 @@ export class CrossmintPayButton extends LitElement {
     @property({ type: Function })
     getButtonText = propertyDefaults.getButtonText;
 
-    static styles = buttonStyles;
+    static styles = hostedCheckoutButtonStyles;
 
     connecting = false;
     setConnecting = (conn: boolean) => {
