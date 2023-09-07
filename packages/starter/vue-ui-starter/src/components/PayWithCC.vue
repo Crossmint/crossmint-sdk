@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 
-import type { CheckoutEventMap, CrossmintCheckoutEvent, CrossmintCheckoutEventUnion } from "@crossmint/client-sdk-base";
+import type { CrossmintCheckoutEventUnion } from "@crossmint/client-sdk-base";
 import { CrossmintPaymentElement } from "@crossmint/client-sdk-vue-ui";
 import "@crossmint/client-sdk-vue-ui/dist/index.css";
-
-import { router } from "../main";
 
 const email = ref("");
 const wallet = ref("");
@@ -21,6 +20,8 @@ const totalEthPrice = totalItemsEthPrice + itemEthFee;
 const totalFiatPrice = ref<string | number | null>(null);
 
 const isPaying = ref(true);
+
+const router = useRouter();
 
 function onEvent(event: CrossmintCheckoutEventUnion) {
     switch (event.type) {

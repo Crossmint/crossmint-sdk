@@ -1,12 +1,21 @@
-import React, { MouseEvent, useMemo } from "react";
+import React, { CSSProperties, MouseEvent, useMemo } from "react";
 import { useState } from "react";
 
-import { clientNames, crossmintModalService, crossmintPayButtonService } from "@crossmint/client-sdk-base";
+import {
+    CrossmintPayButtonProps,
+    clientNames,
+    crossmintModalService,
+    crossmintPayButtonService,
+} from "@crossmint/client-sdk-base";
 
+import { LIB_VERSION } from "../../consts/version";
+import useEnvironment from "../../hooks/useEnvironment";
 import { formatProps, useStyles } from "./styles";
-import { CrossmintPayButtonReactProps } from "./types";
-import useEnvironment from "./useEnvironment";
-import { LIB_VERSION } from "./version";
+
+export type CrossmintPayButtonReactProps = CrossmintPayButtonProps & {
+    onClick?: (e: MouseEvent<HTMLButtonElement>) => void;
+    style?: CSSProperties;
+};
 
 export function CrossmintPayButton(buttonProps: CrossmintPayButtonReactProps) {
     const {

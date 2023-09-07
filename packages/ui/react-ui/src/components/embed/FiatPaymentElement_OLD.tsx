@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 
-import type { PaymentElement } from "@crossmint/client-sdk-base";
+import type { FiatEmbeddedCheckoutProps } from "@crossmint/client-sdk-base";
 import { crossmintPaymentService, crossmintUiService } from "@crossmint/client-sdk-base";
 
-export function CrossmintPaymentElement(props: PaymentElement) {
+export function CrossmintFiatPaymentElement_OLD(props: FiatEmbeddedCheckoutProps) {
     const [height, setHeight] = useState(0);
     const { getIframeUrl, listenToEvents, emitQueryParams } = crossmintPaymentService(props);
     const { listenToEvents: listenToUiEvents } = crossmintUiService({ environment: props.environment });

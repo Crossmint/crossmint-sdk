@@ -6,7 +6,7 @@ import {
     getNFTCollectionViewSrc,
 } from "@crossmint/client-sdk-base";
 
-import { LIB_VERSION } from "./version";
+import { LIB_VERSION } from "../consts/version";
 
 export function CrossmintNFTCollectionView(props: NFTCollectionViewProps) {
     assertValidNFTCollectionViewProps(props);

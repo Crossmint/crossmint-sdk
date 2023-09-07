@@ -2,7 +2,7 @@ import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 import React from "react";
 
-import { CrossmintNFTCollectionView } from "../src/CrossmintNFTCollectionView";
+import { CrossmintNFTCollectionView } from "../src/components/CrossmintNFTCollectionView";
 
 const wallets = [{ chain: "solana", publicKey: "12345" }];
 

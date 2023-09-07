@@ -1,9 +1,10 @@
+import { CrossmintEmbeddedCheckoutProps, FiatEmbeddedCheckoutProps } from "../types";
 import { CrossmintCheckoutEventUnion, ParamsUpdatePayload, PaymentElementSDKEvents } from "../types/events";
 import { CheckoutEvents } from "../types/events";
-import { PaymentElement } from "../types/paymentElement";
 import { getEnvironmentBaseUrl } from "../utils";
 
-export function crossmintPaymentService(props: PaymentElement) {
+// TODO: Accept both fiat and crypto
+export function crossmintPaymentService(props: FiatEmbeddedCheckoutProps) {
     const clientId = "clientId" in props ? props.clientId : props.collectionId;
     const {
         uiConfig,
