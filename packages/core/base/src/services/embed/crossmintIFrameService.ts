@@ -1,8 +1,8 @@
 import {
     CrossmintEmbeddedCheckoutProps,
-    CrossmintEventUnion,
+    CrossmintEvent,
     CrossmintEvents,
-    CrossmintInternalEventUnion,
+    CrossmintInternalEvent,
     CrossmintInternalEvents,
 } from "@/types";
 
@@ -45,7 +45,7 @@ function getUrl(props: CrossmintEmbeddedCheckoutProps) {
     return `${baseUrl}${path}?${queryParams.toString()}`;
 }
 
-function _listenToEvents<EP = CrossmintEventUnion | CrossmintInternalEventUnion>(
+function _listenToEvents<EP = CrossmintEvent | CrossmintInternalEvent>(
     callback: (event: MessageEvent<EP>) => void,
     validEventTypes: {
         [key: string]: CrossmintEvents | CrossmintInternalEvents;
@@ -66,7 +66,7 @@ function _listenToEvents<EP = CrossmintEventUnion | CrossmintInternalEventUnion>
     };
 }
 
-const listenToEvents = (callback: (event: MessageEvent<CrossmintEventUnion>) => void) =>
+const listenToEvents = (callback: (event: MessageEvent<CrossmintEvent>) => void) =>
     _listenToEvents(callback, CrossmintEvents);
-const listenToInternalEvents = (callback: (event: MessageEvent<CrossmintInternalEventUnion>) => void) =>
+const listenToInternalEvents = (callback: (event: MessageEvent<CrossmintInternalEvent>) => void) =>
     _listenToEvents(callback, CrossmintInternalEvents);

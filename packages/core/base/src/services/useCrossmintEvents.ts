@@ -1,6 +1,6 @@
 import { backOff } from "exponential-backoff";
 
-import { CrossmintEventUnion, CrossmintEvents } from "..";
+import { CrossmintEvent, CrossmintEvents } from "..";
 import { getEnvironmentBaseUrl } from "../utils";
 
 export function useCrossmintEvents({ environment }: { environment?: string } = {}) {
@@ -10,13 +10,13 @@ export function useCrossmintEvents({ environment }: { environment?: string } = {
         }: {
             orderIdentifier: string;
         },
-        cb: (event: CrossmintEventUnion) => any
+        cb: (event: CrossmintEvent) => any
     ) {
         const emittedEvents: CrossmintEvents[] = [];
         const succeededTransactionIdentifiers: string[] = [];
         const failedTransactionIdentifiers: string[] = [];
 
-        function emitEvent(event: CrossmintEventUnion) {
+        function emitEvent(event: CrossmintEvent) {
             cb(event);
             emittedEvents.push(event.type);
             if (event.type === CrossmintEvents.ORDER_PROCESS_FINISHED) {
@@ -24,7 +24,7 @@ export function useCrossmintEvents({ environment }: { environment?: string } = {
             }
         }
 
-        function handleDuplicateEvent(event: CrossmintEventUnion) {
+        function handleDuplicateEvent(event: CrossmintEvent) {
             if (!("transactionIdentifier" in event.payload)) {
                 return;
             }
@@ -66,7 +66,7 @@ export function useCrossmintEvents({ environment }: { environment?: string } = {
         };
     }
 
-    async function fetchOrderStatus({ orderIdentifier }: { orderIdentifier: string }): Promise<CrossmintEventUnion[]> {
+    async function fetchOrderStatus({ orderIdentifier }: { orderIdentifier: string }): Promise<CrossmintEvent[]> {
         return await backOff(
             async () => {
                 const res = await fetch(

@@ -1,5 +1,5 @@
 import {
-    CrossmintEventUnion,
+    CrossmintEvent,
     CrossmintEvents,
     CrossmintInternalEvents,
     FiatEmbeddedCheckoutProps,
@@ -73,7 +73,7 @@ export function crossmintPaymentService_OLD(props: FiatEmbeddedCheckoutProps) {
         return `${baseUrl}/sdk/paymentElement?${params.toString()}`;
     }
 
-    function listenToEvents(cb: (event: MessageEvent<CrossmintEventUnion>) => void): () => void {
+    function listenToEvents(cb: (event: MessageEvent<CrossmintEvent>) => void): () => void {
         function _internalOnEvent(event: MessageEvent<any>) {
             if (event.origin !== baseUrl) {
                 return;
