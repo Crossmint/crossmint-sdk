@@ -107,7 +107,7 @@ interface CrossmintModalServiceParams {
     failureCallbackURL?: string;
     loginEmail?: string;
     // TODO: Enable when events are ready in crossbit-main and docs are updated
-    // onEvent?: (event: CheckoutEvents, metadata?: any) => void;
+    // onEvent?: (event: CrossmintPublicEvents, metadata?: any) => void;
 }
 
 export interface CrossmintModalServiceReturn {

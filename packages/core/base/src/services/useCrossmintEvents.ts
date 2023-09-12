@@ -1,34 +1,41 @@
 import { backOff } from "exponential-backoff";
 
-import { CheckoutEvents, CrossmintCheckoutEventUnion, ListenToMintingEventsProps, ListenerType } from "../types/events";
+import { CrossmintPublicEventUnion, CrossmintPublicEvents } from "..";
 import { getEnvironmentBaseUrl } from "../utils";
 
 export function useCrossmintEvents({ environment }: { environment?: string } = {}) {
-    function listenToMintingEvents({ orderIdentifier }: ListenToMintingEventsProps, cb: ListenerType) {
-        const emittedEvents: CheckoutEvents[] = [];
+    function listenToMintingEvents(
+        {
+            orderIdentifier,
+        }: {
+            orderIdentifier: string;
+        },
+        cb: (event: CrossmintPublicEventUnion) => any
+    ) {
+        const emittedEvents: CrossmintPublicEvents[] = [];
         const succeededTransactionIdentifiers: string[] = [];
         const failedTransactionIdentifiers: string[] = [];
 
-        function emitEvent(event: CrossmintCheckoutEventUnion) {
+        function emitEvent(event: CrossmintPublicEventUnion) {
             cb(event);
             emittedEvents.push(event.type);
-            if (event.type === CheckoutEvents.ORDER_PROCESS_FINISHED) {
+            if (event.type === CrossmintPublicEvents.ORDER_PROCESS_FINISHED) {
                 clearInterval(timer);
             }
         }
 
-        function handleDuplicateEvent(event: CrossmintCheckoutEventUnion) {
+        function handleDuplicateEvent(event: CrossmintPublicEventUnion) {
             if (!("transactionIdentifier" in event.payload)) {
                 return;
             }
 
-            if (event.type === CheckoutEvents.TRANSACTION_FULFILLMENT_SUCCEEDED) {
+            if (event.type === CrossmintPublicEvents.TRANSACTION_FULFILLMENT_SUCCEEDED) {
                 if (succeededTransactionIdentifiers.includes(event.payload.transactionIdentifier)) {
                     return;
                 }
                 succeededTransactionIdentifiers.push(event.payload.transactionIdentifier);
                 emitEvent(event);
-            } else if (event.type === CheckoutEvents.TRANSACTION_FULFILLMENT_FAILED) {
+            } else if (event.type === CrossmintPublicEvents.TRANSACTION_FULFILLMENT_FAILED) {
                 if (failedTransactionIdentifiers.includes(event.payload.transactionIdentifier)) {
                     return;
                 }
@@ -63,7 +70,7 @@ export function useCrossmintEvents({ environment }: { environment?: string } = {
         orderIdentifier,
     }: {
         orderIdentifier: string;
-    }): Promise<CrossmintCheckoutEventUnion[]> {
+    }): Promise<CrossmintPublicEventUnion[]> {
         return await backOff(
             async () => {
                 const res = await fetch(

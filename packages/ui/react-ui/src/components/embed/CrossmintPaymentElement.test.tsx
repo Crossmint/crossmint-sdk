@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 
-import { CheckoutEvents } from "@crossmint/client-sdk-base";
+import { CrossmintPublicEvents } from "@crossmint/client-sdk-base";
 
 import { CrossmintPaymentElement } from ".";
 
@@ -29,13 +29,13 @@ describe("CrossmintPaymentElement", () => {
         });
     });
 
-    it("calls the onEvent prop when a CrossmintCheckoutEvent is received", () => {
+    it("calls the onEvent prop when a CrossmintPublicEvents is received", () => {
         const onEvent = jest.fn();
         render(<CrossmintPaymentElement {...embeddedCheckoutProps} onEvent={onEvent} environment="" />);
         screen.getByRole("crossmint-embedded-checkout.iframe");
 
-        // Simulate receiving a CrossmintCheckoutEvent message
-        const eventData = { type: CheckoutEvents.QUOTE_STATUS_CHANGED, payload: {} };
+        // Simulate receiving a CrossmintPublicEvents message
+        const eventData = { type: CrossmintPublicEvents.QUOTE_STATUS_CHANGED, payload: {} };
         const event = new MessageEvent("message", { data: eventData, origin: "https://www.crossmint.com" });
         window.dispatchEvent(event);
 
@@ -47,8 +47,8 @@ describe("CrossmintPaymentElement", () => {
         render(<CrossmintPaymentElement {...embeddedCheckoutProps} onEvent={onEvent} environment="" />);
         screen.getByRole("crossmint-embedded-checkout.iframe");
 
-        // Simulate receiving a CrossmintCheckoutEvent message
-        const eventData = { type: CheckoutEvents.QUOTE_STATUS_CHANGED, payload: {} };
+        // Simulate receiving a CrossmintPublicEvents message
+        const eventData = { type: CrossmintPublicEvents.QUOTE_STATUS_CHANGED, payload: {} };
         const event = new MessageEvent("message", { data: eventData, origin: "http://hacker.com" });
         window.dispatchEvent(event);
 

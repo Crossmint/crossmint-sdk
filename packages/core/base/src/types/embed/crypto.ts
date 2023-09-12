@@ -2,7 +2,7 @@ import { CommonEmbeddedCheckoutProps } from ".";
 import { CryptoPaymentMethod } from "..";
 
 export type CryptoEmbeddedCheckoutProps<
-    PM extends keyof CryptoPaymentMethodSignerMap = keyof CryptoPaymentMethodSignerMap
+    PM extends keyof CryptoPaymentMethodSignerMap = keyof CryptoPaymentMethodSignerMap,
 > = CommonEmbeddedCheckoutProps<PM> & {
     signer?: CryptoPaymentMethodSignerMap[PM];
 };
