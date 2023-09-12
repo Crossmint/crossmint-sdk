@@ -49,11 +49,11 @@ export const CheckoutTransactionEvents = {
 export type CheckoutTransactionEvents = (typeof CheckoutTransactionEvents)[keyof typeof CheckoutTransactionEvents];
 
 // All public events
-export const CrossmintPublicEvents = {
+export const CrossmintEvents = {
     ...CheckoutPaymentEvents,
     ...CheckoutOrderEvents,
     ...CheckoutQuoteEvents,
     ...CheckoutRecipientEvents,
     ...CheckoutTransactionEvents,
 } as const;
-export type CrossmintPublicEvents = (typeof CrossmintPublicEvents)[keyof typeof CrossmintPublicEvents];
+export type CrossmintEvents = (typeof CrossmintEvents)[keyof typeof CrossmintEvents];

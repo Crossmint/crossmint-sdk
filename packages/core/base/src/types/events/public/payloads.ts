@@ -1,23 +1,23 @@
 import { FiatPrice } from "@/types";
 
 import { EmptyObject } from "../../system";
-import { CrossmintPublicEvents } from "./events";
+import { CrossmintEvents } from "./events";
 
-export interface CrossmintPublicEventMap {
-    [CrossmintPublicEvents.PAYMENT_PREPARATION_SUCCEEDED]: EmptyObject;
-    [CrossmintPublicEvents.QUOTE_STATUS_CHANGED]: InitialQuotePayload;
-    [CrossmintPublicEvents.QUOTE_STATUS_INVALIDATED]: EmptyObject;
-    [CrossmintPublicEvents.PAYMENT_PROCESS_STARTED]: EmptyObject;
-    [CrossmintPublicEvents.PAYMENT_PREPARATION_FAILED]: CrossmintEventErrorPayload;
-    [CrossmintPublicEvents.PAYMENT_PROCESS_SUCCEEDED]: PaymentCompletedPayload;
-    [CrossmintPublicEvents.PAYMENT_PROCESS_CANCELED]: EmptyObject;
-    [CrossmintPublicEvents.PAYMENT_PROCESS_REJECTED]: PaymentRejectedPayload;
-    [CrossmintPublicEvents.ORDER_PROCESS_STARTED]: EmptyObject;
-    [CrossmintPublicEvents.TRANSACTION_FULFILLMENT_SUCCEEDED]: TransactionFulfillmentSucceededPayload;
-    [CrossmintPublicEvents.TRANSACTION_FULFILLMENT_FAILED]: TransactionFulfillmentFailedPayload;
-    [CrossmintPublicEvents.ORDER_PROCESS_FINISHED]: OrderProcessFinishedPayload;
-    [CrossmintPublicEvents.RECIPIENT_WALLET_CHANGED]: RecipientWalletChangedPayload;
-    [CrossmintPublicEvents.RECIPIENT_EMAIL_CHANGED]: RecipientEmailChangedPayload;
+export interface CrossmintEventMap {
+    [CrossmintEvents.PAYMENT_PREPARATION_SUCCEEDED]: EmptyObject;
+    [CrossmintEvents.QUOTE_STATUS_CHANGED]: InitialQuotePayload;
+    [CrossmintEvents.QUOTE_STATUS_INVALIDATED]: EmptyObject;
+    [CrossmintEvents.PAYMENT_PROCESS_STARTED]: EmptyObject;
+    [CrossmintEvents.PAYMENT_PREPARATION_FAILED]: CrossmintEventErrorPayload;
+    [CrossmintEvents.PAYMENT_PROCESS_SUCCEEDED]: PaymentCompletedPayload;
+    [CrossmintEvents.PAYMENT_PROCESS_CANCELED]: EmptyObject;
+    [CrossmintEvents.PAYMENT_PROCESS_REJECTED]: PaymentRejectedPayload;
+    [CrossmintEvents.ORDER_PROCESS_STARTED]: EmptyObject;
+    [CrossmintEvents.TRANSACTION_FULFILLMENT_SUCCEEDED]: TransactionFulfillmentSucceededPayload;
+    [CrossmintEvents.TRANSACTION_FULFILLMENT_FAILED]: TransactionFulfillmentFailedPayload;
+    [CrossmintEvents.ORDER_PROCESS_FINISHED]: OrderProcessFinishedPayload;
+    [CrossmintEvents.RECIPIENT_WALLET_CHANGED]: RecipientWalletChangedPayload;
+    [CrossmintEvents.RECIPIENT_EMAIL_CHANGED]: RecipientEmailChangedPayload;
 }
 
 // Initial quote

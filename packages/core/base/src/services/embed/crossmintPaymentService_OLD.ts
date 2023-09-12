@@ -1,7 +1,7 @@
 import {
+    CrossmintEventUnion,
+    CrossmintEvents,
     CrossmintInternalEvents,
-    CrossmintPublicEventUnion,
-    CrossmintPublicEvents,
     FiatEmbeddedCheckoutProps,
     ParamsUpdatePayload,
 } from "../../types";
@@ -73,13 +73,13 @@ export function crossmintPaymentService_OLD(props: FiatEmbeddedCheckoutProps) {
         return `${baseUrl}/sdk/paymentElement?${params.toString()}`;
     }
 
-    function listenToEvents(cb: (event: MessageEvent<CrossmintPublicEventUnion>) => void): () => void {
+    function listenToEvents(cb: (event: MessageEvent<CrossmintEventUnion>) => void): () => void {
         function _internalOnEvent(event: MessageEvent<any>) {
             if (event.origin !== baseUrl) {
                 return;
             }
 
-            if (Object.values(CrossmintPublicEvents).includes(event.data.type)) {
+            if (Object.values(CrossmintEvents).includes(event.data.type)) {
                 cb(event);
             }
         }

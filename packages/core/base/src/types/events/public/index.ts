@@ -1,14 +1,14 @@
-import { CrossmintPublicEvents } from "./events";
-import { CrossmintPublicEventMap } from "./payloads";
+import { CrossmintEvents } from "./events";
+import { CrossmintEventMap } from "./payloads";
 
 export * from "./events";
 export * from "./payloads";
 
-export interface CrossmintPublicEvent<K extends CrossmintPublicEvents = CrossmintPublicEvents> {
+export interface CrossmintEvent<K extends CrossmintEvents = CrossmintEvents> {
     type: K;
-    payload: CrossmintPublicEventMap[K];
+    payload: CrossmintEventMap[K];
 }
 
-export type CrossmintPublicEventUnion = {
-    [K in CrossmintPublicEvents]: CrossmintPublicEvent<K>;
-}[CrossmintPublicEvents];
+export type CrossmintEventUnion = {
+    [K in CrossmintEvents]: CrossmintEvent<K>;
+}[CrossmintEvents];

@@ -37,7 +37,7 @@ export type CrossmintPayButtonProps = BaseButtonProps & {
     loginEmail?: string;
     getButtonText?: (connecting: boolean, paymentMethod: PaymentMethod) => string;
     // TODO: Enable when events are ready in crossbit-main and docs are updated
-    // onEvent?: (event: CrossmintPublicEvents, metadata?: Record<string, any>) => void;
+    // onEvent?: (event: CrossmintEvents, metadata?: Record<string, any>) => void;
 };
 
 export type SigninMethods = "metamask" | "solana";

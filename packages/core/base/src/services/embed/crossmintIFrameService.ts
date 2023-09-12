@@ -1,9 +1,9 @@
 import {
     CrossmintEmbeddedCheckoutProps,
+    CrossmintEventUnion,
+    CrossmintEvents,
     CrossmintInternalEventUnion,
     CrossmintInternalEvents,
-    CrossmintPublicEventUnion,
-    CrossmintPublicEvents,
 } from "@/types";
 
 import { getEnvironmentBaseUrl, isFiatEmbeddedCheckoutProps } from "../../utils";
@@ -45,10 +45,10 @@ function getUrl(props: CrossmintEmbeddedCheckoutProps) {
     return `${baseUrl}${path}?${queryParams.toString()}`;
 }
 
-function _listenToEvents<EP = CrossmintPublicEventUnion | CrossmintInternalEventUnion>(
+function _listenToEvents<EP = CrossmintEventUnion | CrossmintInternalEventUnion>(
     callback: (event: MessageEvent<EP>) => void,
     validEventTypes: {
-        [key: string]: CrossmintPublicEvents | CrossmintInternalEvents;
+        [key: string]: CrossmintEvents | CrossmintInternalEvents;
     }
 ) {
     function _onEvent(event: MessageEvent) {
@@ -66,7 +66,7 @@ function _listenToEvents<EP = CrossmintPublicEventUnion | CrossmintInternalEvent
     };
 }
 
-const listenToEvents = (callback: (event: MessageEvent<CrossmintPublicEventUnion>) => void) =>
-    _listenToEvents(callback, CrossmintPublicEvents);
+const listenToEvents = (callback: (event: MessageEvent<CrossmintEventUnion>) => void) =>
+    _listenToEvents(callback, CrossmintEvents);
 const listenToInternalEvents = (callback: (event: MessageEvent<CrossmintInternalEventUnion>) => void) =>
     _listenToEvents(callback, CrossmintInternalEvents);

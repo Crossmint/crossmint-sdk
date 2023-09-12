@@ -9,7 +9,7 @@ import type {
     Recipient,
     UIConfig,
     FiatEmbeddedCheckoutProps,
-    CrossmintPublicEventUnion,
+    CrossmintEventUnion,
 } from "@crossmint/client-sdk-base";
 
 const propertyDefaults: FiatEmbeddedCheckoutProps = {
@@ -73,7 +73,7 @@ export class CrossmintPaymentElement extends LitElement {
     emailInputOptions?: FiatEmbeddedCheckoutProps["emailInputOptions"] = propertyDefaults.emailInputOptions;
 
     @property({ type: Function || String })
-    onEvent?: (event: CrossmintPublicEventUnion) => void = propertyDefaults.onEvent;
+    onEvent?: (event: CrossmintEventUnion) => void = propertyDefaults.onEvent;
 
     @property({ type: Object })
     experimental?: FiatEmbeddedCheckoutProps["experimental"] = propertyDefaults.experimental;
