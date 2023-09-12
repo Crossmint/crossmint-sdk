@@ -1,10 +1,11 @@
 import { CommonEmbeddedCheckoutProps } from ".";
 import { CryptoPaymentMethod } from "..";
 
-export type CryptoEmbeddedCheckoutProps<PM extends CryptoPaymentMethod = CryptoPaymentMethod> =
-    CommonEmbeddedCheckoutProps<PM> & {
-        signer?: CryptoPaymentMethodSignerMap[PM];
-    };
+export type CryptoEmbeddedCheckoutProps<
+    PM extends keyof CryptoPaymentMethodSignerMap = keyof CryptoPaymentMethodSignerMap
+> = CommonEmbeddedCheckoutProps<PM> & {
+    signer?: CryptoPaymentMethodSignerMap[PM];
+};
 
 type CryptoPaymentMethodSignerMap = {
     [CryptoPaymentMethod.ETH]: ETHEmbeddedCheckoutSigner;
@@ -16,6 +17,7 @@ type CommonEmbeddedCheckoutSignerProps = {
 };
 
 // Signers
+// TODO: Import proper types from respective packages
 export type ETHEmbeddedCheckoutSigner = CommonEmbeddedCheckoutSignerProps & {
     signAndSendTransaction: (transaction: any) => Promise<string>;
 };

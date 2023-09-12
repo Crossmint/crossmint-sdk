@@ -2,7 +2,7 @@
 import { onUnmounted, ref, watch } from "vue";
 
 import type { FiatEmbeddedCheckoutProps } from "@crossmint/client-sdk-base";
-import { crossmintPaymentService, crossmintUiService } from "@crossmint/client-sdk-base";
+import { crossmintPaymentService_OLD, crossmintUiService_OLD } from "@crossmint/client-sdk-base";
 
 const props = withDefaults(defineProps<FiatEmbeddedCheckoutProps>(), {});
 
@@ -36,7 +36,7 @@ function assertClientIdentifier(props: object) {
     return clientIdentifier;
 }
 
-const paymentServiceProps: Parameters<typeof crossmintPaymentService>[0] = {
+const paymentServiceProps: Parameters<typeof crossmintPaymentService_OLD>[0] = {
     clientId: assertClientIdentifier(props),
     projectId: props.projectId,
     environment: props.environment,
@@ -49,8 +49,8 @@ const paymentServiceProps: Parameters<typeof crossmintPaymentService>[0] = {
     experimental: props.experimental,
 };
 
-const { getIframeUrl, listenToEvents, emitQueryParams } = crossmintPaymentService(paymentServiceProps);
-const { listenToEvents: listenToUiEvents } = crossmintUiService({ environment: props.environment });
+const { getIframeUrl, listenToEvents, emitQueryParams } = crossmintPaymentService_OLD(paymentServiceProps);
+const { listenToEvents: listenToUiEvents } = crossmintUiService_OLD({ environment: props.environment });
 
 const iframeUrl = getIframeUrl();
 
@@ -93,7 +93,7 @@ watch(
     <iframe
         :src="iframeUrl"
         allow="payment *"
-        id="iframe-crossmint-payment-element"
+        id="crossmint-embedded-checkout.iframe"
         :style="{ height: `${styleHeight}px` }"
     ></iframe>
 </template>

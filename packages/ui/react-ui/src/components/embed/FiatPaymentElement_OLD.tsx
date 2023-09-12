@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import type { FiatEmbeddedCheckoutProps } from "@crossmint/client-sdk-base";
-import { crossmintPaymentService, crossmintUiService } from "@crossmint/client-sdk-base";
+import { crossmintPaymentService_OLD, crossmintUiService_OLD } from "@crossmint/client-sdk-base";
 
 export function CrossmintFiatPaymentElement_OLD(props: FiatEmbeddedCheckoutProps) {
     const [height, setHeight] = useState(0);
-    const { getIframeUrl, listenToEvents, emitQueryParams } = crossmintPaymentService(props);
-    const { listenToEvents: listenToUiEvents } = crossmintUiService({ environment: props.environment });
+    const { getIframeUrl, listenToEvents, emitQueryParams } = crossmintPaymentService_OLD(props);
+    const { listenToEvents: listenToUiEvents } = crossmintUiService_OLD({ environment: props.environment });
     const [url] = useState(getIframeUrl());
 
     useEffect(() => {
@@ -51,8 +51,8 @@ export function CrossmintFiatPaymentElement_OLD(props: FiatEmbeddedCheckoutProps
     return (
         <iframe
             src={url}
-            id="iframe-crossmint-payment-element"
-            role="iframe-crossmint-payment-element"
+            id="crossmint-embedded-checkout.iframe"
+            role="crossmint-embedded-checkout.iframe"
             allow="payment *"
             style={{
                 border: "none !important",

@@ -3,7 +3,7 @@
     "version": "1.0.1-alpha.6",
     "author": "Paella Labs Inc",
     "license": "Apache-2.0",
-    "repository": "https://github.com/CrossMint/crossmint-client-sdk",
+    "repository": "https://github.com/Crossmint/crossmint-client-sdk",
     "type": "module",
     "sideEffects": false,
     "main": "./dist/index.cjs",
@@ -11,7 +11,7 @@
     "types": "./dist/index.d.ts",
     "exports": {
         "import": "./dist/index.js",
-        "require": "./distlib/index.cjs"
+        "require": "./dist/index.cjs"
     },
     "files": [
         "dist",

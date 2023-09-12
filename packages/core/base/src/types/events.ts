@@ -184,14 +184,24 @@ export interface SDKEventMap {
 }
 
 // Internal UI events
-export const UIEvents = {
+// TODO: Cleanup between internal and external events
+export interface CrossmintInternalCheckoutEvent<K extends InternalEvents = InternalEvents> {
+    type: K;
+    payload: InternalEventMap[K];
+}
+
+export const InternalEvents = {
     UI_HEIGHT_CHANGED: "ui:height.changed",
 } as const;
-export type UIEvents = (typeof UIEvents)[keyof typeof UIEvents];
+export type InternalEvents = (typeof InternalEvents)[keyof typeof InternalEvents];
 
-export interface UiEventMap {
-    [UIEvents.UI_HEIGHT_CHANGED]: { height: number };
+export interface InternalEventMap {
+    [InternalEvents.UI_HEIGHT_CHANGED]: { height: number };
 }
+
+export type InternalEventsUnion = {
+    [K in InternalEvents]: CrossmintInternalCheckoutEvent<K>;
+}[InternalEvents];
 
 // Misc
 export interface ListenToMintingEventsProps {

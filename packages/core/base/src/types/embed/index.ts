@@ -1,13 +1,4 @@
-import {
-    CaseInsensitive,
-    CollectionOrClientId,
-    CryptoPaymentMethod,
-    Currency,
-    Locale,
-    MintConfigs,
-    PaymentMethod,
-    UIConfig,
-} from "..";
+import { CaseInsensitive, CollectionOrClientId, Currency, Locale, MintConfigs, PaymentMethod, UIConfig } from "..";
 import { CryptoEmbeddedCheckoutProps } from "./crypto";
 import { FiatEmbeddedCheckoutProps } from "./fiat";
 
@@ -25,6 +16,4 @@ export type CommonEmbeddedCheckoutProps<PM extends PaymentMethod = PaymentMethod
     projectId?: string;
 } & CollectionOrClientId;
 
-export type CrossmintEmbeddedCheckoutProps =
-    | FiatEmbeddedCheckoutProps
-    | { [K in CryptoPaymentMethod]: CryptoEmbeddedCheckoutProps<K> }[CryptoPaymentMethod];
+export type CrossmintEmbeddedCheckoutProps = FiatEmbeddedCheckoutProps | CryptoEmbeddedCheckoutProps;

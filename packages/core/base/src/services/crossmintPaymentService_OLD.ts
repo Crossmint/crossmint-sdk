@@ -1,10 +1,10 @@
-import { CrossmintEmbeddedCheckoutProps, FiatEmbeddedCheckoutProps } from "../types";
+import { FiatEmbeddedCheckoutProps } from "../types";
 import { CrossmintCheckoutEventUnion, ParamsUpdatePayload, PaymentElementSDKEvents } from "../types/events";
 import { CheckoutEvents } from "../types/events";
 import { getEnvironmentBaseUrl } from "../utils";
 
 // TODO: Accept both fiat and crypto
-export function crossmintPaymentService(props: FiatEmbeddedCheckoutProps) {
+export function crossmintPaymentService_OLD(props: FiatEmbeddedCheckoutProps) {
     const clientId = "clientId" in props ? props.clientId : props.collectionId;
     const {
         uiConfig,
@@ -88,8 +88,15 @@ export function crossmintPaymentService(props: FiatEmbeddedCheckoutProps) {
     }
 
     function emitQueryParams(payload: ParamsUpdatePayload) {
-        const iframe = document.getElementById("iframe-crossmint-payment-element") as HTMLIFrameElement;
-        iframe?.contentWindow?.postMessage({ type: PaymentElementSDKEvents.PARAMS_UPDATE, payload }, baseUrl);
+        const iframe = document.getElementById("crossmint-embedded-checkout.iframe") as HTMLIFrameElement | null;
+        if (iframe == null) {
+            console.error("[Crossmint] Failed to find crossmint-embedded-checkout.iframe");
+        }
+        try {
+            iframe?.contentWindow?.postMessage({ type: PaymentElementSDKEvents.PARAMS_UPDATE, payload }, baseUrl);
+        } catch (e) {
+            console.log("[Crossmint] Failed to emit query params", e);
+        }
     }
 
     return {
