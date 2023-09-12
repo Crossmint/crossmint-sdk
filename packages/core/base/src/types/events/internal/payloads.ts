@@ -8,6 +8,7 @@ export interface CrossmintInternalEventMap {
     [CrossmintInternalEvents.UI_HEIGHT_CHANGED]: { height: number };
     [CrossmintInternalEvents.CRYPTO_PAYMENT_USER_ACCEPTED]: { txId: string };
     [CrossmintInternalEvents.CRYPTO_PAYMENT_USER_REJECTED]: EmptyObject;
+    [CrossmintInternalEvents.CRYPTO_PAYMENT_INCOMING_TRANSACTION]: { serializedTransaction: string };
 }
 
 // Params update
