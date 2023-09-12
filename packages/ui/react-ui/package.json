@@ -26,7 +26,7 @@
         "version": "yarn run create-version-file && git add .",
         "prebuild": "yarn run create-version-file",
         "clean": "shx rm -rf dist/*",
-        "build": "yarn clean && tsup src/index.ts --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts",
+        "build": "yarn clean && tsup src/index.ts --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
         "test": "jest"
     },
     "dependencies": {
