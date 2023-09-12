@@ -47,7 +47,7 @@ function getUrl(props: CrossmintEmbeddedCheckoutProps) {
 function _listenToEvents<EP = CrossmintCheckoutEventUnion | InternalEventsUnion>(
     callback: (event: MessageEvent<EP>) => void,
     validEventTypes: {
-        [key: string]: string;
+        [key: string]: CheckoutEvents | InternalEvents;
     }
 ) {
     function _onEvent(event: MessageEvent) {
