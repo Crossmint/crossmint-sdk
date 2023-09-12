@@ -9,14 +9,6 @@
     "workspaces": {
         "packages": [
             "packages/*/*"
-        ],
-        "nohoist": [
-            "**/@babel/preset-env",
-            "**/@babel/preset-env/**",
-            "**/babel-loader",
-            "**/babel-loader/**",
-            "**/webpack",
-            "**/webpack/**"
         ]
     },
     "engines": {
