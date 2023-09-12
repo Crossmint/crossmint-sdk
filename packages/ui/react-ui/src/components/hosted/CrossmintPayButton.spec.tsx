@@ -1,9 +1,8 @@
 import "@testing-library/jest-dom";
 import { act, fireEvent, render, screen } from "@testing-library/react";
-import React from "react";
 
-import { CrossmintPayButton } from "../src/components/hosted";
-import { LIB_VERSION } from "../src/consts/version";
+import { CrossmintPayButton } from ".";
+import { LIB_VERSION } from "../../consts/version";
 
 // TODO(#60): create a global service for this to work everywhere and to be able to customize resolved/rejected responses
 const fetchReturns = Promise.resolve({

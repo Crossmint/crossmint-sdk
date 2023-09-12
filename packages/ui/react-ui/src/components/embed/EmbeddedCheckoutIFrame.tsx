@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
-import { CrossmintEmbeddedCheckoutProps } from "@crossmint/client-sdk-base";
 import { crossmintIFrameService } from "@crossmint/client-sdk-base";
+import { CrossmintEmbeddedCheckoutProps } from "@crossmint/client-sdk-base";
 
 export default function CrossmintEmbeddedCheckoutIFrame(props: CrossmintEmbeddedCheckoutProps) {
     const { getUrl, listenToInternalEvents } = crossmintIFrameService(props);

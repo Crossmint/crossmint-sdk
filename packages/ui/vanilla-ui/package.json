@@ -35,6 +35,6 @@
     },
     "dependencies": {
         "@crossmint/client-sdk-base": "^1.0.1-alpha.6",
-        "lit": "^2.2.1"
+        "lit": "2.8.0"
     }
 }

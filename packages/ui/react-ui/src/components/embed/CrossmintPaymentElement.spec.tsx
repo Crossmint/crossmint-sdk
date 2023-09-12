@@ -1,10 +1,9 @@
 import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
-import React from "react";
 
 import { CheckoutEvents } from "@crossmint/client-sdk-base";
 
-import { CrossmintPaymentElement } from "../src/components/embed";
+import { CrossmintPaymentElement } from ".";
 
 const embeddedCheckoutProps = {
     clientId: "db218e78-d042-4761-83af-3c4e5e6659dd",

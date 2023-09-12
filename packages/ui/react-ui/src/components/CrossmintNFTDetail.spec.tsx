@@ -1,10 +1,9 @@
 import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
-import React from "react";
 
 import { NFT } from "@crossmint/client-sdk-base";
 
-import { CrossmintNFTDetail } from "../src/components/CrossmintNFTDetail";
+import { CrossmintNFTDetail } from "./CrossmintNFTDetail";
 
 const nft: NFT = { chain: "ethereum", contractAddress: "0x12345", tokenId: "12" };
 
