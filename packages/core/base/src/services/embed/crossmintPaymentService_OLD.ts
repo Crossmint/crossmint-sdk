@@ -1,6 +1,10 @@
-import { FiatEmbeddedCheckoutProps } from "../../types";
-import { CrossmintCheckoutEventUnion, ParamsUpdatePayload, PaymentElementSDKEvents } from "../../types/events";
-import { CheckoutEvents } from "../../types/events";
+import {
+    CrossmintEvent,
+    CrossmintEvents,
+    CrossmintInternalEvents,
+    FiatEmbeddedCheckoutProps,
+    ParamsUpdatePayload,
+} from "../../types";
 import { getEnvironmentBaseUrl } from "../../utils";
 
 // TODO: Accept both fiat and crypto
@@ -69,13 +73,13 @@ export function crossmintPaymentService_OLD(props: FiatEmbeddedCheckoutProps) {
         return `${baseUrl}/sdk/paymentElement?${params.toString()}`;
     }
 
-    function listenToEvents(cb: (event: MessageEvent<CrossmintCheckoutEventUnion>) => void): () => void {
+    function listenToEvents(cb: (event: MessageEvent<CrossmintEvent>) => void): () => void {
         function _internalOnEvent(event: MessageEvent<any>) {
             if (event.origin !== baseUrl) {
                 return;
             }
 
-            if (Object.values(CheckoutEvents).includes(event.data.type)) {
+            if (Object.values(CrossmintEvents).includes(event.data.type)) {
                 cb(event);
             }
         }
@@ -93,7 +97,7 @@ export function crossmintPaymentService_OLD(props: FiatEmbeddedCheckoutProps) {
             console.error("[Crossmint] Failed to find crossmint-embedded-checkout.iframe");
         }
         try {
-            iframe?.contentWindow?.postMessage({ type: PaymentElementSDKEvents.PARAMS_UPDATE, payload }, baseUrl);
+            iframe?.contentWindow?.postMessage({ type: CrossmintInternalEvents.PARAMS_UPDATE, payload }, baseUrl);
         } catch (e) {
             console.log("[Crossmint] Failed to emit query params", e);
         }

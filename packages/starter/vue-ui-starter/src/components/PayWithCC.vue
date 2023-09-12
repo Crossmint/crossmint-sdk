@@ -2,7 +2,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 
-import type { CrossmintCheckoutEventUnion } from "@crossmint/client-sdk-base";
+import type { CrossmintEvent } from "@crossmint/client-sdk-base";
 import { CrossmintPaymentElement } from "@crossmint/client-sdk-vue-ui";
 import "@crossmint/client-sdk-vue-ui/dist/index.css";
 
@@ -23,7 +23,7 @@ const isPaying = ref(true);
 
 const router = useRouter();
 
-function onEvent(event: CrossmintCheckoutEventUnion) {
+function onEvent(event: CrossmintEvent) {
     switch (event.type) {
         case "quote:status.changed":
             const { totalPrice, lineItems } = event.payload;

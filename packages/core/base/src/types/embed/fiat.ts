@@ -1,6 +1,5 @@
 import { CommonEmbeddedCheckoutProps } from ".";
 import { Recipient } from "..";
-import { CrossmintCheckoutEventUnion } from "../events";
 
 export type FiatEmbeddedCheckoutProps = CommonEmbeddedCheckoutProps<"fiat"> & {
     // TODO: Audit old params

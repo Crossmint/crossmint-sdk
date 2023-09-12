@@ -1,4 +1,4 @@
-import { InternalEvents } from "@/types/events";
+import { CrossmintInternalEvents } from "@/types/events";
 import { getEnvironmentBaseUrl } from "@/utils";
 
 export function crossmintUiService_OLD({ environment }: { environment?: string } = {}) {
@@ -10,7 +10,7 @@ export function crossmintUiService_OLD({ environment }: { environment?: string }
                 return;
             }
 
-            if (Object.values(InternalEvents).includes(event.data.type)) {
+            if (Object.values(CrossmintInternalEvents).includes(event.data.type)) {
                 cb(event);
             }
         }
