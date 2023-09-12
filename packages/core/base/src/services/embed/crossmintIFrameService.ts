@@ -1,10 +1,17 @@
-import { CrossmintEmbeddedCheckoutProps, InternalEvents, InternalEventsUnion } from "../types";
-import { getEnvironmentBaseUrl, isFiatEmbeddedCheckoutProps } from "../utils";
+import {
+    CheckoutEvents,
+    CrossmintCheckoutEventUnion,
+    CrossmintEmbeddedCheckoutProps,
+    InternalEvents,
+    InternalEventsUnion,
+} from "../../types";
+import { getEnvironmentBaseUrl, isFiatEmbeddedCheckoutProps } from "../../utils";
 
+// TODO: Emit updatable parameters
 export function crossmintIFrameService(props: CrossmintEmbeddedCheckoutProps) {
-    console.log("crossmintIFrameService", props);
     return {
         getUrl,
+        listenToEvents,
         listenToInternalEvents,
     };
 }
@@ -37,19 +44,28 @@ function getUrl(props: CrossmintEmbeddedCheckoutProps) {
     return `${baseUrl}${path}?${queryParams.toString()}`;
 }
 
-function listenToInternalEvents(callback: (event: MessageEvent<InternalEventsUnion>) => void) {
-    function onInternalEvent(event: MessageEvent) {
+function _listenToEvents<EP = CrossmintCheckoutEventUnion | InternalEventsUnion>(
+    callback: (event: MessageEvent<EP>) => void,
+    validEventTypes: {
+        [key: string]: string;
+    }
+) {
+    function _onEvent(event: MessageEvent) {
         if (event.origin !== window.origin) {
             return;
         }
-
-        if (Object.values(InternalEvents).includes(event.data.type)) {
+        if (Object.values(validEventTypes).includes(event.data.type)) {
             callback(event);
         }
     }
 
-    window.addEventListener("message", onInternalEvent);
+    window.addEventListener("message", _onEvent);
     return () => {
-        window.removeEventListener("message", onInternalEvent);
+        window.removeEventListener("message", _onEvent);
     };
 }
+
+const listenToEvents = (callback: (event: MessageEvent<CrossmintCheckoutEventUnion>) => void) =>
+    _listenToEvents(callback, CheckoutEvents);
+const listenToInternalEvents = (callback: (event: MessageEvent<InternalEventsUnion>) => void) =>
+    _listenToEvents(callback, InternalEvents);

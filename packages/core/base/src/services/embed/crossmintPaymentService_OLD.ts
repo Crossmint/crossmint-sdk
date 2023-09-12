@@ -1,7 +1,7 @@
-import { FiatEmbeddedCheckoutProps } from "../types";
-import { CrossmintCheckoutEventUnion, ParamsUpdatePayload, PaymentElementSDKEvents } from "../types/events";
-import { CheckoutEvents } from "../types/events";
-import { getEnvironmentBaseUrl } from "../utils";
+import { FiatEmbeddedCheckoutProps } from "../../types";
+import { CrossmintCheckoutEventUnion, ParamsUpdatePayload, PaymentElementSDKEvents } from "../../types/events";
+import { CheckoutEvents } from "../../types/events";
+import { getEnvironmentBaseUrl } from "../../utils";
 
 // TODO: Accept both fiat and crypto
 export function crossmintPaymentService_OLD(props: FiatEmbeddedCheckoutProps) {

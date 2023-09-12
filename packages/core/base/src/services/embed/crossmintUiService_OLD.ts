@@ -1,5 +1,5 @@
-import { InternalEvents } from "../types/events";
-import { getEnvironmentBaseUrl } from "../utils";
+import { InternalEvents } from "@/types/events";
+import { getEnvironmentBaseUrl } from "@/utils";
 
 export function crossmintUiService_OLD({ environment }: { environment?: string } = {}) {
     const baseUrl = getEnvironmentBaseUrl(environment);

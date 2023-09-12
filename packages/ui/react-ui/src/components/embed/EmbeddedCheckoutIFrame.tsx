@@ -4,11 +4,23 @@ import { crossmintIFrameService } from "@crossmint/client-sdk-base";
 import { CrossmintEmbeddedCheckoutProps } from "@crossmint/client-sdk-base";
 
 export default function CrossmintEmbeddedCheckoutIFrame(props: CrossmintEmbeddedCheckoutProps) {
-    const { getUrl, listenToInternalEvents } = crossmintIFrameService(props);
+    const { getUrl, listenToEvents, listenToInternalEvents } = crossmintIFrameService(props);
 
     const [height, setHeight] = useState(0);
     const [url] = useState(getUrl(props));
 
+    // Public events
+    useEffect(() => {
+        const clearListener = listenToEvents((event) => {
+            props.onEvent?.(event.data);
+        });
+
+        return () => {
+            clearListener();
+        };
+    }, []);
+
+    // Internal events
     useEffect(() => {
         const clearListener = listenToInternalEvents((event) => {
             const { type, payload } = event.data;
@@ -26,6 +38,8 @@ export default function CrossmintEmbeddedCheckoutIFrame(props: CrossmintEmbedded
             clearListener();
         };
     }, []);
+
+    // TODO: Emit updatable parameters
 
     return (
         <iframe
