@@ -1,6 +1,6 @@
 import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
-import { crossmintPaymentService, crossmintUiService } from "@crossmint/client-sdk-base";
+import { crossmintPaymentService_OLD, crossmintUiService_OLD } from "@crossmint/client-sdk-base";
 import { customElement } from "lit/decorators/custom-element.js";
 
 import type {
@@ -89,8 +89,8 @@ export class CrossmintPaymentElement extends LitElement {
 
         const onEvent = getOnEventFunction(this.onEvent);
 
-        const { listenToEvents } = crossmintPaymentService(getPaymentServiceProps(this));
-        const { listenToEvents: listenToUiEvents } = crossmintUiService({ environment: this.environment });
+        const { listenToEvents } = crossmintPaymentService_OLD(getPaymentServiceProps(this));
+        const { listenToEvents: listenToUiEvents } = crossmintUiService_OLD({ environment: this.environment });
 
         this.removeEventListener = listenToEvents((event) => onEvent?.(event.data));
 
@@ -117,7 +117,7 @@ export class CrossmintPaymentElement extends LitElement {
 
     updated(changedProperties: Map<string, unknown>) {
         super.updated(changedProperties);
-        const { emitQueryParams } = crossmintPaymentService(getPaymentServiceProps(this));
+        const { emitQueryParams } = crossmintPaymentService_OLD(getPaymentServiceProps(this));
 
         if (
             changedProperties.has("recipient") ||
@@ -135,13 +135,13 @@ export class CrossmintPaymentElement extends LitElement {
     }
 
     render() {
-        const { getIframeUrl } = crossmintPaymentService(getPaymentServiceProps(this));
+        const { getIframeUrl } = crossmintPaymentService_OLD(getPaymentServiceProps(this));
 
         return html`
             <iframe
                 src=${getIframeUrl()}
                 allow="payment *"
-                id="iframe-crossmint-payment-element"
+                id="crossmint-embedded-checkout.iframe"
                 style="border: none !important;
                 padding: 0px !important;
                 width: 100% !important;

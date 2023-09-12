@@ -33,7 +33,7 @@ Version 0.2.0 introduces breaking changes. To learn how to migrate from a versio
 1. Clone the project:
 
 ```shell
-git clone https://github.com/CrossMint/crossmint-client-sdk.git
+git clone https://github.com/Crossmint/crossmint-client-sdk.git
 ```
 
 2. Install dependencies:

@@ -7,7 +7,6 @@ export type FiatEmbeddedCheckoutProps = CommonEmbeddedCheckoutProps<"fiat"> & {
     cardWalletPaymentMethods?: CardWalletPaymentMethod | CardWalletPaymentMethod[] | "none";
     emailInputOptions?: EmailInputOptions;
     experimental?: EmbeddedCheckoutExperimentalOptions;
-    onEvent?(event: CrossmintCheckoutEventUnion): any;
     recipient?: Recipient;
 };
 

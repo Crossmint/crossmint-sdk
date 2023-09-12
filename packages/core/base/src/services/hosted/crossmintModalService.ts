@@ -1,7 +1,7 @@
-import { Currency, Locale, PaymentMethod, SigninMethods, clientNames } from "../types";
-import { MintConfigs } from "../types/hosted";
-import { CaseInsensitive } from "../types/system";
-import { getEnvironmentBaseUrl } from "../utils/ui";
+import { Currency, Locale, PaymentMethod, SigninMethods, clientNames } from "../../types";
+import { MintConfigs } from "../../types/hosted";
+import { CaseInsensitive } from "../../types/system";
+import { getEnvironmentBaseUrl } from "../../utils/ui";
 
 type MintQueryParams = {
     clientId: string;

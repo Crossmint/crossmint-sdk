@@ -1,26 +1,28 @@
 import { useEffect, useState } from "react";
 
-import type { FiatEmbeddedCheckoutProps } from "@crossmint/client-sdk-base";
-import { crossmintPaymentService_OLD, crossmintUiService_OLD } from "@crossmint/client-sdk-base";
+import { crossmintIFrameService } from "@crossmint/client-sdk-base";
+import { CrossmintEmbeddedCheckoutProps } from "@crossmint/client-sdk-base";
 
-export function CrossmintFiatPaymentElement_OLD(props: FiatEmbeddedCheckoutProps) {
+export default function CrossmintEmbeddedCheckoutIFrame(props: CrossmintEmbeddedCheckoutProps) {
+    const { getUrl, listenToEvents, listenToInternalEvents } = crossmintIFrameService(props);
+
     const [height, setHeight] = useState(0);
-    const { getIframeUrl, listenToEvents, emitQueryParams } = crossmintPaymentService_OLD(props);
-    const { listenToEvents: listenToUiEvents } = crossmintUiService_OLD({ environment: props.environment });
-    const [url] = useState(getIframeUrl());
+    const [url] = useState(getUrl(props));
 
+    // Public events
     useEffect(() => {
-        const clearListener = listenToEvents((event) => props.onEvent?.(event.data));
+        const clearListener = listenToEvents((event) => {
+            props.onEvent?.(event.data);
+        });
 
         return () => {
-            if (clearListener) {
-                clearListener();
-            }
+            clearListener();
         };
     }, []);
 
+    // Internal events
     useEffect(() => {
-        const clearListener = listenToUiEvents((event: MessageEvent<any>) => {
+        const clearListener = listenToInternalEvents((event) => {
             const { type, payload } = event.data;
 
             switch (type) {
@@ -33,20 +35,11 @@ export function CrossmintFiatPaymentElement_OLD(props: FiatEmbeddedCheckoutProps
         });
 
         return () => {
-            if (clearListener) {
-                clearListener();
-            }
+            clearListener();
         };
     }, []);
 
-    useEffect(() => {
-        emitQueryParams({
-            recipient: props.recipient,
-            mintConfig: props.mintConfig,
-            locale: props.locale,
-            whPassThroughArgs: props.whPassThroughArgs,
-        });
-    }, [props.recipient, props.mintConfig, props.locale, props.whPassThroughArgs]);
+    // TODO: Emit updatable parameters
 
     return (
         <iframe
@@ -67,6 +60,6 @@ export function CrossmintFiatPaymentElement_OLD(props: FiatEmbeddedCheckoutProps
                 transition: "ease 0s, opacity 0.4s ease 0.1s",
                 height: `${height}px`,
             }}
-        ></iframe>
+        />
     );
 }

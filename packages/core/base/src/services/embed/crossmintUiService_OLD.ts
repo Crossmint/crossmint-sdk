@@ -1,7 +1,7 @@
-import { UIEvents } from "../types/events";
-import { getEnvironmentBaseUrl } from "../utils";
+import { InternalEvents } from "@/types/events";
+import { getEnvironmentBaseUrl } from "@/utils";
 
-export function crossmintUiService({ environment }: { environment?: string } = {}) {
+export function crossmintUiService_OLD({ environment }: { environment?: string } = {}) {
     const baseUrl = getEnvironmentBaseUrl(environment);
 
     function listenToEvents(cb: (event: MessageEvent) => void): () => void {
@@ -10,7 +10,7 @@ export function crossmintUiService({ environment }: { environment?: string } = {
                 return;
             }
 
-            if (Object.values(UIEvents).includes(event.data.type)) {
+            if (Object.values(InternalEvents).includes(event.data.type)) {
                 cb(event);
             }
         }

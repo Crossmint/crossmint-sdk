@@ -1,7 +1,7 @@
 import {
     CaseInsensitive,
     CollectionOrClientId,
-    CryptoPaymentMethod,
+    CrossmintCheckoutEventUnion,
     Currency,
     Locale,
     MintConfigs,
@@ -23,8 +23,7 @@ export type CommonEmbeddedCheckoutProps<PM extends PaymentMethod = PaymentMethod
     uiConfig?: UIConfig;
     whPassThroughArgs?: any;
     projectId?: string;
+    onEvent?(event: CrossmintCheckoutEventUnion): any;
 } & CollectionOrClientId;
 
-export type CrossmintEmbeddedCheckoutProps =
-    | FiatEmbeddedCheckoutProps
-    | { [K in CryptoPaymentMethod]: CryptoEmbeddedCheckoutProps<K> }[CryptoPaymentMethod];
+export type CrossmintEmbeddedCheckoutProps = FiatEmbeddedCheckoutProps | CryptoEmbeddedCheckoutProps;

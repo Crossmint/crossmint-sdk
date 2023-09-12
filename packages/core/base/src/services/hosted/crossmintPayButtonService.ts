@@ -1,5 +1,5 @@
-import { Locale, PaymentMethod } from "../types";
-import { t } from "../utils/i18n";
+import { Locale, PaymentMethod } from "../../types";
+import { t } from "../../utils/i18n";
 
 interface IProps {
     onClick?: (e: any) => void;
