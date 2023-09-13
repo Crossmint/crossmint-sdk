@@ -4,7 +4,7 @@ import { crossmintIFrameService } from "@crossmint/client-sdk-base";
 import { CrossmintEmbeddedCheckoutProps } from "@crossmint/client-sdk-base";
 
 export default function CrossmintEmbeddedCheckoutIFrame(props: CrossmintEmbeddedCheckoutProps) {
-    const { getUrl, listenToEvents, listenToInternalEvents } = crossmintIFrameService(props);
+    const { getUrl, listenToEvents, listenToInternalEvents, emitInternalEvent } = crossmintIFrameService(props);
 
     const [height, setHeight] = useState(0);
     const [url] = useState(getUrl(props));
@@ -58,7 +58,7 @@ export default function CrossmintEmbeddedCheckoutIFrame(props: CrossmintEmbedded
                 transform: "translate(0px) !important",
                 opacity: "1",
                 transition: "ease 0s, opacity 0.4s ease 0.1s",
-                height: `${height}px`,
+                // height: `${height}px`,
             }}
         />
     );

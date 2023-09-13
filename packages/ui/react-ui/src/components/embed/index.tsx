@@ -13,8 +13,7 @@ export function CrossmintPaymentElement(props: CrossmintEmbeddedCheckoutProps) {
         return <CrossmintFiatPaymentElement_OLD {...props} />;
     }
     if (isCryptoEmbeddedCheckoutProps(props)) {
-        throw new Error("Unsupported: Fiat is the only supported payment method.");
-        // return <CrossmintCryptoEmbeddedCheckout {...props} />;
+        return <CrossmintCryptoEmbeddedCheckout {...props} />;
     }
     throw new Error("Unsupported: Fiat is the only supported payment method.");
 }
