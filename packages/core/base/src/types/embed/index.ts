@@ -6,6 +6,7 @@ import {
     Locale,
     MintConfigs,
     PaymentMethod,
+    Recipient,
     UIConfig,
 } from "..";
 import { CryptoEmbeddedCheckoutProps } from "./crypto";
@@ -23,6 +24,7 @@ export type CommonEmbeddedCheckoutProps<PM extends PaymentMethod = PaymentMethod
     uiConfig?: UIConfig;
     whPassThroughArgs?: any;
     projectId?: string;
+    recipient?: Recipient;
     onEvent?(event: CrossmintEvent): any;
 } & CollectionOrClientId;
 
