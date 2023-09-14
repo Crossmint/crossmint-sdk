@@ -22,7 +22,7 @@ export default function CryptoEmbeddedCheckoutIFrame(props: CryptoEmbeddedChecko
 
     async function handleIncomingTransaction(serializedTransaction: string) {
         try {
-            const txId = await signer?.signAndSendTransaction(serializedTransaction);
+            const txId = await signer.signAndSendTransaction(serializedTransaction);
 
             console.log("[Crossmint] Signed and sent transaction", txId);
             emitInternalEvent({
