@@ -1,12 +1,10 @@
 import { CommonEmbeddedCheckoutProps } from ".";
-import { Recipient } from "..";
 
 export type FiatEmbeddedCheckoutProps = CommonEmbeddedCheckoutProps<"fiat"> & {
     // TODO: Audit old params
     cardWalletPaymentMethods?: CardWalletPaymentMethod | CardWalletPaymentMethod[] | "none";
     emailInputOptions?: EmailInputOptions;
     experimental?: EmbeddedCheckoutExperimentalOptions;
-    recipient?: Recipient;
 };
 
 export type CardWalletPaymentMethod = "apple-pay" | "google-pay";

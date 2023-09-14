@@ -1,10 +1,17 @@
 import { useEffect, useState } from "react";
 
-import { crossmintIFrameService } from "@crossmint/client-sdk-base";
+import { CrossmintInternalEvent, IncomingInternalEvent, crossmintIFrameService } from "@crossmint/client-sdk-base";
 import { CrossmintEmbeddedCheckoutProps } from "@crossmint/client-sdk-base";
 
-export default function CrossmintEmbeddedCheckoutIFrame(props: CrossmintEmbeddedCheckoutProps) {
-    const { getUrl, listenToEvents, listenToInternalEvents } = crossmintIFrameService(props);
+type CrossmintEmbeddedCheckoutIFrameProps = CrossmintEmbeddedCheckoutProps & {
+    onInternalEvent?: (event: IncomingInternalEvent) => void;
+};
+
+export default function CrossmintEmbeddedCheckoutIFrame({
+    onInternalEvent,
+    ...props
+}: CrossmintEmbeddedCheckoutIFrameProps) {
+    const { getUrl, listenToEvents, listenToInternalEvents, emitInternalEvent } = crossmintIFrameService(props);
 
     const [height, setHeight] = useState(0);
     const [url] = useState(getUrl(props));
@@ -25,13 +32,11 @@ export default function CrossmintEmbeddedCheckoutIFrame(props: CrossmintEmbedded
         const clearListener = listenToInternalEvents((event) => {
             const { type, payload } = event.data;
 
-            switch (type) {
-                case "ui:height.changed":
-                    setHeight(payload.height);
-                    break;
-                default:
-                    return;
+            if (type === "ui:height.changed") {
+                setHeight(payload.height);
             }
+
+            onInternalEvent?.(event.data);
         });
 
         return () => {

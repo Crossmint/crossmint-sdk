@@ -12,7 +12,8 @@
         "outDir": "dist",
         "noEmitOnError": true,
         "forceConsistentCasingInFileNames": true,
-        "lib": ["DOM", "ES6"]
+        "lib": ["DOM", "ES6"],
+        "noErrorTruncation": true
     },
     "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.test.tsx"]
 }

@@ -7,6 +7,12 @@ export type CryptoEmbeddedCheckoutProps<
     signer?: CryptoPaymentMethodSignerMap[PM];
 };
 
+export type CryptoEmbeddedCheckoutPropsWithSigner<
+    PM extends keyof CryptoPaymentMethodSignerMap = keyof CryptoPaymentMethodSignerMap,
+> = CommonEmbeddedCheckoutProps<PM> & {
+    signer: CryptoPaymentMethodSignerMap[PM];
+};
+
 type CryptoPaymentMethodSignerMap = {
     [CryptoPaymentMethod.ETH]: ETHEmbeddedCheckoutSigner;
     [CryptoPaymentMethod.SOL]: SOLEmbeddedCheckoutSigner;
