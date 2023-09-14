@@ -1,11 +1,6 @@
 import { useEffect, useState } from "react";
 
-import {
-    CrossmintInternalEvent,
-    IncomingInternalEvent,
-    IncomingInternalEvents,
-    crossmintIFrameService,
-} from "@crossmint/client-sdk-base";
+import { IncomingInternalEvent, IncomingInternalEvents, crossmintIFrameService } from "@crossmint/client-sdk-base";
 import { CrossmintEmbeddedCheckoutProps } from "@crossmint/client-sdk-base";
 
 type CrossmintEmbeddedCheckoutIFrameProps = CrossmintEmbeddedCheckoutProps & {
