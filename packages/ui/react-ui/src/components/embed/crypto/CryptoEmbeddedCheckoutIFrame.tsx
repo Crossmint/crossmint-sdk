@@ -4,6 +4,8 @@ import {
     CryptoEmbeddedCheckoutPropsWithSigner,
     ETHEmbeddedCheckoutSigner,
     IncomingInternalEvent,
+    IncomingInternalEvents,
+    OutgoingInternalEvents,
     SOLEmbeddedCheckoutSigner,
     crossmintIFrameService,
 } from "@crossmint/client-sdk-base";
@@ -18,7 +20,7 @@ export default function CryptoEmbeddedCheckoutIFrame(props: CryptoEmbeddedChecko
     function onInternalEvent(event: IncomingInternalEvent) {
         const { type, payload } = event;
 
-        if (type === "crypto-payment:incoming-transaction") {
+        if (type === IncomingInternalEvents.CRYPTO_PAYMENT_INCOMING_TRANSACTION) {
             const { serializedTransaction } = payload;
             console.log("[Crossmint] Received incoming transaction", serializedTransaction);
             handleIncomingTransaction(serializedTransaction);
@@ -41,7 +43,7 @@ export default function CryptoEmbeddedCheckoutIFrame(props: CryptoEmbeddedChecko
 
             console.log("[Crossmint] Signed and sent transaction", txId);
             emitInternalEvent({
-                type: "crypto-payment:user-accepted",
+                type: OutgoingInternalEvents.CRYPTO_PAYMENT_USER_ACCEPTED,
                 payload: {
                     txId,
                 },
@@ -49,7 +51,7 @@ export default function CryptoEmbeddedCheckoutIFrame(props: CryptoEmbeddedChecko
         } catch (e) {
             console.error("[Crossmint] Failed to sign and send transaction", e);
             emitInternalEvent({
-                type: "crypto-payment:user-rejected",
+                type: OutgoingInternalEvents.CRYPTO_PAYMENT_USER_REJECTED,
                 payload: {},
             });
         }
