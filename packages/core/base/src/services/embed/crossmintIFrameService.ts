@@ -5,7 +5,9 @@ import {
     CrossmintEvents,
     CrossmintInternalEvent,
     CrossmintInternalEvents,
-    OutgoingInternalEvents,
+    IncomingInternalEvent,
+    IncomingInternalEvents,
+    OutgoingInternalEvent,
 } from "@/types";
 
 import { getEnvironmentBaseUrl, isFiatEmbeddedCheckoutProps } from "../../utils";
@@ -66,10 +68,10 @@ export function crossmintIFrameService(props: CrossmintEmbeddedCheckoutProps) {
 
     const listenToEvents = (callback: (event: MessageEvent<CrossmintEvent>) => void) =>
         _listenToEvents(callback, CrossmintEvents);
-    const listenToInternalEvents = (callback: (event: MessageEvent<CrossmintInternalEvent>) => void) =>
-        _listenToEvents(callback, CrossmintInternalEvents);
+    const listenToInternalEvents = (callback: (event: MessageEvent<IncomingInternalEvent>) => void) =>
+        _listenToEvents(callback, IncomingInternalEvents);
 
-    function emitInternalEvent(event: OutgoingInternalEvents) {
+    function emitInternalEvent(event: OutgoingInternalEvent) {
         const iframe = document.getElementById(embeddedCheckoutIFrameId) as HTMLIFrameElement | null;
         if (iframe == null) {
             console.error("[Crossmint] Failed to find crossmint-embedded-checkout.iframe");
