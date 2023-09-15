@@ -1,17 +1,33 @@
+import type { Transaction as _EthersTransaction } from "@ethersproject/transactions";
+import type { Transaction as _SolanaTransaction } from "@solana/web3.js";
+
 import { CommonEmbeddedCheckoutProps } from ".";
 import { CryptoPaymentMethod } from "..";
 
-export type CryptoEmbeddedCheckoutProps<
+type CryptoEmbeddedCheckoutPropsBase<
     PM extends keyof CryptoPaymentMethodSignerMap = keyof CryptoPaymentMethodSignerMap,
 > = CommonEmbeddedCheckoutProps<PM> & {
+    paymentMethod: PM;
     signer?: CryptoPaymentMethodSignerMap[PM];
 };
 
-export type CryptoEmbeddedCheckoutPropsWithSigner<
+type CryptoEmbeddedCheckoutPropsWithSignerBase<
     PM extends keyof CryptoPaymentMethodSignerMap = keyof CryptoPaymentMethodSignerMap,
-> = CommonEmbeddedCheckoutProps<PM> & {
+> = CryptoEmbeddedCheckoutPropsBase<PM> & {
     signer: CryptoPaymentMethodSignerMap[PM];
 };
+
+// Union discriminate with required signer
+export type CryptoEmbeddedCheckoutPropsWithSigner = {
+    [PM in keyof CryptoPaymentMethodSignerMap]: CryptoEmbeddedCheckoutPropsWithSignerBase<PM>;
+}[keyof CryptoPaymentMethodSignerMap];
+
+// Union discriminate type - both with or without signer
+export type CryptoEmbeddedCheckoutProps =
+    | {
+          [PM in keyof CryptoPaymentMethodSignerMap]: CryptoEmbeddedCheckoutPropsBase<PM>;
+      }[keyof CryptoPaymentMethodSignerMap]
+    | CryptoEmbeddedCheckoutPropsWithSigner;
 
 type CryptoPaymentMethodSignerMap = {
     [CryptoPaymentMethod.ETH]: ETHEmbeddedCheckoutSigner;
@@ -22,12 +38,15 @@ type CommonEmbeddedCheckoutSignerProps = {
     address: string;
 };
 
+// Aliases to preserve names
+type EthersTransaction = _EthersTransaction;
+type SolanaTransaction = _SolanaTransaction;
+
 // Signers
-// TODO: Import proper types from respective packages
 export type ETHEmbeddedCheckoutSigner = CommonEmbeddedCheckoutSignerProps & {
-    signAndSendTransaction: (transaction: any) => Promise<string>;
+    signAndSendTransaction: (transaction: EthersTransaction) => Promise<string>;
 };
 
 export type SOLEmbeddedCheckoutSigner = CommonEmbeddedCheckoutSignerProps & {
-    signAndSendTransaction: (transaction: any) => Promise<string>;
+    signAndSendTransaction: (transaction: SolanaTransaction) => Promise<string>;
 };

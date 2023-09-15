@@ -31,6 +31,9 @@
     },
     "dependencies": {
         "@crossmint/client-sdk-base": "1.1.0-alpha.0",
+        "@ethersproject/transactions": "5.7.0",
+        "@solana/web3.js": "1.78.5",
+        "bs58": "5.0.0",
         "react-jss": "10.10.0"
     },
     "peerDependencies": {
