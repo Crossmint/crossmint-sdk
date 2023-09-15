@@ -58,7 +58,7 @@ export default function CryptoEmbeddedCheckoutIFrame(props: CryptoEmbeddedChecko
     }
 
     async function handleSOLTransaction(signer: SOLEmbeddedCheckoutSigner, serializedTransaction: string) {
-        // @ts-expect-error - Error becasue we dont use 'module' field in tsconfig, which is expected because we use tsup to compile
+        // @ts-ignore - Error becasue we dont use 'module' field in tsconfig, which is expected because we use tsup to compile
         const { Transaction } = await import("@solana/web3.js");
         const transaction = Transaction.from(bs58.decode(serializedTransaction));
         console.log("[Crossmint] Deserialized SOL transaction", transaction);
@@ -67,7 +67,7 @@ export default function CryptoEmbeddedCheckoutIFrame(props: CryptoEmbeddedChecko
     }
 
     async function handleETHTransaction(signer: ETHEmbeddedCheckoutSigner, serializedTransaction: string) {
-        // @ts-expect-error - Error becasue we dont use 'module' field in tsconfig, which is expected because we use tsup to compile
+        // @ts-ignore - Error becasue we dont use 'module' field in tsconfig, which is expected because we use tsup to compile
         const { parse: parseTransaction } = await import("@ethersproject/transactions");
         const transaction = parseTransaction(serializedTransaction);
         console.log("[Crossmint] Deserialized ETH transaction", transaction);
