@@ -1,5 +1,9 @@
 node_modules
-
+coverage/
+dist/
 docs
-dist
+lib
 out
+CHANGELOG.md
+.eslintrc.js
+.eslintcache

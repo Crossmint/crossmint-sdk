@@ -29,7 +29,7 @@
         "format": "prettier --write src/"
     },
     "dependencies": {
-        "@crossmint/client-sdk-base": "1.1.0-alpha.0",
+        "@crossmint/client-sdk-base": "workspace:*",
         "vue": "3.3.4"
     },
     "devDependencies": {

@@ -1,0 +1,37 @@
+
+> @crossmint/client-sdk-example@1.1.0-alpha.0 build C:\Users\Maxwell\code\paella\crossmint-client-sdk-stable\packages\starter\example
+> pnpm run clean && next build && next export
+
+
+> @crossmint/client-sdk-example@1.1.0-alpha.0 clean C:\Users\Maxwell\code\paella\crossmint-client-sdk-stable\packages\starter\example
+> shx rm -rf .next
+
+- info Linting and checking validity of types...
+- info Creating an optimized production build...
+- info Compiled successfully
+- info Collecting page data...
+- info Generating static pages (0/3)
+- info Generating static pages (3/3)
+- info Finalizing page optimization...
+
+Route (pages)                              Size     First Load JS
+┌ ○ /                                      23.3 kB         101 kB
+├   /_app                                  0 B            77.3 kB
+└ ○ /404                                   182 B          77.5 kB
++ First Load JS shared by all              77.5 kB
+  ├ chunks/framework-efd18f4d51f604cf.js   45.2 kB
+  ├ chunks/main-5ad308bb3fef6636.js        29.4 kB
+  ├ chunks/pages/_app-2400802005141a12.js  747 B
+  ├ chunks/webpack-732b15b448539c2b.js     1.89 kB
+  └ css/27d177a30947857b.css               194 B
+
+○  (Static)  automatically rendered as static HTML (uses no initial props)
+
+- warn "next export" is deprecated in favor of "output: export" in next.config.js https://nextjs.org/docs/advanced-features/static-html-export
+- info using build directory: C:\Users\Maxwell\code\paella\crossmint-client-sdk-stable\packages\starter\example\.next
+- info Copying "static build" directory
+- info Launching 19 workers
+- info Exporting (0/3)
+- info Copying "public" directory
+- info Exporting (3/3)
+Export successful. Files written to C:\Users\Maxwell\code\paella\crossmint-client-sdk-stable\packages\starter\example\out

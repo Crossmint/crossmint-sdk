@@ -12,11 +12,10 @@
         "LICENSE",
         "package.json",
         "README.md",
-        "tsconfig.json",
-        "yarn.lock"
+        "tsconfig.json"
     ],
     "dependencies": {
-        "@crossmint/client-sdk-react-ui": "1.1.0-alpha.0",
+        "@crossmint/client-sdk-react-ui": "workspace:*",
         "@types/react": "18.2.21",
         "@types/react-dom": "18.2.7",
         "eslint-config-react-app": "7.0.1",

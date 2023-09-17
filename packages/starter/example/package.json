@@ -20,12 +20,12 @@
     "scripts": {
         "clean": "shx rm -rf .next",
         "dev": "next dev",
-        "build": "yarn clean && next build && next export",
+        "build": "pnpm run clean && next build && next export",
         "start": "next start",
         "lint": "next lint"
     },
     "dependencies": {
-        "@crossmint/client-sdk-react-ui": "1.1.0-alpha.0",
+        "@crossmint/client-sdk-react-ui": "workspace:*",
         "next": "13.4.19",
         "react": "18.2.0",
         "react-dom": "18.2.0"

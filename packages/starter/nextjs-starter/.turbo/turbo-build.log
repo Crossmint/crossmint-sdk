@@ -1,0 +1,33 @@
+
+> @crossmint/client-sdk-nextjs-starter@1.1.0-alpha.0 build C:\Users\Maxwell\code\paella\crossmint-client-sdk-stable\packages\starter\nextjs-starter
+> pnpm run clean && next build
+
+
+> @crossmint/client-sdk-nextjs-starter@1.1.0-alpha.0 clean C:\Users\Maxwell\code\paella\crossmint-client-sdk-stable\packages\starter\nextjs-starter
+> shx rm -rf .next
+
+- info Linting and checking validity of types...
+- info Creating an optimized production build...
+- info Compiled successfully
+- info Collecting page data...
+- info Generating static pages (0/4)
+- info Generating static pages (1/4)
+- info Generating static pages (2/4)
+- info Generating static pages (3/4)
+- info Generating static pages (4/4)
+- info Finalizing page optimization...
+
+Route (pages)                              Size     First Load JS
+┌ ○ /                                      376 B           101 kB
+├   /_app                                  0 B              76 kB
+├ ○ /404                                   182 B          76.2 kB
+└ ○ /payment-element                       676 B           102 kB
++ First Load JS shared by all              76.4 kB
+  ├ chunks/framework-efd18f4d51f604cf.js   45.2 kB
+  ├ chunks/main-1b841164db2a86e2.js        28.7 kB
+  ├ chunks/pages/_app-24ab08a334c45ce0.js  297 B
+  ├ chunks/webpack-e44d47addcfc471c.js     1.86 kB
+  └ css/2f59332a5edbe2e6.css               330 B
+
+○  (Static)  automatically rendered as static HTML (uses no initial props)
+

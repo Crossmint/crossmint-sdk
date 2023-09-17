@@ -40,32 +40,32 @@ git clone https://github.com/Crossmint/crossmint-client-sdk.git
 
 ```shell
 cd crossmint-client-sdk
-yarn install
+pnpm install
 ```
 
 3. Build all packages:
 
 ```shell
-yarn build
+pnpm build
 ```
 
 4. Run locally:
 
 ```shell
 cd packages/starter/react-ui-starter
-yarn start
+pnpm start
 ```
 
 Remember that if doing changes on the `@crossmint/client-sdk-react-ui` package, they wont be reflected into your project until you rebuild the package and install it back again:
 
 ```
 # Inside `packages/ui/react-ui`. Rebuild package
-yarn build
+pnpm build
 ```
 
 ```
 # Inside the starter. Eg. `packages/starter/nextjs-starter`. Install rebuilt package
-yarn
+pnpm install
 ```
 
 ## Publish (for the crossmint team)

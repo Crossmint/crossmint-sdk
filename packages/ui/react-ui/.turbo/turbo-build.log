@@ -1,0 +1,24 @@
+
+> @crossmint/client-sdk-react-ui@1.1.0-alpha.0 build C:\Users\Maxwell\code\paella\crossmint-client-sdk-stable\packages\ui\react-ui
+> pnpm run clean && tsup src/index.ts --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap
+
+
+> @crossmint/client-sdk-react-ui@1.1.0-alpha.0 clean C:\Users\Maxwell\code\paella\crossmint-client-sdk-stable\packages\ui\react-ui
+> shx rm -rf dist/*
+
+[34mCLI[39m Building entry: src/index.ts
+[34mCLI[39m Using tsconfig: tsconfig.json
+[34mCLI[39m tsup v7.2.0
+[34mCLI[39m Target: es6
+[34mESM[39m Build start
+[34mCJS[39m Build start
+[32mCJS[39m [1mdist\index.cjs     [22m[32m9.21 KB[39m
+[32mCJS[39m [1mdist\index.cjs.map [22m[32m26.09 KB[39m
+[32mCJS[39m ⚡️ Build success in 48ms
+[32mESM[39m [1mdist\index.js     [22m[32m8.44 KB[39m
+[32mESM[39m [1mdist\index.js.map [22m[32m26.86 KB[39m
+[32mESM[39m ⚡️ Build success in 49ms
+[34mDTS[39m Build start
+[32mDTS[39m ⚡️ Build success in 2159ms
+[32mDTS[39m [1mdist\index.d.ts  [22m[32m1.05 KB[39m
+[32mDTS[39m [1mdist\index.d.cts [22m[32m1.05 KB[39m

@@ -1,0 +1,53 @@
+
+> @crossmint/client-sdk-react-ui-starter@1.1.0-alpha.0 build C:\Users\Maxwell\code\paella\crossmint-client-sdk-stable\packages\starter\react-ui-starter
+> react-scripts build
+
+Creating an optimized production build...
+Compiled with warnings.
+
+Failed to parse source map from 'C:\Users\Maxwell\code\paella\crossmint-client-sdk-stable\node_modules\.pnpm\@solana+buffer-layout@4.0.1\node_modules\@solana\buffer-layout\src\Layout.ts' file: Error: ENOENT: no such file or directory, open 'C:\Users\Maxwell\code\paella\crossmint-client-sdk-stable\node_modules\.pnpm\@solana+buffer-layout@4.0.1\node_modules\@solana\buffer-layout\src\Layout.ts'
+
+Failed to parse source map from 'C:\Users\Maxwell\code\paella\crossmint-client-sdk-stable\node_modules\.pnpm\exponential-backoff@3.1.1\node_modules\exponential-backoff\src\backoff.ts' file: Error: ENOENT: no such file or directory, open 'C:\Users\Maxwell\code\paella\crossmint-client-sdk-stable\node_modules\.pnpm\exponential-backoff@3.1.1\node_modules\exponential-backoff\src\backoff.ts'
+
+Failed to parse source map from 'C:\Users\Maxwell\code\paella\crossmint-client-sdk-stable\node_modules\.pnpm\exponential-backoff@3.1.1\node_modules\exponential-backoff\src\delay\always\always.delay.ts' file: Error: ENOENT: no such file or directory, open 'C:\Users\Maxwell\code\paella\crossmint-client-sdk-stable\node_modules\.pnpm\exponential-backoff@3.1.1\node_modules\exponential-backoff\src\delay\always\always.delay.ts'
+
+Failed to parse source map from 'C:\Users\Maxwell\code\paella\crossmint-client-sdk-stable\node_modules\.pnpm\exponential-backoff@3.1.1\node_modules\exponential-backoff\src\delay\delay.base.ts' file: Error: ENOENT: no such file or directory, open 'C:\Users\Maxwell\code\paella\crossmint-client-sdk-stable\node_modules\.pnpm\exponential-backoff@3.1.1\node_modules\exponential-backoff\src\delay\delay.base.ts'
+
+Failed to parse source map from 'C:\Users\Maxwell\code\paella\crossmint-client-sdk-stable\node_modules\.pnpm\exponential-backoff@3.1.1\node_modules\exponential-backoff\src\delay\delay.factory.ts' file: Error: ENOENT: no such file or directory, open 'C:\Users\Maxwell\code\paella\crossmint-client-sdk-stable\node_modules\.pnpm\exponential-backoff@3.1.1\node_modules\exponential-backoff\src\delay\delay.factory.ts'
+
+Failed to parse source map from 'C:\Users\Maxwell\code\paella\crossmint-client-sdk-stable\node_modules\.pnpm\exponential-backoff@3.1.1\node_modules\exponential-backoff\src\delay\skip-first\skip-first.delay.ts' file: Error: ENOENT: no such file or directory, open 'C:\Users\Maxwell\code\paella\crossmint-client-sdk-stable\node_modules\.pnpm\exponential-backoff@3.1.1\node_modules\exponential-backoff\src\delay\skip-first\skip-first.delay.ts'
+
+Failed to parse source map from 'C:\Users\Maxwell\code\paella\crossmint-client-sdk-stable\node_modules\.pnpm\exponential-backoff@3.1.1\node_modules\exponential-backoff\src\jitter\full\full.jitter.ts' file: Error: ENOENT: no such file or directory, open 'C:\Users\Maxwell\code\paella\crossmint-client-sdk-stable\node_modules\.pnpm\exponential-backoff@3.1.1\node_modules\exponential-backoff\src\jitter\full\full.jitter.ts'
+
+Failed to parse source map from 'C:\Users\Maxwell\code\paella\crossmint-client-sdk-stable\node_modules\.pnpm\exponential-backoff@3.1.1\node_modules\exponential-backoff\src\jitter\jitter.factory.ts' file: Error: ENOENT: no such file or directory, open 'C:\Users\Maxwell\code\paella\crossmint-client-sdk-stable\node_modules\.pnpm\exponential-backoff@3.1.1\node_modules\exponential-backoff\src\jitter\jitter.factory.ts'
+
+Failed to parse source map from 'C:\Users\Maxwell\code\paella\crossmint-client-sdk-stable\node_modules\.pnpm\exponential-backoff@3.1.1\node_modules\exponential-backoff\src\jitter\no\no.jitter.ts' file: Error: ENOENT: no such file or directory, open 'C:\Users\Maxwell\code\paella\crossmint-client-sdk-stable\node_modules\.pnpm\exponential-backoff@3.1.1\node_modules\exponential-backoff\src\jitter\no\no.jitter.ts'
+
+Failed to parse source map from 'C:\Users\Maxwell\code\paella\crossmint-client-sdk-stable\node_modules\.pnpm\exponential-backoff@3.1.1\node_modules\exponential-backoff\src\options.ts' file: Error: ENOENT: no such file or directory, open 'C:\Users\Maxwell\code\paella\crossmint-client-sdk-stable\node_modules\.pnpm\exponential-backoff@3.1.1\node_modules\exponential-backoff\src\options.ts'
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+File sizes after gzip:
+
+  85.14 kB  build\static\js\795.a8650971.chunk.js
+  71.8 kB   build\static\js\main.1ff04576.js
+  28.07 kB  build\static\js\306.132d91bb.chunk.js
+  11.72 kB  build\static\js\833.64aea379.chunk.js
+  264 B     build\static\css\main.e6c13ad2.css
+  120 B     build\static\js\178.164f4c54.chunk.js
+  120 B     build\static\js\426.b12123a0.chunk.js
+
+The project was built assuming it is hosted at /.
+You can control this with the homepage field in your package.json.
+
+The build folder is ready to be deployed.
+You may serve it with a static server:
+
+  npm install -g serve
+  serve -s build
+
+Find out more about deployment here:
+
+  https://cra.link/deployment
+
