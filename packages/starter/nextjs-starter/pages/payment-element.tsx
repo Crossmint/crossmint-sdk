@@ -77,7 +77,9 @@ function Content({ count }: { count: number }) {
             paymentMethod="SOL"
             signer={{
                 address: signer.publicKey.toString(),
-                signAndSendTransaction: signer.signAndSendTransaction.bind(signer),
+                signAndSendTransaction: async (transaction) => {
+                    return (await signer.signAndSendTransaction(transaction)).signature;
+                },
             }}
             onEvent={(event) => {
                 console.log(event);
