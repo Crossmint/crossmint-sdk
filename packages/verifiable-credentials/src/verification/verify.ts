@@ -7,7 +7,8 @@ import { NFTstatusService } from "./nftStatus";
 import { VerifiableCredentialSignatureService } from "./signatureService";
 
 export async function verifyCredential(
-    credential: VerifiableCredential
+    credential: VerifiableCredential,
+    environment: string = "test"
 ): Promise<{ validVC: boolean; error: string | undefined }> {
     // TODO check for missing fields
 
@@ -28,7 +29,7 @@ export async function verifyCredential(
         return { validVC: false, error };
     }
 
-    const nftRevoked = await new NFTstatusService().isBurned(credential.nft);
+    const nftRevoked = await new NFTstatusService(environment).isBurned(credential.nft);
     if (nftRevoked) {
         error = "Credential has been revoked";
         return { validVC: false, error };
