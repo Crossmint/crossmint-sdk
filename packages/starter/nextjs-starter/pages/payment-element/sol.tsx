@@ -4,26 +4,20 @@ import {
     DynamicWidget,
     useDynamicContext,
 } from "@dynamic-labs/sdk-react";
+import { SolanaWalletConnectors } from "@dynamic-labs/solana-all";
 import { useEffect, useState } from "react";
 
 import { CrossmintPaymentElement } from "@crossmint/client-sdk-react-ui";
 
 export default function PaymentElementPage() {
     const [count, setCount] = useState(1);
-    const [signer, setSigner] = useState<any>(null);
 
     return (
         <DynamicContextProvider
             settings={{
                 initialAuthenticationMode: "connect-only",
                 environmentId: "377e1f17-8ef9-4a9a-b35c-6a13ffb1de5e",
-                eventsCallbacks: {
-                    onConnectSuccess: async ({ walletConnector }) => {
-                        const _signer = await walletConnector?.getSigner();
-                        console.log("_signer", _signer);
-                        setSigner(_signer);
-                    },
-                },
+                walletConnectors: [SolanaWalletConnectors],
             }}
         >
             <div
@@ -40,7 +34,7 @@ export default function PaymentElementPage() {
                     <p>Connect</p>
                 </DynamicConnectButton>
 
-                {<Content count={count} />}
+                <Content count={count} />
             </div>
         </DynamicContextProvider>
     );
@@ -62,7 +56,7 @@ function Content({ count }: { count: number }) {
         getSigner();
     }, [walletConnector]);
 
-    if (signer == null) {
+    if (signer == null || walletConnector?.connectedChain != "SOL") {
         return <p>Connect wallet</p>;
     }
 
@@ -78,7 +72,9 @@ function Content({ count }: { count: number }) {
             signer={{
                 address: signer.publicKey.toString(),
                 signAndSendTransaction: async (transaction) => {
-                    return (await signer.signAndSendTransaction(transaction)).signature;
+                    const signRes = await signer.signAndSendTransaction(transaction);
+                    console.log("signRes", signRes);
+                    return signRes.signature;
                 },
             }}
             onEvent={(event) => {
