@@ -1,10 +1,14 @@
-import { baseUrls } from "../types";
+import { BaseUrls } from "../types";
 import { NFTCollectionViewProps, NFTDetailProps, NFTOrNFTLocator } from "../types/blockchain";
 
 export const getEnvironmentBaseUrl = (environment = ""): string => {
     const productionValues = ["prod", "production"];
-    if (environment === "staging") return baseUrls.staging;
-    if (productionValues.includes(environment) || !environment) return baseUrls.prod;
+    if (environment === "staging") {
+        return BaseUrls.staging;
+    }
+    if (productionValues.includes(environment) || !environment) {
+        return BaseUrls.prod;
+    }
     return environment;
 };
 

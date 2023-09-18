@@ -1,0 +1,30 @@
+name: CI
+on: [push]
+
+jobs:
+    build:
+        name: Test
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Set Node.js 18.16.0
+              uses: actions/setup-node@v3
+              with:
+                  node-version: 18.16.0
+                  cache: "yarn"
+
+            - name: Run install
+              uses: borales/actions-yarn@v4
+              with:
+                  cmd: install
+
+            - name: Build all
+              uses: borales/actions-yarn@v4
+              with:
+                  cmd: build
+
+            - name: Test all
+              uses: borales/actions-yarn@v4
+              with:
+                  cmd: test

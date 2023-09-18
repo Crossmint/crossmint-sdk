@@ -1,0 +1,11 @@
+{
+    "entryPoints": ["./"],
+    "entryPointStrategy": "packages",
+    "out": "docs",
+    "readme": "README.md",
+    "exclude": ["**/node_modules/**", "**/*.test.ts", "**/*.test.tsx"],
+    "excludeExternals": true,
+    "externalPattern": ["**/node_modules/**"],
+    "name": "@crossmint/client-sdk",
+    "includeVersion": true
+}
