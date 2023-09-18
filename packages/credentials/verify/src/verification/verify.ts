@@ -1,9 +1,10 @@
 import { Wallet, verifyMessage } from "@ethersproject/wallet";
 import { EIP712VC } from "@krebitdao/eip712-vc";
-import { VerifiableCredential } from "../types/verifiableCredential.js";
-import { VerifiableCredentialSignatureService } from "./signatureService.js";
 import { parseISO } from "date-fns";
-import { NFTstatusService } from "./nftStatus.js";
+
+import { VerifiableCredential } from "../types/verifiableCredential";
+import { NFTstatusService } from "./nftStatus";
+import { VerifiableCredentialSignatureService } from "./signatureService";
 
 export async function verifyCredential(
     credential: VerifiableCredential
@@ -21,9 +22,7 @@ export async function verifyCredential(
         }
     }
 
-    const validProof = await new VerifiableCredentialSignatureService().verify(
-        credential
-    );
+    const validProof = await new VerifiableCredentialSignatureService().verify(credential);
     if (!validProof) {
         error = "Invalid proof";
         return { validVC: false, error };
