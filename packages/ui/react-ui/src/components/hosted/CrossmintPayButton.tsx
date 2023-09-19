@@ -5,7 +5,7 @@ import {
     CrossmintPayButtonProps,
     clientNames,
     crossmintModalService,
-    crossmintPayButtonService,
+    crossmintPayButtonService, CheckoutProps,
 } from "@crossmint/client-sdk-base";
 
 import { LIB_VERSION } from "../../consts/version";
@@ -48,7 +48,7 @@ export function CrossmintPayButton(buttonProps: CrossmintPayButtonReactProps) {
             experimental: false,
             display: "same-tab",
             paymentMethods: ["fiat", "ETH", "SOL"],
-        },
+        } as CheckoutProps,
         ...props
     } = buttonProps;
 
