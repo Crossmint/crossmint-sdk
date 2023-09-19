@@ -1,4 +1,4 @@
-export * from "./CrossmintPayButton";
-export * from "./CrossmintPaymentElement";
-export { CheckoutEvents, useCrossmintEvents } from "@crossmint/client-sdk-base";
-export type { CrossmintCheckoutEvent, CheckoutEventMap, CrossmintCheckoutEventUnion } from "@crossmint/client-sdk-base";
+export * from "./components";
+
+export { CrossmintEvents, useCrossmintEvents } from "@crossmint/client-sdk-base";
+export type { CrossmintEvent, CrossmintEventMap } from "@crossmint/client-sdk-base";
