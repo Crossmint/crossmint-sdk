@@ -1,5 +1,5 @@
 import { Currency, Locale, PaymentMethod, SigninMethods, clientNames } from "../../types";
-import { MintConfigs } from "../../types/hosted";
+import { MintConfigs, CheckoutProps} from "../../types/hosted";
 import { CaseInsensitive } from "../../types/system";
 import { getEnvironmentBaseUrl } from "../../utils/ui";
 
