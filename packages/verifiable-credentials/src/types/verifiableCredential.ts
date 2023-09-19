@@ -3,7 +3,7 @@ export interface VcNft {
     chain: string;
     contractAddress: string;
 }
-interface VerifiableCredentialCreationParams {
+export interface VerifiableCredential {
     id: string;
     credentialSubject: any;
     expirationDate?: string;
@@ -11,10 +11,6 @@ interface VerifiableCredentialCreationParams {
     issuer: { id: string };
     type: string[];
     issuanceDate: string;
-}
-
-export interface VerifiableCredential
-    extends VerifiableCredentialCreationParams {
     "@context": string[];
     credentialSchema: { id: string; type: string };
     proof?: { proofValue: string; [key: string]: any };

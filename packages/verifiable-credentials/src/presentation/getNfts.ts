@@ -9,7 +9,7 @@ import { getCredentialCollections } from "./getMetadata";
 const headers = {
     "x-project-id": "e62564a7-06eb-4f65-b389-eb3b7a4f6f98",
     "x-client-secret": "sk_test.ad1f46fe.67853d066b359d071d5cab5ef03382f6",
-    // accept: "application/json",
+    accept: "application/json",
 };
 
 async function getWalletNfts(chain: string, wallet: string) {
@@ -46,17 +46,20 @@ async function getWalletNfts(chain: string, wallet: string) {
 }
 
 export function filterPolygonErc721(nfts: EVMNFT[]): EVMNFT[] {
-    return nfts.filter((nft) => nft.chain === "polygon" && nft.tokenStandard === "erc721");
+    return nfts.filter((nft) => nft.chain === "polygon" && nft.tokenStandard === "erc-721");
 }
 
 export function getCollections(nfts: EVMNFT[]): CredentialsCollection[] {
-    const grouped: Record<string, EVMNFT[]> = nfts.reduce((acc, nft) => {
-        if (!acc[nft.contractAddress]) {
-            acc[nft.contractAddress] = [];
-        }
-        acc[nft.contractAddress].push(nft);
-        return acc;
-    }, {} as Record<string, EVMNFT[]>);
+    const grouped: Record<string, EVMNFT[]> = nfts.reduce(
+        (acc, nft) => {
+            if (!acc[nft.contractAddress]) {
+                acc[nft.contractAddress] = [];
+            }
+            acc[nft.contractAddress].push(nft);
+            return acc;
+        },
+        {} as Record<string, EVMNFT[]>
+    );
 
     return Object.entries(grouped).map(([contractAddress, nfts]) => ({
         contractAddress,
@@ -65,7 +68,11 @@ export function getCollections(nfts: EVMNFT[]): CredentialsCollection[] {
     }));
 }
 
-export async function getCredentialNfts(chain: string, wallet: string, filters: CredentialFilter = {}) {
+export async function getCredentialNfts(
+    chain: string,
+    wallet: string,
+    filters: CredentialFilter = {}
+): Promise<CredentialsCollection[]> {
     if (chain !== "polygon") {
         throw new Error("Only polygon is supported");
     }
@@ -73,13 +80,21 @@ export async function getCredentialNfts(chain: string, wallet: string, filters: 
     if (nfts == null) {
         throw new Error("Failed to get nfts");
     }
+    console.info(`Got ${nfts.length} nfts`);
+
     const polygonErc721Nfts = filterPolygonErc721(nfts);
+    console.info(`Got ${polygonErc721Nfts.length} polygon erc721 nfts`);
+
     let collections = getCollections(polygonErc721Nfts);
+    console.info(`Got ${collections.length} collections`);
+
     if (filters.issuers != null) {
         collections = collections.filter((collection) => {
             return filters.issuers?.includes(collection.contractAddress);
         });
     }
+
     const credentialsCollection = await getCredentialCollections(collections);
+    console.info(`Got ${credentialsCollection.length} credential collections`);
     return credentialsCollection;
 }

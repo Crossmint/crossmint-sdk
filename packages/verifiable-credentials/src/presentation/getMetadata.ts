@@ -34,16 +34,20 @@ export async function getVCMetadata(contractAddress: string): Promise<any> {
 }
 
 export async function getCredentialCollections(collections: CredentialsCollection[]): Promise<CredentialsCollection[]> {
-    const collectionsWithMetadata = [];
+    const credentialCollections = [];
 
     for (const collection of collections) {
-        const credentialMetadata = await getVCMetadata(collection.contractAddress);
+        // const credentialMetadata = await getVCMetadata(collection.contractAddress);
 
-        if (credentialMetadata != null) {
-            collection.metadata = credentialMetadata;
-            collectionsWithMetadata.push(collection);
+        // if (credentialMetadata != null) {
+        //     collection.metadata = credentialMetadata;
+        //     credentialCollections.push(collection);
+        // }
+
+        if (collection.nfts[0].metadata.credentialId != null) {
+            credentialCollections.push(collection);
         }
     }
 
-    return collectionsWithMetadata;
+    return credentialCollections;
 }
