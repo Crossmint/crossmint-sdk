@@ -1,4 +1,4 @@
-import { Locale, PaymentMethod } from "../../types";
+import { CheckoutProps, Locale, PaymentMethod } from "../../types";
 import { t } from "../../utils/i18n";
 
 interface IProps {
@@ -6,12 +6,16 @@ interface IProps {
     connecting: boolean;
     paymentMethod?: PaymentMethod;
     locale: Locale;
+    checkoutProps?: CheckoutProps;
 }
 
-export function crossmintPayButtonService({ onClick, connecting, paymentMethod, locale }: IProps) {
+export function crossmintPayButtonService({ onClick, connecting, paymentMethod, locale, checkoutProps }: IProps) {
     const getButtonText = (connecting: boolean) => {
         if (connecting) {
             return t("crossmintPayButtonService.CONNECTING", locale);
+        }
+        if(checkoutProps?.experimental === true && checkoutProps?.paymentMethods?.length != 1) {
+            return t("crossmintPayButtonService.BUY", locale);
         }
         switch (paymentMethod) {
             case "ETH":
