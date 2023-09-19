@@ -26,7 +26,7 @@
         },
         {
             "name": "✅ @crossmint/verify-credentials-sdk",
-            "path": "packages/credentials/verify"
+            "path": "packages/verifiable-credentials"
         }
     ],
     "settings": {

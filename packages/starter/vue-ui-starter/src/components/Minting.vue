@@ -2,7 +2,7 @@
 import { ref } from "vue";
 import { useRoute } from "vue-router";
 
-import { type CheckoutEventMap, useCrossmintEvents } from "@crossmint/client-sdk-vue-ui";
+import { useCrossmintEvents } from "@crossmint/client-sdk-vue-ui";
 
 const { listenToMintingEvents } = useCrossmintEvents({ environment: "http://localhost:3000" });
 const route = useRoute();

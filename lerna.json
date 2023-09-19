@@ -1,6 +1,11 @@
 {
-    "packages": ["packages/*/*"],
+    "packages": ["packages/*/*", "packages/verifiable-credentials"],
     "version": "independent",
     "npmClient": "yarn",
-    "useWorkspaces": true
+    "useWorkspaces": true,
+    "command": {
+        "publish": {
+            "exact": true
+        }
+    }
 }
