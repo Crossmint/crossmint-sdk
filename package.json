@@ -8,8 +8,7 @@
     "type": "module",
     "workspaces": {
         "packages": [
-            "packages/*/*",
-            "packages/verifiable-credentials"
+            "packages/**/*"
         ]
     },
     "engines": {
@@ -27,7 +26,7 @@
         "fmt": "prettier --write '{*,**/*}.{js,ts,jsx,tsx,json}'",
         "lint": "eslint --ext .ts . && prettier --check '{*,**/*}.{js,ts,jsx,tsx,json}'",
         "lint:fix": "eslint --fix --ext .ts . && yarn fmt",
-        "nuke": "shx rm -rf {.,packages/*/*,packages/verifiable-credentials}/{node_modules,dist}",
+        "nuke": "shx rm -rf {.,packages/**/*}/{node_modules,dist}",
         "link": "lerna link"
     },
     "devDependencies": {

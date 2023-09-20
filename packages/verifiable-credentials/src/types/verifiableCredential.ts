@@ -1,20 +1,16 @@
-export interface VcNft {
-    tokenId: string;
-    chain: string;
-    contractAddress: string;
-}
+import { EVMNFT } from "@crossmint/client-sdk-base/src/types/blockchain";
+
 interface VerifiableCredentialCreationParams {
     id: string;
     credentialSubject: any;
     expirationDate?: string;
-    nft: VcNft;
+    nft: EVMNFT;
     issuer: { id: string };
     type: string[];
     issuanceDate: string;
 }
 
-export interface VerifiableCredential
-    extends VerifiableCredentialCreationParams {
+export interface VerifiableCredential extends VerifiableCredentialCreationParams {
     "@context": string[];
     credentialSchema: { id: string; type: string };
     proof?: { proofValue: string; [key: string]: any };

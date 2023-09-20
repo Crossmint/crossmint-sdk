@@ -2,20 +2,21 @@ import { JsonRpcProvider, StaticJsonRpcProvider } from "@ethersproject/providers
 import { Contract } from "ethers";
 import { constants } from "ethers";
 
-import { abi_ERC_721 } from "../ABI/ERC721";
-import { VcNft } from "../types/verifiableCredential";
+import { EVMNFT } from "@crossmint/client-sdk-base/src/types/blockchain";
+
+import { abi_ERC_721 } from "../../ABI/ERC721";
 
 const POLYGON_RPC_URL = "https://rpc-mainnet.maticvigil.com/";
 const POLYGON_RPC_URL_TEST = "https://rpc-mumbai.maticvigil.com/";
 
-export class NFTstatusService {
+export class NFTStatusService {
     private environment: string;
 
     constructor(environment: string) {
         this.environment = environment;
     }
 
-    async isBurned(nft: VcNft) {
+    async isBurned(nft: EVMNFT) {
         if (nft.chain !== "polygon") {
             throw new Error("Only Polygon is supported");
         }
