@@ -29,7 +29,7 @@ export async function verifyCredential(
         return { validVC: false, error };
     }
 
-    const nftRevoked = await new NFTStatusService(environment).isBurned(credential.nft);
+    const nftRevoked = await new NFTStatusService(environment).isBurnt(credential.nft);
     if (nftRevoked) {
         error = "Credential has been revoked";
         return { validVC: false, error };
