@@ -1,4 +1,4 @@
-import { EVMNFT } from "@crossmint/client-sdk-base/src/types/blockchain";
+import { EVMNFT } from "@crossmint/client-sdk-base";
 
 interface VerifiableCredentialCreationParams {
     id: string;

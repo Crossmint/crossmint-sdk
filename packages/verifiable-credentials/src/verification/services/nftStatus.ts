@@ -2,7 +2,7 @@ import { JsonRpcProvider, StaticJsonRpcProvider } from "@ethersproject/providers
 import { Contract } from "ethers";
 import { constants } from "ethers";
 
-import { EVMNFT } from "@crossmint/client-sdk-base/src/types/blockchain";
+import { EVMNFT } from "@crossmint/client-sdk-base";
 
 import { abi_ERC_721 } from "../../ABI/ERC721";
 
