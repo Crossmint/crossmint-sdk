@@ -18,7 +18,7 @@ export default function PaymentElementPage() {
                     display: "flex",
                     alignSelf: "center",
                     flexDirection: "column",
-                    width: "640px",
+                    width: "420px",
                     gap: "20px",
                 }}
             >
