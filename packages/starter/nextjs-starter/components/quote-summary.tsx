@@ -3,11 +3,10 @@ import { InitialQuotePayload } from "@crossmint/client-sdk-base";
 export default function QuoteSummary({initialQuotePayload}:{initialQuotePayload:InitialQuotePayload}) {
     return (
         <div style={{
-            fontFamily: "Courier New, monospace",
             padding: "20px",
             border: "1px solid #ccc",
         }}>
-            <h3 style={{ textAlign: "center", textDecoration: "underline" }}>Summary</h3>
+            <h4 style={{ textAlign: "center", textDecoration: "underline" }}>Summary</h4>
 
             {initialQuotePayload.lineItems.map((item, i) => (
                 <div key={i} style={{
@@ -45,7 +44,7 @@ export default function QuoteSummary({initialQuotePayload}:{initialQuotePayload:
                 marginTop: "20px",
                 borderTop: "2px solid #000",
                 paddingTop: "10px",
-                fontSize: "18px",
+                fontSize: "16px",
                 fontWeight: "bold",
                 display: "flex",
                 justifyContent: "space-between",
