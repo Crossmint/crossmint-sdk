@@ -50,7 +50,7 @@ export default function PaymentElementPage() {
 
 
                 <CrossmintPaymentElement
-                    environment="https://estoussel.ngrok.dev"
+                    environment="https://crossmint-main-git-main-crossmint.vercel.app"
                     clientId="6845c702-8396-4339-b17e-a2bf12d2cf6d"
                     recipient={{ wallet: "0xdC9bb9929b79b62d630A7C3568c979a2843eFd8b" }}
                     mintConfig={{
