@@ -7,7 +7,8 @@ import {
 import { SolanaWalletConnectors } from "@dynamic-labs/solana-all";
 import { useEffect, useState } from "react";
 
-import { CrossmintPaymentElement } from "@crossmint/client-sdk-react-ui";
+import { CrossmintEvents, CrossmintPaymentElement } from "@crossmint/client-sdk-react-ui";
+import QuoteSummary from "../../components/quote-summary";
 
 export default function PaymentElementPage() {
     const [count, setCount] = useState(1);
@@ -20,21 +21,42 @@ export default function PaymentElementPage() {
                 walletConnectors: [SolanaWalletConnectors],
             }}
         >
-            <div
-                style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    width: "100%",
-                    gap: "20px",
-                }}
-            >
-                <button onClick={() => setCount(count + 1)}>Increment count: {count}</button>
+            <div style={{
+                display: "flex",
+                alignSelf: "center",
+                flexDirection: "column",
 
-                <DynamicConnectButton>
-                    <p>Connect</p>
-                </DynamicConnectButton>
+            }}>
+                <div
+                    style={{
+                        marginTop: "100px",
+                        display: "flex",
+                        alignSelf: "center",
+                        flexDirection: "column",
+                        width: "480px",
+                        gap: "20px",
+                    }}
+                >
 
-                <Content count={count} />
+                    <DynamicConnectButton>
+                        <div
+                            style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                width: "460px",
+                                alignSelf: "center",
+
+                            }}
+                        ><p>Connect your wallet</p>
+                        </div>
+                    </DynamicConnectButton>
+
+                    <button onClick={() => setCount(count + 1)}>Increment count: {count}</button>
+
+
+                    <Content count={count} />
+
+                </div>
             </div>
         </DynamicContextProvider>
     );
@@ -43,6 +65,7 @@ export default function PaymentElementPage() {
 function Content({ count }: { count: number }) {
     const [signer, setSigner] = useState<any>(null);
 
+    const [quoteMessage, setQuoteMessage] = useState();
     const { walletConnector } = useDynamicContext();
 
     async function getSigner() {
@@ -56,12 +79,34 @@ function Content({ count }: { count: number }) {
         getSigner();
     }, [walletConnector]);
 
+    useEffect(() => {
+        const handleWindowMessage = (e: MessageEvent) => {
+            const { data } = e;
+            if (data == null || typeof data !== "object") {
+                return;
+            }
+            const eventType = data.type;
+            const eventPayload = data.payload;
+            if (eventType === CrossmintEvents.QUOTE_STATUS_CHANGED) {
+                setQuoteMessage(eventPayload);
+            }
+
+        };
+
+        window.addEventListener("message", handleWindowMessage);
+        return () => window.removeEventListener("message", handleWindowMessage);
+    }, []);
+
     if (signer == null || walletConnector?.connectedChain != "SOL") {
         return <p>Connect wallet</p>;
     }
 
     return (
-        <CrossmintPaymentElement
+        <>
+            {quoteMessage != null ? <QuoteSummary initialQuotePayload={quoteMessage} />
+                : "Loading..."}
+
+            <CrossmintPaymentElement
             environment="https://crossmint-main-git-checkout-embedded-p5-crossmint.vercel.app"
             clientId="db218e78-d042-4761-83af-3c4e5e6659dd"
             recipient={{ wallet: "maxfQWBno84Zfu4sXgmjYvsvLn4LzGFSgSkFMFuzved" }}
@@ -85,5 +130,6 @@ function Content({ count }: { count: number }) {
                 }
             }}
         />
+            </>
     );
 }

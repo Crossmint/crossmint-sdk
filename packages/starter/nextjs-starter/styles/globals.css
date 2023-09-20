@@ -39,6 +39,7 @@ button.my-crossmint-button img {
   animation-timing-function: linear;
 }
 
-.iframe{
-    box-shadow: none !important;
+iframe{
+    
+    border: none !important;
 }
