@@ -5,7 +5,7 @@ import {
     CrossmintPayButtonProps,
     clientNames,
     crossmintModalService,
-    crossmintPayButtonService,
+    crossmintPayButtonService, CheckoutProps,
 } from "@crossmint/client-sdk-base";
 
 import { LIB_VERSION } from "../../consts/version";
@@ -44,6 +44,11 @@ export function CrossmintPayButton(buttonProps: CrossmintPayButtonReactProps) {
         loginEmail = "",
         projectId,
         getButtonText,
+        checkoutProps = {
+            experimental: false,
+            display: "same-tab",
+            paymentMethods: ["fiat", "ETH", "SOL"],
+        } as CheckoutProps,
         ...props
     } = buttonProps;
 
@@ -73,6 +78,7 @@ export function CrossmintPayButton(buttonProps: CrossmintPayButtonReactProps) {
         connecting,
         paymentMethod,
         locale,
+        checkoutProps
     });
 
     const _handleClick = (event: MouseEvent<HTMLButtonElement>) =>
@@ -85,7 +91,8 @@ export function CrossmintPayButton(buttonProps: CrossmintPayButtonReactProps) {
                 whPassThroughArgs,
                 paymentMethod,
                 preferredSigninMethod,
-                prepay
+                prepay,
+                checkoutProps
             );
         });
 

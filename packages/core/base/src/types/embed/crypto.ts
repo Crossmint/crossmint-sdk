@@ -29,12 +29,12 @@ export type CryptoEmbeddedCheckoutProps =
       }[keyof CryptoPaymentMethodSignerMap]
     | CryptoEmbeddedCheckoutPropsWithSigner;
 
-type CryptoPaymentMethodSignerMap = {
+export type CryptoPaymentMethodSignerMap = {
     [CryptoPaymentMethod.ETH]: ETHEmbeddedCheckoutSigner;
     [CryptoPaymentMethod.SOL]: SOLEmbeddedCheckoutSigner;
 };
 
-type CommonEmbeddedCheckoutSignerProps = {
+export type CommonEmbeddedCheckoutSignerProps = {
     address: string;
 };
 

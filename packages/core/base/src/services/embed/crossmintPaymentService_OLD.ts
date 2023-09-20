@@ -3,7 +3,7 @@ import {
     CrossmintEvents,
     CrossmintInternalEvents,
     FiatEmbeddedCheckoutProps,
-    ParamsUpdatePayload,
+    UpdatableEmbeddedCheckoutParams,
 } from "../../types";
 import { getEnvironmentBaseUrl } from "../../utils";
 
@@ -91,7 +91,7 @@ export function crossmintPaymentService_OLD(props: FiatEmbeddedCheckoutProps) {
         };
     }
 
-    function emitQueryParams(payload: ParamsUpdatePayload) {
+    function emitQueryParams(payload: UpdatableEmbeddedCheckoutParams) {
         const iframe = document.getElementById("crossmint-embedded-checkout.iframe") as HTMLIFrameElement | null;
         if (iframe == null) {
             console.error("[Crossmint] Failed to find crossmint-embedded-checkout.iframe");
