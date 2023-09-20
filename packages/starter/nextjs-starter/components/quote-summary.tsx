@@ -1,6 +1,6 @@
 import { InitialQuotePayload } from "@crossmint/client-sdk-base";
 
-export default function QuoteSummary({initialQuotePayload}:{initialQuotePayload:InitialQuotePayload}) {
+export default function QuoteSummary({ initialQuotePayload }: { initialQuotePayload: InitialQuotePayload }) {
     return (
         <div style={{
             padding: "20px",
@@ -11,32 +11,51 @@ export default function QuoteSummary({initialQuotePayload}:{initialQuotePayload:
             {initialQuotePayload.lineItems.map((item, i) => (
                 <div key={i} style={{
                     marginBottom: "10px",
-                    ...(i === initialQuotePayload.lineItems.length - 1 ? {} : {borderBottom: "1px dashed #ccc", }),
+                    ...(i === initialQuotePayload.lineItems.length - 1 ? {} : { borderBottom: "1px dashed #ccc" }),
                     paddingBottom: "10px",
                     display: "flex",
+                    flexDirection: "column",
                     alignItems: "center",
                 }}>
-                    <div>
-                        {item.metadata.imageUrl != null && (
-                            <img
-                                src={item.metadata.imageUrl}
-                                alt={`${item.metadata.title} image`}
-                                style={{ width: "50px", height: "50px", marginRight: "10px" }}
-                            />
-                        )}
+                    <div style={{ display: "flex"}}>
+                        <div>
+                            {item.metadata.imageUrl != null && (
+                                <img
+                                    src={item.metadata.imageUrl}
+                                    alt={`${item.metadata.title} image`}
+                                    style={{ width: "30px", height: "43px", marginRight: "10px" }}
+                                />
+                            )}
+                        </div>
+                        <div style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+
+                            flexDirection: "column",
+                        }}>
+                            <span>{item.quantity}x {item.metadata.title}</span>
+                            <div style={{ fontSize: "10px", color: "#666" }}>{item.metadata.collection}</div>
+                            <div style={{ fontSize: "10px", color: "#888" }}>{item.metadata.description}</div>
+
+                        </div>
                     </div>
+
                     <div style={{
+                        paddingTop: "10px",
                         display: "flex",
                         justifyContent: "space-between",
-                        flexGrow: "1",
+                        alignItems: "flex-end",
+                        fontSize: "12px",
+                        flexGrow:"1",
                         flexDirection: "column",
+                        width:"100%"
                     }}>
-                        <span>{item.quantity}x {item.metadata.title}</span>
-                        <div style={{ fontSize: "12px", color: "#666" }}>{item.metadata.collection}</div>
-                        <div style={{ fontSize: "12px", color: "#888" }}>{item.metadata.description}</div>
-
+                        <span>Price: {item.price.amount} {item.price.currency.toUpperCase()}</span>
+                        {item.gasFee &&
+                            <span>Gas fees: {item.gasFee?.amount} {item.gasFee?.currency.toUpperCase()}</span>}
                     </div>
-                    <span>{item.price.amount} {item.price.currency.toUpperCase()}</span>
+
+
                 </div>
             ))}
 
@@ -53,5 +72,5 @@ export default function QuoteSummary({initialQuotePayload}:{initialQuotePayload:
                 <span>{initialQuotePayload.totalPrice.amount} {initialQuotePayload.totalPrice.currency.toUpperCase()}</span>
             </div>
         </div>
-    )
+    );
 }

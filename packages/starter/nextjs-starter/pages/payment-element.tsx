@@ -50,11 +50,12 @@ export default function PaymentElementPage() {
 
 
                 <CrossmintPaymentElement
-                    environment="https://crossmint-main-git-main-crossmint.vercel.app"
-                    clientId="db218e78-d042-4761-83af-3c4e5e6659dd"
-                    recipient={{ wallet: "maxfQWBno84Zfu4sXgmjYvsvLn4LzGFSgSkFMFuzved" }}
+                    environment="https://estoussel.ngrok.dev"
+                    clientId="6845c702-8396-4339-b17e-a2bf12d2cf6d"
+                    recipient={{ wallet: "0xdC9bb9929b79b62d630A7C3568c979a2843eFd8b" }}
                     mintConfig={{
-                        testCount: count,
+                        totalPrice: `${0.001 * count}`,
+                        quantity: `${count}`,
                     }}
                     paymentMethod="ETH"
                     signer={{
