@@ -1,9 +1,31 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { CrossmintPaymentElement } from "@crossmint/client-sdk-react-ui";
+import { CrossmintEvents, InitialQuotePayload } from "@crossmint/client-sdk-base";
+import QuoteSummary from "../components/quote-summary";
 
 export default function PaymentElementPage() {
     const [count, setCount] = useState(1);
+    const [quoteMessage, setQuoteMessage] = useState<InitialQuotePayload>(null as any);
+
+    useEffect(() => {
+        const handleWindowMessage = (e: MessageEvent) => {
+            const { data } = e;
+            if (data == null || typeof data !== "object") {
+                return;
+            }
+            const eventType = data.type;
+            const eventPayload = data.payload;
+            if (eventType === CrossmintEvents.QUOTE_STATUS_CHANGED) {
+                setQuoteMessage(eventPayload);
+            }
+
+        };
+
+        window.addEventListener("message", handleWindowMessage);
+        return () => window.removeEventListener("message", handleWindowMessage);
+    }, []);
+
 
     return (
         <div style={{
@@ -23,6 +45,10 @@ export default function PaymentElementPage() {
                 }}
             >
                 <button onClick={() => setCount(count + 1)}>Increment count: {count}</button>
+
+                {quoteMessage != null ? <QuoteSummary initialQuotePayload={quoteMessage} /> : "Loading..."}
+
+
                 <CrossmintPaymentElement
                     environment="https://crossmint-main-git-main-crossmint.vercel.app"
                     clientId="db218e78-d042-4761-83af-3c4e5e6659dd"
@@ -43,5 +69,6 @@ export default function PaymentElementPage() {
                 />
             </div>
         </div>
+
     );
 }
