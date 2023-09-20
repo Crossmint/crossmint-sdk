@@ -1,6 +1,7 @@
 import { updatableCryptoParams, updatableFiatParams } from "@/consts";
 import {
     CrossmintEmbeddedCheckoutProps,
+    CryptoEmbeddedCheckoutPropsWithSigner,
     UpdatableCryptoParams,
     UpdatableEmbeddedCheckoutParams,
     UpdatableFiatParams,
@@ -14,7 +15,15 @@ export function embeddedCheckoutPropsToUpdatableParamsPayload(
     let updatableParams: UpdatableEmbeddedCheckoutParams;
     if (isCryptoEmbeddedCheckoutProps(props)) {
         updatableParams = Object.fromEntries<UpdatableCryptoParams>(
-            updatableCryptoParams.map((key) => [key, props[key]])
+            updatableCryptoParams.map((key) => {
+                const value = props[key];
+
+                if (key === "signer" && value != null) {
+                    return [key, { address: (value as CryptoEmbeddedCheckoutPropsWithSigner["signer"]).address }];
+                }
+
+                return [key, value];
+            })
         );
     } else {
         updatableParams = Object.fromEntries<UpdatableFiatParams>(updatableFiatParams.map((key) => [key, props[key]]));
