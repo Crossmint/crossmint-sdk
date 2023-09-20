@@ -3,6 +3,7 @@ import { useEffect } from "react";
 
 import {
     CryptoEmbeddedCheckoutPropsWithSigner,
+    CryptoPaymentMethodSignerMap,
     ETHEmbeddedCheckoutSigner,
     IncomingInternalEvent,
     IncomingInternalEvents,
@@ -10,6 +11,7 @@ import {
     SOLEmbeddedCheckoutSigner,
     crossmintIFrameService,
     embeddedCheckoutPropsToUpdatableParamsPayload,
+    isJsonRpcSigner,
 } from "@crossmint/client-sdk-base";
 
 import CrossmintEmbeddedCheckoutIFrame from "../EmbeddedCheckoutIFrame";
@@ -68,13 +70,17 @@ export default function CryptoEmbeddedCheckoutIFrame(props: CryptoEmbeddedChecko
         return await signer.signAndSendTransaction(transaction);
     }
 
-    async function handleETHTransaction(signer: ETHEmbeddedCheckoutSigner, serializedTransaction: string) {
+    async function handleETHTransaction(signer: CryptoPaymentMethodSignerMap["ETH"], serializedTransaction: string) {
         // @ts-ignore - Error becasue we dont use 'module' field in tsconfig, which is expected because we use tsup to compile
         const { parse: parseTransaction } = await import("@ethersproject/transactions");
         const transaction = parseTransaction(serializedTransaction);
         console.log("[Crossmint] Deserialized ETH transaction", transaction);
 
-        return await signer.signAndSendTransaction(transaction);
+        if ((await isJsonRpcSigner())(signer)) {
+            return (await signer.sendTransaction(transaction as any)).hash;
+        } else {
+            return await signer.signAndSendTransaction(transaction);
+        }
     }
 
     useEffect(() => {

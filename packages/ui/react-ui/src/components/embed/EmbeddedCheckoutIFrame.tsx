@@ -11,7 +11,7 @@ export default function CrossmintEmbeddedCheckoutIFrame({
     onInternalEvent,
     ...props
 }: CrossmintEmbeddedCheckoutIFrameProps) {
-    const { getUrl, listenToEvents, listenToInternalEvents, emitInternalEvent } = crossmintIFrameService(props);
+    const { getUrl, listenToEvents, listenToInternalEvents } = crossmintIFrameService(props);
 
     const [height, setHeight] = useState(0);
     const [url] = useState(getUrl(props));
@@ -43,8 +43,6 @@ export default function CrossmintEmbeddedCheckoutIFrame({
             clearListener();
         };
     }, []);
-
-    // TODO: Emit updatable parameters
 
     return (
         <iframe

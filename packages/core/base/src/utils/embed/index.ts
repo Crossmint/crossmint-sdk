@@ -7,6 +7,7 @@ import {
 } from "../../types";
 
 export * from "./updatableParams";
+export * from "./ethers";
 
 export function isFiatEmbeddedCheckoutProps(props: CrossmintEmbeddedCheckoutProps): props is FiatEmbeddedCheckoutProps {
     return props.paymentMethod == null || props.paymentMethod === "fiat";

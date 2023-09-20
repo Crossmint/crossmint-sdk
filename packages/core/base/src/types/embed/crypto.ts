@@ -1,3 +1,4 @@
+import type { JsonRpcSigner } from "@ethersproject/providers";
 import type { Transaction as _EthersTransaction } from "@ethersproject/transactions";
 import type { Transaction as _SolanaTransaction } from "@solana/web3.js";
 
@@ -30,7 +31,7 @@ export type CryptoEmbeddedCheckoutProps =
     | CryptoEmbeddedCheckoutPropsWithSigner;
 
 export type CryptoPaymentMethodSignerMap = {
-    [CryptoPaymentMethod.ETH]: ETHEmbeddedCheckoutSigner;
+    [CryptoPaymentMethod.ETH]: ETHEmbeddedCheckoutSigner | JsonRpcSigner;
     [CryptoPaymentMethod.SOL]: SOLEmbeddedCheckoutSigner;
 };
 

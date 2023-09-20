@@ -31,6 +31,7 @@
     },
     "devDependencies": {
         "@ethersproject/transactions": "5.7.0",
+        "@ethersproject/providers": "5.7.2",
         "@solana/web3.js": "1.78.5",
         "@types/uuid": "9.0.4"
     }
