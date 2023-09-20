@@ -6,7 +6,7 @@ import QuoteSummary from "../components/quote-summary";
 
 export default function PaymentElementPage() {
     const [count, setCount] = useState(1);
-    const [quoteMessage, setQuoteMessage] = useState<InitialQuotePayload>(null as any);
+    const [quoteMessage, setQuoteMessage] = useState();
 
     useEffect(() => {
         const handleWindowMessage = (e: MessageEvent) => {
