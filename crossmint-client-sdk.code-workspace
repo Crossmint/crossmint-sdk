@@ -23,6 +23,10 @@
         {
             "name": "🏁 Starters",
             "path": "packages/starter"
+        },
+        {
+            "name": "✅ @crossmint/verify-credentials-sdk",
+            "path": "packages/verifiable-credentials"
         }
     ],
     "settings": {
