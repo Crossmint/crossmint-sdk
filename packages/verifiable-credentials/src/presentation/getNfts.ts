@@ -1,10 +1,6 @@
-import { ethers } from "ethers";
 import fetch from "node-fetch";
 
-import { abi_ERC_721 } from "../ABI/ERC721";
-import { CredentialFilter } from "../types/credentialFilter";
-import { CredentialsCollection, EVMNFT } from "../types/nfts";
-import { getCredentialCollections } from "./getMetadata";
+import { VC_EVMNFT } from "../types/nfts";
 
 const headers = {
     "x-project-id": "e62564a7-06eb-4f65-b389-eb3b7a4f6f98",
@@ -12,10 +8,10 @@ const headers = {
     accept: "application/json",
 };
 
-async function getWalletNfts(chain: string, wallet: string) {
+export async function getWalletNfts(chain: string, wallet: string) {
     let page = 1;
     let hasMore = true;
-    let allData: EVMNFT[] = [];
+    let allData: VC_EVMNFT[] = [];
     const perPage = 20;
 
     while (hasMore) {
@@ -45,56 +41,6 @@ async function getWalletNfts(chain: string, wallet: string) {
     return allData;
 }
 
-export function filterPolygonErc721(nfts: EVMNFT[]): EVMNFT[] {
+export function filterPolygonErc721(nfts: VC_EVMNFT[]): VC_EVMNFT[] {
     return nfts.filter((nft) => nft.chain === "polygon" && nft.tokenStandard === "erc-721");
-}
-
-export function getCollections(nfts: EVMNFT[]): CredentialsCollection[] {
-    const grouped: Record<string, EVMNFT[]> = nfts.reduce(
-        (acc, nft) => {
-            if (!acc[nft.contractAddress]) {
-                acc[nft.contractAddress] = [];
-            }
-            acc[nft.contractAddress].push(nft);
-            return acc;
-        },
-        {} as Record<string, EVMNFT[]>
-    );
-
-    return Object.entries(grouped).map(([contractAddress, nfts]) => ({
-        contractAddress,
-        nfts,
-        metadata: null,
-    }));
-}
-
-export async function getCredentialNfts(
-    chain: string,
-    wallet: string,
-    filters: CredentialFilter = {}
-): Promise<CredentialsCollection[]> {
-    if (chain !== "polygon") {
-        throw new Error("Only polygon is supported");
-    }
-    const nfts = await getWalletNfts(chain, wallet);
-    if (nfts == null) {
-        throw new Error("Failed to get nfts");
-    }
-    console.info(`Got ${nfts.length} nfts`);
-
-    const polygonErc721Nfts = filterPolygonErc721(nfts);
-    console.info(`Got ${polygonErc721Nfts.length} polygon erc721 nfts`);
-
-    let collections = getCollections(polygonErc721Nfts);
-    console.info(`Got ${collections.length} collections`);
-
-    if (filters.issuers != null) {
-        collections = collections.filter((collection) => {
-            return filters.issuers?.includes(collection.contractAddress);
-        });
-    }
-
-    const credentialsCollection = await getCredentialCollections(collections);
-    console.info(`Got ${credentialsCollection.length} credential collections`);
-    return credentialsCollection;
 }

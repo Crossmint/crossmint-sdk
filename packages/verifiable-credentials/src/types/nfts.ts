@@ -1,14 +1,18 @@
-export interface EVMNFT {
-    chain: string;
-    contractAddress: string;
-    tokenId: string;
+import { EVMNFT } from "@crossmint/client-sdk-base";
+
+export interface VC_EVMNFT extends EVMNFT {
     metadata: any;
     locators: string;
     tokenStandard: string;
 }
 
 export interface CredentialsCollection {
-    nfts: EVMNFT[];
+    nfts: VC_EVMNFT[];
     contractAddress: string;
-    metadata?: any;
+    metadata?: {
+        credentials: {
+            types: string[];
+            [key: string]: any;
+        };
+    };
 }

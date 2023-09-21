@@ -1,6 +1,6 @@
 // Verification
-export type { VerifiableCredential, VcNft } from "./types/verifiableCredential";
+export type { VerifiableCredential } from "./types/verifiableCredential";
 export { verifyCredential } from "./verification/verify";
 // Presentation
-export { getCredentialNfts } from "./presentation/getNfts";
+export { getCredentialCollections } from "./presentation/getCollections";
 // export { getVCMetadata } from "./presentation/getMetadata";
