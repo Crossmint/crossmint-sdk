@@ -107,7 +107,7 @@ function Content({ count }: { count: number }) {
                 : "Loading..."}
 
             <CrossmintPaymentElement
-            environment="https://crossmint-main-git-checkout-embedded-p5-crossmint.vercel.app"
+            environment="https://crossmint-main-git-main-crossmint.vercel.app"
             clientId="db218e78-d042-4761-83af-3c4e5e6659dd"
             recipient={{ wallet: "maxfQWBno84Zfu4sXgmjYvsvLn4LzGFSgSkFMFuzved" }}
             mintConfig={{
