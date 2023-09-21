@@ -36,5 +36,10 @@ button.my-crossmint-button img {
   animation: spin;
   animation-duration: 5000ms;
   animation-iteration-count: infinite;
-  animation-timing-function: linear; 
+  animation-timing-function: linear;
+}
+
+iframe{
+    
+    border: none !important;
 }
