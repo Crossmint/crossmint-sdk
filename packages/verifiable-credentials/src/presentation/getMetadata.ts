@@ -1,10 +1,9 @@
+import { getProvider } from "@/services.ts/provider";
 import { ethers } from "ethers";
 import fetch from "node-fetch";
 
 import { abi_ERC_721 } from "../ABI/ERC721";
 import { CredentialsCollection, VC_EVMNFT } from "../types/nfts";
-
-const provider = new ethers.providers.JsonRpcProvider("https://rpc-mumbai.maticvigil.com/");
 
 const tempContractURI_ABI = [
     {
@@ -22,8 +21,9 @@ const tempContractURI_ABI = [
     },
 ];
 
-export async function getMetadata(contractAddress: string): Promise<any> {
+export async function getMetadata(contractAddress: string, environment: string): Promise<any> {
     const ABI = abi_ERC_721.concat(tempContractURI_ABI);
+    const provider = getProvider(environment);
     const contract = new ethers.Contract(contractAddress, ABI, provider);
 
     try {
@@ -45,12 +45,13 @@ export async function getMetadata(contractAddress: string): Promise<any> {
 }
 
 export async function getContractWithVCMetadata(
-    collections: CredentialsCollection[]
+    collections: CredentialsCollection[],
+    environment: string
 ): Promise<CredentialsCollection[]> {
     const credentialCollections = [];
 
     for (const collection of collections) {
-        // const metadata = await getMetadata(collection.contractAddress);
+        // const metadata = await getMetadata(collection.contractAddress, environment);
 
         // if (metadata == null || metadata.credentials == null) {
         //     continue;

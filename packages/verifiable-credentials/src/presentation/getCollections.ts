@@ -25,7 +25,8 @@ export function getCollections(nfts: VC_EVMNFT[]): CredentialsCollection[] {
 export async function getCredentialCollections(
     chain: string,
     wallet: string,
-    filters: CredentialFilter = {}
+    filters: CredentialFilter = {},
+    environment: string = "test"
 ): Promise<CredentialsCollection[]> {
     if (chain !== "polygon") {
         throw new Error("Only polygon is supported");
@@ -48,7 +49,7 @@ export async function getCredentialCollections(
         });
     }
 
-    let credentialsCollection = await getContractWithVCMetadata(collections);
+    let credentialsCollection = await getContractWithVCMetadata(collections, environment);
     console.info(`Got ${credentialsCollection.length} credential collections`);
 
     if (filters.types != null) {
