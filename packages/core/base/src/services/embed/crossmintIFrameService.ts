@@ -52,7 +52,10 @@ export function crossmintIFrameService(props: CrossmintEmbeddedCheckoutProps) {
     ) {
         function _onEvent(event: MessageEvent) {
             if (event.origin !== targetOrigin) {
-                console.log("[Crossmint] Received event from invalid origin", event.origin, targetOrigin);
+                console.log("[Crossmint] Received event from invalid origin", {
+                    expected: targetOrigin,
+                    recieved: event.origin,
+                });
                 return;
             }
             if (Object.values(validEventTypes).includes(event.data.type)) {

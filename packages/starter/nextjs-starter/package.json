@@ -1,5 +1,5 @@
 {
-    "version": "1.1.0-alpha.0",
+    "version": "1.1.0-alpha.2",
     "name": "@crossmint/client-sdk-nextjs-starter",
     "private": true,
     "author": "Paella Labs Inc",
@@ -26,7 +26,8 @@
         "clean-install": "shx rm -rf node_modules && yarn"
     },
     "dependencies": {
-        "@crossmint/client-sdk-react-ui": "1.1.0-alpha.0",
+        "@crossmint/client-sdk-react-ui": "1.1.0-alpha.2",
+        "@dynamic-labs/sdk-react": "0.17.29",
         "next": "13.4.19",
         "react": "18.2.0",
         "react-dom": "18.2.0"

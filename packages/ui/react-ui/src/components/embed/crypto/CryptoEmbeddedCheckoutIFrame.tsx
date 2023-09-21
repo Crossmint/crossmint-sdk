@@ -1,4 +1,5 @@
 import bs58 from "bs58";
+import { useEffect } from "react";
 
 import {
     CryptoEmbeddedCheckoutPropsWithSigner,
@@ -8,6 +9,7 @@ import {
     OutgoingInternalEvents,
     SOLEmbeddedCheckoutSigner,
     crossmintIFrameService,
+    embeddedCheckoutPropsToUpdatableParamsPayload,
 } from "@crossmint/client-sdk-base";
 
 import CrossmintEmbeddedCheckoutIFrame from "../EmbeddedCheckoutIFrame";
@@ -74,6 +76,13 @@ export default function CryptoEmbeddedCheckoutIFrame(props: CryptoEmbeddedChecko
 
         return await signer.signAndSendTransaction(transaction);
     }
+
+    useEffect(() => {
+        emitInternalEvent({
+            type: "params-update",
+            payload: embeddedCheckoutPropsToUpdatableParamsPayload(props),
+        });
+    }, [props.signer, props.recipient, props.mintConfig, props.locale, props.whPassThroughArgs]);
 
     return <CrossmintEmbeddedCheckoutIFrame onInternalEvent={onInternalEvent} {...props} />;
 }

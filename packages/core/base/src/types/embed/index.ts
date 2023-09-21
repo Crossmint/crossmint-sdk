@@ -14,6 +14,8 @@ import { FiatEmbeddedCheckoutProps } from "./fiat";
 
 export * from "./crypto";
 export * from "./fiat";
+export * from "./json";
+export * from "./updatable";
 
 export type CommonEmbeddedCheckoutProps<PM extends PaymentMethod = PaymentMethod> = {
     paymentMethod?: PM;

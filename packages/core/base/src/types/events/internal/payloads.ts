@@ -1,4 +1,4 @@
-import { FiatEmbeddedCheckoutProps } from "@/types/embed";
+import { UpdatableEmbeddedCheckoutParams } from "@/types/embed";
 import { EmptyObject } from "@/types/system";
 
 import { CrossmintInternalEvents } from "./events";
@@ -9,14 +9,9 @@ interface IncomingInternalEventMap {
 }
 
 interface OutgoingInternalEventMap {
-    [CrossmintInternalEvents.PARAMS_UPDATE]: ParamsUpdatePayload;
+    [CrossmintInternalEvents.PARAMS_UPDATE]: UpdatableEmbeddedCheckoutParams;
     [CrossmintInternalEvents.CRYPTO_PAYMENT_USER_ACCEPTED]: { txId: string };
     [CrossmintInternalEvents.CRYPTO_PAYMENT_USER_REJECTED]: EmptyObject;
 }
 
 export type CrossmintInternalEventMap = IncomingInternalEventMap & OutgoingInternalEventMap;
-
-// Params update
-export type ParamsUpdatePayload = Partial<
-    Record<keyof Omit<FiatEmbeddedCheckoutProps, "onEvent" | "environment">, any>
->;

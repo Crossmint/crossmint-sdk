@@ -3,8 +3,8 @@ import { EIP712VC } from "@krebitdao/eip712-vc";
 import { parseISO } from "date-fns";
 
 import { VerifiableCredential } from "../types/verifiableCredential";
-import { NFTstatusService } from "./nftStatus";
-import { VerifiableCredentialSignatureService } from "./signatureService";
+import { NFTStatusService } from "./services/nftStatus";
+import { VerifiableCredentialSignatureService } from "./services/signature";
 
 export async function verifyCredential(
     credential: VerifiableCredential,
@@ -29,7 +29,7 @@ export async function verifyCredential(
         return { validVC: false, error };
     }
 
-    const nftRevoked = await new NFTstatusService(environment).isBurned(credential.nft);
+    const nftRevoked = await new NFTStatusService(environment).isBurnt(credential.nft);
     if (nftRevoked) {
         error = "Credential has been revoked";
         return { validVC: false, error };
