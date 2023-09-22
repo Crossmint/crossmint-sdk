@@ -1,4 +1,4 @@
-import { JsonRpcProvider, StaticJsonRpcProvider } from "@ethersproject/providers";
+import { JsonRpcProvider } from "@ethersproject/providers";
 import { Contract } from "ethers";
 import { constants } from "ethers";
 

@@ -1,4 +1,4 @@
-import { Wallet, verifyTypedData } from "@ethersproject/wallet";
+import { verifyTypedData } from "@ethersproject/wallet";
 import { EIP712VC } from "@krebitdao/eip712-vc";
 
 import { VerifiableCredential } from "../../types/verifiableCredential";

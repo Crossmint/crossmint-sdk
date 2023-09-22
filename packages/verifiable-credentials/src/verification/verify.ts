@@ -1,5 +1,3 @@
-import { Wallet, verifyMessage } from "@ethersproject/wallet";
-import { EIP712VC } from "@krebitdao/eip712-vc";
 import { parseISO } from "date-fns";
 
 import { VerifiableCredential } from "../types/verifiableCredential";
