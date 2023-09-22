@@ -11,16 +11,14 @@ export default function CrossmintEmbeddedCheckoutIFrame({
     onInternalEvent,
     ...props
 }: CrossmintEmbeddedCheckoutIFrameProps) {
-    const { getUrl, listenToEvents, listenToInternalEvents, emitInternalEvent } = crossmintIFrameService(props);
+    const { getUrl, listenToEvents, listenToInternalEvents } = crossmintIFrameService(props);
 
     const [height, setHeight] = useState(0);
     const [url] = useState(getUrl(props));
 
     // Public events
     useEffect(() => {
-        const clearListener = listenToEvents((event) => {
-            props.onEvent?.(event.data);
-        });
+        const clearListener = listenToEvents((event) => props.onEvent?.(event.data));
 
         return () => {
             clearListener();
@@ -44,8 +42,6 @@ export default function CrossmintEmbeddedCheckoutIFrame({
         };
     }, []);
 
-    // TODO: Emit updatable parameters
-
     return (
         <iframe
             src={url}
@@ -53,6 +49,7 @@ export default function CrossmintEmbeddedCheckoutIFrame({
             role="crossmint-embedded-checkout.iframe"
             allow="payment *"
             style={{
+                boxShadow: "none !important",
                 border: "none !important",
                 padding: "0px !important",
                 width: "100% !important",

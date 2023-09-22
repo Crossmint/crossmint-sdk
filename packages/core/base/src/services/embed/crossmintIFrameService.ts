@@ -52,10 +52,6 @@ export function crossmintIFrameService(props: CrossmintEmbeddedCheckoutProps) {
     ) {
         function _onEvent(event: MessageEvent) {
             if (event.origin !== targetOrigin) {
-                console.log("[Crossmint] Received event from invalid origin", {
-                    expected: targetOrigin,
-                    recieved: event.origin,
-                });
                 return;
             }
             if (Object.values(validEventTypes).includes(event.data.type)) {
@@ -81,6 +77,7 @@ export function crossmintIFrameService(props: CrossmintEmbeddedCheckoutProps) {
             return;
         }
         try {
+            console.log("[Crossmint] Emitting internal event", event);
             iframe.contentWindow?.postMessage(event, targetOrigin);
         } catch (e) {
             console.error("[Crossmint] Failed to emit internal event", event, e);
