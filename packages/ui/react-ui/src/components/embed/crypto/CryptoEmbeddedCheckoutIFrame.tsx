@@ -1,5 +1,5 @@
+import useDeepEffect from "@/hooks/useDeepEffect";
 import bs58 from "bs58";
-import { useEffect } from "react";
 
 import {
     CryptoEmbeddedCheckoutPropsWithSigner,
@@ -77,12 +77,12 @@ export default function CryptoEmbeddedCheckoutIFrame(props: CryptoEmbeddedChecko
         return await signer.signAndSendTransaction(transaction);
     }
 
-    useEffect(() => {
+    useDeepEffect(() => {
         emitInternalEvent({
             type: "params-update",
             payload: embeddedCheckoutPropsToUpdatableParamsPayload(props),
         });
-    }, [props.signer, props.recipient, props.mintConfig, props.locale, props.whPassThroughArgs]);
+    }, [props.signer.address, props.recipient, props.mintConfig, props.locale, props.whPassThroughArgs]);
 
     return <CrossmintEmbeddedCheckoutIFrame onInternalEvent={onInternalEvent} {...props} />;
 }
