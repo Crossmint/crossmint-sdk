@@ -89,12 +89,10 @@ function Content({ count }: { count: number }) {
             {quoteMessage != null ? <QuoteSummary initialQuotePayload={quoteMessage} /> : "Loading..."}
 
             <CrossmintPaymentElement
-                environment="https://crossmint-main-git-main-crossmint.vercel.app"
-                clientId="db218e78-d042-4761-83af-3c4e5e6659dd"
-                recipient={{ wallet: "maxfQWBno84Zfu4sXgmjYvsvLn4LzGFSgSkFMFuzved" }}
-                mintConfig={{
-                    testCount: count,
-                }}
+                environment="staging"
+                clientId="94273c86-b888-4734-a851-6464c7cce707"
+                recipient={{ wallet: signer.publicKey.toString() }}
+                mintConfig={{ type: "candy-machine", quantity: count }}
                 paymentMethod="SOL"
                 signer={{
                     address: signer.publicKey.toString(),

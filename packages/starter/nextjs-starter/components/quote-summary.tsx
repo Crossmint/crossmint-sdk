@@ -11,7 +11,7 @@ export default function QuoteSummary({ initialQuotePayload }: { initialQuotePayl
             {initialQuotePayload.lineItems.map((item, i) => (
                 <div key={i} style={{
                     marginBottom: "10px",
-                    ...(i > 1 && i === initialQuotePayload.lineItems.length - 1 ? { borderBottom: "1px dashed #ccc" } : {}),
+                    ...(i != initialQuotePayload.lineItems.length - 1 ? { borderBottom: "1px dashed #ccc" } : {}),
                     paddingBottom: "10px",
                     display: "flex",
                     flexDirection: "column",
