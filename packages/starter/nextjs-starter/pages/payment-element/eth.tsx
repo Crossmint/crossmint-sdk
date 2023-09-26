@@ -88,8 +88,8 @@ function Content({ count }: { count: number }) {
             {quoteMessage != null ? <QuoteSummary initialQuotePayload={quoteMessage} /> : "Loading..."}
 
             <CrossmintPaymentElement
-                environment="https://crossmint-main-git-main-crossmint.vercel.app"
-                clientId="6845c702-8396-4339-b17e-a2bf12d2cf6d"
+                environment="staging"
+                clientId="1bd7b6b4-a390-4716-82f3-f78f9f2aa335"
                 recipient={{ wallet: address }}
                 mintConfig={{ totalPrice: `${0.001 * count}`, quantity: count }}
                 paymentMethod="ETH"
