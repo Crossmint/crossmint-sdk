@@ -92,7 +92,7 @@ function Content({ count }: { count: number }) {
                 environment="staging"
                 clientId="94273c86-b888-4734-a851-6464c7cce707"
                 recipient={{ wallet: signer.publicKey.toString() }}
-                mintConfig={{ "type": "candy-machine", "quantity": count, "hsp": true }}
+                mintConfig={{ "type": "candy-machine", "quantity": count }}
                 paymentMethod="SOL"
                 signer={{
                     address: signer.publicKey.toString(),
