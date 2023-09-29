@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-react-ui",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "author": "Paella Labs Inc",
     "license": "Apache-2.0",
     "repository": "https://github.com/Crossmint/crossmint-client-sdk",
@@ -30,7 +30,7 @@
         "test": "jest"
     },
     "dependencies": {
-        "@crossmint/client-sdk-base": "1.1.0",
+        "@crossmint/client-sdk-base": "1.1.1",
         "@ethersproject/transactions": "5.7.0",
         "@solana/web3.js": "1.78.5",
         "bs58": "5.0.0",
