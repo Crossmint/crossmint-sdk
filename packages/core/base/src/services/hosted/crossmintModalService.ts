@@ -1,5 +1,5 @@
 import { Currency, Locale, PaymentMethod, SigninMethods, clientNames } from "../../types";
-import { MintConfigs, CheckoutProps} from "../../types/hosted";
+import { CheckoutProps, MintConfigs } from "../../types/hosted";
 import { CaseInsensitive } from "../../types/system";
 import { getEnvironmentBaseUrl } from "../../utils/ui";
 
@@ -33,6 +33,10 @@ const getChromeVersion = () => {
     return raw ? parseInt(raw[2]) : null;
 };
 
+const isFirefox = () => {
+    return navigator.userAgent.toLowerCase().indexOf("firefox") > -1;
+};
+
 function createPopupString(width: number, height: number) {
     function getLeft() {
         try {
@@ -61,7 +65,7 @@ function createPopupString(width: number, height: number) {
     // In newer versions of chrome (>99) you need to add the `popup=true` for the new window to actually open in a popup
     const chromeVersion = getChromeVersion();
     const chromeVersionGreaterThan99 = chromeVersion && chromeVersion > 99;
-    const popupStringBase = chromeVersionGreaterThan99 ? "popup=true," : "";
+    const popupStringBase = isFirefox() || chromeVersionGreaterThan99 ? "popup=true," : "";
 
     return `${popupStringBase}height=${height},width=${width},left=${getLeft()},top=${getTop()},resizable=yes,scrollbars=yes,toolbar=yes,menubar=true,location=no,directories=no, status=yes`;
 }
@@ -172,12 +176,13 @@ export function crossmintModalService({
             if (successCallbackURL) mintQueryParams.successCallbackURL = successCallbackURL;
             if (failureCallbackURL) mintQueryParams.failureCallbackURL = failureCallbackURL;
             if (projectId) mintQueryParams.projectId = projectId;
-            if (checkoutProps && checkoutProps.experimental === true) mintQueryParams.checkoutProps = JSON.stringify(checkoutProps);
+            if (checkoutProps && checkoutProps.experimental === true)
+                mintQueryParams.checkoutProps = JSON.stringify(checkoutProps);
 
             return new URLSearchParams(mintQueryParams).toString();
         };
 
-        if(checkoutProps != null && checkoutProps.experimental === true) {
+        if (checkoutProps != null && checkoutProps.experimental === true) {
             const url = `${urlOrigin}/checkout?${getMintQueryParams()}`;
 
             switch (checkoutProps.display) {
@@ -188,7 +193,6 @@ export function crossmintModalService({
                         if (showOverlay) {
                             addLoadingOverlay(dismissOverlayOnClick);
                         }
-
                     }
                     return;
                 }
@@ -197,7 +201,7 @@ export function crossmintModalService({
                     return;
                 }
                 case "same-tab":
-                default:{
+                default: {
                     window.location.href = url;
                     return;
                 }
