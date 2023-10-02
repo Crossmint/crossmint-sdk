@@ -54,7 +54,7 @@ export async function getCredentialCollections(
 
     if (filters.types != null) {
         credentialsCollection = credentialsCollection.filter((collection) => {
-            return collection.metadata?.credentials.types.some((type: string) => filters.types?.includes(type)); // At least one type must match
+            return collection.metadata?.credentialMetadata.types.some((type: string) => filters.types?.includes(type)); // At least one type must match
         });
     }
 

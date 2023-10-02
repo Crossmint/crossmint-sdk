@@ -10,7 +10,7 @@ export interface CredentialsCollection {
     nfts: VC_EVMNFT[];
     contractAddress: string;
     metadata?: {
-        credentials: {
+        credentialMetadata: {
             types: string[];
             [key: string]: any;
         };
