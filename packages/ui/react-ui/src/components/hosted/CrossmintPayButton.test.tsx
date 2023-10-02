@@ -57,7 +57,7 @@ describe("CrossmintPayButton", () => {
         expect(global.open).toHaveBeenCalledWith(
             expectedURL,
             "popUpWindow",
-            "height=750,width=400,left=312,top=9,resizable=yes,scrollbars=yes,toolbar=yes,menubar=true,location=no,directories=no, status=yes"
+            "height=750,width=400,left=312,top=9,resizable=yes,scrollbars=yes,toolbar=yes,menubar=true,location=no,directories=no,status=yes"
         );
     });
 

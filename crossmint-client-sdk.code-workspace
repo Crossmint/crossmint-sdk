@@ -21,12 +21,12 @@
             "path": "packages/ui/vue-ui"
         },
         {
-            "name": "🏁 Starters",
-            "path": "packages/starter"
-        },
-        {
             "name": "✅ @crossmint/verify-credentials-sdk",
             "path": "packages/verifiable-credentials"
+        },
+        {
+            "name": "🏁 Starters",
+            "path": "packages/starter"
         }
     ],
     "settings": {
