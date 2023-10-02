@@ -31,17 +31,17 @@ export async function getCredentialCollections(
     if (chain !== "polygon") {
         throw new Error("Only polygon is supported");
     }
-    const nfts = await getWalletNfts(chain, wallet);
+    const nfts = await getWalletNfts(chain, wallet, environment);
     if (nfts == null) {
         throw new Error("Failed to get nfts");
     }
-    console.info(`Got ${nfts.length} nfts`);
+    console.debug(`Got ${nfts.length} nfts`);
 
     const polygonErc721Nfts = filterPolygonErc721(nfts);
-    console.info(`Got ${polygonErc721Nfts.length} polygon erc721 nfts`);
+    console.debug(`Got ${polygonErc721Nfts.length} polygon erc721 nfts`);
 
     let collections = getCollections(polygonErc721Nfts);
-    console.info(`Got ${collections.length} collections`);
+    console.debug(`Got ${collections.length} collections`);
 
     if (filters.issuers != null) {
         collections = collections.filter((collection) => {
@@ -50,7 +50,7 @@ export async function getCredentialCollections(
     }
 
     let credentialsCollection = await getContractWithVCMetadata(collections, environment);
-    console.info(`Got ${credentialsCollection.length} credential collections`);
+    console.debug(`Got ${credentialsCollection.length} credential collections`);
 
     if (filters.types != null) {
         credentialsCollection = credentialsCollection.filter((collection) => {
