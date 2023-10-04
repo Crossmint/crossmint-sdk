@@ -16,6 +16,7 @@ export function crossmintPaymentService_OLD(props: FiatEmbeddedCheckoutProps) {
         environment,
         mintConfig,
         locale,
+        currency,
         whPassThroughArgs,
         cardWalletPaymentMethods,
         projectId,
@@ -43,6 +44,10 @@ export function crossmintPaymentService_OLD(props: FiatEmbeddedCheckoutProps) {
 
         if (locale != null) {
             params.append("locale", locale);
+        }
+
+        if (currency != null) {
+            params.append("currency", currency);
         }
 
         if (whPassThroughArgs != null) {

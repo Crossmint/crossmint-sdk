@@ -47,6 +47,8 @@ const paymentServiceProps: Parameters<typeof crossmintPaymentService_OLD>[0] = {
     cardWalletPaymentMethods: props.cardWalletPaymentMethods,
     emailInputOptions: props.emailInputOptions,
     experimental: props.experimental,
+    locale: props.locale,
+    currency: props.currency,
 };
 
 const { getIframeUrl, listenToEvents, emitQueryParams } = crossmintPaymentService_OLD(paymentServiceProps);
@@ -76,12 +78,13 @@ onUnmounted(() => {
 });
 
 watch(
-    () => [props.recipient, props.mintConfig, props.locale, props.whPassThroughArgs],
+    () => [props.recipient, props.mintConfig, props.locale, props.currency, props.whPassThroughArgs],
     () => {
         emitQueryParams({
             recipient: props.recipient,
             mintConfig: props.mintConfig,
             locale: props.locale,
+            currency: props.currency,
             whPassThroughArgs: props.whPassThroughArgs,
         });
     },
