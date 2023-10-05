@@ -4,3 +4,4 @@ export { verifyCredential } from "./verification/verify";
 // Presentation
 export { getCredentialCollections } from "./presentation/getCollections";
 export { getMetadata } from "./presentation/getMetadata";
+export { CrossmintAPI } from "./services/crossmintAPI";

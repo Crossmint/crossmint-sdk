@@ -2,13 +2,8 @@ import fetch from "node-fetch";
 
 import { getEnvironmentBaseUrl } from "@crossmint/client-sdk-base";
 
+import { CrossmintAPI } from "../services/crossmintAPI";
 import { VC_EVMNFT } from "../types/nfts";
-
-const headers = {
-    "x-project-id": "e62564a7-06eb-4f65-b389-eb3b7a4f6f98",
-    "x-client-secret": "sk_test.ad1f46fe.67853d066b359d071d5cab5ef03382f6",
-    accept: "application/json",
-};
 
 export async function getWalletNfts(chain: string, wallet: string, environment: string) {
     let page = 1;
@@ -20,6 +15,7 @@ export async function getWalletNfts(chain: string, wallet: string, environment: 
         environment = "http://crossmint-main-git-vmc-newprojectid-crossmint.vercel.app";
     }
     const baseUrl = getEnvironmentBaseUrl(environment);
+    const headers = CrossmintAPI.getHeaders();
 
     while (hasMore) {
         const url = `${baseUrl}/api/v1-alpha1/wallets/${chain}:${wallet}/nfts`;

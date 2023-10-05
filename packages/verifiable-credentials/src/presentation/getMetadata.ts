@@ -1,8 +1,8 @@
-import { getProvider } from "@/services.ts/provider";
 import { ethers, utils } from "ethers";
 import fetch from "node-fetch";
 
 import nftZeroEight from "../ABI/upgradeable721-v0.8.json";
+import { getProvider } from "../services/provider";
 import { CredentialsCollection } from "../types/nfts";
 
 const ipfsGateway = "https://ipfs.io/ipfs/";
