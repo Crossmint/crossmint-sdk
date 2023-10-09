@@ -1,7 +1,6 @@
 import { ethers, utils } from "ethers";
-import fetch from "node-fetch";
 
-import nftZeroEight from "../ABI/upgradeable721-v0.8.json";
+import { nftZeroEight } from "../ABI/upgradeable721-v0.8";
 import { getProvider } from "../services/provider";
 import { CredentialsCollection } from "../types/nfts";
 

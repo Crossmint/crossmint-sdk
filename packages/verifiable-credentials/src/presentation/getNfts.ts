@@ -1,5 +1,3 @@
-import fetch from "node-fetch";
-
 import { getEnvironmentBaseUrl } from "@crossmint/client-sdk-base";
 
 import { CrossmintAPI } from "../services/crossmintAPI";

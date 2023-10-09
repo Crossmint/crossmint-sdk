@@ -1,7 +1,7 @@
 {
     "name": "@crossmint/verify-credentials",
     "private": true,
-    "version": "1.1.1",
+    "version": "1.2.0-alpha.1",
     "author": "Paella Labs Inc",
     "license": "Apache-2.0",
     "repository": "https://github.com/Crossmint/crossmint-client-sdk",
@@ -31,7 +31,6 @@
         "@ethersproject/wallet": "5.7.0",
         "@krebitdao/eip712-vc": "1.0.3",
         "date-fns": "2.30.0",
-        "node-fetch": "^3.3.2",
         "ethers": "5.7.2"
     },
     "devDependencies": {
