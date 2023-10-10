@@ -30,8 +30,6 @@ export async function getMetadata(contractAddress: string, environment: string):
     }
 }
 
-const IS_08_RELEASED = false;
-
 export async function getContractWithVCMetadata(
     collections: CredentialsCollection[],
     environment: string
@@ -39,19 +37,13 @@ export async function getContractWithVCMetadata(
     const credentialCollections = [];
 
     for (const collection of collections) {
-        if (IS_08_RELEASED) {
-            const metadata = await getMetadata(collection.contractAddress, environment);
+        const metadata = await getMetadata(collection.contractAddress, environment);
 
-            if (metadata == null || metadata.credentialMetadata == null) {
-                continue;
-            }
-            collection.metadata = metadata;
-            credentialCollections.push(collection);
-        } else {
-            if (collection.nfts[0].metadata.credentialId != null) {
-                credentialCollections.push(collection);
-            }
+        if (metadata == null || metadata.credentialMetadata == null) {
+            continue;
         }
+        collection.metadata = metadata;
+        credentialCollections.push(collection);
     }
 
     return credentialCollections;
