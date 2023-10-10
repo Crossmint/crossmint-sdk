@@ -9,9 +9,6 @@ export async function getWalletNfts(chain: string, wallet: string, environment: 
     let allData: VC_EVMNFT[] = [];
     const perPage = 20;
 
-    if (environment === "test") {
-        environment = "http://crossmint-main-git-vmc-newprojectid-crossmint.vercel.app";
-    }
     const baseUrl = getEnvironmentBaseUrl(environment);
     const headers = CrossmintAPI.getHeaders();
 

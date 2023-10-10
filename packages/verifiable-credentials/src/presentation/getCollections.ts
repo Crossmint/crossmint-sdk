@@ -26,7 +26,7 @@ export async function getCredentialCollections(
     chain: string,
     wallet: string,
     filters: CredentialFilter = {},
-    environment: string = "test"
+    environment: string
 ): Promise<CredentialsCollection[]> {
     if (chain !== "polygon") {
         throw new Error("Only polygon is supported");
