@@ -13,7 +13,8 @@ const quantity = ref(1);
 const itemEthPrice = 0.01;
 const totalItemsEthPrice = itemEthPrice * quantity.value;
 const totalFiatItemPrice = ref<string | number | null>(null);
-
+const totalGasFee  = ref<string | number | null>(null);
+const currency = ref<string | null>(null);
 const itemEthFee = 0.0001 * quantity.value;
 
 const totalEthPrice = totalItemsEthPrice + itemEthFee;
@@ -23,13 +24,16 @@ const isPaying = ref(true);
 
 const router = useRouter();
 
+
 function onEvent(event: CrossmintEvent) {
     switch (event.type) {
         case "quote:status.changed":
             const { totalPrice, lineItems } = event.payload;
             totalFiatItemPrice.value = lineItems[0].price.amount;
             totalFiatPrice.value = totalPrice.amount;
+            currency.value = totalPrice.currency.toUpperCase();
             isPaying.value = false;
+            totalGasFee.value = lineItems[0].gasFee?.amount ?? 0;
             break;
         case "payment:process.started":
             isPaying.value = true;
@@ -60,7 +64,7 @@ function onEvent(event: CrossmintEvent) {
                 <p>{{ itemEthPrice }} ETH x{{ quantity }}</p>
                 <div class="price-value">
                     <p>{{ totalItemsEthPrice }}ETH</p>
-                    <p>~${{ totalFiatItemPrice }}</p>
+                    <p>~{{currency}} {{ totalFiatItemPrice }}</p>
                 </div>
             </div>
 
@@ -72,10 +76,17 @@ function onEvent(event: CrossmintEvent) {
             </div>
 
             <div class="price-container">
+                <p>Gas fee</p>
+                <div class="price-value">
+                    <p>~ {{currency}} {{ totalGasFee }}</p>
+                </div>
+            </div>
+
+            <div class="price-container">
                 <p>Total</p>
                 <div class="price-value">
                     <p>{{ totalEthPrice }} ETH</p>
-                    <p>~${{ totalFiatPrice }}</p>
+                    <p>~{{currency}} {{ totalFiatPrice }}</p>
                 </div>
             </div>
 
