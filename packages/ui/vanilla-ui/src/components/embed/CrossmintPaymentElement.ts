@@ -123,12 +123,14 @@ export class CrossmintPaymentElement extends LitElement {
             changedProperties.has("recipient") ||
             changedProperties.has("mintConfig") ||
             changedProperties.has("locale") ||
+            changedProperties.has("currency") ||
             changedProperties.has("whPassThroughArgs")
         ) {
             emitQueryParams({
                 recipient: this.recipient,
                 mintConfig: this.mintConfig,
                 locale: this.locale,
+                currency: this.currency,
                 whPassThroughArgs: this.whPassThroughArgs,
             });
         }

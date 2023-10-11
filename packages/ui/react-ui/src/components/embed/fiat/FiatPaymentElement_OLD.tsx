@@ -44,9 +44,10 @@ export function CrossmintFiatPaymentElement_OLD(props: FiatEmbeddedCheckoutProps
             recipient: props.recipient,
             mintConfig: props.mintConfig,
             locale: props.locale,
+            currency: props.currency,
             whPassThroughArgs: props.whPassThroughArgs,
         });
-    }, [props.recipient, props.mintConfig, props.locale, props.whPassThroughArgs]);
+    }, [props.recipient, props.mintConfig, props.locale, props.currency, props.whPassThroughArgs]);
 
     return (
         <iframe
