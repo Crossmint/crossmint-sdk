@@ -84,7 +84,7 @@ function Content() {
                                             from: account,
                                             to: transaction.to,
                                             value: transaction.value._hex,
-                                            data: transaction.data,
+                                            data: transaction.data, //THIS IS VERY IMPORTANT. IF THE DATA IS NOT FORMATTED CORRECTLY, THE TRANSACTION WILL FAIL BECAUSE WE USE THE DATA TO MATCH THIS TRANSACTION WITH THE ORDER
                                         }],
                                     }) as string;
                             },
