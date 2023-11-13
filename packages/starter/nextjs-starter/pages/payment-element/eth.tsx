@@ -89,7 +89,7 @@ function Content({ count }: { count: number }) {
 
             <CrossmintPaymentElement
                 environment="staging"
-                clientId="1bd7b6b4-a390-4716-82f3-f78f9f2aa335"
+                clientId="50eb4e94-2cfe-49a7-9af6-099c8fa681da"
                 recipient={{ wallet: address }}
                 mintConfig={{ totalPrice: `${0.001 * count}`, quantity: count }}
                 paymentMethod="ETH"
