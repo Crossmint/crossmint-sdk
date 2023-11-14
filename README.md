@@ -44,7 +44,7 @@ yarn build
 4. Run locally:
 
 ```shell
-cd packages/client/starter/react-ui-starter
+cd packages/client/starters/react-ui-starter
 yarn start
 ```
 
@@ -56,7 +56,7 @@ yarn build
 ```
 
 ```
-# Inside the starter. Eg. `packages/client/starter/nextjs-starter`. Install rebuilt package
+# Inside the starter. Eg. `packages/client/startes/nextjs-starter`. Install rebuilt package
 yarn
 ```
 

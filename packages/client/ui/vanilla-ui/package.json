@@ -2,10 +2,10 @@
     "name": "@crossmint/client-sdk-vanilla-ui",
     "version": "1.1.2-alpha.0",
     "description": "Crossmint client SDK for vanilla JS (no framework required), using web-components",
-    "homepage": "https://github.com/Crossmint/crossmint-client-sdk#readme",
+    "homepage": "https://github.com/Crossmint/crossmint-sdk#readme",
     "author": "Paella Inc",
     "license": "Apache-2.0",
-    "repository": "https://github.com/Crossmint/crossmint-client-sdk",
+    "repository": "https://github.com/Crossmint/crossmint-sdk",
     "type": "module",
     "sideEffects": false,
     "main": "./dist/index.cjs",
@@ -31,7 +31,7 @@
         "build": "yarn clean && tsup src/index.ts --format esm,cjs,iife --outDir ./dist --minify --dts --sourcemap"
     },
     "bugs": {
-        "url": "https://github.com/Crossmint/crossmint-client-sdk/issues"
+        "url": "https://github.com/Crossmint/crossmint-sdk/issues"
     },
     "dependencies": {
         "@crossmint/client-sdk-base": "1.1.2-alpha.0",

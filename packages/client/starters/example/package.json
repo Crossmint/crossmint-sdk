@@ -1,10 +1,10 @@
 {
     "version": "1.1.2-alpha.0",
-    "name": "@crossmint/client-sdk-nextjs-starter",
+    "name": "@crossmint/client-sdk-example",
     "private": true,
     "author": "Paella Labs Inc",
     "license": "Apache-2.0",
-    "repository": "https://github.com/Crossmint/crossmint-client-sdk",
+    "repository": "https://github.com/Crossmint/crossmint-sdk",
     "files": [
         "components",
         "pages",
@@ -19,15 +19,13 @@
     ],
     "scripts": {
         "clean": "shx rm -rf .next",
-        "dev": "next dev -p 3005",
-        "build": "yarn clean && next build",
+        "dev": "next dev",
+        "build": "yarn clean && next build && next export",
         "start": "next start",
-        "lint": "next lint",
-        "clean-install": "shx rm -rf node_modules && yarn"
+        "lint": "next lint"
     },
     "dependencies": {
         "@crossmint/client-sdk-react-ui": "1.1.2-alpha.0",
-        "@dynamic-labs/sdk-react": "0.17.29",
         "next": "13.4.19",
         "react": "18.2.0",
         "react-dom": "18.2.0"
