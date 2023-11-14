@@ -1,0 +1,44 @@
+{
+    "folders": [
+        {
+            "name": "🌿 @crossmint/sdk",
+            "path": "."
+        },
+        {
+            "name": "🕸️ @crossmint/server-sdk",
+            "path": "packages/server"
+        },
+        {
+            "name": "💻 @crossmint/client-sdk",
+            "path": "packages/client"
+        },
+        {
+            "name": "🧬 @crossmint/client-sdk-base",
+            "path": "packages/core/base"
+        },
+        {
+            "name": "⚛️ @crossmint/client-sdk-react-ui",
+            "path": "packages/client/ui/react-ui"
+        },
+        {
+            "name": "⚪ @crossmint/client-sdk-vanilla-ui",
+            "path": "packages/client/ui/vanilla-ui"
+        },
+        {
+            "name": "🟢 @crossmint/client-sdk-vue-ui",
+            "path": "packages/client/ui/vue-ui"
+        },
+        {
+            "name": "✅ @crossmint/verify-credentials-sdk",
+            "path": "packages/client/verifiable-credentials"
+        },
+        {
+            "name": "🏁 Starters",
+            "path": "packages/client/starter"
+        }
+    ],
+    "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    }
+}

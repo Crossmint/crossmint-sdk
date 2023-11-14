@@ -1,4 +1,4 @@
-# `@crossmint/client-sdk (beta)`
+# `@crossmint/sdk (beta)`
 
 ## You can check the full documentation at [docs.crossmint.com](https://docs.crossmint.com/)
 
@@ -9,12 +9,6 @@ The Crossmint SDK allows you to offer wallet-less credit card purchases on your 
 ## Get Started
 
 To get started and for full integration instructions visit [our documentation](https://docs.crossmint.com/).
-
-## How to mint an NFT using Crossmint
-
-Watch [our demo](https://www.youtube.com/watch?v=4NTgDFU-lms) on YouTube on how to mint an NFT using Crossmint.
-
-[![Crossmint Demo](https://img.youtube.com/vi/4NTgDFU-lms/0.jpg)](https://www.youtube.com/watch?v=4NTgDFU-lms)
 
 ## Migration guide to 0.1.X versions
 
@@ -33,13 +27,13 @@ Version 0.2.0 introduces breaking changes. To learn how to migrate from a versio
 1. Clone the project:
 
 ```shell
-git clone https://github.com/Crossmint/crossmint-client-sdk.git
+git clone https://github.com/Crossmint/crossmint-sdk.git
 ```
 
 2. Install dependencies:
 
 ```shell
-cd crossmint-client-sdk
+cd crossmint-sdk
 yarn install
 ```
 
@@ -52,19 +46,19 @@ yarn build
 4. Run locally:
 
 ```shell
-cd packages/starter/react-ui-starter
+cd packages/client/starter/react-ui-starter
 yarn start
 ```
 
 Remember that if doing changes on the `@crossmint/client-sdk-react-ui` package, they wont be reflected into your project until you rebuild the package and install it back again:
 
 ```
-# Inside `packages/ui/react-ui`. Rebuild package
+# Inside `packages/client/ui/react-ui`. Rebuild package
 yarn build
 ```
 
 ```
-# Inside the starter. Eg. `packages/starter/nextjs-starter`. Install rebuilt package
+# Inside the starter. Eg. `packages/client/starter/nextjs-starter`. Install rebuilt package
 yarn
 ```
 
