@@ -2,8 +2,6 @@
 
 ## You can check the full documentation at [docs.crossmint.com](https://docs.crossmint.com/)
 
----
-
 The Crossmint SDK allows you to offer wallet-less credit card purchases on your NFT drop. It takes 5 lines of code and 5 minutes to integrate. It's free to use for the seller. You’ll get the sales proceeds in SOL/ETH as if the user was paying with their own wallet.
 
 ## Get Started
