@@ -4,7 +4,7 @@
     "private": true,
     "author": "Paella Labs Inc",
     "license": "Apache-2.0",
-    "repository": "https://github.com/Crossmint/crossmint-client-sdk",
+    "repository": "https://github.com/Crossmint/crossmint-sdk",
     "type": "module",
     "workspaces": {
         "packages": [
