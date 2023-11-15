@@ -1,10 +1,10 @@
 {
-    "name": "@crossmint/client-sdk-test",
+    "name": "crossmint-sdk",
     "version": "0.0.5",
     "private": true,
     "author": "Paella Labs Inc",
     "license": "Apache-2.0",
-    "repository": "https://github.com/Crossmint/crossmint-client-sdk",
+    "repository": "https://github.com/Crossmint/crossmint-sdk",
     "type": "module",
     "workspaces": {
         "packages": [
@@ -21,7 +21,7 @@
         "publish": "lerna publish from-package",
         "deploy": "yarn deploy:docs && yarn deploy:example",
         "deploy:docs": "yarn docs && gh-pages --dist docs --dotfiles",
-        "deploy:example": "gh-pages --dist packages/starter/example/out --dest example --dotfiles",
+        "deploy:example": "gh-pages --dist packages/client/starters/example/out --dest example --dotfiles",
         "docs": "shx rm -rf docs && typedoc",
         "fmt": "prettier --write '{*,**/*}.{js,ts,jsx,tsx,json}'",
         "lint": "eslint --ext .ts . && prettier --check '{*,**/*}.{js,ts,jsx,tsx,json}'",
@@ -46,7 +46,7 @@
         "gh-pages": "6.0.0",
         "jest": "29.6.4",
         "jest-environment-jsdom": "29.6.4",
-        "lerna": "4.0.0",
+        "lerna": "6.6.2",
         "prettier": "3.0.3",
         "shx": "0.3.4",
         "ts-jest": "29.1.1",
