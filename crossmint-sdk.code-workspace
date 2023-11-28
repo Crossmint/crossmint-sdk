@@ -17,6 +17,10 @@
             "path": "packages/client"
         },
         {
+            "name": "🧬 @crossmint/common-sdk-base",
+            "path": "packages/common/base"
+        },
+        {
             "name": "🧬 @crossmint/client-sdk-base",
             "path": "packages/client/base"
         },
