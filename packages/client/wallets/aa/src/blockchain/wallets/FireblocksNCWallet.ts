@@ -45,8 +45,7 @@ export const FireblocksNCWallet = async (
     };
 
     const secureStorageProvider = new PasswordEncryptedLocalStorage(deviceId, () => {
-        const password = prompt("Enter password", "");
-        return Promise.resolve(password || "");
+        return crossmintService.getNCWIdentifier(deviceId);
     });
 
     const fireblocksNCW = await FireblocksNCW.initialize({
@@ -62,7 +61,6 @@ export const FireblocksNCWallet = async (
     }
 
     try {
-        console.log({ isNew, passphrase });
         if (isNew && passphrase === undefined) {
             throw new BackupKeysGenerationError("Passphrase is required.");
         }

@@ -92,4 +92,4 @@ class CrossmintAASDK {
     }
 }
 
-export { Blockchain, CrossmintAASDK, EVMAAWallet, FireblocksNCWSigner, StoreAbstractWalletInput, TransferInput };
+export { CrossmintAASDK, EVMAAWallet, Blockchain, FireblocksNCWSigner, StoreAbstractWalletInput, TransferInput };

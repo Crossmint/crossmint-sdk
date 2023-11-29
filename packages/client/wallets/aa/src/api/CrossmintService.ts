@@ -1,4 +1,4 @@
-import { GenerateSignatureDataInput, StoreAbstractWalletInput } from "@/types/API";
+import { GenerateSignatureDataInput, StoreAbstractWalletInput } from "../types/API";
 
 export class CrossmintService {
     private crossmintAPIHeaders: Record<string, string>;
@@ -53,6 +53,10 @@ export class CrossmintService {
         return this.fetchCrossmintAPI(
             `v2-alpha1/ncw/address?walletId=${walletId}&accountId=${accountId}&assetId=${assetId}`
         );
+    }
+
+    async getNCWIdentifier(deviceId: string) {
+        return this.fetchCrossmintAPI(`v2-alpha1/ncw?deviceId=${deviceId}`);
     }
 
     async checkVersion(address: string) {
