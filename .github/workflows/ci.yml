@@ -1,5 +1,8 @@
 name: CI
-on: [push]
+on:
+    push:
+        branches-ignore:
+            - main
 
 jobs:
     build-and-test:
@@ -17,7 +20,7 @@ jobs:
             - name: Run install
               uses: borales/actions-yarn@v4
               with:
-                  cmd: install
+                  cmd: install --frozen-lockfile
 
             - name: Build all
               uses: borales/actions-yarn@v4
