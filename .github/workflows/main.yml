@@ -22,7 +22,7 @@ jobs:
             - name: Run install
               uses: borales/actions-yarn@v4
               with:
-                  cmd: install
+                  cmd: install --frozen-lockfile
 
             - name: Build all
               uses: borales/actions-yarn@v4
@@ -49,7 +49,7 @@ jobs:
             - name: Run install
               uses: borales/actions-yarn@v4
               with:
-                  cmd: install
+                  cmd: install --frozen-lockfile
 
             - name: Create Release Pull Request
               uses: changesets/action@v1
