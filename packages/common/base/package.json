@@ -1,5 +1,6 @@
 {
     "name": "@crossmint/common-sdk-base",
+    "private": true,
     "version": "0.0.1",
     "author": "Paella Labs Inc",
     "license": "Apache-2.0",
@@ -19,7 +20,7 @@
         "LICENSE"
     ],
     "publishConfig": {
-        "access": "public"
+        "access": "restricted"
     },
     "scripts": {
         "clean": "shx rm -rf dist/*",

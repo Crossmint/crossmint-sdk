@@ -1,0 +1,58 @@
+name: CI
+on:
+    push:
+        branches:
+            - main
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+    build-and-test:
+        name: Build & Test
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Set Node.js 18.16.0
+              uses: actions/setup-node@v3
+              with:
+                  node-version: 18.16.0
+                  cache: "yarn"
+
+            - name: Run install
+              uses: borales/actions-yarn@v4
+              with:
+                  cmd: install
+
+            - name: Build all
+              uses: borales/actions-yarn@v4
+              with:
+                  cmd: build
+
+            - name: Test all
+              uses: borales/actions-yarn@v4
+              with:
+                  cmd: test
+    release:
+        name: Release
+        runs-on: ubuntu-latest
+        needs: [build-and-test]
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Set Node.js 18.16.0
+              uses: actions/setup-node@v3
+              with:
+                  node-version: 18.16.0
+                  cache: "yarn"
+
+            - name: Run install
+              uses: borales/actions-yarn@v4
+              with:
+                  cmd: install
+
+            - name: Create Release Pull Request
+              uses: changesets/action@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
