@@ -67,11 +67,7 @@ export class CrossmintAASDK {
 
             return evmAAWallet;
         } catch (e) {
-            if (e instanceof WalletSdkError) {
-                console.log(e.code, e.message);
-            } else {
-                console.error("Unexpected error:", e);
-            }
+            throw new WalletSdkError(`Error creating the Wallet. ${e instanceof Error ? e.message : e}`);
         }
     }
 
