@@ -10,6 +10,8 @@ import {
 } from "@fireblocks/ncw-js-sdk";
 import { fromBytes } from "viem";
 
+import { IFrameAdapter } from "@crossmint/client-sdk-base";
+
 import { CrossmintService } from "../../api/CrossmintService";
 import { PasswordEncryptedLocalStorage } from "../../storage/PasswordEncryptedLocalStorage";
 import { BackupKeysGenerationError, SignTransactionError } from "../../utils/error";
@@ -22,6 +24,7 @@ export const FireblocksNCWallet = async (
     passphrase?: string
 ) => {
     const { walletId, deviceId, isNew } = await crossmintService.getOrAssignWallet(userEmail);
+    console.log({ walletId, deviceId, isNew });
 
     // Register a message handler to process outgoing message to your API
     const messagesHandler: IMessagesHandler = {
@@ -48,6 +51,48 @@ export const FireblocksNCWallet = async (
         return crossmintService.getNCWIdentifier(deviceId);
     });
 
+    if (isNew) {
+        const iframe = await IFrameAdapter.init(
+            "https://e772-2601-586-5080-6e80-b553-33d9-e3ec-6cba.ngrok-free.app/2023-06-09/aa/frame"
+        );
+
+        const response = await iframe.postMessageAwaitResponse("hello", (data) => {
+            if (data === "world") {
+                return {
+                    shouldResolve: true,
+                    data: 1,
+                };
+            }
+        });
+
+        const x = await iframe.postMessageAwaitResponse(
+            {
+                type: "INITIALIZE",
+                payload: {
+                    walletId,
+                    deviceId,
+                    passphrase, // DANGER: THIS IS INSECURE
+                    isNew,
+                },
+            },
+            (data) => {
+                const { type, payload } = data as any;
+
+                if (type === "INITIALIZE_RESPONSE") {
+                    return {
+                        shouldResolve: true,
+                        data: payload,
+                    };
+                }
+            },
+            {
+                timeoutMs: 50000,
+            }
+        );
+        console.log("recieved payload from iframe", x);
+        iframe.unmount();
+    }
+
     const fireblocksNCW = await FireblocksNCW.initialize({
         deviceId,
         messagesHandler,
@@ -56,22 +101,27 @@ export const FireblocksNCWallet = async (
         logger: new ConsoleLogger(),
     });
 
-    if (isNew) {
-        await fireblocksNCW.generateMPCKeys(getDefaultAlgorithems());
+    // if (isNew) {
+    //     await fireblocksNCW.generateMPCKeys(getDefaultAlgorithems());
+    // }
+
+    if (!passphrase) {
+        throw new Error("Passphrase is required.");
     }
 
     try {
-        if (isNew && passphrase === undefined) {
-            throw new BackupKeysGenerationError("Passphrase is required.");
-        }
-        if (isNew) {
-            await fireblocksNCW.backupKeys(passphrase!);
-        } else if (passphrase !== undefined) {
-            await fireblocksNCW.recoverKeys(passphrase!);
-        }
+        // if (isNew && passphrase === undefined) {
+        //     throw new BackupKeysGenerationError("Passphrase is required.");
+        // }
+        // if (isNew) {
+        //     await fireblocksNCW.backupKeys(passphrase!);
+        // } else if (passphrase !== undefined) {
+        //     await fireblocksNCW.recoverKeys(passphrase!);
+        // }
+        await fireblocksNCW.recoverKeys(passphrase!);
     } catch (e) {
         console.log({ error: e });
-        throw new BackupKeysGenerationError("Error generating the backupKeys.");
+        throw new BackupKeysGenerationError("Error recovering keys from xmint domain.");
         // TO DO unassing method that deletes the info in nonCustodialWallet table. Requires modification on crossbit-main.
     }
 

@@ -8,7 +8,7 @@ import { CrossmintService } from "../../api/CrossmintService";
 import { TransferError } from "../../utils/error";
 import { EVMToken, Token } from "../token/Tokens";
 
-class BaseWallet extends ZeroDevAccountSigner<"ECDSA"> {
+export class BaseWallet extends ZeroDevAccountSigner<"ECDSA"> {
     private signer: ZeroDevAccountSigner<"ECDSA">;
     crossmintService: CrossmintService;
 
@@ -73,5 +73,3 @@ class BaseWallet extends ZeroDevAccountSigner<"ECDSA"> {
         }
     }
 }
-
-export default BaseWallet;
