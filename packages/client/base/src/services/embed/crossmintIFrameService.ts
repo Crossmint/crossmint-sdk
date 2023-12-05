@@ -16,6 +16,8 @@ export function crossmintIFrameService(props: CrossmintEmbeddedCheckoutProps) {
     const targetOrigin = getEnvironmentBaseUrl(props.environment);
 
     function getUrl(props: CrossmintEmbeddedCheckoutProps) {
+        props = coerceCollectionIdToClientId(props);
+
         const path = isFiatEmbeddedCheckoutProps(props) ? "/sdk/paymentElement" : "/sdk/2023-06-09/embeddedCheckout"; // TODO: v2.0 - remove '/sdk/paymentElement'
 
         const queryParams = new URLSearchParams();
@@ -90,4 +92,11 @@ export function crossmintIFrameService(props: CrossmintEmbeddedCheckoutProps) {
         listenToInternalEvents,
         emitInternalEvent,
     };
+}
+
+function coerceCollectionIdToClientId(props: CrossmintEmbeddedCheckoutProps) {
+    if ("collectionId" in props && props.collectionId) {
+        return { ...props, clientId: props.collectionId, collectionId: undefined };
+    }
+    return props;
 }
