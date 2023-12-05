@@ -1,14 +1,10 @@
+import { CrossmintService } from "@/api";
+import { Blockchain, EVMAAWallet, EVMBlockchain, FireblocksNCWallet } from "@/blockchain";
+import type { CrossmintAASDKInitParams, FireblocksNCWSigner, UserIdentifier, WalletConfig } from "@/types";
+import { CURRENT_VERSION, WalletSdkError, ZERO_DEV_TYPE, ZERO_PROJECT_ID } from "@/utils";
 import type { SmartAccountSigner } from "@alchemy/aa-core";
 import { ZeroDevEthersProvider, convertEthersSignerToAccountSigner } from "@zerodev/sdk";
 import { Signer } from "ethers";
-
-import { CrossmintService } from "./api/CrossmintService";
-import { Blockchain, EVMBlockchain } from "./blockchain/BlockchainNetworks";
-import { EVMAAWallet } from "./blockchain/wallets/EVMAAWallet";
-import { FireblocksNCWallet } from "./blockchain/wallets/FireblocksNCWallet";
-import type { CrossmintAASDKInitParams, FireblocksNCWSigner, UserIdentifier, WalletConfig } from "./types/Config";
-import { CURRENT_VERSION, ZERO_DEV_TYPE, ZERO_PROJECT_ID } from "./utils/constants";
-import { WalletSdkError } from "./utils/error";
 
 export class CrossmintAASDK {
     crossmintService: CrossmintService;
@@ -48,6 +44,7 @@ export class CrossmintAASDK {
                 },
             });
 
+            this.crossmintService.setCrossmintUrl(chain);
             const evmAAWallet = new EVMAAWallet(zDevProvider, this.crossmintService, chain as EVMBlockchain);
 
             const abstractAddress = await evmAAWallet.getAddress();
@@ -67,7 +64,9 @@ export class CrossmintAASDK {
 
             return evmAAWallet;
         } catch (e) {
-            throw new WalletSdkError(`Error creating the Wallet. ${e instanceof Error ? e.message : e}`);
+            throw new WalletSdkError(
+                `Error creating the Wallet [${e instanceof Error ? `${e.name}. ${e.message}` : e}]`
+            );
         }
     }
 

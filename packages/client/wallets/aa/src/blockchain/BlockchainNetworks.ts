@@ -1,3 +1,5 @@
+import { CROSSMINT_PROD_URL, CROSSMINT_STG_URL } from "@/utils";
+
 export const EVMBlockchain = {
     ETHEREUM: "ethereum",
     POLYGON: "polygon",
@@ -84,4 +86,16 @@ export function getUrlProviderByBlockchain(chain: Blockchain) {
         [Blockchain.MUMBAI, "https://rpc-mumbai.maticvigil.com"],
         [Blockchain.TESTNET, ""],
     ]).get(chain)!;
+}
+
+export function getApiUrlByBlockchainType(chain: Blockchain): string {
+    const testnetKeys = new Set<keyof typeof BlockchainTestNet>(
+        Object.keys(BlockchainTestNet) as Array<keyof typeof BlockchainTestNet>
+    );
+
+    if (testnetKeys.has(chain as keyof typeof BlockchainTestNet)) {
+        return CROSSMINT_STG_URL;
+    } else {
+        return CROSSMINT_PROD_URL;
+    }
 }
