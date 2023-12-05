@@ -25,7 +25,5 @@
     "scripts": {
         "clean": "shx rm -rf dist/*",
         "build": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --minify --dts --sourcemap"
-    },
-    "dependencies": {},
-    "devDependencies": {}
+    }
 }

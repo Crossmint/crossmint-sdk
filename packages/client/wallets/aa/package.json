@@ -31,6 +31,5 @@
         "@zerodev/sdk": "4.3.2",
         "ethers": "5.7.2",
         "viem": "1.5.3"
-    },
-    "devDependencies": {}
+    }
 }
