@@ -93,7 +93,7 @@ export class CrossmintService {
                 if (response.status >= 400 && response.status < 500) {
                     // We forward all 4XX errors. This includes rate limit errors.
                     // It also includes chain not found, as it is a bad request error.
-                    throw new CrossmintServiceError(response.statusText);
+                    throw new CrossmintServiceError(await response.text());
                 } else if (response.status >= 500) {
                     // Crossmint throws a generic “An error occurred” error for all 5XX errors.
                     // We throw a more specific error depending on the endpoint that was called.
