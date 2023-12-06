@@ -1,3 +1,4 @@
+import { CrossmintServiceError } from "@/utils/error";
 import { GenerateSignatureDataInput, StoreAbstractWalletInput } from "../types/API";
 
 export class CrossmintService {
@@ -16,77 +17,93 @@ export class CrossmintService {
         return this.fetchCrossmintAPI("v2-alpha1/wallets/sessionkey", {
             method: "POST",
             body: JSON.stringify({ address }),
-        });
+        }, "Error creating session key. Check your init configuration parameters");
     }
 
     async storeAbstractWallet(input: StoreAbstractWalletInput) {
-        return this.fetchCrossmintAPI("v2-alpha1/wallets", { method: "POST", body: JSON.stringify(input) });
+        return this.fetchCrossmintAPI("v2-alpha1/wallets", { method: "POST", body: JSON.stringify(input) }, "Error storing abstract wallet");
     }
 
     async generateChainData(input: GenerateSignatureDataInput) {
-        return this.fetchCrossmintAPI("v2-alpha1/wallets/chaindata", { method: "POST", body: JSON.stringify(input) });
+        return this.fetchCrossmintAPI("v2-alpha1/wallets/chaindata", { method: "POST", body: JSON.stringify(input) }, "Error generating chain data");
     }
 
     async getOrAssignWallet(userEmail: string) {
-        return this.fetchCrossmintAPI("v2-alpha1/ncw", { method: "POST", body: JSON.stringify({ userEmail }) });
+        return this.fetchCrossmintAPI("v2-alpha1/ncw", { method: "POST", body: JSON.stringify({ userEmail }) }, `Error getting or assigning wallet for user: ${userEmail}`);
     }
 
     async rpc(walletId: string, deviceId: string, payload: string) {
         return this.fetchCrossmintAPI("v2-alpha1/ncw/rpc", {
             method: "POST",
             body: JSON.stringify({ walletId, deviceId, payload }),
-        });
+        }, "Error invoking wallet RPC");
     }
 
     async createTransaction(data: any, walletId: string, assetId: string, typedMessage: boolean) {
         return this.fetchCrossmintAPI("v2-alpha1/ncw/transaction", {
             method: "POST",
             body: JSON.stringify({ data, walletId, assetId, typedMessage }),
-        });
+        }, `Error creating transaction for wallet: ${walletId}`);
     }
 
     async getSignature(txId: string) {
-        return this.fetchCrossmintAPI(`v2-alpha1/ncw/transaction?txId=${txId}`);
+        return this.fetchCrossmintAPI(`v2-alpha1/ncw/transaction?txId=${txId}`, { method: "GET" }, `Error getting signature for transaction: ${txId}`);
     }
 
     async getAddress(walletId: string, accountId: number, assetId: string) {
         return this.fetchCrossmintAPI(
-            `v2-alpha1/ncw/address?walletId=${walletId}&accountId=${accountId}&assetId=${assetId}`
+            `v2-alpha1/ncw/address?walletId=${walletId}&accountId=${accountId}&assetId=${assetId}`, { method: "GET" }, `Error getting address for wallet: ${walletId}, account: ${accountId} and asset: ${assetId}`
         );
     }
 
     async getNCWIdentifier(deviceId: string) {
-        return this.fetchCrossmintAPI(`v2-alpha1/ncw?deviceId=${deviceId}`);
+        return this.fetchCrossmintAPI(`v2-alpha1/ncw?deviceId=${deviceId}`, { method: "GET" }, `Error getting NCW identifier for device: ${deviceId}`);
     }
 
     async checkVersion(address: string) {
         return this.fetchCrossmintAPI("v2-alpha1/wallets/version/check", {
             method: "POST",
             body: JSON.stringify({ address }),
-        });
+        }, `Error checking version for wallet: ${address}`);
     }
 
     async updateWallet(address: string, enableSig: string, version: number) {
         return this.fetchCrossmintAPI("v2-alpha1/wallets/version/check", {
             method: "POST",
             body: JSON.stringify({ address, enableSig, version }),
-        });
+        }, `Error updating wallet: ${address}`);
     }
 
     async fetchNFTs(address: string) {
-        return this.fetchCrossmintAPI(`v1-alpha1/wallets/polygon:${address}/nfts`);
+        return this.fetchCrossmintAPI(`v1-alpha1/wallets/polygon:${address}/nfts`, { method: "GET" }, `Error fetching NFTs for wallet: ${address}`);
     }
 
-    private async fetchCrossmintAPI(endpoint: string, options: { body?: string; method: string } = { method: "GET" }) {
+    private async fetchCrossmintAPI(endpoint: string, options: { body?: string; method: string } = { method: "GET" }, onServerErrorMessage: string) {
         const crossmintBaseUrl = "https://staging.crossmint.com/api";
         const url = `${crossmintBaseUrl}/${endpoint}`;
         const { body, method } = options;
-        const response = await fetch(url, {
-            body,
-            method,
-            headers: this.crossmintAPIHeaders,
-        });
-        const json = await response.json();
-        return json;
+
+        try {
+            const response = await fetch(url, {
+                body,
+                method,
+                headers: this.crossmintAPIHeaders,
+            });
+            if (!response.ok) {
+                if (response.status >= 400 && response.status < 500) {
+                    // We forward all 4XX errors. This includes rate limit errors.
+                    // It also includes chain not found, as it is a bad request error.
+                    throw new CrossmintServiceError(response.statusText);
+                } else if (response.status >= 500) {
+                    // Crossmint throws a generic “An error occurred” error for all 5XX errors.
+                    // We throw a more specific error depending on the endpoint that was called.
+                    throw new CrossmintServiceError(onServerErrorMessage);
+                }
+            }
+            const json = await response.json();
+            return json;
+        } catch (error) {
+            throw new CrossmintServiceError(`Error fetching Crossmint API: ${error}`);
+        }
     }
 }
