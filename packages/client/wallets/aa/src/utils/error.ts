@@ -43,8 +43,8 @@ export class PassphraseRequiredError extends Error {
     }
 }
 
-export class BackupKeysGenerationError extends Error {
-    code = "ERROR_BACKUP_KEYS_GENERATION";
+export class KeysGenerationError extends Error {
+    code = "ERROR_KEYS_GENERATION";
 
     constructor(message: string) {
         super(message);
@@ -78,6 +78,20 @@ export class TransferError extends Error {
 
 export class CrossmintServiceError extends Error {
     code = "ERROR_CROSSMINT_SERVICE";
+
+    constructor(message: string) {
+        super(message);
+
+        // ES5 workaround
+        Object.setPrototypeOf(this, WalletSdkError.prototype);
+    }
+}
+
+/**
+ * Generic undefined error
+ */
+export class NonCustodialWalletError extends Error {
+    code = "ERROR_UNDEFINED";
 
     constructor(message: string) {
         super(message);

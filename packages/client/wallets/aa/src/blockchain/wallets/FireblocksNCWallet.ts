@@ -12,7 +12,7 @@ import { fromBytes } from "viem";
 
 import { CrossmintService } from "../../api/CrossmintService";
 import { PasswordEncryptedLocalStorage } from "../../storage/PasswordEncryptedLocalStorage";
-import { BackupKeysGenerationError, SignTransactionError } from "../../utils/error";
+import { KeysGenerationError, NonCustodialWalletError, SignTransactionError } from "../../utils/error";
 import { Blockchain, getAssetIdByBlockchain } from "../BlockchainNetworks";
 
 export const FireblocksNCWallet = async (
@@ -23,10 +23,23 @@ export const FireblocksNCWallet = async (
 ) => {
     const { walletId, deviceId, isNew } = await crossmintService.getOrAssignWallet(userEmail);
 
+    if (isNew && passphrase === undefined) {
+        await crossmintService.unassignWallet(userEmail);
+        throw new KeysGenerationError("Passphrase is required.");
+    }
+
     // Register a message handler to process outgoing message to your API
     const messagesHandler: IMessagesHandler = {
-        handleOutgoingMessage: (message: string) => {
-            return crossmintService.rpc(walletId, deviceId, message);
+        handleOutgoingMessage: async (message: string) => {
+            const rpcResponse = await crossmintService.rpc(walletId, deviceId, message);
+            if (rpcResponse.error !== undefined) {
+                if ((rpcResponse.error.code = -1)) {
+                    //Unexpected physicalDeviceId
+                    throw new NonCustodialWalletError(`Passphrase is required`);
+                }
+                throw new NonCustodialWalletError(`NCW Error: ${rpcResponse.error.message}`);
+            }
+            return rpcResponse;
         },
     };
 
@@ -57,22 +70,19 @@ export const FireblocksNCWallet = async (
     });
 
     if (isNew) {
-        await fireblocksNCW.generateMPCKeys(getDefaultAlgorithems());
-    }
-
-    try {
-        if (isNew && passphrase === undefined) {
-            throw new BackupKeysGenerationError("Passphrase is required.");
-        }
-        if (isNew) {
+        try {
+            await fireblocksNCW.generateMPCKeys(getDefaultAlgorithems());
             await fireblocksNCW.backupKeys(passphrase!);
-        } else if (passphrase !== undefined) {
-            await fireblocksNCW.recoverKeys(passphrase!);
+        } catch (e) {
+            await crossmintService.unassignWallet(userEmail);
+            throw new KeysGenerationError(`Error generating keys. ${e instanceof Error ? e.message : e}`);
         }
-    } catch (e) {
-        console.log({ error: e });
-        throw new BackupKeysGenerationError("Error generating the backupKeys.");
-        // TO DO unassing method that deletes the info in nonCustodialWallet table. Requires modification on crossbit-main.
+    } else if (passphrase !== undefined) {
+        try {
+            await fireblocksNCW.recoverKeys(passphrase!);
+        } catch (e) {
+            throw new KeysGenerationError(`Error recovering keys. ${e instanceof Error ? e.message : e}`);
+        }
     }
 
     return {
@@ -91,35 +101,51 @@ function getSmartAccountSignerFromFireblocks(
             return (await crossmintService.getAddress(walletId, 0, getAssetIdByBlockchain(chain))) as `0x${string}`;
         },
         signMessage: async (msg: Uint8Array | string) => {
-            let msg_ = msg;
-            if (msg instanceof Uint8Array) {
-                msg_ = fromBytes(msg, "hex");
-            }
-            const tx = await crossmintService.createTransaction(
-                msg_ as string,
-                walletId,
-                getAssetIdByBlockchain(chain),
-                false
-            );
-            const result: ITransactionSignature = await fireblocksNCW.signTransaction(tx);
-            console.log(`txId: ${result.txId}`, `status: ${result.transactionSignatureStatus}`);
-            handleSignTransactionStatus(result);
-            return (await crossmintService.getSignature(tx)) as `0x${string}`;
+            return signMessage(crossmintService, fireblocksNCW, walletId, chain, msg);
         },
         signTypedData: async (params: SignTypedDataParams) => {
-            const tx = await crossmintService.createTransaction(
-                params as any,
-                walletId,
-                getAssetIdByBlockchain(chain),
-                true
-            );
-            const result: ITransactionSignature = await fireblocksNCW.signTransaction(tx);
-            console.log(`txId: ${result.txId}`, `status: ${result.transactionSignatureStatus}`);
-            handleSignTransactionStatus(result);
-            return (await crossmintService.getSignature(tx)) as `0x${string}`;
+            return signTypedData(crossmintService, fireblocksNCW, walletId, chain, params);
         },
     };
 }
+
+const signMessage = async (
+    crossmintService: CrossmintService,
+    fireblocksNCW: FireblocksNCW,
+    walletId: string,
+    chain: Blockchain,
+    msg: Uint8Array | string
+) => {
+    console.log({ physicalDeviceId: fireblocksNCW.getPhysicalDeviceId() });
+    let msg_ = msg instanceof Uint8Array ? fromBytes(msg, "hex") : msg;
+    const tx = await crossmintService.createTransaction(msg_ as string, walletId, getAssetIdByBlockchain(chain), false);
+    try {
+        const result: ITransactionSignature = await fireblocksNCW.signTransaction(tx);
+        console.log(`txId: ${result.txId}`, `status: ${result.transactionSignatureStatus}`);
+        handleSignTransactionStatus(result);
+    } catch (e) {
+        throw new SignTransactionError(`Error signing transaction. ${e instanceof Error ? e.message : e}`);
+    }
+    return (await crossmintService.getSignature(tx)) as `0x${string}`;
+};
+
+const signTypedData = async (
+    crossmintService: CrossmintService,
+    fireblocksNCW: FireblocksNCW,
+    walletId: string,
+    chain: Blockchain,
+    params: SignTypedDataParams
+) => {
+    const tx = await crossmintService.createTransaction(params as any, walletId, getAssetIdByBlockchain(chain), true);
+    try {
+        const result: ITransactionSignature = await fireblocksNCW.signTransaction(tx);
+        console.log(`txId: ${result.txId}`, `status: ${result.transactionSignatureStatus}`);
+        handleSignTransactionStatus(result);
+    } catch (e) {
+        throw new SignTransactionError(`Error signing transaction. ${e instanceof Error ? e.message : e}`);
+    }
+    return (await crossmintService.getSignature(tx)) as `0x${string}`;
+};
 
 const handleSignTransactionStatus = (result: ITransactionSignature) => {
     if (result.transactionSignatureStatus === "TIMEOUT") {

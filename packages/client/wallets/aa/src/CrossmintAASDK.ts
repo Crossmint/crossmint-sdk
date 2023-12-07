@@ -10,7 +10,7 @@ import type { CrossmintAASDKInitParams, FireblocksNCWSigner, UserIdentifier, Wal
 import { CURRENT_VERSION, ZERO_DEV_TYPE, ZERO_PROJECT_ID } from "./utils/constants";
 import { WalletSdkError } from "./utils/error";
 
-export default class CrossmintAASDK {
+export class CrossmintAASDK {
     private crossmintService: CrossmintService;
 
     private constructor(config: CrossmintAASDKInitParams) {
@@ -67,11 +67,7 @@ export default class CrossmintAASDK {
 
             return evmAAWallet;
         } catch (e) {
-            if (e instanceof WalletSdkError) {
-                console.log(e.code, e.message);
-            } else {
-                console.error("Unexpected error:", e);
-            }
+            throw new WalletSdkError(`Error creating the Wallet. ${e instanceof Error ? e.message : e}`);
         }
     }
 
