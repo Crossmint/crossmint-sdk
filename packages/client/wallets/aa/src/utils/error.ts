@@ -76,6 +76,17 @@ export class TransferError extends Error {
     }
 }
 
+export class CrossmintServiceError extends Error {
+    code = "ERROR_CROSSMINT_SERVICE";
+
+    constructor(message: string) {
+        super(message);
+
+        // ES5 workaround
+        Object.setPrototypeOf(this, WalletSdkError.prototype);
+    }
+}
+
 /**
  * Generic undefined error
  */
