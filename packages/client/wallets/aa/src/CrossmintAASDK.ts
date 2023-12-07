@@ -10,7 +10,7 @@ import type { CrossmintAASDKInitParams, FireblocksNCWSigner, UserIdentifier, Wal
 import { CURRENT_VERSION, ZERO_DEV_TYPE, ZERO_PROJECT_ID } from "./utils/constants";
 import { WalletSdkError } from "./utils/error";
 
-export default class CrossmintAASDK {
+export class CrossmintAASDK {
     private crossmintService: CrossmintService;
 
     private constructor(config: CrossmintAASDKInitParams) {
