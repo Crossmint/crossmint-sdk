@@ -1,4 +1,5 @@
-import { CROSSMINT_PROD_URL, CROSSMINT_STG_URL } from "@/utils";
+import { CROSSMINT_PROD_URL, CROSSMINT_STG_URL, WEB3_AUTH_MAINNET, WEB3_AUTH_TESTNET } from "@/utils";
+import { TORUS_LEGACY_NETWORK_TYPE } from "@web3auth/single-factor-auth";
 
 export const EVMBlockchain = {
     ETHEREUM: "ethereum",
@@ -21,7 +22,6 @@ export const BlockchainTestNet = {
     GOERLI: "goerli",
     SEPOLIA: "sepolia",
     MUMBAI: "mumbai",
-    TESTNET: "testnet",
 } as const; //testnet as a placeholder for non-EVM chains
 export type BlockchainTestNet = (typeof BlockchainTestNet)[keyof typeof BlockchainTestNet];
 
@@ -46,7 +46,6 @@ export function getAssetIdByBlockchain(chain: Blockchain) {
         [Blockchain.GOERLI, "ETH_TEST3"],
         [Blockchain.SEPOLIA, ""], // TODO
         [Blockchain.MUMBAI, "MATIC_POLYGON_MUMBAI"],
-        [Blockchain.TESTNET, ""], // TODO
     ]).get(chain)!;
 }
 
@@ -64,10 +63,26 @@ export function getBlockchainByChainId(chain: number) {
         [5, Blockchain.GOERLI],
         //[0, Blockchain.SEPOLIA], // TODO
         [80001, Blockchain.MUMBAI],
-        [0, Blockchain.TESTNET], // TODO
     ]);
 
     return chainIdMap.get(chain);
+}
+
+export function getChainIdByBlockchain(chain: Blockchain) {
+    return new Map([
+        [Blockchain.ETHEREUM, 1],
+        [Blockchain.POLYGON, 137],
+        [Blockchain.BSC, 56],
+        [Blockchain.OPTIMISM, 0], // TODO
+        [Blockchain.ARBITRUM, 42161],
+        [Blockchain.ARBITRUM_NOVA, 42170],
+        [Blockchain.ZORA, 7777777],
+        [Blockchain.SOLANA, 0], // TODO
+        [Blockchain.CARDANO, 0], // TODO
+        [Blockchain.GOERLI, 5],
+        [Blockchain.SEPOLIA, 0], // TODO
+        [Blockchain.MUMBAI, 80001],
+    ]).get(chain)!;
 }
 
 export function getUrlProviderByBlockchain(chain: Blockchain) {
@@ -84,18 +99,93 @@ export function getUrlProviderByBlockchain(chain: Blockchain) {
         [Blockchain.GOERLI, "https://ethereum-goerli.publicnode.com"],
         [Blockchain.SEPOLIA, "https://ethereum-sepolia.publicnode.com"],
         [Blockchain.MUMBAI, "https://rpc-mumbai.maticvigil.com"],
-        [Blockchain.TESTNET, ""],
+    ]).get(chain)!;
+}
+
+export function getBlockExplorerByBlockchain(chain: Blockchain) {
+    return new Map([
+        [Blockchain.ETHEREUM, "https://etherscan.io"],
+        [Blockchain.POLYGON, "https://polygonscan.com"],
+        [Blockchain.BSC, "BNB_BSC"],
+        [Blockchain.OPTIMISM, "https://optimistic.etherscan.io"],
+        [Blockchain.ARBITRUM, "https://arbiscan.io"],
+        [Blockchain.ARBITRUM_NOVA, ""],
+        [Blockchain.ZORA, "https://explorer.zora.energy"],
+        [Blockchain.SOLANA, ""],
+        [Blockchain.CARDANO, ""],
+        [Blockchain.GOERLI, "https://goerli.etherscan.io"],
+        [Blockchain.SEPOLIA, "https://sepolia.etherscan.io"],
+        [Blockchain.MUMBAI, "https://mumbai.polygonscan.com"],
+    ]).get(chain)!;
+}
+
+export function getDisplayNameByBlockchain(chain: Blockchain) {
+    return new Map([
+        [Blockchain.ETHEREUM, "Ethereum Mainnet"],
+        [Blockchain.POLYGON, "Polygon Mainnet"],
+        [Blockchain.BSC, "BNB_BSC"],
+        [Blockchain.OPTIMISM, "Optimism"],
+        [Blockchain.ARBITRUM, "Arbitrum"],
+        [Blockchain.ARBITRUM_NOVA, ""],
+        [Blockchain.ZORA, "Zora"],
+        [Blockchain.SOLANA, ""],
+        [Blockchain.CARDANO, ""],
+        [Blockchain.GOERLI, "Goerli Tesnet"],
+        [Blockchain.SEPOLIA, "Sepolia Tesnet"],
+        [Blockchain.MUMBAI, "Mumbai Tesnet"],
+    ]).get(chain)!;
+}
+
+export function getTickerByBlockchain(chain: Blockchain) {
+    return new Map([
+        [Blockchain.ETHEREUM, "ETH"],
+        [Blockchain.POLYGON, "MATIC"],
+        [Blockchain.BSC, "BNB_BSC"],
+        [Blockchain.OPTIMISM, "OP"],
+        [Blockchain.ARBITRUM, "ARB"],
+        [Blockchain.ARBITRUM_NOVA, ""],
+        [Blockchain.ZORA, "ZORA"],
+        [Blockchain.SOLANA, ""],
+        [Blockchain.CARDANO, ""],
+        [Blockchain.GOERLI, "ETH"],
+        [Blockchain.SEPOLIA, "ETH"],
+        [Blockchain.MUMBAI, "MATIC"],
+    ]).get(chain)!;
+}
+
+export function getTickerNameByBlockchain(chain: Blockchain) {
+    return new Map([
+        [Blockchain.ETHEREUM, "ETHEREUM"],
+        [Blockchain.POLYGON, "MATIC"],
+        [Blockchain.BSC, "BNB_BSC"],
+        [Blockchain.OPTIMISM, "OPTIMISM"],
+        [Blockchain.ARBITRUM, "ARBITRUM"],
+        [Blockchain.ARBITRUM_NOVA, ""],
+        [Blockchain.ZORA, "ZORA"],
+        [Blockchain.SOLANA, ""],
+        [Blockchain.CARDANO, ""],
+        [Blockchain.GOERLI, "ETHEREUM"],
+        [Blockchain.SEPOLIA, "ETHEREUM"],
+        [Blockchain.MUMBAI, "MATIC"],
     ]).get(chain)!;
 }
 
 export function getApiUrlByBlockchainType(chain: Blockchain): string {
+    return isTestnet(chain) ? CROSSMINT_STG_URL : CROSSMINT_PROD_URL;
+}
+
+export function getWeb3AuthBlockchain(chain: Blockchain): TORUS_LEGACY_NETWORK_TYPE {
+    return isTestnet(chain) ? WEB3_AUTH_TESTNET : WEB3_AUTH_MAINNET;
+}
+
+export function isTestnet(chain: Blockchain): boolean {
     const testnetKeys = new Set<keyof typeof BlockchainTestNet>(
         Object.keys(BlockchainTestNet) as Array<keyof typeof BlockchainTestNet>
     );
 
     if (testnetKeys.has(chain as keyof typeof BlockchainTestNet)) {
-        return CROSSMINT_STG_URL;
+        return true;
     } else {
-        return CROSSMINT_PROD_URL;
+        return false;
     }
 }

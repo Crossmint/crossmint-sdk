@@ -14,10 +14,7 @@ export type GetUserPasswordFunc = () => Promise<string>;
 export class PasswordEncryptedLocalStorage extends BrowserLocalStorageProvider implements ISecureStorageProvider {
     private encKey: string | null = null;
 
-    constructor(
-        private _salt: string,
-        private getPassword: GetUserPasswordFunc
-    ) {
+    constructor(private _salt: string, private getPassword: GetUserPasswordFunc) {
         super();
     }
 

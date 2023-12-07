@@ -1,10 +1,8 @@
 import { CrossmintService } from "@/api";
-import { Blockchain, EVMAAWallet, EVMBlockchain, FireblocksNCWallet } from "@/blockchain";
-import type { CrossmintAASDKInitParams, FireblocksNCWSigner, UserIdentifier, WalletConfig } from "@/types";
-import { CURRENT_VERSION, WalletSdkError, ZERO_DEV_TYPE, ZERO_PROJECT_ID } from "@/utils";
-import type { SmartAccountSigner } from "@alchemy/aa-core";
-import { ZeroDevEthersProvider, convertEthersSignerToAccountSigner } from "@zerodev/sdk";
-import { Signer } from "ethers";
+import { Blockchain, EVMAAWallet, EVMBlockchain } from "@/blockchain";
+import type { CrossmintAASDKInitParams, UserIdentifier, WalletConfig } from "@/types";
+import { CURRENT_VERSION, WalletSdkError, ZERO_DEV_TYPE, ZERO_PROJECT_ID, createOwnerSigner } from "@/utils";
+import { ZeroDevEthersProvider } from "@zerodev/sdk";
 
 export class CrossmintAASDK {
     crossmintService: CrossmintService;
@@ -23,14 +21,7 @@ export class CrossmintAASDK {
         walletConfig: WalletConfig
     ) {
         try {
-            let owner: SmartAccountSigner;
-            if ((walletConfig.signer as FireblocksNCWSigner)?.type === "FIREBLOCKS_NCW") {
-                const passphrase = (walletConfig.signer as FireblocksNCWSigner).passphrase;
-                const fireblocks = await FireblocksNCWallet(user.email, this.crossmintService, chain, passphrase);
-                owner = fireblocks.owner;
-            } else {
-                owner = convertEthersSignerToAccountSigner(walletConfig.signer as Signer);
-            }
+            const owner = await createOwnerSigner(user, chain, walletConfig, this.crossmintService);
 
             const address = await owner.getAddress();
 
