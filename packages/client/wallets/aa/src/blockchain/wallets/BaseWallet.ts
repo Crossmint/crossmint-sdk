@@ -53,7 +53,6 @@ class BaseWallet extends ZeroDevAccountSigner<"ECDSA"> {
                 );
             } else {
                 // ERC1155
-                console.log("ERC1155", toAddress, evmToken.tokenId, quantity, "0x00");
                 transaction = await contractWithSigner.functions.safeTransferFrom(
                     await this.getAddress(),
                     toAddress,
