@@ -33,7 +33,7 @@ export const FireblocksNCWallet = async (
         handleOutgoingMessage: async (message: string) => {
             const rpcResponse = await crossmintService.rpc(walletId, deviceId, message);
             if (rpcResponse.error !== undefined) {
-                if ((rpcResponse.error.code = -1)) {
+                if ((rpcResponse.error.code === -1)) {
                     //Unexpected physicalDeviceId
                     throw new NonCustodialWalletError(`Passphrase is required`);
                 }
@@ -117,7 +117,7 @@ const signMessage = async (
     msg: Uint8Array | string
 ) => {
     console.log({ physicalDeviceId: fireblocksNCW.getPhysicalDeviceId() });
-    let msg_ = msg instanceof Uint8Array ? fromBytes(msg, "hex") : msg;
+    const msg_ = msg instanceof Uint8Array ? fromBytes(msg, "hex") : msg;
     const tx = await crossmintService.createTransaction(msg_ as string, walletId, getAssetIdByBlockchain(chain), false);
     try {
         const result: ITransactionSignature = await fireblocksNCW.signTransaction(tx);
