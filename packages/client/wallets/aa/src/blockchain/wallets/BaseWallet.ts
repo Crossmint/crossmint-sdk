@@ -19,15 +19,27 @@ class BaseWallet extends ZeroDevAccountSigner<"ECDSA"> {
     }
 
     async getAddress() {
-        return this.signer.getAddress();
+        try {
+            return await this.signer.getAddress();
+        } catch (error) {
+            throw new Error(`Error getting address: ${error}`);
+        }
     }
 
     async signMessage(message: Uint8Array | string) {
-        return this.signer.signMessage(message);
+        try {
+            return await this.signer.signMessage(message);
+        } catch (error) {
+            throw new Error(`Error signing message: ${error}`);
+        }
     }
 
     async signTypedData(params: SignTypedDataParams) {
-        return this.signer.signTypedData(params);
+        try {
+            return await this.signer.signTypedData(params);
+        } catch (error) {
+            throw new Error(`Error signing typed data: ${error}`);
+        }
     }
 
     async transfer(toAddress: string, token: Token, quantity?: number): Promise<string> {
