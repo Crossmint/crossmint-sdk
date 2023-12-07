@@ -36,7 +36,7 @@ export class CrossmintService {
         return this.fetchCrossmintAPI("v2-alpha1/ncw/unassign", {
             method: "POST",
             body: JSON.stringify({ userEmail }),
-        });
+        }, `Error unassigning wallet for user: ${userEmail}`);
     }
 
     async rpc(walletId: string, deviceId: string, payload: string) {
