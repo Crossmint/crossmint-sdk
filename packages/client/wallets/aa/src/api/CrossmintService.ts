@@ -17,15 +17,15 @@ export class CrossmintService {
         return this.fetchCrossmintAPI("v2-alpha1/wallets/sessionkey", {
             method: "POST",
             body: JSON.stringify({ address }),
-        }, "Error creating session key. Check your init configuration parameters");
+        }, "Error creating the wallet. Please check the configuration parameters");
     }
 
     async storeAbstractWallet(input: StoreAbstractWalletInput) {
-        return this.fetchCrossmintAPI("v2-alpha1/wallets", { method: "POST", body: JSON.stringify(input) }, "Error storing abstract wallet");
+        return this.fetchCrossmintAPI("v2-alpha1/wallets", { method: "POST", body: JSON.stringify(input) }, "Error creating abstract wallet. Please contact support");
     }
 
     async generateChainData(input: GenerateSignatureDataInput) {
-        return this.fetchCrossmintAPI("v2-alpha1/wallets/chaindata", { method: "POST", body: JSON.stringify(input) }, "Error generating chain data");
+        return this.fetchCrossmintAPI("v2-alpha1/wallets/chaindata", { method: "POST", body: JSON.stringify(input) }, "Error setting custodian. Please contact support");
     }
 
     async getOrAssignWallet(userEmail: string) {
@@ -36,7 +36,7 @@ export class CrossmintService {
         return this.fetchCrossmintAPI("v2-alpha1/ncw/rpc", {
             method: "POST",
             body: JSON.stringify({ walletId, deviceId, payload }),
-        }, "Error invoking wallet RPC");
+        }, "Error creating abstract wallet. Please contact support");
     }
 
     async createTransaction(data: any, walletId: string, assetId: string, typedMessage: boolean) {
@@ -90,18 +90,16 @@ export class CrossmintService {
                 headers: this.crossmintAPIHeaders,
             });
             if (!response.ok) {
-                if (response.status >= 400 && response.status < 500) {
-                    // We forward all 4XX errors. This includes rate limit errors.
-                    // It also includes chain not found, as it is a bad request error.
-                    throw new CrossmintServiceError(await response.text());
-                } else if (response.status >= 500) {
+                if (response.status >= 500) {
                     // Crossmint throws a generic “An error occurred” error for all 5XX errors.
                     // We throw a more specific error depending on the endpoint that was called.
                     throw new CrossmintServiceError(onServerErrorMessage);
                 }
+                // We forward all 4XX errors. This includes rate limit errors.
+                // It also includes chain not found, as it is a bad request error.
+                throw new CrossmintServiceError(await response.text());
             }
-            const json = await response.json();
-            return json;
+            return await response.json();
         } catch (error) {
             throw new CrossmintServiceError(`Error fetching Crossmint API: ${error}`);
         }
