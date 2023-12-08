@@ -8,7 +8,8 @@ import { EVMAAWallet } from "./blockchain/wallets/EVMAAWallet";
 import { FireblocksNCWallet } from "./blockchain/wallets/FireblocksNCWallet";
 import type { CrossmintAASDKInitParams, FireblocksNCWSigner, UserIdentifier, WalletConfig } from "./types/Config";
 import { CURRENT_VERSION, ZERO_DEV_TYPE, ZERO_PROJECT_ID } from "./utils/constants";
-import { WalletSdkError } from "./utils/error";
+import { WalletSdkError, errorToJSON } from "./utils/error";
+import { logError, logInfo } from "./services/logging";
 
 export class CrossmintAASDK {
     private crossmintService: CrossmintService;
@@ -27,6 +28,11 @@ export class CrossmintAASDK {
         walletConfig: WalletConfig
     ) {
         try {
+            logInfo("[GET_OR_CREATE_WALLET] - INIT", {
+                userEmail: user.email!,
+                chain,
+            });
+
             let owner: SmartAccountSigner;
             if ((walletConfig.signer as FireblocksNCWSigner)?.type === "FIREBLOCKS_NCW") {
                 const passphrase = (walletConfig.signer as FireblocksNCWSigner).passphrase;
@@ -65,9 +71,18 @@ export class CrossmintAASDK {
                 baseLayer: "evm",
             });
 
+            logInfo("[GET_OR_CREATE_WALLET] - FINISH", {
+                userEmail: user.email!,
+                chain,
+            });
             return evmAAWallet;
-        } catch (e) {
-            throw new WalletSdkError(`Error creating the Wallet. ${e instanceof Error ? e.message : e}`);
+        } catch (error) {
+            logError("[GET_OR_CREATE_WALLET] - ERROR_CREATING_WALLET", {
+                error: errorToJSON(error),
+                userEmail: user.email!,
+                chain,
+            });
+            throw new WalletSdkError(`Error creating the Wallet.`)
         }
     }
 
