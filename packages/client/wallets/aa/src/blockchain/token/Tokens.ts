@@ -3,7 +3,7 @@ import { EVMBlockchain } from "../BlockchainNetworks";
 export interface EVMToken {
     chain: EVMBlockchain;
     contractAddress: string;
-    tokenId: string;
+    tokenId?: string;
 }
 export interface SolanaToken {
     mintHash: string;
