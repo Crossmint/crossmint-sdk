@@ -72,17 +72,14 @@ export class CrossmintAASDK {
     }
 
     /**
-     * Clears all key material and state from device storage, related to the user's wallet. Call this method when the user signs out of your app.
-     * @param user The user for which to clear the wallet data
-     */
-    async purgeUserWalletData(user: UserIdentifier): Promise<void> {
-        // TODO
-    }
-
-    /**
      * Clears all key material and state from device storage, related to all wallets stored. Call this method when the user signs out of your app, if you don't have a user identifier.
      */
     async purgeAllWalletData(): Promise<void> {
-        // TODO
+        //Removes the Fireblocks NCW data stored on the localstorage
+        const keys = Object.keys(localStorage);
+        const keysToDelete = keys.filter((key) => key.startsWith("NCW-"));
+        keysToDelete.forEach((key) => {
+            localStorage.removeItem(key);
+        });
     }
 }
