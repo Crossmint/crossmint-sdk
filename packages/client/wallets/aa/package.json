@@ -28,7 +28,7 @@
     "dependencies": {
         "@ambire/signature-validator": "1.3.1",
         "@fireblocks/ncw-js-sdk": "9.5.0",
-        "@zerodev/sdk": "4.3.2",
+        "@zerodev/sdk": "4.4.0",
         "ethers": "5.7.2",
         "viem": "1.5.3"
     }
