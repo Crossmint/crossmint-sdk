@@ -11,7 +11,7 @@ import { CURRENT_VERSION, ZERO_DEV_TYPE, ZERO_PROJECT_ID } from "./utils/constan
 import { WalletSdkError } from "./utils/error";
 
 export class CrossmintAASDK {
-    private crossmintService: CrossmintService;
+    crossmintService: CrossmintService;
 
     private constructor(config: CrossmintAASDKInitParams) {
         this.crossmintService = new CrossmintService(config.clientSecret, config.projectId);
