@@ -19,14 +19,31 @@ export const FireblocksNCWallet = async (
     userEmail: string,
     crossmintService: CrossmintService,
     chain: Blockchain,
-    passphrase: string
+    passphrase: string,
+    ncwData?: {
+        walletId: string;
+        deviceId: string;
+    }
 ) => {
-    const { walletId, deviceId, isNew } = await crossmintService.getOrAssignWallet(userEmail);
+    let _walletId: string;
+    let _deviceId: string;
+    let isNew: boolean;
+
+    if (ncwData) {
+        _walletId = ncwData.walletId;
+        _deviceId = ncwData.deviceId;
+        isNew = false;
+    } else {
+        const ncwData = await crossmintService.getOrAssignWallet(userEmail);
+        _walletId = ncwData.walletId;
+        _deviceId = ncwData.deviceId;
+        isNew = ncwData.isNew;
+    }
 
     // Register a message handler to process outgoing message to your API
     const messagesHandler: IMessagesHandler = {
         handleOutgoingMessage: async (message: string) => {
-            const rpcResponse = await crossmintService.rpc(walletId, deviceId, message);
+            const rpcResponse = await crossmintService.rpc(_walletId, _deviceId, message);
             if (rpcResponse.error !== undefined) {
                 if (rpcResponse.error.code === -1) {
                     //Unexpected physicalDeviceId
@@ -52,12 +69,12 @@ export const FireblocksNCWallet = async (
         },
     };
 
-    const secureStorageProvider = new PasswordEncryptedLocalStorage(deviceId, () => {
+    const secureStorageProvider = new PasswordEncryptedLocalStorage(_deviceId, () => {
         return passphrase;
     });
 
     const fireblocksNCW = await FireblocksNCW.initialize({
-        deviceId,
+        deviceId: _deviceId,
         messagesHandler,
         eventsHandler,
         secureStorageProvider,
@@ -81,7 +98,7 @@ export const FireblocksNCWallet = async (
     }
 
     return {
-        owner: getSmartAccountSignerFromFireblocks(crossmintService, fireblocksNCW, walletId, chain),
+        owner: getSmartAccountSignerFromFireblocks(crossmintService, fireblocksNCW, _walletId, chain),
     };
 };
 
