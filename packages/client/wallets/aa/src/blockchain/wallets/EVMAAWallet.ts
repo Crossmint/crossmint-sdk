@@ -84,7 +84,7 @@ export class EVMAAWallet<B extends EVMBlockchain = EVMBlockchain> extends BaseWa
         const generateSessionKeyDataInput: GenerateSignatureDataInput = {
             sessionKeyData: enableSig,
             smartContractWalletAddress: await this.getAddress(),
-            chain: "polygon",
+            chain: this.chain,
             version: 0,
         };
 
@@ -128,7 +128,7 @@ export class EVMAAWallet<B extends EVMBlockchain = EVMBlockchain> extends BaseWa
         const generateKillSwitchDataInput: GenerateSignatureDataInput = {
             killSwitchData: enableSig,
             smartContractWalletAddress: await this.getAddress(),
-            chain: "polygon",
+            chain: this.chain,
             version: 0,
         };
 
