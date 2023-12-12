@@ -5854,10 +5854,10 @@
     js-yaml "^3.10.0"
     tslib "^2.4.0"
 
-"@zerodev/sdk@4.3.2":
-  version "4.3.2"
-  resolved "https://registry.yarnpkg.com/@zerodev/sdk/-/sdk-4.3.2.tgz#56ed55f1b00affc4a5551eee15a396dec5801d9c"
-  integrity sha512-gaZLnuIm8rKko4/HrHbjqQBWd6lsQ+31QYRTSueb8NDaBUrpISmn9YJWAi+ce2kPad2XnqQa0CoReS584UpqcQ==
+"@zerodev/sdk@4.4.0":
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/@zerodev/sdk/-/sdk-4.4.0.tgz#290800c1684dc48fe2c45f91ade1828e5d018f1f"
+  integrity sha512-i2qPZqnO8vJ4s2ajruNzfTMFgm3nn4LS/S2AXIPcKBL3NOLK/PtsYpTi4JCBb/8y350jczr051h59fbRMk4uQA==
   dependencies:
     "@alchemy/aa-core" "0.1.0-alpha.23"
     "@alchemy/aa-ethers" "0.1.0-alpha.23"
