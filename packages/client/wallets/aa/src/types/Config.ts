@@ -22,7 +22,7 @@ export type Web3AuthSigner = any;
 
 export type FireblocksNCWSigner = {
     type: "FIREBLOCKS_NCW";
-    passphrase?: string;
+    passphrase: string;
 };
 
 type Signer = FireblocksNCWSigner | ethers.Signer; // V2 add: EthersSigner | Web3AuthSigner |
