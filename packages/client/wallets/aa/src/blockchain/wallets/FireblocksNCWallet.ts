@@ -33,7 +33,7 @@ export const FireblocksNCWallet = async (
         handleOutgoingMessage: async (message: string) => {
             const rpcResponse = await crossmintService.rpc(walletId, deviceId, message);
             if (rpcResponse.error !== undefined) {
-                if ((rpcResponse.error.code === -1)) {
+                if (rpcResponse.error.code === -1) {
                     //Unexpected physicalDeviceId
                     throw new NonCustodialWalletError(`Passphrase is required`);
                 }
