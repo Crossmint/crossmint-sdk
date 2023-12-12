@@ -90,7 +90,7 @@ export const FireblocksNCWallet = async (
     };
 };
 
-function getSmartAccountSignerFromFireblocks(
+export function getSmartAccountSignerFromFireblocks(
     crossmintService: CrossmintService,
     fireblocksNCW: FireblocksNCW,
     walletId: string,
