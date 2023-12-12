@@ -86,7 +86,8 @@ export class CrossmintService {
     }
 
     private async fetchCrossmintAPI(endpoint: string, options: { body?: string; method: string } = { method: "GET" }, onServerErrorMessage: string) {
-        const crossmintBaseUrl = "https://staging.crossmint.com/api";
+        // const crossmintBaseUrl = "https://staging.crossmint.com/api";
+        const crossmintBaseUrl = "http://localhost:3000/api";
         const url = `${crossmintBaseUrl}/${endpoint}`;
         const { body, method } = options;
 

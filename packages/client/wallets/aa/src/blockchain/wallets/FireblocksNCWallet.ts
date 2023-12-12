@@ -13,7 +13,7 @@ import { fromBytes } from "viem";
 import { CrossmintService } from "../../api/CrossmintService";
 import { PasswordEncryptedLocalStorage } from "../../storage/PasswordEncryptedLocalStorage";
 import { KeysGenerationError, NonCustodialWalletError, SignTransactionError } from "../../utils/error";
-import { Blockchain, getAssetIdByBlockchain } from "../BlockchainNetworks";
+import { Blockchain, BlockchainTestNet, getAssetIdByBlockchain } from "../BlockchainNetworks";
 
 export const FireblocksNCWallet = async (
     userEmail: string,
@@ -61,7 +61,10 @@ export const FireblocksNCWallet = async (
         return crossmintService.getNCWIdentifier(deviceId);
     });
 
+    const testnets: Blockchain[] = [BlockchainTestNet.GOERLI, BlockchainTestNet.MUMBAI, BlockchainTestNet.SEPOLIA, BlockchainTestNet.TESTNET]
+    const testnet = testnets.includes(chain)
     const fireblocksNCW = await FireblocksNCW.initialize({
+        env: testnet ? "sandbox" : "production",
         deviceId,
         messagesHandler,
         eventsHandler,
