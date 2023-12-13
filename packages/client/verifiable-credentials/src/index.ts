@@ -5,3 +5,6 @@ export { verifyCredential } from "./verification/verify";
 export { getCredentialCollections } from "./presentation/getCollections";
 export { getMetadata } from "./presentation/getMetadata";
 export { CrossmintAPI } from "./services/crossmintAPI";
+export { getCredentialFromId } from "./presentation/getCredential";
+// Decryption
+export { Lit } from "./services/litInterface";
