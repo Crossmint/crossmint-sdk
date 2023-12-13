@@ -1,8 +1,11 @@
 import { CrossmintServiceError } from "@/utils/error";
-import { GenerateSignatureDataInput, StoreAbstractWalletInput } from "../types/API";
+import { Blockchain, getApiUrlByBlockchainType } from "@/blockchain";
+import { GenerateSignatureDataInput, StoreAbstractWalletInput } from "@/types";
+import { CROSSMINT_STG_URL } from "@/utils";
 
 export class CrossmintService {
     private crossmintAPIHeaders: Record<string, string>;
+    private crossmintBaseUrl: string;
 
     constructor(clientSecret: string, projectId: string) {
         this.crossmintAPIHeaders = {
@@ -11,6 +14,11 @@ export class CrossmintService {
             "x-client-secret": clientSecret,
             "x-project-id": projectId,
         };
+        this.crossmintBaseUrl = CROSSMINT_STG_URL;
+    }
+
+    setCrossmintUrl(blockchain: Blockchain) {
+        this.crossmintBaseUrl = getApiUrlByBlockchainType(blockchain);
     }
 
     async createSessionKey(address: string) {
@@ -86,8 +94,7 @@ export class CrossmintService {
     }
 
     private async fetchCrossmintAPI(endpoint: string, options: { body?: string; method: string } = { method: "GET" }, onServerErrorMessage: string) {
-        const crossmintBaseUrl = "https://staging.crossmint.com/api";
-        const url = `${crossmintBaseUrl}/${endpoint}`;
+        const url = `${this.crossmintBaseUrl}/${endpoint}`;
         const { body, method } = options;
 
         try {
