@@ -21,6 +21,7 @@ export class CrossmintAASDK {
         walletConfig: WalletConfig
     ) {
         try {
+            this.crossmintService.setCrossmintUrl(chain);
             const owner = await createOwnerSigner(user, chain, walletConfig, this.crossmintService);
 
             const address = await owner.getAddress();
@@ -35,7 +36,6 @@ export class CrossmintAASDK {
                 },
             });
 
-            this.crossmintService.setCrossmintUrl(chain);
             const evmAAWallet = new EVMAAWallet(zDevProvider, this.crossmintService, chain as EVMBlockchain);
 
             const abstractAddress = await evmAAWallet.getAddress();
