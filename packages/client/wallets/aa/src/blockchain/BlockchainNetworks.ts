@@ -178,9 +178,7 @@ export function getTickerNameByBlockchain(chain: Blockchain) {
 }
 
 export function getApiUrlByBlockchainType(chain: Blockchain): string {
-    console.log("getApiUrlByBlockchainType", chain);
     const result = isTestnet(chain) ? CROSSMINT_STG_URL : CROSSMINT_PROD_URL;
-    console.log("getApiUrlByBlockchainType RESULT", result);
     return result;
 }
 
