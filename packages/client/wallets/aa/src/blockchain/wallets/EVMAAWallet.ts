@@ -14,12 +14,12 @@ import { getFunctionSelector } from "viem";
 import { CrossmintService } from "../../api/CrossmintService";
 import { GenerateSignatureDataInput } from "../../types/API";
 import { ZERO_PROJECT_ID } from "../../utils/constants";
-import { EVMBlockchain, getBlockchainByChainId, getUrlProviderByBlockchain } from "../BlockchainNetworks";
+import { EVMBlockchainWithTestnet, getBlockchainByChainId, getUrlProviderByBlockchain } from "../BlockchainNetworks";
 import { Custodian } from "../plugins";
 import { TokenType } from "../token/Tokens";
 import BaseWallet from "./BaseWallet";
 
-export class EVMAAWallet<B extends EVMBlockchain = EVMBlockchain> extends BaseWallet {
+export class EVMAAWallet<B extends EVMBlockchainWithTestnet = EVMBlockchainWithTestnet> extends BaseWallet {
     private sessionKeySignerAddress?: string;
     chain: B;
 
