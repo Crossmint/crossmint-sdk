@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/verify-credentials",
-    "version": "1.1.2",
+    "version": "1.4.0",
     "author": "Paella Labs Inc",
     "license": "Apache-2.0",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
@@ -26,10 +26,10 @@
         "build": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --minify --dts --sourcemap"
     },
     "dependencies": {
-        "@lit-protocol/lit-node-client": "3.0.24",
         "@ethersproject/providers": "5.7.2",
         "@ethersproject/wallet": "5.7.0",
         "@krebitdao/eip712-vc": "1.0.3",
+        "@lit-protocol/lit-node-client": "3.0.24",
         "date-fns": "2.30.0",
         "ethers": "5.7.2"
     },
