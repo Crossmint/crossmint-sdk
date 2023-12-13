@@ -1,17 +1,17 @@
 export class CrossmintAPI {
-    private static clientSecret: string;
+    private static apiKey: string;
 
-    public static init(APIKey: string) {
-        this.clientSecret = APIKey;
+    public static init(apiKey: string) {
+        this.apiKey = apiKey;
     }
 
     public static getHeaders() {
-        if (!this.clientSecret) {
+        if (!this.apiKey) {
             throw new Error("Credentials not set");
         }
 
         return {
-            "x-client-secret": this.clientSecret,
+            "x-client-secret": this.apiKey,
             accept: "application/json",
         };
     }
