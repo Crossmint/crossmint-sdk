@@ -2,8 +2,7 @@ import { Blockchain } from "@/blockchain";
 import { ethers } from "ethers";
 
 export type CrossmintAASDKInitParams = {
-    projectId: string;
-    clientSecret: string;
+    apiKey: string;
 };
 
 export type UserIdentifier = {

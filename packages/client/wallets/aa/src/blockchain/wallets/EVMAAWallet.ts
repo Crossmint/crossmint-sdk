@@ -1,3 +1,5 @@
+import { logError, logInfo } from "@/services/logging";
+import { errorToJSON } from "@/utils";
 import { verifyMessage } from "@ambire/signature-validator";
 import {
     ERC165SessionKeyProvider,
@@ -22,8 +24,6 @@ import {
 import { Custodian } from "../plugins";
 import { TokenType } from "../token/Tokens";
 import BaseWallet from "./BaseWallet";
-import { logError, logInfo } from "@/services/logging";
-import { errorToJSON } from "@/utils";
 
 export class EVMAAWallet<B extends EVMBlockchain = EVMBlockchain> extends BaseWallet {
     private sessionKeySignerAddress?: string;

@@ -1,25 +1,30 @@
-import { Blockchain, getApiUrlByBlockchainType } from "@/blockchain";
 import { logError } from "@/services/logging";
 import { GenerateSignatureDataInput, StoreAbstractWalletInput } from "@/types";
-import { CROSSMINT_STG_URL } from "@/utils";
+import { CROSSMINT_DEV_URL, CROSSMINT_PROD_URL, CROSSMINT_STG_URL } from "@/utils";
 import { CrossmintServiceError, errorToJSON } from "@/utils/error";
+
+import { validateAPIKey } from "@crossmint/common-sdk-base";
 
 export class CrossmintService {
     private crossmintAPIHeaders: Record<string, string>;
     private crossmintBaseUrl: string;
+    private static urlMap: Record<string, string> = {
+        development: CROSSMINT_DEV_URL,
+        staging: CROSSMINT_STG_URL,
+        production: CROSSMINT_PROD_URL,
+    };
 
-    constructor(clientSecret: string, projectId: string) {
+    constructor(apiKey: string) {
+        const result = validateAPIKey(apiKey);
+        if (!result.isValid) {
+            throw new Error("API key invalid");
+        }
         this.crossmintAPIHeaders = {
             accept: "application/json",
             "content-type": "application/json",
-            "x-client-secret": clientSecret,
-            "x-project-id": projectId,
+            "x-api-key": apiKey,
         };
-        this.crossmintBaseUrl = CROSSMINT_STG_URL;
-    }
-
-    setCrossmintUrl(blockchain: Blockchain) {
-        this.crossmintBaseUrl = getApiUrlByBlockchainType(blockchain);
+        this.crossmintBaseUrl = this.getUrlFromEnv(result.environment);
     }
 
     async createSessionKey(address: string) {
@@ -175,5 +180,13 @@ export class CrossmintService {
             });
             throw new CrossmintServiceError(`Error fetching Crossmint API: ${error}`);
         }
+    }
+
+    private getUrlFromEnv(environment: string) {
+        const url = CrossmintService.urlMap[environment];
+        if (!url) {
+            throw new Error(`URL not found for environment: ${environment}`);
+        }
+        return url;
     }
 }

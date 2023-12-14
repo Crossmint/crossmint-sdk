@@ -15,11 +15,10 @@ jest.mock("@/utils/error", () => ({
 
 describe("CrossmintService", () => {
     let crossmintService: CrossmintService;
-    const clientSecret = "test-secret";
-    const projectId = "test-project-id";
+    const apiKey = "apiKey";
 
     beforeEach(() => {
-        crossmintService = new CrossmintService(clientSecret, projectId);
+        crossmintService = new CrossmintService(apiKey);
     });
 
     describe("constructor", () => {
@@ -29,8 +28,7 @@ describe("CrossmintService", () => {
             expect(crossmintService["crossmintAPIHeaders"]).toEqual({
                 accept: "application/json",
                 "content-type": "application/json",
-                "x-client-secret": clientSecret,
-                "x-project-id": projectId,
+                "x-api-key": apiKey,
             });
 
             // Check if the base URL is correctly set to the staging URL

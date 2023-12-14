@@ -41,7 +41,7 @@ describe("createOwnerSigner", () => {
         };
 
         const mockChain = Blockchain.POLYGON;
-        const mockCrossmintService = new CrossmintService("clientSecret", "projectId");
+        const mockCrossmintService = new CrossmintService("apiKey");
 
         // Now call the function
         try {

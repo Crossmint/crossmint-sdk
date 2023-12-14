@@ -35,6 +35,7 @@
         "@web3auth/ethereum-provider": "^6.1.7",
         "@web3auth/single-factor-auth": "^6.5.0",
         "@zerodev/sdk": "4.5.2",
+        "@crossmint/common-sdk-base": "0.0.1",
         "ethers": "5.7.2",
         "viem": "1.5.3"
     }

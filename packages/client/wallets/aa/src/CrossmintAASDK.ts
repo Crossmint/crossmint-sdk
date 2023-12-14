@@ -1,15 +1,22 @@
 import { CrossmintService } from "@/api";
-import { Blockchain, EVMAAWallet, getChainIdByBlockchain, getZeroDevProjectIdByBlockchain, isEVMBlockchain } from "@/blockchain";
+import {
+    Blockchain,
+    EVMAAWallet,
+    getChainIdByBlockchain,
+    getZeroDevProjectIdByBlockchain,
+    isEVMBlockchain,
+} from "@/blockchain";
 import type { CrossmintAASDKInitParams, UserIdentifier, WalletConfig } from "@/types";
 import { CURRENT_VERSION, WalletSdkError, ZERO_DEV_TYPE, createOwnerSigner, errorToJSON } from "@/utils";
 import { ZeroDevEthersProvider } from "@zerodev/sdk";
+
 import { logError, logInfo } from "./services/logging";
 
 export class CrossmintAASDK {
     crossmintService: CrossmintService;
 
     private constructor(config: CrossmintAASDKInitParams) {
-        this.crossmintService = new CrossmintService(config.clientSecret, config.projectId);
+        this.crossmintService = new CrossmintService(config.apiKey);
     }
 
     static init(params: CrossmintAASDKInitParams): CrossmintAASDK {
@@ -26,7 +33,7 @@ export class CrossmintAASDK {
                 userEmail: user.email!,
                 chain,
             });
-            this.crossmintService.setCrossmintUrl(chain);
+
             const owner = await createOwnerSigner(user, chain, walletConfig, this.crossmintService);
 
             const address = await owner.getAddress();
@@ -75,9 +82,7 @@ export class CrossmintAASDK {
                 chain,
             });
 
-            throw new WalletSdkError(
-                `Error creating the Wallet [${error?.name ?? ""}]`
-            );
+            throw new WalletSdkError(`Error creating the Wallet [${error?.name ?? ""}]`);
         }
     }
 
