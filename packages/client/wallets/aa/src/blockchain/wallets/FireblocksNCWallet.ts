@@ -13,29 +13,41 @@ import { fromBytes } from "viem";
 import { CrossmintService } from "../../api/CrossmintService";
 import { PasswordEncryptedLocalStorage } from "../../storage/PasswordEncryptedLocalStorage";
 import { KeysGenerationError, NonCustodialWalletError, SignTransactionError } from "../../utils/error";
-import { Blockchain, BlockchainTestNet, getAssetIdByBlockchain } from "../BlockchainNetworks";
+import { Blockchain, getAssetIdByBlockchain, isTestnet } from "../BlockchainNetworks";
 
 export const FireblocksNCWallet = async (
     userEmail: string,
     crossmintService: CrossmintService,
     chain: Blockchain,
-    passphrase?: string
+    passphrase: string,
+    ncwData?: {
+        walletId: string;
+        deviceId: string;
+    }
 ) => {
-    const { walletId, deviceId, isNew } = await crossmintService.getOrAssignWallet(userEmail);
+    let _walletId: string;
+    let _deviceId: string;
+    let isNew: boolean;
 
-    if (isNew && passphrase === undefined) {
-        await crossmintService.unassignWallet(userEmail);
-        throw new KeysGenerationError("Passphrase is required.");
+    if (ncwData) {
+        _walletId = ncwData.walletId;
+        _deviceId = ncwData.deviceId;
+        isNew = false;
+    } else {
+        const ncwData = await crossmintService.getOrAssignWallet(userEmail);
+        _walletId = ncwData.walletId;
+        _deviceId = ncwData.deviceId;
+        isNew = ncwData.isNew;
     }
 
     // Register a message handler to process outgoing message to your API
     const messagesHandler: IMessagesHandler = {
         handleOutgoingMessage: async (message: string) => {
-            const rpcResponse = await crossmintService.rpc(walletId, deviceId, message);
+            const rpcResponse = await crossmintService.rpc(_walletId, _deviceId, message);
             if (rpcResponse.error !== undefined) {
                 if (rpcResponse.error.code === -1) {
                     //Unexpected physicalDeviceId
-                    throw new NonCustodialWalletError(`Passphrase is required`);
+                    throw new NonCustodialWalletError(`Unexpected physicalDeviceId`);
                 }
                 throw new NonCustodialWalletError(`NCW Error: ${rpcResponse.error.message}`);
             }
@@ -57,15 +69,13 @@ export const FireblocksNCWallet = async (
         },
     };
 
-    const secureStorageProvider = new PasswordEncryptedLocalStorage(deviceId, () => {
-        return crossmintService.getNCWIdentifier(deviceId);
+    const secureStorageProvider = new PasswordEncryptedLocalStorage(_deviceId, () => {
+        return passphrase;
     });
 
-    const testnets: Blockchain[] = [BlockchainTestNet.GOERLI, BlockchainTestNet.MUMBAI, BlockchainTestNet.SEPOLIA, BlockchainTestNet.TESTNET]
-    const testnet = testnets.includes(chain)
     const fireblocksNCW = await FireblocksNCW.initialize({
-        env: testnet ? "sandbox" : "production",
-        deviceId,
+        env: isTestnet(chain) ? "sandbox" : "production",
+        deviceId: _deviceId,
         messagesHandler,
         eventsHandler,
         secureStorageProvider,
@@ -75,25 +85,25 @@ export const FireblocksNCWallet = async (
     if (isNew) {
         try {
             await fireblocksNCW.generateMPCKeys(getDefaultAlgorithems());
-            await fireblocksNCW.backupKeys(passphrase!);
+            await fireblocksNCW.backupKeys(passphrase);
         } catch (e) {
             await crossmintService.unassignWallet(userEmail);
             throw new KeysGenerationError(`Error generating keys. ${e instanceof Error ? e.message : e}`);
         }
-    } else if (passphrase !== undefined) {
+    } else {
         try {
-            await fireblocksNCW.recoverKeys(passphrase!);
+            await fireblocksNCW.recoverKeys(passphrase);
         } catch (e) {
             throw new KeysGenerationError(`Error recovering keys. ${e instanceof Error ? e.message : e}`);
         }
     }
 
     return {
-        owner: getSmartAccountSignerFromFireblocks(crossmintService, fireblocksNCW, walletId, chain),
+        owner: getSmartAccountSignerFromFireblocks(crossmintService, fireblocksNCW, _walletId, chain),
     };
 };
 
-function getSmartAccountSignerFromFireblocks(
+export function getSmartAccountSignerFromFireblocks(
     crossmintService: CrossmintService,
     fireblocksNCW: FireblocksNCW,
     walletId: string,

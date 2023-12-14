@@ -7,17 +7,14 @@ import {
 } from "@fireblocks/ncw-js-sdk";
 import { md } from "node-forge";
 
-export type GetUserPasswordFunc = () => Promise<string>;
+export type GetUserPasswordFunc = () => string;
 
 /// This secure storage implementations creates an encryption key on-demand based on a user password
 
 export class PasswordEncryptedLocalStorage extends BrowserLocalStorageProvider implements ISecureStorageProvider {
     private encKey: string | null = null;
 
-    constructor(
-        private _salt: string,
-        private getPassword: GetUserPasswordFunc
-    ) {
+    constructor(private _salt: string, private getPassword: GetUserPasswordFunc) {
         super();
     }
 
