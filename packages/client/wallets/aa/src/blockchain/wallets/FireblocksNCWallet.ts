@@ -19,14 +19,9 @@ export const FireblocksNCWallet = async (
     userEmail: string,
     crossmintService: CrossmintService,
     chain: Blockchain,
-    passphrase?: string
+    passphrase: string
 ) => {
     const { walletId, deviceId, isNew } = await crossmintService.getOrAssignWallet(userEmail);
-
-    if (isNew && passphrase === undefined) {
-        await crossmintService.unassignWallet(userEmail);
-        throw new KeysGenerationError("Passphrase is required.");
-    }
 
     // Register a message handler to process outgoing message to your API
     const messagesHandler: IMessagesHandler = {
@@ -35,7 +30,7 @@ export const FireblocksNCWallet = async (
             if (rpcResponse.error !== undefined) {
                 if (rpcResponse.error.code === -1) {
                     //Unexpected physicalDeviceId
-                    throw new NonCustodialWalletError(`Passphrase is required`);
+                    throw new NonCustodialWalletError(`Unexpected physicalDeviceId`);
                 }
                 throw new NonCustodialWalletError(`NCW Error: ${rpcResponse.error.message}`);
             }
@@ -58,7 +53,7 @@ export const FireblocksNCWallet = async (
     };
 
     const secureStorageProvider = new PasswordEncryptedLocalStorage(deviceId, () => {
-        return crossmintService.getNCWIdentifier(deviceId);
+        return passphrase;
     });
 
     const fireblocksNCW = await FireblocksNCW.initialize({
@@ -72,14 +67,14 @@ export const FireblocksNCWallet = async (
     if (isNew) {
         try {
             await fireblocksNCW.generateMPCKeys(getDefaultAlgorithems());
-            await fireblocksNCW.backupKeys(passphrase!);
+            await fireblocksNCW.backupKeys(passphrase);
         } catch (e) {
             await crossmintService.unassignWallet(userEmail);
             throw new KeysGenerationError(`Error generating keys. ${e instanceof Error ? e.message : e}`);
         }
-    } else if (passphrase !== undefined) {
+    } else {
         try {
-            await fireblocksNCW.recoverKeys(passphrase!);
+            await fireblocksNCW.recoverKeys(passphrase);
         } catch (e) {
             throw new KeysGenerationError(`Error recovering keys. ${e instanceof Error ? e.message : e}`);
         }

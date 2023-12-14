@@ -7,7 +7,7 @@ import {
 } from "@fireblocks/ncw-js-sdk";
 import { md } from "node-forge";
 
-export type GetUserPasswordFunc = () => Promise<string>;
+export type GetUserPasswordFunc = () => string;
 
 /// This secure storage implementations creates an encryption key on-demand based on a user password
 

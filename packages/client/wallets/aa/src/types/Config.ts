@@ -26,7 +26,7 @@ export type Web3AuthSigner = {
 
 export type FireblocksNCWSigner = {
     type: "FIREBLOCKS_NCW";
-    passphrase?: string;
+    passphrase: string;
 };
 
 type Signer = FireblocksNCWSigner | ethers.Signer | Web3AuthSigner; // V2 add: EthersSigner
