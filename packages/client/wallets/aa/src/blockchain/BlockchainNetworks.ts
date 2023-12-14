@@ -25,6 +25,13 @@ export const BlockchainTestNet = {
 } as const; //testnet as a placeholder for non-EVM chains
 export type BlockchainTestNet = (typeof BlockchainTestNet)[keyof typeof BlockchainTestNet];
 
+export const EVMBlockchainWithTestnet = {
+    ...EVMBlockchain,
+    ...BlockchainTestNet,
+} as const;
+
+export type EVMBlockchainWithTestnet = (typeof EVMBlockchainWithTestnet)[keyof typeof EVMBlockchainWithTestnet];
+
 export const Blockchain = {
     ...EVMBlockchain,
     ...NonEVMBlockchain,
@@ -171,7 +178,8 @@ export function getTickerNameByBlockchain(chain: Blockchain) {
 }
 
 export function getApiUrlByBlockchainType(chain: Blockchain): string {
-    return isTestnet(chain) ? CROSSMINT_STG_URL : CROSSMINT_PROD_URL;
+    const result = isTestnet(chain) ? CROSSMINT_STG_URL : CROSSMINT_PROD_URL;
+    return result;
 }
 
 export function getWeb3AuthBlockchain(chain: Blockchain): TORUS_LEGACY_NETWORK_TYPE {
@@ -183,7 +191,19 @@ export function isTestnet(chain: Blockchain): boolean {
         Object.keys(BlockchainTestNet) as Array<keyof typeof BlockchainTestNet>
     );
 
-    if (testnetKeys.has(chain as keyof typeof BlockchainTestNet)) {
+    if (testnetKeys.has(chain.toUpperCase() as keyof typeof BlockchainTestNet)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+export function isEVMBlockchain(chain: Blockchain): chain is EVMBlockchain {
+    const evmKeys = new Set<keyof typeof EVMBlockchainWithTestnet>(
+        Object.keys(EVMBlockchainWithTestnet) as Array<keyof typeof EVMBlockchainWithTestnet>
+    );
+
+    if (evmKeys.has(chain.toUpperCase() as keyof typeof EVMBlockchainWithTestnet)) {
         return true;
     } else {
         return false;

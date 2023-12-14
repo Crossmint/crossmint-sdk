@@ -1,5 +1,5 @@
 import { CrossmintService } from "@/api";
-import { Blockchain, EVMAAWallet, EVMBlockchain } from "@/blockchain";
+import { Blockchain, EVMAAWallet, EVMBlockchain, EVMBlockchainWithTestnet, isEVMBlockchain } from "@/blockchain";
 import type { CrossmintAASDKInitParams, UserIdentifier, WalletConfig } from "@/types";
 import { CURRENT_VERSION, WalletSdkError, ZERO_DEV_TYPE, ZERO_PROJECT_ID, createOwnerSigner } from "@/utils";
 import { ZeroDevEthersProvider } from "@zerodev/sdk";
@@ -21,6 +21,7 @@ export class CrossmintAASDK {
         walletConfig: WalletConfig
     ) {
         try {
+            this.crossmintService.setCrossmintUrl(chain);
             const owner = await createOwnerSigner(user, chain, walletConfig, this.crossmintService);
 
             const address = await owner.getAddress();
@@ -35,8 +36,11 @@ export class CrossmintAASDK {
                 },
             });
 
-            this.crossmintService.setCrossmintUrl(chain);
-            const evmAAWallet = new EVMAAWallet(zDevProvider, this.crossmintService, chain as EVMBlockchain);
+            if (!isEVMBlockchain(chain)) {
+                throw new WalletSdkError(`The blockchain ${chain} is still not supported`);
+            }
+
+            const evmAAWallet = new EVMAAWallet(zDevProvider, this.crossmintService, chain);
 
             const abstractAddress = await evmAAWallet.getAddress();
             const { sessionKeySignerAddress } = await this.crossmintService.createSessionKey(abstractAddress);
