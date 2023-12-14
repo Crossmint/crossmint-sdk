@@ -11,7 +11,7 @@ export class CrossmintAPI {
         }
 
         return {
-            "x-client-secret": this.apiKey,
+            "x-api-key": this.apiKey,
             accept: "application/json",
         };
     }
