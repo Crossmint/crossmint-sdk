@@ -197,3 +197,15 @@ export function isTestnet(chain: Blockchain): boolean {
         return false;
     }
 }
+
+export function isEVMBlockchain(chain: Blockchain): chain is EVMBlockchain {
+    const evmKeys = new Set<keyof typeof EVMBlockchainWithTestnet>(
+        Object.keys(EVMBlockchainWithTestnet) as Array<keyof typeof EVMBlockchainWithTestnet>
+    );
+
+    if (evmKeys.has(chain.toUpperCase() as keyof typeof EVMBlockchainWithTestnet)) {
+        return true;
+    } else {
+        return false;
+    }
+}

@@ -1,5 +1,5 @@
 import { CrossmintService } from "@/api";
-import { Blockchain, EVMAAWallet, EVMBlockchain, EVMBlockchainWithTestnet } from "@/blockchain";
+import { Blockchain, EVMAAWallet, EVMBlockchain, EVMBlockchainWithTestnet, isEVMBlockchain } from "@/blockchain";
 import type { CrossmintAASDKInitParams, UserIdentifier, WalletConfig } from "@/types";
 import { CURRENT_VERSION, WalletSdkError, ZERO_DEV_TYPE, ZERO_PROJECT_ID, createOwnerSigner } from "@/utils";
 import { ZeroDevEthersProvider } from "@zerodev/sdk";
@@ -15,7 +15,7 @@ export class CrossmintAASDK {
         return new CrossmintAASDK(params);
     }
 
-    async getOrCreateWallet<B extends EVMBlockchainWithTestnet = EVMBlockchainWithTestnet>(
+    async getOrCreateWallet<B extends Blockchain = Blockchain>(
         user: UserIdentifier,
         chain: B,
         walletConfig: WalletConfig
@@ -35,6 +35,10 @@ export class CrossmintAASDK {
                     },
                 },
             });
+
+            if (!isEVMBlockchain(chain)) {
+                throw new WalletSdkError(`The blockchain ${chain} is still not supported`);
+            }
 
             const evmAAWallet = new EVMAAWallet(zDevProvider, this.crossmintService, chain);
 
