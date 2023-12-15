@@ -74,6 +74,7 @@ export const FireblocksNCWallet = async (
     });
 
     const fireblocksNCW = await FireblocksNCW.initialize({
+        env: "production",
         deviceId: _deviceId,
         messagesHandler,
         eventsHandler,
