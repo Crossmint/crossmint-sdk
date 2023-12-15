@@ -26,8 +26,17 @@ export async function createOwnerSigner(
     crossmintService: CrossmintService
 ): Promise<SmartAccountSigner> {
     if (isFireblocksNCWSigner(walletConfig.signer)) {
-        const { passphrase, walletId, deviceId } = walletConfig.signer;
-        const fireblocks = await FireblocksNCWallet(user.email, crossmintService, chain, passphrase, walletId && deviceId ? { walletId, deviceId } : undefined);
+        let fireblocks: any;
+        if ("walletId" in walletConfig.signer && "deviceId" in walletConfig.signer) {
+            const { passphrase, walletId, deviceId } = walletConfig.signer;
+            fireblocks = await FireblocksNCWallet(user.email, crossmintService, chain, passphrase, {
+                walletId,
+                deviceId,
+            });
+        } else {
+            const { passphrase } = walletConfig.signer;
+            fireblocks = await FireblocksNCWallet(user.email, crossmintService, chain, passphrase, undefined);
+        }
         return fireblocks.owner;
     } else if (isWeb3AuthSigner(walletConfig.signer)) {
         const signer = walletConfig.signer;
@@ -41,7 +50,6 @@ export async function createOwnerSigner(
             ticker: getTickerByBlockchain(chain),
             tickerName: getTickerNameByBlockchain(chain),
         };
-
         const web3auth = new Web3Auth({
             clientId: signer.clientId,
             web3AuthNetwork: getWeb3AuthBlockchain(chain),
@@ -64,8 +72,8 @@ export async function createOwnerSigner(
     }
 }
 
-function isFireblocksNCWSigner(signer: any): signer is FireblocksNCWSigner & { walletId: string; deviceId: string; } {
-    return signer && "walletId" in signer && "deviceId" in signer && signer.type === "FIREBLOCKS_NCW";
+function isFireblocksNCWSigner(signer: any): signer is FireblocksNCWSigner & { walletId: string; deviceId: string } {
+    return signer && signer.type === "FIREBLOCKS_NCW";
 }
 
 function isWeb3AuthSigner(signer: any): signer is Web3AuthSigner {
