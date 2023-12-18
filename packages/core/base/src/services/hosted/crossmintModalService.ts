@@ -198,6 +198,7 @@ export function crossmintModalService({
                 }
                 case "new-tab": {
                     window.open(url, "_blank");
+                    setConnecting(false);
                     return;
                 }
                 case "same-tab":
