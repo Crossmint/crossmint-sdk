@@ -79,7 +79,6 @@ export const FireblocksNCWallet = async (
         messagesHandler,
         eventsHandler,
         secureStorageProvider,
-        logger: new ConsoleLogger(),
     });
 
     if (isNew) {
