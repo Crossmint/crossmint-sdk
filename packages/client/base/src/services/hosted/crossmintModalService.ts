@@ -197,8 +197,13 @@ export function crossmintModalService({
                     return;
                 }
                 case "new-tab": {
-                    window.open(url, "_blank");
-                    setConnecting(false);
+                    const newTab = window.open(url, "_blank");
+                    if (newTab) {
+                        registerListeners(newTab);
+                        if (showOverlay) {
+                            addLoadingOverlay(dismissOverlayOnClick);
+                        }
+                    }
                     return;
                 }
                 case "same-tab":
