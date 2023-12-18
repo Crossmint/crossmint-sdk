@@ -70,8 +70,7 @@ class BaseWallet extends ZeroDevAccountSigner<"ECDSA"> {
             console.log("Transaction receipt:", receipt);
 
             return transaction!.hash;
-        } catch (error) {
-            console.error("Error transferring token:", error);
+        } catch (error: any) {
             throw new TransferError(`Error transferring token ${evmToken.tokenId}`);
         }
     }

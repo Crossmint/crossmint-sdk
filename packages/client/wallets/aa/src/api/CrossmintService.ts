@@ -168,8 +168,8 @@ export class CrossmintService {
                 throw new CrossmintServiceError(await response.text());
             }
             return await response.json();
-        } catch (error) {
-            throw new CrossmintServiceError(`Error fetching Crossmint API: ${error}`);
+        } catch (error: any) {
+            throw new CrossmintServiceError(`Error fetching Crossmint API`);
         }
     }
 }

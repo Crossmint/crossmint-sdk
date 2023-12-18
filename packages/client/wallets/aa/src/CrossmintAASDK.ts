@@ -58,9 +58,9 @@ export class CrossmintAASDK {
             });
 
             return evmAAWallet;
-        } catch (e) {
+        } catch (error: any) {
             throw new WalletSdkError(
-                `Error creating the Wallet [${e instanceof Error ? `${e.name}. ${e.message}` : e}]`
+                `Error creating the Wallet [${error?.name ?? ""}]`
             );
         }
     }

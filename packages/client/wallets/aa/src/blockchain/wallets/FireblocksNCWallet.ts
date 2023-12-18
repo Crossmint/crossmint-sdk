@@ -86,15 +86,15 @@ export const FireblocksNCWallet = async (
         try {
             await fireblocksNCW.generateMPCKeys(getDefaultAlgorithems());
             await fireblocksNCW.backupKeys(passphrase);
-        } catch (e) {
+        } catch (error: any) {
             await crossmintService.unassignWallet(userEmail);
-            throw new KeysGenerationError(`Error generating keys. ${e instanceof Error ? e.message : e}`);
+            throw new KeysGenerationError(`Error generating keys. ${error?.title ?? ""}}`);
         }
     } else {
         try {
             await fireblocksNCW.recoverKeys(passphrase);
-        } catch (e) {
-            throw new KeysGenerationError(`Error recovering keys. ${e instanceof Error ? e.message : e}`);
+        } catch (error: any) {
+            throw new KeysGenerationError(`Error recovering keys. ${error?.title ?? ""}`);
         }
     }
 
@@ -136,8 +136,8 @@ const signMessage = async (
         const result: ITransactionSignature = await fireblocksNCW.signTransaction(tx);
         console.log(`txId: ${result.txId}`, `status: ${result.transactionSignatureStatus}`);
         handleSignTransactionStatus(result);
-    } catch (e) {
-        throw new SignTransactionError(`Error signing transaction. ${e instanceof Error ? e.message : e}`);
+    } catch (error: any) {
+        throw new SignTransactionError(`Error signing transaction. ${error?.title ?? ""}`);
     }
     return (await crossmintService.getSignature(tx)) as `0x${string}`;
 };
@@ -154,8 +154,8 @@ const signTypedData = async (
         const result: ITransactionSignature = await fireblocksNCW.signTransaction(tx);
         console.log(`txId: ${result.txId}`, `status: ${result.transactionSignatureStatus}`);
         handleSignTransactionStatus(result);
-    } catch (e) {
-        throw new SignTransactionError(`Error signing transaction. ${e instanceof Error ? e.message : e}`);
+    } catch (error: any) {
+        throw new SignTransactionError(`Error signing transaction. ${error?.title ?? ""}`);
     }
     return (await crossmintService.getSignature(tx)) as `0x${string}`;
 };
