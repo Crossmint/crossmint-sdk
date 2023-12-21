@@ -14,9 +14,6 @@ export class NotAuthorizedError extends Error {
     }
 }
 
-/**
- * Need to learn when to use it
- */
 export class RateLimitError extends Error {
     code = "ERROR_RATE_LIMIT";
     retryAfterMs: number;
@@ -31,9 +28,6 @@ export class RateLimitError extends Error {
     }
 }
 
-/**
- * Need to learn when to use it
- */
 export class PassphraseRequiredError extends Error {
     code = "ERROR_PASSPHRASE_REQUIRED";
 
