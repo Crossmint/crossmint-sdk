@@ -91,7 +91,7 @@ export const FireblocksNCWallet = async (
         }
     } else {
         try {
-            await fireblocksNCW.recoverKeys(passphrase + 'adasdd');
+            await fireblocksNCW.recoverKeys(passphrase);
         } catch (error: any) {
             throw new KeysGenerationError(`Error recovering keys. ${error?.title ?? ""}`);
         }
