@@ -13,8 +13,12 @@ import { getFunctionSelector } from "viem";
 
 import { CrossmintService } from "../../api/CrossmintService";
 import { GenerateSignatureDataInput } from "../../types/API";
-import { ZERO_PROJECT_ID } from "../../utils/constants";
-import { EVMBlockchain, getBlockchainByChainId, getUrlProviderByBlockchain } from "../BlockchainNetworks";
+import {
+    EVMBlockchain,
+    getBlockchainByChainId,
+    getUrlProviderByBlockchain,
+    getZeroDevProjectIdByBlockchain,
+} from "../BlockchainNetworks";
 import { Custodian } from "../plugins";
 import { TokenType } from "../token/Tokens";
 import BaseWallet from "./BaseWallet";
@@ -49,7 +53,7 @@ export class EVMAAWallet<B extends EVMBlockchain = EVMBlockchain> extends BaseWa
         const sessionKeySigner = jsonRpcProvider.getSigner(this.sessionKeySignerAddress);
 
         const erc165SessionKeyProvider = await ERC165SessionKeyProvider.init({
-            projectId: ZERO_PROJECT_ID, // ZeroDev projectId
+            projectId: getZeroDevProjectIdByBlockchain(this.chain), // ZeroDev projectId
             sessionKey: convertEthersSignerToAccountSigner(sessionKeySigner), // Session Key signer
             sessionKeyData: {
                 selector, // Function selector in the executor contract to execute
@@ -99,7 +103,7 @@ export class EVMAAWallet<B extends EVMBlockchain = EVMBlockchain> extends BaseWa
         const sessionKeySigner = jsonRpcProvider.getSigner(this.sessionKeySignerAddress);
 
         const blockerKillSwitchProvider = await KillSwitchProvider.init({
-            projectId: ZERO_PROJECT_ID, // zeroDev projectId
+            projectId: getZeroDevProjectIdByBlockchain(this.chain), // zeroDev projectId
             guardian: convertEthersSignerToAccountSigner(sessionKeySigner), // Guardian signer
             delaySeconds: 1000, // Delay in seconds
             opts: {
@@ -165,7 +169,7 @@ export class EVMAAWallet<B extends EVMBlockchain = EVMBlockchain> extends BaseWa
         const selector = getFunctionSelector(versionInfo.method);
 
         const erc165SessionKeyProvider = await ERC165SessionKeyProvider.init({
-            projectId: ZERO_PROJECT_ID,
+            projectId: getZeroDevProjectIdByBlockchain(this.chain),
             sessionKey: convertEthersSignerToAccountSigner(sessionKeySigner),
             sessionKeyData: {
                 selector: versionInfo.selector,

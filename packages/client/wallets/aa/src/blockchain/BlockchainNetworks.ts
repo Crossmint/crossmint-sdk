@@ -1,28 +1,49 @@
-import { CROSSMINT_PROD_URL, CROSSMINT_STG_URL, WEB3_AUTH_MAINNET, WEB3_AUTH_TESTNET } from "@/utils";
+import {
+    ARBITRUM_CHAIN_ID,
+    BSC_CHAIN_ID,
+    CROSSMINT_PROD_URL,
+    CROSSMINT_STG_URL,
+    ETHEREUM_CHAIN_ID,
+    GOERLI_CHAIN_ID,
+    MUMBAI_CHAIN_ID,
+    OPTIMISM_CHAIN_ID,
+    POLYGON_CHAIN_ID,
+    SEPOLIA_CHAIN_ID,
+    WEB3_AUTH_MAINNET,
+    WEB3_AUTH_TESTNET,
+    ZD_ARBITRUM_PROJECT_ID,
+    ZD_BSC_PROJECT_ID,
+    ZD_ETHEREUM_PROJECT_ID,
+    ZD_GOERLI_PROJECT_ID,
+    ZD_MUMBAI_PROJECT_ID,
+    ZD_OPTIMISM_PROJECT_ID,
+    ZD_POLYGON_PROJECT_ID,
+    ZD_SEPOLIA_PROJECT_ID,
+} from "@/utils";
 import { TORUS_LEGACY_NETWORK_TYPE } from "@web3auth/single-factor-auth";
 
+/*
+TODO:
+Chains not supported yet due fireblocks or zerodev doesn't supported
+    ARBITRUM_NOVA
+    ZORA
+    SOLANA
+    CARDANO
+*/
 export const EVMBlockchain = {
     ETHEREUM: "ethereum",
     POLYGON: "polygon",
     BSC: "bsc",
     OPTIMISM: "optimism",
     ARBITRUM: "arbitrum",
-    ARBITRUM_NOVA: "arbitrumnova",
-    ZORA: "zora",
 } as const;
 export type EVMBlockchain = (typeof EVMBlockchain)[keyof typeof EVMBlockchain];
-
-export const NonEVMBlockchain = {
-    SOLANA: "solana",
-    CARDANO: "cardano",
-} as const;
-export type NonEVMBlockchain = (typeof NonEVMBlockchain)[keyof typeof NonEVMBlockchain];
 
 export const BlockchainTestNet = {
     GOERLI: "goerli",
     SEPOLIA: "sepolia",
     MUMBAI: "mumbai",
-} as const; //testnet as a placeholder for non-EVM chains
+} as const;
 export type BlockchainTestNet = (typeof BlockchainTestNet)[keyof typeof BlockchainTestNet];
 
 export const EVMBlockchainWithTestnet = {
@@ -34,7 +55,6 @@ export type EVMBlockchainWithTestnet = (typeof EVMBlockchainWithTestnet)[keyof t
 
 export const Blockchain = {
     ...EVMBlockchain,
-    ...NonEVMBlockchain,
     ...BlockchainTestNet,
 } as const;
 export type Blockchain = (typeof Blockchain)[keyof typeof Blockchain];
@@ -46,12 +66,8 @@ export function getAssetIdByBlockchain(chain: Blockchain) {
         [Blockchain.BSC, "BNB_BSC"],
         [Blockchain.OPTIMISM, "ETH-OPT"],
         [Blockchain.ARBITRUM, "ETH-AETH"],
-        [Blockchain.ARBITRUM_NOVA, ""], // TODO
-        [Blockchain.ZORA, "ETH"],
-        [Blockchain.SOLANA, ""], // TODO
-        [Blockchain.CARDANO, ""], // TODO
         [Blockchain.GOERLI, "ETH_TEST3"],
-        [Blockchain.SEPOLIA, ""], // TODO
+        [Blockchain.SEPOLIA, "ETH_TEST5"],
         [Blockchain.MUMBAI, "MATIC_POLYGON_MUMBAI"],
     ]).get(chain)!;
 }
@@ -61,14 +77,10 @@ export function getBlockchainByChainId(chain: number) {
         [1, Blockchain.ETHEREUM],
         [137, Blockchain.POLYGON],
         [56, Blockchain.BSC],
-        //[0, Blockchain.OPTIMISM], // TODO
+        [10, Blockchain.OPTIMISM],
         [42161, Blockchain.ARBITRUM],
-        [42170, Blockchain.ARBITRUM_NOVA],
-        [7777777, Blockchain.ZORA],
-        //[0, Blockchain.SOLANA], // TODO
-        //[0, Blockchain.CARDANO], // TODO
         [5, Blockchain.GOERLI],
-        //[0, Blockchain.SEPOLIA], // TODO
+        [11155111, Blockchain.SEPOLIA],
         [80001, Blockchain.MUMBAI],
     ]);
 
@@ -77,18 +89,14 @@ export function getBlockchainByChainId(chain: number) {
 
 export function getChainIdByBlockchain(chain: Blockchain) {
     return new Map([
-        [Blockchain.ETHEREUM, 1],
-        [Blockchain.POLYGON, 137],
-        [Blockchain.BSC, 56],
-        [Blockchain.OPTIMISM, 0], // TODO
-        [Blockchain.ARBITRUM, 42161],
-        [Blockchain.ARBITRUM_NOVA, 42170],
-        [Blockchain.ZORA, 7777777],
-        [Blockchain.SOLANA, 0], // TODO
-        [Blockchain.CARDANO, 0], // TODO
-        [Blockchain.GOERLI, 5],
-        [Blockchain.SEPOLIA, 0], // TODO
-        [Blockchain.MUMBAI, 80001],
+        [Blockchain.ETHEREUM, ETHEREUM_CHAIN_ID],
+        [Blockchain.POLYGON, POLYGON_CHAIN_ID],
+        [Blockchain.BSC, BSC_CHAIN_ID],
+        [Blockchain.OPTIMISM, OPTIMISM_CHAIN_ID],
+        [Blockchain.ARBITRUM, ARBITRUM_CHAIN_ID],
+        [Blockchain.GOERLI, GOERLI_CHAIN_ID],
+        [Blockchain.SEPOLIA, SEPOLIA_CHAIN_ID],
+        [Blockchain.MUMBAI, MUMBAI_CHAIN_ID],
     ]).get(chain)!;
 }
 
@@ -99,10 +107,6 @@ export function getUrlProviderByBlockchain(chain: Blockchain) {
         [Blockchain.BSC, "BNB_BSC"],
         [Blockchain.OPTIMISM, "https://optimism.llamarpc.com"],
         [Blockchain.ARBITRUM, "https://arbitrum.llamarpc.com"],
-        [Blockchain.ARBITRUM_NOVA, ""],
-        [Blockchain.ZORA, "https://rpc.zora.energy"],
-        [Blockchain.SOLANA, ""],
-        [Blockchain.CARDANO, ""],
         [Blockchain.GOERLI, "https://ethereum-goerli.publicnode.com"],
         [Blockchain.SEPOLIA, "https://ethereum-sepolia.publicnode.com"],
         [Blockchain.MUMBAI, "https://rpc-mumbai.maticvigil.com"],
@@ -116,10 +120,6 @@ export function getBlockExplorerByBlockchain(chain: Blockchain) {
         [Blockchain.BSC, "BNB_BSC"],
         [Blockchain.OPTIMISM, "https://optimistic.etherscan.io"],
         [Blockchain.ARBITRUM, "https://arbiscan.io"],
-        [Blockchain.ARBITRUM_NOVA, ""],
-        [Blockchain.ZORA, "https://explorer.zora.energy"],
-        [Blockchain.SOLANA, ""],
-        [Blockchain.CARDANO, ""],
         [Blockchain.GOERLI, "https://goerli.etherscan.io"],
         [Blockchain.SEPOLIA, "https://sepolia.etherscan.io"],
         [Blockchain.MUMBAI, "https://mumbai.polygonscan.com"],
@@ -133,10 +133,6 @@ export function getDisplayNameByBlockchain(chain: Blockchain) {
         [Blockchain.BSC, "BNB_BSC"],
         [Blockchain.OPTIMISM, "Optimism"],
         [Blockchain.ARBITRUM, "Arbitrum"],
-        [Blockchain.ARBITRUM_NOVA, ""],
-        [Blockchain.ZORA, "Zora"],
-        [Blockchain.SOLANA, ""],
-        [Blockchain.CARDANO, ""],
         [Blockchain.GOERLI, "Goerli Tesnet"],
         [Blockchain.SEPOLIA, "Sepolia Tesnet"],
         [Blockchain.MUMBAI, "Mumbai Tesnet"],
@@ -150,10 +146,6 @@ export function getTickerByBlockchain(chain: Blockchain) {
         [Blockchain.BSC, "BNB_BSC"],
         [Blockchain.OPTIMISM, "OP"],
         [Blockchain.ARBITRUM, "ARB"],
-        [Blockchain.ARBITRUM_NOVA, ""],
-        [Blockchain.ZORA, "ZORA"],
-        [Blockchain.SOLANA, ""],
-        [Blockchain.CARDANO, ""],
         [Blockchain.GOERLI, "ETH"],
         [Blockchain.SEPOLIA, "ETH"],
         [Blockchain.MUMBAI, "MATIC"],
@@ -167,14 +159,27 @@ export function getTickerNameByBlockchain(chain: Blockchain) {
         [Blockchain.BSC, "BNB_BSC"],
         [Blockchain.OPTIMISM, "OPTIMISM"],
         [Blockchain.ARBITRUM, "ARBITRUM"],
-        [Blockchain.ARBITRUM_NOVA, ""],
-        [Blockchain.ZORA, "ZORA"],
-        [Blockchain.SOLANA, ""],
-        [Blockchain.CARDANO, ""],
         [Blockchain.GOERLI, "ETHEREUM"],
         [Blockchain.SEPOLIA, "ETHEREUM"],
         [Blockchain.MUMBAI, "MATIC"],
     ]).get(chain)!;
+}
+
+export function getZeroDevProjectIdByBlockchain(chain: Blockchain) {
+    const zeroDevProjectId = new Map<Blockchain, string>([
+        [Blockchain.ETHEREUM, ZD_ETHEREUM_PROJECT_ID],
+        [Blockchain.POLYGON, ZD_POLYGON_PROJECT_ID],
+        [Blockchain.BSC, ZD_BSC_PROJECT_ID],
+        [Blockchain.OPTIMISM, ZD_OPTIMISM_PROJECT_ID],
+        [Blockchain.ARBITRUM, ZD_ARBITRUM_PROJECT_ID],
+        [Blockchain.GOERLI, ZD_GOERLI_PROJECT_ID],
+        [Blockchain.SEPOLIA, ZD_SEPOLIA_PROJECT_ID],
+        [Blockchain.MUMBAI, ZD_MUMBAI_PROJECT_ID],
+    ]).get(chain);
+    if (zeroDevProjectId == null) {
+        throw new Error(`ZeroDev project id not found for chain ${chain}`);
+    }
+    return zeroDevProjectId;
 }
 
 export function getApiUrlByBlockchainType(chain: Blockchain): string {

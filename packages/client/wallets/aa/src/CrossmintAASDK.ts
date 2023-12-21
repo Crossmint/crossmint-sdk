@@ -1,7 +1,7 @@
 import { CrossmintService } from "@/api";
-import { Blockchain, EVMAAWallet, EVMBlockchain, EVMBlockchainWithTestnet, isEVMBlockchain } from "@/blockchain";
+import { Blockchain, EVMAAWallet, getChainIdByBlockchain, getZeroDevProjectIdByBlockchain, isEVMBlockchain } from "@/blockchain";
 import type { CrossmintAASDKInitParams, UserIdentifier, WalletConfig } from "@/types";
-import { CURRENT_VERSION, WalletSdkError, ZERO_DEV_TYPE, ZERO_PROJECT_ID, createOwnerSigner } from "@/utils";
+import { CURRENT_VERSION, WalletSdkError, ZERO_DEV_TYPE, createOwnerSigner } from "@/utils";
 import { ZeroDevEthersProvider } from "@zerodev/sdk";
 
 export class CrossmintAASDK {
@@ -27,7 +27,7 @@ export class CrossmintAASDK {
             const address = await owner.getAddress();
 
             const zDevProvider = await ZeroDevEthersProvider.init("ECDSA", {
-                projectId: ZERO_PROJECT_ID,
+                projectId: getZeroDevProjectIdByBlockchain(chain),
                 owner,
                 opts: {
                     paymasterConfig: {
@@ -55,6 +55,7 @@ export class CrossmintAASDK {
                 sessionKeySignerAddress,
                 version: CURRENT_VERSION,
                 baseLayer: "evm",
+                chainId: getChainIdByBlockchain(chain),
             });
 
             return evmAAWallet;

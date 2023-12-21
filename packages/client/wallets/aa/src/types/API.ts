@@ -8,6 +8,7 @@ export type StoreAbstractWalletInput = {
     sessionKeySignerAddress: string;
     version: number;
     baseLayer: string;
+    chainId: number;
 };
 
 export type GenerateSignatureDataInput = {
