@@ -62,14 +62,13 @@ export class CrossmintAASDK {
                 baseLayer: "evm",
                 chainId: getChainIdByBlockchain(chain),
             });
-
             logInfo("[GET_OR_CREATE_WALLET] - FINISH", {
                 userEmail: user.email!,
                 chain,
+                abstractAddress,
             });
             return evmAAWallet;
         } catch (error: any) {
-
             logError("[GET_OR_CREATE_WALLET] - ERROR_CREATING_WALLET", {
                 error: errorToJSON(error),
                 userEmail: user.email!,

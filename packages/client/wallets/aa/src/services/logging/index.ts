@@ -9,7 +9,6 @@ function getBrowserLogger() {
         return new ConsoleProvider();
     }
 
-    throw new Error("DatadogProvider not implemented yet");
     return new DatadogProvider();
 }
 
