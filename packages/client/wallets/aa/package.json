@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-aa",
-    "version": "0.0.12",
+    "version": "0.0.13",
     "author": "Paella Labs Inc",
     "license": "Apache-2.0",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
@@ -31,7 +31,7 @@
         "@web3auth/base": "^6.0.1-alpha.0",
         "@web3auth/ethereum-provider": "^6.1.7",
         "@web3auth/single-factor-auth": "^6.5.0",
-        "@zerodev/sdk":"4.5.2",
+        "@zerodev/sdk": "4.5.2",
         "ethers": "5.7.2",
         "viem": "1.5.3"
     }
