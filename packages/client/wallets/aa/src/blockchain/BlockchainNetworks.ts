@@ -130,7 +130,7 @@ export function getBlockExplorerByBlockchain(chain: Blockchain) {
         [Blockchain.GOERLI, "https://goerli.etherscan.io"],
         [Blockchain.SEPOLIA, "https://sepolia.etherscan.io"],
         [Blockchain.MUMBAI, "https://mumbai.polygonscan.com"],
-        [Blockchain.ZKATANA, "https://zkatana.explorer.startale.com/"],
+        [Blockchain.ZKATANA, "https://zkatana.explorer.startale.com"],
     ]).get(chain)!;
 }
 
