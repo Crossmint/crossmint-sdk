@@ -5,7 +5,6 @@ import { DatadogProvider } from "./DatadogProvider";
 
 function getBrowserLogger() {
     if (isLocalhost()) {
-        console.log('CONSOLE PROVIDER RETURRRRNED')
         return new ConsoleProvider();
     }
 
