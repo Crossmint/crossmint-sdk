@@ -1,8 +1,5 @@
 import { logError } from "@/services/logging";
 
-/**
- * Need to learn when to use it
- */
 export class NotAuthorizedError extends Error {
     code = "ERROR_NOT_AUTHORIZED";
 
