@@ -22,6 +22,8 @@ import {
 import { Custodian } from "../plugins";
 import { TokenType } from "../token/Tokens";
 import BaseWallet from "./BaseWallet";
+import { logError, logInfo } from "@/services/logging";
+import { errorToJSON } from "@/utils";
 
 export class EVMAAWallet<B extends EVMBlockchain = EVMBlockchain> extends BaseWallet {
     private sessionKeySignerAddress?: string;
@@ -47,6 +49,10 @@ export class EVMAAWallet<B extends EVMBlockchain = EVMBlockchain> extends BaseWa
 
     async setCustodianForTokens(tokenType?: TokenType, custodian?: Custodian) {
         try {
+            logInfo("[SET_CUSTODIAN_FOR_TOKENS] - INIT", {
+                tokenType,
+                custodian,
+            });
             const selector = getFunctionSelector("transferERC721Action(address, uint256, address)");
 
             const rpcProvider = getUrlProviderByBlockchain(this.chain);
@@ -94,13 +100,24 @@ export class EVMAAWallet<B extends EVMBlockchain = EVMBlockchain> extends BaseWa
             };
 
             await this.crossmintService.generateChainData(generateSessionKeyDataInput);
+            logInfo("[SET_CUSTODIAN_FOR_TOKENS] - FINISH", {
+                tokenType,
+                custodian,
+            });
         } catch (error) {
-            throw new Error(`Error setting custodian for tokens: ${error}`);
+            logError("[SET_CUSTODIAN_FOR_TOKENS] - ERROR", {
+                tokenType,
+                custodian,
+            });
+            throw new Error(`Error setting custodian for tokens. If this error persists, please contact support`);
         }
     }
 
     async setCustodianForKillswitch(custodian?: Custodian | undefined) {
         try {
+            logInfo("[SET_CUSTODIAN_FOR_KILLSWITCH] - INIT", {
+                custodian,
+            });
             const selectorKs = getFunctionSelector("toggleKillSwitch()");
 
             const rpcProvider = getUrlProviderByBlockchain(this.chain);
@@ -142,13 +159,21 @@ export class EVMAAWallet<B extends EVMBlockchain = EVMBlockchain> extends BaseWa
             };
 
             await this.crossmintService.generateChainData(generateKillSwitchDataInput);
+            logInfo("[SET_CUSTODIAN_FOR_KILLSWITCH] - FINISH", {
+                custodian,
+            });
         } catch (error) {
-            throw new Error(`Error setting custodian for killswitch: ${error}`);
+            logError("[SET_CUSTODIAN_FOR_KILLSWITCH] - ERROR", {
+                error: errorToJSON(error),
+                custodian,
+            });
+            throw new Error(`Error setting custodian for killswitch. If this error persists, please contact support`);
         }
     }
 
     async upgradeVersion() {
         try {
+            logInfo("[UPGRADE_VERSION] - INIT", {});
             const sessionKeys = await this.crossmintService!.createSessionKey(await this.getAddress());
             if (sessionKeys == null) {
                 throw new Error("Abstract Wallet doesn't have a session key signer address");
@@ -211,8 +236,12 @@ export class EVMAAWallet<B extends EVMBlockchain = EVMBlockchain> extends BaseWa
                 );
 
             await this.crossmintService.updateWallet(await this.getAddress(), enableSig, 1);
+            logInfo("[UPGRADE_VERSION - FINISH", {});
         } catch (error) {
-            throw new Error(`Error upgrading version: ${error}`);
+            logError("[UPGRADE_VERSION] - ERROR", {
+                error: errorToJSON(error),
+            });
+            throw new Error(`Error upgrading version. If this error persists, please contact support`);
         }
     }
 
