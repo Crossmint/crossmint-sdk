@@ -1,7 +1,8 @@
 import { Blockchain, getApiUrlByBlockchainType } from "@/blockchain";
+import { logError } from "@/services/logging";
 import { GenerateSignatureDataInput, StoreAbstractWalletInput } from "@/types";
 import { CROSSMINT_STG_URL } from "@/utils";
-import { CrossmintServiceError } from "@/utils/error";
+import { CrossmintServiceError, errorToJSON } from "@/utils/error";
 
 export class CrossmintService {
     private crossmintAPIHeaders: Record<string, string>;
@@ -169,6 +170,9 @@ export class CrossmintService {
             }
             return await response.json();
         } catch (error) {
+            logError("[CROSSMINT_SERVICE] - ERROR", {
+                error: errorToJSON(error),
+            });
             throw new CrossmintServiceError(`Error fetching Crossmint API: ${error}`);
         }
     }
