@@ -1,17 +1,12 @@
-import type { SmartAccountSigner } from "@alchemy/aa-core";
-import { ZeroDevEthersProvider, convertEthersSignerToAccountSigner } from "@zerodev/sdk";
-import { Signer } from "ethers";
-
-import { CrossmintService } from "./api/CrossmintService";
-import { Blockchain, EVMBlockchain } from "./blockchain/BlockchainNetworks";
-import { EVMAAWallet } from "./blockchain/wallets/EVMAAWallet";
-import { FireblocksNCWallet } from "./blockchain/wallets/FireblocksNCWallet";
-import type { CrossmintAASDKInitParams, FireblocksNCWSigner, UserIdentifier, WalletConfig } from "./types/Config";
-import { CURRENT_VERSION, ZERO_DEV_TYPE, ZERO_PROJECT_ID } from "./utils/constants";
-import { WalletSdkError } from "./utils/error";
+import { CrossmintService } from "@/api";
+import { Blockchain, EVMAAWallet, getChainIdByBlockchain, getZeroDevProjectIdByBlockchain, isEVMBlockchain } from "@/blockchain";
+import type { CrossmintAASDKInitParams, UserIdentifier, WalletConfig } from "@/types";
+import { CURRENT_VERSION, WalletSdkError, ZERO_DEV_TYPE, createOwnerSigner, errorToJSON } from "@/utils";
+import { ZeroDevEthersProvider } from "@zerodev/sdk";
+import { logError, logInfo } from "./services/logging";
 
 export class CrossmintAASDK {
-    private crossmintService: CrossmintService;
+    crossmintService: CrossmintService;
 
     private constructor(config: CrossmintAASDKInitParams) {
         this.crossmintService = new CrossmintService(config.clientSecret, config.projectId);
@@ -27,19 +22,17 @@ export class CrossmintAASDK {
         walletConfig: WalletConfig
     ) {
         try {
-            let owner: SmartAccountSigner;
-            if ((walletConfig.signer as FireblocksNCWSigner)?.type === "FIREBLOCKS_NCW") {
-                const passphrase = (walletConfig.signer as FireblocksNCWSigner).passphrase;
-                const fireblocks = await FireblocksNCWallet(user.email, this.crossmintService, chain, passphrase);
-                owner = fireblocks.owner;
-            } else {
-                owner = convertEthersSignerToAccountSigner(walletConfig.signer as Signer);
-            }
+            logInfo("[GET_OR_CREATE_WALLET] - INIT", {
+                userEmail: user.email!,
+                chain,
+            });
+            this.crossmintService.setCrossmintUrl(chain);
+            const owner = await createOwnerSigner(user, chain, walletConfig, this.crossmintService);
 
             const address = await owner.getAddress();
 
             const zDevProvider = await ZeroDevEthersProvider.init("ECDSA", {
-                projectId: ZERO_PROJECT_ID,
+                projectId: getZeroDevProjectIdByBlockchain(chain),
                 owner,
                 opts: {
                     paymasterConfig: {
@@ -48,7 +41,11 @@ export class CrossmintAASDK {
                 },
             });
 
-            const evmAAWallet = new EVMAAWallet(zDevProvider, this.crossmintService, chain as EVMBlockchain);
+            if (!isEVMBlockchain(chain)) {
+                throw new WalletSdkError(`The blockchain ${chain} is still not supported`);
+            }
+
+            const evmAAWallet = new EVMAAWallet(zDevProvider, this.crossmintService, chain);
 
             const abstractAddress = await evmAAWallet.getAddress();
             const { sessionKeySignerAddress } = await this.crossmintService.createSessionKey(abstractAddress);
@@ -63,26 +60,36 @@ export class CrossmintAASDK {
                 sessionKeySignerAddress,
                 version: CURRENT_VERSION,
                 baseLayer: "evm",
+                chainId: getChainIdByBlockchain(chain),
+            });
+            logInfo("[GET_OR_CREATE_WALLET] - FINISH", {
+                userEmail: user.email!,
+                chain,
+                abstractAddress,
+            });
+            return evmAAWallet;
+        } catch (error: any) {
+            logError("[GET_OR_CREATE_WALLET] - ERROR_CREATING_WALLET", {
+                error: errorToJSON(error),
+                userEmail: user.email!,
+                chain,
             });
 
-            return evmAAWallet;
-        } catch (e) {
-            throw new WalletSdkError(`Error creating the Wallet. ${e instanceof Error ? e.message : e}`);
+            throw new WalletSdkError(
+                `Error creating the Wallet [${error?.name ?? ""}]`
+            );
         }
-    }
-
-    /**
-     * Clears all key material and state from device storage, related to the user's wallet. Call this method when the user signs out of your app.
-     * @param user The user for which to clear the wallet data
-     */
-    async purgeUserWalletData(user: UserIdentifier): Promise<void> {
-        // TODO
     }
 
     /**
      * Clears all key material and state from device storage, related to all wallets stored. Call this method when the user signs out of your app, if you don't have a user identifier.
      */
     async purgeAllWalletData(): Promise<void> {
-        // TODO
+        //Removes the Fireblocks NCW data stored on the localstorage
+        const keys = Object.keys(localStorage);
+        const keysToDelete = keys.filter((key) => key.startsWith("NCW-"));
+        keysToDelete.forEach((key) => {
+            localStorage.removeItem(key);
+        });
     }
 }

@@ -1,7 +1,8 @@
 import type { SignTypedDataParams } from "@alchemy/aa-core";
 import { ZeroDevAccountSigner, ZeroDevEthersProvider } from "@zerodev/sdk";
-import { ethers } from "ethers";
+import { BigNumber, ethers } from "ethers";
 
+import erc20 from "../../ABI/ERC20.json";
 import erc721 from "../../ABI/ERC721.json";
 import erc1155 from "../../ABI/ERC1155.json";
 import { CrossmintService } from "../../api/CrossmintService";
@@ -42,7 +43,7 @@ class BaseWallet extends ZeroDevAccountSigner<"ECDSA"> {
         }
     }
 
-    async transfer(toAddress: string, token: Token, quantity?: number): Promise<string> {
+    async transfer(toAddress: string, token: Token, quantity?: number, amount?: BigNumber): Promise<string> {
         const evmToken = token as EVMToken;
         const contractAddress = evmToken.contractAddress;
 
@@ -51,26 +52,29 @@ class BaseWallet extends ZeroDevAccountSigner<"ECDSA"> {
 
             const contract = new ethers.Contract(
                 contractAddress,
-                quantity === undefined ? erc721 : erc1155,
+                amount !== undefined ? erc20 : quantity !== undefined ? erc1155 : erc721,
                 this.provider
             );
             const contractWithSigner = contract.connect(this);
 
-            if (quantity === undefined) {
-                // ERC721
-                transaction = await contractWithSigner.functions.transferFrom(
-                    await this.getAddress(),
-                    toAddress,
-                    evmToken.tokenId
-                );
-            } else {
-                // ERC1155
+            if (amount !== undefined) {
+                // Transfer ERC20
+                transaction = await contractWithSigner.functions.transfer(toAddress, amount);
+            } else if (quantity !== undefined) {
+                // Transfer ERC1155
                 transaction = await contractWithSigner.functions.safeTransferFrom(
                     await this.getAddress(),
                     toAddress,
                     evmToken.tokenId,
                     quantity,
                     "0x00"
+                );
+            } else {
+                // Transfer ERC721
+                transaction = await contractWithSigner.functions.transferFrom(
+                    await this.getAddress(),
+                    toAddress,
+                    evmToken.tokenId
                 );
             }
 
@@ -79,7 +83,6 @@ class BaseWallet extends ZeroDevAccountSigner<"ECDSA"> {
 
             return transaction!.hash;
         } catch (error) {
-            console.error("Error transferring token:", error);
             throw new TransferError(`Error transferring token ${evmToken.tokenId}`);
         }
     }

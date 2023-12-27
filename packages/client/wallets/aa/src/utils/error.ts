@@ -1,6 +1,5 @@
-/**
- * Need to learn when to use it
- */
+import { logError } from "@/services/logging";
+
 export class NotAuthorizedError extends Error {
     code = "ERROR_NOT_AUTHORIZED";
 
@@ -12,9 +11,6 @@ export class NotAuthorizedError extends Error {
     }
 }
 
-/**
- * Need to learn when to use it
- */
 export class RateLimitError extends Error {
     code = "ERROR_RATE_LIMIT";
     retryAfterMs: number;
@@ -29,9 +25,6 @@ export class RateLimitError extends Error {
     }
 }
 
-/**
- * Need to learn when to use it
- */
 export class PassphraseRequiredError extends Error {
     code = "ERROR_PASSPHRASE_REQUIRED";
 
@@ -113,4 +106,16 @@ export class WalletSdkError extends Error {
         // ES5 workaround
         Object.setPrototypeOf(this, WalletSdkError.prototype);
     }
+}
+
+
+export function errorToJSON(error: Error | unknown) {
+    const errorToLog = error instanceof Error ? error : { message: "Unknown error", name: "Unknown error" };
+
+    if (!(errorToLog instanceof Error) && (errorToLog as any).constructor?.name !== "SyntheticBaseEvent") {
+        logError("ERROR_TO_JSON_FAILED", { error: errorToLog });
+        throw new Error("[errorToJSON] err is not instanceof Error nor SyntheticBaseEvent");
+    }
+
+    return JSON.parse(JSON.stringify(errorToLog, Object.getOwnPropertyNames(errorToLog)));
 }
