@@ -57,7 +57,6 @@ export class EVMAAWallet<B extends EVMBlockchain = EVMBlockchain> extends BaseWa
                 projectId: getZeroDevProjectIdByBlockchain(this.chain), // ZeroDev projectId
                 sessionKey: convertEthersSignerToAccountSigner(sessionKeySigner), // Session Key signer
                 sessionKeyData: {
-
                     selector, // Function selector in the executor contract to execute
                     erc165InterfaceId: "0x80ac58cd", // Supported interfaceId of the contract the executor calls
                     validAfter: 0,
@@ -86,7 +85,6 @@ export class EVMAAWallet<B extends EVMBlockchain = EVMBlockchain> extends BaseWa
                     0,
                     erc165SessionKeyProvider.getValidator()
                 );
-
 
             const generateSessionKeyDataInput: GenerateSignatureDataInput = {
                 sessionKeyData: enableSig,
@@ -122,7 +120,6 @@ export class EVMAAWallet<B extends EVMBlockchain = EVMBlockchain> extends BaseWa
                         executor: constants.KILL_SWITCH_ACTION, // Address of the executor contract
                         selector: selectorKs, // Function selector in the executor contract to toggleKillSwitch()
                     },
-
                 },
             });
             const enableSig = await this.provider
@@ -136,7 +133,6 @@ export class EVMAAWallet<B extends EVMBlockchain = EVMBlockchain> extends BaseWa
                     0,
                     blockerKillSwitchProvider.getValidator()
                 );
-
 
             const generateKillSwitchDataInput: GenerateSignatureDataInput = {
                 killSwitchData: enableSig,
