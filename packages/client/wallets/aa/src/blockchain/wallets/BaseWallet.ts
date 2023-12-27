@@ -6,8 +6,9 @@ import erc20 from "../../ABI/ERC20.json";
 import erc721 from "../../ABI/ERC721.json";
 import erc1155 from "../../ABI/ERC1155.json";
 import { CrossmintService } from "../../api/CrossmintService";
-import { TransferError } from "../../utils/error";
+import { TransferError, errorToJSON } from "../../utils/error";
 import { EVMToken, Token } from "../token/Tokens";
+import { logError } from "@/services/logging";
 
 class BaseWallet extends ZeroDevAccountSigner<"ECDSA"> {
     private signer: ZeroDevAccountSigner<"ECDSA">;
@@ -23,7 +24,11 @@ class BaseWallet extends ZeroDevAccountSigner<"ECDSA"> {
         try {
             return await this.signer.getAddress();
         } catch (error) {
-            throw new Error(`Error getting address: ${error}`);
+            logError("[GET_ADDRESS] - ERROR", {
+                error: errorToJSON(error),
+                signer: this.signer,
+            });
+            throw new Error(`Error getting address. If this error persists, please contact support.`);
         }
     }
 
@@ -31,7 +36,11 @@ class BaseWallet extends ZeroDevAccountSigner<"ECDSA"> {
         try {
             return await this.signer.signMessage(message);
         } catch (error) {
-            throw new Error(`Error signing message: ${error}`);
+            logError("[SIGN_MESSAGE] - ERROR", {
+                error: errorToJSON(error),
+                signer: this.signer,
+            });
+            throw new Error(`Error signing message. If this error persists, please contact support.`);
         }
     }
 
@@ -39,7 +48,11 @@ class BaseWallet extends ZeroDevAccountSigner<"ECDSA"> {
         try {
             return await this.signer.signTypedData(params);
         } catch (error) {
-            throw new Error(`Error signing typed data: ${error}`);
+            logError("[SIGN_TYPED_DATA] - ERROR", {
+                error: errorToJSON(error),
+                signer: this.signer,
+            });
+            throw new Error(`Error signing typed data. If this error persists, please contact support.`);
         }
     }
 

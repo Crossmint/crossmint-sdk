@@ -106,10 +106,11 @@ export class EVMAAWallet<B extends EVMBlockchain = EVMBlockchain> extends BaseWa
             });
         } catch (error) {
             logError("[SET_CUSTODIAN_FOR_TOKENS] - ERROR", {
+                error: errorToJSON(error),
                 tokenType,
                 custodian,
             });
-            throw new Error(`Error setting custodian for tokens. If this error persists, please contact support`);
+            throw new Error(`Error setting custodian for tokens. If this error persists, please contact support.`);
         }
     }
 
@@ -167,7 +168,7 @@ export class EVMAAWallet<B extends EVMBlockchain = EVMBlockchain> extends BaseWa
                 error: errorToJSON(error),
                 custodian,
             });
-            throw new Error(`Error setting custodian for killswitch. If this error persists, please contact support`);
+            throw new Error(`Error setting custodian for killswitch. If this error persists, please contact support.`);
         }
     }
 
@@ -241,7 +242,7 @@ export class EVMAAWallet<B extends EVMBlockchain = EVMBlockchain> extends BaseWa
             logError("[UPGRADE_VERSION] - ERROR", {
                 error: errorToJSON(error),
             });
-            throw new Error(`Error upgrading version. If this error persists, please contact support`);
+            throw new Error(`Error upgrading version. If this error persists, please contact support.`);
         }
     }
 
