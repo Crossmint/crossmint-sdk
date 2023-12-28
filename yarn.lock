@@ -1707,6 +1707,18 @@
   resolved "https://registry.yarnpkg.com/@csstools/selector-specificity/-/selector-specificity-2.2.0.tgz#2cbcf822bf3764c9658c4d2e568bd0c0cb748016"
   integrity sha512-+OJ9konv95ClSTOJCmMZqpd5+YGsB2S+x6w3E1oaM8UuR5j8nTNHYSz8c9BEPGDOCMQYIEEGlVPj/VY64iTbGw==
 
+"@datadog/browser-core@4.42.2":
+  version "4.42.2"
+  resolved "https://registry.yarnpkg.com/@datadog/browser-core/-/browser-core-4.42.2.tgz#834312b53c3d466666f892e76e766b50b4db021b"
+  integrity sha512-LnkcdFyNRpMEuvV1ePfKdgRvYh+VqqAiVRoAmgObcuzdYdIwQSfcJp4GFbBgr5v7uF2uhAp/b96MIyKlqi0Ixg==
+
+"@datadog/browser-logs@4.42.2":
+  version "4.42.2"
+  resolved "https://registry.yarnpkg.com/@datadog/browser-logs/-/browser-logs-4.42.2.tgz#da946410b8d8eee3e26835bece59fe4671e23994"
+  integrity sha512-idl9DilUGmWbmYb1D6VPmkpnhqaIdsQ08qjOw1c0QbtGUAFlFYyFCrugf2qwMt8QbJ8DqvEiwULTVAZOV9O4kA==
+  dependencies:
+    "@datadog/browser-core" "4.42.2"
+
 "@dynamic-labs/algorand-all@0.17.29":
   version "0.17.29"
   resolved "https://registry.yarnpkg.com/@dynamic-labs/algorand-all/-/algorand-all-0.17.29.tgz#1a916232172002eecad5aacc9cf34bb1e30d2301"
