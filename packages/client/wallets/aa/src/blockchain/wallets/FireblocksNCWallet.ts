@@ -1,3 +1,4 @@
+import { LocalStorageRepository } from "@/storage";
 import type { SignTypedDataParams, SmartAccountSigner } from "@alchemy/aa-core";
 import {
     ConsoleLogger,
@@ -25,6 +26,8 @@ export const FireblocksNCWallet = async (
         deviceId: string;
     }
 ) => {
+    const localStorageRepository = new LocalStorageRepository();
+
     let _walletId: string;
     let _deviceId: string;
     let isNew: boolean;
@@ -34,10 +37,10 @@ export const FireblocksNCWallet = async (
         _deviceId = ncwData.deviceId;
         isNew = false;
     } else {
-        const ncwData = await crossmintService.getOrAssignWallet(userEmail);
+        const ncwData = localStorageRepository.ncwData ?? (await crossmintService.getOrAssignWallet(userEmail));
         _walletId = ncwData.walletId;
         _deviceId = ncwData.deviceId;
-        isNew = ncwData.isNew;
+        isNew = ncwData.isNew !== undefined ? ncwData.isNew : false;
     }
 
     // Register a message handler to process outgoing message to your API
@@ -97,8 +100,16 @@ export const FireblocksNCWallet = async (
         }
     }
 
+    localStorageRepository.ncwData = { walletId: _walletId, deviceId: _deviceId };
+
     return {
-        owner: getSmartAccountSignerFromFireblocks(crossmintService, fireblocksNCW, _walletId, chain),
+        owner: getSmartAccountSignerFromFireblocks(
+            crossmintService,
+            fireblocksNCW,
+            _walletId,
+            chain,
+            localStorageRepository
+        ),
     };
 };
 
@@ -106,11 +117,17 @@ export function getSmartAccountSignerFromFireblocks(
     crossmintService: CrossmintService,
     fireblocksNCW: FireblocksNCW,
     walletId: string,
-    chain: Blockchain
+    chain: Blockchain,
+    localStorageRepository: LocalStorageRepository
 ): SmartAccountSigner {
     return {
         getAddress: async () => {
-            return (await crossmintService.getAddress(walletId, 0, getAssetIdByBlockchain(chain))) as `0x${string}`;
+            let address = localStorageRepository.ncwAddress;
+            if (!address) {
+                address = await crossmintService.getAddress(walletId, 0, getAssetIdByBlockchain(chain));
+                localStorageRepository.ncwAddress = address;
+            }
+            return address as `0x${string}`;
         },
         signMessage: async (msg: Uint8Array | string) => {
             return signMessage(crossmintService, fireblocksNCW, walletId, chain, msg);
