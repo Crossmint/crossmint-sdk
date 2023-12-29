@@ -1,14 +1,8 @@
 
-import { isLocalhost } from "@/utils/helpers";
 import { ConsoleProvider } from "./ConsoleProvider";
-import { DatadogProvider } from "./DatadogProvider";
 
 function getBrowserLogger() {
-    if (isLocalhost()) {
-        return new ConsoleProvider();
-    }
-
-    return new DatadogProvider();
+    return new ConsoleProvider();
 }
 
 const { logInfo, logWarn, logError } = getBrowserLogger();
