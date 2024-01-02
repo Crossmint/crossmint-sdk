@@ -10,7 +10,9 @@
         "@web3auth/single-factor-auth": "^6.5.0",
         "@zerodev/sdk": "4.5.2",
         "ethers": "5.7.2",
-        "viem": "1.5.3"
+        "viem": "1.5.3",
+        "libphonenumber-js": "1.10.44",
+        "email-validator": "2.0.4"
     },
     "exports": {
         "import": "./dist/index.js",
