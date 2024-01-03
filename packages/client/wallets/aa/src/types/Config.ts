@@ -1,4 +1,4 @@
-import { Blockchain } from "@/blockchain";
+import { EVMAAWallet } from "@/blockchain";
 import { ethers } from "ethers";
 
 export type CrossmintAASDKInitParams = {
@@ -40,3 +40,5 @@ type Signer = FireblocksNCWSigner | ethers.Signer | Web3AuthSigner; // V2 add: E
 export interface WalletConfig {
     signer: Signer;
 }
+
+export type WalletCallback = (wallet: EVMAAWallet) => void;
