@@ -1,3 +1,4 @@
+import { logError } from "@/services/logging";
 import type { SignTypedDataParams } from "@alchemy/aa-core";
 import { ZeroDevAccountSigner, ZeroDevEthersProvider } from "@zerodev/sdk";
 import { BigNumber, ethers } from "ethers";
@@ -6,7 +7,7 @@ import erc20 from "../../ABI/ERC20.json";
 import erc721 from "../../ABI/ERC721.json";
 import erc1155 from "../../ABI/ERC1155.json";
 import { CrossmintService } from "../../api/CrossmintService";
-import { TransferError } from "../../utils/error";
+import { TransferError, errorToJSON } from "../../utils/error";
 import { EVMToken, Token } from "../token/Tokens";
 
 class BaseWallet extends ZeroDevAccountSigner<"ECDSA"> {
@@ -20,15 +21,39 @@ class BaseWallet extends ZeroDevAccountSigner<"ECDSA"> {
     }
 
     async getAddress() {
-        return this.signer.getAddress();
+        try {
+            return await this.signer.getAddress();
+        } catch (error) {
+            logError("[GET_ADDRESS] - ERROR", {
+                error: errorToJSON(error),
+                signer: this.signer,
+            });
+            throw new Error(`Error getting address. If this error persists, please contact support.`);
+        }
     }
 
     async signMessage(message: Uint8Array | string) {
-        return this.signer.signMessage(message);
+        try {
+            return await this.signer.signMessageWith6492(message);
+        } catch (error) {
+            logError("[SIGN_MESSAGE] - ERROR", {
+                error: errorToJSON(error),
+                signer: this.signer,
+            });
+            throw new Error(`Error signing message. If this error persists, please contact support.`);
+        }
     }
 
     async signTypedData(params: SignTypedDataParams) {
-        return this.signer.signTypedData(params);
+        try {
+            return await this.signer.signTypedData(params);
+        } catch (error) {
+            logError("[SIGN_TYPED_DATA] - ERROR", {
+                error: errorToJSON(error),
+                signer: this.signer,
+            });
+            throw new Error(`Error signing typed data. If this error persists, please contact support.`);
+        }
     }
 
     async transfer(toAddress: string, token: Token, quantity?: number, amount?: BigNumber): Promise<string> {

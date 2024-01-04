@@ -9,6 +9,7 @@ import {
     OPTIMISM_CHAIN_ID,
     POLYGON_CHAIN_ID,
     SEPOLIA_CHAIN_ID,
+    ZKATANA_CHAIN_ID,
     WEB3_AUTH_MAINNET,
     WEB3_AUTH_TESTNET,
     ZD_ARBITRUM_PROJECT_ID,
@@ -19,6 +20,7 @@ import {
     ZD_OPTIMISM_PROJECT_ID,
     ZD_POLYGON_PROJECT_ID,
     ZD_SEPOLIA_PROJECT_ID,
+    ZD_ZKATANA_PROJECT_ID,
 } from "@/utils";
 import { TORUS_LEGACY_NETWORK_TYPE } from "@web3auth/single-factor-auth";
 
@@ -43,6 +45,7 @@ export const BlockchainTestNet = {
     GOERLI: "goerli",
     SEPOLIA: "sepolia",
     MUMBAI: "mumbai",
+    ZKATANA: "zkatana",
 } as const;
 export type BlockchainTestNet = (typeof BlockchainTestNet)[keyof typeof BlockchainTestNet];
 
@@ -62,26 +65,28 @@ export type Blockchain = (typeof Blockchain)[keyof typeof Blockchain];
 export function getAssetIdByBlockchain(chain: Blockchain) {
     return new Map([
         [Blockchain.ETHEREUM, "ETH"],
-        [Blockchain.POLYGON, "MATIC"],
+        [Blockchain.POLYGON, "MATIC_POLYGON"],
         [Blockchain.BSC, "BNB_BSC"],
         [Blockchain.OPTIMISM, "ETH-OPT"],
         [Blockchain.ARBITRUM, "ETH-AETH"],
         [Blockchain.GOERLI, "ETH_TEST3"],
         [Blockchain.SEPOLIA, "ETH_TEST5"],
         [Blockchain.MUMBAI, "MATIC_POLYGON_MUMBAI"],
+        [Blockchain.ZKATANA, "ETH_ZKEVM_TEST"],
     ]).get(chain)!;
 }
 
 export function getBlockchainByChainId(chain: number) {
     const chainIdMap = new Map<number, Blockchain>([
-        [1, Blockchain.ETHEREUM],
-        [137, Blockchain.POLYGON],
-        [56, Blockchain.BSC],
-        [10, Blockchain.OPTIMISM],
-        [42161, Blockchain.ARBITRUM],
-        [5, Blockchain.GOERLI],
-        [11155111, Blockchain.SEPOLIA],
-        [80001, Blockchain.MUMBAI],
+        [ETHEREUM_CHAIN_ID, Blockchain.ETHEREUM],
+        [POLYGON_CHAIN_ID, Blockchain.POLYGON],
+        [BSC_CHAIN_ID, Blockchain.BSC],
+        [OPTIMISM_CHAIN_ID, Blockchain.OPTIMISM],
+        [ARBITRUM_CHAIN_ID, Blockchain.ARBITRUM],
+        [GOERLI_CHAIN_ID, Blockchain.GOERLI],
+        [SEPOLIA_CHAIN_ID, Blockchain.SEPOLIA],
+        [MUMBAI_CHAIN_ID, Blockchain.MUMBAI],
+        [ZKATANA_CHAIN_ID, Blockchain.ZKATANA],
     ]);
 
     return chainIdMap.get(chain);
@@ -97,6 +102,7 @@ export function getChainIdByBlockchain(chain: Blockchain) {
         [Blockchain.GOERLI, GOERLI_CHAIN_ID],
         [Blockchain.SEPOLIA, SEPOLIA_CHAIN_ID],
         [Blockchain.MUMBAI, MUMBAI_CHAIN_ID],
+        [Blockchain.ZKATANA, ZKATANA_CHAIN_ID],
     ]).get(chain)!;
 }
 
@@ -110,6 +116,7 @@ export function getUrlProviderByBlockchain(chain: Blockchain) {
         [Blockchain.GOERLI, "https://ethereum-goerli.publicnode.com"],
         [Blockchain.SEPOLIA, "https://ethereum-sepolia.publicnode.com"],
         [Blockchain.MUMBAI, "https://rpc-mumbai.maticvigil.com"],
+        [Blockchain.ZKATANA, "https://rpc.startale.com/zkatana"],
     ]).get(chain)!;
 }
 
@@ -123,6 +130,7 @@ export function getBlockExplorerByBlockchain(chain: Blockchain) {
         [Blockchain.GOERLI, "https://goerli.etherscan.io"],
         [Blockchain.SEPOLIA, "https://sepolia.etherscan.io"],
         [Blockchain.MUMBAI, "https://mumbai.polygonscan.com"],
+        [Blockchain.ZKATANA, "https://zkatana.explorer.startale.com"],
     ]).get(chain)!;
 }
 
@@ -136,6 +144,7 @@ export function getDisplayNameByBlockchain(chain: Blockchain) {
         [Blockchain.GOERLI, "Goerli Tesnet"],
         [Blockchain.SEPOLIA, "Sepolia Tesnet"],
         [Blockchain.MUMBAI, "Mumbai Tesnet"],
+        [Blockchain.ZKATANA, "zKatana Tesnet"],
     ]).get(chain)!;
 }
 
@@ -149,6 +158,7 @@ export function getTickerByBlockchain(chain: Blockchain) {
         [Blockchain.GOERLI, "ETH"],
         [Blockchain.SEPOLIA, "ETH"],
         [Blockchain.MUMBAI, "MATIC"],
+        [Blockchain.ZKATANA, "ETH"],
     ]).get(chain)!;
 }
 
@@ -162,6 +172,7 @@ export function getTickerNameByBlockchain(chain: Blockchain) {
         [Blockchain.GOERLI, "ETHEREUM"],
         [Blockchain.SEPOLIA, "ETHEREUM"],
         [Blockchain.MUMBAI, "MATIC"],
+        [Blockchain.ZKATANA, "ETHEREUM"],
     ]).get(chain)!;
 }
 
@@ -175,6 +186,7 @@ export function getZeroDevProjectIdByBlockchain(chain: Blockchain) {
         [Blockchain.GOERLI, ZD_GOERLI_PROJECT_ID],
         [Blockchain.SEPOLIA, ZD_SEPOLIA_PROJECT_ID],
         [Blockchain.MUMBAI, ZD_MUMBAI_PROJECT_ID],
+        [Blockchain.ZKATANA, ZD_ZKATANA_PROJECT_ID],
     ]).get(chain);
     if (zeroDevProjectId == null) {
         throw new Error(`ZeroDev project id not found for chain ${chain}`);
