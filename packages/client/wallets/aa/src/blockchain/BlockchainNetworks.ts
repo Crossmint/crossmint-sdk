@@ -65,7 +65,7 @@ export type Blockchain = (typeof Blockchain)[keyof typeof Blockchain];
 export function getAssetIdByBlockchain(chain: Blockchain) {
     return new Map([
         [Blockchain.ETHEREUM, "ETH"],
-        [Blockchain.POLYGON, "MATIC"],
+        [Blockchain.POLYGON, "MATIC_POLYGON"],
         [Blockchain.BSC, "BNB_BSC"],
         [Blockchain.OPTIMISM, "ETH-OPT"],
         [Blockchain.ARBITRUM, "ETH-AETH"],
