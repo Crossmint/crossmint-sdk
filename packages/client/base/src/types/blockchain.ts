@@ -17,8 +17,9 @@ export const ALL_CHAINS = ["solana", "cardano", "sui", ...EVM_CHAINS] as const;
 export type Blockchain = (typeof ALL_CHAINS)[number];
 
 export type EVMBlockchain = (typeof EVM_CHAINS)[number];
-export const BLOCKCHAIN_TEST_NET = ["goerli", "ethereum-sepolia", "mumbai", "zkatana"] as const;
+
 export type BlockchainTestNet = (typeof BLOCKCHAIN_TEST_NET)[number];
+export const BLOCKCHAIN_TEST_NET = ["goerli", "ethereum-sepolia", "mumbai", "zkatana"] as const;
 
 export const EVM_BLOCKCHAIN_WITH_TESTNET = [...EVM_CHAINS, ...BLOCKCHAIN_TEST_NET] as const;
 export type EVMBlockchainWithTestnet = (typeof EVM_BLOCKCHAIN_WITH_TESTNET)[number];
