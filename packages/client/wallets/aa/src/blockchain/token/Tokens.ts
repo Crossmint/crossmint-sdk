@@ -1,4 +1,4 @@
-import { EVMBlockchain } from "../BlockchainNetworks";
+import { EVMBlockchain } from "@crossmint/client-sdk-base";
 
 export interface EVMToken {
     chain: EVMBlockchain;

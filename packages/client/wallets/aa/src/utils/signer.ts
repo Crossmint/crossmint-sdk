@@ -1,6 +1,5 @@
 import { CrossmintService } from "@/api";
 import {
-    Blockchain,
     FireblocksNCWallet,
     getBlockExplorerByBlockchain,
     getChainIdByBlockchain,
@@ -18,6 +17,8 @@ import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { Web3Auth } from "@web3auth/single-factor-auth";
 import { convertEthersSignerToAccountSigner, getRPCProviderOwner } from "@zerodev/sdk";
 import { Signer } from "ethers";
+
+import { Blockchain } from "@crossmint/client-sdk-base";
 
 export async function createOwnerSigner(
     user: UserIdentifier,

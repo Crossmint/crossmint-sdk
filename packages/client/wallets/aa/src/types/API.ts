@@ -1,4 +1,4 @@
-import { Blockchain } from "../blockchain/BlockchainNetworks";
+import { Blockchain } from "@crossmint/client-sdk-base";
 
 export type StoreAbstractWalletInput = {
     userEmail: string;

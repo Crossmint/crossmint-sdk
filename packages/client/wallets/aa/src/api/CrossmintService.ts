@@ -1,8 +1,10 @@
-import { Blockchain, getApiUrlByBlockchainType } from "@/blockchain";
+import { getApiUrlByBlockchainType } from "@/blockchain";
 import { logError } from "@/services/logging";
 import { GenerateSignatureDataInput, StoreAbstractWalletInput } from "@/types";
 import { CROSSMINT_STG_URL } from "@/utils";
 import { CrossmintServiceError, errorToJSON } from "@/utils/error";
+
+import { Blockchain } from "@crossmint/client-sdk-base";
 
 export class CrossmintService {
     private crossmintAPIHeaders: Record<string, string>;

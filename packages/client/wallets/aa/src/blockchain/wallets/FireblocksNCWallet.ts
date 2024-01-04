@@ -11,10 +11,12 @@ import {
 } from "@fireblocks/ncw-js-sdk";
 import { fromBytes } from "viem";
 
+import { Blockchain } from "@crossmint/client-sdk-base";
+
 import { CrossmintService } from "../../api/CrossmintService";
 import { PasswordEncryptedLocalStorage } from "../../storage/PasswordEncryptedLocalStorage";
 import { KeysGenerationError, NonCustodialWalletError, SignTransactionError } from "../../utils/error";
-import { Blockchain, getAssetIdByBlockchain } from "../BlockchainNetworks";
+import { getAssetIdByBlockchain } from "../BlockchainNetworks";
 
 export const FireblocksNCWallet = async (
     userEmail: string,

@@ -1,3 +1,5 @@
+import { logError, logInfo } from "@/services/logging";
+import { errorToJSON } from "@/utils";
 import { verifyMessage } from "@ambire/signature-validator";
 import {
     ERC165SessionKeyProvider,
@@ -11,10 +13,11 @@ import {
 import { ethers } from "ethers";
 import { getFunctionSelector } from "viem";
 
+import { EVMBlockchain } from "@crossmint/client-sdk-base";
+
 import { CrossmintService } from "../../api/CrossmintService";
 import { GenerateSignatureDataInput } from "../../types/API";
 import {
-    EVMBlockchain,
     getBlockchainByChainId,
     getUrlProviderByBlockchain,
     getZeroDevProjectIdByBlockchain,
@@ -22,8 +25,6 @@ import {
 import { Custodian } from "../plugins";
 import { TokenType } from "../token/Tokens";
 import BaseWallet from "./BaseWallet";
-import { logError, logInfo } from "@/services/logging";
-import { errorToJSON } from "@/utils";
 
 export class EVMAAWallet<B extends EVMBlockchain = EVMBlockchain> extends BaseWallet {
     private sessionKeySignerAddress?: string;

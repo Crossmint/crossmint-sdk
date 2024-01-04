@@ -1,8 +1,11 @@
 import { CrossmintService } from "@/api";
-import { Blockchain, EVMAAWallet, getChainIdByBlockchain, getZeroDevProjectIdByBlockchain, isEVMBlockchain } from "@/blockchain";
+import { EVMAAWallet, getChainIdByBlockchain, getZeroDevProjectIdByBlockchain, isEVMBlockchain } from "@/blockchain";
 import type { CrossmintAASDKInitParams, UserIdentifier, WalletConfig } from "@/types";
 import { CURRENT_VERSION, WalletSdkError, ZERO_DEV_TYPE, createOwnerSigner, errorToJSON } from "@/utils";
 import { ZeroDevEthersProvider } from "@zerodev/sdk";
+
+import { Blockchain } from "@crossmint/client-sdk-base";
+
 import { logError, logInfo } from "./services/logging";
 
 export class CrossmintAASDK {
@@ -75,9 +78,7 @@ export class CrossmintAASDK {
                 chain,
             });
 
-            throw new WalletSdkError(
-                `Error creating the Wallet [${error?.name ?? ""}]`
-            );
+            throw new WalletSdkError(`Error creating the Wallet [${error?.name ?? ""}]`);
         }
     }
 
