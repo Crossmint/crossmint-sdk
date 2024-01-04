@@ -1,3 +1,4 @@
+import { logError } from "@/services/logging";
 import type { SignTypedDataParams } from "@alchemy/aa-core";
 import { ZeroDevAccountSigner, ZeroDevEthersProvider } from "@zerodev/sdk";
 import { BigNumber, ethers } from "ethers";
@@ -8,7 +9,6 @@ import erc1155 from "../../ABI/ERC1155.json";
 import { CrossmintService } from "../../api/CrossmintService";
 import { TransferError, errorToJSON } from "../../utils/error";
 import { EVMToken, Token } from "../token/Tokens";
-import { logError } from "@/services/logging";
 
 class BaseWallet extends ZeroDevAccountSigner<"ECDSA"> {
     private signer: ZeroDevAccountSigner<"ECDSA">;
@@ -34,7 +34,7 @@ class BaseWallet extends ZeroDevAccountSigner<"ECDSA"> {
 
     async signMessage(message: Uint8Array | string) {
         try {
-            return await this.signer.signMessage(message);
+            return await this.signer.signMessageWith6492(message);
         } catch (error) {
             logError("[SIGN_MESSAGE] - ERROR", {
                 error: errorToJSON(error),
