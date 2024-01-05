@@ -4,7 +4,7 @@ import { GenerateSignatureDataInput, StoreAbstractWalletInput } from "@/types";
 import { CROSSMINT_STG_URL } from "@/utils";
 import { CrossmintServiceError, errorToJSON } from "@/utils/error";
 
-import { Blockchain } from "@crossmint/client-sdk-base";
+import { BlockchainIncludingTestnet } from "@crossmint/client-sdk-base";
 
 export class CrossmintService {
     private crossmintAPIHeaders: Record<string, string>;
@@ -20,7 +20,7 @@ export class CrossmintService {
         this.crossmintBaseUrl = CROSSMINT_STG_URL;
     }
 
-    setCrossmintUrl(blockchain: Blockchain) {
+    setCrossmintUrl(blockchain: BlockchainIncludingTestnet) {
         this.crossmintBaseUrl = getApiUrlByBlockchainType(blockchain);
     }
 

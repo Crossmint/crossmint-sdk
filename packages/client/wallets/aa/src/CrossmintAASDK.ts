@@ -4,7 +4,7 @@ import type { CrossmintAASDKInitParams, UserIdentifier, WalletConfig } from "@/t
 import { CURRENT_VERSION, WalletSdkError, ZERO_DEV_TYPE, createOwnerSigner, errorToJSON } from "@/utils";
 import { ZeroDevEthersProvider } from "@zerodev/sdk";
 
-import { Blockchain } from "@crossmint/client-sdk-base";
+import { BlockchainIncludingTestnet } from "@crossmint/client-sdk-base";
 
 import { logError, logInfo } from "./services/logging";
 
@@ -19,7 +19,7 @@ export class CrossmintAASDK {
         return new CrossmintAASDK(params);
     }
 
-    async getOrCreateWallet<B extends Blockchain = Blockchain>(
+    async getOrCreateWallet<B extends BlockchainIncludingTestnet = BlockchainIncludingTestnet>(
         user: UserIdentifier,
         chain: B,
         walletConfig: WalletConfig

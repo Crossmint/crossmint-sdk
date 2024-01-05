@@ -18,11 +18,11 @@ import { Web3Auth } from "@web3auth/single-factor-auth";
 import { convertEthersSignerToAccountSigner, getRPCProviderOwner } from "@zerodev/sdk";
 import { Signer } from "ethers";
 
-import { Blockchain } from "@crossmint/client-sdk-base";
+import { BlockchainIncludingTestnet } from "@crossmint/client-sdk-base";
 
 export async function createOwnerSigner(
     user: UserIdentifier,
-    chain: Blockchain,
+    chain: BlockchainIncludingTestnet,
     walletConfig: WalletConfig,
     crossmintService: CrossmintService
 ): Promise<SmartAccountSigner> {

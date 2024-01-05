@@ -28,7 +28,7 @@ import {
     BLOCKCHAIN_TEST_NET,
     Blockchain,
     BlockchainIncludingTestnet,
-    EVMBlockchain,
+    EVMBlockchainIncludingTestnet,
     EVM_BLOCKCHAIN_INCLUDING_TESTNET,
 } from "@crossmint/client-sdk-base";
 
@@ -41,7 +41,7 @@ Chains not supported yet due fireblocks or zerodev doesn't supported
     CARDANO
 */
 
-export function getAssetIdByBlockchain(chain: Blockchain) {
+export function getAssetIdByBlockchain(chain: BlockchainIncludingTestnet) {
     return new Map([
         ["ethereum", "ETH"],
         ["polygon", "MATIC_POLYGON"],
@@ -69,7 +69,7 @@ export function getBlockchainByChainId(chain: number) {
     return chainIdMap.get(chain);
 }
 
-export function getChainIdByBlockchain(chain: Blockchain) {
+export function getChainIdByBlockchain(chain: BlockchainIncludingTestnet) {
     return new Map([
         ["ethereum", ETHEREUM_CHAIN_ID],
         ["polygon", POLYGON_CHAIN_ID],
@@ -97,7 +97,7 @@ export function getUrlProviderByBlockchain(chain: BlockchainIncludingTestnet) {
     ]).get(chain)!;
 }
 
-export function getBlockExplorerByBlockchain(chain: Blockchain) {
+export function getBlockExplorerByBlockchain(chain: BlockchainIncludingTestnet) {
     return new Map([
         ["ethereum", "https://etherscan.io"],
         ["polygon", "https://polygonscan.com"],
@@ -111,7 +111,7 @@ export function getBlockExplorerByBlockchain(chain: Blockchain) {
     ]).get(chain)!;
 }
 
-export function getDisplayNameByBlockchain(chain: Blockchain) {
+export function getDisplayNameByBlockchain(chain: BlockchainIncludingTestnet) {
     return new Map([
         ["ethereum", "Ethereum Mainnet"],
         ["polygon", "Polygon Mainnet"],
@@ -125,7 +125,7 @@ export function getDisplayNameByBlockchain(chain: Blockchain) {
     ]).get(chain)!;
 }
 
-export function getTickerByBlockchain(chain: Blockchain) {
+export function getTickerByBlockchain(chain: BlockchainIncludingTestnet) {
     return new Map([
         ["ethereum", "ETH"],
         ["polygon", "MATIC"],
@@ -139,7 +139,7 @@ export function getTickerByBlockchain(chain: Blockchain) {
     ]).get(chain)!;
 }
 
-export function getTickerNameByBlockchain(chain: Blockchain) {
+export function getTickerNameByBlockchain(chain: BlockchainIncludingTestnet) {
     return new Map([
         ["ethereum", "ETHEREUM"],
         ["polygon", "MATIC"],
@@ -153,7 +153,7 @@ export function getTickerNameByBlockchain(chain: Blockchain) {
     ]).get(chain)!;
 }
 
-export function getZeroDevProjectIdByBlockchain(chain: Blockchain) {
+export function getZeroDevProjectIdByBlockchain(chain: BlockchainIncludingTestnet) {
     const zeroDevProjectId = new Map([
         ["ethereum", ZD_ETHEREUM_PROJECT_ID],
         ["polygon", ZD_POLYGON_PROJECT_ID],
@@ -172,19 +172,19 @@ export function getZeroDevProjectIdByBlockchain(chain: Blockchain) {
     return zeroDevProjectId;
 }
 
-export function getApiUrlByBlockchainType(chain: Blockchain): string {
+export function getApiUrlByBlockchainType(chain: BlockchainIncludingTestnet): string {
     const result = isTestnet(chain) ? CROSSMINT_STG_URL : CROSSMINT_PROD_URL;
     return result;
 }
 
-export function getWeb3AuthBlockchain(chain: Blockchain): TORUS_LEGACY_NETWORK_TYPE {
+export function getWeb3AuthBlockchain(chain: BlockchainIncludingTestnet): TORUS_LEGACY_NETWORK_TYPE {
     return isTestnet(chain) ? WEB3_AUTH_TESTNET : WEB3_AUTH_MAINNET;
 }
 
-export function isTestnet(chain: Blockchain): boolean {
+export function isTestnet(chain: BlockchainIncludingTestnet): boolean {
     return (BLOCKCHAIN_TEST_NET as readonly string[]).includes(chain);
 }
 
-export function isEVMBlockchain(chain: Blockchain): chain is EVMBlockchain {
+export function isEVMBlockchain(chain: BlockchainIncludingTestnet): chain is EVMBlockchainIncludingTestnet {
     return (EVM_BLOCKCHAIN_INCLUDING_TESTNET as readonly string[]).includes(chain);
 }

@@ -13,7 +13,7 @@ import {
 import { ethers } from "ethers";
 import { getFunctionSelector } from "viem";
 
-import { EVMBlockchain } from "@crossmint/client-sdk-base";
+import { EVMBlockchainIncludingTestnet } from "@crossmint/client-sdk-base";
 
 import { CrossmintService } from "../../api/CrossmintService";
 import { GenerateSignatureDataInput } from "../../types/API";
@@ -26,7 +26,7 @@ import { Custodian } from "../plugins";
 import { TokenType } from "../token/Tokens";
 import BaseWallet from "./BaseWallet";
 
-export class EVMAAWallet<B extends EVMBlockchain = EVMBlockchain> extends BaseWallet {
+export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchainIncludingTestnet> extends BaseWallet {
     private sessionKeySignerAddress?: string;
     chain: B;
 

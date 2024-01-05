@@ -1,4 +1,4 @@
-import { Blockchain } from "@crossmint/client-sdk-base";
+import { BlockchainIncludingTestnet } from "@crossmint/client-sdk-base";
 
 export type StoreAbstractWalletInput = {
     userEmail: string;
@@ -15,7 +15,7 @@ export type GenerateSignatureDataInput = {
     smartContractWalletAddress: string;
     sessionKeyData?: string;
     killSwitchData?: string;
-    chain: Blockchain | "evm";
+    chain: BlockchainIncludingTestnet | "evm";
     version: number;
 };
 
