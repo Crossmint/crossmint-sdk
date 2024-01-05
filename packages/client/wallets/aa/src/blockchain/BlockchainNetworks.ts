@@ -25,12 +25,11 @@ import {
 import { TORUS_LEGACY_NETWORK_TYPE } from "@web3auth/single-factor-auth";
 
 import {
-    AllBlockchainWithTestnet,
     BLOCKCHAIN_TEST_NET,
     Blockchain,
+    BlockchainIncludingTestnet,
     EVMBlockchain,
-    EVMBlockchainWithTestnet,
-    EVM_BLOCKCHAIN_WITH_TESTNET,
+    EVM_BLOCKCHAIN_INCLUDING_TESTNET,
 } from "@crossmint/client-sdk-base";
 
 /*
@@ -56,7 +55,7 @@ export function getAssetIdByBlockchain(chain: Blockchain) {
     ]).get(chain)!;
 }
 export function getBlockchainByChainId(chain: number) {
-    const chainIdMap = new Map<number, EVMBlockchainWithTestnet>([
+    const chainIdMap = new Map<number, BlockchainIncludingTestnet>([
         [ETHEREUM_CHAIN_ID, "ethereum"],
         [POLYGON_CHAIN_ID, "polygon"],
         [BSC_CHAIN_ID, "bsc"],
@@ -84,8 +83,8 @@ export function getChainIdByBlockchain(chain: Blockchain) {
     ]).get(chain)!;
 }
 
-export function getUrlProviderByBlockchain(chain: AllBlockchainWithTestnet) {
-    return new Map<AllBlockchainWithTestnet, string>([
+export function getUrlProviderByBlockchain(chain: BlockchainIncludingTestnet) {
+    return new Map<BlockchainIncludingTestnet, string>([
         ["ethereum", "https://eth.llamarpc.com"],
         ["polygon", "https://polygon.llamarpc.com"],
         ["bsc", "BNB_BSC"],
@@ -187,5 +186,5 @@ export function isTestnet(chain: Blockchain): boolean {
 }
 
 export function isEVMBlockchain(chain: Blockchain): chain is EVMBlockchain {
-    return (EVM_BLOCKCHAIN_WITH_TESTNET as readonly string[]).includes(chain);
+    return (EVM_BLOCKCHAIN_INCLUDING_TESTNET as readonly string[]).includes(chain);
 }
