@@ -12,20 +12,16 @@ export const EVM_CHAINS = [
     "arbitrumnova",
     "zkatana",
 ] as const;
-
-export const ALL_CHAINS = ["solana", "cardano", "sui", ...EVM_CHAINS] as const;
-export type Blockchain = (typeof ALL_CHAINS)[number];
-
-export type EVMBlockchain = (typeof EVM_CHAINS)[number];
-
-export type BlockchainTestNet = (typeof BLOCKCHAIN_TEST_NET)[number];
 export const BLOCKCHAIN_TEST_NET = ["goerli", "ethereum-sepolia", "mumbai", "zkatana"] as const;
+export const ALL_CHAINS = ["solana", "cardano", "sui", ...EVM_CHAINS] as const;
+export const EVM_BLOCKCHAIN_INCLUDING_TESTNET = [...EVM_CHAINS, ...BLOCKCHAIN_TEST_NET] as const;
+export const BLOCKCHAIN_INCLUDING_TESTNET = [...ALL_CHAINS, ...BLOCKCHAIN_TEST_NET] as const;
 
-export const EVM_BLOCKCHAIN_WITH_TESTNET = [...EVM_CHAINS, ...BLOCKCHAIN_TEST_NET] as const;
-export type EVMBlockchainWithTestnet = (typeof EVM_BLOCKCHAIN_WITH_TESTNET)[number];
-
-export const ALL_BLOCKCHAIN_WITH_TESTNET = [...ALL_CHAINS, ...BLOCKCHAIN_TEST_NET] as const;
-export type AllBlockchainWithTestnet = (typeof ALL_BLOCKCHAIN_WITH_TESTNET)[number];
+export type Blockchain = (typeof ALL_CHAINS)[number];
+export type EVMBlockchain = (typeof EVM_CHAINS)[number];
+export type BlockchainTestNet = (typeof BLOCKCHAIN_TEST_NET)[number];
+export type EVMBlockchainIncludingTestnet = (typeof EVM_BLOCKCHAIN_INCLUDING_TESTNET)[number];
+export type BlockchainIncludingTestnet = (typeof BLOCKCHAIN_INCLUDING_TESTNET)[number];
 
 export interface Wallet {
     chain: string;
