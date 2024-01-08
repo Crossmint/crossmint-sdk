@@ -1,7 +1,6 @@
 import { LocalStorageRepository } from "@/storage";
 import type { SignTypedDataParams, SmartAccountSigner } from "@alchemy/aa-core";
 import {
-    ConsoleLogger,
     FireblocksNCW,
     IEventsHandler,
     IMessagesHandler,
@@ -87,14 +86,26 @@ export const FireblocksNCWallet = async (
     if (isNew) {
         try {
             await fireblocksNCW.generateMPCKeys(getDefaultAlgorithems());
-            await fireblocksNCW.backupKeys(passphrase);
+            await fireblocksNCW.backupKeys(passphrase, _deviceId); //using the deviceId as a passphraseId to match implementation.
         } catch (error: any) {
             await crossmintService.unassignWallet(userEmail);
             throw new KeysGenerationError(`Error generating keys. ${error?.title ?? ""}}`);
         }
     } else {
         try {
-            await fireblocksNCW.recoverKeys(passphrase);
+            await fireblocksNCW.recoverKeys(async (passphraseId) => {
+                // Implement logic to fetch the passphrase using the passphraseId
+                // For example, fetch from a database or an API
+
+                /*if (!passphrase) {
+                    throw new Error("Passphrase not found for given id");
+                }*/
+                // Now the passphraseId is the deviceId, it will pass the validation
+                if (passphraseId !== _deviceId) {
+                    throw new Error("Invalid passphraseId. Can not recover the keys.");
+                }
+                return passphrase;
+            });
         } catch (error: any) {
             throw new KeysGenerationError(`Error recovering keys. ${error?.title ?? ""}`);
         }
