@@ -43,7 +43,7 @@ export class KeysGenerationError extends Error {
         super(message);
 
         // ES5 workaround
-        Object.setPrototypeOf(this, PassphraseRequiredError.prototype);
+        Object.setPrototypeOf(this, KeysGenerationError.prototype);
     }
 }
 
@@ -54,7 +54,7 @@ export class SignTransactionError extends Error {
         super(message);
 
         // ES5 workaround
-        Object.setPrototypeOf(this, PassphraseRequiredError.prototype);
+        Object.setPrototypeOf(this, SignTransactionError.prototype);
     }
 }
 
@@ -65,7 +65,7 @@ export class TransferError extends Error {
         super(message);
 
         // ES5 workaround
-        Object.setPrototypeOf(this, PassphraseRequiredError.prototype);
+        Object.setPrototypeOf(this, TransferError.prototype);
     }
 }
 
@@ -76,7 +76,7 @@ export class CrossmintServiceError extends Error {
         super(message);
 
         // ES5 workaround
-        Object.setPrototypeOf(this, WalletSdkError.prototype);
+        Object.setPrototypeOf(this, CrossmintServiceError.prototype);
     }
 }
 
@@ -90,7 +90,7 @@ export class NonCustodialWalletError extends Error {
         super(message);
 
         // ES5 workaround
-        Object.setPrototypeOf(this, WalletSdkError.prototype);
+        Object.setPrototypeOf(this, NonCustodialWalletError.prototype);
     }
 }
 
@@ -107,7 +107,6 @@ export class WalletSdkError extends Error {
         Object.setPrototypeOf(this, WalletSdkError.prototype);
     }
 }
-
 
 export function errorToJSON(error: Error | unknown) {
     const errorToLog = error instanceof Error ? error : { message: "Unknown error", name: "Unknown error" };
