@@ -1,3 +1,7 @@
+import { logError, logInfo } from "@/services/logging";
+import { SignerType } from "@/types";
+import { errorToJSON } from "@/utils";
+import { BaseSmartContractAccount } from "@alchemy/aa-core";
 import { verifyMessage } from "@ambire/signature-validator";
 import {
     ERC165SessionKeyProvider,
@@ -22,8 +26,6 @@ import {
 import { Custodian } from "../plugins";
 import { TokenType } from "../token/Tokens";
 import BaseWallet from "./BaseWallet";
-import { logError, logInfo } from "@/services/logging";
-import { errorToJSON } from "@/utils";
 
 export class EVMAAWallet<B extends EVMBlockchain = EVMBlockchain> extends BaseWallet {
     private sessionKeySignerAddress?: string;
@@ -41,6 +43,20 @@ export class EVMAAWallet<B extends EVMBlockchain = EVMBlockchain> extends BaseWa
             message,
             signature,
         });
+    }
+
+    async getSigner(type: SignerType): Promise<ethers.Signer | BaseSmartContractAccount> {
+        switch (type) {
+            case "ethers":
+                return this.provider.getSigner();
+            case "viem":
+                return this.provider.accountProvider.getAccount();
+            default:
+                logError("[GET_SIGNER] - ERROR", {
+                    error: errorToJSON("Invalid signer type"),
+                });
+                throw new Error("Invalid signer type");
+        }
     }
 
     setSessionKeySignerAddress(sessionKeySignerAddress: string) {

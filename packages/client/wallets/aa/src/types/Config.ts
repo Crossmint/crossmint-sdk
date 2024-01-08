@@ -1,4 +1,3 @@
-import { Blockchain } from "@/blockchain";
 import { ethers } from "ethers";
 
 export type CrossmintAASDKInitParams = {
@@ -12,6 +11,7 @@ export type UserIdentifier = {
     phoneNumber?: string;
 };
 
+export type SignerType = "ethers" | "viem";
 /**
  * Used in v2
  */
