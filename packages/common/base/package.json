@@ -24,6 +24,11 @@
     },
     "scripts": {
         "clean": "shx rm -rf dist/*",
-        "build": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --minify --dts --sourcemap"
+        "build": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
+        "test": "vitest"
+    },
+    "dependencies": {
+        "@noble/ed25519": "2.0.0",
+        "bs58": "5.0.0"
     }
 }
