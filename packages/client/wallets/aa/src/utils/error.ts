@@ -69,6 +69,17 @@ export class TransferError extends Error {
     }
 }
 
+export class TransactionError extends Error {
+    code = "ERROR_TRANSACTION";
+
+    constructor(message: string) {
+        super(message);
+
+        // ES5 workaround
+        Object.setPrototypeOf(this, TransactionError.prototype);
+    }
+}
+
 export class CrossmintServiceError extends Error {
     code = "ERROR_CROSSMINT_SERVICE";
 
