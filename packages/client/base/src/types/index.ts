@@ -1,10 +1,9 @@
-export * from "./blockchain";
+// export * from "@crossmint/common-sdk-base"
 export * from "./errors";
 export * from "./events";
 export * from "./hosted";
 export * from "./embed";
 export * from "./system";
-export * from "./uiconfig";
 
 export enum clientNames {
     reactUi = "client-sdk-react-ui",

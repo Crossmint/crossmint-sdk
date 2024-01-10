@@ -1,13 +1,6 @@
-import {
-    CaseInsensitive,
-    CollectionOrClientId,
-    Currency,
-    Locale,
-    MintConfigs,
-    PaymentMethod,
-    Recipient,
-    UIConfig,
-} from "../..";
+import { UIConfig } from "@crossmint/common-sdk-base";
+
+import { CaseInsensitive, CollectionOrClientId, Currency, Locale, MintConfigs, PaymentMethod, Recipient } from "../..";
 import { CryptoEmbeddedCheckoutPropsJSONParsed, CryptoEmbeddedCheckoutPropsJSONStringified } from "./crypto";
 import { FiatEmbeddedCheckoutPropsJSONParsed, FiatEmbeddedCheckoutPropsJSONStringified } from "./fiat";
 

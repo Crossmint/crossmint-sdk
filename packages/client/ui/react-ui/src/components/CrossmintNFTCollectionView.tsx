@@ -1,8 +1,5 @@
-import {
-    NFTCollectionViewProps,
-    assertValidNFTCollectionViewProps,
-    getNFTCollectionViewSrc,
-} from "@crossmint/client-sdk-base";
+import { assertValidNFTCollectionViewProps, getNFTCollectionViewSrc } from "@crossmint/client-sdk-base";
+import { NFTCollectionViewProps } from "@crossmint/common-sdk-base";
 
 import { LIB_VERSION } from "../consts/version";
 

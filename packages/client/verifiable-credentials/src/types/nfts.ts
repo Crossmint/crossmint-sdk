@@ -1,4 +1,4 @@
-import { EVMNFT } from "@crossmint/client-sdk-base";
+import { EVMNFT } from "@crossmint/common-sdk-base";
 
 export interface VC_EVMNFT extends EVMNFT {
     metadata: any;

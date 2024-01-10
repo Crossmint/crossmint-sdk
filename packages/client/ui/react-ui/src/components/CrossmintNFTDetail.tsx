@@ -1,4 +1,5 @@
-import { NFTDetailProps, assertValidValidateNFTDetailProps, getNFTDetailSrc } from "@crossmint/client-sdk-base";
+import { assertValidValidateNFTDetailProps, getNFTDetailSrc } from "@crossmint/client-sdk-base";
+import { NFTDetailProps } from "@crossmint/common-sdk-base";
 
 import { LIB_VERSION } from "../consts/version";
 

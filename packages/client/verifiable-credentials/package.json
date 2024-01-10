@@ -26,6 +26,7 @@
         "build": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --minify --dts --sourcemap"
     },
     "dependencies": {
+        "@crossmint/common-sdk-base": "file:/Users/max/repos/crossmint-sdk/packages/common/base",
         "@ethersproject/providers": "5.7.2",
         "@ethersproject/wallet": "5.7.0",
         "@krebitdao/eip712-vc": "1.0.3",
