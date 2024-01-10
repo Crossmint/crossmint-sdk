@@ -26,7 +26,6 @@ import { TORUS_LEGACY_NETWORK_TYPE } from "@web3auth/single-factor-auth";
 
 import {
     BLOCKCHAIN_TEST_NET,
-    Blockchain,
     BlockchainIncludingTestnet,
     EVMBlockchainIncludingTestnet,
     EVM_BLOCKCHAIN_INCLUDING_TESTNET,
@@ -41,8 +40,8 @@ Chains not supported yet due fireblocks or zerodev doesn't supported
     CARDANO
 */
 
-export function getAssetIdByBlockchain(chain: BlockchainIncludingTestnet) {
-    return new Map([
+export function getFireblocksAssetId(chain: BlockchainIncludingTestnet) {
+    const assetId = new Map([
         ["ethereum", "ETH"],
         ["polygon", "MATIC_POLYGON"],
         ["bsc", "BNB_BSC"],
@@ -53,9 +52,14 @@ export function getAssetIdByBlockchain(chain: BlockchainIncludingTestnet) {
         ["mumbai", "MATIC_POLYGON_MUMBAI"],
         ["zkatana", "ETH_ZKEVM_TEST"],
     ]).get(chain)!;
+
+    if (assetId == null) {
+        throw new Error(`Url not found for chain ${chain}`);
+    }
+    return assetId;
 }
 export function getBlockchainByChainId(chain: number) {
-    const chainIdMap = new Map<number, BlockchainIncludingTestnet>([
+    const blockchain = new Map<number, BlockchainIncludingTestnet>([
         [ETHEREUM_CHAIN_ID, "ethereum"],
         [POLYGON_CHAIN_ID, "polygon"],
         [BSC_CHAIN_ID, "bsc"],
@@ -64,13 +68,16 @@ export function getBlockchainByChainId(chain: number) {
         [SEPOLIA_CHAIN_ID, "ethereum-sepolia"],
         [MUMBAI_CHAIN_ID, "mumbai"],
         [ZKATANA_CHAIN_ID, "zkatana"],
-    ]);
+    ]).get(chain);
 
-    return chainIdMap.get(chain);
+    if (blockchain == null) {
+        throw new Error(`Url not found for chain ${chain}`);
+    }
+    return blockchain;
 }
 
 export function getChainIdByBlockchain(chain: BlockchainIncludingTestnet) {
-    return new Map([
+    const chainId = new Map([
         ["ethereum", ETHEREUM_CHAIN_ID],
         ["polygon", POLYGON_CHAIN_ID],
         ["bsc", BSC_CHAIN_ID],
@@ -81,10 +88,15 @@ export function getChainIdByBlockchain(chain: BlockchainIncludingTestnet) {
         ["mumbai", MUMBAI_CHAIN_ID],
         ["zkatana", ZKATANA_CHAIN_ID],
     ]).get(chain)!;
+
+    if (chainId == null) {
+        throw new Error(`Url not found for chain ${chain}`);
+    }
+    return chainId;
 }
 
 export function getUrlProviderByBlockchain(chain: BlockchainIncludingTestnet) {
-    return new Map<BlockchainIncludingTestnet, string>([
+    const url = new Map<BlockchainIncludingTestnet, string>([
         ["ethereum", "https://eth.llamarpc.com"],
         ["polygon", "https://polygon.llamarpc.com"],
         ["bsc", "https://binance.llamarpc.com"],
@@ -95,10 +107,15 @@ export function getUrlProviderByBlockchain(chain: BlockchainIncludingTestnet) {
         ["mumbai", "https://rpc-mumbai.maticvigil.com"],
         ["zkatana", "https://rpc.startale.com/zkatana"],
     ]).get(chain)!;
+
+    if (url == null) {
+        throw new Error(`Url not found for chain ${chain}`);
+    }
+    return url;
 }
 
 export function getBlockExplorerByBlockchain(chain: BlockchainIncludingTestnet) {
-    return new Map([
+    const blockExplorer = new Map([
         ["ethereum", "https://etherscan.io"],
         ["polygon", "https://polygonscan.com"],
         ["bsc", "https://bscscan.com/"],
@@ -109,10 +126,15 @@ export function getBlockExplorerByBlockchain(chain: BlockchainIncludingTestnet) 
         ["mumbai", "https://mumbai.polygonscan.com"],
         ["zkatana", "https://zkatana.explorer.startale.com"],
     ]).get(chain)!;
+
+    if (blockExplorer == null) {
+        throw new Error(`Block Explorer not found for chain ${chain}`);
+    }
+    return blockExplorer;
 }
 
 export function getDisplayNameByBlockchain(chain: BlockchainIncludingTestnet) {
-    return new Map([
+    const displayName = new Map([
         ["ethereum", "Ethereum Mainnet"],
         ["polygon", "Polygon Mainnet"],
         ["bsc", "BNB Smart Chain"],
@@ -123,10 +145,15 @@ export function getDisplayNameByBlockchain(chain: BlockchainIncludingTestnet) {
         ["mumbai", "Mumbai Tesnet"],
         ["zkatana", "zKatana Tesnet"],
     ]).get(chain)!;
+
+    if (displayName == null) {
+        throw new Error(`Display name not found for chain ${chain}`);
+    }
+    return displayName;
 }
 
 export function getTickerByBlockchain(chain: BlockchainIncludingTestnet) {
-    return new Map([
+    const ticker = new Map([
         ["ethereum", "ETH"],
         ["polygon", "MATIC"],
         ["bsc", "BNB"],
@@ -137,10 +164,15 @@ export function getTickerByBlockchain(chain: BlockchainIncludingTestnet) {
         ["mumbai", "MATIC"],
         ["zkatana", "ETH"],
     ]).get(chain)!;
+
+    if (ticker == null) {
+        throw new Error(`Ticker project id not found for chain ${chain}`);
+    }
+    return ticker;
 }
 
 export function getTickerNameByBlockchain(chain: BlockchainIncludingTestnet) {
-    return new Map([
+    const tickerName = new Map([
         ["ethereum", "ETHEREUM"],
         ["polygon", "MATIC"],
         ["bsc", "BNB_BSC"],
@@ -151,6 +183,11 @@ export function getTickerNameByBlockchain(chain: BlockchainIncludingTestnet) {
         ["mumbai", "MATIC"],
         ["zkatana", "ETHEREUM"],
     ]).get(chain)!;
+
+    if (tickerName == null) {
+        throw new Error(`Ticker Name project id not found for chain ${chain}`);
+    }
+    return tickerName;
 }
 
 export function getZeroDevProjectIdByBlockchain(chain: BlockchainIncludingTestnet) {
