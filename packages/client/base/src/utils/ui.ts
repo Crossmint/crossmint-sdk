@@ -2,10 +2,6 @@ import { NFTCollectionViewProps, NFTDetailProps, NFTOrNFTLocator } from "@crossm
 
 import { BaseUrls } from "../types";
 
-// import { NFTCollectionViewProps, NFTDetailProps, NFTOrNFTLocator } from "../types/blockchain";
-
-// import {NFTOrNFTLocator } from "@crossmint/common-sdk-base"
-
 export const getEnvironmentBaseUrl = (environment = ""): string => {
     const productionValues = ["prod", "production"];
     if (environment === "staging") {
