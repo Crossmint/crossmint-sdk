@@ -1,4 +1,3 @@
-import { Blockchain } from "@/blockchain";
 import { ethers } from "ethers";
 
 export type CrossmintAASDKInitParams = {

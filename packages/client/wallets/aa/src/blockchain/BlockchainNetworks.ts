@@ -9,7 +9,6 @@ import {
     OPTIMISM_CHAIN_ID,
     POLYGON_CHAIN_ID,
     SEPOLIA_CHAIN_ID,
-    ZKATANA_CHAIN_ID,
     WEB3_AUTH_MAINNET,
     WEB3_AUTH_TESTNET,
     ZD_ARBITRUM_PROJECT_ID,
@@ -21,8 +20,17 @@ import {
     ZD_POLYGON_PROJECT_ID,
     ZD_SEPOLIA_PROJECT_ID,
     ZD_ZKATANA_PROJECT_ID,
+    ZKATANA_CHAIN_ID,
 } from "@/utils";
 import { TORUS_LEGACY_NETWORK_TYPE } from "@web3auth/single-factor-auth";
+
+import {
+    BLOCKCHAIN_TEST_NET,
+    Blockchain,
+    BlockchainIncludingTestnet,
+    EVMBlockchainIncludingTestnet,
+    EVM_BLOCKCHAIN_INCLUDING_TESTNET,
+} from "@crossmint/common-sdk-base";
 
 /*
 TODO:
@@ -32,197 +40,151 @@ Chains not supported yet due fireblocks or zerodev doesn't supported
     SOLANA
     CARDANO
 */
-export const EVMBlockchain = {
-    ETHEREUM: "ethereum",
-    POLYGON: "polygon",
-    BSC: "bsc",
-    OPTIMISM: "optimism",
-    ARBITRUM: "arbitrum",
-} as const;
-export type EVMBlockchain = (typeof EVMBlockchain)[keyof typeof EVMBlockchain];
 
-export const BlockchainTestNet = {
-    GOERLI: "goerli",
-    SEPOLIA: "sepolia",
-    MUMBAI: "mumbai",
-    ZKATANA: "zkatana",
-} as const;
-export type BlockchainTestNet = (typeof BlockchainTestNet)[keyof typeof BlockchainTestNet];
-
-export const EVMBlockchainWithTestnet = {
-    ...EVMBlockchain,
-    ...BlockchainTestNet,
-} as const;
-
-export type EVMBlockchainWithTestnet = (typeof EVMBlockchainWithTestnet)[keyof typeof EVMBlockchainWithTestnet];
-
-export const Blockchain = {
-    ...EVMBlockchain,
-    ...BlockchainTestNet,
-} as const;
-export type Blockchain = (typeof Blockchain)[keyof typeof Blockchain];
-
-export function getAssetIdByBlockchain(chain: Blockchain) {
+export function getAssetIdByBlockchain(chain: BlockchainIncludingTestnet) {
     return new Map([
-        [Blockchain.ETHEREUM, "ETH"],
-        [Blockchain.POLYGON, "MATIC_POLYGON"],
-        [Blockchain.BSC, "BNB_BSC"],
-        [Blockchain.OPTIMISM, "ETH-OPT"],
-        [Blockchain.ARBITRUM, "ETH-AETH"],
-        [Blockchain.GOERLI, "ETH_TEST3"],
-        [Blockchain.SEPOLIA, "ETH_TEST5"],
-        [Blockchain.MUMBAI, "MATIC_POLYGON_MUMBAI"],
-        [Blockchain.ZKATANA, "ETH_ZKEVM_TEST"],
+        ["ethereum", "ETH"],
+        ["polygon", "MATIC_POLYGON"],
+        ["bsc", "BNB_BSC"],
+        ["optimism", "ETH-OPT"],
+        ["arbitrum", "ETH-AETH"],
+        ["goerli", "ETH_TEST3"],
+        ["ethereum-sepolia", "ETH_TEST5"],
+        ["mumbai", "MATIC_POLYGON_MUMBAI"],
+        ["zkatana", "ETH_ZKEVM_TEST"],
     ]).get(chain)!;
 }
-
 export function getBlockchainByChainId(chain: number) {
-    const chainIdMap = new Map<number, Blockchain>([
-        [ETHEREUM_CHAIN_ID, Blockchain.ETHEREUM],
-        [POLYGON_CHAIN_ID, Blockchain.POLYGON],
-        [BSC_CHAIN_ID, Blockchain.BSC],
-        [OPTIMISM_CHAIN_ID, Blockchain.OPTIMISM],
-        [ARBITRUM_CHAIN_ID, Blockchain.ARBITRUM],
-        [GOERLI_CHAIN_ID, Blockchain.GOERLI],
-        [SEPOLIA_CHAIN_ID, Blockchain.SEPOLIA],
-        [MUMBAI_CHAIN_ID, Blockchain.MUMBAI],
-        [ZKATANA_CHAIN_ID, Blockchain.ZKATANA],
+    const chainIdMap = new Map<number, BlockchainIncludingTestnet>([
+        [ETHEREUM_CHAIN_ID, "ethereum"],
+        [POLYGON_CHAIN_ID, "polygon"],
+        [BSC_CHAIN_ID, "bsc"],
+        [OPTIMISM_CHAIN_ID, "optimism"],
+        [ARBITRUM_CHAIN_ID, "arbitrum"],
+        [SEPOLIA_CHAIN_ID, "ethereum-sepolia"],
+        [MUMBAI_CHAIN_ID, "mumbai"],
+        [ZKATANA_CHAIN_ID, "zkatana"],
     ]);
 
     return chainIdMap.get(chain);
 }
 
-export function getChainIdByBlockchain(chain: Blockchain) {
+export function getChainIdByBlockchain(chain: BlockchainIncludingTestnet) {
     return new Map([
-        [Blockchain.ETHEREUM, ETHEREUM_CHAIN_ID],
-        [Blockchain.POLYGON, POLYGON_CHAIN_ID],
-        [Blockchain.BSC, BSC_CHAIN_ID],
-        [Blockchain.OPTIMISM, OPTIMISM_CHAIN_ID],
-        [Blockchain.ARBITRUM, ARBITRUM_CHAIN_ID],
-        [Blockchain.GOERLI, GOERLI_CHAIN_ID],
-        [Blockchain.SEPOLIA, SEPOLIA_CHAIN_ID],
-        [Blockchain.MUMBAI, MUMBAI_CHAIN_ID],
-        [Blockchain.ZKATANA, ZKATANA_CHAIN_ID],
+        ["ethereum", ETHEREUM_CHAIN_ID],
+        ["polygon", POLYGON_CHAIN_ID],
+        ["bsc", BSC_CHAIN_ID],
+        ["optimism", OPTIMISM_CHAIN_ID],
+        ["arbitrum", ARBITRUM_CHAIN_ID],
+        ["goerli", GOERLI_CHAIN_ID],
+        ["ethereum-sepolia", SEPOLIA_CHAIN_ID],
+        ["mumbai", MUMBAI_CHAIN_ID],
+        ["zkatana", ZKATANA_CHAIN_ID],
     ]).get(chain)!;
 }
 
-export function getUrlProviderByBlockchain(chain: Blockchain) {
-    return new Map([
-        [Blockchain.ETHEREUM, "https://eth.llamarpc.com"],
-        [Blockchain.POLYGON, "https://polygon.llamarpc.com"],
-        [Blockchain.BSC, "BNB_BSC"],
-        [Blockchain.OPTIMISM, "https://optimism.llamarpc.com"],
-        [Blockchain.ARBITRUM, "https://arbitrum.llamarpc.com"],
-        [Blockchain.GOERLI, "https://ethereum-goerli.publicnode.com"],
-        [Blockchain.SEPOLIA, "https://ethereum-sepolia.publicnode.com"],
-        [Blockchain.MUMBAI, "https://rpc-mumbai.maticvigil.com"],
-        [Blockchain.ZKATANA, "https://rpc.startale.com/zkatana"],
+export function getUrlProviderByBlockchain(chain: BlockchainIncludingTestnet) {
+    return new Map<BlockchainIncludingTestnet, string>([
+        ["ethereum", "https://eth.llamarpc.com"],
+        ["polygon", "https://polygon.llamarpc.com"],
+        ["bsc", "https://binance.llamarpc.com"],
+        ["optimism", "https://optimism.llamarpc.com"],
+        ["arbitrum", "https://arbitrum.llamarpc.com"],
+        ["goerli", "https://ethereum-goerli.publicnode.com"],
+        ["ethereum-sepolia", "https://ethereum-sepolia.publicnode.com"],
+        ["mumbai", "https://rpc-mumbai.maticvigil.com"],
+        ["zkatana", "https://rpc.startale.com/zkatana"],
     ]).get(chain)!;
 }
 
-export function getBlockExplorerByBlockchain(chain: Blockchain) {
+export function getBlockExplorerByBlockchain(chain: BlockchainIncludingTestnet) {
     return new Map([
-        [Blockchain.ETHEREUM, "https://etherscan.io"],
-        [Blockchain.POLYGON, "https://polygonscan.com"],
-        [Blockchain.BSC, "BNB_BSC"],
-        [Blockchain.OPTIMISM, "https://optimistic.etherscan.io"],
-        [Blockchain.ARBITRUM, "https://arbiscan.io"],
-        [Blockchain.GOERLI, "https://goerli.etherscan.io"],
-        [Blockchain.SEPOLIA, "https://sepolia.etherscan.io"],
-        [Blockchain.MUMBAI, "https://mumbai.polygonscan.com"],
-        [Blockchain.ZKATANA, "https://zkatana.explorer.startale.com"],
+        ["ethereum", "https://etherscan.io"],
+        ["polygon", "https://polygonscan.com"],
+        ["bsc", "https://bscscan.com/"],
+        ["optimism", "https://optimistic.etherscan.io"],
+        ["arbitrum", "https://arbiscan.io"],
+        ["goerli", "https://goerli.etherscan.io"],
+        ["ethereum-sepolia", "https://sepolia.etherscan.io"],
+        ["mumbai", "https://mumbai.polygonscan.com"],
+        ["zkatana", "https://zkatana.explorer.startale.com"],
     ]).get(chain)!;
 }
 
-export function getDisplayNameByBlockchain(chain: Blockchain) {
+export function getDisplayNameByBlockchain(chain: BlockchainIncludingTestnet) {
     return new Map([
-        [Blockchain.ETHEREUM, "Ethereum Mainnet"],
-        [Blockchain.POLYGON, "Polygon Mainnet"],
-        [Blockchain.BSC, "BNB_BSC"],
-        [Blockchain.OPTIMISM, "Optimism"],
-        [Blockchain.ARBITRUM, "Arbitrum"],
-        [Blockchain.GOERLI, "Goerli Tesnet"],
-        [Blockchain.SEPOLIA, "Sepolia Tesnet"],
-        [Blockchain.MUMBAI, "Mumbai Tesnet"],
-        [Blockchain.ZKATANA, "zKatana Tesnet"],
+        ["ethereum", "Ethereum Mainnet"],
+        ["polygon", "Polygon Mainnet"],
+        ["bsc", "BNB Smart Chain"],
+        ["optimism", "Optimism"],
+        ["arbitrum", "Arbitrum"],
+        ["goerli", "Goerli Tesnet"],
+        ["ethereum-sepolia", "Sepolia Tesnet"],
+        ["mumbai", "Mumbai Tesnet"],
+        ["zkatana", "zKatana Tesnet"],
     ]).get(chain)!;
 }
 
-export function getTickerByBlockchain(chain: Blockchain) {
+export function getTickerByBlockchain(chain: BlockchainIncludingTestnet) {
     return new Map([
-        [Blockchain.ETHEREUM, "ETH"],
-        [Blockchain.POLYGON, "MATIC"],
-        [Blockchain.BSC, "BNB_BSC"],
-        [Blockchain.OPTIMISM, "OP"],
-        [Blockchain.ARBITRUM, "ARB"],
-        [Blockchain.GOERLI, "ETH"],
-        [Blockchain.SEPOLIA, "ETH"],
-        [Blockchain.MUMBAI, "MATIC"],
-        [Blockchain.ZKATANA, "ETH"],
+        ["ethereum", "ETH"],
+        ["polygon", "MATIC"],
+        ["bsc", "BNB"],
+        ["optimism", "OP"],
+        ["arbitrum", "ARB"],
+        ["goerli", "ETH"],
+        ["ethereum-sepolia", "ETH"],
+        ["mumbai", "MATIC"],
+        ["zkatana", "ETH"],
     ]).get(chain)!;
 }
 
-export function getTickerNameByBlockchain(chain: Blockchain) {
+export function getTickerNameByBlockchain(chain: BlockchainIncludingTestnet) {
     return new Map([
-        [Blockchain.ETHEREUM, "ETHEREUM"],
-        [Blockchain.POLYGON, "MATIC"],
-        [Blockchain.BSC, "BNB_BSC"],
-        [Blockchain.OPTIMISM, "OPTIMISM"],
-        [Blockchain.ARBITRUM, "ARBITRUM"],
-        [Blockchain.GOERLI, "ETHEREUM"],
-        [Blockchain.SEPOLIA, "ETHEREUM"],
-        [Blockchain.MUMBAI, "MATIC"],
-        [Blockchain.ZKATANA, "ETHEREUM"],
+        ["ethereum", "ETHEREUM"],
+        ["polygon", "MATIC"],
+        ["bsc", "BNB_BSC"],
+        ["optimism", "OPTIMISM"],
+        ["arbitrum", "ARBITRUM"],
+        ["goerli", "ETHEREUM"],
+        ["ethereum-sepolia", "ETHEREUM"],
+        ["mumbai", "MATIC"],
+        ["zkatana", "ETHEREUM"],
     ]).get(chain)!;
 }
 
-export function getZeroDevProjectIdByBlockchain(chain: Blockchain) {
-    const zeroDevProjectId = new Map<Blockchain, string>([
-        [Blockchain.ETHEREUM, ZD_ETHEREUM_PROJECT_ID],
-        [Blockchain.POLYGON, ZD_POLYGON_PROJECT_ID],
-        [Blockchain.BSC, ZD_BSC_PROJECT_ID],
-        [Blockchain.OPTIMISM, ZD_OPTIMISM_PROJECT_ID],
-        [Blockchain.ARBITRUM, ZD_ARBITRUM_PROJECT_ID],
-        [Blockchain.GOERLI, ZD_GOERLI_PROJECT_ID],
-        [Blockchain.SEPOLIA, ZD_SEPOLIA_PROJECT_ID],
-        [Blockchain.MUMBAI, ZD_MUMBAI_PROJECT_ID],
-        [Blockchain.ZKATANA, ZD_ZKATANA_PROJECT_ID],
-    ]).get(chain);
+export function getZeroDevProjectIdByBlockchain(chain: BlockchainIncludingTestnet) {
+    const zeroDevProjectId = new Map([
+        ["ethereum", ZD_ETHEREUM_PROJECT_ID],
+        ["polygon", ZD_POLYGON_PROJECT_ID],
+        ["bsc", ZD_BSC_PROJECT_ID],
+        ["optimism", ZD_OPTIMISM_PROJECT_ID],
+        ["arbitrum", ZD_ARBITRUM_PROJECT_ID],
+        ["goerli", ZD_GOERLI_PROJECT_ID],
+        ["ethereum-sepolia", ZD_SEPOLIA_PROJECT_ID],
+        ["mumbai", ZD_MUMBAI_PROJECT_ID],
+        ["zkatana", ZD_ZKATANA_PROJECT_ID],
+    ]).get(chain)!;
+
     if (zeroDevProjectId == null) {
         throw new Error(`ZeroDev project id not found for chain ${chain}`);
     }
     return zeroDevProjectId;
 }
 
-export function getApiUrlByBlockchainType(chain: Blockchain): string {
+export function getApiUrlByBlockchainType(chain: BlockchainIncludingTestnet): string {
     const result = isTestnet(chain) ? CROSSMINT_STG_URL : CROSSMINT_PROD_URL;
     return result;
 }
 
-export function getWeb3AuthBlockchain(chain: Blockchain): TORUS_LEGACY_NETWORK_TYPE {
+export function getWeb3AuthBlockchain(chain: BlockchainIncludingTestnet): TORUS_LEGACY_NETWORK_TYPE {
     return isTestnet(chain) ? WEB3_AUTH_TESTNET : WEB3_AUTH_MAINNET;
 }
 
-export function isTestnet(chain: Blockchain): boolean {
-    const testnetKeys = new Set<keyof typeof BlockchainTestNet>(
-        Object.keys(BlockchainTestNet) as Array<keyof typeof BlockchainTestNet>
-    );
-
-    if (testnetKeys.has(chain.toUpperCase() as keyof typeof BlockchainTestNet)) {
-        return true;
-    } else {
-        return false;
-    }
+export function isTestnet(chain: BlockchainIncludingTestnet): boolean {
+    return (BLOCKCHAIN_TEST_NET as readonly string[]).includes(chain);
 }
 
-export function isEVMBlockchain(chain: Blockchain): chain is EVMBlockchain {
-    const evmKeys = new Set<keyof typeof EVMBlockchainWithTestnet>(
-        Object.keys(EVMBlockchainWithTestnet) as Array<keyof typeof EVMBlockchainWithTestnet>
-    );
-
-    if (evmKeys.has(chain.toUpperCase() as keyof typeof EVMBlockchainWithTestnet)) {
-        return true;
-    } else {
-        return false;
-    }
+export function isEVMBlockchain(chain: BlockchainIncludingTestnet): chain is EVMBlockchainIncludingTestnet {
+    return (EVM_BLOCKCHAIN_INCLUDING_TESTNET as readonly string[]).includes(chain);
 }
