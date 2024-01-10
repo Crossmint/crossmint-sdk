@@ -129,7 +129,7 @@ export class CrossmintService {
 
     async updateWallet(address: string, enableSig: string, version: number) {
         return this.fetchCrossmintAPI(
-            "v2-alpha1/wallets/version/check",
+            "v2-alpha1/wallets/version/update",
             {
                 method: "POST",
                 body: JSON.stringify({ address, enableSig, version }),
