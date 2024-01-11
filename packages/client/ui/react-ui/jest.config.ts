@@ -6,11 +6,10 @@ const jestConfig: JestConfigWithTsJest = {
     moduleNameMapper: {
         "^@/(.*)$": "<rootDir>/src/$1",
     },
-    globals: {
-        'ts-jest': {
-            useESM: true,
-        },
+    transform: {
+        '^.+\\.(t|j)s$': 'ts-jest',
     },
+    transformIgnorePatterns: ['/node_modules/(?!@noble)'],
 };
 
 export default jestConfig;
