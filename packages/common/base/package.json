@@ -1,6 +1,5 @@
 {
     "name": "@crossmint/common-sdk-base",
-    "private": true,
     "version": "0.0.1",
     "author": "Paella Labs Inc",
     "license": "Apache-2.0",
@@ -20,10 +19,15 @@
         "LICENSE"
     ],
     "publishConfig": {
-        "access": "restricted"
+        "access": "public"
     },
     "scripts": {
         "clean": "shx rm -rf dist/*",
-        "build": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --minify --dts --sourcemap"
+        "build": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
+        "test": "vitest"
+    },
+    "dependencies": {
+        "@noble/ed25519": "2.0.0",
+        "bs58": "5.0.0"
     }
 }
