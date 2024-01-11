@@ -1,6 +1,5 @@
 import { datadogLogs } from "@datadog/browser-logs";
 
-
 import { BrowserLoggerInterface } from "./BrowserLoggerInterface";
 import { DATADOG_CLIENT_TOKEN } from "@/utils/constants";
 
