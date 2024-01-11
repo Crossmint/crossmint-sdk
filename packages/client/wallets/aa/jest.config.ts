@@ -6,15 +6,9 @@ const jestConfig: JestConfigWithTsJest = {
         // ... add other path mappings as needed
     },
     transform: {
-        // '^.+\\.[tj]sx?$' to process js/ts with `ts-jest`
-        // '^.+\\.m?[tj]sx?$' to process js/ts/mjs/mts with `ts-jest`
-        "^.+\\.ts?$": [
-            "ts-jest",
-            {
-                useESM: true,
-            },
-        ],
-    },
+      '^.+\\.(t|j)s$': 'ts-jest',
+  },
+  transformIgnorePatterns: ['/node_modules/(?!@noble)'],
 };
 
 export default jestConfig;
