@@ -8,20 +8,23 @@ type DatadogContext = object | undefined;
 
 export class DatadogProvider implements BrowserLoggerInterface {
     logInfo(message: string, context?: unknown) {
-        const _context = context as DatadogContext;
-        init();
-        datadogLogs.logger.info(message, _context);
+        log(message, 'info', context);
     }
+
     logError(message: string, context?: unknown) {
-        const _context = context as DatadogContext;
-        init();
-        datadogLogs.logger.error(message, _context);
+        log(message, 'error', context);
     }
+
     logWarn(message: string, context?: unknown) {
-        const _context = context as DatadogContext;
-        init();
-        datadogLogs.logger.warn(message, _context);
+        log(message, 'warn', context);
     }
+
+}
+
+function log(message: string, loggerType: 'info' | 'error' | 'warn', context?: unknown,) {
+    const _context = context as DatadogContext;
+    init();
+    datadogLogs.logger[loggerType](message, _context as DatadogContext);
 }
 
 function init() {
