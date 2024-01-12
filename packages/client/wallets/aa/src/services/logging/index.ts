@@ -4,12 +4,11 @@ import { ConsoleProvider } from "./ConsoleProvider";
 import { DatadogProvider } from "./DatadogProvider";
 
 function getBrowserLogger() {
-    return new ConsoleProvider();
-    // if (isLocalhost()) {
-    //     return new ConsoleProvider();
-    // }
+    if (isLocalhost()) {
+        return new ConsoleProvider();
+    }
 
-    // return new DatadogProvider();
+    return new DatadogProvider();
 }
 
 const { logInfo, logWarn, logError } = getBrowserLogger();
