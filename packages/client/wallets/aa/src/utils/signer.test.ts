@@ -1,5 +1,4 @@
 import { CrossmintService } from "../api/CrossmintService";
-import { Blockchain } from "../blockchain";
 import { FireblocksNCWSigner } from "../types";
 import { createOwnerSigner } from "./signer";
 
@@ -40,7 +39,7 @@ describe("createOwnerSigner", () => {
             signer: mockFireblocksNCWSigner,
         };
 
-        const mockChain = Blockchain.POLYGON;
+        const mockChain = "polygon";
         const mockCrossmintService = new CrossmintService("clientSecret", "projectId");
 
         // Now call the function

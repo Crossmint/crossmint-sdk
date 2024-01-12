@@ -10,15 +10,17 @@ import {
 } from "@fireblocks/ncw-js-sdk";
 import { fromBytes } from "viem";
 
+import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
+
 import { CrossmintService } from "../../api/CrossmintService";
 import { PasswordEncryptedLocalStorage } from "../../storage/PasswordEncryptedLocalStorage";
 import { KeysGenerationError, NonCustodialWalletError, SignTransactionError } from "../../utils/error";
-import { Blockchain, getAssetIdByBlockchain } from "../BlockchainNetworks";
+import { getFireblocksAssetId } from "../BlockchainNetworks";
 
 export const FireblocksNCWallet = async (
     userEmail: string,
     crossmintService: CrossmintService,
-    chain: Blockchain,
+    chain: BlockchainIncludingTestnet,
     passphrase: string,
     ncwData?: {
         walletId: string;
@@ -128,14 +130,14 @@ export function getSmartAccountSignerFromFireblocks(
     crossmintService: CrossmintService,
     fireblocksNCW: FireblocksNCW,
     walletId: string,
-    chain: Blockchain,
+    chain: BlockchainIncludingTestnet,
     localStorageRepository: LocalStorageRepository
 ): SmartAccountSigner {
     return {
         getAddress: async () => {
             let address = localStorageRepository.ncwAddress;
             if (!address) {
-                address = await crossmintService.getAddress(walletId, 0, getAssetIdByBlockchain(chain));
+                address = await crossmintService.getAddress(walletId, 0, getFireblocksAssetId(chain));
                 localStorageRepository.ncwAddress = address;
             }
             return address as `0x${string}`;
@@ -153,12 +155,12 @@ const signMessage = async (
     crossmintService: CrossmintService,
     fireblocksNCW: FireblocksNCW,
     walletId: string,
-    chain: Blockchain,
+    chain: BlockchainIncludingTestnet,
     msg: Uint8Array | string
 ) => {
     console.log({ physicalDeviceId: fireblocksNCW.getPhysicalDeviceId() });
     const msg_ = msg instanceof Uint8Array ? fromBytes(msg, "hex") : msg;
-    const tx = await crossmintService.createTransaction(msg_ as string, walletId, getAssetIdByBlockchain(chain), false);
+    const tx = await crossmintService.createTransaction(msg_ as string, walletId, getFireblocksAssetId(chain), false);
     try {
         const result: ITransactionSignature = await fireblocksNCW.signTransaction(tx);
         console.log(`txId: ${result.txId}`, `status: ${result.transactionSignatureStatus}`);
@@ -173,10 +175,10 @@ const signTypedData = async (
     crossmintService: CrossmintService,
     fireblocksNCW: FireblocksNCW,
     walletId: string,
-    chain: Blockchain,
+    chain: BlockchainIncludingTestnet,
     params: SignTypedDataParams
 ) => {
-    const tx = await crossmintService.createTransaction(params as any, walletId, getAssetIdByBlockchain(chain), true);
+    const tx = await crossmintService.createTransaction(params as any, walletId, getFireblocksAssetId(chain), true);
     try {
         const result: ITransactionSignature = await fireblocksNCW.signTransaction(tx);
         console.log(`txId: ${result.txId}`, `status: ${result.transactionSignatureStatus}`);
