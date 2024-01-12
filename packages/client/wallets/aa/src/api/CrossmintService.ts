@@ -24,7 +24,7 @@ export class CrossmintService {
 
     async createSessionKey(address: string) {
         return this.fetchCrossmintAPI(
-            "v2-alpha1/wallets/sessionkey",
+            "unstable/wallets/aa/wallets/sessionkey",
             {
                 method: "POST",
                 body: JSON.stringify({ address }),
@@ -35,7 +35,7 @@ export class CrossmintService {
 
     async storeAbstractWallet(input: StoreAbstractWalletInput) {
         return this.fetchCrossmintAPI(
-            "v2-alpha1/wallets",
+            "unstable/wallets/aa/wallets",
             { method: "POST", body: JSON.stringify(input) },
             "Error creating abstract wallet. Please contact support"
         );
@@ -43,7 +43,7 @@ export class CrossmintService {
 
     async generateChainData(input: GenerateSignatureDataInput) {
         return this.fetchCrossmintAPI(
-            "v2-alpha1/wallets/chaindata",
+            "unstable/wallets/aa/wallets/chaindata",
             { method: "POST", body: JSON.stringify(input) },
             "Error setting custodian. Please contact support"
         );
@@ -51,7 +51,7 @@ export class CrossmintService {
 
     async getOrAssignWallet(userEmail: string) {
         return this.fetchCrossmintAPI(
-            "v2-alpha1/ncw",
+            "unstable/wallets/aa/ncw",
             { method: "POST", body: JSON.stringify({ userEmail }) },
             `Error getting or assigning wallet for user: ${userEmail}`
         );
@@ -59,7 +59,7 @@ export class CrossmintService {
 
     async unassignWallet(userEmail: string) {
         return this.fetchCrossmintAPI(
-            "v2-alpha1/ncw/unassign",
+            "unstable/wallets/aa/ncw/unassign",
             {
                 method: "POST",
                 body: JSON.stringify({ userEmail }),
@@ -70,7 +70,7 @@ export class CrossmintService {
 
     async rpc(walletId: string, deviceId: string, payload: string) {
         return this.fetchCrossmintAPI(
-            "v2-alpha1/ncw/rpc",
+            "unstable/wallets/aa/ncw/rpc",
             {
                 method: "POST",
                 body: JSON.stringify({ walletId, deviceId, payload }),
@@ -81,7 +81,7 @@ export class CrossmintService {
 
     async createTransaction(data: any, walletId: string, assetId: string, typedMessage: boolean) {
         return this.fetchCrossmintAPI(
-            "v2-alpha1/ncw/transaction",
+            "unstable/wallets/aa/ncw/transaction",
             {
                 method: "POST",
                 body: JSON.stringify({ data, walletId, assetId, typedMessage }),
@@ -92,7 +92,7 @@ export class CrossmintService {
 
     async getSignature(txId: string) {
         return this.fetchCrossmintAPI(
-            `v2-alpha1/ncw/transaction?txId=${txId}`,
+            `unstable/wallets/aa/ncw/transaction?txId=${txId}`,
             { method: "GET" },
             `Error getting signature for transaction: ${txId}`
         );
@@ -100,7 +100,7 @@ export class CrossmintService {
 
     async getAddress(walletId: string, accountId: number, assetId: string) {
         return this.fetchCrossmintAPI(
-            `v2-alpha1/ncw/address?walletId=${walletId}&accountId=${accountId}&assetId=${assetId}`,
+            `unstable/wallets/aa/ncw/address?walletId=${walletId}&accountId=${accountId}&assetId=${assetId}`,
             { method: "GET" },
             `Error getting address for wallet: ${walletId}, account: ${accountId} and asset: ${assetId}`
         );
@@ -108,7 +108,7 @@ export class CrossmintService {
 
     async getNCWIdentifier(deviceId: string) {
         return this.fetchCrossmintAPI(
-            `v2-alpha1/ncw?deviceId=${deviceId}`,
+            `unstable/wallets/aa/ncw?deviceId=${deviceId}`,
             { method: "GET" },
             `Error getting NCW identifier for device: ${deviceId}`
         );
@@ -116,7 +116,7 @@ export class CrossmintService {
 
     async checkVersion(address: string) {
         return this.fetchCrossmintAPI(
-            "v2-alpha1/wallets/version/check",
+            "unstable/wallets/aa/wallets/version/check",
             {
                 method: "POST",
                 body: JSON.stringify({ address }),
@@ -127,7 +127,7 @@ export class CrossmintService {
 
     async updateWallet(address: string, enableSig: string, version: number) {
         return this.fetchCrossmintAPI(
-            "v2-alpha1/wallets/version/update",
+            "unstable/wallets/aa/wallets/version/update",
             {
                 method: "POST",
                 body: JSON.stringify({ address, enableSig, version }),
