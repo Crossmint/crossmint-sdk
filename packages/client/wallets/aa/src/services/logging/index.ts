@@ -1,5 +1,5 @@
-
 import { isLocalhost } from "@/utils/helpers";
+
 import { ConsoleProvider } from "./ConsoleProvider";
 import { DatadogProvider } from "./DatadogProvider";
 
