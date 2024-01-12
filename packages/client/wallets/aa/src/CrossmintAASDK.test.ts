@@ -28,7 +28,7 @@ describe("CrossmintAASDK", () => {
             expect(sdk).toBeInstanceOf(CrossmintAASDK);
         });
     });
-    const allChains = [...EVM_CHAINS, BLOCKCHAIN_TEST_NET];
+    const allChains = [...EVM_CHAINS, ...BLOCKCHAIN_TEST_NET];
 
     describe.each(allChains)("getOrCreateWallet - With Fireblocks signer and %s network", (chain) => {
         const mockUser: UserIdentifier = { email: "test@example.com" };
