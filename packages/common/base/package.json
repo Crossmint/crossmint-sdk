@@ -29,5 +29,8 @@
     "dependencies": {
         "bs58": "5.0.0",
         "tweetnacl": "1.0.3"
+    },
+    "devDependencies": {
+        "@types/bs58": "^4.0.4"
     }
 }
