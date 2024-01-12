@@ -27,7 +27,7 @@
         "test": "vitest"
     },
     "dependencies": {
-        "@noble/ed25519": "2.0.0",
-        "bs58": "5.0.0"
+        "bs58": "5.0.0",
+        "tweetnacl": "1.0.3"
     }
 }

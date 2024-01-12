@@ -1,18 +1,14 @@
-import * as ed from "@noble/ed25519";
-import { sha512 } from "@noble/hashes/sha512";
 import base58 from "bs58";
+import nacl from "tweetnacl";
 
 import { CROSSMINT_API_KEY_SIGNER_PUBLICKEY_PROD, CROSSMINT_API_KEY_SIGNER_PUBLICKEY_STAGING } from "./consts";
 import { APIKeyPrefix } from "./types";
+import { environmentToExpectedPublicKey } from "./utils";
 import {
     ValidateAPIKeyPrefixExpectations,
     ValidateAPIKeyPrefixSuccessData,
     validateAPIKeyPrefix,
 } from "./validateAPIKeyPrefix";
-import { environmentToExpectedPublicKey } from "./utils";
-
-// Need to shim for methods to work https://www.npmjs.com/package/@noble/ed25519
-ed.etc.sha512Sync = (...m) => sha512(ed.etc.concatBytes(...m));
 
 export type ValidateAPIKeyResult =
     | ({
@@ -66,24 +62,31 @@ function decodeAPIKeyAndGetParts(apiKey: string, prefix: APIKeyPrefix) {
     };
 }
 
-function validateAPIKeySignature(keyData: string, signature: string, expectations?:ValidateAPIKeyPrefixExpectations): boolean {
+function validateAPIKeySignature(
+    keyData: string,
+    signature: string,
+    expectations?: ValidateAPIKeyPrefixExpectations
+): boolean {
     const expectedPublicKey = environmentToExpectedPublicKey(expectations?.environment);
 
-    function _validateSignature(expectedPublicKey:string) {
+    function _validateSignature(expectedPublicKey: string) {
         try {
-            return ed.verify(
-                base58.decode(signature),
-                new TextEncoder().encode(keyData),
-                base58.decode(expectedPublicKey)
-            );
+            const signatureBytes = base58.decode(signature);
+            const keyDataBytes = new TextEncoder().encode(keyData);
+            const publicKeyBytes = base58.decode(expectedPublicKey);
+
+            return nacl.sign.detached.verify(keyDataBytes, signatureBytes, publicKeyBytes);
         } catch (e) {
             console.error("Failed to validate API key signature", e);
             return false;
         }
     }
 
-    if(expectedPublicKey != null) {
+    if (expectedPublicKey != null) {
         return _validateSignature(expectedPublicKey);
     }
-    return _validateSignature(CROSSMINT_API_KEY_SIGNER_PUBLICKEY_PROD) || _validateSignature(CROSSMINT_API_KEY_SIGNER_PUBLICKEY_STAGING);
+    return (
+        _validateSignature(CROSSMINT_API_KEY_SIGNER_PUBLICKEY_PROD) ||
+        _validateSignature(CROSSMINT_API_KEY_SIGNER_PUBLICKEY_STAGING)
+    );
 }
