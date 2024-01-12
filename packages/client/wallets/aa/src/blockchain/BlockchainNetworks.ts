@@ -64,6 +64,7 @@ export function getBlockchainByChainId(chain: number) {
         [POLYGON_CHAIN_ID, "polygon"],
         [BSC_CHAIN_ID, "bsc"],
         [OPTIMISM_CHAIN_ID, "optimism"],
+        [GOERLI_CHAIN_ID, "goerli"],
         [ARBITRUM_CHAIN_ID, "arbitrum"],
         [SEPOLIA_CHAIN_ID, "ethereum-sepolia"],
         [MUMBAI_CHAIN_ID, "mumbai"],
@@ -118,7 +119,7 @@ export function getBlockExplorerByBlockchain(chain: BlockchainIncludingTestnet) 
     const blockExplorer = new Map([
         ["ethereum", "https://etherscan.io"],
         ["polygon", "https://polygonscan.com"],
-        ["bsc", "https://bscscan.com/"],
+        ["bsc", "https://bscscan.com"],
         ["optimism", "https://optimistic.etherscan.io"],
         ["arbitrum", "https://arbiscan.io"],
         ["goerli", "https://goerli.etherscan.io"],

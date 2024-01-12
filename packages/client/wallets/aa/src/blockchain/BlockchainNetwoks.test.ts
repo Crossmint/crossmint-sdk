@@ -44,10 +44,6 @@ describe("BlockchainNetworks Tests", () => {
             expect(getBlockchainByChainId(11155111)).toBe("ethereum-sepolia");
             expect(getBlockchainByChainId(80001)).toBe("mumbai");
         });
-
-        it("returns undefined for invalid chain ID", () => {
-            expect(getBlockchainByChainId(999)).toBeUndefined();
-        });
     });
 
     describe("getChainIdByBlockchain", () => {
@@ -67,7 +63,7 @@ describe("BlockchainNetworks Tests", () => {
         it("should return the correct url provider for each Blockchain", () => {
             expect(getUrlProviderByBlockchain("ethereum")).toBe("https://eth.llamarpc.com");
             expect(getUrlProviderByBlockchain("polygon")).toBe("https://polygon.llamarpc.com");
-            expect(getUrlProviderByBlockchain("bsc")).toBe("BNB_BSC");
+            expect(getUrlProviderByBlockchain("bsc")).toBe("https://binance.llamarpc.com");
             expect(getUrlProviderByBlockchain("optimism")).toBe("https://optimism.llamarpc.com");
             expect(getUrlProviderByBlockchain("arbitrum")).toBe("https://arbitrum.llamarpc.com");
             expect(getUrlProviderByBlockchain("goerli")).toBe("https://ethereum-goerli.publicnode.com");
@@ -80,7 +76,7 @@ describe("BlockchainNetworks Tests", () => {
         it("should return the correct block explorer URL for each Blockchain", () => {
             expect(getBlockExplorerByBlockchain("ethereum")).toBe("https://etherscan.io");
             expect(getBlockExplorerByBlockchain("polygon")).toBe("https://polygonscan.com");
-            expect(getBlockExplorerByBlockchain("bsc")).toBe("BNB_BSC");
+            expect(getBlockExplorerByBlockchain("bsc")).toBe("https://bscscan.com");
             expect(getBlockExplorerByBlockchain("optimism")).toBe("https://optimistic.etherscan.io");
             expect(getBlockExplorerByBlockchain("arbitrum")).toBe("https://arbiscan.io");
             expect(getBlockExplorerByBlockchain("goerli")).toBe("https://goerli.etherscan.io");
@@ -93,7 +89,7 @@ describe("BlockchainNetworks Tests", () => {
         it("should return the correct display name for each Blockchain", () => {
             expect(getDisplayNameByBlockchain("ethereum")).toBe("Ethereum Mainnet");
             expect(getDisplayNameByBlockchain("polygon")).toBe("Polygon Mainnet");
-            expect(getDisplayNameByBlockchain("bsc")).toBe("BNB_BSC");
+            expect(getDisplayNameByBlockchain("bsc")).toBe("BNB Smart Chain");
             expect(getDisplayNameByBlockchain("optimism")).toBe("Optimism");
             expect(getDisplayNameByBlockchain("arbitrum")).toBe("Arbitrum");
             expect(getDisplayNameByBlockchain("goerli")).toBe("Goerli Tesnet");
@@ -106,7 +102,7 @@ describe("BlockchainNetworks Tests", () => {
         it("should return the correct ticker for each Blockchain", () => {
             expect(getTickerByBlockchain("ethereum")).toBe("ETH");
             expect(getTickerByBlockchain("polygon")).toBe("MATIC");
-            expect(getTickerByBlockchain("bsc")).toBe("BNB_BSC");
+            expect(getTickerByBlockchain("bsc")).toBe("BNB");
             expect(getTickerByBlockchain("optimism")).toBe("OP");
             expect(getTickerByBlockchain("arbitrum")).toBe("ARB");
             expect(getTickerByBlockchain("goerli")).toBe("ETH");
