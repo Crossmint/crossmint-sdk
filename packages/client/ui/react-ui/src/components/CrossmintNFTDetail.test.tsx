@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 
-import { NFT } from "@crossmint/client-sdk-base";
+import { NFT } from "@crossmint/common-sdk-base";
 
 import { CrossmintNFTDetail } from "./CrossmintNFTDetail";
 
