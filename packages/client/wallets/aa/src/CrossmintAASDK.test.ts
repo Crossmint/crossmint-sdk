@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 
-import { BLOCKCHAIN_INCLUDING_TESTNET } from "@crossmint/common-sdk-base";
+import { BLOCKCHAIN_TEST_NET, EVM_CHAINS } from "@crossmint/common-sdk-base";
 
 import { CrossmintAASDK } from "../src/CrossmintAASDK";
 import { CrossmintAASDKInitParams, UserIdentifier, WalletConfig } from "../src/types";
@@ -28,7 +28,7 @@ describe("CrossmintAASDK", () => {
             expect(sdk).toBeInstanceOf(CrossmintAASDK);
         });
     });
-    const allChains = BLOCKCHAIN_INCLUDING_TESTNET;
+    const allChains = [...EVM_CHAINS, BLOCKCHAIN_TEST_NET];
 
     describe.each(allChains)("getOrCreateWallet - With Fireblocks signer and %s network", (chain) => {
         const mockUser: UserIdentifier = { email: "test@example.com" };
