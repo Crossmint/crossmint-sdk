@@ -1,7 +1,7 @@
 import { Contract } from "ethers";
 import { constants } from "ethers";
 
-import { EVMNFT } from "@crossmint/client-sdk-base";
+import { EVMNFT } from "@crossmint/common-sdk-base";
 
 import { abi_ERC_721 } from "../../ABI/ERC721";
 import { getProvider } from "../../services/provider";
