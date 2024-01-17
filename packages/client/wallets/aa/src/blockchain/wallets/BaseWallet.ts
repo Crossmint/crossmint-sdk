@@ -98,7 +98,9 @@ class BaseWallet extends ZeroDevAccountSigner<"ECDSA"> {
                 return transaction!.hash;
             } else {
                 throw new TransferError(
-                    `Error transferring token ${evmToken.tokenId} with transaction hash ${transaction!.hash}`
+                    `Error transferring token ${evmToken.tokenId}${
+                        !transaction || !transaction.hash ? "" : ` with transaction hash ${transaction.hash}`
+                    }`
                 );
             }
         } catch (error) {
