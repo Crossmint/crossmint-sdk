@@ -1,5 +1,8 @@
 import { logError } from "@/services/logging";
+import { TransactionError, TransferError, errorToJSON } from "@/utils";
 import type { SignTypedDataParams } from "@alchemy/aa-core";
+import type { Deferrable } from "@ethersproject/properties";
+import { type TransactionRequest, type TransactionResponse } from "@ethersproject/providers";
 import { ZeroDevAccountSigner, ZeroDevEthersProvider } from "@zerodev/sdk";
 import { BigNumber, ethers } from "ethers";
 
@@ -7,7 +10,6 @@ import erc20 from "../../ABI/ERC20.json";
 import erc721 from "../../ABI/ERC721.json";
 import erc1155 from "../../ABI/ERC1155.json";
 import { CrossmintService } from "../../api/CrossmintService";
-import { TransferError, errorToJSON } from "../../utils/error";
 import { EVMToken, Token } from "../token/Tokens";
 
 class BaseWallet extends ZeroDevAccountSigner<"ECDSA"> {
@@ -92,11 +94,25 @@ class BaseWallet extends ZeroDevAccountSigner<"ECDSA"> {
             }
 
             const receipt = await transaction!.wait();
-            console.log("Transaction receipt:", receipt);
-
-            return transaction!.hash;
+            if (receipt.status === 1) {
+                return transaction!.hash;
+            } else {
+                throw new TransferError(
+                    `Error transferring token ${evmToken.tokenId}${
+                        !transaction || !transaction.hash ? "" : ` with transaction hash ${transaction.hash}`
+                    }`
+                );
+            }
         } catch (error) {
             throw new TransferError(`Error transferring token ${evmToken.tokenId}`);
+        }
+    }
+
+    async sendTransaction(transaction: Deferrable<TransactionRequest>): Promise<TransactionResponse> {
+        try {
+            return await super.sendTransaction(transaction);
+        } catch (error) {
+            throw new TransactionError(`Error sending transaction: ${error}`);
         }
     }
 }
