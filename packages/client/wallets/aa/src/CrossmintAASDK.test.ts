@@ -13,8 +13,7 @@ jest.mock("@/utils");
 describe("CrossmintAASDK", () => {
     let sdk: CrossmintAASDK;
     const mockInitParams: CrossmintAASDKInitParams = {
-        projectId: "projectId",
-        clientSecret: "clientSecret",
+        apiKey: "apiKey",
     };
 
     beforeEach(() => {

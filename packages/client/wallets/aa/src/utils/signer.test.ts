@@ -18,6 +18,7 @@ describe("createOwnerSigner", () => {
         signTypedData: jest.fn().mockResolvedValue("mocked-typed-data-signature"),
         getAddress: jest.fn().mockResolvedValue("mocked-address"),
     };
+    const apiKey = "sk_staging_A4vDwAp4t5az6fVQMpQK6qapBnAqgpxrrD35TaFQnyKgxehNbd959uZeaHjNCadWDXrgLRAK1CxeasZjtYEq4TbFkKMBBvbQ9oinAxQf8LbHsSYW2DMzT8fBko3YGLq9t7ZiXZjmgkTioxGVUUjyLtWLeBKwNUDLgpshWjaoR7pKRnSE9SqhwjQbiK62VKiBTdA3KvHsyG9k8mLMcKrDyfXp";
 
     jest.mock("./signer", () => ({
         createOwnerSigner: jest.fn().mockResolvedValue(mockSmartAccountSigner),
@@ -40,7 +41,7 @@ describe("createOwnerSigner", () => {
         };
 
         const mockChain = "polygon";
-        const mockCrossmintService = new CrossmintService("clientSecret", "projectId");
+        const mockCrossmintService = new CrossmintService(apiKey);
 
         // Now call the function
         try {

@@ -1,4 +1,4 @@
-import { CROSSMINT_STG_URL } from "@/utils";
+import { CROSSMINT_STG_URL } from "../utils";
 
 import { CrossmintService } from "./CrossmintService";
 
@@ -15,11 +15,10 @@ jest.mock("@/utils/error", () => ({
 
 describe("CrossmintService", () => {
     let crossmintService: CrossmintService;
-    const clientSecret = "test-secret";
-    const projectId = "test-project-id";
+    const apiKey = "sk_staging_A4vDwAp4t5az6fVQMpQK6qapBnAqgpxrrD35TaFQnyKgxehNbd959uZeaHjNCadWDXrgLRAK1CxeasZjtYEq4TbFkKMBBvbQ9oinAxQf8LbHsSYW2DMzT8fBko3YGLq9t7ZiXZjmgkTioxGVUUjyLtWLeBKwNUDLgpshWjaoR7pKRnSE9SqhwjQbiK62VKiBTdA3KvHsyG9k8mLMcKrDyfXp";
 
     beforeEach(() => {
-        crossmintService = new CrossmintService(clientSecret, projectId);
+        crossmintService = new CrossmintService(apiKey);
     });
 
     describe("constructor", () => {
@@ -29,8 +28,7 @@ describe("CrossmintService", () => {
             expect(crossmintService["crossmintAPIHeaders"]).toEqual({
                 accept: "application/json",
                 "content-type": "application/json",
-                "x-client-secret": clientSecret,
-                "x-project-id": projectId,
+                "x-api-key": apiKey,
             });
 
             // Check if the base URL is correctly set to the staging URL
