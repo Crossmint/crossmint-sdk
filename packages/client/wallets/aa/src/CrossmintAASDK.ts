@@ -1,17 +1,13 @@
 import { CrossmintService } from "@/api";
-import {
-    EVMAAWallet,
-    getChainIdByBlockchain,
-    getZeroDevProjectIdByBlockchain,
-    isEVMBlockchain,
-} from "@/blockchain";
-import type { CrossmintAASDKInitParams, UserIdentifier, WalletConfig } from "@/types";
+import { EVMAAWallet, getChainIdByBlockchain, getZeroDevProjectIdByBlockchain, isEVMBlockchain } from "@/blockchain";
+import type { CrossmintAASDKInitParams, WalletConfig } from "@/types";
 import { CURRENT_VERSION, WalletSdkError, ZERO_DEV_TYPE, createOwnerSigner, errorToJSON } from "@/utils";
 import { ZeroDevEthersProvider } from "@zerodev/sdk";
 
-import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
+import { BlockchainIncludingTestnet, UserIdentifierParams } from "@crossmint/common-sdk-base";
 
 import { logError, logInfo } from "./services/logging";
+import { parseUserIdentifier } from "./utils/user";
 
 export class CrossmintAASDK {
     crossmintService: CrossmintService;
@@ -25,17 +21,18 @@ export class CrossmintAASDK {
     }
 
     async getOrCreateWallet<B extends BlockchainIncludingTestnet = BlockchainIncludingTestnet>(
-        user: UserIdentifier,
+        user: UserIdentifierParams,
         chain: B,
         walletConfig: WalletConfig
     ) {
         try {
             logInfo("[GET_OR_CREATE_WALLET] - INIT", {
-                userEmail: user.email!,
+                user,
                 chain,
             });
 
-            const owner = await createOwnerSigner(user, chain, walletConfig, this.crossmintService);
+            const userIdentifier = parseUserIdentifier(user);
+            const owner = await createOwnerSigner(userIdentifier, chain, walletConfig, this.crossmintService);
 
             const address = await owner.getAddress();
 
@@ -61,7 +58,7 @@ export class CrossmintAASDK {
             evmAAWallet.setSessionKeySignerAddress(sessionKeySignerAddress);
 
             await this.crossmintService.storeAbstractWallet({
-                userEmail: user.email!,
+                userIdentifier,
                 type: ZERO_DEV_TYPE,
                 smartContractWalletAddress: abstractAddress,
                 eoaAddress: address,
@@ -79,7 +76,7 @@ export class CrossmintAASDK {
         } catch (error: any) {
             logError("[GET_OR_CREATE_WALLET] - ERROR_CREATING_WALLET", {
                 error: errorToJSON(error),
-                userEmail: user.email!,
+                user,
                 chain,
             });
 

@@ -1,10 +1,10 @@
 import { logError } from "@/services/logging";
-import { GenerateSignatureDataInput, StoreAbstractWalletInput } from "@/types";
-import { CROSSMINT_DEV_URL, CROSSMINT_PROD_URL, CROSSMINT_STG_URL } from "../utils";
+import { GenerateSignatureDataInput, StoreAbstractWalletInput, UserIdentifier } from "@/types";
 import { CrossmintServiceError, errorToJSON } from "@/utils/error";
 
-import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 import { validateAPIKey } from "@crossmint/common-sdk-base";
+
+import { CROSSMINT_DEV_URL, CROSSMINT_PROD_URL, CROSSMINT_STG_URL } from "../utils";
 
 export class CrossmintService {
     private crossmintAPIHeaders: Record<string, string>;
@@ -55,22 +55,22 @@ export class CrossmintService {
         );
     }
 
-    async getOrAssignWallet(userEmail: string) {
+    async getOrAssignWallet(userIdentifier: UserIdentifier) {
         return this.fetchCrossmintAPI(
             "unstable/wallets/aa/ncw",
-            { method: "POST", body: JSON.stringify({ userEmail }) },
-            `Error getting or assigning wallet for user: ${userEmail}`
+            { method: "POST", body: JSON.stringify({ userIdentifier }) },
+            `Error getting or assigning wallet for user: ${JSON.stringify({ userIdentifier })}`
         );
     }
 
-    async unassignWallet(userEmail: string) {
+    async unassignWallet(userIdentifier: UserIdentifier) {
         return this.fetchCrossmintAPI(
             "unstable/wallets/aa/ncw/unassign",
             {
                 method: "POST",
-                body: JSON.stringify({ userEmail }),
+                body: JSON.stringify({ userIdentifier }),
             },
-            `Error unassigning wallet for user: ${userEmail}`
+            `Error unassigning wallet for user: ${JSON.stringify({ userIdentifier })}`
         );
     }
 
@@ -185,9 +185,8 @@ export class CrossmintService {
 
     private getUrlFromEnv(environment: string) {
         const url = CrossmintService.urlMap[environment];
-        console.log("url",url)
         if (!url) {
-            console.log(" CrossmintService.urlMap: ", CrossmintService.urlMap)
+            console.log(" CrossmintService.urlMap: ", CrossmintService.urlMap);
             throw new Error(`URL not found for environment: ${environment}`);
         }
         return url;

@@ -1,4 +1,5 @@
 import { LocalStorageRepository } from "@/storage";
+import { UserIdentifier } from "@/types";
 import type { SignTypedDataParams, SmartAccountSigner } from "@alchemy/aa-core";
 import {
     FireblocksNCW,
@@ -18,7 +19,7 @@ import { KeysGenerationError, NonCustodialWalletError, SignTransactionError } fr
 import { getFireblocksAssetId } from "../BlockchainNetworks";
 
 export const FireblocksNCWallet = async (
-    userEmail: string,
+    userIdentifier: UserIdentifier,
     crossmintService: CrossmintService,
     chain: BlockchainIncludingTestnet,
     passphrase: string,
@@ -38,7 +39,7 @@ export const FireblocksNCWallet = async (
         _deviceId = ncwData.deviceId;
         isNew = false;
     } else {
-        const ncwData = localStorageRepository.ncwData ?? (await crossmintService.getOrAssignWallet(userEmail));
+        const ncwData = localStorageRepository.ncwData ?? (await crossmintService.getOrAssignWallet(userIdentifier));
         _walletId = ncwData.walletId;
         _deviceId = ncwData.deviceId;
         isNew = ncwData.isNew !== undefined ? ncwData.isNew : false;
@@ -90,7 +91,7 @@ export const FireblocksNCWallet = async (
             await fireblocksNCW.generateMPCKeys(getDefaultAlgorithems());
             await fireblocksNCW.backupKeys(passphrase, _deviceId); //using the deviceId as a passphraseId to match implementation.
         } catch (error: any) {
-            await crossmintService.unassignWallet(userEmail);
+            await crossmintService.unassignWallet(userIdentifier);
             throw new KeysGenerationError(`Error generating keys. ${error?.title ?? ""}}`);
         }
     } else {

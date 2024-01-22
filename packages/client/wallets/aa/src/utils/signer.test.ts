@@ -1,5 +1,5 @@
 import { CrossmintService } from "../api/CrossmintService";
-import { FireblocksNCWSigner } from "../types";
+import { FireblocksNCWSigner, UserIdentifier } from "../types";
 import { createOwnerSigner } from "./signer";
 
 // Mock the module that contains createOwnerSigner
@@ -18,17 +18,17 @@ describe("createOwnerSigner", () => {
         signTypedData: jest.fn().mockResolvedValue("mocked-typed-data-signature"),
         getAddress: jest.fn().mockResolvedValue("mocked-address"),
     };
-    const apiKey = "sk_staging_A4vDwAp4t5az6fVQMpQK6qapBnAqgpxrrD35TaFQnyKgxehNbd959uZeaHjNCadWDXrgLRAK1CxeasZjtYEq4TbFkKMBBvbQ9oinAxQf8LbHsSYW2DMzT8fBko3YGLq9t7ZiXZjmgkTioxGVUUjyLtWLeBKwNUDLgpshWjaoR7pKRnSE9SqhwjQbiK62VKiBTdA3KvHsyG9k8mLMcKrDyfXp";
+    const apiKey =
+        "sk_staging_A4vDwAp4t5az6fVQMpQK6qapBnAqgpxrrD35TaFQnyKgxehNbd959uZeaHjNCadWDXrgLRAK1CxeasZjtYEq4TbFkKMBBvbQ9oinAxQf8LbHsSYW2DMzT8fBko3YGLq9t7ZiXZjmgkTioxGVUUjyLtWLeBKwNUDLgpshWjaoR7pKRnSE9SqhwjQbiK62VKiBTdA3KvHsyG9k8mLMcKrDyfXp";
 
     jest.mock("./signer", () => ({
         createOwnerSigner: jest.fn().mockResolvedValue(mockSmartAccountSigner),
     }));
 
     it("returns a SmartAccountSigner for other Signers", async () => {
-        const mockUser = {
+        const mockUserEmail: UserIdentifier = {
+            type: "email",
             email: "test@example.com",
-            userId: "user123",
-            phoneNumber: "1234567890",
         };
 
         const mockFireblocksNCWSigner: FireblocksNCWSigner = {
@@ -45,11 +45,16 @@ describe("createOwnerSigner", () => {
 
         // Now call the function
         try {
-            await createOwnerSigner(mockUser, mockChain, mockWalletConfig, mockCrossmintService);
+            await createOwnerSigner(mockUserEmail, mockChain, mockWalletConfig, mockCrossmintService);
         } catch (e) {}
 
         // Verify that the mock was called with the expected arguments
-        expect(createOwnerSigner).toHaveBeenCalledWith(mockUser, mockChain, mockWalletConfig, mockCrossmintService);
+        expect(createOwnerSigner).toHaveBeenCalledWith(
+            mockUserEmail,
+            mockChain,
+            mockWalletConfig,
+            mockCrossmintService
+        );
 
         // Assertions for SmartAccountSigner interface
         expect(mockSmartAccountSigner).toHaveProperty("signMessage");

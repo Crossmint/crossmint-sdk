@@ -1,5 +1,4 @@
 import { CROSSMINT_STG_URL } from "../utils";
-
 import { CrossmintService } from "./CrossmintService";
 
 jest.mock("@/blockchain", () => ({
@@ -15,7 +14,8 @@ jest.mock("@/utils/error", () => ({
 
 describe("CrossmintService", () => {
     let crossmintService: CrossmintService;
-    const apiKey = "sk_staging_A4vDwAp4t5az6fVQMpQK6qapBnAqgpxrrD35TaFQnyKgxehNbd959uZeaHjNCadWDXrgLRAK1CxeasZjtYEq4TbFkKMBBvbQ9oinAxQf8LbHsSYW2DMzT8fBko3YGLq9t7ZiXZjmgkTioxGVUUjyLtWLeBKwNUDLgpshWjaoR7pKRnSE9SqhwjQbiK62VKiBTdA3KvHsyG9k8mLMcKrDyfXp";
+    const apiKey =
+        "sk_staging_A4vDwAp4t5az6fVQMpQK6qapBnAqgpxrrD35TaFQnyKgxehNbd959uZeaHjNCadWDXrgLRAK1CxeasZjtYEq4TbFkKMBBvbQ9oinAxQf8LbHsSYW2DMzT8fBko3YGLq9t7ZiXZjmgkTioxGVUUjyLtWLeBKwNUDLgpshWjaoR7pKRnSE9SqhwjQbiK62VKiBTdA3KvHsyG9k8mLMcKrDyfXp";
 
     beforeEach(() => {
         crossmintService = new CrossmintService(apiKey);

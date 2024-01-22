@@ -30,7 +30,10 @@ describe("CrossmintAASDK", () => {
     const allChains = [...EVM_CHAINS, ...BLOCKCHAIN_TEST_NET];
 
     describe.each(allChains)("getOrCreateWallet - With Fireblocks signer and %s network", (chain) => {
-        const mockUser: UserIdentifier = { email: "test@example.com" };
+        const mockUser: UserIdentifier = {
+            type: "email",
+            email: "test@example.com",
+        };
         const mockWalletConfig: WalletConfig = {
             signer: {
                 type: "FIREBLOCKS_NCW",
@@ -51,7 +54,10 @@ describe("CrossmintAASDK", () => {
     });
 
     describe.each(allChains)("getOrCreateWallet - With ethers.Signer and %s network", (chain) => {
-        const mockUser: UserIdentifier = { email: "test@example.com" };
+        const mockUser: UserIdentifier = {
+            type: "email",
+            email: "test@example.com",
+        };
         const randomWallet = ethers.Wallet.createRandom();
         const mockWalletConfig: WalletConfig = {
             signer: randomWallet,

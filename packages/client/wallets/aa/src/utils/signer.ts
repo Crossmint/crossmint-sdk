@@ -21,7 +21,7 @@ import { Signer } from "ethers";
 import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 export async function createOwnerSigner(
-    user: UserIdentifier,
+    userIdentifier: UserIdentifier,
     chain: BlockchainIncludingTestnet,
     walletConfig: WalletConfig,
     crossmintService: CrossmintService
@@ -30,13 +30,13 @@ export async function createOwnerSigner(
         let fireblocks: any;
         if ("walletId" in walletConfig.signer && "deviceId" in walletConfig.signer) {
             const { passphrase, walletId, deviceId } = walletConfig.signer;
-            fireblocks = await FireblocksNCWallet(user.email, crossmintService, chain, passphrase, {
+            fireblocks = await FireblocksNCWallet(userIdentifier, crossmintService, chain, passphrase, {
                 walletId,
                 deviceId,
             });
         } else {
             const { passphrase } = walletConfig.signer;
-            fireblocks = await FireblocksNCWallet(user.email, crossmintService, chain, passphrase, undefined);
+            fireblocks = await FireblocksNCWallet(userIdentifier, crossmintService, chain, passphrase, undefined);
         }
         return fireblocks.owner;
     } else if (isWeb3AuthSigner(walletConfig.signer)) {

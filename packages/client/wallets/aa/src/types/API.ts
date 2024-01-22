@@ -1,7 +1,9 @@
 import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
+import { UserIdentifier } from "./Config";
+
 export type StoreAbstractWalletInput = {
-    userEmail: string;
+    userIdentifier: UserIdentifier;
     type: string;
     smartContractWalletAddress: string;
     eoaAddress: string;
