@@ -9,13 +9,14 @@ import {
     getUrlProviderByBlockchain,
     getWeb3AuthBlockchain,
 } from "@/blockchain";
-import { FireblocksNCWSigner, UserIdentifier, WalletConfig, Web3AuthSigner } from "@/types";
+import { FireblocksNCWSigner, SignerType, UserIdentifier, WalletConfig, Web3AuthSigner } from "@/types";
 import { parseToken } from "@/utils";
 import type { SmartAccountSigner } from "@alchemy/aa-core";
 import { CHAIN_NAMESPACES } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { Web3Auth } from "@web3auth/single-factor-auth";
-import { convertEthersSignerToAccountSigner, getRPCProviderOwner } from "@zerodev/sdk";
+import { providerToSmartAccountSigner } from "@zerodev/sdk";
+import { convertEthersSignerToAccountSigner, getRPCProviderOwner } from "@zerodev/sdk-legacy";
 import { Signer } from "ethers";
 
 import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
@@ -24,8 +25,9 @@ export async function createOwnerSigner(
     userIdentifier: UserIdentifier,
     chain: BlockchainIncludingTestnet,
     walletConfig: WalletConfig,
-    crossmintService: CrossmintService
-): Promise<SmartAccountSigner> {
+    crossmintService: CrossmintService,
+    signerType?: SignerType
+) {
     if (isFireblocksNCWSigner(walletConfig.signer)) {
         let fireblocks: any;
         if ("walletId" in walletConfig.signer && "deviceId" in walletConfig.signer) {
@@ -66,8 +68,11 @@ export async function createOwnerSigner(
             verifierId: sub,
             idToken: signer.jwt,
         });
-
-        return getRPCProviderOwner(provider);
+        if (signerType === "viem") {
+            return await providerToSmartAccountSigner(provider!);
+        } else {
+            return getRPCProviderOwner(provider);
+        }
     } else {
         return convertEthersSignerToAccountSigner(walletConfig.signer as Signer);
     }

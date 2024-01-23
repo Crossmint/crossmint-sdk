@@ -1,3 +1,3 @@
-export * from "./BaseWallet";
 export * from "./EVMAAWallet";
+export * from "./EVMAAWalletViem";
 export * from "./FireblocksNCWallet";

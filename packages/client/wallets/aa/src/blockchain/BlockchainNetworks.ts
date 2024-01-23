@@ -22,7 +22,7 @@ import {
     ZD_ZKATANA_PROJECT_ID,
     ZKATANA_CHAIN_ID,
 } from "@/utils";
-import { TORUS_LEGACY_NETWORK_TYPE } from "@web3auth/single-factor-auth";
+import { TORUS_NETWORK_TYPE } from "@web3auth/single-factor-auth";
 
 import {
     BLOCKCHAIN_TEST_NET,
@@ -215,7 +215,7 @@ export function getApiUrlByBlockchainType(chain: BlockchainIncludingTestnet): st
     return result;
 }
 
-export function getWeb3AuthBlockchain(chain: BlockchainIncludingTestnet): TORUS_LEGACY_NETWORK_TYPE {
+export function getWeb3AuthBlockchain(chain: BlockchainIncludingTestnet): TORUS_NETWORK_TYPE {
     return isTestnet(chain) ? WEB3_AUTH_TESTNET : WEB3_AUTH_MAINNET;
 }
 
