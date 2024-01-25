@@ -37,7 +37,7 @@
             "path": "packages/client/ui/vue-ui"
         },
         {
-            "name": "✅ @crossmint/verify-credentials",
+            "name": "✅ @crossmint/client-sdk-verifiable-credentials",
             "path": "packages/client/verifiable-credentials"
         },
         {
