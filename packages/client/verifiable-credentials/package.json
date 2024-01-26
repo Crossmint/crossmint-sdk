@@ -24,7 +24,7 @@
     "license": "Apache-2.0",
     "main": "./dist/index.cjs",
     "module": "./dist/index.js",
-    "name": "@crossmint/verify-credentials",
+    "name": "@crossmint/client-sdk-verifiable-credentials",
     "publishConfig": {
         "access": "public"
     },
