@@ -9,7 +9,7 @@ import { KernelAccountClient, createKernelAccount } from "@zerodev/sdk";
 import { signerToSessionKeyValidator } from "@zerodev/session-key";
 import { BigNumber } from "ethers";
 import { SmartAccountSigner } from "permissionless/accounts/types";
-import { SignableMessage, TypedDataDefinition, createPublicClient } from "viem";
+import { SignableMessage, TypedDataDefinition, createPublicClient, publicActions } from "viem";
 
 import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
@@ -79,6 +79,11 @@ export class EVMAAWallet {
 
     async getNFTs() {
         return this.crossmintService.fetchNFTs(await this.getAddress());
+    }
+
+    getPublicClient() {
+        const publicClient = this.kernelClient.extend(publicActions)
+        return publicClient;
     }
 
     async setCustodianForTokens(tokenType?: TokenType, custodian?: Custodian) {
