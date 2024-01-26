@@ -1,162 +1,84 @@
+import { CrossmintService } from "@/api";
 import { logError, logInfo } from "@/services/logging";
-import { TransferError, errorToJSON } from "@/utils";
-import { TransactionError } from "@/utils";
-import type { SignTypedDataParams } from "@alchemy/aa-core";
-import { verifyMessage } from "@ambire/signature-validator";
+import { GenerateSignatureDataInput } from "@/types";
+import { errorToJSON } from "@/utils";
 import type { Deferrable } from "@ethersproject/properties";
 import { type TransactionRequest, type TransactionResponse } from "@ethersproject/providers";
-import {
-    ERC165SessionKeyProvider,
-    KernelSmartContractAccount,
-    KillSwitchProvider,
-    ValidatorMode,
-    ZeroDevAccountSigner,
-    ZeroDevEthersProvider,
-    constants,
-    convertEthersSignerToAccountSigner,
-} from "@zerodev/sdk-legacy";
-import { ethers } from "ethers";
+import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
+import { KernelAccountClient, createKernelAccount } from "@zerodev/sdk";
+import { signerToSessionKeyValidator } from "@zerodev/session-key";
 import { BigNumber } from "ethers";
-import { getFunctionSelector } from "viem";
+import { SmartAccountSigner } from "permissionless/accounts/types";
+import { SignableMessage, TypedDataDefinition, createPublicClient } from "viem";
 
-import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
+import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
-import erc20 from "../../ABI/ERC20.json";
-import erc721 from "../../ABI/ERC721.json";
-import erc1155 from "../../ABI/ERC1155.json";
-import { CrossmintService } from "../../api/CrossmintService";
-import { GenerateSignatureDataInput } from "../../types/API";
-import {
-    getBlockchainByChainId,
-    getUrlProviderByBlockchain,
-    getZeroDevProjectIdByBlockchain,
-} from "../BlockchainNetworks";
 import { Custodian } from "../plugins";
-import { TokenType } from "../token/Tokens";
-import { EVMToken, Token } from "../token/Tokens";
-import { IBaseWallet } from "./IBaseWallet";
+import { Token, TokenType } from "../token/Tokens";
 
-export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchainIncludingTestnet>
-    implements IBaseWallet
-{
+export class EVMAAWallet {
     private sessionKeySignerAddress?: string;
-    private signer: ZeroDevAccountSigner<"ECDSA">;
-    private provider: ZeroDevEthersProvider<"ECDSA">;
+    private kernelClient: KernelAccountClient;
+    private smartAccountSigner: SmartAccountSigner;
     crossmintService: CrossmintService;
-    chain: B;
+    chain: BlockchainIncludingTestnet;
 
-    constructor(provider: ZeroDevEthersProvider<"ECDSA">, crossmintService: CrossmintService, chain: B) {
+    constructor(
+        kernelClient: KernelAccountClient,
+        chain: BlockchainIncludingTestnet,
+        crossmintService: CrossmintService,
+        smartAccountSigner: SmartAccountSigner
+    ) {
         this.chain = chain;
+        this.kernelClient = kernelClient;
         this.crossmintService = crossmintService;
-        this.signer = provider.getAccountSigner();
-        this.provider = provider;
+        this.smartAccountSigner = smartAccountSigner;
     }
 
-    async getAddress() {
+    async getAddress(): Promise<string> {
+        return this.kernelClient.account!.address;
+    }
+
+    async signMessage(message: SignableMessage): Promise<string> {
         try {
-            return await this.signer.getAddress();
-        } catch (error) {
-            logError("[GET_ADDRESS] - ERROR", {
-                error: errorToJSON(error),
-                signer: this.signer,
+            return await this.kernelClient.account!.signMessage({
+                message: message as SignableMessage,
             });
-            throw new Error(`Error getting address. If this error persists, please contact support.`);
-        }
-    }
-
-    async signMessage(message: Uint8Array | string) {
-        try {
-            return await this.signer.signMessageWith6492(message);
         } catch (error) {
             logError("[SIGN_MESSAGE] - ERROR", {
                 error: errorToJSON(error),
-                signer: this.signer,
+                signer: this.smartAccountSigner,
             });
             throw new Error(`Error signing message. If this error persists, please contact support.`);
         }
     }
 
-    async signTypedData(params: SignTypedDataParams) {
+    async signTypedData(params: TypedDataDefinition): Promise<string> {
         try {
-            return await this.signer.signTypedData(params);
+            return (await this.kernelClient.account!.signTypedData(params)) as string;
         } catch (error) {
             logError("[SIGN_TYPED_DATA] - ERROR", {
                 error: errorToJSON(error),
-                signer: this.signer,
+                signer: this.smartAccountSigner,
             });
             throw new Error(`Error signing typed data. If this error persists, please contact support.`);
         }
     }
 
     async transfer(toAddress: string, token: Token, quantity?: number, amount?: BigNumber): Promise<string> {
-        const evmToken = token as EVMToken;
-        const contractAddress = evmToken.contractAddress;
-
-        try {
-            let transaction;
-
-            const contract = new ethers.Contract(
-                contractAddress,
-                amount !== undefined ? erc20 : quantity !== undefined ? erc1155 : erc721,
-                this.provider
-            );
-            const contractWithSigner = contract.connect(this.signer);
-
-            if (amount !== undefined) {
-                // Transfer ERC20
-                transaction = await contractWithSigner.functions.transfer(toAddress, amount);
-            } else if (quantity !== undefined) {
-                // Transfer ERC1155
-                transaction = await contractWithSigner.functions.safeTransferFrom(
-                    await this.getAddress(),
-                    toAddress,
-                    evmToken.tokenId,
-                    quantity,
-                    "0x00"
-                );
-            } else {
-                // Transfer ERC721
-                transaction = await contractWithSigner.functions.transferFrom(
-                    await this.getAddress(),
-                    toAddress,
-                    evmToken.tokenId
-                );
-            }
-
-            const receipt = await transaction!.wait();
-            if (receipt.status === 1) {
-                return transaction!.hash;
-            } else {
-                throw new TransferError(
-                    `Error transferring token ${evmToken.tokenId}${
-                        !transaction || !transaction.hash ? "" : ` with transaction hash ${transaction.hash}`
-                    }`
-                );
-            }
-        } catch (error) {
-            throw new TransferError(`Error transferring token ${evmToken.tokenId}`);
-        }
+        throw new Error(`Error method not implemented yet.`);
     }
 
     async sendTransaction(transaction: Deferrable<TransactionRequest>): Promise<TransactionResponse> {
-        try {
-            return await this.signer.sendTransaction(transaction);
-        } catch (error) {
-            throw new TransactionError(`Error sending transaction: ${error}`);
-        }
-    }
-
-    async verifyMessage(message: string, signature: string) {
-        return verifyMessage({
-            provider: this.provider,
-            signer: await this.getAddress(),
-            message,
-            signature,
-        });
+        throw new Error(`Error method not implemented yet.`);
     }
 
     setSessionKeySignerAddress(sessionKeySignerAddress: string) {
         this.sessionKeySignerAddress = sessionKeySignerAddress;
+    }
+
+    async getNFTs() {
+        return this.crossmintService.fetchNFTs(await this.getAddress());
     }
 
     async setCustodianForTokens(tokenType?: TokenType, custodian?: Custodian) {
@@ -165,44 +87,37 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
                 tokenType,
                 custodian,
             });
-            const selector = getFunctionSelector("transferERC721Action(address, uint256, address)");
 
-            const rpcProvider = getUrlProviderByBlockchain(this.chain);
-            const jsonRpcProvider = new ethers.providers.JsonRpcProvider(rpcProvider);
-            const sessionKeySigner = jsonRpcProvider.getSigner(this.sessionKeySignerAddress);
+            const publicClient = createPublicClient({
+                transport: this.kernelClient.account!.client!.transport["config"],
+            });
 
-            const erc165SessionKeyProvider = await ERC165SessionKeyProvider.init({
-                projectId: getZeroDevProjectIdByBlockchain(this.chain), // ZeroDev projectId
-                sessionKey: convertEthersSignerToAccountSigner(sessionKeySigner), // Session Key signer
-                sessionKeyData: {
-                    selector, // Function selector in the executor contract to execute
-                    erc165InterfaceId: "0x80ac58cd", // Supported interfaceId of the contract the executor calls
-                    validAfter: 0,
-                    validUntil: 0,
-                    addressOffset: 16, // Address offest of the contract called by the executor in the calldata
-                },
-                opts: {
-                    accountConfig: {
-                        accountAddress: (await this.getAddress()) as `0x${string}`,
-                    },
-                    validatorConfig: {
-                        mode: ValidatorMode.plugin,
-                        executor: constants.TOKEN_ACTION, // Address of the executor contract
-                        selector, // Function selector in the executor contract to execute
-                    },
+            const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
+                signer: this.kernelClient.account!,
+            });
+
+            const masterAccount = await createKernelAccount(publicClient, {
+                plugins: {
+                    validator: ecdsaValidator,
                 },
             });
-            const enableSig = await this.provider
-                .getAccountProvider()
-                .getValidator()
-                .approveExecutor(
-                    (await this.getAddress()) as `0x${string}`,
-                    selector,
-                    constants.TOKEN_ACTION,
-                    0,
-                    0,
-                    erc165SessionKeyProvider.getValidator()
-                );
+            console.log("Account address:", masterAccount.address);
+            const sessionKeyValidator = await signerToSessionKeyValidator(publicClient, {
+                signer: this.kernelClient.account!,
+                /*validatorData: {
+                  // Set session key params
+                },*/
+            });
+            const sessionKeyAccount = await createKernelAccount(publicClient, {
+                plugins: {
+                    defaultValidator: ecdsaValidator,
+                    validator: sessionKeyValidator,
+                },
+            });
+
+            const enableSig = await sessionKeyAccount.kernelPluginManager.getPluginEnableSignature(
+                this.kernelClient.account!.address
+            );
 
             const generateSessionKeyDataInput: GenerateSignatureDataInput = {
                 sessionKeyData: enableSig,
@@ -224,141 +139,5 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
             });
             throw new Error(`Error setting custodian for tokens. If this error persists, please contact support.`);
         }
-    }
-
-    async setCustodianForKillswitch(custodian?: Custodian | undefined) {
-        try {
-            logInfo("[SET_CUSTODIAN_FOR_KILLSWITCH] - INIT", {
-                custodian,
-            });
-            const selectorKs = getFunctionSelector("toggleKillSwitch()");
-
-            const rpcProvider = getUrlProviderByBlockchain(this.chain);
-            const jsonRpcProvider = new ethers.providers.JsonRpcProvider(rpcProvider);
-            const sessionKeySigner = jsonRpcProvider.getSigner(this.sessionKeySignerAddress);
-
-            const blockerKillSwitchProvider = await KillSwitchProvider.init({
-                projectId: getZeroDevProjectIdByBlockchain(this.chain), // zeroDev projectId
-                guardian: convertEthersSignerToAccountSigner(sessionKeySigner), // Guardian signer
-                delaySeconds: 1000, // Delay in seconds
-                opts: {
-                    accountConfig: {
-                        accountAddress: (await this.getAddress()) as `0x${string}`,
-                    },
-                    validatorConfig: {
-                        mode: ValidatorMode.plugin,
-                        executor: constants.KILL_SWITCH_ACTION, // Address of the executor contract
-                        selector: selectorKs, // Function selector in the executor contract to toggleKillSwitch()
-                    },
-                },
-            });
-            const enableSig = await this.provider
-                .getAccountProvider()
-                .getValidator()
-                .approveExecutor(
-                    (await this.getAddress()) as `0x${string}`,
-                    selectorKs,
-                    constants.KILL_SWITCH_ACTION,
-                    0,
-                    0,
-                    blockerKillSwitchProvider.getValidator()
-                );
-
-            const generateKillSwitchDataInput: GenerateSignatureDataInput = {
-                killSwitchData: enableSig,
-                smartContractWalletAddress: await this.getAddress(),
-                chain: this.chain,
-                version: 0,
-            };
-
-            await this.crossmintService.generateChainData(generateKillSwitchDataInput);
-            logInfo("[SET_CUSTODIAN_FOR_KILLSWITCH] - FINISH", {
-                custodian,
-            });
-        } catch (error) {
-            logError("[SET_CUSTODIAN_FOR_KILLSWITCH] - ERROR", {
-                error: errorToJSON(error),
-                custodian,
-            });
-            throw new Error(`Error setting custodian for killswitch. If this error persists, please contact support.`);
-        }
-    }
-
-    async upgradeVersion() {
-        try {
-            logInfo("[UPGRADE_VERSION] - INIT", {});
-            const sessionKeys = await this.crossmintService!.createSessionKey(await this.getAddress());
-            if (sessionKeys == null) {
-                throw new Error("Abstract Wallet doesn't have a session key signer address");
-            }
-
-            const latestVersion = await this.crossmintService.checkVersion(await this.getAddress());
-            if (latestVersion.isUpToDate) {
-                return;
-            }
-
-            const versionInfo = latestVersion.latestVersion;
-            if (versionInfo == null) {
-                throw new Error("New version info not found");
-            }
-
-            const abstractAddress = await this.getAddress();
-
-            let jsonRpcProviderUrl = versionInfo.providerUrl;
-            if (jsonRpcProviderUrl == null && versionInfo.chainId) {
-                const blockchainType = getBlockchainByChainId(versionInfo.chainId);
-                jsonRpcProviderUrl = getUrlProviderByBlockchain(blockchainType!);
-            }
-
-            const jsonRpcProvider = new ethers.providers.JsonRpcProvider(jsonRpcProviderUrl);
-            const sessionKeySigner = jsonRpcProvider.getSigner(sessionKeys.sessionKeySignerAddress);
-
-            const selector = getFunctionSelector(versionInfo.method);
-
-            const erc165SessionKeyProvider = await ERC165SessionKeyProvider.init({
-                projectId: getZeroDevProjectIdByBlockchain(this.chain),
-                sessionKey: convertEthersSignerToAccountSigner(sessionKeySigner),
-                sessionKeyData: {
-                    selector: versionInfo.selector,
-                    erc165InterfaceId: versionInfo.erc165InterfaceId,
-                    validAfter: versionInfo.validAfter,
-                    validUntil: versionInfo.validUntil,
-                    addressOffset: versionInfo.addressOffset,
-                },
-                opts: {
-                    accountConfig: {
-                        accountAddress: abstractAddress as `0x${string}`,
-                    },
-                    validatorConfig: {
-                        mode: versionInfo.mode,
-                        executor: versionInfo.executor,
-                        selector: selector,
-                    },
-                },
-            });
-
-            const enableSig = await (this.provider.accountProvider.account as KernelSmartContractAccount)
-                .getValidator()
-                .approveExecutor(
-                    abstractAddress as `0x${string}`,
-                    versionInfo.selector,
-                    versionInfo.tokenAction,
-                    0,
-                    0,
-                    erc165SessionKeyProvider.getValidator()
-                );
-
-            await this.crossmintService.updateWallet(await this.getAddress(), enableSig, 1);
-            logInfo("[UPGRADE_VERSION - FINISH", {});
-        } catch (error) {
-            logError("[UPGRADE_VERSION] - ERROR", {
-                error: errorToJSON(error),
-            });
-            throw new Error(`Error upgrading version. If this error persists, please contact support.`);
-        }
-    }
-
-    async getNFTs() {
-        return this.crossmintService.fetchNFTs(await this.getAddress());
     }
 }

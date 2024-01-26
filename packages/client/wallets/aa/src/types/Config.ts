@@ -1,4 +1,4 @@
-import { ethers } from "ethers";
+import { IProvider } from "@web3auth/base";
 
 export type CrossmintAASDKInitParams = {
     apiKey: string;
@@ -15,8 +15,6 @@ export type UserIdentifier =
     | { type: "email"; email: string }
     | { type: "phoneNumber"; phoneNumber: string };
 
-export type SignerType = "ethers" | "viem";
-
 export type Web3AuthSigner = {
     type: "WEB3_AUTH";
     clientId: string;
@@ -24,18 +22,12 @@ export type Web3AuthSigner = {
     jwt: string;
 };
 
-type FireblocksNCWSignerBase = {
-    type: "FIREBLOCKS_NCW";
-    passphrase: string;
+export type Provider = {
+    type: "PROVIDER";
+    provider: IProvider;
 };
-export type FireblocksNCWSigner =
-    | FireblocksNCWSignerBase
-    | (FireblocksNCWSignerBase & {
-          walletId: string;
-          deviceId: string;
-      });
 
-type Signer = FireblocksNCWSigner | ethers.Signer | Web3AuthSigner;
+type Signer = Web3AuthSigner | IProvider;
 
 export interface WalletConfig {
     signer: Signer;
