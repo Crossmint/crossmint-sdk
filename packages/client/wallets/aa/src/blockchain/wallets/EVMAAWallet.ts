@@ -1,4 +1,5 @@
 import { logError, logInfo } from "@/services/logging";
+import { SignerType } from "@/types";
 import { errorToJSON } from "@/utils";
 import { verifyMessage } from "@ambire/signature-validator";
 import {
@@ -11,7 +12,7 @@ import {
     convertEthersSignerToAccountSigner,
 } from "@zerodev/sdk";
 import { ethers } from "ethers";
-import { getFunctionSelector } from "viem";
+import { createWalletClient, custom, getFunctionSelector, publicActions } from "viem";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
@@ -20,11 +21,13 @@ import { GenerateSignatureDataInput } from "../../types/API";
 import {
     getBlockchainByChainId,
     getUrlProviderByBlockchain,
+    getViemNetwork,
     getZeroDevProjectIdByBlockchain,
 } from "../BlockchainNetworks";
 import { Custodian } from "../plugins";
 import { TokenType } from "../token/Tokens";
 import BaseWallet from "./BaseWallet";
+import { CustomEip1193Bridge } from "./CustomBridge";
 
 export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchainIncludingTestnet> extends BaseWallet {
     private sessionKeySignerAddress?: string;
@@ -33,6 +36,31 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
     constructor(provider: ZeroDevEthersProvider<"ECDSA">, crossmintService: CrossmintService, chain: B) {
         super(provider, crossmintService);
         this.chain = chain;
+    }
+
+    async getSigner(type: SignerType) {
+        switch (type) {
+            case "ethers":
+                return this.provider.getSigner();
+            case "viem":
+                const customeip1193Provider = new CustomEip1193Bridge(this.provider.getAccountSigner(), this.provider);
+                const customTransport = custom({
+                    async request({ method, params }) {
+                        return customeip1193Provider.send(method, params);
+                    },
+                });
+                const walletClient = createWalletClient({
+                    account: await this.getAddress(),
+                    chain: getViemNetwork(this.chain),
+                    transport: customTransport,
+                }).extend(publicActions);
+                return walletClient;
+            default:
+                logError("[GET_SIGNER] - ERROR", {
+                    error: errorToJSON("Invalid signer type"),
+                });
+                throw new Error("Invalid signer type");
+        }
     }
 
     async verifyMessage(message: string, signature: string) {
