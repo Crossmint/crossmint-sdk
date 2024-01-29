@@ -1,19 +1,15 @@
 import { ZeroDevAccountSigner, ZeroDevEthersProvider } from "@zerodev/sdk";
 import { ethers } from "ethers";
-export class CustomEip1193Bridge {
+export class ZeroDevEip1193Bridge {
     readonly signer: ZeroDevAccountSigner<"ECDSA">;
     readonly provider: ZeroDevEthersProvider<"ECDSA">;
 
-    constructor(signer:ZeroDevAccountSigner<"ECDSA">, provider: ZeroDevEthersProvider<"ECDSA">) {
+    constructor(signer: ZeroDevAccountSigner<"ECDSA">, provider: ZeroDevEthersProvider<"ECDSA">) {
         this.signer = signer;
         this.provider = provider;
     }
 
     async send(method: string, params?: Array<any>): Promise<any> {
-        function throwUnsupported(message: string): never {
-            throw new Error('Error throwUnsupported: '+ message );
-        }
-
         let coerce = (value: any) => value;
 
         switch (method) {
@@ -21,14 +17,7 @@ export class CustomEip1193Bridge {
                  const result = await this.provider.getGasPrice();
                  return result.toHexString();
             }
-            case "eth_accounts": {
-                const result = [ ];
-                if (this.signer) {
-                    const address = await this.signer.getAddress();
-                    result.push(address);
-                }
-                return result;
-            }
+            case "eth_accounts":
             case "eth_requestAccounts": {
                const result = [ ];
                if (this.signer) {
@@ -45,8 +34,8 @@ export class CustomEip1193Bridge {
                 return result.chainId;
             }
             case "eth_getBalance": {
-                const result = await this.provider.getBalance(params![0], params![1]);
-                return result.toHexString();
+                const balance = await this.provider.getBalance(params![0], params![1]);
+                return balance.toHexString();
             }
             case "eth_getStorageAt": {
                 return this.provider.getStorageAt(params![0], params![1], params![2]);
@@ -68,11 +57,12 @@ export class CustomEip1193Bridge {
                 return await this.provider.sendTransaction(params![0]);
             }
             case "eth_call": {
+                delete params![0].from;
                 const req = ethers.providers.JsonRpcProvider.hexlifyTransaction(params![0]);
                 return await this.provider.call(req, params![1]);
             }
             case "estimateGas": {
-                if (params![1] && params![1] !== "latest") {
+                if (params![1] != null && params![1] !== "latest") {
                     throwUnsupported("estimateGas does not support blockTag");
                 }
 
@@ -81,10 +71,9 @@ export class CustomEip1193Bridge {
                 return result.toHexString();
             }
 
-            // @TOOD: Transform? No uncles?
             case "eth_getBlockByHash":
             case "eth_getBlockByNumber": {
-                if (params![1]) {
+                if (params![1] != null) {
                     return await this.provider.getBlockWithTransactions(params![0]);
                 } else {
                     return await this.provider.getBlock(params![0]);
@@ -98,7 +87,7 @@ export class CustomEip1193Bridge {
             }
 
             case "eth_sign": {
-                if (!this.signer) {
+                if (this.signer == null) {
                     return throwUnsupported("eth_sign requires an account");
                 }
 
@@ -111,7 +100,7 @@ export class CustomEip1193Bridge {
             }
 
             case "eth_signTransaction": {
-                if (!this.signer) {
+                if (this.signer == null) {
                     throwUnsupported("eth_signTransaction requires a signer");
                 }
                 const transaction = params![0];
@@ -119,17 +108,14 @@ export class CustomEip1193Bridge {
                 transaction.maxPriorityFeePerGas = `0x${transaction.maxPriorityFeePerGas.toString(16)}`;
                 transaction.maxFeePerGas = `0x${transaction.maxFeePerGas.toString(16)}`;
                 transaction.gasLimit = `0x${transaction.gas.toString(16)}`;
-                transaction.chainId = transaction.chainId;
                 transaction.type = 2;
                 delete transaction.gas;
-                // Sign the transaction with the signer
                 const signedTransaction = await this.signer.signTransaction(transaction);
-                // Return the serialized, signed transaction
                 return signedTransaction;
             }
 
            case "personal_sign": {
-               if (!this.signer) {
+               if (this.signer == null) {
                    throwUnsupported("personal_sign requires a signer");
                }
 
@@ -140,20 +126,16 @@ export class CustomEip1193Bridge {
            }
 
             case "eth_sendTransaction": {
-                if (!this.signer) {
+                if (this.signer == null) {
                     return throwUnsupported("eth_sign requires an account");
                 }
-
+                delete params![0].from;
+                delete params![0].gas;
                 const req = ethers.providers.JsonRpcProvider.hexlifyTransaction(params![0]);
+                req.gasLimit = req.gas;
+                delete req.gas;
                 const tx = await this.signer.sendTransaction(req);
                 return tx.hash;
-            }
-
-            case "eth_getUncleCountByBlockHash":
-            case "eth_getUncleCountByBlockNumber":
-            {
-                coerce = ethers.utils.hexValue;
-                break;
             }
 
             case "eth_getTransactionByBlockHashAndIndex":
@@ -167,16 +149,19 @@ export class CustomEip1193Bridge {
             case "eth_getFilterChanges":
             case "eth_getFilterLogs":
             case "eth_getLogs":
+                console.log(`${method} not supported`)
                 break;
         }
 
-        // If our provider supports send, maybe it can do a better job?
-        if ((<any>(this.provider)).send) {
-            const result = await (<any>(this.provider)).send(method, params);
+        if (this.provider.send) {
+            const result = await this.provider.send(method, params ?? []);
             return coerce(result);
         }
 
         return throwUnsupported(`unsupported method: ${ method }`);
     }
+}
 
+function throwUnsupported(message: string): never {
+    throw new Error('Error throwUnsupported: '+ message );
 }

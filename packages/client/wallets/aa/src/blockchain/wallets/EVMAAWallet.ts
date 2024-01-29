@@ -12,7 +12,7 @@ import {
     convertEthersSignerToAccountSigner,
 } from "@zerodev/sdk";
 import { ethers } from "ethers";
-import { createWalletClient, custom, getFunctionSelector, publicActions } from "viem";
+import { WalletClient, createWalletClient, custom, getFunctionSelector, publicActions } from "viem";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
@@ -27,7 +27,12 @@ import {
 import { Custodian } from "../plugins";
 import { TokenType } from "../token/Tokens";
 import BaseWallet from "./BaseWallet";
-import { CustomEip1193Bridge } from "./CustomBridge";
+import { ZeroDevEip1193Bridge } from "./ZeroDevEip1193Bridge";
+
+type SignerMap = {
+    ethers: ethers.Signer;
+    viem: WalletClient;
+};
 
 export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchainIncludingTestnet> extends BaseWallet {
     private sessionKeySignerAddress?: string;
@@ -38,12 +43,12 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
         this.chain = chain;
     }
 
-    async getSigner(type: SignerType) {
+    async getSigner<Type extends SignerType = SignerType>(type: Type): Promise<SignerMap[Type]> {
         switch (type) {
             case "ethers":
-                return this.provider.getSigner();
+                return this.provider.getSigner() as any;
             case "viem":
-                const customeip1193Provider = new CustomEip1193Bridge(this.provider.getAccountSigner(), this.provider);
+                const customeip1193Provider = new ZeroDevEip1193Bridge(this.provider.getAccountSigner(), this.provider);
                 const customTransport = custom({
                     async request({ method, params }) {
                         return customeip1193Provider.send(method, params);
@@ -54,7 +59,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
                     chain: getViemNetwork(this.chain),
                     transport: customTransport,
                 }).extend(publicActions);
-                return walletClient;
+                return walletClient as any;
             default:
                 logError("[GET_SIGNER] - ERROR", {
                     error: errorToJSON("Invalid signer type"),
