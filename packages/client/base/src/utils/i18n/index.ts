@@ -6,6 +6,7 @@ import enUS from "./dictionaries/enUS";
 import esES from "./dictionaries/esES";
 import frFR from "./dictionaries/frFR";
 import itIT from "./dictionaries/itIT";
+import jaJP from "./dictionaries/jaJP";
 import koKR from "./dictionaries/koKR";
 import ptPT from "./dictionaries/ptPT";
 import ruRU from "./dictionaries/ruRU";
@@ -21,6 +22,7 @@ const localeMap = {
     "es-ES": esES,
     "fr-FR": frFR,
     "it-IT": itIT,
+    "ja-JP": jaJP,
     "ko-KR": koKR,
     "pt-PT": ptPT,
     "zh-CN": zhCN,
