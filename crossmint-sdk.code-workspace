@@ -41,6 +41,10 @@
             "path": "packages/client/verifiable-credentials"
         },
         {
+            "name": "🔑 @crossmint/client-sdk-passkeys",
+            "path": "packages/client/passkeys"
+        },
+        {
             "name": "🏁 Starters",
             "path": "packages/client/starters"
         }

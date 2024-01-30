@@ -1,0 +1,47 @@
+{
+    "author": "Paella Labs Inc",
+    "dependencies": {
+        "@lit-protocol/constants": "3.0.29",
+        "@lit-protocol/lit-auth-client": "3.0.29",
+        "@lit-protocol/lit-node-client": "3.0.29",
+        "@lit-protocol/auth-helpers": "3.0.29",
+        "@lit-protocol/pkp-ethers": "3.0.29",
+        "@lit-protocol/types": "3.0.29",
+        "@crossmint/common-sdk-base": "0.0.3",
+        "@spruceid/siwe-parser": "^2.0.2",
+        "buffer": "^6.0.3",
+        "next": "14.0.4",
+        "react": "^18",
+        "react-dom": "^18",
+        "readable-stream": "^4.5.2",
+        "siwe": "^2.1.4"
+    },
+    "devDependencies": {
+        "@crossmint/client-sdk-base": "1.1.4"
+    },
+    "exports": {
+        "import": "./dist/index.js",
+        "require": "./dist/index.cjs"
+    },
+    "files": [
+        "dist",
+        "src",
+        "LICENSE"
+    ],
+    "license": "Apache-2.0",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "name": "@crossmint/client-sdk-passkeys",
+    "publishConfig": {
+        "access": "public"
+    },
+    "repository": "https://github.com/Crossmint/crossmint-sdk",
+    "scripts": {
+        "build": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
+        "clean": "shx rm -rf dist/*"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "types": "./dist/index.d.ts",
+    "version": "1.2.1"
+}
