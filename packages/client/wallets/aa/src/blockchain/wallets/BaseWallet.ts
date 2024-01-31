@@ -1,63 +1,17 @@
-import { logError } from "@/services/logging";
-import { TransactionError, TransferError, errorToJSON } from "@/utils";
-import type { SignTypedDataParams } from "@alchemy/aa-core";
-import type { Deferrable } from "@ethersproject/properties";
-import { type TransactionRequest, type TransactionResponse } from "@ethersproject/providers";
-import { ZeroDevAccountSigner, ZeroDevEthersProvider } from "@zerodev/sdk";
-import { BigNumber, ethers } from "ethers";
+import type { KernelSmartAccount } from "@zerodev/sdk";
 
-import erc20 from "../../ABI/ERC20.json";
-import erc721 from "../../ABI/ERC721.json";
-import erc1155 from "../../ABI/ERC1155.json";
 import { CrossmintService } from "../../api/CrossmintService";
-import { EVMToken, Token } from "../token/Tokens";
 
-class BaseWallet extends ZeroDevAccountSigner<"ECDSA"> {
-    private signer: ZeroDevAccountSigner<"ECDSA">;
+class BaseWallet {
+    masterAccount: KernelSmartAccount;
     crossmintService: CrossmintService;
 
-    constructor(provider: ZeroDevEthersProvider<"ECDSA">, crossmintService: CrossmintService) {
-        super(provider);
+    constructor(masterAccount: KernelSmartAccount, crossmintService: CrossmintService) {
+        this.masterAccount = masterAccount;
         this.crossmintService = crossmintService;
-        this.signer = provider.getAccountSigner();
     }
 
-    async getAddress() {
-        try {
-            return await this.signer.getAddress();
-        } catch (error) {
-            logError("[GET_ADDRESS] - ERROR", {
-                error: errorToJSON(error),
-                signer: this.signer,
-            });
-            throw new Error(`Error getting address. If this error persists, please contact support.`);
-        }
-    }
-
-    async signMessage(message: Uint8Array | string) {
-        try {
-            return await this.signer.signMessageWith6492(message);
-        } catch (error) {
-            logError("[SIGN_MESSAGE] - ERROR", {
-                error: errorToJSON(error),
-                signer: this.signer,
-            });
-            throw new Error(`Error signing message. If this error persists, please contact support.`);
-        }
-    }
-
-    async signTypedData(params: SignTypedDataParams) {
-        try {
-            return await this.signer.signTypedData(params);
-        } catch (error) {
-            logError("[SIGN_TYPED_DATA] - ERROR", {
-                error: errorToJSON(error),
-                signer: this.signer,
-            });
-            throw new Error(`Error signing typed data. If this error persists, please contact support.`);
-        }
-    }
-
+    /*
     async transfer(toAddress: string, token: Token, quantity?: number, amount?: BigNumber): Promise<string> {
         const evmToken = token as EVMToken;
         const contractAddress = evmToken.contractAddress;
@@ -114,7 +68,7 @@ class BaseWallet extends ZeroDevAccountSigner<"ECDSA"> {
         } catch (error) {
             throw new TransactionError(`Error sending transaction: ${error}`);
         }
-    }
+    }*/
 }
 
 export default BaseWallet;

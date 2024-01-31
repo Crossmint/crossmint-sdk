@@ -1,8 +1,11 @@
 import { CrossmintService } from "@/api";
-import { EVMAAWallet, getChainIdByBlockchain, getZeroDevProjectIdByBlockchain, isEVMBlockchain } from "@/blockchain";
+import { EVMAAWallet, getChainIdByBlockchain, isEVMBlockchain } from "@/blockchain";
 import type { CrossmintAASDKInitParams, WalletConfig } from "@/types";
 import { CURRENT_VERSION, WalletSdkError, ZERO_DEV_TYPE, createOwnerSigner, errorToJSON } from "@/utils";
-import { ZeroDevEthersProvider } from "@zerodev/sdk";
+import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
+import { createKernelAccount } from "@zerodev/sdk";
+import { createPublicClient, http } from "viem";
+import { polygonMumbai } from "viem/chains";
 
 import { BlockchainIncludingTestnet, UserIdentifierParams } from "@crossmint/common-sdk-base";
 
@@ -34,25 +37,28 @@ export class CrossmintAASDK {
             const userIdentifier = parseUserIdentifier(user);
             const owner = await createOwnerSigner(userIdentifier, chain, walletConfig, this.crossmintService);
 
-            const address = await owner.getAddress();
+            const address = owner.address;
 
-            const zDevProvider = await ZeroDevEthersProvider.init("ECDSA", {
-                projectId: getZeroDevProjectIdByBlockchain(chain),
-                owner,
-                opts: {
-                    paymasterConfig: {
-                        policy: "VERIFYING_PAYMASTER",
-                    },
-                },
+            const publicClient = createPublicClient({
+                chain: polygonMumbai,
+                transport: http(process.env.BUNDLER_RPC),
+            });
+            const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
+                signer: owner,
             });
 
+            const masterAccount = await createKernelAccount(publicClient, {
+                plugins: {
+                    validator: ecdsaValidator,
+                },
+            });
             if (!isEVMBlockchain(chain)) {
                 throw new WalletSdkError(`The blockchain ${chain} is still not supported`);
             }
 
-            const evmAAWallet = new EVMAAWallet(zDevProvider, this.crossmintService, chain);
+            const evmAAWallet = new EVMAAWallet(masterAccount, this.crossmintService, chain);
 
-            const abstractAddress = await evmAAWallet.getAddress();
+            const abstractAddress = masterAccount.address;
             const { sessionKeySignerAddress } = await this.crossmintService.createSessionKey(abstractAddress);
 
             evmAAWallet.setSessionKeySignerAddress(sessionKeySignerAddress);

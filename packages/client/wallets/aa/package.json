@@ -6,13 +6,17 @@
         "@datadog/browser-logs": "4.42.2",
         "@fireblocks/ncw-js-sdk": "10.0.1",
         "@web3auth/base": "^6.0.1-alpha.0",
-        "@web3auth/ethereum-provider": "^6.1.7",
-        "@web3auth/single-factor-auth": "^6.5.0",
-        "@zerodev/sdk": "4.5.2",
+        "@web3auth/ethereum-provider": "^7.3.1",
+        "@web3auth/single-factor-auth": "^7.3.0",
+        "@zerodev/sdk": "5.0.1",
+        "@zerodev/ecdsa-validator": "5.0.2",
+        "@zerodev/session-key": "5.0.1",
         "ethers": "5.7.2",
-        "viem": "1.5.3",
+        "viem": "^2.0.0",
+        "permissionless": "0.0.31",
         "libphonenumber-js": "1.10.44",
-        "email-validator": "2.0.4"
+        "email-validator": "2.0.4",
+        "web3": "4.4.0"
     },
     "exports": {
         "import": "./dist/index.js",

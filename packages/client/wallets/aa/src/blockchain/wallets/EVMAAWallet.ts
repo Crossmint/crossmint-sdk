@@ -1,53 +1,25 @@
-import { logError, logInfo } from "@/services/logging";
-import { errorToJSON } from "@/utils";
-import { verifyMessage } from "@ambire/signature-validator";
-import {
-    ERC165SessionKeyProvider,
-    KernelSmartContractAccount,
-    KillSwitchProvider,
-    ValidatorMode,
-    ZeroDevEthersProvider,
-    constants,
-    convertEthersSignerToAccountSigner,
-} from "@zerodev/sdk";
-import { ethers } from "ethers";
-import { getFunctionSelector } from "viem";
+import { KernelSmartAccount } from "@zerodev/sdk";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 import { CrossmintService } from "../../api/CrossmintService";
-import { GenerateSignatureDataInput } from "../../types/API";
-import {
-    getBlockchainByChainId,
-    getUrlProviderByBlockchain,
-    getZeroDevProjectIdByBlockchain,
-} from "../BlockchainNetworks";
-import { Custodian } from "../plugins";
-import { TokenType } from "../token/Tokens";
-import BaseWallet from "./BaseWallet";
 
-export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchainIncludingTestnet> extends BaseWallet {
+export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchainIncludingTestnet> {
     private sessionKeySignerAddress?: string;
     chain: B;
+    masterAccount: KernelSmartAccount;
+    crossmintService: CrossmintService;
 
-    constructor(provider: ZeroDevEthersProvider<"ECDSA">, crossmintService: CrossmintService, chain: B) {
-        super(provider, crossmintService);
+    constructor(masterAccount: KernelSmartAccount, crossmintService: CrossmintService, chain: B) {
+        this.masterAccount = masterAccount;
+        this.crossmintService = crossmintService;
         this.chain = chain;
-    }
-
-    async verifyMessage(message: string, signature: string) {
-        return verifyMessage({
-            provider: this.provider,
-            signer: await this.getAddress(),
-            message,
-            signature,
-        });
     }
 
     setSessionKeySignerAddress(sessionKeySignerAddress: string) {
         this.sessionKeySignerAddress = sessionKeySignerAddress;
     }
-
+    /*
     async setCustodianForTokens(tokenType?: TokenType, custodian?: Custodian) {
         try {
             logInfo("[SET_CUSTODIAN_FOR_TOKENS] - INIT", {
@@ -245,9 +217,9 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
             });
             throw new Error(`Error upgrading version. If this error persists, please contact support.`);
         }
-    }
+    }*/
 
     async getNFTs() {
-        return this.crossmintService.fetchNFTs(await this.getAddress());
+        return this.crossmintService.fetchNFTs(this.masterAccount.address);
     }
 }
