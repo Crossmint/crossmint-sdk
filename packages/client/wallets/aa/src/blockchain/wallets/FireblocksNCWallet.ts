@@ -9,6 +9,7 @@ import {
     TEvent,
     TMPCAlgorithm,
 } from "@fireblocks/ncw-js-sdk";
+import { createHash } from "crypto";
 import { fromBytes } from "viem";
 
 import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
@@ -28,7 +29,7 @@ export const FireblocksNCWallet = async (
         deviceId: string;
     }
 ) => {
-    const localStorageRepository = new LocalStorageRepository();
+    const localStorageRepository = new LocalStorageRepository(generateUniqueHash(userIdentifier));
 
     let _walletId: string;
     let _deviceId: string;
@@ -92,7 +93,7 @@ export const FireblocksNCWallet = async (
             await fireblocksNCW.backupKeys(passphrase, _deviceId); //using the deviceId as a passphraseId to match implementation.
         } catch (error: any) {
             await crossmintService.unassignWallet(userIdentifier);
-            throw new KeysGenerationError(`Error generating keys. ${error?.title ?? ""}}`);
+            throw new KeysGenerationError(`Error generating keys. ${error?.message ?? ""}}`);
         }
     } else {
         try {
@@ -110,7 +111,7 @@ export const FireblocksNCWallet = async (
                 return passphrase;
             });
         } catch (error: any) {
-            throw new KeysGenerationError(`Error recovering keys. ${error?.title ?? ""}`);
+            throw new KeysGenerationError(`Error recovering keys. ${error?.message ?? ""}`);
         }
     }
 
@@ -167,7 +168,7 @@ const signMessage = async (
         console.log(`txId: ${result.txId}`, `status: ${result.transactionSignatureStatus}`);
         handleSignTransactionStatus(result);
     } catch (error: any) {
-        throw new SignTransactionError(`Error signing transaction. ${error?.title ?? ""}`);
+        throw new SignTransactionError(`Error signing transaction. ${error?.message ?? ""}`);
     }
     return (await crossmintService.getSignature(tx)) as `0x${string}`;
 };
@@ -185,7 +186,7 @@ const signTypedData = async (
         console.log(`txId: ${result.txId}`, `status: ${result.transactionSignatureStatus}`);
         handleSignTransactionStatus(result);
     } catch (error: any) {
-        throw new SignTransactionError(`Error signing transaction. ${error?.title ?? ""}`);
+        throw new SignTransactionError(`Error signing transaction. ${error?.message ?? ""}`);
     }
     return (await crossmintService.getSignature(tx)) as `0x${string}`;
 };
@@ -203,4 +204,22 @@ const getDefaultAlgorithems = (): Set<TMPCAlgorithm> => {
     const algorithms = new Set<TMPCAlgorithm>();
     algorithms.add("MPC_CMP_ECDSA_SECP256K1");
     return algorithms;
+};
+
+const generateUniqueHash = (userIdentifier: UserIdentifier): string => {
+    let inputString: string;
+
+    switch (userIdentifier.type) {
+        case "whiteLabel":
+            inputString = userIdentifier.userId;
+            break;
+        case "email":
+            inputString = userIdentifier.email;
+            break;
+        case "phoneNumber":
+            inputString = userIdentifier.phoneNumber;
+            break;
+    }
+
+    return createHash("sha256").update(inputString).digest("hex").substring(0, 4);
 };
