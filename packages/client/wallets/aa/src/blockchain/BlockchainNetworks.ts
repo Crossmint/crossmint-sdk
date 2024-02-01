@@ -23,6 +23,7 @@ import {
     ZKATANA_CHAIN_ID,
 } from "@/utils";
 import { TORUS_LEGACY_NETWORK_TYPE } from "@web3auth/single-factor-auth";
+import { arbitrum, bsc, goerli, mainnet, optimism, polygon, polygonMumbai, sepolia } from "viem/chains";
 
 import {
     BLOCKCHAIN_TEST_NET,
@@ -210,6 +211,28 @@ export function getZeroDevProjectIdByBlockchain(chain: BlockchainIncludingTestne
     return zeroDevProjectId;
 }
 
+export function getViemNetwork(networkName: EVMBlockchainIncludingTestnet) {
+    switch (networkName) {
+        case "ethereum":
+            return mainnet;
+        case "polygon":
+            return polygon;
+        case "bsc":
+            return bsc;
+        case "optimism":
+            return optimism;
+        case "arbitrum":
+            return arbitrum;
+        case "goerli":
+            return goerli;
+        case "ethereum-sepolia":
+            return sepolia;
+        case "mumbai":
+            return polygonMumbai;
+        default:
+            throw new Error(`Unsupported network: ${networkName}`);
+    }
+}
 export function getApiUrlByBlockchainType(chain: BlockchainIncludingTestnet): string {
     const result = isTestnet(chain) ? CROSSMINT_STG_URL : CROSSMINT_PROD_URL;
     return result;
