@@ -1,9 +1,11 @@
+import { UserIdentifier } from "@crossmint/common-sdk-base";
+
 export class LocalStorageRepository {
     private NCW_DEVICE_ID_KEY_PREFIX = "NCW-deviceId";
     private NCW_WALLET_ID_KEY_PREFIX = "NCW-walletId";
     private NCW_ADDRESS_KEY_PREFIX = "NCW-address";
 
-    constructor(private readonly userIdentifier: string, private readonly projectId: string) {}
+    constructor(private readonly userIdentifier: UserIdentifier, private readonly projectId: string) {}
 
     get ncwData() {
         const deviceId = localStorage.getItem(this.key(this.NCW_DEVICE_ID_KEY_PREFIX));
@@ -32,6 +34,18 @@ export class LocalStorageRepository {
     }
 
     private key(prefix: string) {
-        return `${prefix}-${this.userIdentifier}-${this.projectId}`;
+        const userIdentifier = userIdentifierString(this.userIdentifier);
+        return `${prefix}-${userIdentifier}-${this.projectId}`;
+    }
+}
+
+function userIdentifierString(userIdentifier: UserIdentifier) {
+    switch (userIdentifier.type) {
+        case "email":
+            return `email:${userIdentifier.email}`;
+        case "phoneNumber":
+            return `phoneNumber:${userIdentifier.phoneNumber}`;
+        case "whiteLabel":
+            return `userId:${userIdentifier.userId}`;
     }
 }
