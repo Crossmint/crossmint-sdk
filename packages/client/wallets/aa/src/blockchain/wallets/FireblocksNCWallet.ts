@@ -18,17 +18,24 @@ import { PasswordEncryptedLocalStorage } from "../../storage/PasswordEncryptedLo
 import { KeysGenerationError, NonCustodialWalletError, SignTransactionError } from "../../utils/error";
 import { getFireblocksAssetId } from "../BlockchainNetworks";
 
-export const FireblocksNCWallet = async (
-    userIdentifier: UserIdentifier,
-    crossmintService: CrossmintService,
-    chain: BlockchainIncludingTestnet,
-    passphrase: string,
-    ncwData?: {
-        walletId: string;
-        deviceId: string;
-    }
-) => {
-    const localStorageRepository = new LocalStorageRepository();
+type FireblocksNCWWalletInput = {
+    userIdentifier: UserIdentifier;
+    projectId: string;
+    crossmintService: CrossmintService;
+    chain: BlockchainIncludingTestnet;
+    passphrase: string;
+    ncwData?: { walletId: string; deviceId: string };
+};
+
+export const FireblocksNCWallet = async ({
+    userIdentifier,
+    projectId,
+    crossmintService,
+    chain,
+    passphrase,
+    ncwData,
+}: FireblocksNCWWalletInput) => {
+    const localStorageRepository = new LocalStorageRepository(userIdentifierString(userIdentifier), projectId);
 
     let _walletId: string;
     let _deviceId: string;
@@ -204,3 +211,14 @@ const getDefaultAlgorithems = (): Set<TMPCAlgorithm> => {
     algorithms.add("MPC_CMP_ECDSA_SECP256K1");
     return algorithms;
 };
+
+function userIdentifierString(userIdentifier: UserIdentifier) {
+    switch (userIdentifier.type) {
+        case "email":
+            return `email:${userIdentifier.email}`;
+        case "phoneNumber":
+            return `phoneNumber:${userIdentifier.phoneNumber}`;
+        case "whiteLabel":
+            return `userId:${userIdentifier.userId}`;
+    }
+}
