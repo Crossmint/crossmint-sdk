@@ -80,7 +80,7 @@ export class CrossmintAASDK {
                 chain,
             });
 
-            throw new WalletSdkError(`Error creating the Wallet [${error?.name ?? ""}]`);
+            throw new WalletSdkError(`Error creating the Wallet [${error?.message ?? ""}]`);
         }
     }
 
