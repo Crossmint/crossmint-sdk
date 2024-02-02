@@ -21,10 +21,7 @@ export type UserIdentifier =
     | { type: "email"; email: string }
     | { type: "phoneNumber"; phoneNumber: string };
 
-/**
- * Used in v2
- */
-export type EthersSigner = any;
+export type SignerType = "ethers" | "viem";
 
 export type Web3AuthSigner = {
     type: "WEB3_AUTH";
@@ -44,7 +41,7 @@ export type FireblocksNCWSigner =
           deviceId: string;
       });
 
-type Signer = FireblocksNCWSigner | ethers.Signer | Web3AuthSigner; // V2 add: EthersSigner
+type Signer = FireblocksNCWSigner | ethers.Signer | Web3AuthSigner;
 
 export interface WalletConfig {
     signer: Signer;
