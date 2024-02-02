@@ -7,13 +7,13 @@ export async function getWalletNfts(chain: string, wallet: string, environment: 
     let page = 1;
     let hasMore = true;
     let allData: VC_EVMNFT[] = [];
-    const perPage = 20;
+    const perPage = 20; /// useee
 
     const baseUrl = getEnvironmentBaseUrl(environment);
     const headers = CrossmintAPI.getHeaders();
 
     while (hasMore) {
-        const url = `${baseUrl}/api/v1-alpha1/wallets/${chain}:${wallet}/nfts`;
+        const url = `${baseUrl}/api/v1-alpha1/wallets/${chain}:${wallet}/nfts?perPage${perPage}&page${page}`;
         const options = { method: "GET", headers: headers };
 
         try {
