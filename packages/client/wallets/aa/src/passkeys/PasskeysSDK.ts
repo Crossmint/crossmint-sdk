@@ -1,0 +1,216 @@
+import { CrossmintService } from "@/api";
+import { logError, logInfo, logWarn } from "@/services/logging";
+import type { CrossmintAASDKInitParams, PasskeyCipher } from "@/types";
+import { PasskeySdkError, errorToJSON } from "@/utils";
+
+import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
+
+import { LitService } from "./services/LitService";
+
+export class PasskeysSDK {
+    crossmintService: CrossmintService;
+    litService: LitService;
+
+    private constructor(config: CrossmintAASDKInitParams) {
+        this.crossmintService = new CrossmintService(config.apiKey);
+        this.litService = new LitService();
+    }
+
+    static init(params: CrossmintAASDKInitParams): PasskeysSDK {
+        return new PasskeysSDK(params);
+    }
+
+    async signUp(chain: BlockchainIncludingTestnet, walletAddress: string) {
+        try {
+            logInfo("[PASSKEYS_SIGN_UP] - INIT", {
+                chain,
+                walletAddress,
+            });
+            if (await this.checkCiphersExist(chain, walletAddress)) {
+                logWarn("[SIGN_UP] - PKP and/or Secrets alreay exist. Skipping sign up.", {
+                    chain,
+                    walletAddress,
+                });
+                return;
+            }
+
+            const { pkpEthAddress, pkpPublicKey } = await this.litService.registerWithWebAuthn(
+                `${chain}:${walletAddress}`
+            );
+            await this.savePKP(chain, walletAddress, pkpEthAddress!, pkpPublicKey!);
+
+            logInfo("[PASSKEYS_SIGN_UP] - FINISH", {
+                chain,
+                walletAddress,
+                pkpEthAddress,
+                pkpPublicKey,
+            });
+            return { pkpEthAddress, pkpPublicKey };
+        } catch (error: any) {
+            logError("[PASSKEYS_SIGN_UP] - ERROR_SIGNING_UP", {
+                error: errorToJSON(error),
+                chain,
+                walletAddress,
+            });
+
+            throw new PasskeySdkError(`Error signing up [${error?.name ?? ""}]`);
+        }
+    }
+
+    async encryt(chain: BlockchainIncludingTestnet, walletAddress: string, secretToEncrypt: string) {
+        try {
+            logInfo("[PASSKEYS_ENCRYPT] - INIT", {
+                chain,
+                walletAddress,
+            });
+
+            const ciphers = await this.getPasskeyCiphers(chain, walletAddress);
+            if (!this.checkPPKAlreadyMinted(ciphers)) {
+                logWarn("[PASSKEYS_ENCRYPT] - PKP not minted. Please sign up first.", {
+                    chain,
+                    walletAddress,
+                });
+                return;
+            }
+
+            if (this.checkSecretAlreadyCreated(ciphers)) {
+                logWarn("[PASSKEYS_ENCRYPT] - Secret already created. Skipping...", {
+                    chain,
+                    walletAddress,
+                });
+                return;
+            }
+            const capacityDelegationAuthSig = await this.crossmintService.getCapacityCreditsOwnerSignature();
+            const { ciphertext, dataToEncryptHash } = await this.litService.encrypt(
+                secretToEncrypt,
+                ciphers.cipherData.pkpPublicKey!,
+                ciphers.cipherData.pkpEthAddress!,
+                capacityDelegationAuthSig
+            );
+            await this.saveCypherText(chain, walletAddress, ciphertext, dataToEncryptHash);
+
+            logInfo("[PASSKEYS_ENCRYPT] - FINISH", {
+                chain,
+                walletAddress,
+            });
+            return { ciphertext, dataToEncryptHash };
+        } catch (error: any) {
+            logError("[PASSKEYS_ENCRYPT] - ERROR_ENCRYPTING", {
+                error: errorToJSON(error),
+                chain,
+                walletAddress,
+            });
+
+            throw new PasskeySdkError(`Error encrypting message [${error?.name ?? ""}]`);
+        }
+    }
+
+    async decrypt(chain: BlockchainIncludingTestnet, walletAddress: string) {
+        try {
+            logInfo("[PASSKEYS_DECRYPT] - INIT", {
+                chain,
+                walletAddress,
+            });
+
+            const ciphers = await this.getPasskeyCiphers(chain, walletAddress);
+            if (!this.checkPPKAlreadyMinted(ciphers)) {
+                logWarn("[PASSKEYS_DECRYPT] - PKP not minted. Please sign up first.", {
+                    chain,
+                    walletAddress,
+                });
+                return;
+            }
+
+            if (!this.checkSecretAlreadyCreated(ciphers)) {
+                logWarn("[PASSKEYS_DECRYPT] - Secret not created. Please create one first.", {
+                    chain,
+                    walletAddress,
+                });
+                return;
+            }
+            const capacityDelegationAuthSig = await this.crossmintService.getCapacityCreditsOwnerSignature();
+            const decryptedString = await this.litService.decrypt(
+                ciphers.cipherData.pkpPublicKey!,
+                ciphers.cipherData.pkpEthAddress!,
+                ciphers.cipherData.cipherText!,
+                ciphers.cipherData.dataToEncryptHash!,
+                capacityDelegationAuthSig
+            );
+
+            logInfo("[PASSKEYS_DECRYPT] - FINISH", {
+                chain,
+                walletAddress,
+            });
+            return decryptedString;
+        } catch (error: any) {
+            logError("[PASSKEYS_DECRYPT] - ERROR_DECRYPTING", {
+                error: errorToJSON(error),
+                chain,
+                walletAddress,
+            });
+
+            throw new PasskeySdkError(`Error decrypting message [${error?.name ?? ""}]`);
+        }
+    }
+
+    private async getPasskeyCiphers(chain: BlockchainIncludingTestnet, walletAddress: string) {
+        return this.crossmintService.getPasskeyCiphers(`${chain}:${walletAddress}`);
+    }
+
+    private async checkCiphersExist(chain: BlockchainIncludingTestnet, walletAddress: string) {
+        const response = await this.getPasskeyCiphers(chain, walletAddress);
+        return this.checkPPKAlreadyMinted(response) || this.checkSecretAlreadyCreated(response);
+    }
+
+    private checkPPKAlreadyMinted(cipher: PasskeyCipher) {
+        return (
+            cipher != null &&
+            cipher.cipherData != null &&
+            cipher.cipherData.pkpEthAddress != null &&
+            cipher.cipherData.pkpPublicKey != null
+        );
+    }
+
+    private checkSecretAlreadyCreated(cipher: PasskeyCipher) {
+        return (
+            cipher != null &&
+            cipher.cipherData != null &&
+            cipher.cipherData.cipherText != null &&
+            cipher.cipherData.dataToEncryptHash != null
+        );
+    }
+
+    private async savePKP(
+        chain: BlockchainIncludingTestnet,
+        walletAddress: string,
+        pkpEthAddress: string,
+        pkpPublicKey: string
+    ) {
+        await this.crossmintService.upsertPasskeyCiphers(`${chain}:${walletAddress}`, {
+            chain: chain,
+            walletAddress: walletAddress,
+            cipherMethod: "lit_protocol",
+            cipherData: {
+                pkpEthAddress: pkpEthAddress,
+                pkpPublicKey: pkpPublicKey,
+            },
+        });
+    }
+
+    private async saveCypherText(
+        chain: BlockchainIncludingTestnet,
+        walletAddress: string,
+        cipherText: string,
+        dataToEncryptHash: string
+    ) {
+        await this.crossmintService.upsertPasskeyCiphers(`${chain}:${walletAddress}`, {
+            chain: chain,
+            walletAddress: walletAddress,
+            cipherMethod: "lit_protocol",
+            cipherData: {
+                cipherText: cipherText,
+                dataToEncryptHash: dataToEncryptHash,
+            },
+        });
+    }
+}

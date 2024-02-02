@@ -1,6 +1,12 @@
 import { ethers } from "ethers";
 
+import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
+
 export type CrossmintAASDKInitParams = {
+    apiKey: string;
+};
+
+export type PasskeysSDKInitParams = {
     apiKey: string;
 };
 
@@ -43,3 +49,18 @@ type Signer = FireblocksNCWSigner | ethers.Signer | Web3AuthSigner; // V2 add: E
 export interface WalletConfig {
     signer: Signer;
 }
+
+export interface PasskeyCipher {
+    chain: BlockchainIncludingTestnet;
+    walletAddress: string;
+    cipherMethod: CipherMethodTypes;
+    cipherData: LitProtocolCipherData;
+}
+
+export interface LitProtocolCipherData {
+    pkpPublicKey?: string;
+    pkpEthAddress?: string;
+    cipherText?: string;
+    dataToEncryptHash?: string;
+}
+export type CipherMethodTypes = "lit_protocol";

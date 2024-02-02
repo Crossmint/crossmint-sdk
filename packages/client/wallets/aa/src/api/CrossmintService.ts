@@ -1,5 +1,5 @@
 import { logError } from "@/services/logging";
-import { GenerateSignatureDataInput, StoreAbstractWalletInput, UserIdentifier } from "@/types";
+import { GenerateSignatureDataInput, PasskeyCipher, StoreAbstractWalletInput, UserIdentifier } from "@/types";
 import { CrossmintServiceError, errorToJSON } from "@/utils/error";
 
 import { validateAPIKey } from "@crossmint/common-sdk-base";
@@ -147,6 +147,33 @@ export class CrossmintService {
             `v1-alpha1/wallets/polygon:${address}/nfts`,
             { method: "GET" },
             `Error fetching NFTs for wallet: ${address}`
+        );
+    }
+
+    async getPasskeyCiphers(walletLocator: string): Promise<PasskeyCipher> {
+        return this.fetchCrossmintAPI(
+            `v1-alpha1/passkeys/ciphers/${walletLocator}`,
+            { method: "GET" },
+            `Error fetching passkeys ciphers for: ${walletLocator}`
+        );
+    }
+
+    async upsertPasskeyCiphers(walletLocator: string, passkeyCipher: PasskeyCipher) {
+        return this.fetchCrossmintAPI(
+            `v1-alpha1/passkeys/ciphers/${walletLocator}`,
+            {
+                method: "PUT",
+                body: JSON.stringify(passkeyCipher),
+            },
+            `Error updating passkey ciphers: ${passkeyCipher}`
+        );
+    }
+
+    async getCapacityCreditsOwnerSignature() {
+        return this.fetchCrossmintAPI(
+            `v1-alpha1/passkeys/ciphers/capacity-credits-owner-signature`,
+            { method: "GET" },
+            `Error fetching capacity credits owner signature`
         );
     }
 

@@ -1,0 +1,232 @@
+import { logError, logInfo } from "@/services/logging";
+import { LitProtocolError, errorToJSON, isLocalhost } from "@/utils";
+import { POLYGON_CHAIN_ID, RELAY_API_KEY } from "@/utils/constants";
+import { LitAbility, LitActionResource } from "@lit-protocol/auth-helpers";
+import { ProviderType } from "@lit-protocol/constants";
+import { LitAuthClient, WebAuthnProvider } from "@lit-protocol/lit-auth-client";
+import { LitNodeClient, decryptToString, encryptString } from "@lit-protocol/lit-node-client";
+import { PKPEthersWallet } from "@lit-protocol/pkp-ethers";
+import { AuthSig } from "@lit-protocol/types";
+import { SiweMessage } from "siwe";
+
+const chain = "polygon";
+
+export class LitService {
+    private litNodeClient: LitNodeClient | undefined;
+    private litAuthClient: LitAuthClient | undefined;
+
+    async connect() {
+        this.litAuthClient = new LitAuthClient({
+            litRelayConfig: {
+                relayApiKey: RELAY_API_KEY,
+            },
+        });
+        this.litAuthClient.initProvider<WebAuthnProvider>(ProviderType.WebAuthn);
+        this.litNodeClient = new LitNodeClient({
+            litNetwork: isLocalhost() ? "manzano" : "habanero",
+        });
+        await this.litNodeClient.connect();
+    }
+
+    async registerWithWebAuthn(identifier: string) {
+        try {
+            logInfo("[LIT_REGISTER_WEBAUTHN] - INIT", {
+                identifier,
+            });
+            if (this.litAuthClient == null) {
+                await this.connect();
+            }
+            const provider = this.litAuthClient!.getProvider(ProviderType.WebAuthn) as WebAuthnProvider;
+            // Register new WebAuthn credential
+            const options = await provider!.register(identifier);
+            // Verify registration and mint PKP through relay server
+            const txHash = await provider!.verifyAndMintPKPThroughRelayer(options);
+            const response = await provider.relay.pollRequestUntilTerminalState(txHash);
+
+            if (response.status !== "Succeeded") {
+                throw new Error("Failed to register with WebAuthn");
+            }
+
+            logInfo("[LIT_REGISTER_WEBAUTHN] - FINISH", {
+                identifier,
+            });
+            return {
+                pkpEthAddress: response.pkpEthAddress,
+                pkpPublicKey: response.pkpPublicKey,
+            };
+        } catch (error: any) {
+            logError("[LIT_REGISTER_WEBAUTHN] - ERROR_REGISTER_WEBAUTHN", {
+                error: errorToJSON(error),
+                identifier,
+            });
+            throw new LitProtocolError(`Error signing up [${error?.name ?? ""}]`);
+        }
+    }
+    async encrypt(
+        messageToEncrypt: string,
+        pkpPublicKey: string,
+        pkpEthAddress: string,
+        capacityDelegationAuthSig: AuthSig
+    ) {
+        try {
+            logInfo("[LIT_ENCRYPT] - INIT", {
+                pkpPublicKey,
+                pkpEthAddress,
+                capacityDelegationAuthSig,
+            });
+            const { authSig, accessControlConditions } = await this.prepareLit(
+                pkpPublicKey,
+                pkpEthAddress,
+                capacityDelegationAuthSig
+            );
+            const { ciphertext, dataToEncryptHash } = await encryptString(
+                {
+                    accessControlConditions,
+                    authSig,
+                    chain: chain,
+                    dataToEncrypt: messageToEncrypt,
+                },
+                this.litNodeClient!
+            );
+
+            logInfo("[LIT_ENCRYPT] - FINISH", {
+                pkpPublicKey,
+                pkpEthAddress,
+                capacityDelegationAuthSig,
+            });
+            return {
+                ciphertext,
+                dataToEncryptHash,
+            };
+        } catch (error: any) {
+            // We log a general error, as we don't want to accidentally log messageToEncrypt
+            logError("[LIT_ENCRYPT] - ERROR_ENCRYPT", {
+                pkpPublicKey,
+                pkpEthAddress,
+                capacityDelegationAuthSig,
+            });
+            throw new LitProtocolError(`Error encrypting message`);
+        }
+    }
+
+    async decrypt(
+        pkpPublicKey: string,
+        pkpEthAddress: string,
+        cipherText: string,
+        dataToEncryptHash: string,
+        capacityDelegationAuthSig: AuthSig
+    ) {
+        try {
+            logInfo("[LIT_DECRYPT] - INIT", {
+                pkpPublicKey,
+                pkpEthAddress,
+                cipherText,
+                dataToEncryptHash,
+                capacityDelegationAuthSig,
+            });
+            const { authSig, accessControlConditions } = await this.prepareLit(
+                pkpPublicKey,
+                pkpEthAddress,
+                capacityDelegationAuthSig
+            );
+            const decryptedString = await decryptToString(
+                {
+                    accessControlConditions,
+                    ciphertext: cipherText,
+                    dataToEncryptHash: dataToEncryptHash,
+                    authSig,
+                    chain: chain,
+                },
+                this.litNodeClient!
+            );
+
+            logInfo("[LIT_DECRYPT] - FINISH", {
+                pkpPublicKey,
+                pkpEthAddress,
+                cipherText,
+                dataToEncryptHash,
+                capacityDelegationAuthSig,
+            });
+            return decryptedString;
+        } catch (error: any) {
+            logError("[LIT_DECRYPT] - ERROR_LIT_DECRYPT", {
+                error: errorToJSON(error),
+                pkpPublicKey,
+                pkpEthAddress,
+                cipherText,
+                dataToEncryptHash,
+                capacityDelegationAuthSig,
+            });
+            throw new LitProtocolError(`Error decrypting message [${error?.name ?? ""}]`);
+        }
+    }
+
+    private async prepareLit(pkpPublicKey: string, pkpEthAddress: string, capacityDelegationAuthSig: AuthSig) {
+        if (this.litAuthClient == null) {
+            await this.connect();
+        }
+
+        const provider = this.litAuthClient!.getProvider(ProviderType.WebAuthn) as WebAuthnProvider;
+        const authMethod = await provider.authenticate();
+
+        const sessionSigs = await provider.getSessionSigs({
+            authMethod: authMethod,
+            pkpPublicKey: pkpPublicKey,
+            sessionSigsParams: {
+                chain: chain,
+                resourceAbilityRequests: [
+                    {
+                        resource: new LitActionResource("*"),
+                        ability: LitAbility.AccessControlConditionDecryption,
+                    },
+                ],
+                capacityDelegationAuthSig: capacityDelegationAuthSig,
+            },
+        });
+
+        const pkpWallet = new PKPEthersWallet({
+            controllerSessionSigs: sessionSigs,
+            pkpPubKey: pkpPublicKey,
+            rpc: "https://chain-rpc.litprotocol.com/http",
+            debug: true,
+        });
+        await pkpWallet.init();
+
+        const statement = "SIWE";
+        const siweMessage = new SiweMessage({
+            domain: window.location.hostname,
+            address: pkpWallet.address,
+            statement,
+            uri: origin,
+            version: "1",
+            chainId: POLYGON_CHAIN_ID,
+            nonce: this.litNodeClient!.getLatestBlockhash()!,
+            expirationTime: new Date(Date.now() + 60_000 * 60).toISOString(), // Valid for 1 hour
+        });
+        const messageToSign = siweMessage.prepareMessage();
+        const signature = await pkpWallet.signMessage(messageToSign);
+
+        const authSig = {
+            sig: signature,
+            derivedVia: "web3.eth.personal.sign",
+            signedMessage: messageToSign,
+            address: pkpWallet.address,
+        };
+
+        const accessControlConditions = [
+            {
+                contractAddress: "",
+                standardContractType: "",
+                chain,
+                method: "",
+                parameters: [":userAddress"],
+                returnValueTest: {
+                    comparator: "=",
+                    value: pkpEthAddress,
+                },
+            },
+        ];
+
+        return { authSig, accessControlConditions };
+    }
+}

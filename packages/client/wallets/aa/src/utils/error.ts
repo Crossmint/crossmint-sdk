@@ -118,6 +118,27 @@ export class WalletSdkError extends Error {
         Object.setPrototypeOf(this, WalletSdkError.prototype);
     }
 }
+export class PasskeySdkError extends Error {
+    code = "ERROR_UNDEFINED";
+
+    constructor(message: string) {
+        super(message);
+
+        // ES5 workaround
+        Object.setPrototypeOf(this, PasskeySdkError.prototype);
+    }
+}
+
+export class LitProtocolError extends Error {
+    code = "ERROR_UNDEFINED";
+
+    constructor(message: string) {
+        super(message);
+
+        // ES5 workaround
+        Object.setPrototypeOf(this, LitProtocolError.prototype);
+    }
+}
 
 export function errorToJSON(error: Error | unknown) {
     const errorToLog = error instanceof Error ? error : { message: "Unknown error", name: "Unknown error" };
