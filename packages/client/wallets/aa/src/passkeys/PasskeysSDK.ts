@@ -1,6 +1,6 @@
 import { CrossmintService } from "@/api";
 import { logError, logInfo, logWarn } from "@/services/logging";
-import type { CrossmintAASDKInitParams, PasskeyCipher } from "@/types";
+import type { CrossmintAASDKInitParams, PasskeyCipher, PasskeysSDKInitParams } from "@/types";
 import { PasskeySdkError, errorToJSON } from "@/utils";
 
 import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
@@ -11,13 +11,13 @@ export class PasskeysSDK {
     crossmintService: CrossmintService;
     litService: LitService;
 
-    private constructor(config: CrossmintAASDKInitParams) {
-        this.crossmintService = new CrossmintService(config.apiKey);
-        this.litService = new LitService();
+    constructor(crossmintService: CrossmintService, litService: LitService) {
+        this.crossmintService = crossmintService;
+        this.litService = litService;
     }
 
-    static init(params: CrossmintAASDKInitParams): PasskeysSDK {
-        return new PasskeysSDK(params);
+    static init(params: PasskeysSDKInitParams): PasskeysSDK {
+        return new PasskeysSDK(new CrossmintService(params.apiKey), new LitService());
     }
 
     async signUp(chain: BlockchainIncludingTestnet, walletAddress: string) {
