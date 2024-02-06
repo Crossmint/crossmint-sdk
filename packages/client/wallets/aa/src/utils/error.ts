@@ -118,6 +118,7 @@ export class WalletSdkError extends Error {
         Object.setPrototypeOf(this, WalletSdkError.prototype);
     }
 }
+
 export class PasskeySdkError extends Error {
     code = "ERROR_UNDEFINED";
 
