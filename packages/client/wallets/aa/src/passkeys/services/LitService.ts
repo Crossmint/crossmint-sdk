@@ -30,9 +30,6 @@ export class LitService {
 
     async registerWithWebAuthn(identifier: string) {
         try {
-            logInfo("[LIT_REGISTER_WEBAUTHN] - INIT", {
-                identifier,
-            });
             if (this.litAuthClient == null) {
                 await this.connect();
             }
@@ -47,18 +44,13 @@ export class LitService {
                 throw new Error("Failed to register with WebAuthn");
             }
 
-            logInfo("[LIT_REGISTER_WEBAUTHN] - FINISH", {
-                identifier,
-            });
+            logInfo("[LIT_REGISTER_WEBAUTHN] - FINISH", { identifier });
             return {
                 pkpEthAddress: response.pkpEthAddress,
                 pkpPublicKey: response.pkpPublicKey,
             };
         } catch (error: any) {
-            logError("[LIT_REGISTER_WEBAUTHN] - ERROR_REGISTER_WEBAUTHN", {
-                error: errorToJSON(error),
-                identifier,
-            });
+            logError("[LIT_REGISTER_WEBAUTHN] - ERROR_REGISTER_WEBAUTHN", { error: errorToJSON(error), identifier });
             throw new LitProtocolError(`Error signing up [${error?.name ?? ""}]`);
         }
     }
@@ -69,11 +61,6 @@ export class LitService {
         capacityDelegationAuthSig: AuthSig
     ) {
         try {
-            logInfo("[LIT_ENCRYPT] - INIT", {
-                pkpPublicKey,
-                pkpEthAddress,
-                capacityDelegationAuthSig,
-            });
             const { authSig, accessControlConditions } = await this.prepareLit(
                 pkpPublicKey,
                 pkpEthAddress,
@@ -89,22 +76,14 @@ export class LitService {
                 this.litNodeClient!
             );
 
-            logInfo("[LIT_ENCRYPT] - FINISH", {
-                pkpPublicKey,
-                pkpEthAddress,
-                capacityDelegationAuthSig,
-            });
+            logInfo("[LIT_ENCRYPT] - FINISH", { pkpPublicKey, pkpEthAddress, capacityDelegationAuthSig });
             return {
                 ciphertext,
                 dataToEncryptHash,
             };
         } catch (error: any) {
             // We log a general error, as we don't want to accidentally log messageToEncrypt
-            logError("[LIT_ENCRYPT] - ERROR_ENCRYPT", {
-                pkpPublicKey,
-                pkpEthAddress,
-                capacityDelegationAuthSig,
-            });
+            logError("[LIT_ENCRYPT] - ERROR_ENCRYPT", { pkpPublicKey, pkpEthAddress, capacityDelegationAuthSig });
             throw new LitProtocolError(`Error encrypting message`);
         }
     }
@@ -117,13 +96,6 @@ export class LitService {
         capacityDelegationAuthSig: AuthSig
     ) {
         try {
-            logInfo("[LIT_DECRYPT] - INIT", {
-                pkpPublicKey,
-                pkpEthAddress,
-                cipherText,
-                dataToEncryptHash,
-                capacityDelegationAuthSig,
-            });
             const { authSig, accessControlConditions } = await this.prepareLit(
                 pkpPublicKey,
                 pkpEthAddress,
