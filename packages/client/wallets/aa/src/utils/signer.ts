@@ -1,4 +1,4 @@
-import { CrossmintService } from "@/api";
+import { CrossmintWalletService } from "@/api";
 import {
     FireblocksNCWallet,
     getBlockExplorerByBlockchain,
@@ -24,7 +24,7 @@ export async function createOwnerSigner(
     userIdentifier: UserIdentifier,
     chain: BlockchainIncludingTestnet,
     walletConfig: WalletConfig,
-    crossmintService: CrossmintService
+    crossmintService: CrossmintWalletService
 ): Promise<SmartAccountSigner> {
     if (isFireblocksNCWSigner(walletConfig.signer)) {
         let fireblocks: any;

@@ -1,4 +1,4 @@
-import { CrossmintService } from "@/api";
+import { CrossmintWalletService } from "@/api";
 import { EVMAAWallet, getChainIdByBlockchain, getZeroDevProjectIdByBlockchain, isEVMBlockchain } from "@/blockchain";
 import type { CrossmintAASDKInitParams, WalletConfig } from "@/types";
 import { CURRENT_VERSION, WalletSdkError, ZERO_DEV_TYPE, createOwnerSigner, errorToJSON } from "@/utils";
@@ -10,10 +10,10 @@ import { logError, logInfo } from "./services/logging";
 import { parseUserIdentifier } from "./utils/user";
 
 export class CrossmintAASDK {
-    crossmintService: CrossmintService;
+    crossmintWalletService: CrossmintWalletService;
 
     private constructor(config: CrossmintAASDKInitParams) {
-        this.crossmintService = new CrossmintService(config.apiKey);
+        this.crossmintWalletService = new CrossmintWalletService(config.apiKey);
     }
 
     static init(params: CrossmintAASDKInitParams): CrossmintAASDK {
@@ -32,7 +32,7 @@ export class CrossmintAASDK {
             });
 
             const userIdentifier = parseUserIdentifier(user);
-            const owner = await createOwnerSigner(userIdentifier, chain, walletConfig, this.crossmintService);
+            const owner = await createOwnerSigner(userIdentifier, chain, walletConfig, this.crossmintWalletService);
 
             const address = await owner.getAddress();
 
@@ -50,14 +50,14 @@ export class CrossmintAASDK {
                 throw new WalletSdkError(`The blockchain ${chain} is still not supported`);
             }
 
-            const evmAAWallet = new EVMAAWallet(zDevProvider, this.crossmintService, chain);
+            const evmAAWallet = new EVMAAWallet(zDevProvider, this.crossmintWalletService, chain);
 
             const abstractAddress = await evmAAWallet.getAddress();
-            const { sessionKeySignerAddress } = await this.crossmintService.createSessionKey(abstractAddress);
+            const { sessionKeySignerAddress } = await this.crossmintWalletService.createSessionKey(abstractAddress);
 
             evmAAWallet.setSessionKeySignerAddress(sessionKeySignerAddress);
 
-            await this.crossmintService.storeAbstractWallet({
+            await this.crossmintWalletService.storeAbstractWallet({
                 userIdentifier,
                 type: ZERO_DEV_TYPE,
                 smartContractWalletAddress: abstractAddress,

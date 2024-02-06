@@ -13,14 +13,14 @@ import { fromBytes } from "viem";
 
 import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
-import { CrossmintService } from "../../api/CrossmintService";
+import { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import { PasswordEncryptedLocalStorage } from "../../storage/PasswordEncryptedLocalStorage";
 import { KeysGenerationError, NonCustodialWalletError, SignTransactionError } from "../../utils/error";
 import { getFireblocksAssetId } from "../BlockchainNetworks";
 
 export const FireblocksNCWallet = async (
     userIdentifier: UserIdentifier,
-    crossmintService: CrossmintService,
+    crossmintService: CrossmintWalletService,
     chain: BlockchainIncludingTestnet,
     passphrase: string,
     ncwData?: {
@@ -128,7 +128,7 @@ export const FireblocksNCWallet = async (
 };
 
 export function getSmartAccountSignerFromFireblocks(
-    crossmintService: CrossmintService,
+    crossmintService: CrossmintWalletService,
     fireblocksNCW: FireblocksNCW,
     walletId: string,
     chain: BlockchainIncludingTestnet,
@@ -153,7 +153,7 @@ export function getSmartAccountSignerFromFireblocks(
 }
 
 const signMessage = async (
-    crossmintService: CrossmintService,
+    crossmintService: CrossmintWalletService,
     fireblocksNCW: FireblocksNCW,
     walletId: string,
     chain: BlockchainIncludingTestnet,
@@ -173,7 +173,7 @@ const signMessage = async (
 };
 
 const signTypedData = async (
-    crossmintService: CrossmintService,
+    crossmintService: CrossmintWalletService,
     fireblocksNCW: FireblocksNCW,
     walletId: string,
     chain: BlockchainIncludingTestnet,

@@ -1,31 +1,10 @@
-import { logError } from "@/services/logging";
-import { GenerateSignatureDataInput, PasskeyCipher, StoreAbstractWalletInput, UserIdentifier } from "@/types";
-import { CrossmintServiceError, errorToJSON } from "@/utils/error";
+import { GenerateSignatureDataInput, StoreAbstractWalletInput, UserIdentifier } from "@/types";
 
-import { validateAPIKey } from "@crossmint/common-sdk-base";
+import { BaseCrossmintService } from "./BaseCrossmintService";
 
-import { CROSSMINT_DEV_URL, CROSSMINT_PROD_URL, CROSSMINT_STG_URL } from "../utils";
-
-export class CrossmintService {
-    private crossmintAPIHeaders: Record<string, string>;
-    private crossmintBaseUrl: string;
-    private static urlMap: Record<string, string> = {
-        development: CROSSMINT_DEV_URL,
-        staging: CROSSMINT_STG_URL,
-        production: CROSSMINT_PROD_URL,
-    };
-
+export class CrossmintWalletService extends BaseCrossmintService {
     constructor(apiKey: string) {
-        const result = validateAPIKey(apiKey);
-        if (!result.isValid) {
-            throw new Error("API key invalid");
-        }
-        this.crossmintAPIHeaders = {
-            accept: "application/json",
-            "content-type": "application/json",
-            "x-api-key": apiKey,
-        };
-        this.crossmintBaseUrl = this.getUrlFromEnv(result.environment);
+        super(apiKey);
     }
 
     async createSessionKey(address: string) {
@@ -148,82 +127,5 @@ export class CrossmintService {
             { method: "GET" },
             `Error fetching NFTs for wallet: ${address}`
         );
-    }
-
-    async getPasskeyCiphers(walletLocator: string): Promise<PasskeyCipher> {
-        const response = await this.fetchCrossmintAPI(
-            `v1-alpha1/passkeys/ciphers/${walletLocator}`,
-            { method: "GET" },
-            `Error fetching passkeys ciphers for: ${walletLocator}`
-        );
-        return {
-            chain: response.chain,
-            walletAddress: response.walletAddress,
-            cipher: {
-                method: response.cipherMethod,
-                data: response.cipherData,
-            },
-        };
-    }
-
-    async upsertPasskeyCiphers(walletLocator: string, passkeyCipher: any) {
-        return this.fetchCrossmintAPI(
-            `v1-alpha1/passkeys/ciphers/${walletLocator}`,
-            {
-                method: "PUT",
-                body: JSON.stringify(passkeyCipher),
-            },
-            `Error updating passkey ciphers: ${passkeyCipher}`
-        );
-    }
-
-    async getCapacityCreditsOwnerSignature() {
-        return this.fetchCrossmintAPI(
-            `v1-alpha1/passkeys/ciphers/capacity-credits-owner-signature`,
-            { method: "GET" },
-            `Error fetching capacity credits owner signature`
-        );
-    }
-
-    private async fetchCrossmintAPI(
-        endpoint: string,
-        options: { body?: string; method: string } = { method: "GET" },
-        onServerErrorMessage: string
-    ) {
-        const url = `${this.crossmintBaseUrl}/${endpoint}`;
-        const { body, method } = options;
-
-        try {
-            const response = await fetch(url, {
-                body,
-                method,
-                headers: this.crossmintAPIHeaders,
-            });
-            if (!response.ok) {
-                if (response.status >= 500) {
-                    // Crossmint throws a generic “An error occurred” error for all 5XX errors.
-                    // We throw a more specific error depending on the endpoint that was called.
-                    throw new CrossmintServiceError(onServerErrorMessage);
-                }
-                // We forward all 4XX errors. This includes rate limit errors.
-                // It also includes chain not found, as it is a bad request error.
-                throw new CrossmintServiceError(await response.text());
-            }
-            return await response.json();
-        } catch (error) {
-            logError("[CROSSMINT_SERVICE] - ERROR", {
-                error: errorToJSON(error),
-            });
-            throw new CrossmintServiceError(`Error fetching Crossmint API: ${error}`);
-        }
-    }
-
-    private getUrlFromEnv(environment: string) {
-        const url = CrossmintService.urlMap[environment];
-        if (!url) {
-            console.log(" CrossmintService.urlMap: ", CrossmintService.urlMap);
-            throw new Error(`URL not found for environment: ${environment}`);
-        }
-        return url;
     }
 }

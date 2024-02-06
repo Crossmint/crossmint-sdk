@@ -1,23 +1,23 @@
-import { CrossmintService } from "@/api";
 import { logError, logInfo, logWarn } from "@/services/logging";
 import type { PasskeyCipher, PasskeysSDKInitParams } from "@/types";
 import { PasskeySdkError, errorToJSON } from "@/utils";
 
 import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
+import { CrossmintPasskeyService } from "./services/CrossmintPasskeyService";
 import { LitService } from "./services/LitService";
 
 export class PasskeysSDK {
-    crossmintService: CrossmintService;
+    crossmintService: CrossmintPasskeyService;
     litService: LitService;
 
-    constructor(crossmintService: CrossmintService, litService: LitService) {
+    constructor(crossmintService: CrossmintPasskeyService, litService: LitService) {
         this.crossmintService = crossmintService;
         this.litService = litService;
     }
 
     static init(params: PasskeysSDKInitParams): PasskeysSDK {
-        return new PasskeysSDK(new CrossmintService(params.apiKey), new LitService());
+        return new PasskeysSDK(new CrossmintPasskeyService(params.apiKey), new LitService());
     }
 
     async signUp(chain: BlockchainIncludingTestnet, walletAddress: string) {
@@ -61,10 +61,7 @@ export class PasskeysSDK {
             );
             await this.saveCypherText(chain, walletAddress, ciphertext, dataToEncryptHash);
 
-            logInfo("[PASSKEYS_ENCRYPT] - FINISH", {
-                chain,
-                walletAddress,
-            });
+            logInfo("[PASSKEYS_ENCRYPT] - FINISH", { chain, walletAddress });
             return { ciphertext, dataToEncryptHash };
         } catch (error: any) {
             logError("[PASSKEYS_ENCRYPT] - ERROR_ENCRYPTING", { error: errorToJSON(error), chain, walletAddress });
