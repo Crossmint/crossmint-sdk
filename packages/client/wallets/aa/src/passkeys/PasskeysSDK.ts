@@ -1,6 +1,6 @@
 import { CrossmintService } from "@/api";
 import { logError, logInfo, logWarn } from "@/services/logging";
-import type { CrossmintAASDKInitParams, PasskeyCipher, PasskeysSDKInitParams } from "@/types";
+import type { PasskeyCipher, PasskeysSDKInitParams } from "@/types";
 import { PasskeySdkError, errorToJSON } from "@/utils";
 
 import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
@@ -55,8 +55,8 @@ export class PasskeysSDK {
             const capacityDelegationAuthSig = await this.crossmintService.getCapacityCreditsOwnerSignature();
             const { ciphertext, dataToEncryptHash } = await this.litService.encrypt(
                 secretToEncrypt,
-                ciphers.cipherData.pkpPublicKey!,
-                ciphers.cipherData.pkpEthAddress!,
+                ciphers.cipher.data.pkpPublicKey!,
+                ciphers.cipher.data.pkpEthAddress!,
                 capacityDelegationAuthSig
             );
             await this.saveCypherText(chain, walletAddress, ciphertext, dataToEncryptHash);
@@ -86,10 +86,10 @@ export class PasskeysSDK {
             }
             const capacityDelegationAuthSig = await this.crossmintService.getCapacityCreditsOwnerSignature();
             const decryptedString = await this.litService.decrypt(
-                ciphers.cipherData.pkpPublicKey!,
-                ciphers.cipherData.pkpEthAddress!,
-                ciphers.cipherData.cipherText!,
-                ciphers.cipherData.dataToEncryptHash!,
+                ciphers.cipher.data.pkpPublicKey!,
+                ciphers.cipher.data.pkpEthAddress!,
+                ciphers.cipher.data.cipherText!,
+                ciphers.cipher.data.dataToEncryptHash!,
                 capacityDelegationAuthSig
             );
 
@@ -114,18 +114,19 @@ export class PasskeysSDK {
     private checkPPKAlreadyMinted(cipher: PasskeyCipher) {
         return (
             cipher != null &&
-            cipher.cipherData != null &&
-            cipher.cipherData.pkpEthAddress != null &&
-            cipher.cipherData.pkpPublicKey != null
+            cipher.cipher != null &&
+            cipher.cipher.data != null &&
+            cipher.cipher.data.pkpEthAddress != null &&
+            cipher.cipher.data.pkpPublicKey != null
         );
     }
 
     private checkSecretAlreadyCreated(cipher: PasskeyCipher) {
         return (
             cipher != null &&
-            cipher.cipherData != null &&
-            cipher.cipherData.cipherText != null &&
-            cipher.cipherData.dataToEncryptHash != null
+            cipher.cipher.data != null &&
+            cipher.cipher.data.cipherText != null &&
+            cipher.cipher.data.dataToEncryptHash != null
         );
     }
 

@@ -50,8 +50,7 @@ export interface WalletConfig {
 export interface PasskeyCipher {
     chain: BlockchainIncludingTestnet;
     walletAddress: string;
-    cipherMethod: CipherMethodTypes;
-    cipherData: LitProtocolCipherData;
+    cipher: Cipher;
 }
 
 export interface LitProtocolCipherData {
@@ -60,4 +59,5 @@ export interface LitProtocolCipherData {
     cipherText?: string;
     dataToEncryptHash?: string;
 }
-export type CipherMethodTypes = "lit_protocol";
+
+type Cipher = { method: "lit_protocol"; data: LitProtocolCipherData };

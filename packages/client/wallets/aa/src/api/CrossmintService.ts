@@ -151,14 +151,22 @@ export class CrossmintService {
     }
 
     async getPasskeyCiphers(walletLocator: string): Promise<PasskeyCipher> {
-        return this.fetchCrossmintAPI(
+        const response = await this.fetchCrossmintAPI(
             `v1-alpha1/passkeys/ciphers/${walletLocator}`,
             { method: "GET" },
             `Error fetching passkeys ciphers for: ${walletLocator}`
         );
+        return {
+            chain: response.chain,
+            walletAddress: response.walletAddress,
+            cipher: {
+                method: response.cipherMethod,
+                data: response.cipherData,
+            },
+        };
     }
 
-    async upsertPasskeyCiphers(walletLocator: string, passkeyCipher: PasskeyCipher) {
+    async upsertPasskeyCiphers(walletLocator: string, passkeyCipher: any) {
         return this.fetchCrossmintAPI(
             `v1-alpha1/passkeys/ciphers/${walletLocator}`,
             {
