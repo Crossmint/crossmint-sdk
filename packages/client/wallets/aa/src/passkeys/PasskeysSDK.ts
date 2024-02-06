@@ -30,7 +30,7 @@ export class PasskeysSDK {
             const { pkpEthAddress, pkpPublicKey } = await this.litService.registerWithWebAuthn(
                 `${chain}:${walletAddress}`
             );
-            await this.savePKP(chain, walletAddress, pkpEthAddress!, pkpPublicKey!);
+            await this.savePKP(chain, walletAddress, pkpEthAddress, pkpPublicKey);
 
             logInfo("[PASSKEYS_SIGN_UP] - FINISH", { chain, walletAddress, pkpEthAddress, pkpPublicKey });
             return { pkpEthAddress, pkpPublicKey };
@@ -40,25 +40,31 @@ export class PasskeysSDK {
         }
     }
 
-    async encryt(chain: BlockchainIncludingTestnet, walletAddress: string, secretToEncrypt: string) {
+    async encrypt(chain: BlockchainIncludingTestnet, walletAddress: string, secretToEncrypt: string) {
         try {
             const ciphers = await this.getPasskeyCiphers(chain, walletAddress);
-            if (!this.checkPPKAlreadyMinted(ciphers)) {
-                logWarn("[PASSKEYS_ENCRYPT] - PKP not minted. Please sign up first.", { chain, walletAddress });
-                return;
-            }
-
             if (this.checkSecretAlreadyCreated(ciphers)) {
                 logWarn("[PASSKEYS_ENCRYPT] - Secret already created. Skipping...", { chain, walletAddress });
                 return;
             }
+
+            let pkpEthAddres, pkpPublicKey;
+            if (!this.checkPPKAlreadyMinted(ciphers)) {
+                const response = await this.signUp(chain, walletAddress);
+                pkpEthAddres = response?.pkpEthAddress;
+                pkpPublicKey = response?.pkpPublicKey;
+            } else {
+                pkpEthAddres = ciphers.cipher.data.pkpEthAddress;
+                pkpPublicKey = ciphers.cipher.data.pkpPublicKey;
+            }
+
             const capacityDelegationAuthSig = await this.crossmintService.getCapacityCreditsOwnerSignature();
-            const { ciphertext, dataToEncryptHash } = await this.litService.encrypt(
-                secretToEncrypt,
-                ciphers.cipher.data.pkpPublicKey!,
-                ciphers.cipher.data.pkpEthAddress!,
-                capacityDelegationAuthSig
-            );
+            const { ciphertext, dataToEncryptHash } = await this.litService.encrypt({
+                messageToEncrypt: secretToEncrypt,
+                pkpPublicKey: pkpPublicKey!,
+                pkpEthAddress: pkpEthAddres!,
+                capacityDelegationAuthSig,
+            });
             await this.saveCypherText(chain, walletAddress, ciphertext, dataToEncryptHash);
 
             logInfo("[PASSKEYS_ENCRYPT] - FINISH", { chain, walletAddress });
@@ -82,13 +88,13 @@ export class PasskeysSDK {
                 return;
             }
             const capacityDelegationAuthSig = await this.crossmintService.getCapacityCreditsOwnerSignature();
-            const decryptedString = await this.litService.decrypt(
-                ciphers.cipher.data.pkpPublicKey!,
-                ciphers.cipher.data.pkpEthAddress!,
-                ciphers.cipher.data.cipherText!,
-                ciphers.cipher.data.dataToEncryptHash!,
-                capacityDelegationAuthSig
-            );
+            const decryptedString = await this.litService.decrypt({
+                pkpPublicKey: ciphers.cipher.data.pkpPublicKey!,
+                pkpEthAddress: ciphers.cipher.data.pkpEthAddress!,
+                cipherText: ciphers.cipher.data.cipherText!,
+                dataToEncryptHash: ciphers.cipher.data.dataToEncryptHash!,
+                capacityDelegationAuthSig,
+            });
 
             logInfo("[PASSKEYS_DECRYPT] - FINISH", { chain, walletAddress });
             return decryptedString;

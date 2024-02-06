@@ -1,4 +1,5 @@
 import { logError, logInfo } from "@/services/logging";
+import { DecryptInput, EncryptInput } from "@/types";
 import { LitProtocolError, errorToJSON, isLocalhost } from "@/utils";
 import { POLYGON_CHAIN_ID, RELAY_API_KEY } from "@/utils/constants";
 import { LitAbility, LitActionResource } from "@lit-protocol/auth-helpers";
@@ -35,31 +36,30 @@ export class LitService {
             }
             const provider = this.litAuthClient!.getProvider(ProviderType.WebAuthn) as WebAuthnProvider;
             // Register new WebAuthn credential
-            const options = await provider!.register(identifier);
+            const options = await provider.register(identifier);
             // Verify registration and mint PKP through relay server
-            const txHash = await provider!.verifyAndMintPKPThroughRelayer(options);
+            const txHash = await provider.verifyAndMintPKPThroughRelayer(options);
             const response = await provider.relay.pollRequestUntilTerminalState(txHash);
 
             if (response.status !== "Succeeded") {
-                throw new Error("Failed to register with WebAuthn");
+                logError("[LIT_REGISTER_WEBAUTHN] - ERROR_REGISTER_WEBAUTHN", {
+                    error: errorToJSON(response.error),
+                    identifier,
+                });
+                throw new LitProtocolError(`Failed to register with WebAuthn: ${response.error ?? ""}`);
             }
 
             logInfo("[LIT_REGISTER_WEBAUTHN] - FINISH", { identifier });
             return {
-                pkpEthAddress: response.pkpEthAddress,
-                pkpPublicKey: response.pkpPublicKey,
+                pkpEthAddress: response.pkpEthAddress!,
+                pkpPublicKey: response.pkpPublicKey!,
             };
         } catch (error: any) {
             logError("[LIT_REGISTER_WEBAUTHN] - ERROR_REGISTER_WEBAUTHN", { error: errorToJSON(error), identifier });
             throw new LitProtocolError(`Error signing up [${error?.name ?? ""}]`);
         }
     }
-    async encrypt(
-        messageToEncrypt: string,
-        pkpPublicKey: string,
-        pkpEthAddress: string,
-        capacityDelegationAuthSig: AuthSig
-    ) {
+    async encrypt({ messageToEncrypt, pkpPublicKey, pkpEthAddress, capacityDelegationAuthSig }: EncryptInput) {
         try {
             const { authSig, accessControlConditions } = await this.prepareLit(
                 pkpPublicKey,
@@ -88,13 +88,13 @@ export class LitService {
         }
     }
 
-    async decrypt(
-        pkpPublicKey: string,
-        pkpEthAddress: string,
-        cipherText: string,
-        dataToEncryptHash: string,
-        capacityDelegationAuthSig: AuthSig
-    ) {
+    async decrypt({
+        pkpPublicKey,
+        pkpEthAddress,
+        cipherText,
+        dataToEncryptHash,
+        capacityDelegationAuthSig,
+    }: DecryptInput) {
         try {
             const { authSig, accessControlConditions } = await this.prepareLit(
                 pkpPublicKey,

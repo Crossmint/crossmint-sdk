@@ -1,3 +1,4 @@
+import { AuthSig } from "@lit-protocol/types";
 import { ethers } from "ethers";
 
 import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
@@ -59,5 +60,20 @@ export interface LitProtocolCipherData {
     cipherText?: string;
     dataToEncryptHash?: string;
 }
+
+export type EncryptInput = {
+    messageToEncrypt: string;
+    pkpPublicKey: string;
+    pkpEthAddress: string;
+    capacityDelegationAuthSig: AuthSig;
+};
+
+export type DecryptInput = {
+    pkpPublicKey: string;
+    pkpEthAddress: string;
+    cipherText: string;
+    dataToEncryptHash: string;
+    capacityDelegationAuthSig: AuthSig;
+};
 
 type Cipher = { method: "lit_protocol"; data: LitProtocolCipherData };
