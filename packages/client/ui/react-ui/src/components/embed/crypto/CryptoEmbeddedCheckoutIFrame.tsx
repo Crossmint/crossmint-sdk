@@ -82,7 +82,7 @@ export default function CryptoEmbeddedCheckoutIFrame(props: CryptoEmbeddedChecko
             type: "params-update",
             payload: embeddedCheckoutPropsToUpdatableParamsPayload(props),
         });
-    }, [props.signer.address, props.recipient, props.mintConfig, props.locale, props.currency, props.whPassThroughArgs]);
+    }, [props.signer.address, (props.signer as any).network, props.recipient, props.mintConfig, props.locale, props.currency, props.whPassThroughArgs]);
 
     return <CrossmintEmbeddedCheckoutIFrame onInternalEvent={onInternalEvent} {...props} />;
 }
