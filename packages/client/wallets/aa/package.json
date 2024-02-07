@@ -9,10 +9,10 @@
         "@web3auth/ethereum-provider": "^6.1.7",
         "@web3auth/single-factor-auth": "^6.5.0",
         "@zerodev/sdk": "4.5.2",
+        "email-validator": "2.0.4",
         "ethers": "5.7.2",
-        "viem": "^2.5.0",
         "libphonenumber-js": "1.10.44",
-        "email-validator": "2.0.4"
+        "viem": "^2.5.0"
     },
     "exports": {
         "import": "./dist/index.js",
@@ -40,5 +40,5 @@
     "sideEffects": false,
     "type": "module",
     "types": "./dist/index.d.ts",
-    "version": "0.1.1"
+    "version": "0.1.2"
 }
