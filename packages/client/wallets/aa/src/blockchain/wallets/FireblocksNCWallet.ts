@@ -18,17 +18,24 @@ import { PasswordEncryptedLocalStorage } from "../../storage/PasswordEncryptedLo
 import { KeysGenerationError, NonCustodialWalletError, SignTransactionError } from "../../utils/error";
 import { getFireblocksAssetId } from "../BlockchainNetworks";
 
-export const FireblocksNCWallet = async (
-    userIdentifier: UserIdentifier,
-    crossmintService: CrossmintWalletService,
-    chain: BlockchainIncludingTestnet,
-    passphrase: string,
-    ncwData?: {
-        walletId: string;
-        deviceId: string;
-    }
-) => {
-    const localStorageRepository = new LocalStorageRepository();
+type FireblocksNCWWalletInput = {
+    userIdentifier: UserIdentifier;
+    projectId: string;
+    crossmintService: CrossmintWalletService;
+    chain: BlockchainIncludingTestnet;
+    passphrase: string;
+    ncwData?: { walletId: string; deviceId: string };
+};
+
+export const FireblocksNCWallet = async ({
+    userIdentifier,
+    projectId,
+    crossmintService,
+    chain,
+    passphrase,
+    ncwData,
+}: FireblocksNCWWalletInput) => {
+    const localStorageRepository = new LocalStorageRepository(userIdentifier, projectId);
 
     let _walletId: string;
     let _deviceId: string;

@@ -3,6 +3,7 @@ import type { Transaction as _SolanaTransaction } from "@solana/web3.js";
 
 import { CommonEmbeddedCheckoutProps } from ".";
 import { CryptoPaymentMethod } from "..";
+import { Blockchain } from "@crossmint/common-sdk-base";
 
 type CryptoEmbeddedCheckoutPropsBase<
     PM extends keyof CryptoPaymentMethodSignerMap = keyof CryptoPaymentMethodSignerMap,
@@ -45,6 +46,7 @@ type SolanaTransaction = _SolanaTransaction;
 // Signers
 export type ETHEmbeddedCheckoutSigner = CommonEmbeddedCheckoutSignerProps & {
     signAndSendTransaction: (transaction: EthersTransaction) => Promise<string>;
+    network?: Blockchain;
 };
 
 export type SOLEmbeddedCheckoutSigner = CommonEmbeddedCheckoutSignerProps & {

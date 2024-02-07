@@ -6,7 +6,11 @@ import { VerifiableCredential } from "../../types/verifiableCredential";
 export class VerifiableCredentialSignatureService {
     async verify(vc: VerifiableCredential) {
         let issuerId = vc.issuer.id;
-        issuerId = issuerId.replace("did:", "");
+        const issuerDidParts = issuerId.split(":");
+        if (issuerDidParts.length < 2) {
+            throw new Error("Issuer DID should be in the format did:{chain}:{address}");
+        }
+        issuerId = issuerDidParts[2];
 
         if (vc.proof == undefined) {
             throw new Error("No proof associated with credential");

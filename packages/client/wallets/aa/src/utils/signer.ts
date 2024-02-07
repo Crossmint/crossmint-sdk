@@ -20,23 +20,39 @@ import { Signer } from "ethers";
 
 import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
-export async function createOwnerSigner(
-    userIdentifier: UserIdentifier,
-    chain: BlockchainIncludingTestnet,
-    walletConfig: WalletConfig,
-    crossmintService: CrossmintWalletService
-): Promise<SmartAccountSigner> {
+type CreateOwnerSignerInput = {
+    userIdentifier: UserIdentifier;
+    projectId: string;
+    chain: BlockchainIncludingTestnet;
+    walletConfig: WalletConfig;
+    crossmintService: CrossmintWalletService;
+};
+
+export async function createOwnerSigner({
+    userIdentifier,
+    projectId,
+    chain,
+    walletConfig,
+    crossmintService,
+}: CreateOwnerSignerInput): Promise<SmartAccountSigner> {
     if (isFireblocksNCWSigner(walletConfig.signer)) {
         let fireblocks: any;
         if ("walletId" in walletConfig.signer && "deviceId" in walletConfig.signer) {
             const { passphrase, walletId, deviceId } = walletConfig.signer;
-            fireblocks = await FireblocksNCWallet(userIdentifier, crossmintService, chain, passphrase, {
-                walletId,
-                deviceId,
+            fireblocks = await FireblocksNCWallet({
+                userIdentifier,
+                projectId,
+                crossmintService,
+                chain,
+                passphrase,
+                ncwData: {
+                    walletId,
+                    deviceId,
+                },
             });
         } else {
             const { passphrase } = walletConfig.signer;
-            fireblocks = await FireblocksNCWallet(userIdentifier, crossmintService, chain, passphrase, undefined);
+            fireblocks = await FireblocksNCWallet({ userIdentifier, projectId, crossmintService, chain, passphrase });
         }
         return fireblocks.owner;
     } else if (isWeb3AuthSigner(walletConfig.signer)) {
