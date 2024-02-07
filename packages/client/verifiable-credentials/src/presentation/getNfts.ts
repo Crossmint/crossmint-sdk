@@ -7,7 +7,7 @@ export async function getWalletNfts(chain: string, wallet: string, environment: 
     let page = 1;
     let hasMore = true;
     let allData: VC_EVMNFT[] = [];
-    const perPage = 20; /// useee
+    const perPage = 20;
 
     const baseUrl = getEnvironmentBaseUrl(environment);
     const headers = CrossmintAPI.getHeaders();
