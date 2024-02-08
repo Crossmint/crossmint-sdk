@@ -9,8 +9,6 @@ import {
     OPTIMISM_CHAIN_ID,
     POLYGON_CHAIN_ID,
     SEPOLIA_CHAIN_ID,
-    WEB3_AUTH_MAINNET,
-    WEB3_AUTH_TESTNET,
     ZD_ARBITRUM_PROJECT_ID,
     ZD_BSC_PROJECT_ID,
     ZD_ETHEREUM_PROJECT_ID,
@@ -22,7 +20,6 @@ import {
     ZD_ZKATANA_PROJECT_ID,
     ZKATANA_CHAIN_ID,
 } from "@/utils";
-import { TORUS_LEGACY_NETWORK_TYPE } from "@web3auth/single-factor-auth";
 import { arbitrum, bsc, goerli, mainnet, optimism, polygon, polygonMumbai, sepolia } from "viem/chains";
 
 import {
@@ -236,10 +233,6 @@ export function getViemNetwork(networkName: EVMBlockchainIncludingTestnet) {
 export function getApiUrlByBlockchainType(chain: BlockchainIncludingTestnet): string {
     const result = isTestnet(chain) ? CROSSMINT_STG_URL : CROSSMINT_PROD_URL;
     return result;
-}
-
-export function getWeb3AuthBlockchain(chain: BlockchainIncludingTestnet): TORUS_LEGACY_NETWORK_TYPE {
-    return isTestnet(chain) ? WEB3_AUTH_TESTNET : WEB3_AUTH_MAINNET;
 }
 
 export function isTestnet(chain: BlockchainIncludingTestnet): boolean {
