@@ -27,6 +27,17 @@ export default function CryptoEmbeddedCheckoutIFrame(props: CryptoEmbeddedChecko
             console.log("[Crossmint] Received incoming transaction", serializedTransaction);
             handleIncomingTransaction(serializedTransaction);
         }
+
+        if (type === IncomingInternalEvents.CRYPTO_SWITCH_NETWORK) {
+            const { network } = payload;
+            console.log("[Crossmint] Received change of network", network);
+
+            const switchNetwork = (signer as ETHEmbeddedCheckoutSigner).switchNetwork;
+            if(switchNetwork == null) {
+                throw new Error("switchNetwork function should have been defined")
+            }
+            switchNetwork(network);
+        }
     }
 
     async function handleIncomingTransaction(serializedTransaction: string) {

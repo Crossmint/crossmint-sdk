@@ -48,6 +48,7 @@ export type ETHEmbeddedCheckoutSigner = CommonEmbeddedCheckoutSignerProps & {
     signAndSendTransaction: (transaction: EthersTransaction) => Promise<string>;
     network?: Blockchain;
     supportedNetworks?: Blockchain[];
+    switchNetwork?: (network: Blockchain) => Promise<void>;
 };
 
 export type SOLEmbeddedCheckoutSigner = CommonEmbeddedCheckoutSignerProps & {
