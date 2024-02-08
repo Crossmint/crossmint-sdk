@@ -7,7 +7,6 @@ import {
     getTickerByBlockchain,
     getTickerNameByBlockchain,
     getUrlProviderByBlockchain,
-    getWeb3AuthBlockchain,
 } from "@/blockchain";
 import { FireblocksNCWSigner, UserIdentifier, WalletConfig, Web3AuthSigner } from "@/types";
 import { parseToken } from "@/utils";
@@ -69,7 +68,7 @@ export async function createOwnerSigner({
         };
         const web3auth = new Web3Auth({
             clientId: signer.clientId,
-            web3AuthNetwork: getWeb3AuthBlockchain(chain),
+            web3AuthNetwork: signer.web3AuthNetwork,
             usePnPKey: false,
         });
 
