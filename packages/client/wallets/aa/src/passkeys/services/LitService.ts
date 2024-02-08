@@ -1,14 +1,12 @@
 import { logError, logInfo } from "@/services/logging";
 import { DecryptInput, EncryptInput } from "@/types";
 import { LitProtocolError, errorToJSON, isLocalhost } from "@/utils";
-import { POLYGON_CHAIN_ID, RELAY_API_KEY } from "@/utils/constants";
+import { RELAY_API_KEY } from "@/utils/constants";
 import { LitAbility, LitActionResource } from "@lit-protocol/auth-helpers";
 import { ProviderType } from "@lit-protocol/constants";
 import { LitAuthClient, WebAuthnProvider } from "@lit-protocol/lit-auth-client";
 import { LitNodeClient, decryptToString, encryptString } from "@lit-protocol/lit-node-client";
-import { PKPEthersWallet } from "@lit-protocol/pkp-ethers";
 import { AuthSig } from "@lit-protocol/types";
-import { SiweMessage } from "siwe";
 
 const chain = "polygon";
 
@@ -17,16 +15,18 @@ export class LitService {
     private litAuthClient: LitAuthClient | undefined;
 
     async connect() {
-        this.litAuthClient = new LitAuthClient({
-            litRelayConfig: {
-                relayApiKey: RELAY_API_KEY,
-            },
-        });
-        this.litAuthClient.initProvider<WebAuthnProvider>(ProviderType.WebAuthn);
         this.litNodeClient = new LitNodeClient({
             litNetwork: isLocalhost() ? "manzano" : "habanero",
         });
         await this.litNodeClient.connect();
+
+        this.litAuthClient = new LitAuthClient({
+            litRelayConfig: {
+                relayApiKey: RELAY_API_KEY,
+            },
+            litNodeClient: this.litNodeClient,
+        });
+        this.litAuthClient.initProvider<WebAuthnProvider>(ProviderType.WebAuthn);
     }
 
     async registerWithWebAuthn(identifier: string) {
@@ -59,7 +59,7 @@ export class LitService {
     }
     async encrypt({ messageToEncrypt, pkpPublicKey, pkpEthAddress, capacityDelegationAuthSig }: EncryptInput) {
         try {
-            const { authSig, accessControlConditions } = await this.prepareLit(
+            const { sessionSigs, accessControlConditions } = await this.prepareLit(
                 pkpPublicKey,
                 pkpEthAddress,
                 capacityDelegationAuthSig
@@ -67,7 +67,7 @@ export class LitService {
             const { ciphertext, dataToEncryptHash } = await encryptString(
                 {
                     accessControlConditions,
-                    authSig,
+                    sessionSigs,
                     chain: chain,
                     dataToEncrypt: messageToEncrypt,
                 },
@@ -94,7 +94,7 @@ export class LitService {
         capacityDelegationAuthSig,
     }: DecryptInput) {
         try {
-            const { authSig, accessControlConditions } = await this.prepareLit(
+            const { sessionSigs, accessControlConditions } = await this.prepareLit(
                 pkpPublicKey,
                 pkpEthAddress,
                 capacityDelegationAuthSig
@@ -104,7 +104,7 @@ export class LitService {
                     accessControlConditions,
                     ciphertext: cipherText,
                     dataToEncryptHash: dataToEncryptHash,
-                    authSig,
+                    sessionSigs,
                     chain: chain,
                 },
                 this.litNodeClient!
@@ -154,35 +154,6 @@ export class LitService {
             },
         });
 
-        const pkpWallet = new PKPEthersWallet({
-            controllerSessionSigs: sessionSigs,
-            pkpPubKey: pkpPublicKey,
-            rpc: "https://chain-rpc.litprotocol.com/http",
-            debug: true,
-        });
-        await pkpWallet.init();
-
-        const statement = "SIWE";
-        const siweMessage = new SiweMessage({
-            domain: window.location.hostname,
-            address: pkpWallet.address,
-            statement,
-            uri: origin,
-            version: "1",
-            chainId: POLYGON_CHAIN_ID,
-            nonce: this.litNodeClient!.getLatestBlockhash()!,
-            expirationTime: new Date(Date.now() + 60_000 * 60).toISOString(), // Valid for 1 hour
-        });
-        const messageToSign = siweMessage.prepareMessage();
-        const signature = await pkpWallet.signMessage(messageToSign);
-
-        const authSig = {
-            sig: signature,
-            derivedVia: "web3.eth.personal.sign",
-            signedMessage: messageToSign,
-            address: pkpWallet.address,
-        };
-
         const accessControlConditions = [
             {
                 contractAddress: "",
@@ -197,6 +168,6 @@ export class LitService {
             },
         ];
 
-        return { authSig, accessControlConditions };
+        return { sessionSigs, accessControlConditions };
     }
 }
