@@ -31,7 +31,12 @@ export default function CryptoEmbeddedCheckoutIFrame(props: CryptoEmbeddedChecko
         if (type === IncomingInternalEvents.CRYPTO_SWITCH_NETWORK) {
             const { network } = payload;
             console.log("[Crossmint] Received change of network", network);
-            (signer as ETHEmbeddedCheckoutSigner).switchNetwork!(network);
+
+            const switchNetwork = (signer as ETHEmbeddedCheckoutSigner).switchNetwork;
+            if(switchNetwork == null) {
+                throw new Error("switchNetwork function should have been defined")
+            }
+            switchNetwork(network);
         }
     }
 
