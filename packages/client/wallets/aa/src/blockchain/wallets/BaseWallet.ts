@@ -9,14 +9,14 @@ import { BigNumber, ethers } from "ethers";
 import erc20 from "../../ABI/ERC20.json";
 import erc721 from "../../ABI/ERC721.json";
 import erc1155 from "../../ABI/ERC1155.json";
-import { CrossmintService } from "../../api/CrossmintService";
+import { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import { EVMToken, Token } from "../token/Tokens";
 
 class BaseWallet extends ZeroDevAccountSigner<"ECDSA"> {
     private signer: ZeroDevAccountSigner<"ECDSA">;
-    crossmintService: CrossmintService;
+    crossmintService: CrossmintWalletService;
 
-    constructor(provider: ZeroDevEthersProvider<"ECDSA">, crossmintService: CrossmintService) {
+    constructor(provider: ZeroDevEthersProvider<"ECDSA">, crossmintService: CrossmintWalletService) {
         super(provider);
         this.crossmintService = crossmintService;
         this.signer = provider.getAccountSigner();

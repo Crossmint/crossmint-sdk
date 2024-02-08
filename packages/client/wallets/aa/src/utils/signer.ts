@@ -1,4 +1,4 @@
-import { CrossmintService } from "@/api";
+import { CrossmintWalletService } from "@/api";
 import {
     FireblocksNCWallet,
     getBlockExplorerByBlockchain,
@@ -24,7 +24,7 @@ type CreateOwnerSignerInput = {
     projectId: string;
     chain: BlockchainIncludingTestnet;
     walletConfig: WalletConfig;
-    crossmintService: CrossmintService;
+    crossmintService: CrossmintWalletService;
 };
 
 export async function createOwnerSigner({

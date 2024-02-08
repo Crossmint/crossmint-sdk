@@ -16,7 +16,7 @@ import { WalletClient, createWalletClient, custom, getFunctionSelector, publicAc
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
-import { CrossmintService } from "../../api/CrossmintService";
+import { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import { GenerateSignatureDataInput } from "../../types/API";
 import {
     getBlockchainByChainId,
@@ -38,7 +38,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
     private sessionKeySignerAddress?: string;
     chain: B;
 
-    constructor(provider: ZeroDevEthersProvider<"ECDSA">, crossmintService: CrossmintService, chain: B) {
+    constructor(provider: ZeroDevEthersProvider<"ECDSA">, crossmintService: CrossmintWalletService, chain: B) {
         super(provider, crossmintService);
         this.chain = chain;
     }
