@@ -2682,21 +2682,19 @@
     "@ethersproject/properties" "^5.7.0"
     "@ethersproject/strings" "^5.7.0"
 
-"@fireblocks/ncw-js-infra@^1.0.13":
-  version "1.0.13"
-  resolved "https://registry.yarnpkg.com/@fireblocks/ncw-js-infra/-/ncw-js-infra-1.0.13.tgz#0116b05bfdec10016c24ac0fb9889432ac0c3c9d"
-  integrity sha512-VVR1J0MRc0ppzoWcSJjQNF0Ah2cQ8ysSjp9tvS6DvlN17oUlb1A/xceeIY8tW6zAgwFv/ZjAb+5QR9AaDjTE6g==
+"@fireblocks/ncw-js-infra@^1.0.17":
+  version "1.0.18"
+  resolved "https://registry.yarnpkg.com/@fireblocks/ncw-js-infra/-/ncw-js-infra-1.0.18.tgz#ea3d0644c254f3aa5b5af52a73be58189780afeb"
+  integrity sha512-xLvzF1b63Yl8nEdIDvmIhdXJB8fsBdcqazkhViNWxeXkYkLnLWgY9Txva0e92pVN+wZjiqPMUlV5MdPmVK4v1g==
   dependencies:
     "@types/emscripten" "^1.39.7"
 
-"@fireblocks/ncw-js-sdk@10.0.1":
-  version "10.0.1"
-  resolved "https://registry.yarnpkg.com/@fireblocks/ncw-js-sdk/-/ncw-js-sdk-10.0.1.tgz#4b828be79100cc09996f50368658f54ea528e246"
-  integrity sha512-eb3WsLpeWFnE/LN8CIf/GK0bmmoI0TsE+qzX/2GsE2v8FirA6I4zlqMHFMErn9twrtxqOepkeoAE1gOeS8e67w==
+"@fireblocks/ncw-js-sdk@11.0.1":
+  version "11.0.1"
+  resolved "https://registry.yarnpkg.com/@fireblocks/ncw-js-sdk/-/ncw-js-sdk-11.0.1.tgz#07f8ba4e976c4c8eb2bcd702943a5b2ae6642dfb"
+  integrity sha512-KVA3/YdhOafXmYVNuBck5835ZVqjfy6mPqj1T6+7hm2qGlxINCgFsZTZY38Z3cgp1vAQgIgg+21zwk70BGtbXA==
   dependencies:
-    "@fireblocks/ncw-js-infra" "^1.0.13"
-    "@types/jwt-decode" "^3.1.0"
-    "@types/node-forge" "^1.3.4"
+    "@fireblocks/ncw-js-infra" "^1.0.17"
     jwt-decode "^3.1.2"
     node-forge "^1.3.1"
 
@@ -5894,13 +5892,6 @@
   resolved "https://registry.yarnpkg.com/@types/json5/-/json5-0.0.29.tgz#ee28707ae94e11d2b827bcbe5270bcea7f3e71ee"
   integrity sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==
 
-"@types/jwt-decode@^3.1.0":
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/@types/jwt-decode/-/jwt-decode-3.1.0.tgz#eb1b24f436962b8857beaf8addfd542de56670a2"
-  integrity sha512-tthwik7TKkou3mVnBnvVuHnHElbjtdbM63pdBCbZTirCt3WAdM73Y79mOri7+ljsS99ZVwUFZHLMxJuJnv/z1w==
-  dependencies:
-    jwt-decode "*"
-
 "@types/lodash.isequal@4.5.6":
   version "4.5.6"
   resolved "https://registry.yarnpkg.com/@types/lodash.isequal/-/lodash.isequal-4.5.6.tgz#ff42a1b8e20caa59a97e446a77dc57db923bc02b"
@@ -5943,10 +5934,10 @@
   resolved "https://registry.yarnpkg.com/@types/ms/-/ms-0.7.34.tgz#10964ba0dee6ac4cd462e2795b6bebd407303433"
   integrity sha512-nG96G3Wp6acyAgJqGasjODb+acrI7KltPiRxzHPXnP3NgI28bpQDRv53olbqGXbfcgF5aiiHmO3xpwEpS5Ld9g==
 
-"@types/node-forge@^1.3.4":
-  version "1.3.10"
-  resolved "https://registry.yarnpkg.com/@types/node-forge/-/node-forge-1.3.10.tgz#62a19d4f75a8b03290578c2b04f294b1a5a71b07"
-  integrity sha512-y6PJDYN4xYBxwd22l+OVH35N+1fCYWiuC3aiP2SlXVE6Lo7SS+rSx9r89hLxrP4pn6n1lBGhHJ12pj3F3Mpttw==
+"@types/node-forge@1.3.1":
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/@types/node-forge/-/node-forge-1.3.1.tgz#49e44432c306970b4e900c3b214157c480af19fa"
+  integrity sha512-hvQ7Wav8I0j9amPXJtGqI/Yx70zeF62UKlAYq8JPm0nHzjKKzZvo9iR3YI2MiOghZRlOI+tQ2f6D+G6vVf4V2Q==
   dependencies:
     "@types/node" "*"
 
@@ -15115,15 +15106,15 @@ just-diff@^6.0.0:
   resolved "https://registry.yarnpkg.com/just-diff/-/just-diff-6.0.2.tgz#03b65908543ac0521caf6d8eb85035f7d27ea285"
   integrity sha512-S59eriX5u3/QhMNq3v/gm8Kd0w8OS6Tz2FS1NG4blv+z0MuQcBRJyFWjdovM0Rad4/P4aUPFtnkNjMjyMlMSYA==
 
-jwt-decode@*, jwt-decode@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/jwt-decode/-/jwt-decode-4.0.0.tgz#2270352425fd413785b2faf11f6e755c5151bd4b"
-  integrity sha512-+KJGIyHgkGuIq3IEBNftfhW/LfWhXUIY6OmyVWjliu5KH1y0fw7VQ8YndE2O4qZdMSd9SqbnC8GOcZEy0Om7sA==
-
 jwt-decode@^3.1.2:
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/jwt-decode/-/jwt-decode-3.1.2.tgz#3fb319f3675a2df0c2895c8f5e9fa4b67b04ed59"
   integrity sha512-UfpWE/VZn0iP50d8cz9NrZLM9lSWhcJ+0Gt/nm4by88UL+J1SiKN8/5dkjMmbEzwL2CAe+67GsegCbIKtbp75A==
+
+jwt-decode@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/jwt-decode/-/jwt-decode-4.0.0.tgz#2270352425fd413785b2faf11f6e755c5151bd4b"
+  integrity sha512-+KJGIyHgkGuIq3IEBNftfhW/LfWhXUIY6OmyVWjliu5KH1y0fw7VQ8YndE2O4qZdMSd9SqbnC8GOcZEy0Om7sA==
 
 keccak@^3.0.0, keccak@^3.0.1:
   version "3.0.3"
@@ -16448,7 +16439,7 @@ node-fetch@2.6.7:
   dependencies:
     whatwg-url "^5.0.0"
 
-node-forge@^1, node-forge@^1.3.1:
+node-forge@1.3.1, node-forge@^1, node-forge@^1.3.1:
   version "1.3.1"
   resolved "https://registry.yarnpkg.com/node-forge/-/node-forge-1.3.1.tgz#be8da2af243b2417d5f646a770663a92b7e9ded3"
   integrity sha512-dPEtOeMvF9VMcYV/1Wb8CPoVAXtp6MKMlcbAt4ddqmGqUJ6fQZFXkNZNkNlfevtNkGtaSoXf/vNNNSvgrdXwtA==
