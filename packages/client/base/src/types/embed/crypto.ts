@@ -47,6 +47,7 @@ type SolanaTransaction = _SolanaTransaction;
 export type ETHEmbeddedCheckoutSigner = CommonEmbeddedCheckoutSignerProps & {
     signAndSendTransaction: (transaction: EthersTransaction) => Promise<string>;
     network?: Blockchain;
+    supportedNetworks?: Blockchain[];
 };
 
 export type SOLEmbeddedCheckoutSigner = CommonEmbeddedCheckoutSignerProps & {
