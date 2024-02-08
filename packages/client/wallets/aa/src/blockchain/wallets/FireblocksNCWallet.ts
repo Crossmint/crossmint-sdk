@@ -2,7 +2,8 @@ import { LocalStorageRepository } from "@/storage";
 import { UserIdentifier } from "@/types";
 import type { SignTypedDataParams, SmartAccountSigner } from "@alchemy/aa-core";
 import {
-    FireblocksNCW,
+    IFireblocksNCW,
+    FireblocksNCWFactory,
     IEventsHandler,
     IMessagesHandler,
     ITransactionSignature,
@@ -85,7 +86,7 @@ export const FireblocksNCWallet = async ({
         return passphrase;
     });
 
-    const fireblocksNCW = await FireblocksNCW.initialize({
+    const fireblocksNCW = await FireblocksNCWFactory({
         env: "production",
         deviceId: _deviceId,
         messagesHandler,
@@ -136,7 +137,7 @@ export const FireblocksNCWallet = async ({
 
 export function getSmartAccountSignerFromFireblocks(
     crossmintService: CrossmintWalletService,
-    fireblocksNCW: FireblocksNCW,
+    fireblocksNCW: IFireblocksNCW,
     walletId: string,
     chain: BlockchainIncludingTestnet,
     localStorageRepository: LocalStorageRepository
@@ -161,7 +162,7 @@ export function getSmartAccountSignerFromFireblocks(
 
 const signMessage = async (
     crossmintService: CrossmintWalletService,
-    fireblocksNCW: FireblocksNCW,
+    fireblocksNCW: IFireblocksNCW,
     walletId: string,
     chain: BlockchainIncludingTestnet,
     msg: Uint8Array | string
@@ -181,7 +182,7 @@ const signMessage = async (
 
 const signTypedData = async (
     crossmintService: CrossmintWalletService,
-    fireblocksNCW: FireblocksNCW,
+    fireblocksNCW: IFireblocksNCW,
     walletId: string,
     chain: BlockchainIncludingTestnet,
     params: SignTypedDataParams

@@ -1,6 +1,6 @@
 import { Blockchain } from "@crossmint/common-sdk-base";
 
-import { CROSSMINT_PROD_URL, CROSSMINT_STG_URL, WEB3_AUTH_MAINNET, WEB3_AUTH_TESTNET } from "../utils/constants";
+import { CROSSMINT_PROD_URL, CROSSMINT_STG_URL } from "../utils/constants";
 import {
     getApiUrlByBlockchainType,
     getBlockExplorerByBlockchain,
@@ -11,7 +11,6 @@ import {
     getTickerByBlockchain,
     getTickerNameByBlockchain,
     getUrlProviderByBlockchain,
-    getWeb3AuthBlockchain,
     getZeroDevProjectIdByBlockchain,
     isEVMBlockchain,
     isTestnet,
@@ -150,22 +149,6 @@ describe("BlockchainNetworks Tests", () => {
             expect(getApiUrlByBlockchainType("bsc")).toBe(CROSSMINT_PROD_URL);
             expect(getApiUrlByBlockchainType("optimism")).toBe(CROSSMINT_PROD_URL);
             expect(getApiUrlByBlockchainType("arbitrum")).toBe(CROSSMINT_PROD_URL);
-        });
-    });
-
-    describe("getWeb3AuthBlockchain", () => {
-        it("should return WEB3_AUTH_TESTNET for testnet blockchains", () => {
-            expect(getWeb3AuthBlockchain("goerli")).toBe(WEB3_AUTH_TESTNET);
-            expect(getWeb3AuthBlockchain("ethereum-sepolia")).toBe(WEB3_AUTH_TESTNET);
-            expect(getWeb3AuthBlockchain("mumbai")).toBe(WEB3_AUTH_TESTNET);
-        });
-
-        it("should return WEB3_AUTH_MAINNET for mainnet blockchains", () => {
-            expect(getWeb3AuthBlockchain("ethereum")).toBe(WEB3_AUTH_MAINNET);
-            expect(getWeb3AuthBlockchain("polygon")).toBe(WEB3_AUTH_MAINNET);
-            expect(getWeb3AuthBlockchain("bsc")).toBe(WEB3_AUTH_MAINNET);
-            expect(getWeb3AuthBlockchain("optimism")).toBe(WEB3_AUTH_MAINNET);
-            expect(getWeb3AuthBlockchain("arbitrum")).toBe(WEB3_AUTH_MAINNET);
         });
     });
 

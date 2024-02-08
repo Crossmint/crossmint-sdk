@@ -1,4 +1,5 @@
 import { AuthSig } from "@lit-protocol/types";
+import { TORUS_NETWORK_TYPE } from "@web3auth/single-factor-auth";
 import { ethers } from "ethers";
 
 import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
@@ -28,9 +29,9 @@ export type Web3AuthSigner = {
     type: "WEB3_AUTH";
     clientId: string;
     verifierId: string;
+    web3AuthNetwork: TORUS_NETWORK_TYPE;
     jwt: string;
 };
-
 type FireblocksNCWSignerBase = {
     type: "FIREBLOCKS_NCW";
     passphrase: string;
