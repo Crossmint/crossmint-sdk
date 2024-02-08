@@ -40,7 +40,6 @@ export class LitService {
             // Verify registration and mint PKP through relay server
             const txHash = await provider.verifyAndMintPKPThroughRelayer(options);
             const response = await provider.relay.pollRequestUntilTerminalState(txHash);
-
             if (response.status !== "Succeeded") {
                 logError("[LIT_REGISTER_WEBAUTHN] - ERROR_REGISTER_WEBAUTHN", {
                     error: errorToJSON(response.error),
@@ -48,14 +47,13 @@ export class LitService {
                 });
                 throw new LitProtocolError(`Failed to register with WebAuthn: ${response.error ?? ""}`);
             }
-
             logInfo("[LIT_REGISTER_WEBAUTHN] - FINISH", { identifier });
             return {
                 pkpEthAddress: response.pkpEthAddress!,
                 pkpPublicKey: response.pkpPublicKey!,
             };
         } catch (error: any) {
-            logError("[LIT_REGISTER_WEBAUTHN] - ERROR_REGISTER_WEBAUTHN", { error: errorToJSON(error), identifier });
+            logError("[LIT_REGISTER_WEBAUTHN] - ERROR_REGISTER_WEBAUTHN", { error: error.message, identifier });
             throw new LitProtocolError(`Error signing up [${error?.name ?? ""}]`);
         }
     }
@@ -122,14 +120,14 @@ export class LitService {
             return decryptedString;
         } catch (error: any) {
             logError("[LIT_DECRYPT] - ERROR_LIT_DECRYPT", {
-                error: errorToJSON(error),
+                error: error.message,
                 pkpPublicKey,
                 pkpEthAddress,
                 cipherText,
                 dataToEncryptHash,
                 capacityDelegationAuthSig,
             });
-            throw new LitProtocolError(`Error decrypting message [${error?.name ?? ""}]`);
+            throw new LitProtocolError(`Error decrypting message [${error?.message ?? ""}]`);
         }
     }
 

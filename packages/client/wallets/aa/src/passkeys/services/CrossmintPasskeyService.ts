@@ -2,10 +2,6 @@ import { BaseCrossmintService } from "@/api/BaseCrossmintService";
 import { PasskeyCipher } from "@/types";
 
 export class CrossmintPasskeyService extends BaseCrossmintService {
-    constructor(apiKey: string) {
-        super(apiKey);
-    }
-
     async getPasskeyCiphers(walletLocator: string): Promise<PasskeyCipher> {
         const response = await this.fetchCrossmintAPI(
             `v1-alpha1/passkeys/ciphers/${walletLocator}`,

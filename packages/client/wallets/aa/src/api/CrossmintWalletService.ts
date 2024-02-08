@@ -3,10 +3,6 @@ import { GenerateSignatureDataInput, StoreAbstractWalletInput, UserIdentifier } 
 import { BaseCrossmintService } from "./BaseCrossmintService";
 
 export class CrossmintWalletService extends BaseCrossmintService {
-    constructor(apiKey: string) {
-        super(apiKey);
-    }
-
     async createSessionKey(address: string) {
         return this.fetchCrossmintAPI(
             "unstable/wallets/aa/wallets/sessionkey",
