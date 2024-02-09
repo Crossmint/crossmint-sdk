@@ -8,8 +8,12 @@ export class Lit {
     public authSig: any;
     private network;
 
-    constructor(network: string = "cayenne") {
+    constructor(network: string = "cayenne", env: string = "test") {
         // manzano not reliable yet
+        const productionValues = ["prod", "production"];
+        if (productionValues.includes(env)) {
+            throw new Error("Production environment not supported yet");
+        }
         this.network = network;
     }
 
