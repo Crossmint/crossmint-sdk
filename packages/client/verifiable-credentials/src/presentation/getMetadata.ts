@@ -55,13 +55,19 @@ export async function getContractWithVCMetadata(
     const credentialCollections = [];
 
     for (const collection of collections) {
-        const metadata = await getMetadata(collection.contractAddress, environment);
+        // const metadata = await getMetadata(collection.contractAddress, environment);
 
-        if (metadata == null || metadata.credentialMetadata == null) {
-            continue;
+        // if (metadata == null || metadata.credentialMetadata == null) {
+        //     continue;
+        // }
+        // collection.metadata = metadata;
+        if (
+            collection.nfts.length > 0 &&
+            collection.nfts[0].metadata != null &&
+            collection.nfts[0].metadata.credentialId != null
+        ) {
+            credentialCollections.push(collection);
         }
-        collection.metadata = metadata;
-        credentialCollections.push(collection);
     }
 
     return credentialCollections;

@@ -4,16 +4,13 @@ import { getContractWithVCMetadata } from "./getMetadata";
 import { filterPolygonErc721, getWalletNfts } from "./getNfts";
 
 export function getCollections(nfts: VC_EVMNFT[]): CredentialsCollection[] {
-    const grouped: Record<string, VC_EVMNFT[]> = nfts.reduce(
-        (acc, nft) => {
-            if (!acc[nft.contractAddress]) {
-                acc[nft.contractAddress] = [];
-            }
-            acc[nft.contractAddress].push(nft);
-            return acc;
-        },
-        {} as Record<string, VC_EVMNFT[]>
-    );
+    const grouped: Record<string, VC_EVMNFT[]> = nfts.reduce((acc, nft) => {
+        if (!acc[nft.contractAddress]) {
+            acc[nft.contractAddress] = [];
+        }
+        acc[nft.contractAddress].push(nft);
+        return acc;
+    }, {} as Record<string, VC_EVMNFT[]>);
 
     return Object.entries(grouped).map(([contractAddress, nfts]) => ({
         contractAddress,
@@ -49,14 +46,14 @@ export async function getCredentialCollections(
         });
     }
 
-    let credentialsCollection = await getContractWithVCMetadata(collections, environment);
+    const credentialsCollection = await getContractWithVCMetadata(collections, environment);
     console.debug(`Got ${credentialsCollection.length} credential collections`);
 
-    if (filters.types != null) {
-        credentialsCollection = credentialsCollection.filter((collection) => {
-            return collection.metadata?.credentialMetadata.types.some((type: string) => filters.types?.includes(type)); // At least one type must match
-        });
-    }
+    // if (filters.types != null) {
+    //     credentialsCollection = credentialsCollection.filter((collection) => {
+    //         return collection.metadata?.credentialMetadata.types.some((type: string) => filters.types?.includes(type)); // At least one type must match
+    //     });
+    // }
 
     console.info(`Got ${credentialsCollection.length} desired credential collections`);
 
