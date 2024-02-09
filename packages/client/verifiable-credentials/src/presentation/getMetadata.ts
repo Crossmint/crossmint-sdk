@@ -28,7 +28,7 @@ export async function getMetadata(contractAddress: string, environment: string):
         try {
             const httpUriFull = formatUrl(gateway, httpUri);
             const timeout = new Promise((resolve, reject) => {
-                const timeoutSeconds = 2;
+                const timeoutSeconds = 5;
                 const id = setTimeout(() => {
                     clearTimeout(id);
                     reject(`Timed out in ${timeoutSeconds} seconds`);
