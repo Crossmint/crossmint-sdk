@@ -8,7 +8,7 @@ export class Lit {
     public authSig: any;
     private network;
 
-    constructor(network: string = "manzano") {
+    constructor(network: string = "cayenne") {
         this.network = network;
     }
 
