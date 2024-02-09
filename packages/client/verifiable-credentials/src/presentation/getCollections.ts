@@ -37,13 +37,11 @@ export async function getCredentialCollections(
     const polygonErc721Nfts = filterPolygonErc721(nfts);
     console.debug(`Got ${polygonErc721Nfts.length} polygon erc721 nfts`);
 
-    let collections = getCollections(polygonErc721Nfts);
+    const collections = getCollections(polygonErc721Nfts);
     console.debug(`Got ${collections.length} collections`);
 
     if (filters.issuers != null) {
-        collections = collections.filter((collection) => {
-            return filters.issuers?.includes(collection.contractAddress);
-        });
+        throw new Error("Filterifying by issuers is not supported yet");
     }
 
     const credentialsCollection = await getContractWithVCMetadata(collections, environment);
