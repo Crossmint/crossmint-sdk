@@ -7,13 +7,13 @@ export async function getWalletNfts(chain: string, wallet: string, environment: 
     let page = 1;
     let hasMore = true;
     let allData: VC_EVMNFT[] = [];
-    const perPage = 20;
+    const perPage = 50;
 
     const baseUrl = getEnvironmentBaseUrl(environment);
     const headers = CrossmintAPI.getHeaders();
 
     while (hasMore) {
-        const url = `${baseUrl}/api/v1-alpha1/wallets/${chain}:${wallet}/nfts?perPage${perPage}&page${page}`;
+        const url = `${baseUrl}/api/v1-alpha1/wallets/${chain}:${wallet}/nfts?perPage=${perPage}&page=${page}`;
         const options = { method: "GET", headers: headers };
 
         try {
@@ -24,10 +24,10 @@ export async function getWalletNfts(chain: string, wallet: string, environment: 
             }
             const data = (await response.json()) as any[];
             allData = [...allData, ...data];
-
             if (data.length < perPage) {
                 hasMore = false;
             } else {
+                console.debug(`Got ${data.length} nfts from page ${page}`);
                 page++;
             }
         } catch (error) {
