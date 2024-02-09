@@ -9,6 +9,7 @@ export class Lit {
     private network;
 
     constructor(network: string = "cayenne") {
+        // manzano not reliable yet
         this.network = network;
     }
 
