@@ -32,7 +32,7 @@ export function crossmintIFrameService(props: CrossmintEmbeddedCheckoutProps) {
                 continue;
             }
             if (typeof value === "object") {
-                queryParams.append(key, JSON.stringify(value));
+                queryParams.append(key, JSON.stringify(value, (key, val) => (typeof val === 'function') ? 'function' : val));
             } else if (typeof value === "string") {
                 if (value === "undefined") {
                     continue;
