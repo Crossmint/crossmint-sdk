@@ -1,16 +1,28 @@
 import * as LitJsSdk from "@lit-protocol/lit-node-client";
+import { randomBytes } from "crypto";
 
 const chain = "polygon";
 
 export class Lit {
     private litNodeClient: any;
     public authSig: any;
+    private network;
+
+    constructor(network: string = "cayenne", env: string = "test") {
+        // manzano not reliable yet
+        const productionValues = ["prod", "production"];
+        if (productionValues.includes(env)) {
+            throw new Error("Production environment not supported yet");
+        }
+        this.network = network;
+    }
 
     async connect() {
         const client = new LitJsSdk.LitNodeClient({
             alertWhenUnauthorized: false,
-            litNetwork: "cayenne",
+            litNetwork: this.network,
         });
+        console.log(`Connecting to Lit ${this.network}`);
         await client.connect();
         this.litNodeClient = client;
     }
@@ -21,7 +33,10 @@ export class Lit {
         }
 
         if (!this.authSig) {
-            this.authSig = await LitJsSdk.checkAndSignAuthMessage({ chain });
+            const nonce = randomBytes(32).toString("hex");
+            const expirationDelta = 1000 * 60 * 10; // 10 minutes
+            const expiration = new Date(new Date().getTime() + expirationDelta).toISOString();
+            this.authSig = await LitJsSdk.checkAndSignAuthMessage({ chain, nonce, expiration });
         }
 
         const ciphertext = LitJsSdk.base64StringToBlob(base64Ciphertext);
