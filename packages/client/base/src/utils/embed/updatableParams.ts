@@ -22,7 +22,7 @@ export function embeddedCheckoutPropsToUpdatableParamsPayload(
                     return [key, 
                         { 
                             address: (value as CryptoEmbeddedCheckoutPropsWithSigner["signer"]).address, 
-                            ...("network" in value ? { network: value.network } : {}) 
+                            ...("chain" in value ? { chain: value.chain } : {}) 
                         } 
                     ];
                 }
