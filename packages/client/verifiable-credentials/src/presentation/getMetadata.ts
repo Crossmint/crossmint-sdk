@@ -25,6 +25,9 @@ export async function getMetadata(contractAddress: string, environment: string):
 
     const httpUri = uri.replace("ipfs://", "");
     for (const gateway of gateways) {
+        console.debug(
+            `Trying to get metadata from gateway ${gateway} for contract ${contractAddress} with uri ${httpUri}`
+        );
         try {
             const httpUriFull = formatUrl(gateway, httpUri);
             const timeout = new Promise((resolve, reject) => {
@@ -41,6 +44,7 @@ export async function getMetadata(contractAddress: string, environment: string):
             }
 
             const metadata = await response.json();
+            console.debug(`Got metadata from gateway ${gateway} for contract ${contractAddress}`);
             return metadata;
         } catch (error) {
             console.error(`Failed to get metadata for contract ${contractAddress} with gataway ${gateway}: ${error}`);
