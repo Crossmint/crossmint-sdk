@@ -7,7 +7,7 @@ import { Blockchain } from "@crossmint/common-sdk-base";
 interface IncomingInternalEventMap {
     [CrossmintInternalEvents.UI_HEIGHT_CHANGED]: { height: number };
     [CrossmintInternalEvents.CRYPTO_PAYMENT_INCOMING_TRANSACTION]: { serializedTransaction: string };
-    [CrossmintInternalEvents.CRYPTO_SWITCH_CHAIN]: { chain: Blockchain };
+    [CrossmintInternalEvents.CRYPTO_CHAIN_SWITCH]: { chain: Blockchain };
 }
 
 interface OutgoingInternalEventMap {
