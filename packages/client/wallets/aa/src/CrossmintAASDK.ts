@@ -1,19 +1,26 @@
-import { CrossmintService } from "@/api";
+import { CrossmintWalletService } from "@/api";
 import { EVMAAWallet, getChainIdByBlockchain, getZeroDevProjectIdByBlockchain, isEVMBlockchain } from "@/blockchain";
 import type { CrossmintAASDKInitParams, WalletConfig } from "@/types";
 import { CURRENT_VERSION, WalletSdkError, ZERO_DEV_TYPE, createOwnerSigner, errorToJSON } from "@/utils";
 import { ZeroDevEthersProvider } from "@zerodev/sdk";
 
-import { BlockchainIncludingTestnet, UserIdentifierParams } from "@crossmint/common-sdk-base";
+import { BlockchainIncludingTestnet, UserIdentifierParams, validateAPIKey } from "@crossmint/common-sdk-base";
 
 import { logError, logInfo } from "./services/logging";
 import { parseUserIdentifier } from "./utils/user";
 
 export class CrossmintAASDK {
-    crossmintService: CrossmintService;
+    crossmintService: CrossmintWalletService;
+    private readonly projectId: string;
 
     private constructor(config: CrossmintAASDKInitParams) {
-        this.crossmintService = new CrossmintService(config.apiKey);
+        const validationResult = validateAPIKey(config.apiKey);
+        if (!validationResult.isValid) {
+            throw new Error("API key invalid");
+        }
+
+        this.projectId = validationResult.projectId;
+        this.crossmintService = new CrossmintWalletService(config.apiKey);
     }
 
     static init(params: CrossmintAASDKInitParams): CrossmintAASDK {
@@ -32,7 +39,14 @@ export class CrossmintAASDK {
             });
 
             const userIdentifier = parseUserIdentifier(user);
-            const owner = await createOwnerSigner(userIdentifier, chain, walletConfig, this.crossmintService);
+
+            const owner = await createOwnerSigner({
+                userIdentifier,
+                projectId: this.projectId,
+                chain,
+                walletConfig,
+                crossmintService: this.crossmintService,
+            });
 
             const address = await owner.getAddress();
 

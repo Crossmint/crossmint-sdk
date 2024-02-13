@@ -1,1 +1,1 @@
-export * from "./CrossmintService";
+export * from "./CrossmintWalletService";

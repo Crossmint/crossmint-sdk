@@ -1,4 +1,4 @@
-import { parseISO } from "date-fns";
+import { isValid, parseISO } from "date-fns";
 
 import { VerifiableCredential } from "../types/verifiableCredential";
 import { NFTStatusService } from "./services/nftStatus";
@@ -6,15 +6,20 @@ import { VerifiableCredentialSignatureService } from "./services/signature";
 
 export async function verifyCredential(
     credential: VerifiableCredential,
-    environment: string = "test"
+    environment: string = "staging"
 ): Promise<{ validVC: boolean; error: string | undefined }> {
-    // TODO check for missing fields
-
     let error;
     if (credential.expirationDate != null) {
-        const parsedExpirationDate = parseISO(credential.expirationDate);
-        const todayDate = new Date();
+        if (typeof credential.expirationDate !== "string") {
+            throw new Error("expirationDate must be a ISO string");
+        }
 
+        const parsedExpirationDate = parseISO(credential.expirationDate);
+        if (!isValid(parsedExpirationDate)) {
+            throw new Error(`Invalid expiration date: ${credential.expirationDate}`);
+        }
+
+        const todayDate = new Date();
         if (parsedExpirationDate < todayDate) {
             error = "Credential expired at " + credential.expirationDate;
             return { validVC: false, error };

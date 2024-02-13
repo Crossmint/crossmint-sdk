@@ -9,7 +9,7 @@ export async function getCredentialFromId(credentialId: string, environment: str
     const headers = CrossmintAPI.getHeaders();
 
     console.debug(`Fetching credential ${credentialId}`);
-    const url = `${baseUrl}/api/vc-alpha1/credentials/${credentialId}`;
+    const url = `${baseUrl}/api/unstable/credentials/${credentialId}`;
     const options = { method: "GET", headers: headers };
     console.log(url, options);
     try {

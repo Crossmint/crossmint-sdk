@@ -19,7 +19,12 @@ export function embeddedCheckoutPropsToUpdatableParamsPayload(
                 const value = props[key];
 
                 if (key === "signer" && value != null) {
-                    return [key, { address: (value as CryptoEmbeddedCheckoutPropsWithSigner["signer"]).address }];
+                    return [key, 
+                        { 
+                            address: (value as CryptoEmbeddedCheckoutPropsWithSigner["signer"]).address, 
+                            ...("chain" in value ? { chain: value.chain } : {}) 
+                        } 
+                    ];
                 }
 
                 return [key, value];
