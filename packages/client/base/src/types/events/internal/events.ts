@@ -1,7 +1,7 @@
 export const IncomingInternalEvents = {
     UI_HEIGHT_CHANGED: "ui:height.changed",
     CRYPTO_PAYMENT_INCOMING_TRANSACTION: "crypto-payment:incoming-transaction",
-    CRYPTO_SWITCH_CHAIN: "crypto-payment:switch-chain",
+    CRYPTO_CHAIN_SWITCH: "crypto-payment:chain-switch",
 } as const;
 export type IncomingInternalEvents = (typeof IncomingInternalEvents)[keyof typeof IncomingInternalEvents];
 
