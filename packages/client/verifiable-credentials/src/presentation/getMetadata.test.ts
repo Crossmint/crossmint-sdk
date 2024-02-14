@@ -53,7 +53,13 @@ describe("getMetadata", () => {
 
     describe("getContractWithVCMetadata", () => {
         it("should fetch contract with VC metadata", async () => {
-            const mockResponse = { a: "a", credentialMetadata: "metadata" };
+            const mockResponse = {
+                a: "a",
+                credentialMetadata: {
+                    issuerDid: "issuerDid",
+                    type: ["type1", "type2"],
+                },
+            };
             const collections: CredentialsCollection[] = [
                 { contractAddress: "contractAddress1" } as any,
                 { contractAddress: "contractAddress2" } as any,

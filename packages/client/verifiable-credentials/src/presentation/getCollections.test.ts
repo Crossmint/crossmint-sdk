@@ -21,8 +21,8 @@ describe("getCollections", () => {
         const result = getCollections(nfts);
 
         expect(result).toEqual([
-            { contractAddress: "address1", nfts: [nfts[0], nfts[1]], metadata: undefined },
-            { contractAddress: "address2", nfts: [nfts[2]], metadata: undefined },
+            { contractAddress: "address1", nfts: [nfts[0], nfts[1]], metadata: {} },
+            { contractAddress: "address2", nfts: [nfts[2]], metadata: {} },
         ]);
     });
 });
@@ -40,8 +40,8 @@ describe("getCredentialCollections", () => {
 
     it("should filter collections by types if filter is provided", async () => {
         const collections: CredentialsCollection[] = [
-            { metadata: { credentialMetadata: { types: ["type1"] } } } as any,
-            { metadata: { credentialMetadata: { types: ["type2"] } } } as any,
+            { metadata: { credentialMetadata: { type: ["type1"] } } } as any,
+            { metadata: { credentialMetadata: { type: ["type2"] } } } as any,
         ];
         jest.spyOn(ContactMetadataService.prototype, "getContractWithVCMetadata").mockResolvedValue(collections as any);
 
