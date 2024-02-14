@@ -42,7 +42,7 @@ export async function getCredentialCollections(
 
     if (filters.issuers != null) {
         collections = collections.filter((collection) => {
-            return filters.issuers?.includes(collection.contractAddress);
+            return filters.issuers?.includes(collection.metadata?.credentialMetadata.issuerDid); // At least one issuer must match
         });
     }
 
