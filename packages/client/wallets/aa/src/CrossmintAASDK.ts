@@ -9,6 +9,7 @@ import { BLOCKCHAIN_INCLUDING_TESTNET, BlockchainIncludingTestnet, UserIdentifie
 import { logError, logInfo } from "./services/logging";
 import { parseUserIdentifier } from "./utils/user";
 import { z } from 'zod';
+import { PasskeysSDK } from "./passkeys/PasskeysSDK";
 
 export class CrossmintAASDK {
     crossmintService: CrossmintWalletService;
@@ -39,7 +40,15 @@ export class CrossmintAASDK {
                 chain,
             });
             let isCreate = true
+            const passkeysSDK = PasskeysSDK.init({
+                // replace with API call from this PR: https://github.com/Paella-Labs/crossbit-main/pull/11361
+                apiKey: "sk_development_5zjHWgh88253PZC6X1Bxbdj6JcfQLt4ZYaPLzvKuqjf4EA6BmuuK1YNuwKDJND6mGYHYKptEiWSRCTLcYKbjUq5XErj4atLDdbjqdAAEk7zSeJ2uWiCZrFdnJwLoJixGthNxXWrpFahnB6SmdX2zd4p4n5ubhBHEqvbGv2zaKs8wP1uFiGqkM6vwpj7uJ37hKcWTLfNc3XLwM4eragcpHu2S",
+            });
 
+
+            console.log('encrypting ...')
+            const enc = await passkeysSDK.encrypt(chain, '0x17096bfA4A98C0503564Ace6Cd55BF3D1f31453c', '1234');
+            debugger
             if (isFireblocksNCWSigner(walletConfig.signer) && walletConfig.signer.passphrase == null) {
                 // I assume that this is a recovery and that I have to get the passphrase from somewhere
                 isCreate = false
@@ -96,8 +105,8 @@ export class CrossmintAASDK {
                 abstractAddress,
             });
 
-            if (isFireblocksNCWSigner(walletConfig.signer) && isCreate) {
-                abriOtraVentanaYpasaleLaData("toda la data para que encryptes");
+            if (isFireblocksNCWSigner(walletConfig.signer) && walletConfig.signer.passphrase && isCreate) {
+                abriOtraVentanaYpasaleLaData(address, chain, walletConfig.signer.passphrase);
             }
 
             return evmAAWallet;
@@ -126,14 +135,13 @@ export class CrossmintAASDK {
 
 
     async giveMeThePassPhraseWithPassKeys(user: UserIdentifierParams, chain: BlockchainIncludingTestnet) {
-        const eoaAddress = await this.crossmintService.getEOAAddress(user, chain)
-
-        const newW = window.open("http://localhost:3000/passkeys", "_blank");
+        const { eoaAddress } = await this.crossmintService.getEOAAddress(user, chain)
+        const newW = window.open("https://7d62-2800-810-458-1608-44d0-8a84-dbbb-575f.ngrok-free.app/passkeys", "_blank");
 
         try {
             try {
                 setTimeout(() => {
-                    newW!.postMessage({ walletAddress: eoaAddress, chain, action: 'decrypt' }, "http://localhost:3000/passkeys")
+                    newW!.postMessage({ walletAddress: eoaAddress, chain, action: 'decrypt', type: 'passkeysAction' }, "https://7d62-2800-810-458-1608-44d0-8a84-dbbb-575f.ngrok-free.app/passkeys")
                 }, 5000)
             } catch (error) {
                 console.log(error)
@@ -145,8 +153,7 @@ export class CrossmintAASDK {
                 window.addEventListener("message", (event) => {
                     if (event.data.passphrase == null) return
                     console.log('we got the passphrase', event.data)
-                    debugger
-                    // if (event.origin !== "http://localhost:3000") return;
+                    // if (event.origin !== "https://7d62-2800-810-458-1608-44d0-8a84-dbbb-575f.ngrok-free.app") return;
                     resolve(event.type);
                     return 'pepe'
                 });
@@ -159,24 +166,15 @@ export class CrossmintAASDK {
 
 }
 
-function abriOtraVentanaYpasaleLaData(someDataFromParent: string) {
-    window.open("http://localhost:3000/passkeys", "_blank");
+function abriOtraVentanaYpasaleLaData(eoaAddress: string, chain: BlockchainIncludingTestnet, passphrase: string) {
+    const newW = window.open("https://7d62-2800-810-458-1608-44d0-8a84-dbbb-575f.ngrok-free.app/passkeys", "_blank");
+
+    setTimeout(() => {
+        newW!.postMessage({ walletAddress: eoaAddress, chain, action: 'encrypt', type: 'passkeysAction', passphrase }, "https://7d62-2800-810-458-1608-44d0-8a84-dbbb-575f.ngrok-free.app/passkeys")
+    }, 5000)
+
     window.onmessage = (event) => {
         console.log('event', event);
     }
-}
-
-
-// common
-const FROM_CHILD_EVENTS = {
-    shardInitialized: z.object({
-        someDataFromChild: z.string()
-    })
-}
-
-const FROM_PARENT_EVENTS = {
-    initializeShard: z.object({
-        action: z.enum(['encrypt', 'decrypt']), chain: z.enum(BLOCKCHAIN_INCLUDING_TESTNET), walletAddress: z.string(), passphrase: z.string().optional()
-    })
 }
 

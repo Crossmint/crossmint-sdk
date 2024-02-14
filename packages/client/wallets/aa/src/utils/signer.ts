@@ -91,7 +91,7 @@ export async function createOwnerSigner({
     }
 }
 
-export function isFireblocksNCWSigner(signer: any): signer is FireblocksNCWSigner & { walletId: string; deviceId: string } {
+export function isFireblocksNCWSigner(signer: any): signer is FireblocksNCWSigner & { walletId: string; deviceId: string, passphrase: string } {
     return signer && signer.type === "FIREBLOCKS_NCW";
 }
 

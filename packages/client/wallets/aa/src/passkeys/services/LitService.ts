@@ -53,6 +53,7 @@ export class LitService {
                 pkpPublicKey: response.pkpPublicKey!,
             };
         } catch (error: any) {
+            debugger
             logError("[LIT_REGISTER_WEBAUTHN] - ERROR_REGISTER_WEBAUTHN", { error: error.message, identifier });
             throw new LitProtocolError(`Error signing up [${error?.name ?? ""}]`);
         }
