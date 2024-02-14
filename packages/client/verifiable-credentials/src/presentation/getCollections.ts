@@ -1,6 +1,6 @@
 import { CredentialFilter } from "../types/credentialFilter";
 import { CredentialsCollection, VC_EVMNFT } from "../types/nfts";
-import { getContractWithVCMetadata } from "./getMetadata";
+import { ContactMetadataService } from "./getMetadata";
 import { filterPolygonErc721, getWalletNfts } from "./getNfts";
 
 export function getCollections(nfts: VC_EVMNFT[]): CredentialsCollection[] {
@@ -37,14 +37,16 @@ export async function getCredentialCollections(
     const polygonErc721Nfts = filterPolygonErc721(nfts);
     console.debug(`Got ${polygonErc721Nfts.length} polygon erc721 nfts`);
 
-    const collections = getCollections(polygonErc721Nfts);
+    let collections = getCollections(polygonErc721Nfts);
     console.debug(`Got ${collections.length} collections`);
 
     if (filters.issuers != null) {
-        throw new Error("Filterifying by issuers is not supported yet");
+        collections = collections.filter((collection) => {
+            return filters.issuers?.includes(collection.contractAddress);
+        });
     }
 
-    let credentialsCollection = await getContractWithVCMetadata(collections, environment);
+    let credentialsCollection = await new ContactMetadataService().getContractWithVCMetadata(collections, environment);
     console.debug(`Got ${credentialsCollection.length} credential collections`);
 
     if (filters.types != null) {

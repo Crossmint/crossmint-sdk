@@ -4,6 +4,11 @@ import { EIP712VC } from "@krebitdao/eip712-vc";
 import { VerifiableCredential } from "../../types/verifiableCredential";
 
 export class VerifiableCredentialSignatureService {
+    vcSigner;
+    constructor(signer = EIP712VC) {
+        this.vcSigner = signer;
+    }
+
     async verify(vc: VerifiableCredential) {
         let issuerId = vc.issuer.id;
         const issuerDidParts = issuerId.split(":");
@@ -15,7 +20,7 @@ export class VerifiableCredentialSignatureService {
         if (vc.proof == undefined) {
             throw new Error("No proof associated with credential");
         }
-        const vcDomain = new EIP712VC(vc.proof.eip712.domain);
+        const vcDomain = new this.vcSigner(vc.proof.eip712.domain);
         const types = vc.proof.eip712.types;
         const proofValue = vc.proof.proofValue;
         delete vc.proof;
