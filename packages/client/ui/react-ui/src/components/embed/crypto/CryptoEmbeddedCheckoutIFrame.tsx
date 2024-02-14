@@ -28,15 +28,15 @@ export default function CryptoEmbeddedCheckoutIFrame(props: CryptoEmbeddedChecko
             handleIncomingTransaction(serializedTransaction);
         }
 
-        if (type === IncomingInternalEvents.CRYPTO_SWITCH_CHAIN) {
+        if (type === IncomingInternalEvents.CRYPTO_CHAIN_SWITCH) {
             const { chain } = payload;
             console.log("[Crossmint] Received change of chain", chain);
 
-            const handleSwitchChain = (signer as ETHEmbeddedCheckoutSigner).handleSwitchChain;
-            if(handleSwitchChain == null) {
+            const handleChainSwitch = (signer as ETHEmbeddedCheckoutSigner).handleChainSwitch;
+            if(handleChainSwitch == null) {
                 throw new Error("switchNetwork function should have been defined")
             }
-            handleSwitchChain(chain);
+            handleChainSwitch(chain);
         }
     }
 
