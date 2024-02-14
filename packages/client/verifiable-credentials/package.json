@@ -10,7 +10,7 @@
         "@crossmint/common-sdk-base": "0.0.3"
     },
     "devDependencies": {
-        "@crossmint/client-sdk-base": "1.1.4"
+        "@crossmint/client-sdk-base": "1.1.6"
     },
     "exports": {
         "import": "./dist/index.js",
