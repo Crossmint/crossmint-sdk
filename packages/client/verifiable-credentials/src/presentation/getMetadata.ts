@@ -41,7 +41,7 @@ export class ContactMetadataService {
 
                 const response = (await Promise.race([fetch(httpUriFull), timeout])) as Response;
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}, responses: ${response.statusText}`);
+                    throw new Error(`HTTP error! status: ${response.status}, responses: ${JSON.stringify(await response.json())}`);
                 }
 
                 const metadata = await response.json();
@@ -63,7 +63,13 @@ export class ContactMetadataService {
 
         for (const collection of collections) {
             const metadata = await this.getMetadata(collection.contractAddress, environment);
-            if (metadata == null || metadata.credentialMetadata == null) {
+            if (
+                metadata == null ||
+                metadata.credentialMetadata == null ||
+                metadata.credentialMetadata.type == null ||
+                metadata.credentialMetadata.issuerDid == null ||
+                !Array.isArray(metadata.credentialMetadata.type)
+            ) {
                 continue;
             }
             collection.metadata = metadata;

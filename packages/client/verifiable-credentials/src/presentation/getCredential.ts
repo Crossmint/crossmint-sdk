@@ -1,4 +1,4 @@
-import { VerifiableCredential } from "@/types/verifiableCredential";
+import { EncryptedVerifiableCredential, VerifiableCredential } from "@/types/verifiableCredential";
 
 import { getEnvironmentBaseUrl } from "@crossmint/client-sdk-base";
 
@@ -14,12 +14,17 @@ export async function getCredentialFromId(credentialId: string, environment: str
     console.log(url, options);
     try {
         const response = await fetch(url, options);
+        const data = await response.json();
         if (!response.ok) {
-            throw new Error(
-                `HTTP error! status: ${response.status}, responses: ${response.statusText}, ${response.body}`
-            );
+            throw new Error(`HTTP error! status: ${response.status}, responses: ${JSON.stringify(data)}`);
         }
-        const credential = (await response.json()) as VerifiableCredential;
+
+        let credential;
+        if (data.encryptedCredential != null) {
+            credential = data.encryptedCredential as EncryptedVerifiableCredential;
+        } else {
+            credential = data as VerifiableCredential;
+        }
         return credential;
     } catch (error) {
         console.error(error);

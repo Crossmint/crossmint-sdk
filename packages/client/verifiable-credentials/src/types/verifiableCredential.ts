@@ -11,3 +11,8 @@ export interface VerifiableCredential {
     "@context": string[];
     proof?: { proofValue: string; [key: string]: any };
 }
+
+export interface EncryptedVerifiableCredential {
+    id: string;
+    payload: string;
+}
