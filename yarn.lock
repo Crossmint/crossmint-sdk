@@ -2683,19 +2683,19 @@
     "@ethersproject/properties" "^5.7.0"
     "@ethersproject/strings" "^5.7.0"
 
-"@fireblocks/ncw-js-infra@^1.0.17":
-  version "1.0.18"
-  resolved "https://registry.yarnpkg.com/@fireblocks/ncw-js-infra/-/ncw-js-infra-1.0.18.tgz#ea3d0644c254f3aa5b5af52a73be58189780afeb"
-  integrity sha512-xLvzF1b63Yl8nEdIDvmIhdXJB8fsBdcqazkhViNWxeXkYkLnLWgY9Txva0e92pVN+wZjiqPMUlV5MdPmVK4v1g==
+"@fireblocks/ncw-js-infra@1.0.17":
+  version "1.0.17"
+  resolved "https://registry.yarnpkg.com/@fireblocks/ncw-js-infra/-/ncw-js-infra-1.0.17.tgz#e7de3e3c9d2da37dd3e30ef0b4a9044ef7da6d8a"
+  integrity sha512-nhg5fGGG1DkEz7DA7Qz46S+fqf2fKNHhxxUwabMEm8u18pzs3eeI232ZYXBE26tx/6MEbzMXFQyk14DnWLCJcQ==
   dependencies:
     "@types/emscripten" "^1.39.7"
 
-"@fireblocks/ncw-js-sdk@11.0.1":
-  version "11.0.1"
-  resolved "https://registry.yarnpkg.com/@fireblocks/ncw-js-sdk/-/ncw-js-sdk-11.0.1.tgz#07f8ba4e976c4c8eb2bcd702943a5b2ae6642dfb"
-  integrity sha512-KVA3/YdhOafXmYVNuBck5835ZVqjfy6mPqj1T6+7hm2qGlxINCgFsZTZY38Z3cgp1vAQgIgg+21zwk70BGtbXA==
+"@fireblocks/ncw-js-sdk@11.0.2":
+  version "11.0.2"
+  resolved "https://registry.yarnpkg.com/@fireblocks/ncw-js-sdk/-/ncw-js-sdk-11.0.2.tgz#837c89ec1f404de4a163258391fedef9eeac7d2e"
+  integrity sha512-K+vM31ZecOC4E6y0njza78kNsD960UsnN/1yz/BMDOs58EH49WsWTDFpX8/n1FXhbxHjFNsp5s9MAZ27iCSLng==
   dependencies:
-    "@fireblocks/ncw-js-infra" "^1.0.17"
+    "@fireblocks/ncw-js-infra" "1.0.17"
     jwt-decode "^3.1.2"
     node-forge "^1.3.1"
 
