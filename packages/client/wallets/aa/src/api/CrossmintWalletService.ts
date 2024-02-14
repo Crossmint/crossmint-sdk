@@ -1,6 +1,7 @@
-import { GenerateSignatureDataInput, StoreAbstractWalletInput, UserIdentifier } from "@/types";
+import { GenerateSignatureDataInput, StoreAbstractWalletInput, UserIdentifier, UserIdentifierParams } from "@/types";
 
 import { BaseCrossmintService } from "./BaseCrossmintService";
+import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 export class CrossmintWalletService extends BaseCrossmintService {
     async createSessionKey(address: string) {
@@ -122,6 +123,18 @@ export class CrossmintWalletService extends BaseCrossmintService {
             `v1-alpha1/wallets/polygon:${address}/nfts`,
             { method: "GET" },
             `Error fetching NFTs for wallet: ${address}`
+        );
+    }
+
+    //TODO: check this endpoint
+    async getEOAAddress(userIdentifier: UserIdentifierParams, chain: BlockchainIncludingTestnet) {
+        // lets assume we get always an email. Figure out how to handle the other cases
+        const email = encodeURIComponent(userIdentifier.email!);
+
+        return this.fetchCrossmintAPI(
+            `unstable/wallets/aa/wallets/eoa?user=${email}&chain=${chain}`,
+            { method: "GET" },
+            `Error getting EOA address for user: ${email}`
         );
     }
 }

@@ -38,6 +38,9 @@ export async function createOwnerSigner({
         let fireblocks: any;
         if ("walletId" in walletConfig.signer && "deviceId" in walletConfig.signer) {
             const { passphrase, walletId, deviceId } = walletConfig.signer;
+
+            if (passphrase == null) throw new Error("Passphrase is required for FireblocksNCWSigner");
+
             fireblocks = await FireblocksNCWallet({
                 userIdentifier,
                 projectId,
@@ -88,7 +91,7 @@ export async function createOwnerSigner({
     }
 }
 
-function isFireblocksNCWSigner(signer: any): signer is FireblocksNCWSigner & { walletId: string; deviceId: string } {
+export function isFireblocksNCWSigner(signer: any): signer is FireblocksNCWSigner & { walletId: string; deviceId: string } {
     return signer && signer.type === "FIREBLOCKS_NCW";
 }
 

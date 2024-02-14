@@ -34,14 +34,14 @@ export type Web3AuthSigner = {
 };
 type FireblocksNCWSignerBase = {
     type: "FIREBLOCKS_NCW";
-    passphrase: string;
+    passphrase?: string;
 };
 export type FireblocksNCWSigner =
     | FireblocksNCWSignerBase
     | (FireblocksNCWSignerBase & {
-          walletId: string;
-          deviceId: string;
-      });
+        walletId: string;
+        deviceId: string;
+    });
 
 type Signer = FireblocksNCWSigner | ethers.Signer | Web3AuthSigner;
 

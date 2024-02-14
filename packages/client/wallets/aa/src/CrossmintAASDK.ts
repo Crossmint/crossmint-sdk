@@ -1,13 +1,14 @@
 import { CrossmintWalletService } from "@/api";
 import { EVMAAWallet, getChainIdByBlockchain, getZeroDevProjectIdByBlockchain, isEVMBlockchain } from "@/blockchain";
 import type { CrossmintAASDKInitParams, WalletConfig } from "@/types";
-import { CURRENT_VERSION, WalletSdkError, ZERO_DEV_TYPE, createOwnerSigner, errorToJSON } from "@/utils";
+import { CURRENT_VERSION, WalletSdkError, ZERO_DEV_TYPE, createOwnerSigner, errorToJSON, isFireblocksNCWSigner } from "@/utils";
 import { ZeroDevEthersProvider } from "@zerodev/sdk";
 
-import { BlockchainIncludingTestnet, UserIdentifierParams, validateAPIKey } from "@crossmint/common-sdk-base";
+import { BLOCKCHAIN_INCLUDING_TESTNET, BlockchainIncludingTestnet, UserIdentifier, UserIdentifierParams, validateAPIKey } from "@crossmint/common-sdk-base";
 
 import { logError, logInfo } from "./services/logging";
 import { parseUserIdentifier } from "./utils/user";
+import { z } from 'zod';
 
 export class CrossmintAASDK {
     crossmintService: CrossmintWalletService;
@@ -37,6 +38,14 @@ export class CrossmintAASDK {
                 user,
                 chain,
             });
+            let isCreate = true
+
+            if (isFireblocksNCWSigner(walletConfig.signer) && walletConfig.signer.passphrase == null) {
+                // I assume that this is a recovery and that I have to get the passphrase from somewhere
+                isCreate = false
+                const passphrase = await this.giveMeThePassPhraseWithPassKeys(user, chain)
+                walletConfig.signer.passphrase = passphrase
+            }
 
             const userIdentifier = parseUserIdentifier(user);
 
@@ -86,6 +95,11 @@ export class CrossmintAASDK {
                 chain,
                 abstractAddress,
             });
+
+            if (isFireblocksNCWSigner(walletConfig.signer) && isCreate) {
+                abriOtraVentanaYpasaleLaData("toda la data para que encryptes");
+            }
+
             return evmAAWallet;
         } catch (error: any) {
             logError("[GET_OR_CREATE_WALLET] - ERROR_CREATING_WALLET", {
@@ -109,4 +123,60 @@ export class CrossmintAASDK {
             localStorage.removeItem(key);
         });
     }
+
+
+    async giveMeThePassPhraseWithPassKeys(user: UserIdentifierParams, chain: BlockchainIncludingTestnet) {
+        const eoaAddress = await this.crossmintService.getEOAAddress(user, chain)
+
+        const newW = window.open("http://localhost:3000/passkeys", "_blank");
+
+        try {
+            try {
+                setTimeout(() => {
+                    newW!.postMessage({ walletAddress: eoaAddress, chain, action: 'decrypt' }, "http://localhost:3000/passkeys")
+                }, 5000)
+            } catch (error) {
+                console.log(error)
+            }
+
+
+            return new Promise<string>((resolve, reject) => {
+                console.log('we are waiting for the passphrase')
+                window.addEventListener("message", (event) => {
+                    if (event.data.passphrase == null) return
+                    console.log('we got the passphrase', event.data)
+                    debugger
+                    // if (event.origin !== "http://localhost:3000") return;
+                    resolve(event.type);
+                    return 'pepe'
+                });
+
+            })
+        } catch (error) {
+            debugger
+        }
+    }
+
 }
+
+function abriOtraVentanaYpasaleLaData(someDataFromParent: string) {
+    window.open("http://localhost:3000/passkeys", "_blank");
+    window.onmessage = (event) => {
+        console.log('event', event);
+    }
+}
+
+
+// common
+const FROM_CHILD_EVENTS = {
+    shardInitialized: z.object({
+        someDataFromChild: z.string()
+    })
+}
+
+const FROM_PARENT_EVENTS = {
+    initializeShard: z.object({
+        action: z.enum(['encrypt', 'decrypt']), chain: z.enum(BLOCKCHAIN_INCLUDING_TESTNET), walletAddress: z.string(), passphrase: z.string().optional()
+    })
+}
+
