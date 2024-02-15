@@ -21,11 +21,11 @@ export const EVMBlockchainTestnet = {
     ZKATANA: "zkatana",
 } as const;
 export type EVMBlockchainTestnet = ObjectValues<typeof EVMBlockchainTestnet>;
-export const EVM_BLOCKCHAIN_TESTNET = objectValues(EVMBlockchainTestnet);
+export const EVM_BLOCKCHAIN_TESTNETS = objectValues(EVMBlockchainTestnet);
 
 export const EVMBlockchainIncludingTestnet = {
     ...EVMBlockchain,
     ...EVMBlockchainTestnet,
 } as const;
 export type EVMBlockchainIncludingTestnet = ObjectValues<typeof EVMBlockchainIncludingTestnet>;
-export const EVM_BLOCKCHAIN_INCLUDING_TESTNET = objectValues(EVMBlockchainIncludingTestnet);
+export const EVM_BLOCKCHAINS_INCLUDING_TESTNETS = objectValues(EVMBlockchainIncludingTestnet);
