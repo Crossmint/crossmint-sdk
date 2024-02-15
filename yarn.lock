@@ -1607,6 +1607,14 @@
     exponential-backoff "3.1.1"
     uuid "9.0.1"
 
+"@crossmint/common-sdk-base@0.0.3":
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/@crossmint/common-sdk-base/-/common-sdk-base-0.0.3.tgz#6c684bf2bbc0423eeab4cb6d831dd7d7c8cac951"
+  integrity sha512-TzVjuaC2JI4Zat0av94veHoRn2ODomw/3fjrOTW0u5KbguALTstn2kCdphatCD4KCDA1uq1XjEqpFa+EQl2Yjw==
+  dependencies:
+    bs58 "5.0.0"
+    tweetnacl "1.0.3"
+
 "@cspotcode/source-map-support@^0.8.0":
   version "0.8.1"
   resolved "https://registry.yarnpkg.com/@cspotcode/source-map-support/-/source-map-support-0.8.1.tgz#00629c35a688e05a88b1cda684fb9d5e73f000a1"
