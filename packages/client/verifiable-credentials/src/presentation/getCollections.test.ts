@@ -36,6 +36,9 @@ describe("getCredentialCollections", () => {
         await expect(getCredentialCollections("ethereum", "wallet", {}, "environment")).rejects.toThrow(
             "Only polygon is supported"
         );
+        await expect(getCredentialCollections("chain", "wallet", {}, "environment")).rejects.toThrow(
+            "Only polygon is supported"
+        );
     });
 
     it("should filter collections by types if filter is provided", async () => {
