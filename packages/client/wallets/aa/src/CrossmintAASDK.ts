@@ -40,15 +40,7 @@ export class CrossmintAASDK {
                 chain,
             });
             let isCreate = true
-            const passkeysSDK = PasskeysSDK.init({
-                // replace with API call from this PR: https://github.com/Paella-Labs/crossbit-main/pull/11361
-                apiKey: "sk_development_5zjHWgh88253PZC6X1Bxbdj6JcfQLt4ZYaPLzvKuqjf4EA6BmuuK1YNuwKDJND6mGYHYKptEiWSRCTLcYKbjUq5XErj4atLDdbjqdAAEk7zSeJ2uWiCZrFdnJwLoJixGthNxXWrpFahnB6SmdX2zd4p4n5ubhBHEqvbGv2zaKs8wP1uFiGqkM6vwpj7uJ37hKcWTLfNc3XLwM4eragcpHu2S",
-            });
 
-
-            console.log('encrypting ...')
-            const enc = await passkeysSDK.encrypt(chain, '0x17096bfA4A98C0503564Ace6Cd55BF3D1f31453c', '1234');
-            debugger
             if (isFireblocksNCWSigner(walletConfig.signer) && walletConfig.signer.passphrase == null) {
                 // I assume that this is a recovery and that I have to get the passphrase from somewhere
                 isCreate = false
@@ -136,44 +128,41 @@ export class CrossmintAASDK {
 
     async giveMeThePassPhraseWithPassKeys(user: UserIdentifierParams, chain: BlockchainIncludingTestnet) {
         const { eoaAddress } = await this.crossmintService.getEOAAddress(user, chain)
-        const newW = window.open("https://7d62-2800-810-458-1608-44d0-8a84-dbbb-575f.ngrok-free.app/passkeys", "_blank");
+        const newW = window.open("http://localhost:3000/passkeys", "_blank");
 
         try {
-            try {
-                setTimeout(() => {
-                    newW!.postMessage({ walletAddress: eoaAddress, chain, action: 'decrypt', type: 'passkeysAction' }, "https://7d62-2800-810-458-1608-44d0-8a84-dbbb-575f.ngrok-free.app/passkeys")
-                }, 5000)
-            } catch (error) {
-                console.log(error)
-            }
-
-
-            return new Promise<string>((resolve, reject) => {
-                console.log('we are waiting for the passphrase')
-                window.addEventListener("message", (event) => {
-                    if (event.data.passphrase == null) return
-                    console.log('we got the passphrase', event.data)
-                    // if (event.origin !== "https://7d62-2800-810-458-1608-44d0-8a84-dbbb-575f.ngrok-free.app") return;
-                    resolve(event.type);
-                    return 'pepe'
-                });
-
-            })
+            setTimeout(() => {
+                newW!.postMessage({ passkeysParams: { walletAddress: eoaAddress, chain, action: 'decrypt' }, type: 'passkeysAction' }, "http://localhost:3000/passkeys")
+            }, 5000)
         } catch (error) {
-            debugger
+            console.log(error)
         }
+
+
+        return new Promise<string>((resolve, reject) => {
+            console.log('we are waiting for the passphrase')
+            window.addEventListener("message", (event) => {
+                if (event.data.passphrase == null) return
+                console.log('we got the passphrase', event.data)
+                // if (event.origin !== "http://localhost:3000") return;
+                //TODO improve types
+                resolve(event.data.passphrase as string);
+            });
+        })
     }
 
 }
 
 function abriOtraVentanaYpasaleLaData(eoaAddress: string, chain: BlockchainIncludingTestnet, passphrase: string) {
-    const newW = window.open("https://7d62-2800-810-458-1608-44d0-8a84-dbbb-575f.ngrok-free.app/passkeys", "_blank");
+    const newW = window.open("http://localhost:3000/passkeys", "_blank");
 
     setTimeout(() => {
-        newW!.postMessage({ walletAddress: eoaAddress, chain, action: 'encrypt', type: 'passkeysAction', passphrase }, "https://7d62-2800-810-458-1608-44d0-8a84-dbbb-575f.ngrok-free.app/passkeys")
-    }, 5000)
+        newW!.postMessage({ passkeysParams: { walletAddress: eoaAddress, chain, action: 'encrypt', passphrase }, type: 'passkeysAction', }, "http://localhost:3000/passkeys")
+    }, 10000)
 
     window.onmessage = (event) => {
+        if (event.data.type !== 'passkeysAction') return
+
         console.log('event', event);
     }
 }

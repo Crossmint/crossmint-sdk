@@ -17,6 +17,7 @@ export class LitService {
     async connect() {
         this.litNodeClient = new LitNodeClient({
             litNetwork: isLocalhost() ? "manzano" : "habanero",
+            connectTimeout: 60000,
         });
         await this.litNodeClient.connect();
 
@@ -53,7 +54,6 @@ export class LitService {
                 pkpPublicKey: response.pkpPublicKey!,
             };
         } catch (error: any) {
-            debugger
             logError("[LIT_REGISTER_WEBAUTHN] - ERROR_REGISTER_WEBAUTHN", { error: error.message, identifier });
             throw new LitProtocolError(`Error signing up [${error?.name ?? ""}]`);
         }
@@ -158,12 +158,12 @@ export class LitService {
         const accessControlConditions = [
             {
                 contractAddress: "",
-                standardContractType: "",
-                chain,
+                standardContractType: "" as any,
+                chain: chain as any,
                 method: "",
                 parameters: [":userAddress"],
                 returnValueTest: {
-                    comparator: "=",
+                    comparator: "=" as any,
                     value: pkpEthAddress,
                 },
             },
