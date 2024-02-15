@@ -1,6 +1,6 @@
 import { CrossmintWalletConnectWallet } from "@/types/wallet";
 
-import { isEVMBlockchain } from "@crossmint/client-sdk-aa";
+import { isEVMBlockchain } from "@crossmint/common-sdk-base";
 
 export function walletToSupportedMethods(wallet: CrossmintWalletConnectWallet) {
     const evmSupportedMethods: string[] = [];

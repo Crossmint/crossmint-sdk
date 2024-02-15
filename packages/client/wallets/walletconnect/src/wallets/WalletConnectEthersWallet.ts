@@ -1,13 +1,17 @@
 import { CrossmintWalletConnectEVMWallet } from "@/types/wallet";
 import { JsonRpcSigner, TransactionRequest } from "@ethersproject/providers";
 
-import { getBlockchainByChainId } from "@crossmint/client-sdk-aa";
+import { chainIdToBlockchain } from "@crossmint/common-sdk-base";
 
 export class WalletConnectEthersWallet implements CrossmintWalletConnectEVMWallet {
-    private constructor(private ethersSigner: JsonRpcSigner) {}
+    constructor(private ethersSigner: JsonRpcSigner) {}
 
     getSupportedChains() {
-        return [getBlockchainByChainId(this.ethersSigner.provider.network.chainId)];
+        const blockchain = chainIdToBlockchain(this.ethersSigner.provider.network.chainId);
+        if (!blockchain) {
+            throw new Error(`Unsupported chainId: ${this.ethersSigner.provider.network.chainId}`);
+        }
+        return [blockchain];
     }
 
     async getAddress() {

@@ -5,7 +5,7 @@ import {
 import { CrossmintWalletConnectWallet } from "@/types/wallet";
 import { BuildApprovedNamespacesParams } from "@walletconnect/utils";
 
-import { getChainIdByBlockchain, isEVMBlockchain } from "@crossmint/client-sdk-aa";
+import { blockchainToChainId, isEVMBlockchain } from "@crossmint/common-sdk-base";
 
 import { walletToSupportedMethods } from "./walletToSupportedMethods";
 
@@ -22,7 +22,7 @@ export async function walletToSupportedNamespaces(
     const address = await wallet.getAddress();
 
     if (supportedMethods.eip155) {
-        const supporedEVMChainIds = supportedChains.filter(isEVMBlockchain).map(getChainIdByBlockchain);
+        const supporedEVMChainIds = supportedChains.filter(isEVMBlockchain).map(blockchainToChainId);
         supportedNamespaces.eip155 = {
             chains: supporedEVMChainIds.map((chainId) => `eip155:${chainId}`),
             methods: supportedMethods.eip155,

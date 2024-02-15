@@ -1,7 +1,7 @@
 {
     "author": "Paella Inc",
     "dependencies": {
-        "@crossmint/client-sdk-aa": "0.1.2",
+        "@crossmint/common-sdk-base": "0.0.4",
         "@headlessui/react": "1.7.18",
         "@heroicons/react": "2.1.1",
         "@walletconnect/core": "2.11.1",
@@ -11,6 +11,7 @@
         "@walletconnect/web3wallet": "1.10.1"
     },
     "devDependencies": {
+        "@crossmint/client-sdk-aa": "0.1.2",
         "@ethersproject/abstract-provider": "5.7.0",
         "@ethersproject/providers": "5.7.2",
         "@solana/web3.js": "1.90.0",
