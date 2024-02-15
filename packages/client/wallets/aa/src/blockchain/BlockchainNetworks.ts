@@ -23,7 +23,7 @@ import {
 import { arbitrum, bsc, goerli, mainnet, optimism, polygon, polygonMumbai, sepolia } from "viem/chains";
 
 import {
-    BLOCKCHAIN_TEST_NET,
+    BLOCKCHAIN_TESTNETS,
     BlockchainIncludingTestnet,
     EVMBlockchainIncludingTestnet,
     EVM_BLOCKCHAIN_INCLUDING_TESTNET,
@@ -236,7 +236,7 @@ export function getApiUrlByBlockchainType(chain: BlockchainIncludingTestnet): st
 }
 
 export function isTestnet(chain: BlockchainIncludingTestnet): boolean {
-    return (BLOCKCHAIN_TEST_NET as readonly string[]).includes(chain);
+    return (BLOCKCHAIN_TESTNETS as readonly string[]).includes(chain);
 }
 
 export function isEVMBlockchain(chain: BlockchainIncludingTestnet): chain is EVMBlockchainIncludingTestnet {
