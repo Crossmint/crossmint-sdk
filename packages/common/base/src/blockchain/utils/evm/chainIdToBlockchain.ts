@@ -8,6 +8,6 @@ export const CHAIN_ID_TO_BLOCKCHAIN: Record<number, EVMBlockchainIncludingTestne
     return acc;
 }, {} as Record<number, EVMBlockchainIncludingTestnet>);
 
-export function chainIdToBlockchain(chainId: number): EVMBlockchainIncludingTestnet {
+export function chainIdToBlockchain(chainId: number): EVMBlockchainIncludingTestnet | undefined {
     return CHAIN_ID_TO_BLOCKCHAIN[chainId];
 }
