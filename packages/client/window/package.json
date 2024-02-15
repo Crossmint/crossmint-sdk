@@ -25,7 +25,7 @@
     "scripts": {
         "build": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
         "clean": "shx rm -rf dist/*",
-        "dev": "yarn build --watch"
+        "dev": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --dts --sourcemap --watch"
     },
     "dependencies": {
         "nanoid": "5.0.4",
