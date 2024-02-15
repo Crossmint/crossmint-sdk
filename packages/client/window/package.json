@@ -23,8 +23,9 @@
         "access": "restricted"
     },
     "scripts": {
+        "build": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
         "clean": "shx rm -rf dist/*",
-        "build": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --minify --dts --sourcemap"
+        "dev": "yarn build --watch"
     },
     "dependencies": {
         "nanoid": "5.0.4",

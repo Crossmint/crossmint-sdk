@@ -44,8 +44,9 @@
     "scripts": {
         "build": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
         "clean": "shx rm -rf dist/*",
-        "test": "NODE_ENV=test jest",
-        "test-coverage": "NODE_ENV=test jest --coverage"
+        "dev": "yarn build --watch",
+        "test": "cross-env NODE_ENV=test jest",
+        "test-coverage": "cross-env NODE_ENV=test jest --coverage"
     },
     "sideEffects": false,
     "type": "module",
