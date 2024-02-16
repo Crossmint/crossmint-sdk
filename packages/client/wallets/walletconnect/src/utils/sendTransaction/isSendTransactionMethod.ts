@@ -1,3 +1,5 @@
+import { SessionRequestMethods } from "@/types/walletconnect/RequestMethods";
+
 export function isSendTransactionMethod(method: string) {
-    return ["eth_sendTransaction"].includes(method);
+    return ([SessionRequestMethods.EVM_SEND_TRANSACTION] as string[]).includes(method);
 }

@@ -1,3 +1,4 @@
+import { SessionRequestMethods } from "@/types/walletconnect/RequestMethods";
 import { Web3WalletTypes } from "@walletconnect/web3wallet";
 
 export function decodeSendTransactionRequest(request: Web3WalletTypes.SessionRequest): {
@@ -14,7 +15,7 @@ export function decodeSendTransactionRequest(request: Web3WalletTypes.SessionReq
     } = request;
 
     switch (method) {
-        case "eth_sendTransaction": {
+        case SessionRequestMethods.EVM_SEND_TRANSACTION: {
             const rawTransaction = params[0];
             return {
                 uiTransaction: JSON.stringify(rawTransaction, null, 2),

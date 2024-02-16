@@ -26,4 +26,8 @@ export class WalletConnectEthersWallet implements CrossmintWalletConnectEVMWalle
         const response = await this.ethersSigner.sendTransaction(transaction);
         return response.hash;
     }
+
+    async signTypedData(typedData: any) {
+        return this.ethersSigner._signTypedData(typedData.domain, typedData.types, typedData.message);
+    }
 }

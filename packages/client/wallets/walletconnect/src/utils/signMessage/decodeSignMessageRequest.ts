@@ -1,9 +1,11 @@
+import { SessionRequestMethods } from "@/types/walletconnect/RequestMethods";
+import { arrayify } from "@ethersproject/bytes";
 import { hexToUtf8 } from "@walletconnect/encoding";
 import { Web3WalletTypes } from "@walletconnect/web3wallet";
 
 export function decodeSignMessageRequest(request: Web3WalletTypes.SessionRequest): {
     uiMessage: string;
-    rawMessage: string;
+    rawMessage: any;
     requestedSignerAddress: string;
     chainId: string;
 } {
@@ -15,18 +17,18 @@ export function decodeSignMessageRequest(request: Web3WalletTypes.SessionRequest
     } = request;
 
     switch (method) {
-        case "eth_signTypedData":
-        case "eth_signTypedData_v4":
+        case SessionRequestMethods.EVM_SIGN_TYPED_DATA:
+        case SessionRequestMethods.EVM_SIGN_TYPED_DATA_V4:
             return {
                 uiMessage: JSON.stringify(JSON.parse(params[1]), null, 2),
-                rawMessage: params[1],
+                rawMessage: JSON.parse(params[1]),
                 requestedSignerAddress: params[0],
                 chainId,
             };
-        case "personal_sign":
+        case SessionRequestMethods.EVM_PERSONAL_SIGN:
             return {
                 uiMessage: hexToUtf8(params[0]),
-                rawMessage: params[0],
+                rawMessage: arrayify(params[0]),
                 requestedSignerAddress: params[1],
                 chainId,
             };

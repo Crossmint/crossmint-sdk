@@ -1,9 +1,10 @@
 import { CrossmintWalletConnectWallet } from "@/types/wallet";
-import { arrayify } from "@ethersproject/bytes";
+import { SignTypedData } from "@/types/wallet/features";
 import { JsonRpcResult, formatJsonRpcResult } from "@walletconnect/jsonrpc-utils";
 import { Web3WalletTypes } from "@walletconnect/web3wallet";
 
 import { decodeSignMessageRequest } from "./decodeSignMessageRequest";
+import { isSignTypedDataMethod } from "./isSignTypedDataMethod";
 
 export async function handleAcceptSignMessage(
     request: Web3WalletTypes.SessionRequest,
@@ -11,12 +12,24 @@ export async function handleAcceptSignMessage(
 ): Promise<JsonRpcResult> {
     const { rawMessage } = decodeSignMessageRequest(request);
 
-    if (!wallet.signMessage) {
-        throw new Error(
-            `[WalletConnectRequestsContextProvider.handleAcceptSignMessage()] wallet does not support signMessage`
-        );
+    const method = request.params.request.method;
+
+    let signature;
+    if (isSignTypedDataMethod(method)) {
+        if ("signTypedData" in wallet && !wallet.signTypedData) {
+            throw new Error(
+                `[WalletConnectRequestsContextProvider.handleAcceptSignMessage()] wallet does not support signTypedData`
+            );
+        }
+        signature = await (wallet as Required<SignTypedData>).signTypedData(rawMessage);
+    } else {
+        if (!wallet.signMessage) {
+            throw new Error(
+                `[WalletConnectRequestsContextProvider.handleAcceptSignMessage()] wallet does not support signMessage`
+            );
+        }
+        signature = await wallet.signMessage(rawMessage);
     }
 
-    const signature = await wallet.signMessage(arrayify(rawMessage));
     return formatJsonRpcResult(request.id, signature);
 }

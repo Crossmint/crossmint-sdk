@@ -1,4 +1,5 @@
 import { CrossmintWalletConnectWallet } from "@/types/wallet";
+import { SessionRequestMethods } from "@/types/walletconnect/RequestMethods";
 
 import { isEVMBlockchain } from "@crossmint/common-sdk-base";
 
@@ -12,20 +13,23 @@ export function walletToSupportedMethods(wallet: CrossmintWalletConnectWallet) {
 
     if (wallet.signMessage != null) {
         if (supportsEVM) {
-            evmSupportedMethods.push("personal_sign");
+            evmSupportedMethods.push(SessionRequestMethods.EVM_PERSONAL_SIGN);
         }
         if (supportsSolana) {
-            solanaSupportedMethods.push("solana_signMessage");
+            solanaSupportedMethods.push(SessionRequestMethods.SOLANA_SIGN_MESSAGE);
         }
     }
     if ("signTypedData" in wallet && wallet.signTypedData != null) {
-        evmSupportedMethods.push("eth_signTypedData", "eth_signTypedData_v4");
+        evmSupportedMethods.push(
+            SessionRequestMethods.EVM_SIGN_TYPED_DATA,
+            SessionRequestMethods.EVM_SIGN_TYPED_DATA_V4
+        );
     }
     if ("sendTransaction" in wallet && wallet.sendTransaction != null) {
-        evmSupportedMethods.push("eth_sendTransaction");
+        evmSupportedMethods.push(SessionRequestMethods.EVM_SEND_TRANSACTION);
     }
     if ("signTransaction" in wallet && wallet.signTransaction != null) {
-        solanaSupportedMethods.push("solana_signTransaction");
+        solanaSupportedMethods.push(SessionRequestMethods.SOLANA_SIGN_TRANSACTION);
     }
 
     return {
