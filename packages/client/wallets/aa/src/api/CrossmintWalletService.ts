@@ -1,7 +1,8 @@
 import { GenerateSignatureDataInput, StoreAbstractWalletInput, UserIdentifier, UserIdentifierParams } from "@/types";
 
-import { BaseCrossmintService } from "./BaseCrossmintService";
 import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
+
+import { BaseCrossmintService } from "./BaseCrossmintService";
 
 export class CrossmintWalletService extends BaseCrossmintService {
     async createSessionKey(address: string) {
@@ -126,13 +127,24 @@ export class CrossmintWalletService extends BaseCrossmintService {
         );
     }
 
-    //TODO: check this endpoint
     async getEOAAddress(userIdentifier: UserIdentifierParams, chain: BlockchainIncludingTestnet) {
-        // lets assume we get always an email. Figure out how to handle the other cases
-        const email = encodeURIComponent(userIdentifier.email!);
+        const email = userIdentifier.email ? encodeURIComponent(userIdentifier.email) : "";
+        const userId = userIdentifier.userId ? encodeURIComponent(userIdentifier.userId) : "";
+        if (email !== "" && userId !== "") {
+            throw new Error("You can't use email and userId at the same time");
+        }
+
+        const phoneNumber = userIdentifier.phoneNumber ? encodeURIComponent(userIdentifier.phoneNumber) : "";
+        if ((email !== "" || userId !== "") && phoneNumber !== "") {
+            throw new Error("You can't use phoneNumber and userId/email at the same time");
+        }
+
+        const queryStr = `${email ? `email=${email}` : ""}${userId ? `userId=${userId}` : ""}${
+            phoneNumber ? `phoneNumber=${phoneNumber}` : ""
+        }`;
 
         return this.fetchCrossmintAPI(
-            `unstable/wallets/aa/wallets/eoa?user=${email}&chain=${chain}`,
+            `unstable/wallets/aa/wallets/eoa?${queryStr}&chain=${chain}`,
             { method: "GET" },
             `Error getting EOA address for user: ${email}`
         );
