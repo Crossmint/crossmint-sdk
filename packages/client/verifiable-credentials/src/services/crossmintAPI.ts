@@ -1,5 +1,16 @@
 import { APIKeyUsageOrigin, validateAPIKey } from "@crossmint/common-sdk-base";
 
+function checkEnvironment() {
+    if (typeof window !== "undefined") {
+        return APIKeyUsageOrigin.CLIENT;
+    } else if (typeof global !== "undefined") {
+        return APIKeyUsageOrigin.SERVER;
+    } else {
+        console.error("Unknown environment, cannot determine API key usage origin, be careful!");
+        return null;
+    }
+}
+
 export class CrossmintAPI {
     private static apiKey: string;
     public static ipfsGateways: string[];
@@ -13,11 +24,15 @@ export class CrossmintAPI {
             "https://nftstorage.link/ipfs/{cid}",
         ]
     ) {
-        const validationResult = validateAPIKey(apiKey, {
-            usageOrigin: APIKeyUsageOrigin.CLIENT,
-        });
-        if (!validationResult.isValid) {
-            throw new Error(`API key invalid: ${validationResult.message}`);
+        const usageOrigin = checkEnvironment();
+
+        if (usageOrigin) {
+            const validationResult = validateAPIKey(apiKey, {
+                usageOrigin: usageOrigin,
+            });
+            if (!validationResult.isValid) {
+                throw new Error(`API key invalid: ${validationResult.message}`);
+            }
         }
 
         this.apiKey = apiKey;
