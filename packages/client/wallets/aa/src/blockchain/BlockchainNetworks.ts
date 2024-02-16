@@ -17,7 +17,7 @@ import {
     ZD_ARBITRUM_NOVA_PROJECT_ID
 } from "@/utils";
 
-import { arbitrum, arbitrumNova, base, bsc, goerli, mainnet, optimism, polygon, polygonMumbai, sepolia, astarZkEVM, polygonAmoy } from "viem/chains";
+import { arbitrum, arbitrumNova, base, bsc, goerli, mainnet, optimism, polygon, sepolia, astarZkEVM, polygonAmoy } from "viem/chains";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
