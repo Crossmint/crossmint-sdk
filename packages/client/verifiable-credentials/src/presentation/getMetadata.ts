@@ -32,16 +32,18 @@ export class ContactMetadataService {
             try {
                 const httpUriFull = formatUrl(gateway, httpUri);
                 const timeout = new Promise((resolve, reject) => {
-                    const timeoutSeconds = 5;
+                    const timeoutMilliSeconds = 5000;
                     const id = setTimeout(() => {
                         clearTimeout(id);
-                        reject(`Timed out in ${timeoutSeconds} seconds`);
-                    }, timeoutSeconds);
+                        reject(`Timed out in ${timeoutMilliSeconds / 1000} seconds`);
+                    }, timeoutMilliSeconds);
                 });
 
                 const response = (await Promise.race([fetch(httpUriFull), timeout])) as Response;
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}, responses: ${JSON.stringify(await response.json())}`);
+                    throw new Error(
+                        `HTTP error! status: ${response.status}, responses: ${JSON.stringify(await response.json())}`
+                    );
                 }
 
                 const metadata = await response.json();
