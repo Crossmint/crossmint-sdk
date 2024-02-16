@@ -1,6 +1,6 @@
 import { APIKeyUsageOrigin, validateAPIKey } from "@crossmint/common-sdk-base";
 
-function checkEnvironment() {
+export function checkEnvironment() {
     if (typeof window !== "undefined") {
         return APIKeyUsageOrigin.CLIENT;
     } else if (typeof global !== "undefined") {

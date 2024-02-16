@@ -1,6 +1,8 @@
 import * as LitJsSdk from "@lit-protocol/lit-node-client";
 import { randomBytes } from "crypto";
 
+import { checkEnvironment } from "./crossmintAPI";
+
 const chain = "polygon";
 
 export class Lit {
@@ -13,6 +15,17 @@ export class Lit {
         const productionValues = ["prod", "production"];
         if (productionValues.includes(env)) {
             throw new Error("Production environment not supported yet");
+        }
+
+        const usageOrigin = checkEnvironment();
+        if (usageOrigin == null) {
+            console.error(
+                "Unknown environment, make sure the sdk is running client side, The Crossmint Lit wrapper is meant to be used in the browser, refer to the @lit-protocol/lit-node-client-nodejs package for server usage."
+            );
+        } else if (usageOrigin === "server") {
+            throw new Error(
+                "The Crossmint Lit wrapper is a client side tool meant to be used in the browser, not in a server environment, refer to the @lit-protocol/lit-node-client-nodejs package for server usage."
+            );
         }
         this.network = network;
     }
