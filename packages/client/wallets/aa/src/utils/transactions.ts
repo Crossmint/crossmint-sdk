@@ -1,6 +1,7 @@
 import type { Deferrable } from "@ethersproject/properties";
 import { type TransactionRequest } from "@ethersproject/providers";
-import { hexlify } from "ethers/lib/utils";
+import { BigNumber, BigNumberish } from "ethers";
+import { BytesLike, hexlify } from "ethers/lib/utils";
 
 /**
  * We need to support odd value and data fields in a tx, as that data comes from WC
@@ -31,4 +32,22 @@ export async function decorateSendTransactionData(transaction: Deferrable<Transa
     }
 
     return decoratedTransaction;
+}
+
+export async function getNonce(
+    nonce: BigNumberish | Promise<BigNumberish | undefined> | undefined
+): Promise<number | undefined> {
+    if (nonce === undefined) return undefined;
+    const resolvedNonce = await Promise.resolve(nonce);
+    if (resolvedNonce === undefined) return undefined;
+    return BigNumber.from(resolvedNonce).toNumber();
+}
+
+export async function convertData(
+    data: BytesLike | Promise<BytesLike | undefined> | undefined
+): Promise<`0x${string}` | undefined> {
+    if (data === undefined) return undefined;
+    const resolvedData = await Promise.resolve(data);
+    if (resolvedData === undefined) return undefined;
+    return hexlify(resolvedData) as `0x${string}`;
 }
