@@ -1,5 +1,6 @@
 import * as LitJsSdk from "@lit-protocol/lit-node-client";
 
+import * as API from "./crossmintAPI";
 import { Lit } from "./litInterface";
 
 jest.mock("@lit-protocol/lit-node-client");
@@ -9,6 +10,7 @@ describe("Lit", () => {
     let litSpy: jest.SpyInstance;
 
     beforeEach(() => {
+        jest.spyOn(API, "checkEnvironment").mockReturnValue("client");
         lit = new Lit();
         litSpy = jest.spyOn(LitJsSdk, "LitNodeClient");
         litSpy.mockImplementation(() => {
