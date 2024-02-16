@@ -32,10 +32,12 @@
     "scripts": {
         "build": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
         "clean": "shx rm -rf dist/*",
+        "test": "NODE_ENV=test jest --silent",
+        "test-coverage": "NODE_ENV=test jest --coverage --silent",
         "dev": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --dts --sourcemap --watch"
     },
     "sideEffects": false,
     "type": "module",
     "types": "./dist/index.d.ts",
-    "version": "1.2.2"
+    "version": "2.0.0"
 }

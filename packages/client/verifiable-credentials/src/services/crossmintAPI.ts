@@ -10,7 +10,7 @@ export class CrossmintAPI {
             "https://fleek.ipfs.io/ipfs/{cid}",
             "https://ipfs.io/ipfs/{cid}",
             "https://gateway.ipfs.io/ipfs/{cid}",
-            "https://{cid}.ipfs.nftstorage.link",
+            "https://nftstorage.link/ipfs/{cid}",
         ]
     ) {
         const validationResult = validateAPIKey(apiKey, {

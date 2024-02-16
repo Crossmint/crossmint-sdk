@@ -20,7 +20,9 @@ export async function getWalletNfts(chain: string, wallet: string, environment: 
             const response = await fetch(url, options);
 
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}, responses: ${response.statusText}`);
+                throw new Error(
+                    `HTTP error! status: ${response.status}, responses: ${JSON.stringify(await response.json())}`
+                );
             }
             const data = (await response.json()) as any[];
             allData = [...allData, ...data];

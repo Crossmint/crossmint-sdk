@@ -9,9 +9,12 @@ export interface VC_EVMNFT extends EVMNFT {
 export interface CredentialsCollection {
     nfts: VC_EVMNFT[];
     contractAddress: string;
-    metadata?: {
+    metadata: {
         credentialMetadata: {
-            types: string[];
+            type: string[];
+            issuerDid: string;
+            encryption: boolean;
+            credentialsEndpoint: string;
             [key: string]: any;
         };
     };
