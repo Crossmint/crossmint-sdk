@@ -28,6 +28,7 @@ export class VerifiableCredentialSignatureService {
         return await vcDomain.verifyW3CCredential(issuerId, vc, types, proofValue, async (data, proofValue: string) => {
             const messageTypes = data.types as any;
             delete messageTypes.EIP712Domain; // data.types contains EIP712Domain, which is not part of the message
+            delete messageTypes.CredentialSchema; // not using credentialSchema
             return verifyTypedData(vcDomain.getDomainTypedData(), messageTypes, data.message, proofValue);
         });
     }
