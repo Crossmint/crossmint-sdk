@@ -47,7 +47,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
         switch (type) {
             case "ethers":
                 return this.provider.getSigner() as any;
-            case "viem":
+            case "viem": {
                 const customeip1193Provider = new ZeroDevEip1193Bridge(this.provider.getAccountSigner(), this.provider);
                 const customTransport = custom({
                     async request({ method, params }) {
@@ -60,6 +60,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
                     transport: customTransport,
                 }).extend(publicActions);
                 return walletClient as any;
+            }
             default:
                 logError("[GET_SIGNER] - ERROR", {
                     error: errorToJSON("Invalid signer type"),
