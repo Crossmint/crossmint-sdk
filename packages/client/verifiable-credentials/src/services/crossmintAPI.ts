@@ -26,7 +26,7 @@ export class CrossmintAPI {
         overrideUsageOrigin?: "client" | "server"
     ) {
         const usageOrigin = overrideUsageOrigin ?? getUsageOrigin();
-        if (usageOrigin) {
+        if (usageOrigin != null) {
             const validationResult = validateAPIKey(apiKey, {
                 usageOrigin: usageOrigin,
             });
