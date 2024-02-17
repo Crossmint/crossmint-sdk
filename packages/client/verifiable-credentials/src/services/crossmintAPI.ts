@@ -22,9 +22,10 @@ export class CrossmintAPI {
             "https://ipfs.io/ipfs/{cid}",
             "https://gateway.ipfs.io/ipfs/{cid}",
             "https://nftstorage.link/ipfs/{cid}",
-        ]
+        ],
+        overrideUsageOrigin?: "client" | "server"
     ) {
-        const usageOrigin = getUsageOrigin();
+        const usageOrigin = overrideUsageOrigin || getUsageOrigin();
 
         if (usageOrigin != null) {
             const validationResult = validateAPIKey(apiKey, {
