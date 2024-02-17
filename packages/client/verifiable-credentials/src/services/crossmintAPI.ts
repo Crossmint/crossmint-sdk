@@ -1,6 +1,6 @@
 import { APIKeyUsageOrigin, validateAPIKey } from "@crossmint/common-sdk-base";
 
-export function checkEnvironment() {
+export function getUsageOrigin() {
     if (typeof window !== "undefined") {
         return APIKeyUsageOrigin.CLIENT;
     } else if (typeof global !== "undefined") {
@@ -24,9 +24,9 @@ export class CrossmintAPI {
             "https://nftstorage.link/ipfs/{cid}",
         ]
     ) {
-        const usageOrigin = checkEnvironment();
+        const usageOrigin = getUsageOrigin();
 
-        if (usageOrigin) {
+        if (usageOrigin != null) {
             const validationResult = validateAPIKey(apiKey, {
                 usageOrigin: usageOrigin,
             });

@@ -10,7 +10,7 @@ describe("Lit", () => {
     let litSpy: jest.SpyInstance;
 
     beforeEach(() => {
-        jest.spyOn(API, "checkEnvironment").mockReturnValue("client");
+        jest.spyOn(API, "getUsageOrigin").mockReturnValue("client");
         lit = new Lit();
         litSpy = jest.spyOn(LitJsSdk, "LitNodeClient");
         litSpy.mockImplementation(() => {
