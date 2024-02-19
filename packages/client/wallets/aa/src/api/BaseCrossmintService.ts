@@ -6,8 +6,8 @@ import { validateAPIKey } from "@crossmint/common-sdk-base";
 import { CROSSMINT_DEV_URL, CROSSMINT_PROD_URL, CROSSMINT_STG_URL } from "../utils";
 
 export abstract class BaseCrossmintService {
+    crossmintBaseUrl: string;
     protected crossmintAPIHeaders: Record<string, string>;
-    protected crossmintBaseUrl: string;
     private static urlMap: Record<string, string> = {
         development: CROSSMINT_DEV_URL,
         staging: CROSSMINT_STG_URL,

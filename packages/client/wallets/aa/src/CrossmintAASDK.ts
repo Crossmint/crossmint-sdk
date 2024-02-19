@@ -1,15 +1,21 @@
 import { CrossmintWalletService } from "@/api";
 import { EVMAAWallet, getChainIdByBlockchain, getZeroDevProjectIdByBlockchain, isEVMBlockchain } from "@/blockchain";
+import { CrossmintPasskeyCommunicationService } from "@/passkeys/services/CrossmintPasskeyCommunicationService";
 import type { CrossmintAASDKInitParams, WalletConfig } from "@/types";
-import { CURRENT_VERSION, WalletSdkError, ZERO_DEV_TYPE, createOwnerSigner, errorToJSON, isFireblocksNCWSigner } from "@/utils";
+import {
+    CURRENT_VERSION,
+    WalletSdkError,
+    ZERO_DEV_TYPE,
+    createOwnerSigner,
+    errorToJSON,
+    isFireblocksNCWSigner,
+} from "@/utils";
 import { ZeroDevEthersProvider } from "@zerodev/sdk";
 
-import { BLOCKCHAIN_INCLUDING_TESTNET, BlockchainIncludingTestnet, UserIdentifier, UserIdentifierParams, validateAPIKey } from "@crossmint/common-sdk-base";
+import { BlockchainIncludingTestnet, UserIdentifierParams, validateAPIKey } from "@crossmint/common-sdk-base";
 
 import { logError, logInfo } from "./services/logging";
 import { parseUserIdentifier } from "./utils/user";
-import { z } from 'zod';
-import { PasskeysSDK } from "./passkeys/PasskeysSDK";
 
 export class CrossmintAASDK {
     crossmintService: CrossmintWalletService;
@@ -39,13 +45,15 @@ export class CrossmintAASDK {
                 user,
                 chain,
             });
-            let isCreate = true
+            let isCreate = true;
 
             if (isFireblocksNCWSigner(walletConfig.signer) && walletConfig.signer.passphrase == null) {
                 // I assume that this is a recovery and that I have to get the passphrase from somewhere
-                isCreate = false
-                const passphrase = await this.giveMeThePassPhraseWithPassKeys(user, chain)
-                walletConfig.signer.passphrase = passphrase
+                isCreate = false;
+                const passphrase = await new CrossmintPasskeyCommunicationService(
+                    this.crossmintService
+                ).getAndDecryptPassphrase(user, chain);
+                walletConfig.signer.passphrase = passphrase;
             }
 
             const userIdentifier = parseUserIdentifier(user);
@@ -98,7 +106,11 @@ export class CrossmintAASDK {
             });
 
             if (isFireblocksNCWSigner(walletConfig.signer) && walletConfig.signer.passphrase && isCreate) {
-                abriOtraVentanaYpasaleLaData(address, chain, walletConfig.signer.passphrase);
+                await new CrossmintPasskeyCommunicationService(this.crossmintService).encryptPassphrase(
+                    address,
+                    chain,
+                    walletConfig.signer.passphrase
+                );
             }
 
             return evmAAWallet;
@@ -124,46 +136,4 @@ export class CrossmintAASDK {
             localStorage.removeItem(key);
         });
     }
-
-
-    async giveMeThePassPhraseWithPassKeys(user: UserIdentifierParams, chain: BlockchainIncludingTestnet) {
-        const { eoaAddress } = await this.crossmintService.getEOAAddress(user, chain)
-        const newW = window.open("http://localhost:3000/passkeys", "_blank");
-
-        try {
-            setTimeout(() => {
-                newW!.postMessage({ passkeysParams: { walletAddress: eoaAddress, chain, action: 'decrypt' }, type: 'passkeysAction' }, "http://localhost:3000/passkeys")
-            }, 5000)
-        } catch (error) {
-            console.log(error)
-        }
-
-
-        return new Promise<string>((resolve, reject) => {
-            console.log('we are waiting for the passphrase')
-            window.addEventListener("message", (event) => {
-                if (event.data.passphrase == null) return
-                console.log('we got the passphrase', event.data)
-                // if (event.origin !== "http://localhost:3000") return;
-                //TODO improve types
-                resolve(event.data.passphrase as string);
-            });
-        })
-    }
-
 }
-
-function abriOtraVentanaYpasaleLaData(eoaAddress: string, chain: BlockchainIncludingTestnet, passphrase: string) {
-    const newW = window.open("http://localhost:3000/passkeys", "_blank");
-
-    setTimeout(() => {
-        newW!.postMessage({ passkeysParams: { walletAddress: eoaAddress, chain, action: 'encrypt', passphrase }, type: 'passkeysAction', }, "http://localhost:3000/passkeys")
-    }, 10000)
-
-    window.onmessage = (event) => {
-        if (event.data.type !== 'passkeysAction') return
-
-        console.log('event', event);
-    }
-}
-

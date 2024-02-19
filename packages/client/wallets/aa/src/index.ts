@@ -6,3 +6,4 @@ export * from "./utils";
 
 export * from "./CrossmintAASDK";
 export * from "./passkeys/PasskeysSDK";
+export * from "./passkeys/services/CrossmintPasskeyCommunicationService";
