@@ -27,10 +27,11 @@
     "scripts": {
         "build": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
         "clean": "shx rm -rf dist/*",
+        "dev": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
         "test": "vitest run"
     },
     "sideEffects": false,
     "type": "module",
     "types": "./dist/index.d.ts",
-    "version": "0.0.3"
+    "version": "0.0.4"
 }

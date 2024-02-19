@@ -28,7 +28,7 @@ export class NFTStatusService {
         }
     }
 
-    private async getNftOwnerByContractAddress(contractAddress: string, tokenId: string): Promise<string> {
+    async getNftOwnerByContractAddress(contractAddress: string, tokenId: string): Promise<string> {
         const provider = getProvider(this.environment);
         const contract = new Contract(contractAddress, abi_ERC_721, provider);
 
