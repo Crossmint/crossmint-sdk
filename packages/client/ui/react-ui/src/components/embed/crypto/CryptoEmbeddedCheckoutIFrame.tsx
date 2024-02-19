@@ -28,15 +28,15 @@ export default function CryptoEmbeddedCheckoutIFrame(props: CryptoEmbeddedChecko
             handleIncomingTransaction(serializedTransaction);
         }
 
-        if (type === IncomingInternalEvents.CRYPTO_SWITCH_NETWORK) {
-            const { network } = payload;
-            console.log("[Crossmint] Received change of network", network);
+        if (type === IncomingInternalEvents.CRYPTO_CHAIN_SWITCH) {
+            const { chain } = payload;
+            console.log("[Crossmint] Received change of chain", chain);
 
-            const switchNetwork = (signer as ETHEmbeddedCheckoutSigner).switchNetwork;
-            if(switchNetwork == null) {
+            const handleChainSwitch = (signer as ETHEmbeddedCheckoutSigner).handleChainSwitch;
+            if(handleChainSwitch == null) {
                 throw new Error("switchNetwork function should have been defined")
             }
-            switchNetwork(network);
+            handleChainSwitch(chain);
         }
     }
 
@@ -100,7 +100,7 @@ export default function CryptoEmbeddedCheckoutIFrame(props: CryptoEmbeddedChecko
         props.locale, 
         props.currency, 
         props.whPassThroughArgs,
-        ..."network" in props.signer ? [props.signer.network] : [],
+        ..."chain" in props.signer ? [props.signer.chain] : [],
     ]);
 
     return <CrossmintEmbeddedCheckoutIFrame onInternalEvent={onInternalEvent} {...props} />;

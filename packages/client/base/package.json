@@ -1,7 +1,7 @@
 {
     "author": "Paella Labs Inc",
     "dependencies": {
-        "@crossmint/common-sdk-base": "0.0.3",
+        "@crossmint/common-sdk-base": "0.0.4",
         "exponential-backoff": "3.1.1",
         "uuid": "9.0.1"
     },
@@ -29,10 +29,11 @@
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "scripts": {
         "build": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
-        "clean": "shx rm -rf dist/*"
+        "clean": "shx rm -rf dist/*",
+        "dev": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --dts --sourcemap --watch"
     },
     "sideEffects": false,
     "type": "module",
     "types": "./dist/index.d.ts",
-    "version": "1.1.4"
+    "version": "1.1.6"
 }
