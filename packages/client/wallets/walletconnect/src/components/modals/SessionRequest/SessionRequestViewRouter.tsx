@@ -1,24 +1,57 @@
+import { useWalletConnectRequests } from "@/hooks/useWalletConnectRequests";
 import { useWalletConnectSessions } from "@/hooks/useWalletConnectSessions";
+import { useWalletConnectWallets } from "@/hooks/useWalletConnectWallets";
 import { isSendTransactionMethod } from "@/utils/sendTransaction/isSendTransactionMethod";
 import { isSignMessageMethod } from "@/utils/signMessage/isSignMessageMethod";
+import { supportedNamespacesSatisfiesMethod } from "@/utils/wallet/supportedNamespacesSatisfiesMethod";
 import { SessionTypes } from "@walletconnect/types";
+import { BuildApprovedNamespacesParams } from "@walletconnect/utils";
 import { Web3WalletTypes } from "@walletconnect/web3wallet";
+import { useEffect, useState } from "react";
 
 import { RequesterMetadata } from "../../common/layouts/modal/DAppRequestHeader";
 import SendTransactionModal from "./SendTransactionModal";
 import SignMessageModal from "./SignMessageModal";
+import UnsupportedMethodRequestedModal from "./UnsupportedMethodRequestedModal";
 
 export default function SessionRequestViewRouter({ request }: { request: Web3WalletTypes.SessionRequest }) {
-    const { sessions } = useWalletConnectSessions();
+    const [supportedNamespaces, setSupportedNamespaces] = useState<
+        BuildApprovedNamespacesParams["supportedNamespaces"] | undefined
+    >(undefined);
 
-    const requesterMetadata = buildRequesterMetadata(request, sessions);
+    const { getSupportedNamespaces } = useWalletConnectWallets();
+    const { getSessionForRequest } = useWalletConnectSessions();
+    const { rejectRequest } = useWalletConnectRequests();
 
+    const method = request.params.request.method;
+
+    useEffect(() => {
+        (async () => {
+            const supportedNamespaces = await getSupportedNamespaces();
+            setSupportedNamespaces(supportedNamespaces);
+        })();
+    }, [request]);
+
+    if (!supportedNamespaces) {
+        return null;
+    }
+
+    const sessionForRequest = getSessionForRequest(request);
+    if (!sessionForRequest) {
+        rejectRequest(request);
+        return null;
+    }
+
+    const requesterMetadata = buildRequesterMetadata(request, sessionForRequest);
     const props = {
         request,
         requesterMetadata,
     };
 
-    const method = request.params.request.method;
+    const doesSupportMethod = supportedNamespacesSatisfiesMethod(method, supportedNamespaces);
+    if (!doesSupportMethod) {
+        return <UnsupportedMethodRequestedModal {...props} />;
+    }
 
     if (isSignMessageMethod(method)) {
         return <SignMessageModal {...props} />;
@@ -26,23 +59,15 @@ export default function SessionRequestViewRouter({ request }: { request: Web3Wal
         return <SendTransactionModal {...props} />;
     }
 
-    return <p>Unsupported method</p>;
+    // TODO: Unknown method modal
+    return <p>Unknown method</p>;
 }
 
 function buildRequesterMetadata(
     request: Web3WalletTypes.SessionRequest,
-    sessions: SessionTypes.Struct[]
+    sessionForRequest: SessionTypes.Struct
 ): RequesterMetadata {
-    const sessionForRequest = sessions.find((s) => s.topic === request.topic);
-    const requesterMetadata = sessionForRequest?.peer.metadata;
-
-    if (!requesterMetadata) {
-        return {
-            name: "Unknown",
-            icon: "https://www.crossmint.com/assets/ui/picPlaceholder.png",
-            url: "unknown",
-        };
-    }
+    const requesterMetadata = sessionForRequest.peer.metadata;
 
     const icon =
         requesterMetadata.icons && requesterMetadata.icons[0]
