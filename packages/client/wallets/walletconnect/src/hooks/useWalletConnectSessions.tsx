@@ -1,3 +1,4 @@
+import { mockRequiredNamespaceMethods } from "@/utils/walletconnect/mockRequiredNamespaceMethods";
 import { SessionTypes } from "@walletconnect/types";
 import { buildApprovedNamespaces, getSdkError } from "@walletconnect/utils";
 import { Web3WalletTypes } from "@walletconnect/web3wallet";
@@ -61,9 +62,15 @@ export function WalletConnectSessionsContextProvider({ children }: { children: R
         }
         console.log("[WalletConnectSessionsContextProvider.approveSession()] approving session proposal", proposal);
         try {
+            const supportedNamespaces = await getSupportedNamespaces();
+            const supportedNamespacesWithMockedMethods = mockRequiredNamespaceMethods(
+                proposal.params.requiredNamespaces,
+                supportedNamespaces
+            ); // We mock the supported methods to improve compatibility. If a mocked method is attempted to be called later, we show an "Unsupported method" modal
+
             const approvedNamespaces = buildApprovedNamespaces({
                 proposal: proposal.params,
-                supportedNamespaces: await getSupportedNamespaces(),
+                supportedNamespaces: supportedNamespacesWithMockedMethods,
             });
             console.log(
                 "[WalletConnectSessionsContextProvider.approveSession()] approvedNamespaces",
