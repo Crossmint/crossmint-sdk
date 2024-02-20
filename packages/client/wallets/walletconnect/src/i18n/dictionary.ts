@@ -24,6 +24,13 @@ export type CrossmintWalletConnectDictionary = {
         takeActionsWithoutPermission: string;
         accessPersonalInformation: string;
     };
+    unsupportedChainsRequested: {
+        unsupported: string;
+        requiresSupportFor: string;
+        butYourWalletDoesNotSupport: string;
+        thisChain: string;
+        theseChains: string;
+    };
     connectedSession: {
         yourWalletIsConnected: string;
         leaveThisTabOpen: string;
@@ -40,8 +47,14 @@ export type CrossmintWalletConnectDictionary = {
     buttons: {
         connect: string;
         cancel: string;
+        close: string;
         send: string;
         sign: string;
+    };
+    common: {
+        chain: string;
+        chains: string;
+        and: string;
     };
 };
 
@@ -69,6 +82,13 @@ export const i18NDictionary: Record<CrossmintWalletConnectLocale, CrossmintWalle
             takeActionsWithoutPermission: "Take actions without your permission",
             accessPersonalInformation: "Access any personal information (email, name, etc.)",
         },
+        unsupportedChainsRequested: {
+            unsupported: "Unsupported",
+            requiresSupportFor: "requires support for",
+            butYourWalletDoesNotSupport: "but your wallet does not support",
+            thisChain: "this chain",
+            theseChains: "these chains",
+        },
         connectedSession: {
             yourWalletIsConnected: "Your wallet is connected :)",
             leaveThisTabOpen: "You're signed in on your app, but leave this tab open to respond to requests",
@@ -85,8 +105,14 @@ export const i18NDictionary: Record<CrossmintWalletConnectLocale, CrossmintWalle
         buttons: {
             connect: "Connect",
             cancel: "Cancel",
+            close: "Close",
             send: "Send",
             sign: "Sign",
+        },
+        common: {
+            and: "and",
+            chain: "chain",
+            chains: "chains",
         },
     },
     "ja-JP": {
@@ -112,6 +138,13 @@ export const i18NDictionary: Record<CrossmintWalletConnectLocale, CrossmintWalle
             takeActionsWithoutPermission: "あなたの許可なく行動を起こす",
             accessPersonalInformation: "個人情報（メール、名前など）にアクセスする",
         },
+        unsupportedChainsRequested: {
+            unsupported: "サポートされていません",
+            requiresSupportFor: "サポートが必要です",
+            butYourWalletDoesNotSupport: "しかし、あなたのウォレットはサポートしていません",
+            thisChain: "このブロックチェーン",
+            theseChains: "これらのブロックチェーン",
+        },
         connectedSession: {
             yourWalletIsConnected: "あなたのウォレットは接続されています :)",
             leaveThisTabOpen:
@@ -129,8 +162,14 @@ export const i18NDictionary: Record<CrossmintWalletConnectLocale, CrossmintWalle
         buttons: {
             connect: "接続",
             cancel: "キャンセル",
+            close: "閉じる",
             send: "送信",
             sign: "署名",
+        },
+        common: {
+            and: "そして",
+            chain: "ブロックチェーン",
+            chains: "ブロックチェーン",
         },
     },
 };

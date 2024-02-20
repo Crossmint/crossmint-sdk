@@ -1,5 +1,5 @@
 import { SessionTypes } from "@walletconnect/types";
-import { buildApprovedNamespaces, getSdkError } from "@walletconnect/utils";
+import { SdkErrorKey, buildApprovedNamespaces, getSdkError } from "@walletconnect/utils";
 import { Web3WalletTypes } from "@walletconnect/web3wallet";
 import { Dispatch, SetStateAction, createContext, useCallback, useContext, useEffect, useState } from "react";
 
@@ -12,7 +12,7 @@ export type WalletConnectSessionsContext = {
     sessions: SessionTypes.Struct[];
     setSessions: Dispatch<SetStateAction<SessionTypes.Struct[]>>;
     approveSession: (proposal: Web3WalletTypes.SessionProposal) => Promise<void>;
-    rejectSession: (proposal: Web3WalletTypes.SessionProposal) => Promise<void>;
+    rejectSession: (proposal: Web3WalletTypes.SessionProposal, reason?: SdkErrorKey) => Promise<void>;
 };
 const WalletConnectSessionsContext = createContext<WalletConnectSessionsContext>({
     sessionProposals: [],
@@ -83,7 +83,7 @@ export function WalletConnectSessionsContextProvider({ children }: { children: R
         }
     }
 
-    async function rejectSession(proposal: Web3WalletTypes.SessionProposal) {
+    async function rejectSession(proposal: Web3WalletTypes.SessionProposal, reason?: SdkErrorKey) {
         if (!provider) {
             console.error("[SessionProposalModal] handleCancel: provider is undefined");
             return;
@@ -92,7 +92,7 @@ export function WalletConnectSessionsContextProvider({ children }: { children: R
         try {
             await provider?.rejectSession({
                 id: proposal.id,
-                reason: getSdkError("USER_REJECTED"),
+                reason: getSdkError(reason || "USER_REJECTED"),
             });
         } catch (e) {
             console.error("[SessionProposalModal] handleCancel: error", e);
