@@ -1,13 +1,13 @@
+import { ProposalTypes } from "@walletconnect/types";
 import { BuildApprovedNamespacesParams } from "@walletconnect/utils";
-import { Web3WalletTypes } from "@walletconnect/web3wallet";
 
 export function supportsRequiredChains(
-    proposal: Web3WalletTypes.SessionProposal,
+    requiredNamespaces: ProposalTypes.RequiredNamespaces,
     supportedNamespaces: BuildApprovedNamespacesParams["supportedNamespaces"]
 ) {
     const unsupportedChains: string[] = [];
 
-    Object.entries(proposal.params.requiredNamespaces).forEach(([caipKey, requiredNamespace]) => {
+    Object.entries(requiredNamespaces).forEach(([caipKey, requiredNamespace]) => {
         const supportedChainsForNamespace = supportedNamespaces[caipKey]?.chains || [];
         const requiredChains = requiredNamespace.chains || [];
 

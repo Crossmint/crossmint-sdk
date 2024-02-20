@@ -25,7 +25,10 @@ export default function SessionProposalViewRouter({ proposal }: { proposal: Web3
         return null;
     }
 
-    const { canSupport: canSupportChains, unsupportedChains } = supportsRequiredChains(proposal, supportedNamespaces);
+    const { canSupport: canSupportChains, unsupportedChains } = supportsRequiredChains(
+        proposal.params.requiredNamespaces,
+        supportedNamespaces
+    );
 
     if (!canSupportChains) {
         return <UnsupportedChainsRequestedModal proposal={proposal} unsupportedChains={unsupportedChains} />;
