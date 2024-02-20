@@ -1,6 +1,6 @@
 import { useWalletConnectRequests } from "../../hooks/useWalletConnectRequests";
 import { useWalletConnectSessions } from "../../hooks/useWalletConnectSessions";
-import SessionProposalModal from "./SessionProposal/SessionProposalModal";
+import SessionProposalViewRouter from "./SessionProposal/SessionProposalViewRouter";
 import SessionRequestViewRouter from "./SessionRequest/SessionRequestViewRouter";
 
 export default function ModalViewRouter() {
@@ -8,7 +8,7 @@ export default function ModalViewRouter() {
     const { requests } = useWalletConnectRequests();
 
     if (sessionProposals.length > 0) {
-        return <SessionProposalModal proposal={sessionProposals[0]} />;
+        return <SessionProposalViewRouter proposal={sessionProposals[0]} />;
     }
 
     if (sessions.length === 0) {

@@ -39,7 +39,7 @@ export function WalletConnectSessionsContextProvider({ children }: { children: R
     const { getSupportedNamespaces } = useWalletConnectWallets();
 
     const onSessionProposal = useCallback((proposal: Web3WalletTypes.SessionProposal) => {
-        console.log("[ModalController] Incoming session_proposal", proposal);
+        console.log("[WalletConnectSessionsContextProvider] Incoming session_proposal", proposal);
         setSessionProposals((prev) => [...prev, proposal]);
     }, []);
 
@@ -78,24 +78,24 @@ export function WalletConnectSessionsContextProvider({ children }: { children: R
             removeSessionProposal(proposal);
         } catch (error) {
             // TODO: Surface error to user
-            console.error("[SessionProposalModal] approveSession: error", error);
+            console.error("[WalletConnectSessionsContextProvider.approveSession()] Error", error);
             await rejectSession(proposal);
         }
     }
 
     async function rejectSession(proposal: Web3WalletTypes.SessionProposal, reason?: SdkErrorKey) {
         if (!provider) {
-            console.error("[SessionProposalModal] handleCancel: provider is undefined");
+            console.error("[WalletConnectSessionsContextProvider.rejectSession()] provider is undefined");
             return;
         }
-        console.log("[SessionProposalModal] handleCancel: rejecting session proposal", proposal);
+        console.log("[WalletConnectSessionsContextProvider.rejectSession()] rejecting session proposal", proposal);
         try {
             await provider?.rejectSession({
                 id: proposal.id,
                 reason: getSdkError(reason || "USER_REJECTED"),
             });
         } catch (e) {
-            console.error("[SessionProposalModal] handleCancel: error", e);
+            console.error("[WalletConnectSessionsContextProvider.rejectSession()] Error", e);
         }
         removeSessionProposal(proposal);
     }

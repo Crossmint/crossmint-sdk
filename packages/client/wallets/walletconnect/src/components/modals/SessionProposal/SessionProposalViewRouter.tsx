@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import RequestedPermissionsModal from "./RequestedPermissionsModal";
 import UnsupportedChainsRequestedModal from "./UnsupportedChainsRequestedModal";
 
-export default function SessionProposalModal({ proposal }: { proposal: Web3WalletTypes.SessionProposal }) {
+export default function SessionProposalViewRouter({ proposal }: { proposal: Web3WalletTypes.SessionProposal }) {
     const [supportedNamespaces, setSupportedNamespaces] = useState<
         BuildApprovedNamespacesParams["supportedNamespaces"] | undefined
     >(undefined);
