@@ -2,6 +2,7 @@ import { RequesterMetadata } from "@/components/common/layouts/modal/DAppRequest
 import { ErrorModal } from "@/components/common/layouts/modal/ErrorModal";
 import { useCrossmintWalletConnect } from "@/hooks/useCrossmintWalletConnect";
 import { useWalletConnectRequests } from "@/hooks/useWalletConnectRequests";
+import { CrossmintWalletConnectDictionary } from "@/i18n/dictionary";
 import { isSendTransactionMethod } from "@/utils/sendTransaction/isSendTransactionMethod";
 import { isSignMessageMethod } from "@/utils/signMessage/isSignMessageMethod";
 import { Web3WalletTypes } from "@walletconnect/web3wallet";
@@ -34,7 +35,7 @@ export default function UnsupportedMethodRequestedModal({
             message={
                 <>
                     {requesterMetadata.name} {dictionary.unsupportedMethodRequested.hasRequestedYouTo}{" "}
-                    {requestMethodToCopyName(method)},{" "}
+                    {requestMethodToCopyName(method, dictionary)},{" "}
                     {dictionary.unsupportedMethodRequested.butWalletDoesNotSupportThisMethod}
                 </>
             }
@@ -44,11 +45,11 @@ export default function UnsupportedMethodRequestedModal({
     );
 }
 
-function requestMethodToCopyName(method: string) {
+function requestMethodToCopyName(method: string, dictionary: CrossmintWalletConnectDictionary) {
     if (isSignMessageMethod(method)) {
-        return "sign a message";
+        return dictionary.unsupportedMethodRequested.signAMessage;
     } else if (isSendTransactionMethod(method)) {
-        return "send a transaction";
+        return dictionary.unsupportedMethodRequested.sendATransaction;
     }
-    return `perform a ${method} operation`;
+    return dictionary.unsupportedMethodRequested.performAnOperation(method);
 }

@@ -38,6 +38,9 @@ export type CrossmintWalletConnectDictionary = {
         unsupportedMethod: string;
         hasRequestedYouTo: string;
         butWalletDoesNotSupportThisMethod: string;
+        signAMessage: string;
+        sendATransaction: string;
+        performAnOperation: (method: string) => string;
     };
     sendTransaction: {
         wantsYouToSendTransaction: string;
@@ -101,6 +104,9 @@ export const i18NDictionary: Record<CrossmintWalletConnectLocale, CrossmintWalle
             unsupportedMethod: "Unsupported Method",
             hasRequestedYouTo: "has requested you to",
             butWalletDoesNotSupportThisMethod: "but your wallet does not support this method",
+            signAMessage: "sign a message",
+            sendATransaction: "send a transaction",
+            performAnOperation: (method) => `perform a ${method} operation`,
         },
         sendTransaction: {
             wantsYouToSendTransaction: "wants you to send a transaction",
@@ -165,6 +171,9 @@ export const i18NDictionary: Record<CrossmintWalletConnectLocale, CrossmintWalle
             unsupportedMethod: "サポートされていないメソッド",
             hasRequestedYouTo: "があなたにリクエストしています",
             butWalletDoesNotSupportThisMethod: "しかし、あなたのウォレットはこのメソッドをサポートしていません",
+            signAMessage: "メッセージに署名する",
+            sendATransaction: "トランザクションを送信する",
+            performAnOperation: (method) => `${method}操作を行う`,
         },
         sendTransaction: {
             wantsYouToSendTransaction: "トランザクションの送信を求めています",
