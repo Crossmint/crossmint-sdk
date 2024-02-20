@@ -1,4 +1,5 @@
 import { ReactNode, createContext, useCallback, useContext, useEffect, useState } from "react";
+import { toast } from "react-hot-toast";
 
 import { useWalletConnectProvider } from "./useWalletConnectProvider";
 
@@ -35,6 +36,7 @@ export function PairWithURIProvider({ children }: { children: ReactNode }) {
                 setIsAwaitingSessionProposal(true);
             } catch (e) {
                 console.error("Error pairing", e);
+                toast.error("Failed to pair with URI. Please try again");
             } finally {
                 setIsPairing(false);
             }
@@ -58,6 +60,7 @@ export function PairWithURIProvider({ children }: { children: ReactNode }) {
             console.log("[CrossmintWalletConnectProvider] Waiting for session proposal");
             timeoutId = setTimeout(() => {
                 console.log("[CrossmintWalletConnectProvider] Waiting for session proposal timed out");
+                toast.error("Timed out waiting for session proposal. Please copy a new URI and try again");
                 setIsAwaitingSessionProposal(false);
             }, 10000);
         }
