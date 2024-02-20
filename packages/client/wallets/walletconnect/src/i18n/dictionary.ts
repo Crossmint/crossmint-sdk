@@ -25,11 +25,9 @@ export type CrossmintWalletConnectDictionary = {
         accessPersonalInformation: string;
     };
     unsupportedChainsRequested: {
-        unsupported: string;
+        unsupportedChain_s: (count: number) => string;
         requiresSupportFor: string;
-        butYourWalletDoesNotSupport: string;
-        thisChain: string;
-        theseChains: string;
+        butWalletDoesNotSupportChain_s: (count: number) => string;
     };
     connectedSession: {
         yourWalletIsConnected: string;
@@ -52,8 +50,6 @@ export type CrossmintWalletConnectDictionary = {
         sign: string;
     };
     common: {
-        chain: string;
-        chains: string;
         and: string;
     };
 };
@@ -83,11 +79,13 @@ export const i18NDictionary: Record<CrossmintWalletConnectLocale, CrossmintWalle
             accessPersonalInformation: "Access any personal information (email, name, etc.)",
         },
         unsupportedChainsRequested: {
-            unsupported: "Unsupported",
+            unsupportedChain_s(count) {
+                return `Unsupported ${count > 1 ? "chains" : "chain"}`;
+            },
+            butWalletDoesNotSupportChain_s(count) {
+                return `but your wallet does not support ${count > 1 ? "these chains" : "this chain"}`;
+            },
             requiresSupportFor: "requires support for",
-            butYourWalletDoesNotSupport: "but your wallet does not support",
-            thisChain: "this chain",
-            theseChains: "these chains",
         },
         connectedSession: {
             yourWalletIsConnected: "Your wallet is connected :)",
@@ -111,8 +109,6 @@ export const i18NDictionary: Record<CrossmintWalletConnectLocale, CrossmintWalle
         },
         common: {
             and: "and",
-            chain: "chain",
-            chains: "chains",
         },
     },
     "ja-JP": {
@@ -139,11 +135,15 @@ export const i18NDictionary: Record<CrossmintWalletConnectLocale, CrossmintWalle
             accessPersonalInformation: "個人情報（メール、名前など）にアクセスする",
         },
         unsupportedChainsRequested: {
-            unsupported: "サポートされていません",
+            unsupportedChain_s() {
+                return `サポートされていないブロックチェーン`;
+            },
+            butWalletDoesNotSupportChain_s(count) {
+                return `しかし、あなたのウォレットは${
+                    count > 1 ? "これらのブロックチェーン" : "このブロックチェーン"
+                }をサポートしていません`;
+            },
             requiresSupportFor: "サポートが必要です",
-            butYourWalletDoesNotSupport: "しかし、あなたのウォレットはサポートしていません",
-            thisChain: "このブロックチェーン",
-            theseChains: "これらのブロックチェーン",
         },
         connectedSession: {
             yourWalletIsConnected: "あなたのウォレットは接続されています :)",
@@ -168,8 +168,6 @@ export const i18NDictionary: Record<CrossmintWalletConnectLocale, CrossmintWalle
         },
         common: {
             and: "そして",
-            chain: "ブロックチェーン",
-            chains: "ブロックチェーン",
         },
     },
 };

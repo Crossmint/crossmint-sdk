@@ -1,7 +1,6 @@
 import { ErrorModal } from "@/components/common/layouts/modal/ErrorModal";
 import { useCrossmintWalletConnect } from "@/hooks/useCrossmintWalletConnect";
 import { useWalletConnectSessions } from "@/hooks/useWalletConnectSessions";
-import { pluralize } from "@/utils/strings";
 import { prettifyWalletConnectChain } from "@/utils/walletconnect/prettifyWalletConnectChain";
 import { Web3WalletTypes } from "@walletconnect/web3wallet";
 import { useState } from "react";
@@ -25,21 +24,22 @@ export default function UnsupportedChainsRequestedModal({
     }
 
     const unsupportedChainsMessage = () => {
-        if (unsupportedChains.length === 2) {
-            return `${prettifyWalletConnectChain(unsupportedChains[0])} ${
-                dictionary.common.and
-            } ${prettifyWalletConnectChain(unsupportedChains[1])}`;
+        if (unsupportedChains.length === 1) {
+            return prettifyWalletConnectChain(unsupportedChains[0]);
         }
-        return unsupportedChains.map(prettifyWalletConnectChain).join(", ");
+        // join with commas and "and" for the last one
+        return (
+            unsupportedChains
+                .slice(0, unsupportedChains.length - 1)
+                .map(prettifyWalletConnectChain)
+                .join(", ") +
+            ` ${dictionary.common.and} ${prettifyWalletConnectChain(unsupportedChains[unsupportedChains.length - 1])}`
+        );
     };
 
     return (
         <ErrorModal
-            title={`${dictionary.unsupportedChainsRequested.unsupported} ${pluralize(
-                dictionary.common.chain,
-                dictionary.common.chains,
-                unsupportedChains.length
-            )}`}
+            title={dictionary.unsupportedChainsRequested.unsupportedChain_s(unsupportedChains.length)}
             message={
                 <>
                     {proposal.params.proposer.metadata.name} {dictionary.unsupportedChainsRequested.requiresSupportFor}{" "}
@@ -51,12 +51,7 @@ export default function UnsupportedChainsRequestedModal({
                     >
                         {unsupportedChainsMessage()}
                     </span>
-                    , {dictionary.unsupportedChainsRequested.butYourWalletDoesNotSupport}{" "}
-                    {pluralize(
-                        dictionary.unsupportedChainsRequested.thisChain,
-                        dictionary.unsupportedChainsRequested.theseChains,
-                        unsupportedChains.length
-                    )}
+                    , {dictionary.unsupportedChainsRequested.butWalletDoesNotSupportChain_s(unsupportedChains.length)}
                 </>
             }
             loading={loading}
