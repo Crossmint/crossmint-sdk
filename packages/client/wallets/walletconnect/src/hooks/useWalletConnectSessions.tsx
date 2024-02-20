@@ -60,6 +60,7 @@ export function WalletConnectSessionsContextProvider({ children }: { children: R
             console.error("[WalletConnectSessionsContextProvider.approveSession()] provider is undefined");
             return;
         }
+
         console.log("[WalletConnectSessionsContextProvider.approveSession()] approving session proposal", proposal);
         try {
             const approvedNamespaces = buildApprovedNamespaces({
@@ -79,7 +80,7 @@ export function WalletConnectSessionsContextProvider({ children }: { children: R
             removeSessionProposal(proposal);
         } catch (error) {
             console.error("[WalletConnectSessionsContextProvider.approveSession()] Error", error);
-            toast.error("Failed to approve session proposal");
+            toast.error(`Failed to approve ${proposal.params.proposer.metadata.name}'s session proposal`);
             await rejectSession(proposal);
         }
     }
