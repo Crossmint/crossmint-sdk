@@ -2,6 +2,7 @@ import { SessionTypes } from "@walletconnect/types";
 import { SdkErrorKey, buildApprovedNamespaces, getSdkError } from "@walletconnect/utils";
 import { Web3WalletTypes } from "@walletconnect/web3wallet";
 import { Dispatch, SetStateAction, createContext, useCallback, useContext, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 import { useWalletConnectProvider } from "./useWalletConnectProvider";
 import { useWalletConnectWallets } from "./useWalletConnectWallets";
@@ -77,8 +78,8 @@ export function WalletConnectSessionsContextProvider({ children }: { children: R
             setSessions((sessions) => [...sessions, session]);
             removeSessionProposal(proposal);
         } catch (error) {
-            // TODO: Surface error to user
             console.error("[WalletConnectSessionsContextProvider.approveSession()] Error", error);
+            toast.error("Failed to approve session proposal");
             await rejectSession(proposal);
         }
     }
