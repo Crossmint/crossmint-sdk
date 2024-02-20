@@ -1,4 +1,3 @@
-import ActionModal from "@/components/common/layouts/modal/ActionModal";
 import { useWalletConnectWallets } from "@/hooks/useWalletConnectWallets";
 import { supportsRequiredChains } from "@/utils/wallet/supportsRequiredChains";
 import { BuildApprovedNamespacesParams } from "@walletconnect/utils";
@@ -23,11 +22,7 @@ export default function SessionProposalModal({ proposal }: { proposal: Web3Walle
     }, [proposal]);
 
     if (!supportedNamespaces) {
-        return (
-            <ActionModal show={true}>
-                <p>Loading...</p>
-            </ActionModal>
-        );
+        return null;
     }
 
     const { canSupport: canSupportChains, unsupportedChains } = supportsRequiredChains(proposal, supportedNamespaces);
