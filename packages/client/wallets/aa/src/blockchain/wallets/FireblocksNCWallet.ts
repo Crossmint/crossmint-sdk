@@ -167,7 +167,6 @@ const signMessage = async (
     chain: BlockchainIncludingTestnet,
     msg: Uint8Array | string
 ) => {
-    console.log({ physicalDeviceId: fireblocksNCW.getPhysicalDeviceId() });
     const msg_ = msg instanceof Uint8Array ? fromBytes(msg, "hex") : msg;
     const tx = await crossmintService.createTransaction(msg_ as string, walletId, getFireblocksAssetId(chain), false);
     try {
