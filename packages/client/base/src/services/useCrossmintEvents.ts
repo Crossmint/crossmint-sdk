@@ -10,7 +10,7 @@ export function useCrossmintEvents({ environment }: { environment?: string } = {
         }: {
             orderIdentifier: string;
         },
-        cb: (event: CrossmintEvent) => CrossmintEvent
+        cb: (event: CrossmintEvent) => any
     ) {
         const emittedEvents: CrossmintEvents[] = [];
         const succeededTransactionIdentifiers: string[] = [];
