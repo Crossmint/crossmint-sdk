@@ -19,7 +19,7 @@ export function supportedNamespacesSatisfiesRequiredChains(
     });
 
     return {
-        canSupport: unsupportedChains.length === 0,
+        satisfies: unsupportedChains.length === 0,
         supportedChains: Object.values(supportedNamespaces).flatMap((namespace) => namespace.chains || []),
         unsupportedChains,
     };
