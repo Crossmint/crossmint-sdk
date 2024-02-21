@@ -10,7 +10,7 @@ export function useCrossmintEvents({ environment }: { environment?: string } = {
         }: {
             orderIdentifier: string;
         },
-        cb: (event: CrossmintEvent) => any
+        cb: (event: CrossmintEvent) => CrossmintEvent
     ) {
         const emittedEvents: CrossmintEvents[] = [];
         const succeededTransactionIdentifiers: string[] = [];
@@ -63,6 +63,12 @@ export function useCrossmintEvents({ environment }: { environment?: string } = {
         window.onpopstate = () => {
             isFetching = false;
             clearInterval(timer);
+        };
+
+        return {
+            cleanup: () => {
+                clearInterval(timer);
+            },
         };
     }
 
