@@ -16,7 +16,7 @@ const jestConfig: JestConfigWithTsJest = {
         ],
     },
     testPathIgnorePatterns: [
-        "**/packages/client/wallets/aa/src/playwright/tests/**",
+        "playwright/tests",
     ],
 };
 
