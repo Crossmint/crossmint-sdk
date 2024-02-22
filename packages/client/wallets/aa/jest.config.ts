@@ -15,6 +15,9 @@ const jestConfig: JestConfigWithTsJest = {
             },
         ],
     },
+    testPathIgnorePatterns: [
+        "**/packages/client/wallets/aa/src/playwright/tests/**",
+    ],
 };
 
 export default jestConfig;
