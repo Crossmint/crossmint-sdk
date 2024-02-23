@@ -4,6 +4,7 @@ import { JsonRpcResult, formatJsonRpcError } from "@walletconnect/jsonrpc-utils"
 import { getSdkError } from "@walletconnect/utils";
 import { Web3WalletTypes } from "@walletconnect/web3wallet";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 import { CrossmintWalletConnectWallet } from "..";
 import { isSendTransactionMethod } from "../utils/sendTransaction/isSendTransactionMethod";
@@ -67,7 +68,12 @@ export function WalletConnectRequestsContextProvider({ children }: { children: R
     }
 
     async function acceptRequest(request: Web3WalletTypes.SessionRequest) {
-        const { topic } = request;
+        const {
+            topic,
+            params: {
+                request: { method },
+            },
+        } = request;
 
         const wallet = await getWalletForRequest(request);
         if (!wallet) {
@@ -96,7 +102,7 @@ export function WalletConnectRequestsContextProvider({ children }: { children: R
                 "[WalletConnectRequestsContextProvider.acceptRequest()] failed to respond to session request",
                 e
             );
-            // TODO: surface error to user
+            toast.error(`Failed to respond to ${method} request`);
             rejectRequest(request);
         }
     }
