@@ -1,9 +1,10 @@
 import { handleAcceptSendTransaction } from "@/utils/sendTransaction/handleAcceptSendTransaction";
 import { handleAcceptSignMessage } from "@/utils/signMessage/handleAcceptSignMessage";
 import { JsonRpcResult, formatJsonRpcError } from "@walletconnect/jsonrpc-utils";
-import { getSdkError } from "@walletconnect/utils";
+import { SdkErrorKey, getSdkError } from "@walletconnect/utils";
 import { Web3WalletTypes } from "@walletconnect/web3wallet";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 import { CrossmintWalletConnectWallet } from "..";
 import { isSendTransactionMethod } from "../utils/sendTransaction/isSendTransactionMethod";
@@ -15,7 +16,7 @@ import { useWalletConnectWallets } from "./useWalletConnectWallets";
 export type WalletConnectRequestsContext = {
     requests: Web3WalletTypes.SessionRequest[];
     acceptRequest: (request: Web3WalletTypes.SessionRequest) => Promise<void>;
-    rejectRequest: (request: Web3WalletTypes.SessionRequest) => Promise<void>;
+    rejectRequest: (request: Web3WalletTypes.SessionRequest, reason?: SdkErrorKey) => Promise<void>;
 };
 const WalletConnectRequestsContext = createContext<WalletConnectRequestsContext>({
     requests: [],
@@ -53,12 +54,12 @@ export function WalletConnectRequestsContextProvider({ children }: { children: R
         provider.on("session_request", onSessionRequest);
     }, [provider, onSessionRequest]);
 
-    async function rejectRequest(request: Web3WalletTypes.SessionRequest) {
+    async function rejectRequest(request: Web3WalletTypes.SessionRequest, reason?: SdkErrorKey) {
         const { id, topic } = request;
         try {
             await provider?.respondSessionRequest({
                 topic,
-                response: formatJsonRpcError(id, getSdkError("USER_REJECTED").message),
+                response: formatJsonRpcError(id, getSdkError(reason || "USER_REJECTED").message),
             });
         } catch (e) {
             console.error("[WalletConnectRequestsContextProvider.rejectRequest()] failed to reject session request", e);
@@ -67,7 +68,12 @@ export function WalletConnectRequestsContextProvider({ children }: { children: R
     }
 
     async function acceptRequest(request: Web3WalletTypes.SessionRequest) {
-        const { topic } = request;
+        const {
+            topic,
+            params: {
+                request: { method },
+            },
+        } = request;
 
         const wallet = await getWalletForRequest(request);
         if (!wallet) {
@@ -96,7 +102,7 @@ export function WalletConnectRequestsContextProvider({ children }: { children: R
                 "[WalletConnectRequestsContextProvider.acceptRequest()] failed to respond to session request",
                 e
             );
-            // TODO: surface error to user
+            toast.error(`Failed to respond to ${method} request`);
             rejectRequest(request);
         }
     }

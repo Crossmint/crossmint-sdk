@@ -50,7 +50,7 @@ export default function ActionModal({
                     leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                 >
                     <div
-                        className="z-30 max-w-[400px] w-full flex flex-col rounded-xl p-5 md:p-7 shadow-sm m-6"
+                        className="z-30 max-w-[400px] w-full flex flex-col items-center rounded-xl p-5 md:p-7 shadow-sm m-6"
                         style={{
                             backgroundColor: uiConfig.colors.backgroundSecondary,
                         }}

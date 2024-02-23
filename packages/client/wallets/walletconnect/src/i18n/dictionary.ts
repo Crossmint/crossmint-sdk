@@ -24,10 +24,23 @@ export type CrossmintWalletConnectDictionary = {
         takeActionsWithoutPermission: string;
         accessPersonalInformation: string;
     };
+    unsupportedChainsRequested: {
+        unsupportedChain_s: (count: number) => string;
+        requiresSupportFor: string;
+        butWalletDoesNotSupportChain_s: (count: number) => string;
+    };
     connectedSession: {
         yourWalletIsConnected: string;
         leaveThisTabOpen: string;
         dontCloseThisWindow: string;
+    };
+    unsupportedMethodRequested: {
+        unsupportedMethod: string;
+        hasRequestedYouTo: string;
+        butWalletDoesNotSupportThisMethod: string;
+        signAMessage: string;
+        sendATransaction: string;
+        performAnOperation: (method: string) => string;
     };
     sendTransaction: {
         wantsYouToSendTransaction: string;
@@ -40,8 +53,12 @@ export type CrossmintWalletConnectDictionary = {
     buttons: {
         connect: string;
         cancel: string;
+        close: string;
         send: string;
         sign: string;
+    };
+    common: {
+        and: string;
     };
 };
 
@@ -69,10 +86,27 @@ export const i18NDictionary: Record<CrossmintWalletConnectLocale, CrossmintWalle
             takeActionsWithoutPermission: "Take actions without your permission",
             accessPersonalInformation: "Access any personal information (email, name, etc.)",
         },
+        unsupportedChainsRequested: {
+            unsupportedChain_s(count) {
+                return `Unsupported ${count > 1 ? "chains" : "chain"}`;
+            },
+            butWalletDoesNotSupportChain_s(count) {
+                return `but your wallet does not support ${count > 1 ? "these chains" : "this chain"}`;
+            },
+            requiresSupportFor: "requires support for",
+        },
         connectedSession: {
             yourWalletIsConnected: "Your wallet is connected :)",
             leaveThisTabOpen: "You're signed in on your app, but leave this tab open to respond to requests",
             dontCloseThisWindow: "Don't close this window",
+        },
+        unsupportedMethodRequested: {
+            unsupportedMethod: "Unsupported Method",
+            hasRequestedYouTo: "has requested you to",
+            butWalletDoesNotSupportThisMethod: "but your wallet does not support this method",
+            signAMessage: "sign a message",
+            sendATransaction: "send a transaction",
+            performAnOperation: (method) => `perform a ${method} operation`,
         },
         sendTransaction: {
             wantsYouToSendTransaction: "wants you to send a transaction",
@@ -85,8 +119,12 @@ export const i18NDictionary: Record<CrossmintWalletConnectLocale, CrossmintWalle
         buttons: {
             connect: "Connect",
             cancel: "Cancel",
+            close: "Close",
             send: "Send",
             sign: "Sign",
+        },
+        common: {
+            and: "and",
         },
     },
     "ja-JP": {
@@ -112,11 +150,30 @@ export const i18NDictionary: Record<CrossmintWalletConnectLocale, CrossmintWalle
             takeActionsWithoutPermission: "あなたの許可なく行動を起こす",
             accessPersonalInformation: "個人情報（メール、名前など）にアクセスする",
         },
+        unsupportedChainsRequested: {
+            unsupportedChain_s() {
+                return `サポートされていないブロックチェーン`;
+            },
+            butWalletDoesNotSupportChain_s(count) {
+                return `しかし、あなたのウォレットは${
+                    count > 1 ? "これらのブロックチェーン" : "このブロックチェーン"
+                }をサポートしていません`;
+            },
+            requiresSupportFor: "サポートが必要です",
+        },
         connectedSession: {
             yourWalletIsConnected: "あなたのウォレットは接続されています :)",
             leaveThisTabOpen:
                 "あなたのアプリにサインインしていますが、リクエストに応答するためにこのタブを開いたままにしてください",
             dontCloseThisWindow: "このウィンドウを閉じないでください",
+        },
+        unsupportedMethodRequested: {
+            unsupportedMethod: "サポートされていないメソッド",
+            hasRequestedYouTo: "があなたにリクエストしています",
+            butWalletDoesNotSupportThisMethod: "しかし、あなたのウォレットはこのメソッドをサポートしていません",
+            signAMessage: "メッセージに署名する",
+            sendATransaction: "トランザクションを送信する",
+            performAnOperation: (method) => `${method}操作を行う`,
         },
         sendTransaction: {
             wantsYouToSendTransaction: "トランザクションの送信を求めています",
@@ -129,8 +186,12 @@ export const i18NDictionary: Record<CrossmintWalletConnectLocale, CrossmintWalle
         buttons: {
             connect: "接続",
             cancel: "キャンセル",
+            close: "閉じる",
             send: "送信",
             sign: "署名",
+        },
+        common: {
+            and: "そして",
         },
     },
 };

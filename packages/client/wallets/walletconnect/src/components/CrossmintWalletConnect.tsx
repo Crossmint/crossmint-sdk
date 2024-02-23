@@ -2,8 +2,9 @@ import Loader from "@/components/common/Loader";
 import { CrossmintWalletConnectLocale } from "@/i18n/dictionary";
 import { CrossmintWalletConnectUIConfig } from "@/types/UIConfig";
 import { CrossmintWalletConnectWallet } from "@/types/wallet";
+import { Toaster } from "react-hot-toast";
 
-import { CrossmintWalletConnectProvider } from "../hooks/useCrossmintWalletConnect";
+import { CrossmintWalletConnectProvider, useCrossmintWalletConnect } from "../hooks/useCrossmintWalletConnect";
 import { useWalletConnectProvider } from "../hooks/useWalletConnectProvider";
 import { useWalletConnectSessions } from "../hooks/useWalletConnectSessions";
 import EnterURI from "./EnterURI/EnterURI";
@@ -22,6 +23,7 @@ export type CrossmintWalletConnectProps = {
 export function CrossmintWalletConnect(props: CrossmintWalletConnectProps) {
     return (
         <CrossmintWalletConnectProvider {...props}>
+            <ToasterWrapper />
             <RootLayout>
                 <ModalViewRouter />
                 <_CrossmintWalletConnect {...props} />
@@ -43,4 +45,25 @@ function _CrossmintWalletConnect(props: CrossmintWalletConnectProps) {
     }
 
     return <EnterURI uri={props.uri} />;
+}
+
+function ToasterWrapper() {
+    const { uiConfig } = useCrossmintWalletConnect();
+
+    return (
+        <Toaster
+            toastOptions={{
+                style: {
+                    backgroundColor: uiConfig.colors.backgroundSecondary,
+                    color: uiConfig.colors.textPrimary,
+                },
+                error: {
+                    iconTheme: {
+                        primary: uiConfig.colors.danger,
+                        secondary: uiConfig.colors.backgroundSecondary,
+                    },
+                },
+            }}
+        />
+    );
 }
