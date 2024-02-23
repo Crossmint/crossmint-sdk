@@ -15,9 +15,7 @@ const jestConfig: JestConfigWithTsJest = {
             },
         ],
     },
-    testPathIgnorePatterns: [
-        "playwright/tests",
-    ],
+    testPathIgnorePatterns: ["playwright/tests"],
 };
 
 export default jestConfig;
