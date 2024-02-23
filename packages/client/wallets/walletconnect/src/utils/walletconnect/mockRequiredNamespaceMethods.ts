@@ -17,7 +17,8 @@ export function mockRequiredNamespaceMethods(
         );
         console.warn(
             "[mockRequiredNamespaceMethods] Mocking unsupported required methods:",
-            unsupportedRequiredMethods
+            unsupportedRequiredMethods,
+            "Calling these methods will result in a no-op."
         );
 
         mockedNamespaces[caipKey].methods = Array.from(
