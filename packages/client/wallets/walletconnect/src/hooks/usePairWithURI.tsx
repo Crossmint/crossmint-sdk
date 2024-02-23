@@ -36,7 +36,7 @@ export function PairWithURIProvider({ children }: { children: ReactNode }) {
                 setIsAwaitingSessionProposal(true);
             } catch (e) {
                 console.error("Error pairing", e);
-                toast.error("Failed to pair with URI. Please try again");
+                toast.error("Failed to connect. Please try again.");
             } finally {
                 setIsPairing(false);
             }
@@ -60,7 +60,7 @@ export function PairWithURIProvider({ children }: { children: ReactNode }) {
             console.log("[CrossmintWalletConnectProvider] Waiting for session proposal");
             timeoutId = setTimeout(() => {
                 console.log("[CrossmintWalletConnectProvider] Waiting for session proposal timed out");
-                toast.error("Timed out waiting for session proposal. Please copy a new URI and try again");
+                toast.error("The connection attempt took too long. Copy a new uri and try again.");
                 setIsAwaitingSessionProposal(false);
             }, 10000);
         }

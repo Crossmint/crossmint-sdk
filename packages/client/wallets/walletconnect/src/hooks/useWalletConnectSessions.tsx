@@ -80,7 +80,7 @@ export function WalletConnectSessionsContextProvider({ children }: { children: R
             removeSessionProposal(proposal);
         } catch (error) {
             console.error("[WalletConnectSessionsContextProvider.approveSession()] Error", error);
-            toast.error(`Failed to approve ${proposal.params.proposer.metadata.name}'s session proposal`);
+            toast.error(`Failed to connect to ${proposal.params.proposer.metadata.name}. Please try again.`);
             await rejectSession(proposal);
         }
     }
