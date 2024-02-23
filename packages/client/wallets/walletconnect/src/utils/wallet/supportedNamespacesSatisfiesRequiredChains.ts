@@ -1,7 +1,7 @@
 import { ProposalTypes } from "@walletconnect/types";
 import { BuildApprovedNamespacesParams } from "@walletconnect/utils";
 
-export function supportsRequiredChains(
+export function supportedNamespacesSatisfiesRequiredChains(
     requiredNamespaces: ProposalTypes.RequiredNamespaces,
     supportedNamespaces: BuildApprovedNamespacesParams["supportedNamespaces"]
 ) {
@@ -19,7 +19,7 @@ export function supportsRequiredChains(
     });
 
     return {
-        canSupport: unsupportedChains.length === 0,
+        satisfies: unsupportedChains.length === 0,
         supportedChains: Object.values(supportedNamespaces).flatMap((namespace) => namespace.chains || []),
         unsupportedChains,
     };

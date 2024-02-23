@@ -18,9 +18,9 @@ export class WalletConnectEthersWallet implements CrossmintWalletConnectEVMWalle
         return this.ethersSigner.getAddress();
     }
 
-    async signMessage(message: Uint8Array) {
-        return this.ethersSigner.signMessage(message);
-    }
+    // async signMessage(message: Uint8Array) {
+    //     return this.ethersSigner.signMessage(message);
+    // }
 
     async sendTransaction(transaction: TransactionRequest) {
         const response = await this.ethersSigner.sendTransaction(transaction);

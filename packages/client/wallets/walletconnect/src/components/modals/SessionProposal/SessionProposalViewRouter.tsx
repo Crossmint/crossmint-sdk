@@ -1,5 +1,5 @@
 import { useWalletConnectWallets } from "@/hooks/useWalletConnectWallets";
-import { supportsRequiredChains } from "@/utils/wallet/supportsRequiredChains";
+import { supportedNamespacesSatisfiesRequiredChains } from "@/utils/wallet/supportedNamespacesSatisfiesRequiredChains";
 import { BuildApprovedNamespacesParams } from "@walletconnect/utils";
 import { Web3WalletTypes } from "@walletconnect/web3wallet";
 import { useEffect, useState } from "react";
@@ -25,12 +25,12 @@ export default function SessionProposalViewRouter({ proposal }: { proposal: Web3
         return null;
     }
 
-    const { canSupport: canSupportChains, unsupportedChains } = supportsRequiredChains(
+    const { satisfies: satisfiesRequredChains, unsupportedChains } = supportedNamespacesSatisfiesRequiredChains(
         proposal.params.requiredNamespaces,
         supportedNamespaces
     );
 
-    if (!canSupportChains) {
+    if (!satisfiesRequredChains) {
         return <UnsupportedChainsRequestedModal proposal={proposal} unsupportedChains={unsupportedChains} />;
     }
 

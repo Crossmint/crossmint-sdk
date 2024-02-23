@@ -14,6 +14,7 @@ export type WalletConnectSessionsContext = {
     setSessions: Dispatch<SetStateAction<SessionTypes.Struct[]>>;
     approveSession: (proposal: Web3WalletTypes.SessionProposal) => Promise<void>;
     rejectSession: (proposal: Web3WalletTypes.SessionProposal, reason?: SdkErrorKey) => Promise<void>;
+    getSessionForRequest: (request: Web3WalletTypes.SessionRequest) => SessionTypes.Struct | undefined;
 };
 const WalletConnectSessionsContext = createContext<WalletConnectSessionsContext>({
     sessionProposals: [],
@@ -29,6 +30,9 @@ const WalletConnectSessionsContext = createContext<WalletConnectSessionsContext>
     },
     rejectSession: () => {
         throw new Error("rejectSession called before WalletConnectSessionsContext was initialized");
+    },
+    getSessionForRequest: () => {
+        throw new Error("getSessionForRequest called before WalletConnectSessionsContext was initialized");
     },
 });
 
@@ -85,6 +89,10 @@ export function WalletConnectSessionsContextProvider({ children }: { children: R
         }
     }
 
+    function getSessionForRequest(request: Web3WalletTypes.SessionRequest) {
+        return sessions.find((s) => s.topic === request.topic);
+    }
+
     async function rejectSession(proposal: Web3WalletTypes.SessionProposal, reason?: SdkErrorKey) {
         if (!provider) {
             console.error("[WalletConnectSessionsContextProvider.rejectSession()] provider is undefined");
@@ -104,7 +112,15 @@ export function WalletConnectSessionsContextProvider({ children }: { children: R
 
     return (
         <WalletConnectSessionsContext.Provider
-            value={{ sessionProposals, setSessionProposals, sessions, setSessions, approveSession, rejectSession }}
+            value={{
+                sessionProposals,
+                setSessionProposals,
+                sessions,
+                setSessions,
+                approveSession,
+                rejectSession,
+                getSessionForRequest,
+            }}
         >
             {children}
         </WalletConnectSessionsContext.Provider>
