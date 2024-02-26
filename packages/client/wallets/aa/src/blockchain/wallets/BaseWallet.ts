@@ -104,6 +104,13 @@ class BaseWallet extends ZeroDevAccountSigner<"ECDSA"> {
                 );
             }
         } catch (error) {
+            logError("[TRANSFER] - ERROR_TRANSFERRING_TOKEN", {
+                error: errorToJSON(error),
+                tokenId: evmToken.tokenId,
+                contractAddress: evmToken.contractAddress,
+                chain: evmToken.chain
+
+            });
             throw new TransferError(`Error transferring token ${evmToken.tokenId}`);
         }
     }
@@ -112,6 +119,10 @@ class BaseWallet extends ZeroDevAccountSigner<"ECDSA"> {
         try {
             return await super.sendTransaction(transaction);
         } catch (error) {
+            logError("[SEND_TRANSACTION] - ERROR_SENDING_TRANSACTION", {
+                error: errorToJSON(error),
+                transaction
+            });
             throw new TransactionError(`Error sending transaction: ${error}`);
         }
     }

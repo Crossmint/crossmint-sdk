@@ -16,8 +16,9 @@ import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 import { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import { PasswordEncryptedLocalStorage } from "../../storage/PasswordEncryptedLocalStorage";
-import { KeysGenerationError, NonCustodialWalletError, SignTransactionError } from "../../utils/error";
+import { KeysGenerationError, NonCustodialWalletError, SignTransactionError, errorToJSON } from "../../utils/error";
 import { getFireblocksAssetId } from "../BlockchainNetworks";
+import { logError } from "@/services/logging";
 
 type FireblocksNCWWalletInput = {
     userIdentifier: UserIdentifier;
@@ -60,8 +61,23 @@ export const FireblocksNCWallet = async ({
             if (rpcResponse.error !== undefined) {
                 if (rpcResponse.error.code === -1) {
                     //Unexpected physicalDeviceId
+                    logError("[FIREBLOCKS_RPC] - ERROR_UNEXPECTED_PHYSICAL_DEVICE_ID", {
+                        error: errorToJSON(rpcResponse.error),
+                        walletId: _walletId,
+                        deviceId: _deviceId,
+                        chain,
+                        user: userIdentifier
+                    });
                     throw new NonCustodialWalletError(`Unexpected physicalDeviceId`);
                 }
+                logError("[FIREBLOCKS_RPC] - ERROR", {
+                    error: errorToJSON(rpcResponse.error),
+                    message: rpcResponse.error.message,
+                    walletId: _walletId,
+                    deviceId: _deviceId,
+                    chain,
+                    user: userIdentifier
+                });
                 throw new NonCustodialWalletError(`NCW Error: ${rpcResponse.error.message}`);
             }
             return rpcResponse;
@@ -99,6 +115,13 @@ export const FireblocksNCWallet = async ({
             await fireblocksNCW.generateMPCKeys(getDefaultAlgorithems());
             await fireblocksNCW.backupKeys(passphrase, _deviceId); //using the deviceId as a passphraseId to match implementation.
         } catch (error: any) {
+            logError("[FIREBLOCKS_GENEARTE_MPC_KEYS] - ERROR", {
+                error: errorToJSON(error),
+                walletId: _walletId,
+                deviceId: _deviceId,
+                chain,
+                user: userIdentifier
+            });
             await crossmintService.unassignWallet(userIdentifier);
             throw new KeysGenerationError(`Error generating keys. ${error?.title ?? ""}}`);
         }
@@ -118,6 +141,13 @@ export const FireblocksNCWallet = async ({
                 return passphrase;
             });
         } catch (error: any) {
+            logError("[FIREBLOCKS_NCW] - ERROR_RECOVERING_KEYS", {
+                error: errorToJSON(error),
+                walletId: _walletId,
+                deviceId: _deviceId,
+                chain,
+                user: userIdentifier
+            });
             throw new KeysGenerationError(`Error recovering keys. ${error?.title ?? ""}`);
         }
     }
@@ -175,6 +205,12 @@ const signMessage = async (
         console.log(`txId: ${result.txId}`, `status: ${result.transactionSignatureStatus}`);
         handleSignTransactionStatus(result);
     } catch (error: any) {
+        logError("[FIREBLOCKS_SIGN_MESSAGE] - ERROR", {
+            error: errorToJSON(error),
+            walletId,
+            chain,
+            message: msg
+        });
         throw new SignTransactionError(`Error signing transaction. ${error?.title ?? ""}`);
     }
     return (await crossmintService.getSignature(tx)) as `0x${string}`;
@@ -193,6 +229,12 @@ const signTypedData = async (
         console.log(`txId: ${result.txId}`, `status: ${result.transactionSignatureStatus}`);
         handleSignTransactionStatus(result);
     } catch (error: any) {
+        logError("[FIREBLOCKS_SIGN_TYPED_DATA] - ERROR", {
+            error: errorToJSON(error),
+            walletId,
+            chain,
+            params
+        });
         throw new SignTransactionError(`Error signing transaction. ${error?.title ?? ""}`);
     }
     return (await crossmintService.getSignature(tx)) as `0x${string}`;
