@@ -134,6 +134,9 @@ export class ZeroDevEip1193Bridge {
                 const req = ethers.providers.JsonRpcProvider.hexlifyTransaction(params![0]);
                 req.gasLimit = req.gas;
                 delete req.gas;
+                if (req.value === "0x0"){
+                    req.value = "0x00";
+                }
                 const tx = await this.signer.sendTransaction(req);
                 return tx.hash;
             }
