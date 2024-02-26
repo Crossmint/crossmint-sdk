@@ -1,3 +1,5 @@
+import { urlToOrigin } from "@/utils/urlToOrigin";
+
 import { EventMap } from "../EventEmitter";
 import { EventEmitterWithHandshakeOptions } from "../handshake";
 import { HandshakeParent } from "../handshake/Parent";
@@ -28,11 +30,7 @@ export class IFrameWindow<IncomingEvents extends EventMap, OutgoingEvents extend
         url: string,
         options?: EventEmitterWithHandshakeOptions<IncomingEvents, OutgoingEvents>
     ) {
-        return new IFrameWindow<IncomingEvents, OutgoingEvents>(
-            await createIFrame(url),
-            parseOriginFromUrl(url),
-            options
-        );
+        return new IFrameWindow<IncomingEvents, OutgoingEvents>(await createIFrame(url), urlToOrigin(url), options);
     }
 }
 
@@ -46,9 +44,4 @@ async function createIFrame(url: string): Promise<HTMLIFrameElement> {
 
         document.body.appendChild(iframe);
     });
-}
-
-function parseOriginFromUrl(url: string): string {
-    const urlObject = new URL(url);
-    return urlObject.origin;
 }
