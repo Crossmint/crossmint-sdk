@@ -23,3 +23,4 @@ export const SEPOLIA_CHAIN_ID = 11155111;
 export const MUMBAI_CHAIN_ID = 80001;
 export const ZKATANA_CHAIN_ID = 1261120;
 export const RELAY_API_KEY = "c8999b7e-8bb7-416d-a854-dac8632f9ee6_crossmint";
+export const SCW_SERVICE = "SDK_AA";

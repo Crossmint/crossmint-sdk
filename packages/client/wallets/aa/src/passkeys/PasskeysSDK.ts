@@ -1,6 +1,6 @@
 import { logError, logInfo, logWarn } from "@/services/logging";
 import type { PasskeyCipher, PasskeysSDKInitParams } from "@/types";
-import { PasskeySdkError, errorToJSON } from "@/utils";
+import { PasskeySdkError, SCW_SERVICE, errorToJSON } from "@/utils";
 
 import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
@@ -32,10 +32,21 @@ export class PasskeysSDK {
             );
             await this.savePKP(chain, walletAddress, pkpEthAddress, pkpPublicKey);
 
-            logInfo("[PASSKEYS_SIGN_UP] - FINISH", { chain, walletAddress, pkpEthAddress, pkpPublicKey });
+            logInfo("[PASSKEYS_SIGN_UP] - FINISH", {
+                service: SCW_SERVICE,
+                chain,
+                walletAddress,
+                pkpEthAddress,
+                pkpPublicKey,
+            });
             return { pkpEthAddress, pkpPublicKey };
         } catch (error: any) {
-            logError("[PASSKEYS_SIGN_UP] - ERROR_SIGNING_UP", { error: errorToJSON(error), chain, walletAddress });
+            logError("[PASSKEYS_SIGN_UP] - ERROR_SIGNING_UP", {
+                service: SCW_SERVICE,
+                error: errorToJSON(error),
+                chain,
+                walletAddress,
+            });
             throw new PasskeySdkError(`Error signing up [${error?.name ?? ""}]`);
         }
     }
@@ -67,10 +78,15 @@ export class PasskeysSDK {
             });
             await this.saveCypherText(chain, walletAddress, ciphertext, dataToEncryptHash);
 
-            logInfo("[PASSKEYS_ENCRYPT] - FINISH", { chain, walletAddress });
+            logInfo("[PASSKEYS_ENCRYPT] - FINISH", { service: SCW_SERVICE, chain, walletAddress });
             return { ciphertext, dataToEncryptHash };
         } catch (error: any) {
-            logError("[PASSKEYS_ENCRYPT] - ERROR_ENCRYPTING", { error: errorToJSON(error), chain, walletAddress });
+            logError("[PASSKEYS_ENCRYPT] - ERROR_ENCRYPTING", {
+                service: SCW_SERVICE,
+                error: errorToJSON(error),
+                chain,
+                walletAddress,
+            });
             throw new PasskeySdkError(`Error encrypting message [${error?.name ?? ""}]`);
         }
     }
@@ -96,10 +112,15 @@ export class PasskeysSDK {
                 capacityDelegationAuthSig,
             });
 
-            logInfo("[PASSKEYS_DECRYPT] - FINISH", { chain, walletAddress });
+            logInfo("[PASSKEYS_DECRYPT] - FINISH", { service: SCW_SERVICE, chain, walletAddress });
             return decryptedString;
         } catch (error: any) {
-            logError("[PASSKEYS_DECRYPT] - ERROR_DECRYPTING", { error: errorToJSON(error), chain, walletAddress });
+            logError("[PASSKEYS_DECRYPT] - ERROR_DECRYPTING", {
+                service: SCW_SERVICE,
+                error: errorToJSON(error),
+                chain,
+                walletAddress,
+            });
 
             throw new PasskeySdkError(`Error decrypting message [${error?.name ?? ""}]`);
         }

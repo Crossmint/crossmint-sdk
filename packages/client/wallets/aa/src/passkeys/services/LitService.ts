@@ -1,7 +1,7 @@
 import { logError, logInfo } from "@/services/logging";
 import { DecryptInput, EncryptInput } from "@/types";
 import { LitProtocolError, errorToJSON, isLocalhost } from "@/utils";
-import { RELAY_API_KEY } from "@/utils/constants";
+import { RELAY_API_KEY, SCW_SERVICE } from "@/utils/constants";
 import { LitAbility, LitActionResource } from "@lit-protocol/auth-helpers";
 import { ProviderType } from "@lit-protocol/constants";
 import { LitAuthClient, WebAuthnProvider } from "@lit-protocol/lit-auth-client";
@@ -42,18 +42,23 @@ export class LitService {
             const response = await provider.relay.pollRequestUntilTerminalState(txHash);
             if (response.status !== "Succeeded") {
                 logError("[LIT_REGISTER_WEBAUTHN] - ERROR_REGISTER_WEBAUTHN", {
+                    service: SCW_SERVICE,
                     error: errorToJSON(response.error),
                     identifier,
                 });
                 throw new LitProtocolError(`Failed to register with WebAuthn: ${response.error ?? ""}`);
             }
-            logInfo("[LIT_REGISTER_WEBAUTHN] - FINISH", { identifier });
+            logInfo("[LIT_REGISTER_WEBAUTHN] - FINISH", { service: SCW_SERVICE, identifier });
             return {
                 pkpEthAddress: response.pkpEthAddress!,
                 pkpPublicKey: response.pkpPublicKey!,
             };
         } catch (error: any) {
-            logError("[LIT_REGISTER_WEBAUTHN] - ERROR_REGISTER_WEBAUTHN", { error: error.message, identifier });
+            logError("[LIT_REGISTER_WEBAUTHN] - ERROR_REGISTER_WEBAUTHN", {
+                service: SCW_SERVICE,
+                error: error.message,
+                identifier,
+            });
             throw new LitProtocolError(`Error signing up [${error?.name ?? ""}]`);
         }
     }
@@ -74,14 +79,24 @@ export class LitService {
                 this.litNodeClient!
             );
 
-            logInfo("[LIT_ENCRYPT] - FINISH", { pkpPublicKey, pkpEthAddress, capacityDelegationAuthSig });
+            logInfo("[LIT_ENCRYPT] - FINISH", {
+                service: SCW_SERVICE,
+                pkpPublicKey,
+                pkpEthAddress,
+                capacityDelegationAuthSig,
+            });
             return {
                 ciphertext,
                 dataToEncryptHash,
             };
         } catch (error: any) {
             // We log a general error, as we don't want to accidentally log messageToEncrypt
-            logError("[LIT_ENCRYPT] - ERROR_ENCRYPT", { pkpPublicKey, pkpEthAddress, capacityDelegationAuthSig });
+            logError("[LIT_ENCRYPT] - ERROR_ENCRYPT", {
+                service: SCW_SERVICE,
+                pkpPublicKey,
+                pkpEthAddress,
+                capacityDelegationAuthSig,
+            });
             throw new LitProtocolError(`Error encrypting message`);
         }
     }
@@ -111,6 +126,7 @@ export class LitService {
             );
 
             logInfo("[LIT_DECRYPT] - FINISH", {
+                service: SCW_SERVICE,
                 pkpPublicKey,
                 pkpEthAddress,
                 cipherText,
@@ -120,6 +136,7 @@ export class LitService {
             return decryptedString;
         } catch (error: any) {
             logError("[LIT_DECRYPT] - ERROR_LIT_DECRYPT", {
+                service: SCW_SERVICE,
                 error: error.message,
                 pkpPublicKey,
                 pkpEthAddress,

@@ -11,7 +11,6 @@ function getBrowserLogger() {
     return new DatadogProvider();
 }
 
-
 const { logInfo, logWarn, logError } = getBrowserLogger();
 
 export { logInfo, logWarn, logError };
