@@ -1,5 +1,5 @@
 import { logError } from "@/services/logging";
-import { TransactionError, TransferError, errorToJSON } from "@/utils";
+import { SCW_SERVICE, TransactionError, TransferError, errorToJSON } from "@/utils";
 import type { SignTypedDataParams } from "@alchemy/aa-core";
 import type { Deferrable } from "@ethersproject/properties";
 import { type TransactionRequest, type TransactionResponse } from "@ethersproject/providers";
@@ -27,6 +27,7 @@ class BaseWallet extends ZeroDevAccountSigner<"ECDSA"> {
             return await this.signer.getAddress();
         } catch (error) {
             logError("[GET_ADDRESS] - ERROR", {
+                service: SCW_SERVICE,
                 error: errorToJSON(error),
                 signer: this.signer,
             });
@@ -39,6 +40,7 @@ class BaseWallet extends ZeroDevAccountSigner<"ECDSA"> {
             return await this.signer.signMessageWith6492(message);
         } catch (error) {
             logError("[SIGN_MESSAGE] - ERROR", {
+                service: SCW_SERVICE,
                 error: errorToJSON(error),
                 signer: this.signer,
             });
@@ -51,6 +53,7 @@ class BaseWallet extends ZeroDevAccountSigner<"ECDSA"> {
             return await this.signer.signTypedData(params);
         } catch (error) {
             logError("[SIGN_TYPED_DATA] - ERROR", {
+                service: SCW_SERVICE,
                 error: errorToJSON(error),
                 signer: this.signer,
             });
@@ -105,11 +108,11 @@ class BaseWallet extends ZeroDevAccountSigner<"ECDSA"> {
             }
         } catch (error) {
             logError("[TRANSFER] - ERROR_TRANSFERRING_TOKEN", {
+                service: SCW_SERVICE,
                 error: errorToJSON(error),
                 tokenId: evmToken.tokenId,
                 contractAddress: evmToken.contractAddress,
-                chain: evmToken.chain
-
+                chain: evmToken.chain,
             });
             throw new TransferError(`Error transferring token ${evmToken.tokenId}`);
         }
@@ -120,8 +123,9 @@ class BaseWallet extends ZeroDevAccountSigner<"ECDSA"> {
             return await super.sendTransaction(transaction);
         } catch (error) {
             logError("[SEND_TRANSACTION] - ERROR_SENDING_TRANSACTION", {
+                service: SCW_SERVICE,
                 error: errorToJSON(error),
-                transaction
+                transaction,
             });
             throw new TransactionError(`Error sending transaction: ${error}`);
         }

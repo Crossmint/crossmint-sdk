@@ -1,10 +1,12 @@
+import { logError } from "@/services/logging";
 import { LocalStorageRepository } from "@/storage";
 import { UserIdentifier } from "@/types";
+import { SCW_SERVICE } from "@/utils";
 import type { SignTypedDataParams, SmartAccountSigner } from "@alchemy/aa-core";
 import {
-    IFireblocksNCW,
     FireblocksNCWFactory,
     IEventsHandler,
+    IFireblocksNCW,
     IMessagesHandler,
     ITransactionSignature,
     TEvent,
@@ -18,7 +20,6 @@ import { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import { PasswordEncryptedLocalStorage } from "../../storage/PasswordEncryptedLocalStorage";
 import { KeysGenerationError, NonCustodialWalletError, SignTransactionError, errorToJSON } from "../../utils/error";
 import { getFireblocksAssetId } from "../BlockchainNetworks";
-import { logError } from "@/services/logging";
 
 type FireblocksNCWWalletInput = {
     userIdentifier: UserIdentifier;
@@ -62,21 +63,23 @@ export const FireblocksNCWallet = async ({
                 if (rpcResponse.error.code === -1) {
                     //Unexpected physicalDeviceId
                     logError("[FIREBLOCKS_RPC] - ERROR_UNEXPECTED_PHYSICAL_DEVICE_ID", {
+                        service: SCW_SERVICE,
                         error: errorToJSON(rpcResponse.error),
                         walletId: _walletId,
                         deviceId: _deviceId,
                         chain,
-                        user: userIdentifier
+                        user: userIdentifier,
                     });
                     throw new NonCustodialWalletError(`Unexpected physicalDeviceId`);
                 }
                 logError("[FIREBLOCKS_RPC] - ERROR", {
+                    service: SCW_SERVICE,
                     error: errorToJSON(rpcResponse.error),
                     message: rpcResponse.error.message,
                     walletId: _walletId,
                     deviceId: _deviceId,
                     chain,
-                    user: userIdentifier
+                    user: userIdentifier,
                 });
                 throw new NonCustodialWalletError(`NCW Error: ${rpcResponse.error.message}`);
             }
@@ -116,11 +119,12 @@ export const FireblocksNCWallet = async ({
             await fireblocksNCW.backupKeys(passphrase, _deviceId); //using the deviceId as a passphraseId to match implementation.
         } catch (error: any) {
             logError("[FIREBLOCKS_GENEARTE_MPC_KEYS] - ERROR", {
+                service: SCW_SERVICE,
                 error: errorToJSON(error),
                 walletId: _walletId,
                 deviceId: _deviceId,
                 chain,
-                user: userIdentifier
+                user: userIdentifier,
             });
             await crossmintService.unassignWallet(userIdentifier);
             throw new KeysGenerationError(`Error generating keys. ${error?.title ?? ""}}`);
@@ -142,11 +146,12 @@ export const FireblocksNCWallet = async ({
             });
         } catch (error: any) {
             logError("[FIREBLOCKS_NCW] - ERROR_RECOVERING_KEYS", {
+                service: SCW_SERVICE,
                 error: errorToJSON(error),
                 walletId: _walletId,
                 deviceId: _deviceId,
                 chain,
-                user: userIdentifier
+                user: userIdentifier,
             });
             throw new KeysGenerationError(`Error recovering keys. ${error?.title ?? ""}`);
         }
@@ -206,10 +211,11 @@ const signMessage = async (
         handleSignTransactionStatus(result);
     } catch (error: any) {
         logError("[FIREBLOCKS_SIGN_MESSAGE] - ERROR", {
+            service: SCW_SERVICE,
             error: errorToJSON(error),
             walletId,
             chain,
-            message: msg
+            message: msg,
         });
         throw new SignTransactionError(`Error signing transaction. ${error?.title ?? ""}`);
     }
@@ -230,10 +236,11 @@ const signTypedData = async (
         handleSignTransactionStatus(result);
     } catch (error: any) {
         logError("[FIREBLOCKS_SIGN_TYPED_DATA] - ERROR", {
+            service: SCW_SERVICE,
             error: errorToJSON(error),
             walletId,
             chain,
-            params
+            params,
         });
         throw new SignTransactionError(`Error signing transaction. ${error?.title ?? ""}`);
     }

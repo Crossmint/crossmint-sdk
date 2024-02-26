@@ -3,7 +3,7 @@ import { CrossmintServiceError, errorToJSON } from "@/utils/error";
 
 import { validateAPIKey } from "@crossmint/common-sdk-base";
 
-import { CROSSMINT_DEV_URL, CROSSMINT_PROD_URL, CROSSMINT_STG_URL } from "../utils";
+import { CROSSMINT_DEV_URL, CROSSMINT_PROD_URL, CROSSMINT_STG_URL, SCW_SERVICE } from "../utils";
 
 export abstract class BaseCrossmintService {
     protected crossmintAPIHeaders: Record<string, string>;
@@ -54,6 +54,7 @@ export abstract class BaseCrossmintService {
             return await response.json();
         } catch (error) {
             logError("[CROSSMINT_SERVICE] - ERROR", {
+                service: SCW_SERVICE,
                 error: errorToJSON(error),
             });
             throw new CrossmintServiceError(`Error fetching Crossmint API: ${error}`);

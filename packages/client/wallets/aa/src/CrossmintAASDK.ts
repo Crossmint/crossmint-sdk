@@ -1,7 +1,7 @@
 import { CrossmintWalletService } from "@/api";
 import { EVMAAWallet, getChainIdByBlockchain, getZeroDevProjectIdByBlockchain, isEVMBlockchain } from "@/blockchain";
 import type { CrossmintAASDKInitParams, WalletConfig } from "@/types";
-import { CURRENT_VERSION, WalletSdkError, ZERO_DEV_TYPE, createOwnerSigner, errorToJSON } from "@/utils";
+import { CURRENT_VERSION, SCW_SERVICE, WalletSdkError, ZERO_DEV_TYPE, createOwnerSigner, errorToJSON } from "@/utils";
 import { ZeroDevEthersProvider } from "@zerodev/sdk";
 
 import { BlockchainIncludingTestnet, UserIdentifierParams, validateAPIKey } from "@crossmint/common-sdk-base";
@@ -34,6 +34,7 @@ export class CrossmintAASDK {
     ) {
         try {
             logInfo("[GET_OR_CREATE_WALLET] - INIT", {
+                service: SCW_SERVICE,
                 user,
                 chain,
             });
@@ -82,6 +83,7 @@ export class CrossmintAASDK {
                 chainId: getChainIdByBlockchain(chain),
             });
             logInfo("[GET_OR_CREATE_WALLET] - FINISH", {
+                service: SCW_SERVICE,
                 userEmail: user.email!,
                 chain,
                 abstractAddress,
@@ -89,6 +91,7 @@ export class CrossmintAASDK {
             return evmAAWallet;
         } catch (error: any) {
             logError("[GET_OR_CREATE_WALLET] - ERROR_CREATING_WALLET", {
+                service: SCW_SERVICE,
                 error: errorToJSON(error),
                 user,
                 chain,

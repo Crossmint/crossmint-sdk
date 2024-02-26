@@ -1,4 +1,6 @@
 import { logError } from "@/services/logging";
+
+import { SCW_SERVICE } from "./constants";
 import { errorToJSON } from "./error";
 
 export const parseToken = (token: any) => {
@@ -10,6 +12,7 @@ export const parseToken = (token: any) => {
         return JSON.parse(jsonPayload || "");
     } catch (err) {
         logError("[PARSE_TOKEN] - ERROR", {
+            service: SCW_SERVICE,
             error: errorToJSON(err),
         });
         console.error("Error while parsing token");
