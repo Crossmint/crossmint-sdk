@@ -16,6 +16,12 @@ const jestConfig: JestConfigWithTsJest = {
         ],
     },
     testPathIgnorePatterns: ["playwright/tests"],
+    extensionsToTreatAsEsm: [".ts"],
+    globals: {
+      "ts-jest": {
+        useESM: true,
+      },
+    },
 };
 
 export default jestConfig;
