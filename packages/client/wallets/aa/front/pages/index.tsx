@@ -85,7 +85,7 @@ export default function WalletPage() {
                 <button className={styles.button} onClick={handleCreateWallet}>
                     Create wallet
                 </button>
-                <input className={styles.input} type="text" value={walletAddress} readOnly />
+                <input className={styles.input} type="text" value={walletAddress} data-testid="createdOrGotWallet" readOnly />
             </section>
 
             <section className={styles.section}>
@@ -103,11 +103,11 @@ export default function WalletPage() {
                 <button className={styles.button} onClick={handleSignMessage}>
                     Sign Message
                 </button>
-                <input className={styles.input} type="text" value={signMessageTxHash} readOnly />
+                <input className={styles.input} type="text" value={signMessageTxHash} data-testid="signedMessageInput" readOnly />
                 <button className={styles.button} onClick={handleSendTransaction}>
                     Send transaction
                 </button>
-                <input className={styles.input} type="text" value={sendTransactionTxHash} readOnly />
+                <input className={styles.input} type="text" value={sendTransactionTxHash} data-testid="sendTransactionTxHashInput" readOnly />
             </section>
         </div>
     );
