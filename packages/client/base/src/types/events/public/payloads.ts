@@ -7,7 +7,7 @@ export interface CrossmintEventMap {
     [CrossmintEvents.PAYMENT_PREPARATION_SUCCEEDED]: EmptyObject;
     [CrossmintEvents.QUOTE_STATUS_CHANGED]: InitialQuotePayload;
     [CrossmintEvents.QUOTE_STATUS_INVALIDATED]: EmptyObject;
-    [CrossmintEvents.PAYMENT_PROCESS_STARTED]: EmptyObject;
+    [CrossmintEvents.PAYMENT_PROCESS_STARTED]: InitialQuotePayload;
     [CrossmintEvents.PAYMENT_PREPARATION_FAILED]: CrossmintEventErrorPayload;
     [CrossmintEvents.PAYMENT_PROCESS_SUCCEEDED]: PaymentCompletedPayload;
     [CrossmintEvents.PAYMENT_PROCESS_CANCELED]: EmptyObject;
