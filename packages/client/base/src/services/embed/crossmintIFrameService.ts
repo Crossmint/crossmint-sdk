@@ -18,7 +18,7 @@ export function crossmintIFrameService(props: CrossmintEmbeddedCheckoutProps) {
     function getUrl(props: CrossmintEmbeddedCheckoutProps) {
         props = coerceCollectionIdToClientId(props);
 
-        const path = isFiatEmbeddedCheckoutProps(props) ? "/sdk/paymentElement" : "/sdk/2023-06-09/embeddedCheckout"; // TODO: v2.0 - remove '/sdk/paymentElement'
+        const path ="/sdk/2023-06-09/embeddedCheckout";
 
         const queryParams = new URLSearchParams();
 
