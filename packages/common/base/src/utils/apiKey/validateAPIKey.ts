@@ -77,7 +77,7 @@ function validateAPIKeySignature(
 
             return nacl.sign.detached.verify(keyDataBytes, signatureBytes, publicKeyBytes);
         } catch (e) {
-            console.error("Failed to validate API key signature", e);
+            console.error("Failed to validate API key signature");
             return false;
         }
     }
