@@ -6,19 +6,11 @@ export class ChildWindow<IncomingEvents extends EventMap, OutgoingEvents extends
     IncomingEvents,
     OutgoingEvents
 > {
-    private constructor(
+    constructor(
         parentWindow: Window,
         targetOrigin: string,
         options?: EventEmitterWithHandshakeOptions<IncomingEvents, OutgoingEvents>
     ) {
         super(parentWindow, targetOrigin, options);
-    }
-
-    static async init<IncomingEvents extends EventMap, OutgoingEvents extends EventMap>(
-        parentWindow: Window,
-        targetOrigin: string,
-        options?: EventEmitterWithHandshakeOptions<IncomingEvents, OutgoingEvents>
-    ) {
-        return new ChildWindow(parentWindow, targetOrigin, options);
     }
 }

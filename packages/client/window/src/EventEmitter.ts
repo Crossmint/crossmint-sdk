@@ -5,7 +5,7 @@ export type EventMap = Record<string, z.ZodTypeAny>;
 
 export interface EventEmitterOptions<
     IncomingEvents extends EventMap = EventMap,
-    OutgoingEvents extends EventMap = EventMap,
+    OutgoingEvents extends EventMap = EventMap
 > {
     incomingEvents?: IncomingEvents;
     outgoingEvents?: OutgoingEvents;
@@ -20,7 +20,7 @@ export type SendActionArgs<
     IncomingEvents extends EventMap,
     OutgoingEvents extends EventMap,
     K extends keyof OutgoingEvents,
-    R extends keyof IncomingEvents,
+    R extends keyof IncomingEvents
 > = {
     event: K;
     data: z.infer<OutgoingEvents[K]>;
@@ -36,7 +36,7 @@ export type OnActionArgs<
     IncomingEvents extends EventMap,
     OutgoingEvents extends EventMap,
     K extends keyof IncomingEvents,
-    R extends keyof OutgoingEvents,
+    R extends keyof OutgoingEvents
 > =
     | {
           event: K;
@@ -65,7 +65,7 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
     send<K extends keyof OutgoingEvents>(event: K, data: z.infer<OutgoingEvents[K]>) {
         const result = this.outgoingEvents[event].safeParse(data);
         if (result.success) {
-            this.otherWindow?.postMessage({ event, data }, this.targetOrigin);
+            this.otherWindow?.postMessage({ event, data }, "http://localhost:3000"); // quick hack to finish POC, should allow targeting this.targetOrigin or an origin passed into send
         } else {
             console.error("Invalid data for event", event, result.error);
         }
@@ -168,10 +168,8 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
         }
     }
 
+    // quick hack to finish POC
     protected isTargetOrigin(otherOrigin: string) {
-        if (this.targetOrigin === "*") {
-            return true;
-        }
-        return this.targetOrigin === otherOrigin;
+        return true;
     }
 }
