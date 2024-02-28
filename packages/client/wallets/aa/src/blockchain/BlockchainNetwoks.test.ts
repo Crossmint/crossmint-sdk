@@ -1,19 +1,13 @@
-import { Blockchain } from "@crossmint/common-sdk-base";
+import { blockchainToChainId, chainIdToBlockchain, isEVMBlockchain } from "@crossmint/common-sdk-base";
 
-import { CROSSMINT_PROD_URL, CROSSMINT_STG_URL } from "../utils/constants";
 import {
-    getApiUrlByBlockchainType,
     getBlockExplorerByBlockchain,
-    getBlockchainByChainId,
-    getChainIdByBlockchain,
     getDisplayNameByBlockchain,
     getFireblocksAssetId,
     getTickerByBlockchain,
     getTickerNameByBlockchain,
     getUrlProviderByBlockchain,
     getZeroDevProjectIdByBlockchain,
-    isEVMBlockchain,
-    isTestnet,
 } from "./BlockchainNetworks";
 
 // Replace with the actual path of your TypeScript file
@@ -26,35 +20,35 @@ describe("BlockchainNetworks Tests", () => {
             expect(getFireblocksAssetId("bsc")).toBe("BNB_BSC");
             expect(getFireblocksAssetId("optimism")).toBe("ETH-OPT");
             expect(getFireblocksAssetId("arbitrum")).toBe("ETH-AETH");
-            expect(getFireblocksAssetId("goerli")).toBe("ETH_TEST3");
+            expect(getFireblocksAssetId("ethereum-goerli")).toBe("ETH_TEST3");
             expect(getFireblocksAssetId("ethereum-sepolia")).toBe("ETH_TEST5");
-            expect(getFireblocksAssetId("mumbai")).toBe("MATIC_POLYGON_MUMBAI");
+            expect(getFireblocksAssetId("polygon-mumbai")).toBe("MATIC_POLYGON_MUMBAI");
         });
     });
 
     describe("getBlockchainByChainId", () => {
         it("should return the correct blockchain for each chain ID", () => {
-            expect(getBlockchainByChainId(1)).toBe("ethereum");
-            expect(getBlockchainByChainId(137)).toBe("polygon");
-            expect(getBlockchainByChainId(56)).toBe("bsc");
-            expect(getBlockchainByChainId(10)).toBe("optimism");
-            expect(getBlockchainByChainId(42161)).toBe("arbitrum");
-            expect(getBlockchainByChainId(5)).toBe("goerli");
-            expect(getBlockchainByChainId(11155111)).toBe("ethereum-sepolia");
-            expect(getBlockchainByChainId(80001)).toBe("mumbai");
+            expect(chainIdToBlockchain(1)).toBe("ethereum");
+            expect(chainIdToBlockchain(137)).toBe("polygon");
+            expect(chainIdToBlockchain(56)).toBe("bsc");
+            expect(chainIdToBlockchain(10)).toBe("optimism");
+            expect(chainIdToBlockchain(42161)).toBe("arbitrum");
+            expect(chainIdToBlockchain(5)).toBe("ethereum-goerli");
+            expect(chainIdToBlockchain(11155111)).toBe("ethereum-sepolia");
+            expect(chainIdToBlockchain(80001)).toBe("polygon-mumbai");
         });
     });
 
     describe("getChainIdByBlockchain", () => {
         it("should return the correct chain ID for each Blockchain", () => {
-            expect(getChainIdByBlockchain("ethereum")).toBe(1);
-            expect(getChainIdByBlockchain("polygon")).toBe(137);
-            expect(getChainIdByBlockchain("bsc")).toBe(56);
-            expect(getChainIdByBlockchain("optimism")).toBe(10);
-            expect(getChainIdByBlockchain("arbitrum")).toBe(42161);
-            expect(getChainIdByBlockchain("goerli")).toBe(5);
-            expect(getChainIdByBlockchain("ethereum-sepolia")).toBe(11155111);
-            expect(getChainIdByBlockchain("mumbai")).toBe(80001);
+            expect(blockchainToChainId("ethereum")).toBe(1);
+            expect(blockchainToChainId("polygon")).toBe(137);
+            expect(blockchainToChainId("bsc")).toBe(56);
+            expect(blockchainToChainId("optimism")).toBe(10);
+            expect(blockchainToChainId("arbitrum")).toBe(42161);
+            expect(blockchainToChainId("ethereum-goerli")).toBe(5);
+            expect(blockchainToChainId("ethereum-sepolia")).toBe(11155111);
+            expect(blockchainToChainId("polygon-mumbai")).toBe(80001);
         });
     });
 
@@ -65,9 +59,9 @@ describe("BlockchainNetworks Tests", () => {
             expect(getUrlProviderByBlockchain("bsc")).toBe("https://binance.llamarpc.com");
             expect(getUrlProviderByBlockchain("optimism")).toBe("https://optimism.llamarpc.com");
             expect(getUrlProviderByBlockchain("arbitrum")).toBe("https://arbitrum.llamarpc.com");
-            expect(getUrlProviderByBlockchain("goerli")).toBe("https://ethereum-goerli.publicnode.com");
+            expect(getUrlProviderByBlockchain("ethereum-goerli")).toBe("https://ethereum-goerli.publicnode.com");
             expect(getUrlProviderByBlockchain("ethereum-sepolia")).toBe("https://ethereum-sepolia.publicnode.com");
-            expect(getUrlProviderByBlockchain("mumbai")).toBe("https://rpc-mumbai.maticvigil.com");
+            expect(getUrlProviderByBlockchain("polygon-mumbai")).toBe("https://rpc-mumbai.maticvigil.com");
         });
     });
 
@@ -78,9 +72,9 @@ describe("BlockchainNetworks Tests", () => {
             expect(getBlockExplorerByBlockchain("bsc")).toBe("https://bscscan.com");
             expect(getBlockExplorerByBlockchain("optimism")).toBe("https://optimistic.etherscan.io");
             expect(getBlockExplorerByBlockchain("arbitrum")).toBe("https://arbiscan.io");
-            expect(getBlockExplorerByBlockchain("goerli")).toBe("https://goerli.etherscan.io");
+            expect(getBlockExplorerByBlockchain("ethereum-goerli")).toBe("https://goerli.etherscan.io");
             expect(getBlockExplorerByBlockchain("ethereum-sepolia")).toBe("https://sepolia.etherscan.io");
-            expect(getBlockExplorerByBlockchain("mumbai")).toBe("https://mumbai.polygonscan.com");
+            expect(getBlockExplorerByBlockchain("polygon-mumbai")).toBe("https://mumbai.polygonscan.com");
         });
     });
 
@@ -91,9 +85,9 @@ describe("BlockchainNetworks Tests", () => {
             expect(getDisplayNameByBlockchain("bsc")).toBe("BNB Smart Chain");
             expect(getDisplayNameByBlockchain("optimism")).toBe("Optimism");
             expect(getDisplayNameByBlockchain("arbitrum")).toBe("Arbitrum");
-            expect(getDisplayNameByBlockchain("goerli")).toBe("Goerli Tesnet");
+            expect(getDisplayNameByBlockchain("ethereum-goerli")).toBe("Goerli Tesnet");
             expect(getDisplayNameByBlockchain("ethereum-sepolia")).toBe("Sepolia Tesnet");
-            expect(getDisplayNameByBlockchain("mumbai")).toBe("Mumbai Tesnet");
+            expect(getDisplayNameByBlockchain("polygon-mumbai")).toBe("Mumbai Tesnet");
         });
     });
 
@@ -104,9 +98,9 @@ describe("BlockchainNetworks Tests", () => {
             expect(getTickerByBlockchain("bsc")).toBe("BNB");
             expect(getTickerByBlockchain("optimism")).toBe("OP");
             expect(getTickerByBlockchain("arbitrum")).toBe("ARB");
-            expect(getTickerByBlockchain("goerli")).toBe("ETH");
+            expect(getTickerByBlockchain("ethereum-goerli")).toBe("ETH");
             expect(getTickerByBlockchain("ethereum-sepolia")).toBe("ETH");
-            expect(getTickerByBlockchain("mumbai")).toBe("MATIC");
+            expect(getTickerByBlockchain("polygon-mumbai")).toBe("MATIC");
         });
     });
 
@@ -117,9 +111,9 @@ describe("BlockchainNetworks Tests", () => {
             expect(getTickerNameByBlockchain("bsc")).toBe("BNB_BSC");
             expect(getTickerNameByBlockchain("optimism")).toBe("OPTIMISM");
             expect(getTickerNameByBlockchain("arbitrum")).toBe("ARBITRUM");
-            expect(getTickerNameByBlockchain("goerli")).toBe("ETHEREUM");
+            expect(getTickerNameByBlockchain("ethereum-goerli")).toBe("ETHEREUM");
             expect(getTickerNameByBlockchain("ethereum-sepolia")).toBe("ETHEREUM");
-            expect(getTickerNameByBlockchain("mumbai")).toBe("MATIC");
+            expect(getTickerNameByBlockchain("polygon-mumbai")).toBe("MATIC");
         });
     });
 
@@ -130,44 +124,11 @@ describe("BlockchainNetworks Tests", () => {
             expect(getZeroDevProjectIdByBlockchain("bsc")).toBe("3d166617-da86-494b-9348-e8a13343bc04");
             expect(getZeroDevProjectIdByBlockchain("optimism")).toBe("e9314f9e-a13d-414f-b965-c591a0248243");
             expect(getZeroDevProjectIdByBlockchain("arbitrum")).toBe("1641cd99-c1ef-404a-9d26-a9dc67b1ba51");
-            expect(getZeroDevProjectIdByBlockchain("goerli")).toBe("3cfecfb6-9d7d-4ef6-acaa-ac8f79f6cd5a");
+            expect(getZeroDevProjectIdByBlockchain("ethereum-goerli")).toBe("3cfecfb6-9d7d-4ef6-acaa-ac8f79f6cd5a");
             expect(getZeroDevProjectIdByBlockchain("ethereum-sepolia")).toBe("7ff22858-06f0-4f3a-8b46-5b41d8c75d0e");
-            expect(getZeroDevProjectIdByBlockchain("mumbai")).toBe("9a334a4d-64d4-465c-ad81-856c6129e064");
+            expect(getZeroDevProjectIdByBlockchain("polygon-mumbai")).toBe("9a334a4d-64d4-465c-ad81-856c6129e064");
         });
     });
-
-    describe("getApiUrlByBlockchainType", () => {
-        it("should return CROSSMINT_STG_URL for testnet blockchains", () => {
-            expect(getApiUrlByBlockchainType("goerli")).toBe(CROSSMINT_STG_URL);
-            expect(getApiUrlByBlockchainType("ethereum-sepolia")).toBe(CROSSMINT_STG_URL);
-            expect(getApiUrlByBlockchainType("mumbai")).toBe(CROSSMINT_STG_URL);
-        });
-
-        it("should return CROSSMINT_PROD_URL for mainnet blockchains", () => {
-            expect(getApiUrlByBlockchainType("ethereum")).toBe(CROSSMINT_PROD_URL);
-            expect(getApiUrlByBlockchainType("polygon")).toBe(CROSSMINT_PROD_URL);
-            expect(getApiUrlByBlockchainType("bsc")).toBe(CROSSMINT_PROD_URL);
-            expect(getApiUrlByBlockchainType("optimism")).toBe(CROSSMINT_PROD_URL);
-            expect(getApiUrlByBlockchainType("arbitrum")).toBe(CROSSMINT_PROD_URL);
-        });
-    });
-
-    describe("isTestnet", () => {
-        it("should return true for testnet blockchains", () => {
-            expect(isTestnet("goerli")).toBe(true);
-            expect(isTestnet("ethereum-sepolia")).toBe(true);
-            expect(isTestnet("mumbai")).toBe(true);
-        });
-
-        it("should return false for mainnet blockchains", () => {
-            expect(isTestnet("ethereum")).toBe(false);
-            expect(isTestnet("polygon")).toBe(false);
-            expect(isTestnet("bsc")).toBe(false);
-            expect(isTestnet("optimism")).toBe(false);
-            expect(isTestnet("arbitrum")).toBe(false);
-        });
-    });
-
     describe("isEVMBlockchain", () => {
         it("should return true for EVM blockchains", () => {
             expect(isEVMBlockchain("ethereum")).toBe(true);

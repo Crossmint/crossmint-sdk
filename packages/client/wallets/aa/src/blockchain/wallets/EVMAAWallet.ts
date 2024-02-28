@@ -14,16 +14,11 @@ import {
 import { ethers } from "ethers";
 import { WalletClient, createWalletClient, custom, getFunctionSelector, publicActions } from "viem";
 
-import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
+import { EVMBlockchainIncludingTestnet, chainIdToBlockchain } from "@crossmint/common-sdk-base";
 
 import { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import { GenerateSignatureDataInput } from "../../types/API";
-import {
-    getBlockchainByChainId,
-    getUrlProviderByBlockchain,
-    getViemNetwork,
-    getZeroDevProjectIdByBlockchain,
-} from "../BlockchainNetworks";
+import { getUrlProviderByBlockchain, getViemNetwork, getZeroDevProjectIdByBlockchain } from "../BlockchainNetworks";
 import { Custodian } from "../plugins";
 import { TokenType } from "../token/Tokens";
 import BaseWallet from "./BaseWallet";
@@ -236,7 +231,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
 
             let jsonRpcProviderUrl = versionInfo.providerUrl;
             if (jsonRpcProviderUrl == null && versionInfo.chainId) {
-                const blockchainType = getBlockchainByChainId(versionInfo.chainId);
+                const blockchainType = chainIdToBlockchain(versionInfo.chainId);
                 jsonRpcProviderUrl = getUrlProviderByBlockchain(blockchainType!);
             }
 

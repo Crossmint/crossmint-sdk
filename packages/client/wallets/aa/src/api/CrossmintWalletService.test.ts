@@ -1,9 +1,6 @@
 import { CROSSMINT_STG_URL } from "../utils";
 import { CrossmintWalletService } from "./CrossmintWalletService";
 
-jest.mock("@/blockchain", () => ({
-    getApiUrlByBlockchainType: jest.fn(),
-}));
 jest.mock("@/services/logging", () => ({
     logError: jest.fn(),
 }));

@@ -1,10 +1,16 @@
 import { CrossmintWalletService } from "@/api";
-import { EVMAAWallet, getChainIdByBlockchain, getZeroDevProjectIdByBlockchain, isEVMBlockchain } from "@/blockchain";
+import { EVMAAWallet, getZeroDevProjectIdByBlockchain } from "@/blockchain";
 import type { CrossmintAASDKInitParams, WalletConfig } from "@/types";
 import { CURRENT_VERSION, SCW_SERVICE, WalletSdkError, ZERO_DEV_TYPE, createOwnerSigner, errorToJSON } from "@/utils";
 import { ZeroDevEthersProvider } from "@zerodev/sdk";
 
-import { BlockchainIncludingTestnet, UserIdentifierParams, validateAPIKey } from "@crossmint/common-sdk-base";
+import {
+    BlockchainIncludingTestnet,
+    UserIdentifierParams,
+    blockchainToChainId,
+    isEVMBlockchain,
+    validateAPIKey,
+} from "@crossmint/common-sdk-base";
 
 import { logError, logInfo } from "./services/logging";
 import { parseUserIdentifier } from "./utils/user";
@@ -39,6 +45,10 @@ export class CrossmintAASDK {
                 chain,
             });
 
+            if (!isEVMBlockchain(chain)) {
+                throw new WalletSdkError(`The blockchain ${chain} is still not supported`);
+            }
+
             const userIdentifier = parseUserIdentifier(user);
 
             const owner = await createOwnerSigner({
@@ -61,10 +71,6 @@ export class CrossmintAASDK {
                 },
             });
 
-            if (!isEVMBlockchain(chain)) {
-                throw new WalletSdkError(`The blockchain ${chain} is still not supported`);
-            }
-
             const evmAAWallet = new EVMAAWallet(zDevProvider, this.crossmintService, chain);
 
             const abstractAddress = await evmAAWallet.getAddress();
@@ -80,7 +86,7 @@ export class CrossmintAASDK {
                 sessionKeySignerAddress,
                 version: CURRENT_VERSION,
                 baseLayer: "evm",
-                chainId: getChainIdByBlockchain(chain),
+                chainId: blockchainToChainId(chain),
             });
             logInfo("[GET_OR_CREATE_WALLET] - FINISH", {
                 service: SCW_SERVICE,
