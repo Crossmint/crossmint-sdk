@@ -1,4 +1,4 @@
-import { Page, expect, request } from "@playwright/test";
+import { Page, expect } from "@playwright/test";
 
 export async function getWallet(page: Page,) {
     await page.goto("/");

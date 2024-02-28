@@ -6,7 +6,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe("AA wallet", () => {
-    test("should allow me to get a wallet and sign, send a transaction with ethers", async ({ page }) => {
+    test("should allow me to get a wallet", async ({ page }) => {
         const locator = page.getByTestId('createdOrGotWallet');
         await expect(locator).toHaveValue("0xbA23099994403e1e1A4Fe569ab2A4B06f59d047d", { timeout: 10_000 });
     });
