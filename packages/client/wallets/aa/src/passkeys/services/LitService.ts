@@ -17,7 +17,6 @@ export class LitService {
     async connect() {
         this.litNodeClient = new LitNodeClient({
             litNetwork: isLocalhost() ? "manzano" : "habanero",
-            connectTimeout: 60000,
         });
         await this.litNodeClient.connect();
 

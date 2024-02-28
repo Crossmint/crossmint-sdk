@@ -17,7 +17,7 @@ type EncryptionMessage = PasskeysMessageBase & {
 };
 
 type DecryptionMessage = PasskeysMessageBase & {
-    passphrase: string;
+    data: any;
 };
 
 type PasskeyHandlerMessage = (event: MessageEvent, resolve: Function, reject: Function) => void;
@@ -62,7 +62,7 @@ export class CrossmintPasskeyCommunicationService {
 
         return this.handlePasskeyMessage<EncryptionMessage, string>(
             "encryptPassphrase",
-            this.handlePasskeyDecryptionMessage.bind(this)
+            this.handlePasskeyEncryptionMessage.bind(this)
         );
     }
 
@@ -78,18 +78,18 @@ export class CrossmintPasskeyCommunicationService {
 
         return this.handlePasskeyMessage<DecryptionMessage, string>(
             "decryptionMessage",
-            this.handlePasskeyEncryptionMessage.bind(this)
+            this.handlePasskeyDecryptionMessage.bind(this)
         );
     }
 
     private handlePasskeyDecryptionMessage(event: MessageEvent<DecryptionMessage>, resolve: Function, _: Function) {
-        if (event.data.passphrase == null) return;
+        if (event.data.data.passphrase == null) return;
 
         logInfo(`${this.logSlag} [openPasskeysWindowAndGetPassphrase] - EVENT_RECEIVED`, {
             event,
         });
 
-        resolve(event.data.passphrase);
+        resolve(event.data.data.passphrase);
     }
 
     private async openPasskeysWindowAndWaitForItToBeReady() {
@@ -100,7 +100,7 @@ export class CrossmintPasskeyCommunicationService {
         }
 
         await this.handlePasskeyMessage<OpenWindowPasskeysMessage, string>(
-            "waitForItToBeReady",
+            "waitForItToBeReadyTestUpdate",
             this.handlePasskeyReadyMessage.bind(this)
         );
 
