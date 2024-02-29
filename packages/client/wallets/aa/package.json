@@ -24,6 +24,10 @@
         "siwe": "2.1.4",
         "viem": "^2.5.0"
     },
+    "devDependencies": {
+        "@playwright/test": "^1.41.2",
+        "@types/node": "^20.11.20"
+    },
     "exports": {
         "import": "./dist/index.js",
         "require": "./dist/index.cjs"
@@ -51,9 +55,5 @@
     "sideEffects": false,
     "type": "module",
     "types": "./dist/index.d.ts",
-    "version": "0.1.2",
-    "devDependencies": {
-        "@playwright/test": "^1.41.2",
-        "@types/node": "^20.11.20"
-    }
+    "version": "0.1.3"
 }
