@@ -45,7 +45,6 @@ export function CrossmintPayButton(buttonProps: CrossmintPayButtonReactProps) {
         projectId,
         getButtonText,
         checkoutProps = {
-            experimental: false,
             display: "same-tab",
             paymentMethods: ["fiat", "ETH", "SOL"],
         } as CheckoutProps,

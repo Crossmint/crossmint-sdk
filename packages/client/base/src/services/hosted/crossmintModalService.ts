@@ -176,13 +176,13 @@ export function crossmintModalService({
             if (successCallbackURL) mintQueryParams.successCallbackURL = successCallbackURL;
             if (failureCallbackURL) mintQueryParams.failureCallbackURL = failureCallbackURL;
             if (projectId) mintQueryParams.projectId = projectId;
-            if (checkoutProps && checkoutProps.experimental === true)
+            if (checkoutProps)
                 mintQueryParams.checkoutProps = JSON.stringify(checkoutProps);
 
             return new URLSearchParams(mintQueryParams).toString();
         };
 
-        if (checkoutProps != null && checkoutProps.experimental === true) {
+        if (checkoutProps != null) {
             const url = `${urlOrigin}/checkout?${getMintQueryParams()}`;
 
             switch (checkoutProps.display) {
