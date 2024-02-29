@@ -14,7 +14,7 @@ export function crossmintPayButtonService({ onClick, connecting, paymentMethod, 
         if (connecting) {
             return t("crossmintPayButtonService.CONNECTING", locale);
         }
-        if(checkoutProps?.paymentMethods?.length != 1) {
+        if(checkoutProps?.experimental === true && checkoutProps?.paymentMethods?.length != 1) {
             return t("crossmintPayButtonService.BUY", locale);
         }
         switch (paymentMethod) {

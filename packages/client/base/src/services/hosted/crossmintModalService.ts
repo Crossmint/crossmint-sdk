@@ -182,7 +182,7 @@ export function crossmintModalService({
             return new URLSearchParams(mintQueryParams).toString();
         };
 
-        if (checkoutProps != null) {
+        if (checkoutProps != null && checkoutProps.experimental === true) {
             const url = `${urlOrigin}/checkout?${getMintQueryParams()}`;
 
             switch (checkoutProps.display) {
