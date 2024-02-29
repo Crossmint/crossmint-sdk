@@ -15,14 +15,14 @@ import ukUA from "./dictionaries/ukUA";
 import zhCN from "./dictionaries/zhCN";
 import zhTW from "./dictionaries/zhTW";
 import viVN from "./dictionaries/viVN";
-import jpJp from "@/utils/i18n/dictionaries/jpJp";
+import jaJp from "./dictionaries/jaJp";
 
 const localeMap = {
     "en-US": enUS,
     "es-ES": esES,
     "fr-FR": frFR,
     "it-IT": itIT,
-    "jp-JP": jpJp,
+    "ja-JP": jaJp,
     "ko-KR": koKR,
     "pt-PT": ptPT,
     "zh-CN": zhCN,

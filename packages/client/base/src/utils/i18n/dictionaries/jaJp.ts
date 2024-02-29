@@ -1,4 +1,4 @@
-const jpJp = {
+const jaJp = {
     CONNECTING: "接続中...",
         BUY: "Crossmintで購入",
         BUY_WITH_ETH: "ETHで購入",
@@ -7,4 +7,4 @@ const jpJp = {
 }
 
 
-export default jpJp;
+export default jaJp;

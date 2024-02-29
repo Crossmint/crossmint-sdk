@@ -36,7 +36,7 @@ export type Locale =
     | "es-ES"
     | "fr-FR"
     | "it-IT"
-    | "jp-JP"
+    | "ja-JP"
     | "ko-KR"
     | "pt-PT"
     | "zh-CN"
