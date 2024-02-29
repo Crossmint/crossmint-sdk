@@ -14,7 +14,7 @@ import {
 } from "@fireblocks/ncw-js-sdk";
 import { fromBytes } from "viem";
 
-import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
+import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 import { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import { PasswordEncryptedLocalStorage } from "../../storage/PasswordEncryptedLocalStorage";
@@ -25,7 +25,7 @@ type FireblocksNCWWalletInput = {
     userIdentifier: UserIdentifier;
     projectId: string;
     crossmintService: CrossmintWalletService;
-    chain: BlockchainIncludingTestnet;
+    chain: EVMBlockchainIncludingTestnet;
     passphrase: string;
     ncwData?: { walletId: string; deviceId: string };
 };
@@ -174,7 +174,7 @@ export function getSmartAccountSignerFromFireblocks(
     crossmintService: CrossmintWalletService,
     fireblocksNCW: IFireblocksNCW,
     walletId: string,
-    chain: BlockchainIncludingTestnet,
+    chain: EVMBlockchainIncludingTestnet,
     localStorageRepository: LocalStorageRepository
 ): SmartAccountSigner {
     return {
@@ -199,7 +199,7 @@ const signMessage = async (
     crossmintService: CrossmintWalletService,
     fireblocksNCW: IFireblocksNCW,
     walletId: string,
-    chain: BlockchainIncludingTestnet,
+    chain: EVMBlockchainIncludingTestnet,
     msg: Uint8Array | string
 ) => {
     const msg_ = msg instanceof Uint8Array ? fromBytes(msg, "hex") : msg;
@@ -225,7 +225,7 @@ const signTypedData = async (
     crossmintService: CrossmintWalletService,
     fireblocksNCW: IFireblocksNCW,
     walletId: string,
-    chain: BlockchainIncludingTestnet,
+    chain: EVMBlockchainIncludingTestnet,
     params: SignTypedDataParams
 ) => {
     const tx = await crossmintService.createTransaction(params as any, walletId, getFireblocksAssetId(chain), true);

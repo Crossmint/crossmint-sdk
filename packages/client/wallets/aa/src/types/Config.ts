@@ -78,3 +78,5 @@ export type DecryptInput = {
 };
 
 type Cipher = { method: "lit_protocol"; data: LitProtocolCipherData };
+
+export type BackwardsCompatibleChains = "mumbai" | "goerli";
