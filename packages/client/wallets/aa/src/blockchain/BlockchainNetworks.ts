@@ -23,7 +23,7 @@ Chains not supported yet due fireblocks or zerodev doesn't supported
 */
 
 export function getFireblocksAssetId(chain: EVMBlockchainIncludingTestnet) {
-    const assetId = new Map<EVMBlockchainIncludingTestnet, string>([
+    const assetId = new Map<EVMBlockchainIncludingTestnet, string | null>([
         ["ethereum", "ETH"],
         ["ethereum-goerli", "ETH_TEST3"],
         ["ethereum-sepolia", "ETH_TEST5"],
@@ -41,18 +41,18 @@ export function getFireblocksAssetId(chain: EVMBlockchainIncludingTestnet) {
         ["zora-sepolia", "ETH_TEST3"],
         ["zora-goerli", "ETH_TEST3"],
         ["zkatana", "ETH_ZKEVM_TEST"],
-        ["bsc-testnet", ""],
-        ["base", ""],
+        ["bsc-testnet", null],
+        ["base", null],
     ]).get(chain)!;
 
-    if (assetId == null || assetId === "") {
+    if (assetId == null) {
         throw new Error(`Asset not found for chain ${chain}`);
     }
     return assetId;
 }
 
 export function getUrlProviderByBlockchain(chain: EVMBlockchainIncludingTestnet) {
-    const url = new Map<EVMBlockchainIncludingTestnet, string>([
+    const url = new Map<EVMBlockchainIncludingTestnet, string | null>([
         ["ethereum", "https://eth.llamarpc.com"],
         ["polygon", "https://polygon.llamarpc.com"],
         ["bsc", "https://binance.llamarpc.com"],
@@ -61,28 +61,28 @@ export function getUrlProviderByBlockchain(chain: EVMBlockchainIncludingTestnet)
         ["ethereum-sepolia", "https://ethereum-sepolia.publicnode.com"],
         ["polygon-mumbai", "https://rpc-mumbai.maticvigil.com"],
         ["zkatana", "https://rpc.startale.com/zkatana"],
-        ["arbitrum-sepolia", ""],
-        ["base-goerli", ""],
-        ["base-sepolia", ""],
-        ["bsc-testnet", ""],
+        ["arbitrum-sepolia", null],
+        ["base-goerli", null],
+        ["base-sepolia", null],
+        ["bsc-testnet", null],
         ["ethereum-goerli", "https://ethereum-goerli.publicnode.com"],
-        ["optimism-goerli", ""],
-        ["optimism-sepolia", ""],
-        ["zora-goerli", ""],
-        ["zora-sepolia", ""],
-        ["base", ""],
-        ["zora", ""],
-        ["arbitrumnova", ""],
+        ["optimism-goerli", null],
+        ["optimism-sepolia", null],
+        ["zora-goerli", null],
+        ["zora-sepolia", null],
+        ["base", null],
+        ["zora", null],
+        ["arbitrumnova", null],
     ]).get(chain)!;
 
-    if (url == null || url === "") {
+    if (url == null) {
         throw new Error(`Url provider not found for chain ${chain}`);
     }
     return url;
 }
 
 export function getBlockExplorerByBlockchain(chain: EVMBlockchainIncludingTestnet) {
-    const blockExplorer = new Map<EVMBlockchainIncludingTestnet, string>([
+    const blockExplorer = new Map<EVMBlockchainIncludingTestnet, string | null>([
         ["ethereum", "https://etherscan.io"],
         ["polygon", "https://polygonscan.com"],
         ["bsc", "https://bscscan.com"],
@@ -92,20 +92,20 @@ export function getBlockExplorerByBlockchain(chain: EVMBlockchainIncludingTestne
         ["ethereum-sepolia", "https://sepolia.etherscan.io"],
         ["polygon-mumbai", "https://mumbai.polygonscan.com"],
         ["zkatana", "https://zkatana.explorer.startale.com"],
-        ["arbitrum-sepolia", ""],
-        ["base-goerli", ""],
-        ["base-sepolia", ""],
-        ["bsc-testnet", ""],
-        ["optimism-goerli", ""],
-        ["optimism-sepolia", ""],
-        ["zora-goerli", ""],
-        ["zora-sepolia", ""],
-        ["base", ""],
-        ["zora", ""],
-        ["arbitrumnova", ""],
+        ["arbitrum-sepolia", null],
+        ["base-goerli", null],
+        ["base-sepolia", null],
+        ["bsc-testnet", null],
+        ["optimism-goerli", null],
+        ["optimism-sepolia", null],
+        ["zora-goerli", null],
+        ["zora-sepolia", null],
+        ["base", null],
+        ["zora", null],
+        ["arbitrumnova", null],
     ]).get(chain)!;
 
-    if (blockExplorer == null || blockExplorer === "") {
+    if (blockExplorer == null) {
         throw new Error(`Block Explorer not found for chain ${chain}`);
     }
     return blockExplorer;
@@ -142,7 +142,7 @@ export function getDisplayNameByBlockchain(chain: EVMBlockchainIncludingTestnet)
 }
 
 export function getTickerByBlockchain(chain: EVMBlockchainIncludingTestnet) {
-    const ticker = new Map<EVMBlockchainIncludingTestnet, string>([
+    const ticker = new Map<EVMBlockchainIncludingTestnet, string | null>([
         ["ethereum", "ETH"],
         ["polygon", "MATIC"],
         ["bsc", "BNB"],
@@ -152,27 +152,27 @@ export function getTickerByBlockchain(chain: EVMBlockchainIncludingTestnet) {
         ["ethereum-sepolia", "ETH"],
         ["polygon-mumbai", "MATIC"],
         ["zkatana", "ETH"],
-        ["arbitrum-sepolia", ""],
-        ["base-goerli", ""],
-        ["base-sepolia", ""],
-        ["bsc-testnet", ""],
-        ["optimism-goerli", ""],
-        ["optimism-sepolia", ""],
-        ["zora-goerli", ""],
-        ["zora-sepolia", ""],
-        ["base", ""],
-        ["zora", ""],
-        ["arbitrumnova", ""],
+        ["arbitrum-sepolia", null],
+        ["base-goerli", null],
+        ["base-sepolia", null],
+        ["bsc-testnet", null],
+        ["optimism-goerli", null],
+        ["optimism-sepolia", null],
+        ["zora-goerli", null],
+        ["zora-sepolia", null],
+        ["base", null],
+        ["zora", null],
+        ["arbitrumnova", null],
     ]).get(chain)!;
 
-    if (ticker == null || ticker === "") {
+    if (ticker == null) {
         throw new Error(`Ticker project id not found for chain ${chain}`);
     }
     return ticker;
 }
 
 export function getTickerNameByBlockchain(chain: EVMBlockchainIncludingTestnet) {
-    const tickerName = new Map<EVMBlockchainIncludingTestnet, string>([
+    const tickerName = new Map<EVMBlockchainIncludingTestnet, string | null>([
         ["ethereum", "ETHEREUM"],
         ["polygon", "MATIC"],
         ["bsc", "BNB_BSC"],
@@ -182,27 +182,27 @@ export function getTickerNameByBlockchain(chain: EVMBlockchainIncludingTestnet) 
         ["ethereum-sepolia", "ETHEREUM"],
         ["polygon-mumbai", "MATIC"],
         ["zkatana", "ETHEREUM"],
-        ["arbitrum-sepolia", ""],
-        ["base-goerli", ""],
-        ["base-sepolia", ""],
-        ["bsc-testnet", ""],
-        ["optimism-goerli", ""],
-        ["optimism-sepolia", ""],
-        ["zora-goerli", ""],
-        ["zora-sepolia", ""],
-        ["base", ""],
-        ["zora", ""],
-        ["arbitrumnova", ""],
+        ["arbitrum-sepolia", null],
+        ["base-goerli", null],
+        ["base-sepolia", null],
+        ["bsc-testnet", null],
+        ["optimism-goerli", null],
+        ["optimism-sepolia", null],
+        ["zora-goerli", null],
+        ["zora-sepolia", null],
+        ["base", null],
+        ["zora", null],
+        ["arbitrumnova", null],
     ]).get(chain)!;
 
-    if (tickerName == null || tickerName === "") {
+    if (tickerName == null) {
         throw new Error(`Ticker Name project id not found for chain ${chain}`);
     }
     return tickerName;
 }
 
 export function getZeroDevProjectIdByBlockchain(chain: EVMBlockchainIncludingTestnet) {
-    const zeroDevProjectId = new Map<EVMBlockchainIncludingTestnet, string>([
+    const zeroDevProjectId = new Map<EVMBlockchainIncludingTestnet, string | null>([
         ["ethereum", ZD_ETHEREUM_PROJECT_ID],
         ["polygon", ZD_POLYGON_PROJECT_ID],
         ["bsc", ZD_BSC_PROJECT_ID],
@@ -212,20 +212,20 @@ export function getZeroDevProjectIdByBlockchain(chain: EVMBlockchainIncludingTes
         ["ethereum-sepolia", ZD_SEPOLIA_PROJECT_ID],
         ["polygon-mumbai", ZD_MUMBAI_PROJECT_ID],
         ["zkatana", ZD_ZKATANA_PROJECT_ID],
-        ["arbitrum-sepolia", ""],
-        ["base-goerli", ""],
-        ["base-sepolia", ""],
-        ["bsc-testnet", ""],
-        ["optimism-goerli", ""],
-        ["optimism-sepolia", ""],
-        ["zora-goerli", ""],
-        ["zora-sepolia", ""],
-        ["base", ""],
-        ["zora", ""],
-        ["arbitrumnova", ""],
+        ["arbitrum-sepolia", null],
+        ["base-goerli", null],
+        ["base-sepolia", null],
+        ["bsc-testnet", null],
+        ["optimism-goerli", null],
+        ["optimism-sepolia", null],
+        ["zora-goerli", null],
+        ["zora-sepolia", null],
+        ["base", null],
+        ["zora", null],
+        ["arbitrumnova", null],
     ]).get(chain)!;
 
-    if (zeroDevProjectId == null || zeroDevProjectId === "") {
+    if (zeroDevProjectId == null) {
         throw new Error(`ZeroDev project id not found for chain ${chain}`);
     }
     return zeroDevProjectId;
