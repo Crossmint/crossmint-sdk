@@ -176,7 +176,7 @@ export function crossmintModalService({
             if (successCallbackURL) mintQueryParams.successCallbackURL = successCallbackURL;
             if (failureCallbackURL) mintQueryParams.failureCallbackURL = failureCallbackURL;
             if (projectId) mintQueryParams.projectId = projectId;
-            if (checkoutProps)
+            if (checkoutProps && checkoutProps.experimental === true)
                 mintQueryParams.checkoutProps = JSON.stringify(checkoutProps);
 
             return new URLSearchParams(mintQueryParams).toString();
