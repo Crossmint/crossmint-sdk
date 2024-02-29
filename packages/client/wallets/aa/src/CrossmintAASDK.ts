@@ -55,7 +55,7 @@ export class CrossmintAASDK {
             });
 
             if (!isEVMBlockchain(chain)) {
-                throw new WalletSdkError(`The blockchain ${chain} is still not supported`);
+                throw new WalletSdkError(`The blockchain ${chain} is not supported`);
             }
 
             const userIdentifier = parseUserIdentifier(user);
