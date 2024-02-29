@@ -97,6 +97,40 @@ const removeLoadingOverlay = (): void => {
     if (overlayEl) overlayEl.remove();
 };
 
+function openPopup(
+    url: string,
+    viewportWidth: number,
+    viewportHeight: number,
+    options: { showOverlay: boolean; dismissOverlayOnClick?: boolean },
+    onOpened: (pop: Window) => void
+): Window | undefined {
+    const pop = window.open(url, "popUpWindow", createPopupString(viewportWidth, viewportHeight));
+    if (pop) {
+        onOpened(pop);
+        if (options.showOverlay) {
+            addLoadingOverlay(options.dismissOverlayOnClick);
+        }
+        return pop;
+    }
+}
+
+function openNewTab(
+    url: string,
+    options?: { showOverlay: boolean; dismissOverlayOnClick?: boolean },
+    onOpened?: (pop: Window) => void
+): void {
+    const newTab = window.open(url, "_blank");
+    if (newTab) {
+        if (onOpened) {
+            onOpened(newTab);
+        }
+        if (options?.showOverlay) {
+            addLoadingOverlay(options?.dismissOverlayOnClick);
+        }
+    }
+    console.error("Failed to open new tab");
+}
+
 interface CrossmintModalServiceParams {
     clientId: string;
     projectId?: string;
@@ -127,6 +161,8 @@ export interface CrossmintModalServiceReturn {
         prepay?: boolean,
         checkoutProps?: CheckoutProps
     ) => void;
+    // TODO: Improve interface
+    connectVerification: () => void;
 }
 
 export function crossmintModalService({
@@ -187,23 +223,20 @@ export function crossmintModalService({
 
             switch (checkoutProps.display) {
                 case "popup": {
-                    const pop = window.open(url, "popUpWindow", createPopupString(POPUP_WIDTH, POPUP_HEIGHT));
-                    if (pop) {
-                        registerListeners(pop);
-                        if (showOverlay) {
-                            addLoadingOverlay(dismissOverlayOnClick);
-                        }
-                    }
+                    openPopup(
+                        url,
+                        POPUP_WIDTH,
+                        POPUP_HEIGHT,
+                        {
+                            showOverlay,
+                            dismissOverlayOnClick,
+                        },
+                        registerListeners
+                    );
                     return;
                 }
                 case "new-tab": {
-                    const newTab = window.open(url, "_blank");
-                    if (newTab) {
-                        registerListeners(newTab);
-                        if (showOverlay) {
-                            addLoadingOverlay(dismissOverlayOnClick);
-                        }
-                    }
+                    openNewTab(url, { showOverlay, dismissOverlayOnClick }, registerListeners);
                     return;
                 }
                 case "same-tab":
@@ -224,19 +257,19 @@ export function crossmintModalService({
 
         const url = `${urlOrigin}/signin?${signinURLParams}&callbackUrl=${callbackUrl}`;
 
-        const pop = window.open(url, "popUpWindow", createPopupString(POPUP_WIDTH, POPUP_HEIGHT));
+        const pop = openPopup(
+            url,
+            POPUP_WIDTH,
+            POPUP_HEIGHT,
+            { showOverlay, dismissOverlayOnClick },
+            registerListeners
+        );
         if (pop) {
-            registerListeners(pop);
-            if (showOverlay) {
-                addLoadingOverlay(dismissOverlayOnClick);
-            }
             return;
         }
+
         setConnecting(false);
-        const newTab = window.open(url, "_blank");
-        if (!newTab) {
-            console.error("Failed to open popup window and new tab");
-        }
+        openNewTab(url);
     };
 
     const connect = (
@@ -291,7 +324,23 @@ export function crossmintModalService({
         window.addEventListener("message", messageEventListener);
     }
 
+    function connectVerification() {
+        setConnecting(true);
+        const urlOrigin = getEnvironmentBaseUrl(environment);
+        // TODO: Generate url
+        const url = `${urlOrigin}/`;
+
+        const pop = openPopup(url, POPUP_WIDTH, POPUP_HEIGHT, { showOverlay: false }, registerListeners);
+        if (pop) {
+            return;
+        }
+
+        setConnecting(false);
+        openNewTab(url);
+    }
+
     return {
         connect,
+        connectVerification,
     };
 }
