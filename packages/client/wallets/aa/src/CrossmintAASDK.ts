@@ -1,7 +1,15 @@
 import { CrossmintWalletService } from "@/api";
 import { EVMAAWallet, getZeroDevProjectIdByBlockchain } from "@/blockchain";
-import type { CrossmintAASDKInitParams, WalletConfig } from "@/types";
-import { CURRENT_VERSION, SCW_SERVICE, WalletSdkError, ZERO_DEV_TYPE, createOwnerSigner, errorToJSON } from "@/utils";
+import type { BackwardsCompatibleChains, CrossmintAASDKInitParams, WalletConfig } from "@/types";
+import {
+    CURRENT_VERSION,
+    SCW_SERVICE,
+    WalletSdkError,
+    ZERO_DEV_TYPE,
+    createOwnerSigner,
+    errorToJSON,
+    transformBackwardsCompatibleChains,
+} from "@/utils";
 import { ZeroDevEthersProvider } from "@zerodev/sdk";
 
 import {
@@ -35,10 +43,11 @@ export class CrossmintAASDK {
 
     async getOrCreateWallet<B extends BlockchainIncludingTestnet = BlockchainIncludingTestnet>(
         user: UserIdentifierParams,
-        chain: B,
+        chain: B | BackwardsCompatibleChains,
         walletConfig: WalletConfig
     ) {
         try {
+            chain = transformBackwardsCompatibleChains(chain);
             logInfo("[GET_OR_CREATE_WALLET] - INIT", {
                 service: SCW_SERVICE,
                 user,
