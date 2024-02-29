@@ -15,10 +15,17 @@ export type EVMBlockchain = ObjectValues<typeof EVMBlockchain>;
 export const EVM_CHAINS = objectValues(EVMBlockchain);
 
 export const EVMBlockchainTestnet = {
-    GOERLI: "goerli",
+    ARBITRUM_SEPOLIA: "arbitrum-sepolia",
+    BASE_GOERLI: "base-goerli",
+    BASE_SEPOLIA: "base-sepolia",
+    BSC_TESTNET: "bsc-testnet",
+    ETHEREUM_GOERLI: "ethereum-goerli",
     ETHEREUM_SEPOLIA: "ethereum-sepolia",
-    MUMBAI: "mumbai",
-    ZKATANA: "zkatana",
+    POLYGON_MUMBAI: "polygon-mumbai",
+    OPTIMISM_GOERLI: "optimism-goerli",
+    OPTIMISM_SEPOLIA: "optimism-sepolia",
+    ZORA_GOERLI: "zora-goerli",
+    ZORA_SEPOLIA: "zora-sepolia",
 } as const;
 export type EVMBlockchainTestnet = ObjectValues<typeof EVMBlockchainTestnet>;
 export const EVM_BLOCKCHAIN_TESTNETS = objectValues(EVMBlockchainTestnet);
