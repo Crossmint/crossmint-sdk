@@ -15,7 +15,7 @@ export const getOrCreateWalletEthers = async (email: string, privateKey: string)
         signer,
     };
     const userIdentifier = { email };
-    return await xm.getOrCreateWallet(userIdentifier, EVMBlockchainIncludingTestnet.MUMBAI, walletInitParams);
+    return await xm.getOrCreateWallet(userIdentifier, EVMBlockchainIncludingTestnet.POLYGON_MUMBAI, walletInitParams);
 };
 
 export const getOrCreateWalletFireblocks = async (email: string) => {
@@ -33,7 +33,7 @@ export const getOrCreateWalletFireblocks = async (email: string) => {
     const walletInitParams = {
         signer: fireblocksNCWSigner,
     };
-    return await xm.getOrCreateWallet(userIdentifier, EVMBlockchainIncludingTestnet.MUMBAI, walletInitParams);
+    return await xm.getOrCreateWallet(userIdentifier, EVMBlockchainIncludingTestnet.POLYGON_MUMBAI, walletInitParams);
 };
 
 export const setCustodianForKillSwitch = async (aaWallet: EVMAAWallet) => {
