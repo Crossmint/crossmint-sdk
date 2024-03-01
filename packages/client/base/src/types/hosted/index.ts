@@ -43,8 +43,8 @@ export type CrossmintPayButtonProps = BaseButtonProps & {
 
 export type CheckoutProps = {
     experimental?: boolean;
-    display: "same-tab" | "new-tab" | "popup";
-    delivery: "custodial" | "non-custodial" | "all";
+    display?: "same-tab" | "new-tab" | "popup";
+    delivery?: "custodial" | "non-custodial" | "all";
     paymentMethods?: PaymentMethod[];
 }
 export type SigninMethods = "metamask" | "solana";
