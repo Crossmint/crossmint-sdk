@@ -16,6 +16,7 @@
     },
     "scripts": {
         "clean": "lerna run clean",
+        "changesets:publish": "yarn build && yarn changeset publish --no-git-tag",
         "build": "lerna run build",
         "test": "lerna run test",
         "publish": "lerna publish from-package",
