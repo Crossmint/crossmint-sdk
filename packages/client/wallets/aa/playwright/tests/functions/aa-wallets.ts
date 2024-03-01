@@ -23,3 +23,13 @@ export async function createFireblocksWallet(page: Page) {
     return addressCreated;
 }
 
+export async function getFireblocksWallet(page: Page, email: string) {   
+    await page.goto("/");
+    await page.getByPlaceholder('Email for Fireblocks').fill(email);
+    await page.getByRole('button', { name: 'Create Fireblocks wallet' }).click();
+    const address = page.getByTestId('createdOrGotFireblocksWallet');
+    await expect(address).toHaveValue(/^0x[a-fA-F0-9]{40}$/, { timeout: 240_000 });
+    let  addressValue = await address.inputValue();   
+    console.log("addressValue: ", addressValue);
+    return addressValue;
+}

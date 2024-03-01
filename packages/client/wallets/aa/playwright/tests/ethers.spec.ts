@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { Page, expect, test } from "@playwright/test";
 import { getWallet } from "./functions/aa-wallets";
 
 test.beforeEach(async ({ page }) => {
@@ -12,9 +12,11 @@ test.describe("AA wallet", () => {
     });
 
     test("should allow me to sign a message", async ({ page }) => {
+        const simpleMessage = "Simple test message";
+        await page.getByPlaceholder("Message to sign").fill(simpleMessage);
         await page.getByText("Sign Message").click();
         const locatorSign = page.getByTestId('signedMessageInput');
-        await expect(locatorSign).toHaveValue("0x7581e3edc09b642a46a00befdba6e0bae61fff4f78381eab77aec3261c48d031637cf8bb4ac209199a64bdaa46d52f0f742aa5b7e33eedd934e909c21b53fd0c1b", { timeout: 20_000 });
+        await expect(locatorSign).toHaveValue("0x7e3bf41cade8bb138beb7a04930d14eaa6f2b41b76dcc36ea994bb907c86c85f24680a3860b44299615b38437413830a54c8bad9ec51f192086e8fea0d0167a21c", { timeout: 20_000 });
     });
 
     test("should allow me to send transaction", async ({ page }) => {
