@@ -1,6 +1,5 @@
 {
     "name": "@crossmint/client-sdk-window",
-    "private": true,
     "version": "0.0.3",
     "author": "Paella Labs Inc",
     "license": "Apache-2.0",
@@ -19,9 +18,6 @@
         "src",
         "LICENSE"
     ],
-    "publishConfig": {
-        "access": "restricted"
-    },
     "scripts": {
         "build": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
         "clean": "shx rm -rf dist/*",
