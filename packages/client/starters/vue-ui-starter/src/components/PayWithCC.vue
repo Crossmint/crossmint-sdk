@@ -13,7 +13,7 @@ const quantity = ref(1);
 const itemEthPrice = 0.01;
 const totalItemsEthPrice = itemEthPrice * quantity.value;
 const totalFiatItemPrice = ref<string | number | null>(null);
-const totalGasFee  = ref<string | number | null>(null);
+const totalGasFee = ref<string | number | null>(null);
 const currency = ref<string | null>(null);
 const itemEthFee = 0.0001 * quantity.value;
 
@@ -23,7 +23,6 @@ const totalFiatPrice = ref<string | number | null>(null);
 const isPaying = ref(true);
 
 const router = useRouter();
-
 
 function onEvent(event: CrossmintEvent) {
     switch (event.type) {
@@ -45,6 +44,7 @@ function onEvent(event: CrossmintEvent) {
         default:
             break;
     }
+    return undefined;
 }
 </script>
 
@@ -64,7 +64,7 @@ function onEvent(event: CrossmintEvent) {
                 <p>{{ itemEthPrice }} ETH x{{ quantity }}</p>
                 <div class="price-value">
                     <p>{{ totalItemsEthPrice }}ETH</p>
-                    <p>~{{currency}} {{ totalFiatItemPrice }}</p>
+                    <p>~{{ currency }} {{ totalFiatItemPrice }}</p>
                 </div>
             </div>
 
@@ -78,7 +78,7 @@ function onEvent(event: CrossmintEvent) {
             <div class="price-container">
                 <p>Gas fee</p>
                 <div class="price-value">
-                    <p>~ {{currency}} {{ totalGasFee }}</p>
+                    <p>~ {{ currency }} {{ totalGasFee }}</p>
                 </div>
             </div>
 
@@ -86,7 +86,7 @@ function onEvent(event: CrossmintEvent) {
                 <p>Total</p>
                 <div class="price-value">
                     <p>{{ totalEthPrice }} ETH</p>
-                    <p>~{{currency}} {{ totalFiatPrice }}</p>
+                    <p>~{{ currency }} {{ totalFiatPrice }}</p>
                 </div>
             </div>
 
