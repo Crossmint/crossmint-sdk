@@ -5,7 +5,7 @@ export type EventMap = Record<string, z.ZodTypeAny>;
 
 export interface EventEmitterOptions<
     IncomingEvents extends EventMap = EventMap,
-    OutgoingEvents extends EventMap = EventMap,
+    OutgoingEvents extends EventMap = EventMap
 > {
     incomingEvents?: IncomingEvents;
     outgoingEvents?: OutgoingEvents;
@@ -20,7 +20,7 @@ export type SendActionArgs<
     IncomingEvents extends EventMap,
     OutgoingEvents extends EventMap,
     K extends keyof OutgoingEvents,
-    R extends keyof IncomingEvents,
+    R extends keyof IncomingEvents
 > = {
     event: K;
     data: z.infer<OutgoingEvents[K]>;
@@ -36,7 +36,7 @@ export type OnActionArgs<
     IncomingEvents extends EventMap,
     OutgoingEvents extends EventMap,
     K extends keyof IncomingEvents,
-    R extends keyof OutgoingEvents,
+    R extends keyof OutgoingEvents
 > =
     | {
           event: K;
@@ -53,10 +53,10 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
     private listeners: Map<string, (message: MessageEvent) => void> = new Map();
 
     constructor(
-        protected otherWindow: Window,
-        protected targetOrigin: string,
-        protected incomingEvents: IncomingEvents,
-        protected outgoingEvents: OutgoingEvents
+        public otherWindow: Window,
+        public targetOrigin: string,
+        public incomingEvents: IncomingEvents,
+        public outgoingEvents: OutgoingEvents
     ) {
         this.otherWindow = otherWindow;
         this.targetOrigin = targetOrigin;

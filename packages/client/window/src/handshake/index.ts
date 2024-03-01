@@ -11,9 +11,10 @@ export interface HandshakeOptions {
 }
 export type EventEmitterWithHandshakeOptions<
     IncomingEvents extends EventMap = EventMap,
-    OutgoingEvents extends EventMap = EventMap,
+    OutgoingEvents extends EventMap = EventMap
 > = EventEmitterOptions<IncomingEvents, OutgoingEvents> & {
     handshakeOptions?: HandshakeOptions;
+    targetOrigin?: string;
 };
 
 export const DEFAULT_HANDSHAKE_OPTIONS: Required<HandshakeOptions> = {

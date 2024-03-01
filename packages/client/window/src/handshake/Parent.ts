@@ -19,8 +19,8 @@ export class HandshakeParent<IncomingEvents extends EventMap, OutgoingEvents ext
     isConnected = false;
 
     constructor(
-        protected otherWindow: Window,
-        protected targetOrigin: string,
+        otherWindow: Window,
+        targetOrigin: string,
         options?: EventEmitterWithHandshakeOptions<IncomingEvents, OutgoingEvents>
     ) {
         const mergedIncomingEvents = {
