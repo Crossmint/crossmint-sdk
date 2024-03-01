@@ -7,10 +7,10 @@
         "@lit-protocol/lit-node-client": "3.1.2",
         "date-fns": "2.30.0",
         "ethers": "5.7.2",
-        "@crossmint/common-sdk-base": "0.0.4"
+        "@crossmint/common-sdk-base": "0.0.5"
     },
     "devDependencies": {
-        "@crossmint/client-sdk-base": "1.1.6"
+        "@crossmint/client-sdk-base": "1.1.7"
     },
     "exports": {
         "import": "./dist/index.js",
@@ -32,8 +32,8 @@
     "scripts": {
         "build": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
         "clean": "shx rm -rf dist/*",
-        "test": "NODE_ENV=test jest --silent",
-        "test-coverage": "NODE_ENV=test jest --coverage --silent",
+        "test": "cross-env NODE_ENV=test jest --silent",
+        "test-coverage": "cross-env NODE_ENV=test jest --coverage --silent",
         "dev": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --dts --sourcemap --watch"
     },
     "sideEffects": false,

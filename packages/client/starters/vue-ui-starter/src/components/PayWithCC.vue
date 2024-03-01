@@ -44,7 +44,6 @@ function onEvent(event: CrossmintEvent) {
         default:
             break;
     }
-    return undefined;
 }
 </script>
 
