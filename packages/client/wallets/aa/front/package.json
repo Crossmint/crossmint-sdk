@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-aa-demo",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "private": true,
     "scripts": {
         "dev": "next dev -p 3001",
@@ -9,12 +9,12 @@
         "lint": "next lint"
     },
     "dependencies": {
+        "@crossmint/client-sdk-aa": "0.2.1",
+        "@crossmint/common-sdk-base": "0.0.6",
         "ethers": "5.7.2",
         "next": "13.5.6",
         "react": "^18",
-        "react-dom": "^18",
-        "@crossmint/client-sdk-aa": "0.2.0",
-        "@crossmint/common-sdk-base": "0.0.5"
+        "react-dom": "^18"
     },
     "devDependencies": {
         "@types/node": "^20",
