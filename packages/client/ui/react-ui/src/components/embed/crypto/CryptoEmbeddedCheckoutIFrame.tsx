@@ -11,6 +11,7 @@ import {
     crossmintIFrameService,
     embeddedCheckoutPropsToUpdatableParamsPayload,
 } from "@crossmint/client-sdk-base";
+import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 import CrossmintEmbeddedCheckoutIFrame from "../EmbeddedCheckoutIFrame";
 
@@ -33,10 +34,10 @@ export default function CryptoEmbeddedCheckoutIFrame(props: CryptoEmbeddedChecko
             console.log("[Crossmint] Received change of chain", chain);
 
             const handleChainSwitch = (signer as ETHEmbeddedCheckoutSigner).handleChainSwitch;
-            if(handleChainSwitch == null) {
-                throw new Error("switchNetwork function should have been defined")
+            if (handleChainSwitch == null) {
+                throw new Error("switchNetwork function should have been defined");
             }
-            handleChainSwitch(chain);
+            handleChainSwitch(chain as EVMBlockchainIncludingTestnet);
         }
     }
 
@@ -94,13 +95,13 @@ export default function CryptoEmbeddedCheckoutIFrame(props: CryptoEmbeddedChecko
             payload: embeddedCheckoutPropsToUpdatableParamsPayload(props),
         });
     }, [
-        props.signer.address, 
-        props.recipient, 
-        props.mintConfig, 
-        props.locale, 
-        props.currency, 
+        props.signer.address,
+        props.recipient,
+        props.mintConfig,
+        props.locale,
+        props.currency,
         props.whPassThroughArgs,
-        ..."chain" in props.signer ? [props.signer.chain] : [],
+        ...("chain" in props.signer ? [props.signer.chain] : []),
     ]);
 
     return <CrossmintEmbeddedCheckoutIFrame onInternalEvent={onInternalEvent} {...props} />;
