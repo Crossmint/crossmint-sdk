@@ -1,5 +1,5 @@
 import { CrossmintWalletService } from "@/api";
-import { EVMAAWallet, getZeroDevProjectIdByBlockchain } from "@/blockchain";
+import { EVMAAWallet, getUrlProviderByBlockchain, getZeroDevProjectIdByBlockchain } from "@/blockchain";
 import type { BackwardsCompatibleChains, CrossmintAASDKInitParams, WalletConfig } from "@/types";
 import {
     CURRENT_VERSION,
@@ -74,6 +74,9 @@ export class CrossmintAASDK {
                 projectId: getZeroDevProjectIdByBlockchain(chain),
                 owner,
                 opts: {
+                    providerConfig: {
+                        rpcUrl: getUrlProviderByBlockchain(chain),
+                    },
                     paymasterConfig: {
                         policy: "VERIFYING_PAYMASTER",
                     },
