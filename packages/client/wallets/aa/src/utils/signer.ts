@@ -2,7 +2,6 @@ import { CrossmintWalletService } from "@/api";
 import {
     FireblocksNCWallet,
     getBlockExplorerByBlockchain,
-    getChainIdByBlockchain,
     getDisplayNameByBlockchain,
     getTickerByBlockchain,
     getTickerNameByBlockchain,
@@ -17,12 +16,12 @@ import { Web3Auth } from "@web3auth/single-factor-auth";
 import { convertEthersSignerToAccountSigner, getRPCProviderOwner } from "@zerodev/sdk";
 import { Signer } from "ethers";
 
-import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
+import { EVMBlockchainIncludingTestnet, blockchainToChainId } from "@crossmint/common-sdk-base";
 
 type CreateOwnerSignerInput = {
     userIdentifier: UserIdentifier;
     projectId: string;
-    chain: BlockchainIncludingTestnet;
+    chain: EVMBlockchainIncludingTestnet;
     walletConfig: WalletConfig;
     crossmintService: CrossmintWalletService;
 };
@@ -56,7 +55,7 @@ export async function createOwnerSigner({
         return fireblocks.owner;
     } else if (isWeb3AuthSigner(walletConfig.signer)) {
         const signer = walletConfig.signer;
-        const chainId = getChainIdByBlockchain(chain);
+        const chainId = blockchainToChainId(chain);
         const chainConfig = {
             chainNamespace: CHAIN_NAMESPACES.EIP155,
             chainId: "0x" + chainId!.toString(16),

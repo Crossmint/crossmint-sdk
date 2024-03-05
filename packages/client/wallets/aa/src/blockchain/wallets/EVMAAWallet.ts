@@ -1,6 +1,6 @@
 import { logError, logInfo } from "@/services/logging";
 import { SignerType } from "@/types";
-import { errorToJSON } from "@/utils";
+import { SCW_SERVICE, errorToJSON } from "@/utils";
 import { verifyMessage } from "@ambire/signature-validator";
 import {
     ERC165SessionKeyProvider,
@@ -14,16 +14,11 @@ import {
 import { ethers } from "ethers";
 import { WalletClient, createWalletClient, custom, getFunctionSelector, publicActions } from "viem";
 
-import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
+import { EVMBlockchainIncludingTestnet, chainIdToBlockchain } from "@crossmint/common-sdk-base";
 
 import { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import { GenerateSignatureDataInput } from "../../types/API";
-import {
-    getBlockchainByChainId,
-    getUrlProviderByBlockchain,
-    getViemNetwork,
-    getZeroDevProjectIdByBlockchain,
-} from "../BlockchainNetworks";
+import { getUrlProviderByBlockchain, getViemNetwork, getZeroDevProjectIdByBlockchain } from "../BlockchainNetworks";
 import { Custodian } from "../plugins";
 import { TokenType } from "../token/Tokens";
 import BaseWallet from "./BaseWallet";
@@ -63,6 +58,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
             }
             default:
                 logError("[GET_SIGNER] - ERROR", {
+                    service: SCW_SERVICE,
                     error: errorToJSON("Invalid signer type"),
                 });
                 throw new Error("Invalid signer type");
@@ -85,6 +81,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
     async setCustodianForTokens(tokenType?: TokenType, custodian?: Custodian) {
         try {
             logInfo("[SET_CUSTODIAN_FOR_TOKENS] - INIT", {
+                service: SCW_SERVICE,
                 tokenType,
                 custodian,
             });
@@ -136,11 +133,13 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
 
             await this.crossmintService.generateChainData(generateSessionKeyDataInput);
             logInfo("[SET_CUSTODIAN_FOR_TOKENS] - FINISH", {
+                service: SCW_SERVICE,
                 tokenType,
                 custodian,
             });
         } catch (error) {
             logError("[SET_CUSTODIAN_FOR_TOKENS] - ERROR", {
+                service: SCW_SERVICE,
                 error: errorToJSON(error),
                 tokenType,
                 custodian,
@@ -152,6 +151,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
     async setCustodianForKillswitch(custodian?: Custodian | undefined) {
         try {
             logInfo("[SET_CUSTODIAN_FOR_KILLSWITCH] - INIT", {
+                service: SCW_SERVICE,
                 custodian,
             });
             const selectorKs = getFunctionSelector("toggleKillSwitch()");
@@ -196,10 +196,12 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
 
             await this.crossmintService.generateChainData(generateKillSwitchDataInput);
             logInfo("[SET_CUSTODIAN_FOR_KILLSWITCH] - FINISH", {
+                service: SCW_SERVICE,
                 custodian,
             });
         } catch (error) {
             logError("[SET_CUSTODIAN_FOR_KILLSWITCH] - ERROR", {
+                service: SCW_SERVICE,
                 error: errorToJSON(error),
                 custodian,
             });
@@ -209,7 +211,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
 
     async upgradeVersion() {
         try {
-            logInfo("[UPGRADE_VERSION] - INIT", {});
+            logInfo("[UPGRADE_VERSION] - INIT", { service: SCW_SERVICE });
             const sessionKeys = await this.crossmintService!.createSessionKey(await this.getAddress());
             if (sessionKeys == null) {
                 throw new Error("Abstract Wallet doesn't have a session key signer address");
@@ -229,7 +231,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
 
             let jsonRpcProviderUrl = versionInfo.providerUrl;
             if (jsonRpcProviderUrl == null && versionInfo.chainId) {
-                const blockchainType = getBlockchainByChainId(versionInfo.chainId);
+                const blockchainType = chainIdToBlockchain(versionInfo.chainId);
                 jsonRpcProviderUrl = getUrlProviderByBlockchain(blockchainType!);
             }
 
@@ -272,9 +274,10 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
                 );
 
             await this.crossmintService.updateWallet(await this.getAddress(), enableSig, 1);
-            logInfo("[UPGRADE_VERSION - FINISH", {});
+            logInfo("[UPGRADE_VERSION - FINISH", { service: SCW_SERVICE });
         } catch (error) {
             logError("[UPGRADE_VERSION] - ERROR", {
+                service: SCW_SERVICE,
                 error: errorToJSON(error),
             });
             throw new Error(`Error upgrading version. If this error persists, please contact support.`);

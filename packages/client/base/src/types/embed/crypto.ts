@@ -1,19 +1,20 @@
 import type { Transaction as _EthersTransaction } from "@ethersproject/transactions";
 import type { Transaction as _SolanaTransaction } from "@solana/web3.js";
 
+import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
+
 import { CommonEmbeddedCheckoutProps } from ".";
 import { CryptoPaymentMethod } from "..";
-import { Blockchain } from "@crossmint/common-sdk-base";
 
 type CryptoEmbeddedCheckoutPropsBase<
-    PM extends keyof CryptoPaymentMethodSignerMap = keyof CryptoPaymentMethodSignerMap,
+    PM extends keyof CryptoPaymentMethodSignerMap = keyof CryptoPaymentMethodSignerMap
 > = CommonEmbeddedCheckoutProps<PM> & {
     paymentMethod: PM;
     signer?: CryptoPaymentMethodSignerMap[PM];
 };
 
 type CryptoEmbeddedCheckoutPropsWithSignerBase<
-    PM extends keyof CryptoPaymentMethodSignerMap = keyof CryptoPaymentMethodSignerMap,
+    PM extends keyof CryptoPaymentMethodSignerMap = keyof CryptoPaymentMethodSignerMap
 > = CryptoEmbeddedCheckoutPropsBase<PM> & {
     signer: CryptoPaymentMethodSignerMap[PM];
 };
@@ -46,9 +47,9 @@ type SolanaTransaction = _SolanaTransaction;
 // Signers
 export type ETHEmbeddedCheckoutSigner = CommonEmbeddedCheckoutSignerProps & {
     signAndSendTransaction: (transaction: EthersTransaction) => Promise<string>;
-    chain?: Blockchain;
-    supportedChains?: Blockchain[];
-    handleChainSwitch?: (network: Blockchain) => Promise<void>;
+    chain?: EVMBlockchainIncludingTestnet;
+    supportedChains?: EVMBlockchainIncludingTestnet[];
+    handleChainSwitch?: (network: EVMBlockchainIncludingTestnet) => Promise<void>;
 };
 
 export type SOLEmbeddedCheckoutSigner = CommonEmbeddedCheckoutSignerProps & {
