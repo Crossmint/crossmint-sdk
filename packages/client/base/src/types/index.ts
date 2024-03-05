@@ -1,6 +1,7 @@
 export * from "./errors";
 export * from "./events";
 export * from "./hosted";
+export * from "./hosted/verification";
 export * from "./embed";
 export * from "./system";
 
