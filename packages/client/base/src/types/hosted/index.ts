@@ -1,3 +1,5 @@
+import { ObjectValues } from "@crossmint/common-sdk-base";
+
 import { Currency, Locale, PaymentMethod } from "..";
 import { CaseInsensitive } from "../system";
 
@@ -46,5 +48,39 @@ export type CheckoutProps = {
     display?: "same-tab" | "new-tab" | "popup";
     delivery?: "custodial" | "non-custodial" | "all";
     paymentMethods?: PaymentMethod[];
-}
+};
 export type SigninMethods = "metamask" | "solana";
+
+export const VerificationCollectionType = {
+    LOYALTY: "loyalty",
+    ART: "art",
+    MUSIC: "music",
+    GAMING: "gaming",
+    TICKETING: "ticketing",
+    CHARITY: "charity",
+    OTHER: "other",
+} as const;
+export type VerificationCollectionType = ObjectValues<typeof VerificationCollectionType>;
+
+type CrossmintVerificationFields = {
+    collectionType?: VerificationCollectionType;
+    collectionDescription?: string;
+    socials?: {
+        website?: string;
+        twitter?: string;
+        discord?: string;
+    };
+};
+
+export const VerificationProducts = {
+    PAYMENTS_CREDIT_CARD: "payments:credit-card",
+    PAYMENTS_CROSS_CHAIN: "payments:cross-chain",
+};
+export type VerificationProducts = ObjectValues<typeof VerificationProducts>;
+
+export type CrossmintVerificationButtonProps = {
+    collectionId: string;
+    products: VerificationProducts[];
+    fields: CrossmintVerificationFields;
+    environment?: string;
+};
