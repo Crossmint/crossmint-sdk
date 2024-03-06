@@ -1,6 +1,7 @@
 import { CSSProperties, MouseEvent } from "react";
 
-import { CrossmintVerificationButtonProps } from "@crossmint/client-sdk-base";
+import { CrossmintVerificationButtonProps, crossmintVerificationService } from "@crossmint/client-sdk-base";
+import { PopupWindow } from "@crossmint/client-sdk-window";
 
 export type CrossmintVerificationButtonReactProps = CrossmintVerificationButtonProps & {
     onClick?: (e: MouseEvent<HTMLButtonElement>) => void;
@@ -8,5 +9,17 @@ export type CrossmintVerificationButtonReactProps = CrossmintVerificationButtonP
 };
 
 export function CrossmintVerificationButton(props: CrossmintVerificationButtonReactProps) {
-    return <p>TODO</p>;
+    const { getUrl } = crossmintVerificationService({
+        collectionId: props.collectionId,
+        scopes: props.scopes,
+        environment: props.environment,
+        fields: props.fields,
+    });
+
+    async function onClick() {
+        PopupWindow.init(getUrl(), { width: 400, height: 650 });
+    }
+
+    // TODO: Styling
+    return <button onClick={onClick}>Verify collection</button>;
 }
