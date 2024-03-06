@@ -1,5 +1,5 @@
 import { logError } from "@/services/logging";
-import { SCW_SERVICE, TransactionError, TransferError, errorToJSON } from "@/utils";
+import { SCW_SERVICE, TransactionError, TransferError, decorateSendTransactionData, errorToJSON } from "@/utils";
 import type { SignTypedDataParams } from "@alchemy/aa-core";
 import type { Deferrable } from "@ethersproject/properties";
 import { type TransactionRequest, type TransactionResponse } from "@ethersproject/providers";
@@ -120,7 +120,8 @@ class BaseWallet extends ZeroDevAccountSigner<"ECDSA"> {
 
     async sendTransaction(transaction: Deferrable<TransactionRequest>): Promise<TransactionResponse> {
         try {
-            return await super.sendTransaction(transaction);
+            const decoratedTransaction = await decorateSendTransactionData(transaction);
+            return await super.sendTransaction(decoratedTransaction);
         } catch (error) {
             logError("[SEND_TRANSACTION] - ERROR_SENDING_TRANSACTION", {
                 service: SCW_SERVICE,
