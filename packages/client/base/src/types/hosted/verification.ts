@@ -30,6 +30,6 @@ export type VerificationScopes = ObjectValues<typeof VerificationScopes>;
 export type CrossmintVerificationButtonProps = {
     collectionId: string;
     scopes: VerificationScopes[];
-    fields: VerificationFields;
+    fields?: VerificationFields;
     environment?: string;
 };
