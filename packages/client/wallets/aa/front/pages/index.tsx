@@ -141,7 +141,7 @@ export default function WalletPage() {
                         <input
                             className={styles.input}
                             type="email"
-                            placeholder="Email"
+                            placeholder="Email for ethers"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                         />
@@ -167,18 +167,18 @@ export default function WalletPage() {
                         <input
                             className={styles.input}
                             type="email"
-                            placeholder="Email"
+                            placeholder="Email for Fireblocks"
                             value={emailFireblocks}
                             onChange={(e) => setEmailFireblocks(e.target.value)}
                         />
                         <button className={styles.button} onClick={handleCreateWalletFireblocks}>
-                            Create wallet
+                            Create Fireblocks wallet
                         </button>
                         <input
                             className={styles.input}
                             type="text"
                             value={walletAddressFireblocks}
-                            data-testid="createdOrGotWallet"
+                            data-testid="createdOrGotFireblocksWallet"
                             readOnly
                         />
                     </div>
@@ -236,13 +236,14 @@ export default function WalletPage() {
                                 value={messageSignature}
                                 onChange={(e) => setMessageSignature(e.target.value)}
                             />
-                            <button className={styles.button} onClick={handleVerifyMessage}>
+                            <button className={styles.button} onClick={handleVerifyMessage} data-testid="VerifyMessageBtn">
                                 Verify message
                             </button>
                             <input
                                 className={styles.input}
                                 type="text"
                                 value={isMessageVerified ? "Verified" : "Not verified"}
+                                data-testid="verifiedMessageOutput"
                                 readOnly
                             />
                         </div>
@@ -252,7 +253,7 @@ export default function WalletPage() {
                         <button className={styles.button} onClick={handleSignTypedData}>
                             Sign Typed Data
                         </button>
-                        <input className={styles.input} type="text" value={signTypedDataHash} readOnly />
+                        <input className={styles.input} type="text" value={signTypedDataHash} data-testid="SignedTypedData" readOnly />
                     </div>
                     <div>
                         <h3 className={styles.title}>Send transaction</h3>
