@@ -46,5 +46,7 @@ export type CheckoutProps = {
     display?: "same-tab" | "new-tab" | "popup";
     delivery?: "custodial" | "non-custodial" | "all";
     paymentMethods?: PaymentMethod[];
-}
+};
 export type SigninMethods = "metamask" | "solana";
+
+export * from "./verification";
