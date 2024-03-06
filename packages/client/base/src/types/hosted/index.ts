@@ -48,3 +48,5 @@ export type CheckoutProps = {
     paymentMethods?: PaymentMethod[];
 };
 export type SigninMethods = "metamask" | "solana";
+
+export * from "./verification";

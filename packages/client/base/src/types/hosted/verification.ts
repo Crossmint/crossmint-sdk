@@ -24,7 +24,7 @@ type VerificationFields = {
 export const VerificationScopes = {
     PAYMENTS_CREDIT_CARD: "payments:credit-card",
     PAYMENTS_CROSS_CHAIN: "payments:cross-chain",
-};
+} as const;
 export type VerificationScopes = ObjectValues<typeof VerificationScopes>;
 
 export type CrossmintVerificationButtonProps = {
