@@ -44,6 +44,9 @@ export const FireblocksNCWallet = async ({
     let _deviceId: string;
     let isNew: boolean;
 
+    console.log({ncwData})
+    console.log({lsNcwData: localStorageRepository.ncwData})
+
     if (ncwData) {
         _walletId = ncwData.walletId;
         _deviceId = ncwData.deviceId;
@@ -54,6 +57,8 @@ export const FireblocksNCWallet = async ({
         _deviceId = ncwData.deviceId;
         isNew = ncwData.isNew !== undefined ? ncwData.isNew : false;
     }
+
+    console.log({_walletId, _deviceId, isNew})
 
     // Register a message handler to process outgoing message to your API
     const messagesHandler: IMessagesHandler = {
