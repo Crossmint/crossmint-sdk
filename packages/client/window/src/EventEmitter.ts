@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { generateRandomString } from "./utils/generateRandomString";
+
 export type EventMap = Record<string, z.ZodTypeAny>;
 
 export interface EventEmitterOptions<
@@ -82,7 +84,7 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
             }
         };
 
-        const id = (Math.random() + 1).toString(36).substring(7);
+        const id = generateRandomString();
         this.listeners.set(id, listener);
         window.addEventListener("message", listener);
         return id;
