@@ -1,4 +1,3 @@
-import { nanoid } from "nanoid";
 import { z } from "zod";
 
 import {
@@ -43,7 +42,7 @@ export class HandshakeParent<IncomingEvents extends EventMap, OutgoingEvents ext
             console.log("[server] Already connected to child");
             return;
         }
-        const requestVerificationId = nanoid();
+        const requestVerificationId = (Math.random() + 1).toString(36).substring(7);
 
         await this._sendAction({
             event: "handshakeRequest",

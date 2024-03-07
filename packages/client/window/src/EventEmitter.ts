@@ -1,11 +1,10 @@
-import { nanoid } from "nanoid";
 import { z } from "zod";
 
 export type EventMap = Record<string, z.ZodTypeAny>;
 
 export interface EventEmitterOptions<
     IncomingEvents extends EventMap = EventMap,
-    OutgoingEvents extends EventMap = EventMap,
+    OutgoingEvents extends EventMap = EventMap
 > {
     incomingEvents?: IncomingEvents;
     outgoingEvents?: OutgoingEvents;
@@ -20,7 +19,7 @@ export type SendActionArgs<
     IncomingEvents extends EventMap,
     OutgoingEvents extends EventMap,
     K extends keyof OutgoingEvents,
-    R extends keyof IncomingEvents,
+    R extends keyof IncomingEvents
 > = {
     event: K;
     data: z.infer<OutgoingEvents[K]>;
@@ -36,7 +35,7 @@ export type OnActionArgs<
     IncomingEvents extends EventMap,
     OutgoingEvents extends EventMap,
     K extends keyof IncomingEvents,
-    R extends keyof OutgoingEvents,
+    R extends keyof OutgoingEvents
 > =
     | {
           event: K;
@@ -83,7 +82,7 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
             }
         };
 
-        const id = nanoid();
+        const id = (Math.random() + 1).toString(36).substring(7);
         this.listeners.set(id, listener);
         window.addEventListener("message", listener);
         return id;
