@@ -1,5 +1,6 @@
 import {
     ZD_ARBITRUM_PROJECT_ID,
+    ZD_ASTAR_PROJECT_ID,
     ZD_BSC_PROJECT_ID,
     ZD_ETHEREUM_PROJECT_ID,
     ZD_GOERLI_PROJECT_ID,
@@ -43,6 +44,8 @@ export function getFireblocksAssetId(chain: EVMBlockchainIncludingTestnet) {
         ["zkatana", "ETH_ZKEVM_TEST"],
         ["bsc-testnet", null],
         ["base", null],
+        ["astar-zkevm", "ETH"],
+        ["apex", "ETH"],
     ]).get(chain)!;
 
     if (assetId == null) {
@@ -73,6 +76,8 @@ export function getUrlProviderByBlockchain(chain: EVMBlockchainIncludingTestnet)
         ["base", null],
         ["zora", null],
         ["arbitrumnova", null],
+        ["astar-zkevm", "https://rpc.startale.com/astar-zkevm"],
+        ["apex", null],
     ]).get(chain)!;
 
     if (url == null) {
@@ -91,54 +96,26 @@ export function getBlockExplorerByBlockchain(chain: EVMBlockchainIncludingTestne
         ["ethereum-goerli", "https://goerli.etherscan.io"],
         ["ethereum-sepolia", "https://sepolia.etherscan.io"],
         ["polygon-mumbai", "https://mumbai.polygonscan.com"],
-        ["zkatana", "https://zkatana.explorer.startale.com"],
-        ["arbitrum-sepolia", null],
-        ["base-goerli", null],
-        ["base-sepolia", null],
-        ["bsc-testnet", null],
-        ["optimism-goerli", null],
-        ["optimism-sepolia", null],
-        ["zora-goerli", null],
-        ["zora-sepolia", null],
-        ["base", null],
-        ["zora", null],
-        ["arbitrumnova", null],
+        ["zkatana", "https://zkatana.blockscout.com"],
+        ["arbitrum-sepolia", "https://sepolia.arbiscan.io"],
+        ["base-goerli", "https://goerli.basescan.org"],
+        ["base-sepolia", "https://sepolia.basescan.org"],
+        ["bsc-testnet", "https://testnet.bscscan.com"],
+        ["optimism-goerli", "https://goerli-optimism.etherscan.io"],
+        ["optimism-sepolia", "https://sepolia-optimism.etherscan.io/"],
+        ["zora-goerli", "https://goerli-optimism.etherscan.io"],
+        ["zora-sepolia", "https://sepolia.explorer.zora.energy"],
+        ["base", "https://basescan.org"],
+        ["zora", "https://explorer.zora.energy"],
+        ["arbitrumnova", "https://nova.arbiscan.io/"],
+        ["astar-zkevm", "https://astar-zkevm.explorer.startale.com"],
+        ["apex", "https://explorer.apex.proofofplay.com/"],
     ]).get(chain)!;
 
     if (blockExplorer == null) {
         throw new Error(`Block Explorer not found for chain ${chain}`);
     }
     return blockExplorer;
-}
-
-export function getDisplayNameByBlockchain(chain: EVMBlockchainIncludingTestnet) {
-    const displayName = new Map<EVMBlockchainIncludingTestnet, string>([
-        ["ethereum", "Ethereum Mainnet"],
-        ["polygon", "Polygon Mainnet"],
-        ["bsc", "BNB Smart Chain"],
-        ["optimism", "Optimism"],
-        ["arbitrum", "Arbitrum"],
-        ["ethereum-goerli", "Goerli Tesnet"],
-        ["ethereum-sepolia", "Sepolia Tesnet"],
-        ["polygon-mumbai", "Mumbai Tesnet"],
-        ["zkatana", "zKatana"],
-        ["arbitrum-sepolia", "Arbitrum Testnet"],
-        ["base-goerli", "Base Goerli Testnet"],
-        ["base-sepolia", "Base Testnet"],
-        ["bsc-testnet", "BNB Smart Chain Testnet"],
-        ["optimism-goerli", "Optimism Goerli Testnet"],
-        ["optimism-sepolia", "Optimism Testnet"],
-        ["zora-goerli", "Zora Goerli Testnet"],
-        ["zora-sepolia", "Zora Testnet"],
-        ["base", "Base"],
-        ["zora", "Zora"],
-        ["arbitrumnova", "Arbitrum Nova"],
-    ]).get(chain)!;
-
-    if (displayName == null) {
-        throw new Error(`Display name not found for chain ${chain}`);
-    }
-    return displayName;
 }
 
 export function getTickerByBlockchain(chain: EVMBlockchainIncludingTestnet) {
@@ -163,6 +140,8 @@ export function getTickerByBlockchain(chain: EVMBlockchainIncludingTestnet) {
         ["base", null],
         ["zora", null],
         ["arbitrumnova", null],
+        ["astar-zkevm", "ETH"],
+        ["apex", null],
     ]).get(chain)!;
 
     if (ticker == null) {
@@ -193,6 +172,8 @@ export function getTickerNameByBlockchain(chain: EVMBlockchainIncludingTestnet) 
         ["base", null],
         ["zora", null],
         ["arbitrumnova", null],
+        ["astar-zkevm", "ETHEREUM"],
+        ["apex", null],
     ]).get(chain)!;
 
     if (tickerName == null) {
@@ -223,6 +204,8 @@ export function getZeroDevProjectIdByBlockchain(chain: EVMBlockchainIncludingTes
         ["base", null],
         ["zora", null],
         ["arbitrumnova", null],
+        ["astar-zkevm", ZD_ASTAR_PROJECT_ID],
+        ["apex", null],
     ]).get(chain)!;
 
     if (zeroDevProjectId == null) {

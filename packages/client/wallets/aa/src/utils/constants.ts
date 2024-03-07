@@ -13,5 +13,6 @@ export const ZD_GOERLI_PROJECT_ID = "3cfecfb6-9d7d-4ef6-acaa-ac8f79f6cd5a";
 export const ZD_SEPOLIA_PROJECT_ID = "7ff22858-06f0-4f3a-8b46-5b41d8c75d0e";
 export const ZD_MUMBAI_PROJECT_ID = "9a334a4d-64d4-465c-ad81-856c6129e064";
 export const ZD_ZKATANA_PROJECT_ID = "d54706a0-304b-419e-8a33-03c26ba3f0e9";
+export const ZD_ASTAR_PROJECT_ID = "REPLACE_ME";
 export const RELAY_API_KEY = "c8999b7e-8bb7-416d-a854-dac8632f9ee6_crossmint";
 export const SCW_SERVICE = "SDK_AA";
