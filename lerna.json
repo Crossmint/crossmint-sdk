@@ -6,7 +6,7 @@
     "command": {
         "publish": {
             "exact": true,
-            "ignoreChanges": ["packages/client/wallets/**/*", "packages/client/verifiable-credentials/*"]
+            "ignoreChanges": ["packages/client/wallets/**/*", "packages/client/verifiable-credentials/**/*"]
         }
     }
 }
