@@ -1,2 +1,2 @@
 export * from "./CrossmintPayButton";
-export * from "./CrossmintVerificationButton";
+// export * from "./CrossmintVerificationButton";
