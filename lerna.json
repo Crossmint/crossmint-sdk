@@ -5,8 +5,7 @@
     "useWorkspaces": true,
     "command": {
         "publish": {
-            "exact": true,
-            "ignoreChanges": ["packages/client/wallets/**/*", "packages/client/verifiable-credentials/**/*"]
+            "exact": true
         }
     }
 }
