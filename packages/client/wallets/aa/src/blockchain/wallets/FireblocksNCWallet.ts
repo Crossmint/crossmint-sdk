@@ -131,6 +131,8 @@ export const FireblocksNCWallet = async ({
         }
     } else {
         try {
+            const status = await fireblocksNCW.getKeysStatus();
+            console.log("status", status);
             await fireblocksNCW.recoverKeys(async (passphraseId) => {
                 // Implement logic to fetch the passphrase using the passphraseId
                 // For example, fetch from a database or an API
