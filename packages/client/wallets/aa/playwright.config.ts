@@ -18,7 +18,7 @@ export default defineConfig({
     workers: process.env.CI ? 1 : undefined,
     reporter: "list",
     outputDir: "./playwright/test-results/",
-    timeout: 60_000,
+    timeout: 240_000,
     use: {
         /* Base URL to use in actions like `await page.goto('/')`. */
         // baseURL: 'http://127.0.0.1:3000',

@@ -101,22 +101,23 @@ const SignComponent: React.FC<SignComponentProps> = ({ aaWallet }) => {
                         value={messageSignature}
                         onChange={(e) => setMessageSignature(e.target.value)}
                     />
-                    <button className={styles.button} onClick={handleVerifyMessage}>
+                    <button className={styles.button}  data-testid="VerifyMessageBtn" onClick={handleVerifyMessage}>
                         Verify message
                     </button>
                     <input
                         className={styles.input}
                         type="text"
                         value={isMessageVerified ? "Verified" : "Not verified"}
+                        data-testid="VerifyMessageInput"
                         readOnly
                     />
                 </div>
                 <div>
                     <h3 className={styles.title}>Sign Typed Data</h3>
-                    <button className={styles.button} onClick={handleSignTypedData}>
+                    <button className={styles.button} data-testid="SignedTypedData" onClick={handleSignTypedData}>
                         Sign Typed Data
                     </button>
-                    <input className={styles.input} type="text" value={signTypedDataHash} readOnly />
+                    <input className={styles.input} type="text" data-testid="SignTypedDataInput" value={signTypedDataHash} readOnly />
                 </div>
             </section>
         </div>
