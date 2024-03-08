@@ -1,6 +1,5 @@
 {
     "packages": ["packages/**/*"],
-    "exclude": ["packages/client/wallets/**/*"],
     "version": "independent",
     "npmClient": "yarn",
     "useWorkspaces": true,
