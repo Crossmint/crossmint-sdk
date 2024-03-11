@@ -1,4 +1,4 @@
-import { Page, expect, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import { getWallet } from "../functions/aa-wallets";
 
 test.beforeEach(async ({ page }) => {
