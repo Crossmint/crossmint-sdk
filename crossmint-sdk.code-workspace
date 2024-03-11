@@ -41,6 +41,10 @@
             "path": "packages/client/verifiable-credentials"
         },
         {
+            "name": "🔒 @crossmint/client-sdk-authkit",
+            "path": "packages/client/wallets/authkit"
+        },
+        {
             "name": "🏁 Starters",
             "path": "packages/client/starters"
         }
