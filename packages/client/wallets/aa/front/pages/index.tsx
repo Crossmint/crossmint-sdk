@@ -9,6 +9,7 @@ import { EVMAAWallet } from "@crossmint/client-sdk-aa";
 import styles from "../styles/index.module.css";
 import LocalStorageDataComponent from "@/components/LocalStorage";
 import MintAndTransferComponent from "@/components/MintAndTransfer";
+import GetNFTsComponent from "@/components/GetNFTsComponent";
 
 export default function WalletPage() {
     const [aaWallet, setAAWallet] = useState<EVMAAWallet | undefined>();
@@ -33,6 +34,8 @@ export default function WalletPage() {
             {aaWallet && <SendTransactionComponent aaWallet={aaWallet} />}
 
             {aaWallet && <MintAndTransferComponent aaWallet={aaWallet} />}
+
+            {aaWallet && <GetNFTsComponent aaWallet={aaWallet} />}
 
             <LocalStorageDataComponent/>
         </div>
