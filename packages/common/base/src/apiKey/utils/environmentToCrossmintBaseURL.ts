@@ -10,6 +10,6 @@ export function environmentToCrossmintBaseURL(
         case "staging":
             return customMap?.staging || "https://staging.crossmint.com";
         case "production":
-            return customMap?.production || "https://crossmint.com";
+            return customMap?.production || "https://www.crossmint.com";
     }
 }
