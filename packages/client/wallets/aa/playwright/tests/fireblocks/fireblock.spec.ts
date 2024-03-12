@@ -98,6 +98,19 @@ test.describe("AA wallet with Fireblocks signer", () => {
     });
 });
 
+test.describe("AA wallet test", () => {
+    let addressCreated = "";
+    test.beforeEach(async ({ page }) => {
+        addressCreated = await createFireblocksWallet(page);
+    }); 
+
+    test("should allow me to fetch NFTs", async ({ page }) => {
+        await page.getByTestId("getNFTsbtn").click();
+        const locatorNFT = await page.getByTestId('getNFTsContent');
+        await expect(locatorNFT).toContainText("[]", { timeout: 30_000 });
+    });
+});
+
 test.describe("AA wallet with Fireblocks signer", () => {
     test("should allow me to sign and verify a message ", async ({ page }) => {
         const email = "begona+testgetfireblockswallet@paella.dev";

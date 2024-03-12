@@ -1,11 +1,11 @@
 import { expect, test } from "@playwright/test";
 import { getWallet } from "../functions/aa-wallets";
 
-test.beforeEach(async ({ page }) => {
-    await getWallet(page);
-});
-
 test.describe("AA wallet", () => {
+    test.beforeEach(async ({ page }) => {
+        await getWallet(page);
+    });
+
     test("should allow me to get a wallet", async ({ page }) => {
         const locator = page.getByTestId('createdOrGotWalletEthers');
         await expect(locator).toHaveValue("0xbA23099994403e1e1A4Fe569ab2A4B06f59d047d", { timeout: 10_000 });
@@ -58,4 +58,3 @@ test.describe("AA wallet", () => {
         await expect(locatorNFT).toContainText("chain", { timeout: 30_000 });
     });
 });
-   
