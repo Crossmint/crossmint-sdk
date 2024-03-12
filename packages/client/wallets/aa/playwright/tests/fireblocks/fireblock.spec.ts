@@ -90,6 +90,12 @@ test.describe("AA wallet with Fireblocks signer", () => {
         await expect(locatorLocalStorageTextAfterPurge).toHaveText("No data found in LocalStorage starting with \"NCW-\".", { timeout: 5_000 });
 
     });
+
+    test("should allow me to fetch NFTs", async ({ page }) => {
+        await page.getByTestId("getNFTsbtn").click();
+        const locatorNFT = await page.getByTestId('getNFTsContent');
+        await expect(locatorNFT).toContainText("[]", { timeout: 30_000 });
+    });
 });
 
 test.describe("AA wallet with Fireblocks signer", () => {

@@ -51,5 +51,11 @@ test.describe("AA wallet", () => {
         });
         await expect(waitForConsoleMessage).resolves.toBe(true);
     });
+
+    test("should allow me to fetch NFTs", async ({ page }) => {
+        await page.getByTestId("getNFTsbtn").click();
+        const locatorNFT = await page.getByTestId('getNFTsContent');
+        await expect(locatorNFT).toContainText("chain", { timeout: 30_000 });
+    });
 });
    

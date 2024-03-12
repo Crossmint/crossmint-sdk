@@ -25,12 +25,13 @@ const GetNFTsComponent: React.FC<GetNFTsComponentProps> = ({ aaWallet }) => {
         <div className={styles.container}>
             <section className={styles.section}>
                 <h2 className={styles.title}>NFTs</h2>
-                <button className={styles.button} onClick={ getNFTs }>
+                <button className={styles.button} onClick={ getNFTs } data-testid = "getNFTsbtn">
                     Get NFTs
                 </button>
                 <textarea
                     className={styles.input}
                     value={JSON.stringify(walletContent)}
+                    data-testid="getNFTsContent"
                     readOnly
                 />
             </section>
