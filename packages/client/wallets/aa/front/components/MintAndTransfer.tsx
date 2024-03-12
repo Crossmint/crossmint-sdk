@@ -50,6 +50,7 @@ const MintAndTransferComponent:  React.FC<MintAndTransferComponentProps> = ({ aa
                     <input
                         className={styles.input}
                         value={transferERC721Hash}
+                        data-testid="executeTransferERC721HashInput"
                         readOnly
                     />
                 </div>
@@ -60,6 +61,7 @@ const MintAndTransferComponent:  React.FC<MintAndTransferComponentProps> = ({ aa
                     <input
                         className={styles.input}
                         value={transferERC1155Hash}
+                        data-testid="executeTransferERC1155HashInput"
                         readOnly
                     />
                 </div>
@@ -70,6 +72,7 @@ const MintAndTransferComponent:  React.FC<MintAndTransferComponentProps> = ({ aa
                     <input
                         className={styles.input}
                         value={transferERC20Hash}
+                        data-testid="executeTransferERC20HashInput"
                         readOnly
                     />
                 </div>

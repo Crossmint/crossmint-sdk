@@ -47,7 +47,7 @@ const CreateWalletComponent: React.FC<CreateWalletComponentProps> = ({ onWalletC
                 <h3>Ethers Wallet</h3>
                 <input
                     type="email"
-                    placeholder="Email"
+                    placeholder="Email for ethers"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className={styles.input}
@@ -60,13 +60,13 @@ const CreateWalletComponent: React.FC<CreateWalletComponentProps> = ({ onWalletC
                     className={styles.input}
                 />
                 <button onClick={handleCreateWalletEthers} className={styles.button}>
-                    Create Wallet
+                    Create Wallet for Ethers
                 </button>
                 <input
                     className={styles.input}
                     type="text"
                     value={walletAddress}
-                    data-testid="createdOrGotWallet"
+                    data-testid="createdOrGotWalletEthers"
                     readOnly
                 />           
             </div>
@@ -74,19 +74,19 @@ const CreateWalletComponent: React.FC<CreateWalletComponentProps> = ({ onWalletC
                 <h3>Fireblocks Wallet</h3>
                 <input
                     type="email"
-                    placeholder="Email"
+                    placeholder="Email for fireblocks"
                     value={emailFireblocks}
                     onChange={(e) => setEmailFireblocks(e.target.value)}
                     className={styles.input}
                 />
                 <button onClick={handleCreateWalletFireblocks} className={styles.button}>
-                    Create Wallet
+                    Create Fireblocks wallet
                 </button>
                 <input
                     className={styles.input}
                     type="text"
                     value={walletAddressFireblocks}
-                    data-testid="createdOrGotWallet"
+                    data-testid="createdOrGotFireblocksWallet"
                     readOnly
                 />
             </div>

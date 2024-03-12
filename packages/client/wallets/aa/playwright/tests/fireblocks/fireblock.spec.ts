@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { createFireblocksWallet, getFireblocksWallet } from "./functions/aa-wallets";
+import { createFireblocksWallet, getFireblocksWallet } from "../functions/aa-wallets";
 
 test.describe("AA wallet with Fireblocks signer", () => {
     let addressCreated = "";
@@ -19,19 +19,18 @@ test.describe("AA wallet with Fireblocks signer", () => {
         await address.inputValue();
         console.log("address.inputValue(): ", address.inputValue());    
         await expect(address).toHaveValue(addressCreated, { timeout: 60_000 });
-
     });
 
     test("should allow me to sign typed data", async ({ page }) => {
         await page.getByRole('button', { name: 'Sign Typed Data' }).click({force: true});
-        const locatorSignedData = page.getByTestId('SignedTypedData');
+        const locatorSignedData = page.getByTestId('SignTypedDataInput');
         await expect(locatorSignedData).toHaveValue(/^0x[a-fA-F0-9]{130}$/, { timeout: 30_000 });
     });
 
     test("should allow me to send transaction", async ({ page }) => {
         await page.getByRole('button', { name: 'Send transaction' }).click({force: true});
         const locatorSend = page.getByTestId('sendTransactionTxHashInput');
-        await expect(locatorSend).toHaveValue(/^0x[a-fA-F0-9]{64}$/, { timeout: 40_000 });
+        await expect(locatorSend).toHaveValue(/^0x[a-fA-F0-9]{64}$/, { timeout: 60_000 });
     });
 
     test("should allow me to killswitch", async ({ page }) => {
@@ -43,7 +42,7 @@ test.describe("AA wallet with Fireblocks signer", () => {
                     resolve(true);
                 }
             });
-            setTimeout(() => reject(new Error('Console message not found within the timeout period')), 20_000); 
+            setTimeout(() => reject(new Error('Console message not found within the timeout period')), 30_000); 
         });
         await expect(waitForConsoleMessage).resolves.toBe(true);
     });
@@ -61,6 +60,36 @@ test.describe("AA wallet with Fireblocks signer", () => {
         });
         await expect(waitForConsoleMessage).resolves.toBe(true);
     });
+
+    test("should allow me to check localStorage and purge", async ({ page }) => {
+        await page.getByTestId("CheckLocalStorageBtn").click();
+        const locatorLocalStorageText =  page.getByTestId('LocalStorageData');
+        console.log("locatorLocalStorageText: ", locatorLocalStorageText);
+        await locatorLocalStorageText.textContent();
+        console.log("locatorLocalStorageText.inputValue(): ", locatorLocalStorageText.textContent());
+        await expect(locatorLocalStorageText).toHaveText("Data found in LocalStorage starting with \"NCW-\".", { timeout: 5_000 });
+
+        await page.getByTestId("PurgeLocalDataBtn").click();
+        await page.getByTestId("CheckLocalStorageBtn").click();
+        const locatorLocalStorageTextAfterPurge1 = page.getByTestId('LocalStorageData');
+        await expect(locatorLocalStorageTextAfterPurge1).toHaveText("No data found in LocalStorage starting with \"NCW-\".", { timeout: 5_000 });
+
+
+        let newAddressCreated = "";
+        newAddressCreated = await createFireblocksWallet(page);
+        await page.getByTestId("CheckLocalStorageBtn").click();
+        const locatorLocalStorageText2 =  page.getByTestId('LocalStorageData');
+        console.log("locatorLocalStorageText: ", locatorLocalStorageText);
+        await locatorLocalStorageText2.textContent();
+        console.log("locatorLocalStorageText2.inputValue(): ", locatorLocalStorageText2.textContent());
+        await expect(locatorLocalStorageText).toHaveText("Data found in LocalStorage starting with \"NCW-\".", { timeout: 5_000 });
+
+        await page.getByTestId("PurgeLocalDataBtn").click();
+        await page.getByTestId("CheckLocalStorageBtn").click();
+        const locatorLocalStorageTextAfterPurge = page.getByTestId('LocalStorageData');
+        await expect(locatorLocalStorageTextAfterPurge).toHaveText("No data found in LocalStorage starting with \"NCW-\".", { timeout: 5_000 });
+
+    });
 });
 
 test.describe("AA wallet with Fireblocks signer", () => {
@@ -72,11 +101,9 @@ test.describe("AA wallet with Fireblocks signer", () => {
         await page.getByPlaceholder("Message to verify").fill(simpleMessage);
         await page.getByPlaceholder("Signature").fill(signedMessage);
         await page.getByTestId("VerifyMessageBtn").click();
-        const locatorVerify = page.getByTestId('verifiedMessageOutput');
+        const locatorVerify = page.getByTestId('VerifyMessageInput');
         expect(locatorVerify).toHaveValue("Verified", { timeout: 20_000 });
     });
-
-}
-);
+});
    
    

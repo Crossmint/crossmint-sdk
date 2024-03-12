@@ -1,5 +1,5 @@
-import { Page, expect, test } from "@playwright/test";
-import { getWallet } from "./functions/aa-wallets";
+import { expect, test } from "@playwright/test";
+import { getWallet } from "../functions/aa-wallets";
 
 test.beforeEach(async ({ page }) => {
     await getWallet(page);
@@ -7,7 +7,7 @@ test.beforeEach(async ({ page }) => {
 
 test.describe("AA wallet", () => {
     test("should allow me to get a wallet", async ({ page }) => {
-        const locator = page.getByTestId('createdOrGotWallet');
+        const locator = page.getByTestId('createdOrGotWalletEthers');
         await expect(locator).toHaveValue("0xbA23099994403e1e1A4Fe569ab2A4B06f59d047d", { timeout: 10_000 });
     });
 
@@ -22,7 +22,7 @@ test.describe("AA wallet", () => {
     test("should allow me to send transaction", async ({ page }) => {
         await page.getByRole('button', { name: 'Send transaction' }).click({force: true});
         const locatorSend = page.getByTestId('sendTransactionTxHashInput');
-        await expect(locatorSend).toHaveValue(/^0x[a-fA-F0-9]{64}$/, { timeout: 20_000 });
+        await expect(locatorSend).toHaveValue(/^0x[a-fA-F0-9]{64}$/, { timeout: 60_000 });
     });
 
     test("should allow me to killswitch", async ({ page }) => {

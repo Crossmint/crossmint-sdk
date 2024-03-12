@@ -19,15 +19,16 @@ const LocalStorageDataComponent: React.FC = () => {
         <div className={styles.container}>
             <section className={styles.section}>
                 <h2 className={styles.title}>LocalStorage Data</h2>
-                <button className={styles.button} onClick={checkLocalStorage}>
+                <button className={styles.button} data-testid="CheckLocalStorageBtn" onClick={checkLocalStorage}>
                     Check LocalStorage Data
                 </button>
-                <button className={styles.button} onClick={ purgeData}>
+                <button className={styles.button} data-testid="PurgeLocalDataBtn" onClick={ purgeData}>
                     Purge Local Data
                 </button>
                 <textarea
                     className={styles.input}
                     value={storageData}
+                    data-testid="LocalStorageData"
                     readOnly
                 />
             </section>
