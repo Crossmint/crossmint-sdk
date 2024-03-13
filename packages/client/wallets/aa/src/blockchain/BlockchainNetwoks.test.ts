@@ -87,7 +87,7 @@ describe("BlockchainNetworks Tests", () => {
             expect(blockchainToDisplayName("ethereum")).toBe("Ethereum");
             expect(blockchainToDisplayName("polygon")).toBe("Polygon");
             expect(blockchainToDisplayName("bsc")).toBe("BNB Smart Chain");
-            expect(blockchainToDisplayName("optimism")).toBe("Arbitrum");
+            expect(blockchainToDisplayName("optimism")).toBe("Optimism");
             expect(blockchainToDisplayName("arbitrum")).toBe("Arbitrum");
             expect(blockchainToDisplayName("ethereum-goerli")).toBe("Ethereum Goerli");
             expect(blockchainToDisplayName("ethereum-sepolia")).toBe("Ethereum Sepolia");
