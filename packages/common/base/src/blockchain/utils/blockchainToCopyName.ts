@@ -25,4 +25,10 @@ export const BLOCKCHAIN_TO_COPY_NAME: Record<BlockchainIncludingTestnet, string>
     "zora-goerli": "Zora Goerli",
     "zora-sepolia": "Zora Sepolia",
     zkatana: "zKatana",
+    "astar-zkevm": "Astar zkEVM",
+    apex: "Apex",
 };
+
+export function blockchainToDisplayName(blockchain: BlockchainIncludingTestnet) {
+    return BLOCKCHAIN_TO_COPY_NAME[blockchain];
+}

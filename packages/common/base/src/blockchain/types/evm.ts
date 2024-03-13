@@ -10,6 +10,8 @@ export const EVMBlockchain = {
     ZORA: "zora",
     ARBITRUMNOVA: "arbitrumnova",
     ZKATANA: "zkatana",
+    ASTAR_ZKEVM: "astar-zkevm",
+    APEX: "apex",
 } as const;
 export type EVMBlockchain = ObjectValues<typeof EVMBlockchain>;
 export const EVM_CHAINS = objectValues(EVMBlockchain);
