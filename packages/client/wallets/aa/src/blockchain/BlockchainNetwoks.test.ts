@@ -1,8 +1,12 @@
-import { blockchainToChainId, chainIdToBlockchain, isEVMBlockchain } from "@crossmint/common-sdk-base";
+import {
+    blockchainToChainId,
+    blockchainToDisplayName,
+    chainIdToBlockchain,
+    isEVMBlockchain,
+} from "@crossmint/common-sdk-base";
 
 import {
     getBlockExplorerByBlockchain,
-    getDisplayNameByBlockchain,
     getFireblocksAssetId,
     getTickerByBlockchain,
     getTickerNameByBlockchain,
@@ -80,14 +84,14 @@ describe("BlockchainNetworks Tests", () => {
 
     describe("getDisplayNameByBlockchain", () => {
         it("should return the correct display name for each Blockchain", () => {
-            expect(getDisplayNameByBlockchain("ethereum")).toBe("Ethereum Mainnet");
-            expect(getDisplayNameByBlockchain("polygon")).toBe("Polygon Mainnet");
-            expect(getDisplayNameByBlockchain("bsc")).toBe("BNB Smart Chain");
-            expect(getDisplayNameByBlockchain("optimism")).toBe("Optimism");
-            expect(getDisplayNameByBlockchain("arbitrum")).toBe("Arbitrum");
-            expect(getDisplayNameByBlockchain("ethereum-goerli")).toBe("Goerli Tesnet");
-            expect(getDisplayNameByBlockchain("ethereum-sepolia")).toBe("Sepolia Tesnet");
-            expect(getDisplayNameByBlockchain("polygon-mumbai")).toBe("Mumbai Tesnet");
+            expect(blockchainToDisplayName("ethereum")).toBe("Ethereum");
+            expect(blockchainToDisplayName("polygon")).toBe("Polygon");
+            expect(blockchainToDisplayName("bsc")).toBe("BNB Smart Chain");
+            expect(blockchainToDisplayName("optimism")).toBe("Arbitrum");
+            expect(blockchainToDisplayName("arbitrum")).toBe("Arbitrum");
+            expect(blockchainToDisplayName("ethereum-goerli")).toBe("Ethereum Goerli");
+            expect(blockchainToDisplayName("ethereum-sepolia")).toBe("Ethereum Sepolia");
+            expect(blockchainToDisplayName("polygon-mumbai")).toBe("Polygon Mumbai");
         });
     });
 
