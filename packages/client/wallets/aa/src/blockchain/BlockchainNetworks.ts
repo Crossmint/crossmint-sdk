@@ -103,7 +103,7 @@ export function getBlockExplorerByBlockchain(chain: EVMBlockchainIncludingTestne
         ["bsc-testnet", "https://testnet.bscscan.com"],
         ["optimism-goerli", "https://goerli-optimism.etherscan.io"],
         ["optimism-sepolia", "https://sepolia-optimism.etherscan.io/"],
-        ["zora-goerli", "https://goerli-optimism.etherscan.io"],
+        ["zora-goerli", null],
         ["zora-sepolia", "https://sepolia.explorer.zora.energy"],
         ["base", "https://basescan.org"],
         ["zora", "https://explorer.zora.energy"],
