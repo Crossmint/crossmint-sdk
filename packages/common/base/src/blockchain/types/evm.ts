@@ -9,7 +9,6 @@ export const EVMBlockchain = {
     BASE: "base",
     ZORA: "zora",
     ARBITRUMNOVA: "arbitrumnova",
-    ZKATANA: "zkatana",
     ASTAR_ZKEVM: "astar-zkevm",
     APEX: "apex",
 } as const;
@@ -28,6 +27,7 @@ export const EVMBlockchainTestnet = {
     OPTIMISM_SEPOLIA: "optimism-sepolia",
     ZORA_GOERLI: "zora-goerli",
     ZORA_SEPOLIA: "zora-sepolia",
+    ZKATANA: "zkatana",
 } as const;
 export type EVMBlockchainTestnet = ObjectValues<typeof EVMBlockchainTestnet>;
 export const EVM_BLOCKCHAIN_TESTNETS = objectValues(EVMBlockchainTestnet);
