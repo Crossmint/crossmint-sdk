@@ -2,7 +2,6 @@ import { CrossmintWalletService } from "@/api";
 import {
     FireblocksNCWallet,
     getBlockExplorerByBlockchain,
-    getDisplayNameByBlockchain,
     getTickerByBlockchain,
     getTickerNameByBlockchain,
     getUrlProviderByBlockchain,
@@ -17,6 +16,7 @@ import { convertEthersSignerToAccountSigner, getRPCProviderOwner } from "@zerode
 import { Signer } from "ethers";
 
 import { EVMBlockchainIncludingTestnet, blockchainToChainId } from "@crossmint/common-sdk-base";
+import { blockchainToDisplayName } from "@crossmint/common-sdk-base";
 
 type CreateOwnerSignerInput = {
     userIdentifier: UserIdentifier;
@@ -60,7 +60,7 @@ export async function createOwnerSigner({
             chainNamespace: CHAIN_NAMESPACES.EIP155,
             chainId: "0x" + chainId!.toString(16),
             rpcTarget: getUrlProviderByBlockchain(chain),
-            displayName: getDisplayNameByBlockchain(chain),
+            displayName: blockchainToDisplayName(chain),
             blockExplorer: getBlockExplorerByBlockchain(chain),
             ticker: getTickerByBlockchain(chain),
             tickerName: getTickerNameByBlockchain(chain),

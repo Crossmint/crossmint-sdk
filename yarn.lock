@@ -1626,6 +1626,14 @@
     siwe "2.1.4"
     viem "^2.5.0"
 
+"@crossmint/common-sdk-base@0.0.7":
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/@crossmint/common-sdk-base/-/common-sdk-base-0.0.7.tgz#561a1e30fad7c482c19dfeea86c2084b75a34970"
+  integrity sha512-65ZGX77XX1NiRFDU9dmsan50FA0lKSm2qq0gfrfeQCH55B2lO7x8405daS1eV+jxi1xIWsWljV5nfV/Vb2tG4g==
+  dependencies:
+    bs58 "5.0.0"
+    tweetnacl "1.0.3"
+
 "@cspotcode/source-map-support@^0.8.0":
   version "0.8.1"
   resolved "https://registry.yarnpkg.com/@cspotcode/source-map-support/-/source-map-support-0.8.1.tgz#00629c35a688e05a88b1cda684fb9d5e73f000a1"
