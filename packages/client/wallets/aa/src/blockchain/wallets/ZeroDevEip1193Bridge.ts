@@ -1,5 +1,6 @@
 import { ZeroDevAccountSigner, ZeroDevEthersProvider } from "@zerodev/sdk";
 import { ethers } from "ethers";
+
 export class ZeroDevEip1193Bridge {
     readonly signer: ZeroDevAccountSigner<"ECDSA">;
     readonly provider: ZeroDevEthersProvider<"ECDSA">;
@@ -14,18 +15,18 @@ export class ZeroDevEip1193Bridge {
 
         switch (method) {
             case "eth_gasPrice": {
-                 const result = await this.provider.getGasPrice();
-                 return result.toHexString();
+                const result = await this.provider.getGasPrice();
+                return result.toHexString();
             }
             case "eth_accounts":
             case "eth_requestAccounts": {
-               const result = [ ];
-               if (this.signer) {
-                   const address = await this.signer.getAddress();
-                   result.push(address);
-               }
-               return result;
-           }
+                const result = [];
+                if (this.signer) {
+                    const address = await this.signer.getAddress();
+                    result.push(address);
+                }
+                return result;
+            }
             case "eth_blockNumber": {
                 return await this.provider.getBlockNumber();
             }
@@ -93,7 +94,7 @@ export class ZeroDevEip1193Bridge {
 
                 const address = await this.signer.getAddress();
                 if (address !== ethers.utils.getAddress(params![0])) {
-                    throw new Error('Error getting address');
+                    throw new Error("Error getting address");
                 }
 
                 return this.signer.signMessage(ethers.utils.arrayify(params![1]));
@@ -114,16 +115,16 @@ export class ZeroDevEip1193Bridge {
                 return signedTransaction;
             }
 
-           case "personal_sign": {
-               if (this.signer == null) {
-                   throwUnsupported("personal_sign requires a signer");
-               }
+            case "personal_sign": {
+                if (this.signer == null) {
+                    throwUnsupported("personal_sign requires a signer");
+                }
 
-               const message = params![1];
-               const prefixedMessage = `\x19Ethereum Signed Message:\n${message.length}${message}`;
-               const hashedMessage = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(prefixedMessage));
-               return await this.signer.signMessage(ethers.utils.arrayify(hashedMessage));
-           }
+                const message = params![1];
+                const prefixedMessage = `\x19Ethereum Signed Message:\n${message.length}${message}`;
+                const hashedMessage = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(prefixedMessage));
+                return await this.signer.signMessage(ethers.utils.arrayify(hashedMessage));
+            }
 
             case "eth_sendTransaction": {
                 if (this.signer == null) {
@@ -134,11 +135,26 @@ export class ZeroDevEip1193Bridge {
                 const req = ethers.providers.JsonRpcProvider.hexlifyTransaction(params![0]);
                 req.gasLimit = req.gas;
                 delete req.gas;
-                if (req.value === "0x0"){
+                if (req.value === "0x0") {
                     req.value = "0x00";
                 }
                 const tx = await this.signer.sendTransaction(req);
                 return tx.hash;
+            }
+
+            case "eth_signTypedData_v4": {
+                if (this.signer == null) {
+                    return throwUnsupported("eth_signTypedData_v4 requires a signer");
+                }
+                const signerAddress = params![0];
+                const address = await this.signer.getAddress();
+                if (signerAddress.toLowerCase() !== address.toLowerCase()) {
+                    throw new Error("Signer address does not match provided address");
+                }
+                const { domain, types, message } = JSON.parse(params![1]);
+                delete types["EIP712Domain"];
+                const signature = await this.signer._signTypedData(domain, types, message);
+                return signature;
             }
 
             case "eth_getTransactionByBlockHashAndIndex":
@@ -152,7 +168,7 @@ export class ZeroDevEip1193Bridge {
             case "eth_getFilterChanges":
             case "eth_getFilterLogs":
             case "eth_getLogs":
-                console.log(`${method} not supported`)
+                console.log(`${method} not supported`);
                 break;
         }
 
@@ -161,10 +177,10 @@ export class ZeroDevEip1193Bridge {
             return coerce(result);
         }
 
-        return throwUnsupported(`unsupported method: ${ method }`);
+        return throwUnsupported(`unsupported method: ${method}`);
     }
 }
 
 function throwUnsupported(message: string): never {
-    throw new Error('Error throwUnsupported: '+ message );
+    throw new Error("Error throwUnsupported: " + message);
 }
