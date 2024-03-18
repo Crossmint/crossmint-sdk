@@ -54,10 +54,10 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
     private listeners: Map<string, (message: MessageEvent) => void> = new Map();
 
     constructor(
-        protected otherWindow: Window,
-        protected targetOrigin: string,
-        protected incomingEvents: IncomingEvents,
-        protected outgoingEvents: OutgoingEvents
+        public otherWindow: Window,
+        public targetOrigin: string,
+        public incomingEvents: IncomingEvents,
+        public outgoingEvents: OutgoingEvents
     ) {
         this.otherWindow = otherWindow;
         this.targetOrigin = targetOrigin;
