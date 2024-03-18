@@ -4,6 +4,5 @@ export * from "./embed/crossmintPaymentService_OLD";
 
 export * from "./hosted/crossmintModalService";
 export * from "./hosted/crossmintPayButtonService";
-export * from "./hosted/crossmintVerificationButtonService";
 
 export * from "./useCrossmintEvents";
