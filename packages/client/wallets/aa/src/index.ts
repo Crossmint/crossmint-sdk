@@ -1,3 +1,5 @@
+export { EVMBlockchainIncludingTestnet as Blockchain } from "@crossmint/common-sdk-base";
+
 export * from "./api";
 export * from "./blockchain";
 export * from "./storage";
