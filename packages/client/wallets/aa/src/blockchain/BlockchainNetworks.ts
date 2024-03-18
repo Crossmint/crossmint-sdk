@@ -62,7 +62,7 @@ export function getUrlProviderByBlockchain(chain: EVMBlockchainIncludingTestnet)
         ["optimism", "https://optimism.llamarpc.com"],
         ["arbitrum", "https://arbitrum.llamarpc.com"],
         ["ethereum-sepolia", "https://ethereum-sepolia.publicnode.com"],
-        ["polygon-mumbai", "https://rpc-mumbai.maticvigil.com"],
+        ["polygon-mumbai", "https://polygon-mumbai-pokt.nodies.app"],
         ["zkatana", "https://rpc.startale.com/zkatana"],
         ["arbitrum-sepolia", null],
         ["base-goerli", null],

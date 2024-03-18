@@ -65,7 +65,7 @@ describe("BlockchainNetworks Tests", () => {
             expect(getUrlProviderByBlockchain("arbitrum")).toBe("https://arbitrum.llamarpc.com");
             expect(getUrlProviderByBlockchain("ethereum-goerli")).toBe("https://ethereum-goerli.publicnode.com");
             expect(getUrlProviderByBlockchain("ethereum-sepolia")).toBe("https://ethereum-sepolia.publicnode.com");
-            expect(getUrlProviderByBlockchain("polygon-mumbai")).toBe("https://rpc-mumbai.maticvigil.com");
+            expect(getUrlProviderByBlockchain("polygon-mumbai")).toBe("https://polygon-mumbai-pokt.nodies.app");
         });
     });
 
