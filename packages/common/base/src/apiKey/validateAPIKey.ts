@@ -3,7 +3,7 @@ import nacl from "tweetnacl";
 
 import { CROSSMINT_API_KEY_SIGNER_PUBLICKEY_PROD, CROSSMINT_API_KEY_SIGNER_PUBLICKEY_STAGING } from "./consts";
 import { APIKeyPrefix } from "./types";
-import { environmentToExpectedPublicKey } from "./utils";
+import { environmentToExpectedPublicKey } from "./utils/environmentToExpectedPublicKey";
 import {
     ValidateAPIKeyPrefixExpectations,
     ValidateAPIKeyPrefixSuccessData,
