@@ -1,7 +1,7 @@
 import { StaticJsonRpcProvider } from "@ethersproject/providers";
 
-const POLYGON_RPC_URL = "https://rpc-mainnet.maticvigil.com/";
-const POLYGON_RPC_URL_TEST = "https://rpc-mumbai.maticvigil.com/";
+const POLYGON_RPC_URL = "https://polygon.llamarpc.com/";
+const POLYGON_RPC_URL_TEST = "https://polygon-mumbai-pokt.nodies.app/";
 
 export function getProvider(environment: string) {
     const productionValues = ["prod", "production"];
