@@ -24,6 +24,8 @@ import { TokenType } from "../token/Tokens";
 import BaseWallet from "./BaseWallet";
 import { ZeroDevEip1193Bridge } from "./ZeroDevEip1193Bridge";
 
+export { EVMBlockchainIncludingTestnet, chainIdToBlockchain } from "@crossmint/common-sdk-base";
+
 type SignerMap = {
     ethers: ethers.Signer;
     viem: WalletClient;
