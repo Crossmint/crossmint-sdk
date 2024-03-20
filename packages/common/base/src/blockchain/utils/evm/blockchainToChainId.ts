@@ -23,6 +23,7 @@ export const BLOCKCHAIN_TO_CHAIN_ID: Record<EVMBlockchainIncludingTestnet, numbe
     zkatana: 1261120,
     "astar-zkevm": 3776,
     apex: 70700,
+    "hypersonic-testnet": 675852,
 };
 
 export function blockchainToChainId(blockchain: EVMBlockchainIncludingTestnet) {

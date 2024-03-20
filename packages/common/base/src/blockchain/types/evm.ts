@@ -28,6 +28,7 @@ export const EVMBlockchainTestnet = {
     OPTIMISM_SEPOLIA: "optimism-sepolia",
     ZORA_GOERLI: "zora-goerli",
     ZORA_SEPOLIA: "zora-sepolia",
+    HYPERSONIC_TESTNET: "hypersonic-testnet",
 } as const;
 export type EVMBlockchainTestnet = ObjectValues<typeof EVMBlockchainTestnet>;
 export const EVM_BLOCKCHAIN_TESTNETS = objectValues(EVMBlockchainTestnet);
