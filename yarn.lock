@@ -1635,6 +1635,19 @@
     exponential-backoff "3.1.1"
     uuid "9.0.1"
 
+"@crossmint/client-sdk-react-ui@1.1.6":
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/@crossmint/client-sdk-react-ui/-/client-sdk-react-ui-1.1.6.tgz#6f8bbcc95c315b9f7361ee9160c7d3cfffaad19e"
+  integrity sha512-/AqURTjex9a29DRap0WgWVRnR4xpOEzOp9ToYlyvFcdGCwJ4g3I9c6A/Kth0fWNkVxsI3UHdlbdCbNba0IBtfA==
+  dependencies:
+    "@crossmint/client-sdk-base" "1.1.9"
+    "@crossmint/common-sdk-base" "0.0.6"
+    "@ethersproject/transactions" "5.7.0"
+    "@solana/web3.js" "1.78.5"
+    bs58 "5.0.0"
+    lodash.isequal "4.5.0"
+    react-jss "10.10.0"
+
 "@crossmint/common-sdk-base@0.0.6":
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/@crossmint/common-sdk-base/-/common-sdk-base-0.0.6.tgz#e7f42fda8025221128a3654070b44cb189b5d234"
