@@ -27,6 +27,7 @@ export const BLOCKCHAIN_TO_COPY_NAME: Record<BlockchainIncludingTestnet, string>
     zkatana: "zKatana",
     "astar-zkevm": "Astar zkEVM",
     apex: "Apex",
+    "hypersonic-testnet": "Hypersonic Testnet",
 };
 
 export function blockchainToDisplayName(blockchain: BlockchainIncludingTestnet) {
