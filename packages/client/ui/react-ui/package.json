@@ -1,8 +1,8 @@
 {
     "author": "Paella Labs Inc",
     "dependencies": {
-        "@crossmint/client-sdk-base": "1.1.9",
-        "@crossmint/common-sdk-base": "0.0.6",
+        "@crossmint/client-sdk-base": "1.1.10",
+        "@crossmint/common-sdk-base": "0.0.9",
         "@ethersproject/transactions": "5.7.0",
         "@solana/web3.js": "1.78.5",
         "bs58": "5.0.0",
