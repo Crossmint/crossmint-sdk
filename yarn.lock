@@ -1626,10 +1626,27 @@
     siwe "2.1.4"
     viem "^2.5.0"
 
+"@crossmint/client-sdk-base@1.1.9":
+  version "1.1.9"
+  resolved "https://registry.yarnpkg.com/@crossmint/client-sdk-base/-/client-sdk-base-1.1.9.tgz#48dcd9cbc3e93654e32007e338212cff7afe5bb7"
+  integrity sha512-w8f3Z4dVHLqgE9E16qQoV+DEwX1UOiE4lKhD0tAQhHgEYrdNOslY8vekks+94/vutqv3zVA2f5CMzRfBA5fe+g==
+  dependencies:
+    "@crossmint/common-sdk-base" "0.0.6"
+    exponential-backoff "3.1.1"
+    uuid "9.0.1"
+
 "@crossmint/common-sdk-base@0.0.6":
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/@crossmint/common-sdk-base/-/common-sdk-base-0.0.6.tgz#e7f42fda8025221128a3654070b44cb189b5d234"
   integrity sha512-kIn2KJpvoKPPy/iDiMdXTnaieKkmJ04q7cyCemNRj82CVBums8pVCMe4mQWUBJX76YyXrmoe8wZssSDF6Qq0AQ==
+  dependencies:
+    bs58 "5.0.0"
+    tweetnacl "1.0.3"
+
+"@crossmint/common-sdk-base@0.0.7":
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/@crossmint/common-sdk-base/-/common-sdk-base-0.0.7.tgz#561a1e30fad7c482c19dfeea86c2084b75a34970"
+  integrity sha512-65ZGX77XX1NiRFDU9dmsan50FA0lKSm2qq0gfrfeQCH55B2lO7x8405daS1eV+jxi1xIWsWljV5nfV/Vb2tG4g==
   dependencies:
     bs58 "5.0.0"
     tweetnacl "1.0.3"
