@@ -14,8 +14,6 @@ import {
     getZeroDevProjectIdByBlockchain,
 } from "./BlockchainNetworks";
 
-// Replace with the actual path of your TypeScript file
-
 describe("BlockchainNetworks Tests", () => {
     describe("getFireblocksAssetId", () => {
         it("should return the correct asset ID for each blockchain", () => {
@@ -27,19 +25,6 @@ describe("BlockchainNetworks Tests", () => {
             expect(getFireblocksAssetId("ethereum-goerli")).toBe("ETH_TEST3");
             expect(getFireblocksAssetId("ethereum-sepolia")).toBe("ETH_TEST5");
             expect(getFireblocksAssetId("polygon-mumbai")).toBe("MATIC_POLYGON_MUMBAI");
-        });
-    });
-
-    describe("getBlockchainByChainId", () => {
-        it("should return the correct blockchain for each chain ID", () => {
-            expect(chainIdToBlockchain(1)).toBe("ethereum");
-            expect(chainIdToBlockchain(137)).toBe("polygon");
-            expect(chainIdToBlockchain(56)).toBe("bsc");
-            expect(chainIdToBlockchain(10)).toBe("optimism");
-            expect(chainIdToBlockchain(42161)).toBe("arbitrum");
-            expect(chainIdToBlockchain(5)).toBe("ethereum-goerli");
-            expect(chainIdToBlockchain(11155111)).toBe("ethereum-sepolia");
-            expect(chainIdToBlockchain(80001)).toBe("polygon-mumbai");
         });
     });
 

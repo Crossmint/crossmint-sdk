@@ -16,3 +16,5 @@ export const ZD_ZKATANA_PROJECT_ID = "d54706a0-304b-419e-8a33-03c26ba3f0e9";
 export const ZD_ASTAR_PROJECT_ID = "6204f336-643f-41af-94e1-f8d146c91675";
 export const RELAY_API_KEY = "c8999b7e-8bb7-416d-a854-dac8632f9ee6_crossmint";
 export const SCW_SERVICE = "SDK_AA";
+export const BUNDLER_RPC = "https://rpc.zerodev.app/api/v2/bundler/";
+export const PAYMASTER_RPC = "https://rpc.zerodev.app/api/v2/paymaster/";

@@ -1,60 +1,34 @@
-import { CrossmintWalletService } from "@/api";
 import {
-    FireblocksNCWallet,
     getBlockExplorerByBlockchain,
     getTickerByBlockchain,
     getTickerNameByBlockchain,
     getUrlProviderByBlockchain,
 } from "@/blockchain";
-import { FireblocksNCWSigner, UserIdentifier, WalletConfig, Web3AuthSigner } from "@/types";
-import { parseToken } from "@/utils";
-import type { SmartAccountSigner } from "@alchemy/aa-core";
+import { WalletConfig, Web3AuthSigner } from "@/types";
+import { WalletSdkError, parseToken } from "@/utils";
 import { CHAIN_NAMESPACES } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { Web3Auth } from "@web3auth/single-factor-auth";
-import { convertEthersSignerToAccountSigner, getRPCProviderOwner } from "@zerodev/sdk";
-import { Signer } from "ethers";
+import { providerToSmartAccountSigner } from "permissionless";
+import type { SmartAccountSigner } from "permissionless/accounts";
+import { Address, EIP1193Provider, Hex } from "viem";
+import { Web3 } from "web3";
 
 import { EVMBlockchainIncludingTestnet, blockchainToChainId } from "@crossmint/common-sdk-base";
 import { blockchainToDisplayName } from "@crossmint/common-sdk-base";
 
 type CreateOwnerSignerInput = {
-    userIdentifier: UserIdentifier;
-    projectId: string;
     chain: EVMBlockchainIncludingTestnet;
     walletConfig: WalletConfig;
-    crossmintService: CrossmintWalletService;
 };
 
 export async function createOwnerSigner({
-    userIdentifier,
-    projectId,
     chain,
     walletConfig,
-    crossmintService,
-}: CreateOwnerSignerInput): Promise<SmartAccountSigner> {
-    if (isFireblocksNCWSigner(walletConfig.signer)) {
-        let fireblocks: any;
-        if ("walletId" in walletConfig.signer && "deviceId" in walletConfig.signer) {
-            const { passphrase, walletId, deviceId } = walletConfig.signer;
-            fireblocks = await FireblocksNCWallet({
-                userIdentifier,
-                projectId,
-                crossmintService,
-                chain,
-                passphrase,
-                ncwData: {
-                    walletId,
-                    deviceId,
-                },
-            });
-        } else {
-            const { passphrase } = walletConfig.signer;
-            fireblocks = await FireblocksNCWallet({ userIdentifier, projectId, crossmintService, chain, passphrase });
-        }
-        return fireblocks.owner;
-    } else if (isWeb3AuthSigner(walletConfig.signer)) {
-        const signer = walletConfig.signer;
+}: CreateOwnerSignerInput): Promise<SmartAccountSigner<"custom", Address>> {
+    if (isWeb3AuthSigner(walletConfig.signer)) {
+        const signer = walletConfig.signer as Web3AuthSigner;
+
         const chainId = blockchainToChainId(chain);
         const chainConfig = {
             chainNamespace: CHAIN_NAMESPACES.EIP155,
@@ -81,16 +55,26 @@ export async function createOwnerSigner({
             idToken: signer.jwt,
         });
 
-        return getRPCProviderOwner(provider);
-    } else {
-        return convertEthersSignerToAccountSigner(walletConfig.signer as Signer);
-    }
-}
+        if (provider == null) {
+            throw new WalletSdkError("Web3auth returned a null signer");
+        }
 
-function isFireblocksNCWSigner(signer: any): signer is FireblocksNCWSigner & { walletId: string; deviceId: string } {
-    return signer && signer.type === "FIREBLOCKS_NCW";
+        const web3 = new Web3(provider);
+        const [address] = await web3.eth.getAccounts();
+        return await providerToSmartAccountSigner(provider as EIP1193Provider, address as Hex);
+    } else if (isEIP1193Provider(walletConfig.signer)) {
+        const web3 = new Web3(walletConfig.signer);
+        const [address] = await web3.eth.getAccounts();
+        return await providerToSmartAccountSigner(walletConfig.signer, address as Hex);
+    } else {
+        throw new WalletSdkError(`The signer type ${walletConfig.signer.type} is not supported`);
+    }
 }
 
 function isWeb3AuthSigner(signer: any): signer is Web3AuthSigner {
     return signer && signer.type === "WEB3_AUTH";
+}
+
+function isEIP1193Provider(signer: any): signer is EIP1193Provider {
+    return signer && typeof signer.request === "function";
 }

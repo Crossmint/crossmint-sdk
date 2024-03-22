@@ -1,6 +1,6 @@
 import { AuthSig } from "@lit-protocol/types";
 import { TORUS_NETWORK_TYPE } from "@web3auth/single-factor-auth";
-import { ethers } from "ethers";
+import { EIP1193Provider, WalletClient } from "viem";
 
 import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
@@ -23,7 +23,11 @@ export type UserIdentifier =
     | { type: "email"; email: string }
     | { type: "phoneNumber"; phoneNumber: string };
 
-export type SignerType = "ethers" | "viem";
+export type SignerMap = {
+    viem: WalletClient;
+};
+
+export type SignerType = keyof SignerMap;
 
 export type Web3AuthSigner = {
     type: "WEB3_AUTH";
@@ -43,7 +47,7 @@ export type FireblocksNCWSigner =
           deviceId: string;
       });
 
-type Signer = FireblocksNCWSigner | ethers.Signer | Web3AuthSigner;
+type Signer = FireblocksNCWSigner | EIP1193Provider | Web3AuthSigner;
 
 export interface WalletConfig {
     signer: Signer;

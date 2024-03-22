@@ -1,4 +1,6 @@
 import {
+    BUNDLER_RPC,
+    PAYMASTER_RPC,
     ZD_ARBITRUM_PROJECT_ID,
     ZD_ASTAR_PROJECT_ID,
     ZD_BSC_PROJECT_ID,
@@ -10,7 +12,7 @@ import {
     ZD_SEPOLIA_PROJECT_ID,
     ZD_ZKATANA_PROJECT_ID,
 } from "@/utils";
-import { arbitrum, bsc, goerli, mainnet, optimism, polygon, polygonMumbai, sepolia } from "viem/chains";
+import { arbitrum, astarZkEVM, bsc, goerli, mainnet, optimism, polygon, polygonMumbai, sepolia } from "viem/chains";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
@@ -232,7 +234,17 @@ export function getViemNetwork(networkName: EVMBlockchainIncludingTestnet) {
             return sepolia;
         case "polygon-mumbai":
             return polygonMumbai;
+        case "astar-zkevm":
+            return astarZkEVM;
         default:
             throw new Error(`Unsupported network: ${networkName}`);
     }
+}
+
+export function getBundlerRPC(chain: EVMBlockchainIncludingTestnet): string {
+    return BUNDLER_RPC + getZeroDevProjectIdByBlockchain(chain);
+}
+
+export function getPaymasterRPC(chain: EVMBlockchainIncludingTestnet): string {
+    return PAYMASTER_RPC + getZeroDevProjectIdByBlockchain(chain);
 }
