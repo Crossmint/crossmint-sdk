@@ -1,6 +1,10 @@
 import { GenerateSignatureDataInput, StoreAbstractWalletInput, UserIdentifier } from "@/types";
 
+import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
+
 import { BaseCrossmintService } from "./BaseCrossmintService";
+
+export { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 export class CrossmintWalletService extends BaseCrossmintService {
     async createSessionKey(address: string) {
@@ -117,9 +121,9 @@ export class CrossmintWalletService extends BaseCrossmintService {
         );
     }
 
-    async fetchNFTs(address: string) {
+    async fetchNFTs(address: string, chain: EVMBlockchainIncludingTestnet) {
         return this.fetchCrossmintAPI(
-            `v1-alpha1/wallets/polygon:${address}/nfts`,
+            `v1-alpha1/wallets/${chain}:${address}/nfts`,
             { method: "GET" },
             `Error fetching NFTs for wallet: ${address}`
         );

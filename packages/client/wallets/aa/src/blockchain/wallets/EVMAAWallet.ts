@@ -287,6 +287,6 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
     }
 
     async getNFTs() {
-        return this.crossmintService.fetchNFTs(await this.getAddress());
+        return this.crossmintService.fetchNFTs(await this.getAddress(), this.chain);
     }
 }

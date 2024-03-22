@@ -1,5 +1,5 @@
 import { CrossmintWalletService } from "@/api";
-import { EVMAAWallet, getUrlProviderByBlockchain, getZeroDevProjectIdByBlockchain } from "@/blockchain";
+import { EVMAAWallet, getZeroDevChainSpecificConfigParams, getZeroDevProjectIdByBlockchain } from "@/blockchain";
 import type { BackwardsCompatibleChains, CrossmintAASDKInitParams, WalletConfig } from "@/types";
 import {
     CURRENT_VERSION,
@@ -73,16 +73,8 @@ export class CrossmintAASDK {
             const zDevProvider = await ZeroDevEthersProvider.init("ECDSA", {
                 projectId: getZeroDevProjectIdByBlockchain(chain),
                 owner,
-                opts: {
-                    providerConfig: {
-                        rpcUrl: getUrlProviderByBlockchain(chain),
-                    },
-                    paymasterConfig: {
-                        policy: "VERIFYING_PAYMASTER",
-                    },
-                },
+                ...getZeroDevChainSpecificConfigParams(chain),
             });
-
             const evmAAWallet = new EVMAAWallet(zDevProvider, this.crossmintService, chain);
 
             const abstractAddress = await evmAAWallet.getAddress();
