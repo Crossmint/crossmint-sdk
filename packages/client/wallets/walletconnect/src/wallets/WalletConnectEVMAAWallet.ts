@@ -3,8 +3,6 @@ import { TransactionRequest } from "@ethersproject/abstract-provider";
 
 import type { EVMAAWallet } from "@crossmint/client-sdk-aa";
 
-export { EVMAAWallet } from "@crossmint/client-sdk-aa";
-
 export class WalletConnectEVMAAWallet implements CrossmintWalletConnectEVMWallet {
     constructor(private aaWallet: EVMAAWallet) {}
 

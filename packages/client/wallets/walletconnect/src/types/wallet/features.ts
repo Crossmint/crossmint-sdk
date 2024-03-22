@@ -3,8 +3,6 @@ import { Transaction as SolanaLegacyTransaction } from "@solana/web3.js";
 
 import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
-export { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
-
 export type SignMessage = {
     signMessage?: (message: Uint8Array) => Promise<string>;
 };
