@@ -4,6 +4,8 @@ import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 import { BaseCrossmintService } from "./BaseCrossmintService";
 
+export { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
+
 export class CrossmintWalletService extends BaseCrossmintService {
     async createSessionKey(address: string) {
         return this.fetchCrossmintAPI(
