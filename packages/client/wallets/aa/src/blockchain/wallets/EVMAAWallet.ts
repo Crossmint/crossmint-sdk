@@ -260,6 +260,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
                 version: 0,
             };
 
+            sessionKeyAccount;
             await this.crossmintService.generateChainData(generateSessionKeyDataInput);
             logInfo("[SET_CUSTODIAN_FOR_TOKENS] - FINISH", {
                 service: SCW_SERVICE,
@@ -274,6 +275,39 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
                 custodian,
             });
             throw new Error(`Error setting custodian for tokens. If this error persists, please contact support.`);
+        }
+    }
+
+    async upgradeVersion() {
+        try {
+            logInfo("[UPGRADE_VERSION] - INIT", { service: SCW_SERVICE });
+            const sessionKeys = await this.crossmintService!.createSessionKey(this.kernelClient.account.address);
+            if (sessionKeys == null) {
+                throw new Error("Abstract Wallet doesn't have a session key signer address");
+            }
+
+            const latestVersion = await this.crossmintService.checkVersion(this.kernelClient.account.address);
+            if (latestVersion.isUpToDate) {
+                return;
+            }
+
+            const versionInfo = latestVersion.latestVersion;
+            if (versionInfo == null) {
+                throw new Error("New version info not found");
+            }
+
+            const enableSig = await this.kernelClient.account.kernelPluginManager.getPluginEnableSignature(
+                this.kernelClient.account.address
+            );
+
+            await this.crossmintService.updateWallet(this.kernelClient.account.address, enableSig, 1);
+            logInfo("[UPGRADE_VERSION - FINISH", { service: SCW_SERVICE });
+        } catch (error) {
+            logError("[UPGRADE_VERSION] - ERROR", {
+                service: SCW_SERVICE,
+                error: errorToJSON(error),
+            });
+            throw new Error(`Error upgrading version. If this error persists, please contact support.`);
         }
     }
 
