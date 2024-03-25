@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-vanilla-ui",
-    "version": "1.1.6",
+    "version": "1.1.7",
     "description": "Crossmint client SDK for vanilla JS (no framework required), using web-components",
     "homepage": "https://github.com/Crossmint/crossmint-sdk#readme",
     "author": "Paella Inc",
