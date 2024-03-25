@@ -29,6 +29,7 @@ export type CommonEmbeddedCheckoutProps<PM extends PaymentMethod = PaymentMethod
     projectId?: string;
     recipient?: Recipient;
     onEvent?(event: CrossmintEvent): any;
+    debug?: boolean;
 } & CollectionOrClientId;
 
 export type CrossmintEmbeddedCheckoutProps = FiatEmbeddedCheckoutProps | CryptoEmbeddedCheckoutProps;

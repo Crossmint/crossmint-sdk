@@ -18,6 +18,7 @@ export interface UIConfig {
     fontWeightPrimary?: string;
     fontWeightSecondary?: string;
     fonts?: UiConfigFonts;
+    hideCardForm?: boolean;
 }
 
 export type UiConfigFonts = (CssFontSource | CustomFontSource)[];
