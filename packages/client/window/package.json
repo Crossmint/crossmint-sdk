@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-window",
-    "version": "0.0.5",
+    "version": "0.0.6",
     "author": "Paella Labs Inc",
     "license": "Apache-2.0",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
