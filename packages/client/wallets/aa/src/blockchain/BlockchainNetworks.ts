@@ -1,18 +1,32 @@
 import {
     BUNDLER_RPC,
     PAYMASTER_RPC,
+    PM_BASE_SEPOLIA_RPC,
     ZD_ARBITRUM_PROJECT_ID,
     ZD_ASTAR_PROJECT_ID,
+    ZD_BASE_SEPOLIA_PROJECT_ID,
     ZD_BSC_PROJECT_ID,
     ZD_ETHEREUM_PROJECT_ID,
     ZD_GOERLI_PROJECT_ID,
     ZD_MUMBAI_PROJECT_ID,
     ZD_OPTIMISM_PROJECT_ID,
+    ZD_OPTIMISM_SEPOLIA_PROJECT_ID,
     ZD_POLYGON_PROJECT_ID,
     ZD_SEPOLIA_PROJECT_ID,
     ZD_ZKATANA_PROJECT_ID,
 } from "@/utils";
-import { arbitrum, astarZkEVM, bsc, goerli, mainnet, optimism, polygon, polygonMumbai, sepolia } from "viem/chains";
+import {
+    arbitrum,
+    astarZkEVM,
+    baseSepolia,
+    bsc,
+    goerli,
+    mainnet,
+    optimism,
+    polygon,
+    polygonMumbai,
+    sepolia,
+} from "viem/chains";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
@@ -68,11 +82,11 @@ export function getUrlProviderByBlockchain(chain: EVMBlockchainIncludingTestnet)
         ["zkatana", "https://rpc.startale.com/zkatana"],
         ["arbitrum-sepolia", null],
         ["base-goerli", null],
-        ["base-sepolia", null],
+        ["base-sepolia", "https://base-sepolia-rpc.publicnode.com"],
         ["bsc-testnet", null],
         ["ethereum-goerli", "https://ethereum-goerli.publicnode.com"],
         ["optimism-goerli", null],
-        ["optimism-sepolia", null],
+        ["optimism-sepolia", "https://sepolia.optimism.io"],
         ["zora-goerli", null],
         ["zora-sepolia", null],
         ["base", null],
@@ -133,10 +147,10 @@ export function getTickerByBlockchain(chain: EVMBlockchainIncludingTestnet) {
         ["zkatana", "ETH"],
         ["arbitrum-sepolia", null],
         ["base-goerli", null],
-        ["base-sepolia", null],
+        ["base-sepolia", "ETH"],
         ["bsc-testnet", null],
         ["optimism-goerli", null],
-        ["optimism-sepolia", null],
+        ["optimism-sepolia", "ETH"],
         ["zora-goerli", null],
         ["zora-sepolia", null],
         ["base", null],
@@ -165,10 +179,10 @@ export function getTickerNameByBlockchain(chain: EVMBlockchainIncludingTestnet) 
         ["zkatana", "ETHEREUM"],
         ["arbitrum-sepolia", null],
         ["base-goerli", null],
-        ["base-sepolia", null],
+        ["base-sepolia", "ETHEREUM"],
         ["bsc-testnet", null],
         ["optimism-goerli", null],
-        ["optimism-sepolia", null],
+        ["optimism-sepolia", "ETHEREUM"],
         ["zora-goerli", null],
         ["zora-sepolia", null],
         ["base", null],
@@ -197,10 +211,10 @@ export function getZeroDevProjectIdByBlockchain(chain: EVMBlockchainIncludingTes
         ["zkatana", ZD_ZKATANA_PROJECT_ID],
         ["arbitrum-sepolia", null],
         ["base-goerli", null],
-        ["base-sepolia", null],
+        ["base-sepolia", ZD_BASE_SEPOLIA_PROJECT_ID],
         ["bsc-testnet", null],
         ["optimism-goerli", null],
-        ["optimism-sepolia", null],
+        ["optimism-sepolia", ZD_OPTIMISM_SEPOLIA_PROJECT_ID],
         ["zora-goerli", null],
         ["zora-sepolia", null],
         ["base", null],
@@ -236,15 +250,41 @@ export function getViemNetwork(networkName: EVMBlockchainIncludingTestnet) {
             return polygonMumbai;
         case "astar-zkevm":
             return astarZkEVM;
+        case "base-sepolia":
+            return baseSepolia;
         default:
             throw new Error(`Unsupported network: ${networkName}`);
     }
 }
 
-export function getBundlerRPC(chain: EVMBlockchainIncludingTestnet): string {
+export function getCustomBundlerRPC(chain: EVMBlockchainIncludingTestnet) {
+    switch (chain) {
+        case "base-sepolia":
+            return PM_BASE_SEPOLIA_RPC;
+        default:
+            throw new Error(`Unsupported custom RPC chain: ${chain}`);
+    }
+}
+
+export function getCustomPaymasterRPC(chain: EVMBlockchainIncludingTestnet) {
+    switch (chain) {
+        case "base-sepolia":
+            return PM_BASE_SEPOLIA_RPC;
+        default:
+            throw new Error(`Unsupported custom RPC chain: ${chain}`);
+    }
+}
+
+export function getBundlerRPC(chain: EVMBlockchainIncludingTestnet, useCustom?: boolean): string {
+    if (useCustom) {
+        return getCustomBundlerRPC(chain);
+    }
     return BUNDLER_RPC + getZeroDevProjectIdByBlockchain(chain);
 }
 
-export function getPaymasterRPC(chain: EVMBlockchainIncludingTestnet): string {
+export function getPaymasterRPC(chain: EVMBlockchainIncludingTestnet, useCustom?: boolean): string {
+    if (useCustom) {
+        return getCustomPaymasterRPC(chain);
+    }
     return PAYMASTER_RPC + getZeroDevProjectIdByBlockchain(chain);
 }
