@@ -12,9 +12,12 @@ import {
     ZD_SEPOLIA_PROJECT_ID,
     ZD_ZKATANA_PROJECT_ID,
     ZD_BASE_SEPOLIA_PROJECT_ID,
-    ZD_OPTIMISM_SEPOLIA_PROJECT_ID
+    ZD_OPTIMISM_SEPOLIA_PROJECT_ID,
+    ZD_BASE_PROJECT_ID,
+    ZD_ARBITRUM_NOVA_PROJECT_ID
 } from "@/utils";
-import { arbitrum, astarZkEVM, bsc, goerli, mainnet, optimism, polygon, polygonMumbai, sepolia } from "viem/chains";
+
+import { arbitrum, arbitrumNova, base, bsc, goerli, mainnet, optimism, polygon, polygonMumbai, sepolia, astarZkEVM } from "viem/chains";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
@@ -47,9 +50,10 @@ export function getFireblocksAssetId(chain: EVMBlockchainIncludingTestnet) {
         ["zora-goerli", "ETH_TEST3"],
         ["zkatana", "ETH_ZKEVM_TEST"],
         ["bsc-testnet", null],
-        ["base", null],
+        ["base", "ETH"], 
         ["astar-zkevm", "ETH"],
         ["apex", "ETH"],
+        ["arbitrumnova", "ETH-AETH"], 
     ]).get(chain)!;
 
     if (assetId == null) {
@@ -77,9 +81,9 @@ export function getUrlProviderByBlockchain(chain: EVMBlockchainIncludingTestnet)
         ["optimism-sepolia", "https://sepolia.optimism.io"],
         ["zora-goerli", null],
         ["zora-sepolia", null],
-        ["base", null],
+        ["base", "https://base.llamarpc.com"],
         ["zora", null],
-        ["arbitrumnova", null],
+        ["arbitrumnova", "https://arbitrum-nova-rpc.publicnode.com"],
         ["astar-zkevm", "https://rpc.startale.com/astar-zkevm"],
         ["apex", null],
     ]).get(chain)!;
@@ -141,9 +145,9 @@ export function getTickerByBlockchain(chain: EVMBlockchainIncludingTestnet) {
         ["optimism-sepolia", "ETH"],
         ["zora-goerli", null],
         ["zora-sepolia", null],
-        ["base", null],
+        ["base", "ETH"],
         ["zora", null],
-        ["arbitrumnova", null],
+        ["arbitrumnova", "ETH"],
         ["astar-zkevm", "ETH"],
         ["apex", null],
     ]).get(chain)!;
@@ -173,9 +177,9 @@ export function getTickerNameByBlockchain(chain: EVMBlockchainIncludingTestnet) 
         ["optimism-sepolia", "ETHEREUM"],
         ["zora-goerli", null],
         ["zora-sepolia", null],
-        ["base", null],
+        ["base", "ETHEREUM"],
         ["zora", null],
-        ["arbitrumnova", null],
+        ["arbitrumnova", "ETHEREUM"],
         ["astar-zkevm", "ETHEREUM"],
         ["apex", null],
     ]).get(chain)!;
@@ -205,9 +209,9 @@ export function getZeroDevProjectIdByBlockchain(chain: EVMBlockchainIncludingTes
         ["optimism-sepolia", ZD_OPTIMISM_SEPOLIA_PROJECT_ID],
         ["zora-goerli", null],
         ["zora-sepolia", null],
-        ["base", null],
+        ["base", ZD_BASE_PROJECT_ID],
         ["zora", null],
-        ["arbitrumnova", null],
+        ["arbitrumnova", ZD_ARBITRUM_NOVA_PROJECT_ID],
         ["astar-zkevm", ZD_ASTAR_PROJECT_ID],
         ["apex", null],
     ]).get(chain)!;
@@ -230,6 +234,10 @@ export function getViemNetwork(networkName: EVMBlockchainIncludingTestnet) {
             return optimism;
         case "arbitrum":
             return arbitrum;
+        case "arbitrumnova":
+            return arbitrumNova;
+        case "base":
+            return base;
         case "ethereum-goerli":
             return goerli;
         case "ethereum-sepolia":
