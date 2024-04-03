@@ -24,6 +24,7 @@ export const EVMBlockchainTestnet = {
     ETHEREUM_GOERLI: "ethereum-goerli",
     ETHEREUM_SEPOLIA: "ethereum-sepolia",
     POLYGON_MUMBAI: "polygon-mumbai",
+    POLYGON_AMOY: "polygon-amoy",
     OPTIMISM_GOERLI: "optimism-goerli",
     OPTIMISM_SEPOLIA: "optimism-sepolia",
     ZORA_GOERLI: "zora-goerli",

@@ -12,6 +12,7 @@ export const BLOCKCHAIN_TO_CHAIN_ID: Record<EVMBlockchainIncludingTestnet, numbe
     "ethereum-sepolia": 11155111,
     "ethereum-goerli": 5,
     "polygon-mumbai": 80001,
+    "polygon-amoy": 80002,
     "bsc-testnet": 97,
     "optimism-sepolia": 11155420,
     "optimism-goerli": 420,
