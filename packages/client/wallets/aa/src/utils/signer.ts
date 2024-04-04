@@ -14,8 +14,7 @@ import type { SmartAccountSigner } from "permissionless/accounts";
 import { Address, EIP1193Provider, Hex } from "viem";
 import { Web3 } from "web3";
 
-import { EVMBlockchainIncludingTestnet, blockchainToChainId } from "@crossmint/common-sdk-base";
-import { blockchainToDisplayName } from "@crossmint/common-sdk-base";
+import { EVMBlockchainIncludingTestnet, blockchainToChainId, blockchainToDisplayName } from "@crossmint/common-sdk-base";
 
 type CreateOwnerSignerInput = {
     chain: EVMBlockchainIncludingTestnet;
@@ -67,7 +66,8 @@ export async function createOwnerSigner({
         const [address] = await web3.eth.getAccounts();
         return await providerToSmartAccountSigner(walletConfig.signer, address as Hex);
     } else {
-        throw new WalletSdkError(`The signer type ${walletConfig.signer.type} is not supported`);
+        const signer = walletConfig.signer as any;
+        throw new WalletSdkError(`The signer type ${signer.type} is not supported`);
     }
 }
 
