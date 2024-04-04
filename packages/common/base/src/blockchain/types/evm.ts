@@ -9,7 +9,6 @@ export const EVMBlockchain = {
     BASE: "base",
     ZORA: "zora",
     ARBITRUMNOVA: "arbitrumnova",
-    ZKATANA: "zkatana",
     ASTAR_ZKEVM: "astar-zkevm",
     APEX: "apex",
 } as const;

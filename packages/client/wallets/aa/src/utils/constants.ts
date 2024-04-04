@@ -12,7 +12,6 @@ export const ZD_ARBITRUM_PROJECT_ID = "1641cd99-c1ef-404a-9d26-a9dc67b1ba51";
 export const ZD_GOERLI_PROJECT_ID = "3cfecfb6-9d7d-4ef6-acaa-ac8f79f6cd5a";
 export const ZD_SEPOLIA_PROJECT_ID = "7ff22858-06f0-4f3a-8b46-5b41d8c75d0e";
 export const ZD_MUMBAI_PROJECT_ID = "9a334a4d-64d4-465c-ad81-856c6129e064";
-export const ZD_ZKATANA_PROJECT_ID = "d54706a0-304b-419e-8a33-03c26ba3f0e9";
 export const ZD_ASTAR_PROJECT_ID = "6204f336-643f-41af-94e1-f8d146c91675";
 export const ZD_BASE_SEPOLIA_PROJECT_ID = "3eb830c5-f91b-48e0-bb7d-dc30103a60b2";
 export const ZD_OPTIMISM_SEPOLIA_PROJECT_ID = "6188b92b-993e-4f39-be22-56e4806416a8";
