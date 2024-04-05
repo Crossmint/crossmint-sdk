@@ -18,3 +18,5 @@ export const ZD_BASE_SEPOLIA_PROJECT_ID = "3eb830c5-f91b-48e0-bb7d-dc30103a60b2"
 export const ZD_OPTIMISM_SEPOLIA_PROJECT_ID = "6188b92b-993e-4f39-be22-56e4806416a8";
 export const RELAY_API_KEY = "c8999b7e-8bb7-416d-a854-dac8632f9ee6_crossmint";
 export const SCW_SERVICE = "SDK_AA";
+export const BUNDLER_RPC = "https://rpc.zerodev.app/api/v2/bundler/";
+export const PAYMASTER_RPC = "https://rpc.zerodev.app/api/v2/paymaster/";

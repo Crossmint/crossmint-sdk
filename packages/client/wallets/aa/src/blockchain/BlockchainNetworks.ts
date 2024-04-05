@@ -1,4 +1,6 @@
 import {
+    BUNDLER_RPC,
+    PAYMASTER_RPC,
     ZD_ARBITRUM_PROJECT_ID,
     ZD_ASTAR_PROJECT_ID,
     ZD_BSC_PROJECT_ID,
@@ -12,8 +14,7 @@ import {
     ZD_BASE_SEPOLIA_PROJECT_ID,
     ZD_OPTIMISM_SEPOLIA_PROJECT_ID
 } from "@/utils";
-import { PaymasterAndBundlerProviders, PaymasterPolicy } from "@zerodev/sdk";
-import { arbitrum, bsc, goerli, mainnet, optimism, polygon, polygonMumbai, sepolia } from "viem/chains";
+import { arbitrum, astarZkEVM, bsc, goerli, mainnet, optimism, polygon, polygonMumbai, sepolia } from "viem/chains";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
@@ -235,25 +236,17 @@ export function getViemNetwork(networkName: EVMBlockchainIncludingTestnet) {
             return sepolia;
         case "polygon-mumbai":
             return polygonMumbai;
+        case "astar-zkevm":
+            return astarZkEVM;
         default:
             throw new Error(`Unsupported network: ${networkName}`);
     }
 }
 
-export function getZeroDevChainSpecificConfigParams(chain: EVMBlockchainIncludingTestnet) {
-    const bundlerProvider: PaymasterAndBundlerProviders = "GELATO";
-    const policy: PaymasterPolicy = "VERIFYING_PAYMASTER";
+export function getBundlerRPC(chain: EVMBlockchainIncludingTestnet): string {
+    return BUNDLER_RPC + getZeroDevProjectIdByBlockchain(chain);
+}
 
-    return chain === EVMBlockchainIncludingTestnet.ASTAR_ZKEVM
-        ? { bundlerProvider }
-        : {
-              opts: {
-                  providerConfig: {
-                      rpcUrl: getUrlProviderByBlockchain(chain),
-                  },
-                  paymasterConfig: {
-                      policy,
-                  },
-              },
-          };
+export function getPaymasterRPC(chain: EVMBlockchainIncludingTestnet): string {
+    return PAYMASTER_RPC + getZeroDevProjectIdByBlockchain(chain);
 }

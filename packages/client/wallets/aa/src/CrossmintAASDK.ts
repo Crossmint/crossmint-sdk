@@ -1,5 +1,5 @@
 import { CrossmintWalletService } from "@/api";
-import { EVMAAWallet, getZeroDevChainSpecificConfigParams, getZeroDevProjectIdByBlockchain } from "@/blockchain";
+import { EVMAAWallet, getBundlerRPC, getViemNetwork } from "@/blockchain";
 import type { BackwardsCompatibleChains, CrossmintAASDKInitParams, WalletConfig } from "@/types";
 import {
     CURRENT_VERSION,
@@ -10,10 +10,13 @@ import {
     errorToJSON,
     transformBackwardsCompatibleChains,
 } from "@/utils";
-import { ZeroDevEthersProvider } from "@zerodev/sdk";
+import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
+import { createKernelAccount } from "@zerodev/sdk";
+import { PublicClient, createPublicClient, http } from "viem";
 
 import {
     BlockchainIncludingTestnet,
+    EVMBlockchainIncludingTestnet,
     UserIdentifierParams,
     blockchainToChainId,
     isEVMBlockchain,
@@ -60,24 +63,37 @@ export class CrossmintAASDK {
 
             const userIdentifier = parseUserIdentifier(user);
 
+            const publicClient = createPublicClient({
+                chain: getViemNetwork(chain as EVMBlockchainIncludingTestnet),
+                transport: http(getBundlerRPC(chain)),
+            });
+
             const owner = await createOwnerSigner({
-                userIdentifier,
-                projectId: this.projectId,
                 chain,
                 walletConfig,
-                crossmintService: this.crossmintService,
             });
 
-            const address = await owner.getAddress();
+            const address = owner.address;
 
-            const zDevProvider = await ZeroDevEthersProvider.init("ECDSA", {
-                projectId: getZeroDevProjectIdByBlockchain(chain),
-                owner,
-                ...getZeroDevChainSpecificConfigParams(chain),
+            const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
+                signer: owner,
             });
-            const evmAAWallet = new EVMAAWallet(zDevProvider, this.crossmintService, chain);
 
-            const abstractAddress = await evmAAWallet.getAddress();
+            const account = await createKernelAccount(publicClient, {
+                plugins: {
+                    sudo: ecdsaValidator,
+                },
+            });
+
+            const evmAAWallet = new EVMAAWallet(
+                account,
+                this.crossmintService,
+                chain,
+                publicClient as PublicClient,
+                ecdsaValidator
+            );
+
+            const abstractAddress = evmAAWallet.kernelClient.account.address;
             const { sessionKeySignerAddress } = await this.crossmintService.createSessionKey(abstractAddress);
 
             evmAAWallet.setSessionKeySignerAddress(sessionKeySignerAddress);
