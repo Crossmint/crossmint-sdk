@@ -51,7 +51,6 @@
     "publishConfig": {
         "access": "public"
     },
-    "private": true,
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "scripts": {
         "build": "yarn clean && tsup src/index.ts --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
