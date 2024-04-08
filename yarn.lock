@@ -1653,6 +1653,14 @@
     lodash.isequal "4.5.0"
     react-jss "10.10.0"
 
+"@crossmint/common-sdk-base@0.0.11":
+  version "0.0.11"
+  resolved "https://registry.yarnpkg.com/@crossmint/common-sdk-base/-/common-sdk-base-0.0.11.tgz#f67a1323e9a805e2bdf0e73c63e529170ca4e502"
+  integrity sha512-BhK3H7fXlAQgzu664uFQyLPkC9oX7QcCIwCmFzXaFAh6Nasr0L9T+nkJmrGkhSdfB2KPGmR2VDYuxG+w/xEfZA==
+  dependencies:
+    bs58 "5.0.0"
+    tweetnacl "1.0.3"
+
 "@crossmint/common-sdk-base@0.0.6":
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/@crossmint/common-sdk-base/-/common-sdk-base-0.0.6.tgz#e7f42fda8025221128a3654070b44cb189b5d234"
