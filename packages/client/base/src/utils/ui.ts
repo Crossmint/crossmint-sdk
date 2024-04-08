@@ -26,6 +26,7 @@ function getNFTLocator(nft: NFTOrNFTLocator) {
         case "ethereum":
         case "astar-zkevm":
         case "polygon-mumbai":
+        case "polygon-amoy":
         case "bsc":
             return `${nft.chain}:${nft.contractAddress}:${nft.tokenId}`;
         case "cardano":
