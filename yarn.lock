@@ -1631,6 +1631,15 @@
     siwe "2.1.4"
     viem "^2.5.0"
 
+"@crossmint/client-sdk-base@1.1.12":
+  version "1.1.12"
+  resolved "https://registry.yarnpkg.com/@crossmint/client-sdk-base/-/client-sdk-base-1.1.12.tgz#9cb222b22f27bb2c246c0264dd64a1a7b368e8e1"
+  integrity sha512-qtpyRfsiTiWp7/Zt4QKND3GsnCl6tx+hySkhtGPEakerj3UHWMNu87pdvv7hQ8fklDTPJiwG3Giv4JUqqRNCFA==
+  dependencies:
+    "@crossmint/common-sdk-base" "0.0.11"
+    exponential-backoff "3.1.1"
+    uuid "9.0.1"
+
 "@crossmint/client-sdk-base@1.1.9":
   version "1.1.9"
   resolved "https://registry.yarnpkg.com/@crossmint/client-sdk-base/-/client-sdk-base-1.1.9.tgz#48dcd9cbc3e93654e32007e338212cff7afe5bb7"
@@ -1665,14 +1674,6 @@
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/@crossmint/common-sdk-base/-/common-sdk-base-0.0.6.tgz#e7f42fda8025221128a3654070b44cb189b5d234"
   integrity sha512-kIn2KJpvoKPPy/iDiMdXTnaieKkmJ04q7cyCemNRj82CVBums8pVCMe4mQWUBJX76YyXrmoe8wZssSDF6Qq0AQ==
-  dependencies:
-    bs58 "5.0.0"
-    tweetnacl "1.0.3"
-
-"@crossmint/common-sdk-base@0.0.8":
-  version "0.0.8"
-  resolved "https://registry.yarnpkg.com/@crossmint/common-sdk-base/-/common-sdk-base-0.0.8.tgz#c7b9ec22f8ef34f1ab04d16878a4771dbca8e061"
-  integrity sha512-sEC1rIQEvwEreqGV4WNLKfLbpRrdHulc0hXm4GJvHGjZQqSTFwa6P7/kpOlDB+dyb/3wuMKA95sw+sBB22TJZQ==
   dependencies:
     bs58 "5.0.0"
     tweetnacl "1.0.3"
@@ -7898,10 +7899,12 @@
     merkletreejs "^0.3.10"
     viem "^1.5.3"
 
-"@zerodev/sdk@5.1.0":
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/@zerodev/sdk/-/sdk-5.1.0.tgz#b59b4e06e7863a142b561e438f661b204319d698"
-  integrity sha512-uIgpQTHLL9CfS+5aQx3ADKolyyKhApgMgRldDr2k11owwlhzdqlk7RWj4Bo36HF3uD4PpOwTQxX8yxEJN6SGOw==
+"@zerodev/sdk@5.1.12":
+  version "5.1.12"
+  resolved "https://registry.yarnpkg.com/@zerodev/sdk/-/sdk-5.1.12.tgz#4563e4a02138a4dcc54895965053a3ff899213f9"
+  integrity sha512-osX5WTpLzVdjXpJKCJ5B0n5Wq9OO7sLydJ1tRzobP7bg5Dfy1444nUmS/1pzGtBTNP5NTmehLfPEWZDjzCs+0A==
+  dependencies:
+    permissionless "^0.0.34"
 
 "@zerodev/session-key@5.1.0":
   version "5.1.0"
@@ -8544,11 +8547,11 @@ axios@^1.0.0:
     proxy-from-env "^1.1.0"
 
 axios@^1.4.0:
-  version "1.6.7"
-  resolved "https://registry.yarnpkg.com/axios/-/axios-1.6.7.tgz#7b48c2e27c96f9c68a2f8f31e2ab19f59b06b0a7"
-  integrity sha512-/hDJGff6/c7u0hDkvkGxR/oy6CbCs8ziCsC7SqmhjfozqiJGc8Z11wrv9z9lYfY4K8l+H9TpjcMDX0xOZmx+RA==
+  version "1.6.8"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-1.6.8.tgz#66d294951f5d988a00e87a0ffb955316a619ea66"
+  integrity sha512-v/ZHtJDU39mDpyBoFVkETcd/uNdxrWRrg3bKpOKzXFA6Bvqopts6ALSMU3y6ijYxbw2B+wPrIv46egTzJXCLGQ==
   dependencies:
-    follow-redirects "^1.15.4"
+    follow-redirects "^1.15.6"
     form-data "^4.0.0"
     proxy-from-env "^1.1.0"
 
@@ -12451,10 +12454,10 @@ follow-redirects@^1.15.0:
   resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.15.3.tgz#fe2f3ef2690afce7e82ed0b44db08165b207123a"
   integrity sha512-1VzOtuEM8pC9SFU1E+8KfTjZyMztRsgEfwQl44z8A25uy13jSzTj6dyK2Df52iV0vgHCfBwLhDWevLn95w5v6Q==
 
-follow-redirects@^1.15.4:
-  version "1.15.5"
-  resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.15.5.tgz#54d4d6d062c0fa7d9d17feb008461550e3ba8020"
-  integrity sha512-vSFWUON1B+yAw1VN4xMfxgn5fTUiaOzAJCKBwIIgT/+7CuGy9+r+5gITvP62j3RmaD5Ph65UaERdOSRGUzZtgw==
+follow-redirects@^1.15.6:
+  version "1.15.6"
+  resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.15.6.tgz#7f815c0cda4249c74ff09e95ef97c23b5fd0399b"
+  integrity sha512-wWN62YITEaOpSK584EZXJafH1AGpO8RVgElfkuXbTOrPX4fIfOyEpW/CsiNd8JdYrAoOvafRTOEnvsO++qCqFA==
 
 for-each@^0.3.3:
   version "0.3.3"
@@ -22578,9 +22581,9 @@ viem@^1.5.3:
     ws "8.13.0"
 
 viem@^2.5.0:
-  version "2.5.0"
-  resolved "https://registry.yarnpkg.com/viem/-/viem-2.5.0.tgz#1d7bd5333a6b9387d42c1c2d368d0b88c2961ee1"
-  integrity sha512-ytHXIWtlgPs4mcsGxXjJrQ25v+N4dE2hBzgCU8CVv4iXNh3PRFRgyYa7igZlmxiMVzkfSHHADOtivS980JhilA==
+  version "2.9.13"
+  resolved "https://registry.yarnpkg.com/viem/-/viem-2.9.13.tgz#3053394a0b3b60e46706951fefba6dd43ed1f50b"
+  integrity sha512-TxNZOWFwr2Pc6CeY4tViFL2NRq9v86HofAPkhBgScP8DUn3EeSbQhmDXbjMZNkZvXoMqWVl0AZM81rEOlaKrbg==
   dependencies:
     "@adraffy/ens-normalize" "1.10.0"
     "@noble/curves" "1.2.0"

@@ -24,7 +24,7 @@ describe("BlockchainNetworks Tests", () => {
             expect(getFireblocksAssetId("arbitrum")).toBe("ETH-AETH");
             expect(getFireblocksAssetId("ethereum-goerli")).toBe("ETH_TEST3");
             expect(getFireblocksAssetId("ethereum-sepolia")).toBe("ETH_TEST5");
-            expect(getFireblocksAssetId("polygon-mumbai")).toBe("MATIC_POLYGON_MUMBAI");
+            expect(getFireblocksAssetId("polygon-amoy")).toBe("AMOY_POLYGON_TEST");
         });
     });
 
@@ -37,7 +37,7 @@ describe("BlockchainNetworks Tests", () => {
             expect(blockchainToChainId("arbitrum")).toBe(42161);
             expect(blockchainToChainId("ethereum-goerli")).toBe(5);
             expect(blockchainToChainId("ethereum-sepolia")).toBe(11155111);
-            expect(blockchainToChainId("polygon-mumbai")).toBe(80001);
+            expect(blockchainToChainId("polygon-amoy")).toBe(80002);
         });
     });
 
@@ -50,7 +50,7 @@ describe("BlockchainNetworks Tests", () => {
             expect(getUrlProviderByBlockchain("arbitrum")).toBe("https://arbitrum.llamarpc.com");
             expect(getUrlProviderByBlockchain("ethereum-goerli")).toBe("https://ethereum-goerli.publicnode.com");
             expect(getUrlProviderByBlockchain("ethereum-sepolia")).toBe("https://ethereum-sepolia.publicnode.com");
-            expect(getUrlProviderByBlockchain("polygon-mumbai")).toBe("https://polygon-mumbai-pokt.nodies.app");
+            expect(getUrlProviderByBlockchain("polygon-amoy")).toBe("https://rpc-amoy.polygon.technology");
         });
     });
 
@@ -63,7 +63,7 @@ describe("BlockchainNetworks Tests", () => {
             expect(getBlockExplorerByBlockchain("arbitrum")).toBe("https://arbiscan.io");
             expect(getBlockExplorerByBlockchain("ethereum-goerli")).toBe("https://goerli.etherscan.io");
             expect(getBlockExplorerByBlockchain("ethereum-sepolia")).toBe("https://sepolia.etherscan.io");
-            expect(getBlockExplorerByBlockchain("polygon-mumbai")).toBe("https://mumbai.polygonscan.com");
+            expect(getBlockExplorerByBlockchain("polygon-amoy")).toBe("https://www.oklink.com/amoy");
         });
     });
 
@@ -76,7 +76,7 @@ describe("BlockchainNetworks Tests", () => {
             expect(blockchainToDisplayName("arbitrum")).toBe("Arbitrum");
             expect(blockchainToDisplayName("ethereum-goerli")).toBe("Ethereum Goerli");
             expect(blockchainToDisplayName("ethereum-sepolia")).toBe("Ethereum Sepolia");
-            expect(blockchainToDisplayName("polygon-mumbai")).toBe("Polygon Mumbai");
+            expect(blockchainToDisplayName("polygon-amoy")).toBe("Polygon Amoy Testnet");
         });
     });
 
@@ -89,7 +89,7 @@ describe("BlockchainNetworks Tests", () => {
             expect(getTickerByBlockchain("arbitrum")).toBe("ARB");
             expect(getTickerByBlockchain("ethereum-goerli")).toBe("ETH");
             expect(getTickerByBlockchain("ethereum-sepolia")).toBe("ETH");
-            expect(getTickerByBlockchain("polygon-mumbai")).toBe("MATIC");
+            expect(getTickerByBlockchain("polygon-amoy")).toBe("MATIC");
         });
     });
 
@@ -102,7 +102,7 @@ describe("BlockchainNetworks Tests", () => {
             expect(getTickerNameByBlockchain("arbitrum")).toBe("ARBITRUM");
             expect(getTickerNameByBlockchain("ethereum-goerli")).toBe("ETHEREUM");
             expect(getTickerNameByBlockchain("ethereum-sepolia")).toBe("ETHEREUM");
-            expect(getTickerNameByBlockchain("polygon-mumbai")).toBe("MATIC");
+            expect(getTickerNameByBlockchain("polygon-amoy")).toBe("MATIC");
         });
     });
 
@@ -115,7 +115,7 @@ describe("BlockchainNetworks Tests", () => {
             expect(getZeroDevProjectIdByBlockchain("arbitrum")).toBe("1641cd99-c1ef-404a-9d26-a9dc67b1ba51");
             expect(getZeroDevProjectIdByBlockchain("ethereum-goerli")).toBe("3cfecfb6-9d7d-4ef6-acaa-ac8f79f6cd5a");
             expect(getZeroDevProjectIdByBlockchain("ethereum-sepolia")).toBe("7ff22858-06f0-4f3a-8b46-5b41d8c75d0e");
-            expect(getZeroDevProjectIdByBlockchain("polygon-mumbai")).toBe("9a334a4d-64d4-465c-ad81-856c6129e064");
+            expect(getZeroDevProjectIdByBlockchain("polygon-amoy")).toBe("3b24773b-d91e-4c01-8ce5-04807463bbca");
         });
     });
     describe("isEVMBlockchain", () => {
