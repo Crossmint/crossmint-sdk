@@ -18,8 +18,6 @@ export function transformBackwardsCompatibleChains<B extends BlockchainIncluding
     chain: B | BackwardsCompatibleChains
 ): B {
     switch (chain) {
-        case "mumbai":
-            return "polygon-mumbai" as B;
         case "goerli":
             return "ethereum-goerli" as B;
         default:

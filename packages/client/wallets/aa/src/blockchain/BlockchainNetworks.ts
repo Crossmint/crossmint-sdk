@@ -6,7 +6,7 @@ import {
     ZD_BSC_PROJECT_ID,
     ZD_ETHEREUM_PROJECT_ID,
     ZD_GOERLI_PROJECT_ID,
-    ZD_MUMBAI_PROJECT_ID,
+    ZD_AMOY_PROJECT_ID,
     ZD_OPTIMISM_PROJECT_ID,
     ZD_POLYGON_PROJECT_ID,
     ZD_SEPOLIA_PROJECT_ID,
@@ -17,7 +17,7 @@ import {
     ZD_ARBITRUM_NOVA_PROJECT_ID
 } from "@/utils";
 
-import { arbitrum, arbitrumNova, base, bsc, goerli, mainnet, optimism, polygon, polygonMumbai, sepolia, astarZkEVM } from "viem/chains";
+import { arbitrum, arbitrumNova, base, bsc, goerli, mainnet, optimism, polygon, polygonMumbai, sepolia, astarZkEVM, polygonAmoy } from "viem/chains";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
@@ -36,7 +36,7 @@ export function getFireblocksAssetId(chain: EVMBlockchainIncludingTestnet) {
         ["ethereum-goerli", "ETH_TEST3"],
         ["ethereum-sepolia", "ETH_TEST5"],
         ["polygon", "MATIC_POLYGON"],
-        ["polygon-mumbai", "MATIC_POLYGON_MUMBAI"],
+        ["polygon-amoy", "AMOY_POLYGON_TEST"],
         ["bsc", "BNB_BSC"],
         ["optimism", "ETH-OPT"],
         ["optimism-sepolia", "ETH-OPT_KOV"],
@@ -70,7 +70,7 @@ export function getUrlProviderByBlockchain(chain: EVMBlockchainIncludingTestnet)
         ["optimism", "https://optimism.llamarpc.com"],
         ["arbitrum", "https://arbitrum.llamarpc.com"],
         ["ethereum-sepolia", "https://ethereum-sepolia.publicnode.com"],
-        ["polygon-mumbai", "https://polygon-mumbai-pokt.nodies.app"],
+        ["polygon-amoy", "https://rpc-amoy.polygon.technology"],
         ["zkatana", "https://rpc.startale.com/zkatana"],
         ["arbitrum-sepolia", null],
         ["base-goerli", null],
@@ -103,7 +103,7 @@ export function getBlockExplorerByBlockchain(chain: EVMBlockchainIncludingTestne
         ["arbitrum", "https://arbiscan.io"],
         ["ethereum-goerli", "https://goerli.etherscan.io"],
         ["ethereum-sepolia", "https://sepolia.etherscan.io"],
-        ["polygon-mumbai", "https://mumbai.polygonscan.com"],
+        ["polygon-amoy", "https://www.oklink.com/amoy"],
         ["zkatana", "https://zkatana.blockscout.com"],
         ["arbitrum-sepolia", "https://sepolia.arbiscan.io"],
         ["base-goerli", "https://goerli.basescan.org"],
@@ -135,7 +135,7 @@ export function getTickerByBlockchain(chain: EVMBlockchainIncludingTestnet) {
         ["arbitrum", "ARB"],
         ["ethereum-goerli", "ETH"],
         ["ethereum-sepolia", "ETH"],
-        ["polygon-mumbai", "MATIC"],
+        ["polygon-amoy", "MATIC"],
         ["zkatana", "ETH"],
         ["arbitrum-sepolia", null],
         ["base-goerli", null],
@@ -167,7 +167,7 @@ export function getTickerNameByBlockchain(chain: EVMBlockchainIncludingTestnet) 
         ["arbitrum", "ARBITRUM"],
         ["ethereum-goerli", "ETHEREUM"],
         ["ethereum-sepolia", "ETHEREUM"],
-        ["polygon-mumbai", "MATIC"],
+        ["polygon-amoy", "MATIC"],
         ["zkatana", "ETHEREUM"],
         ["arbitrum-sepolia", null],
         ["base-goerli", null],
@@ -199,7 +199,7 @@ export function getZeroDevProjectIdByBlockchain(chain: EVMBlockchainIncludingTes
         ["arbitrum", ZD_ARBITRUM_PROJECT_ID],
         ["ethereum-goerli", ZD_GOERLI_PROJECT_ID],
         ["ethereum-sepolia", ZD_SEPOLIA_PROJECT_ID],
-        ["polygon-mumbai", ZD_MUMBAI_PROJECT_ID],
+        ["polygon-amoy", ZD_AMOY_PROJECT_ID],
         ["zkatana", ZD_ZKATANA_PROJECT_ID],
         ["arbitrum-sepolia", null],
         ["base-goerli", null],
@@ -242,8 +242,8 @@ export function getViemNetwork(networkName: EVMBlockchainIncludingTestnet) {
             return goerli;
         case "ethereum-sepolia":
             return sepolia;
-        case "polygon-mumbai":
-            return polygonMumbai;
+        case "polygon-amoy":
+            return polygonAmoy;
         case "astar-zkevm":
             return astarZkEVM;
         default:

@@ -1,7 +1,7 @@
 {
     "author": "Paella Inc",
     "dependencies": {
-        "@crossmint/common-sdk-base": "0.0.8",
+        "@crossmint/common-sdk-base": "0.0.12",
         "@headlessui/react": "1.7.18",
         "@heroicons/react": "2.1.1",
         "@walletconnect/core": "2.11.1",
