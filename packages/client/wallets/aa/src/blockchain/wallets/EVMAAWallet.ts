@@ -21,6 +21,7 @@ import type { KernelAccountClient, KernelValidator } from "@zerodev/sdk";
 import { oneAddress, serializeSessionKeyAccount, signerToSessionKeyValidator } from "@zerodev/session-key";
 import { BigNumber } from "ethers";
 import { UserOperation, walletClientToSmartAccountSigner } from "permissionless";
+import { createPimlicoPaymasterClient } from "permissionless/clients/pimlico";
 import { Hex, createWalletClient, custom, http, publicActions } from "viem";
 import type { Chain, EIP1193Provider, Hash, PublicClient, Transport, TypedDataDefinition } from "viem";
 import { Web3 } from "web3";
@@ -60,16 +61,26 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
             chain: getViemNetwork(chain as EVMBlockchainIncludingTestnet),
             transport: http(getBundlerRPC(chain)),
             sponsorUserOperation: async ({ userOperation }): Promise<UserOperation> => {
-                const paymasterClient = createZeroDevPaymasterClient({
-                    chain: getViemNetwork(chain as EVMBlockchainIncludingTestnet),
-                    transport: http(getPaymasterRPC(chain)),
-                });
+                const paymasterClient = this.getPaymasterClient();
                 return paymasterClient.sponsorUserOperation({
                     userOperation,
+                    entryPoint: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789",
                 });
             },
         }) as KernelAccountClient<Transport, Chain, KernelSmartAccount>;
         this.account = this.kernelClient.account;
+    }
+
+    getPaymasterClient() {
+        return (this.chain === EVMBlockchainIncludingTestnet.BASE || this.chain === EVMBlockchainIncludingTestnet.BASE_SEPOLIA)
+            ? createPimlicoPaymasterClient({
+                  chain: getViemNetwork(this.chain as EVMBlockchainIncludingTestnet),
+                  transport: http(getPaymasterRPC(this.chain)),
+              })
+            : createZeroDevPaymasterClient({
+                  chain: getViemNetwork(this.chain as EVMBlockchainIncludingTestnet),
+                  transport: http(getPaymasterRPC(this.chain)),
+              });
     }
 
     getAddress() {

@@ -14,10 +14,12 @@ import {
     ZD_BASE_SEPOLIA_PROJECT_ID,
     ZD_OPTIMISM_SEPOLIA_PROJECT_ID,
     ZD_BASE_PROJECT_ID,
-    ZD_ARBITRUM_NOVA_PROJECT_ID
+    ZD_ARBITRUM_NOVA_PROJECT_ID,
+    PM_BASE_SEPOLIA_RPC,
+    PM_BASE_RPC
 } from "@/utils";
 
-import { arbitrum, arbitrumNova, base, bsc, goerli, mainnet, optimism, polygon, polygonMumbai, sepolia, astarZkEVM, polygonAmoy } from "viem/chains";
+import { arbitrum, arbitrumNova, base, bsc, goerli, mainnet, optimism, polygon, sepolia, astarZkEVM, polygonAmoy, baseSepolia } from "viem/chains";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
@@ -238,6 +240,8 @@ export function getViemNetwork(networkName: EVMBlockchainIncludingTestnet) {
             return arbitrumNova;
         case "base":
             return base;
+        case "base-sepolia":
+            return baseSepolia;
         case "ethereum-goerli":
             return goerli;
         case "ethereum-sepolia":
@@ -252,9 +256,23 @@ export function getViemNetwork(networkName: EVMBlockchainIncludingTestnet) {
 }
 
 export function getBundlerRPC(chain: EVMBlockchainIncludingTestnet): string {
-    return BUNDLER_RPC + getZeroDevProjectIdByBlockchain(chain);
+    switch (chain) {
+        case EVMBlockchainIncludingTestnet.BASE_SEPOLIA:
+            return PM_BASE_SEPOLIA_RPC;
+        case EVMBlockchainIncludingTestnet.BASE:
+            return PM_BASE_RPC;
+        default:
+            return BUNDLER_RPC + getZeroDevProjectIdByBlockchain(chain);
+    }
 }
 
 export function getPaymasterRPC(chain: EVMBlockchainIncludingTestnet): string {
-    return PAYMASTER_RPC + getZeroDevProjectIdByBlockchain(chain);
+    switch (chain) {
+        case EVMBlockchainIncludingTestnet.BASE_SEPOLIA:
+            return PM_BASE_SEPOLIA_RPC;
+        case EVMBlockchainIncludingTestnet.BASE:
+            return PM_BASE_RPC;
+        default:
+            return PAYMASTER_RPC + getZeroDevProjectIdByBlockchain(chain);
+    }
 }
