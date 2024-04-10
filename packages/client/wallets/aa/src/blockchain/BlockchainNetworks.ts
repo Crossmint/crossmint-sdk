@@ -1,23 +1,36 @@
 import {
     BUNDLER_RPC,
     PAYMASTER_RPC,
+    ZD_AMOY_PROJECT_ID,
+    ZD_ARBITRUM_NOVA_PROJECT_ID,
     ZD_ARBITRUM_PROJECT_ID,
     ZD_ASTAR_PROJECT_ID,
+    ZD_BASE_PROJECT_ID,
+    ZD_BASE_SEPOLIA_PROJECT_ID,
     ZD_BSC_PROJECT_ID,
     ZD_ETHEREUM_PROJECT_ID,
     ZD_GOERLI_PROJECT_ID,
-    ZD_AMOY_PROJECT_ID,
     ZD_OPTIMISM_PROJECT_ID,
+    ZD_OPTIMISM_SEPOLIA_PROJECT_ID,
     ZD_POLYGON_PROJECT_ID,
     ZD_SEPOLIA_PROJECT_ID,
     ZD_ZKATANA_PROJECT_ID,
-    ZD_BASE_SEPOLIA_PROJECT_ID,
-    ZD_OPTIMISM_SEPOLIA_PROJECT_ID,
-    ZD_BASE_PROJECT_ID,
-    ZD_ARBITRUM_NOVA_PROJECT_ID
 } from "@/utils";
-
-import { arbitrum, arbitrumNova, base, bsc, goerli, mainnet, optimism, polygon, sepolia, astarZkEVM, polygonAmoy } from "viem/chains";
+import {
+    arbitrum,
+    arbitrumNova,
+    astarZkEVM,
+    base,
+    baseSepolia,
+    bsc,
+    goerli,
+    mainnet,
+    optimism,
+    optimismSepolia,
+    polygon,
+    polygonAmoy,
+    sepolia,
+} from "viem/chains";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
@@ -50,10 +63,10 @@ export function getFireblocksAssetId(chain: EVMBlockchainIncludingTestnet) {
         ["zora-goerli", "ETH_TEST3"],
         ["zkatana", "ETH_ZKEVM_TEST"],
         ["bsc-testnet", null],
-        ["base", "ETH"], 
+        ["base", "ETH"],
         ["astar-zkevm", "ETH"],
         ["apex", "ETH"],
-        ["arbitrumnova", "ETH-AETH"], 
+        ["arbitrumnova", "ETH-AETH"],
     ]).get(chain)!;
 
     if (assetId == null) {
@@ -246,6 +259,10 @@ export function getViemNetwork(networkName: EVMBlockchainIncludingTestnet) {
             return polygonAmoy;
         case "astar-zkevm":
             return astarZkEVM;
+        case "base-sepolia":
+            return baseSepolia;
+        case "optimism-sepolia":
+            return optimismSepolia;
         default:
             throw new Error(`Unsupported network: ${networkName}`);
     }

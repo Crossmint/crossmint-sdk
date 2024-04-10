@@ -131,7 +131,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
         }
     }
 
-    /* Pending new version of transfer 
+    /* Pending new version of transfer
     async transfer(toAddress: string, token: Token, quantity?: number, amount?: BigNumber): Promise<string> {
         const evmToken = token as EVMToken;
         const contractAddress = evmToken.contractAddress as `0x${string}`;
