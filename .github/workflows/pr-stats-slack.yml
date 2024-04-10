@@ -14,5 +14,5 @@ jobs:
                   period: 14
                   charts: true
                   sortBy: "REVIEWS"
-                  slackChannel: "#project-prs"
-                  slackWebhook: "https://hooks.slack.com/services/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"
+                  slackChannel: ${{ secrets.SLACK_PR_STATS_CHANNEL }}
+                  slackWebhook: ${{ secrets.SLACK_WEBHOOK }}
