@@ -87,6 +87,6 @@ type Cipher = { method: "lit_protocol"; data: LitProtocolCipherData };
 export type BackwardsCompatibleChains = "goerli";
 
 export type Client = {
-    public: PublicClient;
-    wallet: KernelAccountClient<Transport, Chain, KernelSmartAccount>;
+    publicClient: PublicClient;
+    walletClient: KernelAccountClient<Transport, Chain, KernelSmartAccount>;
 };

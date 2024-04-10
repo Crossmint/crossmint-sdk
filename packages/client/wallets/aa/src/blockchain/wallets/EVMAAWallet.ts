@@ -10,17 +10,17 @@ import {
 } from "@/utils";
 import type { Deferrable } from "@ethersproject/properties";
 import { type TransactionRequest } from "@ethersproject/providers";
+import type { KernelAccountClient, KernelValidator } from "@zerodev/sdk";
 import {
     KernelSmartAccount,
     createKernelAccount,
     createKernelAccountClient,
     createZeroDevPaymasterClient,
 } from "@zerodev/sdk";
-import type { KernelAccountClient, KernelValidator } from "@zerodev/sdk";
 import { oneAddress, serializeSessionKeyAccount, signerToSessionKeyValidator } from "@zerodev/session-key";
 import { UserOperation, walletClientToSmartAccountSigner } from "permissionless";
-import { Hex, createWalletClient, custom, http } from "viem";
 import type { Chain, EIP1193Provider, Hash, PublicClient, Transport, TypedDataDefinition } from "viem";
+import { Hex, createWalletClient, custom, http } from "viem";
 import { Web3 } from "web3";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
@@ -131,7 +131,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
         }
     }
 
-    /* Pending new version of transfer 
+    /* Pending new version of transfer
     async transfer(toAddress: string, token: Token, quantity?: number, amount?: BigNumber): Promise<string> {
         const evmToken = token as EVMToken;
         const contractAddress = evmToken.contractAddress as `0x${string}`;
@@ -195,8 +195,8 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
         switch (type) {
             case "viem": {
                 return {
-                    public: this.publicClient,
-                    wallet: this.kernelClient,
+                    publicClient: this.publicClient,
+                    walletClient: this.kernelClient,
                 };
             }
             default:
