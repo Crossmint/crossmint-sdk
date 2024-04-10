@@ -1,7 +1,7 @@
 import { ReservoirWallet } from "@reservoir0x/reservoir-sdk";
 import { hexToBigInt, http } from "viem";
-import { getBundlerRPC } from "../BlockchainNetworks";
-import { EVMAAWallet } from "./EVMAAWallet";
+import { getBundlerRPC } from "../blockchain/BlockchainNetworks";
+import { EVMAAWallet } from "../blockchain/wallets/EVMAAWallet";
 
 export function reservoirAdapter(aaWallet: EVMAAWallet): ReservoirWallet {
     return {
