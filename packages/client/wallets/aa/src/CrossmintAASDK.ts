@@ -93,7 +93,7 @@ export class CrossmintAASDK {
                 ecdsaValidator
             );
 
-            const abstractAddress = evmAAWallet.kernelClient.account.address;
+            const abstractAddress = account.address;
             const { sessionKeySignerAddress } = await this.crossmintService.createSessionKey(abstractAddress);
 
             evmAAWallet.setSessionKeySignerAddress(sessionKeySignerAddress);
