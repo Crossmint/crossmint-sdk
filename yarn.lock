@@ -1631,6 +1631,34 @@
     siwe "2.1.4"
     viem "^2.5.0"
 
+"@crossmint/client-sdk-aa@0.2.8":
+  version "0.2.8"
+  resolved "https://registry.yarnpkg.com/@crossmint/client-sdk-aa/-/client-sdk-aa-0.2.8.tgz#f932cfbf1167bb0d1bdf478b9e9cb01a3bc48a38"
+  integrity sha512-0GpmYU5kGb8NufiRWIh49jwwtSn+h913pzj2UUAZyrHghCGhFNJ6KAAhxzr6mRB7E/kFi+Yx2evEX6HuC23JcQ==
+  dependencies:
+    "@ambire/signature-validator" "1.3.1"
+    "@crossmint/common-sdk-base" "0.0.8"
+    "@datadog/browser-logs" "4.42.2"
+    "@fireblocks/ncw-js-sdk" "11.0.2"
+    "@lit-protocol/auth-helpers" "3.1.2"
+    "@lit-protocol/constants" "3.1.2"
+    "@lit-protocol/contracts-sdk" "3.1.2"
+    "@lit-protocol/lit-auth-client" "3.1.2"
+    "@lit-protocol/lit-node-client" "3.1.2"
+    "@lit-protocol/pkp-ethers" "3.1.2"
+    "@lit-protocol/types" "3.1.2"
+    "@types/node-forge" "1.3.1"
+    "@web3auth/base" "7.3.2"
+    "@web3auth/ethereum-provider" "7.3.2"
+    "@web3auth/single-factor-auth" "7.3.0"
+    "@zerodev/sdk" "4.7.4"
+    email-validator "2.0.4"
+    ethers "5.7.2"
+    libphonenumber-js "1.10.44"
+    node-forge "1.3.1"
+    siwe "2.1.4"
+    viem "^2.5.0"
+
 "@crossmint/client-sdk-base@1.1.12":
   version "1.1.12"
   resolved "https://registry.yarnpkg.com/@crossmint/client-sdk-base/-/client-sdk-base-1.1.12.tgz#9cb222b22f27bb2c246c0264dd64a1a7b368e8e1"
@@ -1674,6 +1702,14 @@
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/@crossmint/common-sdk-base/-/common-sdk-base-0.0.6.tgz#e7f42fda8025221128a3654070b44cb189b5d234"
   integrity sha512-kIn2KJpvoKPPy/iDiMdXTnaieKkmJ04q7cyCemNRj82CVBums8pVCMe4mQWUBJX76YyXrmoe8wZssSDF6Qq0AQ==
+  dependencies:
+    bs58 "5.0.0"
+    tweetnacl "1.0.3"
+
+"@crossmint/common-sdk-base@0.0.8":
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/@crossmint/common-sdk-base/-/common-sdk-base-0.0.8.tgz#c7b9ec22f8ef34f1ab04d16878a4771dbca8e061"
+  integrity sha512-sEC1rIQEvwEreqGV4WNLKfLbpRrdHulc0hXm4GJvHGjZQqSTFwa6P7/kpOlDB+dyb/3wuMKA95sw+sBB22TJZQ==
   dependencies:
     bs58 "5.0.0"
     tweetnacl "1.0.3"
@@ -7906,6 +7942,18 @@
     merkletreejs "^0.3.10"
     viem "^1.5.3"
 
+"@zerodev/sdk@4.7.4":
+  version "4.7.4"
+  resolved "https://registry.yarnpkg.com/@zerodev/sdk/-/sdk-4.7.4.tgz#7b19465a0b8ce0f8bdc7bf0292db9055e116d905"
+  integrity sha512-xSHOio31RK5h58fZ9hbHQWa7WWwS6a5QRu9bqrCT5k8Gztgg0m4O9xszpNQX2LHTFHClV+P0CCj8xKNvDs3ITQ==
+  dependencies:
+    "@alchemy/aa-core" "0.1.0-alpha.23"
+    "@alchemy/aa-ethers" "0.1.0-alpha.23"
+    "@openzeppelin/merkle-tree" "^1.0.5"
+    axios "^1.4.0"
+    merkletreejs "^0.3.10"
+    viem "^1.5.3"
+
 "@zerodev/sdk@5.1.12":
   version "5.1.12"
   resolved "https://registry.yarnpkg.com/@zerodev/sdk/-/sdk-5.1.12.tgz#4563e4a02138a4dcc54895965053a3ff899213f9"
@@ -8553,16 +8601,7 @@ axios@^1.0.0:
     form-data "^4.0.0"
     proxy-from-env "^1.1.0"
 
-axios@^1.4.0:
-  version "1.6.8"
-  resolved "https://registry.yarnpkg.com/axios/-/axios-1.6.8.tgz#66d294951f5d988a00e87a0ffb955316a619ea66"
-  integrity sha512-v/ZHtJDU39mDpyBoFVkETcd/uNdxrWRrg3bKpOKzXFA6Bvqopts6ALSMU3y6ijYxbw2B+wPrIv46egTzJXCLGQ==
-  dependencies:
-    follow-redirects "^1.15.6"
-    form-data "^4.0.0"
-    proxy-from-env "^1.1.0"
-
-axios@^1.6.7:
+axios@^1.4.0, axios@^1.6.7:
   version "1.6.8"
   resolved "https://registry.yarnpkg.com/axios/-/axios-1.6.8.tgz#66d294951f5d988a00e87a0ffb955316a619ea66"
   integrity sha512-v/ZHtJDU39mDpyBoFVkETcd/uNdxrWRrg3bKpOKzXFA6Bvqopts6ALSMU3y6ijYxbw2B+wPrIv46egTzJXCLGQ==
@@ -12469,11 +12508,6 @@ follow-redirects@^1.15.0:
   version "1.15.3"
   resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.15.3.tgz#fe2f3ef2690afce7e82ed0b44db08165b207123a"
   integrity sha512-1VzOtuEM8pC9SFU1E+8KfTjZyMztRsgEfwQl44z8A25uy13jSzTj6dyK2Df52iV0vgHCfBwLhDWevLn95w5v6Q==
-
-follow-redirects@^1.15.6:
-  version "1.15.6"
-  resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.15.6.tgz#7f815c0cda4249c74ff09e95ef97c23b5fd0399b"
-  integrity sha512-wWN62YITEaOpSK584EZXJafH1AGpO8RVgElfkuXbTOrPX4fIfOyEpW/CsiNd8JdYrAoOvafRTOEnvsO++qCqFA==
 
 follow-redirects@^1.15.6:
   version "1.15.6"
