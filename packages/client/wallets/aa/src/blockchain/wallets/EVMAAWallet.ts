@@ -3,7 +3,6 @@ import { GenerateSignatureDataInput, SignerMap, SignerType } from "@/types";
 import {
     SCW_SERVICE,
     TransactionError,
-    TransferError,
     convertData,
     decorateSendTransactionData,
     errorToJSON,
@@ -11,30 +10,26 @@ import {
 } from "@/utils";
 import type { Deferrable } from "@ethersproject/properties";
 import { type TransactionRequest } from "@ethersproject/providers";
+import type { KernelAccountClient, KernelValidator } from "@zerodev/sdk";
 import {
     KernelSmartAccount,
     createKernelAccount,
     createKernelAccountClient,
     createZeroDevPaymasterClient,
 } from "@zerodev/sdk";
-import type { KernelAccountClient, KernelValidator } from "@zerodev/sdk";
 import { oneAddress, serializeSessionKeyAccount, signerToSessionKeyValidator } from "@zerodev/session-key";
-import { BigNumber } from "ethers";
 import { UserOperation, walletClientToSmartAccountSigner } from "permissionless";
 import { createPimlicoPaymasterClient } from "permissionless/clients/pimlico";
-import { Hex, createWalletClient, custom, http, publicActions } from "viem";
 import type { Chain, EIP1193Provider, Hash, PublicClient, Transport, TypedDataDefinition } from "viem";
+import { Hex, createWalletClient, custom, http } from "viem";
 import { Web3 } from "web3";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
-import erc20 from "../../ABI/ERC20.json";
-import erc721 from "../../ABI/ERC721.json";
-import erc1155 from "../../ABI/ERC1155.json";
 import { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import { getBundlerRPC, getPaymasterRPC, getUrlProviderByBlockchain, getViemNetwork } from "../BlockchainNetworks";
 import { Custodian } from "../plugins";
-import { EVMToken, Token, TokenType } from "../token";
+import { TokenType } from "../token";
 
 export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchainIncludingTestnet> {
     private sessionKeySignerAddress?: Hex;
@@ -42,7 +37,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
     private publicClient: PublicClient;
     private ecdsaValidator: KernelValidator<"ECDSAValidator">;
     private account: KernelSmartAccount;
-    kernelClient: KernelAccountClient<Transport, Chain, KernelSmartAccount>;
+    private kernelClient: KernelAccountClient<Transport, Chain, KernelSmartAccount>;
     chain: B;
 
     constructor(
@@ -68,7 +63,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
                 });
             },
         }) as KernelAccountClient<Transport, Chain, KernelSmartAccount>;
-        this.account = this.kernelClient.account;
+        this.account = account;
     }
 
     getPaymasterClient() {
@@ -147,7 +142,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
         }
     }
 
-    /* Pending new version of transfer 
+    /* Pending new version of transfer
     async transfer(toAddress: string, token: Token, quantity?: number, amount?: BigNumber): Promise<string> {
         const evmToken = token as EVMToken;
         const contractAddress = evmToken.contractAddress as `0x${string}`;
@@ -207,15 +202,13 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
         }
     } */
 
-    async getSigner<Type extends SignerType>(type: Type): Promise<SignerMap[Type]> {
+    getSigner<Type extends SignerType>(type: Type): SignerMap[Type] {
         switch (type) {
             case "viem": {
-                const walletClient = createWalletClient({
-                    account: this.account,
-                    chain: getViemNetwork(this.chain as EVMBlockchainIncludingTestnet),
-                    transport: http(getBundlerRPC(this.chain)),
-                }).extend(publicActions) as any;
-                return walletClient as SignerMap[Type];
+                return {
+                    publicClient: this.publicClient,
+                    walletClient: this.kernelClient,
+                };
             }
             default:
                 logError("[GET_SIGNER] - ERROR", {

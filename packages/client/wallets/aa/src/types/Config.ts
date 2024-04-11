@@ -1,6 +1,7 @@
 import { AuthSig } from "@lit-protocol/types";
 import { TORUS_NETWORK_TYPE } from "@web3auth/single-factor-auth";
-import { EIP1193Provider, WalletClient } from "viem";
+import { KernelAccountClient, KernelSmartAccount } from "@zerodev/sdk";
+import { Chain, EIP1193Provider, PublicClient, Transport } from "viem";
 
 import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
@@ -24,7 +25,7 @@ export type UserIdentifier =
     | { type: "phoneNumber"; phoneNumber: string };
 
 export type SignerMap = {
-    viem: WalletClient;
+    viem: Client;
 };
 
 export type SignerType = keyof SignerMap;
@@ -84,3 +85,8 @@ export type DecryptInput = {
 type Cipher = { method: "lit_protocol"; data: LitProtocolCipherData };
 
 export type BackwardsCompatibleChains = "goerli";
+
+export type Client = {
+    publicClient: PublicClient;
+    walletClient: KernelAccountClient<Transport, Chain, KernelSmartAccount>;
+};
