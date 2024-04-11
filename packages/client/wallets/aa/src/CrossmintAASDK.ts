@@ -67,7 +67,7 @@ export class CrossmintAASDK {
                 chain: getViemNetwork(chain as EVMBlockchainIncludingTestnet),
                 transport: http(getBundlerRPC(chain)),
             });
-
+              
             const owner = await createOwnerSigner({
                 chain,
                 walletConfig,
