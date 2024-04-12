@@ -1,7 +1,7 @@
 import { AuthSig } from "@lit-protocol/types";
 import { TORUS_NETWORK_TYPE } from "@web3auth/single-factor-auth";
 import { KernelAccountClient, KernelSmartAccount } from "@zerodev/sdk";
-import { Chain, EIP1193Provider, PublicClient, Transport } from "viem";
+import { Chain, PublicClient, Transport, EIP1193Provider, LocalAccount } from "viem";
 
 import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
@@ -48,7 +48,12 @@ export type FireblocksNCWSigner =
           deviceId: string;
       });
 
-type Signer = EIP1193Provider | Web3AuthSigner;
+export type ViemAccount = {
+    type: "VIEM_ACCOUNT",
+    account: LocalAccount
+}
+
+type Signer = EIP1193Provider | Web3AuthSigner | ViemAccount;
 
 export interface WalletConfig {
     signer: Signer;

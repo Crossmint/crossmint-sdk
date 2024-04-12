@@ -4,14 +4,14 @@ import {
     getTickerNameByBlockchain,
     getUrlProviderByBlockchain,
 } from "@/blockchain";
-import { WalletConfig, Web3AuthSigner } from "@/types";
+import { ViemAccount, WalletConfig, Web3AuthSigner } from "@/types";
 import { WalletSdkError, parseToken } from "@/utils";
 import { CHAIN_NAMESPACES } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { Web3Auth } from "@web3auth/single-factor-auth";
 import { providerToSmartAccountSigner } from "permissionless";
 import type { SmartAccountSigner } from "permissionless/accounts";
-import { Address, EIP1193Provider, Hex } from "viem";
+import { Account, Address, EIP1193Provider, Hex } from "viem";
 import { Web3 } from "web3";
 
 import { EVMBlockchainIncludingTestnet, blockchainToChainId, blockchainToDisplayName } from "@crossmint/common-sdk-base";
@@ -65,6 +65,8 @@ export async function createOwnerSigner({
         const web3 = new Web3(walletConfig.signer);
         const [address] = await web3.eth.getAccounts();
         return await providerToSmartAccountSigner(walletConfig.signer, address as Hex);
+    } else if (isAccount(walletConfig.signer)) {
+        return walletConfig.signer.account;
     } else {
         const signer = walletConfig.signer as any;
         throw new WalletSdkError(`The signer type ${signer.type} is not supported`);
@@ -77,4 +79,8 @@ function isWeb3AuthSigner(signer: any): signer is Web3AuthSigner {
 
 function isEIP1193Provider(signer: any): signer is EIP1193Provider {
     return signer && typeof signer.request === "function";
+}
+
+export function isAccount(signer: any): signer is ViemAccount {
+    return signer && signer.type === "VIEM_ACCOUNT"
 }
