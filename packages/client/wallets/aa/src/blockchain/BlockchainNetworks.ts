@@ -16,9 +16,8 @@ import {
     ZD_OPTIMISM_SEPOLIA_PROJECT_ID,
     ZD_POLYGON_PROJECT_ID,
     ZD_SEPOLIA_PROJECT_ID,
-    ZD_ZKATANA_PROJECT_ID
+    ZD_ZKATANA_PROJECT_ID,
 } from "@/utils";
-
 import {
     arbitrum,
     arbitrumNova,
@@ -32,7 +31,7 @@ import {
     optimismSepolia,
     polygon,
     polygonAmoy,
-    sepolia
+    sepolia,
 } from "viem/chains";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
@@ -81,7 +80,7 @@ export function getFireblocksAssetId(chain: EVMBlockchainIncludingTestnet) {
 export function getUrlProviderByBlockchain(chain: EVMBlockchainIncludingTestnet) {
     const url = new Map<EVMBlockchainIncludingTestnet, string | null>([
         ["ethereum", "https://eth.llamarpc.com"],
-        ["polygon", "https://polygon.llamarpc.com"],
+        ["polygon", "https://rpc.ankr.com/polygon"],
         ["bsc", "https://binance.llamarpc.com"],
         ["optimism", "https://optimism.llamarpc.com"],
         ["arbitrum", "https://arbitrum.llamarpc.com"],

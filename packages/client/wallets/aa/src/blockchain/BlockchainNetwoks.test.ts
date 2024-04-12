@@ -44,7 +44,7 @@ describe("BlockchainNetworks Tests", () => {
     describe("getUrlProviderByBlockchain", () => {
         it("should return the correct url provider for each Blockchain", () => {
             expect(getUrlProviderByBlockchain("ethereum")).toBe("https://eth.llamarpc.com");
-            expect(getUrlProviderByBlockchain("polygon")).toBe("https://polygon.llamarpc.com");
+            expect(getUrlProviderByBlockchain("polygon")).toBe("https://rpc.ankr.com/polygon");
             expect(getUrlProviderByBlockchain("bsc")).toBe("https://binance.llamarpc.com");
             expect(getUrlProviderByBlockchain("optimism")).toBe("https://optimism.llamarpc.com");
             expect(getUrlProviderByBlockchain("arbitrum")).toBe("https://arbitrum.llamarpc.com");
