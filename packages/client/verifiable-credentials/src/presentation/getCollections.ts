@@ -37,14 +37,14 @@ export async function getCredentialCollections(
     const polygonErc721Nfts = filterPolygonErc721(nfts);
     console.debug(`Got ${polygonErc721Nfts.length} polygon erc721 nfts`);
 
-    let collections = getCollections(polygonErc721Nfts);
+    const collections = getCollections(polygonErc721Nfts);
     console.debug(`Got ${collections.length} collections`);
 
     let credentialsCollection = await new ContactMetadataService().getContractWithVCMetadata(collections, environment);
     console.debug(`Got ${credentialsCollection.length} valid credential collections`);
 
     if (filters.issuers != null) {
-        collections = collections.filter((collection) => {
+        credentialsCollection = credentialsCollection.filter((collection) => {
             return filters.issuers?.includes(collection.metadata?.credentialMetadata.issuerDid); // At least one issuer must match
         });
     }
