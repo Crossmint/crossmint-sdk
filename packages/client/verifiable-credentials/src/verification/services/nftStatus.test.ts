@@ -1,14 +1,14 @@
 import { EVMNFT } from "@crossmint/common-sdk-base";
 
-import { NFTStatusService } from "./nftStatus";
+import { NFTService } from "./nftStatus";
 
 jest.mock("../../services/provider");
 
 describe("NFTStatusService", () => {
-    let service: NFTStatusService;
+    let service: NFTService;
 
     beforeEach(() => {
-        service = new NFTStatusService("testEnvironment");
+        service = new NFTService("testEnvironment");
         jest.spyOn(service, "getNftOwnerByContractAddress").mockImplementation(async (contractAddress, tokenId) => {
             if (tokenId === "notBurned") {
                 return "mockOwner";

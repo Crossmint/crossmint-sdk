@@ -2,7 +2,7 @@ import * as API from "@/services/crossmintAPI";
 import { ethers, utils } from "ethers";
 
 import { CredentialsCollection } from "../types/nfts";
-import { ContactMetadataService, formatUrl } from "./getMetadata";
+import { MetadataService, formatUrl } from "./getMetadata";
 
 global.fetch = jest.fn(() =>
     Promise.resolve({
@@ -18,9 +18,9 @@ jest.mock("@krebitdao/eip712-vc", () => {
 });
 
 describe("getMetadata", () => {
-    let metadataService: ContactMetadataService;
+    let metadataService: MetadataService;
     beforeEach(() => {
-        metadataService = new ContactMetadataService();
+        metadataService = new MetadataService();
         jest.resetAllMocks();
     });
 
@@ -44,7 +44,7 @@ describe("getMetadata", () => {
                 json: () => Promise.resolve(mockResponse),
             } as any);
 
-            const result = await metadataService.getMetadata("contractAddress", "environment");
+            const result = await metadataService.getContractMetadata("contractAddress", "environment");
 
             expect(result).toEqual(mockResponse);
             expect(fetch).toHaveBeenCalled();
@@ -65,8 +65,8 @@ describe("getMetadata", () => {
                 { contractAddress: "contractAddress2" } as any,
             ];
 
-            jest.spyOn(metadataService, "getMetadata").mockResolvedValueOnce(mockResponse);
-            jest.spyOn(metadataService, "getMetadata").mockResolvedValueOnce(null);
+            jest.spyOn(metadataService, "getContractMetadata").mockResolvedValueOnce(mockResponse);
+            jest.spyOn(metadataService, "getContractMetadata").mockResolvedValueOnce(null);
 
             const result = await metadataService.getContractWithVCMetadata(collections, "environment");
 

@@ -16,3 +16,15 @@ export interface EncryptedVerifiableCredential {
     id: string;
     payload: string;
 }
+
+export type VerifiableCredentialType = VerifiableCredential | EncryptedVerifiableCredential;
+
+export function isEncryptedVerifiableCredential(
+    credential: VerifiableCredentialType
+): credential is EncryptedVerifiableCredential {
+    return (
+        (credential as EncryptedVerifiableCredential).id !== undefined &&
+        (credential as EncryptedVerifiableCredential).payload !== undefined &&
+        (credential as VerifiableCredential).credentialSubject === undefined
+    );
+}

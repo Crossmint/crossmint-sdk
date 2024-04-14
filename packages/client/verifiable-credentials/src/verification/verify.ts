@@ -1,7 +1,7 @@
 import { isValid, parseISO } from "date-fns";
 
 import { VerifiableCredential } from "../types/verifiableCredential";
-import { NFTStatusService } from "./services/nftStatus";
+import { NFTService } from "./services/nftStatus";
 import { VerifiableCredentialSignatureService } from "./services/signature";
 
 export async function verifyCredential(
@@ -32,7 +32,7 @@ export async function verifyCredential(
         return { validVC: false, error };
     }
 
-    const nftRevoked = await new NFTStatusService(environment).isBurnt(credential.nft);
+    const nftRevoked = await new NFTService(environment).isBurnt(credential.nft);
     if (nftRevoked) {
         error = "Credential has been revoked";
         return { validVC: false, error };

@@ -1,6 +1,6 @@
 import { CredentialFilter } from "../types/credentialFilter";
 import { CredentialsCollection, VC_EVMNFT } from "../types/nfts";
-import { ContactMetadataService } from "./getMetadata";
+import { MetadataService } from "./getMetadata";
 import { filterPolygonErc721, getWalletNfts } from "./getNfts";
 
 export function getCollections(nfts: VC_EVMNFT[]): CredentialsCollection[] {
@@ -40,7 +40,7 @@ export async function getCredentialCollections(
     let collections = getCollections(polygonErc721Nfts);
     console.debug(`Got ${collections.length} collections`);
 
-    let credentialsCollection = await new ContactMetadataService().getContractWithVCMetadata(collections, environment);
+    let credentialsCollection = await new MetadataService().getContractWithVCMetadata(collections, environment);
     console.debug(`Got ${credentialsCollection.length} valid credential collections`);
 
     if (filters.issuers != null) {

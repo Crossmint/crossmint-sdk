@@ -1,6 +1,6 @@
 import { CredentialsCollection, VC_EVMNFT } from "../types/nfts";
 import { getCollections, getCredentialCollections } from "./getCollections";
-import { ContactMetadataService } from "./getMetadata";
+import { MetadataService } from "./getMetadata";
 import * as GetNfts from "./getNfts";
 
 jest.mock("./getMetadata");
@@ -46,7 +46,7 @@ describe("getCredentialCollections", () => {
             { metadata: { credentialMetadata: { type: ["type1"] } } } as any,
             { metadata: { credentialMetadata: { type: ["type2"] } } } as any,
         ];
-        jest.spyOn(ContactMetadataService.prototype, "getContractWithVCMetadata").mockResolvedValue(collections as any);
+        jest.spyOn(MetadataService.prototype, "getContractWithVCMetadata").mockResolvedValue(collections as any);
 
         const result = await getCredentialCollections("polygon", "wallet", { types: ["type1"] }, "environment");
 
