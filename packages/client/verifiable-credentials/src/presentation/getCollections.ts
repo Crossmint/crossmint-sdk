@@ -25,7 +25,7 @@ export async function getCredentialCollections(
     filters: CredentialFilter = {},
     environment: string
 ): Promise<CredentialsCollection[]> {
-    if (chain !== "polygon") {
+    if (!chain.includes("polygon")) {
         throw new Error("Only polygon is supported");
     }
     const nfts = await getWalletNfts(chain, wallet, environment);
