@@ -42,5 +42,5 @@ export async function getWalletNfts(chain: string, wallet: string, environment: 
 }
 
 export function filterPolygonErc721(nfts: VC_EVMNFT[]): VC_EVMNFT[] {
-    return nfts.filter((nft) => nft.chain === "polygon" && nft.tokenStandard === "erc-721");
+    return nfts.filter((nft) => nft.chain.includes("polygon") && nft.tokenStandard === "erc-721");
 }
