@@ -17,7 +17,7 @@ export class NFTService {
     }
 
     async isBurnt(nft: EVMNFT) {
-        if (nft.chain !== "polygon") {
+        if (!nft.chain.includes("poly")) {
             throw new Error("Only Polygon is supported");
         }
         try {

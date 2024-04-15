@@ -12,13 +12,13 @@ export async function getCredentialFromLocator(
     environment: string
 ): Promise<VerifiableCredentialType> {
     const nft = parseLocator(locator);
-    if (nft.chain != EVMBlockchain.POLYGON) {
+    if (!nft.chain.includes("poly")) {
         throw new Error(`Verifiable Credentials are available only on polygon, provided chain: ${nft.chain}`);
     }
 
     const nftUri = await new NFTService(environment).getNftUri(nft);
     const nftMetadata = await new MetadataService().getFromIpfs(nftUri);
-    console.log("METASATA", nftMetadata);
+    console.debug(`Nft ${locator} metadata:`, nftMetadata);
     const vcNft: VC_EVMNFT = {
         metadata: nftMetadata,
         locators: locator,

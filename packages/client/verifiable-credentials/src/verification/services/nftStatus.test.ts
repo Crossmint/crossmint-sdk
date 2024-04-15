@@ -61,7 +61,7 @@ describe("NFTStatusService", () => {
 
     it("should throw error if chain is not polygon", async () => {
         const mockNFT: EVMNFT = {
-            chain: "notPolygon" as any,
+            chain: "someChain" as any,
             contractAddress: "mockContractAddress",
             tokenId: "mockTokenId",
         };
