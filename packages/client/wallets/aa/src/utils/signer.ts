@@ -11,10 +11,14 @@ import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { Web3Auth } from "@web3auth/single-factor-auth";
 import { providerToSmartAccountSigner } from "permissionless";
 import type { SmartAccountSigner } from "permissionless/accounts";
-import { Account, Address, EIP1193Provider, Hex } from "viem";
+import { Address, EIP1193Provider, Hex } from "viem";
 import { Web3 } from "web3";
 
-import { EVMBlockchainIncludingTestnet, blockchainToChainId, blockchainToDisplayName } from "@crossmint/common-sdk-base";
+import {
+    EVMBlockchainIncludingTestnet,
+    blockchainToChainId,
+    blockchainToDisplayName,
+} from "@crossmint/common-sdk-base";
 
 type CreateOwnerSignerInput = {
     chain: EVMBlockchainIncludingTestnet;
@@ -60,11 +64,11 @@ export async function createOwnerSigner({
 
         const web3 = new Web3(provider);
         const [address] = await web3.eth.getAccounts();
-        return await providerToSmartAccountSigner(provider as EIP1193Provider, address as Hex);
+        return await providerToSmartAccountSigner(provider as EIP1193Provider, { signerAddress: address as Hex });
     } else if (isEIP1193Provider(walletConfig.signer)) {
         const web3 = new Web3(walletConfig.signer);
         const [address] = await web3.eth.getAccounts();
-        return await providerToSmartAccountSigner(walletConfig.signer, address as Hex);
+        return await providerToSmartAccountSigner(walletConfig.signer, { signerAddress: address as Hex });
     } else if (isAccount(walletConfig.signer)) {
         return walletConfig.signer.account;
     } else {
@@ -82,5 +86,5 @@ function isEIP1193Provider(signer: any): signer is EIP1193Provider {
 }
 
 export function isAccount(signer: any): signer is ViemAccount {
-    return signer && signer.type === "VIEM_ACCOUNT"
+    return signer && signer.type === "VIEM_ACCOUNT";
 }

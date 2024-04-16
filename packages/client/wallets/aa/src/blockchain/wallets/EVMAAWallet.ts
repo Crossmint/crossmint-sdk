@@ -10,24 +10,24 @@ import {
 } from "@/utils";
 import type { Deferrable } from "@ethersproject/properties";
 import { type TransactionRequest } from "@ethersproject/providers";
-import type { KernelAccountClient, KernelValidator } from "@zerodev/sdk";
-import {
-    KernelSmartAccount,
-    createKernelAccount,
-    createKernelAccountClient,
-    createZeroDevPaymasterClient,
-} from "@zerodev/sdk";
+import type { KernelValidator } from "@zerodev/ecdsa-validator";
+import type { KernelAccountClient } from "@zerodev/sdk";
+import { createKernelAccount, createKernelAccountClient, createZeroDevPaymasterClient } from "@zerodev/sdk";
+import type { KernelSmartAccount } from "@zerodev/sdk";
 import { oneAddress, serializeSessionKeyAccount, signerToSessionKeyValidator } from "@zerodev/session-key";
 import { UserOperation, walletClientToSmartAccountSigner } from "permissionless";
+import { ENTRYPOINT_ADDRESS_V07 } from "permissionless";
 import { createPimlicoPaymasterClient } from "permissionless/clients/pimlico";
-import type { Chain, EIP1193Provider, Hash, PublicClient, Transport, TypedDataDefinition } from "viem";
+import { EntryPoint } from "permissionless/types/entrypoint";
+import type { EIP1193Provider, Hash, PublicClient, TypedDataDefinition } from "viem";
 import { Hex, createWalletClient, custom, http } from "viem";
+import type { Chain, HttpTransport, Transport } from "viem";
 import { Web3 } from "web3";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 import { CrossmintWalletService } from "../../api/CrossmintWalletService";
-import { getBundlerRPC, getPaymasterRPC, getUrlProviderByBlockchain, getViemNetwork } from "../BlockchainNetworks";
+import { TChain, entryPoint, getBundlerRPC, getPaymasterRPC, getUrlProviderByBlockchain, getViemNetwork } from "../BlockchainNetworks";
 import { Custodian } from "../plugins";
 import { TokenType } from "../token";
 
@@ -35,47 +35,62 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
     private sessionKeySignerAddress?: Hex;
     private crossmintService: CrossmintWalletService;
     private publicClient: PublicClient;
-    private ecdsaValidator: KernelValidator<"ECDSAValidator">;
-    private account: KernelSmartAccount;
-    private kernelClient: KernelAccountClient<Transport, Chain, KernelSmartAccount>;
+    private ecdsaValidator: KernelValidator<entryPoint, "ECDSAValidator">;
+    private account: KernelSmartAccount<EntryPoint, HttpTransport, TChain>;
+    private kernelClient: KernelAccountClient<
+        entryPoint,
+        HttpTransport,
+        TChain,
+        KernelSmartAccount<entryPoint, HttpTransport, TChain>
+    >;
     chain: B;
 
     constructor(
-        account: KernelSmartAccount,
+        account: KernelSmartAccount<EntryPoint, HttpTransport, TChain>,
         crossmintService: CrossmintWalletService,
         chain: B,
         publicClient: PublicClient,
-        ecdsaValidator: KernelValidator<"ECDSAValidator">
+        ecdsaValidator: KernelValidator<entryPoint, "ECDSAValidator">
     ) {
         this.chain = chain;
         this.crossmintService = crossmintService;
         this.publicClient = publicClient;
         this.ecdsaValidator = ecdsaValidator;
         this.kernelClient = createKernelAccountClient({
-            account,
-            chain: getViemNetwork(chain as EVMBlockchainIncludingTestnet),
-            transport: http(getBundlerRPC(chain)),
-            sponsorUserOperation: async ({ userOperation }): Promise<UserOperation> => {
-                const paymasterClient = this.getPaymasterClient();
-                return paymasterClient.sponsorUserOperation({
-                    userOperation,
-                    entryPoint: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789",
-                });
+            account: account as any,
+            entryPoint: ENTRYPOINT_ADDRESS_V07,
+            chain: getViemNetwork(chain),
+            bundlerTransport: http(getBundlerRPC(chain)),
+            middleware: {
+                sponsorUserOperation: async ({ userOperation }) => {
+                    const paymasterClient = createZeroDevPaymasterClient({
+                        chain: getViemNetwork(chain),
+                        transport: http(getPaymasterRPC(chain)),
+                        entryPoint: ENTRYPOINT_ADDRESS_V07,
+                    });
+                    return paymasterClient.sponsorUserOperation({
+                        userOperation,
+                        entryPoint: ENTRYPOINT_ADDRESS_V07,
+                    });
+                },
             },
-        }) as KernelAccountClient<Transport, Chain, KernelSmartAccount>;
+        }) as any;
         this.account = account;
     }
 
     getPaymasterClient() {
-        return (this.chain === EVMBlockchainIncludingTestnet.BASE || this.chain === EVMBlockchainIncludingTestnet.BASE_SEPOLIA)
+        return this.chain === EVMBlockchainIncludingTestnet.BASE ||
+            this.chain === EVMBlockchainIncludingTestnet.BASE_SEPOLIA
             ? createPimlicoPaymasterClient({
-                  chain: getViemNetwork(this.chain as EVMBlockchainIncludingTestnet),
-                  transport: http(getPaymasterRPC(this.chain)),
-              })
+                chain: getViemNetwork(this.chain as EVMBlockchainIncludingTestnet),
+                transport: http(getPaymasterRPC(this.chain)),
+                entryPoint: ENTRYPOINT_ADDRESS_V07,
+            })
             : createZeroDevPaymasterClient({
-                  chain: getViemNetwork(this.chain as EVMBlockchainIncludingTestnet),
-                  transport: http(getPaymasterRPC(this.chain)),
-              });
+                chain: getViemNetwork(this.chain),
+                transport: http(getPaymasterRPC(this.chain)),
+                entryPoint: ENTRYPOINT_ADDRESS_V07,
+            });
     }
 
     getAddress() {
@@ -116,30 +131,13 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
     }
 
     async sendTransaction(transaction: Deferrable<TransactionRequest>): Promise<Hash> {
-        try {
-            const decoratedTransaction = await decorateSendTransactionData(transaction);
 
-            return await this.kernelClient.sendTransaction({
-                to: decoratedTransaction.to as `0x${string}`,
-                value: decoratedTransaction.value ? BigInt(decoratedTransaction.value.toString()) : undefined,
-                gas: decoratedTransaction.gasLimit ? BigInt(decoratedTransaction.gasLimit.toString()) : undefined,
-                nonce: await getNonce(decoratedTransaction.nonce),
-                data: await convertData(decoratedTransaction.data),
-                maxFeePerGas: decoratedTransaction.maxFeePerGas
-                    ? BigInt(decoratedTransaction.maxFeePerGas.toString())
-                    : undefined,
-                maxPriorityFeePerGas: decoratedTransaction.maxPriorityFeePerGas
-                    ? BigInt(decoratedTransaction.maxPriorityFeePerGas.toString())
-                    : undefined,
-            });
-        } catch (error) {
-            logError("[SEND_TRANSACTION] - ERROR_SENDING_TRANSACTION", {
-                service: SCW_SERVICE,
-                error: errorToJSON(error),
-                transaction,
-            });
-            throw new TransactionError(`Error sending transaction: ${error}`);
-        }
+        logError("[SEND_TRANSACTION] - ERROR_SENDING_TRANSACTION", {
+            service: SCW_SERVICE,
+            error: errorToJSON("In maintenance"),
+            transaction,
+        });
+        throw new TransactionError(`Error sending transaction: In maintenance`);
     }
 
     /* Pending new version of transfer
@@ -222,7 +220,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
     setSessionKeySignerAddress(sessionKeySignerAddress: Hex) {
         this.sessionKeySignerAddress = sessionKeySignerAddress;
     }
-
+    /*
     async setCustodianForTokens(tokenType?: TokenType, custodian?: Custodian) {
         try {
             logInfo("[SET_CUSTODIAN_FOR_TOKENS] - INIT", {
@@ -277,7 +275,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
             });
             throw new Error(`Error setting custodian for tokens. If this error persists, please contact support.`);
         }
-    }
+    }*/
 
     async upgradeVersion() {
         try {

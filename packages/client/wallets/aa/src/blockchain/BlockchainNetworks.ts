@@ -18,7 +18,9 @@ import {
     ZD_SEPOLIA_PROJECT_ID,
     ZD_ZKATANA_PROJECT_ID,
 } from "@/utils";
+import { EntryPoint } from "permissionless/types/entrypoint";
 import {
+    Chain,
     arbitrum,
     arbitrumNova,
     astarZkEVM,
@@ -277,7 +279,7 @@ export function getBundlerRPC(chain: EVMBlockchainIncludingTestnet): string {
         case EVMBlockchainIncludingTestnet.BASE:
             return PM_BASE_RPC;
         default:
-            return BUNDLER_RPC + getZeroDevProjectIdByBlockchain(chain);
+            return BUNDLER_RPC + getZeroDevProjectIdByBlockchain(chain) + "?bundlerProvider=STACKUP";
     }
 }
 
@@ -288,6 +290,9 @@ export function getPaymasterRPC(chain: EVMBlockchainIncludingTestnet): string {
         case EVMBlockchainIncludingTestnet.BASE:
             return PM_BASE_RPC;
         default:
-            return PAYMASTER_RPC + getZeroDevProjectIdByBlockchain(chain);
+            return PAYMASTER_RPC + getZeroDevProjectIdByBlockchain(chain) + "?paymasterProvider=STACKUP";
     }
 }
+
+export type entryPoint = EntryPoint;
+export type TChain = Chain | undefined;
