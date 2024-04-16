@@ -1,3 +1,4 @@
+import { isPolygon } from "@/services/utils";
 import { StaticJsonRpcProvider } from "@ethersproject/providers";
 import { Contract } from "ethers";
 import { constants } from "ethers";
@@ -17,7 +18,7 @@ export class NFTService {
     }
 
     async isBurnt(nft: EVMNFT) {
-        if (!nft.chain.includes("poly")) {
+        if (!isPolygon(nft.chain)) {
             throw new Error("Only Polygon is supported");
         }
         try {

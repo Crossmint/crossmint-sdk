@@ -1,3 +1,4 @@
+import { isPolygon } from "@/services/utils";
 import { VC_EVMNFT, parseLocator } from "@/types/nfts";
 import { VerifiableCredentialType } from "@/types/verifiableCredential";
 import { NFTService } from "@/verification/services/nftStatus";
@@ -12,7 +13,7 @@ export async function getCredentialFromLocator(
     environment: string
 ): Promise<VerifiableCredentialType> {
     const nft = parseLocator(locator);
-    if (!nft.chain.includes("poly")) {
+    if (!isPolygon(nft.chain)) {
         throw new Error(`Verifiable Credentials are available only on polygon, provided chain: ${nft.chain}`);
     }
 

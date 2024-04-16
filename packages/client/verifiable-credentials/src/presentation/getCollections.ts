@@ -1,3 +1,5 @@
+import { isPolygon } from "@/services/utils";
+
 import { CredentialFilter } from "../types/credentialFilter";
 import { CredentialsCollection, VC_EVMNFT } from "../types/nfts";
 import { MetadataService } from "./getMetadata";
@@ -25,7 +27,7 @@ export async function getCredentialCollections(
     filters: CredentialFilter = {},
     environment: string
 ): Promise<CredentialsCollection[]> {
-    if (!chain.includes("poly")) {
+    if (!isPolygon(chain)) {
         throw new Error("Only polygon is supported");
     }
     const nfts = await getWalletNfts(chain, wallet, environment);

@@ -1,5 +1,9 @@
 // Verification
-export type { VerifiableCredential } from "./types/verifiableCredential";
+export type {
+    VerifiableCredential,
+    VerifiableCredentialType,
+    isEncryptedVerifiableCredential,
+} from "./types/verifiableCredential";
 export { verifyCredential } from "./verification/verify";
 // Presentation
 export { getCredentialCollections } from "./presentation/getCollections";

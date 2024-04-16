@@ -1,3 +1,5 @@
+import { isPolygon } from "@/services/utils";
+
 import { getEnvironmentBaseUrl } from "@crossmint/client-sdk-base";
 
 import { CrossmintAPI } from "../services/crossmintAPI";
@@ -42,5 +44,5 @@ export async function getWalletNfts(chain: string, wallet: string, environment: 
 }
 
 export function filterPolygonErc721(nfts: VC_EVMNFT[]): VC_EVMNFT[] {
-    return nfts.filter((nft) => nft.chain.includes("poly") && nft.tokenStandard === "erc-721");
+    return nfts.filter((nft) => isPolygon(nft.chain) && nft.tokenStandard === "erc-721");
 }
