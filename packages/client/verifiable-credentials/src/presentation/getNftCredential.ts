@@ -3,14 +3,14 @@ import { VC_EVMNFT } from "../types/nfts";
 import { NFTService } from "../verification/services/nftStatus";
 import { MetadataService } from "./getMetadata";
 
-export async function getNFTFromLocator(locator: string, environment: string) {
+export async function getNftFromLocator(locator: string, environment: string) {
     const nft = parseLocator(locator);
     if (!isPolygon(nft.chain)) {
         throw new Error(`Verifiable Credentials are available only on polygon, provided chain: ${nft.chain}`);
     }
+
     const nftUri = await new NFTService(environment).getNftUri(nft);
     const nftMetadata = await new MetadataService().getFromIpfs(nftUri);
-
     console.debug(`Nft ${locator} metadata:`, nftMetadata);
     const vcNft: VC_EVMNFT = {
         metadata: nftMetadata,
@@ -34,6 +34,6 @@ export async function getNFTFromLocator(locator: string, environment: string) {
 
     return {
         nft: vcNft,
-        collection: collection,
+        collection,
     };
 }
