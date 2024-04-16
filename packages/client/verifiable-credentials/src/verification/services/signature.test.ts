@@ -1,64 +1,24 @@
-import { verifyTypedData } from "@ethersproject/wallet";
-
 import { VerifiableCredential } from "../../types/verifiableCredential";
+import credentialData from "./mockCredential.json";
 import { VerifiableCredentialSignatureService } from "./signature";
 
-jest.mock("@krebitdao/eip712-vc", () => {
-    return {
-        EIP712VC: jest.fn().mockImplementation(() => {}),
-    };
-});
-jest.mock("@ethersproject/wallet");
-
-class MockSigner {
-    verifyW3CCredential = jest.fn().mockImplementation((issuerId, cred: any, a, b, c) => cred.id == "valid");
-    getDomainTypedData = jest.fn();
-}
-
+const mockCredential = credentialData as VerifiableCredential;
 describe("VerifiableCredentialSignatureService", () => {
     let service: VerifiableCredentialSignatureService;
 
     beforeEach(() => {
-        service = new VerifiableCredentialSignatureService(MockSigner as any);
-        jest.resetAllMocks();
+        service = new VerifiableCredentialSignatureService();
     });
 
-    it("should verify a valid credential", async () => {
-        const mockCredential: VerifiableCredential = {
-            id: "valid",
-            issuer: { id: "did:chain:address" },
-            proof: {
-                eip712: {
-                    domain: {},
-                    types: {},
-                },
-                proofValue: "proofValue",
-            },
-            // other fields...
-        } as any;
+    it("should fail when tampered credential", async () => {
+        const credential = { ...mockCredential };
+        credential.expirationDate = "2322-12-12";
 
-        const result = await service.verify(mockCredential);
-
-        expect(result).toBe(true);
+        await expect(service.verify(credential)).resolves.toBeFalsy();
     });
 
-    it("should fail a invalid credential", async () => {
-        const mockCredential: VerifiableCredential = {
-            id: "nonValid",
-            issuer: { id: "did:chain:address" },
-            proof: {
-                eip712: {
-                    domain: {},
-                    types: {},
-                },
-                proofValue: "proofValue",
-            },
-            // other fields...
-        } as any;
-
-        const result = await service.verify(mockCredential);
-
-        expect(result).toBe(false);
+    it("should correctly verify a valid proof", async () => {
+        await expect(service.verify(mockCredential)).resolves.toBeTruthy();
     });
 
     it("should throw error for invalid issuer DID", async () => {

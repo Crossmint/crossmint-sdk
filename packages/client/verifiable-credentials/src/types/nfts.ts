@@ -19,3 +19,11 @@ export interface CredentialsCollection {
         };
     };
 }
+
+export interface SignedLocator {
+    locator: string;
+    date: string;
+    nonce: string;
+    payload: string;
+    signature: string;
+}

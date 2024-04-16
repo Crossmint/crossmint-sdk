@@ -11,12 +11,6 @@ global.fetch = jest.fn(() =>
     })
 ) as jest.Mock;
 
-jest.mock("@krebitdao/eip712-vc", () => {
-    return {
-        EIP712VC: jest.fn().mockImplementation(() => {}),
-    };
-});
-
 describe("getMetadata", () => {
     let metadataService: MetadataService;
     beforeEach(() => {

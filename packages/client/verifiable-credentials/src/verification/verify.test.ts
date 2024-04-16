@@ -1,15 +1,11 @@
 import { VerifiableCredential } from "../types/verifiableCredential";
 import { NFTService } from "./services/nftStatus";
 import { VerifiableCredentialSignatureService } from "./services/signature";
-import { verifyCredential } from "./verify";
+import { validatePass, verifyCredential } from "./verify";
 
 jest.mock("./services/signature");
 jest.mock("./services/nftStatus");
-jest.mock("@krebitdao/eip712-vc", () => {
-    return {
-        EIP712VC: jest.fn().mockImplementation(() => {}),
-    };
-});
+
 describe("verifyCredential", () => {
     beforeEach(() => {
         jest.resetAllMocks();
@@ -75,4 +71,8 @@ describe("verifyCredential", () => {
         const result = await verifyCredential(mockCredential, "staging");
         expect(result).toEqual({ validVC: false, error: `Credential expired at ${mockCredential.expirationDate}` });
     });
+});
+
+describe("validatePass", () => {
+    // WIP
 });

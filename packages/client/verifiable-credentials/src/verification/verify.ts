@@ -1,5 +1,9 @@
+import { verifyMessage } from "@ethersproject/wallet";
 import { isValid, parseISO } from "date-fns";
 
+import { getCredentialFromId } from "../presentation/getCredential";
+import { getNftFromLocator } from "../presentation/getNftCredential";
+import { getDidAddress, isEncryptedVerifiableCredential, parseSignedLocator } from "../services/utils";
 import { VerifiableCredential } from "../types/verifiableCredential";
 import { NFTService } from "./services/nftStatus";
 import { VerifiableCredentialSignatureService } from "./services/signature";
@@ -40,4 +44,41 @@ export async function verifyCredential(
 
     const validVC = error == null;
     return { validVC, error };
+}
+
+export async function validatePass(signedLocator: string, environment: string) {
+    const locatorData = parseSignedLocator(signedLocator);
+
+    const { nft, collection } = await getNftFromLocator(locatorData.locator, environment);
+
+    const credentialId = nft.metadata.credentialRetrievalId;
+    if (credentialId == null) {
+        throw new Error("The given nft has no credential associated");
+    }
+
+    const credential = await getCredentialFromId(credentialId, environment);
+    if (credential == null) {
+        throw new Error("Cannot retrive the credential");
+    }
+    if (isEncryptedVerifiableCredential(credential)) {
+        throw new Error("The credential is encrypted");
+    }
+
+    const address = getDidAddress(credential.issuer.id);
+    const validLocator = verifyMessage(locatorData.payload, locatorData.signature) === address;
+
+    if (!validLocator) {
+        throw new Error("Invalid locator signature");
+    }
+
+    const validCredential = await verifyCredential(credential);
+    if (!validCredential.validVC) {
+        throw new Error(`Invalid credential: ${validCredential.error}`);
+    }
+
+    return {
+        nft,
+        collection,
+        credential,
+    };
 }
