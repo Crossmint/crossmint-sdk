@@ -3394,13 +3394,6 @@
     axios "^0.27.2"
     long "^4.0.0"
 
-"@krebitdao/eip712-vc@1.0.3":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@krebitdao/eip712-vc/-/eip712-vc-1.0.3.tgz#7e70e9d680ef4286a314de8fa1f87a369798b619"
-  integrity sha512-+2J+eM3jyEA++KEQd6QqEycK+sZrSx1o14lY3r4s6rqgkrJ2CaQ6yTTYmBb1cE8ESFz1ai2tU2fbg72U6Vjt6g==
-  dependencies:
-    ethers "^5.5.1"
-
 "@leichtgewicht/ip-codec@^2.0.1":
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/@leichtgewicht/ip-codec/-/ip-codec-2.0.4.tgz#b2ac626d6cb9c8718ab459166d4bb405b8ffa78b"
@@ -11965,7 +11958,7 @@ ethereumjs-util@^7.1.5:
     ethereum-cryptography "^0.1.3"
     rlp "^2.2.4"
 
-ethers@5.7.2, ethers@^5.5.1, ethers@^5.6.5, ethers@^5.7.1:
+ethers@5.7.2, ethers@^5.6.5, ethers@^5.7.1:
   version "5.7.2"
   resolved "https://registry.yarnpkg.com/ethers/-/ethers-5.7.2.tgz#3a7deeabbb8c030d4126b24f84e525466145872e"
   integrity sha512-wswUsmWo1aOK8rR7DIKiWSw9DbLWe6x98Jrn8wcTflTVvaXhAMaB5zGAXy0GYQEQp9iO1iSHWVyARQm11zUtyg==
