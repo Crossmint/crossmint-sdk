@@ -1,3 +1,9 @@
+import {
+    EncryptedVerifiableCredential,
+    VerifiableCredential,
+    VerifiableCredentialType,
+} from "@/types/verifiableCredential";
+
 import { EVMBlockchain, EVMNFT } from "@crossmint/common-sdk-base";
 
 export function parseLocator(locator: string): EVMNFT {
@@ -16,4 +22,14 @@ export function parseLocator(locator: string): EVMNFT {
 
 export function isPolygon(chain: string): boolean {
     return chain.includes("poly");
+}
+
+export function isEncryptedVerifiableCredential(
+    credential: VerifiableCredentialType
+): credential is EncryptedVerifiableCredential {
+    return (
+        (credential as EncryptedVerifiableCredential).id !== undefined &&
+        (credential as EncryptedVerifiableCredential).payload !== undefined &&
+        (credential as VerifiableCredential).credentialSubject === undefined
+    );
 }

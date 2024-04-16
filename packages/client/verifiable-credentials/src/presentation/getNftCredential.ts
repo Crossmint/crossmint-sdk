@@ -1,9 +1,7 @@
-import { isPolygon } from "@/services/utils";
-import { VC_EVMNFT, parseLocator } from "@/types/nfts";
+import { isPolygon, parseLocator } from "@/services/utils";
+import { VC_EVMNFT } from "@/types/nfts";
 import { VerifiableCredentialType } from "@/types/verifiableCredential";
 import { NFTService } from "@/verification/services/nftStatus";
-
-import { EVMBlockchain } from "@crossmint/common-sdk-base";
 
 import { getCredentialFromId } from "./getCredential";
 import { MetadataService } from "./getMetadata";
