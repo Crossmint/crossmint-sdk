@@ -1,3 +1,5 @@
+import { SignedLocator } from "@/types/nfts";
+
 import { EVMBlockchain, EVMNFT } from "@crossmint/common-sdk-base";
 
 import {
@@ -19,6 +21,27 @@ export function parseLocator(locator: string): EVMNFT {
         tokenId: items[2],
     };
 }
+
+export function parseSignedLocator(signedLocator: string): SignedLocator {
+    const parts = signedLocator.split("||", 4);
+    if (parts.length !== 4) {
+        throw new Error("Invalid signed locator format");
+    }
+    const locator = parts[0];
+    const date = parts[1];
+    const nonce = parts[2];
+    const payload = `${locator}||${date}||${nonce}`;
+    const signature = parts[3];
+
+    return {
+        locator,
+        date,
+        nonce,
+        payload,
+        signature,
+    };
+}
+
 export function getDidAddress(did: string) {
     const parts = did.split(":");
     if (parts.length < 2) {
