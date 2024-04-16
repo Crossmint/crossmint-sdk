@@ -1,5 +1,4 @@
-import { isPolygon } from "@/services/utils";
-
+import { isPolygon } from "../services/utils";
 import { CredentialFilter } from "../types/credentialFilter";
 import { CredentialsCollection, VC_EVMNFT } from "../types/nfts";
 import { MetadataService } from "./getMetadata";

@@ -1,22 +1,16 @@
-import { isPolygon, parseLocator } from "@/services/utils";
-import { VC_EVMNFT } from "@/types/nfts";
-import { VerifiableCredentialType } from "@/types/verifiableCredential";
-import { NFTService } from "@/verification/services/nftStatus";
-
-import { getCredentialFromId } from "./getCredential";
+import { isPolygon, parseLocator } from "../services/utils";
+import { VC_EVMNFT } from "../types/nfts";
+import { NFTService } from "../verification/services/nftStatus";
 import { MetadataService } from "./getMetadata";
 
-export async function getCredentialFromLocator(
-    locator: string,
-    environment: string
-): Promise<VerifiableCredentialType> {
+export async function getNFTFromLocator(locator: string, environment: string) {
     const nft = parseLocator(locator);
     if (!isPolygon(nft.chain)) {
         throw new Error(`Verifiable Credentials are available only on polygon, provided chain: ${nft.chain}`);
     }
-
     const nftUri = await new NFTService(environment).getNftUri(nft);
     const nftMetadata = await new MetadataService().getFromIpfs(nftUri);
+
     console.debug(`Nft ${locator} metadata:`, nftMetadata);
     const vcNft: VC_EVMNFT = {
         metadata: nftMetadata,
@@ -38,14 +32,8 @@ export async function getCredentialFromLocator(
         )
     )[0];
 
-    const credentialId = vcNft.metadata.credentialRetrievalId;
-    if (credentialId == null) {
-        throw new Error("The given nft has no credential associated");
-    }
-
-    const credential = await getCredentialFromId(credentialId, environment);
-    if (credential == null) {
-        throw new Error("Cannot retrive the credential");
-    }
-    return credential;
+    return {
+        nft: vcNft,
+        collection: collection,
+    };
 }

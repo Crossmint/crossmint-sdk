@@ -1,8 +1,7 @@
-import { isPolygon } from "@/services/utils";
-
 import { getEnvironmentBaseUrl } from "@crossmint/client-sdk-base";
 
 import { CrossmintAPI } from "../services/crossmintAPI";
+import { isPolygon } from "../services/utils";
 import { VC_EVMNFT } from "../types/nfts";
 
 export async function getWalletNfts(chain: string, wallet: string, environment: string) {

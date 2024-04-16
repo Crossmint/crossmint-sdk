@@ -1,7 +1,7 @@
-import { CrossmintAPI } from "@/services/crossmintAPI";
 import { ethers, utils } from "ethers";
 
 import { nftZeroEight } from "../ABI/upgradeable721-v0.8";
+import { CrossmintAPI } from "../services/crossmintAPI";
 import { getProvider } from "../services/provider";
 import { CredentialsCollection } from "../types/nfts";
 

@@ -1,4 +1,3 @@
-import { isPolygon } from "@/services/utils";
 import { StaticJsonRpcProvider } from "@ethersproject/providers";
 import { Contract } from "ethers";
 import { constants } from "ethers";
@@ -7,6 +6,7 @@ import { EVMNFT } from "@crossmint/common-sdk-base";
 
 import { abi_ERC_721 } from "../../ABI/ERC721";
 import { getProvider } from "../../services/provider";
+import { isPolygon } from "../../services/utils";
 
 export class NFTService {
     private environment: string;

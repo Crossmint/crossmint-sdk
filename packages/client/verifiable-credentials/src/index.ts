@@ -11,6 +11,6 @@ export { getCredentialCollections } from "./presentation/getCollections";
 export { MetadataService } from "./presentation/getMetadata";
 export { CrossmintAPI } from "./services/crossmintAPI";
 export { getCredentialFromId } from "./presentation/getCredential";
-export { getCredentialFromLocator } from "./presentation/getNftCredential";
+export { getNFTFromLocator } from "./presentation/getNftCredential";
 // Decryption
 export { Lit } from "./services/litInterface";

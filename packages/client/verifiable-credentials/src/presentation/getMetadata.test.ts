@@ -1,6 +1,6 @@
-import * as API from "@/services/crossmintAPI";
-import { ethers, utils } from "ethers";
+import { ethers } from "ethers";
 
+import * as API from "../services/crossmintAPI";
 import { CredentialsCollection } from "../types/nfts";
 import { MetadataService, formatUrl } from "./getMetadata";
 
