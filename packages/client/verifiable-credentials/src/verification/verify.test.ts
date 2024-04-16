@@ -5,11 +5,7 @@ import { validatePass, verifyCredential } from "./verify";
 
 jest.mock("./services/signature");
 jest.mock("./services/nftStatus");
-jest.mock("@krebitdao/eip712-vc", () => {
-    return {
-        EIP712VC: jest.fn().mockImplementation(() => {}),
-    };
-});
+
 describe("verifyCredential", () => {
     beforeEach(() => {
         jest.resetAllMocks();

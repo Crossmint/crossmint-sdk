@@ -4,11 +4,6 @@ import { MetadataService } from "./getMetadata";
 import * as GetNfts from "./getNfts";
 
 jest.mock("./getMetadata");
-jest.mock("@krebitdao/eip712-vc", () => {
-    return {
-        EIP712VC: jest.fn().mockImplementation(() => {}),
-    };
-});
 
 describe("getCollections", () => {
     it("should group NFTs by contract address", () => {
