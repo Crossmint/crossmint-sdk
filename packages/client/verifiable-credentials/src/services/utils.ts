@@ -19,6 +19,13 @@ export function parseLocator(locator: string): EVMNFT {
         tokenId: items[2],
     };
 }
+export function getDidAddress(did: string) {
+    const parts = did.split(":");
+    if (parts.length < 2) {
+        throw new Error("Issuer DID should be in the format did:{chain}:{address}");
+    }
+    return parts[2];
+}
 
 export function isEncryptedVerifiableCredential(
     credential: VerifiableCredentialType
