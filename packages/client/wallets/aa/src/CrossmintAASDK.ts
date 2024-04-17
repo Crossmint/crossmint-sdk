@@ -1,5 +1,5 @@
 import { CrossmintWalletService } from "@/api";
-import { EVMAAWallet, getBundlerRPC, getViemNetwork } from "@/blockchain";
+import { EVMAAWallet, TChain, entryPoint, getBundlerRPC } from "@/blockchain";
 import type { BackwardsCompatibleChains, CrossmintAASDKInitParams, WalletConfig } from "@/types";
 import {
     CURRENT_VERSION,
@@ -11,12 +11,14 @@ import {
     transformBackwardsCompatibleChains,
 } from "@/utils";
 import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
-import { createKernelAccount } from "@zerodev/sdk";
-import { PublicClient, createPublicClient, http } from "viem";
+import type { KernelValidator } from "@zerodev/ecdsa-validator";
+import { KernelSmartAccount, createKernelAccount } from "@zerodev/sdk";
+import { ENTRYPOINT_ADDRESS_V07 } from "permissionless";
+import { EntryPoint } from "permissionless/types/entrypoint";
+import { HttpTransport, PublicClient, createPublicClient, http } from "viem";
 
 import {
     BlockchainIncludingTestnet,
-    EVMBlockchainIncludingTestnet,
     UserIdentifierParams,
     blockchainToChainId,
     isEVMBlockchain,
@@ -63,11 +65,6 @@ export class CrossmintAASDK {
 
             const userIdentifier = parseUserIdentifier(user);
 
-            const publicClient = createPublicClient({
-                chain: getViemNetwork(chain as EVMBlockchainIncludingTestnet),
-                transport: http(getBundlerRPC(chain)),
-            });
-              
             const owner = await createOwnerSigner({
                 chain,
                 walletConfig,
@@ -75,22 +72,29 @@ export class CrossmintAASDK {
 
             const address = owner.address;
 
+            const publicClient = createPublicClient({
+                transport: http(getBundlerRPC(chain)),
+            });
+
             const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
                 signer: owner,
+                entryPoint: ENTRYPOINT_ADDRESS_V07,
             });
 
             const account = await createKernelAccount(publicClient, {
                 plugins: {
                     sudo: ecdsaValidator,
                 },
+                index: BigInt(0),
+                entryPoint: ENTRYPOINT_ADDRESS_V07,
             });
 
             const evmAAWallet = new EVMAAWallet(
-                account,
+                account as unknown as KernelSmartAccount<EntryPoint, HttpTransport, TChain>,
                 this.crossmintService,
                 chain,
                 publicClient as PublicClient,
-                ecdsaValidator
+                ecdsaValidator as unknown as KernelValidator<entryPoint, "ECDSAValidator">
             );
 
             const abstractAddress = account.address;

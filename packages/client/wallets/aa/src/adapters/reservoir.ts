@@ -27,7 +27,6 @@ export function reservoirAdapter(aaWallet: EVMAAWallet): ReservoirWallet {
         },
         handleSendTransactionStep: async (chainId, stepItem, _) => {
             const stepData = stepItem.data;
-
             return await aaWallet.sendTransaction({
                 chainId: chainId,
                 data: stepData.data,

@@ -1,9 +1,12 @@
 import { AuthSig } from "@lit-protocol/types";
 import { TORUS_NETWORK_TYPE } from "@web3auth/single-factor-auth";
 import { KernelAccountClient, KernelSmartAccount } from "@zerodev/sdk";
-import { Chain, PublicClient, Transport, EIP1193Provider, LocalAccount } from "viem";
+import { EntryPoint } from "permissionless/_types/types";
+import { Chain, EIP1193Provider, HttpTransport, LocalAccount, PublicClient, Transport } from "viem";
 
 import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
+
+import { TChain } from "..";
 
 export type CrossmintAASDKInitParams = {
     apiKey: string;
@@ -49,9 +52,9 @@ export type FireblocksNCWSigner =
       });
 
 export type ViemAccount = {
-    type: "VIEM_ACCOUNT",
-    account: LocalAccount
-}
+    type: "VIEM_ACCOUNT";
+    account: LocalAccount;
+};
 
 type Signer = EIP1193Provider | Web3AuthSigner | ViemAccount;
 
@@ -93,5 +96,10 @@ export type BackwardsCompatibleChains = "goerli";
 
 export type Client = {
     publicClient: PublicClient;
-    walletClient: KernelAccountClient<Transport, Chain, KernelSmartAccount>;
+    walletClient: KernelAccountClient<
+        EntryPoint,
+        HttpTransport,
+        TChain,
+        KernelSmartAccount<EntryPoint, HttpTransport, TChain>
+    >;
 };

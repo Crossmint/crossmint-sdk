@@ -22,6 +22,6 @@ export const RELAY_API_KEY = "c8999b7e-8bb7-416d-a854-dac8632f9ee6_crossmint";
 export const SCW_SERVICE = "SDK_AA";
 export const BUNDLER_RPC = "https://rpc.zerodev.app/api/v2/bundler/";
 export const PAYMASTER_RPC = "https://rpc.zerodev.app/api/v2/paymaster/";
-export const PM_BASE_SEPOLIA_RPC = "https://api.developer.coinbase.com/rpc/v1/base-sepolia/6BTAmOQZ0x1YWtI24hIKKqdHWmVP1UXf"; 
-export const PM_BASE_RPC = "https://api.developer.coinbase.com/rpc/v1/base/6BTAmOQZ0x1YWtI24hIKKqdHWmVP1UXf"; 
-
+export const PM_BASE_SEPOLIA_RPC =
+    "https://api.developer.coinbase.com/rpc/v1/base-sepolia/6BTAmOQZ0x1YWtI24hIKKqdHWmVP1UXf";
+export const PM_BASE_RPC = "https://api.developer.coinbase.com/rpc/v1/base/6BTAmOQZ0x1YWtI24hIKKqdHWmVP1UXf";
