@@ -5416,6 +5416,18 @@
   dependencies:
     "@simplewebauthn/typescript-types" "^7.4.0"
 
+"@simplewebauthn/browser@^9.0.1":
+  version "9.0.1"
+  resolved "https://registry.yarnpkg.com/@simplewebauthn/browser/-/browser-9.0.1.tgz#46a12c2bcefcb199f7fcb6a7e883531cd6efde17"
+  integrity sha512-wD2WpbkaEP4170s13/HUxPcAV5y4ZXaKo1TfNklS5zDefPinIgXOpgz1kpEvobAsaLPa2KeH7AKKX/od1mrBJw==
+  dependencies:
+    "@simplewebauthn/types" "^9.0.1"
+
+"@simplewebauthn/types@^9.0.1":
+  version "9.0.1"
+  resolved "https://registry.yarnpkg.com/@simplewebauthn/types/-/types-9.0.1.tgz#3a68d50e63d8821cf2067de3324c68d5e8120d0c"
+  integrity sha512-tGSRP1QvsAvsJmnOlRQyw/mvK9gnPtjEc5fg2+m8n+QUa+D7rvrKkOYyfpy42GTs90X3RDOnqJgfHt+qO67/+w==
+
 "@simplewebauthn/typescript-types@^7.0.0", "@simplewebauthn/typescript-types@^7.4.0":
   version "7.4.0"
   resolved "https://registry.yarnpkg.com/@simplewebauthn/typescript-types/-/typescript-types-7.4.0.tgz#1f5d55e187cbd30727a75543caf1bade747625ce"
@@ -7893,6 +7905,14 @@
   version "5.2.1"
   resolved "https://registry.yarnpkg.com/@zerodev/ecdsa-validator/-/ecdsa-validator-5.2.1.tgz#888056308a6a834049ddfe8ab067668b2ea592cf"
   integrity sha512-/VDxntTzalQFGOEY3JbM1c39p0jiLbrF97E2V4NR5L4cRgNiWBu/QycW10zUeoeyFuqeghc6vPhNe/M1e7HTig==
+
+"@zerodev/permissions@5.2.5":
+  version "5.2.5"
+  resolved "https://registry.yarnpkg.com/@zerodev/permissions/-/permissions-5.2.5.tgz#6d20cf2f0b7798329bd75d0a82e2ddabf2856a16"
+  integrity sha512-9bnKB+pzKETIXaVgjy/Gg4oALIn0tM/6EQbeMU4wiWr5i/XD0sMCCkoTwiBWLsgVRKxiSJcX6xmTPtOC5rhi6A==
+  dependencies:
+    "@simplewebauthn/browser" "^9.0.1"
+    merkletreejs "^0.3.11"
 
 "@zerodev/sdk@4.5.2":
   version "4.5.2"
