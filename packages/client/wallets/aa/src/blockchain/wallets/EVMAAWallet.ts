@@ -11,24 +11,26 @@ import {
 import type { Deferrable } from "@ethersproject/properties";
 import { type TransactionRequest } from "@ethersproject/providers";
 import type { KernelValidator } from "@zerodev/ecdsa-validator";
-import type { KernelAccountClient } from "@zerodev/sdk";
+import type { KernelAccountClient, KernelSmartAccount } from "@zerodev/sdk";
 import { createKernelAccount, createKernelAccountClient, createZeroDevPaymasterClient } from "@zerodev/sdk";
-import type { KernelSmartAccount } from "@zerodev/sdk";
-import { oneAddress, serializeSessionKeyAccount, signerToSessionKeyValidator } from "@zerodev/session-key";
-import { UserOperation, walletClientToSmartAccountSigner } from "permissionless";
 import { ENTRYPOINT_ADDRESS_V07 } from "permissionless";
 import { createPimlicoPaymasterClient } from "permissionless/clients/pimlico";
 import { EntryPoint } from "permissionless/types/entrypoint";
-import type { EIP1193Provider, Hash, PublicClient, TypedDataDefinition } from "viem";
+import type { EIP1193Provider, Hash, HttpTransport, PublicClient, TypedDataDefinition } from "viem";
 import { Hex, createWalletClient, custom, http } from "viem";
-import type { Chain, HttpTransport, Transport } from "viem";
 import { Web3 } from "web3";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 import { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import { TChain, entryPoint, getBundlerRPC, getPaymasterRPC, getUrlProviderByBlockchain, getViemNetwork } from "../BlockchainNetworks";
+
 import { resolveDeferrable } from "@/utils/deferrable";
+import { serializePermissionAccount, toPermissionValidator } from "@zerodev/permissions";
+import { toECDSASigner } from "@zerodev/permissions/signers";
+import { walletClientToSmartAccountSigner } from "permissionless";
+import { Custodian } from "../plugins";
+import { TokenType } from "../token";
 
 export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchainIncludingTestnet> {
     private sessionKeySignerAddress?: Hex;
@@ -244,7 +246,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
     setSessionKeySignerAddress(sessionKeySignerAddress: Hex) {
         this.sessionKeySignerAddress = sessionKeySignerAddress;
     }
-    /*
+    
     async setCustodianForTokens(tokenType?: TokenType, custodian?: Custodian) {
         try {
             logInfo("[SET_CUSTODIAN_FOR_TOKENS] - INIT", {
@@ -262,28 +264,31 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
             });
 
             const smartAccountSigner = walletClientToSmartAccountSigner(walletClientSigner);
-            const sessionKeyValidator = await signerToSessionKeyValidator(this.publicClient, {
+            const sessionKeySigner = toECDSASigner({
                 signer: smartAccountSigner,
-                validatorData: {
-                    paymaster: oneAddress,
-                },
-            });
+              })
 
+            const sessionKeyValidator = await toPermissionValidator(this.publicClient, {
+                entryPoint: ENTRYPOINT_ADDRESS_V07,
+                signer: sessionKeySigner,
+                policies: [],
+              })
+            
             const sessionKeyAccount = await createKernelAccount(this.publicClient, {
+                entryPoint: ENTRYPOINT_ADDRESS_V07,
                 plugins: {
                     sudo: this.ecdsaValidator,
                     regular: sessionKeyValidator,
                 },
             });
-            const serializedSessionKeyAccount = await serializeSessionKeyAccount(sessionKeyAccount);
+            const serializedSessionKeyAccount = await serializePermissionAccount(sessionKeyAccount);
+            
             const generateSessionKeyDataInput: GenerateSignatureDataInput = {
                 sessionKeyData: serializedSessionKeyAccount,
-                smartContractWalletAddress: this.account.address,
+                smartContractWalletAddress: this.kernelClient.account.address,
                 chain: this.chain,
                 version: 0,
             };
-
-            sessionKeyAccount;
             await this.crossmintService.generateChainData(generateSessionKeyDataInput);
             logInfo("[SET_CUSTODIAN_FOR_TOKENS] - FINISH", {
                 service: SCW_SERVICE,
@@ -299,7 +304,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
             });
             throw new Error(`Error setting custodian for tokens. If this error persists, please contact support.`);
         }
-    }*/
+    }
 
     async upgradeVersion() {
         try {
