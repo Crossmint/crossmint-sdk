@@ -8,26 +8,26 @@ import {
 import type { Deferrable } from "@ethersproject/properties";
 import { type TransactionRequest } from "@ethersproject/providers";
 import type { KernelValidator } from "@zerodev/ecdsa-validator";
-import type { KernelAccountClient } from "@zerodev/sdk";
+import type { KernelAccountClient, KernelSmartAccount } from "@zerodev/sdk";
 import { createKernelAccount, createKernelAccountClient, createZeroDevPaymasterClient } from "@zerodev/sdk";
-import type { KernelSmartAccount } from "@zerodev/sdk";
 import { ENTRYPOINT_ADDRESS_V07 } from "permissionless";
 import { createPimlicoPaymasterClient } from "permissionless/clients/pimlico";
 import { EntryPoint } from "permissionless/types/entrypoint";
-import type { EIP1193Provider, Hash, PublicClient, TypedDataDefinition } from "viem";
+import type { EIP1193Provider, Hash, HttpTransport, PublicClient, TypedDataDefinition } from "viem";
 import { Hex, createWalletClient, custom, http } from "viem";
-import type { HttpTransport } from "viem";
 import { Web3 } from "web3";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 import { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import { TChain, entryPoint, getBundlerRPC, getPaymasterRPC, getUrlProviderByBlockchain, getViemNetwork } from "../BlockchainNetworks";
+
+import { resolveDeferrable } from "@/utils/deferrable";
+import { serializePermissionAccount, toPermissionValidator } from "@zerodev/permissions";
+import { toECDSASigner } from "@zerodev/permissions/signers";
+import { walletClientToSmartAccountSigner } from "permissionless";
 import { Custodian } from "../plugins";
 import { TokenType } from "../token";
-import { serializePermissionAccount, toPermissionValidator } from "@zerodev/permissions";
-import { toECDSASigner } from "@zerodev/permissions/signers"
-import { walletClientToSmartAccountSigner } from "permissionless";
 
 export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchainIncludingTestnet> {
     private sessionKeySignerAddress?: Hex;
@@ -130,12 +130,37 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
 
     async sendTransaction(transaction: Deferrable<TransactionRequest>): Promise<Hash> {
 
-        logError("[SEND_TRANSACTION] - ERROR_SENDING_TRANSACTION", {
-            service: SCW_SERVICE,
-            error: errorToJSON("In maintenance"),
-            transaction,
-        });
-        throw new TransactionError(`Error sending transaction: In maintenance`);
+        try {
+            const decoratedTransaction = await decorateSendTransactionData(transaction);
+            const { to, value, gasLimit, nonce, data, maxFeePerGas, maxPriorityFeePerGas } = await resolveDeferrable(
+                decoratedTransaction
+            );
+    
+            return await this.kernelClient.sendTransaction({
+                to: to as `0x${string}`,
+                value: value ? BigInt(value.toString()) : undefined,
+                gas: gasLimit ? BigInt(gasLimit.toString()) : undefined,
+                nonce: await getNonce(nonce),
+                data: await convertData(data),
+                maxFeePerGas: maxFeePerGas ? BigInt(maxFeePerGas.toString()) : undefined,
+                maxPriorityFeePerGas: maxPriorityFeePerGas ? BigInt(maxPriorityFeePerGas.toString()) : undefined,
+                maxFeePerBlobGas: undefined,
+                blobs: undefined,
+                blobVersionedHashes: undefined,
+                kzg: undefined,
+                sidecars: undefined,
+                type: undefined,
+                chain: null,
+            });
+        } catch (error) {
+            logError("[SEND_TRANSACTION] - ERROR_SENDING_TRANSACTION", {
+                service: SCW_SERVICE,
+                error: errorToJSON(error),
+                transaction,
+            });
+            throw new TransactionError(`Error sending transaction: ${error}`);
+        }
+
     }
 
     /* Pending new version of transfer
