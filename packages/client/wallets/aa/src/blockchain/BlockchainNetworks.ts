@@ -98,7 +98,7 @@ export function getUrlProviderByBlockchain(chain: EVMBlockchainIncludingTestnet)
         ["optimism-sepolia", "https://sepolia.optimism.io"],
         ["zora-goerli", null],
         ["zora-sepolia", null],
-        ["base", "https://base.llamarpc.com"],
+        ["base", "https://mainnet.base.org"],
         ["zora", null],
         ["arbitrumnova", "https://arbitrum-nova-rpc.publicnode.com"],
         ["astar-zkevm", "https://rpc.startale.com/astar-zkevm"],
