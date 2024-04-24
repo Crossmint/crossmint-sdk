@@ -8,12 +8,16 @@ import {
     errorToJSON,
     getNonce,
 } from "@/utils";
+import { resolveDeferrable } from "@/utils/deferrable";
 import type { Deferrable } from "@ethersproject/properties";
 import { type TransactionRequest } from "@ethersproject/providers";
 import type { KernelValidator } from "@zerodev/ecdsa-validator";
+import { serializePermissionAccount, toPermissionValidator } from "@zerodev/permissions";
+import { toECDSASigner } from "@zerodev/permissions/signers";
 import type { KernelAccountClient, KernelSmartAccount } from "@zerodev/sdk";
 import { createKernelAccount, createKernelAccountClient, createZeroDevPaymasterClient } from "@zerodev/sdk";
 import { ENTRYPOINT_ADDRESS_V07 } from "permissionless";
+import { walletClientToSmartAccountSigner } from "permissionless";
 import { createPimlicoPaymasterClient } from "permissionless/clients/pimlico";
 import { EntryPoint } from "permissionless/types/entrypoint";
 import type { EIP1193Provider, Hash, HttpTransport, PublicClient, TypedDataDefinition } from "viem";
@@ -23,12 +27,14 @@ import { Web3 } from "web3";
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 import { CrossmintWalletService } from "../../api/CrossmintWalletService";
-import { TChain, entryPoint, getBundlerRPC, getPaymasterRPC, getUrlProviderByBlockchain, getViemNetwork } from "../BlockchainNetworks";
-
-import { resolveDeferrable } from "@/utils/deferrable";
-import { serializePermissionAccount, toPermissionValidator } from "@zerodev/permissions";
-import { toECDSASigner } from "@zerodev/permissions/signers";
-import { walletClientToSmartAccountSigner } from "permissionless";
+import {
+    TChain,
+    entryPoint,
+    getBundlerRPC,
+    getPaymasterRPC,
+    getUrlProviderByBlockchain,
+    getViemNetwork,
+} from "../BlockchainNetworks";
 import { Custodian } from "../plugins";
 import { TokenType } from "../token";
 
@@ -83,15 +89,15 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
         return this.chain === EVMBlockchainIncludingTestnet.BASE ||
             this.chain === EVMBlockchainIncludingTestnet.BASE_SEPOLIA
             ? createPimlicoPaymasterClient({
-                chain: getViemNetwork(this.chain as EVMBlockchainIncludingTestnet),
-                transport: http(getPaymasterRPC(this.chain)),
-                entryPoint: ENTRYPOINT_ADDRESS_V07,
-            })
+                  chain: getViemNetwork(this.chain as EVMBlockchainIncludingTestnet),
+                  transport: http(getPaymasterRPC(this.chain)),
+                  entryPoint: ENTRYPOINT_ADDRESS_V07,
+              })
             : createZeroDevPaymasterClient({
-                chain: getViemNetwork(this.chain),
-                transport: http(getPaymasterRPC(this.chain)),
-                entryPoint: ENTRYPOINT_ADDRESS_V07,
-            });
+                  chain: getViemNetwork(this.chain),
+                  transport: http(getPaymasterRPC(this.chain)),
+                  entryPoint: ENTRYPOINT_ADDRESS_V07,
+              });
     }
 
     getAddress() {
@@ -132,13 +138,12 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
     }
 
     async sendTransaction(transaction: Deferrable<TransactionRequest>): Promise<Hash> {
-
         try {
             const decoratedTransaction = await decorateSendTransactionData(transaction);
             const { to, value, gasLimit, nonce, data, maxFeePerGas, maxPriorityFeePerGas } = await resolveDeferrable(
                 decoratedTransaction
             );
-    
+
             return await this.kernelClient.sendTransaction({
                 to: to as `0x${string}`,
                 value: value ? BigInt(value.toString()) : undefined,
@@ -163,7 +168,6 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
             });
             throw new TransactionError(`Error sending transaction: ${error}`);
         }
-
     }
 
     /* Pending new version of transfer
@@ -246,7 +250,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
     setSessionKeySignerAddress(sessionKeySignerAddress: Hex) {
         this.sessionKeySignerAddress = sessionKeySignerAddress;
     }
-    
+
     async setCustodianForTokens(tokenType?: TokenType, custodian?: Custodian) {
         try {
             logInfo("[SET_CUSTODIAN_FOR_TOKENS] - INIT", {
@@ -266,14 +270,14 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
             const smartAccountSigner = walletClientToSmartAccountSigner(walletClientSigner);
             const sessionKeySigner = toECDSASigner({
                 signer: smartAccountSigner,
-              })
+            });
 
             const sessionKeyValidator = await toPermissionValidator(this.publicClient, {
                 entryPoint: ENTRYPOINT_ADDRESS_V07,
                 signer: sessionKeySigner,
                 policies: [],
-              })
-            
+            });
+
             const sessionKeyAccount = await createKernelAccount(this.publicClient, {
                 entryPoint: ENTRYPOINT_ADDRESS_V07,
                 plugins: {
@@ -282,7 +286,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
                 },
             });
             const serializedSessionKeyAccount = await serializePermissionAccount(sessionKeyAccount);
-            
+
             const generateSessionKeyDataInput: GenerateSignatureDataInput = {
                 sessionKeyData: serializedSessionKeyAccount,
                 smartContractWalletAddress: this.kernelClient.account.address,

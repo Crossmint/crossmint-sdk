@@ -1631,6 +1631,38 @@
     siwe "2.1.4"
     viem "^2.5.0"
 
+"@crossmint/client-sdk-aa@1.0.0-alpha.1":
+  version "1.0.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@crossmint/client-sdk-aa/-/client-sdk-aa-1.0.0-alpha.1.tgz#d358d36e24c7f7f38c78c1262fad60c377fc38d4"
+  integrity sha512-iz3T2eG29xwi1WTY1NYMAQsRo82JPR/HGFTuXL1YGu+7sVh8PAOeK48eV2EsXfCsyJNOjYcOXsYHhHmwZbD1yw==
+  dependencies:
+    "@ambire/signature-validator" "1.3.1"
+    "@crossmint/common-sdk-base" "0.0.12"
+    "@datadog/browser-logs" "4.42.2"
+    "@lit-protocol/auth-helpers" "3.1.2"
+    "@lit-protocol/constants" "3.1.2"
+    "@lit-protocol/contracts-sdk" "3.1.2"
+    "@lit-protocol/lit-auth-client" "3.1.2"
+    "@lit-protocol/lit-node-client" "3.1.2"
+    "@lit-protocol/pkp-ethers" "3.1.2"
+    "@lit-protocol/types" "3.1.2"
+    "@reservoir0x/reservoir-sdk" "2.0.11"
+    "@types/node-forge" "1.3.1"
+    "@web3auth/base" "7.3.2"
+    "@web3auth/ethereum-provider" "7.3.2"
+    "@web3auth/single-factor-auth" "7.3.0"
+    "@zerodev/ecdsa-validator" "5.1.0"
+    "@zerodev/sdk" "5.1.12"
+    "@zerodev/session-key" "5.1.0"
+    email-validator "2.0.4"
+    ethers "5.7.2"
+    libphonenumber-js "1.10.44"
+    node-forge "1.3.1"
+    permissionless "^0.0.34"
+    siwe "2.1.4"
+    viem "2.8.16"
+    web3 "4.5.0"
+
 "@crossmint/client-sdk-base@1.1.12":
   version "1.1.12"
   resolved "https://registry.yarnpkg.com/@crossmint/client-sdk-base/-/client-sdk-base-1.1.12.tgz#9cb222b22f27bb2c246c0264dd64a1a7b368e8e1"
@@ -7901,6 +7933,11 @@
     js-yaml "^3.10.0"
     tslib "^2.4.0"
 
+"@zerodev/ecdsa-validator@5.1.0":
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/@zerodev/ecdsa-validator/-/ecdsa-validator-5.1.0.tgz#74bd4f6f2df9ff32560ed70109ece24b08d8492f"
+  integrity sha512-mjoRXn/XuKEeyXXjapZMnExNeNnqbRbEHJA/wMhY1pHb+p+29E9oY3JSTgsOKF9ICLsAzD9ZxQTAQJLtrfP2fQ==
+
 "@zerodev/ecdsa-validator@5.2.1":
   version "5.2.1"
   resolved "https://registry.yarnpkg.com/@zerodev/ecdsa-validator/-/ecdsa-validator-5.2.1.tgz#888056308a6a834049ddfe8ab067668b2ea592cf"
@@ -7926,12 +7963,26 @@
     merkletreejs "^0.3.10"
     viem "^1.5.3"
 
+"@zerodev/sdk@5.1.12":
+  version "5.1.12"
+  resolved "https://registry.yarnpkg.com/@zerodev/sdk/-/sdk-5.1.12.tgz#4563e4a02138a4dcc54895965053a3ff899213f9"
+  integrity sha512-osX5WTpLzVdjXpJKCJ5B0n5Wq9OO7sLydJ1tRzobP7bg5Dfy1444nUmS/1pzGtBTNP5NTmehLfPEWZDjzCs+0A==
+  dependencies:
+    permissionless "^0.0.34"
+
 "@zerodev/sdk@5.2.1":
   version "5.2.1"
   resolved "https://registry.yarnpkg.com/@zerodev/sdk/-/sdk-5.2.1.tgz#349210c424b4d43e6f1150e8a5ebd7992e3ca599"
   integrity sha512-RM05e/8hKP2q75Bb3/y8Nd65sJ6XmFOrS7CcNVwJZpOK0wu4fbisJPstCTZEyl55lYMfDBwx+0KUUTyl9LIb8w==
   dependencies:
     semver "^7.6.0"
+
+"@zerodev/session-key@5.1.0":
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/@zerodev/session-key/-/session-key-5.1.0.tgz#9c5206a87890083b8a7676768e39de4443095285"
+  integrity sha512-EC46AFg5MHNGzv5Fb3sf3qq3ed1K4ivY/oY6DpQ5NTtfido0CM3pNxD8cClblSqITONR9jK9Uv1VNSpPETYoZw==
+  dependencies:
+    merkletreejs "^0.3.11"
 
 "@zerodev/session-key@5.2.1":
   version "5.2.1"
@@ -18212,10 +18263,15 @@ performance-now@^2.1.0:
   resolved "https://registry.yarnpkg.com/performance-now/-/performance-now-2.1.0.tgz#6309f4e0e5fa913ec1c69307ae364b4b377c9e7b"
   integrity sha512-7EAHlyLHI56VEIdK57uwHdHKIaAGbnXPiw0yWbarQZOKaKpvUIgW0jWRVLiatnM+XXlSwsanIBH/hzGMJulMow==
 
-permissionless@0.1.17:
-  version "0.1.17"
-  resolved "https://registry.yarnpkg.com/permissionless/-/permissionless-0.1.17.tgz#d50d0475287b70cbd0d76e7f946449be1844f9c5"
-  integrity sha512-xesPWvTvLb5yWB7CzH3W1e989gzqx6EKKo2/jIELLpA5si11yEFnD1rbWxKKwvREip0mJzzIzUbQepQBIhk3Kg==
+permissionless@0.1.18:
+  version "0.1.18"
+  resolved "https://registry.yarnpkg.com/permissionless/-/permissionless-0.1.18.tgz#cefed0de1ad3cb3a36dd4512b6d965e08f56c19c"
+  integrity sha512-A3OBQfA/wj+Qj5zXyMEoKwuwd+GgImG9EFYYtLHPooDJ26CL44HJpY27owH5MPsUS6IX+1E9N6mF4J/frQhXoQ==
+
+permissionless@^0.0.34:
+  version "0.0.34"
+  resolved "https://registry.yarnpkg.com/permissionless/-/permissionless-0.0.34.tgz#479ee4c02068c6982a308df7a64351eea626a00d"
+  integrity sha512-lP59+7VmjLO7dPctH69kgcJ8evxGkrjQ9hruOA+7ymWvUMiuXAfVxvXSWCV+lg67N2TGs1JneEuhwK+iI3kPvA==
 
 picocolors@^0.2.1:
   version "0.2.1"
@@ -22586,10 +22642,24 @@ vary@~1.1.2:
   resolved "https://registry.yarnpkg.com/vary/-/vary-1.1.2.tgz#2299f02c6ded30d4a5961b0b9f74524a18f634fc"
   integrity sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==
 
-viem@2.9.18:
-  version "2.9.18"
-  resolved "https://registry.yarnpkg.com/viem/-/viem-2.9.18.tgz#5f24982fd4f186e90f1ed304e05054ebb4f263b9"
-  integrity sha512-QULuau6DWDVRjGDVIUPuUybqiYu8mxscvwkKQ7dqNRl6w/t8RWs92aJZSQpqEULoERlKYyFFlj7cz4mWFEchsg==
+viem@2.8.16:
+  version "2.8.16"
+  resolved "https://registry.yarnpkg.com/viem/-/viem-2.8.16.tgz#30370390a6f109657b57c1a01b2793c4056b4e95"
+  integrity sha512-J8tu1aP7TfI2HT/IEmyJ+n+WInrA/cuMuJtfgvYhYgHBobxhYGc2SojHm5lZBWcWgErN1Ld7VcKUwTmPh4ToQA==
+  dependencies:
+    "@adraffy/ens-normalize" "1.10.0"
+    "@noble/curves" "1.2.0"
+    "@noble/hashes" "1.3.2"
+    "@scure/bip32" "1.3.2"
+    "@scure/bip39" "1.2.1"
+    abitype "1.0.0"
+    isows "1.0.3"
+    ws "8.13.0"
+
+viem@2.9.17:
+  version "2.9.17"
+  resolved "https://registry.yarnpkg.com/viem/-/viem-2.9.17.tgz#4a74b5302fe5b3d6ac8db4769418a0466867befa"
+  integrity sha512-xMQ4JhgR1fPXQYagEeSsq9lmKXXooHP2gcnowb0eJRq3NTheyzpVBtMuH8DZnnWT4aeFepZktqSXlFul+Ou5Xg==
   dependencies:
     "@adraffy/ens-normalize" "1.10.0"
     "@noble/curves" "1.2.0"
