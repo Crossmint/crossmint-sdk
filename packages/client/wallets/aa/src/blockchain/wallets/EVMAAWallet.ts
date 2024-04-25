@@ -38,6 +38,9 @@ import {
 import { Custodian } from "../plugins";
 import { TokenType } from "../token";
 
+import { verifyMessage } from "@ambire/signature-validator";
+import { ethers } from "ethers";
+
 export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchainIncludingTestnet> {
     private sessionKeySignerAddress?: Hex;
     private crossmintService: CrossmintWalletService;
@@ -345,5 +348,14 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
 
     async getNFTs() {
         return this.crossmintService.fetchNFTs(this.account.address, this.chain);
+    }
+
+    async verifyMessage(message: string, signature: string) {
+        return verifyMessage({
+            provider: new ethers.providers.JsonRpcProvider(getUrlProviderByBlockchain(this.chain)),
+            signer: this.getAddress(),
+            message,
+            signature,
+        });
     }
 }
