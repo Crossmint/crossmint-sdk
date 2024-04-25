@@ -85,7 +85,7 @@ export function getUrlProviderByBlockchain(chain: EVMBlockchainIncludingTestnet)
         ["polygon", "https://rpc.ankr.com/polygon"],
         ["bsc", "https://binance.llamarpc.com"],
         ["optimism", "https://rpc.ankr.com/optimism"],
-        ["arbitrum", "https://arbitrum.llamarpc.com"],
+        ["arbitrum", "https://rpc.ankr.com/arbitrum"],
         ["ethereum-sepolia", "https://ethereum-sepolia.publicnode.com"],
         ["polygon-amoy", "https://rpc-amoy.polygon.technology"],
         ["zkatana", "https://rpc.startale.com/zkatana"],
