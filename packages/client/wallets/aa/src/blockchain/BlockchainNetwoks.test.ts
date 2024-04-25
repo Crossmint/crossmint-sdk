@@ -46,8 +46,8 @@ describe("BlockchainNetworks Tests", () => {
             expect(getUrlProviderByBlockchain("ethereum")).toBe("https://eth.llamarpc.com");
             expect(getUrlProviderByBlockchain("polygon")).toBe("https://rpc.ankr.com/polygon");
             expect(getUrlProviderByBlockchain("bsc")).toBe("https://binance.llamarpc.com");
-            expect(getUrlProviderByBlockchain("optimism")).toBe("https://optimism.llamarpc.com");
-            expect(getUrlProviderByBlockchain("arbitrum")).toBe("https://arbitrum.llamarpc.com");
+            expect(getUrlProviderByBlockchain("optimism")).toBe("https://rpc.ankr.com/optimism");
+            expect(getUrlProviderByBlockchain("arbitrum")).toBe("https://rpc.ankr.com/arbitrum");
             expect(getUrlProviderByBlockchain("ethereum-goerli")).toBe("https://ethereum-goerli.publicnode.com");
             expect(getUrlProviderByBlockchain("ethereum-sepolia")).toBe("https://ethereum-sepolia.publicnode.com");
             expect(getUrlProviderByBlockchain("polygon-amoy")).toBe("https://rpc-amoy.polygon.technology");
