@@ -84,7 +84,7 @@ export function getUrlProviderByBlockchain(chain: EVMBlockchainIncludingTestnet)
         ["ethereum", "https://eth.llamarpc.com"],
         ["polygon", "https://rpc.ankr.com/polygon"],
         ["bsc", "https://binance.llamarpc.com"],
-        ["optimism", "https://optimism.llamarpc.com"],
+        ["optimism", "https://rpc.ankr.com/optimism"],
         ["arbitrum", "https://arbitrum.llamarpc.com"],
         ["ethereum-sepolia", "https://ethereum-sepolia.publicnode.com"],
         ["polygon-amoy", "https://rpc-amoy.polygon.technology"],
