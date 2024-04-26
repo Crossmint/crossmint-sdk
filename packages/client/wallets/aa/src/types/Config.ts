@@ -103,3 +103,5 @@ export type Client = {
         KernelSmartAccount<EntryPoint, HttpTransport, TChain>
     >;
 };
+
+export type EntryPointVersion = 0.6 | 0.7;

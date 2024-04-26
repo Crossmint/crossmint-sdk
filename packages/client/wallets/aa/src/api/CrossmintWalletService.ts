@@ -26,6 +26,14 @@ export class CrossmintWalletService extends BaseCrossmintService {
         );
     }
 
+    async getAbstractWalletEntryPointVersion(email: string, chain: EVMBlockchainIncludingTestnet) {
+        return this.fetchCrossmintAPI(
+            `v1-alpha1/wallets/entry-point-version?email=${encodeURIComponent(email)}&chain=${chain}`,
+            { method: "GET" },
+            `Error getting entry point version. Please contact support`
+        );
+    }
+
     async generateChainData(input: GenerateSignatureDataInput) {
         return this.fetchCrossmintAPI(
             "unstable/wallets/aa/wallets/chaindata",

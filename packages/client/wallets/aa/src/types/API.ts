@@ -11,6 +11,7 @@ export type StoreAbstractWalletInput = {
     version: number;
     baseLayer: string;
     chainId: number;
+    entryPointVersion: number;
 };
 
 export type GenerateSignatureDataInput = {

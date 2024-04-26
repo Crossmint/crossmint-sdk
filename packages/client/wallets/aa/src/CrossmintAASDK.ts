@@ -1,6 +1,6 @@
 import { CrossmintWalletService } from "@/api";
 import { EVMAAWallet, TChain, entryPoint, getBundlerRPC } from "@/blockchain";
-import type { BackwardsCompatibleChains, CrossmintAASDKInitParams, WalletConfig } from "@/types";
+import type { BackwardsCompatibleChains, CrossmintAASDKInitParams, EntryPointVersion, WalletConfig } from "@/types";
 import {
     CURRENT_VERSION,
     SCW_SERVICE,
@@ -13,12 +13,13 @@ import {
 import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
 import type { KernelValidator } from "@zerodev/ecdsa-validator";
 import { KernelSmartAccount, createKernelAccount } from "@zerodev/sdk";
-import { ENTRYPOINT_ADDRESS_V07 } from "permissionless";
+import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
 import { EntryPoint } from "permissionless/types/entrypoint";
 import { HttpTransport, PublicClient, createPublicClient, http } from "viem";
 
 import {
     BlockchainIncludingTestnet,
+    EVMBlockchainIncludingTestnet,
     UserIdentifierParams,
     blockchainToChainId,
     isEVMBlockchain,
@@ -30,7 +31,6 @@ import { parseUserIdentifier } from "./utils/user";
 
 export class CrossmintAASDK {
     crossmintService: CrossmintWalletService;
-    private readonly projectId: string;
 
     private constructor(config: CrossmintAASDKInitParams) {
         const validationResult = validateAPIKey(config.apiKey);
@@ -38,7 +38,6 @@ export class CrossmintAASDK {
             throw new Error("API key invalid");
         }
 
-        this.projectId = validationResult.projectId;
         this.crossmintService = new CrossmintWalletService(config.apiKey);
     }
 
@@ -65,6 +64,9 @@ export class CrossmintAASDK {
 
             const userIdentifier = parseUserIdentifier(user);
 
+            const entryPointVersion = await this.getEntryPointVersion(userIdentifier, chain);
+            const entryPoint = this.getEntryPointAddress(entryPointVersion);
+
             const owner = await createOwnerSigner({
                 chain,
                 walletConfig,
@@ -78,7 +80,7 @@ export class CrossmintAASDK {
 
             const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
                 signer: owner,
-                entryPoint: ENTRYPOINT_ADDRESS_V07,
+                entryPoint,
             });
 
             const account = await createKernelAccount(publicClient, {
@@ -86,7 +88,7 @@ export class CrossmintAASDK {
                     sudo: ecdsaValidator,
                 },
                 index: BigInt(0),
-                entryPoint: ENTRYPOINT_ADDRESS_V07,
+                entryPoint,
             });
 
             const evmAAWallet = new EVMAAWallet(
@@ -94,7 +96,8 @@ export class CrossmintAASDK {
                 this.crossmintService,
                 chain,
                 publicClient as PublicClient,
-                ecdsaValidator as unknown as KernelValidator<entryPoint, "ECDSAValidator">
+                ecdsaValidator as unknown as KernelValidator<entryPoint, "ECDSAValidator">,
+                entryPoint
             );
 
             const abstractAddress = account.address;
@@ -111,6 +114,7 @@ export class CrossmintAASDK {
                 version: CURRENT_VERSION,
                 baseLayer: "evm",
                 chainId: blockchainToChainId(chain),
+                entryPointVersion,
             });
             logInfo("[GET_OR_CREATE_WALLET] - FINISH", {
                 service: SCW_SERVICE,
@@ -141,5 +145,23 @@ export class CrossmintAASDK {
         keysToDelete.forEach((key) => {
             localStorage.removeItem(key);
         });
+    }
+
+    private getEntryPointAddress(entryPointVersion: EntryPointVersion): EntryPoint {
+        return entryPointVersion === 0.6 ? ENTRYPOINT_ADDRESS_V06 : ENTRYPOINT_ADDRESS_V07;
+    }
+
+    private async getEntryPointVersion<B extends EVMBlockchainIncludingTestnet = EVMBlockchainIncludingTestnet>(
+        userIdentifier: UserIdentifierParams,
+        chain: B | EVMBlockchainIncludingTestnet
+    ): Promise<EntryPointVersion> {
+        if (userIdentifier.email == null) {
+            throw new WalletSdkError(`Email is required to get the entry point version`);
+        }
+        const { entryPointVersion } = await this.crossmintService.getAbstractWalletEntryPointVersion(
+            userIdentifier.email,
+            chain
+        );
+        return entryPointVersion;
     }
 }
