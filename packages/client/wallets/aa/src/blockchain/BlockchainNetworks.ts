@@ -245,32 +245,33 @@ export function getViemNetwork(networkName: EVMBlockchainIncludingTestnet) {
     switch (networkName) {
         case "ethereum":
             return mainnet;
-        case "polygon":
-            return polygon;
-        case "bsc":
-            return bsc;
-        case "optimism":
-            return optimism;
-        case "arbitrum":
-            return arbitrum;
-        case "arbitrumnova":
-            return arbitrumNova;
-        case "base":
-            return base;
-        case "base-sepolia":
-            return baseSepolia;
         case "ethereum-goerli":
             return goerli;
         case "ethereum-sepolia":
             return sepolia;
+        case "polygon":
+            return polygon;
         case "polygon-amoy":
             return polygonAmoy;
-        case "astar-zkevm":
-            return astarZkEVM;
+        case "optimism":
+            return optimism;
         case "optimism-sepolia":
             return optimismSepolia;
+        case "arbitrum":
+            return arbitrum;
+        case "arbitrumnova":
+            return arbitrumNova;
         case "arbitrum-sepolia":
             return arbitrumSepolia;
+        case "base":
+            return base;
+        case "base-sepolia":
+            return baseSepolia;
+        case "astar-zkevm":
+            return astarZkEVM;
+        case "bsc":
+            return bsc;
+
         default:
             throw new Error(`Unsupported network: ${networkName}`);
     }
