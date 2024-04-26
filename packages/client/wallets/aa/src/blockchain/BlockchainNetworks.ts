@@ -6,6 +6,7 @@ import {
     ZD_AMOY_PROJECT_ID,
     ZD_ARBITRUM_NOVA_PROJECT_ID,
     ZD_ARBITRUM_PROJECT_ID,
+    ZD_ARBITRUM_SEPOLIA_PROJECT_ID,
     ZD_ASTAR_PROJECT_ID,
     ZD_BASE_PROJECT_ID,
     ZD_BASE_SEPOLIA_PROJECT_ID,
@@ -23,6 +24,7 @@ import {
     Chain,
     arbitrum,
     arbitrumNova,
+    arbitrumSepolia,
     astarZkEVM,
     base,
     baseSepolia,
@@ -89,7 +91,7 @@ export function getUrlProviderByBlockchain(chain: EVMBlockchainIncludingTestnet)
         ["ethereum-sepolia", "https://ethereum-sepolia.publicnode.com"],
         ["polygon-amoy", "https://rpc-amoy.polygon.technology"],
         ["zkatana", "https://rpc.startale.com/zkatana"],
-        ["arbitrum-sepolia", null],
+        ["arbitrum-sepolia", "https://sepolia-rollup.arbitrum.io/rpc"],
         ["base-goerli", null],
         ["base-sepolia", "https://base-sepolia-rpc.publicnode.com"],
         ["bsc-testnet", null],
@@ -154,7 +156,7 @@ export function getTickerByBlockchain(chain: EVMBlockchainIncludingTestnet) {
         ["ethereum-sepolia", "ETH"],
         ["polygon-amoy", "MATIC"],
         ["zkatana", "ETH"],
-        ["arbitrum-sepolia", null],
+        ["arbitrum-sepolia", "ETH"],
         ["base-goerli", null],
         ["base-sepolia", "ETH"],
         ["bsc-testnet", null],
@@ -186,7 +188,7 @@ export function getTickerNameByBlockchain(chain: EVMBlockchainIncludingTestnet) 
         ["ethereum-sepolia", "ETHEREUM"],
         ["polygon-amoy", "MATIC"],
         ["zkatana", "ETHEREUM"],
-        ["arbitrum-sepolia", null],
+        ["arbitrum-sepolia", "ETHEREUM"],
         ["base-goerli", null],
         ["base-sepolia", "ETHEREUM"],
         ["bsc-testnet", null],
@@ -218,7 +220,7 @@ export function getZeroDevProjectIdByBlockchain(chain: EVMBlockchainIncludingTes
         ["ethereum-sepolia", ZD_SEPOLIA_PROJECT_ID],
         ["polygon-amoy", ZD_AMOY_PROJECT_ID],
         ["zkatana", ZD_ZKATANA_PROJECT_ID],
-        ["arbitrum-sepolia", null],
+        ["arbitrum-sepolia", ZD_ARBITRUM_SEPOLIA_PROJECT_ID],
         ["base-goerli", null],
         ["base-sepolia", ZD_BASE_SEPOLIA_PROJECT_ID],
         ["bsc-testnet", null],
@@ -267,6 +269,8 @@ export function getViemNetwork(networkName: EVMBlockchainIncludingTestnet) {
             return astarZkEVM;
         case "optimism-sepolia":
             return optimismSepolia;
+        case "arbitrum-sepolia":
+            return arbitrumSepolia;
         default:
             throw new Error(`Unsupported network: ${networkName}`);
     }
