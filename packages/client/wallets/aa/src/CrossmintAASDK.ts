@@ -65,7 +65,7 @@ export class CrossmintAASDK {
             const userIdentifier = parseUserIdentifier(user);
 
             const entryPointVersion = await this.getEntryPointVersion(userIdentifier, chain);
-            const entryPoint = this.getEntryPointAddress(entryPointVersion);
+            const entryPoint = entryPointVersion === 0.6 ? ENTRYPOINT_ADDRESS_V06 : ENTRYPOINT_ADDRESS_V07;
 
             const owner = await createOwnerSigner({
                 chain,
@@ -145,10 +145,6 @@ export class CrossmintAASDK {
         keysToDelete.forEach((key) => {
             localStorage.removeItem(key);
         });
-    }
-
-    private getEntryPointAddress(entryPointVersion: EntryPointVersion): EntryPoint {
-        return entryPointVersion === 0.6 ? ENTRYPOINT_ADDRESS_V06 : ENTRYPOINT_ADDRESS_V07;
     }
 
     private async getEntryPointVersion<B extends EVMBlockchainIncludingTestnet = EVMBlockchainIncludingTestnet>(
