@@ -1,6 +1,6 @@
 import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
-import { UserIdentifier } from "./Config";
+import { EntryPointVersion, UserIdentifier } from "./Config";
 
 export type StoreAbstractWalletInput = {
     userIdentifier: UserIdentifier;
@@ -11,7 +11,7 @@ export type StoreAbstractWalletInput = {
     version: number;
     baseLayer: string;
     chainId: number;
-    entryPointVersion: number;
+    entryPointVersion: EntryPointVersion;
 };
 
 export type GenerateSignatureDataInput = {
