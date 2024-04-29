@@ -1,6 +1,8 @@
+import { EntryPointVersion } from "permissionless/_types/types";
+
 import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
-import { EntryPointVersion, UserIdentifier } from "./Config";
+import { UserIdentifier } from "./Config";
 
 export type StoreAbstractWalletInput = {
     userIdentifier: UserIdentifier;
