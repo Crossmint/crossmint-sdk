@@ -25,7 +25,7 @@ export const BLOCKCHAIN_TO_COPY_NAME: Record<BlockchainIncludingTestnet, string>
     zora: "Zora",
     "zora-goerli": "Zora Goerli",
     "zora-sepolia": "Zora Sepolia",
-    zkyoto: "zKyoto",
+    zkatana: "zKatana",
     "astar-zkevm": "Astar zkEVM",
     apex: "Apex",
     "hypersonic-testnet": "Hypersonic Testnet",
