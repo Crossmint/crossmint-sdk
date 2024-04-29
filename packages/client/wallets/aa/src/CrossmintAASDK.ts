@@ -1,6 +1,6 @@
 import { CrossmintWalletService } from "@/api";
 import { EVMAAWallet, TChain, entryPoint, getBundlerRPC } from "@/blockchain";
-import type { BackwardsCompatibleChains, CrossmintAASDKInitParams, EntryPointVersion, WalletConfig } from "@/types";
+import type { BackwardsCompatibleChains, CrossmintAASDKInitParams, WalletConfig } from "@/types";
 import {
     CURRENT_VERSION,
     SCW_SERVICE,
@@ -14,7 +14,7 @@ import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
 import type { KernelValidator } from "@zerodev/ecdsa-validator";
 import { KernelSmartAccount, createKernelAccount } from "@zerodev/sdk";
 import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
-import { EntryPoint } from "permissionless/types/entrypoint";
+import { EntryPoint, EntryPointVersion } from "permissionless/types/entrypoint";
 import { HttpTransport, PublicClient, createPublicClient, http } from "viem";
 
 import {
@@ -65,7 +65,7 @@ export class CrossmintAASDK {
             const userIdentifier = parseUserIdentifier(user);
 
             const entryPointVersion = await this.getEntryPointVersion(userIdentifier, chain);
-            const entryPoint = entryPointVersion === 0.6 ? ENTRYPOINT_ADDRESS_V06 : ENTRYPOINT_ADDRESS_V07;
+            const entryPoint = entryPointVersion === "v0.6" ? ENTRYPOINT_ADDRESS_V06 : ENTRYPOINT_ADDRESS_V07;
 
             const owner = await createOwnerSigner({
                 chain,
