@@ -16,7 +16,6 @@ import { serializePermissionAccount, toPermissionValidator } from "@zerodev/perm
 import { toECDSASigner } from "@zerodev/permissions/signers";
 import type { KernelAccountClient, KernelSmartAccount } from "@zerodev/sdk";
 import { createKernelAccount, createKernelAccountClient, createZeroDevPaymasterClient } from "@zerodev/sdk";
-import { ENTRYPOINT_ADDRESS_V07 } from "permissionless";
 import { walletClientToSmartAccountSigner } from "permissionless";
 import { createPimlicoPaymasterClient } from "permissionless/clients/pimlico";
 import { EntryPoint } from "permissionless/types/entrypoint";
@@ -50,6 +49,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
         TChain,
         KernelSmartAccount<entryPoint, HttpTransport, TChain>
     >;
+    private entryPoint: EntryPoint;
     chain: B;
 
     constructor(
@@ -57,7 +57,8 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
         crossmintService: CrossmintWalletService,
         chain: B,
         publicClient: PublicClient,
-        ecdsaValidator: KernelValidator<entryPoint, "ECDSAValidator">
+        ecdsaValidator: KernelValidator<entryPoint, "ECDSAValidator">,
+        entryPoint: EntryPoint
     ) {
         this.chain = chain;
         this.crossmintService = crossmintService;
@@ -65,7 +66,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
         this.ecdsaValidator = ecdsaValidator;
         this.kernelClient = createKernelAccountClient({
             account: account as any,
-            entryPoint: ENTRYPOINT_ADDRESS_V07,
+            entryPoint,
             chain: getViemNetwork(chain),
             bundlerTransport: http(getBundlerRPC(chain)),
             middleware: {
@@ -73,16 +74,17 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
                     const paymasterClient = createZeroDevPaymasterClient({
                         chain: getViemNetwork(chain),
                         transport: http(getPaymasterRPC(chain)),
-                        entryPoint: ENTRYPOINT_ADDRESS_V07,
+                        entryPoint,
                     });
                     return paymasterClient.sponsorUserOperation({
                         userOperation,
-                        entryPoint: ENTRYPOINT_ADDRESS_V07,
+                        entryPoint,
                     });
                 },
             },
         }) as any;
         this.account = account;
+        this.entryPoint = entryPoint;
     }
 
     getPaymasterClient() {
@@ -91,12 +93,12 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
             ? createPimlicoPaymasterClient({
                   chain: getViemNetwork(this.chain as EVMBlockchainIncludingTestnet),
                   transport: http(getPaymasterRPC(this.chain)),
-                  entryPoint: ENTRYPOINT_ADDRESS_V07,
+                  entryPoint: this.entryPoint,
               })
             : createZeroDevPaymasterClient({
                   chain: getViemNetwork(this.chain),
                   transport: http(getPaymasterRPC(this.chain)),
-                  entryPoint: ENTRYPOINT_ADDRESS_V07,
+                  entryPoint: this.entryPoint,
               });
     }
 
@@ -273,13 +275,13 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
             });
 
             const sessionKeyValidator = await toPermissionValidator(this.publicClient, {
-                entryPoint: ENTRYPOINT_ADDRESS_V07,
+                entryPoint: this.entryPoint,
                 signer: sessionKeySigner,
                 policies: [],
             });
 
             const sessionKeyAccount = await createKernelAccount(this.publicClient, {
-                entryPoint: ENTRYPOINT_ADDRESS_V07,
+                entryPoint: this.entryPoint,
                 plugins: {
                     sudo: this.ecdsaValidator,
                     regular: sessionKeyValidator,
