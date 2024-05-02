@@ -17,7 +17,7 @@ export type StoreAbstractWalletInput = {
 };
 
 export type GenerateSignatureDataInput = {
-    smartContractWalletAddress: string;
+    smartContractWalletAddress: `0x${string}`;
     sessionKeyData?: string;
     killSwitchData?: string;
     chain: BlockchainIncludingTestnet | "evm";

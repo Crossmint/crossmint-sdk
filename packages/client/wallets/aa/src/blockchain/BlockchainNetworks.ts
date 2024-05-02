@@ -18,6 +18,7 @@ import {
     ZD_POLYGON_PROJECT_ID,
     ZD_SEPOLIA_PROJECT_ID,
     ZD_ZKATANA_PROJECT_ID,
+    ZD_ZKYOTO_PROJECT_ID,
 } from "@/utils";
 import { EntryPoint } from "permissionless/types/entrypoint";
 import {
@@ -26,6 +27,7 @@ import {
     arbitrumNova,
     arbitrumSepolia,
     astarZkEVM,
+    astarZkyoto,
     base,
     baseSepolia,
     bsc,
@@ -68,6 +70,7 @@ export function getFireblocksAssetId(chain: EVMBlockchainIncludingTestnet) {
         ["zora-sepolia", "ETH_TEST3"],
         ["zora-goerli", "ETH_TEST3"],
         ["zkatana", "ETH_ZKEVM_TEST"],
+        ["zkyoto", "ETH_ZKEVM_TEST"],
         ["bsc-testnet", null],
         ["base", "ETH"],
         ["astar-zkevm", "ETH"],
@@ -91,6 +94,7 @@ export function getUrlProviderByBlockchain(chain: EVMBlockchainIncludingTestnet)
         ["ethereum-sepolia", "https://ethereum-sepolia.publicnode.com"],
         ["polygon-amoy", "https://rpc-amoy.polygon.technology"],
         ["zkatana", "https://rpc.startale.com/zkatana"],
+        ["zkyoto", "https://rpc.startale.com/zkyoto"],
         ["arbitrum-sepolia", "https://sepolia-rollup.arbitrum.io/rpc"],
         ["base-goerli", null],
         ["base-sepolia", "https://base-sepolia-rpc.publicnode.com"],
@@ -124,6 +128,7 @@ export function getBlockExplorerByBlockchain(chain: EVMBlockchainIncludingTestne
         ["ethereum-sepolia", "https://sepolia.etherscan.io"],
         ["polygon-amoy", "https://www.oklink.com/amoy"],
         ["zkatana", "https://zkatana.blockscout.com"],
+        ["zkyoto", "https://zkyoto.explorer.startale.com/"],
         ["arbitrum-sepolia", "https://sepolia.arbiscan.io"],
         ["base-goerli", "https://goerli.basescan.org"],
         ["base-sepolia", "https://sepolia.basescan.org"],
@@ -156,6 +161,7 @@ export function getTickerByBlockchain(chain: EVMBlockchainIncludingTestnet) {
         ["ethereum-sepolia", "ETH"],
         ["polygon-amoy", "MATIC"],
         ["zkatana", "ETH"],
+        ["zkyoto", "ETH"],
         ["arbitrum-sepolia", "ETH"],
         ["base-goerli", null],
         ["base-sepolia", "ETH"],
@@ -188,6 +194,7 @@ export function getTickerNameByBlockchain(chain: EVMBlockchainIncludingTestnet) 
         ["ethereum-sepolia", "ETHEREUM"],
         ["polygon-amoy", "MATIC"],
         ["zkatana", "ETHEREUM"],
+        ["zkyoto", "ETHEREUM"],
         ["arbitrum-sepolia", "ETHEREUM"],
         ["base-goerli", null],
         ["base-sepolia", "ETHEREUM"],
@@ -220,6 +227,7 @@ export function getZeroDevProjectIdByBlockchain(chain: EVMBlockchainIncludingTes
         ["ethereum-sepolia", ZD_SEPOLIA_PROJECT_ID],
         ["polygon-amoy", ZD_AMOY_PROJECT_ID],
         ["zkatana", ZD_ZKATANA_PROJECT_ID],
+        ["zkyoto", ZD_ZKYOTO_PROJECT_ID],
         ["arbitrum-sepolia", ZD_ARBITRUM_SEPOLIA_PROJECT_ID],
         ["base-goerli", null],
         ["base-sepolia", ZD_BASE_SEPOLIA_PROJECT_ID],
@@ -241,7 +249,7 @@ export function getZeroDevProjectIdByBlockchain(chain: EVMBlockchainIncludingTes
     return zeroDevProjectId;
 }
 
-export function getViemNetwork(networkName: EVMBlockchainIncludingTestnet) {
+export function getViemNetwork(networkName: EVMBlockchainIncludingTestnet): Chain {
     switch (networkName) {
         case "ethereum":
             return mainnet;
@@ -267,6 +275,8 @@ export function getViemNetwork(networkName: EVMBlockchainIncludingTestnet) {
             return base;
         case "base-sepolia":
             return baseSepolia;
+        case "zkyoto":
+            return astarZkyoto;
         case "astar-zkevm":
             return astarZkEVM;
         case "bsc":
