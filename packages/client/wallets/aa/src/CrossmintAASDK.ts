@@ -151,11 +151,12 @@ export class CrossmintAASDK {
         userIdentifier: UserIdentifierParams,
         chain: B | EVMBlockchainIncludingTestnet
     ): Promise<EntryPointVersion> {
-        if (userIdentifier.email == null) {
-            throw new WalletSdkError(`Email is required to get the entry point version`);
+        if (userIdentifier.email == null && userIdentifier.userId == null) {
+            throw new WalletSdkError(`Email or userId is required to get the entry point version`);
         }
+
         const { entryPointVersion } = await this.crossmintService.getAbstractWalletEntryPointVersion(
-            userIdentifier.email,
+            userIdentifier,
             chain
         );
         return entryPointVersion;
