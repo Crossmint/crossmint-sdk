@@ -51,7 +51,14 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
     // account represents the one got from eth_requestAccounts.
     // we need to expose it because createKernelAccountClient returns that it can be undefined, and some methods require it to be specifically included because of that.
     public account: KernelSmartAccount<EntryPoint, HttpTransport, TChain>;
-    private kernelClient: ReturnType<typeof createKernelAccountClient>;
+    private kernelClient: ReturnType<
+        typeof createKernelAccountClient<
+            EntryPoint,
+            HttpTransport,
+            TChain,
+            KernelSmartAccount<EntryPoint, HttpTransport, TChain>
+        >
+    >;
     private entryPoint: EntryPoint;
     chain: B;
 
@@ -114,10 +121,6 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
 
     async signMessage(message: string | Uint8Array) {
         try {
-            if (this.kernelClient.account == null) {
-                throw new Error("Kernel client needs to be initialized before signing message.");
-            }
-
             let messageAsString: string;
             if (message instanceof Uint8Array) {
                 const decoder = new TextDecoder();
@@ -128,7 +131,6 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
 
             return await this.kernelClient.signMessage({
                 message: messageAsString,
-                account: this.kernelClient.account,
             });
         } catch (error) {
             logError("[SIGN_MESSAGE] - ERROR", {
@@ -181,7 +183,6 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
                 sidecars: undefined,
                 type: undefined,
                 chain: null,
-                account: this.kernelClient.account!,
             });
         } catch (error) {
             logError("[SEND_TRANSACTION] - ERROR_SENDING_TRANSACTION", {
@@ -325,10 +326,6 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
             });
             const serializedSessionKeyAccount = await serializePermissionAccount(sessionKeyAccount);
 
-            if (this.kernelClient.account == null) {
-                throw new Error("Kernel client needs to be initialized before setting custodian for tokens.");
-            }
-
             const generateSessionKeyDataInput: GenerateSignatureDataInput = {
                 sessionKeyData: serializedSessionKeyAccount,
                 smartContractWalletAddress: this.kernelClient.account?.address,
@@ -355,10 +352,6 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
     async upgradeVersion() {
         try {
             logInfo("[UPGRADE_VERSION] - INIT", { service: SCW_SERVICE });
-
-            if (this.kernelClient.account == null) {
-                throw new Error("Kernel client needs to be initialized before upgrading version.");
-            }
 
             const sessionKeys = await this.crossmintService!.createSessionKey(this.kernelClient.account.address);
             if (sessionKeys == null) {
