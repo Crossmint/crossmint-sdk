@@ -3,6 +3,8 @@ import { GenerateSignatureDataInput, SignerMap, SignerType } from "@/types";
 import {
     SCW_SERVICE,
     TransactionError,
+    TransferError,
+    WalletSdkError,
     convertData,
     decorateSendTransactionData,
     errorToJSON,
@@ -20,11 +22,14 @@ import { walletClientToSmartAccountSigner } from "permissionless";
 import { createPimlicoPaymasterClient } from "permissionless/clients/pimlico";
 import { EntryPoint } from "permissionless/types/entrypoint";
 import type { EIP1193Provider, Hash, HttpTransport, PublicClient, TypedDataDefinition } from "viem";
-import { Hex, createWalletClient, custom, http } from "viem";
+import { Hex, createWalletClient, custom, http, publicActions } from "viem";
 import { Web3 } from "web3";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
+import erc20 from "../../ABI/ERC20.json";
+import erc721 from "../../ABI/ERC721.json";
+import erc1155 from "../../ABI/ERC1155.json";
 import { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import {
     TChain,
@@ -35,7 +40,16 @@ import {
     getViemNetwork,
 } from "../BlockchainNetworks";
 import { Custodian } from "../plugins";
-import { TokenType } from "../token";
+import {
+    ERC20TransferType,
+    SFTTransferType,
+    TokenType,
+    TransferType,
+    isERC20EVMToken,
+    isEVMToken,
+    isNFTEVMToken,
+    isSFTEVMToken,
+} from "../token";
 
 export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchainIncludingTestnet> {
     private sessionKeySignerAddress?: Hex;
@@ -172,65 +186,72 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
         }
     }
 
-    /* Pending new version of transfer
-    async transfer(toAddress: string, token: Token, quantity?: number, amount?: BigNumber): Promise<string> {
-        const evmToken = token as EVMToken;
+    async transfer(toAddress: string, config: TransferType): Promise<string> {
+        const evmToken = config.token;
+        if (!isEVMToken(evmToken)) {
+            throw new WalletSdkError(`Blockchain ${evmToken.chain} is not supported`);
+        }
+
         const contractAddress = evmToken.contractAddress as `0x${string}`;
         const publicClient = this.kernelClient.extend(publicActions);
         let transaction;
+        let tokenId;
         try {
-            if (amount !== undefined) {
-                // Transfer ERC20
+            if (isERC20EVMToken(evmToken)) {
                 const { request } = await publicClient.simulateContract({
                     account: this.account,
                     address: contractAddress,
                     abi: erc20,
                     functionName: "transfer",
-                    args: [toAddress, amount],
+                    args: [toAddress, (config as ERC20TransferType).amount],
                 });
                 transaction = await publicClient.writeContract(request);
-            } else if (quantity !== undefined) {
-                // Transfer ERC1155
+            } else if (isSFTEVMToken(evmToken)) {
+                tokenId = evmToken.tokenId;
                 const { request } = await publicClient.simulateContract({
                     account: this.account,
                     address: contractAddress,
                     abi: erc1155,
                     functionName: "safeTransferFrom",
-                    args: [this.getAddress(), toAddress, evmToken.tokenId, quantity, "0x00"],
+                    args: [this.getAddress(), toAddress, tokenId, (config as SFTTransferType).quantity, "0x00"],
                 });
                 transaction = await publicClient.writeContract(request);
-            } else {
-                // Transfer ERC721
+            } else if (isNFTEVMToken(evmToken)) {
+                tokenId = evmToken.tokenId;
                 const { request } = await publicClient.simulateContract({
                     account: this.account,
                     address: contractAddress,
                     abi: erc721,
                     functionName: "safeTransferFrom",
-                    args: [this.getAddress(), toAddress, evmToken.tokenId],
+                    args: [this.getAddress(), toAddress, tokenId],
                 });
                 transaction = await publicClient.writeContract(request);
+            } else {
+                throw new WalletSdkError(`Token not supported`);
             }
 
             if (transaction != null) {
                 return transaction;
             } else {
                 throw new TransferError(
-                    `Error transferring token ${evmToken.tokenId}${
-                        !transaction ? "" : ` with transaction hash ${transaction}`
-                    }`
+                    `Error transferring token ${evmToken.contractAddress}
+                    ${!tokenId ? "" : ` tokenId=${tokenId}`}
+                    ${!transaction ? "" : ` with transaction hash ${transaction}`}`
                 );
             }
         } catch (error) {
             logError("[TRANSFER] - ERROR_TRANSFERRING_TOKEN", {
                 service: SCW_SERVICE,
                 error: errorToJSON(error),
-                tokenId: evmToken.tokenId,
+                tokenId: tokenId,
                 contractAddress: evmToken.contractAddress,
                 chain: evmToken.chain,
             });
-            throw new TransferError(`Error transferring token ${evmToken.tokenId}`);
+            throw new TransferError(
+                `Error transferring token ${evmToken.contractAddress}${!tokenId ? "" : ` tokenId=${tokenId}}`}`
+            );
         }
-    } */
+    }
 
     getSigner<Type extends SignerType>(type: Type): SignerMap[Type] {
         switch (type) {
