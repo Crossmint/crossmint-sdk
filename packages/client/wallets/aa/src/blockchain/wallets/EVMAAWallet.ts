@@ -116,7 +116,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
     }
 
     getAddress() {
-        return this.kernelClient.account?.address;
+        return this.kernelClient.account.address;
     }
 
     async signMessage(message: string | Uint8Array) {
@@ -318,7 +318,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
 
             const generateSessionKeyDataInput: GenerateSignatureDataInput = {
                 sessionKeyData: serializedSessionKeyAccount,
-                smartContractWalletAddress: this.kernelClient.account?.address,
+                smartContractWalletAddress: this.kernelClient.account.address,
                 chain: this.chain,
                 version: 0,
             };
@@ -358,11 +358,11 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
                 throw new Error("New version info not found");
             }
 
-            const enableSig = await this.kernelClient.account?.kernelPluginManager.getPluginEnableSignature(
-                this.kernelClient.account?.address
+            const enableSig = await this.kernelClient.account.kernelPluginManager.getPluginEnableSignature(
+                this.kernelClient.account.address
             );
 
-            await this.crossmintService.updateWallet(this.kernelClient.account?.address, enableSig, 1);
+            await this.crossmintService.updateWallet(this.kernelClient.account.address, enableSig, 1);
             logInfo("[UPGRADE_VERSION - FINISH", { service: SCW_SERVICE });
         } catch (error) {
             logError("[UPGRADE_VERSION] - ERROR", {
