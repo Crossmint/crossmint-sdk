@@ -1,6 +1,6 @@
 import { GenerateSignatureDataInput, StoreAbstractWalletInput, UserIdentifier } from "@/types";
 
-import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
+import { EVMBlockchainIncludingTestnet, UserIdentifierParams } from "@crossmint/common-sdk-base";
 
 import { BaseCrossmintService } from "./BaseCrossmintService";
 
@@ -26,9 +26,16 @@ export class CrossmintWalletService extends BaseCrossmintService {
         );
     }
 
-    async getAbstractWalletEntryPointVersion(email: string, chain: EVMBlockchainIncludingTestnet) {
+    async getAbstractWalletEntryPointVersion(
+        userIdentifier: UserIdentifierParams,
+        chain: EVMBlockchainIncludingTestnet
+    ) {
+        const identifier = userIdentifier.email
+            ? `email=${encodeURIComponent(userIdentifier.email)}`
+            : `userId=${userIdentifier.userId}`;
+
         return this.fetchCrossmintAPI(
-            `v1-alpha1/wallets/entry-point-version?email=${encodeURIComponent(email)}&chain=${chain}`,
+            `v1-alpha1/wallets/entry-point-version?${identifier}&chain=${chain}`,
             { method: "GET" },
             `Error getting entry point version. Please contact support`
         );
