@@ -257,19 +257,9 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
     getSigner<Type extends SignerType>(type: Type): SignerMap[Type] {
         switch (type) {
             case "viem": {
-                //zerodev returns a type where "account" could be undefined, and "walletClient" requires it to be defined
-                // and this hack only changes that type. So, the change is:
-                // KernelSmartAccount<EntryPoint, HttpTransport, TChain> | undefined => KernelSmartAccount<EntryPoint, HttpTransport, TChain>
-                const kernelClientHackType = this.kernelClient as KernelAccountClient<
-                    EntryPoint,
-                    HttpTransport,
-                    TChain,
-                    KernelSmartAccount<EntryPoint, HttpTransport, TChain>
-                >;
-
                 return {
                     publicClient: this.publicClient,
-                    walletClient: kernelClientHackType,
+                    walletClient: this.kernelClient,
                 };
             }
             default:
