@@ -7,6 +7,7 @@ import {
     decorateSendTransactionData,
     errorToJSON,
     getNonce,
+    hasEIP1559Support,
 } from "@/utils";
 import { resolveDeferrable } from "@/utils/deferrable";
 import type { Deferrable } from "@ethersproject/properties";
@@ -78,7 +79,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
             chain: getViemNetwork(chain),
             entryPoint,
             bundlerTransport: http(getBundlerRPC(chain)),
-            ...(this.hasEIP1559Support() && {
+            ...(hasEIP1559Support(chain) && {
                 middleware: {
                     sponsorUserOperation: async ({ userOperation }) => {
                         const paymasterClient = createZeroDevPaymasterClient({
@@ -374,18 +375,10 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
         return this.crossmintService.fetchNFTs(this.account.address, this.chain);
     }
 
-    hasEIP1559Support() {
-        const chainsNotSupportingEIP1559: EVMBlockchainIncludingTestnet[] = [
-            EVMBlockchainIncludingTestnet.ZKYOTO,
-            EVMBlockchainIncludingTestnet.ASTAR_ZKEVM,
-        ];
-        return !chainsNotSupportingEIP1559.includes(this.chain);
-    }
-
     getLegacyTransactionFeesParamsIfApply(gasFeeParams?: GasFeeTransactionParams) {
         const { maxFeePerGas, maxPriorityFeePerGas } = gasFeeParams ?? {};
 
-        if (this.hasEIP1559Support()) {
+        if (hasEIP1559Support(this.chain)) {
             return {
                 maxFeePerGas: maxFeePerGas ? BigInt(maxFeePerGas.toString()) : undefined,
                 maxPriorityFeePerGas: maxPriorityFeePerGas ? BigInt(maxPriorityFeePerGas.toString()) : undefined,
