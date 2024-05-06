@@ -1702,6 +1702,14 @@
     bs58 "5.0.0"
     tweetnacl "1.0.3"
 
+"@crossmint/common-sdk-base@0.0.12":
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/@crossmint/common-sdk-base/-/common-sdk-base-0.0.12.tgz#e23c45e89df6758decd02c58725588dc088dfbe2"
+  integrity sha512-KFbUX/HwdtLjh2UHN06Rzu1kla7AExulZinIv43k2U/5JkwI3WB4b0BGV7YZ5DGGPsXTkZs1XVLmsQT7fE3KkA==
+  dependencies:
+    bs58 "5.0.0"
+    tweetnacl "1.0.3"
+
 "@crossmint/common-sdk-base@0.0.6":
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/@crossmint/common-sdk-base/-/common-sdk-base-0.0.6.tgz#e7f42fda8025221128a3654070b44cb189b5d234"
