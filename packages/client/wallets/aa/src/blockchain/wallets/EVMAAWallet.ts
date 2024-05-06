@@ -20,7 +20,7 @@ import { BigNumberish } from "ethers";
 import { walletClientToSmartAccountSigner } from "permissionless";
 import { createPimlicoPaymasterClient } from "permissionless/clients/pimlico";
 import { EntryPoint } from "permissionless/types/entrypoint";
-import type { Hash, HttpTransport, PublicClient, SignTypedDataParameters } from "viem";
+import type { Hash, HttpTransport, PublicClient, TypedDataDefinition } from "viem";
 import { Hex, createWalletClient, custom, http } from "viem";
 import { Web3 } from "web3";
 
@@ -48,9 +48,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
     private crossmintService: CrossmintWalletService;
     private publicClient: PublicClient;
     private ecdsaValidator: KernelValidator<entryPoint, "ECDSAValidator">;
-    // account represents the one got from eth_requestAccounts.
-    // we need to expose it because createKernelAccountClient returns that it can be undefined, and some methods require it to be specifically included because of that.
-    public account: KernelSmartAccount<EntryPoint, HttpTransport, TChain>;
+    private account: KernelSmartAccount<EntryPoint, HttpTransport, TChain>;
     private kernelClient: ReturnType<
         typeof createKernelAccountClient<
             EntryPoint,
@@ -142,8 +140,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
         }
     }
 
-    //TODO @matias: if createKernelAccountClient returns account as defined, then we can change the parameter type to TypedDataDefinition
-    async signTypedData(params: SignTypedDataParameters) {
+    async signTypedData(params: TypedDataDefinition) {
         try {
             return await this.kernelClient.signTypedData(params);
         } catch (error) {
