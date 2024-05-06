@@ -1,8 +1,8 @@
 import { AuthSig } from "@lit-protocol/types";
 import { TORUS_NETWORK_TYPE } from "@web3auth/single-factor-auth";
-import { KernelAccountClient, KernelSmartAccount } from "@zerodev/sdk";
+import { KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
 import { EntryPoint } from "permissionless/_types/types";
-import { Chain, EIP1193Provider, HttpTransport, LocalAccount, PublicClient, Transport } from "viem";
+import { EIP1193Provider, HttpTransport, LocalAccount, PublicClient } from "viem";
 
 import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
@@ -96,10 +96,12 @@ export type BackwardsCompatibleChains = "goerli";
 
 export type Client = {
     publicClient: PublicClient;
-    walletClient: KernelAccountClient<
-        EntryPoint,
-        HttpTransport,
-        TChain,
-        KernelSmartAccount<EntryPoint, HttpTransport, TChain>
+    walletClient: ReturnType<
+        typeof createKernelAccountClient<
+            EntryPoint,
+            HttpTransport,
+            TChain,
+            KernelSmartAccount<EntryPoint, HttpTransport, TChain>
+        >
     >;
 };

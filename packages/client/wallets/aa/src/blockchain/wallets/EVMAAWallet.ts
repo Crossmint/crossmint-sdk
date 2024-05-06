@@ -9,6 +9,7 @@ import {
     decorateSendTransactionData,
     errorToJSON,
     getNonce,
+    hasEIP1559Support,
 } from "@/utils";
 import { resolveDeferrable } from "@/utils/deferrable";
 import type { Deferrable } from "@ethersproject/properties";
@@ -16,12 +17,13 @@ import { type TransactionRequest } from "@ethersproject/providers";
 import type { KernelValidator } from "@zerodev/ecdsa-validator";
 import { serializePermissionAccount, toPermissionValidator } from "@zerodev/permissions";
 import { toECDSASigner } from "@zerodev/permissions/signers";
-import type { KernelAccountClient, KernelSmartAccount } from "@zerodev/sdk";
+import type { KernelSmartAccount } from "@zerodev/sdk";
 import { createKernelAccount, createKernelAccountClient, createZeroDevPaymasterClient } from "@zerodev/sdk";
+import { BigNumberish } from "ethers";
 import { walletClientToSmartAccountSigner } from "permissionless";
 import { createPimlicoPaymasterClient } from "permissionless/clients/pimlico";
 import { EntryPoint } from "permissionless/types/entrypoint";
-import type { EIP1193Provider, Hash, HttpTransport, PublicClient, TypedDataDefinition } from "viem";
+import type { Hash, HttpTransport, PublicClient, TypedDataDefinition } from "viem";
 import { Hex, createWalletClient, custom, http, publicActions } from "viem";
 import { Web3 } from "web3";
 
@@ -51,17 +53,24 @@ import {
     isSFTEVMToken,
 } from "../token";
 
+type GasFeeTransactionParams = {
+    maxFeePerGas?: BigNumberish;
+    maxPriorityFeePerGas?: BigNumberish;
+};
+
 export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchainIncludingTestnet> {
     private sessionKeySignerAddress?: Hex;
     private crossmintService: CrossmintWalletService;
     private publicClient: PublicClient;
     private ecdsaValidator: KernelValidator<entryPoint, "ECDSAValidator">;
     private account: KernelSmartAccount<EntryPoint, HttpTransport, TChain>;
-    private kernelClient: KernelAccountClient<
-        entryPoint,
-        HttpTransport,
-        TChain,
-        KernelSmartAccount<entryPoint, HttpTransport, TChain>
+    private kernelClient: ReturnType<
+        typeof createKernelAccountClient<
+            EntryPoint,
+            HttpTransport,
+            TChain,
+            KernelSmartAccount<EntryPoint, HttpTransport, TChain>
+        >
     >;
     private entryPoint: EntryPoint;
     chain: B;
@@ -78,25 +87,28 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
         this.crossmintService = crossmintService;
         this.publicClient = publicClient;
         this.ecdsaValidator = ecdsaValidator;
+
         this.kernelClient = createKernelAccountClient({
-            account: account as any,
-            entryPoint,
+            account,
             chain: getViemNetwork(chain),
+            entryPoint,
             bundlerTransport: http(getBundlerRPC(chain)),
-            middleware: {
-                sponsorUserOperation: async ({ userOperation }) => {
-                    const paymasterClient = createZeroDevPaymasterClient({
-                        chain: getViemNetwork(chain),
-                        transport: http(getPaymasterRPC(chain)),
-                        entryPoint,
-                    });
-                    return paymasterClient.sponsorUserOperation({
-                        userOperation,
-                        entryPoint,
-                    });
+            ...(hasEIP1559Support(chain) && {
+                middleware: {
+                    sponsorUserOperation: async ({ userOperation }) => {
+                        const paymasterClient = createZeroDevPaymasterClient({
+                            chain: getViemNetwork(chain),
+                            transport: http(getPaymasterRPC(chain)),
+                            entryPoint,
+                        });
+                        return paymasterClient.sponsorUserOperation({
+                            userOperation,
+                            entryPoint,
+                        });
+                    },
                 },
-            },
-        }) as any;
+            }),
+        });
         this.account = account;
         this.entryPoint = entryPoint;
     }
@@ -105,7 +117,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
         return this.chain === EVMBlockchainIncludingTestnet.BASE ||
             this.chain === EVMBlockchainIncludingTestnet.BASE_SEPOLIA
             ? createPimlicoPaymasterClient({
-                  chain: getViemNetwork(this.chain as EVMBlockchainIncludingTestnet),
+                  chain: getViemNetwork(this.chain),
                   transport: http(getPaymasterRPC(this.chain)),
                   entryPoint: this.entryPoint,
               })
@@ -129,7 +141,10 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
             } else {
                 messageAsString = message;
             }
-            return await this.kernelClient.signMessage({ message: messageAsString });
+
+            return await this.kernelClient.signMessage({
+                message: messageAsString,
+            });
         } catch (error) {
             logError("[SIGN_MESSAGE] - ERROR", {
                 service: SCW_SERVICE,
@@ -153,6 +168,12 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
         }
     }
 
+    //TODO @matias: review this method.
+    // First, I would like to use TransactionRequest from viem instead of ethers.
+    // Second, we need to check if chain supports eip-1559 ro not:
+    // - If it does, we need to send maxFeePerGas and maxPriorityFeePerGas
+    // - If it doesn't, we need to send gasPrice
+    // And with the use of viem TransactionRequest, we can specify the TransactionRequest type (eip1559 or legacy) and be more accurate
     async sendTransaction(transaction: Deferrable<TransactionRequest>): Promise<Hash> {
         try {
             const decoratedTransaction = await decorateSendTransactionData(transaction);
@@ -166,8 +187,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
                 gas: gasLimit ? BigInt(gasLimit.toString()) : undefined,
                 nonce: await getNonce(nonce),
                 data: await convertData(data),
-                maxFeePerGas: maxFeePerGas ? BigInt(maxFeePerGas.toString()) : undefined,
-                maxPriorityFeePerGas: maxPriorityFeePerGas ? BigInt(maxPriorityFeePerGas.toString()) : undefined,
+                ...this.getLegacyTransactionFeesParamsIfApply({ maxFeePerGas, maxPriorityFeePerGas }),
                 maxFeePerBlobGas: undefined,
                 blobs: undefined,
                 blobVersionedHashes: undefined,
@@ -283,11 +303,16 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
             });
 
             const rpcProvider = getUrlProviderByBlockchain(this.chain);
-            const web3 = new Web3(rpcProvider as any);
+            const web3 = new Web3(rpcProvider);
+
+            if (web3.provider == null) {
+                throw new Error("Web3 provider is not available");
+            }
+
             const walletClientSigner = createWalletClient({
-                chain: getViemNetwork(this.chain as EVMBlockchainIncludingTestnet),
+                chain: getViemNetwork(this.chain),
                 account: this.sessionKeySignerAddress!,
-                transport: custom(web3.provider as EIP1193Provider),
+                transport: custom(web3.provider),
             });
 
             const smartAccountSigner = walletClientToSmartAccountSigner(walletClientSigner);
@@ -336,6 +361,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
     async upgradeVersion() {
         try {
             logInfo("[UPGRADE_VERSION] - INIT", { service: SCW_SERVICE });
+
             const sessionKeys = await this.crossmintService!.createSessionKey(this.kernelClient.account.address);
             if (sessionKeys == null) {
                 throw new Error("Abstract Wallet doesn't have a session key signer address");
@@ -368,5 +394,28 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
 
     async getNFTs() {
         return this.crossmintService.fetchNFTs(this.account.address, this.chain);
+    }
+
+    getLegacyTransactionFeesParamsIfApply(gasFeeParams?: GasFeeTransactionParams) {
+        const { maxFeePerGas, maxPriorityFeePerGas } = gasFeeParams ?? {};
+
+        if (hasEIP1559Support(this.chain)) {
+            return {
+                maxFeePerGas: maxFeePerGas ? BigInt(maxFeePerGas.toString()) : undefined,
+                maxPriorityFeePerGas: maxPriorityFeePerGas ? BigInt(maxPriorityFeePerGas.toString()) : undefined,
+            };
+        } else {
+            if (maxFeePerGas || maxPriorityFeePerGas) {
+                console.warn(
+                    "maxFeePerGas and maxPriorityFeePerGas are not supported on this chain as it supports Legacy Transacitons. Ignoring them."
+                );
+            }
+            return {
+                // It's on zerodev doc that we need to ignore ts errros on maxFeePerGas and maxPriorityFeePerGas
+                // https://docs.zerodev.app/sdk/faqs/use-with-gelato#transaction-configuration
+                maxFeePerGas: "0x0" as any,
+                maxPriorityFeePerGas: "0x0" as any,
+            };
+        }
     }
 }

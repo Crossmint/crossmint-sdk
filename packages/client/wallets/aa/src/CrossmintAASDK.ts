@@ -11,11 +11,10 @@ import {
     transformBackwardsCompatibleChains,
 } from "@/utils";
 import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
-import type { KernelValidator } from "@zerodev/ecdsa-validator";
-import { KernelSmartAccount, createKernelAccount } from "@zerodev/sdk";
+import { createKernelAccount } from "@zerodev/sdk";
 import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
-import { EntryPoint, EntryPointVersion } from "permissionless/types/entrypoint";
-import { HttpTransport, PublicClient, createPublicClient, http } from "viem";
+import { EntryPointVersion } from "permissionless/types/entrypoint";
+import { createPublicClient, http } from "viem";
 
 import {
     BlockchainIncludingTestnet,
@@ -92,11 +91,11 @@ export class CrossmintAASDK {
             });
 
             const evmAAWallet = new EVMAAWallet(
-                account as unknown as KernelSmartAccount<EntryPoint, HttpTransport, TChain>,
+                account,
                 this.crossmintService,
                 chain,
-                publicClient as PublicClient,
-                ecdsaValidator as unknown as KernelValidator<entryPoint, "ECDSAValidator">,
+                publicClient,
+                ecdsaValidator,
                 entryPoint
             );
 
