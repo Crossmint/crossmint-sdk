@@ -1,9 +1,9 @@
 import { BigNumber } from "ethers";
 
-import { EVMBlockchain, isEVMBlockchain } from "@crossmint/common-sdk-base";
+import { EVMBlockchainIncludingTestnet, isEVMBlockchain } from "@crossmint/common-sdk-base";
 
 export interface EVMToken {
-    chain: EVMBlockchain;
+    chain: EVMBlockchainIncludingTestnet;
     contractAddress: string;
 }
 

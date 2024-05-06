@@ -224,6 +224,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
                     abi: erc20,
                     functionName: "transfer",
                     args: [toAddress, (config as ERC20TransferType).amount],
+                    ...this.getLegacyTransactionFeesParamsIfApply(),
                 });
                 transaction = await publicClient.writeContract(request);
             } else if (isSFTEVMToken(evmToken)) {
@@ -234,6 +235,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
                     abi: erc1155,
                     functionName: "safeTransferFrom",
                     args: [this.getAddress(), toAddress, tokenId, (config as SFTTransferType).quantity, "0x00"],
+                    ...this.getLegacyTransactionFeesParamsIfApply(),
                 });
                 transaction = await publicClient.writeContract(request);
             } else if (isNFTEVMToken(evmToken)) {
@@ -244,6 +246,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
                     abi: erc721,
                     functionName: "safeTransferFrom",
                     args: [this.getAddress(), toAddress, tokenId],
+                    ...this.getLegacyTransactionFeesParamsIfApply(),
                 });
                 transaction = await publicClient.writeContract(request);
             } else {
@@ -401,8 +404,8 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
 
         if (hasEIP1559Support(this.chain)) {
             return {
-                maxFeePerGas: maxFeePerGas ? BigInt(maxFeePerGas.toString()) : undefined,
-                maxPriorityFeePerGas: maxPriorityFeePerGas ? BigInt(maxPriorityFeePerGas.toString()) : undefined,
+                ...(maxFeePerGas && { maxFeePerGas: BigInt(maxFeePerGas.toString()) }),
+                ...(maxPriorityFeePerGas && { maxPriorityFeePerGas: BigInt(maxPriorityFeePerGas.toString()) }),
             };
         } else {
             if (maxFeePerGas || maxPriorityFeePerGas) {
