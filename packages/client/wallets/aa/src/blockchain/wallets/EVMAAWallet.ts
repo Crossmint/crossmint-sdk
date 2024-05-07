@@ -209,7 +209,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
         let tokenId;
         try {
             switch (evmToken.type) {
-                case "FT": {
+                case "ft": {
                     const { request } = await publicClient.simulateContract({
                         account: this.account,
                         address: contractAddress,
@@ -221,7 +221,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
                     transaction = await publicClient.writeContract(request);
                     break;
                 }
-                case "SFT": {
+                case "sft": {
                     tokenId = evmToken.tokenId;
                     const { request } = await publicClient.simulateContract({
                         account: this.account,
@@ -234,7 +234,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
                     transaction = await publicClient.writeContract(request);
                     break;
                 }
-                case "NFT": {
+                case "nft": {
                     tokenId = evmToken.tokenId;
                     const { request } = await publicClient.simulateContract({
                         account: this.account,

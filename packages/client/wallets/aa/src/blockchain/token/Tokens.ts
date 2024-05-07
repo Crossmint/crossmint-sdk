@@ -9,27 +9,27 @@ export interface EVMToken {
 
 export interface NFTEVMToken extends EVMToken {
     tokenId: string;
-    type: "NFT";
+    type: "nft";
 }
 
 export interface SFTEVMToken extends EVMToken {
     tokenId: string;
-    type: "SFT";
+    type: "sft";
 }
 
 export interface ERC2OEVMToken extends EVMToken {
-    type: "FT";
+    type: "ft";
 }
 
 export interface SolanaToken {
     mintHash: string;
     chain: "solana";
-    type: "NFT";
+    type: "nft";
 }
 export interface CardanoToken {
     chain: "cardano";
     assetId: string;
-    type: "NFT";
+    type: "nft";
 }
 
 export function isEVMToken(value: unknown): value is EVMToken {
@@ -45,7 +45,7 @@ export function isEVMToken(value: unknown): value is EVMToken {
 }
 
 export type Token = EVMToken | SolanaToken | CardanoToken;
-export type TokenType = "NFT" | "SFT" | "FT";
+export type TokenType = "nft" | "sft" | "ft";
 
 export type ERC20TransferType = { token: ERC2OEVMToken; amount: BigNumber };
 export type SFTTransferType = { token: SFTEVMToken; quantity: number };
