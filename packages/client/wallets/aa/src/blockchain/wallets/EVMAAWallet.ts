@@ -404,6 +404,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
 
         if (hasEIP1559Support(this.chain)) {
             return {
+                // only include if non-null and non-zero
                 ...(maxFeePerGas && { maxFeePerGas: BigInt(maxFeePerGas.toString()) }),
                 ...(maxPriorityFeePerGas && { maxPriorityFeePerGas: BigInt(maxPriorityFeePerGas.toString()) }),
             };
