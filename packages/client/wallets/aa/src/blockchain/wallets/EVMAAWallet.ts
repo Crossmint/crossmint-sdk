@@ -271,7 +271,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
                 chain: evmToken.chain,
             });
             throw new TransferError(
-                `Error transferring token ${evmToken.contractAddress}${!tokenId ? "" : ` tokenId=${tokenId}}`}`
+                `Error transferring token ${evmToken.contractAddress}${tokenId == null ? "" : `:${tokenId}}`}`
             );
         }
     }
