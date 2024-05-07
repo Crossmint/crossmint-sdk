@@ -42,16 +42,7 @@ import {
     getViemNetwork,
 } from "../BlockchainNetworks";
 import { Custodian } from "../plugins";
-import {
-    ERC20TransferType,
-    SFTTransferType,
-    TokenType,
-    TransferType,
-    isERC20EVMToken,
-    isEVMToken,
-    isNFTEVMToken,
-    isSFTEVMToken,
-} from "../token";
+import { ERC20TransferType, SFTTransferType, TokenType, TransferType, isEVMToken } from "../token";
 
 type GasFeeTransactionParams = {
     maxFeePerGas?: BigNumberish;
@@ -217,40 +208,48 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
         let transaction;
         let tokenId;
         try {
-            if (isERC20EVMToken(evmToken)) {
-                const { request } = await publicClient.simulateContract({
-                    account: this.account,
-                    address: contractAddress,
-                    abi: erc20,
-                    functionName: "transfer",
-                    args: [toAddress, (config as ERC20TransferType).amount],
-                    ...this.getLegacyTransactionFeesParamsIfApply(),
-                });
-                transaction = await publicClient.writeContract(request);
-            } else if (isSFTEVMToken(evmToken)) {
-                tokenId = evmToken.tokenId;
-                const { request } = await publicClient.simulateContract({
-                    account: this.account,
-                    address: contractAddress,
-                    abi: erc1155,
-                    functionName: "safeTransferFrom",
-                    args: [this.getAddress(), toAddress, tokenId, (config as SFTTransferType).quantity, "0x00"],
-                    ...this.getLegacyTransactionFeesParamsIfApply(),
-                });
-                transaction = await publicClient.writeContract(request);
-            } else if (isNFTEVMToken(evmToken)) {
-                tokenId = evmToken.tokenId;
-                const { request } = await publicClient.simulateContract({
-                    account: this.account,
-                    address: contractAddress,
-                    abi: erc721,
-                    functionName: "safeTransferFrom",
-                    args: [this.getAddress(), toAddress, tokenId],
-                    ...this.getLegacyTransactionFeesParamsIfApply(),
-                });
-                transaction = await publicClient.writeContract(request);
-            } else {
-                throw new WalletSdkError(`Token not supported`);
+            switch (evmToken.type) {
+                case "FT": {
+                    const { request } = await publicClient.simulateContract({
+                        account: this.account,
+                        address: contractAddress,
+                        abi: erc20,
+                        functionName: "transfer",
+                        args: [toAddress, (config as ERC20TransferType).amount],
+                        ...this.getLegacyTransactionFeesParamsIfApply(),
+                    });
+                    transaction = await publicClient.writeContract(request);
+                    break;
+                }
+                case "SFT": {
+                    tokenId = evmToken.tokenId;
+                    const { request } = await publicClient.simulateContract({
+                        account: this.account,
+                        address: contractAddress,
+                        abi: erc1155,
+                        functionName: "safeTransferFrom",
+                        args: [this.getAddress(), toAddress, tokenId, (config as SFTTransferType).quantity, "0x00"],
+                        ...this.getLegacyTransactionFeesParamsIfApply(),
+                    });
+                    transaction = await publicClient.writeContract(request);
+                    break;
+                }
+                case "NFT": {
+                    tokenId = evmToken.tokenId;
+                    const { request } = await publicClient.simulateContract({
+                        account: this.account,
+                        address: contractAddress,
+                        abi: erc721,
+                        functionName: "safeTransferFrom",
+                        args: [this.getAddress(), toAddress, tokenId],
+                        ...this.getLegacyTransactionFeesParamsIfApply(),
+                    });
+                    transaction = await publicClient.writeContract(request);
+                    break;
+                }
+                default: {
+                    throw new WalletSdkError(`Token not supported`);
+                }
             }
 
             if (transaction != null) {
