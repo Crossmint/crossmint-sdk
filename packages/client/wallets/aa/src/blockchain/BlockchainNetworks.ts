@@ -288,25 +288,11 @@ export function getViemNetwork(networkName: EVMBlockchainIncludingTestnet): Chai
 }
 
 export function getBundlerRPC(chain: EVMBlockchainIncludingTestnet): string {
-    switch (chain) {
-        case EVMBlockchainIncludingTestnet.BASE_SEPOLIA:
-            return PM_BASE_SEPOLIA_RPC;
-        case EVMBlockchainIncludingTestnet.BASE:
-            return PM_BASE_RPC;
-        default:
-            return BUNDLER_RPC + getZeroDevProjectIdByBlockchain(chain) + "?bundlerProvider=STACKUP";
-    }
+    return BUNDLER_RPC + getZeroDevProjectIdByBlockchain(chain) + "?bundlerProvider=STACKUP";
 }
 
 export function getPaymasterRPC(chain: EVMBlockchainIncludingTestnet): string {
-    switch (chain) {
-        case EVMBlockchainIncludingTestnet.BASE_SEPOLIA:
-            return PM_BASE_SEPOLIA_RPC;
-        case EVMBlockchainIncludingTestnet.BASE:
-            return PM_BASE_RPC;
-        default:
-            return PAYMASTER_RPC + getZeroDevProjectIdByBlockchain(chain) + "?paymasterProvider=STACKUP";
-    }
+    return PAYMASTER_RPC + getZeroDevProjectIdByBlockchain(chain) + "?paymasterProvider=STACKUP";
 }
 
 export type entryPoint = EntryPoint;
