@@ -18,7 +18,7 @@ import { toECDSASigner } from "@zerodev/permissions/signers";
 import type { KernelAccountClient, KernelSmartAccount } from "@zerodev/sdk";
 import { createKernelAccount, createKernelAccountClient, createZeroDevPaymasterClient } from "@zerodev/sdk";
 import { BigNumberish } from "ethers";
-import { walletClientToSmartAccountSigner } from "permissionless";
+import { bundlerActions, walletClientToSmartAccountSigner } from "permissionless";
 import { createPimlicoPaymasterClient } from "permissionless/clients/pimlico";
 import { EntryPoint } from "permissionless/types/entrypoint";
 import type { Hash, HttpTransport, PublicClient, TypedDataDefinition } from "viem";
@@ -396,5 +396,121 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
                 maxPriorityFeePerGas: "0x0" as any,
             };
         }
+    }
+}
+
+// TODO, consolidate w/ other class
+export class EVMAAPasskeyWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchainIncludingTestnet> {
+    private crossmintService: CrossmintWalletService;
+    private publicClient: PublicClient;
+    public account: KernelSmartAccount<EntryPoint, HttpTransport, TChain>;
+    public kernelClient: ReturnType<
+        typeof createKernelAccountClient<
+            EntryPoint,
+            HttpTransport,
+            TChain,
+            KernelSmartAccount<EntryPoint, HttpTransport, TChain>
+        >
+    >;
+    private entryPoint: EntryPoint;
+    chain: B;
+
+    constructor(
+        account: KernelSmartAccount<EntryPoint, HttpTransport, TChain>,
+        crossmintService: CrossmintWalletService,
+        chain: B,
+        publicClient: PublicClient,
+        entryPoint: EntryPoint
+    ) {
+        this.chain = chain;
+        this.crossmintService = crossmintService;
+        this.publicClient = publicClient;
+        this.account = account;
+        this.kernelClient = createKernelAccountClient({
+            account: account,
+            chain: getViemNetwork(chain),
+            bundlerTransport: http(getBundlerRPC(chain)),
+            entryPoint,
+            middleware: {
+                sponsorUserOperation: async ({ userOperation }) => {
+                    const paymasterClient = createZeroDevPaymasterClient({
+                        chain: getViemNetwork(chain),
+                        transport: http(getPaymasterRPC(chain)),
+                        entryPoint,
+                    });
+                    return paymasterClient.sponsorUserOperation({
+                        userOperation,
+                        entryPoint,
+                    });
+                },
+            },
+        });
+        this.account = account;
+        this.entryPoint = entryPoint;
+    }
+
+    get address() {
+        return this.kernelClient.account.address;
+    }
+
+    get bundlerClient() {
+        return this.kernelClient.extend(bundlerActions(this.entryPoint));
+    }
+
+    async signMessage(message: string | Uint8Array) {
+        try {
+            let messageAsString: string;
+            if (message instanceof Uint8Array) {
+                const decoder = new TextDecoder();
+                messageAsString = decoder.decode(message);
+            } else {
+                messageAsString = message;
+            }
+
+            return await this.kernelClient.signMessage({
+                message: messageAsString,
+            });
+        } catch (error) {
+            logError("[SIGN_MESSAGE] - ERROR", {
+                service: SCW_SERVICE,
+                error: errorToJSON(error),
+                signer: this.kernelClient.account,
+            });
+            throw new Error(`Error signing message. If this error persists, please contact support.`);
+        }
+    }
+
+    async signTypedData(params: TypedDataDefinition) {
+        try {
+            return await this.kernelClient.signTypedData(params);
+        } catch (error) {
+            logError("[SIGN_TYPED_DATA] - ERROR", {
+                service: SCW_SERVICE,
+                error: errorToJSON(error),
+                signer: this.kernelClient.account,
+            });
+            throw new Error(`Error signing typed data. If this error persists, please contact support.`);
+        }
+    }
+
+    getSigner<Type extends SignerType>(type: Type): SignerMap[Type] {
+        switch (type) {
+            case "viem": {
+                return {
+                    publicClient: this.publicClient,
+                    walletClient: this.kernelClient,
+                };
+            }
+            default:
+                logError("[GET_SIGNER] - ERROR", {
+                    service: SCW_SERVICE,
+                    error: errorToJSON("Invalid signer type"),
+                });
+                throw new Error("Invalid signer type");
+        }
+    }
+
+    async getNFTs() {
+        return this.crossmintService.fetchNFTs(this.account.address, this.chain);
     }
 }

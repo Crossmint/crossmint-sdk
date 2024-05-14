@@ -1,5 +1,5 @@
 import { CrossmintWalletService } from "@/api";
-import { EVMAAWallet, TChain, entryPoint, getBundlerRPC } from "@/blockchain";
+import { EVMAAPasskeyWallet, EVMAAWallet, getBundlerRPC } from "@/blockchain";
 import type { BackwardsCompatibleChains, CrossmintAASDKInitParams, WalletConfig } from "@/types";
 import {
     CURRENT_VERSION,
@@ -11,13 +11,13 @@ import {
     transformBackwardsCompatibleChains,
 } from "@/utils";
 import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
+import { createPasskeyValidator, getPasskeyValidator } from "@zerodev/passkey-validator";
 import { createKernelAccount } from "@zerodev/sdk";
 import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
 import { EntryPointVersion } from "permissionless/types/entrypoint";
 import { createPublicClient, http } from "viem";
 
 import {
-    BlockchainIncludingTestnet,
     EVMBlockchainIncludingTestnet,
     UserIdentifierParams,
     blockchainToChainId,
@@ -44,7 +44,60 @@ export class CrossmintAASDK {
         return new CrossmintAASDK(params);
     }
 
-    async getOrCreateWallet<B extends BlockchainIncludingTestnet = BlockchainIncludingTestnet>(
+    async loginPasskey(chain: EVMBlockchainIncludingTestnet) {
+        console.log("SDK: Get Passkey");
+        return getPasskeyValidator(
+            createPublicClient({
+                transport: http(getBundlerRPC(chain)),
+            }),
+            {
+                passkeyServerUrl: "X", // TODO use env
+                entryPoint: ENTRYPOINT_ADDRESS_V07 as any,
+            }
+        );
+    }
+
+    async registerPasskey(username: string, chain: EVMBlockchainIncludingTestnet) {
+        console.log("SDK: Register Passkey");
+        return createPasskeyValidator(
+            createPublicClient({
+                transport: http(getBundlerRPC(chain)),
+            }),
+            {
+                passkeyServerUrl: "X", // TODO use env
+                entryPoint: ENTRYPOINT_ADDRESS_V07 as any,
+                passkeyName: username,
+            }
+        );
+    }
+
+    async getOrCreatePasskeyWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchainIncludingTestnet>(
+        user: UserIdentifierParams,
+        chain: B | BackwardsCompatibleChains,
+        passkeyValidator: any
+    ) {
+        if (!isEVMBlockchain(chain)) {
+            throw new WalletSdkError(`The blockchain ${chain} is not supported`);
+        }
+
+        const publicClient = createPublicClient({
+            transport: http(getBundlerRPC(chain)),
+        });
+
+        const entryPoint = ENTRYPOINT_ADDRESS_V07;
+        const kernelAccount = await createKernelAccount(publicClient, {
+            plugins: {
+                sudo: passkeyValidator,
+            },
+            entryPoint,
+        });
+
+        // TODO save to CM
+
+        return new EVMAAPasskeyWallet(kernelAccount as any, this.crossmintService, chain, publicClient, entryPoint);
+    }
+
+    async getOrCreateWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchainIncludingTestnet>(
         user: UserIdentifierParams,
         chain: B | BackwardsCompatibleChains,
         walletConfig: WalletConfig
