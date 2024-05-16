@@ -30,6 +30,7 @@ import { parseUserIdentifier } from "./utils/user";
 
 export class CrossmintAASDK {
     crossmintService: CrossmintWalletService;
+    private projectId: string;
 
     private constructor(config: CrossmintAASDKInitParams) {
         const validationResult = validateAPIKey(config.apiKey);
@@ -38,33 +39,38 @@ export class CrossmintAASDK {
         }
 
         this.crossmintService = new CrossmintWalletService(config.apiKey);
+        this.projectId = validationResult.projectId;
     }
 
     static init(params: CrossmintAASDKInitParams): CrossmintAASDK {
         return new CrossmintAASDK(params);
     }
 
-    async loginPasskey(chain: EVMBlockchainIncludingTestnet) {
+    async loginPasskey(userIdentifier: UserIdentifierParams, chain: EVMBlockchainIncludingTestnet) {
         console.log("SDK: Get Passkey");
         return getPasskeyValidator(
             createPublicClient({
                 transport: http(getBundlerRPC(chain)),
             }),
             {
-                passkeyServerUrl: "X", // TODO use env
+                passkeyServerUrl: this.formatCrossmintPasskeysUrl(userIdentifier), // TODO use env
                 entryPoint: ENTRYPOINT_ADDRESS_V07 as any,
             }
         );
     }
 
-    async registerPasskey(username: string, chain: EVMBlockchainIncludingTestnet) {
+    async registerPasskey(
+        userIdentifier: UserIdentifierParams,
+        username: string,
+        chain: EVMBlockchainIncludingTestnet
+    ) {
         console.log("SDK: Register Passkey");
         return createPasskeyValidator(
             createPublicClient({
                 transport: http(getBundlerRPC(chain)),
             }),
             {
-                passkeyServerUrl: "X", // TODO use env
+                passkeyServerUrl: this.formatCrossmintPasskeysUrl(userIdentifier), // TODO use env
                 entryPoint: ENTRYPOINT_ADDRESS_V07 as any,
                 passkeyName: username,
             }
@@ -212,5 +218,12 @@ export class CrossmintAASDK {
             chain
         );
         return entryPointVersion;
+    }
+
+    private formatCrossmintPasskeysUrl(userIdentifier: UserIdentifierParams): string {
+        const identifier = userIdentifier.email
+            ? `email=${encodeURIComponent(userIdentifier.email)}`
+            : `userId=${userIdentifier.userId}`;
+        return this.crossmintService.crossmintBaseUrl + `/v1-alpha1/passkeys/${this.projectId}/${identifier}`;
     }
 }

@@ -7,7 +7,7 @@ import { CROSSMINT_DEV_URL, CROSSMINT_PROD_URL, CROSSMINT_STG_URL, SCW_SERVICE }
 
 export abstract class BaseCrossmintService {
     protected crossmintAPIHeaders: Record<string, string>;
-    protected crossmintBaseUrl: string;
+    crossmintBaseUrl: string;
     private static urlMap: Record<string, string> = {
         development: CROSSMINT_DEV_URL,
         staging: CROSSMINT_STG_URL,
