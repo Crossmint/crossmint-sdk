@@ -1,11 +1,12 @@
 import { logError } from "@/services/logging";
 import { CrossmintServiceError, errorToJSON } from "@/utils/error";
+import { LoggerWrapper } from "@/utils/loggerWrapper";
 
 import { validateAPIKey } from "@crossmint/common-sdk-base";
 
 import { CROSSMINT_DEV_URL, CROSSMINT_PROD_URL, CROSSMINT_STG_URL, SCW_SERVICE } from "../utils";
 
-export abstract class BaseCrossmintService {
+export abstract class BaseCrossmintService extends LoggerWrapper {
     protected crossmintAPIHeaders: Record<string, string>;
     protected crossmintBaseUrl: string;
     private static urlMap: Record<string, string> = {
@@ -15,6 +16,7 @@ export abstract class BaseCrossmintService {
     };
 
     constructor(apiKey: string) {
+        super("BaseCrossmintService");
         const result = validateAPIKey(apiKey);
         if (!result.isValid) {
             throw new Error("API key invalid");

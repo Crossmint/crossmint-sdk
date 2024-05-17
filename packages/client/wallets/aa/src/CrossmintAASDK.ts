@@ -26,12 +26,14 @@ import {
 } from "@crossmint/common-sdk-base";
 
 import { logError, logInfo } from "./services/logging";
+import { LoggerWrapper } from "./utils/loggerWrapper";
 import { parseUserIdentifier } from "./utils/user";
 
-export class CrossmintAASDK {
+export class CrossmintAASDK extends LoggerWrapper {
     crossmintService: CrossmintWalletService;
 
     private constructor(config: CrossmintAASDKInitParams) {
+        super("CrossmintAASDK");
         const validationResult = validateAPIKey(config.apiKey);
         if (!validationResult.isValid) {
             throw new Error("API key invalid");
@@ -50,6 +52,7 @@ export class CrossmintAASDK {
         walletConfig: WalletConfig
     ) {
         try {
+            const startTime = Date.now();
             chain = transformBackwardsCompatibleChains(chain);
             logInfo("[GET_OR_CREATE_WALLET] - INIT", {
                 service: SCW_SERVICE,
@@ -120,6 +123,7 @@ export class CrossmintAASDK {
                 userEmail: user.email!,
                 chain,
                 abstractAddress,
+                timeToCreateWalletInMs: Date.now() - startTime,
             });
             return evmAAWallet;
         } catch (error: any) {

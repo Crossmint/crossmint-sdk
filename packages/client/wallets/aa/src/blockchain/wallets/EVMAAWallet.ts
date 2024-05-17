@@ -12,6 +12,7 @@ import {
     hasEIP1559Support,
 } from "@/utils";
 import { resolveDeferrable } from "@/utils/deferrable";
+import { LoggerWrapper } from "@/utils/loggerWrapper";
 import type { Deferrable } from "@ethersproject/properties";
 import { type TransactionRequest } from "@ethersproject/providers";
 import type { KernelValidator } from "@zerodev/ecdsa-validator";
@@ -49,7 +50,9 @@ type GasFeeTransactionParams = {
     maxPriorityFeePerGas?: BigNumberish;
 };
 
-export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchainIncludingTestnet> {
+export class EVMAAWallet<
+    B extends EVMBlockchainIncludingTestnet = EVMBlockchainIncludingTestnet
+> extends LoggerWrapper {
     private sessionKeySignerAddress?: Hex;
     private crossmintService: CrossmintWalletService;
     private publicClient: PublicClient;
@@ -74,6 +77,7 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
         ecdsaValidator: KernelValidator<entryPoint, "ECDSAValidator">,
         entryPoint: EntryPoint
     ) {
+        super("EVMAAWallet");
         this.chain = chain;
         this.crossmintService = crossmintService;
         this.publicClient = publicClient;
