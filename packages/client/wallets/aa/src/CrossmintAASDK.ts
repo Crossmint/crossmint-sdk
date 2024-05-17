@@ -3,11 +3,9 @@ import { EVMAAWallet, TChain, entryPoint, getBundlerRPC } from "@/blockchain";
 import type { BackwardsCompatibleChains, CrossmintAASDKInitParams, WalletConfig } from "@/types";
 import {
     CURRENT_VERSION,
-    SCW_SERVICE,
     WalletSdkError,
     ZERO_DEV_TYPE,
     createOwnerSigner,
-    errorToJSON,
     transformBackwardsCompatibleChains,
 } from "@/utils";
 import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
@@ -54,7 +52,6 @@ export class CrossmintAASDK extends LoggerWrapper {
             "GET_OR_CREATE_WALLET",
             async () => {
                 try {
-                    const startTime = Date.now();
                     chain = transformBackwardsCompatibleChains(chain);
 
                     if (!isEVMBlockchain(chain)) {
@@ -118,7 +115,7 @@ export class CrossmintAASDK extends LoggerWrapper {
 
                     return evmAAWallet;
                 } catch (error: any) {
-                    throw new WalletSdkError(`Error creating the Wallet [${error?.name ?? ""}]`);
+                    throw new WalletSdkError(`Error creating the Wallet ${error?.message ? `: ${error.message}` : ""}`);
                 }
             },
             { user, chain }
