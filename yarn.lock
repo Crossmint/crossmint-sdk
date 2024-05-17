@@ -8170,10 +8170,10 @@
   resolved "https://registry.yarnpkg.com/@zerodev/ecdsa-validator/-/ecdsa-validator-5.2.1.tgz#888056308a6a834049ddfe8ab067668b2ea592cf"
   integrity sha512-/VDxntTzalQFGOEY3JbM1c39p0jiLbrF97E2V4NR5L4cRgNiWBu/QycW10zUeoeyFuqeghc6vPhNe/M1e7HTig==
 
-"@zerodev/passkey-validator@5.2.3":
-  version "5.2.3"
-  resolved "https://registry.yarnpkg.com/@zerodev/passkey-validator/-/passkey-validator-5.2.3.tgz#e65376c43c7eec14977fb7b9207eecfc124fefc4"
-  integrity sha512-tw5PqBE2G5MlK8rQaQM+1fJlLaAQmY1uyIb5eAd+H5hLmurwmqPgjx3D7ygaiFHCJeUbC1yuM7ZzmkCSgbgMhQ==
+"@zerodev/passkey-validator@5.2.7":
+  version "5.2.7"
+  resolved "https://registry.yarnpkg.com/@zerodev/passkey-validator/-/passkey-validator-5.2.7.tgz#42c3e6a54af9bd878d99750e2db81640c829409b"
+  integrity sha512-PgojM73bict8Y/Td9JR45GTaZobigogJhlwfZdAHH6ZaUrTElF+GigYpPxPRbxR8tx6YvACBBWVkgElSyLZSfg==
   dependencies:
     "@noble/curves" "^1.3.0"
     "@simplewebauthn/browser" "^8.3.4"

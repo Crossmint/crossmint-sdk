@@ -55,6 +55,7 @@ export class CrossmintAASDK {
             {
                 passkeyServerUrl: this.formatCrossmintPasskeysUrl(userIdentifier), // TODO use env
                 entryPoint: ENTRYPOINT_ADDRESS_V07 as any,
+                credentials: "omit",
             }
         );
     }
@@ -73,6 +74,7 @@ export class CrossmintAASDK {
                 passkeyServerUrl: this.formatCrossmintPasskeysUrl(userIdentifier), // TODO use env
                 entryPoint: ENTRYPOINT_ADDRESS_V07 as any,
                 passkeyName: username,
+                credentials: "omit",
             }
         );
     }

@@ -18,7 +18,7 @@
         "@web3auth/single-factor-auth": "7.3.0",
         "@zerodev/ecdsa-validator": "5.2.1",
         "@zerodev/permissions": "5.2.5",
-				"@zerodev/passkey-validator": "5.2.3",
+        "@zerodev/passkey-validator": "5.2.7",
         "@zerodev/sdk": "5.2.1",
         "@zerodev/session-key": "5.2.1",
         "email-validator": "2.0.4",
