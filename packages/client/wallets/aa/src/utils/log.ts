@@ -1,6 +1,6 @@
-import { logError, logInfo } from "@/services/logging";
 import { v4 as uuidv4 } from "uuid";
 
+import { logError, logInfo } from "../services/logging";
 import { SCW_SERVICE } from "./constants";
 import { isLocalhost } from "./helpers";
 
@@ -141,5 +141,7 @@ function logInfoIfNotInLocalhost(message: string, context?: object) {
     if (isLocalhost()) {
         return;
     }
+    console.log(message);
+    console.log(logInfo);
     logInfo(message, context);
 }
