@@ -170,7 +170,7 @@ export class EVMAAWallet<
                 const { to, value, gasLimit, nonce, data, maxFeePerGas, maxPriorityFeePerGas } =
                     await resolveDeferrable(decoratedTransaction);
 
-                return await this.kernelClient.sendTransaction({
+                const txParams = {
                     to: to as `0x${string}`,
                     value: value ? BigInt(value.toString()) : undefined,
                     gas: gasLimit ? BigInt(gasLimit.toString()) : undefined,
@@ -184,7 +184,11 @@ export class EVMAAWallet<
                     sidecars: undefined,
                     type: undefined,
                     chain: null,
-                });
+                };
+
+                logInfo(`[EVMAAWallet - SEND_TRANSACTION] - tx_params: ${JSON.stringify(txParams)}`);
+
+                return await this.kernelClient.sendTransaction(txParams);
             } catch (error) {
                 throw new TransactionError(`Error sending transaction: ${error}`);
             }

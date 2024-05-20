@@ -1,28 +1,27 @@
-import { DATADOG_CLIENT_TOKEN } from "@/utils/constants";
+import { DATADOG_CLIENT_TOKEN, SCW_SERVICE } from "@/utils/constants";
 import { datadogLogs } from "@datadog/browser-logs";
 
 import { BrowserLoggerInterface } from "./BrowserLoggerInterface";
 
-type DatadogContext = object | undefined;
-
 export class DatadogProvider implements BrowserLoggerInterface {
-    logInfo(message: string, context?: unknown) {
+    logInfo(message: string, context?: object) {
         log(message, "info", context);
     }
 
-    logError(message: string, context?: unknown) {
+    logError(message: string, context?: object) {
         log(message, "error", context);
     }
 
-    logWarn(message: string, context?: unknown) {
+    logWarn(message: string, context?: object) {
         log(message, "warn", context);
     }
 }
 
-function log(message: string, loggerType: "info" | "error" | "warn", context?: unknown) {
-    const _context = context as DatadogContext;
+function log(message: string, loggerType: "info" | "error" | "warn", contextParam?: object) {
+    const _context = contextParam ? { ...contextParam, service: SCW_SERVICE } : { service: SCW_SERVICE };
+
     init();
-    datadogLogs.logger[loggerType](message, _context as DatadogContext);
+    datadogLogs.logger[loggerType](message, _context);
 }
 
 function init() {

@@ -46,7 +46,7 @@ export class LoggerWrapper {
             `${identifierTag} input - ${beautify(args)} - extra_info - ${beautify(
                 this.extraInfo
             )} - log_idempotency_key - ${this.logIdempotencyKey}`,
-            addCommonKeysToLog({ args, ...this.extraInfo, logIdempotencyKey: this.logIdempotencyKey })
+            { args, ...this.extraInfo, logIdempotencyKey: this.logIdempotencyKey }
         );
     }
 
@@ -55,11 +55,11 @@ export class LoggerWrapper {
             `${identifierTag} output - ${beautify(res)} - extra_info - ${beautify(
                 this.extraInfo
             )} - log_idempotency_key - ${this.logIdempotencyKey}`,
-            addCommonKeysToLog({
+            {
                 res,
                 ...this.extraInfo,
                 logIdempotencyKey: this.logIdempotencyKey,
-            })
+            }
         );
     }
 
@@ -68,7 +68,7 @@ export class LoggerWrapper {
             `${identifierTag} threw_error - ${err} - extra_info - ${beautify(this.extraInfo)} - log_idempotency_key - ${
                 this.logIdempotencyKey
             }`,
-            addCommonKeysToLog({ err, ...this.extraInfo })
+            { err, ...this.extraInfo }
         );
     }
 
@@ -86,15 +86,8 @@ export async function logPerformance<T>(name: string, cb: () => Promise<T>, extr
     const result = await cb();
     const durationInMs = new Date().getTime() - start;
     const args = { durationInMs, ...extraInfo };
-    logInfo(`[${SCW_SERVICE} - ${name} - TIME] - ${beautify(args)}`, addCommonKeysToLog({ args }));
+    logInfo(`[${SCW_SERVICE} - ${name} - TIME] - ${beautify(args)}`, { args });
     return result;
-}
-
-export function addCommonKeysToLog(obj: any) {
-    return {
-        ...obj,
-        service: SCW_SERVICE,
-    };
 }
 
 export function logInputOutput(fn: Function, functionName: string) {
@@ -104,26 +97,26 @@ export function logInputOutput(fn: Function, functionName: string) {
 
     return function (this: any, ...args: any[]) {
         const identifierTag = `[${SCW_SERVICE} - function: ${functionName}]`;
-        logInfo(`${identifierTag} input: ${beautify(args)}`, addCommonKeysToLog({ args }));
+        logInfo(`${identifierTag} input: ${beautify(args)}`, { args });
 
         try {
             const result = fn.apply(this, args);
             if (result instanceof Promise) {
                 return result
                     .then((res) => {
-                        logInfo(`${identifierTag} output: ${beautify(res)}`, addCommonKeysToLog({ res }));
+                        logInfo(`${identifierTag} output: ${beautify(res)}`, { res });
                         return res;
                     })
                     .catch((err) => {
-                        logError(`${identifierTag} threw_error: ${beautify(err)}`, addCommonKeysToLog({ err }));
+                        logError(`${identifierTag} threw_error: ${beautify(err)}`, { err });
                         throw err;
                     });
             } else {
-                logInfo(`${identifierTag} output: ${beautify(result)}`, addCommonKeysToLog({ res: result }));
+                logInfo(`${identifierTag} output: ${beautify(result)}`, { res: result });
                 return result;
             }
         } catch (err) {
-            logError(`${identifierTag} threw_error: ${beautify(err)}`, addCommonKeysToLog({ err }));
+            logError(`${identifierTag} threw_error: ${beautify(err)}`, { err });
             throw err;
         }
     };
