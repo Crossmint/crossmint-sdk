@@ -20,7 +20,6 @@ import {
     ZD_ZKATANA_PROJECT_ID,
     ZD_ZKYOTO_PROJECT_ID,
 } from "@/utils";
-import { logInputOutput } from "@/utils/log";
 import { EntryPoint } from "permissionless/types/entrypoint";
 import {
     Chain,
@@ -42,6 +41,8 @@ import {
 } from "viem/chains";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
+
+import { logInputOutput } from "../utils/log";
 
 export function getFireblocksAssetId(chain: EVMBlockchainIncludingTestnet) {
     const assetId = new Map<EVMBlockchainIncludingTestnet, string | null>([

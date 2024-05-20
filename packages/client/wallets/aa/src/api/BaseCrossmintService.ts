@@ -1,4 +1,3 @@
-import { logError } from "@/services/logging";
 import { CrossmintServiceError, errorToJSON } from "@/utils/error";
 import { LoggerWrapper, logPerformance } from "@/utils/log";
 
