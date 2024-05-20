@@ -6,10 +6,6 @@ import { isLocalhost } from "./helpers";
 
 export class LoggerWrapper {
     constructor(className: string, private extraInfo = {}, private logIdempotencyKey = uuidv4()) {
-        if (isLocalhost()) {
-            return;
-        }
-
         return new Proxy(this, {
             get: (target: any, propKey: PropertyKey, receiver: any) => {
                 const origMethod = target[propKey];
@@ -42,7 +38,7 @@ export class LoggerWrapper {
     }
 
     private logInput(args: object, identifierTag: string) {
-        logInfo(
+        logInfoIfNotInLocalhost(
             `${identifierTag} input - ${beautify(args)} - extra_info - ${beautify(
                 this.extraInfo
             )} - log_idempotency_key - ${this.logIdempotencyKey}`,
@@ -51,7 +47,7 @@ export class LoggerWrapper {
     }
 
     private logOutput(res: object, identifierTag: string) {
-        logInfo(
+        logInfoIfNotInLocalhost(
             `${identifierTag} output - ${beautify(res)} - extra_info - ${beautify(
                 this.extraInfo
             )} - log_idempotency_key - ${this.logIdempotencyKey}`,
@@ -78,33 +74,25 @@ export class LoggerWrapper {
 }
 
 export async function logPerformance<T>(name: string, cb: () => Promise<T>, extraInfo?: object) {
-    if (isLocalhost()) {
-        return cb();
-    }
-
     const start = new Date().getTime();
     const result = await cb();
     const durationInMs = new Date().getTime() - start;
     const args = { durationInMs, ...extraInfo };
-    logInfo(`[${SCW_SERVICE} - ${name} - TIME] - ${beautify(args)}`, { args });
+    logInfoIfNotInLocalhost(`[${SCW_SERVICE} - ${name} - TIME] - ${beautify(args)}`, { args });
     return result;
 }
 
 export function logInputOutput(fn: Function, functionName: string) {
-    if (isLocalhost()) {
-        return fn;
-    }
-
     return function (this: any, ...args: any[]) {
         const identifierTag = `[${SCW_SERVICE} - function: ${functionName}]`;
-        logInfo(`${identifierTag} input: ${beautify(args)}`, { args });
+        logInfoIfNotInLocalhost(`${identifierTag} input: ${beautify(args)}`, { args });
 
         try {
             const result = fn.apply(this, args);
             if (result instanceof Promise) {
                 return result
                     .then((res) => {
-                        logInfo(`${identifierTag} output: ${beautify(res)}`, { res });
+                        logInfoIfNotInLocalhost(`${identifierTag} output: ${beautify(res)}`, { res });
                         return res;
                     })
                     .catch((err) => {
@@ -112,7 +100,7 @@ export function logInputOutput(fn: Function, functionName: string) {
                         throw err;
                     });
             } else {
-                logInfo(`${identifierTag} output: ${beautify(result)}`, { res: result });
+                logInfoIfNotInLocalhost(`${identifierTag} output: ${beautify(result)}`, { res: result });
                 return result;
             }
         } catch (err) {
@@ -123,5 +111,31 @@ export function logInputOutput(fn: Function, functionName: string) {
 }
 
 function beautify(json: any) {
-    return json != null ? JSON.stringify(json, null, 2) : json;
+    return json != null ? stringifyAvoidingCircular(json) : json;
+}
+
+function stringifyAvoidingCircular(json: any) {
+    // stringify an object, avoiding circular structures
+    // https://stackoverflow.com/a/31557814
+    const simpleObject: { [key: string]: any } = {};
+    for (var prop in json) {
+        if (!json.hasOwnProperty(prop)) {
+            continue;
+        }
+        if (typeof json[prop] == "object") {
+            continue;
+        }
+        if (typeof json[prop] == "function") {
+            continue;
+        }
+        simpleObject[prop] = json[prop];
+    }
+    return JSON.stringify(simpleObject, null, 2); // returns cleaned up JSON
+}
+
+function logInfoIfNotInLocalhost(message: string, context?: object) {
+    if (isLocalhost()) {
+        return;
+    }
+    logInfo(message, context);
 }
