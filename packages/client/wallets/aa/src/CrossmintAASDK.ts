@@ -226,6 +226,6 @@ export class CrossmintAASDK {
         const identifier = userIdentifier.email
             ? `email=${encodeURIComponent(userIdentifier.email)}`
             : `userId=${userIdentifier.userId}`;
-        return this.crossmintService.crossmintBaseUrl + `/v1-alpha1/passkeys/${this.projectId}/${identifier}`;
+        return this.crossmintService.crossmintBaseUrl + `/unstable/passkeys/${this.projectId}/${identifier}`;
     }
 }
