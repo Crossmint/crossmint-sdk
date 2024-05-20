@@ -111,7 +111,11 @@ export function logInputOutput(fn: Function, functionName: string) {
 }
 
 function beautify(json: any) {
-    return json != null ? stringifyAvoidingCircular(json) : json;
+    try {
+        return json != null ? JSON.stringify(json, null, 2) : json;
+    } catch (error) {
+        return stringifyAvoidingCircular(json);
+    }
 }
 
 function stringifyAvoidingCircular(json: any) {
