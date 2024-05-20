@@ -23,9 +23,6 @@ describe("Log test", () => {
         }
 
         it("should return the same value and log the input and output of myMethod", () => {
-            const logInfoSpy = jest.fn();
-            (logInfo as jest.MockedFunction<typeof logInfo>).mockImplementation(logInfoSpy);
-
             const base = new BaseClass();
             const input = 2;
             const result = base.someMethod(input);
