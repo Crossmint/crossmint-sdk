@@ -2,12 +2,13 @@ import { logError, logInfo } from "@/services/logging";
 import { v4 as uuidv4 } from "uuid";
 
 import { SCW_SERVICE } from "./constants";
+import { isLocalhost } from "./helpers";
 
 export class LoggerWrapper {
-    private logIdempotencyKey: string;
-
-    constructor(className: string, private extraInfo = {}) {
-        this.logIdempotencyKey = uuidv4();
+    constructor(className: string, private extraInfo = {}, private logIdempotencyKey = uuidv4()) {
+        if (isLocalhost()) {
+            return;
+        }
 
         return new Proxy(this, {
             get: (target: any, propKey: PropertyKey, receiver: any) => {
@@ -77,6 +78,10 @@ export class LoggerWrapper {
 }
 
 export async function logPerformance<T>(name: string, cb: () => Promise<T>, extraInfo?: object) {
+    if (isLocalhost()) {
+        return cb();
+    }
+
     const start = new Date().getTime();
     const result = await cb();
     const durationInMs = new Date().getTime() - start;
@@ -89,6 +94,38 @@ export function addCommonKeysToLog(obj: any) {
     return {
         ...obj,
         service: SCW_SERVICE,
+    };
+}
+
+export function logInputOutput(fn: Function, functionName: string) {
+    if (isLocalhost()) {
+        return fn;
+    }
+
+    return function (this: any, ...args: any[]) {
+        const identifierTag = `[${SCW_SERVICE} - function: ${functionName}]`;
+        logInfo(`${identifierTag} input: ${beautify(args)}`, addCommonKeysToLog({ args }));
+
+        try {
+            const result = fn.apply(this, args);
+            if (result instanceof Promise) {
+                return result
+                    .then((res) => {
+                        logInfo(`${identifierTag} output: ${beautify(res)}`, addCommonKeysToLog({ res }));
+                        return res;
+                    })
+                    .catch((err) => {
+                        logError(`${identifierTag} threw_error: ${beautify(err)}`, addCommonKeysToLog({ err }));
+                        throw err;
+                    });
+            } else {
+                logInfo(`${identifierTag} output: ${beautify(result)}`, addCommonKeysToLog({ res: result }));
+                return result;
+            }
+        } catch (err) {
+            logError(`${identifierTag} threw_error: ${beautify(err)}`, addCommonKeysToLog({ err }));
+            throw err;
+        }
     };
 }
 
