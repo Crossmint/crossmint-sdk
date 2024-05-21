@@ -141,7 +141,5 @@ function logInfoIfNotInLocalhost(message: string, context?: object) {
     if (isLocalhost()) {
         return;
     }
-    console.log(message);
-    console.log(logInfo);
     logInfo(message, context);
 }
