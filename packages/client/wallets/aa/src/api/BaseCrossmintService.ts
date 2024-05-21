@@ -1,9 +1,9 @@
 import { CrossmintServiceError, errorToJSON } from "@/utils/error";
-import { LoggerWrapper, logPerformance } from "@/utils/log";
 
 import { validateAPIKey } from "@crossmint/common-sdk-base";
 
 import { CROSSMINT_DEV_URL, CROSSMINT_PROD_URL, CROSSMINT_STG_URL, SCW_SERVICE } from "../utils";
+import { LoggerWrapper, logPerformance } from "../utils/log";
 
 export abstract class BaseCrossmintService extends LoggerWrapper {
     protected crossmintAPIHeaders: Record<string, string>;
