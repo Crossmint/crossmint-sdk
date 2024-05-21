@@ -3,11 +3,9 @@ import { EVMAAWallet, TChain, entryPoint, getBundlerRPC } from "@/blockchain";
 import type { BackwardsCompatibleChains, CrossmintAASDKInitParams, WalletConfig } from "@/types";
 import {
     CURRENT_VERSION,
-    SCW_SERVICE,
     WalletSdkError,
     ZERO_DEV_TYPE,
     createOwnerSigner,
-    errorToJSON,
     transformBackwardsCompatibleChains,
 } from "@/utils";
 import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
@@ -25,13 +23,14 @@ import {
     validateAPIKey,
 } from "@crossmint/common-sdk-base";
 
-import { logError, logInfo } from "./services/logging";
+import { LoggerWrapper, logPerformance } from "./utils/log";
 import { parseUserIdentifier } from "./utils/user";
 
-export class CrossmintAASDK {
+export class CrossmintAASDK extends LoggerWrapper {
     crossmintService: CrossmintWalletService;
 
     private constructor(config: CrossmintAASDKInitParams) {
+        super("CrossmintAASDK");
         const validationResult = validateAPIKey(config.apiKey);
         if (!validationResult.isValid) {
             throw new Error("API key invalid");
@@ -49,89 +48,78 @@ export class CrossmintAASDK {
         chain: B | BackwardsCompatibleChains,
         walletConfig: WalletConfig
     ) {
-        try {
-            chain = transformBackwardsCompatibleChains(chain);
-            logInfo("[GET_OR_CREATE_WALLET] - INIT", {
-                service: SCW_SERVICE,
-                user,
-                chain,
-            });
+        return logPerformance(
+            "GET_OR_CREATE_WALLET",
+            async () => {
+                try {
+                    chain = transformBackwardsCompatibleChains(chain);
 
-            if (!isEVMBlockchain(chain)) {
-                throw new WalletSdkError(`The blockchain ${chain} is not supported`);
-            }
+                    if (!isEVMBlockchain(chain)) {
+                        throw new WalletSdkError(`The blockchain ${chain} is not supported`);
+                    }
 
-            const userIdentifier = parseUserIdentifier(user);
+                    const userIdentifier = parseUserIdentifier(user);
 
-            const entryPointVersion = await this.getEntryPointVersion(userIdentifier, chain);
-            const entryPoint = entryPointVersion === "v0.6" ? ENTRYPOINT_ADDRESS_V06 : ENTRYPOINT_ADDRESS_V07;
+                    const entryPointVersion = await this.getEntryPointVersion(userIdentifier, chain);
+                    const entryPoint = entryPointVersion === "v0.6" ? ENTRYPOINT_ADDRESS_V06 : ENTRYPOINT_ADDRESS_V07;
 
-            const owner = await createOwnerSigner({
-                chain,
-                walletConfig,
-            });
+                    const owner = await createOwnerSigner({
+                        chain,
+                        walletConfig,
+                    });
 
-            const address = owner.address;
+                    const address = owner.address;
 
-            const publicClient = createPublicClient({
-                transport: http(getBundlerRPC(chain)),
-            });
+                    const publicClient = createPublicClient({
+                        transport: http(getBundlerRPC(chain)),
+                    });
 
-            const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
-                signer: owner,
-                entryPoint,
-            });
+                    const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
+                        signer: owner,
+                        entryPoint,
+                    });
 
-            const account = await createKernelAccount(publicClient, {
-                plugins: {
-                    sudo: ecdsaValidator,
-                },
-                index: BigInt(0),
-                entryPoint,
-            });
+                    const account = await createKernelAccount(publicClient, {
+                        plugins: {
+                            sudo: ecdsaValidator,
+                        },
+                        index: BigInt(0),
+                        entryPoint,
+                    });
 
-            const evmAAWallet = new EVMAAWallet(
-                account,
-                this.crossmintService,
-                chain,
-                publicClient,
-                ecdsaValidator,
-                entryPoint
-            );
+                    const evmAAWallet = new EVMAAWallet(
+                        account,
+                        this.crossmintService,
+                        chain,
+                        publicClient,
+                        ecdsaValidator,
+                        entryPoint
+                    );
 
-            const abstractAddress = account.address;
-            const { sessionKeySignerAddress } = await this.crossmintService.createSessionKey(abstractAddress);
+                    const abstractAddress = account.address;
+                    const { sessionKeySignerAddress } = await this.crossmintService.createSessionKey(abstractAddress);
 
-            evmAAWallet.setSessionKeySignerAddress(sessionKeySignerAddress);
+                    evmAAWallet.setSessionKeySignerAddress(sessionKeySignerAddress);
 
-            await this.crossmintService.storeAbstractWallet({
-                userIdentifier,
-                type: ZERO_DEV_TYPE,
-                smartContractWalletAddress: abstractAddress,
-                eoaAddress: address,
-                sessionKeySignerAddress,
-                version: CURRENT_VERSION,
-                baseLayer: "evm",
-                chainId: blockchainToChainId(chain),
-                entryPointVersion,
-            });
-            logInfo("[GET_OR_CREATE_WALLET] - FINISH", {
-                service: SCW_SERVICE,
-                userEmail: user.email!,
-                chain,
-                abstractAddress,
-            });
-            return evmAAWallet;
-        } catch (error: any) {
-            logError("[GET_OR_CREATE_WALLET] - ERROR_CREATING_WALLET", {
-                service: SCW_SERVICE,
-                error: errorToJSON(error),
-                user,
-                chain,
-            });
+                    await this.crossmintService.storeAbstractWallet({
+                        userIdentifier,
+                        type: ZERO_DEV_TYPE,
+                        smartContractWalletAddress: abstractAddress,
+                        eoaAddress: address,
+                        sessionKeySignerAddress,
+                        version: CURRENT_VERSION,
+                        baseLayer: "evm",
+                        chainId: blockchainToChainId(chain),
+                        entryPointVersion,
+                    });
 
-            throw new WalletSdkError(`Error creating the Wallet [${error?.name ?? ""}]`);
-        }
+                    return evmAAWallet;
+                } catch (error: any) {
+                    throw new WalletSdkError(`Error creating the Wallet ${error?.message ? `: ${error.message}` : ""}`);
+                }
+            },
+            { user, chain }
+        );
     }
 
     /**

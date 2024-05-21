@@ -1,11 +1,11 @@
-import { logError } from "@/services/logging";
 import { CrossmintServiceError, errorToJSON } from "@/utils/error";
 
 import { validateAPIKey } from "@crossmint/common-sdk-base";
 
 import { CROSSMINT_DEV_URL, CROSSMINT_PROD_URL, CROSSMINT_STG_URL, SCW_SERVICE } from "../utils";
+import { LoggerWrapper, logPerformance } from "../utils/log";
 
-export abstract class BaseCrossmintService {
+export abstract class BaseCrossmintService extends LoggerWrapper {
     protected crossmintAPIHeaders: Record<string, string>;
     protected crossmintBaseUrl: string;
     private static urlMap: Record<string, string> = {
@@ -15,6 +15,7 @@ export abstract class BaseCrossmintService {
     };
 
     constructor(apiKey: string) {
+        super("BaseCrossmintService");
         const result = validateAPIKey(apiKey);
         if (!result.isValid) {
             throw new Error("API key invalid");
@@ -32,33 +33,35 @@ export abstract class BaseCrossmintService {
         options: { body?: string; method: string } = { method: "GET" },
         onServerErrorMessage: string
     ) {
-        const url = `${this.crossmintBaseUrl}/${endpoint}`;
-        const { body, method } = options;
+        return logPerformance(
+            "FETCH_CROSSMINT_API",
+            async () => {
+                const url = `${this.crossmintBaseUrl}/${endpoint}`;
+                const { body, method } = options;
 
-        try {
-            const response = await fetch(url, {
-                body,
-                method,
-                headers: this.crossmintAPIHeaders,
-            });
-            if (!response.ok) {
-                if (response.status >= 500) {
-                    // Crossmint throws a generic “An error occurred” error for all 5XX errors.
-                    // We throw a more specific error depending on the endpoint that was called.
-                    throw new CrossmintServiceError(onServerErrorMessage);
+                try {
+                    const response = await fetch(url, {
+                        body,
+                        method,
+                        headers: this.crossmintAPIHeaders,
+                    });
+                    if (!response.ok) {
+                        if (response.status >= 500) {
+                            // Crossmint throws a generic “An error occurred” error for all 5XX errors.
+                            // We throw a more specific error depending on the endpoint that was called.
+                            throw new CrossmintServiceError(onServerErrorMessage);
+                        }
+                        // We forward all 4XX errors. This includes rate limit errors.
+                        // It also includes chain not found, as it is a bad request error.
+                        throw new CrossmintServiceError(await response.text());
+                    }
+                    return await response.json();
+                } catch (error) {
+                    throw new CrossmintServiceError(`Error fetching Crossmint API: ${error}`);
                 }
-                // We forward all 4XX errors. This includes rate limit errors.
-                // It also includes chain not found, as it is a bad request error.
-                throw new CrossmintServiceError(await response.text());
-            }
-            return await response.json();
-        } catch (error) {
-            logError("[CROSSMINT_SERVICE] - ERROR", {
-                service: SCW_SERVICE,
-                error: errorToJSON(error),
-            });
-            throw new CrossmintServiceError(`Error fetching Crossmint API: ${error}`);
-        }
+            },
+            { endpoint }
+        );
     }
 
     protected getUrlFromEnv(environment: string) {
