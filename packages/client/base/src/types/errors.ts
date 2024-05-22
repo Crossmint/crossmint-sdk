@@ -3,7 +3,7 @@ export const PaymentErrors = {
     PAYMENT_METHOD_INVALID: "payments:payment-method.invalid",
     EMAIL_INVALID: "payments:email.invalid",
     CLIENT_ID_INVALID: "payments:client-id.invalid",
-    MISSING_RECIPIENT: "payments:recipient.missing",
+    REQUIRED_RECIPIENT: "payments:recipient.required",
     MINTING_CONTRACT_MISSING: "payments:minting-contract.missing",
     COLLECTION_DISABLED: "payments:collection.disabled",
     COLLECTION_UNAVAILABLE: "payments:collection.unavailable",
