@@ -1,41 +1,54 @@
 import { CrossmintWalletService, EVMAAWallet } from "@/index";
 import { getIdString } from "@/utils/user";
-import { createPasskeyValidator } from "@zerodev/passkey-validator";
-import { createKernelAccount } from "@zerodev/sdk";
+import { createPasskeyValidator, deserializePasskeyValidator } from "@zerodev/passkey-validator";
+import { KernelValidator, createKernelAccount } from "@zerodev/sdk";
 import { ENTRYPOINT_ADDRESS_V07 } from "permissionless";
+import { ENTRYPOINT_ADDRESS_V07_TYPE } from "permissionless/_types/types";
 import { HttpTransport, PublicClient } from "viem";
 
 import { EVMBlockchainIncludingTestnet, UserIdentifier } from "@crossmint/common-sdk-base";
 
 export default class PasskeyWalletService {
-    constructor(private readonly crossmintService: CrossmintWalletService) {}
+    private readonly entryPoint = ENTRYPOINT_ADDRESS_V07;
+    constructor(private readonly crossmintService: CrossmintWalletService, private readonly passkeyServerUrl: string) {}
 
     public async getOrCreate(
         userIdentifier: UserIdentifier,
         chain: EVMBlockchainIncludingTestnet,
         publicClient: PublicClient<HttpTransport>
     ) {
-        // TODO
-        // Fetch wallet for userIdentifier
-        // If there's an inconsistency, throw an error
-        // If there's a wallet, deserialize the validator and pass it back.
+        const serializedData = await this.get(userIdentifier, chain);
 
-        const entryPoint = ENTRYPOINT_ADDRESS_V07;
-        const validator = await createPasskeyValidator(publicClient, {
-            passkeyServerUrl: "X",
-            entryPoint,
-            passkeyName: getIdString(userIdentifier),
-        });
+        let validator: KernelValidator<ENTRYPOINT_ADDRESS_V07_TYPE, "WebAuthnValidator">;
+        if (serializedData != null) {
+            validator = await deserializePasskeyValidator(publicClient, {
+                serializedData,
+                entryPoint: this.entryPoint,
+            });
+        } else {
+            validator = await createPasskeyValidator(publicClient, {
+                passkeyServerUrl: this.passkeyServerUrl,
+                entryPoint: this.entryPoint,
+                passkeyName: getIdString(userIdentifier),
+            });
+        }
+
         const kernelAccount = await createKernelAccount(publicClient, {
             plugins: {
                 sudo: validator,
             },
-            entryPoint,
+            entryPoint: this.entryPoint,
         });
 
         // TODO save wallet to CM backend
 
         // TODO fix the init code type issue w/ kernel account & validator
-        return new EVMAAWallet(kernelAccount as any, this.crossmintService, chain, publicClient, entryPoint);
+        return new EVMAAWallet(kernelAccount as any, this.crossmintService, chain, publicClient, this.entryPoint);
+    }
+
+    // TODO fetch from DB
+    // If there's an inconsistency, throw a nice error message.
+    private async get(userIdentifier: UserIdentifier, chain: EVMBlockchainIncludingTestnet): Promise<string | null> {
+        return "eyJwYXNza2V5U2VydmVyVXJsIjoiaHR0cHM6Ly9wYXNza2V5cy56ZXJvZGV2LmFwcC9hcGkvdjMvMTc0M2M5ZTQtYzQxYS00MTg4LTgyN2YtNTQ3MzAxYWExNjQ1IiwiY3JlZGVudGlhbHMiOiJpbmNsdWRlIiwiZW50cnlQb2ludCI6IjB4MDAwMDAwMDA3MTcyN0RlMjJFNUU5ZDhCQWYwZWRBYzZmMzdkYTAzMiIsInZhbGlkYXRvckFkZHJlc3MiOiIweEQ5OTAzOTNDNjcwZENjRThiNGQ4Rjg1OEZCOThjOTkxMmRCRkFhMDYiLCJwdWJLZXlYIjoiYjgxYzNiNWUxMjQ2MWY5Mzk4MTAzYWI5MTk5ZWRjYzgyMThjNzdmYWFkMDYwNGZhYmI5NGM1MzVkMTdjOGQ3MyIsInB1YktleVkiOiIyZDZmYmU4MGRlYjI3MzgzNDllNDY3MWI2ZTYwZmM2M2Q3NmEwOTczMjJmYTQwYzdiNTRiNDg3NTZmMjJmYjM3IiwiYXV0aGVudGljYXRvcklkSGFzaCI6IjB4MGY0NzIwYzdlMmI3NWEwODYxMGJkN2E1ZmMxZDEwMDlmZDJhZGYyZTc3ZTdmNTViOGMzNzcxZDQ1Njc5Mjg3OCJ9";
     }
 }

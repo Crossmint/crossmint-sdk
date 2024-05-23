@@ -12,6 +12,9 @@ import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 import { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import { TChain, getBundlerRPC, getPaymasterRPC, getViemNetwork } from "../BlockchainNetworks";
 
+// TODO
+// - Fix the fact that `sendTransaction` requires a chain property
+
 export class EVMAAWallet {
     public chain: EVMBlockchainIncludingTestnet;
     public publicClient: PublicClient<HttpTransport>;
