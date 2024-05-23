@@ -4,16 +4,13 @@ import { createKernelAccountClient, createZeroDevPaymasterClient } from "@zerode
 import { bundlerActions } from "permissionless";
 import { Middleware } from "permissionless/actions/smartAccount";
 import { EntryPoint } from "permissionless/types/entrypoint";
-import type { HttpTransport, PublicClient } from "viem";
+import type { Chain, HttpTransport, PublicClient } from "viem";
 import { http } from "viem";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 import { CrossmintWalletService } from "../../api/CrossmintWalletService";
-import { TChain, getBundlerRPC, getPaymasterRPC, getViemNetwork } from "../BlockchainNetworks";
-
-// TODO
-// - Fix the fact that `sendTransaction` requires a chain property
+import { getBundlerRPC, getPaymasterRPC, getViemNetwork } from "../BlockchainNetworks";
 
 export class EVMAAWallet {
     public chain: EVMBlockchainIncludingTestnet;
@@ -21,12 +18,12 @@ export class EVMAAWallet {
     private kernelClient: KernelAccountClient<
         EntryPoint,
         HttpTransport,
-        TChain,
-        KernelSmartAccount<EntryPoint, HttpTransport, TChain>
+        Chain,
+        KernelSmartAccount<EntryPoint, HttpTransport>
     >;
 
     constructor(
-        private readonly account: KernelSmartAccount<EntryPoint, HttpTransport, TChain>,
+        private readonly account: KernelSmartAccount<EntryPoint, HttpTransport>,
         private readonly crossmintService: CrossmintWalletService,
         chain: EVMBlockchainIncludingTestnet,
         publicClient: PublicClient<HttpTransport>,
@@ -51,7 +48,7 @@ export class EVMAAWallet {
         };
         this.kernelClient = createKernelAccountClient({
             account,
-            chain: getViemNetwork(chain),
+            chain: getViemNetwork(chain) as Chain, // Fix getViemNetwork definition
             entryPoint,
             bundlerTransport: http(getBundlerRPC(chain)),
             ...(hasEIP1559Support(chain) && paymasterMiddleware),
