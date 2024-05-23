@@ -20,6 +20,7 @@ import {
     blockchainToChainId,
 } from "@crossmint/common-sdk-base";
 
+// TODO figure out if that session key stuff worked, if yes, add it back.
 export default class EOAWalletService {
     constructor(private readonly crossmintService: CrossmintWalletService) {}
 

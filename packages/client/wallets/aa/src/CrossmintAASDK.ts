@@ -17,7 +17,6 @@ import { logError, logInfo } from "./services/logging";
 import { parseUserIdentifier } from "./utils/user";
 
 export class CrossmintAASDK {
-    private readonly crossmintService: CrossmintWalletService;
     private readonly passkeyWalletService: PasskeyWalletService;
     private readonly eoaWalletService: EOAWalletService;
 
@@ -26,21 +25,28 @@ export class CrossmintAASDK {
             throw new Error("API key invalid");
         }
 
-        this.crossmintService = new CrossmintWalletService(apiKey);
+        const crossmintService = new CrossmintWalletService(apiKey);
         this.passkeyWalletService = new PasskeyWalletService(
-            this.crossmintService,
+            crossmintService,
             "X" // TODO move this somewhere else!
         );
-        this.eoaWalletService = new EOAWalletService(this.crossmintService);
+        this.eoaWalletService = new EOAWalletService(crossmintService);
     }
 
     static init(params: CrossmintAASDKInitParams): CrossmintAASDK {
         return new CrossmintAASDK(params);
     }
 
-    // Scenarios
-    // The user already has a wallet (from "user" & "chain") but the wallet config doesn't match, we'll throw an error
-    // The dev doesn't provide wallet config, create passkey wallet by default.
+    /**
+     * Retrieves an existing wallet or creates a new one based on the provided parameters.
+     * - If a wallet does not exist for the given user and no `walletConfig` is provided, a passkey signer will be created by default.
+     * - If a wallet for a user already exists and `walletConfig` is provided, but the wallet and config do not match, an error will be thrown.
+     *
+     * @param {UserIdentifierParams} user - The user identifier parameters.
+     * @param {EVMBlockchainIncludingTestnet} chain - The blockchain type, including testnets.
+     * @param {WalletConfig} [walletConfig] - Optional configuration for the wallet, if specific wallet type needs to be created or validated.
+     * @returns {Promise<EVMAAWallet>} The wallet instance, either fetched or newly created.
+     */
     public async getOrCreate(
         user: UserIdentifierParams,
         chain: EVMBlockchainIncludingTestnet,
