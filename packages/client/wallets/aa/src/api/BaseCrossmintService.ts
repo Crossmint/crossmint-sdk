@@ -7,7 +7,7 @@ import { LoggerWrapper, logPerformance } from "../utils/log";
 
 export abstract class BaseCrossmintService extends LoggerWrapper {
     protected crossmintAPIHeaders: Record<string, string>;
-    protected crossmintBaseUrl: string;
+    crossmintBaseUrl: string;
     private static urlMap: Record<string, string> = {
         development: CROSSMINT_DEV_URL,
         staging: CROSSMINT_STG_URL,

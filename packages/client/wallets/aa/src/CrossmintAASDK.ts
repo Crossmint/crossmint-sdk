@@ -1,5 +1,5 @@
 import { CrossmintWalletService } from "@/api";
-import { EVMAAWallet, TChain, entryPoint, getBundlerRPC } from "@/blockchain";
+import { EVMAAPasskeyWallet, EVMAAWallet, getBundlerRPC } from "@/blockchain";
 import type { BackwardsCompatibleChains, CrossmintAASDKInitParams, WalletConfig } from "@/types";
 import {
     CURRENT_VERSION,
@@ -9,13 +9,13 @@ import {
     transformBackwardsCompatibleChains,
 } from "@/utils";
 import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
+import { createPasskeyValidator, getPasskeyValidator } from "@zerodev/passkey-validator";
 import { createKernelAccount } from "@zerodev/sdk";
 import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
 import { EntryPointVersion } from "permissionless/types/entrypoint";
 import { createPublicClient, http } from "viem";
 
 import {
-    BlockchainIncludingTestnet,
     EVMBlockchainIncludingTestnet,
     UserIdentifierParams,
     blockchainToChainId,
@@ -28,6 +28,7 @@ import { parseUserIdentifier } from "./utils/user";
 
 export class CrossmintAASDK extends LoggerWrapper {
     crossmintService: CrossmintWalletService;
+    private projectId: string;
 
     private constructor(config: CrossmintAASDKInitParams) {
         super("CrossmintAASDK");
@@ -37,13 +38,73 @@ export class CrossmintAASDK extends LoggerWrapper {
         }
 
         this.crossmintService = new CrossmintWalletService(config.apiKey);
+        this.projectId = validationResult.projectId;
     }
 
     static init(params: CrossmintAASDKInitParams): CrossmintAASDK {
         return new CrossmintAASDK(params);
     }
 
-    async getOrCreateWallet<B extends BlockchainIncludingTestnet = BlockchainIncludingTestnet>(
+    async loginPasskey(userIdentifier: UserIdentifierParams, chain: EVMBlockchainIncludingTestnet) {
+        console.log("SDK: Get Passkey");
+        return getPasskeyValidator(
+            createPublicClient({
+                transport: http(getBundlerRPC(chain)),
+            }),
+            {
+                passkeyServerUrl: this.formatCrossmintPasskeysUrl(userIdentifier), // TODO use env
+                entryPoint: ENTRYPOINT_ADDRESS_V07 as any,
+                credentials: "omit",
+            }
+        );
+    }
+
+    async registerPasskey(
+        userIdentifier: UserIdentifierParams,
+        username: string,
+        chain: EVMBlockchainIncludingTestnet
+    ) {
+        console.log("SDK: Register Passkey");
+        return createPasskeyValidator(
+            createPublicClient({
+                transport: http(getBundlerRPC(chain)),
+            }),
+            {
+                passkeyServerUrl: this.formatCrossmintPasskeysUrl(userIdentifier), // TODO use env
+                entryPoint: ENTRYPOINT_ADDRESS_V07 as any,
+                passkeyName: username,
+                credentials: "omit",
+            }
+        );
+    }
+
+    async getOrCreatePasskeyWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchainIncludingTestnet>(
+        user: UserIdentifierParams,
+        chain: B | BackwardsCompatibleChains,
+        passkeyValidator: any
+    ) {
+        if (!isEVMBlockchain(chain)) {
+            throw new WalletSdkError(`The blockchain ${chain} is not supported`);
+        }
+
+        const publicClient = createPublicClient({
+            transport: http(getBundlerRPC(chain)),
+        });
+
+        const entryPoint = ENTRYPOINT_ADDRESS_V07;
+        const kernelAccount = await createKernelAccount(publicClient, {
+            plugins: {
+                sudo: passkeyValidator,
+            },
+            entryPoint,
+        });
+
+        // TODO save to CM
+
+        return new EVMAAPasskeyWallet(kernelAccount as any, this.crossmintService, chain, publicClient, entryPoint);
+    }
+
+    async getOrCreateWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchainIncludingTestnet>(
         user: UserIdentifierParams,
         chain: B | BackwardsCompatibleChains,
         walletConfig: WalletConfig
@@ -147,5 +208,12 @@ export class CrossmintAASDK extends LoggerWrapper {
             chain
         );
         return entryPointVersion;
+    }
+
+    private formatCrossmintPasskeysUrl(userIdentifier: UserIdentifierParams): string {
+        const identifier = userIdentifier.email
+            ? `email=${encodeURIComponent(userIdentifier.email)}`
+            : `userId=${userIdentifier.userId}`;
+        return this.crossmintService.crossmintBaseUrl + `/unstable/passkeys/${this.projectId}/${identifier}`;
     }
 }
