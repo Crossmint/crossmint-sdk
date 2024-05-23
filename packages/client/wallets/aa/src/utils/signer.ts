@@ -4,7 +4,7 @@ import {
     getTickerNameByBlockchain,
     getUrlProviderByBlockchain,
 } from "@/blockchain";
-import { ViemAccount, WalletConfig, Web3AuthSigner } from "@/types";
+import { EOAWalletConfig, ViemAccount, Web3AuthSigner } from "@/types";
 import { WalletSdkError, parseToken } from "@/utils";
 import { CHAIN_NAMESPACES } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
@@ -22,7 +22,7 @@ import {
 
 type CreateOwnerSignerInput = {
     chain: EVMBlockchainIncludingTestnet;
-    walletConfig: WalletConfig;
+    walletConfig: EOAWalletConfig;
 };
 
 export async function createOwnerSigner({

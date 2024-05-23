@@ -3,17 +3,6 @@ import { isEmpty } from "@/utils/helpers";
 import EmailValidator from "email-validator";
 import { parsePhoneNumber } from "libphonenumber-js";
 
-export function narrowUserIdentifier(userIdentifier: UserIdentifier) {
-    switch (userIdentifier.type) {
-        case "whiteLabel":
-            return { userId: userIdentifier.userId };
-        case "email":
-            return { userEmail: userIdentifier.email };
-        case "phoneNumber":
-            return { phoneNumber: userIdentifier.phoneNumber };
-    }
-}
-
 export function parseUserIdentifier(reqParams: UserIdentifierParams, acceptPhoneWithoutPlus = false): UserIdentifier {
     const { userId, email } = reqParams;
     const phoneNumber = getPhoneNumber(reqParams.phoneNumber, acceptPhoneWithoutPlus);
@@ -37,6 +26,19 @@ export function parseUserIdentifier(reqParams: UserIdentifierParams, acceptPhone
     }
 
     throw new Error(`Missing required parameter.`);
+}
+
+export function getIdString(identifier: UserIdentifier): string {
+    switch (identifier.type) {
+        case "whiteLabel":
+            return identifier.userId;
+        case "email":
+            return identifier.email;
+        case "phoneNumber":
+            return identifier.phoneNumber;
+        default:
+            throw new Error("Invalid UserIdentifier type.");
+    }
 }
 
 function getPhoneNumber(input?: string, acceptPhoneWithoutPlus = false) {

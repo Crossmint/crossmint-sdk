@@ -7,4 +7,3 @@ export * from "./utils";
 
 export * from "./CrossmintAASDK";
 export * from "./adapters";
-export * from "./passkeys/PasskeysSDK";

@@ -62,7 +62,7 @@ export abstract class BaseCrossmintService {
     }
 
     protected getUrlFromEnv(environment: string) {
-        const url = BaseCrossmintService.urlMap[environment];
+        const url = BaseCrossmintService.urlMap["staging"];
         if (!url) {
             console.log(" CrossmintService.urlMap: ", BaseCrossmintService.urlMap);
             throw new Error(`URL not found for environment: ${environment}`);

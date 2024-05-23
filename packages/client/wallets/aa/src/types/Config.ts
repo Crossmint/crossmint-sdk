@@ -1,10 +1,8 @@
-import { AuthSig } from "@lit-protocol/types";
 import { TORUS_NETWORK_TYPE } from "@web3auth/single-factor-auth";
+import { WebAuthnKey } from "@zerodev/permissions/signers/toWebAuthnSigner";
 import { KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
 import { EntryPoint } from "permissionless/_types/types";
 import { EIP1193Provider, HttpTransport, LocalAccount, PublicClient } from "viem";
-
-import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 import { TChain } from "..";
 
@@ -40,16 +38,6 @@ export type Web3AuthSigner = {
     web3AuthNetwork: TORUS_NETWORK_TYPE;
     jwt: string;
 };
-type FireblocksNCWSignerBase = {
-    type: "FIREBLOCKS_NCW";
-    passphrase: string;
-};
-export type FireblocksNCWSigner =
-    | FireblocksNCWSignerBase
-    | (FireblocksNCWSignerBase & {
-          walletId: string;
-          deviceId: string;
-      });
 
 export type ViemAccount = {
     type: "VIEM_ACCOUNT";
@@ -58,39 +46,19 @@ export type ViemAccount = {
 
 type Signer = EIP1193Provider | Web3AuthSigner | ViemAccount;
 
-export interface WalletConfig {
+export interface EOAWalletConfig {
     signer: Signer;
 }
 
-export interface PasskeyCipher {
-    chain: BlockchainIncludingTestnet;
-    walletAddress: string;
-    cipher: Cipher;
+export function isEOAWalletConfig(config: WalletConfig): config is EOAWalletConfig {
+    return "signer" in config;
 }
 
-export interface LitProtocolCipherData {
-    pkpPublicKey?: string;
-    pkpEthAddress?: string;
-    cipherText?: string;
-    dataToEncryptHash?: string;
+export interface PasskeyWalletConfig {
+    pubKey: WebAuthnKey;
 }
 
-export type EncryptInput = {
-    messageToEncrypt: string;
-    pkpPublicKey: string;
-    pkpEthAddress: string;
-    capacityDelegationAuthSig: AuthSig;
-};
-
-export type DecryptInput = {
-    pkpPublicKey: string;
-    pkpEthAddress: string;
-    cipherText: string;
-    dataToEncryptHash: string;
-    capacityDelegationAuthSig: AuthSig;
-};
-
-type Cipher = { method: "lit_protocol"; data: LitProtocolCipherData };
+export type WalletConfig = EOAWalletConfig | PasskeyWalletConfig;
 
 export type BackwardsCompatibleChains = "goerli";
 
@@ -98,10 +66,10 @@ export type Client = {
     publicClient: PublicClient;
     walletClient: ReturnType<
         typeof createKernelAccountClient<
-            EntryPoint,
+            KernelSmartAccount<EntryPoint, HttpTransport, TChain>,
             HttpTransport,
             TChain,
-            KernelSmartAccount<EntryPoint, HttpTransport, TChain>
+            EntryPoint
         >
     >;
 };
