@@ -47,20 +47,14 @@ export type ViemAccount = {
 type Signer = EIP1193Provider | Web3AuthSigner | ViemAccount;
 
 export interface EOAWalletConfig {
+    type: "eoa";
     signer: Signer;
 }
 
-export function isEOAWalletConfig(config: WalletConfig): config is EOAWalletConfig {
-    return "signer" in config;
-}
-
 export interface PasskeyWalletConfig {
-    pubKey: WebAuthnKey;
+    type: "passkey";
 }
-
 export type WalletConfig = EOAWalletConfig | PasskeyWalletConfig;
-
-export type BackwardsCompatibleChains = "goerli";
 
 export type Client = {
     publicClient: PublicClient;

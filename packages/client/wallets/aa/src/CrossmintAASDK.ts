@@ -1,15 +1,9 @@
 import { CrossmintWalletService } from "@/api";
 import { EVMAAWallet, getBundlerRPC } from "@/blockchain";
-import {
-    type CrossmintAASDKInitParams,
-    type EOAWalletConfig,
-    type UserIdentifier,
-    WalletConfig,
-    isEOAWalletConfig,
-} from "@/types";
+import { type CrossmintAASDKInitParams, type EOAWalletConfig, type UserIdentifier, WalletConfig } from "@/types";
 import { CURRENT_VERSION, SCW_SERVICE, WalletSdkError, ZERO_DEV_TYPE, createOwnerSigner, errorToJSON } from "@/utils";
 import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
-import { createPasskeyValidator, getPasskeyValidator } from "@zerodev/passkey-validator";
+import { createPasskeyValidator } from "@zerodev/passkey-validator";
 import { createKernelAccount } from "@zerodev/sdk";
 import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
 import { EntryPointVersion } from "permissionless/types/entrypoint";
@@ -42,7 +36,8 @@ export class CrossmintAASDK {
     }
 
     // Scenarios
-    // The user already has a wallet (from "user" & "chain") but the wallet config doesn't match
+    // The user already has a wallet (from "user" & "chain") but the wallet config doesn't match, we'll throw an error
+    // The dev doesn't provide wallet config, create passkey wallet by default.
     public async getOrCreate(
         user: UserIdentifierParams,
         chain: EVMBlockchainIncludingTestnet,
@@ -62,12 +57,10 @@ export class CrossmintAASDK {
             const publicClient = createPublicClient({
                 transport: http(getBundlerRPC(chain)),
             });
-
             const userIdentifier = parseUserIdentifier(user);
-            // Fetch wallet config
 
             let wallet: EVMAAWallet;
-            if (walletConfig != null && isEOAWalletConfig(walletConfig)) {
+            if (walletConfig?.type === "eoa") {
                 wallet = await this.getOrCreateEOAWallet(userIdentifier, chain, publicClient, walletConfig);
             } else {
                 wallet = await this.getOrCreatePasskeyWallet(userIdentifier, chain, publicClient);
@@ -92,11 +85,16 @@ export class CrossmintAASDK {
         }
     }
 
-    private async registerPasskeyWallet(
+    private async getOrCreatePasskeyWallet(
         userIdentifier: UserIdentifier,
         chain: EVMBlockchainIncludingTestnet,
         publicClient: PublicClient<HttpTransport>
     ) {
+        // TODO
+        // Fetch wallet for userIdentifier
+        // If there's an inconsistency, throw an error
+        // If there's a wallet, deserialize the validator and pass it back.
+
         const entryPoint = ENTRYPOINT_ADDRESS_V07;
         const validator = await createPasskeyValidator(publicClient, {
             passkeyServerUrl: "X",
@@ -109,49 +107,11 @@ export class CrossmintAASDK {
             },
             entryPoint,
         });
-        // TODO save to CM
+
+        // TODO save wallet to CM backend
 
         // TODO fix the init code type issue w/ kernel account & validator
         return new EVMAAWallet(kernelAccount as any, this.crossmintService, chain, publicClient, entryPoint);
-    }
-
-    private async getOrCreatePasskeyWallet(
-        userIdentifier: UserIdentifier,
-        chain: EVMBlockchainIncludingTestnet,
-        publicClient: PublicClient<HttpTransport>
-    ) {
-        const userHasSetupPasskey = true; // TODO figure this out by fetching from crossmint server.
-        const entryPoint = ENTRYPOINT_ADDRESS_V07;
-
-        // Can we deserialize our passkey validator
-        const passkeyValidatorParams = {
-            passkeyServerUrl: "X",
-            entryPoint,
-            passkeyName: getIdString(userIdentifier),
-        };
-
-        const validator = userHasSetupPasskey
-            ? await getPasskeyValidator(publicClient, passkeyValidatorParams)
-            : await createPasskeyValidator(publicClient, passkeyValidatorParams);
-
-        // Scenario:
-        // If the validator doesn't match here, throw a good error. The dev is responsible for surfacing this to their user.
-
-        const kernelAccount = await createKernelAccount(publicClient, {
-            plugins: {
-                sudo: validator,
-            },
-            entryPoint,
-        });
-
-        // TODO save to CM
-
-        // TODO fix the init code type issue w/ kernel account & validator
-        return new EVMAAWallet(kernelAccount as any, this.crossmintService, chain, publicClient, entryPoint);
-    }
-
-    private async get(user: UserIdentifierParams, chain: EVMBlockchainIncludingTestnet): Promise<EVMAAWallet | null> {
-        return null;
     }
 
     private async getOrCreateEOAWallet(
@@ -160,6 +120,10 @@ export class CrossmintAASDK {
         publicClient: PublicClient<HttpTransport>,
         walletConfig: EOAWalletConfig
     ) {
+        // TODO
+        // Fetch wallet for userIdentifier
+        // If there's an inconsistency, throw an error
+
         const entryPointVersion = await this.getEntryPointVersion(userIdentifier, chain);
         const entryPoint = entryPointVersion === "v0.6" ? ENTRYPOINT_ADDRESS_V06 : ENTRYPOINT_ADDRESS_V07;
 
