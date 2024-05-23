@@ -1,5 +1,4 @@
 import { TORUS_NETWORK_TYPE } from "@web3auth/single-factor-auth";
-import { WebAuthnKey } from "@zerodev/permissions/signers/toWebAuthnSigner";
 import { KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
 import { EntryPoint } from "permissionless/_types/types";
 import { EIP1193Provider, HttpTransport, LocalAccount, PublicClient } from "viem";
