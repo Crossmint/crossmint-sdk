@@ -42,7 +42,6 @@ export function reservoirAdapter(aaWallet: EVMAAWallet): ReservoirWallet {
                 ...(stepData.gas && {
                     gas: hexToBigInt(stepData.gas as any),
                 }),
-                chain: null, // TODO wtf why?
             });
         },
         transport: http(getBundlerRPC(aaWallet.chain)),
