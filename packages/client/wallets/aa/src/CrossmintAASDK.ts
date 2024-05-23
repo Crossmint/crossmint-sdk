@@ -1,6 +1,6 @@
 import { CrossmintWalletService } from "@/api";
 import { EVMAAWallet, getBundlerRPC } from "@/blockchain";
-import { type CrossmintAASDKInitParams, WalletConfig } from "@/types";
+import { type CrossmintAASDKInitParams, WalletConfig, isEOAWalletConfig } from "@/types";
 import { SCW_SERVICE, WalletSdkError, errorToJSON } from "@/utils";
 import { createPublicClient, http } from "viem";
 
@@ -47,7 +47,7 @@ export class CrossmintAASDK {
      * @param {WalletConfig} [walletConfig] - Optional configuration for the wallet, if specific wallet type needs to be created or validated.
      * @returns {Promise<EVMAAWallet>} The wallet instance, either fetched or newly created.
      */
-    public async getOrCreate(
+    public async getOrCreateWallet(
         user: UserIdentifierParams,
         chain: EVMBlockchainIncludingTestnet,
         walletConfig?: WalletConfig
@@ -69,17 +69,17 @@ export class CrossmintAASDK {
             const userIdentifier = parseUserIdentifier(user);
 
             let wallet: EVMAAWallet;
-            if (walletConfig?.type === "eoa") {
+            if (walletConfig != null && isEOAWalletConfig(walletConfig)) {
                 wallet = await this.eoaWalletService.getOrCreate(userIdentifier, chain, publicClient, walletConfig);
             } else {
-                wallet = await this.passkeyWalletService.getOrCreate(userIdentifier, chain, publicClient);
+                wallet = await this.passkeyWalletService.getOrCreate(userIdentifier, chain, publicClient, walletConfig);
             }
 
             logInfo("[GET_OR_CREATE_WALLET] - FINISH", {
                 service: SCW_SERVICE,
                 userEmail: user.email!,
                 chain,
-                address: wallet.address,
+                address: wallet.getAddress(),
             });
             return wallet;
         } catch (error: any) {

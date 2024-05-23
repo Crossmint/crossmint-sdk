@@ -1,4 +1,4 @@
-import { CrossmintWalletService, EVMAAWallet } from "@/index";
+import { CrossmintWalletService, EVMAAWallet, PasskeyWalletConfig } from "@/index";
 import { getIdString } from "@/utils/user";
 import { createPasskeyValidator, deserializePasskeyValidator } from "@zerodev/passkey-validator";
 import { KernelValidator, createKernelAccount } from "@zerodev/sdk";
@@ -15,7 +15,8 @@ export default class PasskeyWalletService {
     public async getOrCreate(
         userIdentifier: UserIdentifier,
         chain: EVMBlockchainIncludingTestnet,
-        publicClient: PublicClient<HttpTransport>
+        publicClient: PublicClient<HttpTransport>,
+        walletConfig?: PasskeyWalletConfig // TODO, should we let devs override the name? Or add special validation?
     ) {
         const serializedData = await this.get(userIdentifier, chain);
 

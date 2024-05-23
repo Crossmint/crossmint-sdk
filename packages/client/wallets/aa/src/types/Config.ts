@@ -1,4 +1,5 @@
 import { TORUS_NETWORK_TYPE } from "@web3auth/single-factor-auth";
+import { WebAuthnKey } from "@zerodev/permissions/signers/toWebAuthnSigner";
 import { KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
 import { EntryPoint } from "permissionless/_types/types";
 import { EIP1193Provider, HttpTransport, LocalAccount, PublicClient } from "viem";
@@ -46,13 +47,17 @@ export type ViemAccount = {
 type Signer = EIP1193Provider | Web3AuthSigner | ViemAccount;
 
 export interface EOAWalletConfig {
-    type: "eoa";
     signer: Signer;
 }
 
-export interface PasskeyWalletConfig {
-    type: "passkey";
+export function isEOAWalletConfig(config: WalletConfig): config is EOAWalletConfig {
+    return "signer" in config;
 }
+
+export interface PasskeyWalletConfig {
+    name?: string;
+}
+
 export type WalletConfig = EOAWalletConfig | PasskeyWalletConfig;
 
 export type Client = {

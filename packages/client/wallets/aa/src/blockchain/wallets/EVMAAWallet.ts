@@ -1,8 +1,8 @@
 import { hasEIP1559Support } from "@/utils";
 import type { KernelAccountClient, KernelSmartAccount } from "@zerodev/sdk";
 import { createKernelAccountClient, createZeroDevPaymasterClient } from "@zerodev/sdk";
-import { bundlerActions } from "permissionless";
-import { Middleware } from "permissionless/actions/smartAccount";
+import { UserOperation } from "permissionless";
+import { EntryPointVersion } from "permissionless/_types/types";
 import { EntryPoint } from "permissionless/types/entrypoint";
 import type { Chain, HttpTransport, PublicClient } from "viem";
 import { http } from "viem";
@@ -31,41 +31,32 @@ export class EVMAAWallet {
     ) {
         this.chain = chain;
 
-        const paymasterMiddleware: Middleware<EntryPoint> = {
-            middleware: {
-                sponsorUserOperation: async ({ userOperation }) => {
-                    const paymasterClient = createZeroDevPaymasterClient({
-                        chain: getViemNetwork(chain),
-                        transport: http(getPaymasterRPC(chain)),
-                        entryPoint,
-                    });
-                    return paymasterClient.sponsorUserOperation({
-                        userOperation,
-                        entryPoint,
-                    });
-                },
-            },
-        };
+        const sponsorUserOperation = ({ userOperation }: { userOperation: UserOperation<EntryPointVersion> }) =>
+            createZeroDevPaymasterClient({
+                chain: getViemNetwork(chain),
+                transport: http(getPaymasterRPC(chain)),
+                entryPoint,
+            }).sponsorUserOperation({
+                userOperation,
+                entryPoint,
+            });
+
         this.kernelClient = createKernelAccountClient({
             account,
             chain: getViemNetwork(chain) as Chain, // Fix getViemNetwork definition
             entryPoint,
             bundlerTransport: http(getBundlerRPC(chain)),
-            ...(hasEIP1559Support(chain) && paymasterMiddleware),
+            ...(hasEIP1559Support(chain) && { middleware: { sponsorUserOperation } }),
         });
         this.publicClient = publicClient;
     }
 
-    get address() {
+    getAddress() {
         return this.kernelClient.account.address;
     }
 
-    get signer() {
+    getSigner() {
         return this.kernelClient;
-    }
-
-    get bundlerClient() {
-        return this.kernelClient.extend(bundlerActions(this.signer.account.entryPoint));
     }
 
     async getNFTs() {

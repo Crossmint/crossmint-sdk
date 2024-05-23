@@ -7,17 +7,17 @@ import { EVMAAWallet } from "../blockchain/wallets/EVMAAWallet";
 // TODO does this still all work?
 export function reservoirAdapter(aaWallet: EVMAAWallet): ReservoirWallet {
     return {
-        address: async () => aaWallet.address,
+        address: async () => aaWallet.getAddress(),
         handleSignMessageStep: async (stepItem, _) => {
             const signData = stepItem.data?.sign;
             let signature: string | undefined;
             if (signData) {
                 if (signData.signatureKind === "eip191") {
                     console.log("Execute Steps: Signing with eip191");
-                    signature = await aaWallet.signer.signMessage({ message: signData.message });
+                    signature = await aaWallet.getSigner().signMessage({ message: signData.message });
                 } else if (signData.signatureKind === "eip712") {
                     console.log("Execute Steps: Signing with eip712");
-                    signature = await aaWallet.signer.signTypedData({
+                    signature = await aaWallet.getSigner().signTypedData({
                         domain: signData.domain as any,
                         types: signData.types as any,
                         primaryType: signData.primaryType,
@@ -29,7 +29,7 @@ export function reservoirAdapter(aaWallet: EVMAAWallet): ReservoirWallet {
         },
         handleSendTransactionStep: async (chainId, stepItem, _) => {
             const stepData = stepItem.data;
-            return await aaWallet.signer.sendTransaction({
+            return await aaWallet.getSigner().sendTransaction({
                 data: stepData.data,
                 to: stepData.to,
                 value: hexToBigInt((stepData.value as any) || 0),
