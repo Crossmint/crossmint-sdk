@@ -20,62 +20,65 @@ import {
     blockchainToDisplayName,
 } from "@crossmint/common-sdk-base";
 
+import { logInputOutput } from "./log";
+
 type CreateOwnerSignerInput = {
     chain: EVMBlockchainIncludingTestnet;
     walletConfig: EOAWalletConfig;
 };
 
-export async function createOwnerSigner({
-    chain,
-    walletConfig,
-}: CreateOwnerSignerInput): Promise<SmartAccountSigner<"custom", Address>> {
-    if (isWeb3AuthSigner(walletConfig.signer)) {
-        const signer = walletConfig.signer as Web3AuthSigner;
+export const createOwnerSigner = logInputOutput(
+    async ({ chain, walletConfig }: CreateOwnerSignerInput): Promise<SmartAccountSigner<"custom", Address>> => {
+        if (isWeb3AuthSigner(walletConfig.signer)) {
+            const signer = walletConfig.signer as Web3AuthSigner;
 
-        const chainId = blockchainToChainId(chain);
-        const chainConfig = {
-            chainNamespace: CHAIN_NAMESPACES.EIP155,
-            chainId: "0x" + chainId!.toString(16),
-            rpcTarget: getUrlProviderByBlockchain(chain),
-            displayName: blockchainToDisplayName(chain),
-            blockExplorer: getBlockExplorerByBlockchain(chain),
-            ticker: getTickerByBlockchain(chain),
-            tickerName: getTickerNameByBlockchain(chain),
-        };
-        const web3auth = new Web3Auth({
-            clientId: signer.clientId,
-            web3AuthNetwork: signer.web3AuthNetwork,
-            usePnPKey: false,
-        });
+            const chainId = blockchainToChainId(chain);
+            const chainConfig = {
+                chainNamespace: CHAIN_NAMESPACES.EIP155,
+                chainId: "0x" + chainId!.toString(16),
+                rpcTarget: getUrlProviderByBlockchain(chain),
+                displayName: blockchainToDisplayName(chain),
+                blockExplorer: getBlockExplorerByBlockchain(chain),
+                ticker: getTickerByBlockchain(chain),
+                tickerName: getTickerNameByBlockchain(chain),
+            };
 
-        const privateKeyProvider = new EthereumPrivateKeyProvider({ config: { chainConfig } });
-        await web3auth.init(privateKeyProvider);
-        const { sub } = parseToken(signer.jwt);
+            const web3auth = new Web3Auth({
+                clientId: signer.clientId,
+                web3AuthNetwork: signer.web3AuthNetwork,
+                usePnPKey: false,
+            });
 
-        const provider = await web3auth.connect({
-            verifier: signer.verifierId,
-            verifierId: sub,
-            idToken: signer.jwt,
-        });
+            const privateKeyProvider = new EthereumPrivateKeyProvider({ config: { chainConfig } });
+            await web3auth.init(privateKeyProvider);
+            const { sub } = parseToken(signer.jwt);
 
-        if (provider == null) {
-            throw new WalletSdkError("Web3auth returned a null signer");
+            const provider = await web3auth.connect({
+                verifier: signer.verifierId,
+                verifierId: sub,
+                idToken: signer.jwt,
+            });
+
+            if (provider == null) {
+                throw new WalletSdkError("Web3auth returned a null signer");
+            }
+
+            const web3 = new Web3(provider);
+            const [address] = await web3.eth.getAccounts();
+            return await providerToSmartAccountSigner(provider as EIP1193Provider, { signerAddress: address as Hex });
+        } else if (isEIP1193Provider(walletConfig.signer)) {
+            const web3 = new Web3(walletConfig.signer);
+            const [address] = await web3.eth.getAccounts();
+            return await providerToSmartAccountSigner(walletConfig.signer, { signerAddress: address as Hex });
+        } else if (isAccount(walletConfig.signer)) {
+            return walletConfig.signer.account;
+        } else {
+            const signer = walletConfig.signer as any;
+            throw new WalletSdkError(`The signer type ${signer.type} is not supported`);
         }
-
-        const web3 = new Web3(provider);
-        const [address] = await web3.eth.getAccounts();
-        return await providerToSmartAccountSigner(provider as EIP1193Provider, { signerAddress: address as Hex });
-    } else if (isEIP1193Provider(walletConfig.signer)) {
-        const web3 = new Web3(walletConfig.signer);
-        const [address] = await web3.eth.getAccounts();
-        return await providerToSmartAccountSigner(walletConfig.signer, { signerAddress: address as Hex });
-    } else if (isAccount(walletConfig.signer)) {
-        return walletConfig.signer.account;
-    } else {
-        const signer = walletConfig.signer as any;
-        throw new WalletSdkError(`The signer type ${signer.type} is not supported`);
-    }
-}
+    },
+    "createOwnerSigner"
+);
 
 function isWeb3AuthSigner(signer: any): signer is Web3AuthSigner {
     return signer && signer.type === "WEB3_AUTH";

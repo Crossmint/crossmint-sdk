@@ -9,6 +9,8 @@ import {
     getZeroDevProjectIdByBlockchain,
 } from "./BlockchainNetworks";
 
+jest.mock("../services/logging");
+
 describe("BlockchainNetworks Tests", () => {
     describe("getFireblocksAssetId", () => {
         it("should return the correct asset ID for each blockchain", () => {

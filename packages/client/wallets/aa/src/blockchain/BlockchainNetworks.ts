@@ -42,14 +42,7 @@ import {
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
-/*
-TODO:
-Chains not supported yet due fireblocks or zerodev doesn't supported
-    ARBITRUM_NOVA
-    ZORA
-    SOLANA
-    CARDANO
-*/
+import { logInputOutput } from "../utils/log";
 
 export function getFireblocksAssetId(chain: EVMBlockchainIncludingTestnet) {
     const assetId = new Map<EVMBlockchainIncludingTestnet, string | null>([
@@ -84,7 +77,7 @@ export function getFireblocksAssetId(chain: EVMBlockchainIncludingTestnet) {
     return assetId;
 }
 
-export function getUrlProviderByBlockchain(chain: EVMBlockchainIncludingTestnet) {
+export const getUrlProviderByBlockchain = logInputOutput((chain: EVMBlockchainIncludingTestnet) => {
     const url = new Map<EVMBlockchainIncludingTestnet, string | null>([
         ["ethereum", "https://eth.llamarpc.com"],
         ["polygon", "https://rpc.ankr.com/polygon"],
@@ -115,9 +108,9 @@ export function getUrlProviderByBlockchain(chain: EVMBlockchainIncludingTestnet)
         throw new Error(`Url provider not found for chain ${chain}`);
     }
     return url;
-}
+}, "getUrlProviderByBlockchain");
 
-export function getBlockExplorerByBlockchain(chain: EVMBlockchainIncludingTestnet) {
+export const getBlockExplorerByBlockchain = logInputOutput((chain: EVMBlockchainIncludingTestnet) => {
     const blockExplorer = new Map<EVMBlockchainIncludingTestnet, string | null>([
         ["ethereum", "https://etherscan.io"],
         ["polygon", "https://polygonscan.com"],
@@ -148,7 +141,7 @@ export function getBlockExplorerByBlockchain(chain: EVMBlockchainIncludingTestne
         throw new Error(`Block Explorer not found for chain ${chain}`);
     }
     return blockExplorer;
-}
+}, "getBlockExplorerByBlockchain");
 
 export function getTickerByBlockchain(chain: EVMBlockchainIncludingTestnet) {
     const ticker = new Map<EVMBlockchainIncludingTestnet, string | null>([
@@ -216,7 +209,7 @@ export function getTickerNameByBlockchain(chain: EVMBlockchainIncludingTestnet) 
     return tickerName;
 }
 
-export function getZeroDevProjectIdByBlockchain(chain: EVMBlockchainIncludingTestnet) {
+export const getZeroDevProjectIdByBlockchain = logInputOutput((chain: EVMBlockchainIncludingTestnet) => {
     const zeroDevProjectId = new Map<EVMBlockchainIncludingTestnet, string | null>([
         ["ethereum", ZD_ETHEREUM_PROJECT_ID],
         ["polygon", ZD_POLYGON_PROJECT_ID],
@@ -247,9 +240,9 @@ export function getZeroDevProjectIdByBlockchain(chain: EVMBlockchainIncludingTes
         throw new Error(`ZeroDev project id not found for chain ${chain}`);
     }
     return zeroDevProjectId;
-}
+}, "getZeroDevProjectIdByBlockchain");
 
-export function getViemNetwork(networkName: EVMBlockchainIncludingTestnet): Chain {
+export const getViemNetwork = logInputOutput((networkName: EVMBlockchainIncludingTestnet) => {
     switch (networkName) {
         case "ethereum":
             return mainnet;
@@ -285,9 +278,9 @@ export function getViemNetwork(networkName: EVMBlockchainIncludingTestnet): Chai
         default:
             throw new Error(`Unsupported network: ${networkName}`);
     }
-}
+}, "getViemNetwork");
 
-export function getBundlerRPC(chain: EVMBlockchainIncludingTestnet): string {
+export const getBundlerRPC = logInputOutput((chain: EVMBlockchainIncludingTestnet) => {
     switch (chain) {
         case EVMBlockchainIncludingTestnet.BASE_SEPOLIA:
             return PM_BASE_SEPOLIA_RPC;
@@ -296,9 +289,9 @@ export function getBundlerRPC(chain: EVMBlockchainIncludingTestnet): string {
         default:
             return BUNDLER_RPC + getZeroDevProjectIdByBlockchain(chain) + "?bundlerProvider=STACKUP";
     }
-}
+}, "getBundlerRPC");
 
-export function getPaymasterRPC(chain: EVMBlockchainIncludingTestnet): string {
+export const getPaymasterRPC = logInputOutput((chain: EVMBlockchainIncludingTestnet) => {
     switch (chain) {
         case EVMBlockchainIncludingTestnet.BASE_SEPOLIA:
             return PM_BASE_SEPOLIA_RPC;
@@ -307,7 +300,7 @@ export function getPaymasterRPC(chain: EVMBlockchainIncludingTestnet): string {
         default:
             return PAYMASTER_RPC + getZeroDevProjectIdByBlockchain(chain) + "?paymasterProvider=STACKUP";
     }
-}
+}, "getPaymasterRPC");
 
 export type entryPoint = EntryPoint;
 export type TChain = Chain | undefined;
