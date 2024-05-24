@@ -8,7 +8,7 @@ export type StoreAbstractWalletInput = {
     userIdentifier: UserIdentifier;
     type: string;
     smartContractWalletAddress: string;
-    eoaAddress: string;
+    signerData: EOASignerData | PasskeysSignerData;
     sessionKeySignerAddress: string;
     version: number;
     baseLayer: string;
@@ -31,3 +31,14 @@ export type TransferInput = {
     toAddress: string;
     tokenMintAddress: string;
 };
+
+export interface EOASignerData {
+    eoaAddress: string;
+    type: "eoa";
+}
+
+export interface PasskeysSignerData {
+    passkeyName: string;
+    validatorSerializedData: string;
+    type: "passkeys";
+}

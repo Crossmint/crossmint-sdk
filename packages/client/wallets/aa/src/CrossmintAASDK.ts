@@ -87,11 +87,9 @@ export class CrossmintAASDK {
         if (!isEVMBlockchain(chain)) {
             throw new WalletSdkError(`The blockchain ${chain} is not supported`);
         }
-
         const publicClient = createPublicClient({
             transport: http(getBundlerRPC(chain)),
         });
-
         const entryPoint = ENTRYPOINT_ADDRESS_V07;
         const kernelAccount = await createKernelAccount(publicClient, {
             plugins: {
@@ -101,7 +99,26 @@ export class CrossmintAASDK {
         });
 
         // TODO save to CM
+        const abstractAddress = kernelAccount.address;
+        const { sessionKeySignerAddress } = await this.crossmintService.createSessionKey(abstractAddress);
+        // evmAAWallet.setSessionKeySignerAddress(sessionKeySignerAddress);
 
+        const userIdentifier = parseUserIdentifier(user);
+        await this.crossmintService.storeAbstractWallet({
+            userIdentifier,
+            type: ZERO_DEV_TYPE,
+            smartContractWalletAddress: abstractAddress,
+            signerData: {
+                passkeyName: "TODO passkeyName",
+                validatorSerializedData: passkeyValidator.getSerializedData(),
+                type: "passkeys",
+            },
+            sessionKeySignerAddress,
+            version: CURRENT_VERSION,
+            baseLayer: "evm",
+            chainId: blockchainToChainId(chain),
+            entryPointVersion: "v0.7", // Placeholder
+        });
         return new EVMAAPasskeyWallet(kernelAccount as any, this.crossmintService, chain, publicClient, entryPoint);
     }
 
@@ -169,7 +186,11 @@ export class CrossmintAASDK {
                 userIdentifier,
                 type: ZERO_DEV_TYPE,
                 smartContractWalletAddress: abstractAddress,
-                eoaAddress: address,
+                signerData: {
+                    eoaAddress: address,
+                    type: "eoa",
+                },
+
                 sessionKeySignerAddress,
                 version: CURRENT_VERSION,
                 baseLayer: "evm",
