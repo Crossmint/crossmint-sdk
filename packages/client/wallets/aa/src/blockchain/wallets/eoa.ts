@@ -58,7 +58,7 @@ export default class EOAWalletService {
         await this.crossmintService.storeAbstractWallet({
             userIdentifier: userIdentifier,
             type: ZERO_DEV_TYPE,
-            smartContractWalletAddress: wallet.address,
+            smartContractWalletAddress: wallet.getAddress(),
             eoaAddress: owner.address,
             sessionKeySignerAddress: "n/a", // TODO
             version: CURRENT_VERSION,
