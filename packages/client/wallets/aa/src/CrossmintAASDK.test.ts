@@ -1,9 +1,5 @@
-import { ethers } from "ethers";
-
-import { BLOCKCHAIN_TESTNETS, EVM_CHAINS } from "@crossmint/common-sdk-base";
-
 import { CrossmintAASDK } from "../src/CrossmintAASDK";
-import { CrossmintAASDKInitParams, UserIdentifier, WalletConfig } from "../src/types";
+import { CrossmintAASDKInitParams } from "../src/types";
 
 jest.mock("@/api");
 jest.mock("@/blockchain");

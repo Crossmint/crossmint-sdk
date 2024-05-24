@@ -1,9 +1,4 @@
-import {
-    blockchainToChainId,
-    blockchainToDisplayName,
-    chainIdToBlockchain,
-    isEVMBlockchain,
-} from "@crossmint/common-sdk-base";
+import { blockchainToChainId, blockchainToDisplayName, isEVMBlockchain } from "@crossmint/common-sdk-base";
 
 import {
     getBlockExplorerByBlockchain,

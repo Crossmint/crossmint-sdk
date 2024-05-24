@@ -1,151 +1,94 @@
 import { CrossmintWalletService } from "@/api";
-import { EVMAAWallet, TChain, entryPoint, getBundlerRPC } from "@/blockchain";
-import type { BackwardsCompatibleChains, CrossmintAASDKInitParams, WalletConfig } from "@/types";
-import {
-    CURRENT_VERSION,
-    WalletSdkError,
-    ZERO_DEV_TYPE,
-    createOwnerSigner,
-    transformBackwardsCompatibleChains,
-} from "@/utils";
-import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
-import { createKernelAccount } from "@zerodev/sdk";
-import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
-import { EntryPointVersion } from "permissionless/types/entrypoint";
+import { EVMAAWallet, getBundlerRPC } from "@/blockchain";
+import { type CrossmintAASDKInitParams, WalletConfig, isEOAWalletConfig } from "@/types";
+import { SCW_SERVICE, WalletSdkError, errorToJSON } from "@/utils";
 import { createPublicClient, http } from "viem";
 
 import {
-    BlockchainIncludingTestnet,
     EVMBlockchainIncludingTestnet,
     UserIdentifierParams,
-    blockchainToChainId,
     isEVMBlockchain,
     validateAPIKey,
 } from "@crossmint/common-sdk-base";
 
-import { LoggerWrapper, logPerformance } from "./utils/log";
+import EOAWalletService from "./blockchain/wallets/eoa";
+import PasskeyWalletService from "./blockchain/wallets/passkey";
+import { logError, logInfo } from "./services/logging";
 import { parseUserIdentifier } from "./utils/user";
 
-export class CrossmintAASDK extends LoggerWrapper {
-    crossmintService: CrossmintWalletService;
+export class CrossmintAASDK {
+    private readonly passkeyWalletService: PasskeyWalletService;
+    private readonly eoaWalletService: EOAWalletService;
 
-    private constructor(config: CrossmintAASDKInitParams) {
-        super("CrossmintAASDK");
-        const validationResult = validateAPIKey(config.apiKey);
-        if (!validationResult.isValid) {
+    private constructor({ apiKey }: CrossmintAASDKInitParams) {
+        const result = validateAPIKey(apiKey);
+        if (!result.isValid) {
             throw new Error("API key invalid");
         }
 
-        this.crossmintService = new CrossmintWalletService(config.apiKey);
+        const crossmintService = new CrossmintWalletService(apiKey);
+        this.passkeyWalletService = new PasskeyWalletService(crossmintService, result.projectId);
+        this.eoaWalletService = new EOAWalletService(crossmintService);
     }
 
     static init(params: CrossmintAASDKInitParams): CrossmintAASDK {
         return new CrossmintAASDK(params);
     }
 
-    async getOrCreateWallet<B extends BlockchainIncludingTestnet = BlockchainIncludingTestnet>(
-        user: UserIdentifierParams,
-        chain: B | BackwardsCompatibleChains,
-        walletConfig: WalletConfig
-    ) {
-        return logPerformance(
-            "GET_OR_CREATE_WALLET",
-            async () => {
-                try {
-                    chain = transformBackwardsCompatibleChains(chain);
-
-                    if (!isEVMBlockchain(chain)) {
-                        throw new WalletSdkError(`The blockchain ${chain} is not supported`);
-                    }
-
-                    const userIdentifier = parseUserIdentifier(user);
-
-                    const entryPointVersion = await this.getEntryPointVersion(userIdentifier, chain);
-                    const entryPoint = entryPointVersion === "v0.6" ? ENTRYPOINT_ADDRESS_V06 : ENTRYPOINT_ADDRESS_V07;
-
-                    const owner = await createOwnerSigner({
-                        chain,
-                        walletConfig,
-                    });
-
-                    const address = owner.address;
-
-                    const publicClient = createPublicClient({
-                        transport: http(getBundlerRPC(chain)),
-                    });
-
-                    const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
-                        signer: owner,
-                        entryPoint,
-                    });
-
-                    const account = await createKernelAccount(publicClient, {
-                        plugins: {
-                            sudo: ecdsaValidator,
-                        },
-                        index: BigInt(0),
-                        entryPoint,
-                    });
-
-                    const evmAAWallet = new EVMAAWallet(
-                        account,
-                        this.crossmintService,
-                        chain,
-                        publicClient,
-                        ecdsaValidator,
-                        entryPoint
-                    );
-
-                    const abstractAddress = account.address;
-                    const { sessionKeySignerAddress } = await this.crossmintService.createSessionKey(abstractAddress);
-
-                    evmAAWallet.setSessionKeySignerAddress(sessionKeySignerAddress);
-
-                    await this.crossmintService.storeAbstractWallet({
-                        userIdentifier,
-                        type: ZERO_DEV_TYPE,
-                        smartContractWalletAddress: abstractAddress,
-                        eoaAddress: address,
-                        sessionKeySignerAddress,
-                        version: CURRENT_VERSION,
-                        baseLayer: "evm",
-                        chainId: blockchainToChainId(chain),
-                        entryPointVersion,
-                    });
-
-                    return evmAAWallet;
-                } catch (error: any) {
-                    throw new WalletSdkError(`Error creating the Wallet ${error?.message ? `: ${error.message}` : ""}`);
-                }
-            },
-            { user, chain }
-        );
-    }
-
     /**
-     * Clears all key material and state from device storage, related to all wallets stored. Call this method when the user signs out of your app, if you don't have a user identifier.
+     * Retrieves an existing wallet or creates a new one based on the provided parameters.
+     * - If a wallet does not exist for the given user and no `walletConfig` is provided, a passkey signer will be created by default.
+     * - If a wallet for a user already exists and `walletConfig` is provided, but the wallet and config do not match, an error will be thrown.
+     *
+     * @param {UserIdentifierParams} user - The user identifier parameters.
+     * @param {EVMBlockchainIncludingTestnet} chain - The blockchain type, including testnets.
+     * @param {WalletConfig} [walletConfig] - Optional configuration for the wallet, if specific wallet type needs to be created or validated.
+     * @returns {Promise<EVMAAWallet>} The wallet instance, either fetched or newly created.
      */
-    async purgeAllWalletData(): Promise<void> {
-        //Removes the Fireblocks NCW data stored on the localstorage
-        const keys = Object.keys(localStorage);
-        const keysToDelete = keys.filter((key) => key.startsWith("NCW-"));
-        keysToDelete.forEach((key) => {
-            localStorage.removeItem(key);
-        });
-    }
+    public async getOrCreateWallet(
+        user: UserIdentifierParams,
+        chain: EVMBlockchainIncludingTestnet,
+        walletConfig?: WalletConfig
+    ) {
+        try {
+            logInfo("[GET_OR_CREATE_WALLET] - INIT", {
+                service: SCW_SERVICE,
+                user,
+                chain,
+            });
 
-    private async getEntryPointVersion<B extends EVMBlockchainIncludingTestnet = EVMBlockchainIncludingTestnet>(
-        userIdentifier: UserIdentifierParams,
-        chain: B | EVMBlockchainIncludingTestnet
-    ): Promise<EntryPointVersion> {
-        if (userIdentifier.email == null && userIdentifier.userId == null) {
-            throw new WalletSdkError(`Email or userId is required to get the entry point version`);
+            if (!isEVMBlockchain(chain)) {
+                throw new WalletSdkError(`The blockchain ${chain} is not supported`);
+            }
+
+            const publicClient = createPublicClient({
+                transport: http(getBundlerRPC(chain)),
+            });
+            const userIdentifier = parseUserIdentifier(user);
+
+            let wallet: EVMAAWallet;
+            if (walletConfig != null && isEOAWalletConfig(walletConfig)) {
+                wallet = await this.eoaWalletService.getOrCreate(userIdentifier, chain, publicClient, walletConfig);
+            } else {
+                wallet = await this.passkeyWalletService.getOrCreate(userIdentifier, chain, publicClient, walletConfig);
+            }
+
+            logInfo("[GET_OR_CREATE_WALLET] - FINISH", {
+                service: SCW_SERVICE,
+                userEmail: user.email!,
+                chain,
+                address: wallet.getAddress(),
+            });
+            return wallet;
+        } catch (error: any) {
+            logError("[GET_OR_CREATE_WALLET] - ERROR_CREATING_WALLET", {
+                service: SCW_SERVICE,
+                error: errorToJSON(error),
+                user,
+                chain,
+            });
+
+            throw new WalletSdkError(`Error creating the Wallet ${error?.message ? `: ${error.message}` : ""}`);
         }
-
-        const { entryPointVersion } = await this.crossmintService.getAbstractWalletEntryPointVersion(
-            userIdentifier,
-            chain
-        );
-        return entryPointVersion;
     }
 }

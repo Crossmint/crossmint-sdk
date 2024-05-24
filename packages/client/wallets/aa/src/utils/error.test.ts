@@ -1,9 +1,7 @@
 import {
     CrossmintServiceError,
-    KeysGenerationError,
     NonCustodialWalletError,
     NotAuthorizedError,
-    PassphraseRequiredError,
     RateLimitError,
     SignTransactionError,
     TransferError,
@@ -39,38 +37,6 @@ describe("Error Classes", () => {
         });
         it("should not create an instance with the wrong message and code", () => {
             const error = new RateLimitError("Too many requests", 1000);
-            expect(error.message).not.toBe("Some other message");
-            expect(error.code).not.toBe("SOME_OTHER_CODE");
-        });
-    });
-
-    // Test for PassphraseRequiredError
-    describe("PassphraseRequiredError", () => {
-        it("should create an instance with the correct message and code", () => {
-            const error = new PassphraseRequiredError("Passphrase required");
-            expect(error.message).toBe("Passphrase required");
-            expect(error.code).toBe("ERROR_PASSPHRASE_REQUIRED");
-            expect(error).toBeInstanceOf(PassphraseRequiredError);
-            expect(error).toBeInstanceOf(Error);
-        });
-        it("should not create an instance with the wrong message and code", () => {
-            const error = new PassphraseRequiredError("Passphrase required");
-            expect(error.message).not.toBe("Some other message");
-            expect(error.code).not.toBe("SOME_OTHER_CODE");
-        });
-    });
-
-    // Test for KeysGenerationError
-    describe("KeysGenerationError", () => {
-        it("should create an instance with the correct message and code", () => {
-            const error = new KeysGenerationError("Error generating keys");
-            expect(error.message).toBe("Error generating keys");
-            expect(error.code).toBe("ERROR_KEYS_GENERATION");
-            expect(error).toBeInstanceOf(KeysGenerationError);
-            expect(error).toBeInstanceOf(Error);
-        });
-        it("should not create an instance with the wrong message and code", () => {
-            const error = new KeysGenerationError("Error generating keys");
             expect(error.message).not.toBe("Some other message");
             expect(error.code).not.toBe("SOME_OTHER_CODE");
         });
