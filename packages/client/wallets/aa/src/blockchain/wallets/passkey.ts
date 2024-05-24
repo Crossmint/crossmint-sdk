@@ -10,7 +10,8 @@ import { EVMBlockchainIncludingTestnet, UserIdentifier } from "@crossmint/common
 
 export default class PasskeyWalletService {
     private readonly entryPoint = ENTRYPOINT_ADDRESS_V07;
-    constructor(private readonly crossmintService: CrossmintWalletService, private readonly passkeyServerUrl: string) {}
+
+    constructor(private readonly crossmintService: CrossmintWalletService, private readonly projectId: string) {}
 
     public async getOrCreate(
         userIdentifier: UserIdentifier,
@@ -28,9 +29,10 @@ export default class PasskeyWalletService {
             });
         } else {
             validator = await createPasskeyValidator(publicClient, {
-                passkeyServerUrl: this.passkeyServerUrl,
+                passkeyServerUrl: this.passkeyServerUrl(userIdentifier),
                 entryPoint: this.entryPoint,
                 passkeyName: getIdString(userIdentifier),
+                credentials: "omit",
             });
         }
 
@@ -50,6 +52,27 @@ export default class PasskeyWalletService {
     // TODO fetch from DB
     // If there's an inconsistency, throw a nice error message.
     private async get(userIdentifier: UserIdentifier, chain: EVMBlockchainIncludingTestnet): Promise<string | null> {
-        return "eyJwYXNza2V5U2VydmVyVXJsIjoiaHR0cHM6Ly9wYXNza2V5cy56ZXJvZGV2LmFwcC9hcGkvdjMvMTc0M2M5ZTQtYzQxYS00MTg4LTgyN2YtNTQ3MzAxYWExNjQ1IiwiY3JlZGVudGlhbHMiOiJpbmNsdWRlIiwiZW50cnlQb2ludCI6IjB4MDAwMDAwMDA3MTcyN0RlMjJFNUU5ZDhCQWYwZWRBYzZmMzdkYTAzMiIsInZhbGlkYXRvckFkZHJlc3MiOiIweEQ5OTAzOTNDNjcwZENjRThiNGQ4Rjg1OEZCOThjOTkxMmRCRkFhMDYiLCJwdWJLZXlYIjoiYjgxYzNiNWUxMjQ2MWY5Mzk4MTAzYWI5MTk5ZWRjYzgyMThjNzdmYWFkMDYwNGZhYmI5NGM1MzVkMTdjOGQ3MyIsInB1YktleVkiOiIyZDZmYmU4MGRlYjI3MzgzNDllNDY3MWI2ZTYwZmM2M2Q3NmEwOTczMjJmYTQwYzdiNTRiNDg3NTZmMjJmYjM3IiwiYXV0aGVudGljYXRvcklkSGFzaCI6IjB4MGY0NzIwYzdlMmI3NWEwODYxMGJkN2E1ZmMxZDEwMDlmZDJhZGYyZTc3ZTdmNTViOGMzNzcxZDQ1Njc5Mjg3OCJ9";
+        return "eyJwYXNza2V5U2VydmVyVXJsIjoiaHR0cDovL2xvY2FsaG9zdDozMDAwL2FwaS91bnN0YWJsZS9wYXNza2V5cy80NGI2ZjFlOS1kMjE4LTQ1MTAtYTAzMi1hZGU4YmEwOTM4ZGEvdXNlcklkPWRldmx5bi10ZXN0aW5nLTM0NSIsImNyZWRlbnRpYWxzIjoib21pdCIsImVudHJ5UG9pbnQiOiIweDAwMDAwMDAwNzE3MjdEZTIyRTVFOWQ4QkFmMGVkQWM2ZjM3ZGEwMzIiLCJ2YWxpZGF0b3JBZGRyZXNzIjoiMHhEOTkwMzkzQzY3MGRDY0U4YjRkOEY4NThGQjk4Yzk5MTJkQkZBYTA2IiwicHViS2V5WCI6ImJmYTU3YjhiNzFiNTQ2NDQxOGQ1YmVkMTk2ZjczYmUxM2Q3YWE5MDFlYTFiMTM0ZTJlMzQyNTRjOWIyNzkzM2YiLCJwdWJLZXlZIjoiMGI5OGU0YmRmZmVkZjIyZjE4NTUxNTA1MTEwMGFkNTE2MzE0YzI5NDZkN2M2OGNiZjU2ZTcyN2ZlYjU0ZWVhZCIsImF1dGhlbnRpY2F0b3JJZEhhc2giOiIweGMwOGY0NjBhNTFlN2NlZmVlOTBkYTAwNmZmZWRlNjgwNzEyOThiZDQwNGU0YTQyOThkNTJhNTU3Zjg0OTM0ZWEifQ==";
+        // return null;
+        // return "eyJwYXNza2V5U2VydmVyVXJsIjoiaHR0cHM6Ly9wYXNza2V5cy56ZXJvZGV2LmFwcC9hcGkvdjMvMTc0M2M5ZTQtYzQxYS00MTg4LTgyN2YtNTQ3MzAxYWExNjQ1IiwiY3JlZGVudGlhbHMiOiJpbmNsdWRlIiwiZW50cnlQb2ludCI6IjB4MDAwMDAwMDA3MTcyN0RlMjJFNUU5ZDhCQWYwZWRBYzZmMzdkYTAzMiIsInZhbGlkYXRvckFkZHJlc3MiOiIweEQ5OTAzOTNDNjcwZENjRThiNGQ4Rjg1OEZCOThjOTkxMmRCRkFhMDYiLCJwdWJLZXlYIjoiYjgxYzNiNWUxMjQ2MWY5Mzk4MTAzYWI5MTk5ZWRjYzgyMThjNzdmYWFkMDYwNGZhYmI5NGM1MzVkMTdjOGQ3MyIsInB1YktleVkiOiIyZDZmYmU4MGRlYjI3MzgzNDllNDY3MWI2ZTYwZmM2M2Q3NmEwOTczMjJmYTQwYzdiNTRiNDg3NTZmMjJmYjM3IiwiYXV0aGVudGljYXRvcklkSGFzaCI6IjB4MGY0NzIwYzdlMmI3NWEwODYxMGJkN2E1ZmMxZDEwMDlmZDJhZGYyZTc3ZTdmNTViOGMzNzcxZDQ1Njc5Mjg3OCJ9";
+    }
+
+    private passkeyServerUrl(userIdentifier: UserIdentifier): string {
+        let identifier: string;
+        switch (userIdentifier.type) {
+            case "email":
+                identifier = `email=${encodeURIComponent(userIdentifier.email)}`;
+                break;
+            case "whiteLabel":
+                identifier = `userId=${userIdentifier.userId}`;
+                break;
+            case "phoneNumber":
+                identifier = `phoneNumber=${encodeURIComponent(userIdentifier.phoneNumber)}`; // TODO will this work?
+                break;
+            default:
+                throw new Error("Unsupported identifier type");
+        }
+
+        return this.crossmintService.crossmintBaseUrl + `/unstable/passkeys/${this.projectId}/${identifier}`;
     }
 }

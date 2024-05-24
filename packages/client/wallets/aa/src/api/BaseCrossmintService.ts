@@ -7,7 +7,8 @@ import { LoggerWrapper, logPerformance } from "../utils/log";
 
 export abstract class BaseCrossmintService extends LoggerWrapper {
     protected crossmintAPIHeaders: Record<string, string>;
-    protected crossmintBaseUrl: string;
+    public readonly crossmintBaseUrl: string;
+
     private static urlMap: Record<string, string> = {
         development: CROSSMINT_DEV_URL,
         staging: CROSSMINT_STG_URL,
@@ -65,7 +66,7 @@ export abstract class BaseCrossmintService extends LoggerWrapper {
     }
 
     protected getUrlFromEnv(environment: string) {
-        const url = BaseCrossmintService.urlMap["staging"];
+        const url = BaseCrossmintService.urlMap[environment];
         if (!url) {
             console.log(" CrossmintService.urlMap: ", BaseCrossmintService.urlMap);
             throw new Error(`URL not found for environment: ${environment}`);

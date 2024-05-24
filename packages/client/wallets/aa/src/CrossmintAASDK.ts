@@ -21,15 +21,13 @@ export class CrossmintAASDK {
     private readonly eoaWalletService: EOAWalletService;
 
     private constructor({ apiKey }: CrossmintAASDKInitParams) {
-        if (!validateAPIKey(apiKey).isValid) {
+        const result = validateAPIKey(apiKey);
+        if (!result.isValid) {
             throw new Error("API key invalid");
         }
 
         const crossmintService = new CrossmintWalletService(apiKey);
-        this.passkeyWalletService = new PasskeyWalletService(
-            crossmintService,
-            "X" // TODO move this somewhere else!
-        );
+        this.passkeyWalletService = new PasskeyWalletService(crossmintService, result.projectId);
         this.eoaWalletService = new EOAWalletService(crossmintService);
     }
 
