@@ -39,7 +39,6 @@ export interface EOASignerData {
 
 export interface PasskeysSignerData {
     passkeyName: string;
-    // validatorSerializedData: string;
     passkeyServerUrl: string;
     credentials: string;
     entryPoint: string;
