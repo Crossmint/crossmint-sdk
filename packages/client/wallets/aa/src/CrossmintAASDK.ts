@@ -122,18 +122,6 @@ export class CrossmintAASDK extends LoggerWrapper {
         );
     }
 
-    /**
-     * Clears all key material and state from device storage, related to all wallets stored. Call this method when the user signs out of your app, if you don't have a user identifier.
-     */
-    async purgeAllWalletData(): Promise<void> {
-        //Removes the Fireblocks NCW data stored on the localstorage
-        const keys = Object.keys(localStorage);
-        const keysToDelete = keys.filter((key) => key.startsWith("NCW-"));
-        keysToDelete.forEach((key) => {
-            localStorage.removeItem(key);
-        });
-    }
-
     private async getEntryPointVersion<B extends EVMBlockchainIncludingTestnet = EVMBlockchainIncludingTestnet>(
         userIdentifier: UserIdentifierParams,
         chain: B | EVMBlockchainIncludingTestnet
