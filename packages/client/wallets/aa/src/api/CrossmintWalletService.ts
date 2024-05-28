@@ -37,4 +37,32 @@ export class CrossmintWalletService extends BaseCrossmintService {
             `Error fetching NFTs for wallet: ${address}`
         );
     }
+
+    async createSessionKey(address: string | `0x${string}`) {
+        return this.fetchCrossmintAPI(
+            "unstable/wallets/aa/wallets/sessionkey",
+            {
+                method: "POST",
+                body: JSON.stringify({ address }),
+            },
+            "Error creating the wallet. Please check the configuration parameters"
+        );
+    }
+
+    async getPasskeyValidatorSigner(userIdentifier: UserIdentifierParams) {
+        const identifier = userIdentifier.email
+            ? `email=${encodeURIComponent(userIdentifier.email)}`
+            : `userId=${userIdentifier.userId}`;
+
+        const signers = await this.fetchCrossmintAPI(
+            `unstable/wallets/aa/signers?${identifier}&type=passkeys`,
+            { method: "GET" },
+            "Error fetching passkey validator signer. Please contact support"
+        );
+        if (signers.length === 0) {
+            throw new Error("Passkey validator signer not found");
+        }
+
+        return signers[0].signerData;
+    }
 }
