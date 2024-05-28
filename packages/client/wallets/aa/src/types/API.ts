@@ -39,6 +39,14 @@ export interface EOASignerData {
 
 export interface PasskeysSignerData {
     passkeyName: string;
-    validatorSerializedData: string;
+    // validatorSerializedData: string;
+    passkeyServerUrl: string;
+    credentials: string;
+    entryPoint: string;
+    validatorAddress: string;
+    pubKeyX: string;
+    pubKeyY: string;
+    authenticatorIdHash: string;
+    domain: string;
     type: "passkeys";
 }

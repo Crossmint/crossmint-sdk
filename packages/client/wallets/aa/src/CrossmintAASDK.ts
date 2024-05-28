@@ -12,6 +12,7 @@ import {
 } from "@/utils";
 import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
 import { createPasskeyValidator, getPasskeyValidator } from "@zerodev/passkey-validator";
+import { deserializePasskeyValidatorData } from "@zerodev/passkey-validator/utils";
 import { createKernelAccount } from "@zerodev/sdk";
 import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
 import { EntryPointVersion } from "permissionless/types/entrypoint";
@@ -103,6 +104,7 @@ export class CrossmintAASDK {
         const { sessionKeySignerAddress } = await this.crossmintService.createSessionKey(abstractAddress);
         // evmAAWallet.setSessionKeySignerAddress(sessionKeySignerAddress);
 
+        const validatorFields = deserializePasskeyValidatorData(await passkeyValidator.getSerializedData());
         const userIdentifier = parseUserIdentifier(user);
         await this.crossmintService.storeAbstractWallet({
             userIdentifier,
@@ -110,7 +112,14 @@ export class CrossmintAASDK {
             smartContractWalletAddress: abstractAddress,
             signerData: {
                 passkeyName: "TODO passkeyName",
-                validatorSerializedData: passkeyValidator.getSerializedData(),
+                passkeyServerUrl: validatorFields.passkeyServerUrl,
+                credentials: validatorFields.credentials,
+                entryPoint: validatorFields.entryPoint,
+                validatorAddress: validatorFields.validatorAddress,
+                pubKeyX: validatorFields.pubKeyX,
+                pubKeyY: validatorFields.pubKeyY,
+                authenticatorIdHash: validatorFields.authenticatorIdHash,
+                domain: "TODO domain",
                 type: "passkeys",
             },
             sessionKeySignerAddress,
@@ -119,6 +128,7 @@ export class CrossmintAASDK {
             chainId: blockchainToChainId(chain),
             entryPointVersion: "v0.7", // Placeholder
         });
+
         return new EVMAAPasskeyWallet(kernelAccount as any, this.crossmintService, chain, publicClient, entryPoint);
     }
 
