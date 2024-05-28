@@ -1,5 +1,5 @@
 import { logError, logInfo } from "@/services/logging";
-import { GenerateSignatureDataInput, SignerMap, SignerType } from "@/types";
+import { SignerMap, SignerType } from "@/types";
 import {
     SCW_SERVICE,
     TransactionError,
@@ -16,17 +16,12 @@ import { LoggerWrapper } from "@/utils/log";
 import type { Deferrable } from "@ethersproject/properties";
 import { type TransactionRequest } from "@ethersproject/providers";
 import type { KernelValidator } from "@zerodev/ecdsa-validator";
-import { serializePermissionAccount, toPermissionValidator } from "@zerodev/permissions";
-import { toECDSASigner } from "@zerodev/permissions/signers";
 import type { KernelSmartAccount } from "@zerodev/sdk";
-import { createKernelAccount, createKernelAccountClient, createZeroDevPaymasterClient } from "@zerodev/sdk";
+import { createKernelAccountClient, createZeroDevPaymasterClient } from "@zerodev/sdk";
 import { BigNumberish } from "ethers";
-import { walletClientToSmartAccountSigner } from "permissionless";
-import { createPimlicoPaymasterClient } from "permissionless/clients/pimlico";
 import { EntryPoint } from "permissionless/types/entrypoint";
 import type { Hash, HttpTransport, PublicClient, TypedDataDefinition } from "viem";
-import { Hex, createWalletClient, custom, http, publicActions } from "viem";
-import { Web3 } from "web3";
+import { Hex, http, publicActions } from "viem";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
@@ -34,16 +29,8 @@ import erc20 from "../../ABI/ERC20.json";
 import erc721 from "../../ABI/ERC721.json";
 import erc1155 from "../../ABI/ERC1155.json";
 import { CrossmintWalletService } from "../../api/CrossmintWalletService";
-import {
-    TChain,
-    entryPoint,
-    getBundlerRPC,
-    getPaymasterRPC,
-    getUrlProviderByBlockchain,
-    getViemNetwork,
-} from "../BlockchainNetworks";
-import { Custodian } from "../plugins";
-import { ERC20TransferType, SFTTransferType, TokenType, TransferType } from "../token";
+import { TChain, entryPoint, getBundlerRPC, getPaymasterRPC, getViemNetwork } from "../BlockchainNetworks";
+import { ERC20TransferType, SFTTransferType, TransferType } from "../token";
 
 type GasFeeTransactionParams = {
     maxFeePerGas?: BigNumberish;
@@ -269,59 +256,6 @@ export class EVMAAWallet extends LoggerWrapper {
                 });
                 throw new Error("Invalid signer type");
         }
-    }
-
-    setSessionKeySignerAddress(sessionKeySignerAddress: Hex) {
-        this.sessionKeySignerAddress = sessionKeySignerAddress;
-    }
-
-    async setCustodianForTokens(tokenType?: TokenType, custodian?: Custodian) {
-        return this.logPerformance("SET_CUSTODIAN_FOR_TOKENS", async () => {
-            try {
-                const rpcProvider = getUrlProviderByBlockchain(this.chain);
-                const web3 = new Web3(rpcProvider);
-
-                if (web3.provider == null) {
-                    throw new Error("Web3 provider is not available");
-                }
-
-                const walletClientSigner = createWalletClient({
-                    chain: getViemNetwork(this.chain),
-                    account: this.sessionKeySignerAddress!,
-                    transport: custom(web3.provider),
-                });
-
-                const smartAccountSigner = walletClientToSmartAccountSigner(walletClientSigner);
-                const sessionKeySigner = toECDSASigner({
-                    signer: smartAccountSigner,
-                });
-
-                const sessionKeyValidator = await toPermissionValidator(this.publicClient, {
-                    entryPoint: this.entryPoint,
-                    signer: sessionKeySigner,
-                    policies: [],
-                });
-
-                const sessionKeyAccount = await createKernelAccount(this.publicClient, {
-                    entryPoint: this.entryPoint,
-                    plugins: {
-                        sudo: this.ecdsaValidator,
-                        regular: sessionKeyValidator,
-                    },
-                });
-                const serializedSessionKeyAccount = await serializePermissionAccount(sessionKeyAccount);
-
-                const generateSessionKeyDataInput: GenerateSignatureDataInput = {
-                    sessionKeyData: serializedSessionKeyAccount,
-                    smartContractWalletAddress: this.kernelClient.account.address,
-                    chain: this.chain,
-                    version: 0,
-                };
-                await this.crossmintService.generateChainData(generateSessionKeyDataInput);
-            } catch (error) {
-                throw new Error(`Error setting custodian for tokens. If this error persists, please contact support.`);
-            }
-        });
     }
 
     async getNFTs() {
