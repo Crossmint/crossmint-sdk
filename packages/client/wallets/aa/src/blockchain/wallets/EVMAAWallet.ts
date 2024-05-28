@@ -108,21 +108,6 @@ export class EVMAAWallet<
         this.entryPoint = entryPoint;
     }
 
-    getPaymasterClient() {
-        return this.chain === EVMBlockchainIncludingTestnet.BASE ||
-            this.chain === EVMBlockchainIncludingTestnet.BASE_SEPOLIA
-            ? createPimlicoPaymasterClient({
-                  chain: getViemNetwork(this.chain),
-                  transport: http(getPaymasterRPC(this.chain)),
-                  entryPoint: this.entryPoint,
-              })
-            : createZeroDevPaymasterClient({
-                  chain: getViemNetwork(this.chain),
-                  transport: http(getPaymasterRPC(this.chain)),
-                  entryPoint: this.entryPoint,
-              });
-    }
-
     getAddress() {
         return this.kernelClient.account.address;
     }
