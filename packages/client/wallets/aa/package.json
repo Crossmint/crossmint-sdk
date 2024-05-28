@@ -13,7 +13,6 @@
         "@zerodev/sdk": "5.2.1",
         "@zerodev/session-key": "5.2.1",
         "email-validator": "2.0.4",
-        "ethers": "5.7.2",
         "libphonenumber-js": "1.10.44",
         "permissionless": "0.1.18",
         "siwe": "2.1.4",

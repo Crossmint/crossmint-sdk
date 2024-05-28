@@ -1,30 +1,15 @@
-import { logError, logInfo } from "@/services/logging";
+import { logError } from "@/services/logging";
 import { GenerateSignatureDataInput, SignerMap, SignerType } from "@/types";
-import {
-    SCW_SERVICE,
-    TransactionError,
-    TransferError,
-    WalletSdkError,
-    convertData,
-    decorateSendTransactionData,
-    errorToJSON,
-    getNonce,
-    hasEIP1559Support,
-} from "@/utils";
-import { resolveDeferrable } from "@/utils/deferrable";
+import { SCW_SERVICE, TransferError, WalletSdkError, errorToJSON, hasEIP1559Support } from "@/utils";
 import { LoggerWrapper } from "@/utils/log";
-import type { Deferrable } from "@ethersproject/properties";
-import { type TransactionRequest } from "@ethersproject/providers";
 import type { KernelValidator } from "@zerodev/ecdsa-validator";
 import { serializePermissionAccount, toPermissionValidator } from "@zerodev/permissions";
 import { toECDSASigner } from "@zerodev/permissions/signers";
 import type { KernelSmartAccount } from "@zerodev/sdk";
 import { createKernelAccount, createKernelAccountClient, createZeroDevPaymasterClient } from "@zerodev/sdk";
-import { BigNumberish } from "ethers";
 import { walletClientToSmartAccountSigner } from "permissionless";
-import { createPimlicoPaymasterClient } from "permissionless/clients/pimlico";
 import { EntryPoint } from "permissionless/types/entrypoint";
-import type { Hash, HttpTransport, PublicClient, TypedDataDefinition } from "viem";
+import type { HttpTransport, PublicClient, TypedDataDefinition } from "viem";
 import { Hex, createWalletClient, custom, http, publicActions } from "viem";
 import { Web3 } from "web3";
 
@@ -44,11 +29,6 @@ import {
 } from "../BlockchainNetworks";
 import { Custodian } from "../plugins";
 import { ERC20TransferType, SFTTransferType, TokenType, TransferType } from "../token";
-
-type GasFeeTransactionParams = {
-    maxFeePerGas?: BigNumberish;
-    maxPriorityFeePerGas?: BigNumberish;
-};
 
 export class EVMAAWallet extends LoggerWrapper {
     private sessionKeySignerAddress?: Hex;
@@ -140,44 +120,6 @@ export class EVMAAWallet extends LoggerWrapper {
         });
     }
 
-    //TODO @matias: review this method.
-    // First, I would like to use TransactionRequest from viem instead of ethers.
-    // Second, we need to check if chain supports eip-1559 ro not:
-    // - If it does, we need to send maxFeePerGas and maxPriorityFeePerGas
-    // - If it doesn't, we need to send gasPrice
-    // And with the use of viem TransactionRequest, we can specify the TransactionRequest type (eip1559 or legacy) and be more accurate
-    async sendTransaction(transaction: Deferrable<TransactionRequest>): Promise<Hash> {
-        return this.logPerformance("SEND_TRANSACTION", async () => {
-            try {
-                const decoratedTransaction = await decorateSendTransactionData(transaction);
-                const { to, value, gasLimit, nonce, data, maxFeePerGas, maxPriorityFeePerGas } =
-                    await resolveDeferrable(decoratedTransaction);
-
-                const txParams = {
-                    to: to as `0x${string}`,
-                    value: value ? BigInt(value.toString()) : undefined,
-                    gas: gasLimit ? BigInt(gasLimit.toString()) : undefined,
-                    nonce: await getNonce(nonce),
-                    data: await convertData(data),
-                    ...this.getLegacyTransactionFeesParamsIfApply({ maxFeePerGas, maxPriorityFeePerGas }),
-                    maxFeePerBlobGas: undefined,
-                    blobs: undefined,
-                    blobVersionedHashes: undefined,
-                    kzg: undefined,
-                    sidecars: undefined,
-                    type: undefined,
-                    chain: null,
-                };
-
-                logInfo(`[EVMAAWallet - SEND_TRANSACTION] - tx_params: ${JSON.stringify(txParams)}`);
-
-                return await this.kernelClient.sendTransaction(txParams);
-            } catch (error) {
-                throw new TransactionError(`Error sending transaction: ${error}`);
-            }
-        });
-    }
-
     async transfer(toAddress: string, config: TransferType): Promise<string> {
         return this.logPerformance("TRANSFER", async () => {
             const evmToken = config.token;
@@ -194,7 +136,6 @@ export class EVMAAWallet extends LoggerWrapper {
                             abi: erc20,
                             functionName: "transfer",
                             args: [toAddress, (config as ERC20TransferType).amount],
-                            ...this.getLegacyTransactionFeesParamsIfApply(),
                         });
                         transaction = await publicClient.writeContract(request);
                         break;
@@ -207,7 +148,6 @@ export class EVMAAWallet extends LoggerWrapper {
                             abi: erc1155,
                             functionName: "safeTransferFrom",
                             args: [this.getAddress(), toAddress, tokenId, (config as SFTTransferType).quantity, "0x00"],
-                            ...this.getLegacyTransactionFeesParamsIfApply(),
                         });
                         transaction = await publicClient.writeContract(request);
                         break;
@@ -220,7 +160,6 @@ export class EVMAAWallet extends LoggerWrapper {
                             abi: erc721,
                             functionName: "safeTransferFrom",
                             args: [this.getAddress(), toAddress, tokenId],
-                            ...this.getLegacyTransactionFeesParamsIfApply(),
                         });
                         transaction = await publicClient.writeContract(request);
                         break;
@@ -328,29 +267,5 @@ export class EVMAAWallet extends LoggerWrapper {
         return this.logPerformance("GET_NFTS", async () => {
             return this.crossmintService.fetchNFTs(this.account.address, this.chain);
         });
-    }
-
-    getLegacyTransactionFeesParamsIfApply(gasFeeParams?: GasFeeTransactionParams) {
-        const { maxFeePerGas, maxPriorityFeePerGas } = gasFeeParams ?? {};
-
-        if (hasEIP1559Support(this.chain)) {
-            return {
-                // only include if non-null and non-zero
-                ...(maxFeePerGas && { maxFeePerGas: BigInt(maxFeePerGas.toString()) }),
-                ...(maxPriorityFeePerGas && { maxPriorityFeePerGas: BigInt(maxPriorityFeePerGas.toString()) }),
-            };
-        } else {
-            if (maxFeePerGas || maxPriorityFeePerGas) {
-                console.warn(
-                    "maxFeePerGas and maxPriorityFeePerGas are not supported on this chain as it supports Legacy Transacitons. Ignoring them."
-                );
-            }
-            return {
-                // It's on zerodev doc that we need to ignore ts errros on maxFeePerGas and maxPriorityFeePerGas
-                // https://docs.zerodev.app/sdk/faqs/use-with-gelato#transaction-configuration
-                maxFeePerGas: "0x0" as any,
-                maxPriorityFeePerGas: "0x0" as any,
-            };
-        }
     }
 }

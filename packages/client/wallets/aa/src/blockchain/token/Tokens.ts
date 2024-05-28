@@ -1,5 +1,3 @@
-import { BigNumber } from "ethers";
-
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 export interface EVMToken {
@@ -23,7 +21,7 @@ export interface ERC2OEVMToken extends EVMToken {
 
 export type TokenType = "nft" | "sft" | "ft";
 
-export type ERC20TransferType = { token: ERC2OEVMToken; amount: BigNumber };
+export type ERC20TransferType = { token: ERC2OEVMToken; amount: bigint };
 export type SFTTransferType = { token: SFTEVMToken; quantity: number };
 export type NFTTransferType = { token: NFTEVMToken };
 export type TransferType = ERC20TransferType | SFTTransferType | NFTTransferType;
