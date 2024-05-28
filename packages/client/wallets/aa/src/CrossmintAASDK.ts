@@ -12,6 +12,7 @@ import {
 } from "@/utils";
 import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
 import { createPasskeyValidator, getPasskeyValidator } from "@zerodev/passkey-validator";
+import { deserializePasskeyValidatorData } from "@zerodev/passkey-validator/utils";
 import { createKernelAccount } from "@zerodev/sdk";
 import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
 import { EntryPointVersion } from "permissionless/types/entrypoint";
@@ -87,11 +88,9 @@ export class CrossmintAASDK {
         if (!isEVMBlockchain(chain)) {
             throw new WalletSdkError(`The blockchain ${chain} is not supported`);
         }
-
         const publicClient = createPublicClient({
             transport: http(getBundlerRPC(chain)),
         });
-
         const entryPoint = ENTRYPOINT_ADDRESS_V07;
         const kernelAccount = await createKernelAccount(publicClient, {
             plugins: {
@@ -101,6 +100,34 @@ export class CrossmintAASDK {
         });
 
         // TODO save to CM
+        const abstractAddress = kernelAccount.address;
+        const { sessionKeySignerAddress } = await this.crossmintService.createSessionKey(abstractAddress);
+        // evmAAWallet.setSessionKeySignerAddress(sessionKeySignerAddress);
+
+        const validatorFields = deserializePasskeyValidatorData(await passkeyValidator.getSerializedData());
+        const userIdentifier = parseUserIdentifier(user);
+        await this.crossmintService.storeAbstractWallet({
+            userIdentifier,
+            type: ZERO_DEV_TYPE,
+            smartContractWalletAddress: abstractAddress,
+            signerData: {
+                passkeyName: "TODO passkeyName",
+                passkeyServerUrl: validatorFields.passkeyServerUrl,
+                credentials: validatorFields.credentials,
+                entryPoint: validatorFields.entryPoint,
+                validatorAddress: validatorFields.validatorAddress,
+                pubKeyX: validatorFields.pubKeyX,
+                pubKeyY: validatorFields.pubKeyY,
+                authenticatorIdHash: validatorFields.authenticatorIdHash,
+                domain: "TODO domain",
+                type: "passkeys",
+            },
+            sessionKeySignerAddress,
+            version: CURRENT_VERSION,
+            baseLayer: "evm",
+            chainId: blockchainToChainId(chain),
+            entryPointVersion: "v0.7", // Placeholder
+        });
 
         return new EVMAAPasskeyWallet(kernelAccount as any, this.crossmintService, chain, publicClient, entryPoint);
     }
@@ -169,7 +196,11 @@ export class CrossmintAASDK {
                 userIdentifier,
                 type: ZERO_DEV_TYPE,
                 smartContractWalletAddress: abstractAddress,
-                eoaAddress: address,
+                signerData: {
+                    eoaAddress: address,
+                    type: "eoa",
+                },
+
                 sessionKeySignerAddress,
                 version: CURRENT_VERSION,
                 baseLayer: "evm",
