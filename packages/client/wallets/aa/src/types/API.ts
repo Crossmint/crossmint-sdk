@@ -1,7 +1,5 @@
 import { EntryPointVersion } from "permissionless/_types/types";
 
-import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
-
 import { UserIdentifier } from "./Config";
 
 export type StoreAbstractWalletInput = {
@@ -14,14 +12,6 @@ export type StoreAbstractWalletInput = {
     baseLayer: string;
     chainId: number;
     entryPointVersion: EntryPointVersion;
-};
-
-export type GenerateSignatureDataInput = {
-    smartContractWalletAddress: `0x${string}`;
-    sessionKeyData?: string;
-    killSwitchData?: string;
-    chain: BlockchainIncludingTestnet | "evm";
-    version: number;
 };
 
 export type TransferInput = {
