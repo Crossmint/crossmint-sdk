@@ -15,7 +15,7 @@ import { resolveDeferrable } from "@/utils/deferrable";
 import { LoggerWrapper } from "@/utils/log";
 import type { Deferrable } from "@ethersproject/properties";
 import { type TransactionRequest } from "@ethersproject/providers";
-import { createKernelAccountClient, createZeroDevPaymasterClient } from "@zerodev/sdk";
+import { KernelSmartAccount, createKernelAccountClient, createZeroDevPaymasterClient } from "@zerodev/sdk";
 import { BigNumberish } from "ethers";
 import { EntryPoint } from "permissionless/types/entrypoint";
 import type { Hash, HttpTransport, PublicClient, TypedDataDefinition } from "viem";
@@ -47,7 +47,6 @@ export class EVMAAWallet extends LoggerWrapper {
             KernelSmartAccount<EntryPoint, HttpTransport, TChain>
         >
     >;
-    private entryPoint: EntryPoint;
     chain: EVMBlockchainIncludingTestnet;
 
     constructor(
@@ -61,8 +60,6 @@ export class EVMAAWallet extends LoggerWrapper {
         this.chain = chain;
         this.crossmintService = crossmintService;
         this.publicClient = publicClient;
-        this.ecdsaValidator = ecdsaValidator;
-
         this.kernelClient = createKernelAccountClient({
             account,
             chain: getViemNetwork(chain),
@@ -85,7 +82,6 @@ export class EVMAAWallet extends LoggerWrapper {
             }),
         });
         this.account = account;
-        this.entryPoint = entryPoint;
     }
 
     getAddress() {
