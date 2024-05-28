@@ -43,7 +43,7 @@ import {
     getViemNetwork,
 } from "../BlockchainNetworks";
 import { Custodian } from "../plugins";
-import { ERC20TransferType, SFTTransferType, TokenType, TransferType, isEVMToken } from "../token";
+import { ERC20TransferType, SFTTransferType, TokenType, TransferType } from "../token";
 
 type GasFeeTransactionParams = {
     maxFeePerGas?: BigNumberish;
