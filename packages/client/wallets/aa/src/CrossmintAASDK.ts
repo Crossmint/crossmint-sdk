@@ -1,5 +1,5 @@
 import { CrossmintWalletService } from "@/api";
-import { EVMAAWallet, TChain, entryPoint, getBundlerRPC } from "@/blockchain";
+import { EVMAAWallet, getBundlerRPC } from "@/blockchain";
 import type { BackwardsCompatibleChains, CrossmintAASDKInitParams, WalletConfig } from "@/types";
 import {
     CURRENT_VERSION,
