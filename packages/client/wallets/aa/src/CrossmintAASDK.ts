@@ -1,5 +1,5 @@
 import { CrossmintWalletService } from "@/api";
-import { EVMAAWallet, TChain, entryPoint, getBundlerRPC } from "@/blockchain";
+import { EVMAAWallet, getBundlerRPC } from "@/blockchain";
 import type { CrossmintAASDKInitParams, WalletConfig } from "@/types";
 import { CURRENT_VERSION, WalletSdkError, ZERO_DEV_TYPE, createOwnerSigner } from "@/utils";
 import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
@@ -111,18 +111,6 @@ export class CrossmintAASDK extends LoggerWrapper {
             },
             { user, chain }
         );
-    }
-
-    /**
-     * Clears all key material and state from device storage, related to all wallets stored. Call this method when the user signs out of your app, if you don't have a user identifier.
-     */
-    async purgeAllWalletData(): Promise<void> {
-        //Removes the Fireblocks NCW data stored on the localstorage
-        const keys = Object.keys(localStorage);
-        const keysToDelete = keys.filter((key) => key.startsWith("NCW-"));
-        keysToDelete.forEach((key) => {
-            localStorage.removeItem(key);
-        });
     }
 
     private async getEntryPointVersion(
