@@ -83,15 +83,11 @@ export class CrossmintAASDK extends LoggerWrapper {
                         this.crossmintService,
                         chain,
                         publicClient,
-                        ecdsaValidator,
                         entryPoint
                     );
 
                     const abstractAddress = account.address;
                     const { sessionKeySignerAddress } = await this.crossmintService.createSessionKey(abstractAddress);
-
-                    evmAAWallet.setSessionKeySignerAddress(sessionKeySignerAddress);
-
                     await this.crossmintService.storeAbstractWallet({
                         userIdentifier,
                         type: ZERO_DEV_TYPE,

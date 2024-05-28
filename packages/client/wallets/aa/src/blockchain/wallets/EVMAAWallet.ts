@@ -15,13 +15,11 @@ import { resolveDeferrable } from "@/utils/deferrable";
 import { LoggerWrapper } from "@/utils/log";
 import type { Deferrable } from "@ethersproject/properties";
 import { type TransactionRequest } from "@ethersproject/providers";
-import type { KernelValidator } from "@zerodev/ecdsa-validator";
-import type { KernelSmartAccount } from "@zerodev/sdk";
 import { createKernelAccountClient, createZeroDevPaymasterClient } from "@zerodev/sdk";
 import { BigNumberish } from "ethers";
 import { EntryPoint } from "permissionless/types/entrypoint";
 import type { Hash, HttpTransport, PublicClient, TypedDataDefinition } from "viem";
-import { Hex, http, publicActions } from "viem";
+import { http, publicActions } from "viem";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
@@ -29,7 +27,7 @@ import erc20 from "../../ABI/ERC20.json";
 import erc721 from "../../ABI/ERC721.json";
 import erc1155 from "../../ABI/ERC1155.json";
 import { CrossmintWalletService } from "../../api/CrossmintWalletService";
-import { TChain, entryPoint, getBundlerRPC, getPaymasterRPC, getViemNetwork } from "../BlockchainNetworks";
+import { TChain, getBundlerRPC, getPaymasterRPC, getViemNetwork } from "../BlockchainNetworks";
 import { ERC20TransferType, SFTTransferType, TransferType } from "../token";
 
 type GasFeeTransactionParams = {
@@ -38,10 +36,8 @@ type GasFeeTransactionParams = {
 };
 
 export class EVMAAWallet extends LoggerWrapper {
-    private sessionKeySignerAddress?: Hex;
     private crossmintService: CrossmintWalletService;
     private publicClient: PublicClient;
-    private ecdsaValidator: KernelValidator<entryPoint, "ECDSAValidator">;
     private account: KernelSmartAccount<EntryPoint, HttpTransport, TChain>;
     private kernelClient: ReturnType<
         typeof createKernelAccountClient<
@@ -59,7 +55,6 @@ export class EVMAAWallet extends LoggerWrapper {
         crossmintService: CrossmintWalletService,
         chain: EVMBlockchainIncludingTestnet,
         publicClient: PublicClient,
-        ecdsaValidator: KernelValidator<entryPoint, "ECDSAValidator">,
         entryPoint: EntryPoint
     ) {
         super("EVMAAWallet", { chain, address: account.address });
