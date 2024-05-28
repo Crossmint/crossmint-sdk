@@ -50,9 +50,7 @@ type GasFeeTransactionParams = {
     maxPriorityFeePerGas?: BigNumberish;
 };
 
-export class EVMAAWallet<
-    B extends EVMBlockchainIncludingTestnet = EVMBlockchainIncludingTestnet
-> extends LoggerWrapper {
+export class EVMAAWallet extends LoggerWrapper {
     private sessionKeySignerAddress?: Hex;
     private crossmintService: CrossmintWalletService;
     private publicClient: PublicClient;
@@ -67,12 +65,12 @@ export class EVMAAWallet<
         >
     >;
     private entryPoint: EntryPoint;
-    chain: B;
+    chain: EVMBlockchainIncludingTestnet;
 
     constructor(
         account: KernelSmartAccount<EntryPoint, HttpTransport, TChain>,
         crossmintService: CrossmintWalletService,
-        chain: B,
+        chain: EVMBlockchainIncludingTestnet,
         publicClient: PublicClient,
         ecdsaValidator: KernelValidator<entryPoint, "ECDSAValidator">,
         entryPoint: EntryPoint
