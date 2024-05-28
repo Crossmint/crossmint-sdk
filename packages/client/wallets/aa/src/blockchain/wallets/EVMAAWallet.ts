@@ -198,10 +198,6 @@ export class EVMAAWallet<
     async transfer(toAddress: string, config: TransferType): Promise<string> {
         return this.logPerformance("TRANSFER", async () => {
             const evmToken = config.token;
-            if (!isEVMToken(evmToken)) {
-                throw new WalletSdkError(`Blockchain ${evmToken.chain} is not supported`);
-            }
-
             const contractAddress = evmToken.contractAddress as `0x${string}`;
             const publicClient = this.kernelClient.extend(publicActions);
             let transaction;
