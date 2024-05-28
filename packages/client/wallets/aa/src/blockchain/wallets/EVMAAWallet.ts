@@ -43,7 +43,7 @@ import {
     getViemNetwork,
 } from "../BlockchainNetworks";
 import { Custodian } from "../plugins";
-import { ERC20TransferType, SFTTransferType, TokenType, TransferType, isEVMToken } from "../token";
+import { ERC20TransferType, SFTTransferType, TokenType, TransferType } from "../token";
 
 type GasFeeTransactionParams = {
     maxFeePerGas?: BigNumberish;
@@ -183,10 +183,6 @@ export class EVMAAWallet<
     async transfer(toAddress: string, config: TransferType): Promise<string> {
         return this.logPerformance("TRANSFER", async () => {
             const evmToken = config.token;
-            if (!isEVMToken(evmToken)) {
-                throw new WalletSdkError(`Blockchain ${evmToken.chain} is not supported`);
-            }
-
             const contractAddress = evmToken.contractAddress as `0x${string}`;
             const publicClient = this.kernelClient.extend(publicActions);
             let transaction;
