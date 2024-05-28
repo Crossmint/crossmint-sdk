@@ -25,28 +25,6 @@ export class RateLimitError extends Error {
     }
 }
 
-export class PassphraseRequiredError extends Error {
-    code = "ERROR_PASSPHRASE_REQUIRED";
-
-    constructor(message: string) {
-        super(message);
-
-        // ES5 workaround
-        Object.setPrototypeOf(this, PassphraseRequiredError.prototype);
-    }
-}
-
-export class KeysGenerationError extends Error {
-    code = "ERROR_KEYS_GENERATION";
-
-    constructor(message: string) {
-        super(message);
-
-        // ES5 workaround
-        Object.setPrototypeOf(this, KeysGenerationError.prototype);
-    }
-}
-
 export class SignTransactionError extends Error {
     code = "ERROR_SIGN_TRANSACTION";
 
@@ -116,28 +94,6 @@ export class WalletSdkError extends Error {
 
         // ES5 workaround
         Object.setPrototypeOf(this, WalletSdkError.prototype);
-    }
-}
-
-export class PasskeySdkError extends Error {
-    code = "ERROR_UNDEFINED";
-
-    constructor(message: string) {
-        super(message);
-
-        // ES5 workaround
-        Object.setPrototypeOf(this, PasskeySdkError.prototype);
-    }
-}
-
-export class LitProtocolError extends Error {
-    code = "ERROR_UNDEFINED";
-
-    constructor(message: string) {
-        super(message);
-
-        // ES5 workaround
-        Object.setPrototypeOf(this, LitProtocolError.prototype);
     }
 }
 
