@@ -345,35 +345,6 @@ export class EVMAAWallet<
         });
     }
 
-    async upgradeVersion() {
-        return this.logPerformance("UPGRADE_VERSION", async () => {
-            try {
-                const sessionKeys = await this.crossmintService!.createSessionKey(this.kernelClient.account.address);
-                if (sessionKeys == null) {
-                    throw new Error("Abstract Wallet doesn't have a session key signer address");
-                }
-
-                const latestVersion = await this.crossmintService.checkVersion(this.kernelClient.account.address);
-                if (latestVersion.isUpToDate) {
-                    return;
-                }
-
-                const versionInfo = latestVersion.latestVersion;
-                if (versionInfo == null) {
-                    throw new Error("New version info not found");
-                }
-
-                const enableSig = await this.kernelClient.account.kernelPluginManager.getPluginEnableSignature(
-                    this.kernelClient.account.address
-                );
-
-                await this.crossmintService.updateWallet(this.kernelClient.account.address, enableSig, 1);
-            } catch (error) {
-                throw new Error(`Error upgrading version. If this error persists, please contact support.`);
-            }
-        });
-    }
-
     async getNFTs() {
         return this.logPerformance("GET_NFTS", async () => {
             return this.crossmintService.fetchNFTs(this.account.address, this.chain);

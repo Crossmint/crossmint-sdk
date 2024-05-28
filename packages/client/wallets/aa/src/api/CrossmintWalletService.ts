@@ -114,28 +114,6 @@ export class CrossmintWalletService extends BaseCrossmintService {
         );
     }
 
-    async checkVersion(address: string) {
-        return this.fetchCrossmintAPI(
-            "unstable/wallets/aa/wallets/version/check",
-            {
-                method: "POST",
-                body: JSON.stringify({ address }),
-            },
-            `Error checking version for wallet: ${address}`
-        );
-    }
-
-    async updateWallet(address: string, enableSig: string, version: number) {
-        return this.fetchCrossmintAPI(
-            "unstable/wallets/aa/wallets/version/update",
-            {
-                method: "POST",
-                body: JSON.stringify({ address, enableSig, version }),
-            },
-            `Error updating wallet: ${address}`
-        );
-    }
-
     async fetchNFTs(address: string, chain: EVMBlockchainIncludingTestnet) {
         return this.fetchCrossmintAPI(
             `v1-alpha1/wallets/${chain}:${address}/nfts`,
