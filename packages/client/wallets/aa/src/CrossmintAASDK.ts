@@ -1,13 +1,7 @@
 import { CrossmintWalletService } from "@/api";
 import { EVMAAWallet, TChain, entryPoint, getBundlerRPC } from "@/blockchain";
-import type { BackwardsCompatibleChains, CrossmintAASDKInitParams, WalletConfig } from "@/types";
-import {
-    CURRENT_VERSION,
-    WalletSdkError,
-    ZERO_DEV_TYPE,
-    createOwnerSigner,
-    transformBackwardsCompatibleChains,
-} from "@/utils";
+import type { CrossmintAASDKInitParams, WalletConfig } from "@/types";
+import { CURRENT_VERSION, WalletSdkError, ZERO_DEV_TYPE, createOwnerSigner } from "@/utils";
 import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
 import { createKernelAccount } from "@zerodev/sdk";
 import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
@@ -15,7 +9,6 @@ import { EntryPointVersion } from "permissionless/types/entrypoint";
 import { createPublicClient, http } from "viem";
 
 import {
-    BlockchainIncludingTestnet,
     EVMBlockchainIncludingTestnet,
     UserIdentifierParams,
     blockchainToChainId,
@@ -43,17 +36,15 @@ export class CrossmintAASDK extends LoggerWrapper {
         return new CrossmintAASDK(params);
     }
 
-    async getOrCreateWallet<B extends BlockchainIncludingTestnet = BlockchainIncludingTestnet>(
+    async getOrCreateWallet(
         user: UserIdentifierParams,
-        chain: B | BackwardsCompatibleChains,
+        chain: EVMBlockchainIncludingTestnet,
         walletConfig: WalletConfig
     ) {
         return logPerformance(
             "GET_OR_CREATE_WALLET",
             async () => {
                 try {
-                    chain = transformBackwardsCompatibleChains(chain);
-
                     if (!isEVMBlockchain(chain)) {
                         throw new WalletSdkError(`The blockchain ${chain} is not supported`);
                     }
@@ -134,9 +125,9 @@ export class CrossmintAASDK extends LoggerWrapper {
         });
     }
 
-    private async getEntryPointVersion<B extends EVMBlockchainIncludingTestnet = EVMBlockchainIncludingTestnet>(
+    private async getEntryPointVersion(
         userIdentifier: UserIdentifierParams,
-        chain: B | EVMBlockchainIncludingTestnet
+        chain: EVMBlockchainIncludingTestnet
     ): Promise<EntryPointVersion> {
         if (userIdentifier.email == null && userIdentifier.userId == null) {
             throw new WalletSdkError(`Email or userId is required to get the entry point version`);
