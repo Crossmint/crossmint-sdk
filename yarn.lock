@@ -5335,6 +5335,13 @@
   dependencies:
     axios "^1.6.7"
 
+"@reservoir0x/reservoir-sdk@2.2.7":
+  version "2.2.7"
+  resolved "https://registry.yarnpkg.com/@reservoir0x/reservoir-sdk/-/reservoir-sdk-2.2.7.tgz#b0e31343d16874594a5c47c92a58f6936043f521"
+  integrity sha512-xSreQz9jkITqeQv42MyZIhQ4971r70YiLUO1UMNBxZBbIPRxnBkEd5fJKm/RfHkllH+zGdbSTcYZKuhSWipKgw==
+  dependencies:
+    axios "^1.6.7"
+
 "@rollup/plugin-babel@^5.2.0":
   version "5.3.1"
   resolved "https://registry.yarnpkg.com/@rollup/plugin-babel/-/plugin-babel-5.3.1.tgz#04bc0608f4aa4b2e4b1aebf284344d0f68fda283"
@@ -22897,7 +22904,7 @@ vary@~1.1.2:
   resolved "https://registry.yarnpkg.com/vary/-/vary-1.1.2.tgz#2299f02c6ded30d4a5961b0b9f74524a18f634fc"
   integrity sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==
 
-viem@2.13.1:
+viem@2.13.1, viem@^2.5.0:
   version "2.13.1"
   resolved "https://registry.yarnpkg.com/viem/-/viem-2.13.1.tgz#a2e5b4f9396f80e6d812af49db23eda40d2a6e72"
   integrity sha512-QaSCtPXb9uVaba+vOsyCFX21BDWNbjBOuXIWWlQXLmECtr/mbJ64XUHyFz6KLvUwAsQ+vxUQVwgmXc3jVMxwYw==
@@ -22924,7 +22931,6 @@ viem@2.8.16:
     abitype "1.0.0"
     isows "1.0.3"
     ws "8.13.0"
-
 viem@^1.5.3:
   version "1.21.4"
   resolved "https://registry.yarnpkg.com/viem/-/viem-1.21.4.tgz#883760e9222540a5a7e0339809202b45fe6a842d"
@@ -22936,20 +22942,6 @@ viem@^1.5.3:
     "@scure/bip32" "1.3.2"
     "@scure/bip39" "1.2.1"
     abitype "0.9.8"
-    isows "1.0.3"
-    ws "8.13.0"
-
-viem@^2.5.0:
-  version "2.9.13"
-  resolved "https://registry.yarnpkg.com/viem/-/viem-2.9.13.tgz#3053394a0b3b60e46706951fefba6dd43ed1f50b"
-  integrity sha512-TxNZOWFwr2Pc6CeY4tViFL2NRq9v86HofAPkhBgScP8DUn3EeSbQhmDXbjMZNkZvXoMqWVl0AZM81rEOlaKrbg==
-  dependencies:
-    "@adraffy/ens-normalize" "1.10.0"
-    "@noble/curves" "1.2.0"
-    "@noble/hashes" "1.3.2"
-    "@scure/bip32" "1.3.2"
-    "@scure/bip39" "1.2.1"
-    abitype "1.0.0"
     isows "1.0.3"
     ws "8.13.0"
 

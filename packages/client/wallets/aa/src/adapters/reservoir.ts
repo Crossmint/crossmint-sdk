@@ -1,6 +1,7 @@
 import { ReservoirWallet } from "@reservoir0x/reservoir-sdk";
-import { hexToBigInt } from "viem";
+import { hexToBigInt, http } from "viem";
 
+import { getBundlerRPC } from "..";
 import { EVMAAWallet } from "../blockchain/wallets/EVMAAWallet";
 
 export function reservoirAdapter(wallet: EVMAAWallet): ReservoirWallet {
@@ -43,5 +44,6 @@ export function reservoirAdapter(wallet: EVMAAWallet): ReservoirWallet {
                 }),
             });
         },
+        transport: http(getBundlerRPC(wallet.chain)),
     };
 }

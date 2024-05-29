@@ -41,9 +41,9 @@ type GasFeeTransactionParams = {
 };
 
 export class EVMAAWallet extends LoggerWrapper {
-    public chain: EVMBlockchainIncludingTestnet;
-    public publicClient: PublicClient;
-    private kernelClient: KernelAccountClient<
+    public readonly chain: EVMBlockchainIncludingTestnet;
+    public readonly publicClient: PublicClient;
+    private readonly kernelClient: KernelAccountClient<
         EntryPoint,
         HttpTransport,
         Chain,
@@ -83,11 +83,11 @@ export class EVMAAWallet extends LoggerWrapper {
         this.publicClient = publicClient;
     }
 
-    getAddress() {
+    public getAddress() {
         return this.kernelClient.account.address;
     }
 
-    async signMessage(message: string | Uint8Array) {
+    public async signMessage(message: string | Uint8Array) {
         return this.logPerformance("SIGN_MESSAGE", async () => {
             try {
                 let messageAsString: string;
@@ -107,7 +107,7 @@ export class EVMAAWallet extends LoggerWrapper {
         });
     }
 
-    async signTypedData(params: TypedDataDefinition) {
+    public async signTypedData(params: TypedDataDefinition) {
         return this.logPerformance("SIGN_TYPED_DATA", async () => {
             try {
                 return await this.kernelClient.signTypedData(params);
@@ -123,7 +123,7 @@ export class EVMAAWallet extends LoggerWrapper {
     // - If it does, we need to send maxFeePerGas and maxPriorityFeePerGas
     // - If it doesn't, we need to send gasPrice
     // And with the use of viem TransactionRequest, we can specify the TransactionRequest type (eip1559 or legacy) and be more accurate
-    async sendTransaction(transaction: Deferrable<TransactionRequest>): Promise<Hash> {
+    public async sendTransaction(transaction: Deferrable<TransactionRequest>): Promise<Hash> {
         return this.logPerformance("SEND_TRANSACTION", async () => {
             try {
                 const decoratedTransaction = await decorateSendTransactionData(transaction);
@@ -155,7 +155,7 @@ export class EVMAAWallet extends LoggerWrapper {
         });
     }
 
-    async transfer(toAddress: string, config: TransferType): Promise<string> {
+    public async transfer(toAddress: string, config: TransferType): Promise<string> {
         return this.logPerformance("TRANSFER", async () => {
             const evmToken = config.token;
             const contractAddress = evmToken.contractAddress as `0x${string}`;
@@ -231,7 +231,7 @@ export class EVMAAWallet extends LoggerWrapper {
         });
     }
 
-    getSigner<Type extends SignerType>(type: Type): SignerMap[Type] {
+    public getSigner<Type extends SignerType>(type: Type): SignerMap[Type] {
         switch (type) {
             case "viem": {
                 return {
@@ -248,13 +248,13 @@ export class EVMAAWallet extends LoggerWrapper {
         }
     }
 
-    async getNFTs() {
+    public async getNFTs() {
         return this.logPerformance("GET_NFTS", async () => {
             return this.crossmintService.fetchNFTs(this.account.address, this.chain);
         });
     }
 
-    getLegacyTransactionFeesParamsIfApply(gasFeeParams?: GasFeeTransactionParams) {
+    private getLegacyTransactionFeesParamsIfApply(gasFeeParams?: GasFeeTransactionParams) {
         const { maxFeePerGas, maxPriorityFeePerGas } = gasFeeParams ?? {};
 
         if (hasEIP1559Support(this.chain)) {

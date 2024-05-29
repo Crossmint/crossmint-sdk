@@ -1,6 +1,6 @@
 import { type TransactionRequest } from "@ethersproject/providers";
 import { ethers } from "ethers";
-import { SignTypedDataParameters } from "viem";
+import { type SignTypedDataParameters } from "viem";
 
 import { EVMAAWallet, FireblocksNCWSigner } from "@crossmint/client-sdk-aa";
 import { EVMBlockchain, EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
