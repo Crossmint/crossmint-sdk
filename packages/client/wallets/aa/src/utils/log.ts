@@ -98,7 +98,7 @@ export function logInputOutput<T, A extends any[]>(fn: (...args: A) => T, functi
                     .catch((err) => {
                         logError(`${identifierTag} threw_error: ${beautify(err)}`, { err });
                         throw err;
-                    }) as unknown as T;
+                    }) as T;
             } else {
                 logInfoIfNotInLocalhost(`${identifierTag} output: ${beautify(result)}`, { res: result });
                 return result;
@@ -139,6 +139,7 @@ function stringifyAvoidingCircular(json: any) {
 
 function logInfoIfNotInLocalhost(message: string, context?: object) {
     if (isLocalhost()) {
+        console.log(message);
         return;
     }
     logInfo(message, context);
