@@ -6,8 +6,8 @@ export type StoreAbstractWalletInput = {
     userIdentifier: UserIdentifier;
     type: string;
     smartContractWalletAddress: string;
-    eoaAddress: string;
-    sessionKeySignerAddress: string;
+    eoaAddress?: string;
+    sessionKeySignerAddress?: string;
     version: number;
     baseLayer: string;
     chainId: number;

@@ -1,26 +1,20 @@
 import { CrossmintWalletService } from "@/api";
-import { EVMAAWallet, getBundlerRPC } from "@/blockchain";
+import { getBundlerRPC } from "@/blockchain";
 import type { CrossmintAASDKInitParams, WalletConfig } from "@/types";
-import { CURRENT_VERSION, WalletSdkError, ZERO_DEV_TYPE, createOwnerSigner } from "@/utils";
-import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
-import { createKernelAccount } from "@zerodev/sdk";
+import { WalletSdkError } from "@/utils";
 import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
 import { EntryPointVersion } from "permissionless/types/entrypoint";
 import { createPublicClient, http } from "viem";
 
-import {
-    EVMBlockchainIncludingTestnet,
-    UserIdentifierParams,
-    blockchainToChainId,
-    isEVMBlockchain,
-    validateAPIKey,
-} from "@crossmint/common-sdk-base";
+import { EVMBlockchainIncludingTestnet, UserIdentifierParams, validateAPIKey } from "@crossmint/common-sdk-base";
 
+import EOAWalletService from "./blockchain/wallets/eoa";
 import { LoggerWrapper, logPerformance } from "./utils/log";
 import { parseUserIdentifier } from "./utils/user";
 
 export class CrossmintAASDK extends LoggerWrapper {
-    crossmintService: CrossmintWalletService;
+    private readonly crossmintService: CrossmintWalletService;
+    private readonly eaoWalletService: EOAWalletService;
 
     private constructor(config: CrossmintAASDKInitParams) {
         super("CrossmintAASDK");
@@ -30,6 +24,7 @@ export class CrossmintAASDK extends LoggerWrapper {
         }
 
         this.crossmintService = new CrossmintWalletService(config.apiKey);
+        this.eaoWalletService = new EOAWalletService(this.crossmintService);
     }
 
     static init(params: CrossmintAASDKInitParams): CrossmintAASDK {
@@ -45,62 +40,18 @@ export class CrossmintAASDK extends LoggerWrapper {
             "GET_OR_CREATE_WALLET",
             async () => {
                 try {
-                    if (!isEVMBlockchain(chain)) {
-                        throw new WalletSdkError(`The blockchain ${chain} is not supported`);
-                    }
-
                     const userIdentifier = parseUserIdentifier(user);
-
                     const entryPointVersion = await this.getEntryPointVersion(userIdentifier, chain);
-                    const entryPoint = entryPointVersion === "v0.6" ? ENTRYPOINT_ADDRESS_V06 : ENTRYPOINT_ADDRESS_V07;
-
-                    const owner = await createOwnerSigner({
+                    return this.eaoWalletService.getOrCreate({
+                        userIdentifier,
                         chain,
+                        publicClient: createPublicClient({
+                            transport: http(getBundlerRPC(chain)),
+                        }),
+                        entryPointVersion,
+                        entryPoint: entryPointVersion === "v0.6" ? ENTRYPOINT_ADDRESS_V06 : ENTRYPOINT_ADDRESS_V07,
                         walletConfig,
                     });
-
-                    const address = owner.address;
-
-                    const publicClient = createPublicClient({
-                        transport: http(getBundlerRPC(chain)),
-                    });
-
-                    const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
-                        signer: owner,
-                        entryPoint,
-                    });
-
-                    const account = await createKernelAccount(publicClient, {
-                        plugins: {
-                            sudo: ecdsaValidator,
-                        },
-                        index: BigInt(0),
-                        entryPoint,
-                    });
-
-                    const evmAAWallet = new EVMAAWallet(
-                        account,
-                        this.crossmintService,
-                        publicClient,
-                        entryPoint,
-                        chain
-                    );
-
-                    const abstractAddress = account.address;
-                    const { sessionKeySignerAddress } = await this.crossmintService.createSessionKey(abstractAddress);
-                    await this.crossmintService.storeAbstractWallet({
-                        userIdentifier,
-                        type: ZERO_DEV_TYPE,
-                        smartContractWalletAddress: abstractAddress,
-                        eoaAddress: address,
-                        sessionKeySignerAddress,
-                        version: CURRENT_VERSION,
-                        baseLayer: "evm",
-                        chainId: blockchainToChainId(chain),
-                        entryPointVersion,
-                    });
-
-                    return evmAAWallet;
                 } catch (error: any) {
                     throw new WalletSdkError(`Error creating the Wallet ${error?.message ? `: ${error.message}` : ""}`);
                 }
