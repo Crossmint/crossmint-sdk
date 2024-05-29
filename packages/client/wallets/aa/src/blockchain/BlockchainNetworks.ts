@@ -242,7 +242,7 @@ export const getZeroDevProjectIdByBlockchain = logInputOutput((chain: EVMBlockch
     return zeroDevProjectId;
 }, "getZeroDevProjectIdByBlockchain");
 
-export const getViemNetwork = (cmChain: EVMBlockchainIncludingTestnet) => {
+export const getViemNetwork = logInputOutput((cmChain: EVMBlockchainIncludingTestnet) => {
     switch (cmChain) {
         case "ethereum":
             return mainnet;
@@ -277,7 +277,7 @@ export const getViemNetwork = (cmChain: EVMBlockchainIncludingTestnet) => {
         default:
             throw new Error(`Unsupported network: ${cmChain}`);
     }
-};
+}, "getViemNetwork");
 
 export const getBundlerRPC = logInputOutput((chain: EVMBlockchainIncludingTestnet) => {
     switch (chain) {
