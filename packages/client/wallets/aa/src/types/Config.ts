@@ -43,8 +43,6 @@ export interface WalletConfig {
     signer: Signer;
 }
 
-export type BackwardsCompatibleChains = "goerli";
-
 export type Client = {
     publicClient: PublicClient;
     walletClient: KernelAccountClient<EntryPoint, HttpTransport, Chain, KernelSmartAccount<EntryPoint, HttpTransport>>;
