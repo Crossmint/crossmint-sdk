@@ -1,9 +1,7 @@
 import { TORUS_NETWORK_TYPE } from "@web3auth/single-factor-auth";
-import { KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
+import { KernelAccountClient, KernelSmartAccount } from "@zerodev/sdk";
 import { EntryPoint } from "permissionless/_types/types";
-import { EIP1193Provider, HttpTransport, LocalAccount, PublicClient } from "viem";
-
-import { TChain } from "..";
+import { Chain, EIP1193Provider, HttpTransport, LocalAccount, PublicClient } from "viem";
 
 export type CrossmintAASDKInitParams = {
     apiKey: string;
@@ -36,7 +34,7 @@ export type Web3AuthSigner = {
 
 export type ViemAccount = {
     type: "VIEM_ACCOUNT";
-    account: LocalAccount;
+    account: LocalAccount & { source: "custom" };
 };
 
 type Signer = EIP1193Provider | Web3AuthSigner | ViemAccount;
@@ -45,16 +43,7 @@ export interface WalletConfig {
     signer: Signer;
 }
 
-export type BackwardsCompatibleChains = "goerli";
-
 export type Client = {
     publicClient: PublicClient;
-    walletClient: ReturnType<
-        typeof createKernelAccountClient<
-            EntryPoint,
-            HttpTransport,
-            TChain,
-            KernelSmartAccount<EntryPoint, HttpTransport, TChain>
-        >
-    >;
+    walletClient: KernelAccountClient<EntryPoint, HttpTransport, Chain, KernelSmartAccount<EntryPoint, HttpTransport>>;
 };

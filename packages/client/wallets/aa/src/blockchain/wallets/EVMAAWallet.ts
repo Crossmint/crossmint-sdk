@@ -15,11 +15,16 @@ import { resolveDeferrable } from "@/utils/deferrable";
 import { LoggerWrapper } from "@/utils/log";
 import type { Deferrable } from "@ethersproject/properties";
 import { type TransactionRequest } from "@ethersproject/providers";
-import { KernelSmartAccount, createKernelAccountClient, createZeroDevPaymasterClient } from "@zerodev/sdk";
+import {
+    KernelAccountClient,
+    KernelSmartAccount,
+    createKernelAccountClient,
+    createZeroDevPaymasterClient,
+} from "@zerodev/sdk";
 import { BigNumberish } from "ethers";
 import { EntryPoint } from "permissionless/types/entrypoint";
 import type { Hash, HttpTransport, PublicClient, TypedDataDefinition } from "viem";
-import { http, publicActions } from "viem";
+import { Chain, http, publicActions } from "viem";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
@@ -27,7 +32,7 @@ import erc20 from "../../ABI/ERC20.json";
 import erc721 from "../../ABI/ERC721.json";
 import erc1155 from "../../ABI/ERC1155.json";
 import { CrossmintWalletService } from "../../api/CrossmintWalletService";
-import { TChain, getBundlerRPC, getPaymasterRPC, getViemNetwork } from "../BlockchainNetworks";
+import { getBundlerRPC, getPaymasterRPC, getViemNetwork } from "../BlockchainNetworks";
 import { ERC20TransferType, SFTTransferType, TransferType } from "../token";
 
 type GasFeeTransactionParams = {
@@ -36,30 +41,23 @@ type GasFeeTransactionParams = {
 };
 
 export class EVMAAWallet extends LoggerWrapper {
-    private crossmintService: CrossmintWalletService;
-    private publicClient: PublicClient;
-    private account: KernelSmartAccount<EntryPoint, HttpTransport, TChain>;
-    private kernelClient: ReturnType<
-        typeof createKernelAccountClient<
-            EntryPoint,
-            HttpTransport,
-            TChain,
-            KernelSmartAccount<EntryPoint, HttpTransport, TChain>
-        >
+    public readonly chain: EVMBlockchainIncludingTestnet;
+    public readonly publicClient: PublicClient;
+    private readonly kernelClient: KernelAccountClient<
+        EntryPoint,
+        HttpTransport,
+        Chain,
+        KernelSmartAccount<EntryPoint, HttpTransport>
     >;
-    chain: EVMBlockchainIncludingTestnet;
 
     constructor(
-        account: KernelSmartAccount<EntryPoint, HttpTransport, TChain>,
-        crossmintService: CrossmintWalletService,
-        chain: EVMBlockchainIncludingTestnet,
-        publicClient: PublicClient,
-        entryPoint: EntryPoint
+        private readonly account: KernelSmartAccount<EntryPoint, HttpTransport>,
+        private readonly crossmintService: CrossmintWalletService,
+        publicClient: PublicClient<HttpTransport>,
+        entryPoint: EntryPoint,
+        chain: EVMBlockchainIncludingTestnet
     ) {
         super("EVMAAWallet", { chain, address: account.address });
-        this.chain = chain;
-        this.crossmintService = crossmintService;
-        this.publicClient = publicClient;
         this.kernelClient = createKernelAccountClient({
             account,
             chain: getViemNetwork(chain),
@@ -81,14 +79,15 @@ export class EVMAAWallet extends LoggerWrapper {
                 },
             }),
         });
-        this.account = account;
+        this.chain = chain;
+        this.publicClient = publicClient;
     }
 
-    getAddress() {
+    public getAddress() {
         return this.kernelClient.account.address;
     }
 
-    async signMessage(message: string | Uint8Array) {
+    public async signMessage(message: string | Uint8Array) {
         return this.logPerformance("SIGN_MESSAGE", async () => {
             try {
                 let messageAsString: string;
@@ -108,7 +107,7 @@ export class EVMAAWallet extends LoggerWrapper {
         });
     }
 
-    async signTypedData(params: TypedDataDefinition) {
+    public async signTypedData(params: TypedDataDefinition) {
         return this.logPerformance("SIGN_TYPED_DATA", async () => {
             try {
                 return await this.kernelClient.signTypedData(params);
@@ -124,7 +123,7 @@ export class EVMAAWallet extends LoggerWrapper {
     // - If it does, we need to send maxFeePerGas and maxPriorityFeePerGas
     // - If it doesn't, we need to send gasPrice
     // And with the use of viem TransactionRequest, we can specify the TransactionRequest type (eip1559 or legacy) and be more accurate
-    async sendTransaction(transaction: Deferrable<TransactionRequest>): Promise<Hash> {
+    public async sendTransaction(transaction: Deferrable<TransactionRequest>): Promise<Hash> {
         return this.logPerformance("SEND_TRANSACTION", async () => {
             try {
                 const decoratedTransaction = await decorateSendTransactionData(transaction);
@@ -156,7 +155,7 @@ export class EVMAAWallet extends LoggerWrapper {
         });
     }
 
-    async transfer(toAddress: string, config: TransferType): Promise<string> {
+    public async transfer(toAddress: string, config: TransferType): Promise<string> {
         return this.logPerformance("TRANSFER", async () => {
             const evmToken = config.token;
             const contractAddress = evmToken.contractAddress as `0x${string}`;
@@ -232,7 +231,7 @@ export class EVMAAWallet extends LoggerWrapper {
         });
     }
 
-    getSigner<Type extends SignerType>(type: Type): SignerMap[Type] {
+    public getSigner<Type extends SignerType>(type: Type): SignerMap[Type] {
         switch (type) {
             case "viem": {
                 return {
@@ -249,13 +248,13 @@ export class EVMAAWallet extends LoggerWrapper {
         }
     }
 
-    async getNFTs() {
+    public async getNFTs() {
         return this.logPerformance("GET_NFTS", async () => {
             return this.crossmintService.fetchNFTs(this.account.address, this.chain);
         });
     }
 
-    getLegacyTransactionFeesParamsIfApply(gasFeeParams?: GasFeeTransactionParams) {
+    private getLegacyTransactionFeesParamsIfApply(gasFeeParams?: GasFeeTransactionParams) {
         const { maxFeePerGas, maxPriorityFeePerGas } = gasFeeParams ?? {};
 
         if (hasEIP1559Support(this.chain)) {

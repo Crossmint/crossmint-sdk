@@ -1,19 +1,21 @@
-import React, { useState } from 'react';
-import styles from '../styles/index.module.css';
+import { signMessage, signTypedData, verifyMessage } from "@/services/walletService";
+import React, { useState } from "react";
+
 import { EVMAAWallet } from "@crossmint/client-sdk-aa";
-import { signMessage, signTypedData, verifyMessage } from '@/services/walletService';
+
+import styles from "../styles/index.module.css";
 
 interface SignComponentProps {
     aaWallet: EVMAAWallet | undefined;
 }
 
 const SignComponent: React.FC<SignComponentProps> = ({ aaWallet }) => {
-    const [messageToSign, setMessageToSign] = useState('');
-    const [signMessageSignature, setSignMessageSignature] = useState('');
-    const [messageToVerify, setMessageToVerify] = useState('');
-    const [messageSignature, setMessageSignature] = useState('');
+    const [messageToSign, setMessageToSign] = useState("");
+    const [signMessageSignature, setSignMessageSignature] = useState("");
+    const [messageToVerify, setMessageToVerify] = useState("");
+    const [messageSignature, setMessageSignature] = useState("");
     const [isMessageVerified, setIsMessageVerified] = useState(false);
-    const [signTypedDataHash, setSignTypedDataHash] = useState('');
+    const [signTypedDataHash, setSignTypedDataHash] = useState("");
 
     const handleSignMessage = async () => {
         if (aaWallet) {
@@ -54,6 +56,7 @@ const SignComponent: React.FC<SignComponentProps> = ({ aaWallet }) => {
                         { name: "enableData", type: "bytes" },
                     ],
                 },
+                account: await aaWallet.getAddress(),
             };
             const txHash = await signTypedData(aaWallet, params);
             console.log({ signTypedDataHash: txHash });
@@ -101,7 +104,7 @@ const SignComponent: React.FC<SignComponentProps> = ({ aaWallet }) => {
                         value={messageSignature}
                         onChange={(e) => setMessageSignature(e.target.value)}
                     />
-                    <button className={styles.button}  data-testid="VerifyMessageBtn" onClick={handleVerifyMessage}>
+                    <button className={styles.button} data-testid="VerifyMessageBtn" onClick={handleVerifyMessage}>
                         Verify message
                     </button>
                     <input
@@ -117,7 +120,13 @@ const SignComponent: React.FC<SignComponentProps> = ({ aaWallet }) => {
                     <button className={styles.button} data-testid="SignedTypedData" onClick={handleSignTypedData}>
                         Sign Typed Data
                     </button>
-                    <input className={styles.input} type="text" data-testid="SignTypedDataInput" value={signTypedDataHash} readOnly />
+                    <input
+                        className={styles.input}
+                        type="text"
+                        data-testid="SignTypedDataInput"
+                        value={signTypedDataHash}
+                        readOnly
+                    />
                 </div>
             </section>
         </div>

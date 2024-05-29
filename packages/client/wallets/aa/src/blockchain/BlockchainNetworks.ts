@@ -242,8 +242,8 @@ export const getZeroDevProjectIdByBlockchain = logInputOutput((chain: EVMBlockch
     return zeroDevProjectId;
 }, "getZeroDevProjectIdByBlockchain");
 
-export const getViemNetwork = logInputOutput((networkName: EVMBlockchainIncludingTestnet) => {
-    switch (networkName) {
+export const getViemNetwork = logInputOutput((cmChain: EVMBlockchainIncludingTestnet) => {
+    switch (cmChain) {
         case "ethereum":
             return mainnet;
         case "ethereum-goerli":
@@ -274,9 +274,8 @@ export const getViemNetwork = logInputOutput((networkName: EVMBlockchainIncludin
             return astarZkEVM;
         case "bsc":
             return bsc;
-
         default:
-            throw new Error(`Unsupported network: ${networkName}`);
+            throw new Error(`Unsupported network: ${cmChain}`);
     }
 }, "getViemNetwork");
 
@@ -303,4 +302,3 @@ export const getPaymasterRPC = logInputOutput((chain: EVMBlockchainIncludingTest
 }, "getPaymasterRPC");
 
 export type entryPoint = EntryPoint;
-export type TChain = Chain | undefined;

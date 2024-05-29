@@ -82,8 +82,8 @@ export async function logPerformance<T>(name: string, cb: () => Promise<T>, extr
     return result;
 }
 
-export function logInputOutput(fn: Function, functionName: string) {
-    return function (this: any, ...args: any[]) {
+export function logInputOutput<T, A extends any[]>(fn: (...args: A) => T, functionName: string): (...args: A) => T {
+    return function (this: any, ...args: A): T {
         const identifierTag = `[${SCW_SERVICE} - function: ${functionName}]`;
         logInfoIfNotInLocalhost(`${identifierTag} input: ${beautify(args)}`, { args });
 
@@ -98,7 +98,7 @@ export function logInputOutput(fn: Function, functionName: string) {
                     .catch((err) => {
                         logError(`${identifierTag} threw_error: ${beautify(err)}`, { err });
                         throw err;
-                    });
+                    }) as T;
             } else {
                 logInfoIfNotInLocalhost(`${identifierTag} output: ${beautify(result)}`, { res: result });
                 return result;
@@ -139,6 +139,7 @@ function stringifyAvoidingCircular(json: any) {
 
 function logInfoIfNotInLocalhost(message: string, context?: object) {
     if (isLocalhost()) {
+        console.log(message);
         return;
     }
     logInfo(message, context);

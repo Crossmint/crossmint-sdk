@@ -81,9 +81,9 @@ export class CrossmintAASDK extends LoggerWrapper {
                     const evmAAWallet = new EVMAAWallet(
                         account,
                         this.crossmintService,
-                        chain,
                         publicClient,
-                        entryPoint
+                        entryPoint,
+                        chain
                     );
 
                     const abstractAddress = account.address;

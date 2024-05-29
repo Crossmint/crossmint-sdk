@@ -1,22 +1,22 @@
 import { ReservoirWallet } from "@reservoir0x/reservoir-sdk";
 import { hexToBigInt, http } from "viem";
 
-import { getBundlerRPC } from "../blockchain/BlockchainNetworks";
+import { getBundlerRPC } from "..";
 import { EVMAAWallet } from "../blockchain/wallets/EVMAAWallet";
 
-export function reservoirAdapter(aaWallet: EVMAAWallet): ReservoirWallet {
+export function reservoirAdapter(wallet: EVMAAWallet): ReservoirWallet {
     return {
-        address: async () => aaWallet.getAddress() as string,
+        address: async () => wallet.getAddress(),
         handleSignMessageStep: async (stepItem, _) => {
             const signData = stepItem.data?.sign;
             let signature: string | undefined;
             if (signData) {
                 if (signData.signatureKind === "eip191") {
                     console.log("Execute Steps: Signing with eip191");
-                    signature = await aaWallet.signMessage(signData.message);
+                    signature = await wallet.signMessage(signData.message);
                 } else if (signData.signatureKind === "eip712") {
                     console.log("Execute Steps: Signing with eip712");
-                    signature = await aaWallet.signTypedData({
+                    signature = await wallet.signTypedData({
                         domain: signData.domain as any,
                         types: signData.types as any,
                         primaryType: signData.primaryType,
@@ -28,7 +28,7 @@ export function reservoirAdapter(aaWallet: EVMAAWallet): ReservoirWallet {
         },
         handleSendTransactionStep: async (chainId, stepItem, _) => {
             const stepData = stepItem.data;
-            return await aaWallet.sendTransaction({
+            return await wallet.sendTransaction({
                 chainId: chainId,
                 data: stepData.data,
                 to: stepData.to,
@@ -44,6 +44,6 @@ export function reservoirAdapter(aaWallet: EVMAAWallet): ReservoirWallet {
                 }),
             });
         },
-        transport: http(getBundlerRPC(aaWallet.chain)),
+        transport: http(getBundlerRPC(wallet.chain)),
     };
 }
