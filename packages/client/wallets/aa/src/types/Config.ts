@@ -34,7 +34,7 @@ export type Web3AuthSigner = {
 
 export type ViemAccount = {
     type: "VIEM_ACCOUNT";
-    account: LocalAccount;
+    account: LocalAccount & { source: "custom" };
 };
 
 type Signer = EIP1193Provider | Web3AuthSigner | ViemAccount;
