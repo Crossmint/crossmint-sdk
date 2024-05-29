@@ -11,7 +11,7 @@ import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { Web3Auth } from "@web3auth/single-factor-auth";
 import { providerToSmartAccountSigner } from "permissionless";
 import type { SmartAccountSigner } from "permissionless/accounts";
-import { Address, EIP1193Provider, Hex } from "viem";
+import { Address, EIP1193Provider, Hex, LocalAccount } from "viem";
 import { Web3 } from "web3";
 
 import {
@@ -71,7 +71,10 @@ export const createOwnerSigner = logInputOutput(
             const [address] = await web3.eth.getAccounts();
             return await providerToSmartAccountSigner(walletConfig.signer, { signerAddress: address as Hex });
         } else if (isAccount(walletConfig.signer)) {
-            return walletConfig.signer.account;
+            if (walletConfig.signer.account.source !== "custom") {
+                throw new Error("Account misconfigured to convert to signer");
+            }
+            return walletConfig.signer.account as LocalAccount & { source: "custom" };
         } else {
             const signer = walletConfig.signer as any;
             throw new WalletSdkError(`The signer type ${signer.type} is not supported`);

@@ -5651,18 +5651,6 @@
   dependencies:
     "@simplewebauthn/typescript-types" "^7.4.0"
 
-"@simplewebauthn/browser@^9.0.1":
-  version "9.0.1"
-  resolved "https://registry.yarnpkg.com/@simplewebauthn/browser/-/browser-9.0.1.tgz#46a12c2bcefcb199f7fcb6a7e883531cd6efde17"
-  integrity sha512-wD2WpbkaEP4170s13/HUxPcAV5y4ZXaKo1TfNklS5zDefPinIgXOpgz1kpEvobAsaLPa2KeH7AKKX/od1mrBJw==
-  dependencies:
-    "@simplewebauthn/types" "^9.0.1"
-
-"@simplewebauthn/types@^9.0.1":
-  version "9.0.1"
-  resolved "https://registry.yarnpkg.com/@simplewebauthn/types/-/types-9.0.1.tgz#3a68d50e63d8821cf2067de3324c68d5e8120d0c"
-  integrity sha512-tGSRP1QvsAvsJmnOlRQyw/mvK9gnPtjEc5fg2+m8n+QUa+D7rvrKkOYyfpy42GTs90X3RDOnqJgfHt+qO67/+w==
-
 "@simplewebauthn/typescript-types@^7.0.0", "@simplewebauthn/typescript-types@^7.4.0":
   version "7.4.0"
   resolved "https://registry.yarnpkg.com/@simplewebauthn/typescript-types/-/typescript-types-7.4.0.tgz#1f5d55e187cbd30727a75543caf1bade747625ce"
@@ -8141,18 +8129,10 @@
   resolved "https://registry.yarnpkg.com/@zerodev/ecdsa-validator/-/ecdsa-validator-5.1.0.tgz#74bd4f6f2df9ff32560ed70109ece24b08d8492f"
   integrity sha512-mjoRXn/XuKEeyXXjapZMnExNeNnqbRbEHJA/wMhY1pHb+p+29E9oY3JSTgsOKF9ICLsAzD9ZxQTAQJLtrfP2fQ==
 
-"@zerodev/ecdsa-validator@5.2.1":
-  version "5.2.1"
-  resolved "https://registry.yarnpkg.com/@zerodev/ecdsa-validator/-/ecdsa-validator-5.2.1.tgz#888056308a6a834049ddfe8ab067668b2ea592cf"
-  integrity sha512-/VDxntTzalQFGOEY3JbM1c39p0jiLbrF97E2V4NR5L4cRgNiWBu/QycW10zUeoeyFuqeghc6vPhNe/M1e7HTig==
-
-"@zerodev/permissions@5.2.5":
-  version "5.2.5"
-  resolved "https://registry.yarnpkg.com/@zerodev/permissions/-/permissions-5.2.5.tgz#6d20cf2f0b7798329bd75d0a82e2ddabf2856a16"
-  integrity sha512-9bnKB+pzKETIXaVgjy/Gg4oALIn0tM/6EQbeMU4wiWr5i/XD0sMCCkoTwiBWLsgVRKxiSJcX6xmTPtOC5rhi6A==
-  dependencies:
-    "@simplewebauthn/browser" "^9.0.1"
-    merkletreejs "^0.3.11"
+"@zerodev/ecdsa-validator@5.2.3":
+  version "5.2.3"
+  resolved "https://registry.yarnpkg.com/@zerodev/ecdsa-validator/-/ecdsa-validator-5.2.3.tgz#19f55620c2254df53677662ce0715172675f28ed"
+  integrity sha512-zeJjYhOW5EWK6XnctPt3iVnrqmrHfb81p/fJKaY4yQnL2ZYPrH37ZgtY1z5COETPCDTm65+jPfc1Zn/dziyAXQ==
 
 "@zerodev/sdk@4.5.2":
   version "4.5.2"
@@ -8173,10 +8153,10 @@
   dependencies:
     permissionless "^0.0.34"
 
-"@zerodev/sdk@5.2.1":
-  version "5.2.1"
-  resolved "https://registry.yarnpkg.com/@zerodev/sdk/-/sdk-5.2.1.tgz#349210c424b4d43e6f1150e8a5ebd7992e3ca599"
-  integrity sha512-RM05e/8hKP2q75Bb3/y8Nd65sJ6XmFOrS7CcNVwJZpOK0wu4fbisJPstCTZEyl55lYMfDBwx+0KUUTyl9LIb8w==
+"@zerodev/sdk@5.2.15":
+  version "5.2.15"
+  resolved "https://registry.yarnpkg.com/@zerodev/sdk/-/sdk-5.2.15.tgz#176c4d0b0d38de5d34bff64703abf3fb84e5fcbf"
+  integrity sha512-c88ByIINOa+wcpdZRRDL6y6Nx9gUOZwHWJWpZESxQwhkh0tPabBGKaqqYmiCdzFZWMjvSNly7L2yS8DSQWkWeA==
   dependencies:
     semver "^7.6.0"
 
@@ -8184,13 +8164,6 @@
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/@zerodev/session-key/-/session-key-5.1.0.tgz#9c5206a87890083b8a7676768e39de4443095285"
   integrity sha512-EC46AFg5MHNGzv5Fb3sf3qq3ed1K4ivY/oY6DpQ5NTtfido0CM3pNxD8cClblSqITONR9jK9Uv1VNSpPETYoZw==
-  dependencies:
-    merkletreejs "^0.3.11"
-
-"@zerodev/session-key@5.2.1":
-  version "5.2.1"
-  resolved "https://registry.yarnpkg.com/@zerodev/session-key/-/session-key-5.2.1.tgz#1a531d3d01acd50fa24253887f306d46d3af2ccb"
-  integrity sha512-W5yY1mY38RVmhOIICGymlkeYMsXndf9EeC2xWKqqudU+YWQa0prsVWxaZJlybDzapH0w+ON6rszFGahHI9YaNQ==
   dependencies:
     merkletreejs "^0.3.11"
 
@@ -14598,6 +14571,11 @@ isows@1.0.3:
   resolved "https://registry.yarnpkg.com/isows/-/isows-1.0.3.tgz#93c1cf0575daf56e7120bab5c8c448b0809d0d74"
   integrity sha512-2cKei4vlmg2cxEjm3wVSqn8pcoRF/LX/wpifuuNquFO4SQmPwarClT+SUCA2lt+l581tTeZIPIZuIDo2jWN1fg==
 
+isows@1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/isows/-/isows-1.0.4.tgz#810cd0d90cc4995c26395d2aa4cfa4037ebdf061"
+  integrity sha512-hEzjY+x9u9hPmBom9IIAqdJCwNLax+xrPb51vEPpERoFlIxgmZcHzsT5jKG06nvInKOBGvReAVz80Umed5CczQ==
+
 istanbul-lib-coverage@^3.0.0, istanbul-lib-coverage@^3.2.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/istanbul-lib-coverage/-/istanbul-lib-coverage-3.2.0.tgz#189e7909d0a39fa5a3dfad5b03f71947770191d3"
@@ -18495,10 +18473,10 @@ performance-now@^2.1.0:
   resolved "https://registry.yarnpkg.com/performance-now/-/performance-now-2.1.0.tgz#6309f4e0e5fa913ec1c69307ae364b4b377c9e7b"
   integrity sha512-7EAHlyLHI56VEIdK57uwHdHKIaAGbnXPiw0yWbarQZOKaKpvUIgW0jWRVLiatnM+XXlSwsanIBH/hzGMJulMow==
 
-permissionless@0.1.18:
-  version "0.1.18"
-  resolved "https://registry.yarnpkg.com/permissionless/-/permissionless-0.1.18.tgz#cefed0de1ad3cb3a36dd4512b6d965e08f56c19c"
-  integrity sha512-A3OBQfA/wj+Qj5zXyMEoKwuwd+GgImG9EFYYtLHPooDJ26CL44HJpY27owH5MPsUS6IX+1E9N6mF4J/frQhXoQ==
+permissionless@0.1.29:
+  version "0.1.29"
+  resolved "https://registry.yarnpkg.com/permissionless/-/permissionless-0.1.29.tgz#185faa51d106422670b6c92cfca861f889e9de8d"
+  integrity sha512-jKkgl3G2b4hv5DvX2U8v0OI3JfX+nEzj9a6zsrcXuJaLZdS14td4tExnlmBY93nUN6lRC6NfPZjdLbi8Dkzz7w==
 
 permissionless@^0.0.34:
   version "0.0.34"
@@ -22919,10 +22897,10 @@ vary@~1.1.2:
   resolved "https://registry.yarnpkg.com/vary/-/vary-1.1.2.tgz#2299f02c6ded30d4a5961b0b9f74524a18f634fc"
   integrity sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==
 
-viem@2.8.16:
-  version "2.8.16"
-  resolved "https://registry.yarnpkg.com/viem/-/viem-2.8.16.tgz#30370390a6f109657b57c1a01b2793c4056b4e95"
-  integrity sha512-J8tu1aP7TfI2HT/IEmyJ+n+WInrA/cuMuJtfgvYhYgHBobxhYGc2SojHm5lZBWcWgErN1Ld7VcKUwTmPh4ToQA==
+viem@2.13.1:
+  version "2.13.1"
+  resolved "https://registry.yarnpkg.com/viem/-/viem-2.13.1.tgz#a2e5b4f9396f80e6d812af49db23eda40d2a6e72"
+  integrity sha512-QaSCtPXb9uVaba+vOsyCFX21BDWNbjBOuXIWWlQXLmECtr/mbJ64XUHyFz6KLvUwAsQ+vxUQVwgmXc3jVMxwYw==
   dependencies:
     "@adraffy/ens-normalize" "1.10.0"
     "@noble/curves" "1.2.0"
@@ -22930,13 +22908,13 @@ viem@2.8.16:
     "@scure/bip32" "1.3.2"
     "@scure/bip39" "1.2.1"
     abitype "1.0.0"
-    isows "1.0.3"
+    isows "1.0.4"
     ws "8.13.0"
 
-viem@2.9.17:
-  version "2.9.17"
-  resolved "https://registry.yarnpkg.com/viem/-/viem-2.9.17.tgz#4a74b5302fe5b3d6ac8db4769418a0466867befa"
-  integrity sha512-xMQ4JhgR1fPXQYagEeSsq9lmKXXooHP2gcnowb0eJRq3NTheyzpVBtMuH8DZnnWT4aeFepZktqSXlFul+Ou5Xg==
+viem@2.8.16:
+  version "2.8.16"
+  resolved "https://registry.yarnpkg.com/viem/-/viem-2.8.16.tgz#30370390a6f109657b57c1a01b2793c4056b4e95"
+  integrity sha512-J8tu1aP7TfI2HT/IEmyJ+n+WInrA/cuMuJtfgvYhYgHBobxhYGc2SojHm5lZBWcWgErN1Ld7VcKUwTmPh4ToQA==
   dependencies:
     "@adraffy/ens-normalize" "1.10.0"
     "@noble/curves" "1.2.0"

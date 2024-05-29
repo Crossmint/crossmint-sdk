@@ -15,11 +15,16 @@ import { resolveDeferrable } from "@/utils/deferrable";
 import { LoggerWrapper } from "@/utils/log";
 import type { Deferrable } from "@ethersproject/properties";
 import { type TransactionRequest } from "@ethersproject/providers";
-import { KernelSmartAccount, createKernelAccountClient, createZeroDevPaymasterClient } from "@zerodev/sdk";
+import {
+    KernelAccountClient,
+    KernelSmartAccount,
+    createKernelAccountClient,
+    createZeroDevPaymasterClient,
+} from "@zerodev/sdk";
 import { BigNumberish } from "ethers";
 import { EntryPoint } from "permissionless/types/entrypoint";
 import type { Hash, HttpTransport, PublicClient, TypedDataDefinition } from "viem";
-import { http, publicActions } from "viem";
+import { Chain, http, publicActions } from "viem";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
@@ -27,7 +32,7 @@ import erc20 from "../../ABI/ERC20.json";
 import erc721 from "../../ABI/ERC721.json";
 import erc1155 from "../../ABI/ERC1155.json";
 import { CrossmintWalletService } from "../../api/CrossmintWalletService";
-import { TChain, getBundlerRPC, getPaymasterRPC, getViemNetwork } from "../BlockchainNetworks";
+import { getBundlerRPC, getPaymasterRPC, getViemNetwork } from "../BlockchainNetworks";
 import { ERC20TransferType, SFTTransferType, TransferType } from "../token";
 
 type GasFeeTransactionParams = {
@@ -36,30 +41,23 @@ type GasFeeTransactionParams = {
 };
 
 export class EVMAAWallet extends LoggerWrapper {
-    private crossmintService: CrossmintWalletService;
-    private publicClient: PublicClient;
-    private account: KernelSmartAccount<EntryPoint, HttpTransport, TChain>;
-    private kernelClient: ReturnType<
-        typeof createKernelAccountClient<
-            EntryPoint,
-            HttpTransport,
-            TChain,
-            KernelSmartAccount<EntryPoint, HttpTransport, TChain>
-        >
+    public chain: EVMBlockchainIncludingTestnet;
+    public publicClient: PublicClient;
+    private kernelClient: KernelAccountClient<
+        EntryPoint,
+        HttpTransport,
+        Chain,
+        KernelSmartAccount<EntryPoint, HttpTransport>
     >;
-    chain: EVMBlockchainIncludingTestnet;
 
     constructor(
-        account: KernelSmartAccount<EntryPoint, HttpTransport, TChain>,
-        crossmintService: CrossmintWalletService,
-        chain: EVMBlockchainIncludingTestnet,
-        publicClient: PublicClient,
-        entryPoint: EntryPoint
+        private readonly account: KernelSmartAccount<EntryPoint, HttpTransport>,
+        private readonly crossmintService: CrossmintWalletService,
+        publicClient: PublicClient<HttpTransport>,
+        entryPoint: EntryPoint,
+        chain: EVMBlockchainIncludingTestnet
     ) {
         super("EVMAAWallet", { chain, address: account.address });
-        this.chain = chain;
-        this.crossmintService = crossmintService;
-        this.publicClient = publicClient;
         this.kernelClient = createKernelAccountClient({
             account,
             chain: getViemNetwork(chain),
@@ -81,7 +79,8 @@ export class EVMAAWallet extends LoggerWrapper {
                 },
             }),
         });
-        this.account = account;
+        this.chain = chain;
+        this.publicClient = publicClient;
     }
 
     getAddress() {

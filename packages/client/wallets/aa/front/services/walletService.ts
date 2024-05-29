@@ -1,13 +1,13 @@
-import type { SignTypedDataParams } from "@alchemy/aa-core";
 import { type TransactionRequest } from "@ethersproject/providers";
 import { ethers } from "ethers";
+import { SignTypedDataParameters } from "viem";
 
 import { EVMAAWallet, FireblocksNCWSigner } from "@crossmint/client-sdk-aa";
 import { EVMBlockchain, EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
-import ERC1155ABI from "../abi/ERC1155ABI.json"
-import ERC721ABI from "../abi/ERC721ABI.json"
-import ERC20ABI from "../abi/ERC20ABI.json"
+import ERC20ABI from "../abi/ERC20ABI.json";
+import ERC721ABI from "../abi/ERC721ABI.json";
+import ERC1155ABI from "../abi/ERC1155ABI.json";
 
 export const getOrCreateWalletEthers = async (email: string, privateKey: string) => {
     const { CrossmintAASDK } = await import("@crossmint/client-sdk-aa");
@@ -63,7 +63,7 @@ export const sendTransaction = async (aaWallet: EVMAAWallet, tx: TransactionRequ
     return txResponse.hash;
 };
 
-export const signTypedData = async (aaWallet: EVMAAWallet, params: SignTypedDataParams) => {
+export const signTypedData = async (aaWallet: EVMAAWallet, params: Omit<SignTypedDataParameters, "privateKey">) => {
     const txResponse = await aaWallet.signTypedData(params);
     return txResponse;
 };
@@ -135,16 +135,11 @@ export const mintAndTransferERC1155 = async (aaWallet: EVMAAWallet) => {
         const signer = aaWallet;
         const contractWithSigner = contract.connect(signer);
 
-        const tokenId = 1; 
-        const amount = 1; 
+        const tokenId = 1;
+        const amount = 1;
         const data = ethers.utils.toUtf8Bytes("");
 
-        const transaction = await contractWithSigner.mint(
-            await aaWallet.getAddress(),
-            tokenId,
-            amount,
-            data
-        );
+        const transaction = await contractWithSigner.mint(await aaWallet.getAddress(), tokenId, amount, data);
 
         await transaction.wait();
 
@@ -191,7 +186,7 @@ export const mintAndTransferERC20 = async (aaWallet: EVMAAWallet) => {
         const evmToken = {
             chain: EVMBlockchain.POLYGON,
             contractAddress,
-            tokenId: '0',
+            tokenId: "0",
         };
 
         const hash = await aaWallet.transfer(
@@ -199,7 +194,7 @@ export const mintAndTransferERC20 = async (aaWallet: EVMAAWallet) => {
             evmToken,
             undefined,
             ethers.utils.parseUnits("100", 18)
-          );
+        );
 
         console.log("USDTest transferred. Tx hash:", hash);
         return hash;
