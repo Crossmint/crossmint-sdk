@@ -12,7 +12,7 @@ import { EVMBlockchainIncludingTestnet, UserIdentifier, blockchainToChainId } fr
 export default class PasskeyWalletService {
     private readonly entryPoint = ENTRYPOINT_ADDRESS_V07;
 
-    constructor(private readonly crossmintService: CrossmintWalletService, private readonly projectId: string) {}
+    constructor(private readonly crossmintService: CrossmintWalletService, private readonly apiKey: string) {}
 
     public async getOrCreate(
         userIdentifier: UserIdentifier,
@@ -112,6 +112,6 @@ export default class PasskeyWalletService {
                 throw new Error("Unsupported identifier type");
         }
 
-        return this.crossmintService.crossmintBaseUrl + `/unstable/passkeys/${this.projectId}/${identifier}`;
+        return this.crossmintService.crossmintBaseUrl + `/unstable/passkeys/${this.apiKey}/${identifier}`;
     }
 }

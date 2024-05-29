@@ -27,7 +27,7 @@ export class CrossmintAASDK {
         }
 
         const crossmintService = new CrossmintWalletService(apiKey);
-        this.passkeyWalletService = new PasskeyWalletService(crossmintService, result.projectId);
+        this.passkeyWalletService = new PasskeyWalletService(crossmintService, apiKey);
         this.eoaWalletService = new EOAWalletService(crossmintService);
     }
 
