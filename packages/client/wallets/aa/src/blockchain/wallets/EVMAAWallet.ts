@@ -1,6 +1,6 @@
 import { logError, logInfo } from "@/services/logging";
 import { SignerMap, SignerType } from "@/types";
-import { SCW_SERVICE, TransactionError, TransferError, WalletSdkError, errorToJSON, hasEIP1559Support } from "@/utils";
+import { SCW_SERVICE, TransactionError, TransferError, WalletSdkError, errorToJSON, usesGelatoBundler } from "@/utils";
 import { LoggerWrapper } from "@/utils/log";
 import {
     KernelAccountClient,
@@ -9,8 +9,15 @@ import {
     createZeroDevPaymasterClient,
 } from "@zerodev/sdk";
 import { EntryPoint } from "permissionless/types/entrypoint";
-import type { Hash, HttpTransport, PublicClient, SendTransactionParameters, TypedDataDefinition } from "viem";
-import { Chain, http, publicActions } from "viem";
+import type {
+    Hash,
+    HttpTransport,
+    PublicClient,
+    SendTransactionParameters,
+    TransactionReceipt,
+    TypedDataDefinition,
+} from "viem";
+import { Chain, http, isAddress, isHex, publicActions } from "viem";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
@@ -39,12 +46,14 @@ export class EVMAAWallet extends LoggerWrapper {
         chain: EVMBlockchainIncludingTestnet
     ) {
         super("EVMAAWallet", { chain, address: account.address });
+
+        const shouldSponsor = !usesGelatoBundler(chain);
         this.kernelClient = createKernelAccountClient({
             account,
             chain: getViemNetwork(chain),
             entryPoint,
             bundlerTransport: http(getBundlerRPC(chain)),
-            ...(hasEIP1559Support(chain) && {
+            ...(shouldSponsor && {
                 middleware: {
                     sponsorUserOperation: async ({ userOperation }) => {
                         const paymasterClient = createZeroDevPaymasterClient({
@@ -98,26 +107,38 @@ export class EVMAAWallet extends LoggerWrapper {
         });
     }
 
-    public async sendTransaction(
-        transaction: SendTransactionParameters<Chain, KernelSmartAccount<EntryPoint, HttpTransport>, Chain>
-    ): Promise<Hash> {
+    public async sendTransaction({
+        to,
+        value,
+        data,
+    }: {
+        to: string;
+        value: bigint;
+        data?: string;
+    }): Promise<TransactionReceipt> {
         return this.logPerformance("SEND_TRANSACTION", async () => {
+            if (!isAddress(to)) {
+                throw new Error("Invalid recipient address: '${to}' is not a valid EVM address.");
+            }
+
+            if (data != null && !isHex(data)) {
+                throw new Error("Invalid Hex: '${data}' is not valid Hex address.");
+            }
+
             try {
-                const txParams = {
-                    to: transaction.to,
-                    value: transaction.value,
-                    gas: transaction.gas,
-                    nonce: transaction.nonce,
-                    data: transaction.data,
-                    ...this.getLegacyTransactionFeesParamsIfApply({
-                        maxFeePerGas: transaction.maxFeePerGas,
-                        maxPriorityFeePerGas: transaction.maxPriorityFeePerGas,
+                const txParams: SendTransactionParameters<Chain, KernelSmartAccount<EntryPoint, HttpTransport>> = {
+                    to,
+                    value,
+                    data,
+                    ...(usesGelatoBundler(this.chain) && {
+                        maxFeePerGas: "0x0" as any,
+                        maxPriorityFeePerGas: "0x0" as any,
                     }),
                 };
 
                 logInfo(`[EVMAAWallet - SEND_TRANSACTION] - tx_params: ${JSON.stringify(txParams)}`);
-
-                return await this.kernelClient.sendTransaction(txParams);
+                const hash = await this.kernelClient.sendTransaction(txParams);
+                return this.publicClient.waitForTransactionReceipt({ hash });
             } catch (error) {
                 throw new TransactionError(`Error sending transaction: ${error}`);
             }
@@ -141,7 +162,10 @@ export class EVMAAWallet extends LoggerWrapper {
                             abi: erc20,
                             functionName: "transfer",
                             args: [toAddress, (config as ERC20TransferType).amount],
-                            ...this.getLegacyTransactionFeesParamsIfApply(),
+                            ...(usesGelatoBundler(this.chain) && {
+                                maxFeePerGas: "0x0" as any,
+                                maxPriorityFeePerGas: "0x0" as any,
+                            }),
                         });
                         transaction = await publicClient.writeContract(request);
                         break;
@@ -154,7 +178,10 @@ export class EVMAAWallet extends LoggerWrapper {
                             abi: erc1155,
                             functionName: "safeTransferFrom",
                             args: [this.getAddress(), toAddress, tokenId, (config as SFTTransferType).quantity, "0x00"],
-                            ...this.getLegacyTransactionFeesParamsIfApply(),
+                            ...(usesGelatoBundler(this.chain) && {
+                                maxFeePerGas: "0x0" as any,
+                                maxPriorityFeePerGas: "0x0" as any,
+                            }),
                         });
                         transaction = await publicClient.writeContract(request);
                         break;
@@ -167,7 +194,10 @@ export class EVMAAWallet extends LoggerWrapper {
                             abi: erc721,
                             functionName: "safeTransferFrom",
                             args: [this.getAddress(), toAddress, tokenId],
-                            ...this.getLegacyTransactionFeesParamsIfApply(),
+                            ...(usesGelatoBundler(this.chain) && {
+                                maxFeePerGas: "0x0" as any,
+                                maxPriorityFeePerGas: "0x0" as any,
+                            }),
                         });
                         transaction = await publicClient.writeContract(request);
                         break;
@@ -222,34 +252,5 @@ export class EVMAAWallet extends LoggerWrapper {
         return this.logPerformance("GET_NFTS", async () => {
             return this.crossmintService.fetchNFTs(this.account.address, this.chain);
         });
-    }
-
-    private getLegacyTransactionFeesParamsIfApply(gasFeeParams?: {
-        maxFeePerGas?: bigint;
-        maxPriorityFeePerGas?: bigint;
-    }) {
-        const { maxFeePerGas, maxPriorityFeePerGas } = gasFeeParams ?? {};
-
-        if (hasEIP1559Support(this.chain)) {
-            return {
-                // only include if non-null and non-zero
-                ...(maxFeePerGas && { maxFeePerGas }),
-                ...(maxPriorityFeePerGas && { maxPriorityFeePerGas }),
-            };
-        } else {
-            if (maxFeePerGas || maxPriorityFeePerGas) {
-                console.warn(
-                    "maxFeePerGas and maxPriorityFeePerGas are not supported on this chain as it supports Legacy Transacitons. Ignoring them."
-                );
-            }
-
-            // Since there's no bundler support for Polygon CDK chains yet, ZD relies on Gelato, which requires some special configuration
-            // https://docs.zerodev.app/sdk/faqs/use-with-gelato#transaction-configuration
-            // TODO: Looks like we're checking the wrong condition here, we should check for ZD using Gelato rather than 1559 support.
-            return {
-                maxFeePerGas: "0x0" as any,
-                maxPriorityFeePerGas: "0x0" as any,
-            };
-        }
     }
 }
