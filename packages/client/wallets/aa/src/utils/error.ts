@@ -11,31 +11,6 @@ export class NotAuthorizedError extends Error {
     }
 }
 
-export class RateLimitError extends Error {
-    code = "ERROR_RATE_LIMIT";
-    retryAfterMs: number;
-
-    constructor(message: string, retryAfterMs: number) {
-        super(message);
-
-        this.retryAfterMs = retryAfterMs;
-
-        // ES5 workaround
-        Object.setPrototypeOf(this, RateLimitError.prototype);
-    }
-}
-
-export class SignTransactionError extends Error {
-    code = "ERROR_SIGN_TRANSACTION";
-
-    constructor(message: string) {
-        super(message);
-
-        // ES5 workaround
-        Object.setPrototypeOf(this, SignTransactionError.prototype);
-    }
-}
-
 export class TransferError extends Error {
     code = "ERROR_TRANSFER";
 
@@ -66,20 +41,6 @@ export class CrossmintServiceError extends Error {
 
         // ES5 workaround
         Object.setPrototypeOf(this, CrossmintServiceError.prototype);
-    }
-}
-
-/**
- * Generic undefined error
- */
-export class NonCustodialWalletError extends Error {
-    code = "ERROR_UNDEFINED";
-
-    constructor(message: string) {
-        super(message);
-
-        // ES5 workaround
-        Object.setPrototypeOf(this, NonCustodialWalletError.prototype);
     }
 }
 

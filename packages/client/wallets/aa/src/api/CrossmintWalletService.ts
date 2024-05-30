@@ -7,17 +7,6 @@ import { BaseCrossmintService } from "./BaseCrossmintService";
 export { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 export class CrossmintWalletService extends BaseCrossmintService {
-    async createSessionKey(address: string | `0x${string}`) {
-        return this.fetchCrossmintAPI(
-            "unstable/wallets/aa/wallets/sessionkey",
-            {
-                method: "POST",
-                body: JSON.stringify({ address }),
-            },
-            "Error creating the wallet. Please check the configuration parameters"
-        );
-    }
-
     async storeAbstractWallet(input: StoreAbstractWalletInput) {
         return this.fetchCrossmintAPI(
             "unstable/wallets/aa/wallets",

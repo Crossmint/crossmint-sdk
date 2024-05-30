@@ -40,19 +40,6 @@ describe("CrossmintService", () => {
         });
     });
 
-    describe("createSessionKey", () => {
-        it("should call fetchCrossmintAPI with correct arguments", async () => {
-            global.fetch = jest.fn().mockResolvedValue({
-                ok: true,
-                json: () => Promise.resolve({}),
-            });
-
-            const address = "test-address";
-            await crossmintService.createSessionKey(address);
-            expect(global.fetch).toHaveBeenCalledWith(expect.any(String), expect.any(Object));
-        });
-    });
-
     afterEach(() => {
         jest.clearAllMocks();
     });
