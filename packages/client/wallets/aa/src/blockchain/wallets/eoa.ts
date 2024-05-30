@@ -48,7 +48,7 @@ export default class EOAWalletService {
             userIdentifier,
             type: ZERO_DEV_TYPE,
             smartContractWalletAddress: account.address,
-            eoaAddress: eoa.address,
+            signerData: { eoaAddress: eoa.address, type: "eoa" },
             version: CURRENT_VERSION,
             baseLayer: "evm",
             chainId: blockchainToChainId(chain),
