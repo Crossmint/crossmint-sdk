@@ -1,6 +1,14 @@
 import { logError, logInfo } from "@/services/logging";
 import { SignerMap, SignerType } from "@/types";
-import { SCW_SERVICE, TransactionError, TransferError, errorToJSON, usesGelatoBundler } from "@/utils";
+import {
+    SCW_SERVICE,
+    TransactionError,
+    TransferError,
+    WalletSdkError,
+    errorToJSON,
+    gelatoBundlerProperties,
+    usesGelatoBundler,
+} from "@/utils";
 import { LoggerWrapper } from "@/utils/log";
 import {
     KernelAccountClient,
@@ -9,13 +17,7 @@ import {
     createZeroDevPaymasterClient,
 } from "@zerodev/sdk";
 import { EntryPoint } from "permissionless/types/entrypoint";
-import type {
-    HttpTransport,
-    PublicClient,
-    SendTransactionParameters,
-    TransactionReceipt,
-    TypedDataDefinition,
-} from "viem";
+import type { Hash, HttpTransport, PublicClient, TransactionReceipt, TypedDataDefinition } from "viem";
 import { Chain, http, isAddress, isHex, publicActions } from "viem";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
@@ -103,37 +105,35 @@ export class EVMAAWallet extends LoggerWrapper {
         });
     }
 
-    public async sendTransaction({
-        to,
-        value,
-        data,
-    }: {
-        to: string;
-        value: bigint;
-        data?: string;
-    }): Promise<TransactionReceipt> {
+    /**
+     * Sends a transaction, waits for its completion, then returns the receipt.
+     * This function will validate the recipient address and the data format before sending the transaction.
+     *
+     * @param {string} to - The recipient's EVM (Ethereum Virtual Machine) compatible address.
+     * @param {bigint} value - The amount of cryptocurrency (in wei, where 1 ether = 10^18 wei) to send.
+     * @param {string} [data] - The hexadecimal string representing the data to be sent with the transaction.
+     * @returns {Promise<TransactionReceipt>} A promise that resolves to the transaction receipt object.
+     */
+    public async sendTransaction(to: string, value: bigint, data?: string): Promise<TransactionReceipt> {
         return this.logPerformance("SEND_TRANSACTION", async () => {
             if (!isAddress(to)) {
-                throw new Error("Invalid recipient address: '${to}' is not a valid EVM address.");
+                throw new Error(`Invalid recipient address: '${to}' is not a valid EVM address.`);
             }
 
             if (data != null && !isHex(data)) {
-                throw new Error("Invalid Hex: '${data}' is not valid Hex address.");
+                throw new Error(`Invalid Hex: '${data}' is not valid Hex data.`);
             }
 
             try {
-                const txParams: SendTransactionParameters<Chain, KernelSmartAccount<EntryPoint, HttpTransport>> = {
+                const tx = {
                     to,
                     value,
                     data,
-                    ...(usesGelatoBundler(this.chain) && {
-                        maxFeePerGas: "0x0" as any,
-                        maxPriorityFeePerGas: "0x0" as any,
-                    }),
+                    ...(usesGelatoBundler(this.chain) && gelatoBundlerProperties),
                 };
 
-                logInfo(`[EVMAAWallet - SEND_TRANSACTION] - tx_params: ${JSON.stringify(txParams)}`);
-                const hash = await this.kernelClient.sendTransaction(txParams);
+                logInfo(`[EVMAAWallet - SEND_TRANSACTION] - tx_params: ${JSON.stringify(tx)}`);
+                const hash = await this.kernelClient.sendTransaction(tx);
                 return this.publicClient.waitForTransactionReceipt({ hash });
             } catch (error) {
                 throw new TransactionError(`Error sending transaction: ${error}`);
@@ -141,7 +141,16 @@ export class EVMAAWallet extends LoggerWrapper {
         });
     }
 
-    public async transfer({ to, config }: { to: string; config: TransferType }): Promise<TransactionReceipt> {
+    /**
+     * Transfers tokens from the wallet to a specified recipient address.
+     * This function ensures that the transaction is performed on the correct blockchain and validates the recipient and contract addresses.
+     * It simulates the transaction before actually sending it to catch any potential errors early.
+     *
+     * @param {string} to - The recipient's EVM-compatible address where the tokens will be sent.
+     * @param {TransferType} config - Configuration object containing details about the token
+     * @returns {Promise<TransactionReceipt>} A promise that resolves to the transaction receipt object upon successful transaction.
+     */
+    public async transfer(to: string, config: TransferType): Promise<TransactionReceipt> {
         return this.logPerformance("TRANSFER", async () => {
             if (this.chain !== config.token.chain) {
                 throw new Error(
@@ -160,29 +169,26 @@ export class EVMAAWallet extends LoggerWrapper {
             }
 
             const publicClient = this.kernelClient.extend(publicActions);
-            const txParams = {
+            const tx = {
                 ...transferParams({ contract: config.token.contractAddress, to, from: this.account, config }),
-                ...(usesGelatoBundler(this.chain) && {
-                    maxFeePerGas: "0x0" as any,
-                    maxPriorityFeePerGas: "0x0" as any,
-                }),
+                ...(usesGelatoBundler(this.chain) && gelatoBundlerProperties),
             };
 
             try {
-                const { request } = await publicClient.simulateContract(txParams);
+                const { request } = await publicClient.simulateContract(tx);
                 const hash = await publicClient.writeContract(request);
                 return publicClient.waitForTransactionReceipt({ hash });
             } catch (error) {
                 logError("[TRANSFER] - ERROR_TRANSFERRING_TOKEN", {
                     service: SCW_SERVICE,
                     error: errorToJSON(error),
-                    tokenId: txParams.tokenId,
+                    tokenId: tx.tokenId,
                     contractAddress: config.token.contractAddress,
                     chain: config.token.chain,
                 });
                 throw new TransferError(
                     `Error transferring token ${config.token.contractAddress}${
-                        txParams.tokenId == null ? "" : `:${txParams.tokenId}}`
+                        tx.tokenId == null ? "" : `:${tx.tokenId}}`
                     }`
                 );
             }

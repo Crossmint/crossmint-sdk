@@ -1,7 +1,7 @@
 import { ReservoirWallet } from "@reservoir0x/reservoir-sdk";
 import { hexToBigInt, http } from "viem";
 
-import { getBundlerRPC, usesGelatoBundler } from "..";
+import { gelatoBundlerProperties, getBundlerRPC, usesGelatoBundler } from "..";
 import { EVMAAWallet } from "../blockchain/wallets/EVMAAWallet";
 
 export function reservoirAdapter(wallet: EVMAAWallet): ReservoirWallet {
@@ -41,10 +41,7 @@ export function reservoirAdapter(wallet: EVMAAWallet): ReservoirWallet {
                 ...(stepData.gas && {
                     gas: hexToBigInt(stepData.gas as any),
                 }),
-                ...(usesGelatoBundler(wallet.chain) && {
-                    maxFeePerGas: "0x0" as any,
-                    maxPriorityFeePerGas: "0x0" as any,
-                }),
+                ...(usesGelatoBundler(wallet.chain) && gelatoBundlerProperties),
             });
         },
         transport: http(getBundlerRPC(wallet.chain)),
