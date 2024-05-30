@@ -125,13 +125,7 @@ export class EVMAAWallet extends LoggerWrapper {
             }
 
             try {
-                const tx = {
-                    to,
-                    value,
-                    data,
-                    ...(usesGelatoBundler(this.chain) && gelatoBundlerProperties),
-                };
-
+                const tx = { to, value, data, ...(usesGelatoBundler(this.chain) && gelatoBundlerProperties) };
                 logInfo(`[EVMAAWallet - SEND_TRANSACTION] - tx_params: ${JSON.stringify(tx)}`);
                 const hash = await this.kernelClient.sendTransaction(tx);
                 return this.publicClient.waitForTransactionReceipt({ hash });
