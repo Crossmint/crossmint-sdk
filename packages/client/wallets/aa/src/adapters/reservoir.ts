@@ -16,7 +16,7 @@ export function reservoirAdapter(wallet: EVMAAWallet): ReservoirWallet {
                     signature = await wallet.signMessage(signData.message);
                 } else if (signData.signatureKind === "eip712") {
                     console.log("Execute Steps: Signing with eip712");
-                    signature = await wallet.signTypedData({
+                    signature = await wallet.getSigner("viem").walletClient.signTypedData({
                         domain: signData.domain as any,
                         types: signData.types as any,
                         primaryType: signData.primaryType,

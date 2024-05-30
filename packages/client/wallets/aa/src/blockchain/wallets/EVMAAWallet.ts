@@ -23,7 +23,7 @@ import {
 } from "@zerodev/sdk";
 import { BigNumberish } from "ethers";
 import { EntryPoint } from "permissionless/types/entrypoint";
-import type { Hash, HttpTransport, PublicClient, TypedDataDefinition } from "viem";
+import type { Hash, HttpTransport, PublicClient } from "viem";
 import { Chain, http, publicActions } from "viem";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
@@ -103,16 +103,6 @@ export class EVMAAWallet extends LoggerWrapper {
                 });
             } catch (error) {
                 throw new Error(`Error signing message. If this error persists, please contact support.`);
-            }
-        });
-    }
-
-    public async signTypedData(params: TypedDataDefinition) {
-        return this.logPerformance("SIGN_TYPED_DATA", async () => {
-            try {
-                return await this.kernelClient.signTypedData(params);
-            } catch (error) {
-                throw new Error(`Error signing typed data. If this error persists, please contact support.`);
             }
         });
     }
