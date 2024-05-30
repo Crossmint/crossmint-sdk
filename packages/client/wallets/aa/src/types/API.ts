@@ -6,13 +6,18 @@ export type StoreAbstractWalletInput = {
     userIdentifier: UserIdentifier;
     type: string;
     smartContractWalletAddress: string;
-    eoaAddress: string;
-    sessionKeySignerAddress: string;
+    signerData: EOASignerData;
+    sessionKeySignerAddress?: string;
     version: number;
     baseLayer: string;
     chainId: number;
     entryPointVersion: EntryPointVersion;
 };
+
+export interface EOASignerData {
+    eoaAddress: string;
+    type: "eoa";
+}
 
 export type TransferInput = {
     tokenId: number;
