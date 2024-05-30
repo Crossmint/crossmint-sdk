@@ -1,3 +1,5 @@
+import { PAYMASTER_RPC, PM_BASE_RPC, PM_BASE_SEPOLIA_RPC } from "@/utils";
+import { logInputOutput } from "@/utils/log";
 import { createZeroDevPaymasterClient } from "@zerodev/sdk";
 import { Middleware } from "permissionless/actions/smartAccount";
 import { EntryPoint } from "permissionless/types/entrypoint";
@@ -5,7 +7,18 @@ import { http } from "viem";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
-import { getPaymasterRPC, getViemNetwork } from "../BlockchainNetworks";
+import { getViemNetwork, getZeroDevProjectIdByBlockchain } from "../BlockchainNetworks";
+
+const getPaymasterRPC = logInputOutput((chain: EVMBlockchainIncludingTestnet) => {
+    switch (chain) {
+        case EVMBlockchainIncludingTestnet.BASE_SEPOLIA:
+            return PM_BASE_SEPOLIA_RPC;
+        case EVMBlockchainIncludingTestnet.BASE:
+            return PM_BASE_RPC;
+        default:
+            return PAYMASTER_RPC + getZeroDevProjectIdByBlockchain(chain) + "?paymasterProvider=STACKUP";
+    }
+}, "getPaymasterRPC");
 
 export function paymasterMiddleware({
     entryPoint,
