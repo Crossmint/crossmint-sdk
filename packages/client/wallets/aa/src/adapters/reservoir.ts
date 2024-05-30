@@ -28,8 +28,7 @@ export function reservoirAdapter(wallet: EVMAAWallet): ReservoirWallet {
         },
         handleSendTransactionStep: async (chainId, stepItem, _) => {
             const stepData = stepItem.data;
-            return await wallet.sendTransaction({
-                chainId: chainId,
+            return wallet.sendTransaction({
                 data: stepData.data,
                 to: stepData.to,
                 value: hexToBigInt((stepData.value as any) || 0),

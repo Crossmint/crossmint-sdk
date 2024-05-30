@@ -1,29 +1,15 @@
 import { logError, logInfo } from "@/services/logging";
 import { SignerMap, SignerType } from "@/types";
-import {
-    SCW_SERVICE,
-    TransactionError,
-    TransferError,
-    WalletSdkError,
-    convertData,
-    decorateSendTransactionData,
-    errorToJSON,
-    getNonce,
-    hasEIP1559Support,
-} from "@/utils";
-import { resolveDeferrable } from "@/utils/deferrable";
+import { SCW_SERVICE, TransactionError, TransferError, WalletSdkError, errorToJSON, hasEIP1559Support } from "@/utils";
 import { LoggerWrapper } from "@/utils/log";
-import type { Deferrable } from "@ethersproject/properties";
-import { type TransactionRequest } from "@ethersproject/providers";
 import {
     KernelAccountClient,
     KernelSmartAccount,
     createKernelAccountClient,
     createZeroDevPaymasterClient,
 } from "@zerodev/sdk";
-import { BigNumberish } from "ethers";
 import { EntryPoint } from "permissionless/types/entrypoint";
-import type { Hash, HttpTransport, PublicClient, TypedDataDefinition } from "viem";
+import type { Hash, HttpTransport, PublicClient, SendTransactionParameters, TypedDataDefinition } from "viem";
 import { Chain, http, publicActions } from "viem";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
@@ -34,11 +20,6 @@ import erc1155 from "../../ABI/ERC1155.json";
 import { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import { getBundlerRPC, getPaymasterRPC, getViemNetwork } from "../BlockchainNetworks";
 import { ERC20TransferType, SFTTransferType, TransferType } from "../token";
-
-type GasFeeTransactionParams = {
-    maxFeePerGas?: BigNumberish;
-    maxPriorityFeePerGas?: BigNumberish;
-};
 
 export class EVMAAWallet extends LoggerWrapper {
     public readonly chain: EVMBlockchainIncludingTestnet;
@@ -123,27 +104,21 @@ export class EVMAAWallet extends LoggerWrapper {
     // - If it does, we need to send maxFeePerGas and maxPriorityFeePerGas
     // - If it doesn't, we need to send gasPrice
     // And with the use of viem TransactionRequest, we can specify the TransactionRequest type (eip1559 or legacy) and be more accurate
-    public async sendTransaction(transaction: Deferrable<TransactionRequest>): Promise<Hash> {
+    public async sendTransaction(
+        transaction: SendTransactionParameters<Chain, KernelSmartAccount<EntryPoint, HttpTransport>, Chain>
+    ): Promise<Hash> {
         return this.logPerformance("SEND_TRANSACTION", async () => {
             try {
-                const decoratedTransaction = await decorateSendTransactionData(transaction);
-                const { to, value, gasLimit, nonce, data, maxFeePerGas, maxPriorityFeePerGas } =
-                    await resolveDeferrable(decoratedTransaction);
-
                 const txParams = {
-                    to: to as `0x${string}`,
-                    value: value ? BigInt(value.toString()) : undefined,
-                    gas: gasLimit ? BigInt(gasLimit.toString()) : undefined,
-                    nonce: await getNonce(nonce),
-                    data: await convertData(data),
-                    ...this.getLegacyTransactionFeesParamsIfApply({ maxFeePerGas, maxPriorityFeePerGas }),
-                    maxFeePerBlobGas: undefined,
-                    blobs: undefined,
-                    blobVersionedHashes: undefined,
-                    kzg: undefined,
-                    sidecars: undefined,
-                    type: undefined,
-                    chain: null,
+                    to: transaction.to,
+                    value: transaction.value,
+                    gas: transaction.gas,
+                    nonce: transaction.nonce,
+                    data: transaction.data,
+                    ...this.getLegacyTransactionFeesParamsIfApply({
+                        maxFeePerGas: transaction.maxFeePerGas,
+                        maxPriorityFeePerGas: transaction.maxPriorityFeePerGas,
+                    }),
                 };
 
                 logInfo(`[EVMAAWallet - SEND_TRANSACTION] - tx_params: ${JSON.stringify(txParams)}`);
@@ -160,8 +135,9 @@ export class EVMAAWallet extends LoggerWrapper {
             const evmToken = config.token;
             const contractAddress = evmToken.contractAddress as `0x${string}`;
             const publicClient = this.kernelClient.extend(publicActions);
-            let transaction;
-            let tokenId;
+            let transaction: Hash;
+            let tokenId: string | undefined;
+
             try {
                 switch (evmToken.type) {
                     case "ft": {
@@ -254,14 +230,17 @@ export class EVMAAWallet extends LoggerWrapper {
         });
     }
 
-    private getLegacyTransactionFeesParamsIfApply(gasFeeParams?: GasFeeTransactionParams) {
+    private getLegacyTransactionFeesParamsIfApply(gasFeeParams?: {
+        maxFeePerGas?: bigint;
+        maxPriorityFeePerGas?: bigint;
+    }) {
         const { maxFeePerGas, maxPriorityFeePerGas } = gasFeeParams ?? {};
 
         if (hasEIP1559Support(this.chain)) {
             return {
                 // only include if non-null and non-zero
-                ...(maxFeePerGas && { maxFeePerGas: BigInt(maxFeePerGas.toString()) }),
-                ...(maxPriorityFeePerGas && { maxPriorityFeePerGas: BigInt(maxPriorityFeePerGas.toString()) }),
+                ...(maxFeePerGas && { maxFeePerGas }),
+                ...(maxPriorityFeePerGas && { maxPriorityFeePerGas }),
             };
         } else {
             if (maxFeePerGas || maxPriorityFeePerGas) {
@@ -269,9 +248,11 @@ export class EVMAAWallet extends LoggerWrapper {
                     "maxFeePerGas and maxPriorityFeePerGas are not supported on this chain as it supports Legacy Transacitons. Ignoring them."
                 );
             }
+
+            // Since there's no bundler support for Polygon CDK chains yet, ZD relies on Gelato, which requires some special configuration
+            // https://docs.zerodev.app/sdk/faqs/use-with-gelato#transaction-configuration
+            // TODO: Looks like we're checking the wrong condition here, we should check for ZD using Gelato rather than 1559 support.
             return {
-                // It's on zerodev doc that we need to ignore ts errros on maxFeePerGas and maxPriorityFeePerGas
-                // https://docs.zerodev.app/sdk/faqs/use-with-gelato#transaction-configuration
                 maxFeePerGas: "0x0" as any,
                 maxPriorityFeePerGas: "0x0" as any,
             };
