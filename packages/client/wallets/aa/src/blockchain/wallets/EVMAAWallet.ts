@@ -1,6 +1,6 @@
 import { logError, logInfo } from "@/services/logging";
 import { SignerMap, SignerType } from "@/types";
-import { SCW_SERVICE, TransactionError, TransferError, WalletSdkError, errorToJSON, usesGelatoBundler } from "@/utils";
+import { SCW_SERVICE, TransactionError, TransferError, errorToJSON, usesGelatoBundler } from "@/utils";
 import { LoggerWrapper } from "@/utils/log";
 import {
     KernelAccountClient,
@@ -10,7 +10,6 @@ import {
 } from "@zerodev/sdk";
 import { EntryPoint } from "permissionless/types/entrypoint";
 import type {
-    Hash,
     HttpTransport,
     PublicClient,
     SendTransactionParameters,
@@ -21,12 +20,9 @@ import { Chain, http, isAddress, isHex, publicActions } from "viem";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
-import erc20 from "../../ABI/ERC20.json";
-import erc721 from "../../ABI/ERC721.json";
-import erc1155 from "../../ABI/ERC1155.json";
 import { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import { getBundlerRPC, getPaymasterRPC, getViemNetwork } from "../BlockchainNetworks";
-import { ERC20TransferType, SFTTransferType, TransferType } from "../token";
+import { TransferType, transferParams } from "../token";
 
 export class EVMAAWallet extends LoggerWrapper {
     public readonly chain: EVMBlockchainIncludingTestnet;
@@ -145,87 +141,49 @@ export class EVMAAWallet extends LoggerWrapper {
         });
     }
 
-    public async transfer(toAddress: string, config: TransferType): Promise<string> {
+    public async transfer({ to, config }: { to: string; config: TransferType }): Promise<TransactionReceipt> {
         return this.logPerformance("TRANSFER", async () => {
-            const evmToken = config.token;
-            const contractAddress = evmToken.contractAddress as `0x${string}`;
+            if (this.chain !== config.token.chain) {
+                throw new Error(
+                    `Chain mismatch: Expected ${config.token.chain}, but got ${this.chain}. Ensure you are interacting with the correct blockchain.`
+                );
+            }
+
+            if (!isAddress(to)) {
+                throw new Error(`Invalid recipient address: '${to}' is not a valid EVM address.`);
+            }
+
+            if (!isAddress(config.token.contractAddress)) {
+                throw new Error(
+                    `Invalid contract address: '${config.token.contractAddress}' is not a valid EVM address.`
+                );
+            }
+
             const publicClient = this.kernelClient.extend(publicActions);
-            let transaction: Hash;
-            let tokenId: string | undefined;
+            const txParams = {
+                ...transferParams({ contract: config.token.contractAddress, to, from: this.account, config }),
+                ...(usesGelatoBundler(this.chain) && {
+                    maxFeePerGas: "0x0" as any,
+                    maxPriorityFeePerGas: "0x0" as any,
+                }),
+            };
 
             try {
-                switch (evmToken.type) {
-                    case "ft": {
-                        const { request } = await publicClient.simulateContract({
-                            account: this.account,
-                            address: contractAddress,
-                            abi: erc20,
-                            functionName: "transfer",
-                            args: [toAddress, (config as ERC20TransferType).amount],
-                            ...(usesGelatoBundler(this.chain) && {
-                                maxFeePerGas: "0x0" as any,
-                                maxPriorityFeePerGas: "0x0" as any,
-                            }),
-                        });
-                        transaction = await publicClient.writeContract(request);
-                        break;
-                    }
-                    case "sft": {
-                        tokenId = evmToken.tokenId;
-                        const { request } = await publicClient.simulateContract({
-                            account: this.account,
-                            address: contractAddress,
-                            abi: erc1155,
-                            functionName: "safeTransferFrom",
-                            args: [this.getAddress(), toAddress, tokenId, (config as SFTTransferType).quantity, "0x00"],
-                            ...(usesGelatoBundler(this.chain) && {
-                                maxFeePerGas: "0x0" as any,
-                                maxPriorityFeePerGas: "0x0" as any,
-                            }),
-                        });
-                        transaction = await publicClient.writeContract(request);
-                        break;
-                    }
-                    case "nft": {
-                        tokenId = evmToken.tokenId;
-                        const { request } = await publicClient.simulateContract({
-                            account: this.account,
-                            address: contractAddress,
-                            abi: erc721,
-                            functionName: "safeTransferFrom",
-                            args: [this.getAddress(), toAddress, tokenId],
-                            ...(usesGelatoBundler(this.chain) && {
-                                maxFeePerGas: "0x0" as any,
-                                maxPriorityFeePerGas: "0x0" as any,
-                            }),
-                        });
-                        transaction = await publicClient.writeContract(request);
-                        break;
-                    }
-                    default: {
-                        throw new WalletSdkError(`Token not supported`);
-                    }
-                }
-
-                if (transaction != null) {
-                    return transaction;
-                } else {
-                    throw new TransferError(
-                        `Error transferring token ${evmToken.contractAddress}
-                    ${!tokenId ? "" : ` tokenId=${tokenId}`}
-                    ${!transaction ? "" : ` with transaction hash ${transaction}`}`
-                    );
-                }
+                const { request } = await publicClient.simulateContract(txParams);
+                const hash = await publicClient.writeContract(request);
+                return publicClient.waitForTransactionReceipt({ hash });
             } catch (error) {
                 logError("[TRANSFER] - ERROR_TRANSFERRING_TOKEN", {
                     service: SCW_SERVICE,
                     error: errorToJSON(error),
-                    tokenId: tokenId,
-                    contractAddress: evmToken.contractAddress,
-                    chain: evmToken.chain,
+                    tokenId: txParams.tokenId,
+                    contractAddress: config.token.contractAddress,
+                    chain: config.token.chain,
                 });
                 throw new TransferError(
-                    `Error transferring token ${evmToken.contractAddress}${tokenId == null ? "" : `:${tokenId}}`}`
+                    `Error transferring token ${config.token.contractAddress}${
+                        txParams.tokenId == null ? "" : `:${txParams.tokenId}}`
+                    }`
                 );
             }
         });
