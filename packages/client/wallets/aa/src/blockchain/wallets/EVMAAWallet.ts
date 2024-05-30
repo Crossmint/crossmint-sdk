@@ -98,12 +98,6 @@ export class EVMAAWallet extends LoggerWrapper {
         });
     }
 
-    //TODO @matias: review this method.
-    // First, I would like to use TransactionRequest from viem instead of ethers.
-    // Second, we need to check if chain supports eip-1559 ro not:
-    // - If it does, we need to send maxFeePerGas and maxPriorityFeePerGas
-    // - If it doesn't, we need to send gasPrice
-    // And with the use of viem TransactionRequest, we can specify the TransactionRequest type (eip1559 or legacy) and be more accurate
     public async sendTransaction(
         transaction: SendTransactionParameters<Chain, KernelSmartAccount<EntryPoint, HttpTransport>, Chain>
     ): Promise<Hash> {
