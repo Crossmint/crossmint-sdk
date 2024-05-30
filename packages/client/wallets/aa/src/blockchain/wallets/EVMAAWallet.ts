@@ -1,6 +1,14 @@
 import { logError, logInfo } from "@/services/logging";
 import { SignerMap, SignerType } from "@/types";
-import { SCW_SERVICE, TransactionError, TransferError, WalletSdkError, errorToJSON, usesGelatoBundler } from "@/utils";
+import {
+    SCW_SERVICE,
+    TransactionError,
+    TransferError,
+    WalletSdkError,
+    errorToJSON,
+    gelatoBundlerProperties,
+    usesGelatoBundler,
+} from "@/utils";
 import { LoggerWrapper } from "@/utils/log";
 import {
     KernelAccountClient,
@@ -130,10 +138,7 @@ export class EVMAAWallet extends LoggerWrapper {
                     to,
                     value,
                     data,
-                    ...(usesGelatoBundler(this.chain) && {
-                        maxFeePerGas: "0x0" as any,
-                        maxPriorityFeePerGas: "0x0" as any,
-                    }),
+                    ...(usesGelatoBundler(this.chain) && gelatoBundlerProperties),
                 };
 
                 logInfo(`[EVMAAWallet - SEND_TRANSACTION] - tx_params: ${JSON.stringify(txParams)}`);
@@ -162,10 +167,7 @@ export class EVMAAWallet extends LoggerWrapper {
                             abi: erc20,
                             functionName: "transfer",
                             args: [toAddress, (config as ERC20TransferType).amount],
-                            ...(usesGelatoBundler(this.chain) && {
-                                maxFeePerGas: "0x0" as any,
-                                maxPriorityFeePerGas: "0x0" as any,
-                            }),
+                            ...(usesGelatoBundler(this.chain) && gelatoBundlerProperties),
                         });
                         transaction = await publicClient.writeContract(request);
                         break;
@@ -178,10 +180,7 @@ export class EVMAAWallet extends LoggerWrapper {
                             abi: erc1155,
                             functionName: "safeTransferFrom",
                             args: [this.getAddress(), toAddress, tokenId, (config as SFTTransferType).quantity, "0x00"],
-                            ...(usesGelatoBundler(this.chain) && {
-                                maxFeePerGas: "0x0" as any,
-                                maxPriorityFeePerGas: "0x0" as any,
-                            }),
+                            ...(usesGelatoBundler(this.chain) && gelatoBundlerProperties),
                         });
                         transaction = await publicClient.writeContract(request);
                         break;
@@ -194,10 +193,7 @@ export class EVMAAWallet extends LoggerWrapper {
                             abi: erc721,
                             functionName: "safeTransferFrom",
                             args: [this.getAddress(), toAddress, tokenId],
-                            ...(usesGelatoBundler(this.chain) && {
-                                maxFeePerGas: "0x0" as any,
-                                maxPriorityFeePerGas: "0x0" as any,
-                            }),
+                            ...(usesGelatoBundler(this.chain) && gelatoBundlerProperties),
                         });
                         transaction = await publicClient.writeContract(request);
                         break;
