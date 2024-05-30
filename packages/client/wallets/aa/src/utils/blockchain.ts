@@ -22,10 +22,14 @@ export async function verifyMessage({ address, message, signature, chain }: Veri
     });
 }
 
-export function hasEIP1559Support(chain: EVMBlockchainIncludingTestnet) {
-    const chainsNotSupportingEIP1559: EVMBlockchainIncludingTestnet[] = [
+function isPolygonCDK(chain: EVMBlockchainIncludingTestnet) {
+    const polygonCDKchains: EVMBlockchainIncludingTestnet[] = [
         EVMBlockchainIncludingTestnet.ZKYOTO,
         EVMBlockchainIncludingTestnet.ASTAR_ZKEVM,
     ];
-    return !chainsNotSupportingEIP1559.includes(chain);
+    return polygonCDKchains.includes(chain);
+}
+
+export function usesGelatoBundler(chain: EVMBlockchainIncludingTestnet) {
+    return isPolygonCDK(chain);
 }

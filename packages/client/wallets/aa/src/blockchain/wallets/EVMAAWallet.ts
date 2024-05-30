@@ -1,29 +1,30 @@
 import { logError, logInfo } from "@/services/logging";
 import { SignerMap, SignerType } from "@/types";
-import { SCW_SERVICE, TransactionError, TransferError, WalletSdkError, errorToJSON, hasEIP1559Support } from "@/utils";
+import { SCW_SERVICE, TransactionError, TransferError, errorToJSON, usesGelatoBundler } from "@/utils";
 import { LoggerWrapper } from "@/utils/log";
-import {
-    KernelAccountClient,
-    KernelSmartAccount,
-    createKernelAccountClient,
-    createZeroDevPaymasterClient,
-} from "@zerodev/sdk";
+import { KernelAccountClient, KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
 import { EntryPoint } from "permissionless/types/entrypoint";
-import type { Hash, HttpTransport, PublicClient, SendTransactionParameters, TypedDataDefinition } from "viem";
-import { Chain, http, publicActions } from "viem";
+import type {
+    Address,
+    Hex,
+    HttpTransport,
+    PublicClient,
+    SendTransactionParameters,
+    TransactionReceipt,
+    TypedDataDefinition,
+} from "viem";
+import { Chain, http, isAddress, isHex, publicActions } from "viem";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
-import erc20 from "../../ABI/ERC20.json";
-import erc721 from "../../ABI/ERC721.json";
-import erc1155 from "../../ABI/ERC1155.json";
 import { CrossmintWalletService } from "../../api/CrossmintWalletService";
-import { getBundlerRPC, getPaymasterRPC, getViemNetwork } from "../BlockchainNetworks";
-import { ERC20TransferType, SFTTransferType, TransferType } from "../token";
+import { getBundlerRPC, getViemNetwork } from "../BlockchainNetworks";
+import { TransferType, transferParams } from "../token";
+import { paymasterMiddleware } from "./paymaster";
 
 export class EVMAAWallet extends LoggerWrapper {
     public readonly chain: EVMBlockchainIncludingTestnet;
-    public readonly publicClient: PublicClient;
+    public readonly publicClient: PublicClient<HttpTransport>;
     private readonly kernelClient: KernelAccountClient<
         EntryPoint,
         HttpTransport,
@@ -39,163 +40,126 @@ export class EVMAAWallet extends LoggerWrapper {
         chain: EVMBlockchainIncludingTestnet
     ) {
         super("EVMAAWallet", { chain, address: account.address });
+
+        const shouldSponsor = !usesGelatoBundler(chain);
         this.kernelClient = createKernelAccountClient({
             account,
             chain: getViemNetwork(chain),
             entryPoint,
             bundlerTransport: http(getBundlerRPC(chain)),
-            ...(hasEIP1559Support(chain) && {
-                middleware: {
-                    sponsorUserOperation: async ({ userOperation }) => {
-                        const paymasterClient = createZeroDevPaymasterClient({
-                            chain: getViemNetwork(chain),
-                            transport: http(getPaymasterRPC(chain)),
-                            entryPoint,
-                        });
-                        return paymasterClient.sponsorUserOperation({
-                            userOperation,
-                            entryPoint,
-                        });
-                    },
-                },
-            }),
+            ...(shouldSponsor && paymasterMiddleware({ entryPoint, chain })),
         });
         this.chain = chain;
         this.publicClient = publicClient;
     }
 
-    public getAddress() {
+    public getAddress(): Address {
         return this.kernelClient.account.address;
     }
 
-    public async signMessage(message: string | Uint8Array) {
+    public async signMessage(message: string | Uint8Array): Promise<Hex> {
         return this.logPerformance("SIGN_MESSAGE", async () => {
-            try {
-                let messageAsString: string;
-                if (message instanceof Uint8Array) {
-                    const decoder = new TextDecoder();
-                    messageAsString = decoder.decode(message);
-                } else {
-                    messageAsString = message;
-                }
-
-                return await this.kernelClient.signMessage({
-                    message: messageAsString,
-                });
-            } catch (error) {
-                throw new Error(`Error signing message. If this error persists, please contact support.`);
+            let messageAsString: string;
+            if (message instanceof Uint8Array) {
+                const decoder = new TextDecoder();
+                messageAsString = decoder.decode(message);
+            } else {
+                messageAsString = message;
             }
+
+            return this.kernelClient.signMessage({
+                message: messageAsString,
+            });
         });
     }
 
-    public async signTypedData(params: TypedDataDefinition) {
+    public async signTypedData(params: TypedDataDefinition): Promise<Hex> {
         return this.logPerformance("SIGN_TYPED_DATA", async () => {
-            try {
-                return await this.kernelClient.signTypedData(params);
-            } catch (error) {
-                throw new Error(`Error signing typed data. If this error persists, please contact support.`);
-            }
+            return this.kernelClient.signTypedData(params);
         });
     }
 
-    public async sendTransaction(
-        transaction: SendTransactionParameters<Chain, KernelSmartAccount<EntryPoint, HttpTransport>, Chain>
-    ): Promise<Hash> {
+    public async sendTransaction({
+        to,
+        value,
+        data,
+    }: {
+        to: string;
+        value: bigint;
+        data?: string;
+    }): Promise<TransactionReceipt> {
         return this.logPerformance("SEND_TRANSACTION", async () => {
+            if (!isAddress(to)) {
+                throw new Error("Invalid recipient address: '${to}' is not a valid EVM address.");
+            }
+
+            if (data != null && !isHex(data)) {
+                throw new Error("Invalid Hex: '${data}' is not valid Hex address.");
+            }
+
             try {
-                const txParams = {
-                    to: transaction.to,
-                    value: transaction.value,
-                    gas: transaction.gas,
-                    nonce: transaction.nonce,
-                    data: transaction.data,
-                    ...this.getLegacyTransactionFeesParamsIfApply({
-                        maxFeePerGas: transaction.maxFeePerGas,
-                        maxPriorityFeePerGas: transaction.maxPriorityFeePerGas,
+                const txParams: SendTransactionParameters<Chain, KernelSmartAccount<EntryPoint, HttpTransport>> = {
+                    to,
+                    value,
+                    data,
+                    ...(usesGelatoBundler(this.chain) && {
+                        maxFeePerGas: "0x0" as any,
+                        maxPriorityFeePerGas: "0x0" as any,
                     }),
                 };
 
                 logInfo(`[EVMAAWallet - SEND_TRANSACTION] - tx_params: ${JSON.stringify(txParams)}`);
-
-                return await this.kernelClient.sendTransaction(txParams);
+                const hash = await this.kernelClient.sendTransaction(txParams);
+                return this.publicClient.waitForTransactionReceipt({ hash });
             } catch (error) {
                 throw new TransactionError(`Error sending transaction: ${error}`);
             }
         });
     }
 
-    public async transfer(toAddress: string, config: TransferType): Promise<string> {
+    public async transfer({ to, config }: { to: string; config: TransferType }): Promise<TransactionReceipt> {
         return this.logPerformance("TRANSFER", async () => {
-            const evmToken = config.token;
-            const contractAddress = evmToken.contractAddress as `0x${string}`;
+            if (this.chain !== config.token.chain) {
+                throw new Error(
+                    `Chain mismatch: Expected ${config.token.chain}, but got ${this.chain}. Ensure you are interacting with the correct blockchain.`
+                );
+            }
+
+            if (!isAddress(to)) {
+                throw new Error(`Invalid recipient address: '${to}' is not a valid EVM address.`);
+            }
+
+            if (!isAddress(config.token.contractAddress)) {
+                throw new Error(
+                    `Invalid contract address: '${config.token.contractAddress}' is not a valid EVM address.`
+                );
+            }
+
             const publicClient = this.kernelClient.extend(publicActions);
-            let transaction: Hash;
-            let tokenId: string | undefined;
+            const txParams = {
+                ...transferParams({ contract: config.token.contractAddress, to, from: this.account, config }),
+                ...(usesGelatoBundler(this.chain) && {
+                    maxFeePerGas: "0x0" as any,
+                    maxPriorityFeePerGas: "0x0" as any,
+                }),
+            };
 
             try {
-                switch (evmToken.type) {
-                    case "ft": {
-                        const { request } = await publicClient.simulateContract({
-                            account: this.account,
-                            address: contractAddress,
-                            abi: erc20,
-                            functionName: "transfer",
-                            args: [toAddress, (config as ERC20TransferType).amount],
-                            ...this.getLegacyTransactionFeesParamsIfApply(),
-                        });
-                        transaction = await publicClient.writeContract(request);
-                        break;
-                    }
-                    case "sft": {
-                        tokenId = evmToken.tokenId;
-                        const { request } = await publicClient.simulateContract({
-                            account: this.account,
-                            address: contractAddress,
-                            abi: erc1155,
-                            functionName: "safeTransferFrom",
-                            args: [this.getAddress(), toAddress, tokenId, (config as SFTTransferType).quantity, "0x00"],
-                            ...this.getLegacyTransactionFeesParamsIfApply(),
-                        });
-                        transaction = await publicClient.writeContract(request);
-                        break;
-                    }
-                    case "nft": {
-                        tokenId = evmToken.tokenId;
-                        const { request } = await publicClient.simulateContract({
-                            account: this.account,
-                            address: contractAddress,
-                            abi: erc721,
-                            functionName: "safeTransferFrom",
-                            args: [this.getAddress(), toAddress, tokenId],
-                            ...this.getLegacyTransactionFeesParamsIfApply(),
-                        });
-                        transaction = await publicClient.writeContract(request);
-                        break;
-                    }
-                    default: {
-                        throw new WalletSdkError(`Token not supported`);
-                    }
-                }
-
-                if (transaction != null) {
-                    return transaction;
-                } else {
-                    throw new TransferError(
-                        `Error transferring token ${evmToken.contractAddress}
-                    ${!tokenId ? "" : ` tokenId=${tokenId}`}
-                    ${!transaction ? "" : ` with transaction hash ${transaction}`}`
-                    );
-                }
+                const { request } = await publicClient.simulateContract(txParams);
+                const hash = await publicClient.writeContract(request);
+                return publicClient.waitForTransactionReceipt({ hash });
             } catch (error) {
                 logError("[TRANSFER] - ERROR_TRANSFERRING_TOKEN", {
                     service: SCW_SERVICE,
                     error: errorToJSON(error),
-                    tokenId: tokenId,
-                    contractAddress: evmToken.contractAddress,
-                    chain: evmToken.chain,
+                    tokenId: txParams.tokenId,
+                    contractAddress: config.token.contractAddress,
+                    chain: config.token.chain,
                 });
                 throw new TransferError(
-                    `Error transferring token ${evmToken.contractAddress}${tokenId == null ? "" : `:${tokenId}}`}`
+                    `Error transferring token ${config.token.contractAddress}${
+                        txParams.tokenId == null ? "" : `:${txParams.tokenId}}`
+                    }`
                 );
             }
         });
@@ -222,34 +186,5 @@ export class EVMAAWallet extends LoggerWrapper {
         return this.logPerformance("GET_NFTS", async () => {
             return this.crossmintService.fetchNFTs(this.account.address, this.chain);
         });
-    }
-
-    private getLegacyTransactionFeesParamsIfApply(gasFeeParams?: {
-        maxFeePerGas?: bigint;
-        maxPriorityFeePerGas?: bigint;
-    }) {
-        const { maxFeePerGas, maxPriorityFeePerGas } = gasFeeParams ?? {};
-
-        if (hasEIP1559Support(this.chain)) {
-            return {
-                // only include if non-null and non-zero
-                ...(maxFeePerGas && { maxFeePerGas }),
-                ...(maxPriorityFeePerGas && { maxPriorityFeePerGas }),
-            };
-        } else {
-            if (maxFeePerGas || maxPriorityFeePerGas) {
-                console.warn(
-                    "maxFeePerGas and maxPriorityFeePerGas are not supported on this chain as it supports Legacy Transacitons. Ignoring them."
-                );
-            }
-
-            // Since there's no bundler support for Polygon CDK chains yet, ZD relies on Gelato, which requires some special configuration
-            // https://docs.zerodev.app/sdk/faqs/use-with-gelato#transaction-configuration
-            // TODO: Looks like we're checking the wrong condition here, we should check for ZD using Gelato rather than 1559 support.
-            return {
-                maxFeePerGas: "0x0" as any,
-                maxPriorityFeePerGas: "0x0" as any,
-            };
-        }
     }
 }
