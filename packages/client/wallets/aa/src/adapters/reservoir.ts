@@ -15,11 +15,10 @@ export function reservoirAdapter(wallet: EVMAAWallet): ReservoirWallet {
                 return;
             }
 
+            console.log(`Execute Steps: Signing with ${signData.signatureKind}`);
             if (signData.signatureKind === "eip191") {
-                console.log("Execute Steps: Signing with eip191");
                 return walletClient.signMessage({ message: signData.message });
             } else if (signData.signatureKind === "eip712") {
-                console.log("Execute Steps: Signing with eip712");
                 return walletClient.signTypedData({
                     domain: signData.domain as any,
                     types: signData.types as any,
