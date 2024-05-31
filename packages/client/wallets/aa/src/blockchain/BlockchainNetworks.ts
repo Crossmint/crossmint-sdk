@@ -1,6 +1,5 @@
 import {
     BUNDLER_RPC,
-    PAYMASTER_RPC,
     PM_BASE_RPC,
     PM_BASE_SEPOLIA_RPC,
     ZD_AMOY_PROJECT_ID,
@@ -22,7 +21,6 @@ import {
 } from "@/utils";
 import { EntryPoint } from "permissionless/types/entrypoint";
 import {
-    Chain,
     arbitrum,
     arbitrumNova,
     arbitrumSepolia,
@@ -289,16 +287,5 @@ export const getBundlerRPC = logInputOutput((chain: EVMBlockchainIncludingTestne
             return BUNDLER_RPC + getZeroDevProjectIdByBlockchain(chain) + "?bundlerProvider=STACKUP";
     }
 }, "getBundlerRPC");
-
-export const getPaymasterRPC = logInputOutput((chain: EVMBlockchainIncludingTestnet) => {
-    switch (chain) {
-        case EVMBlockchainIncludingTestnet.BASE_SEPOLIA:
-            return PM_BASE_SEPOLIA_RPC;
-        case EVMBlockchainIncludingTestnet.BASE:
-            return PM_BASE_RPC;
-        default:
-            return PAYMASTER_RPC + getZeroDevProjectIdByBlockchain(chain) + "?paymasterProvider=STACKUP";
-    }
-}, "getPaymasterRPC");
 
 export type entryPoint = EntryPoint;
