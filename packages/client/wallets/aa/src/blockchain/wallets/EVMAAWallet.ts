@@ -87,26 +87,6 @@ export class EVMAAWallet extends LoggerWrapper {
         return this.kernelClient.account.address;
     }
 
-    public async signMessage(message: string | Uint8Array) {
-        return this.logPerformance("SIGN_MESSAGE", async () => {
-            try {
-                let messageAsString: string;
-                if (message instanceof Uint8Array) {
-                    const decoder = new TextDecoder();
-                    messageAsString = decoder.decode(message);
-                } else {
-                    messageAsString = message;
-                }
-
-                return await this.kernelClient.signMessage({
-                    message: messageAsString,
-                });
-            } catch (error) {
-                throw new Error(`Error signing message. If this error persists, please contact support.`);
-            }
-        });
-    }
-
     //TODO @matias: review this method.
     // First, I would like to use TransactionRequest from viem instead of ethers.
     // Second, we need to check if chain supports eip-1559 ro not:
