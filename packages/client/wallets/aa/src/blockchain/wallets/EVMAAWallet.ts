@@ -1,29 +1,18 @@
 import { logError } from "@/services/logging";
 import { SignerMap, SignerType } from "@/types";
-import {
-    SCW_SERVICE,
-    TransferError,
-    WalletSdkError,
-    errorToJSON,
-    gelatoBundlerProperties,
-    usesGelatoBundler,
-} from "@/utils";
+import { SCW_SERVICE, TransferError, errorToJSON, gelatoBundlerProperties, usesGelatoBundler } from "@/utils";
 import { LoggerWrapper } from "@/utils/log";
-import {
-    KernelAccountClient,
-    KernelSmartAccount,
-    createKernelAccountClient,
-    createZeroDevPaymasterClient,
-} from "@zerodev/sdk";
+import { KernelAccountClient, KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
 import { EntryPoint } from "permissionless/types/entrypoint";
-import type { Hash, HttpTransport, PublicClient, TypedDataDefinition } from "viem";
+import type { HttpTransport, PublicClient, TypedDataDefinition } from "viem";
 import { Chain, http, isAddress, publicActions } from "viem";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 import { CrossmintWalletService } from "../../api/CrossmintWalletService";
-import { getBundlerRPC, getPaymasterRPC, getViemNetwork } from "../BlockchainNetworks";
+import { getBundlerRPC, getViemNetwork } from "../BlockchainNetworks";
 import { TransferType, transferParams } from "../token";
+import { paymasterMiddleware } from "./paymaster";
 
 export class EVMAAWallet extends LoggerWrapper {
     public readonly chain: EVMBlockchainIncludingTestnet;
@@ -50,21 +39,7 @@ export class EVMAAWallet extends LoggerWrapper {
             chain: getViemNetwork(chain),
             entryPoint,
             bundlerTransport: http(getBundlerRPC(chain)),
-            ...(shouldSponsor && {
-                middleware: {
-                    sponsorUserOperation: async ({ userOperation }) => {
-                        const paymasterClient = createZeroDevPaymasterClient({
-                            chain: getViemNetwork(chain),
-                            transport: http(getPaymasterRPC(chain)),
-                            entryPoint,
-                        });
-                        return paymasterClient.sponsorUserOperation({
-                            userOperation,
-                            entryPoint,
-                        });
-                    },
-                },
-            }),
+            ...(shouldSponsor && paymasterMiddleware({ entryPoint, chain })),
         });
         this.chain = chain;
         this.publicClient = publicClient;
