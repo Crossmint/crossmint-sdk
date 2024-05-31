@@ -15,12 +15,7 @@ import { resolveDeferrable } from "@/utils/deferrable";
 import { LoggerWrapper } from "@/utils/log";
 import type { Deferrable } from "@ethersproject/properties";
 import { type TransactionRequest } from "@ethersproject/providers";
-import {
-    KernelAccountClient,
-    KernelSmartAccount,
-    createKernelAccountClient,
-    createZeroDevPaymasterClient,
-} from "@zerodev/sdk";
+import { KernelAccountClient, KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
 import { BigNumberish } from "ethers";
 import { EntryPoint } from "permissionless/types/entrypoint";
 import type { Hash, HttpTransport, PublicClient } from "viem";
@@ -32,8 +27,9 @@ import erc20 from "../../ABI/ERC20.json";
 import erc721 from "../../ABI/ERC721.json";
 import erc1155 from "../../ABI/ERC1155.json";
 import { CrossmintWalletService } from "../../api/CrossmintWalletService";
-import { getBundlerRPC, getPaymasterRPC, getViemNetwork } from "../BlockchainNetworks";
+import { getBundlerRPC, getViemNetwork } from "../BlockchainNetworks";
 import { ERC20TransferType, SFTTransferType, TransferType } from "../token";
+import { paymasterMiddleware } from "./paymaster";
 
 type GasFeeTransactionParams = {
     maxFeePerGas?: BigNumberish;
@@ -63,21 +59,7 @@ export class EVMAAWallet extends LoggerWrapper {
             chain: getViemNetwork(chain),
             entryPoint,
             bundlerTransport: http(getBundlerRPC(chain)),
-            ...(hasEIP1559Support(chain) && {
-                middleware: {
-                    sponsorUserOperation: async ({ userOperation }) => {
-                        const paymasterClient = createZeroDevPaymasterClient({
-                            chain: getViemNetwork(chain),
-                            transport: http(getPaymasterRPC(chain)),
-                            entryPoint,
-                        });
-                        return paymasterClient.sponsorUserOperation({
-                            userOperation,
-                            entryPoint,
-                        });
-                    },
-                },
-            }),
+            ...(hasEIP1559Support(chain) && paymasterMiddleware({ entryPoint, chain })),
         });
         this.chain = chain;
         this.publicClient = publicClient;
