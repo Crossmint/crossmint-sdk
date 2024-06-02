@@ -1,5 +1,4 @@
 import { logError, logInfo } from "@/services/logging";
-import { SignerMap, SignerType } from "@/types";
 import {
     SCW_SERVICE,
     TransactionError,
@@ -213,7 +212,7 @@ export class EVMAAWallet extends LoggerWrapper {
         });
     }
 
-    public getSigner<Type extends SignerType>(type: Type): SignerMap[Type] {
+    public getSigner(type: "viem" = "viem") {
         switch (type) {
             case "viem": {
                 return {
