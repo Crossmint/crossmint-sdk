@@ -28,7 +28,7 @@ export function useLoginAndCreateAA() {
     }
 
     /**
-     * @matias idea is to modify the AA SDK a bit to replase the
+     * @matias idea is to modify the AA SDK a bit to replace the
      * BaseCrossmintService function with the sendApiEventToCrossmint,
      * it should be all about making that instead of using what we have there,
      * it should call to this sendApiEventToCrossmint which is async so the rest of the flow
