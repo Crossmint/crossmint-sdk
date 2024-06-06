@@ -29,7 +29,7 @@ export class IFrameWindow<IncomingEvents extends EventMap, OutgoingEvents extend
     static async init<IncomingEvents extends EventMap, OutgoingEvents extends EventMap>(
         url: string,
         options?: EventEmitterWithHandshakeOptions<IncomingEvents, OutgoingEvents> & {
-            existingIFrame?: HTMLIFrameElement;
+            existingIFrame: HTMLIFrameElement | null;
         }
     ) {
         return new IFrameWindow<IncomingEvents, OutgoingEvents>(
