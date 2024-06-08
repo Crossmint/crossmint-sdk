@@ -83,6 +83,10 @@ function isPolygonCDK(chain: EVMBlockchainIncludingTestnet) {
     return polygonCDKchains.includes(chain);
 }
 
+export function hasEIP1559Support(chain: EVMBlockchainIncludingTestnet) {
+    return !isPolygonCDK(chain);
+}
+
 export function usesGelatoBundler(chain: EVMBlockchainIncludingTestnet) {
     return isPolygonCDK(chain);
 }

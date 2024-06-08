@@ -9,6 +9,7 @@ import {
     errorToJSON,
     gelatoBundlerProperties,
     getNonce,
+    hasEIP1559Support,
     usesGelatoBundler,
 } from "@/utils";
 import { resolveDeferrable } from "@/utils/deferrable";
@@ -16,6 +17,7 @@ import { LoggerWrapper } from "@/utils/log";
 import type { Deferrable } from "@ethersproject/properties";
 import { type TransactionRequest } from "@ethersproject/providers";
 import { KernelAccountClient, KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
+import { BigNumberish } from "ethers";
 import { EntryPoint } from "permissionless/types/entrypoint";
 import type { Hash, HttpTransport, PublicClient, TypedDataDefinition } from "viem";
 import { Chain, http, publicActions } from "viem";
@@ -111,7 +113,7 @@ export class EVMAAWallet extends LoggerWrapper {
                     gas: gasLimit ? BigInt(gasLimit.toString()) : undefined,
                     nonce: await getNonce(nonce),
                     data: await convertData(data),
-                    ...(usesGelatoBundler(this.chain) && gelatoBundlerProperties),
+                    ...this.getLegacyTransactionFeesParamsIfApply(),
                 };
 
                 logInfo(`[EVMAAWallet - SEND_TRANSACTION] - tx_params: ${JSON.stringify(txParams)}`);
@@ -139,7 +141,7 @@ export class EVMAAWallet extends LoggerWrapper {
                             abi: erc20,
                             functionName: "transfer",
                             args: [toAddress, (config as ERC20TransferType).amount],
-                            ...(usesGelatoBundler(this.chain) && gelatoBundlerProperties),
+                            ...this.getLegacyTransactionFeesParamsIfApply(),
                         });
                         transaction = await publicClient.writeContract(request);
                         break;
@@ -152,7 +154,7 @@ export class EVMAAWallet extends LoggerWrapper {
                             abi: erc1155,
                             functionName: "safeTransferFrom",
                             args: [this.getAddress(), toAddress, tokenId, (config as SFTTransferType).quantity, "0x00"],
-                            ...(usesGelatoBundler(this.chain) && gelatoBundlerProperties),
+                            ...this.getLegacyTransactionFeesParamsIfApply(),
                         });
                         transaction = await publicClient.writeContract(request);
                         break;
@@ -165,7 +167,7 @@ export class EVMAAWallet extends LoggerWrapper {
                             abi: erc721,
                             functionName: "safeTransferFrom",
                             args: [this.getAddress(), toAddress, tokenId],
-                            ...(usesGelatoBundler(this.chain) && gelatoBundlerProperties),
+                            ...this.getLegacyTransactionFeesParamsIfApply(),
                         });
                         transaction = await publicClient.writeContract(request);
                         break;
@@ -220,5 +222,27 @@ export class EVMAAWallet extends LoggerWrapper {
         return this.logPerformance("GET_NFTS", async () => {
             return this.crossmintService.fetchNFTs(this.account.address, this.chain);
         });
+    }
+
+    private getLegacyTransactionFeesParamsIfApply(gasFeeParams?: {
+        maxFeePerGas?: BigNumberish;
+        maxPriorityFeePerGas?: BigNumberish;
+    }) {
+        const { maxFeePerGas, maxPriorityFeePerGas } = gasFeeParams ?? {};
+
+        if (hasEIP1559Support(this.chain)) {
+            return {
+                // only include if non-null and non-zero
+                ...(maxFeePerGas && { maxFeePerGas: BigInt(maxFeePerGas.toString()) }),
+                ...(maxPriorityFeePerGas && { maxPriorityFeePerGas: BigInt(maxPriorityFeePerGas.toString()) }),
+            };
+        } else {
+            if (maxFeePerGas || maxPriorityFeePerGas) {
+                console.warn(
+                    "maxFeePerGas and maxPriorityFeePerGas are not supported on this chain as it supports Legacy Transacitons. Ignoring them."
+                );
+            }
+            return gelatoBundlerProperties;
+        }
     }
 }
