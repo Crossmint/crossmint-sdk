@@ -105,7 +105,8 @@ export class EVMAAWallet extends LoggerWrapper {
         return this.logPerformance("SEND_TRANSACTION", async () => {
             try {
                 const decoratedTransaction = await decorateSendTransactionData(transaction);
-                const { to, value, gasLimit, nonce, data } = await resolveDeferrable(decoratedTransaction);
+                const { to, value, gasLimit, nonce, data, maxFeePerGas, maxPriorityFeePerGas } =
+                    await resolveDeferrable(decoratedTransaction);
 
                 const txParams = {
                     to: to as `0x${string}`,
@@ -113,7 +114,7 @@ export class EVMAAWallet extends LoggerWrapper {
                     gas: gasLimit ? BigInt(gasLimit.toString()) : undefined,
                     nonce: await getNonce(nonce),
                     data: await convertData(data),
-                    ...this.getLegacyTransactionFeesParamsIfApply(),
+                    ...this.getLegacyTransactionFeesParamsIfApply({ maxFeePerGas, maxPriorityFeePerGas }),
                 };
 
                 logInfo(`[EVMAAWallet - SEND_TRANSACTION] - tx_params: ${JSON.stringify(txParams)}`);
@@ -141,7 +142,7 @@ export class EVMAAWallet extends LoggerWrapper {
                             abi: erc20,
                             functionName: "transfer",
                             args: [toAddress, (config as ERC20TransferType).amount],
-                            ...this.getLegacyTransactionFeesParamsIfApply(),
+                            ...(usesGelatoBundler(this.chain) && gelatoBundlerProperties),
                         });
                         transaction = await publicClient.writeContract(request);
                         break;
@@ -154,7 +155,7 @@ export class EVMAAWallet extends LoggerWrapper {
                             abi: erc1155,
                             functionName: "safeTransferFrom",
                             args: [this.getAddress(), toAddress, tokenId, (config as SFTTransferType).quantity, "0x00"],
-                            ...this.getLegacyTransactionFeesParamsIfApply(),
+                            ...(usesGelatoBundler(this.chain) && gelatoBundlerProperties),
                         });
                         transaction = await publicClient.writeContract(request);
                         break;
@@ -167,7 +168,7 @@ export class EVMAAWallet extends LoggerWrapper {
                             abi: erc721,
                             functionName: "safeTransferFrom",
                             args: [this.getAddress(), toAddress, tokenId],
-                            ...this.getLegacyTransactionFeesParamsIfApply(),
+                            ...(usesGelatoBundler(this.chain) && gelatoBundlerProperties),
                         });
                         transaction = await publicClient.writeContract(request);
                         break;
