@@ -78,7 +78,9 @@ export async function verifyMessage({ address, message, signature, chain }: Veri
 function isPolygonCDK(chain: EVMBlockchainIncludingTestnet) {
     const polygonCDKchains: EVMBlockchainIncludingTestnet[] = [
         EVMBlockchainIncludingTestnet.ZKYOTO,
+        EVMBlockchainIncludingTestnet.ZKATANA,
         EVMBlockchainIncludingTestnet.ASTAR_ZKEVM,
+        EVMBlockchainIncludingTestnet.HYPERSONIC_TESTNET,
     ];
     return polygonCDKchains.includes(chain);
 }
