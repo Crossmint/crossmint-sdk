@@ -75,10 +75,23 @@ export async function verifyMessage({ address, message, signature, chain }: Veri
     });
 }
 
-export function hasEIP1559Support(chain: EVMBlockchainIncludingTestnet) {
-    const chainsNotSupportingEIP1559: EVMBlockchainIncludingTestnet[] = [
+function isPolygonCDK(chain: EVMBlockchainIncludingTestnet) {
+    const polygonCDKchains: EVMBlockchainIncludingTestnet[] = [
         EVMBlockchainIncludingTestnet.ZKYOTO,
         EVMBlockchainIncludingTestnet.ASTAR_ZKEVM,
     ];
-    return !chainsNotSupportingEIP1559.includes(chain);
+    return polygonCDKchains.includes(chain);
 }
+
+export function usesGelatoBundler(chain: EVMBlockchainIncludingTestnet) {
+    return isPolygonCDK(chain);
+}
+
+/*
+ * Chain that ZD uses Gelato as for bundler require special parameters:
+ * https://docs.zerodev.app/sdk/faqs/use-with-gelato#transaction-configuration
+ */
+export const gelatoBundlerProperties = {
+    maxFeePerGas: "0x0" as any,
+    maxPriorityFeePerGas: "0x0" as any,
+};
