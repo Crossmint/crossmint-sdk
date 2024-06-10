@@ -1,5 +1,5 @@
 import { CrossmintWalletService } from "@/api";
-import { EVMAAWallet } from "@/blockchain";
+import { EVMSmartWallet } from "@/blockchain";
 import type { UserIdentifier, WalletConfig } from "@/types";
 import { CURRENT_VERSION, ZERO_DEV_TYPE, createOwnerSigner } from "@/utils";
 import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
@@ -43,7 +43,7 @@ export default class EOAWalletService {
             entryPoint,
         });
 
-        const wallet = new EVMAAWallet(account, this.crossmintService, publicClient, entryPoint, chain);
+        const wallet = new EVMSmartWallet(account, this.crossmintService, publicClient, entryPoint, chain);
         await this.crossmintService.storeAbstractWallet({
             userIdentifier,
             type: ZERO_DEV_TYPE,

@@ -35,7 +35,7 @@ import { ERC20TransferType, SFTTransferType, TransferType } from "../token";
 import { paymasterMiddleware } from "./paymaster";
 import { toCrossmintSmartAccountClient } from "./smartAccount";
 
-export class EVMAAWallet extends LoggerWrapper {
+export class EVMSmartWallet extends LoggerWrapper {
     public readonly chain: EVMBlockchainIncludingTestnet;
     public readonly publicClient: PublicClient;
     private readonly smartAccountClient: KernelAccountClient<
@@ -52,7 +52,7 @@ export class EVMAAWallet extends LoggerWrapper {
         entryPoint: EntryPoint,
         chain: EVMBlockchainIncludingTestnet
     ) {
-        super("EVMAAWallet", { chain, address: account.address });
+        super("EVMSmartWallet", { chain, address: account.address });
 
         const kernelClient: KernelAccountClient<
             EntryPoint,

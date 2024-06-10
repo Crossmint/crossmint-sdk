@@ -1,1 +1,1 @@
-export * from "./EVMAAWallet";
+export * from "./EVMSmartWallet";

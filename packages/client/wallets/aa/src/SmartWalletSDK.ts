@@ -1,6 +1,6 @@
 import { CrossmintWalletService } from "@/api";
 import { getBundlerRPC } from "@/blockchain";
-import type { CrossmintAASDKInitParams, WalletConfig } from "@/types";
+import type { SmartWalletSDKInitParams, WalletConfig } from "@/types";
 import { WalletSdkError } from "@/utils";
 import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
 import { EntryPointVersion } from "permissionless/types/entrypoint";
@@ -12,12 +12,12 @@ import EOAWalletService from "./blockchain/wallets/eoa";
 import { LoggerWrapper, logPerformance } from "./utils/log";
 import { parseUserIdentifier } from "./utils/user";
 
-export class CrossmintAASDK extends LoggerWrapper {
+export class SmartWalletSDK extends LoggerWrapper {
     private readonly crossmintService: CrossmintWalletService;
     private readonly eaoWalletService: EOAWalletService;
 
-    private constructor(config: CrossmintAASDKInitParams) {
-        super("CrossmintAASDK");
+    private constructor(config: SmartWalletSDKInitParams) {
+        super("SmartWalletSDK");
         const validationResult = validateAPIKey(config.apiKey);
         if (!validationResult.isValid) {
             throw new Error("API key invalid");
@@ -27,15 +27,11 @@ export class CrossmintAASDK extends LoggerWrapper {
         this.eaoWalletService = new EOAWalletService(this.crossmintService);
     }
 
-    static init(params: CrossmintAASDKInitParams): CrossmintAASDK {
-        return new CrossmintAASDK(params);
+    static init(params: SmartWalletSDKInitParams): SmartWalletSDK {
+        return new SmartWalletSDK(params);
     }
 
-    async getOrCreateWallet(
-        user: UserIdentifierParams,
-        chain: EVMBlockchainIncludingTestnet,
-        walletConfig: WalletConfig
-    ) {
+    async getOrCreate(user: UserIdentifierParams, chain: EVMBlockchainIncludingTestnet, walletConfig: WalletConfig) {
         return logPerformance(
             "GET_OR_CREATE_WALLET",
             async () => {
