@@ -28,7 +28,7 @@ export function reservoirAdapter(wallet: EVMAAWallet): ReservoirWallet {
         },
         handleSendTransactionStep: async (chainId, stepItem, _) => {
             const stepData = stepItem.data;
-            return wallet.getSigner("viem").walletClient.sendTransaction({
+            return wallet.getSigner().walletClient.sendTransaction({
                 data: stepData.data,
                 to: stepData.to,
                 value: hexToBigInt((stepData.value as any) || 0),
@@ -41,7 +41,6 @@ export function reservoirAdapter(wallet: EVMAAWallet): ReservoirWallet {
                 ...(stepData.gas && {
                     gas: hexToBigInt(stepData.gas as any),
                 }),
-                ...(usesGelatoBundler(wallet.chain) && gelatoBundlerProperties),
             });
         },
         transport: http(getBundlerRPC(wallet.chain)),
