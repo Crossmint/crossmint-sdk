@@ -7,8 +7,10 @@ import {
     convertData,
     decorateSendTransactionData,
     errorToJSON,
+    gelatoBundlerProperties,
     getNonce,
     hasEIP1559Support,
+    usesGelatoBundler,
 } from "@/utils";
 import { resolveDeferrable } from "@/utils/deferrable";
 import { LoggerWrapper } from "@/utils/log";
@@ -29,11 +31,6 @@ import { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import { getBundlerRPC, getViemNetwork } from "../BlockchainNetworks";
 import { ERC20TransferType, SFTTransferType, TransferType } from "../token";
 import { paymasterMiddleware } from "./paymaster";
-
-type GasFeeTransactionParams = {
-    maxFeePerGas?: BigNumberish;
-    maxPriorityFeePerGas?: BigNumberish;
-};
 
 export class EVMAAWallet extends LoggerWrapper {
     public readonly chain: EVMBlockchainIncludingTestnet;
@@ -58,7 +55,7 @@ export class EVMAAWallet extends LoggerWrapper {
             chain: getViemNetwork(chain),
             entryPoint,
             bundlerTransport: http(getBundlerRPC(chain)),
-            ...(hasEIP1559Support(chain) && paymasterMiddleware({ entryPoint, chain })),
+            ...(!usesGelatoBundler(chain) && paymasterMiddleware({ entryPoint, chain })),
         });
         this.chain = chain;
         this.publicClient = publicClient;
@@ -118,13 +115,6 @@ export class EVMAAWallet extends LoggerWrapper {
                     nonce: await getNonce(nonce),
                     data: await convertData(data),
                     ...this.getLegacyTransactionFeesParamsIfApply({ maxFeePerGas, maxPriorityFeePerGas }),
-                    maxFeePerBlobGas: undefined,
-                    blobs: undefined,
-                    blobVersionedHashes: undefined,
-                    kzg: undefined,
-                    sidecars: undefined,
-                    type: undefined,
-                    chain: null,
                 };
 
                 logInfo(`[EVMAAWallet - SEND_TRANSACTION] - tx_params: ${JSON.stringify(txParams)}`);
@@ -152,7 +142,7 @@ export class EVMAAWallet extends LoggerWrapper {
                             abi: erc20,
                             functionName: "transfer",
                             args: [toAddress, (config as ERC20TransferType).amount],
-                            ...this.getLegacyTransactionFeesParamsIfApply(),
+                            ...(usesGelatoBundler(this.chain) && gelatoBundlerProperties),
                         });
                         transaction = await publicClient.writeContract(request);
                         break;
@@ -165,7 +155,7 @@ export class EVMAAWallet extends LoggerWrapper {
                             abi: erc1155,
                             functionName: "safeTransferFrom",
                             args: [this.getAddress(), toAddress, tokenId, (config as SFTTransferType).quantity, "0x00"],
-                            ...this.getLegacyTransactionFeesParamsIfApply(),
+                            ...(usesGelatoBundler(this.chain) && gelatoBundlerProperties),
                         });
                         transaction = await publicClient.writeContract(request);
                         break;
@@ -178,7 +168,7 @@ export class EVMAAWallet extends LoggerWrapper {
                             abi: erc721,
                             functionName: "safeTransferFrom",
                             args: [this.getAddress(), toAddress, tokenId],
-                            ...this.getLegacyTransactionFeesParamsIfApply(),
+                            ...(usesGelatoBundler(this.chain) && gelatoBundlerProperties),
                         });
                         transaction = await publicClient.writeContract(request);
                         break;
@@ -235,7 +225,10 @@ export class EVMAAWallet extends LoggerWrapper {
         });
     }
 
-    private getLegacyTransactionFeesParamsIfApply(gasFeeParams?: GasFeeTransactionParams) {
+    private getLegacyTransactionFeesParamsIfApply(gasFeeParams?: {
+        maxFeePerGas?: BigNumberish;
+        maxPriorityFeePerGas?: BigNumberish;
+    }) {
         const { maxFeePerGas, maxPriorityFeePerGas } = gasFeeParams ?? {};
 
         if (hasEIP1559Support(this.chain)) {
@@ -250,12 +243,7 @@ export class EVMAAWallet extends LoggerWrapper {
                     "maxFeePerGas and maxPriorityFeePerGas are not supported on this chain as it supports Legacy Transacitons. Ignoring them."
                 );
             }
-            return {
-                // It's on zerodev doc that we need to ignore ts errros on maxFeePerGas and maxPriorityFeePerGas
-                // https://docs.zerodev.app/sdk/faqs/use-with-gelato#transaction-configuration
-                maxFeePerGas: "0x0" as any,
-                maxPriorityFeePerGas: "0x0" as any,
-            };
+            return gelatoBundlerProperties;
         }
     }
 }
