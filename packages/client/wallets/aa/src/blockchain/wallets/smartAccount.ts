@@ -1,5 +1,6 @@
 import { logInfo } from "@/services/logging";
-import { gelatoBundlerProperties, usesGelatoBundler } from "@/utils";
+import { TransactionError, gelatoBundlerProperties, usesGelatoBundler } from "@/utils";
+import { logPerformance } from "@/utils/log";
 import { SmartAccountClient } from "permissionless";
 import { EntryPoint } from "permissionless/types/entrypoint";
 
@@ -29,21 +30,34 @@ export function toCrossmintSmartAccountClient<Client extends SmartAccountClient<
             }
         },
         async sendTransaction(txn) {
-            txn = {
-                ...txn,
-                ...(usesGelatoBundler(crossmintChain) && gelatoBundlerProperties),
-            };
-            logInfo(`[CrossmintSmartWallet.sendTransaction] - params: ${JSON.stringify(txn)}`);
-            return smartAccountClient.sendTransaction(txn);
+            return logPerformance("CrossmintSmartWallet.sendTransaction", async () => {
+                try {
+                    txn = {
+                        ...txn,
+                        ...(usesGelatoBundler(crossmintChain) && gelatoBundlerProperties),
+                    };
+
+                    logInfo(`[CrossmintSmartWallet.sendTransaction] - params: ${JSON.stringify(txn)}`);
+                    return await smartAccountClient.sendTransaction(txn);
+                } catch (error) {
+                    throw new TransactionError(`Error sending transaction: ${error}`);
+                }
+            });
         },
         async sendUserOperation({ userOperation, middleware, account }) {
-            userOperation = {
-                ...userOperation,
-                ...(usesGelatoBundler(crossmintChain) && gelatoBundlerProperties),
-            };
+            return logPerformance("CrossmintSmartWallet.sendUserOperation", async () => {
+                const params = {
+                    userOperation: {
+                        ...userOperation,
+                        ...(usesGelatoBundler(crossmintChain) && gelatoBundlerProperties),
+                    },
+                    middleware,
+                    account,
+                };
 
-            logInfo(`[CrossmintSmartWallet.sendUserOperation] - params: ${{ userOperation, middleware, account }}`);
-            return smartAccountClient.sendUserOperation({ userOperation, middleware, account });
+                logInfo(`[CrossmintSmartWallet.sendUserOperation] - params: ${params}`);
+                return smartAccountClient.sendUserOperation(params);
+            });
         },
     };
 }
