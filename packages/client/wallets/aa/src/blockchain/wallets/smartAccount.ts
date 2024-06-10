@@ -27,7 +27,7 @@ export function toCrossmintSmartAccountClient<Client extends SmartAccountClient<
         async signTypedData(data) {
             return logPerformance("CrossmintSmartWallet.signTypedData", async () => {
                 try {
-                    return smartAccountClient.signTypedData(data);
+                    return await smartAccountClient.signTypedData(data);
                 } catch (error) {
                     throw new Error(`Error signing typed data. If this error persists, please contact support.`);
                 }
