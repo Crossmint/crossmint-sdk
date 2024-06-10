@@ -1,7 +1,7 @@
 import { ReservoirWallet } from "@reservoir0x/reservoir-sdk";
 import { hexToBigInt, http } from "viem";
 
-import { gelatoBundlerProperties, getBundlerRPC, usesGelatoBundler } from "..";
+import { getBundlerRPC } from "..";
 import { EVMAAWallet } from "../blockchain/wallets/EVMAAWallet";
 
 export function reservoirAdapter(wallet: EVMAAWallet): ReservoirWallet {
