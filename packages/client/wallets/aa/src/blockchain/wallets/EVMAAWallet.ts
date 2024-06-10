@@ -1,5 +1,4 @@
 import { logError, logInfo } from "@/services/logging";
-import { SignerMap, SignerType } from "@/types";
 import {
     SCW_SERVICE,
     TransactionError,
@@ -8,8 +7,10 @@ import {
     convertData,
     decorateSendTransactionData,
     errorToJSON,
+    gelatoBundlerProperties,
     getNonce,
     hasEIP1559Support,
+    usesGelatoBundler,
 } from "@/utils";
 import { resolveDeferrable } from "@/utils/deferrable";
 import { LoggerWrapper } from "@/utils/log";
@@ -17,6 +18,8 @@ import type { Deferrable } from "@ethersproject/properties";
 import { type TransactionRequest } from "@ethersproject/providers";
 import { KernelAccountClient, KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
 import { BigNumberish } from "ethers";
+import { SmartAccountClient } from "permissionless";
+import { SmartAccount } from "permissionless/accounts";
 import { EntryPoint } from "permissionless/types/entrypoint";
 import type { Hash, HttpTransport, PublicClient } from "viem";
 import { Chain, http, publicActions } from "viem";
@@ -30,16 +33,12 @@ import { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import { getBundlerRPC, getViemNetwork } from "../BlockchainNetworks";
 import { ERC20TransferType, SFTTransferType, TransferType } from "../token";
 import { paymasterMiddleware } from "./paymaster";
-
-type GasFeeTransactionParams = {
-    maxFeePerGas?: BigNumberish;
-    maxPriorityFeePerGas?: BigNumberish;
-};
+import { toCrossmintSmartAccountClient } from "./smartAccount";
 
 export class EVMAAWallet extends LoggerWrapper {
     public readonly chain: EVMBlockchainIncludingTestnet;
     public readonly publicClient: PublicClient;
-    private readonly kernelClient: KernelAccountClient<
+    private readonly smartAccountClient: KernelAccountClient<
         EntryPoint,
         HttpTransport,
         Chain,
@@ -54,19 +53,30 @@ export class EVMAAWallet extends LoggerWrapper {
         chain: EVMBlockchainIncludingTestnet
     ) {
         super("EVMAAWallet", { chain, address: account.address });
-        this.kernelClient = createKernelAccountClient({
+
+        const kernelClient: KernelAccountClient<
+            EntryPoint,
+            HttpTransport,
+            Chain,
+            KernelSmartAccount<EntryPoint, HttpTransport>
+        > = createKernelAccountClient({
             account,
             chain: getViemNetwork(chain),
             entryPoint,
             bundlerTransport: http(getBundlerRPC(chain)),
-            ...(hasEIP1559Support(chain) && paymasterMiddleware({ entryPoint, chain })),
+            ...(!usesGelatoBundler(chain) && paymasterMiddleware({ entryPoint, chain })),
+        });
+
+        this.smartAccountClient = toCrossmintSmartAccountClient({
+            smartAccountClient: kernelClient,
+            crossmintChain: chain,
         });
         this.chain = chain;
         this.publicClient = publicClient;
     }
 
     public getAddress() {
-        return this.kernelClient.account.address;
+        return this.smartAccountClient.account.address;
     }
 
     //TODO @matias: review this method.
@@ -89,18 +99,11 @@ export class EVMAAWallet extends LoggerWrapper {
                     nonce: await getNonce(nonce),
                     data: await convertData(data),
                     ...this.getLegacyTransactionFeesParamsIfApply({ maxFeePerGas, maxPriorityFeePerGas }),
-                    maxFeePerBlobGas: undefined,
-                    blobs: undefined,
-                    blobVersionedHashes: undefined,
-                    kzg: undefined,
-                    sidecars: undefined,
-                    type: undefined,
-                    chain: null,
                 };
 
                 logInfo(`[EVMAAWallet - SEND_TRANSACTION] - tx_params: ${JSON.stringify(txParams)}`);
 
-                return await this.kernelClient.sendTransaction(txParams);
+                return await this.smartAccountClient.sendTransaction(txParams);
             } catch (error) {
                 throw new TransactionError(`Error sending transaction: ${error}`);
             }
@@ -111,7 +114,7 @@ export class EVMAAWallet extends LoggerWrapper {
         return this.logPerformance("TRANSFER", async () => {
             const evmToken = config.token;
             const contractAddress = evmToken.contractAddress as `0x${string}`;
-            const publicClient = this.kernelClient.extend(publicActions);
+            const publicClient = this.smartAccountClient.extend(publicActions);
             let transaction;
             let tokenId;
             try {
@@ -123,7 +126,7 @@ export class EVMAAWallet extends LoggerWrapper {
                             abi: erc20,
                             functionName: "transfer",
                             args: [toAddress, (config as ERC20TransferType).amount],
-                            ...this.getLegacyTransactionFeesParamsIfApply(),
+                            ...(usesGelatoBundler(this.chain) && gelatoBundlerProperties),
                         });
                         transaction = await publicClient.writeContract(request);
                         break;
@@ -136,7 +139,7 @@ export class EVMAAWallet extends LoggerWrapper {
                             abi: erc1155,
                             functionName: "safeTransferFrom",
                             args: [this.getAddress(), toAddress, tokenId, (config as SFTTransferType).quantity, "0x00"],
-                            ...this.getLegacyTransactionFeesParamsIfApply(),
+                            ...(usesGelatoBundler(this.chain) && gelatoBundlerProperties),
                         });
                         transaction = await publicClient.writeContract(request);
                         break;
@@ -149,7 +152,7 @@ export class EVMAAWallet extends LoggerWrapper {
                             abi: erc721,
                             functionName: "safeTransferFrom",
                             args: [this.getAddress(), toAddress, tokenId],
-                            ...this.getLegacyTransactionFeesParamsIfApply(),
+                            ...(usesGelatoBundler(this.chain) && gelatoBundlerProperties),
                         });
                         transaction = await publicClient.writeContract(request);
                         break;
@@ -183,12 +186,15 @@ export class EVMAAWallet extends LoggerWrapper {
         });
     }
 
-    public getSigner<Type extends SignerType>(type: Type): SignerMap[Type] {
+    public getSigner(type: "viem" = "viem"): {
+        publicClient: PublicClient;
+        walletClient: SmartAccountClient<EntryPoint, HttpTransport, Chain, SmartAccount<EntryPoint>>;
+    } {
         switch (type) {
             case "viem": {
                 return {
                     publicClient: this.publicClient,
-                    walletClient: this.kernelClient,
+                    walletClient: this.smartAccountClient,
                 };
             }
             default:
@@ -206,7 +212,10 @@ export class EVMAAWallet extends LoggerWrapper {
         });
     }
 
-    private getLegacyTransactionFeesParamsIfApply(gasFeeParams?: GasFeeTransactionParams) {
+    private getLegacyTransactionFeesParamsIfApply(gasFeeParams?: {
+        maxFeePerGas?: BigNumberish;
+        maxPriorityFeePerGas?: BigNumberish;
+    }) {
         const { maxFeePerGas, maxPriorityFeePerGas } = gasFeeParams ?? {};
 
         if (hasEIP1559Support(this.chain)) {
@@ -221,12 +230,7 @@ export class EVMAAWallet extends LoggerWrapper {
                     "maxFeePerGas and maxPriorityFeePerGas are not supported on this chain as it supports Legacy Transacitons. Ignoring them."
                 );
             }
-            return {
-                // It's on zerodev doc that we need to ignore ts errros on maxFeePerGas and maxPriorityFeePerGas
-                // https://docs.zerodev.app/sdk/faqs/use-with-gelato#transaction-configuration
-                maxFeePerGas: "0x0" as any,
-                maxPriorityFeePerGas: "0x0" as any,
-            };
+            return gelatoBundlerProperties;
         }
     }
 }
