@@ -18,10 +18,10 @@ import type { Deferrable } from "@ethersproject/properties";
 import { type TransactionRequest } from "@ethersproject/providers";
 import { KernelAccountClient, KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
 import { BigNumberish } from "ethers";
-import { SmartAccountClient } from "permissionless";
-import { SmartAccount } from "permissionless/accounts";
-import { EntryPoint } from "permissionless/types/entrypoint";
-import type { Hash, HttpTransport, PublicClient, TypedDataDefinition } from "viem";
+import type { SmartAccountClient } from "permissionless";
+import type { SmartAccount } from "permissionless/accounts";
+import type { EntryPoint } from "permissionless/types/entrypoint";
+import type { Address, Hash, HttpTransport, PublicClient, TypedDataDefinition } from "viem";
 import { Chain, http, publicActions } from "viem";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
@@ -75,7 +75,7 @@ export class EVMAAWallet extends LoggerWrapper {
         this.publicClient = publicClient;
     }
 
-    public getAddress() {
+    public get address(): Address {
         return this.smartAccountClient.account.address;
     }
 
@@ -164,7 +164,7 @@ export class EVMAAWallet extends LoggerWrapper {
                             address: contractAddress,
                             abi: erc1155,
                             functionName: "safeTransferFrom",
-                            args: [this.getAddress(), toAddress, tokenId, (config as SFTTransferType).quantity, "0x00"],
+                            args: [this.address, toAddress, tokenId, (config as SFTTransferType).quantity, "0x00"],
                             ...(usesGelatoBundler(this.chain) && gelatoBundlerProperties),
                         });
                         transaction = await publicClient.writeContract(request);
@@ -177,7 +177,7 @@ export class EVMAAWallet extends LoggerWrapper {
                             address: contractAddress,
                             abi: erc721,
                             functionName: "safeTransferFrom",
-                            args: [this.getAddress(), toAddress, tokenId],
+                            args: [this.address, toAddress, tokenId],
                             ...(usesGelatoBundler(this.chain) && gelatoBundlerProperties),
                         });
                         transaction = await publicClient.writeContract(request);
@@ -212,24 +212,14 @@ export class EVMAAWallet extends LoggerWrapper {
         });
     }
 
-    public getSigner(type: "viem" = "viem"): {
-        publicClient: PublicClient;
-        walletClient: SmartAccountClient<EntryPoint, HttpTransport, Chain, SmartAccount<EntryPoint>>;
+    public get client(): {
+        public: PublicClient;
+        wallet: SmartAccountClient<EntryPoint, HttpTransport, Chain, SmartAccount<EntryPoint>>;
     } {
-        switch (type) {
-            case "viem": {
-                return {
-                    publicClient: this.publicClient,
-                    walletClient: this.smartAccountClient,
-                };
-            }
-            default:
-                logError("[GET_SIGNER] - ERROR", {
-                    service: SCW_SERVICE,
-                    error: errorToJSON("Invalid signer type"),
-                });
-                throw new Error("Invalid signer type");
-        }
+        return {
+            public: this.publicClient,
+            wallet: this.smartAccountClient,
+        };
     }
 
     public async getNFTs() {

@@ -6,7 +6,7 @@ import { EVMAAWallet } from "../blockchain/wallets/EVMAAWallet";
 
 export function reservoirAdapter(wallet: EVMAAWallet): ReservoirWallet {
     return {
-        address: async () => wallet.getAddress(),
+        address: async () => wallet.address,
         handleSignMessageStep: async (stepItem, _) => {
             const signData = stepItem.data?.sign;
             let signature: string | undefined;
