@@ -1,5 +1,4 @@
 import { logError } from "@/services/logging";
-import { SignerMap, SignerType } from "@/types";
 import {
     SCW_SERVICE,
     TransferError,
@@ -10,6 +9,8 @@ import {
 } from "@/utils";
 import { LoggerWrapper } from "@/utils/log";
 import { KernelAccountClient, KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
+import { SmartAccountClient } from "permissionless";
+import { SmartAccount } from "permissionless/accounts";
 import { EntryPoint } from "permissionless/types/entrypoint";
 import type { Hash, HttpTransport, PublicClient, TypedDataDefinition } from "viem";
 import { Chain, http, publicActions } from "viem";
@@ -23,11 +24,13 @@ import { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import { getBundlerRPC, getViemNetwork } from "../BlockchainNetworks";
 import { ERC20TransferType, SFTTransferType, TransferType } from "../token";
 import { paymasterMiddleware } from "./paymaster";
+import { toCrossmintSmartAccountClient } from "./smartAccount";
 
 export class EVMAAWallet extends LoggerWrapper {
     public readonly chain: EVMBlockchainIncludingTestnet;
     public readonly publicClient: PublicClient;
-    private readonly kernelClient: KernelAccountClient<
+
+    private readonly smartAccountClient: KernelAccountClient<
         EntryPoint,
         HttpTransport,
         Chain,
@@ -43,20 +46,29 @@ export class EVMAAWallet extends LoggerWrapper {
     ) {
         super("EVMAAWallet", { chain, address: account.address });
 
-        const shouldSponsor = !usesGelatoBundler(chain);
-        this.kernelClient = createKernelAccountClient({
+        const kernelClient: KernelAccountClient<
+            EntryPoint,
+            HttpTransport,
+            Chain,
+            KernelSmartAccount<EntryPoint, HttpTransport>
+        > = createKernelAccountClient({
             account,
             chain: getViemNetwork(chain),
             entryPoint,
             bundlerTransport: http(getBundlerRPC(chain)),
-            ...(shouldSponsor && paymasterMiddleware({ entryPoint, chain })),
+            ...(!usesGelatoBundler(chain) && paymasterMiddleware({ entryPoint, chain })),
+        });
+
+        this.smartAccountClient = toCrossmintSmartAccountClient({
+            smartAccountClient: kernelClient,
+            crossmintChain: chain,
         });
         this.chain = chain;
         this.publicClient = publicClient;
     }
 
     public getAddress() {
-        return this.kernelClient.account.address;
+        return this.smartAccountClient.account.address;
     }
 
     public async signMessage(message: string | Uint8Array) {
@@ -70,7 +82,7 @@ export class EVMAAWallet extends LoggerWrapper {
                     messageAsString = message;
                 }
 
-                return await this.kernelClient.signMessage({
+                return await this.smartAccountClient.signMessage({
                     message: messageAsString,
                 });
             } catch (error) {
@@ -81,11 +93,7 @@ export class EVMAAWallet extends LoggerWrapper {
 
     public async signTypedData(params: TypedDataDefinition) {
         return this.logPerformance("SIGN_TYPED_DATA", async () => {
-            try {
-                return await this.kernelClient.signTypedData(params);
-            } catch (error) {
-                throw new Error(`Error signing typed data. If this error persists, please contact support.`);
-            }
+            return await this.smartAccountClient.signTypedData(params);
         });
     }
 
@@ -93,7 +101,7 @@ export class EVMAAWallet extends LoggerWrapper {
         return this.logPerformance("TRANSFER", async () => {
             const evmToken = config.token;
             const contractAddress = evmToken.contractAddress as `0x${string}`;
-            const publicClient = this.kernelClient.extend(publicActions);
+            const publicClient = this.smartAccountClient.extend(publicActions);
             let transaction: Hash;
             let tokenId: string | undefined;
 
@@ -166,12 +174,15 @@ export class EVMAAWallet extends LoggerWrapper {
         });
     }
 
-    public getSigner<Type extends SignerType>(type: Type): SignerMap[Type] {
+    public getSigner(type: "viem" = "viem"): {
+        publicClient: PublicClient;
+        walletClient: SmartAccountClient<EntryPoint, HttpTransport, Chain, SmartAccount<EntryPoint>>;
+    } {
         switch (type) {
             case "viem": {
                 return {
                     publicClient: this.publicClient,
-                    walletClient: this.kernelClient,
+                    walletClient: this.smartAccountClient,
                 };
             }
             default:
