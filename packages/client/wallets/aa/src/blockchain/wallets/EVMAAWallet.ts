@@ -19,6 +19,7 @@ import { type TransactionRequest } from "@ethersproject/providers";
 import { KernelAccountClient, KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
 import { BigNumberish } from "ethers";
 import { SmartAccountClient } from "permissionless";
+import { SmartAccount } from "permissionless/accounts";
 import { EntryPoint } from "permissionless/types/entrypoint";
 import type { Hash, HttpTransport, PublicClient, TypedDataDefinition } from "viem";
 import { Chain, http, publicActions } from "viem";
@@ -213,7 +214,7 @@ export class EVMAAWallet extends LoggerWrapper {
 
     public getSigner(type: "viem" = "viem"): {
         publicClient: PublicClient;
-        walletClient: SmartAccountClient<EntryPoint, HttpTransport, Chain>;
+        walletClient: SmartAccountClient<EntryPoint, HttpTransport, Chain, SmartAccount<EntryPoint>>;
     } {
         switch (type) {
             case "viem": {
