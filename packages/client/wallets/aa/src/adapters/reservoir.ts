@@ -8,7 +8,7 @@ export function reservoirAdapter(wallet: EVMAAWallet): ReservoirWallet {
     return {
         address: async () => wallet.getAddress(),
         handleSignMessageStep: async ({ data }, _) => {
-            const walletClient = wallet.getSigner("viem").walletClient;
+            const { walletClient } = wallet.getSigner();
             const signData = data?.sign;
 
             if (signData == null) {
