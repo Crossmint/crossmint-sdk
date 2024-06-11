@@ -15,8 +15,10 @@ export interface UIConfig {
     fontSizeBase?: string;
     spacingUnit?: string;
     borderRadius?: string;
+    borderRadiusSecondary?: string;
     fontWeightPrimary?: string;
     fontWeightSecondary?: string;
+    fontWeightTertiary?: string;
     fonts?: UiConfigFonts;
     hideCardForm?: boolean;
 }
