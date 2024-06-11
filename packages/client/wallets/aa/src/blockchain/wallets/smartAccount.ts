@@ -1,5 +1,6 @@
 import { logInfo } from "@/services/logging";
 import { gelatoBundlerProperties, usesGelatoBundler } from "@/utils";
+import { logPerformance } from "@/utils/log";
 import { SmartAccountClient } from "permissionless";
 import { EntryPoint } from "permissionless/types/entrypoint";
 
@@ -15,18 +16,22 @@ export function toCrossmintSmartAccountClient<Client extends SmartAccountClient<
     return {
         ...smartAccountClient,
         async signMessage(args) {
-            try {
-                return await smartAccountClient.signMessage(args);
-            } catch (error) {
-                throw new Error(`Error signing message. If this error persists, please contact support.`);
-            }
+            return logPerformance("CrossmintSmartWallet.signMessage", async () => {
+                try {
+                    return await smartAccountClient.signMessage(args);
+                } catch (error) {
+                    throw new Error(`Error signing message. If this error persists, please contact support.`);
+                }
+            });
         },
         async signTypedData(data) {
-            try {
-                return smartAccountClient.signTypedData(data);
-            } catch (error) {
-                throw new Error(`Error signing typed data. If this error persists, please contact support.`);
-            }
+            return logPerformance("CrossmintSmartWallet.signTypedData", async () => {
+                try {
+                    return await smartAccountClient.signTypedData(data);
+                } catch (error) {
+                    throw new Error(`Error signing typed data. If this error persists, please contact support.`);
+                }
+            });
         },
         async sendTransaction(txn) {
             txn = {
