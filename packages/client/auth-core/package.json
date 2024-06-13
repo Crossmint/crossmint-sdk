@@ -1,0 +1,43 @@
+{
+    "author": "Paella Labs Inc",
+    "dependencies": {
+        "zod": "3.22.4"
+    },
+    "devDependencies": {
+        "@types/react": "18.2.21",
+        "@types/react-dom": "18.2.7",
+        "react": "18.2.0",
+        "react-dom": "18.2.0"
+    },
+    "exports": {
+        "import": "./dist/index.js",
+        "require": "./dist/index.cjs"
+    },
+    "files": [
+        "dist",
+        "src",
+        "LICENSE"
+    ],
+    "license": "Apache-2.0",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "name": "@crossmint/client-sdk-auth-core",
+    "peerDependencies": {
+        "react": ">=17.0.2",
+        "react-dom": ">=17.0.2"
+    },
+    "publishConfig": {
+        "access": "restricted"
+    },
+    "repository": "https://github.com/Crossmint/crossmint-sdk",
+    "scripts": {
+        "build": "yarn clean && tsup src/index.ts --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
+        "clean": "shx rm -rf dist/*",
+        "dev": "yarn clean && tsup src/index.ts --external react,react-dom --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
+        "test": "jest"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "types": "./dist/index.d.ts",
+    "version": "0.0.1"
+}
