@@ -21,11 +21,11 @@ export class Lit {
 
         const usageOrigin = getUsageOrigin();
         if (usageOrigin == null) {
-            console.error(
+            console.warn(
                 "Unknown environment, make sure the sdk is running client side, The Crossmint Lit wrapper is meant to be used in the browser, refer to the @lit-protocol/lit-node-client-nodejs package for server usage."
             );
         } else if (usageOrigin === APIKeyUsageOrigin.SERVER) {
-            throw new Error(
+            console.warn(
                 "The Crossmint Lit wrapper is a client side tool meant to be used in the browser, not in a server environment, refer to the @lit-protocol/lit-node-client-nodejs package for server usage."
             );
         }

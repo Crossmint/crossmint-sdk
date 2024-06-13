@@ -1,65 +1,201 @@
 import { logError, logInfo } from "@/services/logging";
-import { SignerType } from "@/types";
-import { SCW_SERVICE, errorToJSON } from "@/utils";
-import { verifyMessage } from "@ambire/signature-validator";
 import {
-    ERC165SessionKeyProvider,
-    KernelSmartContractAccount,
-    KillSwitchProvider,
-    ValidatorMode,
-    ZeroDevEthersProvider,
-    constants,
-    convertEthersSignerToAccountSigner,
-} from "@zerodev/sdk";
-import { ethers } from "ethers";
-import { WalletClient, createWalletClient, custom, getFunctionSelector, publicActions } from "viem";
+    SCW_SERVICE,
+    TransactionError,
+    TransferError,
+    WalletSdkError,
+    convertData,
+    decorateSendTransactionData,
+    errorToJSON,
+    gelatoBundlerProperties,
+    getNonce,
+    hasEIP1559Support,
+    usesGelatoBundler,
+} from "@/utils";
+import { resolveDeferrable } from "@/utils/deferrable";
+import { LoggerWrapper } from "@/utils/log";
+import type { Deferrable } from "@ethersproject/properties";
+import { type TransactionRequest } from "@ethersproject/providers";
+import { KernelAccountClient, KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
+import { BigNumberish } from "ethers";
+import { SmartAccountClient } from "permissionless";
+import { SmartAccount } from "permissionless/accounts";
+import { EntryPoint } from "permissionless/types/entrypoint";
+import type { Hash, HttpTransport, PublicClient } from "viem";
+import { Chain, http, publicActions } from "viem";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
+import erc20 from "../../ABI/ERC20.json";
+import erc721 from "../../ABI/ERC721.json";
+import erc1155 from "../../ABI/ERC1155.json";
 import { CrossmintWalletService } from "../../api/CrossmintWalletService";
-import { GenerateSignatureDataInput } from "../../types/API";
-import {
-    getBlockchainByChainId,
-    getUrlProviderByBlockchain,
-    getViemNetwork,
-    getZeroDevProjectIdByBlockchain,
-} from "../BlockchainNetworks";
-import { Custodian } from "../plugins";
-import { TokenType } from "../token/Tokens";
-import BaseWallet from "./BaseWallet";
-import { ZeroDevEip1193Bridge } from "./ZeroDevEip1193Bridge";
+import { getBundlerRPC, getViemNetwork } from "../BlockchainNetworks";
+import { ERC20TransferType, SFTTransferType, TransferType } from "../token";
+import { paymasterMiddleware } from "./paymaster";
+import { toCrossmintSmartAccountClient } from "./smartAccount";
 
-type SignerMap = {
-    ethers: ethers.Signer;
-    viem: WalletClient;
-};
+export class EVMAAWallet extends LoggerWrapper {
+    public readonly chain: EVMBlockchainIncludingTestnet;
+    public readonly publicClient: PublicClient;
+    private readonly smartAccountClient: KernelAccountClient<
+        EntryPoint,
+        HttpTransport,
+        Chain,
+        KernelSmartAccount<EntryPoint, HttpTransport>
+    >;
 
-export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchainIncludingTestnet> extends BaseWallet {
-    private sessionKeySignerAddress?: string;
-    chain: B;
+    constructor(
+        private readonly account: KernelSmartAccount<EntryPoint, HttpTransport>,
+        private readonly crossmintService: CrossmintWalletService,
+        publicClient: PublicClient<HttpTransport>,
+        entryPoint: EntryPoint,
+        chain: EVMBlockchainIncludingTestnet
+    ) {
+        super("EVMAAWallet", { chain, address: account.address });
 
-    constructor(provider: ZeroDevEthersProvider<"ECDSA">, crossmintService: CrossmintWalletService, chain: B) {
-        super(provider, crossmintService);
+        const kernelClient: KernelAccountClient<
+            EntryPoint,
+            HttpTransport,
+            Chain,
+            KernelSmartAccount<EntryPoint, HttpTransport>
+        > = createKernelAccountClient({
+            account,
+            chain: getViemNetwork(chain),
+            entryPoint,
+            bundlerTransport: http(getBundlerRPC(chain)),
+            ...(!usesGelatoBundler(chain) && paymasterMiddleware({ entryPoint, chain })),
+        });
+
+        this.smartAccountClient = toCrossmintSmartAccountClient({
+            smartAccountClient: kernelClient,
+            crossmintChain: chain,
+        });
         this.chain = chain;
+        this.publicClient = publicClient;
     }
 
-    async getSigner<Type extends SignerType = SignerType>(type: Type): Promise<SignerMap[Type]> {
-        switch (type) {
-            case "ethers":
-                return this.provider.getSigner() as any;
-            case "viem": {
-                const customeip1193Provider = new ZeroDevEip1193Bridge(this.provider.getAccountSigner(), this.provider);
-                const customTransport = custom({
-                    async request({ method, params }) {
-                        return customeip1193Provider.send(method, params);
-                    },
+    public getAddress() {
+        return this.smartAccountClient.account.address;
+    }
+
+    //TODO @matias: review this method.
+    // First, I would like to use TransactionRequest from viem instead of ethers.
+    // Second, we need to check if chain supports eip-1559 ro not:
+    // - If it does, we need to send maxFeePerGas and maxPriorityFeePerGas
+    // - If it doesn't, we need to send gasPrice
+    // And with the use of viem TransactionRequest, we can specify the TransactionRequest type (eip1559 or legacy) and be more accurate
+    public async sendTransaction(transaction: Deferrable<TransactionRequest>): Promise<Hash> {
+        return this.logPerformance("SEND_TRANSACTION", async () => {
+            try {
+                const decoratedTransaction = await decorateSendTransactionData(transaction);
+                const { to, value, gasLimit, nonce, data, maxFeePerGas, maxPriorityFeePerGas } =
+                    await resolveDeferrable(decoratedTransaction);
+
+                const txParams = {
+                    to: to as `0x${string}`,
+                    value: value ? BigInt(value.toString()) : undefined,
+                    gas: gasLimit ? BigInt(gasLimit.toString()) : undefined,
+                    nonce: await getNonce(nonce),
+                    data: await convertData(data),
+                    ...this.getLegacyTransactionFeesParamsIfApply({ maxFeePerGas, maxPriorityFeePerGas }),
+                };
+
+                logInfo(`[EVMAAWallet - SEND_TRANSACTION] - tx_params: ${JSON.stringify(txParams)}`);
+
+                return await this.smartAccountClient.sendTransaction(txParams);
+            } catch (error) {
+                throw new TransactionError(`Error sending transaction: ${error}`);
+            }
+        });
+    }
+
+    public async transfer(toAddress: string, config: TransferType): Promise<string> {
+        return this.logPerformance("TRANSFER", async () => {
+            const evmToken = config.token;
+            const contractAddress = evmToken.contractAddress as `0x${string}`;
+            const publicClient = this.smartAccountClient.extend(publicActions);
+            let transaction;
+            let tokenId;
+            try {
+                switch (evmToken.type) {
+                    case "ft": {
+                        const { request } = await publicClient.simulateContract({
+                            account: this.account,
+                            address: contractAddress,
+                            abi: erc20,
+                            functionName: "transfer",
+                            args: [toAddress, (config as ERC20TransferType).amount],
+                            ...(usesGelatoBundler(this.chain) && gelatoBundlerProperties),
+                        });
+                        transaction = await publicClient.writeContract(request);
+                        break;
+                    }
+                    case "sft": {
+                        tokenId = evmToken.tokenId;
+                        const { request } = await publicClient.simulateContract({
+                            account: this.account,
+                            address: contractAddress,
+                            abi: erc1155,
+                            functionName: "safeTransferFrom",
+                            args: [this.getAddress(), toAddress, tokenId, (config as SFTTransferType).quantity, "0x00"],
+                            ...(usesGelatoBundler(this.chain) && gelatoBundlerProperties),
+                        });
+                        transaction = await publicClient.writeContract(request);
+                        break;
+                    }
+                    case "nft": {
+                        tokenId = evmToken.tokenId;
+                        const { request } = await publicClient.simulateContract({
+                            account: this.account,
+                            address: contractAddress,
+                            abi: erc721,
+                            functionName: "safeTransferFrom",
+                            args: [this.getAddress(), toAddress, tokenId],
+                            ...(usesGelatoBundler(this.chain) && gelatoBundlerProperties),
+                        });
+                        transaction = await publicClient.writeContract(request);
+                        break;
+                    }
+                    default: {
+                        throw new WalletSdkError(`Token not supported`);
+                    }
+                }
+
+                if (transaction != null) {
+                    return transaction;
+                } else {
+                    throw new TransferError(
+                        `Error transferring token ${evmToken.contractAddress}
+                    ${!tokenId ? "" : ` tokenId=${tokenId}`}
+                    ${!transaction ? "" : ` with transaction hash ${transaction}`}`
+                    );
+                }
+            } catch (error) {
+                logError("[TRANSFER] - ERROR_TRANSFERRING_TOKEN", {
+                    service: SCW_SERVICE,
+                    error: errorToJSON(error),
+                    tokenId: tokenId,
+                    contractAddress: evmToken.contractAddress,
+                    chain: evmToken.chain,
                 });
-                const walletClient = createWalletClient({
-                    account: await this.getAddress(),
-                    chain: getViemNetwork(this.chain),
-                    transport: customTransport,
-                }).extend(publicActions);
-                return walletClient as any;
+                throw new TransferError(
+                    `Error transferring token ${evmToken.contractAddress}${tokenId == null ? "" : `:${tokenId}}`}`
+                );
+            }
+        });
+    }
+
+    public getSigner(type: "viem" = "viem"): {
+        publicClient: PublicClient;
+        walletClient: SmartAccountClient<EntryPoint, HttpTransport, Chain, SmartAccount<EntryPoint>>;
+    } {
+        switch (type) {
+            case "viem": {
+                return {
+                    publicClient: this.publicClient,
+                    walletClient: this.smartAccountClient,
+                };
             }
             default:
                 logError("[GET_SIGNER] - ERROR", {
@@ -70,226 +206,31 @@ export class EVMAAWallet<B extends EVMBlockchainIncludingTestnet = EVMBlockchain
         }
     }
 
-    async verifyMessage(message: string, signature: string) {
-        return verifyMessage({
-            provider: this.provider,
-            signer: await this.getAddress(),
-            message,
-            signature,
+    public async getNFTs() {
+        return this.logPerformance("GET_NFTS", async () => {
+            return this.crossmintService.fetchNFTs(this.account.address, this.chain);
         });
     }
 
-    setSessionKeySignerAddress(sessionKeySignerAddress: string) {
-        this.sessionKeySignerAddress = sessionKeySignerAddress;
-    }
+    private getLegacyTransactionFeesParamsIfApply(gasFeeParams?: {
+        maxFeePerGas?: BigNumberish;
+        maxPriorityFeePerGas?: BigNumberish;
+    }) {
+        const { maxFeePerGas, maxPriorityFeePerGas } = gasFeeParams ?? {};
 
-    async setCustodianForTokens(tokenType?: TokenType, custodian?: Custodian) {
-        try {
-            logInfo("[SET_CUSTODIAN_FOR_TOKENS] - INIT", {
-                service: SCW_SERVICE,
-                tokenType,
-                custodian,
-            });
-            const selector = getFunctionSelector("transferERC721Action(address, uint256, address)");
-
-            const rpcProvider = getUrlProviderByBlockchain(this.chain);
-            const jsonRpcProvider = new ethers.providers.JsonRpcProvider(rpcProvider);
-            const sessionKeySigner = jsonRpcProvider.getSigner(this.sessionKeySignerAddress);
-
-            const erc165SessionKeyProvider = await ERC165SessionKeyProvider.init({
-                projectId: getZeroDevProjectIdByBlockchain(this.chain), // ZeroDev projectId
-                sessionKey: convertEthersSignerToAccountSigner(sessionKeySigner), // Session Key signer
-                sessionKeyData: {
-                    selector, // Function selector in the executor contract to execute
-                    erc165InterfaceId: "0x80ac58cd", // Supported interfaceId of the contract the executor calls
-                    validAfter: 0,
-                    validUntil: 0,
-                    addressOffset: 16, // Address offest of the contract called by the executor in the calldata
-                },
-                opts: {
-                    accountConfig: {
-                        accountAddress: (await this.getAddress()) as `0x${string}`,
-                    },
-                    validatorConfig: {
-                        mode: ValidatorMode.plugin,
-                        executor: constants.TOKEN_ACTION, // Address of the executor contract
-                        selector, // Function selector in the executor contract to execute
-                    },
-                },
-            });
-            const enableSig = await this.provider
-                .getAccountProvider()
-                .getValidator()
-                .approveExecutor(
-                    (await this.getAddress()) as `0x${string}`,
-                    selector,
-                    constants.TOKEN_ACTION,
-                    0,
-                    0,
-                    erc165SessionKeyProvider.getValidator()
-                );
-
-            const generateSessionKeyDataInput: GenerateSignatureDataInput = {
-                sessionKeyData: enableSig,
-                smartContractWalletAddress: await this.getAddress(),
-                chain: this.chain,
-                version: 0,
+        if (hasEIP1559Support(this.chain)) {
+            return {
+                // only include if non-null and non-zero
+                ...(maxFeePerGas && { maxFeePerGas: BigInt(maxFeePerGas.toString()) }),
+                ...(maxPriorityFeePerGas && { maxPriorityFeePerGas: BigInt(maxPriorityFeePerGas.toString()) }),
             };
-
-            await this.crossmintService.generateChainData(generateSessionKeyDataInput);
-            logInfo("[SET_CUSTODIAN_FOR_TOKENS] - FINISH", {
-                service: SCW_SERVICE,
-                tokenType,
-                custodian,
-            });
-        } catch (error) {
-            logError("[SET_CUSTODIAN_FOR_TOKENS] - ERROR", {
-                service: SCW_SERVICE,
-                error: errorToJSON(error),
-                tokenType,
-                custodian,
-            });
-            throw new Error(`Error setting custodian for tokens. If this error persists, please contact support.`);
-        }
-    }
-
-    async setCustodianForKillswitch(custodian?: Custodian | undefined) {
-        try {
-            logInfo("[SET_CUSTODIAN_FOR_KILLSWITCH] - INIT", {
-                service: SCW_SERVICE,
-                custodian,
-            });
-            const selectorKs = getFunctionSelector("toggleKillSwitch()");
-
-            const rpcProvider = getUrlProviderByBlockchain(this.chain);
-            const jsonRpcProvider = new ethers.providers.JsonRpcProvider(rpcProvider);
-            const sessionKeySigner = jsonRpcProvider.getSigner(this.sessionKeySignerAddress);
-
-            const blockerKillSwitchProvider = await KillSwitchProvider.init({
-                projectId: getZeroDevProjectIdByBlockchain(this.chain), // zeroDev projectId
-                guardian: convertEthersSignerToAccountSigner(sessionKeySigner), // Guardian signer
-                delaySeconds: 1000, // Delay in seconds
-                opts: {
-                    accountConfig: {
-                        accountAddress: (await this.getAddress()) as `0x${string}`,
-                    },
-                    validatorConfig: {
-                        mode: ValidatorMode.plugin,
-                        executor: constants.KILL_SWITCH_ACTION, // Address of the executor contract
-                        selector: selectorKs, // Function selector in the executor contract to toggleKillSwitch()
-                    },
-                },
-            });
-            const enableSig = await this.provider
-                .getAccountProvider()
-                .getValidator()
-                .approveExecutor(
-                    (await this.getAddress()) as `0x${string}`,
-                    selectorKs,
-                    constants.KILL_SWITCH_ACTION,
-                    0,
-                    0,
-                    blockerKillSwitchProvider.getValidator()
+        } else {
+            if (maxFeePerGas || maxPriorityFeePerGas) {
+                console.warn(
+                    "maxFeePerGas and maxPriorityFeePerGas are not supported on this chain as it supports Legacy Transacitons. Ignoring them."
                 );
-
-            const generateKillSwitchDataInput: GenerateSignatureDataInput = {
-                killSwitchData: enableSig,
-                smartContractWalletAddress: await this.getAddress(),
-                chain: this.chain,
-                version: 0,
-            };
-
-            await this.crossmintService.generateChainData(generateKillSwitchDataInput);
-            logInfo("[SET_CUSTODIAN_FOR_KILLSWITCH] - FINISH", {
-                service: SCW_SERVICE,
-                custodian,
-            });
-        } catch (error) {
-            logError("[SET_CUSTODIAN_FOR_KILLSWITCH] - ERROR", {
-                service: SCW_SERVICE,
-                error: errorToJSON(error),
-                custodian,
-            });
-            throw new Error(`Error setting custodian for killswitch. If this error persists, please contact support.`);
+            }
+            return gelatoBundlerProperties;
         }
-    }
-
-    async upgradeVersion() {
-        try {
-            logInfo("[UPGRADE_VERSION] - INIT", { service: SCW_SERVICE });
-            const sessionKeys = await this.crossmintService!.createSessionKey(await this.getAddress());
-            if (sessionKeys == null) {
-                throw new Error("Abstract Wallet doesn't have a session key signer address");
-            }
-
-            const latestVersion = await this.crossmintService.checkVersion(await this.getAddress());
-            if (latestVersion.isUpToDate) {
-                return;
-            }
-
-            const versionInfo = latestVersion.latestVersion;
-            if (versionInfo == null) {
-                throw new Error("New version info not found");
-            }
-
-            const abstractAddress = await this.getAddress();
-
-            let jsonRpcProviderUrl = versionInfo.providerUrl;
-            if (jsonRpcProviderUrl == null && versionInfo.chainId) {
-                const blockchainType = getBlockchainByChainId(versionInfo.chainId);
-                jsonRpcProviderUrl = getUrlProviderByBlockchain(blockchainType!);
-            }
-
-            const jsonRpcProvider = new ethers.providers.JsonRpcProvider(jsonRpcProviderUrl);
-            const sessionKeySigner = jsonRpcProvider.getSigner(sessionKeys.sessionKeySignerAddress);
-
-            const selector = getFunctionSelector(versionInfo.method);
-
-            const erc165SessionKeyProvider = await ERC165SessionKeyProvider.init({
-                projectId: getZeroDevProjectIdByBlockchain(this.chain),
-                sessionKey: convertEthersSignerToAccountSigner(sessionKeySigner),
-                sessionKeyData: {
-                    selector: versionInfo.selector,
-                    erc165InterfaceId: versionInfo.erc165InterfaceId,
-                    validAfter: versionInfo.validAfter,
-                    validUntil: versionInfo.validUntil,
-                    addressOffset: versionInfo.addressOffset,
-                },
-                opts: {
-                    accountConfig: {
-                        accountAddress: abstractAddress as `0x${string}`,
-                    },
-                    validatorConfig: {
-                        mode: versionInfo.mode,
-                        executor: versionInfo.executor,
-                        selector: selector,
-                    },
-                },
-            });
-
-            const enableSig = await (this.provider.accountProvider.account as KernelSmartContractAccount)
-                .getValidator()
-                .approveExecutor(
-                    abstractAddress as `0x${string}`,
-                    versionInfo.selector,
-                    versionInfo.tokenAction,
-                    0,
-                    0,
-                    erc165SessionKeyProvider.getValidator()
-                );
-
-            await this.crossmintService.updateWallet(await this.getAddress(), enableSig, 1);
-            logInfo("[UPGRADE_VERSION - FINISH", { service: SCW_SERVICE });
-        } catch (error) {
-            logError("[UPGRADE_VERSION] - ERROR", {
-                service: SCW_SERVICE,
-                error: errorToJSON(error),
-            });
-            throw new Error(`Error upgrading version. If this error persists, please contact support.`);
-        }
-    }
-
-    async getNFTs() {
-        return this.crossmintService.fetchNFTs(await this.getAddress());
     }
 }

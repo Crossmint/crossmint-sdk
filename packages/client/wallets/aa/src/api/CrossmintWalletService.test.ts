@@ -1,16 +1,20 @@
 import { CROSSMINT_STG_URL } from "../utils";
 import { CrossmintWalletService } from "./CrossmintWalletService";
 
-jest.mock("@/blockchain", () => ({
-    getApiUrlByBlockchainType: jest.fn(),
-}));
-jest.mock("@/services/logging", () => ({
+jest.mock("../services/logging", () => ({
     logError: jest.fn(),
+    logInfo: jest.fn(),
 }));
 jest.mock("@/utils/error", () => ({
     CrossmintServiceError: jest.fn(),
     errorToJSON: jest.fn(),
 }));
+
+jest.mock("../utils/helpers", () => {
+    return {
+        isLocalhost: jest.fn().mockReturnValue(true),
+    };
+});
 
 describe("CrossmintService", () => {
     let crossmintService: CrossmintWalletService;
@@ -33,19 +37,6 @@ describe("CrossmintService", () => {
 
             // Check if the base URL is correctly set to the staging URL
             expect(crossmintService["crossmintBaseUrl"]).toBe(CROSSMINT_STG_URL);
-        });
-    });
-
-    describe("createSessionKey", () => {
-        it("should call fetchCrossmintAPI with correct arguments", async () => {
-            global.fetch = jest.fn().mockResolvedValue({
-                ok: true,
-                json: () => Promise.resolve({}),
-            });
-
-            const address = "test-address";
-            await crossmintService.createSessionKey(address);
-            expect(global.fetch).toHaveBeenCalledWith(expect.any(String), expect.any(Object));
         });
     });
 

@@ -1,4 +1,3 @@
-import { nanoid } from "nanoid";
 import { z } from "zod";
 
 import {
@@ -10,6 +9,7 @@ import {
     HandshakeParentEvents,
 } from ".";
 import { EventEmitter, EventMap, SendActionArgs, SendActionOptions } from "../EventEmitter";
+import { generateRandomString } from "@/utils/generateRandomString";
 
 export class HandshakeParent<IncomingEvents extends EventMap, OutgoingEvents extends EventMap> extends EventEmitter<
     IncomingEvents,
@@ -19,8 +19,8 @@ export class HandshakeParent<IncomingEvents extends EventMap, OutgoingEvents ext
     isConnected = false;
 
     constructor(
-        protected otherWindow: Window,
-        protected targetOrigin: string,
+        otherWindow: Window,
+        targetOrigin: string,
         options?: EventEmitterWithHandshakeOptions<IncomingEvents, OutgoingEvents>
     ) {
         const mergedIncomingEvents = {
@@ -43,7 +43,7 @@ export class HandshakeParent<IncomingEvents extends EventMap, OutgoingEvents ext
             console.log("[server] Already connected to child");
             return;
         }
-        const requestVerificationId = nanoid();
+        const requestVerificationId = generateRandomString();
 
         await this._sendAction({
             event: "handshakeRequest",

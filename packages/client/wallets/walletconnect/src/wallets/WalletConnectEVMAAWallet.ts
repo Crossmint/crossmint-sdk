@@ -20,6 +20,6 @@ export class WalletConnectEVMAAWallet implements CrossmintWalletConnectEVMWallet
 
     async sendTransaction(transaction: TransactionRequest) {
         const response = await this.aaWallet.sendTransaction(transaction);
-        return response.hash;
+        return response;
     }
 }

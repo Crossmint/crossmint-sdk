@@ -13,18 +13,12 @@ export class PopupWindow<IncomingEvents extends EventMap, OutgoingEvents extends
     IncomingEvents,
     OutgoingEvents
 > {
-    window: Window;
-    targetOrigin: string;
-
     private constructor(
-        window: Window,
+        public window: Window,
         targetOrigin: string,
         options?: EventEmitterWithHandshakeOptions<IncomingEvents, OutgoingEvents>
     ) {
         super(window, targetOrigin, options);
-
-        this.window = window;
-        this.targetOrigin = targetOrigin;
     }
 
     static async init<IncomingEvents extends EventMap, OutgoingEvents extends EventMap>(
@@ -33,7 +27,7 @@ export class PopupWindow<IncomingEvents extends EventMap, OutgoingEvents extends
     ) {
         return new PopupWindow<IncomingEvents, OutgoingEvents>(
             await createPopup(url, options),
-            urlToOrigin(url),
+            options?.targetOrigin || urlToOrigin(url),
             options
         );
     }

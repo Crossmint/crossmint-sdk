@@ -1,115 +1,77 @@
 import { CrossmintWalletService } from "@/api";
-import { EVMAAWallet, getChainIdByBlockchain, getZeroDevProjectIdByBlockchain, isEVMBlockchain } from "@/blockchain";
+import { getBundlerRPC } from "@/blockchain";
 import type { CrossmintAASDKInitParams, WalletConfig } from "@/types";
-import { CURRENT_VERSION, SCW_SERVICE, WalletSdkError, ZERO_DEV_TYPE, createOwnerSigner, errorToJSON } from "@/utils";
-import { ZeroDevEthersProvider } from "@zerodev/sdk";
+import { WalletSdkError } from "@/utils";
+import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
+import { EntryPointVersion } from "permissionless/types/entrypoint";
+import { createPublicClient, http } from "viem";
 
-import { BlockchainIncludingTestnet, UserIdentifierParams, validateAPIKey } from "@crossmint/common-sdk-base";
+import { EVMBlockchainIncludingTestnet, UserIdentifierParams, validateAPIKey } from "@crossmint/common-sdk-base";
 
-import { logError, logInfo } from "./services/logging";
+import EOAWalletService from "./blockchain/wallets/eoa";
+import { LoggerWrapper, logPerformance } from "./utils/log";
 import { parseUserIdentifier } from "./utils/user";
 
-export class CrossmintAASDK {
-    crossmintService: CrossmintWalletService;
-    private readonly projectId: string;
+export class CrossmintAASDK extends LoggerWrapper {
+    private readonly crossmintService: CrossmintWalletService;
+    private readonly eaoWalletService: EOAWalletService;
 
     private constructor(config: CrossmintAASDKInitParams) {
+        super("CrossmintAASDK");
         const validationResult = validateAPIKey(config.apiKey);
         if (!validationResult.isValid) {
             throw new Error("API key invalid");
         }
 
-        this.projectId = validationResult.projectId;
         this.crossmintService = new CrossmintWalletService(config.apiKey);
+        this.eaoWalletService = new EOAWalletService(this.crossmintService);
     }
 
     static init(params: CrossmintAASDKInitParams): CrossmintAASDK {
         return new CrossmintAASDK(params);
     }
 
-    async getOrCreateWallet<B extends BlockchainIncludingTestnet = BlockchainIncludingTestnet>(
+    async getOrCreateWallet(
         user: UserIdentifierParams,
-        chain: B,
+        chain: EVMBlockchainIncludingTestnet,
         walletConfig: WalletConfig
     ) {
-        try {
-            logInfo("[GET_OR_CREATE_WALLET] - INIT", {
-                service: SCW_SERVICE,
-                user,
-                chain,
-            });
-
-            const userIdentifier = parseUserIdentifier(user);
-
-            const owner = await createOwnerSigner({
-                userIdentifier,
-                projectId: this.projectId,
-                chain,
-                walletConfig,
-                crossmintService: this.crossmintService,
-            });
-
-            const address = await owner.getAddress();
-
-            const zDevProvider = await ZeroDevEthersProvider.init("ECDSA", {
-                projectId: getZeroDevProjectIdByBlockchain(chain),
-                owner,
-                opts: {
-                    paymasterConfig: {
-                        policy: "VERIFYING_PAYMASTER",
-                    },
-                },
-            });
-
-            if (!isEVMBlockchain(chain)) {
-                throw new WalletSdkError(`The blockchain ${chain} is still not supported`);
-            }
-
-            const evmAAWallet = new EVMAAWallet(zDevProvider, this.crossmintService, chain);
-
-            const abstractAddress = await evmAAWallet.getAddress();
-            const { sessionKeySignerAddress } = await this.crossmintService.createSessionKey(abstractAddress);
-
-            evmAAWallet.setSessionKeySignerAddress(sessionKeySignerAddress);
-
-            await this.crossmintService.storeAbstractWallet({
-                userIdentifier,
-                type: ZERO_DEV_TYPE,
-                smartContractWalletAddress: abstractAddress,
-                eoaAddress: address,
-                sessionKeySignerAddress,
-                version: CURRENT_VERSION,
-                baseLayer: "evm",
-                chainId: getChainIdByBlockchain(chain),
-            });
-            logInfo("[GET_OR_CREATE_WALLET] - FINISH", {
-                service: SCW_SERVICE,
-                userEmail: user.email!,
-                chain,
-                abstractAddress,
-            });
-            return evmAAWallet;
-        } catch (error: any) {
-            logError("[GET_OR_CREATE_WALLET] - ERROR_CREATING_WALLET", {
-                service: SCW_SERVICE,
-                error: errorToJSON(error),
-                user,
-                chain,
-            });
-
-            throw new WalletSdkError(`Error creating the Wallet [${error?.name ?? ""}]`);
-        }
+        return logPerformance(
+            "GET_OR_CREATE_WALLET",
+            async () => {
+                try {
+                    const userIdentifier = parseUserIdentifier(user);
+                    const entryPointVersion = await this.getEntryPointVersion(userIdentifier, chain);
+                    return this.eaoWalletService.getOrCreate({
+                        userIdentifier,
+                        chain,
+                        publicClient: createPublicClient({
+                            transport: http(getBundlerRPC(chain)),
+                        }),
+                        entryPointVersion,
+                        entryPoint: entryPointVersion === "v0.6" ? ENTRYPOINT_ADDRESS_V06 : ENTRYPOINT_ADDRESS_V07,
+                        walletConfig,
+                    });
+                } catch (error: any) {
+                    throw new WalletSdkError(`Error creating the Wallet ${error?.message ? `: ${error.message}` : ""}`);
+                }
+            },
+            { user, chain }
+        );
     }
 
-    /**
-     * Clears all key material and state from device storage, related to all wallets stored. Call this method when the user signs out of your app, if you don't have a user identifier.
-     */
-    async purgeAllWalletData(): Promise<void> {
-        //Removes the Fireblocks NCW data stored on the localstorage
-        const keys = Object.keys(localStorage);
-        const keysToDelete = keys.filter((key) => key.startsWith("NCW-"));
-        keysToDelete.forEach((key) => {
-            localStorage.removeItem(key);
-        });
+    private async getEntryPointVersion(
+        userIdentifier: UserIdentifierParams,
+        chain: EVMBlockchainIncludingTestnet
+    ): Promise<EntryPointVersion> {
+        if (userIdentifier.email == null && userIdentifier.userId == null) {
+            throw new WalletSdkError(`Email or userId is required to get the entry point version`);
+        }
+
+        const { entryPointVersion } = await this.crossmintService.getAbstractWalletEntryPointVersion(
+            userIdentifier,
+            chain
+        );
+        return entryPointVersion;
     }
 }

@@ -21,8 +21,12 @@ function getNFTLocator(nft: NFTOrNFTLocator) {
     switch (nft.chain) {
         case "solana":
             return `${nft.chain}:${nft.mintHash}`;
+        case "hypersonic-testnet":
         case "polygon":
         case "ethereum":
+        case "astar-zkevm":
+        case "polygon-mumbai":
+        case "polygon-amoy":
         case "bsc":
             return `${nft.chain}:${nft.contractAddress}:${nft.tokenId}`;
         case "cardano":

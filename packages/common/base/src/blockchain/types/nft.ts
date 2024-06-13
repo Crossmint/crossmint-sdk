@@ -1,8 +1,8 @@
 import { Blockchain } from ".";
-import { EVMBlockchain } from "./evm";
+import { EVMBlockchainIncludingTestnet } from "./evm";
 
 export interface EVMNFT {
-    chain: EVMBlockchain;
+    chain: EVMBlockchainIncludingTestnet;
     contractAddress: string;
     tokenId: string;
 }
@@ -17,7 +17,9 @@ export interface CardanoNFT {
     assetId: string;
 }
 
-export type NFTLocator<T extends Blockchain> = `${T}:${string}${T extends EVMBlockchain ? `:${string}` : ""}`;
+export type NFTLocator<T extends Blockchain> = `${T}:${string}${T extends EVMBlockchainIncludingTestnet
+    ? `:${string}`
+    : ""}`;
 
 export type NFT = SolanaNFT | EVMNFT | CardanoNFT;
 

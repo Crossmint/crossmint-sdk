@@ -18,8 +18,8 @@ export class HandshakeChild<IncomingEvents extends EventMap, OutgoingEvents exte
     isConnected = false;
 
     constructor(
-        protected otherWindow: Window,
-        protected targetOrigin: string,
+        otherWindow: Window,
+        targetOrigin: string,
         options?: EventEmitterWithHandshakeOptions<IncomingEvents, OutgoingEvents>
     ) {
         const mergedIncomingEvents = {
@@ -34,7 +34,6 @@ export class HandshakeChild<IncomingEvents extends EventMap, OutgoingEvents exte
         super(otherWindow, targetOrigin, mergedIncomingEvents, mergedOutgoingEvents);
 
         this.handshakeOptions = { ...DEFAULT_HANDSHAKE_OPTIONS, ...options?.handshakeOptions };
-        this.targetOrigin = targetOrigin;
     }
 
     async handshakeWithParent() {
