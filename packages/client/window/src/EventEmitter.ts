@@ -65,7 +65,7 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
     send<K extends keyof OutgoingEvents>(event: K, data: z.infer<OutgoingEvents[K]>) {
         const result = this.outgoingEvents[event].safeParse(data);
         if (result.success) {
-            this.otherWindow?.postMessage({ event, data }, "http://localhost:3000"); // quick hack to finish POC, should allow targeting this.targetOrigin or an origin passed into send
+            this.otherWindow?.postMessage({ event, data }, this.targetOrigin);
         } else {
             console.error("Invalid data for event", event, result.error);
         }
@@ -170,6 +170,9 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
 
     // quick hack to finish POC
     protected isTargetOrigin(otherOrigin: string) {
-        return true;
+        if (this.targetOrigin === "*") {
+            return true;
+        }
+        return this.targetOrigin === otherOrigin;
     }
 }
