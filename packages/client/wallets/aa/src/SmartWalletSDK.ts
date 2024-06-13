@@ -1,5 +1,5 @@
 import { CrossmintWalletService } from "@/api";
-import { getBundlerRPC } from "@/blockchain";
+import { EVMSmartWallet, getBundlerRPC } from "@/blockchain";
 import type { SmartWalletSDKInitParams, WalletConfig } from "@/types";
 import { WalletSdkError } from "@/utils";
 import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
@@ -31,7 +31,11 @@ export class SmartWalletSDK extends LoggerWrapper {
         return new SmartWalletSDK(params);
     }
 
-    async getOrCreate(user: UserIdentifierParams, chain: EVMBlockchainIncludingTestnet, walletConfig: WalletConfig) {
+    async getOrCreate(
+        user: UserIdentifierParams,
+        chain: EVMBlockchainIncludingTestnet,
+        walletConfig: WalletConfig
+    ): Promise<EVMSmartWallet> {
         return logPerformance(
             "GET_OR_CREATE_WALLET",
             async () => {
