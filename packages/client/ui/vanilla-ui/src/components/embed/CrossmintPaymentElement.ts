@@ -7,10 +7,10 @@ import type {
     Locale,
     MintConfig,
     Recipient,
-    UIConfig,
     FiatEmbeddedCheckoutProps,
     CrossmintEvent,
 } from "@crossmint/client-sdk-base";
+import type { UIConfig } from "@crossmint/common-sdk-base";
 
 const propertyDefaults: FiatEmbeddedCheckoutProps = {
     collectionId: "",

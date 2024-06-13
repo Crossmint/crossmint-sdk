@@ -1,25 +1,25 @@
 {
-  "name": "front",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev -p 3001",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
-  "dependencies": {
-    "ethers": "5.7.2",
-    "next": "13.5.6",
-    "react": "^18",
-    "react-dom": "^18",
-    "@crossmint/client-sdk-aa": "file: ../../../",
-    "@crossmint/common-sdk-base": "file: ../../../../../../common/base"
-  },
-  "devDependencies": {
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "typescript": "^5"
-  }
+    "name": "@crossmint/client-sdk-aa-demo",
+    "version": "0.1.3",
+    "private": true,
+    "scripts": {
+        "dev": "next dev -p 3001",
+        "build": "next build",
+        "start": "next start",
+        "lint": "next lint"
+    },
+    "dependencies": {
+        "@crossmint/client-sdk-aa": "0.2.1",
+        "@crossmint/common-sdk-base": "0.0.6",
+        "ethers": "5.7.2",
+        "next": "13.5.6",
+        "react": "^18",
+        "react-dom": "^18"
+    },
+    "devDependencies": {
+        "@types/node": "^20",
+        "@types/react": "^18",
+        "@types/react-dom": "^18",
+        "typescript": "^5"
+    }
 }

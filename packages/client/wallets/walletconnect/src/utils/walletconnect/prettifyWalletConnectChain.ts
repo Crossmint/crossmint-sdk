@@ -3,7 +3,7 @@ import {
     WALLETCONNECT_SOLANA_MAINNET_CHAIN_IDENTIFIER,
 } from "@/consts/walletconnect";
 
-import { blockchainToCopyName, chainIdToBlockchain } from "@crossmint/common-sdk-base";
+import { blockchainToDisplayName, chainIdToBlockchain } from "@crossmint/common-sdk-base";
 
 export function prettifyWalletConnectChain(chain: string) {
     if (chain.startsWith("eip155:")) {
@@ -12,7 +12,7 @@ export function prettifyWalletConnectChain(chain: string) {
         if (!blockchain) {
             return chain;
         }
-        return blockchainToCopyName(blockchain);
+        return blockchainToDisplayName(blockchain);
     }
     if (chain === WALLETCONNECT_SOLANA_DEVNET_CHAIN_IDENTIFIER) {
         return "Solana Devnet";

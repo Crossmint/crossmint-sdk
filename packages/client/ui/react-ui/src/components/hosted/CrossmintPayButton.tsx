@@ -2,10 +2,11 @@ import { CSSProperties, MouseEvent, useMemo } from "react";
 import { useState } from "react";
 
 import {
+    CheckoutProps,
     CrossmintPayButtonProps,
     clientNames,
     crossmintModalService,
-    crossmintPayButtonService, CheckoutProps,
+    crossmintPayButtonService,
 } from "@crossmint/client-sdk-base";
 
 import { LIB_VERSION } from "../../consts/version";
@@ -78,7 +79,7 @@ export function CrossmintPayButton(buttonProps: CrossmintPayButtonReactProps) {
         connecting,
         paymentMethod,
         locale,
-        checkoutProps
+        checkoutProps,
     });
 
     const _handleClick = (event: MouseEvent<HTMLButtonElement>) =>

@@ -64,6 +64,12 @@ export function useCrossmintEvents({ environment }: { environment?: string } = {
             isFetching = false;
             clearInterval(timer);
         };
+
+        return {
+            cleanup: () => {
+                clearInterval(timer);
+            },
+        };
     }
 
     async function fetchOrderStatus({ orderIdentifier }: { orderIdentifier: string }): Promise<CrossmintEvent[]> {

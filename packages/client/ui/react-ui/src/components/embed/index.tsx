@@ -5,12 +5,12 @@ import {
 } from "@crossmint/client-sdk-base";
 
 import { CrossmintCryptoEmbeddedCheckout } from "./crypto/CryptoEmbeddedCheckout";
-import { CrossmintFiatPaymentElement_OLD } from "./fiat/FiatPaymentElement_OLD";
+import { CrossmintFiatEmbeddedCheckout } from "./fiat/FiatEmbeddedCheckout";
 
-// TODO: Rename to CrossmintEmbeddedCheckout
+// TODO: Rename to CrossmintEmbeddedCheckout on v2 major publish, prior announcement since its a breaking change
 export function CrossmintPaymentElement(props: CrossmintEmbeddedCheckoutProps) {
     if (isFiatEmbeddedCheckoutProps(props)) {
-        return <CrossmintFiatPaymentElement_OLD {...props} />;
+        return <CrossmintFiatEmbeddedCheckout {...props} />;
     }
     if (isCryptoEmbeddedCheckoutProps(props)) {
         return <CrossmintCryptoEmbeddedCheckout {...props} />;
