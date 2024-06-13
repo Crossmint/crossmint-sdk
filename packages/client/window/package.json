@@ -29,7 +29,7 @@
     },
     "dependencies": {
         "nanoid": "5.0.4",
-        "zod": "3.22.4"
+        "zod": "3.22.3"
     },
     "devDependencies": {}
 }
