@@ -168,7 +168,6 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
         }
     }
 
-    // quick hack to finish POC
     protected isTargetOrigin(otherOrigin: string) {
         if (this.targetOrigin === "*") {
             return true;
