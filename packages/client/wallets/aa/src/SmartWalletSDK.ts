@@ -18,17 +18,20 @@ export class SmartWalletSDK extends LoggerWrapper {
 
     private constructor(config: SmartWalletSDKInitParams) {
         super("SmartWalletSDK");
-        const validationResult = validateAPIKey(config.apiKey);
-        if (!validationResult.isValid) {
-            throw new Error("API key invalid");
-        }
-
-        this.crossmintService = new CrossmintWalletService(config.apiKey);
+        this.crossmintService = new CrossmintWalletService(config.clientApiKey);
         this.eaoWalletService = new EOAWalletService(this.crossmintService);
     }
 
-    static init(params: SmartWalletSDKInitParams): SmartWalletSDK {
-        return new SmartWalletSDK(params);
+    /**
+     * Initializes the SDK with the **client side** API key obtained from the Crossmint console.
+     * @throws error if the api key is not formatted correctly.
+     */
+    static init(config: SmartWalletSDKInitParams): SmartWalletSDK {
+        const validationResult = validateAPIKey(config.clientApiKey);
+        if (!validationResult.isValid) {
+            throw new Error("API key invalid");
+        }
+        return new SmartWalletSDK(config);
     }
 
     async getOrCreateWallet(
