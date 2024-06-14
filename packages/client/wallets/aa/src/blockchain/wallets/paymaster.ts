@@ -1,4 +1,4 @@
-import { PAYMASTER_RPC, PM_BASE_RPC, PM_BASE_SEPOLIA_RPC } from "@/utils";
+import { PAYMASTER_RPC, PM_BASE_RPC, PM_BASE_SEPOLIA_RPC, usesGelatoBundler } from "@/utils";
 import { logInputOutput } from "@/utils/log";
 import { createZeroDevPaymasterClient } from "@zerodev/sdk";
 import { Middleware } from "permissionless/actions/smartAccount";
@@ -8,6 +8,10 @@ import { http } from "viem";
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 import { getViemNetwork, getZeroDevProjectIdByBlockchain } from "../BlockchainNetworks";
+
+export function usePaymaster(chain: EVMBlockchainIncludingTestnet) {
+    return !usesGelatoBundler(chain);
+}
 
 const getPaymasterRPC = logInputOutput((chain: EVMBlockchainIncludingTestnet) => {
     switch (chain) {

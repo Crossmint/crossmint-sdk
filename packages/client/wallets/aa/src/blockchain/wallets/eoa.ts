@@ -43,7 +43,7 @@ export default class EOAWalletService {
             entryPoint,
         });
 
-        const wallet = new EVMAAWallet(account, this.crossmintService, publicClient, entryPoint, chain);
+        const wallet = new EVMAAWallet(this.crossmintService, account, publicClient, entryPoint, chain);
         await this.crossmintService.storeAbstractWallet({
             userIdentifier,
             type: ZERO_DEV_TYPE,

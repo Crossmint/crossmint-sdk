@@ -1,5 +1,5 @@
 import { logError } from "@/services/logging";
-import { SCW_SERVICE, TransferError, errorToJSON, usesGelatoBundler } from "@/utils";
+import { SCW_SERVICE, TransferError, errorToJSON } from "@/utils";
 import { LoggerWrapper } from "@/utils/log";
 import { KernelAccountClient, KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
 import { SmartAccountClient } from "permissionless";
@@ -13,14 +13,28 @@ import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 import { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import { getBundlerRPC, getViemNetwork } from "../BlockchainNetworks";
 import { TransferType, transferParams } from "../token/transfer";
-import { paymasterMiddleware } from "./paymaster";
+import { paymasterMiddleware, usePaymaster } from "./paymaster";
 import { toCrossmintSmartAccountClient } from "./smartAccount";
 
 export class EVMAAWallet extends LoggerWrapper {
     public readonly chain: EVMBlockchainIncludingTestnet;
-    public readonly publicClient: PublicClient;
 
-    private readonly smartAccountClient: KernelAccountClient<
+    /**
+     * [viem](https://viem.sh/) clients that provide an interface for core wallet functionality.
+     */
+    public readonly client: {
+        /**
+         * An interface to interact with the smart wallet, execute transactions, sign messages, etc.
+         */
+        wallet: SmartAccountClient<EntryPoint, HttpTransport, Chain, SmartAccount<EntryPoint>>;
+
+        /**
+         * An interface to read onchain data, fetch transactions, retrieve account balances, etc. Corresponds to public [JSON-RPC API](https://ethereum.org/en/developers/docs/apis/json-rpc/) methods.
+         */
+        public: PublicClient;
+    };
+
+    private readonly kernel: KernelAccountClient<
         EntryPoint,
         HttpTransport,
         Chain,
@@ -28,37 +42,34 @@ export class EVMAAWallet extends LoggerWrapper {
     >;
 
     constructor(
-        private readonly account: KernelSmartAccount<EntryPoint, HttpTransport>,
         private readonly crossmintService: CrossmintWalletService,
+        account: KernelSmartAccount<EntryPoint, HttpTransport>,
         publicClient: PublicClient<HttpTransport>,
         entryPoint: EntryPoint,
         chain: EVMBlockchainIncludingTestnet
     ) {
         super("EVMAAWallet", { chain, address: account.address });
-
-        const kernelClient: KernelAccountClient<
-            EntryPoint,
-            HttpTransport,
-            Chain,
-            KernelSmartAccount<EntryPoint, HttpTransport>
-        > = createKernelAccountClient({
+        const kernelParams = {
             account,
             chain: getViemNetwork(chain),
             entryPoint,
             bundlerTransport: http(getBundlerRPC(chain)),
-            ...(!usesGelatoBundler(chain) && paymasterMiddleware({ entryPoint, chain })),
-        });
+            ...(usePaymaster(chain) && paymasterMiddleware({ entryPoint, chain })),
+        };
 
-        this.smartAccountClient = toCrossmintSmartAccountClient({
-            smartAccountClient: kernelClient,
+        this.kernel = toCrossmintSmartAccountClient({
             crossmintChain: chain,
+            smartAccountClient: createKernelAccountClient(kernelParams),
         });
         this.chain = chain;
-        this.publicClient = publicClient;
+        this.client = {
+            wallet: this.kernel,
+            public: publicClient,
+        };
     }
 
-    public getAddress() {
-        return this.smartAccountClient.account.address;
+    public get address() {
+        return this.kernel.account.address;
     }
 
     public async transfer(toAddress: string, config: TransferType): Promise<string> {
@@ -82,12 +93,12 @@ export class EVMAAWallet extends LoggerWrapper {
             const tx = transferParams({
                 contract: config.token.contractAddress,
                 to: toAddress,
-                from: this.account,
+                from: this.kernel.account,
                 config,
             });
 
             try {
-                const client = this.smartAccountClient.extend(publicActions);
+                const client = this.kernel.extend(publicActions);
                 const { request } = await client.simulateContract(tx);
                 return client.writeContract(request);
             } catch (error) {
@@ -104,29 +115,9 @@ export class EVMAAWallet extends LoggerWrapper {
         });
     }
 
-    public getSigner(type: "viem" = "viem"): {
-        publicClient: PublicClient;
-        walletClient: SmartAccountClient<EntryPoint, HttpTransport, Chain, SmartAccount<EntryPoint>>;
-    } {
-        switch (type) {
-            case "viem": {
-                return {
-                    publicClient: this.publicClient,
-                    walletClient: this.smartAccountClient,
-                };
-            }
-            default:
-                logError("[GET_SIGNER] - ERROR", {
-                    service: SCW_SERVICE,
-                    error: errorToJSON("Invalid signer type"),
-                });
-                throw new Error("Invalid signer type");
-        }
-    }
-
     public async getNFTs() {
         return this.logPerformance("GET_NFTS", async () => {
-            return this.crossmintService.fetchNFTs(this.account.address, this.chain);
+            return this.crossmintService.fetchNFTs(this.kernel.account.address, this.chain);
         });
     }
 }

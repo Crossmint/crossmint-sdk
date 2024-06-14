@@ -4,11 +4,10 @@ import { hexToBigInt, http } from "viem";
 import { getBundlerRPC } from "..";
 import { EVMAAWallet } from "../blockchain/wallets/EVMAAWallet";
 
-export function reservoirAdapter(wallet: EVMAAWallet): ReservoirWallet {
+export function reservoirAdapter(smartAccount: EVMAAWallet): ReservoirWallet {
     return {
-        address: async () => wallet.getAddress(),
+        address: async () => smartAccount.address,
         handleSignMessageStep: async ({ data }, _) => {
-            const { walletClient } = wallet.getSigner();
             const signData = data?.sign;
 
             if (signData == null) {
@@ -17,9 +16,9 @@ export function reservoirAdapter(wallet: EVMAAWallet): ReservoirWallet {
 
             console.log(`Execute Steps: Signing with ${signData.signatureKind}`);
             if (signData.signatureKind === "eip191") {
-                return walletClient.signMessage({ message: signData.message });
+                return smartAccount.client.wallet.signMessage({ message: signData.message });
             } else if (signData.signatureKind === "eip712") {
-                return walletClient.signTypedData({
+                return smartAccount.client.wallet.signTypedData({
                     domain: signData.domain as any,
                     types: signData.types as any,
                     primaryType: signData.primaryType,
@@ -29,7 +28,7 @@ export function reservoirAdapter(wallet: EVMAAWallet): ReservoirWallet {
         },
         handleSendTransactionStep: async (chainId, stepItem, _) => {
             const stepData = stepItem.data;
-            return wallet.getSigner().walletClient.sendTransaction({
+            return smartAccount.client.wallet.sendTransaction({
                 data: stepData.data,
                 to: stepData.to,
                 value: hexToBigInt((stepData.value as any) || 0),
@@ -44,6 +43,6 @@ export function reservoirAdapter(wallet: EVMAAWallet): ReservoirWallet {
                 }),
             });
         },
-        transport: http(getBundlerRPC(wallet.chain)),
+        transport: http(getBundlerRPC(smartAccount.chain)),
     };
 }
