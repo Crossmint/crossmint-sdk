@@ -2,9 +2,9 @@ import { ReservoirWallet } from "@reservoir0x/reservoir-sdk";
 import { hexToBigInt, http } from "viem";
 
 import { getBundlerRPC } from "..";
-import { EVMAAWallet } from "../blockchain/wallets/EVMAAWallet";
+import { EVMSmartWallet } from "../blockchain/wallets/EVMSmartWallet";
 
-export function reservoirAdapter(smartAccount: EVMAAWallet): ReservoirWallet {
+export function reservoirAdapter(smartAccount: EVMSmartWallet): ReservoirWallet {
     return {
         address: async () => smartAccount.address,
         handleSignMessageStep: async ({ data }, _) => {

@@ -16,7 +16,7 @@ import { TransferType, transferParams } from "../token/transfer";
 import { paymasterMiddleware, usePaymaster } from "./paymaster";
 import { toCrossmintSmartAccountClient } from "./smartAccount";
 
-export class EVMAAWallet extends LoggerWrapper {
+export class EVMSmartWallet extends LoggerWrapper {
     public readonly chain: EVMBlockchainIncludingTestnet;
 
     /**
@@ -48,7 +48,7 @@ export class EVMAAWallet extends LoggerWrapper {
         entryPoint: EntryPoint,
         chain: EVMBlockchainIncludingTestnet
     ) {
-        super("EVMAAWallet", { chain, address: account.address });
+        super("EVMSmartWallet", { chain, address: account.address });
         const kernelParams = {
             account,
             chain: getViemNetwork(chain),
