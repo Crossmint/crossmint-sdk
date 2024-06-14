@@ -98,11 +98,8 @@ export class EVMAAWallet extends LoggerWrapper {
                     contractAddress: config.token.contractAddress,
                     chain: config.token.chain,
                 });
-                throw new TransferError(
-                    `Error transferring token ${config.token.contractAddress}${
-                        tx.tokenId == null ? "" : `:${tx.tokenId}}`
-                    }`
-                );
+                const tokenIdString = tx.tokenId == null ? "" : `:${tx.tokenId}}`;
+                throw new TransferError(`Error transferring token ${config.token.contractAddress}${tokenIdString}`);
             }
         });
     }
