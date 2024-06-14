@@ -1,23 +1,14 @@
-import { logError, logInfo } from "@/services/logging";
+import { logError } from "@/services/logging";
 import {
     SCW_SERVICE,
-    TransactionError,
     TransferError,
     WalletSdkError,
-    convertData,
-    decorateSendTransactionData,
     errorToJSON,
     gelatoBundlerProperties,
-    getNonce,
-    hasEIP1559Support,
     usesGelatoBundler,
 } from "@/utils";
-import { resolveDeferrable } from "@/utils/deferrable";
 import { LoggerWrapper } from "@/utils/log";
-import type { Deferrable } from "@ethersproject/properties";
-import { type TransactionRequest } from "@ethersproject/providers";
 import { KernelAccountClient, KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
-import { BigNumberish } from "ethers";
 import { SmartAccountClient } from "permissionless";
 import { SmartAccount } from "permissionless/accounts";
 import { EntryPoint } from "permissionless/types/entrypoint";
@@ -38,6 +29,7 @@ import { toCrossmintSmartAccountClient } from "./smartAccount";
 export class EVMAAWallet extends LoggerWrapper {
     public readonly chain: EVMBlockchainIncludingTestnet;
     public readonly publicClient: PublicClient;
+
     private readonly smartAccountClient: KernelAccountClient<
         EntryPoint,
         HttpTransport,
@@ -79,44 +71,14 @@ export class EVMAAWallet extends LoggerWrapper {
         return this.smartAccountClient.account.address;
     }
 
-    //TODO @matias: review this method.
-    // First, I would like to use TransactionRequest from viem instead of ethers.
-    // Second, we need to check if chain supports eip-1559 ro not:
-    // - If it does, we need to send maxFeePerGas and maxPriorityFeePerGas
-    // - If it doesn't, we need to send gasPrice
-    // And with the use of viem TransactionRequest, we can specify the TransactionRequest type (eip1559 or legacy) and be more accurate
-    public async sendTransaction(transaction: Deferrable<TransactionRequest>): Promise<Hash> {
-        return this.logPerformance("SEND_TRANSACTION", async () => {
-            try {
-                const decoratedTransaction = await decorateSendTransactionData(transaction);
-                const { to, value, gasLimit, nonce, data, maxFeePerGas, maxPriorityFeePerGas } =
-                    await resolveDeferrable(decoratedTransaction);
-
-                const txParams = {
-                    to: to as `0x${string}`,
-                    value: value ? BigInt(value.toString()) : undefined,
-                    gas: gasLimit ? BigInt(gasLimit.toString()) : undefined,
-                    nonce: await getNonce(nonce),
-                    data: await convertData(data),
-                    ...this.getLegacyTransactionFeesParamsIfApply({ maxFeePerGas, maxPriorityFeePerGas }),
-                };
-
-                logInfo(`[EVMAAWallet - SEND_TRANSACTION] - tx_params: ${JSON.stringify(txParams)}`);
-
-                return await this.smartAccountClient.sendTransaction(txParams);
-            } catch (error) {
-                throw new TransactionError(`Error sending transaction: ${error}`);
-            }
-        });
-    }
-
     public async transfer(toAddress: string, config: TransferType): Promise<string> {
         return this.logPerformance("TRANSFER", async () => {
             const evmToken = config.token;
             const contractAddress = evmToken.contractAddress as `0x${string}`;
             const publicClient = this.smartAccountClient.extend(publicActions);
-            let transaction;
-            let tokenId;
+            let transaction: Hash;
+            let tokenId: string | undefined;
+
             try {
                 switch (evmToken.type) {
                     case "ft": {
@@ -210,27 +172,5 @@ export class EVMAAWallet extends LoggerWrapper {
         return this.logPerformance("GET_NFTS", async () => {
             return this.crossmintService.fetchNFTs(this.account.address, this.chain);
         });
-    }
-
-    private getLegacyTransactionFeesParamsIfApply(gasFeeParams?: {
-        maxFeePerGas?: BigNumberish;
-        maxPriorityFeePerGas?: BigNumberish;
-    }) {
-        const { maxFeePerGas, maxPriorityFeePerGas } = gasFeeParams ?? {};
-
-        if (hasEIP1559Support(this.chain)) {
-            return {
-                // only include if non-null and non-zero
-                ...(maxFeePerGas && { maxFeePerGas: BigInt(maxFeePerGas.toString()) }),
-                ...(maxPriorityFeePerGas && { maxPriorityFeePerGas: BigInt(maxPriorityFeePerGas.toString()) }),
-            };
-        } else {
-            if (maxFeePerGas || maxPriorityFeePerGas) {
-                console.warn(
-                    "maxFeePerGas and maxPriorityFeePerGas are not supported on this chain as it supports Legacy Transacitons. Ignoring them."
-                );
-            }
-            return gelatoBundlerProperties;
-        }
     }
 }
