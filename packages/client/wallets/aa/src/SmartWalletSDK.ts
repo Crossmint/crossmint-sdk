@@ -31,7 +31,7 @@ export class SmartWalletSDK extends LoggerWrapper {
         return new SmartWalletSDK(params);
     }
 
-    async getOrCreate(
+    async getOrCreateWallet(
         user: UserIdentifierParams,
         chain: EVMBlockchainIncludingTestnet,
         walletConfig: WalletConfig
