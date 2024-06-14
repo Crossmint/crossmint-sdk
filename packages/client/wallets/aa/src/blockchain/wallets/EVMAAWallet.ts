@@ -1,5 +1,5 @@
 import { logError } from "@/services/logging";
-import { SCW_SERVICE, TransferError, errorToJSON, usesGelatoBundler } from "@/utils";
+import { SCW_SERVICE, TransferError, errorToJSON } from "@/utils";
 import { LoggerWrapper } from "@/utils/log";
 import { KernelAccountClient, KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
 import { SmartAccountClient } from "permissionless";
@@ -13,7 +13,7 @@ import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 import { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import { getBundlerRPC, getViemNetwork } from "../BlockchainNetworks";
 import { TransferType, transferParams } from "../token/transfer";
-import { paymasterMiddleware } from "./paymaster";
+import { paymasterMiddleware, usePaymaster } from "./paymaster";
 import { toCrossmintSmartAccountClient } from "./smartAccount";
 
 export class EVMAAWallet extends LoggerWrapper {
@@ -49,13 +49,12 @@ export class EVMAAWallet extends LoggerWrapper {
         chain: EVMBlockchainIncludingTestnet
     ) {
         super("EVMAAWallet", { chain, address: account.address });
-        const usePaymaster = !usesGelatoBundler(chain);
         const kernelParams = {
             account,
             chain: getViemNetwork(chain),
             entryPoint,
             bundlerTransport: http(getBundlerRPC(chain)),
-            ...(usePaymaster && paymasterMiddleware({ entryPoint, chain })),
+            ...(usePaymaster(chain) && paymasterMiddleware({ entryPoint, chain })),
         };
 
         this.kernel = toCrossmintSmartAccountClient({
