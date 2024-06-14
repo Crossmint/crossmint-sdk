@@ -18,11 +18,3 @@ export interface EOASignerData {
     eoaAddress: string;
     type: "eoa";
 }
-
-export type TransferInput = {
-    tokenId: number;
-    chain: string;
-    fromAddress: string;
-    toAddress: string;
-    tokenMintAddress: string;
-};

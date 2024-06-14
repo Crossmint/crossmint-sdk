@@ -19,7 +19,6 @@ import {
     ZD_ZKATANA_PROJECT_ID,
     ZD_ZKYOTO_PROJECT_ID,
 } from "@/utils";
-import { EntryPoint } from "permissionless/types/entrypoint";
 import {
     arbitrum,
     arbitrumNova,
@@ -41,39 +40,6 @@ import {
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 import { logInputOutput } from "../utils/log";
-
-export function getFireblocksAssetId(chain: EVMBlockchainIncludingTestnet) {
-    const assetId = new Map<EVMBlockchainIncludingTestnet, string | null>([
-        ["ethereum", "ETH"],
-        ["ethereum-goerli", "ETH_TEST3"],
-        ["ethereum-sepolia", "ETH_TEST5"],
-        ["polygon", "MATIC_POLYGON"],
-        ["polygon-amoy", "AMOY_POLYGON_TEST"],
-        ["bsc", "BNB_BSC"],
-        ["optimism", "ETH-OPT"],
-        ["optimism-sepolia", "ETH-OPT_KOV"],
-        ["optimism-goerli", "ETH-OPT_KOV"],
-        ["arbitrum", "ETH-AETH"],
-        ["arbitrum-sepolia", "ETH-AETH_RIN"],
-        ["base-sepolia", "ETH_TEST3"],
-        ["base-goerli", "ETH_TEST3"],
-        ["zora", "ETH"],
-        ["zora-sepolia", "ETH_TEST3"],
-        ["zora-goerli", "ETH_TEST3"],
-        ["zkatana", "ETH_ZKEVM_TEST"],
-        ["zkyoto", "ETH_ZKEVM_TEST"],
-        ["bsc-testnet", null],
-        ["base", "ETH"],
-        ["astar-zkevm", "ETH"],
-        ["apex", "ETH"],
-        ["arbitrumnova", "ETH-AETH"],
-    ]).get(chain)!;
-
-    if (assetId == null) {
-        throw new Error(`Asset not found for chain ${chain}`);
-    }
-    return assetId;
-}
 
 export const getUrlProviderByBlockchain = logInputOutput((chain: EVMBlockchainIncludingTestnet) => {
     const url = new Map<EVMBlockchainIncludingTestnet, string | null>([
@@ -287,5 +253,3 @@ export const getBundlerRPC = logInputOutput((chain: EVMBlockchainIncludingTestne
             return BUNDLER_RPC + getZeroDevProjectIdByBlockchain(chain) + "?bundlerProvider=STACKUP";
     }
 }, "getBundlerRPC");
-
-export type entryPoint = EntryPoint;
