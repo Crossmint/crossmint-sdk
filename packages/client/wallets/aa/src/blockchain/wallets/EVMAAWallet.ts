@@ -61,32 +61,6 @@ export class EVMAAWallet extends LoggerWrapper {
         return this.smartAccountClient.account.address;
     }
 
-    public async signMessage(message: string | Uint8Array) {
-        return this.logPerformance("SIGN_MESSAGE", async () => {
-            try {
-                let messageAsString: string;
-                if (message instanceof Uint8Array) {
-                    const decoder = new TextDecoder();
-                    messageAsString = decoder.decode(message);
-                } else {
-                    messageAsString = message;
-                }
-
-                return await this.smartAccountClient.signMessage({
-                    message: messageAsString,
-                });
-            } catch (error) {
-                throw new Error(`Error signing message. If this error persists, please contact support.`);
-            }
-        });
-    }
-
-    public async signTypedData(params: TypedDataDefinition) {
-        return this.logPerformance("SIGN_TYPED_DATA", async () => {
-            return await this.smartAccountClient.signTypedData(params);
-        });
-    }
-
     public async transfer(toAddress: string, config: TransferType): Promise<string> {
         return this.logPerformance("TRANSFER", async () => {
             if (this.chain !== config.token.chain) {
@@ -105,14 +79,12 @@ export class EVMAAWallet extends LoggerWrapper {
                 );
             }
 
-            const tx = {
-                ...transferParams({
-                    contract: config.token.contractAddress,
-                    to: toAddress,
-                    from: this.account,
-                    config,
-                }),
-            };
+            const tx = transferParams({
+                contract: config.token.contractAddress,
+                to: toAddress,
+                from: this.account,
+                config,
+            });
 
             try {
                 const client = this.smartAccountClient.extend(publicActions);

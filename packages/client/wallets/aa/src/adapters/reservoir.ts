@@ -7,24 +7,25 @@ import { EVMAAWallet } from "../blockchain/wallets/EVMAAWallet";
 export function reservoirAdapter(wallet: EVMAAWallet): ReservoirWallet {
     return {
         address: async () => wallet.getAddress(),
-        handleSignMessageStep: async (stepItem, _) => {
-            const signData = stepItem.data?.sign;
-            let signature: string | undefined;
-            if (signData) {
-                if (signData.signatureKind === "eip191") {
-                    console.log("Execute Steps: Signing with eip191");
-                    signature = await wallet.signMessage(signData.message);
-                } else if (signData.signatureKind === "eip712") {
-                    console.log("Execute Steps: Signing with eip712");
-                    signature = await wallet.signTypedData({
-                        domain: signData.domain as any,
-                        types: signData.types as any,
-                        primaryType: signData.primaryType,
-                        message: signData.value,
-                    });
-                }
+        handleSignMessageStep: async ({ data }, _) => {
+            const { walletClient } = wallet.getSigner();
+            const signData = data?.sign;
+
+            if (signData == null) {
+                return;
             }
-            return signature;
+
+            console.log(`Execute Steps: Signing with ${signData.signatureKind}`);
+            if (signData.signatureKind === "eip191") {
+                return walletClient.signMessage({ message: signData.message });
+            } else if (signData.signatureKind === "eip712") {
+                return walletClient.signTypedData({
+                    domain: signData.domain as any,
+                    types: signData.types as any,
+                    primaryType: signData.primaryType,
+                    message: signData.value,
+                });
+            }
         },
         handleSendTransactionStep: async (chainId, stepItem, _) => {
             const stepData = stepItem.data;
