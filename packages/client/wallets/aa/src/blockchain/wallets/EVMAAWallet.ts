@@ -1,18 +1,18 @@
 import { logError } from "@/services/logging";
-import { SCW_SERVICE, TransferError, errorToJSON, gelatoBundlerProperties, usesGelatoBundler } from "@/utils";
+import { SCW_SERVICE, TransferError, errorToJSON, usesGelatoBundler } from "@/utils";
 import { LoggerWrapper } from "@/utils/log";
 import { KernelAccountClient, KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
 import { SmartAccountClient } from "permissionless";
 import { SmartAccount } from "permissionless/accounts";
 import { EntryPoint } from "permissionless/types/entrypoint";
-import type { HttpTransport, PublicClient, TypedDataDefinition } from "viem";
+import type { HttpTransport, PublicClient } from "viem";
 import { Chain, http, isAddress, publicActions } from "viem";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 import { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import { getBundlerRPC, getViemNetwork } from "../BlockchainNetworks";
-import { TransferType, transferParams } from "../token";
+import { TransferType, transferParams } from "../token/transfer";
 import { paymasterMiddleware } from "./paymaster";
 import { toCrossmintSmartAccountClient } from "./smartAccount";
 
