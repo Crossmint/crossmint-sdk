@@ -49,16 +49,15 @@ export class EVMSmartWallet extends LoggerWrapper {
         private readonly crossmintService: CrossmintWalletService,
         account: KernelSmartAccount<EntryPoint, HttpTransport>,
         publicClient: PublicClient<HttpTransport>,
-        entryPoint: EntryPoint,
         chain: EVMBlockchainIncludingTestnet
     ) {
         super("EVMSmartWallet", { chain, address: account.address });
         const kernelParams = {
             account,
             chain: getViemNetwork(chain),
-            entryPoint,
+            entryPoint: account.entryPoint,
             bundlerTransport: http(getBundlerRPC(chain)),
-            ...(usePaymaster(chain) && paymasterMiddleware({ entryPoint, chain })),
+            ...(usePaymaster(chain) && paymasterMiddleware({ entryPoint: account.entryPoint, chain })),
         };
 
         this.kernel = toCrossmintSmartAccountClient({
