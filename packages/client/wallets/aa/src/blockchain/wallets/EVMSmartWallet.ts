@@ -16,6 +16,10 @@ import { TransferType, transferParams } from "../token/transfer";
 import { paymasterMiddleware, usePaymaster } from "./paymaster";
 import { toCrossmintSmartAccountClient } from "./smartAccount";
 
+/**
+ * Smart wallet interface for EVM chains enhanced with Crossmint capabilities.
+ * Core functionality is exposed via [viem](https://viem.sh/) clients within the `client` property of the class.
+ */
 export class EVMSmartWallet extends LoggerWrapper {
     public readonly chain: EVMBlockchainIncludingTestnet;
 
@@ -45,16 +49,15 @@ export class EVMSmartWallet extends LoggerWrapper {
         private readonly crossmintService: CrossmintWalletService,
         account: KernelSmartAccount<EntryPoint, HttpTransport>,
         publicClient: PublicClient<HttpTransport>,
-        entryPoint: EntryPoint,
         chain: EVMBlockchainIncludingTestnet
     ) {
         super("EVMSmartWallet", { chain, address: account.address });
         const kernelParams = {
             account,
             chain: getViemNetwork(chain),
-            entryPoint,
+            entryPoint: account.entryPoint,
             bundlerTransport: http(getBundlerRPC(chain)),
-            ...(usePaymaster(chain) && paymasterMiddleware({ entryPoint, chain })),
+            ...(usePaymaster(chain) && paymasterMiddleware({ entryPoint: account.entryPoint, chain })),
         };
 
         this.kernel = toCrossmintSmartAccountClient({
@@ -68,10 +71,16 @@ export class EVMSmartWallet extends LoggerWrapper {
         };
     }
 
+    /**
+     * The address of the smart wallet.
+     */
     public get address() {
         return this.kernel.account.address;
     }
 
+    /**
+     * @returns The transaction hash.
+     */
     public async transfer(toAddress: string, config: TransferType): Promise<string> {
         return this.logPerformance("TRANSFER", async () => {
             if (this.chain !== config.token.chain) {
@@ -115,7 +124,10 @@ export class EVMSmartWallet extends LoggerWrapper {
         });
     }
 
-    public async getNFTs() {
+    /**
+     * @returns A list of NFTs owned by the wallet.
+     */
+    public async nfts() {
         return this.logPerformance("GET_NFTS", async () => {
             return this.crossmintService.fetchNFTs(this.kernel.account.address, this.chain);
         });
