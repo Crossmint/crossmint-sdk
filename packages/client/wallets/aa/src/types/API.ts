@@ -1,12 +1,11 @@
 import { EntryPointVersion } from "permissionless/_types/types";
 
-import { UserIdentifier } from "./Config";
-
+export type CrossmintServiceUser = { type: "whiteLabel"; userId: string };
 export type StoreAbstractWalletInput = {
-    userIdentifier: UserIdentifier;
+    userIdentifier: CrossmintServiceUser;
     type: string;
     smartContractWalletAddress: string;
-    signerData: EOASignerData;
+    signerData: EOASignerData | PasskeysSignerData;
     sessionKeySignerAddress?: string;
     version: number;
     baseLayer: string;
@@ -17,4 +16,17 @@ export type StoreAbstractWalletInput = {
 export interface EOASignerData {
     eoaAddress: string;
     type: "eoa";
+}
+
+export interface PasskeysSignerData {
+    passkeyName: string;
+    passkeyServerUrl: string;
+    credentials: string;
+    entryPoint: string;
+    validatorAddress: string;
+    pubKeyX: string;
+    pubKeyY: string;
+    authenticatorIdHash: string;
+    domain: string;
+    type: "passkeys";
 }

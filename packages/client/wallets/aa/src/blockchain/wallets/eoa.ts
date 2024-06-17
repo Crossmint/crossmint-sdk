@@ -1,6 +1,6 @@
 import { CrossmintWalletService } from "@/api";
 import { EVMSmartWallet } from "@/blockchain";
-import type { UserIdentifier, WalletConfig } from "@/types";
+import type { UserParams, WalletConfig } from "@/types";
 import { CURRENT_VERSION, ZERO_DEV_TYPE, createOwnerSigner } from "@/utils";
 import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
 import { createKernelAccount } from "@zerodev/sdk";
@@ -13,23 +13,23 @@ export default class EOAWalletService {
     constructor(private readonly crossmintService: CrossmintWalletService) {}
 
     public async getOrCreate({
-        userIdentifier,
+        user,
         chain,
         publicClient,
         entryPoint,
         entryPointVersion,
-        walletConfig,
+        config,
     }: {
-        userIdentifier: UserIdentifier;
+        user: UserParams;
         chain: EVMBlockchainIncludingTestnet;
         publicClient: PublicClient<HttpTransport>;
         entryPoint: EntryPoint;
         entryPointVersion: EntryPointVersion;
-        walletConfig: WalletConfig;
+        config: WalletConfig;
     }) {
         const eoa = await createOwnerSigner({
             chain,
-            walletConfig,
+            walletConfig: config,
         });
         const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
             signer: eoa,
@@ -45,7 +45,7 @@ export default class EOAWalletService {
 
         const wallet = new EVMSmartWallet(this.crossmintService, account, publicClient, chain);
         await this.crossmintService.storeAbstractWallet({
-            userIdentifier,
+            userIdentifier: { type: "whiteLabel", userId: user.id },
             type: ZERO_DEV_TYPE,
             smartContractWalletAddress: account.address,
             signerData: { eoaAddress: eoa.address, type: "eoa" },
