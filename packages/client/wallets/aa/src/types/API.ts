@@ -5,13 +5,15 @@ export type StoreAbstractWalletInput = {
     userIdentifier: CrossmintServiceUser;
     type: string;
     smartContractWalletAddress: string;
-    signerData: EOASignerData | PasskeysSignerData;
+    signerData: SignerData;
     sessionKeySignerAddress?: string;
     version: number;
     baseLayer: string;
     chainId: number;
     entryPointVersion: EntryPointVersion;
 };
+
+export type SignerData = EOASignerData | PasskeysSignerData;
 
 export interface EOASignerData {
     eoaAddress: string;

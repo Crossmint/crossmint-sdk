@@ -1,4 +1,4 @@
-import { CrossmintServiceUser, StoreAbstractWalletInput } from "@/types";
+import { CrossmintServiceUser, SignerData, StoreAbstractWalletInput } from "@/types";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
@@ -31,21 +31,29 @@ export class CrossmintWalletService extends BaseCrossmintService {
         );
     }
 
-    async getPasskeyValidatorSigner(user: CrossmintServiceUser): Promise<any> {
+    async getPasskeyValidatorSigner(user: CrossmintServiceUser): Promise<SignerData | null> {
         console.log(`Fetching passkey validator signer for user ID: ${user.userId}`);
-        const signers = await this.fetchCrossmintAPI(
-            `unstable/wallets/aa/signers?userId=${user.userId}&type=passkeys`,
-            { method: "GET" },
-            "Error fetching passkey validator signer. Please contact support"
-        );
-        console.log(`Received signers: ${JSON.stringify(signers)}`);
 
-        if (signers.length === 0) {
-            console.error("Passkey validator signer not found");
-            throw new Error("Passkey validator signer not found");
+        try {
+            const signers = await this.fetchCrossmintAPI(
+                `unstable/wallets/aa/signers?userId=${user.userId}&type=passkeys`,
+                { method: "GET" },
+                "Error fetching passkey validator signer. Please contact support"
+            );
+
+            console.log(`Received signers: ${JSON.stringify(signers)}`);
+            if (signers.length === 0) {
+                return null;
+            }
+
+            console.log(`Returning signer data: ${JSON.stringify(signers[0].signerData)}`);
+            return signers[0].signerData;
+        } catch (e: any) {
+            if (e.message.includes("Wallet not found")) {
+                return null;
+            }
+
+            throw e;
         }
-
-        console.log(`Returning signer data: ${JSON.stringify(signers[0].signerData)}`);
-        return signers[0].signerData;
     }
 }

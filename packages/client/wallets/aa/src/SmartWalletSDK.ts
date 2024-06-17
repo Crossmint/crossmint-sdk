@@ -9,16 +9,19 @@ import { createPublicClient, http } from "viem";
 import { EVMBlockchainIncludingTestnet, validateAPIKey } from "@crossmint/common-sdk-base";
 
 import EOAWalletService from "./blockchain/wallets/eoa";
+import PasskeyWalletService from "./blockchain/wallets/passkey";
 import { LoggerWrapper, logPerformance } from "./utils/log";
 
 export class SmartWalletSDK extends LoggerWrapper {
     private readonly crossmintService: CrossmintWalletService;
     private readonly eaoWalletService: EOAWalletService;
+    private readonly passkeyWalletService: PasskeyWalletService;
 
     private constructor(config: SmartWalletSDKInitParams) {
         super("SmartWalletSDK");
         this.crossmintService = new CrossmintWalletService(config.clientApiKey);
         this.eaoWalletService = new EOAWalletService(this.crossmintService);
+        this.passkeyWalletService = new PasskeyWalletService(this.crossmintService, config.clientApiKey);
     }
 
     /**
@@ -43,16 +46,22 @@ export class SmartWalletSDK extends LoggerWrapper {
             async () => {
                 try {
                     const entryPointVersion = await this.getEntryPointVersion(user, chain);
+                    const publicClient = createPublicClient({
+                        transport: http(getBundlerRPC(chain)),
+                    });
+
                     if (isPasskeySigner(config.signer)) {
-                        console.log("hi");
-                        return {} as any;
+                        return this.passkeyWalletService.getOrCreate({
+                            user,
+                            chain,
+                            publicClient,
+                            signer: config.signer,
+                        });
                     } else {
                         return this.eaoWalletService.getOrCreate({
                             user,
                             chain,
-                            publicClient: createPublicClient({
-                                transport: http(getBundlerRPC(chain)),
-                            }),
+                            publicClient,
                             entryPointVersion,
                             entryPoint: entryPointVersion === "v0.6" ? ENTRYPOINT_ADDRESS_V06 : ENTRYPOINT_ADDRESS_V07,
                             config,
