@@ -3,6 +3,7 @@ import { EVMSmartWallet, getBundlerRPC } from "@/blockchain";
 import { type SmartWalletSDKInitParams, type UserParams, type WalletConfig, isPasskeySigner } from "@/types";
 import { WalletSdkError } from "@/utils";
 import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
+import { EntryPoint } from "permissionless/_types/types";
 import { EntryPointVersion } from "permissionless/types/entrypoint";
 import { createPublicClient, http } from "viem";
 
@@ -45,7 +46,7 @@ export class SmartWalletSDK extends LoggerWrapper {
             "GET_OR_CREATE_WALLET",
             async () => {
                 try {
-                    const entryPointVersion = await this.getEntryPointVersion(user, chain);
+                    const entrypoint = await this.getEntryPointVersion(user, chain);
                     const publicClient = createPublicClient({
                         transport: http(getBundlerRPC(chain)),
                     });
@@ -55,6 +56,7 @@ export class SmartWalletSDK extends LoggerWrapper {
                             user,
                             chain,
                             publicClient,
+                            entrypoint,
                             signer: config.signer,
                         });
                     } else {
@@ -62,8 +64,7 @@ export class SmartWalletSDK extends LoggerWrapper {
                             user,
                             chain,
                             publicClient,
-                            entryPointVersion,
-                            entryPoint: entryPointVersion === "v0.6" ? ENTRYPOINT_ADDRESS_V06 : ENTRYPOINT_ADDRESS_V07,
+                            entrypoint,
                             config,
                         });
                     }
@@ -78,11 +79,17 @@ export class SmartWalletSDK extends LoggerWrapper {
     private async getEntryPointVersion(
         user: UserParams,
         chain: EVMBlockchainIncludingTestnet
-    ): Promise<EntryPointVersion> {
+    ): Promise<EntryPointDetails> {
         const { entryPointVersion } = await this.crossmintService.getAbstractWalletEntryPointVersion(
             { type: "whiteLabel", userId: user.id },
             chain
         );
-        return entryPointVersion;
+
+        return {
+            version: entryPointVersion,
+            address: entryPointVersion === "v0.6" ? ENTRYPOINT_ADDRESS_V06 : ENTRYPOINT_ADDRESS_V07,
+        };
     }
 }
+
+export type EntryPointDetails = { version: EntryPointVersion; address: EntryPoint };

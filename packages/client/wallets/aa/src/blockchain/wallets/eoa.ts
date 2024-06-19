@@ -1,10 +1,10 @@
 import { CrossmintWalletService } from "@/api";
 import { EVMSmartWallet } from "@/blockchain";
+import { EntryPointDetails } from "@/index";
 import type { UserParams, WalletConfig } from "@/types";
 import { CURRENT_VERSION, ZERO_DEV_TYPE, createOwnerSigner } from "@/utils";
 import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
 import { createKernelAccount } from "@zerodev/sdk";
-import { EntryPoint, EntryPointVersion } from "permissionless/types/entrypoint";
 import { HttpTransport, PublicClient } from "viem";
 
 import { EVMBlockchainIncludingTestnet, blockchainToChainId } from "@crossmint/common-sdk-base";
@@ -16,15 +16,13 @@ export default class EOAWalletService {
         user,
         chain,
         publicClient,
-        entryPoint,
-        entryPointVersion,
+        entrypoint,
         config,
     }: {
         user: UserParams;
         chain: EVMBlockchainIncludingTestnet;
         publicClient: PublicClient<HttpTransport>;
-        entryPoint: EntryPoint;
-        entryPointVersion: EntryPointVersion;
+        entrypoint: EntryPointDetails;
         config: WalletConfig;
     }) {
         const eoa = await createOwnerSigner({
@@ -33,14 +31,14 @@ export default class EOAWalletService {
         });
         const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
             signer: eoa,
-            entryPoint,
+            entryPoint: entrypoint.address,
         });
         const account = await createKernelAccount(publicClient, {
             plugins: {
                 sudo: ecdsaValidator,
             },
             index: BigInt(0),
-            entryPoint,
+            entryPoint: entrypoint.address,
         });
 
         const wallet = new EVMSmartWallet(this.crossmintService, account, publicClient, chain);
@@ -52,7 +50,7 @@ export default class EOAWalletService {
             version: CURRENT_VERSION,
             baseLayer: "evm",
             chainId: blockchainToChainId(chain),
-            entryPointVersion,
+            entryPointVersion: entrypoint.version,
         });
 
         return wallet;
