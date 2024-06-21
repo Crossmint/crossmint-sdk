@@ -17,4 +17,20 @@ export interface EncryptedVerifiableCredential {
     payload: string;
 }
 
+export enum VerifiableCredentialEncryption {
+    NONE = "none",
+    DECENTRALIZED = "decentralized-lit",
+}
+
+export interface VCContractMetadata {
+    credentialMetadata: CredentialMetadata;
+}
+
+export interface CredentialMetadata {
+    type: string[];
+    encryption: VerifiableCredentialEncryption;
+    credentialsEndpoint: string;
+    issuerDid: string;
+}
+
 export type VerifiableCredentialType = VerifiableCredential | EncryptedVerifiableCredential;

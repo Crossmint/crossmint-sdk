@@ -1,21 +1,18 @@
 import { EVMNFT } from "@crossmint/common-sdk-base";
 
+import { VCContractMetadata } from "./verifiableCredential";
+
 export interface VC_EVMNFT extends EVMNFT {
     metadata: any;
     locators: string;
     tokenStandard: string;
 }
 
-export interface CredentialsCollection {
+export interface Collection {
     nfts: VC_EVMNFT[];
     contractAddress: string;
-    metadata: {
-        credentialMetadata: {
-            type: string[];
-            issuerDid: string;
-            encryption: boolean;
-            credentialsEndpoint: string;
-            [key: string]: any;
-        };
-    };
+    metadata: any;
+}
+export interface CredentialsCollection extends Collection {
+    metadata: VCContractMetadata;
 }
