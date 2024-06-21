@@ -34,13 +34,7 @@ export class MetadataService {
 
         for (const collection of collections) {
             const metadata = await this.getContractMetadata(collection.contractAddress, environment);
-            if (
-                metadata == null ||
-                metadata.credentialMetadata == null ||
-                metadata.credentialMetadata.type == null ||
-                metadata.credentialMetadata.issuerDid == null ||
-                !Array.isArray(metadata.credentialMetadata.type)
-            ) {
+            if (!isVerifiableCredentialContractMetadata(metadata)) {
                 continue;
             }
             collection.metadata = metadata;
@@ -85,4 +79,14 @@ export class MetadataService {
 
 export function formatUrl(template: string, cid: string): string {
     return template.replace("{cid}", cid);
+}
+
+function isVerifiableCredentialContractMetadata(metadata: any): boolean {
+    return !(
+        metadata == null ||
+        metadata.credentialMetadata == null ||
+        metadata.credentialMetadata.type == null ||
+        metadata.credentialMetadata.issuerDid == null ||
+        !Array.isArray(metadata.credentialMetadata.type)
+    );
 }

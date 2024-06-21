@@ -23,6 +23,9 @@ export function parseLocator(locator: string): EVMNFT {
 export function isEncryptedVerifiableCredential(
     credential: VerifiableCredentialType
 ): credential is EncryptedVerifiableCredential {
+    if (credential == null || typeof credential.id !== "string") {
+        throw new Error("obj should be a VerifiableCredential or EncryptedVerifiableCredential object");
+    }
     return (
         (credential as EncryptedVerifiableCredential).id !== undefined &&
         (credential as EncryptedVerifiableCredential).payload !== undefined &&
