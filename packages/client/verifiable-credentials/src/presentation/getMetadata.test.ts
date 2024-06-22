@@ -52,6 +52,7 @@ describe("getMetadata", () => {
                 credentialMetadata: {
                     issuerDid: "issuerDid",
                     type: ["type1", "type2"],
+                    credentialsEndpoint: "credentialsEndpoint",
                 },
             };
             const collections: CredentialsCollection[] = [
