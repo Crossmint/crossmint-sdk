@@ -17,7 +17,12 @@ export interface EncryptedVerifiableCredential {
     payload: string;
 }
 
-export enum VerifiableCredentialEncryption {
+export interface VerifiableCredentialEncryption {
+    type: VerifiableCredentialEncryptionType;
+    details?: string;
+}
+
+export enum VerifiableCredentialEncryptionType {
     NONE = "none",
     DECENTRALIZED = "decentralized-lit",
 }
