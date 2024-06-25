@@ -66,13 +66,10 @@ export abstract class BaseCrossmintService extends LoggerWrapper {
     }
 
     protected getUrlFromEnv(environment: string) {
-        console.log(`Attempting to retrieve URL for environment: ${environment}`);
         const url = BaseCrossmintService.urlMap[environment];
         if (!url) {
-            console.log("Failed to find URL. CrossmintService.urlMap: ", BaseCrossmintService.urlMap);
             throw new Error(`URL not found for environment: ${environment}`);
         }
-        console.log(`URL retrieved successfully for environment ${environment}: ${url}`);
         return url;
     }
 }
