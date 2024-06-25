@@ -12,8 +12,7 @@
         "email-validator": "2.0.4",
         "libphonenumber-js": "1.10.44",
         "permissionless": "0.1.29",
-        "viem": "2.13.1",
-        "web3": "4.5.0"
+        "viem": "2.13.1"
     },
     "devDependencies": {
         "@playwright/test": "^1.41.2",
