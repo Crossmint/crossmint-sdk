@@ -1,5 +1,7 @@
 import { parseToken } from "./auth";
 
+jest.mock("@zerodev/passkey-validator/utils", () => ({}));
+
 describe("parseToken", () => {
     let originalAtob: Function | undefined;
     let originalConsoleError: any;

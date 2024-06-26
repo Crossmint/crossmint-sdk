@@ -1,8 +1,8 @@
 import type { SignerData, StoreAbstractWalletInput, UserIdentifier, UserIdentifierParams } from "@/types";
+import { CrossmintServiceError } from "@/utils/error";
 
 import type { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
-import { CrossmintServiceError } from "..";
 import { BaseCrossmintService } from "./BaseCrossmintService";
 
 export { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
@@ -52,7 +52,7 @@ export class CrossmintWalletService extends BaseCrossmintService {
             }
 
             if (signers.length > 1) {
-                throw new Error("Config Error"); // TODO use error as defined by SDK spec
+                throw new Error("Config Error"); // TODO use error as defined by SDK
             }
 
             return signers[0].signerData;

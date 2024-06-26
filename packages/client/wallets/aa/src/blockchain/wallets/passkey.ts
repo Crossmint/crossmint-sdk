@@ -8,6 +8,7 @@ import {
     UserIdentifier,
     WalletConfig,
     ZERO_DEV_TYPE,
+    blockchainToChainId,
 } from "@/index";
 import { WalletCreationParams } from "@/types/internal";
 import { createPasskeyValidator, deserializePasskeyValidator } from "@zerodev/passkey-validator";
@@ -15,8 +16,6 @@ import { deserializePasskeyValidatorData, serializePasskeyValidatorData } from "
 import { KernelValidator, createKernelAccount } from "@zerodev/sdk";
 import { EntryPoint } from "permissionless/types/entrypoint";
 import { PublicClient } from "viem";
-
-import { blockchainToChainId } from "@crossmint/common-sdk-base";
 
 export interface PasskeyWalletParams extends WalletCreationParams {
     walletConfig: WalletConfig & { signer: PasskeySigner };
