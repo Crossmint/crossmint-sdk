@@ -56,7 +56,7 @@ export class SmartWalletSDK extends LoggerWrapper {
                         walletConfig,
                         entrypoint: await this.fetchEntryPoint(user, chain),
                         publicClient: createPublicClient({ transport: http(getBundlerRPC(chain)) }),
-                        user: parseUserIdentifier(user),
+                        userIdentifier: parseUserIdentifier(user),
                     };
 
                     if (isPasskeyParams(params)) {

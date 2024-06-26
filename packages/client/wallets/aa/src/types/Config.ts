@@ -49,7 +49,7 @@ export interface WalletConfig {
 export type EntryPointDetails = { version: EntryPointVersion; address: EntryPoint };
 
 export interface WalletCreationParams {
-    user: UserIdentifier;
+    userIdentifier: UserIdentifier;
     chain: EVMBlockchainIncludingTestnet;
     publicClient: PublicClient<HttpTransport>;
     walletConfig: WalletConfig;

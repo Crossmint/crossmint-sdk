@@ -4,7 +4,7 @@ import { EntryPointVersion } from "permissionless/_types/types";
 import type { UserIdentifier } from "./Config";
 
 export type StoreAbstractWalletInput = {
-    user: UserIdentifier;
+    userIdentifier: UserIdentifier;
     type: string;
     smartContractWalletAddress: string;
     signerData: SignerData;

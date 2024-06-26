@@ -27,9 +27,9 @@ export function isPasskeyParams(params: WalletCreationParams): params is Passkey
 export class PasskeyWalletService {
     constructor(private readonly crossmintService: CrossmintWalletService, private readonly apiKey: string) {}
 
-    public async getOrCreate({ user, chain, publicClient, walletConfig, entrypoint }: PasskeyWalletParams) {
+    public async getOrCreate({ userIdentifier, chain, publicClient, walletConfig, entrypoint }: PasskeyWalletParams) {
         const validator = await this.getOrCreateSigner({
-            user,
+            userIdentifier,
             entrypoint,
             publicClient,
             signer: walletConfig.signer,
@@ -41,7 +41,7 @@ export class PasskeyWalletService {
 
         const validatorFields = deserializePasskeyValidatorData(validator.getSerializedData());
         await this.crossmintService.storeAbstractWallet({
-            user,
+            userIdentifier,
             type: ZERO_DEV_TYPE,
             smartContractWalletAddress: kernelAccount.address,
             signerData: {
@@ -60,17 +60,17 @@ export class PasskeyWalletService {
     }
 
     private async getOrCreateSigner({
-        user,
+        userIdentifier,
         entrypoint,
         publicClient,
         signer,
     }: {
-        user: UserIdentifier;
+        userIdentifier: UserIdentifier;
         entrypoint: EntryPointDetails;
         publicClient: PublicClient;
         signer: PasskeySigner;
     }) {
-        const serializedData = await this.get(user);
+        const serializedData = await this.get(userIdentifier);
         if (serializedData != null) {
             return deserializePasskeyValidator(publicClient, {
                 serializedData,
@@ -79,7 +79,7 @@ export class PasskeyWalletService {
         }
 
         return createPasskeyValidator(publicClient, {
-            passkeyServerUrl: this.passkeyServerUrl(user),
+            passkeyServerUrl: this.passkeyServerUrl(userIdentifier),
             entryPoint: entrypoint.address,
             passkeyName: signer.passkeyName,
             credentials: "omit",
