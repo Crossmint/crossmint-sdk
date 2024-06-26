@@ -22,6 +22,7 @@ export const BLOCKCHAIN_TO_CHAIN_ID: Record<EVMBlockchainIncludingTestnet, numbe
     "zora-sepolia": 999999999,
     "zora-goerli": 999,
     zkatana: 1261120,
+    zkyoto: 6038361,
     "astar-zkevm": 3776,
     apex: 70700,
     "hypersonic-testnet": 675852,
