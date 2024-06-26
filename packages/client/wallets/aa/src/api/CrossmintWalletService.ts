@@ -38,10 +38,10 @@ export class CrossmintWalletService extends BaseCrossmintService {
         );
     }
 
-    async getPasskeyValidatorSigner(user: UserIdentifier): Promise<SignerData | null> {
+    async getPasskeyValidatorSigner(userIdentifier: UserIdentifier): Promise<SignerData | null> {
         try {
             const signers = await this.fetchCrossmintAPI(
-                `unstable/wallets/aa/signers?${user}&type=passkeys`,
+                `unstable/wallets/aa/signers?${this.encodeUserId(userIdentifier)}&type=passkeys`,
                 { method: "GET" },
                 "Error fetching passkey validator signer. Please contact support"
             );
@@ -59,6 +59,24 @@ export class CrossmintWalletService extends BaseCrossmintService {
             }
 
             throw e;
+        }
+    }
+
+    public getPasskeyServerUrl(userIdentifier: UserIdentifier): string {
+        return (
+            this.crossmintBaseUrl +
+            `/unstable/passkeys/${this.crossmintAPIHeaders["x-api-key"]}/${this.encodeUserId(userIdentifier)}`
+        );
+    }
+
+    private encodeUserId(userIdentifier: UserIdentifier) {
+        switch (userIdentifier.type) {
+            case "email":
+                return `email=${encodeURIComponent(userIdentifier.email)}`;
+            case "whiteLabel":
+                return `userId=${userIdentifier.userId}`;
+            case "phoneNumber":
+                return `phoneNumber=${encodeURIComponent(userIdentifier.phoneNumber)}`; // TODO will this work?
         }
     }
 }

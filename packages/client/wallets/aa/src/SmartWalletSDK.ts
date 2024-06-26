@@ -27,7 +27,7 @@ export class SmartWalletSDK extends LoggerWrapper {
         super("SmartWalletSDK");
         this.crossmintService = new CrossmintWalletService(config.clientApiKey);
         this.eaoWalletService = new EOAWalletService(this.crossmintService);
-        this.passkeyWalletService = new PasskeyWalletService(this.crossmintService, config.clientApiKey);
+        this.passkeyWalletService = new PasskeyWalletService(this.crossmintService);
     }
 
     /**

@@ -25,7 +25,7 @@ export function isPasskeyParams(params: WalletCreationParams): params is Passkey
 }
 
 export class PasskeyWalletService {
-    constructor(private readonly crossmintService: CrossmintWalletService, private readonly apiKey: string) {}
+    constructor(private readonly crossmintService: CrossmintWalletService) {}
 
     public async getOrCreate({ userIdentifier, chain, publicClient, walletConfig, entrypoint }: PasskeyWalletParams) {
         const validator = await this.getOrCreateSigner({
@@ -79,7 +79,7 @@ export class PasskeyWalletService {
         }
 
         return createPasskeyValidator(publicClient, {
-            passkeyServerUrl: this.passkeyServerUrl(userIdentifier),
+            passkeyServerUrl: this.crossmintService.getPasskeyServerUrl(userIdentifier),
             entryPoint: entrypoint.address,
             passkeyName: signer.passkeyName,
             credentials: "omit",
@@ -97,10 +97,6 @@ export class PasskeyWalletService {
         }
 
         return serializePasskeyValidatorData(signer);
-    }
-
-    private passkeyServerUrl(user: UserIdentifier): string {
-        return this.crossmintService.crossmintBaseUrl + `/unstable/passkeys/${this.apiKey}/${user}`;
     }
 
     private getCurrentDomain(): string {
