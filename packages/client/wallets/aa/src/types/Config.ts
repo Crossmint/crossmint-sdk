@@ -52,6 +52,6 @@ export interface WalletCreationParams {
     user: UserIdentifier;
     chain: EVMBlockchainIncludingTestnet;
     publicClient: PublicClient<HttpTransport>;
-    config: WalletConfig;
+    walletConfig: WalletConfig;
     entrypoint: EntryPointDetails;
 }

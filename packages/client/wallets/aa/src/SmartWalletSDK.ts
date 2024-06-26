@@ -45,7 +45,7 @@ export class SmartWalletSDK extends LoggerWrapper {
     async getOrCreateWallet(
         user: UserIdentifierParams,
         chain: EVMBlockchainIncludingTestnet,
-        config: WalletConfig
+        walletConfig: WalletConfig
     ): Promise<EVMSmartWallet> {
         return logPerformance(
             "GET_OR_CREATE_WALLET",
@@ -53,7 +53,7 @@ export class SmartWalletSDK extends LoggerWrapper {
                 try {
                     const params: WalletCreationParams = {
                         chain,
-                        config,
+                        walletConfig,
                         entrypoint: await this.fetchEntryPoint(user, chain),
                         publicClient: createPublicClient({ transport: http(getBundlerRPC(chain)) }),
                         user: parseUserIdentifier(user),

@@ -17,22 +17,22 @@ import { PublicClient } from "viem";
 import { blockchainToChainId } from "@crossmint/common-sdk-base";
 
 export interface PasskeyWalletParams extends WalletCreationParams {
-    config: WalletConfig & { signer: PasskeySigner };
+    walletConfig: WalletConfig & { signer: PasskeySigner };
 }
 
 export function isPasskeyParams(params: WalletCreationParams): params is PasskeyWalletParams {
-    return (params.config.signer as PasskeySigner).type === "PASSKEY";
+    return (params.walletConfig.signer as PasskeySigner).type === "PASSKEY";
 }
 
 export class PasskeyWalletService {
     constructor(private readonly crossmintService: CrossmintWalletService, private readonly apiKey: string) {}
 
-    public async getOrCreate({ user, chain, publicClient, config, entrypoint }: PasskeyWalletParams) {
+    public async getOrCreate({ user, chain, publicClient, walletConfig, entrypoint }: PasskeyWalletParams) {
         const validator = await this.getOrCreateSigner({
             user,
             entrypoint,
             publicClient,
-            signer: config.signer,
+            signer: walletConfig.signer,
         });
         const kernelAccount = await createKernelAccount(publicClient, {
             plugins: { sudo: validator },
@@ -46,7 +46,7 @@ export class PasskeyWalletService {
             smartContractWalletAddress: kernelAccount.address,
             signerData: {
                 ...validatorFields,
-                passkeyName: config.signer.passkeyName,
+                passkeyName: walletConfig.signer.passkeyName,
                 domain: this.getCurrentDomain(),
                 type: "passkeys",
             },

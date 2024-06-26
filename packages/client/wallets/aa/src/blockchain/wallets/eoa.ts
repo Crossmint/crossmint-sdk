@@ -8,16 +8,16 @@ import { createKernelAccount } from "@zerodev/sdk";
 import { blockchainToChainId } from "@crossmint/common-sdk-base";
 
 export interface EOAWalletParams extends WalletCreationParams {
-    config: WalletConfig & { signer: EOASigner };
+    walletConfig: WalletConfig & { signer: EOASigner };
 }
 
 export class EOAWalletService {
     constructor(private readonly crossmintService: CrossmintWalletService) {}
 
-    public async getOrCreate({ user, chain, publicClient, entrypoint, config }: EOAWalletParams) {
+    public async getOrCreate({ user, chain, publicClient, entrypoint, walletConfig }: EOAWalletParams) {
         const eoa = await createOwnerSigner({
             chain,
-            walletConfig: config,
+            walletConfig,
         });
         const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
             signer: eoa,
