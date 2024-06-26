@@ -1,6 +1,6 @@
-import { SignerData, StoreAbstractWalletInput, UserIdentifier, UserIdentifierParams } from "@/types";
+import type { SignerData, StoreAbstractWalletInput, UserIdentifier, UserIdentifierParams } from "@/types";
 
-import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
+import type { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 import { BaseCrossmintService } from "./BaseCrossmintService";
 
@@ -24,7 +24,7 @@ export class CrossmintWalletService extends BaseCrossmintService {
             : `userId=${userIdentifier.userId}`;
 
         return this.fetchCrossmintAPI(
-            `v1-alpha1/wallets/entry-point-version?userId=${identifier}&chain=${chain}`,
+            `v1-alpha1/wallets/entry-point-version?${identifier}&chain=${chain}`,
             { method: "GET" },
             `Error getting entry point version. Please contact support`
         );

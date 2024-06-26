@@ -10,6 +10,7 @@ import { blockchainToChainId } from "@crossmint/common-sdk-base";
 export interface EOAWalletParams extends WalletCreationParams {
     config: WalletConfig & { signer: EOASigner };
 }
+
 export class EOAWalletService {
     constructor(private readonly crossmintService: CrossmintWalletService) {}
 
@@ -30,6 +31,7 @@ export class EOAWalletService {
             entryPoint: entrypoint.address,
         });
 
+        const wallet = new EVMSmartWallet(this.crossmintService, account, publicClient, chain);
         await this.crossmintService.storeAbstractWallet({
             user,
             type: ZERO_DEV_TYPE,
@@ -41,6 +43,6 @@ export class EOAWalletService {
             entryPointVersion: entrypoint.version,
         });
 
-        return new EVMSmartWallet(this.crossmintService, account, publicClient, chain);
+        return wallet;
     }
 }
