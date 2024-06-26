@@ -1,10 +1,10 @@
 import { isPolygon } from "../services/utils";
 import { CredentialFilter } from "../types/credentialFilter";
-import { CredentialsCollection, VC_EVMNFT } from "../types/nfts";
+import { Collection, CredentialsCollection, VC_EVMNFT } from "../types/nfts";
 import { MetadataService } from "./getMetadata";
 import { filterPolygonErc721, getWalletNfts } from "./getNfts";
 
-export function getCollections(nfts: VC_EVMNFT[]): CredentialsCollection[] {
+export function getCollections(nfts: VC_EVMNFT[]): Collection[] {
     const grouped: Record<string, VC_EVMNFT[]> = nfts.reduce((acc, nft) => {
         if (!acc[nft.contractAddress]) {
             acc[nft.contractAddress] = [];

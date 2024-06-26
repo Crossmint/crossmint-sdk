@@ -3,7 +3,8 @@ import { ethers, utils } from "ethers";
 import { nftZeroEight } from "../ABI/upgradeable721-v0.8";
 import { CrossmintAPI } from "../services/crossmintAPI";
 import { getProvider } from "../services/provider";
-import { CredentialsCollection } from "../types/nfts";
+import { isVerifiableCredentialContractMetadata } from "../services/utils";
+import { Collection, CredentialsCollection } from "../types/nfts";
 
 export class MetadataService {
     async getContractMetadata(contractAddress: string, environment: string): Promise<any> {
@@ -26,11 +27,8 @@ export class MetadataService {
         return this.getFromIpfs(uri);
     }
 
-    async getContractWithVCMetadata(
-        collections: CredentialsCollection[],
-        environment: string
-    ): Promise<CredentialsCollection[]> {
-        const credentialCollections = [];
+    async getContractWithVCMetadata(collections: Collection[], environment: string): Promise<CredentialsCollection[]> {
+        const credentialCollections: CredentialsCollection[] = [];
 
         for (const collection of collections) {
             const metadata = await this.getContractMetadata(collection.contractAddress, environment);
@@ -79,14 +77,4 @@ export class MetadataService {
 
 export function formatUrl(template: string, cid: string): string {
     return template.replace("{cid}", cid);
-}
-
-function isVerifiableCredentialContractMetadata(metadata: any): boolean {
-    return !(
-        metadata == null ||
-        metadata.credentialMetadata == null ||
-        metadata.credentialMetadata.type == null ||
-        metadata.credentialMetadata.issuerDid == null ||
-        !Array.isArray(metadata.credentialMetadata.type)
-    );
 }

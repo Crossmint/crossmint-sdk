@@ -11,12 +11,6 @@ global.fetch = jest.fn(() =>
     })
 ) as jest.Mock;
 
-jest.mock("@krebitdao/eip712-vc", () => {
-    return {
-        EIP712VC: jest.fn().mockImplementation(() => {}),
-    };
-});
-
 describe("getMetadata", () => {
     let metadataService: MetadataService;
     beforeEach(() => {
@@ -58,6 +52,7 @@ describe("getMetadata", () => {
                 credentialMetadata: {
                     issuerDid: "issuerDid",
                     type: ["type1", "type2"],
+                    credentialsEndpoint: "credentialsEndpoint",
                 },
             };
             const collections: CredentialsCollection[] = [
