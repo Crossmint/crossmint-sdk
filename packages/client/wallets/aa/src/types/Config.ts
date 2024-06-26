@@ -1,8 +1,6 @@
 import { TORUS_NETWORK_TYPE } from "@web3auth/single-factor-auth";
 import { EntryPoint, EntryPointVersion } from "permissionless/types/entrypoint";
-import { EIP1193Provider, HttpTransport, LocalAccount, PublicClient } from "viem";
-
-import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
+import { EIP1193Provider, LocalAccount } from "viem";
 
 export type SmartWalletSDKInitParams = {
     clientApiKey: string;
@@ -47,11 +45,3 @@ export interface WalletConfig {
 }
 
 export type EntryPointDetails = { version: EntryPointVersion; address: EntryPoint };
-
-export interface WalletCreationParams {
-    userIdentifier: UserIdentifier;
-    chain: EVMBlockchainIncludingTestnet;
-    publicClient: PublicClient<HttpTransport>;
-    walletConfig: WalletConfig;
-    entrypoint: EntryPointDetails;
-}

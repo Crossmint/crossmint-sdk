@@ -7,9 +7,9 @@ import {
     PasskeySignerData,
     UserIdentifier,
     WalletConfig,
-    WalletCreationParams,
     ZERO_DEV_TYPE,
 } from "@/index";
+import { WalletCreationParams } from "@/types/internal";
 import { createPasskeyValidator, deserializePasskeyValidator } from "@zerodev/passkey-validator";
 import { deserializePasskeyValidatorData, serializePasskeyValidatorData } from "@zerodev/passkey-validator/utils";
 import { KernelValidator, createKernelAccount } from "@zerodev/sdk";
