@@ -1,3 +1,4 @@
+import { StaticJsonRpcProvider } from "@ethersproject/providers";
 import { Contract } from "ethers";
 import { constants } from "ethers";
 
@@ -5,16 +6,19 @@ import { EVMNFT } from "@crossmint/common-sdk-base";
 
 import { abi_ERC_721 } from "../../ABI/ERC721";
 import { getProvider } from "../../services/provider";
+import { isPolygon } from "../../services/utils";
 
-export class NFTStatusService {
+export class NFTService {
     private environment: string;
+    private provider: StaticJsonRpcProvider;
 
     constructor(environment: string) {
         this.environment = environment;
+        this.provider = getProvider(this.environment);
     }
 
     async isBurnt(nft: EVMNFT) {
-        if (!nft.chain.includes("polygon")) {
+        if (!isPolygon(nft.chain)) {
             throw new Error("Only Polygon is supported");
         }
         try {
@@ -29,9 +33,12 @@ export class NFTStatusService {
     }
 
     async getNftOwnerByContractAddress(contractAddress: string, tokenId: string): Promise<string> {
-        const provider = getProvider(this.environment);
-        const contract = new Contract(contractAddress, abi_ERC_721, provider);
-
+        const contract = new Contract(contractAddress, abi_ERC_721, this.provider);
         return await contract.ownerOf(tokenId);
+    }
+
+    async getNftUri(nft: EVMNFT) {
+        const contract = new Contract(nft.contractAddress, abi_ERC_721, this.provider);
+        return await contract.tokenURI(nft.tokenId);
     }
 }

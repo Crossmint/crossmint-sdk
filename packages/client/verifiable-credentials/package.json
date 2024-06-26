@@ -39,5 +39,5 @@
     "sideEffects": false,
     "type": "module",
     "types": "./dist/index.d.ts",
-    "version": "2.1.6"
+    "version": "2.3.0"
 }
