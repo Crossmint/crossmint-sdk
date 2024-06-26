@@ -1,5 +1,4 @@
-import { EncryptedVerifiableCredential, VerifiableCredential } from "@/types/verifiableCredential";
-
+import { EncryptedVerifiableCredential, VerifiableCredential } from "../types/verifiableCredential";
 import { isEncryptedVerifiableCredential, isPolygon, parseLocator } from "./utils";
 
 describe("utils", () => {
