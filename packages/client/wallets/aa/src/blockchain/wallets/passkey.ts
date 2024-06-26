@@ -4,6 +4,7 @@ import {
     EVMSmartWallet,
     EntryPointDetails,
     PasskeySigner,
+    PasskeySignerData,
     UserIdentifier,
     WalletConfig,
     WalletCreationParams,
@@ -11,7 +12,8 @@ import {
 } from "@/index";
 import { createPasskeyValidator, deserializePasskeyValidator } from "@zerodev/passkey-validator";
 import { deserializePasskeyValidatorData, serializePasskeyValidatorData } from "@zerodev/passkey-validator/utils";
-import { createKernelAccount } from "@zerodev/sdk";
+import { KernelValidator, createKernelAccount } from "@zerodev/sdk";
+import { EntryPoint } from "permissionless/types/entrypoint";
 import { PublicClient } from "viem";
 
 import { blockchainToChainId } from "@crossmint/common-sdk-base";
@@ -23,6 +25,10 @@ export interface PasskeyWalletParams extends WalletCreationParams {
 export function isPasskeyParams(params: WalletCreationParams): params is PasskeyWalletParams {
     return (params.walletConfig.signer as PasskeySigner).type === "PASSKEY";
 }
+
+type PasskeyValidator = KernelValidator<EntryPoint, "WebAuthnValidator"> & {
+    getSerializedData: () => string;
+};
 
 export class PasskeyWalletService {
     constructor(private readonly crossmintService: CrossmintWalletService) {}
@@ -39,17 +45,11 @@ export class PasskeyWalletService {
             entryPoint: entrypoint.address,
         });
 
-        const validatorFields = deserializePasskeyValidatorData(validator.getSerializedData());
         await this.crossmintService.storeAbstractWallet({
             userIdentifier,
             type: ZERO_DEV_TYPE,
             smartContractWalletAddress: kernelAccount.address,
-            signerData: {
-                ...validatorFields,
-                passkeyName: walletConfig.signer.passkeyName,
-                domain: this.getCurrentDomain(),
-                type: "passkeys",
-            },
+            signerData: this.getSignerData(validator, walletConfig.signer.passkeyName),
             version: CURRENT_VERSION,
             baseLayer: "evm",
             chainId: blockchainToChainId(chain),
@@ -69,8 +69,8 @@ export class PasskeyWalletService {
         entrypoint: EntryPointDetails;
         publicClient: PublicClient;
         signer: PasskeySigner;
-    }) {
-        const serializedData = await this.get(userIdentifier);
+    }): Promise<PasskeyValidator> {
+        const serializedData = await this.fetchSerializedSigner(userIdentifier);
         if (serializedData != null) {
             return deserializePasskeyValidator(publicClient, {
                 serializedData,
@@ -86,7 +86,7 @@ export class PasskeyWalletService {
         });
     }
 
-    private async get(user: UserIdentifier): Promise<string | null> {
+    private async fetchSerializedSigner(user: UserIdentifier): Promise<string | null> {
         const signer = await this.crossmintService.getPasskeyValidatorSigner(user);
         if (signer == null) {
             return null;
@@ -99,7 +99,13 @@ export class PasskeyWalletService {
         return serializePasskeyValidatorData(signer);
     }
 
-    private getCurrentDomain(): string {
-        return window.location.hostname;
+    private getSignerData(validator: PasskeyValidator, passkeyName: string): PasskeySignerData {
+        const fields = deserializePasskeyValidatorData(validator.getSerializedData());
+        return {
+            ...fields,
+            passkeyName,
+            domain: window.location.hostname,
+            type: "passkeys",
+        };
     }
 }

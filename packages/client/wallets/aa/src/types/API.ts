@@ -15,7 +15,7 @@ export type StoreAbstractWalletInput = {
     entryPointVersion: EntryPointVersion;
 };
 
-export type SignerData = EOASignerData | PasskeysSignerData;
+export type SignerData = EOASignerData | PasskeySignerData;
 
 export interface EOASignerData {
     eoaAddress: string;
@@ -23,7 +23,7 @@ export interface EOASignerData {
 }
 
 type ZeroDevPasskeyValidatorFields = ReturnType<typeof deserializePasskeyValidatorData>;
-export type PasskeysSignerData = ZeroDevPasskeyValidatorFields & {
+export type PasskeySignerData = ZeroDevPasskeyValidatorFields & {
     passkeyName: string;
     domain: string;
     type: "passkeys";
