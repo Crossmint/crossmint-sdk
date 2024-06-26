@@ -78,3 +78,13 @@ export class MetadataService {
 export function formatUrl(template: string, cid: string): string {
     return template.replace("{cid}", cid);
 }
+
+function isVerifiableCredentialContractMetadata(metadata: any): boolean {
+    return !(
+        metadata == null ||
+        metadata.credentialMetadata == null ||
+        metadata.credentialMetadata.type == null ||
+        metadata.credentialMetadata.issuerDid == null ||
+        !Array.isArray(metadata.credentialMetadata.type)
+    );
+}

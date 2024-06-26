@@ -1,15 +1,15 @@
 import { BrowserLoggerInterface } from "./BrowserLoggerInterface";
 
 export class ConsoleProvider implements BrowserLoggerInterface {
-    logInfo(message: string, context?: unknown) {
+    logInfo(message: string, context?: object) {
         console.log(message, context);
     }
 
-    logError(message: string, context?: unknown) {
+    logError(message: string, context?: object) {
         console.error(message, context);
     }
 
-    logWarn(message: string, context?: unknown) {
+    logWarn(message: string, context?: object) {
         console.warn(message, context);
     }
 }
