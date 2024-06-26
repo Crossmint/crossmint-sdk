@@ -1,4 +1,4 @@
-import type { SignerData, StoreAbstractWalletInput, UserIdentifier, UserIdentifierParams } from "@/types";
+import type { SignerData, StoreAbstractWalletInput, UserParams } from "@/types";
 import { CrossmintServiceError } from "@/utils/error";
 
 import type { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
@@ -16,16 +16,9 @@ export class CrossmintWalletService extends BaseCrossmintService {
         );
     }
 
-    async getAbstractWalletEntryPointVersion(
-        userIdentifier: UserIdentifierParams,
-        chain: EVMBlockchainIncludingTestnet
-    ) {
-        const identifier = userIdentifier.email
-            ? `email=${encodeURIComponent(userIdentifier.email)}`
-            : `userId=${userIdentifier.userId}`;
-
+    async getAbstractWalletEntryPointVersion(user: UserParams, chain: EVMBlockchainIncludingTestnet) {
         return this.fetchCrossmintAPI(
-            `v1-alpha1/wallets/entry-point-version?${identifier}&chain=${chain}`,
+            `v1-alpha1/wallets/entry-point-version?${this.encodeUser(user)}&chain=${chain}`,
             { method: "GET" },
             `Error getting entry point version. Please contact support`
         );
@@ -39,10 +32,10 @@ export class CrossmintWalletService extends BaseCrossmintService {
         );
     }
 
-    async getPasskeyValidatorSigner(userIdentifier: UserIdentifier): Promise<SignerData | null> {
+    async getPasskeyValidatorSigner(user: UserParams): Promise<SignerData | null> {
         try {
             const signers = await this.fetchCrossmintAPI(
-                `unstable/wallets/aa/signers?${this.encodeUserId(userIdentifier)}&type=passkeys`,
+                `unstable/wallets/aa/signers?${this.encodeUser(user)}&type=passkeys`,
                 { method: "GET" },
                 "Error fetching passkey validator signer. Please contact support"
             );
@@ -65,21 +58,14 @@ export class CrossmintWalletService extends BaseCrossmintService {
         }
     }
 
-    public getPasskeyServerUrl(userIdentifier: UserIdentifier): string {
+    public getPasskeyServerUrl(user: UserParams): string {
         return (
             this.crossmintBaseUrl +
-            `/unstable/passkeys/${this.crossmintAPIHeaders["x-api-key"]}/${this.encodeUserId(userIdentifier)}`
+            `/unstable/passkeys/${this.crossmintAPIHeaders["x-api-key"]}/${this.encodeUser(user)}`
         );
     }
 
-    private encodeUserId(userIdentifier: UserIdentifier) {
-        switch (userIdentifier.type) {
-            case "email":
-                return `email=${encodeURIComponent(userIdentifier.email)}`;
-            case "whiteLabel":
-                return `userId=${userIdentifier.userId}`;
-            case "phoneNumber":
-                return `phoneNumber=${encodeURIComponent(userIdentifier.phoneNumber)}`; // TODO will this work?
-        }
+    private encodeUser(user: UserParams) {
+        return `userId=${user.id}`;
     }
 }

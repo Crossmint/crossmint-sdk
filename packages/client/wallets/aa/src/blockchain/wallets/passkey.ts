@@ -5,7 +5,7 @@ import {
     EntryPointDetails,
     PasskeySigner,
     PasskeySignerData,
-    UserIdentifier,
+    UserParams,
     WalletConfig,
     ZERO_DEV_TYPE,
     blockchainToChainId,
@@ -32,20 +32,21 @@ type PasskeyValidator = KernelValidator<EntryPoint, "WebAuthnValidator"> & {
 export class PasskeyWalletService {
     constructor(private readonly crossmintService: CrossmintWalletService) {}
 
-    public async getOrCreate({ userIdentifier, chain, publicClient, walletConfig, entrypoint }: PasskeyWalletParams) {
+    public async getOrCreate({ user, chain, publicClient, walletConfig, entrypoint }: PasskeyWalletParams) {
         const validator = await this.getOrCreateSigner({
-            userIdentifier,
+            user,
             entrypoint,
             publicClient,
             signer: walletConfig.signer,
         });
+
         const kernelAccount = await createKernelAccount(publicClient, {
             plugins: { sudo: validator },
             entryPoint: entrypoint.address,
         });
 
         await this.crossmintService.storeAbstractWallet({
-            userIdentifier,
+            userIdentifier: { type: "whiteLabel", userId: user.id },
             type: ZERO_DEV_TYPE,
             smartContractWalletAddress: kernelAccount.address,
             signerData: this.getSignerData(validator, walletConfig.signer.passkeyName),
@@ -59,17 +60,17 @@ export class PasskeyWalletService {
     }
 
     private async getOrCreateSigner({
-        userIdentifier,
+        user,
         entrypoint,
         publicClient,
         signer,
     }: {
-        userIdentifier: UserIdentifier;
+        user: UserParams;
         entrypoint: EntryPointDetails;
         publicClient: PublicClient;
         signer: PasskeySigner;
     }): Promise<PasskeyValidator> {
-        const serializedData = await this.fetchSerializedSigner(userIdentifier);
+        const serializedData = await this.fetchSerializedSigner(user);
         if (serializedData != null) {
             return deserializePasskeyValidator(publicClient, {
                 serializedData,
@@ -78,14 +79,14 @@ export class PasskeyWalletService {
         }
 
         return createPasskeyValidator(publicClient, {
-            passkeyServerUrl: this.crossmintService.getPasskeyServerUrl(userIdentifier),
+            passkeyServerUrl: this.crossmintService.getPasskeyServerUrl(user),
             entryPoint: entrypoint.address,
             passkeyName: signer.passkeyName,
             credentials: "omit",
         });
     }
 
-    private async fetchSerializedSigner(user: UserIdentifier): Promise<string | null> {
+    private async fetchSerializedSigner(user: UserParams): Promise<string | null> {
         const signer = await this.crossmintService.getPasskeyValidatorSigner(user);
         if (signer == null) {
             return null;

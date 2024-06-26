@@ -6,16 +6,15 @@ export type SmartWalletSDKInitParams = {
     clientApiKey: string;
 };
 
-export type UserIdentifierParams = {
-    email?: string;
-    userId?: string;
-    phoneNumber?: string;
+type WhitelabelUserParams = {
+    /**
+     * A unique identifier for the user. This must match the value of the identifier within the JWT
+     * that is specified in the project settings (typically `sub`).
+     */
+    id: string;
+    jwt: string;
 };
-
-export type UserIdentifier =
-    | { type: "whiteLabel"; userId: string }
-    | { type: "email"; email: string }
-    | { type: "phoneNumber"; phoneNumber: string };
+export type UserParams = WhitelabelUserParams;
 
 export type Web3AuthSigner = {
     type: "WEB3_AUTH";
