@@ -1,16 +1,15 @@
-import { CrossmintAPI } from "@/services/crossmintAPI";
 import { ethers, utils } from "ethers";
 
 import { nftZeroEight } from "../ABI/upgradeable721-v0.8";
+import { CrossmintAPI } from "../services/crossmintAPI";
 import { getProvider } from "../services/provider";
 import { CredentialsCollection } from "../types/nfts";
 
-export class ContactMetadataService {
-    async getMetadata(contractAddress: string, environment: string): Promise<any> {
+export class MetadataService {
+    async getContractMetadata(contractAddress: string, environment: string): Promise<any> {
         const ABI = new utils.Interface(nftZeroEight.abi);
         const provider = getProvider(environment);
         const contract = new ethers.Contract(contractAddress, ABI, provider);
-        const gateways = CrossmintAPI.ipfsGateways;
 
         let uri;
         try {
@@ -24,11 +23,33 @@ export class ContactMetadataService {
         }
         console.debug(`Found contract ${uri} for contract ${contractAddress}`);
 
+        return this.getFromIpfs(uri);
+    }
+
+    async getContractWithVCMetadata(
+        collections: CredentialsCollection[],
+        environment: string
+    ): Promise<CredentialsCollection[]> {
+        const credentialCollections = [];
+
+        for (const collection of collections) {
+            const metadata = await this.getContractMetadata(collection.contractAddress, environment);
+            if (!isVerifiableCredentialContractMetadata(metadata)) {
+                continue;
+            }
+            collection.metadata = metadata;
+            credentialCollections.push(collection);
+        }
+
+        return credentialCollections;
+    }
+
+    async getFromIpfs(uri: string) {
+        const gateways = CrossmintAPI.ipfsGateways;
+
         const httpUri = uri.replace("ipfs://", "");
         for (const gateway of gateways) {
-            console.debug(
-                `Trying to get metadata from gateway ${gateway} for contract ${contractAddress} with uri ${httpUri}`
-            );
+            console.debug(`Trying to get metadata from gateway ${gateway} with uri ${httpUri}`);
             try {
                 const httpUriFull = formatUrl(gateway, httpUri);
                 const timeout = new Promise((resolve, reject) => {
@@ -47,40 +68,25 @@ export class ContactMetadataService {
                 }
 
                 const metadata = await response.json();
-                console.debug(`Got metadata from gateway ${gateway} for contract ${contractAddress}`);
+                console.debug(`Got metadata from gateway ${gateway} for ${uri}`);
                 return metadata;
             } catch (error) {
-                console.error(
-                    `Failed to get metadata for contract ${contractAddress} with gateway ${gateway}: ${error}`
-                );
+                console.error(`Failed to get metadata for ${uri} with gateway ${gateway}: ${error}`);
             }
         }
-    }
-
-    async getContractWithVCMetadata(
-        collections: CredentialsCollection[],
-        environment: string
-    ): Promise<CredentialsCollection[]> {
-        const credentialCollections = [];
-
-        for (const collection of collections) {
-            const metadata = await this.getMetadata(collection.contractAddress, environment);
-            if (
-                metadata == null ||
-                metadata.credentialMetadata == null ||
-                metadata.credentialMetadata.type == null ||
-                metadata.credentialMetadata.issuerDid == null ||
-                !Array.isArray(metadata.credentialMetadata.type)
-            ) {
-                continue;
-            }
-            collection.metadata = metadata;
-            credentialCollections.push(collection);
-        }
-
-        return credentialCollections;
     }
 }
+
 export function formatUrl(template: string, cid: string): string {
     return template.replace("{cid}", cid);
+}
+
+function isVerifiableCredentialContractMetadata(metadata: any): boolean {
+    return !(
+        metadata == null ||
+        metadata.credentialMetadata == null ||
+        metadata.credentialMetadata.type == null ||
+        metadata.credentialMetadata.issuerDid == null ||
+        !Array.isArray(metadata.credentialMetadata.type)
+    );
 }

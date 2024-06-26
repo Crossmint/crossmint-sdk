@@ -1,5 +1,5 @@
 import { VerifiableCredential } from "../types/verifiableCredential";
-import { NFTStatusService } from "./services/nftStatus";
+import { NFTService } from "./services/nftStatus";
 import { VerifiableCredentialSignatureService } from "./services/signature";
 import { verifyCredential } from "./verify";
 
@@ -21,7 +21,7 @@ describe("verifyCredential", () => {
             nft: {} as any,
         } as any;
         (VerifiableCredentialSignatureService.prototype.verify as jest.Mock).mockResolvedValue(true);
-        (NFTStatusService.prototype.isBurnt as jest.Mock).mockResolvedValue(false);
+        (NFTService.prototype.isBurnt as jest.Mock).mockResolvedValue(false);
         const result = await verifyCredential(mockCredential, "staging");
         expect(result).toEqual({ validVC: true, error: undefined });
     });
@@ -32,7 +32,7 @@ describe("verifyCredential", () => {
             nft: {} as any,
         } as any;
         (VerifiableCredentialSignatureService.prototype.verify as jest.Mock).mockResolvedValue(true);
-        (NFTStatusService.prototype.isBurnt as jest.Mock).mockResolvedValue(true);
+        (NFTService.prototype.isBurnt as jest.Mock).mockResolvedValue(true);
         const result = await verifyCredential(mockCredential, "staging");
         expect(result).toEqual({ validVC: false, error: "Credential has been revoked" });
     });
@@ -43,7 +43,7 @@ describe("verifyCredential", () => {
             nft: {} as any,
         } as any;
         (VerifiableCredentialSignatureService.prototype.verify as jest.Mock).mockResolvedValue(false);
-        (NFTStatusService.prototype.isBurnt as jest.Mock).mockResolvedValue(false);
+        (NFTService.prototype.isBurnt as jest.Mock).mockResolvedValue(false);
         const result = await verifyCredential(mockCredential, "staging");
         expect(result).toEqual({ validVC: false, error: "Invalid proof" });
     });

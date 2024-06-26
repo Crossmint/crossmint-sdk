@@ -16,3 +16,5 @@ export interface EncryptedVerifiableCredential {
     id: string;
     payload: string;
 }
+
+export type VerifiableCredentialType = VerifiableCredential | EncryptedVerifiableCredential;

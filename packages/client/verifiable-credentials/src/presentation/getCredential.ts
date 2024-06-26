@@ -1,10 +1,17 @@
-import { EncryptedVerifiableCredential, VerifiableCredential } from "@/types/verifiableCredential";
+import {
+    EncryptedVerifiableCredential,
+    VerifiableCredential,
+    VerifiableCredentialType,
+} from "@/types/verifiableCredential";
 
 import { getEnvironmentBaseUrl } from "@crossmint/client-sdk-base";
 
 import { CrossmintAPI } from "../services/crossmintAPI";
 
-export async function getCredentialFromId(credentialId: string, environment: string) {
+export async function getCredentialFromId(
+    credentialId: string,
+    environment: string
+): Promise<VerifiableCredentialType | null> {
     const baseUrl = getEnvironmentBaseUrl(environment);
     const headers = CrossmintAPI.getHeaders();
 
