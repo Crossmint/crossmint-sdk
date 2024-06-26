@@ -2,6 +2,7 @@ import type { SignerData, StoreAbstractWalletInput, UserIdentifier, UserIdentifi
 
 import type { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
+import { CrossmintServiceError } from "..";
 import { BaseCrossmintService } from "./BaseCrossmintService";
 
 export { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
@@ -46,7 +47,6 @@ export class CrossmintWalletService extends BaseCrossmintService {
                 "Error fetching passkey validator signer. Please contact support"
             );
 
-            console.log(`Received signers: ${JSON.stringify(signers)}`);
             if (signers.length === 0) {
                 return null;
             }
@@ -54,7 +54,7 @@ export class CrossmintWalletService extends BaseCrossmintService {
             console.log(`Returning signer data: ${JSON.stringify(signers[0].signerData)}`);
             return signers[0].signerData;
         } catch (e: any) {
-            if (e.message.includes("Wallet not found")) {
+            if (e instanceof CrossmintServiceError && e.status === 404) {
                 return null;
             }
 
