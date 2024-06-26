@@ -1,12 +1,13 @@
+import type { deserializePasskeyValidatorData } from "@zerodev/passkey-validator/utils";
 import { EntryPointVersion } from "permissionless/_types/types";
 
-import { UserIdentifier } from "./Config";
+import type { UserIdentifier } from "./Config";
 
 export type StoreAbstractWalletInput = {
     userIdentifier: UserIdentifier;
     type: string;
     smartContractWalletAddress: string;
-    signerData: EOASignerData;
+    signerData: SignerData;
     sessionKeySignerAddress?: string;
     version: number;
     baseLayer: string;
@@ -14,7 +15,16 @@ export type StoreAbstractWalletInput = {
     entryPointVersion: EntryPointVersion;
 };
 
+export type SignerData = EOASignerData | PasskeySignerData;
+
 export interface EOASignerData {
     eoaAddress: string;
     type: "eoa";
 }
+
+type ZeroDevPasskeyValidatorFields = ReturnType<typeof deserializePasskeyValidatorData>;
+export type PasskeySignerData = ZeroDevPasskeyValidatorFields & {
+    passkeyName: string;
+    domain: string;
+    type: "passkeys";
+};

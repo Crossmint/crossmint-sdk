@@ -34,10 +34,12 @@ export class TransactionError extends Error {
 }
 
 export class CrossmintServiceError extends Error {
-    code = "ERROR_CROSSMINT_SERVICE";
+    public code = "ERROR_CROSSMINT_SERVICE";
+    public status?: number;
 
-    constructor(message: string) {
+    constructor(message: string, status?: number) {
         super(message);
+        this.status = status;
 
         // ES5 workaround
         Object.setPrototypeOf(this, CrossmintServiceError.prototype);

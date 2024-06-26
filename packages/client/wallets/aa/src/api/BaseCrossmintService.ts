@@ -39,26 +39,28 @@ export abstract class BaseCrossmintService extends LoggerWrapper {
                 const url = `${this.crossmintBaseUrl}/${endpoint}`;
                 const { body, method } = options;
 
+                let response: Response;
+
                 try {
-                    const response = await fetch(url, {
+                    response = await fetch(url, {
                         body,
                         method,
                         headers: this.crossmintAPIHeaders,
                     });
-                    if (!response.ok) {
-                        if (response.status >= 500) {
-                            // Crossmint throws a generic “An error occurred” error for all 5XX errors.
-                            // We throw a more specific error depending on the endpoint that was called.
-                            throw new CrossmintServiceError(onServerErrorMessage);
-                        }
-                        // We forward all 4XX errors. This includes rate limit errors.
-                        // It also includes chain not found, as it is a bad request error.
-                        throw new CrossmintServiceError(await response.text());
-                    }
-                    return await response.json();
                 } catch (error) {
                     throw new CrossmintServiceError(`Error fetching Crossmint API: ${error}`);
                 }
+
+                if (!response.ok) {
+                    // Crossmint throws a generic “An error occurred” error for all 5XX errors.
+                    // We throw a more specific error depending on the endpoint that was called.
+                    // We forward all 4XX errors. This includes rate limit errors.
+                    // It also includes chain not found, as it is a bad request error.
+                    const message = response.status >= 500 ? onServerErrorMessage : await response.text();
+                    throw new CrossmintServiceError(message, response.status);
+                }
+
+                return await response.json();
             },
             { endpoint }
         );

@@ -1,4 +1,5 @@
 import { TORUS_NETWORK_TYPE } from "@web3auth/single-factor-auth";
+import { EntryPoint, EntryPointVersion } from "permissionless/types/entrypoint";
 import { EIP1193Provider, LocalAccount } from "viem";
 
 export type SmartWalletSDKInitParams = {
@@ -29,8 +30,18 @@ export type ViemAccount = {
     account: LocalAccount & { source: "custom" };
 };
 
-type Signer = EIP1193Provider | Web3AuthSigner | ViemAccount;
+export type PasskeySigner = {
+    type: "PASSKEY";
 
+    /**
+     * Displayed to the user during passkey registration or signing prompts.
+     */
+    passkeyName: string;
+};
+
+export type EOASigner = EIP1193Provider | Web3AuthSigner | ViemAccount;
 export interface WalletConfig {
-    signer: Signer;
+    signer: EOASigner | PasskeySigner;
 }
+
+export type EntryPointDetails = { version: EntryPointVersion; address: EntryPoint };
