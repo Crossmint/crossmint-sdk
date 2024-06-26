@@ -1,6 +1,12 @@
 import { CrossmintWalletService } from "@/api";
 import { EVMSmartWallet, getBundlerRPC } from "@/blockchain";
-import type { EntryPointDetails, SmartWalletSDKInitParams, UserParams, WalletConfig, WalletParams } from "@/types";
+import type {
+    EntryPointDetails,
+    SmartWalletSDKInitParams,
+    UserIdentifierParams,
+    WalletConfig,
+    WalletCreationParams,
+} from "@/types";
 import { WalletSdkError } from "@/utils";
 import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
 import { createPublicClient, http } from "viem";
@@ -10,6 +16,7 @@ import { EVMBlockchainIncludingTestnet, validateAPIKey } from "@crossmint/common
 import { EOAWalletParams, EOAWalletService } from "./blockchain/wallets/eoa";
 import { PasskeyWalletService, isPasskeyParams } from "./blockchain/wallets/passkey";
 import { LoggerWrapper, logPerformance } from "./utils/log";
+import { parseUserIdentifier } from "./utils/user";
 
 export class SmartWalletSDK extends LoggerWrapper {
     private readonly crossmintService: CrossmintWalletService;
@@ -36,20 +43,20 @@ export class SmartWalletSDK extends LoggerWrapper {
     }
 
     async getOrCreateWallet(
-        user: UserParams,
+        user: UserIdentifierParams,
         chain: EVMBlockchainIncludingTestnet,
-        config: WalletConfig = { signer: { type: "PASSKEY", passkeyName: user.id } }
+        config: WalletConfig
     ): Promise<EVMSmartWallet> {
         return logPerformance(
             "GET_OR_CREATE_WALLET",
             async () => {
                 try {
-                    const params: WalletParams = {
-                        user,
+                    const params: WalletCreationParams = {
                         chain,
-                        publicClient: createPublicClient({ transport: http(getBundlerRPC(chain)) }),
-                        entrypoint: await this.getEntryPoint(user, chain),
                         config,
+                        entrypoint: await this.fetchEntryPoint(user, chain),
+                        publicClient: createPublicClient({ transport: http(getBundlerRPC(chain)) }),
+                        user: parseUserIdentifier(user),
                     };
 
                     if (isPasskeyParams(params)) {
@@ -65,9 +72,16 @@ export class SmartWalletSDK extends LoggerWrapper {
         );
     }
 
-    private async getEntryPoint(user: UserParams, chain: EVMBlockchainIncludingTestnet): Promise<EntryPointDetails> {
+    private async fetchEntryPoint(
+        userIdentifier: UserIdentifierParams,
+        chain: EVMBlockchainIncludingTestnet
+    ): Promise<EntryPointDetails> {
+        if (userIdentifier.email == null && userIdentifier.userId == null) {
+            throw new WalletSdkError(`Email or userId is required to get the entry point version`);
+        }
+
         const { entryPointVersion } = await this.crossmintService.getAbstractWalletEntryPointVersion(
-            { type: "whiteLabel", userId: user.id },
+            userIdentifier,
             chain
         );
 

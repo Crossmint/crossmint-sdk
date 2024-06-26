@@ -1,9 +1,10 @@
 import type { deserializePasskeyValidatorData } from "@zerodev/passkey-validator/utils";
 import { EntryPointVersion } from "permissionless/_types/types";
 
-export type CrossmintServiceUser = { type: "whiteLabel"; userId: string };
+import type { UserIdentifier } from "./Config";
+
 export type StoreAbstractWalletInput = {
-    userIdentifier: CrossmintServiceUser;
+    user: UserIdentifier;
     type: string;
     smartContractWalletAddress: string;
     signerData: SignerData;

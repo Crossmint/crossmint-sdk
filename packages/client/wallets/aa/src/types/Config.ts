@@ -8,15 +8,16 @@ export type SmartWalletSDKInitParams = {
     clientApiKey: string;
 };
 
-type WhitelabelUserParams = {
-    /**
-     * Must match the identifier within the JWT specified within project settings (typically `sub`).
-     */
-    id: string;
-    jwt: string;
+export type UserIdentifierParams = {
+    email?: string;
+    userId?: string;
+    phoneNumber?: string;
 };
 
-export type UserParams = WhitelabelUserParams;
+export type UserIdentifier =
+    | { type: "whiteLabel"; userId: string }
+    | { type: "email"; email: string }
+    | { type: "phoneNumber"; phoneNumber: string };
 
 export type Web3AuthSigner = {
     type: "WEB3_AUTH";
@@ -47,8 +48,8 @@ export interface WalletConfig {
 
 export type EntryPointDetails = { version: EntryPointVersion; address: EntryPoint };
 
-export interface WalletParams {
-    user: UserParams;
+export interface WalletCreationParams {
+    user: UserIdentifier;
     chain: EVMBlockchainIncludingTestnet;
     publicClient: PublicClient<HttpTransport>;
     config: WalletConfig;

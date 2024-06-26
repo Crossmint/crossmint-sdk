@@ -4,9 +4,9 @@ import {
     EVMSmartWallet,
     EntryPointDetails,
     PasskeySigner,
-    UserParams,
+    UserIdentifier,
     WalletConfig,
-    WalletParams,
+    WalletCreationParams,
     ZERO_DEV_TYPE,
 } from "@/index";
 import { createPasskeyValidator, deserializePasskeyValidator } from "@zerodev/passkey-validator";
@@ -16,11 +16,11 @@ import { PublicClient } from "viem";
 
 import { blockchainToChainId } from "@crossmint/common-sdk-base";
 
-export interface PasskeyWalletParams extends WalletParams {
+export interface PasskeyWalletParams extends WalletCreationParams {
     config: WalletConfig & { signer: PasskeySigner };
 }
 
-export function isPasskeyParams(params: WalletParams): params is PasskeyWalletParams {
+export function isPasskeyParams(params: WalletCreationParams): params is PasskeyWalletParams {
     return (params.config.signer as PasskeySigner).type === "PASSKEY";
 }
 
@@ -28,7 +28,12 @@ export class PasskeyWalletService {
     constructor(private readonly crossmintService: CrossmintWalletService, private readonly apiKey: string) {}
 
     public async getOrCreate({ user, chain, publicClient, config, entrypoint }: PasskeyWalletParams) {
-        const validator = await this.getOrCreateSigner({ user, entrypoint, publicClient, signer: config.signer });
+        const validator = await this.getOrCreateSigner({
+            user,
+            entrypoint,
+            publicClient,
+            signer: config.signer,
+        });
         const kernelAccount = await createKernelAccount(publicClient, {
             plugins: { sudo: validator },
             entryPoint: entrypoint.address,
@@ -36,7 +41,7 @@ export class PasskeyWalletService {
 
         const validatorFields = deserializePasskeyValidatorData(validator.getSerializedData());
         await this.crossmintService.storeAbstractWallet({
-            userIdentifier: { type: "whiteLabel", userId: user.id },
+            user,
             type: ZERO_DEV_TYPE,
             smartContractWalletAddress: kernelAccount.address,
             signerData: {
@@ -60,7 +65,7 @@ export class PasskeyWalletService {
         publicClient,
         signer,
     }: {
-        user: UserParams;
+        user: UserIdentifier;
         entrypoint: EntryPointDetails;
         publicClient: PublicClient;
         signer: PasskeySigner;
@@ -81,8 +86,8 @@ export class PasskeyWalletService {
         });
     }
 
-    private async get(user: UserParams): Promise<string | null> {
-        const signer = await this.crossmintService.getPasskeyValidatorSigner({ type: "whiteLabel", userId: user.id });
+    private async get(user: UserIdentifier): Promise<string | null> {
+        const signer = await this.crossmintService.getPasskeyValidatorSigner(user);
         if (signer == null) {
             return null;
         }
@@ -94,8 +99,8 @@ export class PasskeyWalletService {
         return serializePasskeyValidatorData(signer);
     }
 
-    private passkeyServerUrl(user: UserParams): string {
-        return this.crossmintService.crossmintBaseUrl + `/unstable/passkeys/${this.apiKey}/userId=${user.id}`;
+    private passkeyServerUrl(user: UserIdentifier): string {
+        return this.crossmintService.crossmintBaseUrl + `/unstable/passkeys/${this.apiKey}/${user}`;
     }
 
     private getCurrentDomain(): string {

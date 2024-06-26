@@ -1,4 +1,4 @@
-import { CrossmintServiceUser, SignerData, StoreAbstractWalletInput } from "@/types";
+import { SignerData, StoreAbstractWalletInput, UserIdentifier, UserIdentifierParams } from "@/types";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
@@ -15,9 +15,16 @@ export class CrossmintWalletService extends BaseCrossmintService {
         );
     }
 
-    async getAbstractWalletEntryPointVersion(user: CrossmintServiceUser, chain: EVMBlockchainIncludingTestnet) {
+    async getAbstractWalletEntryPointVersion(
+        userIdentifier: UserIdentifierParams,
+        chain: EVMBlockchainIncludingTestnet
+    ) {
+        const identifier = userIdentifier.email
+            ? `email=${encodeURIComponent(userIdentifier.email)}`
+            : `userId=${userIdentifier.userId}`;
+
         return this.fetchCrossmintAPI(
-            `v1-alpha1/wallets/entry-point-version?userId=${user.userId}&chain=${chain}`,
+            `v1-alpha1/wallets/entry-point-version?userId=${identifier}&chain=${chain}`,
             { method: "GET" },
             `Error getting entry point version. Please contact support`
         );
@@ -31,12 +38,10 @@ export class CrossmintWalletService extends BaseCrossmintService {
         );
     }
 
-    async getPasskeyValidatorSigner(user: CrossmintServiceUser): Promise<SignerData | null> {
-        console.log(`Fetching passkey validator signer for user ID: ${user.userId}`);
-
+    async getPasskeyValidatorSigner(user: UserIdentifier): Promise<SignerData | null> {
         try {
             const signers = await this.fetchCrossmintAPI(
-                `unstable/wallets/aa/signers?userId=${user.userId}&type=passkeys`,
+                `unstable/wallets/aa/signers?${user}&type=passkeys`,
                 { method: "GET" },
                 "Error fetching passkey validator signer. Please contact support"
             );
