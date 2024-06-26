@@ -1,3 +1,4 @@
+import type { deserializePasskeyValidatorData } from "@zerodev/passkey-validator/utils";
 import { EntryPointVersion } from "permissionless/_types/types";
 
 export type CrossmintServiceUser = { type: "whiteLabel"; userId: string };
@@ -20,15 +21,9 @@ export interface EOASignerData {
     type: "eoa";
 }
 
-export interface PasskeysSignerData {
+type ZeroDevPasskeyValidatorFields = ReturnType<typeof deserializePasskeyValidatorData>;
+export type PasskeysSignerData = ZeroDevPasskeyValidatorFields & {
     passkeyName: string;
-    passkeyServerUrl: string;
-    credentials: string;
-    entryPoint: string;
-    validatorAddress: string;
-    pubKeyX: string;
-    pubKeyY: string;
-    authenticatorIdHash: string;
     domain: string;
     type: "passkeys";
-}
+};
