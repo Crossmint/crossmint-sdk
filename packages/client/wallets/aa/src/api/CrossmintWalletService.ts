@@ -51,7 +51,10 @@ export class CrossmintWalletService extends BaseCrossmintService {
                 return null;
             }
 
-            console.log(`Returning signer data: ${JSON.stringify(signers[0].signerData)}`);
+            if (signers.length > 1) {
+                throw new Error("Config Error"); // TODO use error as defined by SDK spec
+            }
+
             return signers[0].signerData;
         } catch (e: any) {
             if (e instanceof CrossmintServiceError && e.status === 404) {
