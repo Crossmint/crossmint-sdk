@@ -1,5 +1,6 @@
+import { VCChain } from "./chain";
 import { VCContractMetadata } from "./collection";
-import { VCChain, VCNFT } from "./nft";
+import { VCNFT } from "./nft";
 import { EncryptedVerifiableCredential, VerifiableCredential, VerifiableCredentialType } from "./verifiableCredential";
 
 export function parseLocator(locator: string): VCNFT {

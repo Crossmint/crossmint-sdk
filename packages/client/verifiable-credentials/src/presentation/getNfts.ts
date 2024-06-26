@@ -1,19 +1,16 @@
-import { VCNFT } from "@/verifiableCredentialsSKD/types/nft";
+import { VCNFT, isVcChain } from "@/verifiableCredentialsSKD";
 
-import { getEnvironmentBaseUrl } from "@crossmint/client-sdk-base";
-
-import { CrossmintAPI } from "../services/crossmintAPI";
+import { crossmintAPI } from "../crossmintAPI";
 import { CrossmintWalletNft } from "../types/nfts";
-import { isVcChain } from "../verifiableCredentialsSKD/types/utils";
 
-export async function getWalletNfts(chain: string, wallet: string, environment: string) {
+export async function getWalletNfts(chain: string, wallet: string) {
     let page = 1;
     let hasMore = true;
     let allData: CrossmintWalletNft[] = [];
     const perPage = 50;
 
-    const baseUrl = getEnvironmentBaseUrl(environment);
-    const headers = CrossmintAPI.getHeaders();
+    const baseUrl = crossmintAPI.getBaseUrl();
+    const headers = crossmintAPI.getHeaders();
 
     while (hasMore) {
         const url = `${baseUrl}/api/v1-alpha1/wallets/${chain}:${wallet}/nfts?perPage=${perPage}&page=${page}`;
@@ -58,8 +55,8 @@ export function filterPolygonErc721(nfts: CrossmintWalletNft[]): VCNFT[] {
     return vcNfts;
 }
 
-export async function getWalletVcCompatibleNfts(chain: string, wallet: string, environment: string): Promise<VCNFT[]> {
-    const nfts = await getWalletNfts(chain, wallet, environment);
+export async function getWalletVcCompatibleNfts(chain: string, wallet: string): Promise<VCNFT[]> {
+    const nfts = await getWalletNfts(chain, wallet);
     if (nfts == null) {
         throw new Error("Failed to get nfts");
     }

@@ -5,13 +5,13 @@ import { VCNFTComplete } from "../types/nft";
 import { isVcChain, isVerifiableCredentialContractMetadata, parseLocator } from "../types/utils";
 import { ContractMetadataService } from "./contractMetadata";
 
-export async function getNFTFromLocator(locator: string, environment: string, ipfsGateways?: string[]) {
+export async function getNFTFromLocator(locator: string) {
     const nft = parseLocator(locator);
     if (!isVcChain(nft.chain)) {
         throw new Error(`Verifiable Credentials are not available on the provided chain: ${nft.chain}`);
     }
-    const nftUri = await new NFTService(environment).getNftUri(nft);
-    const nftMetadata = await new IPFSService(ipfsGateways).getFile(nftUri);
+    const nftUri = await new NFTService(nft.chain).getNftUri(nft);
+    const nftMetadata = await new IPFSService().getFile(nftUri);
 
     console.debug(`Nft ${locator} metadata:`, nftMetadata);
     const vcNft: VCNFTComplete = {
@@ -19,10 +19,7 @@ export async function getNFTFromLocator(locator: string, environment: string, ip
         ...nft,
     };
 
-    const metadata = await new ContractMetadataService(ipfsGateways).getContractMetadata(
-        nft.contractAddress,
-        environment
-    );
+    const metadata = await new ContractMetadataService(nft.chain).getContractMetadata(nft.contractAddress);
 
     if (!isVerifiableCredentialContractMetadata(metadata)) {
         throw new Error(`The nft provided is not associated to a VC collection: contract ${nft.contractAddress}`);

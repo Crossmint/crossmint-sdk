@@ -1,4 +1,4 @@
-import { VCNFTComplete } from "@/verifiableCredentialsSKD/types/nft";
+import { VCNFTComplete } from "@/verifiableCredentialsSKD";
 
 export interface CrossmintWalletNft extends VCNFTComplete {
     metadata: any;

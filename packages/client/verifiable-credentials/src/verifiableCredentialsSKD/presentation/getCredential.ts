@@ -15,7 +15,7 @@ async function ipfsProcedure({
     locator: string;
     retrievalPath: string;
 }): Promise<VerifiableCredentialType | null> {
-    const raw = await new IPFSService(this.ipfsGateways).getFile(retrievalPath);
+    const raw = await new IPFSService().getFile(retrievalPath);
     if (!isCredentialType(raw)) {
         throw new Error(`The credential is malformed`);
     }
@@ -32,11 +32,8 @@ export const ipfsRetrievalProcedure: CredentialRetrievalProcedure = {
 };
 
 export class CredentialService {
-    ipfsGateways?: string[];
-
     retrievalProcedures: CredentialRetrievalProcedure[];
-    constructor(retrievalProcedures = [ipfsRetrievalProcedure], ipfsGateways?: string[]) {
-        this.ipfsGateways = ipfsGateways;
+    constructor(retrievalProcedures = [ipfsRetrievalProcedure]) {
         this.retrievalProcedures = retrievalProcedures;
     }
 

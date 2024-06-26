@@ -1,9 +1,4 @@
-export const DEFAULT_IPFS_GATEWAYS = [
-    "https://fleek.ipfs.io/ipfs/{cid}",
-    "https://ipfs.io/ipfs/{cid}",
-    "https://gateway.ipfs.io/ipfs/{cid}",
-    "https://nftstorage.link/ipfs/{cid}",
-];
+import { configManager } from "../configs";
 
 export class IPFSService {
     gateways: string[];
@@ -12,9 +7,8 @@ export class IPFSService {
         return template.replace("{cid}", cid);
     }
 
-    constructor(gateways: string[] = DEFAULT_IPFS_GATEWAYS) {
-        console.debug(`Using IPFS gateways: ${gateways}`);
-        this.gateways = gateways;
+    constructor() {
+        this.gateways = configManager.getIpfsGateways();
     }
 
     async getFile(uri: string) {

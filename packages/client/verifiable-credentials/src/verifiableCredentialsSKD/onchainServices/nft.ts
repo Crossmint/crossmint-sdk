@@ -1,25 +1,26 @@
-import { VCNFT } from "@/verifiableCredentialsSKD/types/verifiableCredential";
 import { StaticJsonRpcProvider } from "@ethersproject/providers";
 import { Contract } from "ethers";
 import { constants } from "ethers";
 
-import { isPolygon } from "../types/utils";
+import { VCChain } from "../types/chain";
+import { VCNFT } from "../types/nft";
+import { isVcChain } from "../types/utils";
 import { abi_ERC_721 } from "./ABI/ERC721";
 import { abi_ERC_7572 } from "./ABI/ERC7572";
 import { getProvider } from "./provider";
 
 export class NFTService {
-    private environment: string;
     private provider: StaticJsonRpcProvider;
+    private chain: VCChain;
 
-    constructor(environment: string) {
-        this.environment = environment;
-        this.provider = getProvider(this.environment);
+    constructor(chain: VCChain) {
+        this.chain = chain;
+        this.provider = getProvider(this.chain);
     }
 
     async isBurnt(nft: VCNFT) {
-        if (!isPolygon(nft.chain)) {
-            throw new Error("Only Polygon is supported");
+        if (!isVcChain(nft.chain)) {
+            throw new Error(`Verifiable credentials are not supported on ${nft.chain} chain`);
         }
         try {
             const owner = await this.getNftOwnerByContractAddress(nft.contractAddress, nft.tokenId);

@@ -1,6 +1,8 @@
-import { Lit as LitRaw } from "@/verifiableCredentialsSKD/encryption/lit";
+import { Lit as LitRaw } from "@/verifiableCredentialsSKD";
 
-import { getUsageOrigin } from "./crossmintAPI";
+import { APIKeyUsageOrigin } from "@crossmint/common-sdk-base";
+
+import { crossmintAPI } from "../crossmintAPI";
 
 export class Lit extends LitRaw {
     constructor(network: string = "cayenne", env: string = "test") {
@@ -10,7 +12,7 @@ export class Lit extends LitRaw {
             throw new Error("Production environment not supported yet");
         }
 
-        const usageOrigin = getUsageOrigin();
+        const usageOrigin = crossmintAPI.getOrigin();
         if (usageOrigin == null) {
             console.warn(
                 "Unknown environment, make sure the sdk is running client side, The Crossmint Lit wrapper is meant to be used in the browser, refer to the @lit-protocol/lit-node-client-nodejs package for server usage."

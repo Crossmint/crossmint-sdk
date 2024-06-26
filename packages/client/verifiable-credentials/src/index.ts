@@ -1,16 +1,20 @@
-// Verification
+// Types
 export type {
     VerifiableCredential,
     VerifiableCredentialType,
     EncryptedVerifiableCredential,
-} from "./verifiableCredentialsSKD/types/verifiableCredential";
-export { isEncryptedVerifiableCredential } from "./verifiableCredentialsSKD/types/utils";
-export { verifyCredential } from "./verifiableCredentialsSKD/verification/verify";
+} from "./verifiableCredentialsSKD";
+export { isEncryptedVerifiableCredential } from "./verifiableCredentialsSKD";
+
+// Verification
+export { verifyCredential } from "./verifiableCredentialsSKD";
 // Presentation
-export { getCredentialCollections } from "./verifiableCredentialsSKD/presentation/getCollections";
-export { MetadataService } from "./verifiableCredentialsSKD/presentation/contractMetadata";
-export { CrossmintAPI } from "./services/crossmintAPI";
-export { getCredentialFromId } from "./presentation/getCredential";
-export { getNFTFromLocator } from "./verifiableCredentialsSKD/presentation/nftByLocator";
+export { crossmintAPI } from "./crossmintAPI";
+export {
+    getNFTFromLocator,
+    ContractMetadataService,
+    getUsersCredentialNfts,
+    CredentialService,
+} from "./verifiableCredentialsSKD";
 // Decryption
-export { Lit } from "./verifiableCredentialsSKD/encryption/lit";
+export { Lit } from "./services/lit";

@@ -2,26 +2,21 @@ import {
     CredentialRetrievalProcedure,
     CredentialService as CredentialServiceRaw,
     ipfsRetrievalProcedure,
-} from "@/verifiableCredentialsSKD/presentation/getCredential";
-import {
+} from "@/verifiableCredentialsSKD";
+import type {
     EncryptedVerifiableCredential,
     VerifiableCredential,
     VerifiableCredentialType,
-} from "@/verifiableCredentialsSKD/types/verifiableCredential";
+} from "@/verifiableCredentialsSKD";
 
-import { getEnvironmentBaseUrl } from "@crossmint/client-sdk-base";
-
-import { CrossmintAPI } from "../services/crossmintAPI";
+import { crossmintAPI } from "../crossmintAPI";
 
 export class CrossmintCredentialRetrieval {
-    environment: string;
-    constructor(environment: string) {
-        this.environment = environment;
-    }
+    constructor() {}
 
     async getCredential(query: { credentialId?: string; locator?: string }): Promise<VerifiableCredentialType | null> {
-        const baseUrl = getEnvironmentBaseUrl(this.environment);
-        const headers = CrossmintAPI.getHeaders();
+        const baseUrl = crossmintAPI.getBaseUrl();
+        const headers = crossmintAPI.getHeaders();
 
         if (query.credentialId == null && query.locator == null) {
             throw new Error(`Either credentialId or locator must be provided`);
@@ -66,20 +61,16 @@ export class CrossmintCredentialRetrieval {
 const crossmintRetrievalProcedure: CredentialRetrievalProcedure = {
     endpointCondition: (endpoint: string) => endpoint.includes("crossmint"),
     procedure: async ({ locator, retrievalPath }: { locator: string; retrievalPath: string }) => {
-        return await new CrossmintCredentialRetrieval(environment).getCredential({ locator });
+        return await new CrossmintCredentialRetrieval().getCredential({ locator });
     },
 };
 
 export class CredentialService extends CredentialServiceRaw {
-    constructor(
-        environment: string,
-        retrievalProcedures = [ipfsRetrievalProcedure, crossmintRetrievalProcedure],
-        ipfsGateways?: string[]
-    ) {
-        super(retrievalProcedures, ipfsGateways);
+    constructor(retrievalProcedures = [ipfsRetrievalProcedure, crossmintRetrievalProcedure]) {
+        super(retrievalProcedures);
     }
 
-    async getById(credentialId: string, environment: string): Promise<VerifiableCredentialType | null> {
-        return await new CrossmintCredentialRetrieval(environment).getCredential({ credentialId });
+    async getById(credentialId: string): Promise<VerifiableCredentialType | null> {
+        return await new CrossmintCredentialRetrieval().getCredential({ credentialId });
     }
 }

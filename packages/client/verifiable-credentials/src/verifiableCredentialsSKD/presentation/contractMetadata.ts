@@ -1,25 +1,24 @@
 import { NFTService } from "@/verifiableCredentialsSKD/onchainServices/nft";
 import { IPFSService } from "@/verifiableCredentialsSKD/services/ipfs";
 
+import { VCChain } from "../types/chain";
 import { Collection, CredentialsCollection } from "../types/collection";
 import { isVerifiableCredentialContractMetadata } from "../types/utils";
 
 export class ContractMetadataService {
-    ipfsGateways?: string[];
-    environment: string;
+    chain: VCChain;
 
-    constructor(environment: string, ipfsGateways?: string[]) {
-        this.ipfsGateways = ipfsGateways;
-        this.environment = environment;
+    constructor(chain: VCChain) {
+        this.chain = chain;
     }
 
     async getContractMetadata(contractAddress: string) {
-        const uri = await new NFTService(this.environment).getContractURI(contractAddress);
+        const uri = await new NFTService(this.chain).getContractURI(contractAddress);
         if (uri == null) {
             return null;
         }
 
-        const metadata = await new IPFSService(this.ipfsGateways).getFile(uri);
+        const metadata = await new IPFSService().getFile(uri);
         return metadata;
     }
 

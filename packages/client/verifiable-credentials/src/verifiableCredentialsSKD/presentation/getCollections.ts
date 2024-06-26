@@ -3,6 +3,7 @@ import { Collection, CredentialsCollection } from "@/verifiableCredentialsSKD/ty
 import { VCNFT } from "@/verifiableCredentialsSKD/types/nft";
 import { isVcChain } from "@/verifiableCredentialsSKD/types/utils";
 
+import { VCChain } from "../types/chain";
 import { CredentialFilter } from "../types/credentialFilter";
 
 function bundleNfts(nfts: VCNFT[]): Collection[] {
@@ -26,26 +27,22 @@ function bundleNfts(nfts: VCNFT[]): Collection[] {
 }
 
 export async function getUsersCredentialNfts(
-    chain: string,
+    chain: VCChain,
     wallet: string,
-    environment: string,
-    getVcCompatibleNftsFromWallet: (chain: string, wallet: string, environment: string) => Promise<VCNFT[]>,
+    getVcCompatibleNftsFromWallet: (chain: VCChain, wallet: string) => Promise<VCNFT[]>,
     filters: CredentialFilter = {}
 ): Promise<CredentialsCollection[]> {
     if (!isVcChain(chain)) {
         throw new Error(`Verifiable credentials are not supported on ${chain} chain`);
     }
 
-    const nfts = await getVcCompatibleNftsFromWallet(chain, wallet, environment);
+    const nfts = await getVcCompatibleNftsFromWallet(chain, wallet);
     console.debug(`Got ${nfts.length} nfts`);
 
     const collections = bundleNfts(nfts);
     console.debug(`Got ${collections.length} collections`);
 
-    let credentialsCollection = await new ContractMetadataService(
-        environment,
-        ipfsGateways
-    ).retrieveContractsWithMetadata(collections);
+    let credentialsCollection = await new ContractMetadataService(chain).retrieveContractsWithMetadata(collections);
     console.debug(`Got ${credentialsCollection.length} valid credential collections`);
 
     if (filters.issuers != null) {
