@@ -1,8 +1,8 @@
-import * as API from "@/services/crossmintAPI";
-import { ethers, utils } from "ethers";
+import { ethers } from "ethers";
 
+import * as API from "../services/crossmintAPI";
 import { CredentialsCollection } from "../types/nfts";
-import { ContactMetadataService, formatUrl } from "./getMetadata";
+import { MetadataService, formatUrl } from "./getMetadata";
 
 global.fetch = jest.fn(() =>
     Promise.resolve({
@@ -11,16 +11,10 @@ global.fetch = jest.fn(() =>
     })
 ) as jest.Mock;
 
-jest.mock("@krebitdao/eip712-vc", () => {
-    return {
-        EIP712VC: jest.fn().mockImplementation(() => {}),
-    };
-});
-
 describe("getMetadata", () => {
-    let metadataService: ContactMetadataService;
+    let metadataService: MetadataService;
     beforeEach(() => {
-        metadataService = new ContactMetadataService();
+        metadataService = new MetadataService();
         jest.resetAllMocks();
     });
 
@@ -44,7 +38,7 @@ describe("getMetadata", () => {
                 json: () => Promise.resolve(mockResponse),
             } as any);
 
-            const result = await metadataService.getMetadata("contractAddress", "environment");
+            const result = await metadataService.getContractMetadata("contractAddress", "environment");
 
             expect(result).toEqual(mockResponse);
             expect(fetch).toHaveBeenCalled();
@@ -58,6 +52,7 @@ describe("getMetadata", () => {
                 credentialMetadata: {
                     issuerDid: "issuerDid",
                     type: ["type1", "type2"],
+                    credentialsEndpoint: "credentialsEndpoint",
                 },
             };
             const collections: CredentialsCollection[] = [
@@ -65,8 +60,8 @@ describe("getMetadata", () => {
                 { contractAddress: "contractAddress2" } as any,
             ];
 
-            jest.spyOn(metadataService, "getMetadata").mockResolvedValueOnce(mockResponse);
-            jest.spyOn(metadataService, "getMetadata").mockResolvedValueOnce(null);
+            jest.spyOn(metadataService, "getContractMetadata").mockResolvedValueOnce(mockResponse);
+            jest.spyOn(metadataService, "getContractMetadata").mockResolvedValueOnce(null);
 
             const result = await metadataService.getContractWithVCMetadata(collections, "environment");
 
