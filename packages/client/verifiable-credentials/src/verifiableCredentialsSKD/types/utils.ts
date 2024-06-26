@@ -1,13 +1,8 @@
-import { EVMBlockchain, EVMNFT } from "@crossmint/common-sdk-base";
+import { VCContractMetadata } from "./collection";
+import { VCChain, VCNFT } from "./nft";
+import { EncryptedVerifiableCredential, VerifiableCredential, VerifiableCredentialType } from "./verifiableCredential";
 
-import {
-    EncryptedVerifiableCredential,
-    VCContractMetadata,
-    VerifiableCredential,
-    VerifiableCredentialType,
-} from "../types/verifiableCredential";
-
-export function parseLocator(locator: string): EVMNFT {
+export function parseLocator(locator: string): VCNFT {
     const items = locator.split(":");
     const itemsLength = items.length;
     if (itemsLength < 2) {
@@ -15,7 +10,7 @@ export function parseLocator(locator: string): EVMNFT {
     }
 
     return {
-        chain: items[0] as EVMBlockchain,
+        chain: items[0] as VCChain,
         contractAddress: items[1],
         tokenId: items[2],
     };
@@ -56,7 +51,7 @@ export function isVerifiableCredential(credential: VerifiableCredentialType): cr
 
     const nftFields = ["tokenId", "chain", "contractAddress"];
     for (const field of nftFields) {
-        if (!credential.nft[field as keyof EVMNFT]) {
+        if (!credential.nft[field as keyof VCNFT]) {
             return false;
         }
     }
@@ -76,8 +71,8 @@ export function isEncryptedVerifiableCredential(
     );
 }
 
-export function isPolygon(chain: string): boolean {
-    return chain.includes("poly");
+export function isVcChain(chain: string): chain is VCChain {
+    return Object.values(VCChain).includes(chain as VCChain);
 }
 
 export function isVerifiableCredentialContractMetadata(metadata: any): metadata is VCContractMetadata {

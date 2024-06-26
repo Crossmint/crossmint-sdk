@@ -1,12 +1,12 @@
+import { VCNFT } from "@/verifiableCredentialsSKD/types/verifiableCredential";
 import { StaticJsonRpcProvider } from "@ethersproject/providers";
 import { Contract } from "ethers";
 import { constants } from "ethers";
 
-import { EVMNFT } from "@crossmint/common-sdk-base";
-
-import { abi_ERC_721 } from "../../ABI/ERC721";
-import { getProvider } from "../../services/provider";
-import { isPolygon } from "../../services/utils";
+import { isPolygon } from "../types/utils";
+import { abi_ERC_721 } from "./ABI/ERC721";
+import { abi_ERC_7572 } from "./ABI/ERC7572";
+import { getProvider } from "./provider";
 
 export class NFTService {
     private environment: string;
@@ -17,7 +17,7 @@ export class NFTService {
         this.provider = getProvider(this.environment);
     }
 
-    async isBurnt(nft: EVMNFT) {
+    async isBurnt(nft: VCNFT) {
         if (!isPolygon(nft.chain)) {
             throw new Error("Only Polygon is supported");
         }
@@ -37,8 +37,25 @@ export class NFTService {
         return await contract.ownerOf(tokenId);
     }
 
-    async getNftUri(nft: EVMNFT) {
+    async getNftUri(nft: VCNFT) {
         const contract = new Contract(nft.contractAddress, abi_ERC_721, this.provider);
         return await contract.tokenURI(nft.tokenId);
+    }
+
+    async getContractURI(contractAddress: string) {
+        const contract = new Contract(contractAddress, abi_ERC_7572, this.provider);
+
+        let uri: string;
+        try {
+            uri = await contract.contractURI();
+        } catch (error) {
+            console.error(`Failed call contractURI() on ${contractAddress}: ${error}`);
+            return null;
+        }
+
+        if (uri != null) {
+            console.debug(`Found contract metadata at ${uri} for contract ${contractAddress}`);
+        }
+        return uri;
     }
 }

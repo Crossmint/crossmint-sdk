@@ -1,6 +1,6 @@
-import { NFTService } from "../verification/services/nftStatus";
-import { MetadataService } from "./getMetadata";
-import { getNFTFromLocator } from "./getNftCredential";
+import { NFTService } from "../onchainServices/nft";
+import { MetadataService } from "./contractMetadata";
+import { getNFTFromLocator } from "./nftByLocator";
 
 jest.mock("../verification/services/nftStatus");
 jest.mock("./getMetadata");

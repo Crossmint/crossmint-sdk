@@ -1,8 +1,8 @@
 import { ethers } from "ethers";
 
-import * as API from "../services/crossmintAPI";
-import { CredentialsCollection } from "../types/nfts";
-import { MetadataService, formatUrl } from "./getMetadata";
+import * as API from "../../services/crossmintAPI";
+import { CredentialsCollection } from "../../types/nfts";
+import { MetadataService, formatUrl } from "./contractMetadata";
 
 global.fetch = jest.fn(() =>
     Promise.resolve({

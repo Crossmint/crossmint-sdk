@@ -3,14 +3,14 @@ export type {
     VerifiableCredential,
     VerifiableCredentialType,
     EncryptedVerifiableCredential,
-} from "./types/verifiableCredential";
-export { isEncryptedVerifiableCredential } from "./services/utils";
-export { verifyCredential } from "./verification/verify";
+} from "./verifiableCredentialsSKD/types/verifiableCredential";
+export { isEncryptedVerifiableCredential } from "./verifiableCredentialsSKD/types/utils";
+export { verifyCredential } from "./verifiableCredentialsSKD/verification/verify";
 // Presentation
-export { getCredentialCollections } from "./presentation/getCollections";
-export { MetadataService } from "./presentation/getMetadata";
+export { getCredentialCollections } from "./verifiableCredentialsSKD/presentation/getCollections";
+export { MetadataService } from "./verifiableCredentialsSKD/presentation/contractMetadata";
 export { CrossmintAPI } from "./services/crossmintAPI";
 export { getCredentialFromId } from "./presentation/getCredential";
-export { getNFTFromLocator } from "./presentation/getNftCredential";
+export { getNFTFromLocator } from "./verifiableCredentialsSKD/presentation/nftByLocator";
 // Decryption
-export { Lit } from "./services/litInterface";
+export { Lit } from "./verifiableCredentialsSKD/encryption/lit";

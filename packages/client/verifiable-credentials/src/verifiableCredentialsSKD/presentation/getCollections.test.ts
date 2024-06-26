@@ -1,7 +1,7 @@
-import { CredentialsCollection, VC_EVMNFT } from "../types/nfts";
+import * as GetNfts from "../../presentation/getNfts";
+import { CredentialsCollection, VC_EVMNFT } from "../../types/nfts";
 import { getCollections, getCredentialCollections } from "./getCollections";
 import { MetadataService } from "./getMetadata";
-import * as GetNfts from "./getNfts";
 
 jest.mock("./getMetadata");
 jest.mock("@krebitdao/eip712-vc", () => {

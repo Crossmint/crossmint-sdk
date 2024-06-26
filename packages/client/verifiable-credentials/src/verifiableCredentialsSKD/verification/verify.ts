@@ -1,8 +1,8 @@
 import { isValid, parseISO } from "date-fns";
 
+import { NFTService } from "../onchainServices/nft";
 import { VerifiableCredential } from "../types/verifiableCredential";
-import { NFTService } from "./services/nftStatus";
-import { VerifiableCredentialSignatureService } from "./services/signature";
+import { VerifiableCredentialSignatureService } from "./signature";
 
 export async function verifyCredential(
     credential: VerifiableCredential,

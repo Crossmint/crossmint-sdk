@@ -1,7 +1,7 @@
 import * as LitJsSdk from "@lit-protocol/lit-node-client";
 
-import * as API from "./crossmintAPI";
-import { Lit } from "./litInterface";
+import * as API from "../../services/crossmintAPI";
+import { Lit } from "./lit";
 
 jest.mock("@lit-protocol/lit-node-client");
 
