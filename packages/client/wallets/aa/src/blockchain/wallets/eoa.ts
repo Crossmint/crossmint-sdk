@@ -33,8 +33,7 @@ export class EOAWalletService {
         });
 
         const wallet = new EVMSmartWallet(this.crossmintService, account, publicClient, chain);
-        await this.crossmintService.storeAbstractWallet({
-            userIdentifier: { type: "whiteLabel", userId: user.id },
+        await this.crossmintService.storeAbstractWallet(user, {
             type: ZERO_DEV_TYPE,
             smartContractWalletAddress: account.address,
             signerData: { eoaAddress: eoa.address, type: "eoa" },

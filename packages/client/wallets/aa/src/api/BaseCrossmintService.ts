@@ -31,7 +31,8 @@ export abstract class BaseCrossmintService extends LoggerWrapper {
     protected async fetchCrossmintAPI(
         endpoint: string,
         options: { body?: string; method: string } = { method: "GET" },
-        onServerErrorMessage: string
+        onServerErrorMessage: string,
+        authToken?: string
     ) {
         return logPerformance(
             "FETCH_CROSSMINT_API",
@@ -40,12 +41,14 @@ export abstract class BaseCrossmintService extends LoggerWrapper {
                 const { body, method } = options;
 
                 let response: Response;
-
                 try {
                     response = await fetch(url, {
                         body,
                         method,
-                        headers: this.crossmintAPIHeaders,
+                        headers: {
+                            ...this.crossmintAPIHeaders,
+                            ...(authToken != null && { Authorization: `Bearer ${authToken}` }),
+                        },
                     });
                 } catch (error) {
                     throw new CrossmintServiceError(`Error fetching Crossmint API: ${error}`);

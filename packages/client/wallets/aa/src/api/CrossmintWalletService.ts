@@ -1,4 +1,4 @@
-import type { SignerData, StoreAbstractWalletInput, UserParams } from "@/types";
+import type { PasskeySignerData, StoreAbstractWalletInput, UserParams } from "@/types";
 import { CrossmintServiceError } from "@/utils/error";
 
 import type { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
@@ -8,36 +8,31 @@ import { BaseCrossmintService } from "./BaseCrossmintService";
 export { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 export class CrossmintWalletService extends BaseCrossmintService {
-    async storeAbstractWallet(input: StoreAbstractWalletInput) {
+    async storeAbstractWallet(user: UserParams, input: StoreAbstractWalletInput) {
         return this.fetchCrossmintAPI(
-            "unstable/wallets/aa/wallets",
+            "internal/client/smart-wallet",
             { method: "POST", body: JSON.stringify(input) },
-            "Error creating abstract wallet. Please contact support"
+            "Error creating abstract wallet. Please contact support",
+            user.jwt
         );
     }
 
     async getAbstractWalletEntryPointVersion(user: UserParams, chain: EVMBlockchainIncludingTestnet) {
         return this.fetchCrossmintAPI(
-            `v1-alpha1/wallets/entry-point-version?${this.encodeUser(user)}&chain=${chain}`,
+            `internal/client/smart-wallet/entry-point-version?chain=${chain}`,
             { method: "GET" },
-            `Error getting entry point version. Please contact support`
+            `Error getting entry point version. Please contact support`,
+            user.jwt
         );
     }
 
-    async fetchNFTs(address: string, chain: EVMBlockchainIncludingTestnet) {
-        return this.fetchCrossmintAPI(
-            `v1-alpha1/wallets/${chain}:${address}/nfts`,
-            { method: "GET" },
-            `Error fetching NFTs for wallet: ${address}`
-        );
-    }
-
-    async getPasskeyValidatorSigner(user: UserParams): Promise<SignerData | null> {
+    async getPasskeySigner(user: UserParams): Promise<PasskeySignerData | null> {
         try {
             const signers = await this.fetchCrossmintAPI(
-                `unstable/wallets/aa/signers?${this.encodeUser(user)}&type=passkeys`,
+                `internal/client/smart-wallet/signers?type=passkeys`,
                 { method: "GET" },
-                "Error fetching passkey validator signer. Please contact support"
+                "Error fetching passkey validator signer. Please contact support",
+                user.jwt
             );
 
             if (signers.length === 0) {
@@ -58,14 +53,16 @@ export class CrossmintWalletService extends BaseCrossmintService {
         }
     }
 
-    public getPasskeyServerUrl(user: UserParams): string {
-        return (
-            this.crossmintBaseUrl +
-            `/unstable/passkeys/${this.crossmintAPIHeaders["x-api-key"]}/${this.encodeUser(user)}`
+    async fetchNFTs(address: string, chain: EVMBlockchainIncludingTestnet) {
+        return this.fetchCrossmintAPI(
+            `v1-alpha1/wallets/${chain}:${address}/nfts`,
+            { method: "GET" },
+            `Error fetching NFTs for wallet: ${address}`
         );
     }
 
-    private encodeUser(user: UserParams) {
-        return `userId=${user.id}`;
+    public getPasskeyServerUrl(user: UserParams): string {
+        const userParam = `userId=${user.id}`;
+        return this.crossmintBaseUrl + `/unstable/passkeys/${this.crossmintAPIHeaders["x-api-key"]}/${userParam}`;
     }
 }

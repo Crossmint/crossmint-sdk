@@ -45,8 +45,7 @@ export class PasskeyWalletService {
             entryPoint: entrypoint.address,
         });
 
-        await this.crossmintService.storeAbstractWallet({
-            userIdentifier: { type: "whiteLabel", userId: user.id },
+        await this.crossmintService.storeAbstractWallet(user, {
             type: ZERO_DEV_TYPE,
             smartContractWalletAddress: kernelAccount.address,
             signerData: this.getSignerData(validator, walletConfig.signer.passkeyName),
@@ -87,13 +86,9 @@ export class PasskeyWalletService {
     }
 
     private async fetchSerializedSigner(user: UserParams): Promise<string | null> {
-        const signer = await this.crossmintService.getPasskeyValidatorSigner(user);
+        const signer = await this.crossmintService.getPasskeySigner(user);
         if (signer == null) {
             return null;
-        }
-
-        if (signer.type !== "passkeys") {
-            throw new Error("Admin Mismatch"); // TODO custom error as defined within SDK spec
         }
 
         return serializePasskeyValidatorData(signer);
