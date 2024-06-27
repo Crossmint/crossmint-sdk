@@ -1,6 +1,5 @@
-import { NFTService } from "@/verifiableCredentialsSKD/onchainServices/nft";
-import { IPFSService } from "@/verifiableCredentialsSKD/services/ipfs";
-
+import { NFTService } from "../onchainServices/nft";
+import { IPFSService } from "../services/ipfs";
 import { VCChain } from "../types/chain";
 import { Collection, CredentialsCollection } from "../types/collection";
 import { isVerifiableCredentialContractMetadata } from "../types/utils";
@@ -22,7 +21,7 @@ export class ContractMetadataService {
         return metadata;
     }
 
-    async retrieveContractsWithMetadata(collections: Collection[]): Promise<CredentialsCollection[]> {
+    async retrieveContractCredentialMetadata(collections: Collection[]): Promise<CredentialsCollection[]> {
         const credentialCollections: CredentialsCollection[] = [];
 
         for (const collection of collections) {

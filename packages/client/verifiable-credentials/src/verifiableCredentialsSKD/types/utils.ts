@@ -76,6 +76,10 @@ export function isVcChain(chain: string): chain is VCChain {
     return Object.values(VCChain).includes(chain as VCChain);
 }
 
+export function isVcNft(nft: any): nft is VCNFT {
+    return !(nft == null || nft.chain == null || nft.contractAddress == null || nft.tokenId == null);
+}
+
 export function isVerifiableCredentialContractMetadata(metadata: any): metadata is VCContractMetadata {
     return !(
         metadata == null ||

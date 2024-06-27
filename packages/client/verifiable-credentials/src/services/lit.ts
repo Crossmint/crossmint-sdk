@@ -1,8 +1,7 @@
-import { Lit as LitRaw } from "@/verifiableCredentialsSKD";
-
 import { APIKeyUsageOrigin } from "@crossmint/common-sdk-base";
 
 import { crossmintAPI } from "../crossmintAPI";
+import { Lit as LitRaw } from "../verifiableCredentialsSKD";
 
 export class Lit extends LitRaw {
     constructor(network: string = "cayenne", env: string = "test") {

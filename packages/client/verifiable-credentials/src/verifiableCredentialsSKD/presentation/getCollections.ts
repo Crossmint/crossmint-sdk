@@ -1,12 +1,11 @@
-import { ContractMetadataService } from "@/verifiableCredentialsSKD/presentation/contractMetadata";
-import { Collection, CredentialsCollection } from "@/verifiableCredentialsSKD/types/collection";
-import { VCNFT } from "@/verifiableCredentialsSKD/types/nft";
-import { isVcChain } from "@/verifiableCredentialsSKD/types/utils";
-
 import { VCChain } from "../types/chain";
+import { Collection, CredentialsCollection } from "../types/collection";
 import { CredentialFilter } from "../types/credentialFilter";
+import { VCNFT } from "../types/nft";
+import { isVcChain, isVcNft } from "../types/utils";
+import { ContractMetadataService } from "./contractMetadata";
 
-function bundleNfts(nfts: VCNFT[]): Collection[] {
+export function bundleNfts(nfts: VCNFT[]): Collection[] {
     // Group NFTs by their contract address
     const nftsByAddress: Record<string, VCNFT[]> = nfts.reduce((acc, nft) => {
         if (!acc[nft.contractAddress]) {
@@ -39,10 +38,21 @@ export async function getUsersCredentialNfts(
     const nfts = await getVcCompatibleNftsFromWallet(chain, wallet);
     console.debug(`Got ${nfts.length} nfts`);
 
+    nfts.forEach((nft) => {
+        if (!isVcNft(nft)) {
+            throw new Error(`Not a valid VC nftt: ${nft}`);
+        }
+        if (!isVcChain(nft.chain)) {
+            throw new Error(`Verifiable credentials are not supported on this nft chain: ${nft}`);
+        }
+    });
+
     const collections = bundleNfts(nfts);
     console.debug(`Got ${collections.length} collections`);
 
-    let credentialsCollection = await new ContractMetadataService(chain).retrieveContractsWithMetadata(collections);
+    let credentialsCollection = await new ContractMetadataService(chain).retrieveContractCredentialMetadata(
+        collections
+    );
     console.debug(`Got ${credentialsCollection.length} valid credential collections`);
 
     if (filters.issuers != null) {

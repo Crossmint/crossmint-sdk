@@ -1,11 +1,21 @@
-import { Lit } from "./encryption/lit";
-import { ContractMetadataService } from "./presentation/contractMetadata";
-import { getUsersCredentialNfts } from "./presentation/getCollections";
-import { getNFTFromLocator } from "./presentation/nftByLocator";
-import { IPFSService } from "./services/ipfs";
-import { verifyCredential } from "./verification";
+// Types
+export type * from "./types";
+export type { CredentialRetrievalProcedure } from "./presentation/getCredential";
+export type { VCSDKConfig } from "./configs";
 
-export { verifyCredential, IPFSService, Lit, ContractMetadataService, getUsersCredentialNfts, getNFTFromLocator };
-export * from "./types";
-export * from "./presentation/getCredential";
-export * from "./configs";
+// Verification
+export { verifyCredential } from "./verification";
+
+// Presentation
+export { CredentialService, ipfsRetrievalProcedure } from "./presentation/getCredential";
+export { ContractMetadataService } from "./presentation/contractMetadata";
+export { getUsersCredentialNfts } from "./presentation/getCollections";
+export { getNFTFromLocator } from "./presentation/nftByLocator";
+
+// Decryption
+export { Lit } from "./encryption/lit";
+
+// Utils
+export * from "./types/utils";
+export { IPFSService } from "./services/ipfs";
+export { configManager, DEFAULT_CHAIN_RPCS, DEFAULT_IPFS_GATEWAYS } from "./configs";

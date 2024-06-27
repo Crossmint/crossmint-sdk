@@ -15,12 +15,15 @@ export class IPFSService {
         const httpUri = uri.replace("ipfs://", "");
         for (const gateway of this.gateways) {
             console.debug(`Trying to get file from gateway ${gateway} with uri ${httpUri}`);
+            let timeoutId: NodeJS.Timeout = {} as NodeJS.Timeout;
+
             try {
                 const httpUriFull = this.formatUrl(gateway, httpUri);
+
                 const timeout = new Promise((resolve, reject) => {
                     const timeoutMilliSeconds = 5000;
-                    const id = setTimeout(() => {
-                        clearTimeout(id);
+                    timeoutId = setTimeout(() => {
+                        clearTimeout(timeoutId);
                         reject(`Timed out in ${timeoutMilliSeconds / 1000} seconds`);
                     }, timeoutMilliSeconds);
                 });
@@ -37,7 +40,10 @@ export class IPFSService {
                 return metadata;
             } catch (error) {
                 console.error(`Failed to get file for ${uri} with gateway ${gateway}: ${error}`);
+            } finally {
+                clearTimeout(timeoutId);
             }
         }
+        throw new Error(`Failed to get file for ${uri}, all gateways failed`);
     }
 }

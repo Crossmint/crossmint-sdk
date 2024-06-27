@@ -14,7 +14,7 @@ import { crossmintAPI } from "../crossmintAPI";
 export class CrossmintCredentialRetrieval {
     constructor() {}
 
-    async getCredential(query: { credentialId?: string; locator?: string }): Promise<VerifiableCredentialType | null> {
+    async getCredential(query: { credentialId?: string; locator?: string }): Promise<VerifiableCredentialType> {
         const baseUrl = crossmintAPI.getBaseUrl();
         const headers = crossmintAPI.getHeaders();
 
@@ -53,7 +53,7 @@ export class CrossmintCredentialRetrieval {
             return credential;
         } catch (error) {
             console.error(error);
-            return null;
+            throw new Error(`Failed to get credential ${JSON.stringify(query)} from crossmint`);
         }
     }
 }

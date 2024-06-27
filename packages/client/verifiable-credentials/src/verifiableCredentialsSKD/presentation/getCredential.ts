@@ -5,7 +5,7 @@ import { VerifiableCredentialType } from "../types/verifiableCredential";
 
 export type CredentialRetrievalProcedure = {
     endpointCondition: (endpoint: string) => boolean;
-    procedure: (query: { locator: string; retrievalPath: string }) => Promise<VerifiableCredentialType | null>;
+    procedure: (query: { locator: string; retrievalPath: string }) => Promise<VerifiableCredentialType>;
 };
 
 async function ipfsProcedure({
@@ -14,7 +14,7 @@ async function ipfsProcedure({
 }: {
     locator: string;
     retrievalPath: string;
-}): Promise<VerifiableCredentialType | null> {
+}): Promise<VerifiableCredentialType> {
     const raw = await new IPFSService().getFile(retrievalPath);
     if (!isCredentialType(raw)) {
         throw new Error(`The credential is malformed`);
@@ -37,7 +37,7 @@ export class CredentialService {
         this.retrievalProcedures = retrievalProcedures;
     }
 
-    async getCredential(collection: CredentialsCollection, tokenId: string): Promise<VerifiableCredentialType | null> {
+    async getCredential(collection: CredentialsCollection, tokenId: string): Promise<VerifiableCredentialType> {
         const metadata = collection.metadata;
         if (!isVerifiableCredentialContractMetadata(metadata)) {
             throw new Error(`The collection provided is not a verifiable credential collection`);
