@@ -47,7 +47,7 @@ export abstract class BaseCrossmintService extends LoggerWrapper {
                         method,
                         headers: {
                             ...this.crossmintAPIHeaders,
-                            ...(authToken != null && { authorization: `bearer ${authToken}` }),
+                            ...(authToken != null && { Authorization: `Bearer ${authToken}` }),
                         },
                     });
                 } catch (error) {
