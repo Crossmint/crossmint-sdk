@@ -1,6 +1,5 @@
 import * as LitJsSdk from "@lit-protocol/lit-node-client";
 
-import * as API from "../../services/crossmintAPI";
 import { Lit } from "./lit";
 
 jest.mock("@lit-protocol/lit-node-client");
@@ -10,7 +9,6 @@ describe("Lit", () => {
     let litSpy: jest.SpyInstance;
 
     beforeEach(() => {
-        jest.spyOn(API, "getUsageOrigin").mockReturnValue("client");
         lit = new Lit();
         litSpy = jest.spyOn(LitJsSdk, "LitNodeClient");
         litSpy.mockImplementation(() => {
@@ -19,10 +17,6 @@ describe("Lit", () => {
             } as any;
         });
         jest.spyOn(LitJsSdk, "checkAndSignAuthMessage").mockResolvedValue({} as any);
-    });
-
-    it("should throw an error when production environment is used", () => {
-        expect(() => new Lit("cayenne", "prod")).toThrow("Production environment not supported yet");
     });
 
     it("should connect to the Lit network", async () => {

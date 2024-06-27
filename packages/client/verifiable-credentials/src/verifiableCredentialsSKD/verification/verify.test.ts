@@ -1,10 +1,10 @@
+import { NFTService } from "../onchainServices/nft";
 import { VerifiableCredential } from "../types/verifiableCredential";
-import { NFTService } from "./services/nftStatus";
-import { VerifiableCredentialSignatureService } from "./services/signature";
+import { VerifiableCredentialSignatureService } from "./signature";
 import { verifyCredential } from "./verify";
 
-jest.mock("./services/signature");
-jest.mock("./services/nftStatus");
+jest.mock("./signature");
+jest.mock("../onchainServices/nft");
 jest.mock("@krebitdao/eip712-vc", () => {
     return {
         EIP712VC: jest.fn().mockImplementation(() => {}),
@@ -22,7 +22,7 @@ describe("verifyCredential", () => {
         } as any;
         (VerifiableCredentialSignatureService.prototype.verify as jest.Mock).mockResolvedValue(true);
         (NFTService.prototype.isBurnt as jest.Mock).mockResolvedValue(false);
-        const result = await verifyCredential(mockCredential, "staging");
+        const result = await verifyCredential(mockCredential);
         expect(result).toEqual({ validVC: true, error: undefined });
     });
 
@@ -33,7 +33,7 @@ describe("verifyCredential", () => {
         } as any;
         (VerifiableCredentialSignatureService.prototype.verify as jest.Mock).mockResolvedValue(true);
         (NFTService.prototype.isBurnt as jest.Mock).mockResolvedValue(true);
-        const result = await verifyCredential(mockCredential, "staging");
+        const result = await verifyCredential(mockCredential);
         expect(result).toEqual({ validVC: false, error: "Credential has been revoked" });
     });
 
@@ -44,7 +44,7 @@ describe("verifyCredential", () => {
         } as any;
         (VerifiableCredentialSignatureService.prototype.verify as jest.Mock).mockResolvedValue(false);
         (NFTService.prototype.isBurnt as jest.Mock).mockResolvedValue(false);
-        const result = await verifyCredential(mockCredential, "staging");
+        const result = await verifyCredential(mockCredential);
         expect(result).toEqual({ validVC: false, error: "Invalid proof" });
     });
 
@@ -53,7 +53,7 @@ describe("verifyCredential", () => {
             expirationDate: "not a valid ISO string",
             nft: {} as any,
         } as any;
-        await expect(verifyCredential(mockCredential, "staging")).rejects.toThrow(
+        await expect(verifyCredential(mockCredential)).rejects.toThrow(
             "Invalid expiration date: not a valid ISO string"
         );
     });
@@ -62,9 +62,7 @@ describe("verifyCredential", () => {
             expirationDate: 1,
             nft: {} as any,
         } as any;
-        await expect(verifyCredential(mockCredential, "staging")).rejects.toThrow(
-            "expirationDate must be a ISO string"
-        );
+        await expect(verifyCredential(mockCredential)).rejects.toThrow("expirationDate must be a ISO string");
     });
 
     it("should fail if expirationDate is in the past", async () => {
@@ -72,7 +70,7 @@ describe("verifyCredential", () => {
             expirationDate: new Date(Date.now() - 86400000).toISOString(), // 1 day in the past
             nft: {} as any,
         } as any;
-        const result = await verifyCredential(mockCredential, "staging");
+        const result = await verifyCredential(mockCredential);
         expect(result).toEqual({ validVC: false, error: `Credential expired at ${mockCredential.expirationDate}` });
     });
 });
