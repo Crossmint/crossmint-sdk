@@ -2,10 +2,10 @@ import { HttpTransport, PublicClient } from "viem";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
-import { EntryPointDetails, UserIdentifier, WalletConfig } from "./Config";
+import { EntryPointDetails, UserParams, WalletConfig } from "./Config";
 
 export interface WalletCreationParams {
-    userIdentifier: UserIdentifier;
+    user: UserParams;
     chain: EVMBlockchainIncludingTestnet;
     publicClient: PublicClient<HttpTransport>;
     walletConfig: WalletConfig;
