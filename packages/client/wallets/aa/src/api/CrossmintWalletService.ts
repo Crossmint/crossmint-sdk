@@ -10,7 +10,7 @@ export { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 export class CrossmintWalletService extends BaseCrossmintService {
     async storeAbstractWallet(user: UserParams, input: StoreAbstractWalletInput) {
         return this.fetchCrossmintAPI(
-            "internal/client/smart-wallet",
+            "sdk/smart-wallet",
             { method: "POST", body: JSON.stringify(input) },
             "Error creating abstract wallet. Please contact support",
             user.jwt
@@ -19,7 +19,7 @@ export class CrossmintWalletService extends BaseCrossmintService {
 
     async getAbstractWalletEntryPointVersion(user: UserParams, chain: EVMBlockchainIncludingTestnet) {
         return this.fetchCrossmintAPI(
-            `internal/client/smart-wallet/entry-point-version?chain=${chain}`,
+            `sdk/smart-wallet/entry-point-version?chain=${chain}`,
             { method: "GET" },
             `Error getting entry point version. Please contact support`,
             user.jwt
@@ -29,7 +29,7 @@ export class CrossmintWalletService extends BaseCrossmintService {
     async getPasskeySigner(user: UserParams): Promise<PasskeySignerData | null> {
         try {
             const signers = await this.fetchCrossmintAPI(
-                `internal/client/smart-wallet/signers?type=passkeys`,
+                `sdk/smart-wallet/signers?type=passkeys`,
                 { method: "GET" },
                 "Error fetching passkey validator signer. Please contact support",
                 user.jwt
