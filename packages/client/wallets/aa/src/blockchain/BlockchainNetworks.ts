@@ -18,7 +18,7 @@ import {
     ZD_SEPOLIA_PROJECT_ID,
     ZD_ZKATANA_PROJECT_ID,
     ZD_ZKYOTO_PROJECT_ID,
-} from "@/utils";
+} from "@/utils/constants";
 import {
     arbitrum,
     arbitrumNova,

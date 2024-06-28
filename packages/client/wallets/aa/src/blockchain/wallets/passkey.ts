@@ -1,5 +1,4 @@
 import {
-    CURRENT_VERSION,
     CrossmintWalletService,
     EVMSmartWallet,
     EntryPointDetails,
@@ -7,10 +6,10 @@ import {
     PasskeySignerData,
     UserParams,
     WalletConfig,
-    ZERO_DEV_TYPE,
     blockchainToChainId,
 } from "@/index";
 import { WalletCreationParams } from "@/types/internal";
+import { CURRENT_VERSION, ZERO_DEV_TYPE } from "@/utils/constants";
 import { createPasskeyValidator, deserializePasskeyValidator } from "@zerodev/passkey-validator";
 import { deserializePasskeyValidatorData, serializePasskeyValidatorData } from "@zerodev/passkey-validator/utils";
 import { KernelValidator, createKernelAccount } from "@zerodev/sdk";
