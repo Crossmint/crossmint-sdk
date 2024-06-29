@@ -1,4 +1,5 @@
-import { PAYMASTER_RPC, PM_BASE_RPC, PM_BASE_SEPOLIA_RPC, usesGelatoBundler } from "@/utils";
+import { usesGelatoBundler } from "@/utils";
+import { PAYMASTER_RPC, PM_BASE_RPC, PM_BASE_SEPOLIA_RPC } from "@/utils/constants";
 import { logInputOutput } from "@/utils/log";
 import { createZeroDevPaymasterClient } from "@zerodev/sdk";
 import { Middleware } from "permissionless/actions/smartAccount";

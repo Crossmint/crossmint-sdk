@@ -1,5 +1,6 @@
 import { logError } from "@/services/logging";
-import { SCW_SERVICE, TransferError, errorToJSON } from "@/utils";
+import { TransferError, errorToJSON } from "@/utils";
+import { SCW_SERVICE } from "@/utils/constants";
 import { LoggerWrapper } from "@/utils/log";
 import { KernelAccountClient, KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
 import { SmartAccountClient } from "permissionless";

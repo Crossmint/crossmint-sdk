@@ -1,4 +1,4 @@
-import { CROSSMINT_STG_URL } from "../utils";
+import { CROSSMINT_STG_URL } from "../utils/constants";
 import { CrossmintWalletService } from "./CrossmintWalletService";
 
 jest.mock("../services/logging", () => ({

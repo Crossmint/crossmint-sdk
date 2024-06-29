@@ -2,7 +2,8 @@ import { CrossmintWalletService } from "@/api";
 import { EVMSmartWallet } from "@/blockchain";
 import type { EOASigner, WalletConfig } from "@/types";
 import { WalletCreationParams } from "@/types/internal";
-import { CURRENT_VERSION, ZERO_DEV_TYPE, createOwnerSigner } from "@/utils";
+import { createOwnerSigner } from "@/utils";
+import { CURRENT_VERSION, ZERO_DEV_TYPE } from "@/utils/constants";
 import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
 import { createKernelAccount } from "@zerodev/sdk";
 
