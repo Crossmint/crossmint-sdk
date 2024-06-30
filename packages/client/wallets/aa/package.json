@@ -12,12 +12,15 @@
         "email-validator": "2.0.4",
         "libphonenumber-js": "1.10.44",
         "permissionless": "0.1.31",
-        "viem": "2.14.2"
+        "viem": "2.16.2"
     },
     "devDependencies": {
         "@playwright/test": "^1.41.2",
         "@types/node": "^20.11.20",
         "tsup": "^8.0.2"
+    },
+    "peerDependencies": {
+        "viem": "^2.16.2"
     },
     "exports": {
         "import": "./dist/index.js",
@@ -49,5 +52,5 @@
     "sideEffects": false,
     "type": "module",
     "types": "./dist/index.d.ts",
-    "version": "1.1.0-beta.5"
+    "version": "1.1.0-beta.6"
 }
