@@ -5347,10 +5347,10 @@
   dependencies:
     axios "^1.6.7"
 
-"@reservoir0x/reservoir-sdk@2.2.7":
-  version "2.2.7"
-  resolved "https://registry.yarnpkg.com/@reservoir0x/reservoir-sdk/-/reservoir-sdk-2.2.7.tgz#b0e31343d16874594a5c47c92a58f6936043f521"
-  integrity sha512-xSreQz9jkITqeQv42MyZIhQ4971r70YiLUO1UMNBxZBbIPRxnBkEd5fJKm/RfHkllH+zGdbSTcYZKuhSWipKgw==
+"@reservoir0x/reservoir-sdk@2.3.0":
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/@reservoir0x/reservoir-sdk/-/reservoir-sdk-2.3.0.tgz#a0568eee033e12b10f5672fe524f4b64f87488a4"
+  integrity sha512-u341EVzoOVM+VfG9nSax8mpxRCXbHpiSv25Wa6DYoYg88S2HIAFGDbQea6e7a9AZHA+Whw9dKnGEmDs/Ga4FMw==
   dependencies:
     axios "^1.6.7"
 
