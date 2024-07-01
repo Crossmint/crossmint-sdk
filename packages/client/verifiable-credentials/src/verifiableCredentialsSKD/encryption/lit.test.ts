@@ -1,7 +1,6 @@
 import * as LitJsSdk from "@lit-protocol/lit-node-client";
 
-import * as API from "./crossmintAPI";
-import { Lit } from "./litInterface";
+import { Lit } from "./lit";
 
 jest.mock("@lit-protocol/lit-node-client");
 
@@ -15,21 +14,12 @@ describe("Lit", () => {
     };
 
     beforeEach(() => {
-        jest.spyOn(API, "getUsageOrigin").mockReturnValue("client");
-        lit = new Lit();
+        lit = new Lit("manzano", { sig: "delegationSig" } as any);
         litSpy = jest.spyOn(LitJsSdk, "LitNodeClient");
         litSpy.mockImplementation(() => {
             return mockNodeClient as any;
         });
         jest.spyOn(LitJsSdk, "checkAndSignAuthMessage").mockResolvedValue({} as any);
-    });
-
-    it("should correctly set prod env", () => {
-        const litProd = new Lit("prod");
-        expect(litProd.prod).toBe(true);
-
-        const litTest = new Lit("test");
-        expect(litTest.prod).toBe(false);
     });
 
     it("should connect to the Lit network", async () => {

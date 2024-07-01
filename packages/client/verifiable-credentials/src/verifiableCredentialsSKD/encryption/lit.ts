@@ -2,20 +2,6 @@ import { LitAbility, LitAccessControlConditionResource } from "@lit-protocol/aut
 import * as LitJsSdk from "@lit-protocol/lit-node-client";
 import { AuthSig, LIT_NETWORKS_KEYS, SessionSigsMap } from "@lit-protocol/types";
 
-import { APIKeyUsageOrigin } from "@crossmint/common-sdk-base";
-
-import { getUsageOrigin } from "./crossmintAPI";
-import { isProduction } from "./utils";
-
-const fallbackCapacityDelegationAuthSig = {
-    sig: "d44b33ebaafa807f6117c3581978fbf54c4a2cc958dcdfab15cfd21481af6e2a34c2d2890ef35777ff065b23f2863085a257f108c4ecb79f516345ff22dcfaf41c",
-    derivedVia: "web3.eth.personal.sign",
-    signedMessage:
-        "example.com wants you to sign in with your Ethereum account:\n0x203F7dD921837f6Cdfc906cc17406e5bA0a87453\n\n I further authorize the stated URI to perform the following actions on my behalf: (1) 'Auth': 'Auth' for 'lit-ratelimitincrease://*'.\n\nURI: lit:capability:delegation\nVersion: 1\nChain ID: 1\nNonce: 0xaa2283e4f1e68ecd63293b548d921d4a318615af09d489557c922d89c47679d8\nIssued At: 2024-06-07T00:24:28.745Z\nExpiration Time: 2024-07-07T00:24:25.744Z\nResources:\n- urn:recap:eyJhdHQiOnsibGl0LXJhdGVsaW1pdGluY3JlYXNlOi8vKiI6eyJBdXRoL0F1dGgiOlt7InVzZXMiOiIxMDAwMDAwMDAwIn1dfX0sInByZiI6W119",
-    address: "203f7dd921837f6cdfc906cc17406e5ba0a87453",
-    algo: undefined,
-};
-
 const authNeededCallback = async (params: any) => {
     const authSig = await LitJsSdk.checkAndSignAuthMessage({
         chain: params.chain,
@@ -37,12 +23,12 @@ type LitChain = (typeof LitChain)[keyof typeof LitChain];
 const LitNetwork = {
     prodNetwork: "habanero",
     testNetwork: "manzano",
+    legacyNetwork: "cayenne",
 } as const;
 
-type LitNetwork = (typeof LitNetwork)[keyof typeof LitNetwork] & LIT_NETWORKS_KEYS;
+export type LitNetwork = (typeof LitNetwork)[keyof typeof LitNetwork] & LIT_NETWORKS_KEYS;
 
 export class Lit {
-    prod: boolean;
     private capacityDelegationAuthSig: AuthSig;
     private network: LIT_NETWORKS_KEYS;
     private chain: LitChain;
@@ -50,24 +36,12 @@ export class Lit {
     private litNodeClient?: LitJsSdk.LitNodeClient;
     private sessionSigs?: SessionSigsMap;
 
-    constructor(env: string = "test", capacityDelegationAuthSig?: AuthSig, debug = false) {
+    constructor(network: LitNetwork, capacityDelegationAuthSig: AuthSig, debug = false) {
         this.debug = debug;
-        const usageOrigin = getUsageOrigin();
-        if (usageOrigin == null) {
-            console.warn(
-                "Unknown environment, make sure the sdk is running client side, The Crossmint Lit wrapper is meant to be used in the browser, refer to the @lit-protocol/lit-node-client-nodejs package for server usage."
-            );
-        } else if (usageOrigin === APIKeyUsageOrigin.SERVER) {
-            console.warn(
-                "The Crossmint Lit wrapper is a client side tool meant to be used in the browser, not in a server environment, refer to the @lit-protocol/lit-node-client-nodejs package for server usage."
-            );
-        }
 
-        this.prod = isProduction(env);
-
-        this.network = this.prod ? LitNetwork.prodNetwork : LitNetwork.testNetwork;
-        this.chain = this.prod ? LitChain.prodChain : LitChain.testChain;
-        this.capacityDelegationAuthSig = capacityDelegationAuthSig ?? fallbackCapacityDelegationAuthSig;
+        this.network = network;
+        this.chain = this.network === LitNetwork.prodNetwork ? LitChain.prodChain : LitChain.testChain;
+        this.capacityDelegationAuthSig = capacityDelegationAuthSig;
     }
 
     async connect() {
@@ -96,7 +70,7 @@ export class Lit {
             resourceAbilityRequests: [ability],
             capacityDelegationAuthSig: this.capacityDelegationAuthSig,
         });
-        console.debug("obtained sessionSigs:", sessionSigs);
+        // console.debug("Obtained sessionSigs:", sessionSigs);
         return sessionSigs;
     }
 
