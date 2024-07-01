@@ -1,58 +1,47 @@
 import { CrossmintWalletService } from "@/api";
 import { EVMSmartWallet } from "@/blockchain";
-import type { UserIdentifier, WalletConfig } from "@/types";
-import { CURRENT_VERSION, ZERO_DEV_TYPE, createOwnerSigner } from "@/utils";
+import type { EOASigner, WalletConfig } from "@/types";
+import { WalletCreationParams } from "@/types/internal";
+import { createOwnerSigner } from "@/utils";
+import { CURRENT_VERSION, ZERO_DEV_TYPE } from "@/utils/constants";
 import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
 import { createKernelAccount } from "@zerodev/sdk";
-import { EntryPoint, EntryPointVersion } from "permissionless/types/entrypoint";
-import { HttpTransport, PublicClient } from "viem";
 
-import { EVMBlockchainIncludingTestnet, blockchainToChainId } from "@crossmint/common-sdk-base";
+import { blockchainToChainId } from "@crossmint/common-sdk-base";
 
-export default class EOAWalletService {
+export interface EOAWalletParams extends WalletCreationParams {
+    walletConfig: WalletConfig & { signer: EOASigner };
+}
+
+export class EOAWalletService {
     constructor(private readonly crossmintService: CrossmintWalletService) {}
 
-    public async getOrCreate({
-        userIdentifier,
-        chain,
-        publicClient,
-        entryPoint,
-        entryPointVersion,
-        walletConfig,
-    }: {
-        userIdentifier: UserIdentifier;
-        chain: EVMBlockchainIncludingTestnet;
-        publicClient: PublicClient<HttpTransport>;
-        entryPoint: EntryPoint;
-        entryPointVersion: EntryPointVersion;
-        walletConfig: WalletConfig;
-    }) {
+    public async getOrCreate({ user, chain, publicClient, entrypoint, walletConfig }: EOAWalletParams) {
         const eoa = await createOwnerSigner({
             chain,
             walletConfig,
         });
         const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
             signer: eoa,
-            entryPoint,
+            entryPoint: entrypoint.address,
         });
         const account = await createKernelAccount(publicClient, {
             plugins: {
                 sudo: ecdsaValidator,
             },
             index: BigInt(0),
-            entryPoint,
+            entryPoint: entrypoint.address,
         });
 
         const wallet = new EVMSmartWallet(this.crossmintService, account, publicClient, chain);
-        await this.crossmintService.storeAbstractWallet({
-            userIdentifier,
+        await this.crossmintService.storeAbstractWallet(user, {
             type: ZERO_DEV_TYPE,
             smartContractWalletAddress: account.address,
             signerData: { eoaAddress: eoa.address, type: "eoa" },
             version: CURRENT_VERSION,
             baseLayer: "evm",
             chainId: blockchainToChainId(chain),
-            entryPointVersion,
+            entryPointVersion: entrypoint.version,
         });
 
         return wallet;

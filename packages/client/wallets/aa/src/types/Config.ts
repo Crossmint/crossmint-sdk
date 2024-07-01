@@ -1,20 +1,20 @@
 import { TORUS_NETWORK_TYPE } from "@web3auth/single-factor-auth";
+import { EntryPoint, EntryPointVersion } from "permissionless/types/entrypoint";
 import { EIP1193Provider, LocalAccount } from "viem";
 
 export type SmartWalletSDKInitParams = {
     clientApiKey: string;
 };
 
-export type UserIdentifierParams = {
-    email?: string;
-    userId?: string;
-    phoneNumber?: string;
+type WhitelabelUserParams = {
+    /**
+     * A unique identifier for the user. This must match the value of the identifier within the JWT
+     * that is specified in the project settings (typically `sub`).
+     */
+    id: string;
+    jwt: string;
 };
-
-export type UserIdentifier =
-    | { type: "whiteLabel"; userId: string }
-    | { type: "email"; email: string }
-    | { type: "phoneNumber"; phoneNumber: string };
+export type UserParams = WhitelabelUserParams;
 
 export type Web3AuthSigner = {
     type: "WEB3_AUTH";
@@ -29,8 +29,18 @@ export type ViemAccount = {
     account: LocalAccount & { source: "custom" };
 };
 
-type Signer = EIP1193Provider | Web3AuthSigner | ViemAccount;
+export type PasskeySigner = {
+    type: "PASSKEY";
 
+    /**
+     * Displayed to the user during passkey registration or signing prompts.
+     */
+    passkeyName: string;
+};
+
+export type EOASigner = EIP1193Provider | Web3AuthSigner | ViemAccount;
 export interface WalletConfig {
-    signer: Signer;
+    signer: EOASigner | PasskeySigner;
 }
+
+export type EntryPointDetails = { version: EntryPointVersion; address: EntryPoint };

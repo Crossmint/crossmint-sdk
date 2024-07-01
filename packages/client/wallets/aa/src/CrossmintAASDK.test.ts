@@ -5,6 +5,7 @@ jest.mock("@/api");
 jest.mock("@/blockchain");
 jest.mock("@/types");
 jest.mock("@/utils");
+jest.mock("@zerodev/passkey-validator/utils", () => ({}));
 
 describe("CrossmintAASDK", () => {
     let sdk: SmartWalletSDK;
