@@ -11,7 +11,7 @@ export type {
     VerifiableCredentialEncryption,
     VerifiableCredentialEncryptionType,
     VCNFT,
-    ChainRPC,
+    ChainRPCConfig,
 } from "./verifiableCredentialsSKD";
 
 // Verification

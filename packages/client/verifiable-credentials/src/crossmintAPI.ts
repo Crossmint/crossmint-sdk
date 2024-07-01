@@ -1,7 +1,7 @@
 import { getEnvironmentBaseUrl } from "@crossmint/client-sdk-base";
 import { APIKeyUsageOrigin, validateAPIKey } from "@crossmint/common-sdk-base";
 
-import { ChainRPC, VCSDKConfig, configManager } from "./verifiableCredentialsSKD";
+import { ChainRPCConfig, VCSDKConfig, configManager } from "./verifiableCredentialsSKD";
 
 class CrossmintAPI {
     private apiKey?: string;
@@ -24,7 +24,7 @@ class CrossmintAPI {
         return this.getConfig().ipfsGateways;
     }
 
-    public getBlockchainRpcs(): ChainRPC[] {
+    public getBlockchainRpcs(): ChainRPCConfig[] {
         return this.getConfig().blockchainRpcs;
     }
 
@@ -64,7 +64,7 @@ class CrossmintAPI {
 
     public init(
         apiKey: string,
-        config: { environment: "staging" | "prod" | string; ipfsGateways?: string[]; blockchainRpcs?: ChainRPC[] }
+        config: { environment: "staging" | "prod" | string; ipfsGateways?: string[]; blockchainRpcs?: ChainRPCConfig[] }
     ) {
         this.apiKey = apiKey;
         this.environment = config.environment;

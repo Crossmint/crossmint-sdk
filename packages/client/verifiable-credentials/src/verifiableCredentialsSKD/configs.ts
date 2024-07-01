@@ -1,9 +1,9 @@
-import { ChainRPC, VCChain } from "./types/chain";
+import { ChainRPCConfig, VCChain } from "./types/chain";
 
 const POLYGON_RPC_URL = "https://polygon.llamarpc.com/";
 const POLYGON_RPC_URL_TEST = "https://rpc-amoy.polygon.technology/";
 
-export const DEFAULT_CHAIN_RPCS: ChainRPC[] = [
+export const DEFAULT_CHAIN_RPCS: ChainRPCConfig[] = [
     {
         chain: VCChain.POLYGON,
         rpc: POLYGON_RPC_URL,
@@ -27,7 +27,7 @@ export const DEFAULT_IPFS_GATEWAYS = [
 
 export interface VCSDKConfig {
     ipfsGateways: string[];
-    blockchainRpcs: ChainRPC[];
+    blockchainRpcs: ChainRPCConfig[];
 }
 
 class ConfigManager {
@@ -43,7 +43,7 @@ class ConfigManager {
         return ConfigManager.instance;
     }
 
-    public init(config: { ipfsGateways?: string[]; blockchainRpcs?: ChainRPC[] }): void {
+    public init(config: { ipfsGateways?: string[]; blockchainRpcs?: ChainRPCConfig[] }): void {
         let ipfsGateways = config.ipfsGateways;
         let blockchainRpcs = config.blockchainRpcs;
 
@@ -73,7 +73,7 @@ class ConfigManager {
         return this.getConfig().ipfsGateways;
     }
 
-    public getBlockchainRpcs(): ChainRPC[] {
+    public getBlockchainRpcs(): ChainRPCConfig[] {
         return this.getConfig().blockchainRpcs;
     }
 }

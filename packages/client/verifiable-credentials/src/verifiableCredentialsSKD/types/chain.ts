@@ -6,7 +6,7 @@ export const VCChain = {
 
 export type VCChain = (typeof VCChain)[keyof typeof VCChain];
 
-export type ChainRPC = {
+export type ChainRPCConfig = {
     chain: VCChain;
     rpc: string;
 };
