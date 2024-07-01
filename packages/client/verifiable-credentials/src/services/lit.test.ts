@@ -16,7 +16,7 @@ describe("Lit", () => {
 
     beforeEach(() => {
         jest.spyOn(crossmintAPI, "getOrigin").mockReturnValue("client");
-        lit = new Lit();
+        lit = new Lit("manzano", { sig: "delegationSig" } as any);
         litSpy = jest.spyOn(LitJsSdk, "LitNodeClient");
         litSpy.mockImplementation(() => {
             return {
@@ -26,7 +26,13 @@ describe("Lit", () => {
         jest.spyOn(LitJsSdk, "checkAndSignAuthMessage").mockResolvedValue({} as any);
     });
 
-    it("should throw an error when production environment is used", () => {
-        expect(() => new Lit("cayenne", "prod")).toThrow("Production environment not supported yet");
+    it("should connect to the Lit network", async () => {
+        const mockConnect = jest.fn();
+        litSpy.mockImplementation(() => {
+            return { connect: mockConnect } as any;
+        });
+        await lit.connect();
+
+        expect(mockConnect).toHaveBeenCalled();
     });
 });

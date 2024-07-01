@@ -2,6 +2,7 @@
 export type * from "./types";
 export type { CredentialRetrievalProcedure } from "./presentation/getCredential";
 export type { VCSDKConfig } from "./configs";
+export type { LitNetwork } from "./encryption/lit";
 
 // Verification
 export { verifyCredential } from "./verification";
