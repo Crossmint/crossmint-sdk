@@ -1,17 +1,16 @@
-import { getEnvironmentBaseUrl } from "@crossmint/client-sdk-base";
+import { Nft, isVcChain } from "@/verifiableCredentialsSKD";
 
-import { CrossmintAPI } from "../services/crossmintAPI";
-import { isPolygon } from "../services/utils";
-import { VC_EVMNFT } from "../types/nfts";
+import { crossmintAPI } from "../crossmintAPI";
+import { CrossmintWalletNft } from "../types/nfts";
 
-export async function getWalletNfts(chain: string, wallet: string, environment: string) {
+export async function getWalletNfts(chain: string, wallet: string) {
     let page = 1;
     let hasMore = true;
-    let allData: VC_EVMNFT[] = [];
+    let allData: CrossmintWalletNft[] = [];
     const perPage = 50;
 
-    const baseUrl = getEnvironmentBaseUrl(environment);
-    const headers = CrossmintAPI.getHeaders();
+    const baseUrl = crossmintAPI.getBaseUrl();
+    const headers = crossmintAPI.getHeaders();
 
     while (hasMore) {
         const url = `${baseUrl}/api/v1-alpha1/wallets/${chain}:${wallet}/nfts?perPage=${perPage}&page=${page}`;
@@ -35,13 +34,36 @@ export async function getWalletNfts(chain: string, wallet: string, environment: 
             }
         } catch (error) {
             console.error(error);
-            return null;
+            throw new Error(`Failed to get nfts`);
         }
     }
 
     return allData;
 }
 
-export function filterPolygonErc721(nfts: VC_EVMNFT[]): VC_EVMNFT[] {
-    return nfts.filter((nft) => isPolygon(nft.chain) && nft.tokenStandard === "erc-721");
+export function filterVCCompErc721(nfts: CrossmintWalletNft[]): Nft[] {
+    const vcNfts: Nft[] = [];
+    for (const nft of nfts) {
+        if (isVcChain(nft.chain) && nft.tokenStandard === "erc-721") {
+            vcNfts.push({
+                chain: nft.chain,
+                contractAddress: nft.contractAddress,
+                tokenId: nft.tokenId,
+            });
+        }
+    }
+    return vcNfts;
+}
+
+export async function getWalletVcCompatibleNfts(chain: string, wallet: string): Promise<Nft[]> {
+    const nfts = await getWalletNfts(chain, wallet);
+    if (nfts == null) {
+        throw new Error("Failed to get nfts");
+    }
+    console.debug(`Got ${nfts.length} nfts`);
+
+    const compatibleNfts = filterVCCompErc721(nfts);
+    console.debug(`Got ${compatibleNfts.length} compatible erc721 nfts`);
+
+    return compatibleNfts;
 }

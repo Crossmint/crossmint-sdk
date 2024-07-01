@@ -1,6 +1,6 @@
-import { CrossmintAPI } from "../services/crossmintAPI";
-import { VC_EVMNFT } from "../types/nfts";
-import { filterPolygonErc721, getWalletNfts } from "./getNfts";
+import { crossmintAPI } from "../crossmintAPI";
+import { CrossmintWalletNft } from "../types/nfts";
+import { filterVCCompErc721, getWalletNfts } from "./getNfts";
 
 global.fetch = jest.fn(() =>
     Promise.resolve({
@@ -8,9 +8,16 @@ global.fetch = jest.fn(() =>
     })
 ) as jest.Mock;
 
+jest.mock("@krebitdao/eip712-vc", () => {
+    return {
+        EIP712VC: jest.fn().mockImplementation(() => {}),
+    };
+});
+
 describe("getNfts", () => {
     beforeEach(() => {
-        jest.spyOn(CrossmintAPI, "getHeaders").mockReturnValue({} as any);
+        crossmintAPI.init("test", { environment: "test" });
+        jest.spyOn(crossmintAPI, "getHeaders").mockReturnValue({} as any);
     });
     it("should fetch wallet NFTs", async () => {
         const mockResponse = Array(50).fill({ a: "a" });
@@ -26,20 +33,20 @@ describe("getNfts", () => {
             json: () => Promise.resolve(mockResponse2),
         } as any);
 
-        const result = await getWalletNfts("chain", "wallet", "environment");
+        const result = await getWalletNfts("chain", "wallet");
 
         expect(result).toEqual(mockResponse.concat(mockResponse2));
         expect(fetch).toHaveBeenCalled();
     });
 
     it("should filter Polygon ERC-721 NFTs", () => {
-        const nfts: VC_EVMNFT[] = [
+        const nfts: CrossmintWalletNft[] = [
             { chain: "polygon", tokenStandard: "erc-721" } as any,
             { chain: "ethereum", tokenStandard: "erc-721" } as any,
         ];
 
-        const result = filterPolygonErc721(nfts);
+        const result = filterVCCompErc721(nfts);
 
-        expect(result).toEqual([{ chain: "polygon", tokenStandard: "erc-721" }]);
+        expect(result).toEqual([{ chain: "polygon", contractAddress: undefined, tokenId: undefined }]);
     });
 });

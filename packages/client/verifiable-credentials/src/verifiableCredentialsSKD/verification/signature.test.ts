@@ -1,6 +1,6 @@
 import { verifyTypedData } from "@ethersproject/wallet";
 
-import { VerifiableCredential } from "../../types/verifiableCredential";
+import { VerifiableCredential } from "../types/verifiableCredential";
 import { VerifiableCredentialSignatureService } from "./signature";
 
 jest.mock("@krebitdao/eip712-vc", () => {

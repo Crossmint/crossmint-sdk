@@ -1,21 +1,18 @@
 import { ethers } from "ethers";
 
-import * as API from "../services/crossmintAPI";
-import { CredentialsCollection } from "../types/nfts";
-import { MetadataService, formatUrl } from "./getMetadata";
+import { configManager } from "../configs";
+import { IPFSService } from "../services/ipfs";
+import { CredentialsCollection } from "../types";
+import { ContractMetadataService } from "./contractMetadata";
 
-global.fetch = jest.fn(() =>
-    Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({}),
-    })
-) as jest.Mock;
+jest.mock("../services/ipfs");
 
 describe("getMetadata", () => {
-    let metadataService: MetadataService;
+    let metadataService: ContractMetadataService;
     beforeEach(() => {
-        metadataService = new MetadataService();
+        metadataService = new ContractMetadataService("polygon");
         jest.resetAllMocks();
+        configManager.init({});
     });
 
     describe("getMetadata", () => {
@@ -27,21 +24,16 @@ describe("getMetadata", () => {
                     } as any)
             );
 
-            API.CrossmintAPI.ipfsGateways = ["gateway1", "gateway2"];
+            configManager.init({ ipfsGateways: ["gateway1", "gateway2"] });
         });
 
         it("should fetch metadata", async () => {
             const mockResponse = { a: "a" };
+            (IPFSService.prototype.getFile as jest.Mock).mockResolvedValue(mockResponse);
 
-            (fetch as jest.MockedFunction<typeof fetch>).mockResolvedValueOnce({
-                ok: true,
-                json: () => Promise.resolve(mockResponse),
-            } as any);
-
-            const result = await metadataService.getContractMetadata("contractAddress", "environment");
+            const result = await metadataService.getContractMetadata("contractAddress");
 
             expect(result).toEqual(mockResponse);
-            expect(fetch).toHaveBeenCalled();
         });
     });
 
@@ -63,19 +55,9 @@ describe("getMetadata", () => {
             jest.spyOn(metadataService, "getContractMetadata").mockResolvedValueOnce(mockResponse);
             jest.spyOn(metadataService, "getContractMetadata").mockResolvedValueOnce(null);
 
-            const result = await metadataService.getContractWithVCMetadata(collections, "environment");
+            const result = await metadataService.retrieveContractCredentialMetadata(collections);
 
             expect(result).toEqual([{ contractAddress: "contractAddress1", metadata: mockResponse }]);
         });
-    });
-});
-
-describe("formatUrl", () => {
-    it("should correctly format URL", () => {
-        const baseUrl = "http://example.com/{cid}";
-
-        const result = formatUrl(baseUrl, "123");
-
-        expect(result).toEqual("http://example.com/123");
     });
 });

@@ -1,12 +1,11 @@
 import { isValid, parseISO } from "date-fns";
 
+import { NFTService } from "../onchainServices/nft";
 import { VerifiableCredential } from "../types/verifiableCredential";
-import { NFTService } from "./services/nftStatus";
-import { VerifiableCredentialSignatureService } from "./services/signature";
+import { VerifiableCredentialSignatureService } from "./signature";
 
 export async function verifyCredential(
-    credential: VerifiableCredential,
-    environment: string = "staging"
+    credential: VerifiableCredential
 ): Promise<{ validVC: boolean; error: string | undefined }> {
     let error;
     if (credential.expirationDate != null) {
@@ -32,7 +31,7 @@ export async function verifyCredential(
         return { validVC: false, error };
     }
 
-    const nftRevoked = await new NFTService(environment).isBurnt(credential.nft);
+    const nftRevoked = await new NFTService(credential.nft.chain).isBurnt(credential.nft);
     if (nftRevoked) {
         error = "Credential has been revoked";
         return { validVC: false, error };
