@@ -36,10 +36,24 @@ export class SmartWalletSDK extends LoggerWrapper {
         return new SmartWalletSDK(config);
     }
 
+    /**
+     * Retrieves or creates a wallet for the specified user.
+     * The default configuration is a `PasskeySigner` with the name, which is displayed to the user during creation or signing prompts, derived from the `user` parameter.
+     * Wallets for the same user on different chains should have consistent configurations.
+     *
+     * Example using the default passkey signer:
+     * ```ts
+     * const wallet = await smartWalletSDK.getOrCreateWallet({ id: "vitalik", jwt: "xxx" }, "base");
+     * ```
+     * @param user User related parameters for the wallet.
+     * @param chain Blockchain for wallet to operate on.
+     * @param config Smart wallet configuration.
+     * @returns A wallet instance for the given user and chain.
+     */
     async getOrCreateWallet(
         user: UserParams,
         chain: EVMBlockchainIncludingTestnet,
-        walletConfig: WalletConfig
+        walletConfig: WalletConfig = { signer: { type: "PASSKEY", passkeyName: user.id } }
     ): Promise<EVMSmartWallet> {
         return logPerformance(
             "GET_OR_CREATE_WALLET",
