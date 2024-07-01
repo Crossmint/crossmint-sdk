@@ -22,10 +22,12 @@ export class IFrameWindow<IncomingEvents extends EventMap, OutgoingEvents extend
 
     static async init<IncomingEvents extends EventMap, OutgoingEvents extends EventMap>(
         url: string,
-        options?: EventEmitterWithHandshakeOptions<IncomingEvents, OutgoingEvents>
+        options?: EventEmitterWithHandshakeOptions<IncomingEvents, OutgoingEvents> & {
+            existingIFrame?: HTMLIFrameElement;
+        }
     ) {
         return new IFrameWindow<IncomingEvents, OutgoingEvents>(
-            await createIFrame(url),
+            options?.existingIFrame || (await createIFrame(url)),
             options?.targetOrigin || urlToOrigin(url),
             options
         );

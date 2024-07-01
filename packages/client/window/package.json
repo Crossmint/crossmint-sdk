@@ -24,6 +24,7 @@
         "dev": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --dts --sourcemap --watch"
     },
     "dependencies": {
-        "zod": "3.22.4"
+        "nanoid": "5.0.4",
+        "zod": "3.22.3"
     }
 }
