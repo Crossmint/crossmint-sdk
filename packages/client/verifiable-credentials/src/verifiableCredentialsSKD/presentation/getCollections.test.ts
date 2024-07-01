@@ -1,4 +1,4 @@
-import { CredentialsCollection, VCNFT } from "../types";
+import { CredentialsCollection, Nft } from "../types";
 import { ContractMetadataService } from "./contractMetadata";
 import { bundleNfts, getUsersCredentialNfts } from "./getCollections";
 
@@ -6,7 +6,7 @@ jest.mock("./contractMetadata");
 
 describe("bundleNfts", () => {
     it("should group NFTs by contract address", () => {
-        const nfts: VCNFT[] = [
+        const nfts: Nft[] = [
             { contractAddress: "address1" } as any,
             { contractAddress: "address1" } as any,
             { contractAddress: "address2" } as any,

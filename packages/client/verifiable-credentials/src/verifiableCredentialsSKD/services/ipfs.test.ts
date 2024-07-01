@@ -18,7 +18,7 @@ describe("IPFSService", () => {
 
     describe("formatUrl", () => {
         it("should correctly format URL", () => {
-            const baseUrl = "http://example.com/{cid}";
+            const baseUrl = "http://example.com/";
             const result = ipfsService.formatUrl(baseUrl, "123");
             expect(result).toEqual("http://example.com/123");
         });

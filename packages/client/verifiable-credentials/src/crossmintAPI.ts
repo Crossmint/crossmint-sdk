@@ -24,7 +24,7 @@ class CrossmintAPI {
         return this.getConfig().ipfsGateways;
     }
 
-    public getBlockchainRpcs(): ChainRPCConfig[] {
+    public getBlockchainRpcs(): ChainRPCConfig {
         return this.getConfig().blockchainRpcs;
     }
 
@@ -64,7 +64,7 @@ class CrossmintAPI {
 
     public init(
         apiKey: string,
-        config: { environment: "staging" | "prod" | string; ipfsGateways?: string[]; blockchainRpcs?: ChainRPCConfig[] }
+        config: { environment: "staging" | "prod" | string; ipfsGateways?: string[]; blockchainRpcs?: ChainRPCConfig }
     ) {
         this.apiKey = apiKey;
         this.environment = config.environment;

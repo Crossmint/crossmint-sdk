@@ -1,6 +1,6 @@
 import { crossmintAPI } from "../crossmintAPI";
 import { CrossmintWalletNft } from "../types/nfts";
-import { filterPolygonErc721, getWalletNfts } from "./getNfts";
+import { filterVCCompErc721, getWalletNfts } from "./getNfts";
 
 global.fetch = jest.fn(() =>
     Promise.resolve({
@@ -45,7 +45,7 @@ describe("getNfts", () => {
             { chain: "ethereum", tokenStandard: "erc-721" } as any,
         ];
 
-        const result = filterPolygonErc721(nfts);
+        const result = filterVCCompErc721(nfts);
 
         expect(result).toEqual([{ chain: "polygon", contractAddress: undefined, tokenId: undefined }]);
     });

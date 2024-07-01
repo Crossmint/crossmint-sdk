@@ -1,4 +1,4 @@
-import { VCNFT } from "../types";
+import { Nft } from "../types";
 import { NFTService } from "./nft";
 
 jest.mock("./provider");
@@ -23,7 +23,7 @@ describe("NFTStatusService", () => {
     });
 
     it("should return false if NFT is not burnt", async () => {
-        const mockNFT: VCNFT = {
+        const mockNFT: Nft = {
             chain: "polygon",
             contractAddress: "mockContractAddress",
             tokenId: "notBurned",
@@ -35,7 +35,7 @@ describe("NFTStatusService", () => {
     });
 
     it("should return true if NFT is burnt", async () => {
-        const mockNFT: VCNFT = {
+        const mockNFT: Nft = {
             chain: "polygon",
             contractAddress: "mockContractAddress",
             tokenId: "burned",
@@ -47,7 +47,7 @@ describe("NFTStatusService", () => {
     });
 
     it("should return true if NFT is burnt", async () => {
-        const mockNFT: VCNFT = {
+        const mockNFT: Nft = {
             chain: "polygon",
             contractAddress: "mockContractAddress",
             tokenId: "burn error",
@@ -59,7 +59,7 @@ describe("NFTStatusService", () => {
     });
 
     it("should throw error if chain is not polygon", async () => {
-        const mockNFT: VCNFT = {
+        const mockNFT: Nft = {
             chain: "someChain" as any,
             contractAddress: "mockContractAddress",
             tokenId: "mockTokenId",
@@ -71,7 +71,7 @@ describe("NFTStatusService", () => {
     });
 
     it("should throw error if failed to check if NFT is burned", async () => {
-        const mockNFT: VCNFT = {
+        const mockNFT: Nft = {
             chain: "polygon",
             contractAddress: "mockContractAddress",
             tokenId: "error",

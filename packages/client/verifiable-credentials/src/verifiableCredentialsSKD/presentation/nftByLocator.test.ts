@@ -45,6 +45,7 @@ describe("getNFTFromLocator", () => {
         expect(result).toEqual({
             nft: resNft,
             collection: {
+                chain: "polygon",
                 nfts: [resNft],
                 metadata: collectionMetadata,
                 contractAddress: resNft.contractAddress,
