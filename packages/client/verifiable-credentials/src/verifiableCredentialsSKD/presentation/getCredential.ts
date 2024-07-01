@@ -26,6 +26,7 @@ function ipfsCondition(endpoint: string): boolean {
     return endpoint.startsWith("ipfs://");
 }
 
+// Default retrieval procedure for ipfs, can be overridden by the user
 export const ipfsRetrievalProcedure: CredentialRetrievalProcedure = {
     endpointCondition: ipfsCondition,
     procedure: ipfsProcedure,
@@ -44,7 +45,7 @@ export class CredentialService {
         }
         const retrievalEndpoint = metadata.credentialMetadata.credentialsEndpoint;
         const retrievalPath = `${retrievalEndpoint}/${tokenId}`;
-        const locator = `polygon:${collection.contractAddress}:${tokenId}`;
+        const locator = `${collection.chain}:${collection.contractAddress}:${tokenId}`;
 
         for (const { endpointCondition, procedure } of this.retrievalProcedures) {
             // Find the first procedure that matches the endpoint condition

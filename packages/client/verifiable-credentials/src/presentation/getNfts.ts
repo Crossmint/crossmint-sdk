@@ -1,4 +1,4 @@
-import { VCNFT, isVcChain } from "@/verifiableCredentialsSKD";
+import { Nft, isVcChain } from "@/verifiableCredentialsSKD";
 
 import { crossmintAPI } from "../crossmintAPI";
 import { CrossmintWalletNft } from "../types/nfts";
@@ -41,8 +41,8 @@ export async function getWalletNfts(chain: string, wallet: string) {
     return allData;
 }
 
-export function filterPolygonErc721(nfts: CrossmintWalletNft[]): VCNFT[] {
-    const vcNfts: VCNFT[] = [];
+export function filterVCCompErc721(nfts: CrossmintWalletNft[]): Nft[] {
+    const vcNfts: Nft[] = [];
     for (const nft of nfts) {
         if (isVcChain(nft.chain) && nft.tokenStandard === "erc-721") {
             vcNfts.push({
@@ -55,15 +55,15 @@ export function filterPolygonErc721(nfts: CrossmintWalletNft[]): VCNFT[] {
     return vcNfts;
 }
 
-export async function getWalletVcCompatibleNfts(chain: string, wallet: string): Promise<VCNFT[]> {
+export async function getWalletVcCompatibleNfts(chain: string, wallet: string): Promise<Nft[]> {
     const nfts = await getWalletNfts(chain, wallet);
     if (nfts == null) {
         throw new Error("Failed to get nfts");
     }
     console.debug(`Got ${nfts.length} nfts`);
 
-    const polygonErc721Nfts = filterPolygonErc721(nfts);
-    console.debug(`Got ${polygonErc721Nfts.length} polygon erc721 nfts`);
+    const compatibleNfts = filterVCCompErc721(nfts);
+    console.debug(`Got ${compatibleNfts.length} compatible erc721 nfts`);
 
-    return polygonErc721Nfts;
+    return compatibleNfts;
 }

@@ -1,8 +1,10 @@
-import { VCNFT } from "./nft";
+import { VCChain } from "./chain";
+import { Nft } from "./nft";
 
 export interface Collection {
-    nfts: VCNFT[];
+    nfts: Nft[];
     contractAddress: string;
+    chain: VCChain;
     metadata: any;
 }
 

@@ -1,7 +1,7 @@
 import { NFTService } from "../onchainServices/nft";
 import { IPFSService } from "../services/ipfs";
 import { CredentialsCollection } from "../types/collection";
-import { VCNFTComplete } from "../types/nft";
+import { NftWithMetadata } from "../types/nft";
 import { isVcChain, isVerifiableCredentialContractMetadata, parseLocator } from "../types/utils";
 import { ContractMetadataService } from "./contractMetadata";
 
@@ -14,7 +14,7 @@ export async function getNFTFromLocator(locator: string) {
     const nftMetadata = await new IPFSService().getFile(nftUri);
 
     console.debug(`Nft ${locator} metadata:`, nftMetadata);
-    const vcNft: VCNFTComplete = {
+    const vcNft: NftWithMetadata = {
         metadata: nftMetadata,
         ...nft,
     };
@@ -26,6 +26,7 @@ export async function getNFTFromLocator(locator: string) {
     }
     const collection: CredentialsCollection = {
         nfts: [vcNft],
+        chain: nft.chain,
         contractAddress: nft.contractAddress,
         metadata: metadata,
     };

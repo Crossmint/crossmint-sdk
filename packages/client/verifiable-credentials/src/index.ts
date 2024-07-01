@@ -10,7 +10,7 @@ export type {
     CredentialMetadata,
     VerifiableCredentialEncryption,
     VerifiableCredentialEncryptionType,
-    VCNFT,
+    Nft as VCNFT,
     ChainRPCConfig,
 } from "./verifiableCredentialsSKD";
 

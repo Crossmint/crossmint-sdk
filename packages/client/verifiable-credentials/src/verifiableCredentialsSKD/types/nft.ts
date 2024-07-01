@@ -1,11 +1,11 @@
 import { VCChain } from "./chain";
 
-export interface VCNFT {
+export interface Nft {
     chain: VCChain;
     contractAddress: string;
     tokenId: string;
 }
 
-export interface VCNFTComplete extends VCNFT {
+export interface NftWithMetadata extends Nft {
     metadata: any;
 }

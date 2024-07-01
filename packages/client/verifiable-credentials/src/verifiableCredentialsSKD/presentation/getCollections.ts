@@ -1,13 +1,13 @@
 import { VCChain } from "../types/chain";
 import { Collection, CredentialsCollection } from "../types/collection";
 import { CredentialFilter } from "../types/credentialFilter";
-import { VCNFT } from "../types/nft";
+import { Nft } from "../types/nft";
 import { isVcChain, isVcNft } from "../types/utils";
 import { ContractMetadataService } from "./contractMetadata";
 
-export function bundleNfts(nfts: VCNFT[]): Collection[] {
+export function bundleNfts(nfts: Nft[]): Collection[] {
     // Group NFTs by their contract address
-    const nftsByAddress: Record<string, VCNFT[]> = nfts.reduce((acc, nft) => {
+    const nftsByAddress: Record<string, Nft[]> = nfts.reduce((acc, nft) => {
         if (!acc[nft.contractAddress]) {
             acc[nft.contractAddress] = [];
         }
@@ -15,11 +15,12 @@ export function bundleNfts(nfts: VCNFT[]): Collection[] {
         // Push the current NFT to the array associated with its contract address
         acc[nft.contractAddress].push(nft);
         return acc;
-    }, {} as Record<string, VCNFT[]>);
+    }, {} as Record<string, Nft[]>);
 
     // Map each contract address and its associated NFTs to a Collection object
     return Object.entries(nftsByAddress).map(([contractAddress, nfts]) => ({
         contractAddress,
+        chain: nfts[0].chain, // All NFTs in a Collection should be on the same chain
         nfts,
         metadata: {},
     }));
@@ -28,7 +29,7 @@ export function bundleNfts(nfts: VCNFT[]): Collection[] {
 export async function getUsersCredentialNfts(
     chain: VCChain,
     wallet: string,
-    getVcCompatibleNftsFromWallet: (chain: VCChain, wallet: string) => Promise<VCNFT[]>,
+    getVcCompatibleNftsFromWallet: (chain: VCChain, wallet: string) => Promise<Nft[]>,
     filters: CredentialFilter = {}
 ): Promise<CredentialsCollection[]> {
     if (!isVcChain(chain)) {

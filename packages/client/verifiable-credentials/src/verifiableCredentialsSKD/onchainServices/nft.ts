@@ -3,7 +3,7 @@ import { Contract } from "ethers";
 import { constants } from "ethers";
 
 import { VCChain } from "../types/chain";
-import { VCNFT } from "../types/nft";
+import { Nft } from "../types/nft";
 import { isVcChain } from "../types/utils";
 import { abi_ERC_721 } from "./ABI/ERC721";
 import { abi_ERC_7572 } from "./ABI/ERC7572";
@@ -18,7 +18,7 @@ export class NFTService {
         this.provider = getProvider(this.chain);
     }
 
-    async isBurnt(nft: VCNFT) {
+    async isBurnt(nft: Nft) {
         if (!isVcChain(nft.chain)) {
             throw new Error(`Verifiable credentials are not supported on ${nft.chain} chain`);
         }
@@ -38,7 +38,7 @@ export class NFTService {
         return await contract.ownerOf(tokenId);
     }
 
-    async getNftUri(nft: VCNFT) {
+    async getNftUri(nft: Nft) {
         const contract = new Contract(nft.contractAddress, abi_ERC_721, this.provider);
         return await contract.tokenURI(nft.tokenId);
     }

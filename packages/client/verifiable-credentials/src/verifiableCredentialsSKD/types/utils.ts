@@ -1,9 +1,9 @@
 import { VCChain } from "./chain";
 import { VCContractMetadata } from "./collection";
-import { VCNFT } from "./nft";
+import { Nft } from "./nft";
 import { EncryptedVerifiableCredential, VerifiableCredential, VerifiableCredentialType } from "./verifiableCredential";
 
-export function parseLocator(locator: string): VCNFT {
+export function parseLocator(locator: string): Nft {
     const items = locator.split(":");
     const itemsLength = items.length;
     if (itemsLength < 2) {
@@ -52,7 +52,7 @@ export function isVerifiableCredential(credential: VerifiableCredentialType): cr
 
     const nftFields = ["tokenId", "chain", "contractAddress"];
     for (const field of nftFields) {
-        if (!credential.nft[field as keyof VCNFT]) {
+        if (!credential.nft[field as keyof Nft]) {
             return false;
         }
     }
@@ -76,7 +76,7 @@ export function isVcChain(chain: string): chain is VCChain {
     return Object.values(VCChain).includes(chain as VCChain);
 }
 
-export function isVcNft(nft: any): nft is VCNFT {
+export function isVcNft(nft: any): nft is Nft {
     return !(nft == null || nft.chain == null || nft.contractAddress == null || nft.tokenId == null);
 }
 

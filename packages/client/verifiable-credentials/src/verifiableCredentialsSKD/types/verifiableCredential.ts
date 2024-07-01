@@ -1,10 +1,10 @@
-import { VCNFT } from "./nft";
+import { Nft } from "./nft";
 
 export interface VerifiableCredential {
     id: string;
     credentialSubject: any;
     expirationDate?: string;
-    nft: VCNFT;
+    nft: Nft;
     issuer: { id: string };
     type: string[];
     issuanceDate: string;

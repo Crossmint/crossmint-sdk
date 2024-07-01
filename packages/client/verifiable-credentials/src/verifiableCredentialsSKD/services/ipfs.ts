@@ -4,7 +4,10 @@ export class IPFSService {
     gateways: string[];
 
     formatUrl(template: string, cid: string): string {
-        return template.replace("{cid}", cid);
+        if (template.endsWith("/")) {
+            template = template.slice(0, -1);
+        }
+        return `${template}/${cid}`;
     }
 
     constructor() {
@@ -21,7 +24,7 @@ export class IPFSService {
                 const httpUriFull = this.formatUrl(gateway, httpUri);
 
                 const timeout = new Promise((resolve, reject) => {
-                    const timeoutMilliSeconds = 5000;
+                    const timeoutMilliSeconds = configManager.getIpfsTimeout();
                     timeoutId = setTimeout(() => {
                         clearTimeout(timeoutId);
                         reject(`Timed out in ${timeoutMilliSeconds / 1000} seconds`);
