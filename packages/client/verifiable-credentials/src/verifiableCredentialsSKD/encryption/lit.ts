@@ -29,7 +29,7 @@ const LitNetwork = {
 export type LitNetwork = (typeof LitNetwork)[keyof typeof LitNetwork] & LIT_NETWORKS_KEYS;
 
 export class Lit {
-    private capacityDelegationAuthSig: AuthSig;
+    protected capacityDelegationAuthSig: AuthSig;
     private network: LIT_NETWORKS_KEYS;
     private chain: LitChain;
     private debug = false;

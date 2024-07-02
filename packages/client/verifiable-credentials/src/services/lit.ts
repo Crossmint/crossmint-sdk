@@ -1,7 +1,10 @@
+import { AuthSig } from "@lit-protocol/types";
+
 import { APIKeyUsageOrigin } from "@crossmint/common-sdk-base";
 
 import { crossmintAPI } from "../crossmintAPI";
 import { LitNetwork, Lit as LitRaw } from "../verifiableCredentialsSKD";
+import { DelegationSignature } from "./delegationSignature";
 
 const fallbackCapacityDelegationAuthSig = {
     sig: "d44b33ebaafa807f6117c3581978fbf54c4a2cc958dcdfab15cfd21481af6e2a34c2d2890ef35777ff065b23f2863085a257f108c4ecb79f516345ff22dcfaf41c",
@@ -13,7 +16,7 @@ const fallbackCapacityDelegationAuthSig = {
 };
 
 export class Lit extends LitRaw {
-    constructor(network: LitNetwork, capacityDelegationAuthSig = fallbackCapacityDelegationAuthSig, debug = false) {
+    constructor(network: LitNetwork, capacityDelegationAuthSig?: AuthSig, debug = false) {
         const usageOrigin = crossmintAPI.getOrigin();
         if (usageOrigin == null) {
             console.warn(
@@ -25,6 +28,14 @@ export class Lit extends LitRaw {
             );
         }
 
-        super(network, capacityDelegationAuthSig, debug);
+        super(network, capacityDelegationAuthSig as AuthSig, debug);
+    }
+
+    async decrypt(base64Ciphertext: string): Promise<string> {
+        if (this.capacityDelegationAuthSig == null) {
+            console.debug("No capacity delegation auth sig provided, retrieving from Crossmint");
+            this.capacityDelegationAuthSig = await new DelegationSignature().getSignature();
+        }
+        return super.decrypt(base64Ciphertext);
     }
 }
