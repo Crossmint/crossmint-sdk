@@ -34,7 +34,7 @@ type AuthProviderParams = {
 
 
 export function AuthProvider({ children, apiKey, environment }: AuthProviderParams) {
-    const [jwtToken, setJwtToken] = useState<string>('');
+    const [jwtToken, setJwtToken] = useState<string | null>(null);
     const [modalOpen, setModalOpen] = useState(false);
     const [user, setUser] = useState<User | null>(null);
     const crossmintService = useMemo(() => new CrossmintService(jwtToken, environment), [jwtToken, environment]);
@@ -52,9 +52,19 @@ export function AuthProvider({ children, apiKey, environment }: AuthProviderPara
         setModalOpen(true);
     };
 
+    useEffect(() => {
+        if (jwtToken == null) {
+            return
+        }
+
+        setModalOpen(false);
+    }, [modalOpen, jwtToken]);
+
+
+
     const logout = () => {
         document.cookie = "crossmint-session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        setJwtToken('');
+        setJwtToken(null);
         setUser(null);
     };
 
@@ -80,7 +90,6 @@ export function AuthProvider({ children, apiKey, environment }: AuthProviderPara
             console.log("cookie", document.cookie);
         }
     }, [jwtToken]);
-
 
     return (
         <AuthContext.Provider value={{ user, login, logout, fetchCrossmintAPI, jwt: jwtToken }}>
