@@ -6,11 +6,6 @@ global.fetch = jest.fn(() =>
         json: () => Promise.resolve({}),
     })
 ) as jest.Mock;
-jest.mock("@krebitdao/eip712-vc", () => {
-    return {
-        EIP712VC: jest.fn().mockImplementation(() => {}),
-    };
-});
 
 describe("getCredentialFromId", () => {
     let credentialService: CredentialService;

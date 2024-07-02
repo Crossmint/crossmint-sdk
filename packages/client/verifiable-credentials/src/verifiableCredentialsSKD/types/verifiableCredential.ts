@@ -3,11 +3,13 @@ import { Nft } from "./nft";
 export interface VerifiableCredential {
     id: string;
     credentialSubject: any;
-    expirationDate?: string;
+    validUntil?: string;
+    name?: string;
+    description?: string;
     nft: Nft;
     issuer: { id: string };
     type: string[];
-    issuanceDate: string;
+    validFrom: string;
     "@context": string[];
     proof?: { proofValue: string; [key: string]: any };
 }
