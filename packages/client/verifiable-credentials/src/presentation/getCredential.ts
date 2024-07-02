@@ -44,13 +44,13 @@ export class CrossmintCredentialRetrieval {
                 throw new Error(`HTTP error! status: ${response.status}, responses: ${JSON.stringify(data)}`);
             }
 
-            let credential;
-            if (data.encryptedCredential != null) {
-                credential = data.encryptedCredential as EncryptedVerifiableCredential;
-            } else {
-                credential = data as VerifiableCredential;
+            if (data.unencryptedCredential != null) {
+                return data.unencryptedCredential as VerifiableCredential;
+            } else if (data.encryptedCredential != null) {
+                return data.encryptedCredential as EncryptedVerifiableCredential;
             }
-            return credential;
+
+            throw new Error(`Invalid response`);
         } catch (error) {
             console.error(error);
             throw new Error(`Failed to get credential ${JSON.stringify(query)} from crossmint`);
@@ -58,7 +58,7 @@ export class CrossmintCredentialRetrieval {
     }
 }
 
-const crossmintRetrievalProcedure: CredentialRetrievalProcedure = {
+export const crossmintRetrievalProcedure: CredentialRetrievalProcedure = {
     endpointCondition: (endpoint: string) => endpoint.includes("crossmint"),
     procedure: async ({ locator, retrievalPath }: { locator: string; retrievalPath: string }) => {
         return await new CrossmintCredentialRetrieval().getCredential({ locator });
