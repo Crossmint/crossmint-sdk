@@ -77,12 +77,22 @@ export class PasskeyWalletService {
             });
         }
 
-        return createPasskeyValidator(publicClient, {
-            passkeyServerUrl: this.crossmintService.getPasskeyServerUrl(user),
-            entryPoint: entrypoint.address,
-            passkeyName: signer.passkeyName,
-            credentials: "omit",
-        });
+        try {
+            const test = await createPasskeyValidator(publicClient, {
+                passkeyServerUrl: this.crossmintService.getPasskeyServerUrl(user),
+                entryPoint: entrypoint.address,
+                passkeyName: signer.passkeyName,
+                credentials: "omit",
+            });
+            return test;
+        } catch (e: any) {
+            if (e.message.includes("The operation either timed out or was not allowed")) {
+                throw new Error("Ahh caught you!");
+            }
+            console.log("Here's the error");
+            console.log(e);
+            throw e;
+        }
     }
 
     private async fetchSerializedSigner(user: UserParams): Promise<string | null> {

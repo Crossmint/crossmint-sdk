@@ -44,6 +44,9 @@ export function toCrossmintSmartAccountClient<Client extends SmartAccountClient<
                     logInfo(`[CrossmintSmartWallet.sendTransaction] - params: ${JSON.stringify(txn)}`);
                     return await smartAccountClient.sendTransaction(txn);
                 } catch (error) {
+                    console.log("Here's an error");
+                    console.log(error);
+
                     throw new TransactionError(`Error sending transaction: ${error}`);
                 }
             });

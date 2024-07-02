@@ -1,23 +1,10 @@
 import { logError } from "@/services/logging";
 
-export class NotAuthorizedError extends Error {
-    code = "ERROR_NOT_AUTHORIZED";
-
-    constructor(message: string) {
-        super(message);
-
-        // ES5 workaround
-        Object.setPrototypeOf(this, NotAuthorizedError.prototype);
-    }
-}
-
 export class TransferError extends Error {
     code = "ERROR_TRANSFER";
 
     constructor(message: string) {
         super(message);
-
-        // ES5 workaround
         Object.setPrototypeOf(this, TransferError.prototype);
     }
 }
@@ -27,9 +14,15 @@ export class TransactionError extends Error {
 
     constructor(message: string) {
         super(message);
-
-        // ES5 workaround
         Object.setPrototypeOf(this, TransactionError.prototype);
+    }
+}
+
+export class PasskeyPromptError extends Error {
+    public readonly code = "ERROR_PASSKEY_PROMPT";
+    constructor() {
+        super("Passkey prompt either timed out or was cancelled by the user.");
+        Object.setPrototypeOf(this, PasskeyPromptError.prototype);
     }
 }
 
@@ -40,8 +33,6 @@ export class CrossmintServiceError extends Error {
     constructor(message: string, status?: number) {
         super(message);
         this.status = status;
-
-        // ES5 workaround
         Object.setPrototypeOf(this, CrossmintServiceError.prototype);
     }
 }
@@ -54,8 +45,6 @@ export class WalletSdkError extends Error {
 
     constructor(message: string) {
         super(message);
-
-        // ES5 workaround
         Object.setPrototypeOf(this, WalletSdkError.prototype);
     }
 }
