@@ -4,7 +4,6 @@ import { SmartWalletSDKInitParams } from "../src/types";
 jest.mock("@/api");
 jest.mock("@/blockchain");
 jest.mock("@/types");
-jest.mock("@/utils");
 jest.mock("@zerodev/passkey-validator/utils", () => ({}));
 
 describe("CrossmintAASDK", () => {

@@ -1,7 +1,7 @@
 import { validateAPIKey } from "@crossmint/common-sdk-base";
 
+import { CrossmintServiceError } from "../types/Error";
 import { CROSSMINT_DEV_URL, CROSSMINT_PROD_URL, CROSSMINT_STG_URL } from "../utils/constants";
-import { CrossmintServiceError } from "../utils/error";
 import { LoggerWrapper, logPerformance } from "../utils/log";
 
 export abstract class BaseCrossmintService extends LoggerWrapper {

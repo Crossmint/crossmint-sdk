@@ -1,2 +1,2 @@
-export * from "./API";
 export * from "./Config";
+export * from "./Error";

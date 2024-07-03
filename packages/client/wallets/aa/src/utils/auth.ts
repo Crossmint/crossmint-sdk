@@ -1,7 +1,7 @@
 import { logError } from "@/services/logging";
 
+import { errorToJSON } from "../types/Error";
 import { SCW_SERVICE } from "./constants";
-import { errorToJSON } from "./error";
 
 export const parseToken = (token: any) => {
     try {

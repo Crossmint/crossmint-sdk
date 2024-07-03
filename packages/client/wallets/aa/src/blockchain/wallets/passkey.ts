@@ -3,11 +3,11 @@ import {
     EVMSmartWallet,
     EntryPointDetails,
     PasskeySigner,
-    PasskeySignerData,
     UserParams,
     WalletConfig,
     blockchainToChainId,
 } from "@/index";
+import { PasskeySignerData } from "@/types/API";
 import { WalletCreationParams } from "@/types/internal";
 import { CURRENT_VERSION, ZERO_DEV_TYPE } from "@/utils/constants";
 import { createPasskeyValidator, deserializePasskeyValidator } from "@zerodev/passkey-validator";
