@@ -1,8 +1,14 @@
 import { CrossmintWalletService } from "@/api";
 import { EVMSmartWallet, getBundlerRPC } from "@/blockchain";
-import type { EntryPointDetails, SmartWalletSDKInitParams, UserParams, WalletConfig } from "@/types";
+import {
+    type EntryPointDetails,
+    RunningOnServerError,
+    type SmartWalletSDKInitParams,
+    type UserParams,
+    type WalletConfig,
+    WalletSdkError,
+} from "@/types";
 import { WalletCreationParams } from "@/types/internal";
-import { RunningOnServerError, WalletSdkError } from "@/utils";
 import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
 import { createPublicClient, http } from "viem";
 

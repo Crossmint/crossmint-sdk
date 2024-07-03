@@ -1,5 +1,6 @@
 import { logInfo } from "@/services/logging";
-import { TransactionError, gelatoBundlerProperties, usesGelatoBundler } from "@/utils";
+import { TransactionError } from "@/types";
+import { gelatoBundlerProperties, usesGelatoBundler } from "@/utils/blockchain";
 import { logPerformance } from "@/utils/log";
 import { SmartAccountClient } from "permissionless";
 import { EntryPoint } from "permissionless/types/entrypoint";

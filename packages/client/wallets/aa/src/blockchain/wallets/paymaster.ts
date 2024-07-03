@@ -1,4 +1,4 @@
-import { usesGelatoBundler } from "@/utils";
+import { usesGelatoBundler } from "@/utils/blockchain";
 import { PAYMASTER_RPC, PM_BASE_RPC, PM_BASE_SEPOLIA_RPC } from "@/utils/constants";
 import { logInputOutput } from "@/utils/log";
 import { createZeroDevPaymasterClient } from "@zerodev/sdk";

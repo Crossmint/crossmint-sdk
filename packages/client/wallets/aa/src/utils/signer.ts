@@ -4,8 +4,7 @@ import {
     getTickerNameByBlockchain,
     getUrlProviderByBlockchain,
 } from "@/blockchain";
-import { ViemAccount, WalletConfig, Web3AuthSigner } from "@/types";
-import { WalletSdkError, parseToken } from "@/utils";
+import { ViemAccount, WalletConfig, WalletSdkError, Web3AuthSigner } from "@/types";
 import { CHAIN_NAMESPACES } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { Web3Auth } from "@web3auth/single-factor-auth";
@@ -19,6 +18,7 @@ import {
     blockchainToDisplayName,
 } from "@crossmint/common-sdk-base";
 
+import { parseToken } from "./auth";
 import { logInputOutput } from "./log";
 
 type CreateOwnerSignerInput = {
