@@ -4,6 +4,7 @@ import { SmartWalletSDKInitParams } from "./types";
 jest.mock("@/api");
 jest.mock("@/blockchain");
 jest.mock("@/types");
+
 Object.defineProperty(global, "window", {
     value: {
         location: {

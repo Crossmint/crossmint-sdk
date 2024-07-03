@@ -3,7 +3,7 @@ export function isLocalhost() {
         return false;
     }
 
-    return typeof window !== "undefined" && window.location.origin.includes("localhost");
+    return window.location.origin.includes("localhost");
 }
 
 export function isEmpty(str: string | undefined | null): str is undefined | null {
