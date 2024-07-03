@@ -29,14 +29,14 @@ const LitNetwork = {
 export type LitNetwork = (typeof LitNetwork)[keyof typeof LitNetwork] & LIT_NETWORKS_KEYS;
 
 export class Lit {
-    private capacityDelegationAuthSig: AuthSig;
+    protected capacityDelegationAuthSig?: AuthSig;
     private network: LIT_NETWORKS_KEYS;
     private chain: LitChain;
     private debug = false;
     private litNodeClient?: LitJsSdk.LitNodeClient;
     private sessionSigs?: SessionSigsMap;
 
-    constructor(network: LitNetwork, capacityDelegationAuthSig: AuthSig, debug = false) {
+    constructor(network: LitNetwork, capacityDelegationAuthSig?: AuthSig, debug = false) {
         this.debug = debug;
 
         this.network = network;
@@ -56,6 +56,12 @@ export class Lit {
     }
 
     private async auth(litNodeClient: LitJsSdk.LitNodeClient) {
+        if (!this.capacityDelegationAuthSig) {
+            console.warn(
+                "No capacity delegation auth sig provided, the user will pay for the operation, the users wallet is required to have Lit capacity tokens."
+            );
+        }
+
         const expirationDelta = 1000 * 60 * 10; // 10 minutes
         const expiration = new Date(new Date().getTime() + expirationDelta).toISOString();
 
