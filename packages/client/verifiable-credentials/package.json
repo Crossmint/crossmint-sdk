@@ -4,7 +4,6 @@
         "@crossmint/common-sdk-base": "0.0.6",
         "@ethersproject/providers": "5.7.2",
         "@ethersproject/wallet": "5.7.0",
-        "@krebitdao/eip712-vc": "1.0.3",
         "@lit-protocol/lit-node-client": "5.1.0",
         "date-fns": "2.30.0"
     },
@@ -38,5 +37,5 @@
     "sideEffects": false,
     "type": "module",
     "types": "./dist/index.d.ts",
-    "version": "3.1.0"
+    "version": "3.2.0"
 }
