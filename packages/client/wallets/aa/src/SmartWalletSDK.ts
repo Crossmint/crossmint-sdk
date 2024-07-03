@@ -2,6 +2,7 @@ import { CrossmintWalletService } from "@/api";
 import { EVMSmartWallet, getBundlerRPC } from "@/blockchain";
 import {
     type EntryPointDetails,
+    RunningOnServerError,
     type SmartWalletSDKInitParams,
     type UserParams,
     type WalletConfig,
