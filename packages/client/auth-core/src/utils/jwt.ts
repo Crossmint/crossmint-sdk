@@ -20,5 +20,5 @@ export async function verifyCrossmintSessionToken(token: string, environment: "p
         return false;
     }
 
-    return !!response.valid;
+    return response;
 }

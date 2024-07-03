@@ -10,8 +10,14 @@
         "react-dom": "18.2.0"
     },
     "exports": {
-        "import": "./dist/index.js",
-        "require": "./dist/index.cjs"
+        "./client": {
+            "import": "./dist/clientIndex.js",
+            "require": "./dist/clientIndex.cjs"
+        },
+        "./server": {
+            "import": "./dist/serverIndex.js",
+            "require": "./dist/serverIndex.cjs"
+        }
     },
     "files": [
         "dist",
@@ -31,13 +37,22 @@
     },
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "scripts": {
-        "build": "yarn clean && tsup src/index.ts --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
+        "build": "yarn clean && tsup src/clientIndex.ts src/serverIndex.ts --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
         "clean": "shx rm -rf dist/*",
-        "dev": "yarn clean && tsup src/index.ts --external react,react-dom --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
+        "dev": "yarn clean && tsup src/clientIndex.ts src/serverIndex.ts --external react,react-dom --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
         "test": "jest"
     },
     "sideEffects": false,
     "type": "module",
-    "types": "./dist/index.d.ts",
+    "typesVersions": {
+        "*": {
+            "clientComponents": [
+                "./dist/types/clientComponents.d.ts"
+            ],
+            "serverComponents": [
+                "./dist/types/serverComponents.d.ts"
+            ]
+        }
+    },
     "version": "0.0.1"
 }

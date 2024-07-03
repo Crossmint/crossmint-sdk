@@ -1,3 +1,5 @@
+'use client'
+
 import AuthModal from "@/components/AuthModal";
 import { CrossmintService, FetchCrossmintParams } from "@/services/CrossmintService";
 import { CrossmintEnvironment } from "@/utils";
