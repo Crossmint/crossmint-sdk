@@ -28,7 +28,7 @@ export class Lit extends LitRaw {
             );
         }
 
-        super(network, capacityDelegationAuthSig as AuthSig, debug);
+        super(network, capacityDelegationAuthSig, debug);
     }
 
     async decrypt(base64Ciphertext: string): Promise<string> {
