@@ -38,10 +38,10 @@ describe("getCredentialFromId", () => {
         });
     });
 
-    // it("should throw if fetch throws an error", async () => {
-    //     jest.spyOn(crossmintAPI, "getBaseUrl").mockReturnValue("test-env");
-    //     (fetch as jest.Mock).mockRejectedValue(new Error("Fetch error"));
-    //     const credential = credentialService.getById("test-id");
-    //     expect(credential).rejects.toThrow('Failed to get credential {"credentialId":"test-id"} from crossmint');
-    // });
+    it("should throw if fetch throws an error", async () => {
+        jest.spyOn(crossmintAPI, "getBaseUrl").mockReturnValue("test-env");
+        (fetch as jest.Mock).mockRejectedValue(new Error("Fetch error"));
+        const credential = credentialService.getById("test-id");
+        expect(credential).rejects.toThrow('Failed to get credential {"credentialId":"test-id"} from crossmint');
+    });
 });
