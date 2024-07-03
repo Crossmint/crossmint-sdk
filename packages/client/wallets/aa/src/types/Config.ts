@@ -6,7 +6,7 @@ export type SmartWalletSDKInitParams = {
     clientApiKey: string;
 };
 
-type WhitelabelUserParams = {
+export type UserParams = {
     /**
      * A unique identifier for the user. This must match the value of the identifier within the JWT
      * that is specified in the project settings (typically `sub`).
@@ -14,7 +14,6 @@ type WhitelabelUserParams = {
     id: string;
     jwt: string;
 };
-export type UserParams = WhitelabelUserParams;
 
 export type Web3AuthSigner = {
     type: "WEB3_AUTH";
