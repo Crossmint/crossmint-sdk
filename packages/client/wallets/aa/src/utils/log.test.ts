@@ -3,7 +3,6 @@ import { LoggerWrapper } from "./log";
 import * as logModule from "./log";
 
 jest.mock("../services/logging");
-jest.mock("@zerodev/passkey-validator/utils", () => ({}));
 
 describe("Log test", () => {
     beforeEach(() => {
