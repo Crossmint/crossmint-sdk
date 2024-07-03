@@ -5,4 +5,3 @@ export * from "./blockchain";
 export * from "./types";
 
 export * from "./SmartWalletSDK";
-export * from "./adapters";

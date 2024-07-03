@@ -1,4 +1,4 @@
-import type { deserializePasskeyValidatorData } from "@zerodev/passkey-validator/utils";
+import { PasskeyValidatorSerializedData } from "@/utils/passkey";
 import { EntryPointVersion } from "permissionless/_types/types";
 
 export type StoreAbstractWalletInput = {
@@ -19,8 +19,7 @@ export interface EOASignerData {
     type: "eoa";
 }
 
-type ZeroDevPasskeyValidatorFields = ReturnType<typeof deserializePasskeyValidatorData>;
-export type PasskeySignerData = ZeroDevPasskeyValidatorFields & {
+export type PasskeySignerData = PasskeyValidatorSerializedData & {
     passkeyName: string;
     domain: string;
     type: "passkeys";

@@ -15,6 +15,7 @@ import { EVMBlockchainIncludingTestnet, validateAPIKey } from "@crossmint/common
 
 import { EOAWalletParams, EOAWalletService } from "./blockchain/wallets/eoa";
 import { PasskeyWalletService, isPasskeyParams } from "./blockchain/wallets/passkey";
+import { isClient } from "./utils/environment";
 import { LoggerWrapper, logPerformance } from "./utils/log";
 
 export class SmartWalletSDK extends LoggerWrapper {
@@ -34,6 +35,10 @@ export class SmartWalletSDK extends LoggerWrapper {
      * @throws error if the api key is not formatted correctly.
      */
     static init(config: SmartWalletSDKInitParams): SmartWalletSDK {
+        if (!isClient()) {
+            throw new RunningOnServerError();
+        }
+
         const validationResult = validateAPIKey(config.clientApiKey);
         if (!validationResult.isValid) {
             throw new Error("API key invalid");

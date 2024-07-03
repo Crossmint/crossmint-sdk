@@ -1,12 +1,19 @@
-import { SmartWalletSDK } from "../src/SmartWalletSDK";
-import { SmartWalletSDKInitParams } from "../src/types";
+import { SmartWalletSDK } from "./SmartWalletSDK";
+import { SmartWalletSDKInitParams } from "./types";
 
 jest.mock("@/api");
 jest.mock("@/blockchain");
 jest.mock("@/types");
-jest.mock("@zerodev/passkey-validator/utils", () => ({}));
 
-describe("CrossmintAASDK", () => {
+Object.defineProperty(global, "window", {
+    value: {
+        location: {
+            origin: "http://localhost",
+        },
+    },
+});
+
+describe("SmartWalletSDK", () => {
     let sdk: SmartWalletSDK;
     const mockInitParams: SmartWalletSDKInitParams = {
         clientApiKey:

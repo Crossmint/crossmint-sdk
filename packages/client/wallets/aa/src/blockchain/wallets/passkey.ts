@@ -11,10 +11,11 @@ import { PasskeySignerData } from "@/types/API";
 import { WalletCreationParams } from "@/types/internal";
 import { CURRENT_VERSION, ZERO_DEV_TYPE } from "@/utils/constants";
 import { createPasskeyValidator, deserializePasskeyValidator } from "@zerodev/passkey-validator";
-import { deserializePasskeyValidatorData, serializePasskeyValidatorData } from "@zerodev/passkey-validator/utils";
 import { KernelValidator, createKernelAccount } from "@zerodev/sdk";
 import { EntryPoint } from "permissionless/types/entrypoint";
 import { PublicClient } from "viem";
+
+import { deserializePasskeyValidatorData, serializePasskeyValidatorData } from "../../utils/passkey";
 
 export interface PasskeyWalletParams extends WalletCreationParams {
     walletConfig: WalletConfig & { signer: PasskeySigner };
