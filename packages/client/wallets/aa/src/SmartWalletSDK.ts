@@ -2,7 +2,7 @@ import { CrossmintWalletService } from "@/api";
 import { EVMSmartWallet, getBundlerRPC } from "@/blockchain";
 import type { EntryPointDetails, SmartWalletSDKInitParams, UserParams, WalletConfig } from "@/types";
 import { WalletCreationParams } from "@/types/internal";
-import { WalletSdkError } from "@/utils";
+import { RunningOnServerError, WalletSdkError } from "@/utils";
 import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
 import { createPublicClient, http } from "viem";
 
@@ -10,6 +10,7 @@ import { EVMBlockchainIncludingTestnet, validateAPIKey } from "@crossmint/common
 
 import { EOAWalletParams, EOAWalletService } from "./blockchain/wallets/eoa";
 import { PasskeyWalletService, isPasskeyParams } from "./blockchain/wallets/passkey";
+import { isClient } from "./utils/environment";
 import { LoggerWrapper, logPerformance } from "./utils/log";
 
 export class SmartWalletSDK extends LoggerWrapper {
@@ -29,6 +30,10 @@ export class SmartWalletSDK extends LoggerWrapper {
      * @throws error if the api key is not formatted correctly.
      */
     static init(config: SmartWalletSDKInitParams): SmartWalletSDK {
+        if (!isClient()) {
+            throw new RunningOnServerError();
+        }
+
         const validationResult = validateAPIKey(config.clientApiKey);
         if (!validationResult.isValid) {
             throw new Error("API key invalid");

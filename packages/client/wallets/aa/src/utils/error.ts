@@ -5,8 +5,6 @@ export class NotAuthorizedError extends Error {
 
     constructor(message: string) {
         super(message);
-
-        // ES5 workaround
         Object.setPrototypeOf(this, NotAuthorizedError.prototype);
     }
 }
@@ -16,8 +14,6 @@ export class TransferError extends Error {
 
     constructor(message: string) {
         super(message);
-
-        // ES5 workaround
         Object.setPrototypeOf(this, TransferError.prototype);
     }
 }
@@ -27,8 +23,6 @@ export class TransactionError extends Error {
 
     constructor(message: string) {
         super(message);
-
-        // ES5 workaround
         Object.setPrototypeOf(this, TransactionError.prototype);
     }
 }
@@ -40,9 +34,15 @@ export class CrossmintServiceError extends Error {
     constructor(message: string, status?: number) {
         super(message);
         this.status = status;
-
-        // ES5 workaround
         Object.setPrototypeOf(this, CrossmintServiceError.prototype);
+    }
+}
+
+export class RunningOnServerError extends Error {
+    public readonly code = "ERROR_RUNNING_ON_SERVER";
+
+    constructor() {
+        super("Smart Wallet SDK should only be used client side.");
     }
 }
 
@@ -54,8 +54,6 @@ export class WalletSdkError extends Error {
 
     constructor(message: string) {
         super(message);
-
-        // ES5 workaround
         Object.setPrototypeOf(this, WalletSdkError.prototype);
     }
 }
