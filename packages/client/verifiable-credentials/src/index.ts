@@ -35,5 +35,7 @@ export {
     isCredentialType,
     isVerifiableCredential,
     isVcChain,
+    ipfsRetrievalProcedure,
 } from "./verifiableCredentialsSKD";
+export { crossmintRetrievalProcedure } from "./presentation/getCredential";
 export { crossmintAPI } from "./crossmintAPI";

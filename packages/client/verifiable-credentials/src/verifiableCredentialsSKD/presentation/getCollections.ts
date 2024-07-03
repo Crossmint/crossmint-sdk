@@ -36,6 +36,8 @@ export async function getUsersCredentialNfts(
         throw new Error(`Verifiable credentials are not supported on ${chain} chain`);
     }
 
+    console.log(`Getting nfts for wallet ${wallet} on chain ${chain}`);
+
     const nfts = await getVcCompatibleNftsFromWallet(chain, wallet);
     console.debug(`Got ${nfts.length} nfts`);
 

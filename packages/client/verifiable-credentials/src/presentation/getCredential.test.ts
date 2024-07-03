@@ -3,7 +3,7 @@ import { CredentialService } from "./getCredential";
 
 global.fetch = jest.fn(() =>
     Promise.resolve({
-        json: () => Promise.resolve({}),
+        json: () => Promise.resolve({ unencryptedCredential: {} }),
     })
 ) as jest.Mock;
 
@@ -14,7 +14,7 @@ describe("getCredentialFromId", () => {
         jest.spyOn(crossmintAPI, "getHeaders").mockReturnValue({} as any);
         (fetch as jest.Mock).mockResolvedValue({
             ok: true,
-            json: () => Promise.resolve({ id: "test", type: "VerifiableCredential" }),
+            json: () => Promise.resolve({ unencryptedCredential: { id: "test", type: "VerifiableCredential" } }),
         });
         credentialService = new CredentialService();
     });

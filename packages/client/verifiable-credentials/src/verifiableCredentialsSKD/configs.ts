@@ -48,7 +48,7 @@ class ConfigManager {
         this.config = {
             ipfsGateways,
             blockchainRpcs,
-            ipfstimeout: config.ipfsTimeout || 5000,
+            ipfstimeout: config.ipfsTimeout || 10000,
         };
     }
 

@@ -27,7 +27,11 @@ export interface CredentialMetadata {
 
 export interface VerifiableCredentialEncryption {
     type: VerifiableCredentialEncryptionType;
-    details?: string;
+    details?: LitEncryptionDetails;
+}
+
+export interface LitEncryptionDetails {
+    network: string;
 }
 
 export enum VerifiableCredentialEncryptionType {

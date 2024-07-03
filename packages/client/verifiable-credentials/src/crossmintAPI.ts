@@ -64,7 +64,12 @@ class CrossmintAPI {
 
     public init(
         apiKey: string,
-        config: { environment: "staging" | "prod" | string; ipfsGateways?: string[]; blockchainRpcs?: ChainRPCConfig }
+        config: {
+            environment: "staging" | "prod" | string;
+            ipfsGateways?: string[];
+            ipfsTimeout?: number;
+            blockchainRpcs?: ChainRPCConfig;
+        }
     ) {
         this.apiKey = apiKey;
         this.environment = config.environment;
