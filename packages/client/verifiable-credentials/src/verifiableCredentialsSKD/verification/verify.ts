@@ -1,27 +1,26 @@
 import { isValid, parseISO } from "date-fns";
 
+import { NFTService } from "../onchainServices/nft";
 import { VerifiableCredential } from "../types/verifiableCredential";
-import { NFTService } from "./services/nftStatus";
-import { VerifiableCredentialSignatureService } from "./services/signature";
+import { VerifiableCredentialSignatureService } from "./signature";
 
 export async function verifyCredential(
-    credential: VerifiableCredential,
-    environment: string = "staging"
+    credential: VerifiableCredential
 ): Promise<{ validVC: boolean; error: string | undefined }> {
     let error;
-    if (credential.expirationDate != null) {
-        if (typeof credential.expirationDate !== "string") {
+    if (credential.validUntil != null) {
+        if (typeof credential.validUntil !== "string") {
             throw new Error("expirationDate must be a ISO string");
         }
 
-        const parsedExpirationDate = parseISO(credential.expirationDate);
+        const parsedExpirationDate = parseISO(credential.validUntil);
         if (!isValid(parsedExpirationDate)) {
-            throw new Error(`Invalid expiration date: ${credential.expirationDate}`);
+            throw new Error(`Invalid expiration date: ${credential.validUntil}`);
         }
 
         const todayDate = new Date();
         if (parsedExpirationDate < todayDate) {
-            error = "Credential expired at " + credential.expirationDate;
+            error = "Credential expired at " + credential.validUntil;
             return { validVC: false, error };
         }
     }
@@ -32,7 +31,7 @@ export async function verifyCredential(
         return { validVC: false, error };
     }
 
-    const nftRevoked = await new NFTService(environment).isBurnt(credential.nft);
+    const nftRevoked = await new NFTService(credential.nft.chain).isBurnt(credential.nft);
     if (nftRevoked) {
         error = "Credential has been revoked";
         return { validVC: false, error };

@@ -1,18 +1,20 @@
-import { NFTService } from "../verification/services/nftStatus";
-import { MetadataService } from "./getMetadata";
-import { getNFTFromLocator } from "./getNftCredential";
+import { NFTService } from "../onchainServices/nft";
+import { IPFSService } from "../services/ipfs";
+import { ContractMetadataService } from "./contractMetadata";
+import { getNFTFromLocator } from "./nftByLocator";
 
-jest.mock("../verification/services/nftStatus");
-jest.mock("./getMetadata");
+jest.mock("../onchainServices/nft");
+jest.mock("./contractMetadata");
+jest.mock("../services/ipfs");
 
 describe("getNFTFromLocator", () => {
     beforeEach(() => {
         jest.resetAllMocks();
     });
 
-    it("should throw error if chain is not polygon", async () => {
-        await expect(getNFTFromLocator("ethereum:0x1234:1", "environment")).rejects.toThrow(
-            "Verifiable Credentials are available only on polygon, provided chain: ethereum"
+    it("should throw error if chain is not supported", async () => {
+        await expect(getNFTFromLocator("ethereum:0x1234:1")).rejects.toThrow(
+            "Verifiable Credentials are not available on the provided chain: ethereum"
         );
     });
 
@@ -28,15 +30,13 @@ describe("getNFTFromLocator", () => {
             },
         };
         (NFTService.prototype.getNftUri as jest.Mock).mockResolvedValue(mockNftUri);
-        (MetadataService.prototype.getFromIpfs as jest.Mock).mockResolvedValue(mockNftMetadata);
-        (MetadataService.prototype.getContractMetadata as jest.Mock).mockResolvedValue(collectionMetadata);
+        (IPFSService.prototype.getFile as jest.Mock).mockResolvedValue(mockNftMetadata);
+        (ContractMetadataService.prototype.getContractMetadata as jest.Mock).mockResolvedValue(collectionMetadata);
 
-        const result = await getNFTFromLocator("polygon:0x1234:1", "environment");
+        const result = await getNFTFromLocator("polygon:0x1234:1");
 
         const resNft = {
             metadata: mockNftMetadata,
-            locators: "polygon:0x1234:1",
-            tokenStandard: "erc-721",
             chain: "polygon",
             contractAddress: "0x1234",
             tokenId: "1",
@@ -45,6 +45,7 @@ describe("getNFTFromLocator", () => {
         expect(result).toEqual({
             nft: resNft,
             collection: {
+                chain: "polygon",
                 nfts: [resNft],
                 metadata: collectionMetadata,
                 contractAddress: resNft.contractAddress,

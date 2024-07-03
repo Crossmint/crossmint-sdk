@@ -1,18 +1,18 @@
 import { EncryptedVerifiableCredential, VerifiableCredential } from "../types/verifiableCredential";
-import { isEncryptedVerifiableCredential, isPolygon, parseLocator } from "./utils";
+import { isEncryptedVerifiableCredential, isVcChain, parseLocator } from "./utils";
 
 describe("utils", () => {
     describe("isPolygon", () => {
         it("should return true if the chain includes 'poly'", () => {
-            expect(isPolygon("polygon")).toBe(true);
+            expect(isVcChain("polygon")).toBe(true);
         });
 
         it("should return true if the chain is poly-amoy", () => {
-            expect(isPolygon("poly-amoy")).toBe(true);
+            expect(isVcChain("poly-amoy")).toBe(true);
         });
 
         it("should return false if the chain does not include 'poly'", () => {
-            expect(isPolygon("ethereum")).toBe(false);
+            expect(isVcChain("ethereum")).toBe(false);
         });
     });
 

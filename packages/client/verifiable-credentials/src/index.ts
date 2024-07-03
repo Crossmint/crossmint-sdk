@@ -1,16 +1,41 @@
-// Verification
+// Types
 export type {
     VerifiableCredential,
-    VerifiableCredentialType,
+    VerifiableCredentialType, // VerifiableCredential | EncryptedVerifiableCredential
     EncryptedVerifiableCredential,
-} from "./types/verifiableCredential";
-export { isEncryptedVerifiableCredential } from "./services/utils";
-export { verifyCredential } from "./verification/verify";
+    VCChain,
+    CredentialFilter,
+    CredentialsCollection,
+    Collection,
+    CredentialMetadata,
+    VerifiableCredentialEncryption,
+    VerifiableCredentialEncryptionType,
+    Nft as VCNFT,
+    ChainRPCConfig,
+} from "./verifiableCredentialsSKD";
+
+// Verification
+export { verifyCredential } from "./verifiableCredentialsSKD";
 // Presentation
-export { getCredentialCollections } from "./presentation/getCollections";
-export { MetadataService } from "./presentation/getMetadata";
-export { CrossmintAPI } from "./services/crossmintAPI";
-export { getCredentialFromId } from "./presentation/getCredential";
-export { getNFTFromLocator } from "./presentation/getNftCredential";
+export {
+    getNFTFromLocator,
+    ContractMetadataService,
+    // getUsersCredentialNfts, // Wrapped
+    // CredentialService, // Wrapped
+} from "./verifiableCredentialsSKD";
+
+export { getUsersCredentialNfts } from "./presentation/getCredentialNfts";
+export { CredentialService } from "./presentation/getCredential";
 // Decryption
-export { Lit } from "./services/litInterface";
+export { Lit } from "./services/lit";
+
+// Utils
+export {
+    isEncryptedVerifiableCredential,
+    isCredentialType,
+    isVerifiableCredential,
+    isVcChain,
+    ipfsRetrievalProcedure,
+} from "./verifiableCredentialsSKD";
+export { crossmintRetrievalProcedure } from "./presentation/getCredential";
+export { crossmintAPI } from "./crossmintAPI";

@@ -1,7 +1,6 @@
 import * as LitJsSdk from "@lit-protocol/lit-node-client";
 
-import * as API from "./crossmintAPI";
-import { Lit } from "./litInterface";
+import { Lit } from "./lit";
 
 jest.mock("@lit-protocol/lit-node-client");
 
@@ -9,20 +8,18 @@ describe("Lit", () => {
     let lit: Lit;
     let litSpy: jest.SpyInstance;
 
+    const mockNodeClient = {
+        connect: jest.fn(),
+        getSessionSigs: jest.fn().mockReturnValue({ sig: "sig" }),
+    };
+
     beforeEach(() => {
-        jest.spyOn(API, "getUsageOrigin").mockReturnValue("client");
-        lit = new Lit();
+        lit = new Lit("manzano", { sig: "delegationSig" } as any);
         litSpy = jest.spyOn(LitJsSdk, "LitNodeClient");
         litSpy.mockImplementation(() => {
-            return {
-                connect: jest.fn(),
-            } as any;
+            return mockNodeClient as any;
         });
         jest.spyOn(LitJsSdk, "checkAndSignAuthMessage").mockResolvedValue({} as any);
-    });
-
-    it("should throw an error when production environment is used", () => {
-        expect(() => new Lit("cayenne", "prod")).toThrow("Production environment not supported yet");
     });
 
     it("should connect to the Lit network", async () => {
@@ -39,23 +36,27 @@ describe("Lit", () => {
         const mockDecryptZipFileWithMetadata = jest.fn().mockResolvedValue({});
         jest.spyOn(LitJsSdk, "decryptZipFileWithMetadata").mockImplementation(mockDecryptZipFileWithMetadata);
 
-        await expect(lit.decrypt("test")).rejects.toThrow("Failed to decrypt file");
+        await expect(lit.decrypt("test")).rejects.toThrow(
+            `Failed to decrypt file. Hint: Be sure the file was encrypted on the same network, currently using manzano network.`
+        );
     });
 
     it("should decrypt a base64 ciphertext", async () => {
-        const mockCheckAndSignAuthMessage = jest.fn().mockResolvedValue("test");
         const mockDecryptZipFileWithMetadata = jest.fn().mockResolvedValue({
             decryptedFile: [1, 2, 3],
         });
 
         jest.spyOn(LitJsSdk, "decryptZipFileWithMetadata").mockImplementation(mockDecryptZipFileWithMetadata);
         jest.spyOn(LitJsSdk, "uint8arrayToString").mockImplementation((arr) => arr.toString());
-        jest.spyOn(LitJsSdk, "checkAndSignAuthMessage").mockImplementation(mockCheckAndSignAuthMessage);
+        jest.spyOn(LitJsSdk, "base64StringToBlob").mockImplementation((a) => a as any);
 
         const result = await lit.decrypt("test");
 
-        expect(mockDecryptZipFileWithMetadata).toHaveBeenCalled();
-        expect(mockCheckAndSignAuthMessage).toHaveBeenCalled();
+        expect(mockDecryptZipFileWithMetadata).toHaveBeenCalledWith({
+            sessionSigs: { sig: "sig" },
+            file: "test" as any,
+            litNodeClient: mockNodeClient,
+        });
         expect(result).toEqual("1,2,3");
     });
 });
