@@ -8,12 +8,6 @@ global.fetch = jest.fn(() =>
     })
 ) as jest.Mock;
 
-jest.mock("@krebitdao/eip712-vc", () => {
-    return {
-        EIP712VC: jest.fn().mockImplementation(() => {}),
-    };
-});
-
 describe("getNfts", () => {
     beforeEach(() => {
         crossmintAPI.init("test", { environment: "test" });

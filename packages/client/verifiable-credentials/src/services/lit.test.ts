@@ -4,11 +4,6 @@ import { crossmintAPI } from "../crossmintAPI";
 import { Lit } from "./lit";
 
 jest.mock("@lit-protocol/lit-node-client");
-jest.mock("@krebitdao/eip712-vc", () => {
-    return {
-        EIP712VC: jest.fn().mockImplementation(() => {}),
-    };
-});
 
 describe("Lit", () => {
     let lit: Lit;

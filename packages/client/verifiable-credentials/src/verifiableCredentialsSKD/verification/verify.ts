@@ -8,19 +8,19 @@ export async function verifyCredential(
     credential: VerifiableCredential
 ): Promise<{ validVC: boolean; error: string | undefined }> {
     let error;
-    if (credential.expirationDate != null) {
-        if (typeof credential.expirationDate !== "string") {
+    if (credential.validUntil != null) {
+        if (typeof credential.validUntil !== "string") {
             throw new Error("expirationDate must be a ISO string");
         }
 
-        const parsedExpirationDate = parseISO(credential.expirationDate);
+        const parsedExpirationDate = parseISO(credential.validUntil);
         if (!isValid(parsedExpirationDate)) {
-            throw new Error(`Invalid expiration date: ${credential.expirationDate}`);
+            throw new Error(`Invalid expiration date: ${credential.validUntil}`);
         }
 
         const todayDate = new Date();
         if (parsedExpirationDate < todayDate) {
-            error = "Credential expired at " + credential.expirationDate;
+            error = "Credential expired at " + credential.validUntil;
             return { validVC: false, error };
         }
     }
