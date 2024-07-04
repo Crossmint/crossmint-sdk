@@ -12,10 +12,8 @@ export function reservoirAdapter(aaWallet: EVMAAWallet): ReservoirWallet {
             let signature: string | undefined;
             if (signData) {
                 if (signData.signatureKind === "eip191") {
-                    console.log("Execute Steps: Signing with eip191");
                     signature = await aaWallet.signMessage(signData.message);
                 } else if (signData.signatureKind === "eip712") {
-                    console.log("Execute Steps: Signing with eip712");
                     signature = await aaWallet.signTypedData({
                         domain: signData.domain as any,
                         types: signData.types as any,

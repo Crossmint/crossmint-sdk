@@ -57,7 +57,6 @@ function getPhoneNumber(input?: string, acceptPhoneWithoutPlus = false) {
 
     const phoneNumber = parsePhoneNumber(input);
     if (!phoneNumber.isValid()) {
-        console.log(`Invalid phone number reported (${input}).`);
         throw new Error(`Invalid phone number provided. Please be sure to include the country code.`);
     }
 
