@@ -1,6 +1,7 @@
 import { IFrameWindow } from "@crossmint/client-sdk-window";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
+import ActionModal from "./ActionModal";
 
 const incomingModalIframeEvents = {
     jwtToken: z.object({
@@ -27,42 +28,47 @@ export default function AuthModal({
     const [iframe, setIframe] = useState<IFrameWindow<IncomingModalIframeEventsType, {}> | null>(null);
 
     useEffect(() => {
-        if (!iframeRef.current) {
+        if (iframe == null) {
             return;
         }
 
-        (async () => {
-            const initIframe = await IFrameWindow.init(`${baseUrl}/sdk/auth/frame`, {
-                existingIFrame: iframeRef.current,
-                incomingEvents: {
-                    jwtToken: z.object({
-                        jwtToken: z.string(),
-                    })
-                }
-            });
-            console.log("iframe", initIframe);
-            setIframe(initIframe);
-        })();
-    }, [iframeRef.current]);
-
-    useEffect(() => {
-        console.log("iframe", iframe);
-
-        if (!iframe) {
-            return;
-        }
         iframe.on("jwtToken", data => {
-            console.log("jwtToken in sdk mock page", data);
             setJwtToken(data.jwtToken);
+            iframe.off("jwtToken")
+
+            if (iframe?.iframe.contentWindow != null) {
+                iframe.iframe.contentWindow.close();
+            }
             setModalOpen(false);
         });
+
+        // return () => {
+        //     if (iframe) {
+        //         iframe.off("jwtToken");
+
+        //         if (iframe.iframe.contentWindow != null) {
+        //             iframe.iframe.contentWindow.close();
+        //         }
+        //     }
+        // }
     }, [iframe]);
 
-    const iframeSrc = `${baseUrl}/sdk/auth/frame?api_key=${apiKey}`;
 
+    const handleIframeLoaded = async () => {
+        console.log(iframeRef.current, 'iframeRef.current')
+        const initIframe = await IFrameWindow.init(`${baseUrl}/sdk/auth/frame?api_key=${apiKey}`, {
+            existingIFrame: iframeRef.current,
+            incomingEvents: incomingModalIframeEvents
+        });
+        setIframe(initIframe);
+    }
+
+    const iframeSrc = `${baseUrl}/sdk/auth/frame?api_key=${apiKey}`;
     return (
-        <div className="flex flex-col items-center w-full">
-            <iframe ref={iframeRef} src={iframeSrc} className="w-[300px] h-[100px]" />
-        </div>
+        <ActionModal show={true} onClose={() => setModalOpen(false)}>
+            <div className="flex flex-col items-center w-[500px] h-[600px]">
+                <iframe ref={iframeRef} src={iframeSrc} onLoad={handleIframeLoaded} style={{ width: "500px", height: "600px" }} />
+            </div>
+        </ActionModal>
     );
 }

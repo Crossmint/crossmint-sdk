@@ -17,7 +17,7 @@ export class CrossmintService {
         production: CROSSMINT_PROD_URL,
     };
 
-    constructor(jwtToken: string, environment?: CrossmintEnvironment) {
+    constructor(jwtToken: string | null, environment?: CrossmintEnvironment) {
         this.crossmintAPIHeaders = {
             accept: "application/json",
             "content-type": "application/json",
