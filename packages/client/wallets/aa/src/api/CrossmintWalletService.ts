@@ -62,8 +62,7 @@ export class CrossmintWalletService extends BaseCrossmintService {
         );
     }
 
-    public getPasskeyServerUrl(user: UserParams): string {
-        const userParam = `userId=${user.id}`;
-        return this.crossmintBaseUrl + `/unstable/passkeys/${this.crossmintAPIHeaders["x-api-key"]}/${userParam}`;
+    public getPasskeyServerUrl() {
+        return this.crossmintBaseUrl + `/internal/passkeys/${this.crossmintAPIHeaders["x-api-key"]}`;
     }
 }

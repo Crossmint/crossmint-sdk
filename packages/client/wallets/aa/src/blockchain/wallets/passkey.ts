@@ -33,6 +33,8 @@ export class PasskeyWalletService {
     constructor(private readonly crossmintService: CrossmintWalletService) {}
 
     public async getOrCreate({ user, chain, publicClient, walletConfig, entrypoint }: PasskeyWalletParams) {
+        this.setJwtCookie(user.jwt);
+
         const validator = await this.getOrCreateSigner({
             user,
             entrypoint,
@@ -78,10 +80,10 @@ export class PasskeyWalletService {
         }
 
         return createPasskeyValidator(publicClient, {
-            passkeyServerUrl: this.crossmintService.getPasskeyServerUrl(user),
+            passkeyServerUrl: this.crossmintService.getPasskeyServerUrl(),
             entryPoint: entrypoint.address,
             passkeyName: signer.passkeyName,
-            credentials: "omit",
+            credentials: "include",
         });
     }
 
@@ -102,5 +104,11 @@ export class PasskeyWalletService {
             domain: window.location.hostname,
             type: "passkeys",
         };
+    }
+
+    private setJwtCookie(jwt: string) {
+        const now = new Date();
+        const expireTime = new Date(now.getTime() + 1 * 60 * 60 * 1000); // Now + 1 hour
+        document.cookie = `user_jwt=${jwt}; expires=${expireTime.toUTCString()}; path=/`;
     }
 }
