@@ -1,5 +1,6 @@
-import { PasskeyValidatorSerializedData } from "@/utils/passkey";
 import { EntryPointVersion } from "permissionless/_types/types";
+
+import { PasskeyValidatorSerializedData } from "./internal";
 
 export type StoreAbstractWalletInput = {
     type: string;

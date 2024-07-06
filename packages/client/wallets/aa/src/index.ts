@@ -1,7 +1,6 @@
 export { EVMBlockchainIncludingTestnet as Blockchain, blockchainToChainId } from "@crossmint/common-sdk-base";
 
-export * from "./api";
-export * from "./blockchain";
-export * from "./types";
+export { EVMSmartWallet } from "./blockchain/wallets/EVMSmartWallet";
 
-export * from "./SmartWalletSDK";
+export * from "./types";
+export { SmartWalletSDK } from "./SmartWalletSDK";

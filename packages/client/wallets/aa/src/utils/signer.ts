@@ -1,9 +1,3 @@
-import {
-    getBlockExplorerByBlockchain,
-    getTickerByBlockchain,
-    getTickerNameByBlockchain,
-    getUrlProviderByBlockchain,
-} from "@/blockchain";
 import { ViemAccount, WalletConfig, WalletSdkError, Web3AuthSigner } from "@/types";
 import { CHAIN_NAMESPACES } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
@@ -18,6 +12,12 @@ import {
     blockchainToDisplayName,
 } from "@crossmint/common-sdk-base";
 
+import {
+    getBlockExplorerByBlockchain,
+    getTickerByBlockchain,
+    getTickerNameByBlockchain,
+    getUrlProviderByBlockchain,
+} from "../blockchain/BlockchainNetworks";
 import { parseToken } from "./auth";
 import { logInputOutput } from "./log";
 

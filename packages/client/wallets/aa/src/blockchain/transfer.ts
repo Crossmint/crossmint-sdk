@@ -1,7 +1,7 @@
+import { ERC2OEVMToken, NFTEVMToken, SFTEVMToken } from "@/types/Tokens";
 import { Abi, Account, Address, erc20Abi, erc721Abi } from "viem";
 
-import erc1155Abi from "../../ABI/ERC1155.json";
-import { ERC2OEVMToken, NFTEVMToken, SFTEVMToken } from "./Tokens";
+import erc1155Abi from "../ABI/ERC1155.json";
 
 export type ERC20TransferType = { token: ERC2OEVMToken; amount: bigint };
 export type SFTTransferType = { token: SFTEVMToken; quantity: number };

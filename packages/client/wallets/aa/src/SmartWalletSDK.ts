@@ -1,21 +1,16 @@
-import { CrossmintWalletService } from "@/api";
-import { EVMSmartWallet, getBundlerRPC } from "@/blockchain";
-import {
-    type EntryPointDetails,
-    RunningOnServerError,
-    type SmartWalletSDKInitParams,
-    type UserParams,
-    type WalletConfig,
-    WalletSdkError,
-} from "@/types";
-import { WalletCreationParams } from "@/types/internal";
 import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
 import { createPublicClient, http } from "viem";
 
 import { EVMBlockchainIncludingTestnet, validateAPIKey } from "@crossmint/common-sdk-base";
 
+import { CrossmintWalletService } from "./api/CrossmintWalletService";
+import { getBundlerRPC } from "./blockchain/BlockchainNetworks";
+import { EVMSmartWallet } from "./blockchain/wallets";
 import { EOAWalletParams, EOAWalletService } from "./blockchain/wallets/eoa";
 import { PasskeyWalletService, isPasskeyParams } from "./blockchain/wallets/passkey";
+import type { EntryPointDetails, SmartWalletSDKInitParams, UserParams, WalletConfig } from "./types/Config";
+import { RunningOnServerError, WalletSdkError } from "./types/Error";
+import type { WalletCreationParams } from "./types/internal";
 import { isClient } from "./utils/environment";
 import { LoggerWrapper, logPerformance } from "./utils/log";
 

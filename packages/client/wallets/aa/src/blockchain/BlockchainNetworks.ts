@@ -39,9 +39,7 @@ import {
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
-import { logInputOutput } from "../utils/log";
-
-export const getUrlProviderByBlockchain = logInputOutput((chain: EVMBlockchainIncludingTestnet) => {
+export const getUrlProviderByBlockchain = (chain: EVMBlockchainIncludingTestnet) => {
     const url = new Map<EVMBlockchainIncludingTestnet, string | null>([
         ["ethereum", "https://eth.llamarpc.com"],
         ["polygon", "https://rpc.ankr.com/polygon"],
@@ -72,9 +70,9 @@ export const getUrlProviderByBlockchain = logInputOutput((chain: EVMBlockchainIn
         throw new Error(`Url provider not found for chain ${chain}`);
     }
     return url;
-}, "getUrlProviderByBlockchain");
+};
 
-export const getBlockExplorerByBlockchain = logInputOutput((chain: EVMBlockchainIncludingTestnet) => {
+export const getBlockExplorerByBlockchain = (chain: EVMBlockchainIncludingTestnet) => {
     const blockExplorer = new Map<EVMBlockchainIncludingTestnet, string | null>([
         ["ethereum", "https://etherscan.io"],
         ["polygon", "https://polygonscan.com"],
@@ -105,7 +103,7 @@ export const getBlockExplorerByBlockchain = logInputOutput((chain: EVMBlockchain
         throw new Error(`Block Explorer not found for chain ${chain}`);
     }
     return blockExplorer;
-}, "getBlockExplorerByBlockchain");
+};
 
 export function getTickerByBlockchain(chain: EVMBlockchainIncludingTestnet) {
     const ticker = new Map<EVMBlockchainIncludingTestnet, string | null>([
@@ -173,7 +171,7 @@ export function getTickerNameByBlockchain(chain: EVMBlockchainIncludingTestnet) 
     return tickerName;
 }
 
-export const getZeroDevProjectIdByBlockchain = logInputOutput((chain: EVMBlockchainIncludingTestnet) => {
+export const getZeroDevProjectIdByBlockchain = (chain: EVMBlockchainIncludingTestnet) => {
     const zeroDevProjectId = new Map<EVMBlockchainIncludingTestnet, string | null>([
         ["ethereum", ZD_ETHEREUM_PROJECT_ID],
         ["polygon", ZD_POLYGON_PROJECT_ID],
@@ -204,9 +202,9 @@ export const getZeroDevProjectIdByBlockchain = logInputOutput((chain: EVMBlockch
         throw new Error(`ZeroDev project id not found for chain ${chain}`);
     }
     return zeroDevProjectId;
-}, "getZeroDevProjectIdByBlockchain");
+};
 
-export const getViemNetwork = logInputOutput((cmChain: EVMBlockchainIncludingTestnet) => {
+export const getViemNetwork = (cmChain: EVMBlockchainIncludingTestnet) => {
     switch (cmChain) {
         case "ethereum":
             return mainnet;
@@ -241,9 +239,9 @@ export const getViemNetwork = logInputOutput((cmChain: EVMBlockchainIncludingTes
         default:
             throw new Error(`Unsupported network: ${cmChain}`);
     }
-}, "getViemNetwork");
+};
 
-export const getBundlerRPC = logInputOutput((chain: EVMBlockchainIncludingTestnet) => {
+export const getBundlerRPC = (chain: EVMBlockchainIncludingTestnet) => {
     switch (chain) {
         case EVMBlockchainIncludingTestnet.BASE_SEPOLIA:
             return PM_BASE_SEPOLIA_RPC;
@@ -252,4 +250,4 @@ export const getBundlerRPC = logInputOutput((chain: EVMBlockchainIncludingTestne
         default:
             return BUNDLER_RPC + getZeroDevProjectIdByBlockchain(chain) + "?bundlerProvider=STACKUP";
     }
-}, "getBundlerRPC");
+};
