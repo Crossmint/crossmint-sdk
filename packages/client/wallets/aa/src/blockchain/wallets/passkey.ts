@@ -1,5 +1,4 @@
 import { CrossmintWalletService } from "@/api/CrossmintWalletService";
-import { EVMSmartWallet } from "@/index";
 import { PasskeySignerData } from "@/types/API";
 import { EntryPointDetails, PasskeySigner, UserParams, WalletConfig } from "@/types/Config";
 import { WalletCreationParams } from "@/types/internal";
@@ -12,6 +11,7 @@ import { PublicClient } from "viem";
 import { blockchainToChainId } from "@crossmint/common-sdk-base";
 
 import { deserializePasskeyValidatorData, serializePasskeyValidatorData } from "../../utils/passkey";
+import { EVMSmartWallet } from "./EVMSmartWallet";
 
 export interface PasskeyWalletParams extends WalletCreationParams {
     walletConfig: WalletConfig & { signer: PasskeySigner };
