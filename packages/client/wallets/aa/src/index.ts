@@ -14,7 +14,7 @@ export type {
 
 export type { TransferType, ERC20TransferType, NFTTransferType, SFTTransferType } from "./types/Tokens";
 
-export {
+export type {
     NotAuthorizedError,
     TransferError,
     TransactionError,
