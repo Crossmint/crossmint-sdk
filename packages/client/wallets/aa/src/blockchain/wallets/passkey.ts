@@ -1,7 +1,7 @@
 import { CrossmintWalletService } from "@/api/CrossmintWalletService";
 import { EVMSmartWallet } from "@/index";
-import { EntryPointDetails, PasskeySigner, UserParams, WalletConfig } from "@/types";
 import { PasskeySignerData } from "@/types/API";
+import { EntryPointDetails, PasskeySigner, UserParams, WalletConfig } from "@/types/Config";
 import { WalletCreationParams } from "@/types/internal";
 import { CURRENT_VERSION, ZERO_DEV_TYPE } from "@/utils/constants";
 import { createPasskeyValidator, deserializePasskeyValidator } from "@zerodev/passkey-validator";

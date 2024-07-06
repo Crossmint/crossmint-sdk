@@ -1,5 +1,5 @@
 import { logError } from "@/services/logging";
-import { TransferError } from "@/types";
+import { TransferError } from "@/types/Error";
 import { KernelAccountClient, KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
 import { SmartAccountClient } from "permissionless";
 import { SmartAccount } from "permissionless/accounts";

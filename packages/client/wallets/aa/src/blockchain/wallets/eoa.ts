@@ -1,5 +1,5 @@
 import { CrossmintWalletService } from "@/api/CrossmintWalletService";
-import type { EOASigner, WalletConfig } from "@/types";
+import type { EOASigner, WalletConfig } from "@/types/Config";
 import { WalletCreationParams } from "@/types/internal";
 import { CURRENT_VERSION, ZERO_DEV_TYPE } from "@/utils/constants";
 import { createOwnerSigner } from "@/utils/signer";

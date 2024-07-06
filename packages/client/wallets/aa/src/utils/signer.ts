@@ -1,4 +1,3 @@
-import { ViemAccount, WalletConfig, WalletSdkError, Web3AuthSigner } from "@/types";
 import { CHAIN_NAMESPACES } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { Web3Auth } from "@web3auth/single-factor-auth";
@@ -18,6 +17,8 @@ import {
     getTickerNameByBlockchain,
     getUrlProviderByBlockchain,
 } from "../blockchain/BlockchainNetworks";
+import { ViemAccount, WalletConfig, Web3AuthSigner } from "../types/Config";
+import { WalletSdkError } from "../types/Error";
 import { parseToken } from "./auth";
 import { logInputOutput } from "./log";
 

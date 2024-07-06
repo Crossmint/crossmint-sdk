@@ -1,9 +1,6 @@
 import { SmartWalletSDK } from "./SmartWalletSDK";
-import { SmartWalletSDKInitParams } from "./types";
+import { SmartWalletSDKInitParams } from "./types/Config";
 
-jest.mock("@/api");
-jest.mock("@/blockchain");
-jest.mock("@/types");
 jest.mock("./services/logging");
 
 Object.defineProperty(global, "window", {
