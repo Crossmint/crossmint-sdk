@@ -10,10 +10,11 @@ import { Chain, http, isAddress, publicActions } from "viem";
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 import { CrossmintWalletService } from "../../api/CrossmintWalletService";
+import { TransferType } from "../../types/Tokens";
 import { SCW_SERVICE } from "../../utils/constants";
 import { LoggerWrapper, errorToJSON } from "../../utils/log";
 import { getBundlerRPC, getViemNetwork } from "../BlockchainNetworks";
-import { TransferType, transferParams } from "../transfer";
+import { transferParams } from "../transfer";
 import { paymasterMiddleware, usePaymaster } from "./paymaster";
 import { toCrossmintSmartAccountClient } from "./smartAccount";
 

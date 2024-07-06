@@ -12,6 +12,8 @@ export type {
     WalletConfig,
 } from "./types/Config";
 
+export type { TransferType, ERC20TransferType, NFTTransferType, SFTTransferType } from "./types/Tokens";
+
 export {
     NotAuthorizedError,
     TransferError,
