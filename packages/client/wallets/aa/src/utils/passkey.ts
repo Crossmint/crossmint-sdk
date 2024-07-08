@@ -1,14 +1,4 @@
-import { Hex } from "viem";
-
-export type PasskeyValidatorSerializedData = {
-    passkeyServerUrl: string;
-    credentials: string;
-    entryPoint: Hex;
-    validatorAddress: Hex;
-    pubKeyX: string;
-    pubKeyY: string;
-    authenticatorIdHash: Hex;
-};
+import { PasskeyValidatorSerializedData } from "@/types/internal";
 
 export const serializePasskeyValidatorData = (params: PasskeyValidatorSerializedData) => {
     const replacer = (_: string, value: any) => {

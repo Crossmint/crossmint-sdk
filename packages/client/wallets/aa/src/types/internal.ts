@@ -1,4 +1,4 @@
-import { HttpTransport, PublicClient } from "viem";
+import { Hex, HttpTransport, PublicClient } from "viem";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
@@ -11,3 +11,13 @@ export interface WalletCreationParams {
     walletConfig: WalletConfig;
     entrypoint: EntryPointDetails;
 }
+
+export type PasskeyValidatorSerializedData = {
+    passkeyServerUrl: string;
+    credentials: string;
+    entryPoint: Hex;
+    validatorAddress: Hex;
+    pubKeyX: string;
+    pubKeyY: string;
+    authenticatorIdHash: Hex;
+};

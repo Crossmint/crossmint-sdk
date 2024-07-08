@@ -1,7 +1,5 @@
 import { logError } from "@/services/logging";
-import { TransferError, errorToJSON } from "@/types";
-import { SCW_SERVICE } from "@/utils/constants";
-import { LoggerWrapper } from "@/utils/log";
+import { TransferError } from "@/types/Error";
 import { KernelAccountClient, KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
 import { SmartAccountClient } from "permissionless";
 import { SmartAccount } from "permissionless/accounts";
@@ -12,8 +10,11 @@ import { Chain, http, isAddress, publicActions } from "viem";
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 import { CrossmintWalletService } from "../../api/CrossmintWalletService";
+import { TransferType } from "../../types/Tokens";
+import { SCW_SERVICE } from "../../utils/constants";
+import { LoggerWrapper, errorToJSON } from "../../utils/log";
 import { getBundlerRPC, getViemNetwork } from "../BlockchainNetworks";
-import { TransferType, transferParams } from "../token/transfer";
+import { transferParams } from "../transfer";
 import { paymasterMiddleware, usePaymaster } from "./paymaster";
 import { toCrossmintSmartAccountClient } from "./smartAccount";
 

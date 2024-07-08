@@ -1,5 +1,5 @@
-import type { UserParams } from "@/types";
 import { PasskeySignerData, StoreAbstractWalletInput } from "@/types/API";
+import type { UserParams } from "@/types/Config";
 import { CrossmintServiceError } from "@/types/Error";
 
 import type { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
