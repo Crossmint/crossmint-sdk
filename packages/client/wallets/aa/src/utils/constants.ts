@@ -27,3 +27,4 @@ export const PAYMASTER_RPC = "https://rpc.zerodev.app/api/v2/paymaster/";
 export const PM_BASE_SEPOLIA_RPC =
     "https://api.developer.coinbase.com/rpc/v1/base-sepolia/6BTAmOQZ0x1YWtI24hIKKqdHWmVP1UXf";
 export const PM_BASE_RPC = "https://api.developer.coinbase.com/rpc/v1/base/6BTAmOQZ0x1YWtI24hIKKqdHWmVP1UXf";
+export const JWT_COOKIE_EXPIRY_TIME = 3_600_000;

@@ -9,7 +9,8 @@ import {
 } from "@/index";
 import { PasskeySignerData } from "@/types/API";
 import { WalletCreationParams } from "@/types/internal";
-import { CURRENT_VERSION, ZERO_DEV_TYPE } from "@/utils/constants";
+import { CURRENT_VERSION, JWT_COOKIE_EXPIRY_TIME, ZERO_DEV_TYPE } from "@/utils/constants";
+import { isLocalhost } from "@/utils/helpers";
 import { createPasskeyValidator, deserializePasskeyValidator } from "@zerodev/passkey-validator";
 import { KernelValidator, createKernelAccount } from "@zerodev/sdk";
 import { EntryPoint } from "permissionless/types/entrypoint";
@@ -108,7 +109,9 @@ export class PasskeyWalletService {
 
     private setJwtCookie(jwt: string) {
         const now = new Date();
-        const expireTime = new Date(now.getTime() + 1 * 60 * 60 * 1000); // Now + 1 hour
-        document.cookie = `user_jwt=${jwt}; expires=${expireTime.toUTCString()}; path=/`;
+        const expireTime = new Date(now.getTime() + JWT_COOKIE_EXPIRY_TIME);
+        document.cookie = `user_jwt=${jwt}; expires=${expireTime.toUTCString()}; path=/;${
+            isLocalhost() ? "" : " Secure;"
+        }`;
     }
 }
