@@ -3,6 +3,7 @@ import { EIP1193Provider, LocalAccount } from "viem";
 
 export type SmartWalletSDKInitParams = {
     clientApiKey: string;
+    logging?: boolean;
 };
 
 export type UserIdentifierParams = {
