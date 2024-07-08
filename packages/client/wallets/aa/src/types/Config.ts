@@ -7,11 +7,6 @@ export type SmartWalletSDKInitParams = {
 };
 
 export type UserParams = {
-    /**
-     * A unique identifier for the user. This must match the value of the identifier within the JWT
-     * that is specified in the project settings (typically `sub`).
-     */
-    id: string;
     jwt: string;
 };
 
@@ -30,11 +25,6 @@ export type ViemAccount = {
 
 export type PasskeySigner = {
     type: "PASSKEY";
-
-    /**
-     * Displayed to the user during passkey registration or signing prompts.
-     */
-    passkeyName: string;
 };
 
 export type EOASigner = EIP1193Provider | Web3AuthSigner | ViemAccount;

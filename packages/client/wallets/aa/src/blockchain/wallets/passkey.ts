@@ -33,14 +33,13 @@ type PasskeyValidator = KernelValidator<EntryPoint, "WebAuthnValidator"> & {
 export class PasskeyWalletService {
     constructor(private readonly crossmintService: CrossmintWalletService) {}
 
-    public async getOrCreate({ user, chain, publicClient, walletConfig, entrypoint }: PasskeyWalletParams) {
+    public async getOrCreate({ user, chain, publicClient, entrypoint }: PasskeyWalletParams) {
         this.setJwtCookie(user.jwt);
 
         const validator = await this.getOrCreateSigner({
             user,
             entrypoint,
             publicClient,
-            signer: walletConfig.signer,
         });
 
         const kernelAccount = await createKernelAccount(publicClient, {
@@ -51,7 +50,7 @@ export class PasskeyWalletService {
         await this.crossmintService.storeAbstractWallet(user, {
             type: ZERO_DEV_TYPE,
             smartContractWalletAddress: kernelAccount.address,
-            signerData: this.getSignerData(validator, walletConfig.signer.passkeyName),
+            signerData: this.getSignerData(validator),
             version: CURRENT_VERSION,
             baseLayer: "evm",
             chainId: blockchainToChainId(chain),
@@ -65,12 +64,10 @@ export class PasskeyWalletService {
         user,
         entrypoint,
         publicClient,
-        signer,
     }: {
         user: UserParams;
         entrypoint: EntryPointDetails;
         publicClient: PublicClient;
-        signer: PasskeySigner;
     }): Promise<PasskeyValidator> {
         const serializedData = await this.fetchSerializedSigner(user);
         if (serializedData != null) {
@@ -83,7 +80,7 @@ export class PasskeyWalletService {
         return createPasskeyValidator(publicClient, {
             passkeyServerUrl: this.crossmintService.getPasskeyServerUrl(),
             entryPoint: entrypoint.address,
-            passkeyName: signer.passkeyName,
+            passkeyName: "no-op", // Parameter not used in our server. We infer the name from the jwt token.
             credentials: "include",
         });
     }
@@ -97,11 +94,10 @@ export class PasskeyWalletService {
         return serializePasskeyValidatorData(signer);
     }
 
-    private getSignerData(validator: PasskeyValidator, passkeyName: string): PasskeySignerData {
+    private getSignerData(validator: PasskeyValidator): PasskeySignerData {
         const fields = deserializePasskeyValidatorData(validator.getSerializedData());
         return {
             ...fields,
-            passkeyName,
             domain: window.location.hostname,
             type: "passkeys",
         };

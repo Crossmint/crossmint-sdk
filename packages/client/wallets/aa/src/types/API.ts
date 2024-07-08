@@ -20,7 +20,6 @@ export interface EOASignerData {
 }
 
 export type PasskeySignerData = PasskeyValidatorSerializedData & {
-    passkeyName: string;
     domain: string;
     type: "passkeys";
 };
