@@ -1,4 +1,4 @@
-import { logError } from "@/services/logging";
+import { logger } from "@/services/logging";
 import { SCW_SERVICE, TransferError, errorToJSON } from "@/utils";
 import { LoggerWrapper } from "@/utils/log";
 import { KernelAccountClient, KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
@@ -111,7 +111,7 @@ export class EVMSmartWallet extends LoggerWrapper {
                 const { request } = await client.simulateContract(tx);
                 return client.writeContract(request);
             } catch (error) {
-                logError("[TRANSFER] - ERROR_TRANSFERRING_TOKEN", {
+                logger.logError("[TRANSFER] - ERROR_TRANSFERRING_TOKEN", {
                     service: SCW_SERVICE,
                     error: errorToJSON(error),
                     tokenId: tx.tokenId,

@@ -1,4 +1,4 @@
-import { logError } from "@/services/logging";
+import { logger } from "@/services/logging";
 
 import { SCW_SERVICE } from "./constants";
 import { errorToJSON } from "./error";
@@ -11,7 +11,7 @@ export const parseToken = (token: any) => {
             typeof window !== "undefined" ? window.atob(base64) : Buffer.from(base64, "base64").toString();
         return JSON.parse(jsonPayload || "");
     } catch (err) {
-        logError("[PARSE_TOKEN] - ERROR", {
+        logger.logError("[PARSE_TOKEN] - ERROR", {
             service: SCW_SERVICE,
             error: errorToJSON(err),
         });

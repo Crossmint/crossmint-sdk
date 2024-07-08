@@ -1,16 +1,50 @@
 import { isLocalhost } from "@/utils/helpers";
 
-import { ConsoleProvider } from "./ConsoleProvider";
 import { DatadogProvider } from "./DatadogProvider";
 
-function getBrowserLogger() {
-    if (isLocalhost()) {
-        return new ConsoleProvider();
+class LoggerProvider {
+    private static instance: LoggerProvider;
+    public logInfo!: (message: string, context?: object) => void;
+    public logWarn!: (message: string, context?: object) => void;
+    public logError!: (message: string, context?: object) => void;
+
+    private constructor(private logOnDatadogOnLocalhost = false) {
+        this.setLogger();
     }
 
-    return new DatadogProvider();
+    private setLogger() {
+        const logger = this.shouldLogToDatadog() ? new DatadogProvider() : this.getEmptyLogger();
+        console.log("logger", logger);
+        const { logInfo, logWarn, logError } = logger;
+        this.logInfo = logInfo;
+        this.logWarn = logWarn;
+        this.logError = logError;
+    }
+
+    private shouldLogToDatadog() {
+        return (isLocalhost() && this.logOnDatadogOnLocalhost) || !isLocalhost();
+    }
+
+    private getEmptyLogger() {
+        return {
+            logInfo: () => {},
+            logWarn: () => {},
+            logError: () => {},
+        };
+    }
+
+    public setDDLoggerOnLocalhost(logOnDatadog: boolean) {
+        console.log("setDDLoggerOnLocalhost", logOnDatadog);
+        this.logOnDatadogOnLocalhost = logOnDatadog;
+        this.setLogger();
+    }
+
+    public static getInstance() {
+        if (!LoggerProvider.instance) {
+            LoggerProvider.instance = new LoggerProvider();
+        }
+        return LoggerProvider.instance;
+    }
 }
 
-const { logInfo, logWarn, logError } = getBrowserLogger();
-
-export { logInfo, logWarn, logError };
+export const logger = LoggerProvider.getInstance();

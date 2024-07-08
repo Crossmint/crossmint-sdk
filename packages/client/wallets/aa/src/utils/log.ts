@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 
-import { logError, logInfo } from "../services/logging";
+import { logger } from "../services/logging";
 import { SCW_SERVICE } from "./constants";
 import { isLocalhost } from "./helpers";
 
@@ -60,7 +60,7 @@ export class LoggerWrapper {
     }
 
     private logError(err: object, identifierTag: string) {
-        logError(
+        logger.logError(
             `${identifierTag} threw_error - ${err} - extra_info - ${beautify(this.extraInfo)} - log_idempotency_key - ${
                 this.logIdempotencyKey
             }`,
@@ -96,7 +96,7 @@ export function logInputOutput<T, A extends any[]>(fn: (...args: A) => T, functi
                         return res;
                     })
                     .catch((err) => {
-                        logError(`${identifierTag} threw_error: ${beautify(err)}`, { err });
+                        logger.logError(`${identifierTag} threw_error: ${beautify(err)}`, { err });
                         throw err;
                     }) as T;
             } else {
@@ -104,7 +104,7 @@ export function logInputOutput<T, A extends any[]>(fn: (...args: A) => T, functi
                 return result;
             }
         } catch (err) {
-            logError(`${identifierTag} threw_error: ${beautify(err)}`, { err });
+            logger.logError(`${identifierTag} threw_error: ${beautify(err)}`, { err });
             throw err;
         }
     };
@@ -142,5 +142,5 @@ function logInfoIfNotInLocalhost(message: string, context?: object) {
         console.log(message);
         return;
     }
-    logInfo(message, context);
+    logger.logInfo(message, context);
 }

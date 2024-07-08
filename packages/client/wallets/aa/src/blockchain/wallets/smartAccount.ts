@@ -1,4 +1,4 @@
-import { logInfo } from "@/services/logging";
+import { logger } from "@/services/logging";
 import { TransactionError, gelatoBundlerProperties, usesGelatoBundler } from "@/utils";
 import { logPerformance } from "@/utils/log";
 import { SmartAccountClient } from "permissionless";
@@ -41,7 +41,7 @@ export function toCrossmintSmartAccountClient<Client extends SmartAccountClient<
                         ...(usesGelatoBundler(crossmintChain) && gelatoBundlerProperties),
                     };
 
-                    logInfo(`[CrossmintSmartWallet.sendTransaction] - params: ${JSON.stringify(txn)}`);
+                    logger.logInfo(`[CrossmintSmartWallet.sendTransaction] - params: ${JSON.stringify(txn)}`);
                     return await smartAccountClient.sendTransaction(txn);
                 } catch (error) {
                     throw new TransactionError(`Error sending transaction: ${error}`);
@@ -59,7 +59,7 @@ export function toCrossmintSmartAccountClient<Client extends SmartAccountClient<
                     account,
                 };
 
-                logInfo(`[CrossmintSmartWallet.sendUserOperation] - params: ${params}`);
+                logger.logInfo(`[CrossmintSmartWallet.sendUserOperation] - params: ${params}`);
                 return smartAccountClient.sendUserOperation(params);
             });
         },
