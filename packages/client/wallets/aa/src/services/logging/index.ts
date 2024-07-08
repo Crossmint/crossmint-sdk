@@ -14,7 +14,6 @@ class LoggerProvider {
 
     private setLogger() {
         const logger = this.shouldLogToDatadog() ? new DatadogProvider() : this.getEmptyLogger();
-        console.log("logger", logger);
         const { logInfo, logWarn, logError } = logger;
         this.logInfo = logInfo;
         this.logWarn = logWarn;
