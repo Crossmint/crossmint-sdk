@@ -54,6 +54,15 @@ export class CrossmintWalletService extends BaseCrossmintService {
         }
     }
 
+    async storeJwtCookie(user: UserParams) {
+        return this.fetchCrossmintAPI(
+            `sdk/smart-wallet/save-jwt-cookie`,
+            { method: "GET" },
+            `Error setting jwt cookie. Please contact support`,
+            user.jwt
+        );
+    }
+
     async fetchNFTs(address: string, chain: EVMBlockchainIncludingTestnet) {
         return this.fetchCrossmintAPI(
             `v1-alpha1/wallets/${chain}:${address}/nfts`,

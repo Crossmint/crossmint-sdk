@@ -9,8 +9,7 @@ import {
 } from "@/index";
 import { PasskeySignerData } from "@/types/API";
 import { WalletCreationParams } from "@/types/internal";
-import { CURRENT_VERSION, JWT_COOKIE_EXPIRY_TIME, ZERO_DEV_TYPE } from "@/utils/constants";
-import { isLocalhost } from "@/utils/helpers";
+import { CURRENT_VERSION, ZERO_DEV_TYPE } from "@/utils/constants";
 import { createPasskeyValidator, deserializePasskeyValidator } from "@zerodev/passkey-validator";
 import { KernelValidator, createKernelAccount } from "@zerodev/sdk";
 import { EntryPoint } from "permissionless/types/entrypoint";
@@ -34,7 +33,7 @@ export class PasskeyWalletService {
     constructor(private readonly crossmintService: CrossmintWalletService) {}
 
     public async getOrCreate({ user, chain, publicClient, walletConfig, entrypoint }: PasskeyWalletParams) {
-        this.setJwtCookie(user.jwt);
+        this.setJwtCookie(user);
 
         const validator = await this.getOrCreateSigner({
             user,
@@ -107,11 +106,7 @@ export class PasskeyWalletService {
         };
     }
 
-    private setJwtCookie(jwt: string) {
-        const now = new Date();
-        const expireTime = new Date(now.getTime() + JWT_COOKIE_EXPIRY_TIME);
-        document.cookie = `user_jwt=${jwt}; expires=${expireTime.toUTCString()}; path=/;${
-            isLocalhost() ? "" : " Secure;"
-        }`;
+    private async setJwtCookie(user: UserParams) {
+        await this.crossmintService.storeJwtCookie(user);
     }
 }

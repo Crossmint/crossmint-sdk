@@ -23,6 +23,7 @@ export abstract class BaseCrossmintService extends LoggerWrapper {
             accept: "application/json",
             "content-type": "application/json",
             "x-api-key": apiKey,
+            credentials: "include",
         };
         this.crossmintBaseUrl = this.getUrlFromEnv(result.environment);
     }
