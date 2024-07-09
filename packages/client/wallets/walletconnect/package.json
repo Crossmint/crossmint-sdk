@@ -1,5 +1,40 @@
 {
+    "name": "@crossmint/client-sdk-walletconnect",
+    "version": "1.1.6",
+    "repository": "https://github.com/Crossmint/crossmint-sdk",
+    "license": "Apache-2.0",
     "author": "Paella Inc",
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs"
+        },
+        "./index.css": {
+            "import": "./dist/index.css",
+            "require": "./dist/index.css"
+        }
+    },
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "style": "./dist/index.css",
+    "files": [
+        "dist",
+        "src",
+        "LICENSE",
+        ".yalc"
+    ],
+    "scripts": {
+        "build": "yarn clean && tsup src/index.ts --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
+        "clean": "shx rm -rf dist/*",
+        "dev": "yarn clean && tsup src/index.ts --external react,react-dom --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
+        "link:client-sdk-aa": "yalc add @crossmint/client-sdk-aa && yalc link @crossmint/client-sdk-aa && yarn ",
+        "link:common-sdk-base": "yalc add @crossmint/common-sdk-base && yalc link @crossmint/common-sdk-base && yarn",
+        "unlink:client-sdk-aa": "yalc remove @crossmint/client-sdk-aa && yarn",
+        "unlink:common-sdk-base": "yalc remove @crossmint/common-sdk-base && yalc link @crossmint/common-sdk-base && yarn"
+    },
     "dependencies": {
         "@crossmint/common-sdk-base": "0.0.12",
         "@headlessui/react": "1.7.18",
@@ -24,46 +59,11 @@
         "react-dom": "18.2.0",
         "tailwindcss": "3.4.1"
     },
-    "exports": {
-        ".": {
-            "import": "./dist/index.js",
-            "require": "./dist/index.cjs"
-        },
-        "./index.css": {
-            "import": "./dist/index.css",
-            "require": "./dist/index.css"
-        }
-    },
-    "files": [
-        "dist",
-        "src",
-        "LICENSE",
-        ".yalc"
-    ],
-    "license": "Apache-2.0",
-    "main": "./dist/index.cjs",
-    "module": "./dist/index.js",
-    "name": "@crossmint/client-sdk-walletconnect",
     "peerDependencies": {
         "react": ">=17.0.2",
         "react-dom": ">=17.0.2"
     },
     "publishConfig": {
         "access": "public"
-    },
-    "repository": "https://github.com/Crossmint/crossmint-sdk",
-    "scripts": {
-        "build": "yarn clean && tsup src/index.ts --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
-        "dev": "yarn clean && tsup src/index.ts --external react,react-dom --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
-        "clean": "shx rm -rf dist/*",
-        "link:common-sdk-base": "yalc add @crossmint/common-sdk-base && yalc link @crossmint/common-sdk-base && yarn",
-        "unlink:common-sdk-base": "yalc remove @crossmint/common-sdk-base && yalc link @crossmint/common-sdk-base && yarn",
-        "link:client-sdk-aa": "yalc add @crossmint/client-sdk-aa && yalc link @crossmint/client-sdk-aa && yarn ",
-        "unlink:client-sdk-aa": "yalc remove @crossmint/client-sdk-aa && yarn"
-    },
-    "sideEffects": false,
-    "style": "./dist/index.css",
-    "type": "module",
-    "types": "./dist/index.d.ts",
-    "version": "1.1.6"
+    }
 }
