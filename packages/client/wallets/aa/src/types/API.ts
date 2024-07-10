@@ -11,6 +11,7 @@ export type StoreAbstractWalletInput = {
     baseLayer: string;
     chainId: number;
     entryPointVersion: EntryPointVersion;
+    kernelVersion: "0.3.1" | "0.3.0";
 };
 
 export type SignerData = EOASignerData | PasskeySignerData;

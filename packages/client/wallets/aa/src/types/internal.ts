@@ -1,3 +1,4 @@
+import { KERNEL_V3_VERSION_TYPE } from "@zerodev/sdk/_types/types/kernel";
 import { Hex, HttpTransport, PublicClient } from "viem";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
@@ -10,6 +11,7 @@ export interface WalletCreationParams {
     publicClient: PublicClient<HttpTransport>;
     walletConfig: WalletConfig;
     entrypoint: EntryPointDetails;
+    kernelVersion: KERNEL_V3_VERSION_TYPE;
 }
 
 export type PasskeyValidatorSerializedData = {
