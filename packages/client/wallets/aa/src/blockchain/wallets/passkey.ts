@@ -44,7 +44,7 @@ export class PasskeyWalletService {
         await this.crossmintService.storeAbstractWallet(user, {
             type: ZERO_DEV_TYPE,
             smartContractWalletAddress: kernelAccount.address,
-            signerData: this.getSignerData(validator, walletConfig.signer.passkeyName),
+            signerData: this.getSignerData(validator, walletConfig.signer.passkeyName ?? ""),
             version: CURRENT_VERSION,
             baseLayer: "evm",
             chainId: blockchainToChainId(chain),
@@ -74,9 +74,9 @@ export class PasskeyWalletService {
         }
 
         return createPasskeyValidator(publicClient, {
-            passkeyServerUrl: this.crossmintService.getPasskeyServerUrl(user),
+            passkeyServerUrl: this.crossmintService.getPasskeyServerUrl(),
             entryPoint: entrypoint.address,
-            passkeyName: signer.passkeyName,
+            passkeyName: signer.passkeyName ?? "",
             credentials: "omit",
         });
     }
