@@ -1,9 +1,14 @@
-import { KERNEL_V3_VERSION_TYPE } from "@zerodev/sdk/_types/types/kernel";
 import { Hex, HttpTransport, PublicClient } from "viem";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 import { EntryPointDetails, UserParams, WalletConfig } from "./Config";
+
+export const SUPPORTED_KERNEL_VERSIONS = ["0.3.1", "0.3.0"] as const;
+export type SupportedKernelVersion = (typeof SUPPORTED_KERNEL_VERSIONS)[number];
+
+export const SUPPORTED_ENTRYPOINT_VERSIONS = ["v0.6", "v0.7"] as const;
+export type SupportedEntrypointVersion = (typeof SUPPORTED_ENTRYPOINT_VERSIONS)[number];
 
 export interface WalletCreationParams {
     user: UserParams;
@@ -11,7 +16,7 @@ export interface WalletCreationParams {
     publicClient: PublicClient<HttpTransport>;
     walletConfig: WalletConfig;
     entrypoint: EntryPointDetails;
-    kernelVersion: KERNEL_V3_VERSION_TYPE;
+    kernelVersion: SupportedKernelVersion;
 }
 
 export type PasskeyValidatorSerializedData = {

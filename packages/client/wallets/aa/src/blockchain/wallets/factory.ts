@@ -1,11 +1,15 @@
-import { KERNEL_V3_VERSION_TYPE } from "@zerodev/sdk/_types/types/kernel";
 import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
 import { createPublicClient, http } from "viem";
 
 import { CrossmintWalletService, EVMBlockchainIncludingTestnet } from "../../api/CrossmintWalletService";
 import { EntryPointDetails, UserParams, WalletConfig } from "../../types/Config";
 import { WalletSdkError } from "../../types/Error";
-import { WalletCreationParams } from "../../types/internal";
+import {
+    SUPPORTED_ENTRYPOINT_VERSIONS,
+    SUPPORTED_KERNEL_VERSIONS,
+    SupportedKernelVersion,
+    WalletCreationParams,
+} from "../../types/internal";
 import { getBundlerRPC } from "../BlockchainNetworks";
 import { EVMSmartWallet } from "./EVMSmartWallet";
 import { EOAWalletParams, EOAWalletService } from "./eoa";
@@ -50,30 +54,32 @@ export class SmartWalletCreator {
     private async fetchConfig(
         user: UserParams,
         chain: EVMBlockchainIncludingTestnet
-    ): Promise<{ entrypoint: EntryPointDetails; kernelVersion: KERNEL_V3_VERSION_TYPE }> {
-        console.debug(`Fetching smart wallet config for user: ${JSON.stringify(user)}, chain: ${chain}`);
+    ): Promise<{ entrypoint: EntryPointDetails; kernelVersion: SupportedKernelVersion }> {
         const { entryPointVersion, kernelVersion } = await this.crossmintWalletService.getSmartWalletConfig(
             user,
             chain
         );
-        console.debug(
-            `Received smart wallet config: entryPointVersion=${entryPointVersion}, kernelVersion=${kernelVersion}`
-        );
 
-        if (!["0.3.0", "0.3.1"].includes(kernelVersion)) {
-            console.error(`Unsupported kernel version: ${kernelVersion}`);
-            throw new Error("Unsupported kernel version");
+        if (!SUPPORTED_KERNEL_VERSIONS.includes(kernelVersion)) {
+            throw new Error(
+                `Unsupported kernel version. Supported versions: ${SUPPORTED_KERNEL_VERSIONS.join(
+                    ", "
+                )}. Version used: ${kernelVersion}`
+            );
         }
 
-        const entrypointAddress = entryPointVersion === "v0.6" ? ENTRYPOINT_ADDRESS_V06 : ENTRYPOINT_ADDRESS_V07;
-        console.debug(
-            `Determined entrypoint address: ${entrypointAddress} for entryPointVersion: ${entryPointVersion}`
-        );
+        if (!SUPPORTED_ENTRYPOINT_VERSIONS.includes(entryPointVersion)) {
+            throw new Error(
+                `Unsupported entry point version. Supported versions: ${SUPPORTED_ENTRYPOINT_VERSIONS.join(
+                    ", "
+                )}. Version used: ${entryPointVersion}`
+            );
+        }
 
         return {
             entrypoint: {
                 version: entryPointVersion,
-                address: entrypointAddress,
+                address: entryPointVersion === "v0.6" ? ENTRYPOINT_ADDRESS_V06 : ENTRYPOINT_ADDRESS_V07,
             },
             kernelVersion,
         };
