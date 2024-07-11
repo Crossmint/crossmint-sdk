@@ -7,7 +7,7 @@ import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 import { SignerData } from "./API";
 import { EntryPointDetails, UserParams, WalletConfig } from "./Config";
 
-export const SUPPORTED_KERNEL_VERSIONS = ["0.3.1", "0.3.0"] as const;
+export const SUPPORTED_KERNEL_VERSIONS = ["0.3.1", "0.3.0", "0.2.4"] as const;
 export type SupportedKernelVersion = (typeof SUPPORTED_KERNEL_VERSIONS)[number];
 
 export function isSupportedKernelVersion(version: string): version is SupportedKernelVersion {

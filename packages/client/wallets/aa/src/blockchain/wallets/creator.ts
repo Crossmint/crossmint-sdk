@@ -101,7 +101,19 @@ export class SmartWalletCreator {
             throw new Error(
                 `Unsupported entry point version. Supported versions: ${SUPPORTED_ENTRYPOINT_VERSIONS.join(
                     ", "
-                )}. Version used: ${entryPointVersion}, Please contact support`
+                )}. Version used: ${entryPointVersion}. Please contact support`
+            );
+        }
+
+        if (entryPointVersion === "v0.7" && kernelVersion.startsWith("0.2")) {
+            throw new Error(
+                "Unsupported combination: entryPoint v0.7 and kernel version 0.2.x. Please contact support"
+            );
+        }
+
+        if (entryPointVersion === "v0.6" && kernelVersion.startsWith("0.3")) {
+            throw new Error(
+                "Unsupported combination: entryPoint v0.6 and kernel version 0.3.x. Please contact support"
             );
         }
 
