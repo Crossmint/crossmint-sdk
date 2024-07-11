@@ -9,7 +9,7 @@ import { isClient } from "./utils/environment";
 import { LoggerWrapper, logPerformance } from "./utils/log";
 
 export class SmartWalletSDK extends LoggerWrapper {
-    private constructor(private readonly smartWalletFactory: SmartWalletCreator) {
+    private constructor(private readonly walletCreator: SmartWalletCreator) {
         super("SmartWalletSDK");
     }
 
@@ -39,7 +39,7 @@ export class SmartWalletSDK extends LoggerWrapper {
         return logPerformance(
             "GET_OR_CREATE_WALLET",
             async () => {
-                return await this.smartWalletFactory.getOrCreate(user, chain, walletConfig);
+                return await this.walletCreator.getOrCreate(user, chain, walletConfig);
             },
             { user, chain }
         );

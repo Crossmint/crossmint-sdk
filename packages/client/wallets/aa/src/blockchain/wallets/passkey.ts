@@ -1,8 +1,7 @@
 import { CrossmintWalletService } from "@/api/CrossmintWalletService";
 import { PasskeySignerData } from "@/types/API";
 import { PasskeySigner, UserParams, WalletConfig } from "@/types/Config";
-import { WalletCreationParams } from "@/types/internal";
-import { CURRENT_VERSION, ZERO_DEV_TYPE } from "@/utils/constants";
+import { AccountAndSigner, WalletCreationParams } from "@/types/internal";
 import {
     WebAuthnMode,
     deserializePasskeyValidator,
@@ -12,10 +11,7 @@ import {
 import { KernelValidator, createKernelAccount } from "@zerodev/sdk";
 import { EntryPoint } from "permissionless/types/entrypoint";
 
-import { blockchainToChainId } from "@crossmint/common-sdk-base";
-
 import { deserializePasskeyValidatorData, serializePasskeyValidatorData } from "../../utils/passkey";
-import { EVMSmartWallet } from "./EVMSmartWallet";
 
 export interface PasskeyWalletParams extends WalletCreationParams {
     walletConfig: WalletConfig & { signer: PasskeySigner };
@@ -39,7 +35,7 @@ export class PasskeyWalletService {
         walletConfig,
         entryPoint,
         kernelVersion,
-    }: PasskeyWalletParams) {
+    }: PasskeyWalletParams): Promise<AccountAndSigner> {
         const validator = await this.getOrCreateSigner({
             user,
             entryPoint,
@@ -49,27 +45,13 @@ export class PasskeyWalletService {
             chain,
         });
 
-        console.log("Here's the kernel version we're trying to re-construct the wallet from");
-        console.log(kernelVersion);
-
         const kernelAccount = await createKernelAccount(publicClient, {
             plugins: { sudo: validator },
             entryPoint: entryPoint.address,
             kernelVersion,
         });
 
-        await this.crossmintService.storeSmartWallet(user, {
-            type: ZERO_DEV_TYPE,
-            smartContractWalletAddress: kernelAccount.address,
-            signerData: this.getSignerData(validator, walletConfig.signer.passkeyName),
-            version: CURRENT_VERSION,
-            baseLayer: "evm",
-            chainId: blockchainToChainId(chain),
-            entryPointVersion: entryPoint.version,
-            kernelVersion,
-        });
-
-        return new EVMSmartWallet(this.crossmintService, kernelAccount, publicClient, chain);
+        return { signerData: this.getSignerData(validator, walletConfig.signer.passkeyName), account: kernelAccount };
     }
 
     private async getOrCreateSigner({

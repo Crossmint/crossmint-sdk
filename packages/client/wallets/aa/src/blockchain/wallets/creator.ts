@@ -1,5 +1,10 @@
+import { SignerData } from "@/types/API";
+import { KernelSmartAccount } from "@zerodev/sdk";
 import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
-import { createPublicClient, http } from "viem";
+import { EntryPoint } from "permissionless/types/entrypoint";
+import { type HttpTransport, createPublicClient, http } from "viem";
+
+import { blockchainToChainId } from "@crossmint/common-sdk-base";
 
 import { CrossmintWalletService, EVMBlockchainIncludingTestnet } from "../../api/CrossmintWalletService";
 import { EntryPointDetails, UserParams, WalletConfig } from "../../types/Config";
@@ -12,6 +17,7 @@ import {
     isSupportedEntryPointVersion,
     isSupportedKernelVersion,
 } from "../../types/internal";
+import { CURRENT_VERSION, ZERO_DEV_TYPE } from "../../utils/constants";
 import { getBundlerRPC } from "../BlockchainNetworks";
 import { EVMSmartWallet } from "./EVMSmartWallet";
 import { EOAWalletParams, EOAWalletService } from "./eoa";
@@ -30,26 +36,47 @@ export class SmartWalletCreator {
         walletConfig: WalletConfig
     ): Promise<EVMSmartWallet> {
         try {
-            const versions = await this.fetchVersions(user, chain);
+            const { entryPoint, kernelVersion } = await this.fetchVersions(user, chain);
+            const publicClient = createPublicClient({ transport: http(getBundlerRPC(chain)) });
             const params: WalletCreationParams = {
                 chain,
                 walletConfig,
-                publicClient: createPublicClient({ transport: http(getBundlerRPC(chain)) }),
+                publicClient,
                 user,
-                ...versions,
+                entryPoint,
+                kernelVersion,
             };
 
-            if (isPasskeyParams(params)) {
-                return await this.passkeyWalletService.getOrCreate(params);
-            }
+            const { signerData, account } = await this.constructAccount(params);
+            await this.crossmintWalletService.storeSmartWallet(user, {
+                type: ZERO_DEV_TYPE,
+                smartContractWalletAddress: account.address,
+                signerData: signerData,
+                version: CURRENT_VERSION,
+                baseLayer: "evm",
+                chainId: blockchainToChainId(chain),
+                entryPointVersion: entryPoint.version,
+                kernelVersion: kernelVersion,
+            });
 
-            return await this.eoaWalletService.getOrCreate(params as EOAWalletParams);
+            return new EVMSmartWallet(this.crossmintWalletService, account, publicClient, chain);
         } catch (error: any) {
             if (error.code == null) {
                 throw new WalletSdkError(`Error creating the Wallet ${error?.message ? `: ${error.message}` : ""}`);
             }
 
             throw error;
+        }
+    }
+
+    private constructAccount(params: WalletCreationParams): Promise<{
+        signerData: SignerData;
+        account: KernelSmartAccount<EntryPoint, HttpTransport>;
+    }> {
+        if (isPasskeyParams(params)) {
+            return this.passkeyWalletService.getOrCreate(params);
+        } else {
+            return this.eoaWalletService.getOrCreate(params as EOAWalletParams);
         }
     }
 
