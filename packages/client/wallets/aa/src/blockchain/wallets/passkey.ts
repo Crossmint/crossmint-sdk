@@ -75,6 +75,7 @@ export class PasskeyWalletService {
                 passkeyName: walletConfig.signer.passkeyName,
                 passkeyServerUrl: this.crossmintService.getPasskeyServerUrl(user),
                 mode: WebAuthnMode.Register,
+                passkeyServerHeaders: {},
             }),
             entryPoint: entryPoint.address,
             kernelVersion,
