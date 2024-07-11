@@ -2,7 +2,7 @@ import { EVMBlockchainIncludingTestnet, validateAPIKey } from "@crossmint/common
 
 import { CrossmintWalletService } from "./api/CrossmintWalletService";
 import { EVMSmartWallet } from "./blockchain/wallets";
-import { SmartWalletCreator } from "./blockchain/wallets/factory";
+import { SmartWalletCreator } from "./blockchain/wallets/creator";
 import type { SmartWalletSDKInitParams, UserParams, WalletConfig } from "./types/Config";
 import { RunningOnServerError } from "./types/Error";
 import { isClient } from "./utils/environment";

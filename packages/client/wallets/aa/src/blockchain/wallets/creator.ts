@@ -64,7 +64,7 @@ export class SmartWalletCreator {
             throw new Error(
                 `Unsupported kernel version. Supported versions: ${SUPPORTED_KERNEL_VERSIONS.join(
                     ", "
-                )}. Version used: ${kernelVersion}`
+                )}. Version used: ${kernelVersion}, Please contact support`
             );
         }
 
@@ -72,7 +72,7 @@ export class SmartWalletCreator {
             throw new Error(
                 `Unsupported entry point version. Supported versions: ${SUPPORTED_ENTRYPOINT_VERSIONS.join(
                     ", "
-                )}. Version used: ${entryPointVersion}`
+                )}. Version used: ${entryPointVersion}, Please contact support`
             );
         }
 

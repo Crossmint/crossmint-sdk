@@ -20,9 +20,9 @@ export class CrossmintWalletService extends BaseCrossmintService {
 
     async getSmartWalletConfig(user: UserParams, chain: EVMBlockchainIncludingTestnet) {
         return this.fetchCrossmintAPI(
-            `sdk/smart-wallet/config?chain=${chain}`,
+            `sdk/smart-wallet/version?chain=${chain}`,
             { method: "GET" },
-            `Error getting entry point version. Please contact support`,
+            `Error getting smart wallet version configuration. Please contact support`,
             user.jwt
         );
     }
