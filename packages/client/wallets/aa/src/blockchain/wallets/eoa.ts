@@ -17,14 +17,14 @@ export interface EOAWalletParams extends WalletCreationParams {
 export class EOAWalletService {
     constructor(private readonly crossmintService: CrossmintWalletService) {}
 
-    public async getOrCreate({ user, chain, publicClient, entrypoint, walletConfig, kernelVersion }: EOAWalletParams) {
+    public async getOrCreate({ user, chain, publicClient, entryPoint, walletConfig, kernelVersion }: EOAWalletParams) {
         const eoa = await createOwnerSigner({
             chain,
             walletConfig,
         });
         const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
             signer: eoa,
-            entryPoint: entrypoint.address,
+            entryPoint: entryPoint.address,
             kernelVersion,
         });
         const account = await createKernelAccount(publicClient, {
@@ -32,7 +32,7 @@ export class EOAWalletService {
                 sudo: ecdsaValidator,
             },
             index: BigInt(0),
-            entryPoint: entrypoint.address,
+            entryPoint: entryPoint.address,
             kernelVersion,
         });
 
@@ -44,7 +44,7 @@ export class EOAWalletService {
             version: CURRENT_VERSION,
             baseLayer: "evm",
             chainId: blockchainToChainId(chain),
-            entryPointVersion: entrypoint.version,
+            entryPointVersion: entryPoint.version,
             kernelVersion,
         });
 

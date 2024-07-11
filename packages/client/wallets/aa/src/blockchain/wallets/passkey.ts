@@ -37,12 +37,12 @@ export class PasskeyWalletService {
         chain,
         publicClient,
         walletConfig,
-        entrypoint,
+        entryPoint,
         kernelVersion,
     }: PasskeyWalletParams) {
         const validator = await this.getOrCreateSigner({
             user,
-            entrypoint,
+            entryPoint,
             publicClient,
             walletConfig,
             kernelVersion,
@@ -54,7 +54,7 @@ export class PasskeyWalletService {
 
         const kernelAccount = await createKernelAccount(publicClient, {
             plugins: { sudo: validator },
-            entryPoint: entrypoint.address,
+            entryPoint: entryPoint.address,
             kernelVersion,
         });
 
@@ -65,7 +65,7 @@ export class PasskeyWalletService {
             version: CURRENT_VERSION,
             baseLayer: "evm",
             chainId: blockchainToChainId(chain),
-            entryPointVersion: entrypoint.version,
+            entryPointVersion: entryPoint.version,
             kernelVersion,
         });
 
@@ -74,7 +74,7 @@ export class PasskeyWalletService {
 
     private async getOrCreateSigner({
         user,
-        entrypoint,
+        entryPoint,
         publicClient,
         walletConfig,
         kernelVersion,
@@ -83,7 +83,7 @@ export class PasskeyWalletService {
         if (serializedData != null) {
             return deserializePasskeyValidator(publicClient, {
                 serializedData,
-                entryPoint: entrypoint.address,
+                entryPoint: entryPoint.address,
                 kernelVersion,
             });
         }
@@ -94,7 +94,7 @@ export class PasskeyWalletService {
                 passkeyServerUrl: this.crossmintService.getPasskeyServerUrl(user),
                 mode: WebAuthnMode.Register,
             }),
-            entryPoint: entrypoint.address,
+            entryPoint: entryPoint.address,
             kernelVersion,
         });
     }

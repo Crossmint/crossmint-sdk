@@ -1,4 +1,4 @@
-import { PasskeyValidatorSerializedData, SupportedEntrypointVersion, SupportedKernelVersion } from "./internal";
+import { PasskeyValidatorSerializedData, SupportedEntryPointVersion, SupportedKernelVersion } from "./internal";
 
 export type StoreAbstractWalletInput = {
     type: string;
@@ -8,7 +8,7 @@ export type StoreAbstractWalletInput = {
     version: number;
     baseLayer: string;
     chainId: number;
-    entryPointVersion: SupportedEntrypointVersion;
+    entryPointVersion: SupportedEntryPointVersion;
     kernelVersion: SupportedKernelVersion;
 };
 

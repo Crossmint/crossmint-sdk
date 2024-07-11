@@ -9,6 +9,8 @@ import {
     SUPPORTED_KERNEL_VERSIONS,
     SupportedKernelVersion,
     WalletCreationParams,
+    isSupportedEntryPointVersion,
+    isSupportedKernelVersion,
 } from "../../types/internal";
 import { getBundlerRPC } from "../BlockchainNetworks";
 import { EVMSmartWallet } from "./EVMSmartWallet";
@@ -28,13 +30,13 @@ export class SmartWalletCreator {
         walletConfig: WalletConfig
     ): Promise<EVMSmartWallet> {
         try {
-            const config = await this.fetchConfig(user, chain);
+            const versions = await this.fetchVersions(user, chain);
             const params: WalletCreationParams = {
                 chain,
                 walletConfig,
                 publicClient: createPublicClient({ transport: http(getBundlerRPC(chain)) }),
                 user,
-                ...config,
+                ...versions,
             };
 
             if (isPasskeyParams(params)) {
@@ -51,16 +53,16 @@ export class SmartWalletCreator {
         }
     }
 
-    private async fetchConfig(
+    private async fetchVersions(
         user: UserParams,
         chain: EVMBlockchainIncludingTestnet
-    ): Promise<{ entrypoint: EntryPointDetails; kernelVersion: SupportedKernelVersion }> {
+    ): Promise<{ entryPoint: EntryPointDetails; kernelVersion: SupportedKernelVersion }> {
         const { entryPointVersion, kernelVersion } = await this.crossmintWalletService.getSmartWalletConfig(
             user,
             chain
         );
 
-        if (!SUPPORTED_KERNEL_VERSIONS.includes(kernelVersion)) {
+        if (!isSupportedKernelVersion(kernelVersion)) {
             throw new Error(
                 `Unsupported kernel version. Supported versions: ${SUPPORTED_KERNEL_VERSIONS.join(
                     ", "
@@ -68,7 +70,7 @@ export class SmartWalletCreator {
             );
         }
 
-        if (!SUPPORTED_ENTRYPOINT_VERSIONS.includes(entryPointVersion)) {
+        if (!isSupportedEntryPointVersion(entryPointVersion)) {
             throw new Error(
                 `Unsupported entry point version. Supported versions: ${SUPPORTED_ENTRYPOINT_VERSIONS.join(
                     ", "
@@ -77,7 +79,7 @@ export class SmartWalletCreator {
         }
 
         return {
-            entrypoint: {
+            entryPoint: {
                 version: entryPointVersion,
                 address: entryPointVersion === "v0.6" ? ENTRYPOINT_ADDRESS_V06 : ENTRYPOINT_ADDRESS_V07,
             },

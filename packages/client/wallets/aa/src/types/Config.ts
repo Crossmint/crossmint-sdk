@@ -2,7 +2,7 @@ import { TORUS_NETWORK_TYPE } from "@web3auth/single-factor-auth";
 import { EntryPoint } from "permissionless/types/entrypoint";
 import { EIP1193Provider, LocalAccount } from "viem";
 
-import { SupportedEntrypointVersion } from "./internal";
+import { SupportedEntryPointVersion } from "./internal";
 
 export type SmartWalletSDKInitParams = {
     clientApiKey: string;
@@ -44,4 +44,4 @@ export interface WalletConfig {
     signer: EOASigner | PasskeySigner;
 }
 
-export type EntryPointDetails = { version: SupportedEntrypointVersion; address: EntryPoint };
+export type EntryPointDetails = { version: SupportedEntryPointVersion; address: EntryPoint };
