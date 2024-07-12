@@ -37,10 +37,12 @@
     },
     "dependencies": {
         "@crossmint/common-sdk-base": "0.0.12",
+        "@ethersproject/bytes": "5.7.0",
         "@headlessui/react": "1.7.18",
         "@heroicons/react": "2.1.1",
         "@walletconnect/core": "2.11.1",
         "@walletconnect/encoding": "1.0.2",
+        "@walletconnect/jsonrpc-utils": "1.0.8",
         "@walletconnect/types": "2.11.1",
         "@walletconnect/utils": "2.11.1",
         "@walletconnect/web3wallet": "1.10.1",
