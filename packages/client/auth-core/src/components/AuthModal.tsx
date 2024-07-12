@@ -9,8 +9,18 @@ const incomingModalIframeEvents = {
     }),
 };
 
+const outgoingModalIframeEvents = {
+    closeWindow: z.object({
+        closeWindow: z.string(),
+    }),
+};
+
 type IncomingModalIframeEventsType = {
     jwtToken: typeof incomingModalIframeEvents.jwtToken;
+};
+
+type OutgoingModalIframeEventsType = {
+    closeWindow: typeof outgoingModalIframeEvents.closeWindow;
 };
 
 export default function AuthModal({
@@ -25,7 +35,7 @@ export default function AuthModal({
     baseUrl: string;
 }) {
     const iframeRef = useRef<HTMLIFrameElement | null>(null);
-    const [iframe, setIframe] = useState<IFrameWindow<IncomingModalIframeEventsType, {}> | null>(null);
+    const [iframe, setIframe] = useState<IFrameWindow<IncomingModalIframeEventsType, OutgoingModalIframeEventsType> | null>(null);
 
     useEffect(() => {
         if (iframe == null) {
@@ -35,6 +45,10 @@ export default function AuthModal({
         iframe.on("jwtToken", data => {
             setJwtToken(data.jwtToken);
             iframe.off("jwtToken")
+
+            iframe.send("closeWindow", {
+                closeWindow: "closeWindow"
+            })
 
             if (iframe?.iframe.contentWindow != null) {
                 iframe.iframe.contentWindow.close();
@@ -55,10 +69,16 @@ export default function AuthModal({
 
 
     const handleIframeLoaded = async () => {
-        console.log(iframeRef.current, 'iframeRef.current')
+        if (iframeRef.current == null) {
+            // The iframe should be load, here we should log on DD if possible
+            console.error('Something wrong happened, please try again')
+            return;
+        }
+
         const initIframe = await IFrameWindow.init(`${baseUrl}/sdk/auth/frame?api_key=${apiKey}`, {
             existingIFrame: iframeRef.current,
-            incomingEvents: incomingModalIframeEvents
+            incomingEvents: incomingModalIframeEvents,
+            outgoingEvents: outgoingModalIframeEvents
         });
         setIframe(initIframe);
     }
@@ -66,9 +86,7 @@ export default function AuthModal({
     const iframeSrc = `${baseUrl}/sdk/auth/frame?api_key=${apiKey}`;
     return (
         <ActionModal show={true} onClose={() => setModalOpen(false)}>
-            <div className="flex flex-col items-center w-[500px] h-[600px]">
-                <iframe ref={iframeRef} src={iframeSrc} onLoad={handleIframeLoaded} style={{ width: "500px", height: "600px" }} />
-            </div>
+            <iframe ref={iframeRef} src={iframeSrc} onLoad={handleIframeLoaded} style={{ width: "448px", height: "530px", border: "1px solid #D0D5DD", borderRadius: "16px", padding: "48px 40px", backgroundColor: "#FFFFFF", animation: "fadeIn 3s ease-in-out" }} />
         </ActionModal>
     );
 }

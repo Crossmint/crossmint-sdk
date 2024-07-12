@@ -89,7 +89,6 @@ export function AuthProvider({ children, apiKey, environment }: AuthProviderPara
             });
 
             document.cookie = `crossmint-session=${jwtToken}; path=/;`
-            console.log("cookie", document.cookie);
         }
     }, [jwtToken]);
 
