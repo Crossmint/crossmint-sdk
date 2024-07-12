@@ -1,18 +1,18 @@
 {
     "name": "@crossmint/client-sdk-window",
     "version": "0.0.6",
-    "author": "Paella Labs Inc",
-    "license": "Apache-2.0",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
-    "type": "module",
+    "license": "Apache-2.0",
+    "author": "Paella Labs Inc",
     "sideEffects": false,
-    "main": "./dist/index.cjs",
-    "module": "./dist/index.js",
-    "types": "./dist/index.d.ts",
+    "type": "module",
     "exports": {
         "import": "./dist/index.js",
         "require": "./dist/index.cjs"
     },
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
     "files": [
         "dist",
         "src",

@@ -1,5 +1,33 @@
 {
+    "name": "@crossmint/client-sdk-aa",
+    "version": "1.0.3",
+    "repository": "https://github.com/Crossmint/crossmint-sdk",
+    "license": "Apache-2.0",
     "author": "Paella Labs Inc",
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        "import": "./dist/index.js",
+        "require": "./dist/index.cjs"
+    },
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "files": [
+        "dist",
+        "src",
+        "LICENSE"
+    ],
+    "scripts": {
+        "build": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
+        "build-no-minify": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --dts --sourcemap",
+        "clean": "shx rm -rf dist/*",
+        "dev": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
+        "link:common-sdk-base": "yalc add @crossmint/common-sdk-base && yalc link @crossmint/common-sdk-base && yarn && yarn build && yalc push",
+        "test": "cross-env NODE_ENV=test jest",
+        "test-coverage": "cross-env NODE_ENV=test jest --coverage",
+        "unlink:common-sdk-base": "yalc remove @crossmint/common-sdk-base && yarn"
+    },
     "dependencies": {
         "@crossmint/common-sdk-base": "0.0.13",
         "@datadog/browser-logs": "4.42.2",
@@ -19,35 +47,7 @@
         "@types/node": "^20.11.20",
         "tsup": "^8.0.2"
     },
-    "exports": {
-        "import": "./dist/index.js",
-        "require": "./dist/index.cjs"
-    },
-    "files": [
-        "dist",
-        "src",
-        "LICENSE"
-    ],
-    "license": "Apache-2.0",
-    "main": "./dist/index.cjs",
-    "module": "./dist/index.js",
-    "name": "@crossmint/client-sdk-aa",
     "publishConfig": {
         "access": "public"
-    },
-    "repository": "https://github.com/Crossmint/crossmint-sdk",
-    "scripts": {
-        "build": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
-        "build-no-minify": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --dts --sourcemap",
-        "clean": "shx rm -rf dist/*",
-        "dev": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
-        "link:common-sdk-base": "yalc add @crossmint/common-sdk-base && yalc link @crossmint/common-sdk-base && yarn && yarn build && yalc push",
-        "test": "cross-env NODE_ENV=test jest",
-        "test-coverage": "cross-env NODE_ENV=test jest --coverage",
-        "unlink:common-sdk-base": "yalc remove @crossmint/common-sdk-base && yarn"
-    },
-    "sideEffects": false,
-    "type": "module",
-    "types": "./dist/index.d.ts",
-    "version": "1.0.3"
+    }
 }

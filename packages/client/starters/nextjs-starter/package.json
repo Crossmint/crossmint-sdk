@@ -1,10 +1,10 @@
 {
-    "version": "1.1.8",
     "name": "@crossmint/client-sdk-nextjs-starter",
+    "version": "1.1.8",
     "private": true,
-    "author": "Paella Labs Inc",
-    "license": "Apache-2.0",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
+    "license": "Apache-2.0",
+    "author": "Paella Labs Inc",
     "files": [
         "components",
         "pages",
@@ -18,12 +18,12 @@
         "tsconfig.json"
     ],
     "scripts": {
-        "clean": "shx rm -rf .next",
-        "dev": "next dev -p 3005",
         "build": "yarn clean && next build",
-        "start": "next start",
+        "clean": "shx rm -rf .next",
+        "clean-install": "shx rm -rf node_modules && yarn",
+        "dev": "next dev -p 3005",
         "lint": "next lint",
-        "clean-install": "shx rm -rf node_modules && yarn"
+        "start": "next start"
     },
     "dependencies": {
         "@crossmint/client-sdk-react-ui": "1.1.6",
