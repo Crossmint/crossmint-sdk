@@ -11,8 +11,7 @@ import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { Web3Auth } from "@web3auth/single-factor-auth";
 import { providerToSmartAccountSigner } from "permissionless";
 import type { SmartAccountSigner } from "permissionless/accounts";
-import { Address, EIP1193Provider, Hex } from "viem";
-import { Web3 } from "web3";
+import { Address, EIP1193Provider } from "viem";
 
 import {
     EVMBlockchainIncludingTestnet,

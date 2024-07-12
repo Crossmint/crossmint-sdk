@@ -41,8 +41,7 @@
         "libphonenumber-js": "1.10.44",
         "permissionless": "0.1.29",
         "uuid": "10.0.0",
-        "viem": "2.13.1",
-        "web3": "4.11.0"
+        "viem": "2.13.1"
     },
     "devDependencies": {
         "@playwright/test": "^1.41.2",

@@ -11,23 +11,21 @@ jobs:
         steps:
             - uses: actions/checkout@v3
 
+            - uses: pnpm/action-setup@v4
+              with:
+                  version: 9.3.0
+
             - name: Set Node.js 18.16.0
               uses: actions/setup-node@v3
               with:
                   node-version: 18.16.0
-                  cache: "yarn"
+                  cache: "pnpm"
 
             - name: Run install
-              uses: borales/actions-yarn@v4
-              with:
-                  cmd: install --frozen-lockfile
+              run: pnpm install --frozen-lockfile
 
             - name: Build all
-              uses: borales/actions-yarn@v4
-              with:
-                  cmd: build
+              run: pnpm build
 
             - name: Test all
-              uses: borales/actions-yarn@v4
-              with:
-                  cmd: test
+              run: pnpm test
