@@ -22,32 +22,32 @@ const styles: Styles<"crossmintButton" | "crossmintImg" | "crossmintParagraph" |
     },
     crossmintButton: {
         display: "flex",
-        flexDirection: "row",
-        alignItems: "center",
+        "flex-direction": "row",
+        "align-items": "center",
         padding: "0.875rem 0.875rem",
-        fontWeight: 900,
+        "font-weight": "900",
         transition: "opacity ease-in-out 0.25s",
-        borderRadius: "0.5rem",
-        fontFamily: `"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif`,
+        "border-radius": "0.5rem",
+        "font-family": `"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif`,
         outline: "none",
         border: "none",
-        boxShadow: "0px 8px 15px rgba(0, 0, 0, 0.1)",
-        justifyContent: "center",
+        "box-shadow": "0px 8px 15px rgba(0, 0, 0, 0.1)",
+        "justify-content": "center",
         background: ({ buttonBgColor }: CustomStylingProps) => buttonBgColor,
 
         "&:hover:enabled": {
-            opacity: 0.6,
+            opacity: "0.6",
             cursor: "pointer",
         },
     },
     crossmintImg: {
         width: "21px",
         height: "21px",
-        marginRight: "0.875rem",
+        "margin-right": "0.875rem",
     },
     crossmintParagraph: {
         color: ({ paragraphColor }: CustomStylingProps) => paragraphColor,
-        margin: 0,
+        margin: "0",
     },
 };
 
