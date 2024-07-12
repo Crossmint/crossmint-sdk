@@ -455,6 +455,9 @@ importers:
       '@crossmint/common-sdk-base':
         specifier: 0.0.6
         version: 0.0.6
+      '@ethersproject/providers':
+        specifier: 5.7.2
+        version: 5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       ethers:
         specifier: 5.7.2
         version: 5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10)

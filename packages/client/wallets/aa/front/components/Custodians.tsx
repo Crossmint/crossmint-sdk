@@ -9,7 +9,7 @@ interface CustodianComponentProps {
     aaWallet: EVMAAWallet | undefined;
 }
 
-const CustodianComponent: React.FC<CustodianComponentProps> = ({ aaWallet }) => {
+function CustodianComponent({ aaWallet }: CustodianComponentProps) {
     const handleSetCustodianKillSwitch = async () => {
         if (!aaWallet) {
             console.log("AAWallet not defined");
@@ -37,6 +37,6 @@ const CustodianComponent: React.FC<CustodianComponentProps> = ({ aaWallet }) => 
             </button>
         </div>
     );
-};
+}
 
 export default CustodianComponent;
