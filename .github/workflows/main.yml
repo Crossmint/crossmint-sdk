@@ -13,18 +13,8 @@ jobs:
         steps:
             - uses: actions/checkout@v3
 
-            - uses: pnpm/action-setup@v4
-              with:
-                  version: 9.3.0
-
-            - name: Set Node.js 20.12.2
-              uses: actions/setup-node@v3
-              with:
-                  node-version: 20.12.2
-                  cache: "pnpm"
-
-            - name: Run install
-              run: pnpm install --frozen-lockfile
+            - name: Setup Node.js, PNPM, and install dependencies
+              uses: ./.github/actions/pnpm-install
 
             - name: Build all
               run: pnpm build
@@ -39,18 +29,8 @@ jobs:
         steps:
             - uses: actions/checkout@v3
 
-            - uses: pnpm/action-setup@v4
-              with:
-                  version: 9.3.0
-
-            - name: Set Node.js 20.12.2
-              uses: actions/setup-node@v3
-              with:
-                  node-version: 20.12.2
-                  cache: "pnpm"
-
-            - name: Run install
-              run: pnpm install --frozen-lockfile
+            - name: Setup Node.js, PNPM, and install dependencies
+              uses: ./.github/actions/pnpm-install
 
             - name: Create Release Pull Request or Publish
               uses: changesets/action@v1
