@@ -27,13 +27,13 @@
         ".yalc"
     ],
     "scripts": {
-        "build": "yarn clean && tsup src/index.ts --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
+        "build": "pnpm clean && tsup src/index.ts --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
         "clean": "shx rm -rf dist/*",
-        "dev": "yarn clean && tsup src/index.ts --external react,react-dom --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
-        "link:client-sdk-aa": "yalc add @crossmint/client-sdk-aa && yalc link @crossmint/client-sdk-aa && yarn ",
-        "link:common-sdk-base": "yalc add @crossmint/common-sdk-base && yalc link @crossmint/common-sdk-base && yarn",
-        "unlink:client-sdk-aa": "yalc remove @crossmint/client-sdk-aa && yarn",
-        "unlink:common-sdk-base": "yalc remove @crossmint/common-sdk-base && yalc link @crossmint/common-sdk-base && yarn"
+        "dev": "pnpm clean && tsup src/index.ts --external react,react-dom --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
+        "link:client-sdk-aa": "yalc add @crossmint/client-sdk-aa && yalc link @crossmint/client-sdk-aa && pnpm i",
+        "link:common-sdk-base": "yalc add @crossmint/common-sdk-base && yalc link @crossmint/common-sdk-base && pnpm i",
+        "unlink:client-sdk-aa": "yalc remove @crossmint/client-sdk-aa && pnpm i",
+        "unlink:common-sdk-base": "yalc remove @crossmint/common-sdk-base && yalc link @crossmint/common-sdk-base && pnpm i"
     },
     "dependencies": {
         "@crossmint/common-sdk-base": "0.0.12",

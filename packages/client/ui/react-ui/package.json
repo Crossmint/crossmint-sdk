@@ -19,13 +19,13 @@
         "LICENSE"
     ],
     "scripts": {
-        "prebuild": "yarn run create-version-file",
-        "build": "yarn clean && tsup src/index.ts --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
+        "prebuild": "pnpm run create-version-file",
+        "build": "pnpm clean && tsup src/index.ts --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
         "clean": "shx rm -rf dist/*",
         "create-version-file": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/consts/version.ts",
-        "dev": "yarn clean && tsup src/index.ts --external react,react-dom --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
+        "dev": "pnpm clean && tsup src/index.ts --external react,react-dom --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
         "test": "jest",
-        "version": "yarn run create-version-file && git add ."
+        "version": "pnpm run create-version-file && git add ."
     },
     "dependencies": {
         "@crossmint/client-sdk-base": "1.1.12",

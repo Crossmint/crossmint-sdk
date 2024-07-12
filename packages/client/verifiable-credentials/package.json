@@ -19,17 +19,22 @@
         "LICENSE"
     ],
     "scripts": {
-        "build": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
+        "build": "pnpm clean && tsup src/index.ts --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
         "clean": "shx rm -rf dist/*",
-        "dev": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
+        "dev": "pnpm clean && tsup src/index.ts --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
         "test": "cross-env NODE_ENV=test jest --silent",
         "test-coverage": "cross-env NODE_ENV=test jest --coverage --silent"
     },
     "dependencies": {
         "@crossmint/common-sdk-base": "0.0.6",
+        "@ethersproject/address": "5.7.0",
+        "@ethersproject/constants": "5.7.0",
+        "@ethersproject/contracts": "5.7.0",
         "@ethersproject/providers": "5.7.2",
         "@ethersproject/wallet": "5.7.0",
+        "@lit-protocol/auth-helpers": "5.1.0",
         "@lit-protocol/lit-node-client": "5.1.0",
+        "@lit-protocol/types": "5.1.0",
         "date-fns": "2.30.0"
     },
     "devDependencies": {

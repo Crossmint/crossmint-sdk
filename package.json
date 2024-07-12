@@ -1,28 +1,21 @@
 {
     "name": "crossmint-sdk",
-    "version": "0.0.5",
     "private": true,
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
-    "type": "module",
-    "workspaces": {
-        "packages": [
-            "packages/**/*"
-        ]
-    },
     "scripts": {
         "build": "lerna run build",
-        "changesets:publish": "yarn build && yarn changeset publish --no-git-tag",
+        "changesets:publish": "pnpm build && pnpm changeset publish --no-git-tag",
         "clean": "lerna run clean",
-        "deploy": "yarn deploy:docs && yarn deploy:example",
-        "deploy:docs": "yarn docs && gh-pages --dist docs --dotfiles",
+        "deploy": "pnpm deploy:docs && pnpm deploy:example",
+        "deploy:docs": "pnpm docs && gh-pages --dist docs --dotfiles",
         "deploy:example": "gh-pages --dist packages/client/starters/example/out --dest example --dotfiles",
         "docs": "shx rm -rf docs && typedoc",
         "fmt": "prettier --write '{*,**/*}.{js,ts,jsx,tsx,json}'",
         "link": "lerna link",
         "lint": "eslint --ext .ts . && prettier --check '{*,**/*}.{js,ts,jsx,tsx,json}'",
-        "lint:fix": "eslint --fix --ext .ts . && yarn fmt",
+        "lint:fix": "eslint --fix --ext .ts . && pnpm fmt",
         "nuke": "shx rm -rf {.,packages/**/*}/{node_modules,dist}",
         "prepare": "husky",
         "publish": "lerna publish from-package",
@@ -65,7 +58,11 @@
         "typescript": "5.2.2",
         "vitest": "1.0.2"
     },
+    "packageManager": "pnpm@9.3.0",
     "engines": {
-        "node": ">= 10"
+        "node": ">=20.12.2 <21",
+        "npm": "please-use-pnpm",
+        "pnpm": ">=9",
+        "yarn": "please-use-pnpm"
     }
 }
