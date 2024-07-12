@@ -1,6 +1,4 @@
-import { EthereumWalletConnectors } from "@dynamic-labs/ethereum-all";
-import { DynamicConnectButton, DynamicContextProvider, useDynamicContext } from "@dynamic-labs/sdk-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { InitialQuotePayload } from "@crossmint/client-sdk-base";
 import { CrossmintPaymentElement } from "@crossmint/client-sdk-react-ui";
@@ -28,18 +26,16 @@ export default function PaymentElementPage() {
                     gap: "20px",
                 }}
             >
-            <button onClick={() => setCount(count + 1)}>Increment count: {count}</button>
+                <button onClick={() => setCount(count + 1)}>Increment count: {count}</button>
 
-            <Content count={count} />
+                <Content count={count} />
+            </div>
         </div>
-        </div>
-
     );
 }
 
 function Content({ count }: { count: number }) {
     const [quoteMessage, setQuoteMessage] = useState<InitialQuotePayload | undefined>();
-
 
     return (
         <>
