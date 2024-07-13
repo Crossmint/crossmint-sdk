@@ -9,7 +9,7 @@ interface SignComponentProps {
     aaWallet: EVMAAWallet | undefined;
 }
 
-const SignComponent: React.FC<SignComponentProps> = ({ aaWallet }) => {
+function SignComponent({ aaWallet }: SignComponentProps) {
     const [messageToSign, setMessageToSign] = useState("");
     const [signMessageSignature, setSignMessageSignature] = useState("");
     const [messageToVerify, setMessageToVerify] = useState("");
@@ -131,6 +131,6 @@ const SignComponent: React.FC<SignComponentProps> = ({ aaWallet }) => {
             </section>
         </div>
     );
-};
+}
 
 export default SignComponent;

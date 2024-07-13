@@ -1,6 +1,6 @@
+import { AddressZero } from "@ethersproject/constants";
+import { Contract } from "@ethersproject/contracts";
 import { StaticJsonRpcProvider } from "@ethersproject/providers";
-import { Contract } from "ethers";
-import { constants } from "ethers";
 
 import { VCChain } from "../types/chain";
 import { Nft } from "../types/nft";
@@ -24,7 +24,7 @@ export class NFTService {
         }
         try {
             const owner = await this.getNftOwnerByContractAddress(nft.contractAddress, nft.tokenId);
-            return owner === constants.AddressZero;
+            return owner === AddressZero;
         } catch (e) {
             if ((e as Error).message.includes("ERC721: invalid token ID")) {
                 return true;

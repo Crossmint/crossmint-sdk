@@ -1,15 +1,16 @@
-import { html, LitElement } from "lit";
-import { classMap } from "lit/directives/class-map.js";
-import { property } from "lit/decorators/property.js";
+import { LitElement, html } from "lit";
 import { customElement } from "lit/decorators/custom-element.js";
+import { property } from "lit/decorators/property.js";
+import { classMap } from "lit/directives/class-map.js";
+
 import {
+    CrossmintPayButtonProps,
+    clientNames,
     crossmintModalService,
     crossmintPayButtonService,
-    clientNames,
-    CrossmintPayButtonProps,
 } from "@crossmint/client-sdk-base";
-import { LIB_VERSION } from "../../consts/version";
 
+import { LIB_VERSION } from "../../consts/version";
 import { hostedCheckoutButtonStyles } from "./styles";
 
 export type CrossmintPayButtonLitProps = CrossmintPayButtonProps & {
@@ -45,8 +46,8 @@ const propertyDefaults: CrossmintPayButtonLitProps = {
         experimental: false,
         display: "same-tab",
         paymentMethods: ["fiat", "ETH", "SOL"],
-        delivery:"all"
-    }
+        delivery: "all",
+    },
 };
 
 @customElement("crossmint-pay-button")
@@ -145,10 +146,13 @@ export class CrossmintPayButton extends LitElement {
             connecting: this.connecting,
             paymentMethod: this.paymentMethod,
             locale: this.locale || "en-US",
-            checkoutProps: this.checkoutProps
+            checkoutProps: this.checkoutProps,
         });
 
-        const content = this.getButtonText != null ? this.getButtonText(this.connecting, this.paymentMethod || "fiat") : getButtonTextInteral(this.connecting);
+        const content =
+            this.getButtonText != null
+                ? this.getButtonText(this.connecting, this.paymentMethod || "fiat")
+                : getButtonTextInteral(this.connecting);
 
         const { connect } = crossmintModalService({
             environment: this.environment,
@@ -161,9 +165,9 @@ export class CrossmintPayButton extends LitElement {
             clientName: clientNames.vanillaUi,
             locale: this.locale || "en-US",
             currency: this.currency || "usd",
-            successCallbackURL: this.successCallbackURL ,
+            successCallbackURL: this.successCallbackURL,
             failureCallbackURL: this.failureCallbackURL,
-            loginEmail: this.loginEmail
+            loginEmail: this.loginEmail,
         });
 
         const _handleClick = (e: any) =>
@@ -177,7 +181,7 @@ export class CrossmintPayButton extends LitElement {
                     this.paymentMethod,
                     this.preferredSigninMethod,
                     this.prepay,
-                    this.checkoutProps,
+                    this.checkoutProps
                 );
             });
 
