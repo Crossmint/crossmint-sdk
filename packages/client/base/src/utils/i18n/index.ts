@@ -6,16 +6,16 @@ import enUS from "./dictionaries/enUS";
 import esES from "./dictionaries/esES";
 import frFR from "./dictionaries/frFR";
 import itIT from "./dictionaries/itIT";
+import jaJp from "./dictionaries/jaJp";
 import koKR from "./dictionaries/koKR";
 import ptPT from "./dictionaries/ptPT";
 import ruRU from "./dictionaries/ruRU";
 import thTH from "./dictionaries/thTH";
 import trTR from "./dictionaries/trTR";
 import ukUA from "./dictionaries/ukUA";
+import viVN from "./dictionaries/viVN";
 import zhCN from "./dictionaries/zhCN";
 import zhTW from "./dictionaries/zhTW";
-import viVN from "./dictionaries/viVN";
-import jaJp from "./dictionaries/jaJp";
 
 const localeMap = {
     "en-US": enUS,

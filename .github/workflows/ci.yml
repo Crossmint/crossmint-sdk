@@ -9,7 +9,8 @@ jobs:
     name: build & test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Setup Node.js, PNPM, and install dependencies
         uses: ./.github/actions/pnpm-install
@@ -43,5 +44,5 @@ jobs:
       - name: Setup Node.js, PNPM, and install dependencies
         uses: ./.github/actions/pnpm-install
 
-      - name: Check for unpretty files
+      - name: Check for lint errors
         run: pnpm lint
