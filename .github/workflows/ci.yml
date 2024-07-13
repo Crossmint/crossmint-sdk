@@ -1,48 +1,48 @@
 name: CI
 on:
-  push:
-    branches-ignore:
-      - main
+    push:
+        branches-ignore:
+            - main
 
 jobs:
-  build-and-test:
-    name: build & test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    build-and-test:
+        name: build & test
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
 
-      - name: Setup Node.js, PNPM, and install dependencies
-        uses: ./.github/actions/pnpm-install
+            - name: Setup Node.js, PNPM, and install dependencies
+              uses: ./.github/actions/pnpm-install
 
-      - name: Build all
-        run: pnpm build
+            - name: Build all
+              run: pnpm build
 
-      - name: Test all
-        run: pnpm test
+            - name: Test all
+              run: pnpm test
 
-  prettier:
-    name: prettier:check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    prettier:
+        name: prettier:check
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
 
-      - name: Setup Node.js, PNPM, and install dependencies
-        uses: ./.github/actions/pnpm-install
+            - name: Setup Node.js, PNPM, and install dependencies
+              uses: ./.github/actions/pnpm-install
 
-      - name: Check for unpretty files
-        run: pnpm prettier:check
+            - name: Check for unpretty files
+              run: pnpm prettier:check
 
-  lint:
-    name: lint
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    lint:
+        name: lint
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
 
-      - name: Setup Node.js, PNPM, and install dependencies
-        uses: ./.github/actions/pnpm-install
+            - name: Setup Node.js, PNPM, and install dependencies
+              uses: ./.github/actions/pnpm-install
 
-      - name: Check for lint errors
-        run: pnpm lint
+            - name: Check for lint errors
+              run: pnpm lint
