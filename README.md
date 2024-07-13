@@ -28,20 +28,25 @@ Version 0.2.0 introduces breaking changes. To learn how to migrate from a versio
 git clone https://github.com/Crossmint/crossmint-sdk.git
 ```
 
-2. Install dependencies:
+2. Use the specified node version in .nvmrc file:
+```shell
+nvm use
+```
+
+3. Install dependencies:
 
 ```shell
 cd crossmint-sdk
 pnpm install
 ```
 
-3. Build all packages:
+4. Build all packages:
 
 ```shell
 pnpm build
 ```
 
-4. Run locally:
+5. Run locally:
 
 ```shell
 cd packages/client/starters/react-ui-starter
