@@ -1,6 +1,6 @@
 {
-    "name": "@crossmint/client-sdk-aa",
-    "version": "1.0.3",
+    "name": "@crossmint/client-sdk-aa-passkeys-beta",
+    "version": "1.1.0-beta.17",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
