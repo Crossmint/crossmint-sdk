@@ -19,9 +19,9 @@
         "LICENSE"
     ],
     "scripts": {
-        "build": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
+        "build": "pnpm clean && tsup src/index.ts --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
         "clean": "shx rm -rf dist/*",
-        "dev": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --dts --sourcemap --watch"
+        "dev": "pnpm clean && tsup src/index.ts --format esm,cjs --outDir ./dist --dts --sourcemap --watch"
     },
     "dependencies": {
         "zod": "3.22.4"

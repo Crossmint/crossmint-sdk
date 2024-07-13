@@ -19,14 +19,14 @@
         "LICENSE"
     ],
     "scripts": {
-        "build": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
-        "build-no-minify": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --dts --sourcemap",
+        "build": "pnpm clean && tsup src/index.ts --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
+        "build-no-minify": "pnpm clean && tsup src/index.ts --format esm,cjs --outDir ./dist --dts --sourcemap",
         "clean": "shx rm -rf dist/*",
-        "dev": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
-        "link:common-sdk-base": "yalc add @crossmint/common-sdk-base && yalc link @crossmint/common-sdk-base && yarn && yarn build && yalc push",
+        "dev": "pnpm clean && tsup src/index.ts --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
+        "link:common-sdk-base": "yalc add @crossmint/common-sdk-base && yalc link @crossmint/common-sdk-base && pnpm i && pnpm build && yalc push",
         "test": "cross-env NODE_ENV=test jest",
         "test-coverage": "cross-env NODE_ENV=test jest --coverage",
-        "unlink:common-sdk-base": "yalc remove @crossmint/common-sdk-base && yarn"
+        "unlink:common-sdk-base": "yalc remove @crossmint/common-sdk-base && pnpm i"
     },
     "dependencies": {
         "@crossmint/common-sdk-base": "0.0.13",
@@ -40,12 +40,13 @@
         "email-validator": "2.0.4",
         "libphonenumber-js": "1.10.44",
         "permissionless": "0.1.29",
+        "uuid": "10.0.0",
         "viem": "2.13.1"
     },
     "devDependencies": {
         "@playwright/test": "^1.41.2",
-        "@types/node": "^20.11.20",
-        "tsup": "^8.0.2"
+        "@types/node": "20.12.7",
+        "@types/uuid": "10.0.0"
     },
     "publishConfig": {
         "access": "public"

@@ -1,4 +1,4 @@
-import { ethers } from "ethers";
+import * as ethersContracts from "@ethersproject/contracts";
 
 import { configManager } from "../configs";
 import { IPFSService } from "../services/ipfs";
@@ -17,7 +17,7 @@ describe("getMetadata", () => {
 
     describe("getMetadata", () => {
         beforeEach(() => {
-            jest.spyOn(ethers, "Contract").mockImplementation(
+            jest.spyOn(ethersContracts, "Contract").mockImplementation(
                 () =>
                     ({
                         contractURI: jest.fn().mockResolvedValue("ipfs://uri"),

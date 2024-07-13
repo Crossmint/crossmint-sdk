@@ -18,7 +18,7 @@
         "tsconfig.json"
     ],
     "scripts": {
-        "build": "yarn clean && next build && next export",
+        "build": "pnpm clean && next build && next export",
         "clean": "shx rm -rf .next",
         "dev": "next dev",
         "lint": "next lint",

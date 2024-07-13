@@ -1,11 +1,6 @@
-import { createUseStyles } from "react-jss";
+import { Styles, createUseStyles } from "react-jss";
 
 const DARK_BG = "#1e1e1e";
-
-interface CustomStylingProps {
-    buttonBgColor?: string;
-    paragraphColor?: string;
-}
 
 const themeIsLight = (theme: string) => theme === "light";
 
@@ -14,7 +9,13 @@ export const formatProps = (theme: string): CustomStylingProps => ({
     paragraphColor: themeIsLight(theme) ? "black" : "white",
 });
 
-export const useStyles = createUseStyles({
+export type Classes<Name extends string | number | symbol = string> = Record<Name, string>;
+interface CustomStylingProps {
+    buttonBgColor?: string;
+    paragraphColor?: string;
+}
+
+const styles: Styles<"crossmintButton" | "crossmintImg" | "crossmintParagraph" | "@global", CustomStylingProps> = {
     "@global": {
         "@import":
             "url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap')",
@@ -48,4 +49,11 @@ export const useStyles = createUseStyles({
         color: ({ paragraphColor }: CustomStylingProps) => paragraphColor,
         margin: "0",
     },
-});
+};
+
+export const useStyles: (
+    data?:
+        | CustomStylingProps & {
+              theme?: any;
+          }
+) => Classes<"crossmintButton" | "crossmintImg" | "crossmintParagraph" | "@global"> = createUseStyles(styles);

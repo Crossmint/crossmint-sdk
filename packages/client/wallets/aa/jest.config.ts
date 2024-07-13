@@ -2,7 +2,7 @@ import type { JestConfigWithTsJest } from "ts-jest";
 
 const jestConfig: JestConfigWithTsJest = {
     moduleNameMapper: {
-        "^@/(.*)$": "<rootDir>/dist/index.cjs",
+        "^@/(.*)$": "<rootDir>/src/$1",
         // ... add other path mappings as needed
     },
     transform: {
@@ -18,9 +18,9 @@ const jestConfig: JestConfigWithTsJest = {
     testPathIgnorePatterns: ["playwright/tests"],
     extensionsToTreatAsEsm: [".ts"],
     globals: {
-      "ts-jest": {
-        useESM: true,
-      },
+        "ts-jest": {
+            useESM: true,
+        },
     },
 };
 

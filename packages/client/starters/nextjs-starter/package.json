@@ -18,19 +18,23 @@
         "tsconfig.json"
     ],
     "scripts": {
-        "build": "yarn clean && next build",
+        "build": "pnpm clean && next build",
         "clean": "shx rm -rf .next",
-        "clean-install": "shx rm -rf node_modules && yarn",
+        "clean-install": "shx rm -rf node_modules && pnpm i",
         "dev": "next dev -p 3005",
         "lint": "next lint",
         "start": "next start"
     },
     "dependencies": {
+        "@crossmint/client-sdk-base": "1.1.13",
         "@crossmint/client-sdk-react-ui": "1.1.6",
+        "@dynamic-labs/ethereum-all": "0.17.29",
         "@dynamic-labs/sdk-react": "0.17.29",
+        "@dynamic-labs/solana-all": "0.17.29",
         "next": "13.4.19",
         "react": "18.2.0",
-        "react-dom": "18.2.0"
+        "react-dom": "18.2.0",
+        "rpc-websockets": "7.11.0"
     },
     "devDependencies": {
         "@types/react": "18.2.21",
