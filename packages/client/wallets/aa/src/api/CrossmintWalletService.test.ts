@@ -5,10 +5,6 @@ jest.mock("../services/logging", () => ({
     logError: jest.fn(),
     logInfo: jest.fn(),
 }));
-jest.mock("@/utils/error", () => ({
-    CrossmintServiceError: jest.fn(),
-    errorToJSON: jest.fn(),
-}));
 
 jest.mock("../utils/helpers", () => {
     return {
