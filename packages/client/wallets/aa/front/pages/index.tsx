@@ -1,5 +1,8 @@
 import CreateWalletComponent from "@/components/CreateWallet";
 import CustodianComponent from "@/components/Custodians";
+import GetNFTsComponent from "@/components/GetNFTsComponent";
+import LocalStorageDataComponent from "@/components/LocalStorage";
+import MintAndTransferComponent from "@/components/MintAndTransfer";
 import SendTransactionComponent from "@/components/SendTransaction";
 import SignComponent from "@/components/SignMessages";
 import { useState } from "react";
@@ -7,9 +10,6 @@ import { useState } from "react";
 import { EVMAAWallet } from "@crossmint/client-sdk-aa";
 
 import styles from "../styles/index.module.css";
-import LocalStorageDataComponent from "@/components/LocalStorage";
-import MintAndTransferComponent from "@/components/MintAndTransfer";
-import GetNFTsComponent from "@/components/GetNFTsComponent";
 
 export default function WalletPage() {
     const [aaWallet, setAAWallet] = useState<EVMAAWallet | undefined>();
@@ -27,7 +27,7 @@ export default function WalletPage() {
                 </section>
             </div>
 
-            {aaWallet && <CustodianComponent aaWallet={aaWallet}/>}
+            {aaWallet && <CustodianComponent aaWallet={aaWallet} />}
 
             {aaWallet && <SignComponent aaWallet={aaWallet} />}
 
@@ -37,7 +37,7 @@ export default function WalletPage() {
 
             {aaWallet && <GetNFTsComponent aaWallet={aaWallet} />}
 
-            <LocalStorageDataComponent/>
+            <LocalStorageDataComponent />
         </div>
     );
 }

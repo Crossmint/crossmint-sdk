@@ -6,10 +6,11 @@ on:
 
 jobs:
     build-and-test:
-        name: Build & Test
+        name: build & test
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v3
+            - name: Checkout
+              uses: actions/checkout@v4
 
             - name: Setup Node.js, PNPM, and install dependencies
               uses: ./.github/actions/pnpm-install
@@ -19,3 +20,29 @@ jobs:
 
             - name: Test all
               run: pnpm test
+
+    prettier:
+        name: prettier:check
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js, PNPM, and install dependencies
+              uses: ./.github/actions/pnpm-install
+
+            - name: Check for unpretty files
+              run: pnpm prettier:check
+
+    lint:
+        name: lint
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js, PNPM, and install dependencies
+              uses: ./.github/actions/pnpm-install
+
+            - name: Check for lint errors
+              run: pnpm lint
