@@ -1,5 +1,31 @@
 {
+    "name": "@crossmint/client-sdk-react-ui",
+    "version": "1.1.10",
+    "repository": "https://github.com/Crossmint/crossmint-sdk",
+    "license": "Apache-2.0",
     "author": "Paella Labs Inc",
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        "import": "./dist/index.js",
+        "require": "./dist/index.cjs"
+    },
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "files": [
+        "dist",
+        "src",
+        "LICENSE"
+    ],
+    "scripts": {
+        "prebuild": "pnpm run create-version-file",
+        "build": "tsup src/index.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
+        "create-version-file": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/consts/version.ts",
+        "dev": "tsup src/index.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
+        "test": "jest",
+        "version": "pnpm run create-version-file && git add ."
+    },
     "dependencies": {
         "@crossmint/client-sdk-base": "1.1.12",
         "@crossmint/common-sdk-base": "0.0.11",
@@ -16,38 +42,11 @@
         "react": "18.2.0",
         "react-dom": "18.2.0"
     },
-    "exports": {
-        "import": "./dist/index.js",
-        "require": "./dist/index.cjs"
-    },
-    "files": [
-        "dist",
-        "src",
-        "LICENSE"
-    ],
-    "license": "Apache-2.0",
-    "main": "./dist/index.cjs",
-    "module": "./dist/index.js",
-    "name": "@crossmint/client-sdk-react-ui",
     "peerDependencies": {
         "react": ">=17.0.2",
         "react-dom": ">=17.0.2"
     },
     "publishConfig": {
         "access": "public"
-    },
-    "repository": "https://github.com/Crossmint/crossmint-sdk",
-    "scripts": {
-        "build": "yarn clean && tsup src/index.ts --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
-        "clean": "shx rm -rf dist/*",
-        "create-version-file": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/consts/version.ts",
-        "dev": "yarn clean && tsup src/index.ts --external react,react-dom --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
-        "prebuild": "yarn run create-version-file",
-        "test": "jest",
-        "version": "yarn run create-version-file && git add ."
-    },
-    "sideEffects": false,
-    "type": "module",
-    "types": "./dist/index.d.ts",
-    "version": "1.1.10"
+    }
 }

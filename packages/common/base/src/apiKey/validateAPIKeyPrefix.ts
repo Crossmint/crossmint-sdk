@@ -82,7 +82,7 @@ function getUsageOriginForKey(apiKey: string): APIKeyUsageOrigin | null {
 }
 
 function getEnvironmentForKey(apiKey: string): APIKeyEnvironmentPrefix | null {
-    const keyWithoutUsageOrigin = apiKey.slice(3)
+    const keyWithoutUsageOrigin = apiKey.slice(3);
     if (keyWithoutUsageOrigin.startsWith(APIKeyEnvironmentPrefix.DEVELOPMENT + "_")) {
         return APIKeyEnvironmentPrefix.DEVELOPMENT;
     } else if (keyWithoutUsageOrigin.startsWith(APIKeyEnvironmentPrefix.STAGING + "_")) {

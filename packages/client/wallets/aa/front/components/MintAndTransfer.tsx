@@ -1,16 +1,18 @@
-import React, { useState } from 'react';
-import styles from "../styles/index.module.css"; 
+import { mintAndTransferERC20, mintAndTransferERC721, mintAndTransferERC1155 } from "@/services/walletService";
+import React, { useState } from "react";
+
 import { EVMAAWallet } from "@crossmint/client-sdk-aa";
-import { mintAndTransferERC20, mintAndTransferERC721, mintAndTransferERC1155 } from '@/services/walletService';
+
+import styles from "../styles/index.module.css";
 
 interface MintAndTransferComponentProps {
     aaWallet: EVMAAWallet | undefined;
 }
 
-const MintAndTransferComponent:  React.FC<MintAndTransferComponentProps> = ({ aaWallet }) => {
-    const [transferERC721Hash, setTransferERC721Hash] = useState('');
-    const [transferERC1155Hash, setTransferERC1155Hash] = useState('');
-    const [transferERC20Hash, setTransferERC20Hash] = useState('');
+function MintAndTransferComponent({ aaWallet }: MintAndTransferComponentProps) {
+    const [transferERC721Hash, setTransferERC721Hash] = useState("");
+    const [transferERC1155Hash, setTransferERC1155Hash] = useState("");
+    const [transferERC20Hash, setTransferERC20Hash] = useState("");
 
     const handleTransferERC721 = async () => {
         if (!aaWallet) {
@@ -79,6 +81,6 @@ const MintAndTransferComponent:  React.FC<MintAndTransferComponentProps> = ({ aa
             </section>
         </div>
     );
-};
+}
 
 export default MintAndTransferComponent;

@@ -1,5 +1,28 @@
 {
+    "name": "@crossmint/common-sdk-base",
+    "version": "0.0.13",
+    "repository": "https://github.com/Crossmint/crossmint-sdk",
+    "license": "Apache-2.0",
     "author": "Paella Labs Inc",
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        "import": "./dist/index.js",
+        "require": "./dist/index.cjs"
+    },
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "files": [
+        "dist",
+        "src",
+        "LICENSE"
+    ],
+    "scripts": {
+        "build": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
+        "dev": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
+        "test": "vitest run"
+    },
     "dependencies": {
         "bs58": "5.0.0",
         "tweetnacl": "1.0.3"
@@ -7,31 +30,7 @@
     "devDependencies": {
         "@types/bs58": "^4.0.4"
     },
-    "exports": {
-        "import": "./dist/index.js",
-        "require": "./dist/index.cjs"
-    },
-    "files": [
-        "dist",
-        "src",
-        "LICENSE"
-    ],
-    "license": "Apache-2.0",
-    "main": "./dist/index.cjs",
-    "module": "./dist/index.js",
-    "name": "@crossmint/common-sdk-base",
     "publishConfig": {
         "access": "public"
-    },
-    "repository": "https://github.com/Crossmint/crossmint-sdk",
-    "scripts": {
-        "build": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
-        "clean": "shx rm -rf dist/*",
-        "dev": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
-        "test": "vitest run"
-    },
-    "sideEffects": false,
-    "type": "module",
-    "types": "./dist/index.d.ts",
-    "version": "0.0.13"
+    }
 }

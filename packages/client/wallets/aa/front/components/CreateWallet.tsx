@@ -9,7 +9,7 @@ interface CreateWalletComponentProps {
     onWalletCreated: (wallet: EVMAAWallet) => void;
 }
 
-const CreateWalletComponent: React.FC<CreateWalletComponentProps> = ({ onWalletCreated }) => {
+function CreateWalletComponent({ onWalletCreated }: CreateWalletComponentProps) {
     const [email, setEmail] = useState<string>("");
     const [privateKey, setPrivateKey] = useState<string>("");
     const [walletAddress, setWalletAddress] = useState<string>("");
@@ -68,7 +68,7 @@ const CreateWalletComponent: React.FC<CreateWalletComponentProps> = ({ onWalletC
                     value={walletAddress}
                     data-testid="createdOrGotWalletEthers"
                     readOnly
-                />           
+                />
             </div>
             <div>
                 <h3>Fireblocks Wallet</h3>
@@ -92,6 +92,6 @@ const CreateWalletComponent: React.FC<CreateWalletComponentProps> = ({ onWalletC
             </div>
         </div>
     );
-};
+}
 
 export default CreateWalletComponent;

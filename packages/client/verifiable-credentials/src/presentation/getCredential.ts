@@ -60,7 +60,7 @@ export class CrossmintCredentialRetrieval {
 
 export const crossmintRetrievalProcedure: CredentialRetrievalProcedure = {
     endpointCondition: (endpoint: string) => endpoint.includes("crossmint"),
-    procedure: async ({ locator, retrievalPath }: { locator: string; retrievalPath: string }) => {
+    procedure: async ({ locator }: { locator: string; retrievalPath: string }) => {
         return await new CrossmintCredentialRetrieval().getCredential({ locator });
     },
 };

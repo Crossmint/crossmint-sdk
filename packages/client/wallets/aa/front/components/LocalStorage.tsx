@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
-import styles from "../styles/index.module.css";
-import { purgeData } from '@/services/walletService';
+import { purgeData } from "@/services/walletService";
+import React, { useState } from "react";
 
-const LocalStorageDataComponent: React.FC = () => {
-    const [storageData, setStorageData] = useState('');
+import styles from "../styles/index.module.css";
+
+function LocalStorageDataComponent() {
+    const [storageData, setStorageData] = useState("");
 
     const checkLocalStorage = () => {
         const keys = Object.keys(localStorage);
-        const filteredKeys = keys.filter(key => key.startsWith('NCW-'));
+        const filteredKeys = keys.filter((key) => key.startsWith("NCW-"));
         if (filteredKeys.length > 0) {
             setStorageData('Data found in LocalStorage starting with "NCW-".');
         } else {
@@ -22,18 +23,13 @@ const LocalStorageDataComponent: React.FC = () => {
                 <button className={styles.button} data-testid="CheckLocalStorageBtn" onClick={checkLocalStorage}>
                     Check LocalStorage Data
                 </button>
-                <button className={styles.button} data-testid="PurgeLocalDataBtn" onClick={ purgeData}>
+                <button className={styles.button} data-testid="PurgeLocalDataBtn" onClick={purgeData}>
                     Purge Local Data
                 </button>
-                <textarea
-                    className={styles.input}
-                    value={storageData}
-                    data-testid="LocalStorageData"
-                    readOnly
-                />
+                <textarea className={styles.input} value={storageData} data-testid="LocalStorageData" readOnly />
             </section>
         </div>
     );
-};
+}
 
 export default LocalStorageDataComponent;

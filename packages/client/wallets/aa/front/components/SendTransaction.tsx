@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
-import styles from '../styles/index.module.css';
+import { sendTransaction } from "@/services/walletService";
+import React, { useState } from "react";
+
 import { EVMAAWallet } from "@crossmint/client-sdk-aa";
-import { sendTransaction } from '@/services/walletService';
+
+import styles from "../styles/index.module.css";
 
 interface SendTransactionComponentProps {
     aaWallet: EVMAAWallet | undefined;
 }
 
-const SendTransactionComponent: React.FC<SendTransactionComponentProps> = ({ aaWallet }) => {
-    const [sendTransactionTxHash, setSendTransactionTxHash] = useState('');
+function SendTransactionComponent({ aaWallet }: SendTransactionComponentProps) {
+    const [sendTransactionTxHash, setSendTransactionTxHash] = useState("");
 
     const handleSendTransaction = async () => {
         if (aaWallet) {
@@ -41,6 +43,6 @@ const SendTransactionComponent: React.FC<SendTransactionComponentProps> = ({ aaW
             </section>
         </div>
     );
-};
+}
 
 export default SendTransactionComponent;

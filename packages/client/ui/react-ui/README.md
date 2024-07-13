@@ -11,7 +11,7 @@ If you're using React.js, or Next.js, Crossmint provides a client integration sp
 First, add the Crossmint Client SDK to your project with the following command:
 
 ```shell
-yarn add @crossmint/client-sdk-react-ui
+pnpm add @crossmint/client-sdk-react-ui
 ```
 
 ### Add payment button to your site
