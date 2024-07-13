@@ -18,8 +18,7 @@
         "tsconfig.json"
     ],
     "scripts": {
-        "build": "pnpm clean && next build && next export",
-        "clean": "shx rm -rf .next",
+        "build": "next build",
         "dev": "next dev",
         "lint": "next lint",
         "start": "next start"

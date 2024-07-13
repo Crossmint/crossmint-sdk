@@ -92,7 +92,7 @@ export const mintAndTransferERC721 = async (aaWallet: EVMAAWallet) => {
         const contractWithSigner = contract.connect(signer);
 
         let _tokenId;
-        contractWithSigner.on("Transfer", (from, to, tokenId, event) => {
+        contractWithSigner.on("Transfer", (from, to, tokenId) => {
             console.log(`Token ID: ${tokenId.toString()}`);
             _tokenId = tokenId;
         });

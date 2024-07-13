@@ -20,10 +20,9 @@
     ],
     "scripts": {
         "prebuild": "pnpm run create-version-file",
-        "build": "pnpm clean && tsup src/index.ts --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
-        "clean": "shx rm -rf dist/*",
+        "build": "tsup src/index.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
         "create-version-file": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/consts/version.ts",
-        "dev": "pnpm clean && tsup src/index.ts --external react,react-dom --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
+        "dev": "tsup src/index.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
         "test": "jest",
         "version": "pnpm run create-version-file && git add ."
     },
