@@ -44,4 +44,4 @@ jobs:
         uses: ./.github/actions/pnpm-install
 
       - name: Check for unpretty files
-        run: pnpm prettier:check
+        run: pnpm lint
