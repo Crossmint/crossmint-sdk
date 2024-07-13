@@ -26,7 +26,6 @@
     "scripts": {
         "prebuild": "pnpm run create-version-file",
         "build": "pnpm clean && tsup src/index.ts --format esm,cjs,iife --outDir ./dist --minify --dts --sourcemap",
-        "clean": "shx rm -rf dist/*",
         "create-version-file": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/consts/version.ts",
         "dev": "pnpm clean && tsup src/index.ts --format esm,cjs,iife --outDir ./dist --dts --sourcemap --watch",
         "version": "pnpm run create-version-file && git add ."

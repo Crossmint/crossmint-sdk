@@ -1,7 +1,7 @@
 import { parseToken } from "./auth";
 
 describe("parseToken", () => {
-    let originalAtob: Function | undefined;
+    let originalAtob: typeof window.atob | undefined;
     let originalConsoleError: any;
 
     beforeAll(() => {

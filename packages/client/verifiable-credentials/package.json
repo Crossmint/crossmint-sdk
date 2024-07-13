@@ -20,7 +20,6 @@
     ],
     "scripts": {
         "build": "pnpm clean && tsup src/index.ts --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
-        "clean": "shx rm -rf dist/*",
         "dev": "pnpm clean && tsup src/index.ts --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
         "test": "cross-env NODE_ENV=test jest --silent",
         "test-coverage": "cross-env NODE_ENV=test jest --coverage --silent"

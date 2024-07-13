@@ -20,7 +20,6 @@
     ],
     "scripts": {
         "build": "pnpm clean && tsup src/index.ts --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
-        "clean": "shx rm -rf dist/*",
         "dev": "pnpm clean && tsup src/index.ts --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
         "test": "vitest run"
     },

@@ -21,7 +21,6 @@
     "scripts": {
         "build": "pnpm clean && tsup src/index.ts --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
         "build-no-minify": "pnpm clean && tsup src/index.ts --format esm,cjs --outDir ./dist --dts --sourcemap",
-        "clean": "shx rm -rf dist/*",
         "dev": "pnpm clean && tsup src/index.ts --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
         "link:common-sdk-base": "yalc add @crossmint/common-sdk-base && yalc link @crossmint/common-sdk-base && pnpm i && pnpm build && yalc push",
         "test": "cross-env NODE_ENV=test jest",

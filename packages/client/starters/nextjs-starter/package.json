@@ -19,8 +19,6 @@
     ],
     "scripts": {
         "build": "pnpm clean && next build",
-        "clean": "shx rm -rf .next",
-        "clean-install": "shx rm -rf node_modules && pnpm i",
         "dev": "next dev -p 3005",
         "lint": "next lint",
         "start": "next start"
