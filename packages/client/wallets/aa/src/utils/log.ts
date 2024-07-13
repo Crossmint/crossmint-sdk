@@ -122,7 +122,7 @@ function stringifyAvoidingCircular(json: any) {
     // stringify an object, avoiding circular structures
     // https://stackoverflow.com/a/31557814
     const simpleObject: { [key: string]: any } = {};
-    for (var prop in json) {
+    for (const prop in json) {
         if (!json.hasOwnProperty(prop)) {
             continue;
         }

@@ -10,7 +10,7 @@ import {
     OutgoingInternalEvent,
 } from "@/types";
 
-import { getEnvironmentBaseUrl, isFiatEmbeddedCheckoutProps } from "../../utils";
+import { getEnvironmentBaseUrl } from "../../utils";
 
 export function crossmintIFrameService(props: CrossmintEmbeddedCheckoutProps) {
     const targetOrigin = getEnvironmentBaseUrl(props.environment);
@@ -32,7 +32,10 @@ export function crossmintIFrameService(props: CrossmintEmbeddedCheckoutProps) {
                 continue;
             }
             if (typeof value === "object") {
-                queryParams.append(key, JSON.stringify(value, (key, val) => (typeof val === 'function') ? 'function' : val));
+                queryParams.append(
+                    key,
+                    JSON.stringify(value, (key, val) => (typeof val === "function" ? "function" : val))
+                );
             } else if (typeof value === "string") {
                 if (value === "undefined") {
                     continue;
