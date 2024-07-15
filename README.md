@@ -44,7 +44,7 @@ pnpm build
 4. Run locally:
 
 ```shell
-cd packages/client/starters/react-ui-starter
+cd apps/payments/create-react-app
 pnpm start
 ```
 
