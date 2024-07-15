@@ -8,7 +8,7 @@
         "build": "lerna run build",
         "build:apps": "pnpm --filter \"./apps/**\" build",
         "build:libs": "pnpm --filter \"./packages/**\" build",
-        "changesets:publish": "pnpm build && pnpm changeset publish --no-git-tag",
+        "changesets:publish": "pnpm build:libs && pnpm changeset publish --no-git-tag",
         "clean:dist": "pnpm rimraf \"**/dist\" --glob",
         "clean:next": "pnpm rimraf \"**/.next\" --glob",
         "clean:node_modules": "pnpm dlx rimraf \"**/node_modules\" --glob",
