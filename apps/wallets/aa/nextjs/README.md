@@ -27,6 +27,6 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/deploym
 ## Run Playwright tests
 
 -   `npx playwright install` in the `/crossmint-sdk/packages/client/wallets/aa` directory
--   Add `.env.local` file in `/crossmint-sdk/packages/client/wallets/aa/front` with `NEXT_PUBLIC_API_KEY_STG` and `NEXT_PUBLIC_API_KEY_DEV`
--   `yarn dev` to raise the test app on port 3001 `/crossmint-sdk/packages/client/wallets/aa/front`
+-   Add `.env.local` file in `/crossmint-sdk/apps/wallets/aa/nextjs` with `NEXT_PUBLIC_API_KEY_STG` and `NEXT_PUBLIC_API_KEY_DEV`
+-   `yarn dev` to raise the test app on port 3001 `/crossmint-sdk/apps/wallets/aa/nextjs`
 -   In `/crossmint-sdk/packages/client/wallets/aa` run `npx playwright test --project=chromium packages/client/wallets/aa/playwright/tests --ui`. If yoi dont want to open the playwright ui, just omit `--ui`
