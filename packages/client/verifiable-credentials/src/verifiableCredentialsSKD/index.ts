@@ -2,7 +2,6 @@
 export type * from "./types";
 export type { CredentialRetrievalProcedure } from "./presentation/getCredential";
 export type { VCSDKConfig } from "./configs";
-export type { LitNetwork } from "./encryption/lit";
 
 // Verification
 export { verifyCredential } from "./verification";
@@ -14,7 +13,8 @@ export { getUsersCredentialNfts } from "./presentation/getCollections";
 export { getNFTFromLocator } from "./presentation/nftByLocator";
 
 // Decryption
-export { Lit } from "./encryption/lit";
+export { Lit, LitNetwork } from "./encryption/lit";
+export { VerifiableCredentialEncryptionType } from "./types";
 
 // Utils
 export * from "./types/utils";

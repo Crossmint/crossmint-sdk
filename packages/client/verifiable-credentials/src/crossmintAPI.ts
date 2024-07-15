@@ -35,6 +35,10 @@ class CrossmintAPI {
         return this.environment;
     }
 
+    isProd() {
+        return this.getEnvironment() === "prod";
+    }
+
     public getHeaders() {
         if (!this.apiKey) {
             throw new Error("Credentials not set");
