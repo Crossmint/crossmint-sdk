@@ -1,4 +1,4 @@
-import { NftWithMetadata } from "@/verifiableCredentialsSKD";
+import { NftWithMetadata } from "@/verifiableCredentialsSDK";
 
 export interface CrossmintWalletNft extends NftWithMetadata {
     metadata: any;
