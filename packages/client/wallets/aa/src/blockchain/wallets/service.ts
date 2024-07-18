@@ -26,7 +26,7 @@ import { PasskeyWalletService, isPasskeyParams } from "./passkey";
 export class SmartWalletService {
     constructor(
         private readonly crossmintWalletService: CrossmintWalletService,
-        private readonly eoaWalletService = new EOAWalletService(crossmintWalletService),
+        private readonly eoaWalletService = new EOAWalletService(),
         private readonly passkeyWalletService = new PasskeyWalletService(crossmintWalletService)
     ) {}
 
@@ -74,9 +74,9 @@ export class SmartWalletService {
         account: KernelSmartAccount<EntryPoint, HttpTransport>;
     }> {
         if (isPasskeyParams(params)) {
-            return this.passkeyWalletService.getOrCreate(params);
+            return this.passkeyWalletService.getAccountAndSigner(params);
         } else {
-            return this.eoaWalletService.getOrCreate(params as EOAWalletParams);
+            return this.eoaWalletService.getAccountAndSigner(params as EOAWalletParams);
         }
     }
 

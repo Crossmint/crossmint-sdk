@@ -24,21 +24,19 @@ type PasskeyValidator = KernelValidator<EntryPoint, "WebAuthnValidator"> & {
 export class PasskeyWalletService {
     constructor(private readonly crossmintService: CrossmintWalletService) {}
 
-    public async getOrCreate({
+    public async getAccountAndSigner({
         user,
-        chain,
         publicClient,
         walletConfig,
         entryPoint,
         kernelVersion,
     }: PasskeyWalletParams): Promise<AccountAndSigner> {
-        const validator = await this.getOrCreateSigner({
+        const validator = await this.getValidator({
             user,
             entryPoint,
             publicClient,
             walletConfig,
             kernelVersion,
-            chain,
         });
 
         const kernelAccount = await createKernelAccount(publicClient, {
@@ -50,14 +48,15 @@ export class PasskeyWalletService {
         return { signerData: this.getSignerData(validator, walletConfig.signer.passkeyName), account: kernelAccount };
     }
 
-    private async getOrCreateSigner({
+    private async getValidator({
         user,
         entryPoint,
         publicClient,
         walletConfig,
         kernelVersion,
-    }: PasskeyWalletParams): Promise<PasskeyValidator> {
+    }: Omit<PasskeyWalletParams, "chain">): Promise<PasskeyValidator> {
         const serializedData = await this.fetchSerializedSigner(user);
+
         if (serializedData != null) {
             return deserializePasskeyValidator(publicClient, {
                 serializedData,

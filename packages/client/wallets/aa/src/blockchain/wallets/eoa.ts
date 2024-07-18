@@ -1,4 +1,3 @@
-import { CrossmintWalletService } from "@/api/CrossmintWalletService";
 import type { EOASigner, WalletConfig } from "@/types/Config";
 import { AccountAndSigner, WalletCreationParams } from "@/types/internal";
 import { createOwnerSigner } from "@/utils/signer";
@@ -10,9 +9,7 @@ export interface EOAWalletParams extends WalletCreationParams {
 }
 
 export class EOAWalletService {
-    constructor(private readonly crossmintService: CrossmintWalletService) {}
-
-    public async getOrCreate({
+    public async getAccountAndSigner({
         chain,
         publicClient,
         entryPoint,
