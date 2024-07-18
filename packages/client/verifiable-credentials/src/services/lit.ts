@@ -3,7 +3,7 @@ import { AuthSig } from "@lit-protocol/types";
 import { APIKeyUsageOrigin } from "@crossmint/common-sdk-base";
 
 import { crossmintAPI } from "../crossmintAPI";
-import { LitNetwork, Lit as LitRaw } from "../verifiableCredentialsSKD";
+import { LitNetwork, Lit as LitRaw } from "../verifiableCredentialsSDK";
 import { DelegationSignature } from "./delegationSignature";
 
 export class Lit extends LitRaw {

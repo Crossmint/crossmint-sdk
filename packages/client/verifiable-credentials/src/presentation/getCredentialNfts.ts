@@ -2,7 +2,7 @@ import {
     CredentialFilter,
     VCChain,
     getUsersCredentialNfts as getUsersCredentialNftsRaw,
-} from "@/verifiableCredentialsSKD";
+} from "@/verifiableCredentialsSDK";
 
 import { getWalletVcCompatibleNfts } from "./getNfts";
 

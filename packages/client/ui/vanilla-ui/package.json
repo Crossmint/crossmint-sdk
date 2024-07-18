@@ -34,8 +34,5 @@
         "@crossmint/client-sdk-base": "1.1.9",
         "@crossmint/common-sdk-base": "0.0.6",
         "lit": "2.8.0"
-    },
-    "publishConfig": {
-        "access": "public"
     }
 }

@@ -2,12 +2,12 @@ import {
     CredentialRetrievalProcedure,
     CredentialService as CredentialServiceRaw,
     ipfsRetrievalProcedure,
-} from "@/verifiableCredentialsSKD";
+} from "@/verifiableCredentialsSDK";
 import type {
     EncryptedVerifiableCredential,
     VerifiableCredential,
     VerifiableCredentialType,
-} from "@/verifiableCredentialsSKD";
+} from "@/verifiableCredentialsSDK";
 
 import { crossmintAPI } from "../crossmintAPI";
 

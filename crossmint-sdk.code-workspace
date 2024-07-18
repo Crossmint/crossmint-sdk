@@ -41,8 +41,8 @@
             "path": "packages/client/verifiable-credentials"
         },
         {
-            "name": "🏁 Starters",
-            "path": "packages/client/starters"
+            "name": "🏁 Apps",
+            "path": "apps"
         }
     ],
     "settings": {

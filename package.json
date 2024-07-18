@@ -6,7 +6,11 @@
     "author": "Paella Labs Inc",
     "scripts": {
         "build": "lerna run build",
-        "changesets:publish": "pnpm build && pnpm changeset publish --no-git-tag",
+        "build:apps": "pnpm --filter \"./apps/**\" build",
+        "build:libs": "pnpm --filter \"./packages/**\" build",
+        "change:add": "pnpm changeset add",
+        "change:publish": "pnpm build:libs && pnpm changeset publish --no-git-tag",
+        "change:version": "pnpm changeset version",
         "clean:dist": "pnpm rimraf \"**/dist\" --glob",
         "clean:next": "pnpm rimraf \"**/.next\" --glob",
         "clean:node_modules": "pnpm dlx rimraf \"**/node_modules\" --glob",
