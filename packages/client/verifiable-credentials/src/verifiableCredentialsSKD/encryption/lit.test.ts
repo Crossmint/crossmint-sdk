@@ -1,5 +1,6 @@
 import * as LitJsSdk from "@lit-protocol/lit-node-client";
 
+import { mockCredential } from "../types/mockCredential";
 import { Lit } from "./lit";
 
 jest.mock("@lit-protocol/lit-node-client");
@@ -36,7 +37,7 @@ describe("Lit", () => {
         const mockDecryptZipFileWithMetadata = jest.fn().mockResolvedValue({});
         jest.spyOn(LitJsSdk, "decryptZipFileWithMetadata").mockImplementation(mockDecryptZipFileWithMetadata);
 
-        await expect(lit.decrypt("test")).rejects.toThrow(
+        await expect(lit.decrypt({ id: "id", payload: "test" })).rejects.toThrow(
             `Failed to decrypt file. Hint: Be sure the file was encrypted on the same network, currently using manzano network.`
         );
     });
@@ -47,16 +48,16 @@ describe("Lit", () => {
         });
 
         jest.spyOn(LitJsSdk, "decryptZipFileWithMetadata").mockImplementation(mockDecryptZipFileWithMetadata);
-        jest.spyOn(LitJsSdk, "uint8arrayToString").mockImplementation((arr) => arr.toString());
+        jest.spyOn(LitJsSdk, "uint8arrayToString").mockImplementation((arr) => JSON.stringify(mockCredential));
         jest.spyOn(LitJsSdk, "base64StringToBlob").mockImplementation((a) => a as any);
 
-        const result = await lit.decrypt("test");
+        const result = await lit.decrypt({ id: "id", payload: "test" });
 
         expect(mockDecryptZipFileWithMetadata).toHaveBeenCalledWith({
             sessionSigs: { sig: "sig" },
             file: "test" as any,
             litNodeClient: mockNodeClient,
         });
-        expect(result).toEqual("1,2,3");
+        expect(result).toEqual(mockCredential);
     });
 });

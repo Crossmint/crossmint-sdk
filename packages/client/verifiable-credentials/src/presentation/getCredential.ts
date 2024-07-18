@@ -28,7 +28,7 @@ export class CrossmintCredentialRetrieval {
         if (query.credentialId != null) {
             const credentialId = query.credentialId;
             console.debug(`Fetching credential ${credentialId}`);
-            url = `${baseUrl}/api/unstable/credentials/id/${credentialId}`;
+            url = `${baseUrl}/api/unstable/credentials/${credentialId}`;
         } else {
             const locator = query.locator;
             console.debug(`Fetching credential from locator ${locator}`);

@@ -105,7 +105,6 @@ export class Lit {
                 `Failed to decrypt file. Hint: Be sure the file was encrypted on the same network, currently using ${this.network} network.`
             );
         }
-
         const decryptedObj = JSON.parse(LitJsSdk.uint8arrayToString(decryptedData?.decryptedFile));
         return decryptedObj;
     }
