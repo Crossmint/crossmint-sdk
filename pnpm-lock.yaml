@@ -408,6 +408,9 @@ importers:
       date-fns:
         specifier: 2.30.0
         version: 2.30.0
+      ethers:
+        specifier: 5.7.2
+        version: 5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10)
     devDependencies:
       '@crossmint/client-sdk-base':
         specifier: 1.1.9
