@@ -1,5 +1,5 @@
 import { crossmintAPI } from "@/crossmintAPI";
-import { EncryptedVerifiableCredential } from "@/verifiableCredentialsSKD";
+import { EncryptedVerifiableCredential } from "@/verifiableCredentialsSDK";
 
 export class WalletAuthService {
     async getChallenge(userAddress: string): Promise<string> {

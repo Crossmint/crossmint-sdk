@@ -4,7 +4,7 @@ import {
     EncryptedVerifiableCredential,
     VerifiableCredential,
     isVerifiableCredential,
-} from "@/verifiableCredentialsSKD";
+} from "@/verifiableCredentialsSDK";
 
 export class WalletDecrypt {
     userAddress: string;
