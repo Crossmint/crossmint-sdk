@@ -44,8 +44,5 @@
         "@playwright/test": "^1.41.2",
         "@types/node": "20.12.7",
         "@types/uuid": "10.0.0"
-    },
-    "publishConfig": {
-        "access": "public"
     }
 }

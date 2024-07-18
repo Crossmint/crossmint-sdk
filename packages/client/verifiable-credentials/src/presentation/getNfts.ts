@@ -1,4 +1,4 @@
-import { Nft, isVcChain } from "@/verifiableCredentialsSKD";
+import { Nft, isVcChain } from "@/verifiableCredentialsSDK";
 
 import { crossmintAPI } from "../crossmintAPI";
 import { CrossmintWalletNft } from "../types/nfts";

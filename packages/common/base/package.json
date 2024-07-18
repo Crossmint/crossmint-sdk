@@ -29,8 +29,5 @@
     },
     "devDependencies": {
         "@types/bs58": "^4.0.4"
-    },
-    "publishConfig": {
-        "access": "public"
     }
 }

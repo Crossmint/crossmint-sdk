@@ -44,7 +44,7 @@ pnpm build
 4. Run locally:
 
 ```shell
-cd packages/client/starters/react-ui-starter
+cd apps/payments/create-react-app
 pnpm start
 ```
 
@@ -60,7 +60,17 @@ pnpm build
 pnpm install
 ```
 
-## Publish (for the crossmint team)
+## Publish
+
+1. Locally, run `pnpm change:add` - the CLI will guide you through selecting which packages you want to update + adding a short message for the changelog
+2. Commit the generated `changeset` file to your PR
+3. The `changeset-bot` will comment on your PR when it detects a new `changeset` has been added
+4. Merge your PR, with the `changeset`, to `main`
+5. A "Release packages" PR will be created/updated by the `changeset-bot`, detailing the pending updates
+6. Merge the "Release packages" PR to main - the new packages will automatically be published on the NPM registry
+7. Done!
+
+## (OLD) Publish (for the crossmint team)
 
 ```shell
 pnpm build

@@ -37,7 +37,7 @@ jobs:
               with:
                   commit: "Release packages"
                   title: "Release packages"
-                  publish: pnpm changeset publish
+                  publish: pnpm change:publish
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
