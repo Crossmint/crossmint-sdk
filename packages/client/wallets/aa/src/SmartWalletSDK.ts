@@ -1,15 +1,15 @@
 import { EVMBlockchainIncludingTestnet, validateAPIKey } from "@crossmint/common-sdk-base";
 
 import { CrossmintWalletService } from "./api/CrossmintWalletService";
-import { EVMSmartWallet } from "./blockchain/wallets";
-import { SmartWalletCreator } from "./blockchain/wallets/creator";
+import type { EVMSmartWallet } from "./blockchain/wallets";
+import { SmartWalletService } from "./blockchain/wallets/service";
 import type { SmartWalletSDKInitParams, UserParams, WalletConfig } from "./types/Config";
 import { RunningOnServerError } from "./types/Error";
 import { isClient } from "./utils/environment";
 import { LoggerWrapper, logPerformance } from "./utils/log";
 
 export class SmartWalletSDK extends LoggerWrapper {
-    private constructor(private readonly walletCreator: SmartWalletCreator) {
+    private constructor(private readonly smartWalletService: SmartWalletService) {
         super("SmartWalletSDK");
     }
 
@@ -28,7 +28,7 @@ export class SmartWalletSDK extends LoggerWrapper {
         }
 
         const crossmintService = new CrossmintWalletService(clientApiKey);
-        return new SmartWalletSDK(new SmartWalletCreator(crossmintService));
+        return new SmartWalletSDK(new SmartWalletService(crossmintService));
     }
 
     async getOrCreateWallet(
@@ -39,7 +39,7 @@ export class SmartWalletSDK extends LoggerWrapper {
         return logPerformance(
             "GET_OR_CREATE_WALLET",
             async () => {
-                return await this.walletCreator.getOrCreate(user, chain, walletConfig);
+                return await this.smartWalletService.getOrCreate(user, chain, walletConfig);
             },
             { user, chain }
         );

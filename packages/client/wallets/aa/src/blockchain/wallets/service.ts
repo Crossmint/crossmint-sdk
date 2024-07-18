@@ -23,7 +23,7 @@ import { EVMSmartWallet } from "./EVMSmartWallet";
 import { EOAWalletParams, EOAWalletService } from "./eoa";
 import { PasskeyWalletService, isPasskeyParams } from "./passkey";
 
-export class SmartWalletCreator {
+export class SmartWalletService {
     constructor(
         private readonly crossmintWalletService: CrossmintWalletService,
         private readonly eoaWalletService = new EOAWalletService(crossmintWalletService),
