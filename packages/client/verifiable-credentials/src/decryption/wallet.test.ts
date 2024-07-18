@@ -1,10 +1,10 @@
 import { EncryptedVerifiableCredential, VerifiableCredential } from "@/verifiableCredentialsSKD";
 
 import { mockCredential } from "../verifiableCredentialsSKD/types/mockCredential";
-import { WalletDecrypt } from "./wallet";
+import { CrossmintDecrypt } from "./wallet";
 
 describe("WalletDecrypt", () => {
-    let walletDecrypt: WalletDecrypt;
+    let walletDecrypt: CrossmintDecrypt;
     let authServiceMock: any;
     let signCallbackMock: any;
     let encryptedCredentialMock: EncryptedVerifiableCredential;
@@ -16,7 +16,7 @@ describe("WalletDecrypt", () => {
         };
         signCallbackMock = jest.fn().mockResolvedValue("signature");
         encryptedCredentialMock = { payload: "payload" } as EncryptedVerifiableCredential;
-        walletDecrypt = new WalletDecrypt("userAddress", signCallbackMock, authServiceMock);
+        walletDecrypt = new CrossmintDecrypt("userAddress", signCallbackMock, authServiceMock);
     });
 
     it("should decrypt a credential", async () => {

@@ -6,7 +6,7 @@ import {
     isVerifiableCredential,
 } from "@/verifiableCredentialsSDK";
 
-export class WalletDecrypt {
+export class CrossmintDecrypt {
     userAddress: string;
     signCallback: (wallet: string, challenge: string) => Promise<string>;
     constructor(
@@ -34,14 +34,14 @@ export class WalletDecrypt {
     }
 }
 
-export class MetamaskWalletDecrypt {
+export class CrossmintMetamaskDecrypt {
     constructor(private readonly metamask = new MetamaskService()) {
         this.metamask.metamaskSignMessage = this.metamask.metamaskSignMessage.bind(this.metamask);
     }
 
     async decrypt(credential: EncryptedVerifiableCredential, wallet?: string): Promise<VerifiableCredential> {
         wallet = wallet || (await this.metamask.getConnectedWallet());
-        const descryptService = new WalletDecrypt(wallet, this.metamask.metamaskSignMessage);
+        const descryptService = new CrossmintDecrypt(wallet, this.metamask.metamaskSignMessage);
         return descryptService.decrypt(credential);
     }
 }

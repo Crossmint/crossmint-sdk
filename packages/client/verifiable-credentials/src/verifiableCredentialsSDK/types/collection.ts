@@ -36,5 +36,6 @@ export interface LitEncryptionDetails {
 
 export enum VerifiableCredentialEncryptionType {
     NONE = "none",
-    DECENTRALIZED = "decentralized-lit",
+    DECENTRALIZED_LIT = "decentralized-lit",
+    CROSSMINT_RECOVERABLE = "crossmint-recoverable",
 }

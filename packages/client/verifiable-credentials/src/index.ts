@@ -29,7 +29,7 @@ export { CredentialService } from "./presentation/getCredential";
 // Decryption
 export { Lit } from "./decryption/lit";
 export { WalletAuthService } from "./services/walletAuth";
-export { WalletDecrypt, MetamaskWalletDecrypt } from "./decryption/wallet";
+export { CrossmintDecrypt, CrossmintMetamaskDecrypt } from "./decryption/wallet";
 
 // Utils
 export {
