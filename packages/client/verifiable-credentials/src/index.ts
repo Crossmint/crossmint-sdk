@@ -12,17 +12,17 @@ export type {
     VerifiableCredentialEncryptionType,
     Nft as VCNFT,
     ChainRPCConfig,
-} from "./verifiableCredentialsSKD";
+} from "./verifiableCredentialsSDK";
 
 // Verification
-export { verifyCredential } from "./verifiableCredentialsSKD";
+export { verifyCredential } from "./verifiableCredentialsSDK";
 // Presentation
 export {
     getNFTFromLocator,
     ContractMetadataService,
     // getUsersCredentialNfts, // Wrapped
     // CredentialService, // Wrapped
-} from "./verifiableCredentialsSKD";
+} from "./verifiableCredentialsSDK";
 
 export { getUsersCredentialNfts } from "./presentation/getCredentialNfts";
 export { CredentialService } from "./presentation/getCredential";
@@ -38,6 +38,6 @@ export {
     isVerifiableCredential,
     isVcChain,
     ipfsRetrievalProcedure,
-} from "./verifiableCredentialsSKD";
+} from "./verifiableCredentialsSDK";
 export { crossmintRetrievalProcedure } from "./presentation/getCredential";
 export { crossmintAPI } from "./crossmintAPI";

@@ -9,7 +9,7 @@ import {
     LitNetwork,
     Lit as LitRaw,
     VerifiableCredential,
-} from "../verifiableCredentialsSKD";
+} from "../verifiableCredentialsSDK";
 
 export class Lit extends LitRaw {
     constructor(network: LitNetwork, capacityDelegationAuthSig?: AuthSig, debug = false) {
