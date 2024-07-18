@@ -11,7 +11,7 @@ If you're using a different front-end framework, or working with vanilla JavaScr
 First add the Crossmint Client SDK to your project with the following command:
 
 ```shell
-yarn add @crossmint/client-sdk-vanilla-ui
+pnpm add @crossmint/client-sdk-vanilla-ui
 ```
 
 Check our dedicated section for payments [in the docs](https://docs.crossmint.com/docs/integration-guide).

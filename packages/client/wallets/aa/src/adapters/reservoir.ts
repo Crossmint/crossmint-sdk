@@ -7,7 +7,7 @@ import { EVMSmartWallet } from "../blockchain/wallets/EVMSmartWallet";
 export function reservoirAdapter(smartAccount: EVMSmartWallet): ReservoirWallet {
     return {
         address: async () => smartAccount.address,
-        handleSignMessageStep: async ({ data }, _) => {
+        handleSignMessageStep: async ({ data }) => {
             const signData = data?.sign;
 
             if (signData == null) {
@@ -26,7 +26,7 @@ export function reservoirAdapter(smartAccount: EVMSmartWallet): ReservoirWallet 
                 });
             }
         },
-        handleSendTransactionStep: async (chainId, stepItem, _) => {
+        handleSendTransactionStep: async (chainId, stepItem) => {
             const stepData = stepItem.data;
             return smartAccount.client.wallet.sendTransaction({
                 data: stepData.data,

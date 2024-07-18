@@ -1,8 +1,9 @@
 import { UpdatableEmbeddedCheckoutParams } from "@/types/embed";
 import { EmptyObject } from "@/types/system";
 
-import { CrossmintInternalEvents } from "./events";
 import { Blockchain } from "@crossmint/common-sdk-base";
+
+import { CrossmintInternalEvents } from "./events";
 
 interface IncomingInternalEventMap {
     [CrossmintInternalEvents.UI_HEIGHT_CHANGED]: { height: number };

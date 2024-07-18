@@ -1,10 +1,6 @@
-import { verifyTypedData } from "@ethersproject/wallet";
-
 import { mockCredential } from "../types/mockCredential";
 import { VerifiableCredential } from "../types/verifiableCredential";
 import { VerifiableCredentialSignatureService } from "./signature";
-
-// jest.mock("@ethersproject/wallet");
 
 describe("VerifiableCredentialSignatureService", () => {
     let service: VerifiableCredentialSignatureService;

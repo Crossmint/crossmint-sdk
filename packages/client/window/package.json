@@ -1,27 +1,26 @@
 {
     "name": "@crossmint/client-sdk-window",
-    "version": "0.0.6",
-    "author": "Paella Labs Inc",
-    "license": "Apache-2.0",
+    "version": "0.0.7",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
-    "type": "module",
+    "license": "Apache-2.0",
+    "author": "Paella Labs Inc",
     "sideEffects": false,
-    "main": "./dist/index.cjs",
-    "module": "./dist/index.js",
-    "types": "./dist/index.d.ts",
+    "type": "module",
     "exports": {
         "import": "./dist/index.js",
         "require": "./dist/index.cjs"
     },
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
     "files": [
         "dist",
         "src",
         "LICENSE"
     ],
     "scripts": {
-        "build": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
-        "clean": "shx rm -rf dist/*",
-        "dev": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --dts --sourcemap --watch"
+        "build": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
+        "dev": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --dts --sourcemap --watch"
     },
     "dependencies": {
         "zod": "3.22.4"

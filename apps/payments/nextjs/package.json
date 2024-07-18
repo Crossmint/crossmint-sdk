@@ -1,0 +1,42 @@
+{
+    "name": "@crossmint/client-sdk-nextjs-starter",
+    "version": "1.1.8",
+    "private": true,
+    "repository": "https://github.com/Crossmint/crossmint-sdk",
+    "license": "Apache-2.0",
+    "author": "Paella Labs Inc",
+    "files": [
+        "components",
+        "pages",
+        "public",
+        "styles",
+        ".eslintrc.json",
+        "next.config.js",
+        "next-env.d.ts",
+        "package.json",
+        "README.md",
+        "tsconfig.json"
+    ],
+    "scripts": {
+        "build": "next build",
+        "dev": "next dev -p 3005",
+        "lint": "next lint",
+        "start": "next start"
+    },
+    "dependencies": {
+        "@crossmint/client-sdk-base": "1.1.13",
+        "@crossmint/client-sdk-react-ui": "1.1.6",
+        "@dynamic-labs/ethereum-all": "0.17.29",
+        "@dynamic-labs/sdk-react": "0.17.29",
+        "@dynamic-labs/solana-all": "0.17.29",
+        "next": "13.4.19",
+        "react": "18.2.0",
+        "react-dom": "18.2.0",
+        "rpc-websockets": "7.11.0"
+    },
+    "devDependencies": {
+        "@types/react": "18.2.21",
+        "@types/react-dom": "18.2.7",
+        "eslint-config-next": "13.4.19"
+    }
+}
