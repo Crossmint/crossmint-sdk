@@ -47,6 +47,7 @@ class CrossmintAPI {
         return {
             "x-api-key": this.apiKey,
             accept: "application/json",
+            "Content-Type": "application/json",
         };
     }
 
