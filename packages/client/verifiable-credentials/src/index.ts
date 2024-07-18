@@ -27,7 +27,9 @@ export {
 export { getUsersCredentialNfts } from "./presentation/getCredentialNfts";
 export { CredentialService } from "./presentation/getCredential";
 // Decryption
-export { Lit } from "./services/lit";
+export { Lit } from "./decryption/lit";
+export { WalletAuthService } from "./services/walletAuth";
+export { WalletDecrypt, MetamaskWalletDecrypt } from "./decryption/wallet";
 
 // Utils
 export {
