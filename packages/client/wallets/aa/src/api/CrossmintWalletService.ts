@@ -1,4 +1,4 @@
-import { PasskeySignerData, StoreAbstractWalletInput } from "@/types/API";
+import { PasskeySignerData, StoreSmartWalletParams } from "@/types/API";
 import type { UserParams } from "@/types/Config";
 import { CrossmintServiceError } from "@/types/Error";
 
@@ -9,7 +9,7 @@ import { BaseCrossmintService } from "./BaseCrossmintService";
 export { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 export class CrossmintWalletService extends BaseCrossmintService {
-    async storeSmartWallet(user: UserParams, input: StoreAbstractWalletInput) {
+    async storeSmartWallet(user: UserParams, input: StoreSmartWalletParams) {
         return this.fetchCrossmintAPI(
             "sdk/smart-wallet",
             { method: "POST", body: JSON.stringify(input) },

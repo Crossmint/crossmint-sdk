@@ -38,16 +38,16 @@ export class SmartWalletService {
         try {
             const { entryPoint, kernelVersion } = await this.fetchVersions(user, chain);
             const publicClient = createPublicClient({ transport: http(getBundlerRPC(chain)) });
-            const params: WalletCreationParams = {
+
+            const { signerData, account } = await this.constructAccount({
                 chain,
                 walletConfig,
                 publicClient,
                 user,
                 entryPoint,
                 kernelVersion,
-            };
+            });
 
-            const { signerData, account } = await this.constructAccount(params);
             await this.crossmintWalletService.storeSmartWallet(user, {
                 type: ZERO_DEV_TYPE,
                 smartContractWalletAddress: account.address,
@@ -56,7 +56,7 @@ export class SmartWalletService {
                 baseLayer: "evm",
                 chainId: blockchainToChainId(chain),
                 entryPointVersion: entryPoint.version,
-                kernelVersion: kernelVersion,
+                kernelVersion,
             });
 
             return new EVMSmartWallet(this.crossmintWalletService, account, publicClient, chain);
@@ -74,9 +74,9 @@ export class SmartWalletService {
         account: KernelSmartAccount<EntryPoint, HttpTransport>;
     }> {
         if (isPasskeyParams(params)) {
-            return this.passkeyWalletService.getAccountAndSigner(params);
+            return this.passkeyWalletService.getAccount(params);
         } else {
-            return this.eoaWalletService.getAccountAndSigner(params as EOAWalletParams);
+            return this.eoaWalletService.getAccount(params as EOAWalletParams);
         }
     }
 

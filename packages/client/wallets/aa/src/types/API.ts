@@ -1,6 +1,6 @@
 import { PasskeyValidatorSerializedData, SupportedEntryPointVersion, SupportedKernelVersion } from "./internal";
 
-export type StoreAbstractWalletInput = {
+export type StoreSmartWalletParams = {
     type: string;
     smartContractWalletAddress: string;
     signerData: SignerData;

@@ -9,7 +9,7 @@ export interface EOAWalletParams extends WalletCreationParams {
 }
 
 export class EOAWalletService {
-    public async getAccountAndSigner({
+    public async getAccount({
         chain,
         publicClient,
         entryPoint,
