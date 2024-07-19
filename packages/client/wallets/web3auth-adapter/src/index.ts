@@ -17,7 +17,7 @@ import {
     getUrlProviderByBlockchain,
 } from "./networks";
 
-export type Web3AuthAdapterParams = {
+export type Web3AuthSignerParams = {
     type: "WEB3_AUTH";
     clientId: string;
     verifierId: string;
@@ -26,13 +26,13 @@ export type Web3AuthAdapterParams = {
     chain: EVMBlockchainIncludingTestnet;
 };
 
-export async function getSigner({
+export async function getWeb3AuthSigner({
     chain,
     clientId,
     web3AuthNetwork,
     jwt,
     verifierId,
-}: Web3AuthAdapterParams): Promise<EIP1193Provider> {
+}: Web3AuthSignerParams): Promise<EIP1193Provider> {
     const chainId = blockchainToChainId(chain);
     const chainConfig = {
         chainNamespace: CHAIN_NAMESPACES.EIP155,
