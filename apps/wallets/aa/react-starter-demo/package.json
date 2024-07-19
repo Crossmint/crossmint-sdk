@@ -1,0 +1,89 @@
+{
+    "name": "@crossmint/react-starter-demo",
+    "version": "1.5.0",
+    "private": true,
+    "scripts": {
+        "build": "react-app-rewired build",
+        "eject": "react-scripts eject",
+        "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+        "start": "react-app-rewired start",
+        "test": "react-app-rewired test"
+    },
+    "browserslist": {
+        "production": [
+            "chrome >= 67",
+            "edge >= 79",
+            "firefox >= 68",
+            "opera >= 54",
+            "safari >= 14"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
+    },
+    "eslintConfig": {
+        "extends": [
+            "react-app",
+            "react-app/jest"
+        ],
+        "rules": {
+            "react/jsx-uses-react": "off",
+            "react/react-in-jsx-scope": "off"
+        }
+    },
+    "dependencies": {
+        "@crossmint/client-sdk-aa-passkeys-beta": "1.1.0-beta.17",
+        "@emotion/react": "^11.11.1",
+        "@emotion/styled": "^11.11.0",
+        "@headlessui/react": "^1.7.16",
+        "@heroicons/react": "^1.0.6",
+        "@mui/material": "^5.14.4",
+        "@radix-ui/react-tooltip": "^1.0.6",
+        "@reservoir0x/reservoir-sdk": "^2.0.16",
+        "@testing-library/jest-dom": "^5.16.5",
+        "@types/react": "^18.2.79",
+        "classnames": "^2.3.2",
+        "email-validator": "^2.0.4",
+        "firebase": "^10.3.1",
+        "formik": "^2.4.3",
+        "hardhat": "^2.11.0",
+        "path-browserify": "^1.0.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "react-hot-toast": "^2.4.1",
+        "react-html-props": "^2.0.3",
+        "react-icons": "^4.10.1",
+        "react-router-dom": "^6.14.1",
+        "react-scripts": "5.0.1",
+        "typescript": "5.4.2",
+        "viem": "2.9.17",
+        "web-vitals": "^3.1.1"
+    },
+    "devDependencies": {
+        "@babel/core": "7.21.8",
+        "@babel/helper-get-function-arity": "7.16.7",
+        "@babel/plugin-transform-modules-commonjs": "^7.22.5",
+        "@babel/preset-typescript": "^7.23.0",
+        "@nomiclabs/hardhat-ethers": "^2.2.3",
+        "@types/react-dom": "^18.2.17",
+        "assert": "^2.0.0",
+        "babel-loader": "9.1.2",
+        "buffer": "^6.0.3",
+        "crypto-browserify": "^3.12.0",
+        "eslint": "^8.54.0",
+        "eslint-config-next": "^14.0.3",
+        "eslint-config-react-app": "^7.0.1",
+        "eslint-plugin-react": "7.34.4",
+        "ethers": "^5.7.2",
+        "https-browserify": "^1.0.0",
+        "os-browserify": "^0.3.0",
+        "process": "^0.11.10",
+        "react-app-rewired": "^2.2.1",
+        "stream-browserify": "^3.0.0",
+        "stream-http": "^3.2.0",
+        "tailwindcss": "^3.3.3",
+        "url": "^0.11.0"
+    }
+}
