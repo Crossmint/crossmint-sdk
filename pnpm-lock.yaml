@@ -417,19 +417,10 @@ importers:
     dependencies:
       '@crossmint/common-sdk-base':
         specifier: 0.0.13
-        version: 0.0.13
+        version: link:../../../common/base
       '@datadog/browser-logs':
         specifier: 4.42.2
         version: 4.42.2
-      '@web3auth/base':
-        specifier: 7.3.2
-        version: 7.3.2(@babel/runtime@7.24.7)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      '@web3auth/ethereum-provider':
-        specifier: 7.3.2
-        version: 7.3.2(@babel/runtime@7.24.7)(buffer@6.0.3)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      '@web3auth/single-factor-auth':
-        specifier: 7.3.0
-        version: 7.3.0(@babel/runtime@7.24.7)(@types/bn.js@5.1.5)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       '@zerodev/ecdsa-validator':
         specifier: 5.3.1
         version: 5.3.1(@zerodev/sdk@5.3.3(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
@@ -531,6 +522,28 @@ importers:
       tailwindcss:
         specifier: 3.4.1
         version: 3.4.1(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.5.3))
+
+  packages/client/wallets/web3auth-adapter:
+    dependencies:
+      '@crossmint/common-sdk-base':
+        specifier: 0.0.13
+        version: 0.0.13
+      '@web3auth/base':
+        specifier: 7.3.2
+        version: 7.3.2(@babel/runtime@7.24.7)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
+      '@web3auth/ethereum-provider':
+        specifier: 7.3.2
+        version: 7.3.2(@babel/runtime@7.24.7)(buffer@6.0.3)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
+      '@web3auth/single-factor-auth':
+        specifier: 7.3.0
+        version: 7.3.0(@babel/runtime@7.24.7)(@types/bn.js@5.1.5)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
+      viem:
+        specifier: 2.17.5
+        version: 2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+    devDependencies:
+      '@types/node':
+        specifier: 20.12.7
+        version: 20.12.7
 
   packages/client/window:
     dependencies:

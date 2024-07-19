@@ -7,5 +7,5 @@
             "@/*": ["src/*"]
         }
     },
-    "include": ["src/**/*", "../web3auth-adapter/src/auth.ts", "../web3auth-adapter/src/auth.test.ts"]
+    "include": ["src/**/*"]
 }

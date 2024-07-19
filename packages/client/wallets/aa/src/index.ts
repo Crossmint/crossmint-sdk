@@ -5,7 +5,6 @@ export { EVMSmartWallet } from "./blockchain/wallets/EVMSmartWallet";
 export type {
     SmartWalletSDKInitParams,
     UserParams,
-    Web3AuthSigner,
     ViemAccount,
     PasskeySigner,
     EOASigner,
