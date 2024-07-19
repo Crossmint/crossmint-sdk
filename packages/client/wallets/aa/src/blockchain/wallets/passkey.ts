@@ -66,9 +66,9 @@ export class PasskeyWalletService {
 
         const webAuthnKey = await toWebAuthnKey({
             passkeyName: walletConfig.signer.passkeyName,
-            passkeyServerUrl: this.crossmintService.getPasskeyServerUrl(user),
+            passkeyServerUrl: this.crossmintService.getPasskeyServerUrl(),
             mode: WebAuthnMode.Register,
-            passkeyServerHeaders: {},
+            passkeyServerHeaders: this.createPasskeysServerHeaders(user),
         });
 
         return toPasskeyValidator(publicClient, {
@@ -94,6 +94,13 @@ export class PasskeyWalletService {
             passkeyName,
             domain: window.location.hostname,
             type: "passkeys",
+        };
+    }
+
+    private createPasskeysServerHeaders(user: UserParams) {
+        return {
+            "x-api-key": this.crossmintService.crossmintAPIHeaders["x-api-key"],
+            Authorization: `Bearer ${user.jwt}`,
         };
     }
 }
