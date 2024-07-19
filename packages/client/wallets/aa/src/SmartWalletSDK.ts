@@ -1,45 +1,34 @@
-import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
-import { createPublicClient, http } from "viem";
-
 import { EVMBlockchainIncludingTestnet, validateAPIKey } from "@crossmint/common-sdk-base";
 
 import { CrossmintWalletService } from "./api/CrossmintWalletService";
-import { getBundlerRPC } from "./blockchain/BlockchainNetworks";
-import { EVMSmartWallet } from "./blockchain/wallets";
-import { EOAWalletParams, EOAWalletService } from "./blockchain/wallets/eoa";
-import { PasskeyWalletService, isPasskeyParams } from "./blockchain/wallets/passkey";
-import type { EntryPointDetails, SmartWalletSDKInitParams, UserParams, WalletConfig } from "./types/Config";
-import { RunningOnServerError, WalletSdkError } from "./types/Error";
-import type { WalletCreationParams } from "./types/internal";
+import type { EVMSmartWallet } from "./blockchain/wallets";
+import { SmartWalletService } from "./blockchain/wallets/service";
+import type { SmartWalletSDKInitParams, UserParams, WalletConfig } from "./types/Config";
+import { RunningOnServerError } from "./types/Error";
 import { isClient } from "./utils/environment";
 import { LoggerWrapper, logPerformance } from "./utils/log";
 
 export class SmartWalletSDK extends LoggerWrapper {
-    private readonly crossmintService: CrossmintWalletService;
-    private readonly eaoWalletService: EOAWalletService;
-    private readonly passkeyWalletService: PasskeyWalletService;
-
-    private constructor(config: SmartWalletSDKInitParams) {
+    private constructor(private readonly smartWalletService: SmartWalletService) {
         super("SmartWalletSDK");
-        this.crossmintService = new CrossmintWalletService(config.clientApiKey);
-        this.eaoWalletService = new EOAWalletService(this.crossmintService);
-        this.passkeyWalletService = new PasskeyWalletService(this.crossmintService);
     }
 
     /**
      * Initializes the SDK with the **client side** API key obtained from the Crossmint console.
      * @throws error if the api key is not formatted correctly.
      */
-    static init(config: SmartWalletSDKInitParams): SmartWalletSDK {
+    static init({ clientApiKey }: SmartWalletSDKInitParams): SmartWalletSDK {
         if (!isClient()) {
             throw new RunningOnServerError();
         }
 
-        const validationResult = validateAPIKey(config.clientApiKey);
+        const validationResult = validateAPIKey(clientApiKey);
         if (!validationResult.isValid) {
             throw new Error("API key invalid");
         }
-        return new SmartWalletSDK(config);
+
+        const crossmintService = new CrossmintWalletService(clientApiKey);
+        return new SmartWalletSDK(new SmartWalletService(crossmintService));
     }
 
     async getOrCreateWallet(
@@ -50,33 +39,9 @@ export class SmartWalletSDK extends LoggerWrapper {
         return logPerformance(
             "GET_OR_CREATE_WALLET",
             async () => {
-                try {
-                    const params: WalletCreationParams = {
-                        chain,
-                        walletConfig,
-                        entrypoint: await this.fetchEntryPoint(user, chain),
-                        publicClient: createPublicClient({ transport: http(getBundlerRPC(chain)) }),
-                        user,
-                    };
-
-                    if (isPasskeyParams(params)) {
-                        return this.passkeyWalletService.getOrCreate(params);
-                    } else {
-                        return this.eaoWalletService.getOrCreate(params as EOAWalletParams);
-                    }
-                } catch (error: any) {
-                    throw new WalletSdkError(`Error creating the Wallet ${error?.message ? `: ${error.message}` : ""}`);
-                }
+                return await this.smartWalletService.getOrCreate(user, chain, walletConfig);
             },
             { user, chain }
         );
-    }
-
-    private async fetchEntryPoint(user: UserParams, chain: EVMBlockchainIncludingTestnet): Promise<EntryPointDetails> {
-        const { entryPointVersion } = await this.crossmintService.getAbstractWalletEntryPointVersion(user, chain);
-        return {
-            version: entryPointVersion,
-            address: entryPointVersion === "v0.6" ? ENTRYPOINT_ADDRESS_V06 : ENTRYPOINT_ADDRESS_V07,
-        };
     }
 }

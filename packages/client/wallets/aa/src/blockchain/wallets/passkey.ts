@@ -1,17 +1,13 @@
 import { CrossmintWalletService } from "@/api/CrossmintWalletService";
 import { PasskeySignerData } from "@/types/API";
-import { EntryPointDetails, PasskeySigner, UserParams, WalletConfig } from "@/types/Config";
-import { WalletCreationParams } from "@/types/internal";
-import { CURRENT_VERSION, ZERO_DEV_TYPE } from "@/utils/constants";
-import { createPasskeyValidator, deserializePasskeyValidator } from "@zerodev/passkey-validator";
+import { PasskeySigner, UserParams, WalletConfig } from "@/types/Config";
+import { AccountAndSigner, WalletCreationParams } from "@/types/internal";
+import { WebAuthnMode, deserializePasskeyValidator, toPasskeyValidator } from "@zerodev/passkey-validator";
 import { KernelValidator, createKernelAccount } from "@zerodev/sdk";
+import { toWebAuthnKey } from "@zerodev/webauthn-key";
 import { EntryPoint } from "permissionless/types/entrypoint";
-import { PublicClient } from "viem";
-
-import { blockchainToChainId } from "@crossmint/common-sdk-base";
 
 import { deserializePasskeyValidatorData, serializePasskeyValidatorData } from "../../utils/passkey";
-import { EVMSmartWallet } from "./EVMSmartWallet";
 
 export interface PasskeyWalletParams extends WalletCreationParams {
     walletConfig: WalletConfig & { signer: PasskeySigner };
@@ -28,56 +24,57 @@ type PasskeyValidator = KernelValidator<EntryPoint, "WebAuthnValidator"> & {
 export class PasskeyWalletService {
     constructor(private readonly crossmintService: CrossmintWalletService) {}
 
-    public async getOrCreate({ user, chain, publicClient, walletConfig, entrypoint }: PasskeyWalletParams) {
-        const validator = await this.getOrCreateSigner({
+    public async getAccount({
+        user,
+        publicClient,
+        walletConfig,
+        entryPoint,
+        kernelVersion,
+    }: PasskeyWalletParams): Promise<AccountAndSigner> {
+        const validator = await this.getValidator({
             user,
-            entrypoint,
+            entryPoint,
             publicClient,
-            signer: walletConfig.signer,
+            walletConfig,
+            kernelVersion,
         });
 
         const kernelAccount = await createKernelAccount(publicClient, {
             plugins: { sudo: validator },
-            entryPoint: entrypoint.address,
+            entryPoint: entryPoint.address,
+            kernelVersion,
         });
 
-        await this.crossmintService.storeAbstractWallet(user, {
-            type: ZERO_DEV_TYPE,
-            smartContractWalletAddress: kernelAccount.address,
-            signerData: this.getSignerData(validator, walletConfig.signer.passkeyName),
-            version: CURRENT_VERSION,
-            baseLayer: "evm",
-            chainId: blockchainToChainId(chain),
-            entryPointVersion: entrypoint.version,
-        });
-
-        return new EVMSmartWallet(this.crossmintService, kernelAccount, publicClient, chain);
+        return { signerData: this.getSignerData(validator, walletConfig.signer.passkeyName), account: kernelAccount };
     }
 
-    private async getOrCreateSigner({
+    private async getValidator({
         user,
-        entrypoint,
+        entryPoint,
         publicClient,
-        signer,
-    }: {
-        user: UserParams;
-        entrypoint: EntryPointDetails;
-        publicClient: PublicClient;
-        signer: PasskeySigner;
-    }): Promise<PasskeyValidator> {
+        walletConfig,
+        kernelVersion,
+    }: Omit<PasskeyWalletParams, "chain">): Promise<PasskeyValidator> {
         const serializedData = await this.fetchSerializedSigner(user);
         if (serializedData != null) {
             return deserializePasskeyValidator(publicClient, {
                 serializedData,
-                entryPoint: entrypoint.address,
+                entryPoint: entryPoint.address,
+                kernelVersion,
             });
         }
 
-        return createPasskeyValidator(publicClient, {
+        const webAuthnKey = await toWebAuthnKey({
+            passkeyName: walletConfig.signer.passkeyName,
             passkeyServerUrl: this.crossmintService.getPasskeyServerUrl(user),
-            entryPoint: entrypoint.address,
-            passkeyName: signer.passkeyName,
-            credentials: "omit",
+            mode: WebAuthnMode.Register,
+            passkeyServerHeaders: {},
+        });
+
+        return toPasskeyValidator(publicClient, {
+            webAuthnKey,
+            entryPoint: entryPoint.address,
+            kernelVersion,
         });
     }
 

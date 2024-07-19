@@ -1,8 +1,6 @@
-import { EntryPointVersion } from "permissionless/_types/types";
+import { PasskeyValidatorSerializedData, SupportedEntryPointVersion, SupportedKernelVersion } from "./internal";
 
-import { PasskeyValidatorSerializedData } from "./internal";
-
-export type StoreAbstractWalletInput = {
+export type StoreSmartWalletParams = {
     type: string;
     smartContractWalletAddress: string;
     signerData: SignerData;
@@ -10,7 +8,8 @@ export type StoreAbstractWalletInput = {
     version: number;
     baseLayer: string;
     chainId: number;
-    entryPointVersion: EntryPointVersion;
+    entryPointVersion: SupportedEntryPointVersion;
+    kernelVersion: SupportedKernelVersion;
 };
 
 export type SignerData = EOASignerData | PasskeySignerData;
