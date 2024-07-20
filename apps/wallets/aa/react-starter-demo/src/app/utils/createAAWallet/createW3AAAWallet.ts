@@ -15,10 +15,6 @@ export const createW3AAAWallet = async (isProd: boolean) => {
 
     const { email } = parseToken(jwt);
 
-    console.log("Here they are:");
-    console.log(process.env.REACT_APP_CROSSMINT_API_KEY_PROD);
-    console.log(process.env.REACT_APP_CROSSMINT_API_KEY_STG);
-
     const xm = isProd
         ? SmartWalletSDK.init({
               clientApiKey: process.env.REACT_APP_CROSSMINT_API_KEY_PROD || "",
@@ -31,11 +27,15 @@ export const createW3AAAWallet = async (isProd: boolean) => {
 
     const web3AuthSigner: Web3AuthSigner = {
         type: "WEB3_AUTH",
-        clientId: isProd
-            ? "BEbQWgoEiWso39k9FwIWRS5ML5L-MOMgUzCnK0ND3I14Hc93qE3ZPa7z5zcpPDWxcv2BvZuRXhiMB2QgDvLBZus"
-            : "BDSwOWOvXYz_ZrUzgDcBRFoz6mCCuno76zuWGEz09FCg-XVaGED941abRaYJ6I3EcYjRvLCDXhdr8qPH2wf-03E",
-        web3AuthNetwork: isProd ? "sapphire_mainnet" : "sapphire_devnet",
-        verifierId: isProd ? "xm-aa-prod-verifier" : "xm-aa-verifier",
+        clientId: (isProd
+            ? process.env.REACT_APP_WEB3_AUTH_CLIENT_ID_PROD
+            : process.env.REACT_APP_WEB3_AUTH_CLIENT_ID_STG) as string,
+        web3AuthNetwork: (isProd
+            ? process.env.REACT_APP_WEB3_AUTH_NETWORK_PROD
+            : process.env.REACT_APP_WEB3_AUTH_NETWORK_STG) as Web3AuthSigner["web3AuthNetwork"],
+        verifierId: (isProd
+            ? process.env.REACT_APP_WEB3_AUTH_VERIFIER_ID_PROD
+            : process.env.REACT_APP_WEB3_AUTH_VERIFIER_ID_STG) as string,
         jwt,
     };
 

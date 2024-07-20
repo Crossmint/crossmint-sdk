@@ -20,7 +20,6 @@
         "prettier:check": "prettier --check \"{*,**/*}.{js,ts,jsx,tsx,json,mdx}\" --ignore-unknown",
         "prettier:write": "prettier --write \"{*,**/*}.{js,ts,jsx,tsx,json,mdx}\" --ignore-unknown",
         "publish": "lerna publish from-package",
-        "start:react-starter-demo": "pnpm --filter @crossmint/react-starter-demo run start",
         "test": "lerna run test"
     },
     "lint-staged": {

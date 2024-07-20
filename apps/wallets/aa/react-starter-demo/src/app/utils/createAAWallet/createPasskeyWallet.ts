@@ -13,7 +13,7 @@ export async function createPasskeyWallet(isProd: boolean) {
         throw new Error("No JWT token found");
     }
 
-    const { email, sub } = parseToken(jwt);
+    const { sub } = parseToken(jwt);
 
     const xm = isProd
         ? SmartWalletSDK.init({

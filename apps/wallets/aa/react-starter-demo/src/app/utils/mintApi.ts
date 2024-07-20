@@ -8,7 +8,6 @@ import contractERC20abi from "./erc20tokenSell.json";
 import { getERC20ContractAddress, getNFTContractAddress } from "./getContracts";
 
 export const transferTokenERC20 = async (account: EVMSmartWallet, to: string, rawAmount: string) => {
-    console.log("Transfer Token ERC20", account.address);
     const contractAddress = getERC20ContractAddress(account.chain);
     try {
         const amountInWei = ethers.utils.parseUnits(rawAmount, 18);

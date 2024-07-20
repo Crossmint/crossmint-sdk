@@ -9,8 +9,8 @@ Copy the `.env.sample` file to `.env` and fill in the following:
 
 ## Start the app
 
-To start the app from root of the monorepo, run:
+To start the app, run:
 
 ```bash
-pnpm run start:react-starter-demo
+pnpm run start
 ```
