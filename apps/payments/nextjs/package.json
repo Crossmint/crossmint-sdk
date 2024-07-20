@@ -24,8 +24,8 @@
         "start": "next start"
     },
     "dependencies": {
-        "@crossmint/client-sdk-base": "1.1.14",
-        "@crossmint/client-sdk-react-ui": "1.1.11",
+        "@crossmint/client-sdk-base": "workspace:*",
+        "@crossmint/client-sdk-react-ui": "workspace:*",
         "@dynamic-labs/ethereum-all": "0.17.29",
         "@dynamic-labs/sdk-react": "0.17.29",
         "@dynamic-labs/solana-all": "0.17.29",
