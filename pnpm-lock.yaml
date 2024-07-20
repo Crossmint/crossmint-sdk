@@ -253,8 +253,8 @@ importers:
   packages/client/base:
     dependencies:
       '@crossmint/common-sdk-base':
-        specifier: 0.0.12
-        version: 0.0.12
+        specifier: workspace:*
+        version: link:../../common/base
       exponential-backoff:
         specifier: 3.1.1
         version: 3.1.1
@@ -275,11 +275,11 @@ importers:
   packages/client/ui/react-ui:
     dependencies:
       '@crossmint/client-sdk-base':
-        specifier: 1.1.12
-        version: 1.1.12
+        specifier: workspace:*
+        version: link:../../base
       '@crossmint/common-sdk-base':
-        specifier: 0.0.11
-        version: 0.0.11
+        specifier: workspace:*
+        version: link:../../../common/base
       '@ethersproject/transactions':
         specifier: 5.7.0
         version: 5.7.0
@@ -315,11 +315,11 @@ importers:
   packages/client/ui/vanilla-ui:
     dependencies:
       '@crossmint/client-sdk-base':
-        specifier: 1.1.9
-        version: 1.1.9
+        specifier: workspace:*
+        version: link:../../base
       '@crossmint/common-sdk-base':
-        specifier: 0.0.6
-        version: 0.0.6
+        specifier: workspace:*
+        version: link:../../../common/base
       lit:
         specifier: 2.8.0
         version: 2.8.0
@@ -327,8 +327,8 @@ importers:
   packages/client/ui/vue-ui:
     dependencies:
       '@crossmint/client-sdk-base':
-        specifier: 1.1.9
-        version: 1.1.9
+        specifier: workspace:*
+        version: link:../../base
       vue:
         specifier: 3.3.4
         version: 3.3.4
@@ -1437,9 +1437,6 @@ packages:
   '@crossmint/client-sdk-aa@1.0.3':
     resolution: {integrity: sha512-ckQ+b0xOeJ+Su4QSkzfPiFQEMXE9PraAaArINsvElSTfZRII+AJsWq2D7gQ4R9pNDTKSISFYgaY7/VtBCQPTNQ==}
 
-  '@crossmint/client-sdk-base@1.1.12':
-    resolution: {integrity: sha512-qtpyRfsiTiWp7/Zt4QKND3GsnCl6tx+hySkhtGPEakerj3UHWMNu87pdvv7hQ8fklDTPJiwG3Giv4JUqqRNCFA==}
-
   '@crossmint/client-sdk-base@1.1.13':
     resolution: {integrity: sha512-CKJnZkr7QJad278ZhnregKR9EAzpZVUqZGf9hG0cJcjPNFbYME4hx+V7mJVxeWmRTuVI8aylsrQslzvz6SnO1Q==}
 
@@ -1454,9 +1451,6 @@ packages:
 
   '@crossmint/client-sdk-vue-ui@1.1.8':
     resolution: {integrity: sha512-2U6s9N6jtnaHXhQ7MHhntERkPgZSlfMvQXJXfJW+bUSrzRQ+IW93VjL7QAeDJKuK7zeYtjHH1sWjgQMNOoBPUg==}
-
-  '@crossmint/common-sdk-base@0.0.11':
-    resolution: {integrity: sha512-BhK3H7fXlAQgzu664uFQyLPkC9oX7QcCIwCmFzXaFAh6Nasr0L9T+nkJmrGkhSdfB2KPGmR2VDYuxG+w/xEfZA==}
 
   '@crossmint/common-sdk-base@0.0.12':
     resolution: {integrity: sha512-KFbUX/HwdtLjh2UHN06Rzu1kla7AExulZinIv43k2U/5JkwI3WB4b0BGV7YZ5DGGPsXTkZs1XVLmsQT7fE3KkA==}
@@ -14775,12 +14769,6 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@crossmint/client-sdk-base@1.1.12':
-    dependencies:
-      '@crossmint/common-sdk-base': 0.0.11
-      exponential-backoff: 3.1.1
-      uuid: 9.0.1
-
   '@crossmint/client-sdk-base@1.1.13':
     dependencies:
       '@crossmint/common-sdk-base': 0.0.12
@@ -14813,11 +14801,6 @@ snapshots:
     dependencies:
       '@crossmint/client-sdk-base': 1.1.9
       vue: 3.3.4
-
-  '@crossmint/common-sdk-base@0.0.11':
-    dependencies:
-      bs58: 5.0.0
-      tweetnacl: 1.0.3
 
   '@crossmint/common-sdk-base@0.0.12':
     dependencies:
