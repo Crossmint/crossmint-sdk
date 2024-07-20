@@ -92,6 +92,9 @@ importers:
       tsup:
         specifier: 8.1.0
         version: 8.1.0(@microsoft/api-extractor@7.36.4(@types/node@20.12.7))(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.5.3))(typescript@5.5.3)
+      turbo:
+        specifier: 1.13.3
+        version: 1.13.3
       typescript:
         specifier: 5.5.3
         version: 5.5.3
@@ -253,8 +256,8 @@ importers:
   packages/client/base:
     dependencies:
       '@crossmint/common-sdk-base':
-        specifier: 0.0.12
-        version: 0.0.12
+        specifier: 0.0.13
+        version: 0.0.13
       exponential-backoff:
         specifier: 3.1.1
         version: 3.1.1
@@ -275,11 +278,11 @@ importers:
   packages/client/ui/react-ui:
     dependencies:
       '@crossmint/client-sdk-base':
-        specifier: 1.1.12
-        version: 1.1.12
+        specifier: 1.1.13
+        version: 1.1.13
       '@crossmint/common-sdk-base':
-        specifier: 0.0.11
-        version: 0.0.11
+        specifier: 0.0.13
+        version: 0.0.13
       '@ethersproject/transactions':
         specifier: 5.7.0
         version: 5.7.0
@@ -1437,9 +1440,6 @@ packages:
   '@crossmint/client-sdk-aa@1.0.3':
     resolution: {integrity: sha512-ckQ+b0xOeJ+Su4QSkzfPiFQEMXE9PraAaArINsvElSTfZRII+AJsWq2D7gQ4R9pNDTKSISFYgaY7/VtBCQPTNQ==}
 
-  '@crossmint/client-sdk-base@1.1.12':
-    resolution: {integrity: sha512-qtpyRfsiTiWp7/Zt4QKND3GsnCl6tx+hySkhtGPEakerj3UHWMNu87pdvv7hQ8fklDTPJiwG3Giv4JUqqRNCFA==}
-
   '@crossmint/client-sdk-base@1.1.13':
     resolution: {integrity: sha512-CKJnZkr7QJad278ZhnregKR9EAzpZVUqZGf9hG0cJcjPNFbYME4hx+V7mJVxeWmRTuVI8aylsrQslzvz6SnO1Q==}
 
@@ -1454,9 +1454,6 @@ packages:
 
   '@crossmint/client-sdk-vue-ui@1.1.8':
     resolution: {integrity: sha512-2U6s9N6jtnaHXhQ7MHhntERkPgZSlfMvQXJXfJW+bUSrzRQ+IW93VjL7QAeDJKuK7zeYtjHH1sWjgQMNOoBPUg==}
-
-  '@crossmint/common-sdk-base@0.0.11':
-    resolution: {integrity: sha512-BhK3H7fXlAQgzu664uFQyLPkC9oX7QcCIwCmFzXaFAh6Nasr0L9T+nkJmrGkhSdfB2KPGmR2VDYuxG+w/xEfZA==}
 
   '@crossmint/common-sdk-base@0.0.12':
     resolution: {integrity: sha512-KFbUX/HwdtLjh2UHN06Rzu1kla7AExulZinIv43k2U/5JkwI3WB4b0BGV7YZ5DGGPsXTkZs1XVLmsQT7fE3KkA==}
@@ -12114,6 +12111,40 @@ packages:
     resolution: {integrity: sha512-i3P9Kgw3ytjELUfpuKVDNBJvk4u5bXL6gskv572mcevPbSKCV3zt3djhmlEQ65yERjIbOSncy7U4cQJaB1CBCg==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
 
+  turbo-darwin-64@1.13.3:
+    resolution: {integrity: sha512-glup8Qx1qEFB5jerAnXbS8WrL92OKyMmg5Hnd4PleLljAeYmx+cmmnsmLT7tpaVZIN58EAAwu8wHC6kIIqhbWA==}
+    cpu: [x64]
+    os: [darwin]
+
+  turbo-darwin-arm64@1.13.3:
+    resolution: {integrity: sha512-/np2xD+f/+9qY8BVtuOQXRq5f9LehCFxamiQnwdqWm5iZmdjygC5T3uVSYuagVFsZKMvX3ycySwh8dylGTl6lg==}
+    cpu: [arm64]
+    os: [darwin]
+
+  turbo-linux-64@1.13.3:
+    resolution: {integrity: sha512-G+HGrau54iAnbXLfl+N/PynqpDwi/uDzb6iM9hXEDG+yJnSJxaHMShhOkXYJPk9offm9prH33Khx2scXrYVW1g==}
+    cpu: [x64]
+    os: [linux]
+
+  turbo-linux-arm64@1.13.3:
+    resolution: {integrity: sha512-qWwEl5VR02NqRyl68/3pwp3c/olZuSp+vwlwrunuoNTm6JXGLG5pTeme4zoHNnk0qn4cCX7DFrOboArlYxv0wQ==}
+    cpu: [arm64]
+    os: [linux]
+
+  turbo-windows-64@1.13.3:
+    resolution: {integrity: sha512-Nudr4bRChfJzBPzEmpVV85VwUYRCGKecwkBFpbp2a4NtrJ3+UP1VZES653ckqCu2FRyRuS0n03v9euMbAvzH+Q==}
+    cpu: [x64]
+    os: [win32]
+
+  turbo-windows-arm64@1.13.3:
+    resolution: {integrity: sha512-ouJCgsVLd3icjRLmRvHQDDZnmGzT64GBupM1Y+TjtYn2LVaEBoV6hicFy8x5DUpnqdLy+YpCzRMkWlwhmkX7sQ==}
+    cpu: [arm64]
+    os: [win32]
+
+  turbo@1.13.3:
+    resolution: {integrity: sha512-n17HJv4F4CpsYTvKzUJhLbyewbXjq1oLCi90i5tW1TiWDz16ML1eDG7wi5dHaKxzh5efIM56SITnuVbMq5dk4g==}
+    hasBin: true
+
   tweetnacl-util@0.13.5:
     resolution: {integrity: sha512-/4Q3hpPFAnbBjNLLOmdTdyvInBfZcQBTWy+LWbypmWxAKwOpSQOyyv4ZZts4CoiYtS8Skyix5CkOWytf7XNK9A==}
 
@@ -14775,12 +14806,6 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@crossmint/client-sdk-base@1.1.12':
-    dependencies:
-      '@crossmint/common-sdk-base': 0.0.11
-      exponential-backoff: 3.1.1
-      uuid: 9.0.1
-
   '@crossmint/client-sdk-base@1.1.13':
     dependencies:
       '@crossmint/common-sdk-base': 0.0.12
@@ -14813,11 +14838,6 @@ snapshots:
     dependencies:
       '@crossmint/client-sdk-base': 1.1.9
       vue: 3.3.4
-
-  '@crossmint/common-sdk-base@0.0.11':
-    dependencies:
-      bs58: 5.0.0
-      tweetnacl: 1.0.3
 
   '@crossmint/common-sdk-base@0.0.12':
     dependencies:
@@ -30369,6 +30389,33 @@ snapshots:
       make-fetch-happen: 11.1.1
     transitivePeerDependencies:
       - supports-color
+
+  turbo-darwin-64@1.13.3:
+    optional: true
+
+  turbo-darwin-arm64@1.13.3:
+    optional: true
+
+  turbo-linux-64@1.13.3:
+    optional: true
+
+  turbo-linux-arm64@1.13.3:
+    optional: true
+
+  turbo-windows-64@1.13.3:
+    optional: true
+
+  turbo-windows-arm64@1.13.3:
+    optional: true
+
+  turbo@1.13.3:
+    optionalDependencies:
+      turbo-darwin-64: 1.13.3
+      turbo-darwin-arm64: 1.13.3
+      turbo-linux-64: 1.13.3
+      turbo-linux-arm64: 1.13.3
+      turbo-windows-64: 1.13.3
+      turbo-windows-arm64: 1.13.3
 
   tweetnacl-util@0.13.5: {}
 

@@ -6,8 +6,8 @@
     "author": "Paella Labs Inc",
     "scripts": {
         "build": "lerna run build",
-        "build:apps": "pnpm --filter \"./apps/**\" build",
-        "build:libs": "pnpm --filter \"./packages/**\" build",
+        "build:apps": "pnpm turbo --filter \"./apps/**\" build",
+        "build:libs": "pnpm turbo --filter \"./packages/**\" build",
         "change:add": "pnpm changeset add",
         "change:publish": "pnpm build:libs && pnpm changeset publish --no-git-tag",
         "change:version": "pnpm changeset version",
@@ -55,6 +55,7 @@
         "sort-package-json": "2.10.0",
         "ts-jest": "29.1.1",
         "tsup": "8.1.0",
+        "turbo": "1.13.3",
         "typescript": "5.5.3",
         "vitest": "1.0.2"
     },
