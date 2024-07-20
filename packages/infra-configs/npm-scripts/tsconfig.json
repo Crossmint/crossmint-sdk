@@ -1,0 +1,4 @@
+{
+    "extends": "@crossmint/tsconfig/base.json",
+    "include": ["src"]
+}

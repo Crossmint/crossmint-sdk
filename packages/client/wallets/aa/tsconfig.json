@@ -1,11 +1,9 @@
 {
-    "extends": "../../../../tsconfig.base.json",
+    "extends": "@crossmint/tsconfig/base.json",
     "compilerOptions": {
-        "rootDir": "src",
-        "baseUrl": ".",
         "paths": {
-            "@/*": ["src/*"]
+            "@/*": ["./src/*"]
         }
     },
-    "include": ["src/**/*"]
+    "include": ["src"]
 }

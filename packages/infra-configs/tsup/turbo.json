@@ -1,0 +1,21 @@
+{
+    "$schema": "https://turbo.build/schema.json",
+    "extends": ["//"],
+    "pipeline": {
+        "build": {
+            "dependsOn": ["^build"],
+            "inputs": ["src/**", "tsup.config.ts", "!./**/*.test.{ts,tsx}", "tsconfig.json"],
+            "outputs": ["dist/**"]
+        },
+        "test:circular": {
+            "inputs": ["../../../collected-circular-dependencies.json", "src/**/*.{js,ts,tsx}", "tsconfig.json"],
+            "outputs": ["circular-dependencies.json"]
+        },
+        "test:tsc": {
+            "inputs": ["src/**", "tsconfig.json"]
+        },
+        "test:vitest": {
+            "inputs": ["src/**", "vitest.config.ts"]
+        }
+    }
+}

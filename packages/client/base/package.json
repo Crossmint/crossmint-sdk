@@ -19,8 +19,8 @@
         "LICENSE"
     ],
     "scripts": {
-        "build": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
-        "dev": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --dts --sourcemap --watch"
+        "build": "crossmint-npm-scripts lib build",
+        "dev": "crossmint-npm-scripts lib dev"
     },
     "dependencies": {
         "@crossmint/common-sdk-base": "workspace:*",
@@ -28,6 +28,7 @@
         "uuid": "9.0.1"
     },
     "devDependencies": {
+        "@crossmint/tsupconfig": "workspace:*",
         "@ethersproject/transactions": "5.7.0",
         "@solana/web3.js": "1.78.5",
         "@types/uuid": "9.0.4"

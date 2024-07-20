@@ -1,13 +1,9 @@
 {
-    "extends": "../../../../tsconfig.base.json",
+    "extends": "@crossmint/tsconfig/base.json",
     "compilerOptions": {
-        "rootDir": "src",
-        "baseUrl": ".",
         "paths": {
-            "@/*": ["src/*"]
-        },
-        "jsx": "react-jsx"
+            "@/*": ["./src/*"]
+        }
     },
-    "include": ["src/**/*"],
-    "exclude": ["__tests__"]
+    "include": ["src"]
 }
