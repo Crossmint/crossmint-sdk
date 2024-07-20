@@ -31,8 +31,8 @@
         "version": "pnpm run create-version-file && git add ."
     },
     "dependencies": {
-        "@crossmint/client-sdk-base": "1.1.9",
-        "@crossmint/common-sdk-base": "0.0.6",
+        "@crossmint/client-sdk-base": "workspace:*",
+        "@crossmint/common-sdk-base": "workspace:*",
         "lit": "2.8.0"
     }
 }
