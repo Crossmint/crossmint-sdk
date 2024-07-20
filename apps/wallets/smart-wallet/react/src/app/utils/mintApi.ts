@@ -110,7 +110,7 @@ export const getTokenBalances = async (address: string, isProd: boolean, chain: 
             headers: {
                 accept: "application/json",
                 "Content-Type": "application/json",
-                "x-api-key": apikey!,
+                "x-api-key": apikey || "",
             },
         });
 

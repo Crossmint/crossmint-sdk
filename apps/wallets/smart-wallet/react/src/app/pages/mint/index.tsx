@@ -6,7 +6,6 @@ import { useNavigate } from "react-router-dom";
 import { AppContext } from "../../AppContext";
 import Button from "../../components/button/Button";
 import { createPasskeyWallet } from "../../utils/createAAWallet/createPasskeyWallet";
-import { createW3AAAWallet } from "../../utils/createAAWallet/createW3AAAWallet";
 import { mintNFT } from "../../utils/mintApi";
 
 export const Mint = () => {

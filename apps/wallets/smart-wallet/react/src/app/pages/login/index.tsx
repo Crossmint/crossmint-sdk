@@ -13,7 +13,6 @@ import { MarginLessSecondaryTitle, Paragraph, ParagraphBold, TerciaryTitle } fro
 import Button from "../../components/button/Button";
 import Switch from "../../components/switch/Switch";
 import { createPasskeyWallet } from "../../utils/createAAWallet/createPasskeyWallet";
-import { createW3AAAWallet } from "../../utils/createAAWallet/createW3AAAWallet";
 
 const StepCard = ({ Icon, title, subtitle }: any) => {
     return (

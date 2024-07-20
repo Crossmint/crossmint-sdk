@@ -8,7 +8,6 @@ import nftCardIcon from "../../assets/icons/no_nfts.svg";
 import Button from "../../components/button/Button";
 import Card from "../../components/card/Card";
 import { createPasskeyWallet } from "../../utils/createAAWallet/createPasskeyWallet";
-import { createW3AAAWallet } from "../../utils/createAAWallet/createW3AAAWallet";
 import { getTokenBalances, hexBalanceToDecimalValue, walletContent } from "../../utils/mintApi";
 import NftBurn from "./NftBurn";
 import NftTransfer from "./NftTransfer";
@@ -97,7 +96,9 @@ export const Wallet = () => {
         if (value && value.address) {
             setTokens([]);
             const tokenBalances = await getTokenBalances(value.address, isProd, value.chain);
-            if (tokenBalances == null) return;
+            if (tokenBalances == null) {
+                return;
+            }
             const allTokens = tokenBalances.map((token: any) => {
                 if (token.tokenBalance === "0x" + "0".repeat(64)) {
                     return null;
@@ -244,7 +245,7 @@ export const Wallet = () => {
                     onClose={handleCloseNftTransferModal}
                     currentToken={currentToken}
                     tokensArray={tokensArray}
-                    walletInstance={value!}
+                    walletInstance={value}
                 />
             )}
         </div>
