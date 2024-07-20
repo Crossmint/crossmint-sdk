@@ -102,8 +102,8 @@ importers:
   apps/payments/create-react-app:
     dependencies:
       '@crossmint/client-sdk-react-ui':
-        specifier: 1.1.6
-        version: 1.1.6(bufferutil@4.0.7)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(utf-8-validate@5.0.10)
+        specifier: workspace:*
+        version: link:../../../packages/client/ui/react-ui
       eslint-config-react-app:
         specifier: 7.0.1
         version: 7.0.1(@babel/plugin-syntax-flow@7.22.5(@babel/core@7.22.17))(@babel/plugin-transform-react-jsx@7.22.15(@babel/core@7.22.17))(eslint@8.57.0)(jest@27.5.1(bufferutil@4.0.7)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.3.3))(utf-8-validate@5.0.10))(typescript@5.3.3)
@@ -216,8 +216,8 @@ importers:
         specifier: 0.2.1
         version: 0.2.1(@babel/runtime@7.24.7)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.7)(encoding@0.1.13)(react@18.2.0)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
       '@crossmint/common-sdk-base':
-        specifier: 0.0.6
-        version: 0.0.6
+        specifier: workspace:*
+        version: link:../../../../packages/common/base
       '@ethersproject/providers':
         specifier: 5.7.2
         version: 5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10)
@@ -1439,12 +1439,6 @@ packages:
 
   '@crossmint/client-sdk-base@1.1.9':
     resolution: {integrity: sha512-w8f3Z4dVHLqgE9E16qQoV+DEwX1UOiE4lKhD0tAQhHgEYrdNOslY8vekks+94/vutqv3zVA2f5CMzRfBA5fe+g==}
-
-  '@crossmint/client-sdk-react-ui@1.1.6':
-    resolution: {integrity: sha512-/AqURTjex9a29DRap0WgWVRnR4xpOEzOp9ToYlyvFcdGCwJ4g3I9c6A/Kth0fWNkVxsI3UHdlbdCbNba0IBtfA==}
-    peerDependencies:
-      react: '>=17.0.2'
-      react-dom: '>=17.0.2'
 
   '@crossmint/common-sdk-base@0.0.12':
     resolution: {integrity: sha512-KFbUX/HwdtLjh2UHN06Rzu1kla7AExulZinIv43k2U/5JkwI3WB4b0BGV7YZ5DGGPsXTkZs1XVLmsQT7fE3KkA==}
@@ -14768,22 +14762,6 @@ snapshots:
       '@crossmint/common-sdk-base': 0.0.6
       exponential-backoff: 3.1.1
       uuid: 9.0.1
-
-  '@crossmint/client-sdk-react-ui@1.1.6(bufferutil@4.0.7)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(utf-8-validate@5.0.10)':
-    dependencies:
-      '@crossmint/client-sdk-base': 1.1.9
-      '@crossmint/common-sdk-base': 0.0.6
-      '@ethersproject/transactions': 5.7.0
-      '@solana/web3.js': 1.78.5(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
-      bs58: 5.0.0
-      lodash.isequal: 4.5.0
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-      react-jss: 10.10.0(react@18.2.0)
-    transitivePeerDependencies:
-      - bufferutil
-      - encoding
-      - utf-8-validate
 
   '@crossmint/common-sdk-base@0.0.12':
     dependencies:
