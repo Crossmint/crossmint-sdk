@@ -2,6 +2,7 @@
     "$schema": "https://json.schemastore.org/tsconfig",
     "display": "Default",
     "compilerOptions": {
+        "target": "ES6",
         "experimentalDecorators": true,
         "composite": false,
         "declaration": true,
@@ -23,6 +24,6 @@
         "allowJs": true,
         "strictNullChecks": true,
         "jsx": "react-jsx",
-        "lib": ["esnext", "dom", "dom.iterable"]
+        "lib": ["ES6", "DOM", "DOM.Iterable"]
     }
 }
