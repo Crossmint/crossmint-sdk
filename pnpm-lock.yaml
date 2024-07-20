@@ -136,11 +136,11 @@ importers:
   apps/payments/nextjs:
     dependencies:
       '@crossmint/client-sdk-base':
-        specifier: 1.1.13
-        version: 1.1.13
+        specifier: workspace:*
+        version: link:../../../packages/client/base
       '@crossmint/client-sdk-react-ui':
-        specifier: 1.1.6
-        version: 1.1.6(bufferutil@4.0.7)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(utf-8-validate@5.0.10)
+        specifier: workspace:*
+        version: link:../../../packages/client/ui/react-ui
       '@dynamic-labs/ethereum-all':
         specifier: 0.17.29
         version: 0.17.29(@babel/core@7.22.17)(@dynamic-labs/logger@0.17.29)(@dynamic-labs/rpc-providers@0.17.29(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(@dynamic-labs/utils@0.17.29(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@dynamic-labs/wallet-book@0.17.29(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(@solana/web3.js@1.94.0(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(bufferutil@4.0.7)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(utf-8-validate@5.0.10)
@@ -179,11 +179,11 @@ importers:
         specifier: 1.0.3
         version: 1.0.3(@babel/runtime@7.24.7)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.7)(encoding@0.1.13)(react@18.2.0)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
       '@crossmint/client-sdk-base':
-        specifier: 1.1.13
-        version: 1.1.13
+        specifier: workspace:*
+        version: link:../../../packages/client/base
       '@crossmint/client-sdk-vue-ui':
-        specifier: 1.1.8
-        version: 1.1.8
+        specifier: workspace:*
+        version: link:../../../packages/client/ui/vue-ui
       vue:
         specifier: 3.3.4
         version: 3.3.4
@@ -1437,9 +1437,6 @@ packages:
   '@crossmint/client-sdk-aa@1.0.3':
     resolution: {integrity: sha512-ckQ+b0xOeJ+Su4QSkzfPiFQEMXE9PraAaArINsvElSTfZRII+AJsWq2D7gQ4R9pNDTKSISFYgaY7/VtBCQPTNQ==}
 
-  '@crossmint/client-sdk-base@1.1.13':
-    resolution: {integrity: sha512-CKJnZkr7QJad278ZhnregKR9EAzpZVUqZGf9hG0cJcjPNFbYME4hx+V7mJVxeWmRTuVI8aylsrQslzvz6SnO1Q==}
-
   '@crossmint/client-sdk-base@1.1.9':
     resolution: {integrity: sha512-w8f3Z4dVHLqgE9E16qQoV+DEwX1UOiE4lKhD0tAQhHgEYrdNOslY8vekks+94/vutqv3zVA2f5CMzRfBA5fe+g==}
 
@@ -1448,9 +1445,6 @@ packages:
     peerDependencies:
       react: '>=17.0.2'
       react-dom: '>=17.0.2'
-
-  '@crossmint/client-sdk-vue-ui@1.1.8':
-    resolution: {integrity: sha512-2U6s9N6jtnaHXhQ7MHhntERkPgZSlfMvQXJXfJW+bUSrzRQ+IW93VjL7QAeDJKuK7zeYtjHH1sWjgQMNOoBPUg==}
 
   '@crossmint/common-sdk-base@0.0.12':
     resolution: {integrity: sha512-KFbUX/HwdtLjh2UHN06Rzu1kla7AExulZinIv43k2U/5JkwI3WB4b0BGV7YZ5DGGPsXTkZs1XVLmsQT7fE3KkA==}
@@ -14769,12 +14763,6 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@crossmint/client-sdk-base@1.1.13':
-    dependencies:
-      '@crossmint/common-sdk-base': 0.0.12
-      exponential-backoff: 3.1.1
-      uuid: 9.0.1
-
   '@crossmint/client-sdk-base@1.1.9':
     dependencies:
       '@crossmint/common-sdk-base': 0.0.6
@@ -14796,11 +14784,6 @@ snapshots:
       - bufferutil
       - encoding
       - utf-8-validate
-
-  '@crossmint/client-sdk-vue-ui@1.1.8':
-    dependencies:
-      '@crossmint/client-sdk-base': 1.1.9
-      vue: 3.3.4
 
   '@crossmint/common-sdk-base@0.0.12':
     dependencies:
