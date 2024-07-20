@@ -1,0 +1,15 @@
+{
+    "name": "@crossmint/npm-scripts",
+    "bin": {
+        "crossmint-npm-scripts": "./ts-node-proxy.js"
+    },
+    "files": [
+        "ts-node-proxy.js",
+        "src"
+    ],
+    "devDependencies": {
+        "@types/node": "20.12.7",
+        "commander": "12.0.0",
+        "ts-node": "10.9.2"
+    }
+}

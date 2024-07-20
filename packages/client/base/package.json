@@ -19,8 +19,8 @@
         "LICENSE"
     ],
     "scripts": {
-        "build": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
-        "dev": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --dts --sourcemap --watch"
+        "build": "crossmint-npm-scripts lib build",
+        "dev": "crossmint-npm-scripts lib dev"
     },
     "dependencies": {
         "@crossmint/common-sdk-base": "workspace:*",

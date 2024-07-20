@@ -27,8 +27,8 @@
         ".yalc"
     ],
     "scripts": {
-        "build": "tsup src/index.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
-        "dev": "tsup src/index.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
+        "build": "crossmint-npm-scripts lib build",
+        "dev": "crossmint-npm-scripts lib dev",
         "link:client-sdk-aa": "yalc add @crossmint/client-sdk-aa && yalc link @crossmint/client-sdk-aa && pnpm i",
         "link:common-sdk-base": "yalc add @crossmint/common-sdk-base && yalc link @crossmint/common-sdk-base && pnpm i",
         "unlink:client-sdk-aa": "yalc remove @crossmint/client-sdk-aa && pnpm i",

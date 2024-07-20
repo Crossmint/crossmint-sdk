@@ -1,0 +1,12 @@
+{
+    "name": "@crossmint/tsupconfig",
+    "sideEffects": false,
+    "type": "module",
+    "main": "dist/index.js",
+    "module": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "crossmint-npm-scripts lib build",
+        "dev": "crossmint-npm-scripts lib dev"
+    }
+}
