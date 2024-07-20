@@ -28,6 +28,7 @@
     ],
     "scripts": {
         "build": "tsup src/index.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
+        "build:prod": "tsup src/index.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts",
         "dev": "tsup src/index.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
         "link:client-sdk-aa": "yalc add @crossmint/client-sdk-aa && yalc link @crossmint/client-sdk-aa && pnpm i",
         "link:common-sdk-base": "yalc add @crossmint/common-sdk-base && yalc link @crossmint/common-sdk-base && pnpm i",
