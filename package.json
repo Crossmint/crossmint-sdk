@@ -5,7 +5,7 @@
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
     "scripts": {
-        "build": "lerna run build",
+        "build": "pnpm -r build",
         "build:apps": "pnpm --filter \"./apps/**\" build",
         "build:libs": "pnpm --filter \"./packages/**\" build",
         "change:add": "pnpm changeset add",

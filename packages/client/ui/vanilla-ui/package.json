@@ -33,6 +33,7 @@
     "dependencies": {
         "@crossmint/client-sdk-base": "workspace:*",
         "@crossmint/common-sdk-base": "workspace:*",
+        "@crossmint/tsupconfig": "workspace:*",
         "lit": "2.8.0"
     }
 }

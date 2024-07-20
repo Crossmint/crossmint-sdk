@@ -28,6 +28,7 @@
         "uuid": "9.0.1"
     },
     "devDependencies": {
+        "@crossmint/tsupconfig": "workspace:*",
         "@ethersproject/transactions": "5.7.0",
         "@solana/web3.js": "1.78.5",
         "@types/uuid": "9.0.4"

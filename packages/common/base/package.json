@@ -28,6 +28,7 @@
         "tweetnacl": "1.0.3"
     },
     "devDependencies": {
+        "@crossmint/tsupconfig": "workspace:*",
         "@types/bs58": "^4.0.4"
     }
 }
