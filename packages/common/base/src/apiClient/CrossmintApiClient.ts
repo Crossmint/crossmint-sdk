@@ -3,9 +3,12 @@ import { ValidateAPIKeyPrefixExpectations, ValidateAPIKeyPrefixSuccessResult } f
 
 import { ApiClient } from "./ApiClient";
 
-export type CrossmintApiClientCtorParams = {
-    apiKey: string;
+export type CrossmintApiClientCtorParams = CrossmintApiClientCtorWithoutExpectationsParams & {
     expectations?: ValidateAPIKeyPrefixExpectations;
+};
+
+export type CrossmintApiClientCtorWithoutExpectationsParams = {
+    apiKey: string;
     overrideBaseUrl?: string;
 };
 
@@ -47,5 +50,3 @@ export class CrossmintApiClient extends ApiClient {
         return CrossmintApiClient.normalizePath(url);
     }
 }
-
-new CrossmintApiClient({ apiKey: "ck_prodc" }).get("path", { body: "" });
