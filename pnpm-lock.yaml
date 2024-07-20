@@ -106,7 +106,7 @@ importers:
         version: link:../../../packages/client/ui/react-ui
       eslint-config-react-app:
         specifier: 7.0.1
-        version: 7.0.1(@babel/plugin-syntax-flow@7.22.5(@babel/core@7.22.17))(@babel/plugin-transform-react-jsx@7.22.15(@babel/core@7.22.17))(eslint@8.57.0)(jest@29.6.4(@types/node@20.12.7)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.5.3)))(typescript@5.3.3)
+        version: 7.0.1(@babel/plugin-syntax-flow@7.22.5(@babel/core@7.22.17))(@babel/plugin-transform-react-jsx@7.22.15(@babel/core@7.22.17))(eslint@8.57.0)(jest@27.5.1(bufferutil@4.0.7)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.3.3))(utf-8-validate@5.0.10))(typescript@5.3.3)
       react:
         specifier: 18.2.0
         version: 18.2.0
@@ -253,8 +253,8 @@ importers:
   apps/wallets/smart-wallet/react:
     dependencies:
       '@crossmint/client-sdk-aa-passkeys-beta':
-        specifier: 1.1.0-beta.17
-        version: 1.1.0-beta.17(@babel/runtime@7.24.7)(buffer@6.0.3)(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)
+        specifier: 1.1.0-beta.19
+        version: 1.1.0-beta.19(@babel/runtime@7.24.7)(buffer@6.0.3)(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)
       '@emotion/react':
         specifier: ^11.11.1
         version: 11.11.4(@types/react@18.3.3)(react@18.2.0)
@@ -372,7 +372,7 @@ importers:
         version: 14.2.5(eslint@8.57.0)(typescript@5.4.2)
       eslint-config-react-app:
         specifier: ^7.0.1
-        version: 7.0.1(@babel/plugin-syntax-flow@7.22.5(@babel/core@7.21.8))(@babel/plugin-transform-react-jsx@7.22.15(@babel/core@7.21.8))(eslint@8.57.0)(jest@27.5.1(bufferutil@4.0.7)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.4.2))(utf-8-validate@5.0.10))(typescript@5.4.2)
+        version: 7.0.1(@babel/plugin-syntax-flow@7.22.5(@babel/core@7.21.8))(@babel/plugin-transform-react-jsx@7.22.15(@babel/core@7.21.8))(eslint@8.57.0)(jest@29.6.4(@types/node@20.12.7)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.5.3)))(typescript@5.4.2)
       eslint-plugin-react:
         specifier: 7.34.4
         version: 7.34.4(eslint@8.57.0)
@@ -1651,8 +1651,8 @@ packages:
   '@cosmjs/utils@0.30.1':
     resolution: {integrity: sha512-KvvX58MGMWh7xA+N+deCfunkA/ZNDvFLw4YbOmX3f/XBIkqrVY7qlotfy2aNb1kgp6h4B6Yc8YawJPDTfvWX7g==}
 
-  '@crossmint/client-sdk-aa-passkeys-beta@1.1.0-beta.17':
-    resolution: {integrity: sha512-lkNfwT4qVTU6Nty4KnJMSK2iv3nIxcF5ktkRaFpWiqFTEG4hrkxZ3L29u7EDTs6Gx0zWPE+hHn0eixjUuQq4Yw==}
+  '@crossmint/client-sdk-aa-passkeys-beta@1.1.0-beta.19':
+    resolution: {integrity: sha512-VhgxKN92AYCyZiNNhrAF+0NXPW+NLu+38Y4RZHUXal+YnR8NCiNT5WvjflS52Fm+dG+D77RjSWMy5xNzO2vv/Q==}
 
   '@crossmint/client-sdk-aa@0.2.1':
     resolution: {integrity: sha512-/otw5GdnJE0Xp8eAW+J85C0WG7XLSfUmYNRvtq8vW5Oxja4XnuYrJY+AphoRsnFyrh6Xg8ZwUY9Zhs/RmnbhPQ==}
@@ -3441,6 +3441,9 @@ packages:
   '@noble/curves@1.2.0':
     resolution: {integrity: sha512-oYclrNgRaM9SsBUBVbb8M6DTV7ZHRTKugureoYEncY5c65HOmRzvSiTE3y5CYaPYJA/GVkrhXEoF0M3Ya9PMnw==}
 
+  '@noble/curves@1.4.0':
+    resolution: {integrity: sha512-p+4cb332SFCrReJkCYe8Xzm0OWi4Jji5jVdIZRL/PmacmDkFNw6MrrV+gGpiPxLHbV+zKFRywUWbaseT+tZRXg==}
+
   '@noble/curves@1.4.2':
     resolution: {integrity: sha512-TavHr8qycMChk8UwMld0ZDRvatedkzWfH8IiaeGCfymOP5i0hSCozz9vHOL0nkwk7HRMlFnAiKpS2jrUmSybcw==}
 
@@ -4351,6 +4354,9 @@ packages:
   '@scure/base@1.1.5':
     resolution: {integrity: sha512-Brj9FiG2W1MRQSTB212YVPRrcbjkv48FoZi/u4l/zds/ieRrqsh7aUf6CLwkAq61oKXr/ZlTzlY66gLIj3TFTQ==}
 
+  '@scure/base@1.1.7':
+    resolution: {integrity: sha512-PPNYBslrLNNUQ/Yad37MHYsNQtK67EhWb6WtSvNLLPo7SdVZgkUjD6Dg+5On7zNwmskf8OX7I7Nx5oN+MIWE0g==}
+
   '@scure/bip32@1.1.5':
     resolution: {integrity: sha512-XyNh1rB0SkEqd3tXcXMi+Xe1fvg+kUIcoRIEujP1Jgv7DqW2r9lg3Ah0NkFaCs9sTkQAQA8kw7xiRXzENi9Rtw==}
 
@@ -4360,11 +4366,17 @@ packages:
   '@scure/bip32@1.3.2':
     resolution: {integrity: sha512-N1ZhksgwD3OBlwTv3R6KFEcPojl/W4ElJOeCZdi+vuI5QmTFwLq3OFf2zd2ROpKvxFdgZ6hUpb0dx9bVNEwYCA==}
 
+  '@scure/bip32@1.4.0':
+    resolution: {integrity: sha512-sVUpc0Vq3tXCkDGYVWGIZTRfnvu8LoTDaev7vbwh0omSvVORONr960MQWdKqJDCReIEmTj3PAr73O3aoxz7OPg==}
+
   '@scure/bip39@1.1.1':
     resolution: {integrity: sha512-t+wDck2rVkh65Hmv280fYdVdY25J9YeEUIgn2LG1WM6gxFkGzcksoDiUkWVpVp3Oex9xGC68JU2dSbUfwZ2jPg==}
 
   '@scure/bip39@1.2.1':
     resolution: {integrity: sha512-Z3/Fsz1yr904dduJD0NpiyRHhRYHdcnyh73FZWiV+/qhWi83wNJ3NWolYqCEN+ZWsUz2TWwajJggcRE9r1zUYg==}
+
+  '@scure/bip39@1.3.0':
+    resolution: {integrity: sha512-disdg7gHuTDZtY+ZdkmLpPCk7fxZSu3gBiEGuoC1XYxv9cGx3Z6cpTggCgW6odSOOIXCiDjuGejW+aJKCY/pIQ==}
 
   '@sentry/core@5.30.0':
     resolution: {integrity: sha512-TmfrII8w1PQZSZgPpUESqjB+jC6MvZJZdLtE/0hZ+SrnKhW3x5WlYLvTXZpcWePYBku7rl2wn1RZu6uT0qCTeg==}
@@ -5598,12 +5610,20 @@ packages:
       permissionless: ^0.1.18
       viem: ^2.9.17
 
-  '@zerodev/passkey-validator@5.2.7':
-    resolution: {integrity: sha512-PgojM73bict8Y/Td9JR45GTaZobigogJhlwfZdAHH6ZaUrTElF+GigYpPxPRbxR8tx6YvACBBWVkgElSyLZSfg==}
+  '@zerodev/ecdsa-validator@5.3.1':
+    resolution: {integrity: sha512-4xg/uBgjQLyO5GoE9TkQqO7HRwSPVbchd6UXit+R3excN1fC27k7UcjLmm5rTrM2JxbgncIodGcNQMxYKNejsA==}
     peerDependencies:
       '@zerodev/sdk': ^5.2.1
       permissionless: ^0.1.18
-      viem: ^2.9.17
+      viem: ^2.16.3
+
+  '@zerodev/passkey-validator@5.3.5':
+    resolution: {integrity: sha512-TMTm1vO3THvGnczBTPQGh4mU0cS88fDPjXqsjQXfWdlvzlnHpobLdAmxdyeLDVrJ9aEN4lsEm6Hgnna5AXtoNw==}
+    peerDependencies:
+      '@zerodev/sdk': ^5.2.1
+      '@zerodev/webauthn-key': ^5.3.0
+      permissionless: ^0.1.18
+      viem: ^2.16.3
 
   '@zerodev/permissions@5.2.5':
     resolution: {integrity: sha512-9bnKB+pzKETIXaVgjy/Gg4oALIn0tM/6EQbeMU4wiWr5i/XD0sMCCkoTwiBWLsgVRKxiSJcX6xmTPtOC5rhi6A==}
@@ -5632,6 +5652,12 @@ packages:
       permissionless: ^0.1.18
       viem: ^2.9.17
 
+  '@zerodev/sdk@5.3.3':
+    resolution: {integrity: sha512-NZs0dW9cvRdmcju7rQ4C47TysbDnhpWxPzPQrfZ5VJFHQTa01qAZcKJrTpzVeduzMDnntZgv2ueFrYGAW00Xog==}
+    peerDependencies:
+      permissionless: ^0.1.18
+      viem: ^2.16.3
+
   '@zerodev/session-key@5.1.0':
     resolution: {integrity: sha512-EC46AFg5MHNGzv5Fb3sf3qq3ed1K4ivY/oY6DpQ5NTtfido0CM3pNxD8cClblSqITONR9jK9Uv1VNSpPETYoZw==}
     peerDependencies:
@@ -5645,6 +5671,11 @@ packages:
       '@zerodev/sdk': ^5.2.1
       permissionless: ^0.1.17
       viem: ^2.9.17
+
+  '@zerodev/webauthn-key@5.3.1':
+    resolution: {integrity: sha512-8s/gdKppXgh15wrER50nAIhaD/QTEwecN288RbXI+TWVmdwzuLOpbMuzfgBvisfiE1kNJlfYEl9qos7aKm6EkQ==}
+    peerDependencies:
+      viem: ^2.16.3
 
   '@zkochan/js-yaml@0.0.6':
     resolution: {integrity: sha512-nzvgl3VfhcELQ8LyVrYOru+UtAy1nrygk2+AGbTm8a5YcO6o8lSjAT+pfg3vJWxIoZKOUhrK6UU7xW/+00kQrg==}
@@ -5696,6 +5727,17 @@ packages:
 
   abitype@1.0.0:
     resolution: {integrity: sha512-NMeMah//6bJ56H5XRj8QCV4AwuW6hB6zqz2LnhhLdcWVQOsXki6/Pn3APeqxCma62nXIcmZWdu1DlHWS74umVQ==}
+    peerDependencies:
+      typescript: '>=5.0.4'
+      zod: ^3 >=3.22.0
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+      zod:
+        optional: true
+
+  abitype@1.0.5:
+    resolution: {integrity: sha512-YzDhti7cjlfaBhHutMaboYB21Ha3rXR9QTkNJFzYC4kC8YclaiwPBBBJY8ejFdu2wnJeZCVZSMlQJ7fi8S6hsw==}
     peerDependencies:
       typescript: '>=5.0.4'
       zod: ^3 >=3.22.0
@@ -11195,10 +11237,10 @@ packages:
     peerDependencies:
       viem: ^2.9.17
 
-  permissionless@0.1.31:
-    resolution: {integrity: sha512-mFRJPVNPSJLQ2FlaOjKL4M24wOoQE2OcWIGpFPAOGuEQkzU3yclO7p/8jHe4cDFSAFD2z4y91KvFuHji0x9sbw==}
+  permissionless@0.1.36:
+    resolution: {integrity: sha512-v+VMpkHX9wr13ZPV6nilwQ0yiFU1K4498j6ohmNzD2eLlP1R/FB77xQrbMkZo98ATYca2CYh2gcBYsxmOC3VmA==}
     peerDependencies:
-      viem: ^2.9.17
+      viem: ^2.14.1
 
   picocolors@0.2.1:
     resolution: {integrity: sha512-cMlDqaLEqfSaW8Z7N5Jw+lyIW869EzT73/F5lhtY9cLGoVxSXznfgfXMO0Z5K0o0Q2TkTXq+0KFsdnSe3jDViA==}
@@ -13899,8 +13941,8 @@ packages:
       typescript:
         optional: true
 
-  viem@2.14.2:
-    resolution: {integrity: sha512-dQY3dmeKY0av7p1zVvqBYYsFzNhMmnxOtBA3ttS2SFRJHs4r8EdF4L9xW0rJ6tMyUwSlpeHxJ4kP+S+uCuoyGQ==}
+  viem@2.17.5:
+    resolution: {integrity: sha512-m0QIKQF1uqTFWAYNeAdhNUBFMaIs0Mwhu2VmZuXmBMkzJ0IL0ViblLH13JRwbDnOaY82KYzNhCARmfnLBWVdkA==}
     peerDependencies:
       typescript: '>=5.0.4'
     peerDependenciesMeta:
@@ -16238,18 +16280,20 @@ snapshots:
 
   '@cosmjs/utils@0.30.1': {}
 
-  '@crossmint/client-sdk-aa-passkeys-beta@1.1.0-beta.17(@babel/runtime@7.24.7)(buffer@6.0.3)(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)':
+  '@crossmint/client-sdk-aa-passkeys-beta@1.1.0-beta.19(@babel/runtime@7.24.7)(buffer@6.0.3)(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)':
     dependencies:
       '@crossmint/common-sdk-base': 0.0.13
       '@datadog/browser-logs': 4.42.2
       '@web3auth/base': 7.3.2(@babel/runtime@7.24.7)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       '@web3auth/ethereum-provider': 7.3.2(@babel/runtime@7.24.7)(buffer@6.0.3)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       '@web3auth/single-factor-auth': 7.3.0(@babel/runtime@7.24.7)(@types/bn.js@5.1.5)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      '@zerodev/ecdsa-validator': 5.2.3(@zerodev/sdk@5.2.15(permissionless@0.1.31(viem@2.14.2(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.14.2(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.31(viem@2.14.2(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.14.2(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4))
-      '@zerodev/passkey-validator': 5.2.7(@zerodev/sdk@5.2.15(permissionless@0.1.31(viem@2.14.2(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.14.2(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.31(viem@2.14.2(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.14.2(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4))
-      '@zerodev/sdk': 5.2.15(permissionless@0.1.31(viem@2.14.2(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4))
-      permissionless: 0.1.31(viem@2.9.17(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4))
-      viem: 2.14.2(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)
+      '@zerodev/ecdsa-validator': 5.3.1(@zerodev/sdk@5.3.3(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4))
+      '@zerodev/passkey-validator': 5.3.5(@zerodev/sdk@5.3.3(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(@zerodev/webauthn-key@5.3.1(viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4))
+      '@zerodev/sdk': 5.3.3(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4))
+      '@zerodev/webauthn-key': 5.3.1(viem@2.9.17(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4))
+      permissionless: 0.1.36(viem@2.9.17(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4))
+      uuid: 10.0.0
+      viem: 2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -19753,7 +19797,7 @@ snapshots:
     dependencies:
       '@ethereumjs/tx': 4.2.0
       '@noble/hashes': 1.4.0
-      '@scure/base': 1.1.5
+      '@scure/base': 1.1.7
       '@types/debug': 4.1.12
       debug: 4.3.5(supports-color@8.1.1)
       pony-cause: 2.1.10
@@ -19997,6 +20041,10 @@ snapshots:
   '@noble/curves@1.2.0':
     dependencies:
       '@noble/hashes': 1.3.2
+
+  '@noble/curves@1.4.0':
+    dependencies:
+      '@noble/hashes': 1.4.0
 
   '@noble/curves@1.4.2':
     dependencies:
@@ -20964,17 +21012,19 @@ snapshots:
 
   '@scure/base@1.1.5': {}
 
+  '@scure/base@1.1.7': {}
+
   '@scure/bip32@1.1.5':
     dependencies:
       '@noble/hashes': 1.2.0
       '@noble/secp256k1': 1.7.1
-      '@scure/base': 1.1.5
+      '@scure/base': 1.1.7
 
   '@scure/bip32@1.3.1':
     dependencies:
       '@noble/curves': 1.1.0
       '@noble/hashes': 1.3.3
-      '@scure/base': 1.1.5
+      '@scure/base': 1.1.7
 
   '@scure/bip32@1.3.2':
     dependencies:
@@ -20982,15 +21032,26 @@ snapshots:
       '@noble/hashes': 1.3.3
       '@scure/base': 1.1.5
 
+  '@scure/bip32@1.4.0':
+    dependencies:
+      '@noble/curves': 1.4.2
+      '@noble/hashes': 1.4.0
+      '@scure/base': 1.1.7
+
   '@scure/bip39@1.1.1':
     dependencies:
       '@noble/hashes': 1.2.0
-      '@scure/base': 1.1.5
+      '@scure/base': 1.1.7
 
   '@scure/bip39@1.2.1':
     dependencies:
       '@noble/hashes': 1.3.3
       '@scure/base': 1.1.5
+
+  '@scure/bip39@1.3.0':
+    dependencies:
+      '@noble/hashes': 1.4.0
+      '@scure/base': 1.1.7
 
   '@sentry/core@5.30.0':
     dependencies:
@@ -23511,19 +23572,20 @@ snapshots:
       permissionless: 0.1.29(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
       viem: 2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
 
-  '@zerodev/ecdsa-validator@5.2.3(@zerodev/sdk@5.2.15(permissionless@0.1.31(viem@2.14.2(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.14.2(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.31(viem@2.14.2(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.14.2(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4))':
+  '@zerodev/ecdsa-validator@5.3.1(@zerodev/sdk@5.3.3(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4))':
     dependencies:
-      '@zerodev/sdk': 5.2.15(permissionless@0.1.31(viem@2.14.2(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4))
-      permissionless: 0.1.31(viem@2.9.17(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4))
-      viem: 2.14.2(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)
+      '@zerodev/sdk': 5.3.3(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4))
+      permissionless: 0.1.36(viem@2.9.17(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4))
+      viem: 2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)
 
-  '@zerodev/passkey-validator@5.2.7(@zerodev/sdk@5.2.15(permissionless@0.1.31(viem@2.14.2(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.14.2(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.31(viem@2.14.2(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.14.2(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4))':
+  '@zerodev/passkey-validator@5.3.5(@zerodev/sdk@5.3.3(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(@zerodev/webauthn-key@5.3.1(viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4))':
     dependencies:
       '@noble/curves': 1.4.2
       '@simplewebauthn/browser': 8.3.7
-      '@zerodev/sdk': 5.2.15(permissionless@0.1.31(viem@2.14.2(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4))
-      permissionless: 0.1.31(viem@2.9.17(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4))
-      viem: 2.14.2(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)
+      '@zerodev/sdk': 5.3.3(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4))
+      '@zerodev/webauthn-key': 5.3.1(viem@2.9.17(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4))
+      permissionless: 0.1.36(viem@2.9.17(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4))
+      viem: 2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)
 
   '@zerodev/permissions@5.2.5(@zerodev/sdk@5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))':
     dependencies:
@@ -23565,9 +23627,9 @@ snapshots:
       semver: 7.6.0
       viem: 2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
 
-  '@zerodev/sdk@5.2.15(permissionless@0.1.31(viem@2.14.2(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4))':
+  '@zerodev/sdk@5.3.3(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4))':
     dependencies:
-      permissionless: 0.1.31(viem@2.9.17(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4))
+      permissionless: 0.1.36(viem@2.9.17(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4))
       semver: 7.6.0
       viem: 2.9.17(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)
 
@@ -23584,6 +23646,12 @@ snapshots:
       merkletreejs: 0.3.11
       permissionless: 0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))
       viem: 2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+
+  '@zerodev/webauthn-key@5.3.1(viem@2.9.17(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4))':
+    dependencies:
+      '@noble/curves': 1.4.2
+      '@simplewebauthn/browser': 8.3.7
+      viem: 2.9.17(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)
 
   '@zkochan/js-yaml@0.0.6':
     dependencies:
@@ -23636,6 +23704,11 @@ snapshots:
   abitype@1.0.0(typescript@5.5.3)(zod@3.22.4):
     optionalDependencies:
       typescript: 5.5.3
+      zod: 3.22.4
+
+  abitype@1.0.5(typescript@5.4.2)(zod@3.22.4):
+    optionalDependencies:
+      typescript: 5.4.2
       zod: 3.22.4
 
   abort-controller@3.0.0:
@@ -26151,7 +26224,7 @@ snapshots:
       eslint: 8.57.0
       eslint-import-resolver-node: 0.3.9
       eslint-import-resolver-typescript: 3.6.0(@typescript-eslint/parser@6.7.0(eslint@8.57.0)(typescript@5.4.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.28.1)(eslint@8.57.0)
-      eslint-plugin-import: 2.28.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.4.2))(eslint@8.57.0)
+      eslint-plugin-import: 2.28.1(@typescript-eslint/parser@6.7.0(eslint@8.49.0)(typescript@5.5.3))(eslint@8.57.0)
       eslint-plugin-jsx-a11y: 6.7.1(eslint@8.57.0)
       eslint-plugin-react: 7.34.4(eslint@8.57.0)
       eslint-plugin-react-hooks: 4.6.0(eslint@8.57.0)
@@ -26196,6 +26269,33 @@ snapshots:
       - jest
       - supports-color
 
+  eslint-config-react-app@7.0.1(@babel/plugin-syntax-flow@7.22.5(@babel/core@7.21.8))(@babel/plugin-transform-react-jsx@7.22.15(@babel/core@7.21.8))(eslint@8.57.0)(jest@29.6.4(@types/node@20.12.7)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.5.3)))(typescript@5.4.2):
+    dependencies:
+      '@babel/core': 7.22.17
+      '@babel/eslint-parser': 7.22.15(@babel/core@7.22.17)(eslint@8.57.0)
+      '@rushstack/eslint-patch': 1.3.3
+      '@typescript-eslint/eslint-plugin': 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.4.2))(eslint@8.57.0)(typescript@5.4.2)
+      '@typescript-eslint/parser': 5.62.0(eslint@8.57.0)(typescript@5.4.2)
+      babel-preset-react-app: 10.0.1
+      confusing-browser-globals: 1.0.11
+      eslint: 8.57.0
+      eslint-plugin-flowtype: 8.0.3(@babel/plugin-syntax-flow@7.22.5(@babel/core@7.21.8))(@babel/plugin-transform-react-jsx@7.22.15(@babel/core@7.21.8))(eslint@8.57.0)
+      eslint-plugin-import: 2.28.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.4.2))(eslint@8.57.0)
+      eslint-plugin-jest: 25.7.0(@typescript-eslint/eslint-plugin@5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.4.2))(eslint@8.57.0)(typescript@5.4.2))(eslint@8.57.0)(jest@29.6.4(@types/node@20.12.7)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.5.3)))(typescript@5.4.2)
+      eslint-plugin-jsx-a11y: 6.7.1(eslint@8.57.0)
+      eslint-plugin-react: 7.33.2(eslint@8.57.0)
+      eslint-plugin-react-hooks: 4.6.0(eslint@8.57.0)
+      eslint-plugin-testing-library: 5.11.1(eslint@8.57.0)(typescript@5.4.2)
+    optionalDependencies:
+      typescript: 5.4.2
+    transitivePeerDependencies:
+      - '@babel/plugin-syntax-flow'
+      - '@babel/plugin-transform-react-jsx'
+      - eslint-import-resolver-typescript
+      - eslint-import-resolver-webpack
+      - jest
+      - supports-color
+
   eslint-config-react-app@7.0.1(@babel/plugin-syntax-flow@7.22.5(@babel/core@7.22.17))(@babel/plugin-transform-react-jsx@7.22.15(@babel/core@7.22.17))(eslint@8.57.0)(jest@27.5.1(bufferutil@4.0.7)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.3.3))(utf-8-validate@5.0.10))(typescript@5.3.3):
     dependencies:
       '@babel/core': 7.22.17
@@ -26209,33 +26309,6 @@ snapshots:
       eslint-plugin-flowtype: 8.0.3(@babel/plugin-syntax-flow@7.22.5(@babel/core@7.22.17))(@babel/plugin-transform-react-jsx@7.22.15(@babel/core@7.22.17))(eslint@8.57.0)
       eslint-plugin-import: 2.28.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.3.3))(eslint@8.57.0)
       eslint-plugin-jest: 25.7.0(@typescript-eslint/eslint-plugin@5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.3.3))(eslint@8.57.0)(typescript@5.3.3))(eslint@8.57.0)(jest@27.5.1(bufferutil@4.0.7)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.3.3))(utf-8-validate@5.0.10))(typescript@5.3.3)
-      eslint-plugin-jsx-a11y: 6.7.1(eslint@8.57.0)
-      eslint-plugin-react: 7.33.2(eslint@8.57.0)
-      eslint-plugin-react-hooks: 4.6.0(eslint@8.57.0)
-      eslint-plugin-testing-library: 5.11.1(eslint@8.57.0)(typescript@5.3.3)
-    optionalDependencies:
-      typescript: 5.3.3
-    transitivePeerDependencies:
-      - '@babel/plugin-syntax-flow'
-      - '@babel/plugin-transform-react-jsx'
-      - eslint-import-resolver-typescript
-      - eslint-import-resolver-webpack
-      - jest
-      - supports-color
-
-  eslint-config-react-app@7.0.1(@babel/plugin-syntax-flow@7.22.5(@babel/core@7.22.17))(@babel/plugin-transform-react-jsx@7.22.15(@babel/core@7.22.17))(eslint@8.57.0)(jest@29.6.4(@types/node@20.12.7)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.5.3)))(typescript@5.3.3):
-    dependencies:
-      '@babel/core': 7.22.17
-      '@babel/eslint-parser': 7.22.15(@babel/core@7.22.17)(eslint@8.57.0)
-      '@rushstack/eslint-patch': 1.3.3
-      '@typescript-eslint/eslint-plugin': 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.3.3))(eslint@8.57.0)(typescript@5.3.3)
-      '@typescript-eslint/parser': 5.62.0(eslint@8.57.0)(typescript@5.3.3)
-      babel-preset-react-app: 10.0.1
-      confusing-browser-globals: 1.0.11
-      eslint: 8.57.0
-      eslint-plugin-flowtype: 8.0.3(@babel/plugin-syntax-flow@7.22.5(@babel/core@7.22.17))(@babel/plugin-transform-react-jsx@7.22.15(@babel/core@7.22.17))(eslint@8.57.0)
-      eslint-plugin-import: 2.28.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.3.3))(eslint@8.57.0)
-      eslint-plugin-jest: 25.7.0(@typescript-eslint/eslint-plugin@5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.3.3))(eslint@8.57.0)(typescript@5.3.3))(eslint@8.57.0)(jest@29.6.4(@types/node@20.12.7)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.5.3)))(typescript@5.3.3)
       eslint-plugin-jsx-a11y: 6.7.1(eslint@8.57.0)
       eslint-plugin-react: 7.33.2(eslint@8.57.0)
       eslint-plugin-react-hooks: 4.6.0(eslint@8.57.0)
@@ -26264,7 +26337,7 @@ snapshots:
       enhanced-resolve: 5.15.0
       eslint: 8.57.0
       eslint-module-utils: 2.8.0(@typescript-eslint/parser@6.7.0(eslint@8.57.0)(typescript@5.4.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.0(@typescript-eslint/parser@6.7.0(eslint@8.57.0)(typescript@5.4.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.28.1)(eslint@8.57.0))(eslint@8.57.0)
-      eslint-plugin-import: 2.28.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.4.2))(eslint@8.57.0)
+      eslint-plugin-import: 2.28.1(@typescript-eslint/parser@6.7.0(eslint@8.49.0)(typescript@5.5.3))(eslint@8.57.0)
       fast-glob: 3.3.1
       get-tsconfig: 4.7.0
       is-core-module: 2.13.1
@@ -26297,6 +26370,26 @@ snapshots:
       debug: 3.2.7
     optionalDependencies:
       '@typescript-eslint/parser': 5.62.0(eslint@8.57.0)(typescript@5.3.3)
+      eslint: 8.57.0
+      eslint-import-resolver-node: 0.3.9
+    transitivePeerDependencies:
+      - supports-color
+
+  eslint-module-utils@2.8.0(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.4.2))(eslint-import-resolver-node@0.3.9)(eslint@8.57.0):
+    dependencies:
+      debug: 3.2.7
+    optionalDependencies:
+      '@typescript-eslint/parser': 5.62.0(eslint@8.57.0)(typescript@5.4.2)
+      eslint: 8.57.0
+      eslint-import-resolver-node: 0.3.9
+    transitivePeerDependencies:
+      - supports-color
+
+  eslint-module-utils@2.8.0(@typescript-eslint/parser@6.7.0(eslint@8.49.0)(typescript@5.5.3))(eslint-import-resolver-node@0.3.9)(eslint@8.57.0):
+    dependencies:
+      debug: 3.2.7
+    optionalDependencies:
+      '@typescript-eslint/parser': 6.7.0(eslint@8.49.0)(typescript@5.5.3)
       eslint: 8.57.0
       eslint-import-resolver-node: 0.3.9
     transitivePeerDependencies:
@@ -26377,7 +26470,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 8.57.0
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.8.0(@typescript-eslint/parser@6.7.0(eslint@8.57.0)(typescript@5.4.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.0(@typescript-eslint/parser@6.7.0(eslint@8.57.0)(typescript@5.4.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.28.1)(eslint@8.57.0))(eslint@8.57.0)
+      eslint-module-utils: 2.8.0(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.4.2))(eslint-import-resolver-node@0.3.9)(eslint@8.57.0)
       has: 1.0.3
       is-core-module: 2.13.1
       is-glob: 4.0.3
@@ -26404,7 +26497,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 8.57.0
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.8.0(@typescript-eslint/parser@6.7.0(eslint@8.57.0)(typescript@5.5.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.0(@typescript-eslint/parser@6.7.0(eslint@8.57.0)(typescript@5.5.3))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.28.1)(eslint@8.57.0))(eslint@8.57.0)
+      eslint-module-utils: 2.8.0(@typescript-eslint/parser@6.7.0(eslint@8.49.0)(typescript@5.5.3))(eslint-import-resolver-node@0.3.9)(eslint@8.57.0)
       has: 1.0.3
       is-core-module: 2.13.1
       is-glob: 4.0.3
@@ -26432,17 +26525,6 @@ snapshots:
       - supports-color
       - typescript
 
-  eslint-plugin-jest@25.7.0(@typescript-eslint/eslint-plugin@5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.3.3))(eslint@8.57.0)(typescript@5.3.3))(eslint@8.57.0)(jest@29.6.4(@types/node@20.12.7)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.5.3)))(typescript@5.3.3):
-    dependencies:
-      '@typescript-eslint/experimental-utils': 5.62.0(eslint@8.57.0)(typescript@5.3.3)
-      eslint: 8.57.0
-    optionalDependencies:
-      '@typescript-eslint/eslint-plugin': 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.3.3))(eslint@8.57.0)(typescript@5.3.3)
-      jest: 29.6.4(@types/node@20.12.7)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.5.3))
-    transitivePeerDependencies:
-      - supports-color
-      - typescript
-
   eslint-plugin-jest@25.7.0(@typescript-eslint/eslint-plugin@5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.4.2))(eslint@8.57.0)(typescript@5.4.2))(eslint@8.57.0)(jest@27.5.1(bufferutil@4.0.7)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.4.2))(utf-8-validate@5.0.10))(typescript@5.4.2):
     dependencies:
       '@typescript-eslint/experimental-utils': 5.62.0(eslint@8.57.0)(typescript@5.4.2)
@@ -26450,6 +26532,17 @@ snapshots:
     optionalDependencies:
       '@typescript-eslint/eslint-plugin': 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.4.2))(eslint@8.57.0)(typescript@5.4.2)
       jest: 27.5.1(bufferutil@4.0.7)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.4.2))(utf-8-validate@5.0.10)
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+
+  eslint-plugin-jest@25.7.0(@typescript-eslint/eslint-plugin@5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.4.2))(eslint@8.57.0)(typescript@5.4.2))(eslint@8.57.0)(jest@29.6.4(@types/node@20.12.7)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.5.3)))(typescript@5.4.2):
+    dependencies:
+      '@typescript-eslint/experimental-utils': 5.62.0(eslint@8.57.0)(typescript@5.4.2)
+      eslint: 8.57.0
+    optionalDependencies:
+      '@typescript-eslint/eslint-plugin': 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.4.2))(eslint@8.57.0)(typescript@5.4.2)
+      jest: 29.6.4(@types/node@20.12.7)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.5.3))
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -28494,6 +28587,10 @@ snapshots:
   isows@1.0.4(ws@8.13.0(bufferutil@4.0.7)(utf-8-validate@5.0.10)):
     dependencies:
       ws: 8.13.0(bufferutil@4.0.7)(utf-8-validate@5.0.10)
+
+  isows@1.0.4(ws@8.17.1(bufferutil@4.0.7)(utf-8-validate@5.0.10)):
+    dependencies:
+      ws: 8.17.1(bufferutil@4.0.7)(utf-8-validate@5.0.10)
 
   istanbul-lib-coverage@3.2.0: {}
 
@@ -31373,7 +31470,7 @@ snapshots:
     dependencies:
       viem: 2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
 
-  permissionless@0.1.31(viem@2.9.17(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)):
+  permissionless@0.1.36(viem@2.9.17(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)):
     dependencies:
       viem: 2.9.17(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)
 
@@ -34647,16 +34744,16 @@ snapshots:
       - utf-8-validate
       - zod
 
-  viem@2.14.2(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4):
+  viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4):
     dependencies:
       '@adraffy/ens-normalize': 1.10.0
-      '@noble/curves': 1.2.0
-      '@noble/hashes': 1.3.2
-      '@scure/bip32': 1.3.2
-      '@scure/bip39': 1.2.1
-      abitype: 1.0.0(typescript@5.4.2)(zod@3.22.4)
-      isows: 1.0.4(ws@8.13.0(bufferutil@4.0.7)(utf-8-validate@5.0.10))
-      ws: 8.13.0(bufferutil@4.0.7)(utf-8-validate@5.0.10)
+      '@noble/curves': 1.4.0
+      '@noble/hashes': 1.4.0
+      '@scure/bip32': 1.4.0
+      '@scure/bip39': 1.3.0
+      abitype: 1.0.5(typescript@5.4.2)(zod@3.22.4)
+      isows: 1.0.4(ws@8.17.1(bufferutil@4.0.7)(utf-8-validate@5.0.10))
+      ws: 8.17.1(bufferutil@4.0.7)(utf-8-validate@5.0.10)
     optionalDependencies:
       typescript: 5.4.2
     transitivePeerDependencies:

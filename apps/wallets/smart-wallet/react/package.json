@@ -6,8 +6,7 @@
         "build": "react-app-rewired build",
         "eject": "react-scripts eject",
         "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-        "start": "react-app-rewired start",
-        "test": "react-app-rewired test"
+        "start": "react-app-rewired start"
     },
     "browserslist": {
         "production": [
@@ -34,7 +33,7 @@
         }
     },
     "dependencies": {
-        "@crossmint/client-sdk-aa-passkeys-beta": "1.1.0-beta.17",
+        "@crossmint/client-sdk-aa-passkeys-beta": "1.1.0-beta.19",
         "@emotion/react": "^11.11.1",
         "@emotion/styled": "^11.11.0",
         "@headlessui/react": "^1.7.16",
