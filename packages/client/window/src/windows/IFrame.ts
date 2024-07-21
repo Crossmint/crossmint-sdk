@@ -21,14 +21,13 @@ export class IFrameWindow<IncomingEvents extends EventMap, OutgoingEvents extend
     }
 
     static async init<IncomingEvents extends EventMap, OutgoingEvents extends EventMap>(
-        url: string,
+        urlOrExistingIframe: string | HTMLIFrameElement,
         options?: EventEmitterWithHandshakeOptions<IncomingEvents, OutgoingEvents>
     ) {
-        return new IFrameWindow<IncomingEvents, OutgoingEvents>(
-            await createIFrame(url),
-            options?.targetOrigin || urlToOrigin(url),
-            options
-        );
+        const iframe =
+            typeof urlOrExistingIframe === "string" ? await createIFrame(urlOrExistingIframe) : urlOrExistingIframe;
+        const targetOrigin = options?.targetOrigin || urlToOrigin(iframe.src);
+        return new IFrameWindow<IncomingEvents, OutgoingEvents>(iframe, targetOrigin, options);
     }
 }
 
