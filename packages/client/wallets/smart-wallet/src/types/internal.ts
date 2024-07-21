@@ -1,11 +1,13 @@
-import { KernelSmartAccount } from "@zerodev/sdk";
-import { EntryPoint } from "permissionless/types/entrypoint";
-import type { Hex, HttpTransport, PublicClient } from "viem";
+import type { KernelSmartAccount } from "@zerodev/sdk";
+import type { SmartAccountClient } from "permissionless";
+import type { SmartAccount } from "permissionless/accounts";
+import type { EntryPoint } from "permissionless/types/entrypoint";
+import type { Chain, Hex, HttpTransport, PublicClient } from "viem";
 
-import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
+import type { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
-import { SignerData } from "./API";
-import { EntryPointDetails, UserParams, WalletConfig } from "./Config";
+import type { SignerData } from "./API";
+import type { EntryPointDetails, UserParams, WalletConfig } from "./Config";
 
 export const SUPPORTED_KERNEL_VERSIONS = ["0.3.1", "0.3.0", "0.2.4"] as const;
 export type SupportedKernelVersion = (typeof SUPPORTED_KERNEL_VERSIONS)[number];
@@ -44,3 +46,5 @@ export type PasskeyValidatorSerializedData = {
     pubKeyY: string;
     authenticatorIdHash: Hex;
 };
+
+export type SmartWalletClient = SmartAccountClient<EntryPoint, HttpTransport, Chain, SmartAccount<EntryPoint>>;
