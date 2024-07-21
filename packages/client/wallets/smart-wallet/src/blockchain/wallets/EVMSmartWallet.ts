@@ -1,15 +1,13 @@
 import { logError } from "@/services/logging";
 import { TransferError } from "@/types/Error";
-import type { SmartAccountClient } from "permissionless";
-import type { SmartAccount } from "permissionless/accounts";
-import type { EntryPoint } from "permissionless/types/entrypoint";
 import type { HttpTransport, PublicClient } from "viem";
-import { type Chain, isAddress, publicActions } from "viem";
+import { isAddress, publicActions } from "viem";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 import type { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import type { TransferType } from "../../types/Tokens";
+import { SmartWalletClient } from "../../types/internal";
 import { SCW_SERVICE } from "../../utils/constants";
 import { LoggerWrapper, errorToJSON } from "../../utils/log";
 import { transferParams } from "../transfer";
@@ -28,7 +26,7 @@ export class EVMSmartWallet extends LoggerWrapper {
         /**
          * An interface to interact with the smart wallet, execute transactions, sign messages, etc.
          */
-        wallet: SmartAccountClient<EntryPoint, HttpTransport, Chain, SmartAccount<EntryPoint>>;
+        wallet: SmartWalletClient;
 
         /**
          * An interface to read onchain data, fetch transactions, retrieve account balances, etc. Corresponds to public [JSON-RPC API](https://ethereum.org/en/developers/docs/apis/json-rpc/) methods.
@@ -38,7 +36,7 @@ export class EVMSmartWallet extends LoggerWrapper {
 
     constructor(
         private readonly crossmintService: CrossmintWalletService,
-        private readonly accountClient: SmartAccountClient<EntryPoint, HttpTransport, Chain, SmartAccount<EntryPoint>>,
+        private readonly accountClient: SmartWalletClient,
         publicClient: PublicClient<HttpTransport>,
         chain: EVMBlockchainIncludingTestnet
     ) {

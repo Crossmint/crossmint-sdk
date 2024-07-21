@@ -1,8 +1,8 @@
 import type { SignerData } from "@/types/API";
-import { type KernelAccountClient, type KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
+import { type KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
 import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
 import type { EntryPoint } from "permissionless/types/entrypoint";
-import { type Chain, type HttpTransport, createPublicClient, http } from "viem";
+import { type HttpTransport, createPublicClient, http } from "viem";
 
 import { blockchainToChainId } from "@crossmint/common-sdk-base";
 
@@ -12,6 +12,7 @@ import { WalletSdkError } from "../../types/Error";
 import {
     SUPPORTED_ENTRYPOINT_VERSIONS,
     SUPPORTED_KERNEL_VERSIONS,
+    SmartWalletClient,
     type SupportedKernelVersion,
     type WalletCreationParams,
     isSupportedEntryPointVersion,
@@ -68,13 +69,7 @@ export class SmartWalletService {
                 bundlerTransport: http(getBundlerRPC(chain)),
                 ...(usePaymaster(chain) && paymasterMiddleware({ entryPoint: account.entryPoint, chain })),
             };
-
-            const smartAccountClient: KernelAccountClient<
-                EntryPoint,
-                HttpTransport,
-                Chain,
-                KernelSmartAccount<EntryPoint, HttpTransport>
-            > = toCrossmintSmartAccountClient({
+            const smartAccountClient: SmartWalletClient = toCrossmintSmartAccountClient({
                 crossmintChain: chain,
                 smartAccountClient: createKernelAccountClient(kernelParams),
             });
