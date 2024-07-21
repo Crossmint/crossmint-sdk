@@ -177,7 +177,7 @@ importers:
     dependencies:
       '@crossmint/client-sdk-aa':
         specifier: 1.0.3
-        version: 1.0.3(@babel/runtime@7.24.7)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.7)(encoding@0.1.13)(react@18.2.0)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+        version: 1.0.3(@babel/runtime@7.24.7)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.7)(encoding@0.1.13)(react@18.2.0)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)
       '@crossmint/client-sdk-base':
         specifier: workspace:*
         version: link:../../../packages/client/base
@@ -214,7 +214,7 @@ importers:
     dependencies:
       '@crossmint/client-sdk-aa':
         specifier: 0.2.1
-        version: 0.2.1(@babel/runtime@7.24.7)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.7)(encoding@0.1.13)(react@18.2.0)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+        version: 0.2.1(@babel/runtime@7.24.7)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.7)(encoding@0.1.13)(react@18.2.0)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)
       '@crossmint/common-sdk-base':
         specifier: workspace:*
         version: link:../../../../packages/common/base
@@ -235,7 +235,7 @@ importers:
         version: 18.2.0(react@18.2.0)
       viem:
         specifier: 2.13.1
-        version: 2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+        version: 2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)
     devDependencies:
       '@types/node':
         specifier: ^20
@@ -277,6 +277,9 @@ importers:
       '@crossmint/client-sdk-base':
         specifier: workspace:*
         version: link:../../base
+      '@crossmint/client-sdk-window':
+        specifier: workspace:*
+        version: link:../../window
       '@crossmint/common-sdk-base':
         specifier: workspace:*
         version: link:../../../common/base
@@ -295,6 +298,9 @@ importers:
       react-jss:
         specifier: 10.10.0
         version: 10.10.0(react@18.2.0)
+      zod:
+        specifier: 3.23.8
+        version: 3.23.8
     devDependencies:
       '@types/lodash.isequal':
         specifier: 4.5.6
@@ -423,7 +429,7 @@ importers:
         version: 4.42.2
       '@reservoir0x/reservoir-sdk':
         specifier: 2.2.7
-        version: 2.2.7(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
+        version: 2.2.7(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8))
       '@web3auth/base':
         specifier: 7.3.2
         version: 7.3.2(@babel/runtime@7.24.7)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
@@ -435,10 +441,10 @@ importers:
         version: 7.3.0(@babel/runtime@7.24.7)(@types/bn.js@5.1.5)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       '@zerodev/ecdsa-validator':
         specifier: 5.2.3
-        version: 5.2.3(@zerodev/sdk@5.2.15(permissionless@0.1.29(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.29(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
+        version: 5.2.3(@zerodev/sdk@5.2.15(permissionless@0.1.29(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(permissionless@0.1.29(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8))
       '@zerodev/sdk':
         specifier: 5.2.15
-        version: 5.2.15(permissionless@0.1.29(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
+        version: 5.2.15(permissionless@0.1.29(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8))
       email-validator:
         specifier: 2.0.4
         version: 2.0.4
@@ -447,13 +453,13 @@ importers:
         version: 1.10.44
       permissionless:
         specifier: 0.1.29
-        version: 0.1.29(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
+        version: 0.1.29(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8))
       uuid:
         specifier: 10.0.0
         version: 10.0.0
       viem:
         specifier: 2.13.1
-        version: 2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+        version: 2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)
     devDependencies:
       '@playwright/test':
         specifier: ^1.41.2
@@ -503,7 +509,7 @@ importers:
     devDependencies:
       '@crossmint/client-sdk-aa':
         specifier: 1.0.0-alpha.1
-        version: 1.0.0-alpha.1(@babel/runtime@7.24.7)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.7)(encoding@0.1.13)(react@18.2.0)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+        version: 1.0.0-alpha.1(@babel/runtime@7.24.7)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.7)(encoding@0.1.13)(react@18.2.0)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)
       '@ethersproject/abstract-provider':
         specifier: 5.7.0
         version: 5.7.0
@@ -538,8 +544,8 @@ importers:
   packages/client/window:
     dependencies:
       zod:
-        specifier: 3.22.4
-        version: 3.22.4
+        specifier: 3.23.8
+        version: 3.23.8
 
   packages/common/base:
     dependencies:
@@ -13310,8 +13316,8 @@ packages:
   zod@3.21.4:
     resolution: {integrity: sha512-m46AKbrzKVzOzs/DZgVnG5H55N1sv1M8qZU3A8RIKbs3mrACDNeIOeilDymVb2HdmP8uwshOCF4uJ8uM9rCqJw==}
 
-  zod@3.22.4:
-    resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}
+  zod@3.23.8:
+    resolution: {integrity: sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==}
 
 snapshots:
 
@@ -13323,20 +13329,20 @@ snapshots:
 
   '@adraffy/ens-normalize@1.10.1': {}
 
-  '@alchemy/aa-core@0.1.0-alpha.23(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)':
+  '@alchemy/aa-core@0.1.0-alpha.23(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)':
     dependencies:
-      abitype: 0.8.11(typescript@5.5.3)(zod@3.22.4)
+      abitype: 0.8.11(typescript@5.5.3)(zod@3.23.8)
       eventemitter3: 5.0.1
-      viem: 1.21.4(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      viem: 1.21.4(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)
     transitivePeerDependencies:
       - bufferutil
       - typescript
       - utf-8-validate
       - zod
 
-  '@alchemy/aa-ethers@0.1.0-alpha.23(@alchemy/aa-core@0.1.0-alpha.23(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)':
+  '@alchemy/aa-ethers@0.1.0-alpha.23(@alchemy/aa-core@0.1.0-alpha.23(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8))(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)':
     dependencies:
-      '@alchemy/aa-core': 0.1.0-alpha.23(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      '@alchemy/aa-core': 0.1.0-alpha.23(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)
       '@ethersproject/abi': 5.7.0
       '@ethersproject/abstract-signer': 5.7.0
       '@ethersproject/bytes': 5.7.0
@@ -13345,7 +13351,7 @@ snapshots:
       '@ethersproject/keccak256': 5.7.0
       '@ethersproject/providers': 5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       '@ethersproject/wallet': 5.7.0
-      viem: 1.21.4(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      viem: 1.21.4(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)
     transitivePeerDependencies:
       - bufferutil
       - typescript
@@ -14580,7 +14586,7 @@ snapshots:
 
   '@cosmjs/utils@0.30.1': {}
 
-  '@crossmint/client-sdk-aa@0.2.1(@babel/runtime@7.24.7)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.7)(encoding@0.1.13)(react@18.2.0)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)':
+  '@crossmint/client-sdk-aa@0.2.1(@babel/runtime@7.24.7)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.7)(encoding@0.1.13)(react@18.2.0)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)':
     dependencies:
       '@ambire/signature-validator': 1.3.1(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       '@crossmint/common-sdk-base': 0.0.6
@@ -14597,13 +14603,13 @@ snapshots:
       '@web3auth/base': 7.3.2(@babel/runtime@7.24.7)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       '@web3auth/ethereum-provider': 7.3.2(@babel/runtime@7.24.7)(buffer@6.0.3)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       '@web3auth/single-factor-auth': 7.3.0(@babel/runtime@7.24.7)(@types/bn.js@5.1.5)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      '@zerodev/sdk': 4.5.2(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      '@zerodev/sdk': 4.5.2(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)
       email-validator: 2.0.4
       ethers: 5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       libphonenumber-js: 1.10.44
       node-forge: 1.3.1
       siwe: 2.1.4(ethers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))
-      viem: 2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      viem: 2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -14636,7 +14642,7 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@crossmint/client-sdk-aa@1.0.0-alpha.1(@babel/runtime@7.24.7)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.7)(encoding@0.1.13)(react@18.2.0)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)':
+  '@crossmint/client-sdk-aa@1.0.0-alpha.1(@babel/runtime@7.24.7)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.7)(encoding@0.1.13)(react@18.2.0)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)':
     dependencies:
       '@ambire/signature-validator': 1.3.1(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       '@crossmint/common-sdk-base': 0.0.12
@@ -14648,22 +14654,22 @@ snapshots:
       '@lit-protocol/lit-node-client': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.7)(encoding@0.1.13)(react@18.2.0)(utf-8-validate@5.0.10)
       '@lit-protocol/pkp-ethers': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.7)(encoding@0.1.13)(react@18.2.0)(utf-8-validate@5.0.10)
       '@lit-protocol/types': 3.1.2(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      '@reservoir0x/reservoir-sdk': 2.0.11(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
+      '@reservoir0x/reservoir-sdk': 2.0.11(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8))
       '@types/node-forge': 1.3.1
       '@web3auth/base': 7.3.2(@babel/runtime@7.24.7)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       '@web3auth/ethereum-provider': 7.3.2(@babel/runtime@7.24.7)(buffer@6.0.3)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       '@web3auth/single-factor-auth': 7.3.0(@babel/runtime@7.24.7)(@types/bn.js@5.1.5)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      '@zerodev/ecdsa-validator': 5.1.0(@zerodev/sdk@5.1.12(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.0.34(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
-      '@zerodev/sdk': 5.1.12(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
-      '@zerodev/session-key': 5.1.0(@zerodev/sdk@5.1.12(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.0.34(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
+      '@zerodev/ecdsa-validator': 5.1.0(@zerodev/sdk@5.1.12(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(permissionless@0.0.34(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8))
+      '@zerodev/sdk': 5.1.12(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8))
+      '@zerodev/session-key': 5.1.0(@zerodev/sdk@5.1.12(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(permissionless@0.0.34(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8))
       email-validator: 2.0.4
       ethers: 5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       libphonenumber-js: 1.10.44
       node-forge: 1.3.1
-      permissionless: 0.0.34(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
+      permissionless: 0.0.34(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8))
       siwe: 2.1.4(ethers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))
-      viem: 2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
-      web3: 4.5.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      viem: 2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)
+      web3: 4.5.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -14696,7 +14702,7 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@crossmint/client-sdk-aa@1.0.3(@babel/runtime@7.24.7)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.7)(encoding@0.1.13)(react@18.2.0)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)':
+  '@crossmint/client-sdk-aa@1.0.3(@babel/runtime@7.24.7)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.7)(encoding@0.1.13)(react@18.2.0)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)':
     dependencies:
       '@ambire/signature-validator': 1.3.1(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       '@crossmint/common-sdk-base': 0.0.13
@@ -14708,23 +14714,23 @@ snapshots:
       '@lit-protocol/lit-node-client': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.7)(encoding@0.1.13)(react@18.2.0)(utf-8-validate@5.0.10)
       '@lit-protocol/pkp-ethers': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.7)(encoding@0.1.13)(react@18.2.0)(utf-8-validate@5.0.10)
       '@lit-protocol/types': 3.1.2(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      '@reservoir0x/reservoir-sdk': 2.0.11(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))
+      '@reservoir0x/reservoir-sdk': 2.0.11(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8))
       '@types/node-forge': 1.3.1
       '@web3auth/base': 7.3.2(@babel/runtime@7.24.7)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       '@web3auth/ethereum-provider': 7.3.2(@babel/runtime@7.24.7)(buffer@6.0.3)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       '@web3auth/single-factor-auth': 7.3.0(@babel/runtime@7.24.7)(@types/bn.js@5.1.5)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      '@zerodev/ecdsa-validator': 5.2.1(@zerodev/sdk@5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))
-      '@zerodev/permissions': 5.2.5(@zerodev/sdk@5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))
-      '@zerodev/sdk': 5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))
-      '@zerodev/session-key': 5.2.1(@zerodev/sdk@5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))
+      '@zerodev/ecdsa-validator': 5.2.1(@zerodev/sdk@5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8))
+      '@zerodev/permissions': 5.2.5(@zerodev/sdk@5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8))
+      '@zerodev/sdk': 5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8))
+      '@zerodev/session-key': 5.2.1(@zerodev/sdk@5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8))
       email-validator: 2.0.4
       ethers: 5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       libphonenumber-js: 1.10.44
       node-forge: 1.3.1
-      permissionless: 0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))
+      permissionless: 0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8))
       siwe: 2.1.4(ethers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))
-      viem: 2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
-      web3: 4.5.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      viem: 2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)
+      web3: 4.5.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -18315,24 +18321,24 @@ snapshots:
     dependencies:
       '@randlabs/communication-bridge': 1.0.1
 
-  '@reservoir0x/reservoir-sdk@2.0.11(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))':
+  '@reservoir0x/reservoir-sdk@2.0.11(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8))':
     dependencies:
       axios: 1.6.8
-      viem: 2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      viem: 2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)
     transitivePeerDependencies:
       - debug
 
-  '@reservoir0x/reservoir-sdk@2.0.11(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))':
+  '@reservoir0x/reservoir-sdk@2.0.11(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8))':
     dependencies:
       axios: 1.6.8
-      viem: 2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      viem: 2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)
     transitivePeerDependencies:
       - debug
 
-  '@reservoir0x/reservoir-sdk@2.2.7(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))':
+  '@reservoir0x/reservoir-sdk@2.2.7(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8))':
     dependencies:
       axios: 1.6.8
-      viem: 2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      viem: 2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)
     transitivePeerDependencies:
       - debug
 
@@ -20770,40 +20776,40 @@ snapshots:
       js-yaml: 3.14.1
       tslib: 2.6.3
 
-  '@zerodev/ecdsa-validator@5.1.0(@zerodev/sdk@5.1.12(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.0.34(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))':
+  '@zerodev/ecdsa-validator@5.1.0(@zerodev/sdk@5.1.12(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(permissionless@0.0.34(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8))':
     dependencies:
-      '@zerodev/sdk': 5.1.12(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
-      permissionless: 0.0.34(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
-      viem: 2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      '@zerodev/sdk': 5.1.12(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8))
+      permissionless: 0.0.34(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8))
+      viem: 2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)
 
-  '@zerodev/ecdsa-validator@5.2.1(@zerodev/sdk@5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))':
+  '@zerodev/ecdsa-validator@5.2.1(@zerodev/sdk@5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8))':
     dependencies:
-      '@zerodev/sdk': 5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))
-      permissionless: 0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))
-      viem: 2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      '@zerodev/sdk': 5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8))
+      permissionless: 0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8))
+      viem: 2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)
 
-  '@zerodev/ecdsa-validator@5.2.3(@zerodev/sdk@5.2.15(permissionless@0.1.29(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.29(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))':
+  '@zerodev/ecdsa-validator@5.2.3(@zerodev/sdk@5.2.15(permissionless@0.1.29(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(permissionless@0.1.29(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8))':
     dependencies:
-      '@zerodev/sdk': 5.2.15(permissionless@0.1.29(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
-      permissionless: 0.1.29(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
-      viem: 2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      '@zerodev/sdk': 5.2.15(permissionless@0.1.29(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8))
+      permissionless: 0.1.29(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8))
+      viem: 2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)
 
-  '@zerodev/permissions@5.2.5(@zerodev/sdk@5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))':
+  '@zerodev/permissions@5.2.5(@zerodev/sdk@5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8))':
     dependencies:
       '@simplewebauthn/browser': 9.0.1
-      '@zerodev/sdk': 5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))
+      '@zerodev/sdk': 5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8))
       merkletreejs: 0.3.11
-      permissionless: 0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))
-      viem: 2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      permissionless: 0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8))
+      viem: 2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)
 
-  '@zerodev/sdk@4.5.2(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)':
+  '@zerodev/sdk@4.5.2(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)':
     dependencies:
-      '@alchemy/aa-core': 0.1.0-alpha.23(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
-      '@alchemy/aa-ethers': 0.1.0-alpha.23(@alchemy/aa-core@0.1.0-alpha.23(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      '@alchemy/aa-core': 0.1.0-alpha.23(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)
+      '@alchemy/aa-ethers': 0.1.0-alpha.23(@alchemy/aa-core@0.1.0-alpha.23(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8))(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)
       '@openzeppelin/merkle-tree': 1.0.6
       axios: 1.6.8
       merkletreejs: 0.3.11
-      viem: 1.21.4(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      viem: 1.21.4(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)
     transitivePeerDependencies:
       - bufferutil
       - debug
@@ -20811,36 +20817,36 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@zerodev/sdk@5.1.12(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))':
+  '@zerodev/sdk@5.1.12(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8))':
     dependencies:
-      permissionless: 0.0.34(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
-      viem: 2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      permissionless: 0.0.34(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8))
+      viem: 2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)
 
-  '@zerodev/sdk@5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))':
+  '@zerodev/sdk@5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8))':
     dependencies:
-      permissionless: 0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))
+      permissionless: 0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8))
       semver: 7.6.0
-      viem: 2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      viem: 2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)
 
-  '@zerodev/sdk@5.2.15(permissionless@0.1.29(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))':
+  '@zerodev/sdk@5.2.15(permissionless@0.1.29(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8))':
     dependencies:
-      permissionless: 0.1.29(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
+      permissionless: 0.1.29(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8))
       semver: 7.6.0
-      viem: 2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      viem: 2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)
 
-  '@zerodev/session-key@5.1.0(@zerodev/sdk@5.1.12(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.0.34(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))':
+  '@zerodev/session-key@5.1.0(@zerodev/sdk@5.1.12(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(permissionless@0.0.34(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8))':
     dependencies:
-      '@zerodev/sdk': 5.1.12(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
+      '@zerodev/sdk': 5.1.12(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8))
       merkletreejs: 0.3.11
-      permissionless: 0.0.34(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
-      viem: 2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      permissionless: 0.0.34(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8))
+      viem: 2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)
 
-  '@zerodev/session-key@5.2.1(@zerodev/sdk@5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))':
+  '@zerodev/session-key@5.2.1(@zerodev/sdk@5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8))':
     dependencies:
-      '@zerodev/sdk': 5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))
+      '@zerodev/sdk': 5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8))
       merkletreejs: 0.3.11
-      permissionless: 0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))
-      viem: 2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      permissionless: 0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8))
+      viem: 2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)
 
   '@zkochan/js-yaml@0.0.6':
     dependencies:
@@ -20857,38 +20863,38 @@ snapshots:
 
   abbrev@2.0.0: {}
 
-  abitype@0.7.1(typescript@5.3.3)(zod@3.22.4):
+  abitype@0.7.1(typescript@5.3.3)(zod@3.23.8):
     dependencies:
       typescript: 5.3.3
     optionalDependencies:
-      zod: 3.22.4
+      zod: 3.23.8
 
-  abitype@0.7.1(typescript@5.5.3)(zod@3.22.4):
+  abitype@0.7.1(typescript@5.5.3)(zod@3.23.8):
     dependencies:
       typescript: 5.5.3
     optionalDependencies:
-      zod: 3.22.4
+      zod: 3.23.8
 
-  abitype@0.8.11(typescript@5.5.3)(zod@3.22.4):
+  abitype@0.8.11(typescript@5.5.3)(zod@3.23.8):
     dependencies:
       typescript: 5.5.3
     optionalDependencies:
-      zod: 3.22.4
+      zod: 3.23.8
 
-  abitype@0.9.8(typescript@5.5.3)(zod@3.22.4):
+  abitype@0.9.8(typescript@5.5.3)(zod@3.23.8):
     optionalDependencies:
       typescript: 5.5.3
-      zod: 3.22.4
+      zod: 3.23.8
 
-  abitype@1.0.0(typescript@5.3.3)(zod@3.22.4):
+  abitype@1.0.0(typescript@5.3.3)(zod@3.23.8):
     optionalDependencies:
       typescript: 5.3.3
-      zod: 3.22.4
+      zod: 3.23.8
 
-  abitype@1.0.0(typescript@5.5.3)(zod@3.22.4):
+  abitype@1.0.0(typescript@5.5.3)(zod@3.23.8):
     optionalDependencies:
       typescript: 5.5.3
-      zod: 3.22.4
+      zod: 3.23.8
 
   abort-controller@3.0.0:
     dependencies:
@@ -27777,17 +27783,17 @@ snapshots:
 
   performance-now@2.1.0: {}
 
-  permissionless@0.0.34(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)):
+  permissionless@0.0.34(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)):
     dependencies:
-      viem: 2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      viem: 2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)
 
-  permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)):
+  permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)):
     dependencies:
-      viem: 2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      viem: 2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)
 
-  permissionless@0.1.29(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)):
+  permissionless@0.1.29(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)):
     dependencies:
-      viem: 2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      viem: 2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)
 
   picocolors@0.2.1: {}
 
@@ -30637,14 +30643,14 @@ snapshots:
 
   vary@1.1.2: {}
 
-  viem@1.21.4(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4):
+  viem@1.21.4(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8):
     dependencies:
       '@adraffy/ens-normalize': 1.10.0
       '@noble/curves': 1.2.0
       '@noble/hashes': 1.3.2
       '@scure/bip32': 1.3.2
       '@scure/bip39': 1.2.1
-      abitype: 0.9.8(typescript@5.5.3)(zod@3.22.4)
+      abitype: 0.9.8(typescript@5.5.3)(zod@3.23.8)
       isows: 1.0.3(ws@8.13.0(bufferutil@4.0.7)(utf-8-validate@5.0.10))
       ws: 8.13.0(bufferutil@4.0.7)(utf-8-validate@5.0.10)
     optionalDependencies:
@@ -30654,14 +30660,14 @@ snapshots:
       - utf-8-validate
       - zod
 
-  viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4):
+  viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8):
     dependencies:
       '@adraffy/ens-normalize': 1.10.0
       '@noble/curves': 1.2.0
       '@noble/hashes': 1.3.2
       '@scure/bip32': 1.3.2
       '@scure/bip39': 1.2.1
-      abitype: 1.0.0(typescript@5.5.3)(zod@3.22.4)
+      abitype: 1.0.0(typescript@5.5.3)(zod@3.23.8)
       isows: 1.0.4(ws@8.13.0(bufferutil@4.0.7)(utf-8-validate@5.0.10))
       ws: 8.13.0(bufferutil@4.0.7)(utf-8-validate@5.0.10)
     optionalDependencies:
@@ -30671,14 +30677,14 @@ snapshots:
       - utf-8-validate
       - zod
 
-  viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4):
+  viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8):
     dependencies:
       '@adraffy/ens-normalize': 1.10.0
       '@noble/curves': 1.2.0
       '@noble/hashes': 1.3.2
       '@scure/bip32': 1.3.2
       '@scure/bip39': 1.2.1
-      abitype: 1.0.0(typescript@5.5.3)(zod@3.22.4)
+      abitype: 1.0.0(typescript@5.5.3)(zod@3.23.8)
       isows: 1.0.3(ws@8.13.0(bufferutil@4.0.7)(utf-8-validate@5.0.10))
       ws: 8.13.0(bufferutil@4.0.7)(utf-8-validate@5.0.10)
     optionalDependencies:
@@ -30688,14 +30694,14 @@ snapshots:
       - utf-8-validate
       - zod
 
-  viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4):
+  viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8):
     dependencies:
       '@adraffy/ens-normalize': 1.10.0
       '@noble/curves': 1.2.0
       '@noble/hashes': 1.3.2
       '@scure/bip32': 1.3.2
       '@scure/bip39': 1.2.1
-      abitype: 1.0.0(typescript@5.3.3)(zod@3.22.4)
+      abitype: 1.0.0(typescript@5.3.3)(zod@3.23.8)
       isows: 1.0.3(ws@8.13.0(bufferutil@4.0.7)(utf-8-validate@5.0.10))
       ws: 8.13.0(bufferutil@4.0.7)(utf-8-validate@5.0.10)
     optionalDependencies:
@@ -31002,9 +31008,9 @@ snapshots:
     dependencies:
       web3-types: 1.4.0
 
-  web3-eth-abi@4.2.0(typescript@5.3.3)(zod@3.22.4):
+  web3-eth-abi@4.2.0(typescript@5.3.3)(zod@3.23.8):
     dependencies:
-      abitype: 0.7.1(typescript@5.3.3)(zod@3.22.4)
+      abitype: 0.7.1(typescript@5.3.3)(zod@3.23.8)
       web3-errors: 1.1.4
       web3-types: 1.4.0
       web3-utils: 4.2.0
@@ -31013,9 +31019,9 @@ snapshots:
       - typescript
       - zod
 
-  web3-eth-abi@4.2.0(typescript@5.5.3)(zod@3.22.4):
+  web3-eth-abi@4.2.0(typescript@5.5.3)(zod@3.23.8):
     dependencies:
-      abitype: 0.7.1(typescript@5.5.3)(zod@3.22.4)
+      abitype: 0.7.1(typescript@5.5.3)(zod@3.23.8)
       web3-errors: 1.1.4
       web3-types: 1.4.0
       web3-utils: 4.2.0
@@ -31034,12 +31040,12 @@ snapshots:
       web3-utils: 4.2.0
       web3-validator: 2.0.4
 
-  web3-eth-contract@4.2.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4):
+  web3-eth-contract@4.2.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8):
     dependencies:
       web3-core: 4.3.2(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
       web3-errors: 1.1.4
-      web3-eth: 4.4.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
-      web3-eth-abi: 4.2.0(typescript@5.3.3)(zod@3.22.4)
+      web3-eth: 4.4.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)
+      web3-eth-abi: 4.2.0(typescript@5.3.3)(zod@3.23.8)
       web3-types: 1.4.0
       web3-utils: 4.2.0
       web3-validator: 2.0.4
@@ -31050,12 +31056,12 @@ snapshots:
       - utf-8-validate
       - zod
 
-  web3-eth-contract@4.2.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4):
+  web3-eth-contract@4.2.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8):
     dependencies:
       web3-core: 4.3.2(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
       web3-errors: 1.1.4
-      web3-eth: 4.4.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
-      web3-eth-abi: 4.2.0(typescript@5.5.3)(zod@3.22.4)
+      web3-eth: 4.4.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)
+      web3-eth-abi: 4.2.0(typescript@5.5.3)(zod@3.23.8)
       web3-types: 1.4.0
       web3-utils: 4.2.0
       web3-validator: 2.0.4
@@ -31066,13 +31072,13 @@ snapshots:
       - utf-8-validate
       - zod
 
-  web3-eth-ens@4.0.8(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4):
+  web3-eth-ens@4.0.8(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8):
     dependencies:
       '@adraffy/ens-normalize': 1.10.1
       web3-core: 4.3.2(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
       web3-errors: 1.1.4
-      web3-eth: 4.4.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
-      web3-eth-contract: 4.2.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      web3-eth: 4.4.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)
+      web3-eth-contract: 4.2.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)
       web3-net: 4.0.7(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
       web3-types: 1.4.0
       web3-utils: 4.2.0
@@ -31084,13 +31090,13 @@ snapshots:
       - utf-8-validate
       - zod
 
-  web3-eth-ens@4.0.8(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4):
+  web3-eth-ens@4.0.8(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8):
     dependencies:
       '@adraffy/ens-normalize': 1.10.1
       web3-core: 4.3.2(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
       web3-errors: 1.1.4
-      web3-eth: 4.4.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
-      web3-eth-contract: 4.2.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      web3-eth: 4.4.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)
+      web3-eth-contract: 4.2.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)
       web3-net: 4.0.7(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
       web3-types: 1.4.0
       web3-utils: 4.2.0
@@ -31114,10 +31120,10 @@ snapshots:
       web3-utils: 4.2.0
       web3-validator: 2.0.4
 
-  web3-eth-personal@4.0.8(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4):
+  web3-eth-personal@4.0.8(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8):
     dependencies:
       web3-core: 4.3.2(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
-      web3-eth: 4.4.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      web3-eth: 4.4.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)
       web3-rpc-methods: 1.1.4(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
       web3-types: 1.4.0
       web3-utils: 4.2.0
@@ -31129,10 +31135,10 @@ snapshots:
       - utf-8-validate
       - zod
 
-  web3-eth-personal@4.0.8(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4):
+  web3-eth-personal@4.0.8(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8):
     dependencies:
       web3-core: 4.3.2(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
-      web3-eth: 4.4.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      web3-eth: 4.4.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)
       web3-rpc-methods: 1.1.4(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
       web3-types: 1.4.0
       web3-utils: 4.2.0
@@ -31144,12 +31150,12 @@ snapshots:
       - utf-8-validate
       - zod
 
-  web3-eth@4.4.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4):
+  web3-eth@4.4.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8):
     dependencies:
       setimmediate: 1.0.5
       web3-core: 4.3.2(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
       web3-errors: 1.1.4
-      web3-eth-abi: 4.2.0(typescript@5.3.3)(zod@3.22.4)
+      web3-eth-abi: 4.2.0(typescript@5.3.3)(zod@3.23.8)
       web3-eth-accounts: 4.1.1
       web3-net: 4.0.7(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
       web3-providers-ws: 4.0.7(bufferutil@4.0.7)(utf-8-validate@5.0.10)
@@ -31164,12 +31170,12 @@ snapshots:
       - utf-8-validate
       - zod
 
-  web3-eth@4.4.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4):
+  web3-eth@4.4.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8):
     dependencies:
       setimmediate: 1.0.5
       web3-core: 4.3.2(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
       web3-errors: 1.1.4
-      web3-eth-abi: 4.2.0(typescript@5.5.3)(zod@3.22.4)
+      web3-eth-abi: 4.2.0(typescript@5.5.3)(zod@3.23.8)
       web3-eth-accounts: 4.1.1
       web3-net: 4.0.7(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
       web3-providers-ws: 4.0.7(bufferutil@4.0.7)(utf-8-validate@5.0.10)
@@ -31287,19 +31293,19 @@ snapshots:
       util: 0.12.5
       web3-errors: 1.1.4
       web3-types: 1.4.0
-      zod: 3.22.4
+      zod: 3.23.8
 
-  web3@4.5.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4):
+  web3@4.5.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8):
     dependencies:
       web3-core: 4.3.2(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
       web3-errors: 1.1.4
-      web3-eth: 4.4.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
-      web3-eth-abi: 4.2.0(typescript@5.3.3)(zod@3.22.4)
+      web3-eth: 4.4.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)
+      web3-eth-abi: 4.2.0(typescript@5.3.3)(zod@3.23.8)
       web3-eth-accounts: 4.1.1
-      web3-eth-contract: 4.2.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
-      web3-eth-ens: 4.0.8(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      web3-eth-contract: 4.2.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)
+      web3-eth-ens: 4.0.8(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)
       web3-eth-iban: 4.0.7
-      web3-eth-personal: 4.0.8(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      web3-eth-personal: 4.0.8(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.23.8)
       web3-net: 4.0.7(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
       web3-providers-http: 4.1.0(encoding@0.1.13)
       web3-providers-ws: 4.0.7(bufferutil@4.0.7)(utf-8-validate@5.0.10)
@@ -31314,17 +31320,17 @@ snapshots:
       - utf-8-validate
       - zod
 
-  web3@4.5.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4):
+  web3@4.5.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8):
     dependencies:
       web3-core: 4.3.2(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
       web3-errors: 1.1.4
-      web3-eth: 4.4.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
-      web3-eth-abi: 4.2.0(typescript@5.5.3)(zod@3.22.4)
+      web3-eth: 4.4.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)
+      web3-eth-abi: 4.2.0(typescript@5.5.3)(zod@3.23.8)
       web3-eth-accounts: 4.1.1
-      web3-eth-contract: 4.2.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
-      web3-eth-ens: 4.0.8(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      web3-eth-contract: 4.2.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)
+      web3-eth-ens: 4.0.8(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)
       web3-eth-iban: 4.0.7
-      web3-eth-personal: 4.0.8(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      web3-eth-personal: 4.0.8(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.23.8)
       web3-net: 4.0.7(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
       web3-providers-http: 4.1.0(encoding@0.1.13)
       web3-providers-ws: 4.0.7(bufferutil@4.0.7)(utf-8-validate@5.0.10)
@@ -31953,4 +31959,4 @@ snapshots:
 
   zod@3.21.4: {}
 
-  zod@3.22.4: {}
+  zod@3.23.8: {}

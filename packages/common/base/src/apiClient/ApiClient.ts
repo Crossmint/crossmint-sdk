@@ -7,10 +7,14 @@ export abstract class ApiClient {
     abstract get baseUrl(): string;
 
     private async makeRequest(path: string, init: RequestInit) {
-        return fetch(`${ApiClient.normalizePath(this.baseUrl)}/${ApiClient.normalizePath(path)}`, {
+        return fetch(this.buildUrl(path), {
             ...init,
             headers: { ...this.#authHeaders, ...init.headers }, // #authHeaders intentionally first, in case sub class wants to override
         });
+    }
+
+    buildUrl(path: string) {
+        return `${ApiClient.normalizePath(this.baseUrl)}/${ApiClient.normalizePath(path)}`;
     }
 
     async get(path: string, params: Omit<RequestInit, "method">) {

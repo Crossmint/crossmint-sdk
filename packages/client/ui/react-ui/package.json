@@ -28,12 +28,14 @@
     },
     "dependencies": {
         "@crossmint/client-sdk-base": "workspace:*",
+        "@crossmint/client-sdk-window": "workspace:*",
         "@crossmint/common-sdk-base": "workspace:*",
         "@ethersproject/transactions": "5.7.0",
         "@solana/web3.js": "1.78.5",
         "bs58": "5.0.0",
         "lodash.isequal": "4.5.0",
-        "react-jss": "10.10.0"
+        "react-jss": "10.10.0",
+        "zod": "3.23.8"
     },
     "devDependencies": {
         "@types/lodash.isequal": "4.5.6",

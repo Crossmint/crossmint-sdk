@@ -27,6 +27,12 @@ export function validateAPIKeyPrefix(
     apiKey: string,
     expectations?: ValidateAPIKeyPrefixExpectations
 ): ValidateAPIKeyPrefixResult {
+    if (!apiKey) {
+        return {
+            isValid: false,
+            message: "API key is empty",
+        };
+    }
     if (isOldAPIKey(apiKey)) {
         return {
             isValid: false,
