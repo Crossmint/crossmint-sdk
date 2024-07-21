@@ -3,8 +3,8 @@ import { EVMBlockchainIncludingTestnet, validateAPIKey } from "@crossmint/common
 import { CrossmintWalletService } from "./api/CrossmintWalletService";
 import type { EVMSmartWallet } from "./blockchain/wallets";
 import { SmartWalletService } from "./blockchain/wallets/service";
+import { RunningOnServerError } from "./error";
 import type { SmartWalletSDKInitParams, UserParams, WalletConfig } from "./types/Config";
-import { RunningOnServerError } from "./types/Error";
 import { isClient } from "./utils/environment";
 import { LoggerWrapper, logPerformance } from "./utils/log";
 

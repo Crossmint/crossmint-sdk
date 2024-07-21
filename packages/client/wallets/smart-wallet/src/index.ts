@@ -21,6 +21,6 @@ export type {
     CrossmintServiceError,
     RunningOnServerError,
     SmartWalletSDKError,
-} from "./types/Error";
+} from "./error";
 
 export { SmartWalletSDK } from "./SmartWalletSDK";

@@ -1,3 +1,4 @@
+import { ErrorMapper } from "@/error/mapper";
 import type { SignerData } from "@/types/API";
 import { type KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
 import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
@@ -7,8 +8,8 @@ import { type HttpTransport, createPublicClient, http } from "viem";
 import { blockchainToChainId } from "@crossmint/common-sdk-base";
 
 import type { CrossmintWalletService, EVMBlockchainIncludingTestnet } from "../../api/CrossmintWalletService";
+import { SmartWalletSDKError } from "../../error";
 import type { EntryPointDetails, UserParams, WalletConfig } from "../../types/Config";
-import { SmartWalletSDKError } from "../../types/Error";
 import {
     SUPPORTED_ENTRYPOINT_VERSIONS,
     SUPPORTED_KERNEL_VERSIONS,
@@ -21,16 +22,18 @@ import {
 import { CURRENT_VERSION, ZERO_DEV_TYPE } from "../../utils/constants";
 import { getBundlerRPC, getViemNetwork } from "../BlockchainNetworks";
 import { EVMSmartWallet } from "./EVMSmartWallet";
+import { AccountClientDecorator } from "./clientDecorator";
 import { type EOAWalletParams, EOAWalletService } from "./eoa";
 import { PasskeyWalletService, isPasskeyParams } from "./passkey";
 import { paymasterMiddleware, usePaymaster } from "./paymaster";
-import { toCrossmintSmartAccountClient } from "./smartAccount";
 
 export class SmartWalletService {
     constructor(
         private readonly crossmintWalletService: CrossmintWalletService,
         private readonly eoaWalletService = new EOAWalletService(),
-        private readonly passkeyWalletService = new PasskeyWalletService(crossmintWalletService)
+        private readonly passkeyWalletService = new PasskeyWalletService(crossmintWalletService),
+        private readonly errorMapper = new ErrorMapper(),
+        private readonly accountClientDecorator = new AccountClientDecorator(errorMapper)
     ) {}
 
     public async getOrCreate(
@@ -70,20 +73,17 @@ export class SmartWalletService {
                 ...(usePaymaster(chain) && paymasterMiddleware({ entryPoint: account.entryPoint, chain })),
             });
 
-            const smartAccountClient = toCrossmintSmartAccountClient({
+            const smartAccountClient = this.accountClientDecorator.decorate({
                 crossmintChain: chain,
                 smartAccountClient: kernelAccountClient,
             });
 
             return new EVMSmartWallet(this.crossmintWalletService, smartAccountClient, publicClient, chain);
         } catch (error: any) {
-            if (error.code == null) {
-                throw new SmartWalletSDKError(
-                    `Error creating the Wallet ${error?.message ? `: ${error.message}` : ""}`
-                );
-            }
-
-            throw error;
+            throw this.errorMapper.map(
+                error,
+                new SmartWalletSDKError(`Error creating the Wallet ${error?.message ? `: ${error.message}` : ""}`)
+            );
         }
     }
 
@@ -108,7 +108,7 @@ export class SmartWalletService {
         );
 
         if (!isSupportedKernelVersion(kernelVersion)) {
-            throw new Error(
+            throw new SmartWalletSDKError(
                 `Unsupported kernel version. Supported versions: ${SUPPORTED_KERNEL_VERSIONS.join(
                     ", "
                 )}. Version used: ${kernelVersion}, Please contact support`
@@ -116,7 +116,7 @@ export class SmartWalletService {
         }
 
         if (!isSupportedEntryPointVersion(entryPointVersion)) {
-            throw new Error(
+            throw new SmartWalletSDKError(
                 `Unsupported entry point version. Supported versions: ${SUPPORTED_ENTRYPOINT_VERSIONS.join(
                     ", "
                 )}. Version used: ${entryPointVersion}. Please contact support`
@@ -124,13 +124,13 @@ export class SmartWalletService {
         }
 
         if (entryPointVersion === "v0.7" && kernelVersion.startsWith("0.2")) {
-            throw new Error(
+            throw new SmartWalletSDKError(
                 "Unsupported combination: entryPoint v0.7 and kernel version 0.2.x. Please contact support"
             );
         }
 
         if (entryPointVersion === "v0.6" && kernelVersion.startsWith("0.3")) {
-            throw new Error(
+            throw new SmartWalletSDKError(
                 "Unsupported combination: entryPoint v0.6 and kernel version 0.3.x. Please contact support"
             );
         }

@@ -17,8 +17,8 @@ import {
     getTickerNameByBlockchain,
     getUrlProviderByBlockchain,
 } from "../blockchain/BlockchainNetworks";
+import { SmartWalletSDKError } from "../error";
 import { ViemAccount, WalletConfig, Web3AuthSigner } from "../types/Config";
-import { SmartWalletSDKError } from "../types/Error";
 import { parseToken } from "./auth";
 import { logInputOutput } from "./log";
 
