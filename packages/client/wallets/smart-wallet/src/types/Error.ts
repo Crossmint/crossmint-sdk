@@ -1,57 +1,47 @@
-export class NotAuthorizedError extends Error {
-    code = "ERROR_NOT_AUTHORIZED";
+export const SmartWalletErrors = {
+    NOT_AUTHORIZED: "smart-wallet:not-authorized",
+    TRANSFER: "smart-wallet:transfer.error",
+    TRANSACTION: "smart-wallet:transaction.error",
+    CROSSMINT_SERVICE: "smart-wallet:crossmint-service.error",
+    RUNNING_ON_SERVER: "smart-wallet:running-on-server",
+} as const;
+export type SmartWalletErrorCode = (typeof SmartWalletErrors)[keyof typeof SmartWalletErrors];
 
+export class SmartWalletSDKError extends Error {
+    public readonly code: SmartWalletErrorCode;
+
+    constructor(message: string, code: SmartWalletErrorCode) {
+        super(message);
+        this.code = code;
+    }
+}
+
+export class NotAuthorizedError extends SmartWalletSDKError {
     constructor(message: string) {
-        super(message);
-        Object.setPrototypeOf(this, NotAuthorizedError.prototype);
+        super(message, SmartWalletErrors.NOT_AUTHORIZED);
     }
 }
 
-export class TransferError extends Error {
-    code = "ERROR_TRANSFER";
-
+export class TransferError extends SmartWalletSDKError {
     constructor(message: string) {
-        super(message);
-        Object.setPrototypeOf(this, TransferError.prototype);
+        super(message, SmartWalletErrors.TRANSFER);
     }
 }
 
-export class TransactionError extends Error {
-    code = "ERROR_TRANSACTION";
-
+export class TransactionError extends SmartWalletSDKError {
     constructor(message: string) {
-        super(message);
-        Object.setPrototypeOf(this, TransactionError.prototype);
+        super(message, SmartWalletErrors.TRANSACTION);
     }
 }
 
-export class CrossmintServiceError extends Error {
-    public code = "ERROR_CROSSMINT_SERVICE";
-    public status?: number;
-
-    constructor(message: string, status?: number) {
-        super(message);
-        this.status = status;
-        Object.setPrototypeOf(this, CrossmintServiceError.prototype);
+export class CrossmintServiceError extends SmartWalletSDKError {
+    constructor(message: string) {
+        super(message, SmartWalletErrors.CROSSMINT_SERVICE);
     }
 }
 
-export class RunningOnServerError extends Error {
-    public readonly code = "ERROR_RUNNING_ON_SERVER";
-
+export class RunningOnServerError extends SmartWalletSDKError {
     constructor() {
-        super("Smart Wallet SDK should only be used client side.");
-    }
-}
-
-/**
- * Generic undefined error
- */
-export class WalletSdkError extends Error {
-    code = "ERROR_UNDEFINED";
-
-    constructor(message: string) {
-        super(message);
-        Object.setPrototypeOf(this, WalletSdkError.prototype);
+        super("Smart Wallet SDK should only be used client side.", SmartWalletErrors.RUNNING_ON_SERVER);
     }
 }
