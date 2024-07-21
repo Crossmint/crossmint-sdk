@@ -1,27 +1,29 @@
-import { SignerData } from "@/types/API";
-import { KernelSmartAccount } from "@zerodev/sdk";
+import type { SignerData } from "@/types/API";
+import { type KernelAccountClient, type KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
 import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
-import { EntryPoint } from "permissionless/types/entrypoint";
-import { type HttpTransport, createPublicClient, http } from "viem";
+import type { EntryPoint } from "permissionless/types/entrypoint";
+import { type Chain, type HttpTransport, createPublicClient, http } from "viem";
 
 import { blockchainToChainId } from "@crossmint/common-sdk-base";
 
-import { CrossmintWalletService, EVMBlockchainIncludingTestnet } from "../../api/CrossmintWalletService";
-import { EntryPointDetails, UserParams, WalletConfig } from "../../types/Config";
+import type { CrossmintWalletService, EVMBlockchainIncludingTestnet } from "../../api/CrossmintWalletService";
+import type { EntryPointDetails, UserParams, WalletConfig } from "../../types/Config";
 import { WalletSdkError } from "../../types/Error";
 import {
     SUPPORTED_ENTRYPOINT_VERSIONS,
     SUPPORTED_KERNEL_VERSIONS,
-    SupportedKernelVersion,
-    WalletCreationParams,
+    type SupportedKernelVersion,
+    type WalletCreationParams,
     isSupportedEntryPointVersion,
     isSupportedKernelVersion,
 } from "../../types/internal";
 import { CURRENT_VERSION, ZERO_DEV_TYPE } from "../../utils/constants";
-import { getBundlerRPC } from "../BlockchainNetworks";
+import { getBundlerRPC, getViemNetwork } from "../BlockchainNetworks";
 import { EVMSmartWallet } from "./EVMSmartWallet";
-import { EOAWalletParams, EOAWalletService } from "./eoa";
+import { type EOAWalletParams, EOAWalletService } from "./eoa";
 import { PasskeyWalletService, isPasskeyParams } from "./passkey";
+import { paymasterMiddleware, usePaymaster } from "./paymaster";
+import { toCrossmintSmartAccountClient } from "./smartAccount";
 
 export class SmartWalletService {
     constructor(
@@ -59,7 +61,25 @@ export class SmartWalletService {
                 kernelVersion,
             });
 
-            return new EVMSmartWallet(this.crossmintWalletService, account, publicClient, chain);
+            const kernelParams = {
+                account,
+                chain: getViemNetwork(chain),
+                entryPoint: account.entryPoint,
+                bundlerTransport: http(getBundlerRPC(chain)),
+                ...(usePaymaster(chain) && paymasterMiddleware({ entryPoint: account.entryPoint, chain })),
+            };
+
+            const smartAccountClient: KernelAccountClient<
+                EntryPoint,
+                HttpTransport,
+                Chain,
+                KernelSmartAccount<EntryPoint, HttpTransport>
+            > = toCrossmintSmartAccountClient({
+                crossmintChain: chain,
+                smartAccountClient: createKernelAccountClient(kernelParams),
+            });
+
+            return new EVMSmartWallet(this.crossmintWalletService, smartAccountClient, publicClient, chain);
         } catch (error: any) {
             if (error.code == null) {
                 throw new WalletSdkError(`Error creating the Wallet ${error?.message ? `: ${error.message}` : ""}`);

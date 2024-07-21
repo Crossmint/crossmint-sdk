@@ -1,22 +1,18 @@
 import { logError } from "@/services/logging";
 import { TransferError } from "@/types/Error";
-import { KernelAccountClient, KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
-import { SmartAccountClient } from "permissionless";
-import { SmartAccount } from "permissionless/accounts";
-import { EntryPoint } from "permissionless/types/entrypoint";
+import type { SmartAccountClient } from "permissionless";
+import type { SmartAccount } from "permissionless/accounts";
+import type { EntryPoint } from "permissionless/types/entrypoint";
 import type { HttpTransport, PublicClient } from "viem";
-import { Chain, http, isAddress, publicActions } from "viem";
+import { type Chain, isAddress, publicActions } from "viem";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
-import { CrossmintWalletService } from "../../api/CrossmintWalletService";
-import { TransferType } from "../../types/Tokens";
+import type { CrossmintWalletService } from "../../api/CrossmintWalletService";
+import type { TransferType } from "../../types/Tokens";
 import { SCW_SERVICE } from "../../utils/constants";
 import { LoggerWrapper, errorToJSON } from "../../utils/log";
-import { getBundlerRPC, getViemNetwork } from "../BlockchainNetworks";
 import { transferParams } from "../transfer";
-import { paymasterMiddleware, usePaymaster } from "./paymaster";
-import { toCrossmintSmartAccountClient } from "./smartAccount";
 
 /**
  * Smart wallet interface for EVM chains enhanced with Crossmint capabilities.
@@ -40,35 +36,16 @@ export class EVMSmartWallet extends LoggerWrapper {
         public: PublicClient;
     };
 
-    private readonly kernel: KernelAccountClient<
-        EntryPoint,
-        HttpTransport,
-        Chain,
-        KernelSmartAccount<EntryPoint, HttpTransport>
-    >;
-
     constructor(
         private readonly crossmintService: CrossmintWalletService,
-        account: KernelSmartAccount<EntryPoint, HttpTransport>,
+        private readonly accountClient: SmartAccountClient<EntryPoint, HttpTransport, Chain, SmartAccount<EntryPoint>>,
         publicClient: PublicClient<HttpTransport>,
         chain: EVMBlockchainIncludingTestnet
     ) {
-        super("EVMSmartWallet", { chain, address: account.address });
-        const kernelParams = {
-            account,
-            chain: getViemNetwork(chain),
-            entryPoint: account.entryPoint,
-            bundlerTransport: http(getBundlerRPC(chain)),
-            ...(usePaymaster(chain) && paymasterMiddleware({ entryPoint: account.entryPoint, chain })),
-        };
-
-        this.kernel = toCrossmintSmartAccountClient({
-            crossmintChain: chain,
-            smartAccountClient: createKernelAccountClient(kernelParams),
-        });
+        super("EVMSmartWallet", { chain, address: accountClient.account.address });
         this.chain = chain;
         this.client = {
-            wallet: this.kernel,
+            wallet: accountClient,
             public: publicClient,
         };
     }
@@ -77,7 +54,7 @@ export class EVMSmartWallet extends LoggerWrapper {
      * The address of the smart wallet.
      */
     public get address() {
-        return this.kernel.account.address;
+        return this.accountClient.account.address;
     }
 
     /**
@@ -104,12 +81,12 @@ export class EVMSmartWallet extends LoggerWrapper {
             const tx = transferParams({
                 contract: config.token.contractAddress,
                 to: toAddress,
-                from: this.kernel.account,
+                from: this.accountClient.account,
                 config,
             });
 
             try {
-                const client = this.kernel.extend(publicActions);
+                const client = this.accountClient.extend(publicActions);
                 const { request } = await client.simulateContract(tx);
                 return client.writeContract(request);
             } catch (error) {
@@ -131,7 +108,7 @@ export class EVMSmartWallet extends LoggerWrapper {
      */
     public async nfts() {
         return this.logPerformance("GET_NFTS", async () => {
-            return this.crossmintService.fetchNFTs(this.kernel.account.address, this.chain);
+            return this.crossmintService.fetchNFTs(this.accountClient.account.address, this.chain);
         });
     }
 }
