@@ -62,16 +62,17 @@ export class SmartWalletService {
                 kernelVersion,
             });
 
-            const kernelParams = {
+            const kernelAccountClient: SmartWalletClient = createKernelAccountClient({
                 account,
                 chain: getViemNetwork(chain),
                 entryPoint: account.entryPoint,
                 bundlerTransport: http(getBundlerRPC(chain)),
                 ...(usePaymaster(chain) && paymasterMiddleware({ entryPoint: account.entryPoint, chain })),
-            };
-            const smartAccountClient: SmartWalletClient = toCrossmintSmartAccountClient({
+            });
+
+            const smartAccountClient = toCrossmintSmartAccountClient({
                 crossmintChain: chain,
-                smartAccountClient: createKernelAccountClient(kernelParams),
+                smartAccountClient: kernelAccountClient,
             });
 
             return new EVMSmartWallet(this.crossmintWalletService, smartAccountClient, publicClient, chain);
