@@ -4,13 +4,14 @@ export const SmartWalletErrors = {
     TRANSACTION: "smart-wallet:transaction.error",
     CROSSMINT_SERVICE: "smart-wallet:crossmint-service.error",
     RUNNING_ON_SERVER: "smart-wallet:running-on-server",
+    UNCATEGORIZED: "smart-wallet:uncategorized", // catch-all error code
 } as const;
 export type SmartWalletErrorCode = (typeof SmartWalletErrors)[keyof typeof SmartWalletErrors];
 
 export class SmartWalletSDKError extends Error {
     public readonly code: SmartWalletErrorCode;
 
-    constructor(message: string, code: SmartWalletErrorCode) {
+    constructor(message: string, code: SmartWalletErrorCode = SmartWalletErrors.UNCATEGORIZED) {
         super(message);
         this.code = code;
     }
@@ -35,8 +36,11 @@ export class TransactionError extends SmartWalletSDKError {
 }
 
 export class CrossmintServiceError extends SmartWalletSDKError {
-    constructor(message: string) {
+    public status?: number;
+
+    constructor(message: string, status?: number) {
         super(message, SmartWalletErrors.CROSSMINT_SERVICE);
+        this.status = status;
     }
 }
 
