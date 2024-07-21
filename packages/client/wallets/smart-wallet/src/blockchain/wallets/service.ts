@@ -8,7 +8,7 @@ import { blockchainToChainId } from "@crossmint/common-sdk-base";
 
 import { CrossmintWalletService, EVMBlockchainIncludingTestnet } from "../../api/CrossmintWalletService";
 import { EntryPointDetails, UserParams, WalletConfig } from "../../types/Config";
-import { WalletSdkError } from "../../types/Error";
+import { SmartWalletSDKError } from "../../types/Error";
 import {
     SUPPORTED_ENTRYPOINT_VERSIONS,
     SUPPORTED_KERNEL_VERSIONS,
@@ -62,7 +62,9 @@ export class SmartWalletService {
             return new EVMSmartWallet(this.crossmintWalletService, account, publicClient, chain);
         } catch (error: any) {
             if (error.code == null) {
-                throw new WalletSdkError(`Error creating the Wallet ${error?.message ? `: ${error.message}` : ""}`);
+                throw new SmartWalletSDKError(
+                    `Error creating the Wallet ${error?.message ? `: ${error.message}` : ""}`
+                );
             }
 
             throw error;

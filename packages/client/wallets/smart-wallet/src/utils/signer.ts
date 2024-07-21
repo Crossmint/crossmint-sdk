@@ -18,7 +18,7 @@ import {
     getUrlProviderByBlockchain,
 } from "../blockchain/BlockchainNetworks";
 import { ViemAccount, WalletConfig, Web3AuthSigner } from "../types/Config";
-import { WalletSdkError } from "../types/Error";
+import { SmartWalletSDKError } from "../types/Error";
 import { parseToken } from "./auth";
 import { logInputOutput } from "./log";
 
@@ -60,7 +60,7 @@ export const createOwnerSigner = logInputOutput(
             });
 
             if (provider == null) {
-                throw new WalletSdkError("Web3auth returned a null signer");
+                throw new SmartWalletSDKError("Web3auth returned a null signer");
             }
 
             return await providerToSmartAccountSigner(provider as EIP1193Provider);
@@ -70,7 +70,7 @@ export const createOwnerSigner = logInputOutput(
             return walletConfig.signer.account;
         } else {
             const signer = walletConfig.signer as any;
-            throw new WalletSdkError(`The signer type ${signer.type} is not supported`);
+            throw new SmartWalletSDKError(`The signer type ${signer.type} is not supported`);
         }
     },
     "createOwnerSigner"
