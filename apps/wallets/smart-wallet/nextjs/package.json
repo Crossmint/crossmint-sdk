@@ -10,7 +10,7 @@
     },
     "dependencies": {
         "@crossmint/client-sdk-aa": "0.2.1",
-        "@crossmint/common-sdk-base": "0.0.6",
+        "@crossmint/common-sdk-base": "workspace:*",
         "@ethersproject/providers": "5.7.2",
         "ethers": "5.7.2",
         "next": "13.5.6",
