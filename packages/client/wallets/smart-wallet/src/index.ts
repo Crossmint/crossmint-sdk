@@ -19,7 +19,7 @@ export type {
     TransactionError,
     CrossmintServiceError,
     RunningOnServerError,
-    WalletSdkError,
+    SmartWalletSDKError,
 } from "./types/Error";
 
 export { SmartWalletSDK } from "./SmartWalletSDK";

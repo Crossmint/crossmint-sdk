@@ -1,0 +1,42 @@
+{
+    "extends": ["../../../../.eslintrc.json"],
+    "ignorePatterns": ["*.js"],
+    "plugins": ["@typescript-eslint"],
+    "overrides": [
+        {
+            "files": ["*.ts", "*.tsx"],
+            "parser": "@typescript-eslint/parser",
+            "extends": ["plugin:@typescript-eslint/recommended"],
+            "rules": {
+                "@typescript-eslint/no-non-null-asserted-optional-chain": "warn",
+                "@typescript-eslint/no-non-null-assertion": "warn",
+                "@typescript-eslint/no-empty-function": "warn",
+                "@typescript-eslint/no-namespace": "warn",
+                "@typescript-eslint/no-unused-vars": "off",
+                "@typescript-eslint/no-explicit-any": "off",
+                "no-control-regex": "off",
+                "prefer-const": "warn",
+                "default-case": "error",
+                "no-fallthrough": "error",
+                "curly": "warn"
+            }
+        },
+        {
+            "files": ["package.json"],
+            "parser": "eslint-plugin-package-json-dependencies",
+            "plugins": ["package-json-dependencies"],
+            "parserOptions": {
+                "project": null
+            },
+            "rules": {
+                "package-json-dependencies/controlled-versions": [
+                    "error",
+                    {
+                        "granularity": "fixed",
+                        "excludePatterns": ["@metaplex-foundation/mpl-token-metadata-deprecated"]
+                    }
+                ]
+            }
+        }
+    ]
+}

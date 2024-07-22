@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-base",
-    "version": "1.1.13",
+    "version": "1.1.14",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
@@ -23,7 +23,7 @@
         "dev": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --dts --sourcemap --watch"
     },
     "dependencies": {
-        "@crossmint/common-sdk-base": "0.0.12",
+        "@crossmint/common-sdk-base": "workspace:*",
         "exponential-backoff": "3.1.1",
         "uuid": "9.0.1"
     },
