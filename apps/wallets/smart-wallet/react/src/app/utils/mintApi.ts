@@ -40,22 +40,7 @@ export const mintNFT = async (account: EVMSmartWallet) => {
     const contractAddress = getNFTContractAddress(account.chain);
 
     try {
-        await account.client.public.simulateContract({
-            abi: collectionABI,
-            address: contractAddress,
-            functionName: "mintToCustomError",
-            args: [account.address, BigInt(27)],
-            account: account.address,
-        });
-
-        const hash = await account.client.wallet.writeContract({
-            abi: collectionABI,
-            address: contractAddress,
-            functionName: "mintToCustomError",
-            args: [account.address, BigInt(27)],
-        });
-        console.log("NFT mint. Tx hash:", hash);
-
+        // Mint NFT with EVMSmartWallet `account` here
         return true;
     } catch (error) {
         console.error("Error minting NFT:", error);

@@ -13,14 +13,8 @@ export async function createPasskeyWallet(isProd: boolean) {
         throw new Error("No JWT token found");
     }
 
-    console.log("Here's the jwt");
-    console.log(parseToken(jwt));
-
     try {
-        const sdk = SmartWalletSDK.init({
-            clientApiKey: process.env.REACT_APP_CROSSMINT_API_KEY_STG!,
-        });
-        return await sdk.getOrCreateWallet({ jwt }, "polygon-amoy");
+        // Create and return passkey smart wallet here
     } catch (e) {
         console.log("There's been an error, here it is");
         console.log((e as any).message);
