@@ -91,7 +91,7 @@ export class PasskeyWalletService {
         const fields = deserializePasskeyValidatorData(validator.getSerializedData());
         return {
             ...fields,
-            passkeyName: passkeyName,
+            passkeyName,
             domain: window.location.hostname,
             type: "passkeys",
         };
