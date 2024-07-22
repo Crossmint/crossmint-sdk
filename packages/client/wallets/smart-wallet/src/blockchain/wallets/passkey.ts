@@ -65,7 +65,7 @@ export class PasskeyWalletService {
         }
 
         const webAuthnKey = await toWebAuthnKey({
-            passkeyName: walletConfig.signer.passkeyName,
+            passkeyName: walletConfig.signer.passkeyName ?? "",
             passkeyServerUrl: this.crossmintService.getPasskeyServerUrl(),
             mode: WebAuthnMode.Register,
             passkeyServerHeaders: this.createPasskeysServerHeaders(user),
@@ -87,7 +87,7 @@ export class PasskeyWalletService {
         return serializePasskeyValidatorData(signer);
     }
 
-    private getSignerData(validator: PasskeyValidator, passkeyName: string): PasskeySignerData {
+    private getSignerData(validator: PasskeyValidator, passkeyName: string = ""): PasskeySignerData {
         const fields = deserializePasskeyValidatorData(validator.getSerializedData());
         return {
             ...fields,
