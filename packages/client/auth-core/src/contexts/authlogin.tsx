@@ -39,7 +39,7 @@ export function AuthProvider({ children, apiKey, environment }: AuthProviderPara
     const [jwtToken, setJwtToken] = useState<string | null>(null);
     const [modalOpen, setModalOpen] = useState(false);
     const [user, setUser] = useState<User | null>(null);
-    const crossmintService = useMemo(() => new CrossmintService(jwtToken, environment), [jwtToken, environment]);
+    const crossmintService = useMemo(() => new CrossmintService(apiKey, jwtToken, environment), [apiKey, jwtToken, environment]);
 
     useEffect(() => {
         const crossmintSession = document.cookie.split('; ').find(row => row.startsWith('crossmint-session'));
@@ -75,7 +75,7 @@ export function AuthProvider({ children, apiKey, environment }: AuthProviderPara
             throw new Error("jwtToken is not set");
         }
 
-        return crossmintService.fetchCrossmintAPI(fetchCrossmintParams,);
+        return crossmintService.fetchCrossmintAPI(fetchCrossmintParams);
     }, [jwtToken, environment]);
 
     useEffect(() => {

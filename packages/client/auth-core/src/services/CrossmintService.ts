@@ -17,11 +17,12 @@ export class CrossmintService {
         production: CROSSMINT_PROD_URL,
     };
 
-    constructor(jwtToken: string | null, environment?: CrossmintEnvironment) {
+    constructor(apiKey: string, jwtToken: string | null, environment?: CrossmintEnvironment) {
         this.crossmintAPIHeaders = {
             accept: "application/json",
             "content-type": "application/json",
-            "x-jwt-auth": `Bearer ${jwtToken}`,
+            authorization: `Bearer ${jwtToken}`,
+            "x-api-key": apiKey,
         };
         this.crossmintBaseUrl = this.getUrlFromEnv(environment ?? "production");
     }

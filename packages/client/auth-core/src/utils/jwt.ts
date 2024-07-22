@@ -1,8 +1,12 @@
 import { CrossmintService } from "@/services/CrossmintService";
 
 //TODO: this should resolve the user
-export async function verifyCrossmintSessionToken(token: string, environment: "production" | "staging") {
-    const crossmintService = new CrossmintService(token, environment);
+export async function verifyCrossmintSessionToken(
+    apiKey: string,
+    token: string,
+    environment: "production" | "staging"
+) {
+    const crossmintService = new CrossmintService(apiKey, token, environment);
 
     let response;
     try {
@@ -10,9 +14,6 @@ export async function verifyCrossmintSessionToken(token: string, environment: "p
             endpoint: "/sdk/auth/verifyJWT",
             options: {
                 method: "POST",
-                body: {
-                    token,
-                },
             },
         });
     } catch (error) {
