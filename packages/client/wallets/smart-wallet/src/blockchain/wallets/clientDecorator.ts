@@ -6,6 +6,7 @@ import { gelatoBundlerProperties, usesGelatoBundler } from "@/utils/blockchain";
 import { logPerformance } from "@/utils/log";
 import type { SmartAccountClient } from "permissionless";
 import type { EntryPoint } from "permissionless/types/entrypoint";
+import { stringify } from "viem";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
@@ -43,7 +44,7 @@ export class AccountClientDecorator {
                         throw this.errorMapper.map(
                             error,
                             new SmartWalletSDKError(
-                                `Error signing typed data. If this error persists, please contact support.`
+                                "Error signing typed data. If this error persists, please contact support."
                             )
                         );
                     }
@@ -56,7 +57,7 @@ export class AccountClientDecorator {
                             ...(usesGelatoBundler(crossmintChain) && gelatoBundlerProperties),
                         };
 
-                        logInfo(`[CrossmintSmartWallet.sendTransaction] - params: ${JSON.stringify(txn)}`);
+                        logInfo(`[CrossmintSmartWallet.sendTransaction] - params: ${stringify(txn)}`);
                         return await smartAccountClient.sendTransaction(txn);
                     } catch (error) {
                         throw this.errorMapper.map(error, new TransactionError(`Error sending transaction: ${error}`));
@@ -70,7 +71,7 @@ export class AccountClientDecorator {
                             ...(usesGelatoBundler(crossmintChain) && gelatoBundlerProperties),
                         };
 
-                        logInfo(`[CrossmintSmartWallet.writeContract] - params:`);
+                        logInfo(`[CrossmintSmartWallet.writeContract] - params: ${stringify(txn)}`);
                         return await smartAccountClient.writeContract(txn);
                     } catch (error) {
                         throw this.errorMapper.map(error, new TransactionError(`Error writing to contract: ${error}`));
@@ -88,7 +89,7 @@ export class AccountClientDecorator {
                             account,
                         };
 
-                        logInfo(`[CrossmintSmartWallet.sendUserOperation] - params: ${params}`);
+                        logInfo(`[CrossmintSmartWallet.sendUserOperation] - params: ${stringify(params)}`);
                         return smartAccountClient.sendUserOperation(params);
                     } catch (error) {
                         throw this.errorMapper.map(

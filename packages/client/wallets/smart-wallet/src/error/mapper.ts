@@ -1,22 +1,18 @@
-import { SignerData } from "@/types/API";
-import { WebAuthnError } from "@simplewebauthn/browser";
+import { BaseError } from "viem";
 
-import { PasskeyPromptError, SmartWalletSDKError } from ".";
+import { SmartWalletSDKError } from ".";
 
 export class ErrorMapper {
-    constructor(private readonly signerData: SignerData) {}
-
-    public map(error: unknown, fallback: SmartWalletSDKError): SmartWalletSDKError {
+    public map(error: unknown, fallback: SmartWalletSDKError): SmartWalletSDKError | BaseError {
         if (error instanceof SmartWalletSDKError) {
-            throw error;
+            return error;
         }
 
-        if (this.signerData.type === "passkeys") {
-            if ((error as WebAuthnError).name === "NotAllowedError") {
-                throw new PasskeyPromptError(this.signerData.passkeyName);
-            }
+        // Allow viem errors, which are generally pretty friendly.
+        if (error instanceof BaseError) {
+            return error;
         }
 
-        throw fallback;
+        return fallback;
     }
 }

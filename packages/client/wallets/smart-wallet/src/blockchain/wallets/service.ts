@@ -1,7 +1,6 @@
 import { ErrorMapper } from "@/error/mapper";
 import type { SignerData } from "@/types/API";
 import { type KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
-import { error } from "console";
 import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
 import type { EntryPoint } from "permissionless/types/entrypoint";
 import { type HttpTransport, createPublicClient, http } from "viem";
@@ -32,7 +31,9 @@ export class SmartWalletService {
     constructor(
         private readonly crossmintWalletService: CrossmintWalletService,
         private readonly eoaWalletService = new EOAWalletService(),
-        private readonly passkeyWalletService = new PasskeyWalletService(crossmintWalletService)
+        private readonly passkeyWalletService = new PasskeyWalletService(crossmintWalletService),
+        private readonly errorMapper = new ErrorMapper(),
+        private readonly clientDecorator = new AccountClientDecorator(errorMapper)
     ) {}
 
     public async getOrCreate(
@@ -50,7 +51,6 @@ export class SmartWalletService {
             entryPoint,
             kernelVersion,
         });
-        const errorMapper = new ErrorMapper(signerData);
         try {
             await this.crossmintWalletService.storeSmartWallet(user, {
                 type: ZERO_DEV_TYPE,
@@ -71,7 +71,7 @@ export class SmartWalletService {
                 ...(usePaymaster(chain) && paymasterMiddleware({ entryPoint: account.entryPoint, chain })),
             });
 
-            const smartAccountClient = new AccountClientDecorator(errorMapper).decorate({
+            const smartAccountClient = this.clientDecorator.decorate({
                 crossmintChain: chain,
                 signerData,
                 smartAccountClient: kernelAccountClient,
@@ -79,7 +79,7 @@ export class SmartWalletService {
 
             return new EVMSmartWallet(this.crossmintWalletService, smartAccountClient, publicClient, chain);
         } catch (error: any) {
-            throw errorMapper.map(
+            throw this.errorMapper.map(
                 error,
                 new SmartWalletSDKError(`Error creating the Wallet ${error?.message ? `: ${error.message}` : ""}`)
             );

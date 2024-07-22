@@ -1,11 +1,13 @@
-import { CrossmintWalletService } from "@/api/CrossmintWalletService";
-import { PasskeySignerData } from "@/types/API";
-import { PasskeySigner, UserParams, WalletConfig } from "@/types/Config";
-import { AccountAndSigner, WalletCreationParams } from "@/types/internal";
+import type { CrossmintWalletService } from "@/api/CrossmintWalletService";
+import { PasskeyPromptError, SmartWalletSDKError } from "@/error";
+import type { PasskeySignerData } from "@/types/API";
+import type { PasskeySigner, UserParams, WalletConfig } from "@/types/Config";
+import type { AccountAndSigner, WalletCreationParams } from "@/types/internal";
+import { WebAuthnError } from "@simplewebauthn/browser";
 import { WebAuthnMode, deserializePasskeyValidator, toPasskeyValidator } from "@zerodev/passkey-validator";
-import { KernelValidator, createKernelAccount } from "@zerodev/sdk";
+import { KernelSmartAccount, type KernelValidator, createKernelAccount } from "@zerodev/sdk";
 import { toWebAuthnKey } from "@zerodev/webauthn-key";
-import { EntryPoint } from "permissionless/types/entrypoint";
+import type { EntryPoint } from "permissionless/types/entrypoint";
 
 import { deserializePasskeyValidatorData, serializePasskeyValidatorData } from "../../utils/passkey";
 
@@ -31,21 +33,28 @@ export class PasskeyWalletService {
         entryPoint,
         kernelVersion,
     }: PasskeyWalletParams): Promise<AccountAndSigner> {
-        const validator = await this.getValidator({
-            user,
-            entryPoint,
-            publicClient,
-            walletConfig,
-            kernelVersion,
-        });
+        try {
+            const validator = await this.getValidator({
+                user,
+                entryPoint,
+                publicClient,
+                walletConfig,
+                kernelVersion,
+            });
 
-        const kernelAccount = await createKernelAccount(publicClient, {
-            plugins: { sudo: validator },
-            entryPoint: entryPoint.address,
-            kernelVersion,
-        });
+            const kernelAccount = await createKernelAccount(publicClient, {
+                plugins: { sudo: validator },
+                entryPoint: entryPoint.address,
+                kernelVersion,
+            });
 
-        return { signerData: this.getSignerData(validator, walletConfig.signer.passkeyName), account: kernelAccount };
+            return {
+                signerData: this.getSignerData(validator, walletConfig.signer.passkeyName),
+                account: this.decorateAccount(kernelAccount, walletConfig.signer),
+            };
+        } catch (error) {
+            throw this.mapError(error, walletConfig.signer);
+        }
     }
 
     private async getValidator({
@@ -102,5 +111,34 @@ export class PasskeyWalletService {
             "x-api-key": this.crossmintService.crossmintAPIHeaders["x-api-key"],
             Authorization: `Bearer ${user.jwt}`,
         };
+    }
+
+    private mapError(error: unknown, config: PasskeySigner) {
+        if ((error as WebAuthnError).name === "NotAllowedError") {
+            return new PasskeyPromptError(config.passkeyName);
+        }
+
+        return error;
+    }
+
+    private decorateAccount<Client extends KernelSmartAccount<EntryPoint>>(
+        account: Client,
+        config: PasskeySigner
+    ): Client {
+        return new Proxy(account, {
+            get: (target, prop, receiver) => {
+                if (prop !== "signUserOperation") {
+                    return Reflect.get(target, prop, receiver);
+                }
+
+                return async (...args: Parameters<Client["signUserOperation"]>) => {
+                    try {
+                        return await Reflect.get(target, prop, receiver).call(target, ...args);
+                    } catch (error) {
+                        throw this.mapError(error, config);
+                    }
+                };
+            },
+        });
     }
 }
