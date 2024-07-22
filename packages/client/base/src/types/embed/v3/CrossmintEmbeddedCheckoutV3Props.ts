@@ -18,7 +18,9 @@ export type EmbeddedCheckoutV3LineItem = {
     callData?: Record<string, any>;
 };
 
-export type EmbeddedCheckoutV3Appearance = {};
+export type EmbeddedCheckoutV3Appearance = {
+    variables?: Record<string, string>; // TODO: Actual implementation
+};
 
 export type EmbeddedCheckoutV3Payment = {
     fiat?: EmbeddedCheckoutV3FiatPayment;
