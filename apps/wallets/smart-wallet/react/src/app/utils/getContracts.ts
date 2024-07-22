@@ -9,7 +9,7 @@ export const getNFTContractAddress: GetContractAddressFunction = (chain) => {
         case Blockchain.POLYGON:
             return "0x6A1e16403c7de87071703eB21C5FB745ecA0Bf41";
         case Blockchain.POLYGON_AMOY:
-            return "0xf07D348194eaCAE910051615cea2E90Ec4eCA439";
+            return "0x65BF57E2880A4e84D66063F4129eE9F8b84Af768";
         case Blockchain.OPTIMISM:
             return "0xc93800eaad38e2c809dda65af7e29f473bbf885a";
         case Blockchain.OPTIMISM_SEPOLIA:

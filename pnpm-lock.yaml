@@ -253,8 +253,8 @@ importers:
   apps/wallets/smart-wallet/react:
     dependencies:
       '@crossmint/client-sdk-aa-passkeys-beta':
-        specifier: 1.1.0-beta.19
-        version: 1.1.0-beta.19(@babel/runtime@7.24.7)(buffer@6.0.3)(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)
+        specifier: 1.1.0-beta.20
+        version: 1.1.0-beta.20(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)
       '@emotion/react':
         specifier: ^11.11.1
         version: 11.13.0(@types/react@18.3.3)(react@18.2.0)
@@ -571,7 +571,7 @@ importers:
     dependencies:
       '@crossmint/common-sdk-base':
         specifier: 0.0.13
-        version: link:../../../common/base
+        version: 0.0.13
       '@datadog/browser-logs':
         specifier: 4.42.2
         version: 4.42.2
@@ -1685,8 +1685,8 @@ packages:
   '@cosmjs/utils@0.30.1':
     resolution: {integrity: sha512-KvvX58MGMWh7xA+N+deCfunkA/ZNDvFLw4YbOmX3f/XBIkqrVY7qlotfy2aNb1kgp6h4B6Yc8YawJPDTfvWX7g==}
 
-  '@crossmint/client-sdk-aa-passkeys-beta@1.1.0-beta.19':
-    resolution: {integrity: sha512-VhgxKN92AYCyZiNNhrAF+0NXPW+NLu+38Y4RZHUXal+YnR8NCiNT5WvjflS52Fm+dG+D77RjSWMy5xNzO2vv/Q==}
+  '@crossmint/client-sdk-aa-passkeys-beta@1.1.0-beta.20':
+    resolution: {integrity: sha512-ztwu2uAJZZ9O8iqB5BZy1uPfTvgotif9nN6O3NPf9YEroSXh3WE78RgCfudxIiISijZsKcHLR8Z53wbSTk0JmA==}
 
   '@crossmint/client-sdk-aa@0.2.1':
     resolution: {integrity: sha512-/otw5GdnJE0Xp8eAW+J85C0WG7XLSfUmYNRvtq8vW5Oxja4XnuYrJY+AphoRsnFyrh6Xg8ZwUY9Zhs/RmnbhPQ==}
@@ -16325,13 +16325,10 @@ snapshots:
 
   '@cosmjs/utils@0.30.1': {}
 
-  '@crossmint/client-sdk-aa-passkeys-beta@1.1.0-beta.19(@babel/runtime@7.24.7)(buffer@6.0.3)(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)':
+  '@crossmint/client-sdk-aa-passkeys-beta@1.1.0-beta.20(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)':
     dependencies:
       '@crossmint/common-sdk-base': 0.0.13
       '@datadog/browser-logs': 4.42.2
-      '@web3auth/base': 7.3.2(@babel/runtime@7.24.7)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      '@web3auth/ethereum-provider': 7.3.2(@babel/runtime@7.24.7)(buffer@6.0.3)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      '@web3auth/single-factor-auth': 7.3.0(@babel/runtime@7.24.7)(@types/bn.js@5.1.5)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       '@zerodev/ecdsa-validator': 5.3.1(@zerodev/sdk@5.3.3(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4))
       '@zerodev/passkey-validator': 5.3.5(@zerodev/sdk@5.3.3(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(@zerodev/webauthn-key@5.3.1(viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4))
       '@zerodev/sdk': 5.3.3(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4))
@@ -16340,26 +16337,8 @@ snapshots:
       uuid: 10.0.0
       viem: 2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)
     transitivePeerDependencies:
-      - '@azure/app-configuration'
-      - '@azure/cosmos'
-      - '@azure/data-tables'
-      - '@azure/identity'
-      - '@azure/keyvault-secrets'
-      - '@azure/storage-blob'
-      - '@babel/runtime'
-      - '@capacitor/preferences'
       - '@datadog/browser-rum'
-      - '@netlify/blobs'
-      - '@planetscale/database'
-      - '@react-native-async-storage/async-storage'
-      - '@sentry/types'
-      - '@types/bn.js'
-      - '@upstash/redis'
-      - '@vercel/kv'
-      - buffer
       - bufferutil
-      - c-kzg
-      - supports-color
       - typescript
       - utf-8-validate
       - zod

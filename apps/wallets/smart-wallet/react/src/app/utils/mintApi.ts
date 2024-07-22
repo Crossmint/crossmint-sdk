@@ -1,9 +1,10 @@
 import { ethers } from "ethers";
 import { encodeFunctionData } from "viem";
 
-import { Blockchain, EVMSmartWallet } from "@crossmint/client-sdk-aa-passkeys-beta";
+import { type Blockchain, type EVMSmartWallet } from "@crossmint/client-sdk-aa-passkeys-beta";
 
 import contractAbi from "./MintBurnABI.json";
+import { collectionABI } from "./collectionAbi";
 import contractERC20abi from "./erc20tokenSell.json";
 import { getERC20ContractAddress, getNFTContractAddress } from "./getContracts";
 
@@ -39,22 +40,26 @@ export const mintNFT = async (account: EVMSmartWallet) => {
     const contractAddress = getNFTContractAddress(account.chain);
 
     try {
-        const data = encodeFunctionData({
-            abi: contractAbi,
-            functionName: "mintNFT",
-            args: [account.address, "https://ipfs.io/ipfs/bafkreihzaqud4drmkwamevaallgmhjsg7t5oauaqsgpiwor7gvu646znse"],
+        await account.client.public.simulateContract({
+            abi: collectionABI,
+            address: contractAddress,
+            functionName: "mintToCustomError",
+            args: [account.address, BigInt(27)],
+            account: account.address,
         });
 
-        const transactionHash = await account.client.wallet.sendTransaction({
-            to: contractAddress,
-            data: data,
+        const hash = await account.client.wallet.writeContract({
+            abi: collectionABI,
+            address: contractAddress,
+            functionName: "mintToCustomError",
+            args: [account.address, BigInt(27)],
         });
+        console.log("NFT mint. Tx hash:", hash);
 
-        console.log("NFT mint. Tx hash:", transactionHash);
         return true;
     } catch (error) {
         console.error("Error minting NFT:", error);
-        return false;
+        console.log((error as any).message);
     }
 };
 
