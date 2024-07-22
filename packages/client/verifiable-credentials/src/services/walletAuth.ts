@@ -6,7 +6,7 @@ export class WalletAuthService {
         const baseUrl = crossmintAPI.getBaseUrl();
         const headers = crossmintAPI.getHeaders(true);
 
-        const url = `${baseUrl}/api/unstable/credentials/walletAuth`;
+        const url = `${baseUrl}/api/unstable/credentials/auth/wallet`;
 
         const options = { method: "POST", headers: headers, body: JSON.stringify({ address: userAddress }) };
         console.log(url, options);
@@ -35,7 +35,7 @@ export class WalletAuthService {
         const baseUrl = crossmintAPI.getBaseUrl();
         const headers = crossmintAPI.getHeaders(true);
 
-        const url = `${baseUrl}/api/unstable/credentials/decrypt`;
+        const url = `${baseUrl}/api/unstable/credentials/decryption/decrypt`;
 
         const options = {
             method: "POST",
