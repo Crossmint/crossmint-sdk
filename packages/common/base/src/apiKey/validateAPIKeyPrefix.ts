@@ -1,14 +1,16 @@
 import { APIKeyEnvironmentPrefix, APIKeyPrefix, APIKeyUsageOrigin, APIKeyUsageOriginPrefix } from "./types";
 import { usageOriginToPrefix } from "./utils";
 
-export type ValidateAPIKeyPrefixResult =
-    | ({
-          isValid: true;
-      } & ValidateAPIKeyPrefixSuccessData)
-    | {
-          isValid: false;
-          message: string;
-      };
+export type ValidateAPIKeyPrefixResult = ValidateAPIKeyPrefixSuccessResult | ValidateAPIKeyPrefixFailResult;
+
+export type ValidateAPIKeyPrefixSuccessResult = {
+    isValid: true;
+} & ValidateAPIKeyPrefixSuccessData;
+
+export type ValidateAPIKeyPrefixFailResult = {
+    isValid: false;
+    message: string;
+};
 
 export type ValidateAPIKeyPrefixSuccessData = {
     usageOrigin: APIKeyUsageOrigin;
