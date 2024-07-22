@@ -36,19 +36,26 @@ class CrossmintAPI {
     }
 
     isProd() {
-        return this.getEnvironment() === "prod";
+        return this.getEnvironment() === "prod" || this.getEnvironment() === "production";
     }
 
-    public getHeaders() {
+    public getHeaders(post = false) {
         if (!this.apiKey) {
             throw new Error("Credentials not set");
         }
 
-        return {
+        const headers = {
             "x-api-key": this.apiKey,
             accept: "application/json",
-            "Content-Type": "application/json",
         };
+
+        if (post) {
+            return {
+                ...headers,
+                "Content-Type": "application/json",
+            };
+        }
+        return headers;
     }
 
     public getBaseUrl() {
@@ -70,7 +77,7 @@ class CrossmintAPI {
     public init(
         apiKey: string,
         config: {
-            environment: "staging" | "prod" | string;
+            environment: "staging" | "prod" | "production" | string;
             ipfsGateways?: string[];
             ipfsTimeout?: number;
             blockchainRpcs?: ChainRPCConfig;

@@ -21,7 +21,7 @@ export class ContractMetadataService {
         return metadata;
     }
 
-    async retrieveContractCredentialMetadata(collections: Collection[]): Promise<CredentialsCollection[]> {
+    async getContractsWithCredentialMetadata(collections: Collection[]): Promise<CredentialsCollection[]> {
         const credentialCollections: CredentialsCollection[] = [];
 
         for (const collection of collections) {

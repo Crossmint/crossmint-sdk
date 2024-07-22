@@ -1,6 +1,6 @@
-import { EncryptedVerifiableCredential, VerifiableCredential } from "@/verifiableCredentialsSKD";
+import { EncryptedVerifiableCredential, VerifiableCredential } from "@/verifiableCredentialsSDK";
 
-import { mockCredential } from "../verifiableCredentialsSKD/types/mockCredential";
+import { mockCredential } from "../verifiableCredentialsSDK/types/mockCredential";
 import { CrossmintDecrypt } from "./wallet";
 
 describe("WalletDecrypt", () => {

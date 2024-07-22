@@ -26,7 +26,7 @@ export function bundleNfts(nfts: Nft[]): Collection[] {
     }));
 }
 
-export async function getUsersCredentialNfts(
+export async function getCredentialNfts(
     chain: VCChain,
     wallet: string,
     getVcCompatibleNftsFromWallet: (chain: VCChain, wallet: string) => Promise<Nft[]>,
@@ -53,7 +53,7 @@ export async function getUsersCredentialNfts(
     const collections = bundleNfts(nfts);
     console.debug(`Got ${collections.length} collections`);
 
-    let credentialsCollection = await new ContractMetadataService(chain).retrieveContractCredentialMetadata(
+    let credentialsCollection = await new ContractMetadataService(chain).getContractsWithCredentialMetadata(
         collections
     );
     console.debug(`Got ${credentialsCollection.length} valid credential collections`);

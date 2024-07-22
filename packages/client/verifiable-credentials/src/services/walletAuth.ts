@@ -4,7 +4,7 @@ import { EncryptedVerifiableCredential } from "@/verifiableCredentialsSDK";
 export class WalletAuthService {
     async getChallenge(userAddress: string): Promise<string> {
         const baseUrl = crossmintAPI.getBaseUrl();
-        const headers = crossmintAPI.getHeaders();
+        const headers = crossmintAPI.getHeaders(true);
 
         const url = `${baseUrl}/api/unstable/credentials/walletAuth`;
 
@@ -33,7 +33,7 @@ export class WalletAuthService {
         userAddress: string
     ): Promise<any> {
         const baseUrl = crossmintAPI.getBaseUrl();
-        const headers = crossmintAPI.getHeaders();
+        const headers = crossmintAPI.getHeaders(true);
 
         const url = `${baseUrl}/api/unstable/credentials/decrypt`;
 

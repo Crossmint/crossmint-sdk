@@ -5,7 +5,7 @@ import { NftWithMetadata } from "../types/nft";
 import { isVcChain, isVerifiableCredentialContractMetadata, parseLocator } from "../types/utils";
 import { ContractMetadataService } from "./contractMetadata";
 
-export async function getNFTFromLocator(locator: string) {
+export async function getCredentialNFTFromLocator(locator: string) {
     const nft = parseLocator(locator);
     if (!isVcChain(nft.chain)) {
         throw new Error(`Verifiable Credentials are not available on the provided chain: ${nft.chain}`);

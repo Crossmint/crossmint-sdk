@@ -18,13 +18,13 @@ export type {
 export { verifyCredential } from "./verifiableCredentialsSDK";
 // Presentation
 export {
-    getNFTFromLocator,
+    getCredentialNFTFromLocator,
     ContractMetadataService,
-    // getUsersCredentialNfts, // Wrapped
+    // getCredentialNfts, // Wrapped
     // CredentialService, // Wrapped
 } from "./verifiableCredentialsSDK";
 
-export { getUsersCredentialNfts } from "./presentation/getCredentialNfts";
+export { getCredentialNfts } from "./presentation/getCredentialNfts";
 export { CredentialService } from "./presentation/getCredential";
 // Decryption
 export { Lit } from "./decryption/lit";

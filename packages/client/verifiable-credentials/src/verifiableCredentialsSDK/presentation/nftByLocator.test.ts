@@ -1,19 +1,19 @@
 import { NFTService } from "../onchainServices/nft";
 import { IPFSService } from "../services/ipfs";
 import { ContractMetadataService } from "./contractMetadata";
-import { getNFTFromLocator } from "./nftByLocator";
+import { getCredentialNFTFromLocator } from "./nftByLocator";
 
 jest.mock("../onchainServices/nft");
 jest.mock("./contractMetadata");
 jest.mock("../services/ipfs");
 
-describe("getNFTFromLocator", () => {
+describe("getCredentialNFTFromLocator", () => {
     beforeEach(() => {
         jest.resetAllMocks();
     });
 
     it("should throw error if chain is not supported", async () => {
-        await expect(getNFTFromLocator("ethereum:0x1234:1")).rejects.toThrow(
+        await expect(getCredentialNFTFromLocator("ethereum:0x1234:1")).rejects.toThrow(
             "Verifiable Credentials are not available on the provided chain: ethereum"
         );
     });
@@ -33,7 +33,7 @@ describe("getNFTFromLocator", () => {
         (IPFSService.prototype.getFile as jest.Mock).mockResolvedValue(mockNftMetadata);
         (ContractMetadataService.prototype.getContractMetadata as jest.Mock).mockResolvedValue(collectionMetadata);
 
-        const result = await getNFTFromLocator("polygon:0x1234:1");
+        const result = await getCredentialNFTFromLocator("polygon:0x1234:1");
 
         const resNft = {
             metadata: mockNftMetadata,
