@@ -1,10 +1,11 @@
 import { SmartWalletSDKError, TransactionError } from "@/error";
 import { ErrorMapper } from "@/error/mapper";
 import { logInfo } from "@/services/logging";
+import type { SignerData } from "@/types/API";
 import { gelatoBundlerProperties, usesGelatoBundler } from "@/utils/blockchain";
 import { logPerformance } from "@/utils/log";
-import { SmartAccountClient } from "permissionless";
-import { EntryPoint } from "permissionless/types/entrypoint";
+import type { SmartAccountClient } from "permissionless";
+import type { EntryPoint } from "permissionless/types/entrypoint";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
@@ -16,6 +17,7 @@ export class AccountClientDecorator {
         smartAccountClient,
     }: {
         crossmintChain: EVMBlockchainIncludingTestnet;
+        signerData: SignerData;
         smartAccountClient: Client;
     }): Client {
         return {
@@ -58,6 +60,20 @@ export class AccountClientDecorator {
                         return await smartAccountClient.sendTransaction(txn);
                     } catch (error) {
                         throw this.errorMapper.map(error, new TransactionError(`Error sending transaction: ${error}`));
+                    }
+                }),
+            writeContract: (txn) =>
+                logPerformance("CrossmintSmartWallet.writeContract", async () => {
+                    try {
+                        txn = {
+                            ...txn,
+                            ...(usesGelatoBundler(crossmintChain) && gelatoBundlerProperties),
+                        };
+
+                        logInfo(`[CrossmintSmartWallet.writeContract] - params:`);
+                        return await smartAccountClient.writeContract(txn);
+                    } catch (error) {
+                        throw this.errorMapper.map(error, new TransactionError(`Error writing to contract: ${error}`));
                     }
                 }),
             sendUserOperation: ({ userOperation, middleware, account }) =>

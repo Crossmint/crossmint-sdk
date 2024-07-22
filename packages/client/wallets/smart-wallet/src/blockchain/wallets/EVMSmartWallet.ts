@@ -1,6 +1,5 @@
 import { logError } from "@/services/logging";
-import type { HttpTransport, PublicClient } from "viem";
-import { isAddress, publicActions } from "viem";
+import { type HttpTransport, type PublicClient, isAddress, publicActions } from "viem";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 

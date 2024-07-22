@@ -4,6 +4,7 @@ export const SmartWalletErrors = {
     TRANSACTION: "smart-wallet:transaction.error",
     CROSSMINT_SERVICE: "smart-wallet:crossmint-service.error",
     RUNNING_ON_SERVER: "smart-wallet:running-on-server",
+    PASSKEY_PROMPT: "smart-wallet:passkeys.prompt.error",
     UNCATEGORIZED: "smart-wallet:uncategorized", // catch-all error code
 } as const;
 export type SmartWalletErrorCode = (typeof SmartWalletErrors)[keyof typeof SmartWalletErrors];
@@ -47,5 +48,14 @@ export class CrossmintServiceError extends SmartWalletSDKError {
 export class RunningOnServerError extends SmartWalletSDKError {
     constructor() {
         super("Smart Wallet SDK should only be used client side.", SmartWalletErrors.RUNNING_ON_SERVER);
+    }
+}
+
+export class PasskeyPromptError extends SmartWalletSDKError {
+    public passkeyName: string;
+
+    constructor(passkeyName: string) {
+        super("Passkey prompt was either cancelled or timed out", SmartWalletErrors.PASSKEY_PROMPT);
+        this.passkeyName = passkeyName;
     }
 }
