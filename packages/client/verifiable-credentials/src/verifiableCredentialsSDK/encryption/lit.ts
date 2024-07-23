@@ -118,7 +118,7 @@ export class Lit {
             }
             return vc;
         } catch (error: any) {
-            console.error("Decryption error", error);
+            console.error("Decryption error", error.message, error);
             if (error.errorCode === "NodeAccessControlConditionsReturnedNotAuthorized") {
                 throw new Error("Unauthorized to decrypt file");
             }
