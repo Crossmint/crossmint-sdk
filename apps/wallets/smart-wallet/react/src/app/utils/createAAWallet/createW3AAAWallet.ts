@@ -1,6 +1,7 @@
-import { Blockchain, SmartWalletSDK, Web3AuthSigner } from "@crossmint/client-sdk-aa-passkeys-beta";
+import { Blockchain, SmartWalletSDK } from "@crossmint/client-sdk-aa-passkeys-beta";
+import { TORUS_NETWORK_TYPE, getWeb3AuthSigner } from "@crossmint/client-sdk-smart-wallet-web3auth-adapter";
 
-import { checkAuthState, parseToken, signInWithGoogle } from "../../auth/FirebaseAuthManager";
+import { checkAuthState, signInWithGoogle } from "../../auth/FirebaseAuthManager";
 
 export const createW3AAAWallet = async (isProd: boolean) => {
     let jwt = await checkAuthState();
@@ -13,8 +14,6 @@ export const createW3AAAWallet = async (isProd: boolean) => {
         throw new Error("No JWT token found");
     }
 
-    const { email } = parseToken(jwt);
-
     const xm = isProd
         ? SmartWalletSDK.init({
               clientApiKey: process.env.REACT_APP_CROSSMINT_API_KEY_PROD || "",
@@ -22,32 +21,23 @@ export const createW3AAAWallet = async (isProd: boolean) => {
         : SmartWalletSDK.init({
               clientApiKey: process.env.REACT_APP_CROSSMINT_API_KEY_STG || "",
           });
+    const chain = isProd ? Blockchain.POLYGON : Blockchain.POLYGON_AMOY;
 
-    const userIdentifier = { id: email, jwt };
-
-    const web3AuthSigner: Web3AuthSigner = {
-        type: "WEB3_AUTH",
-        clientId: (isProd
-            ? process.env.REACT_APP_WEB3_AUTH_CLIENT_ID_PROD
-            : process.env.REACT_APP_WEB3_AUTH_CLIENT_ID_STG) as string,
-        web3AuthNetwork: (isProd
-            ? process.env.REACT_APP_WEB3_AUTH_NETWORK_PROD
-            : process.env.REACT_APP_WEB3_AUTH_NETWORK_STG) as Web3AuthSigner["web3AuthNetwork"],
-        verifierId: (isProd
-            ? process.env.REACT_APP_WEB3_AUTH_VERIFIER_ID_PROD
-            : process.env.REACT_APP_WEB3_AUTH_VERIFIER_ID_STG) as string,
-        jwt,
+    const walletConfig = {
+        signer: await getWeb3AuthSigner({
+            clientId: (isProd
+                ? process.env.REACT_APP_WEB3_AUTH_CLIENT_ID_PROD
+                : process.env.REACT_APP_WEB3_AUTH_CLIENT_ID_STG) as string,
+            web3AuthNetwork: (isProd
+                ? process.env.REACT_APP_WEB3_AUTH_NETWORK_PROD
+                : process.env.REACT_APP_WEB3_AUTH_NETWORK_STG) as TORUS_NETWORK_TYPE,
+            verifierId: (isProd
+                ? process.env.REACT_APP_WEB3_AUTH_VERIFIER_ID_PROD
+                : process.env.REACT_APP_WEB3_AUTH_VERIFIER_ID_STG) as string,
+            jwt,
+            chain,
+        }),
     };
 
-    const walletInitParams = {
-        signer: web3AuthSigner,
-    };
-
-    const wallet = await xm.getOrCreateWallet(
-        userIdentifier,
-        isProd ? Blockchain.POLYGON : Blockchain.POLYGON_AMOY,
-        walletInitParams
-    );
-
-    return wallet;
+    return await xm.getOrCreateWallet({ jwt }, chain, walletConfig);
 };
