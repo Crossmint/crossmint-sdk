@@ -57,7 +57,7 @@ export class EVMSmartWallet extends LoggerWrapper {
     /**
      * @returns The transaction hash.
      */
-    public async transfer(toAddress: string, config: TransferType): Promise<string> {
+    public async transferToken(toAddress: string, config: TransferType): Promise<string> {
         return this.logPerformance("TRANSFER", async () => {
             if (this.chain !== config.token.chain) {
                 throw new Error(

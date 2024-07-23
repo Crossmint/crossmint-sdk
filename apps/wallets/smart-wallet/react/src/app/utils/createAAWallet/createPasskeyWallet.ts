@@ -25,9 +25,7 @@ export async function createPasskeyWallet(isProd: boolean) {
 
     const chain = isProd ? Blockchain.POLYGON : Blockchain.POLYGON_AMOY;
 
-    const test = await xm.getOrCreateWallet({ jwt, id: sub }, chain, {
-        signer: { type: "PASSKEY", passkeyName: "testing something!" },
-    });
+    const test = await xm.getOrCreateWallet({ jwt }, chain);
 
     return test;
 }
