@@ -4,7 +4,7 @@ import { TORUS_NETWORK_TYPE, Web3Auth } from "@web3auth/single-factor-auth";
 import type { EIP1193Provider } from "viem";
 
 import {
-    EVMBlockchainIncludingTestnet,
+    EVMBlockchainIncludingTestnet as Blockchain,
     blockchainToChainId,
     blockchainToDisplayName,
 } from "@crossmint/common-sdk-base";
@@ -17,13 +17,14 @@ import {
     getUrlProviderByBlockchain,
 } from "./networks";
 
+export type { TORUS_NETWORK_TYPE } from "@web3auth/single-factor-auth";
+export { EVMBlockchainIncludingTestnet as Blockchain } from "@crossmint/common-sdk-base";
 export type Web3AuthSignerParams = {
-    type: "WEB3_AUTH";
     clientId: string;
     verifierId: string;
     web3AuthNetwork: TORUS_NETWORK_TYPE;
     jwt: string;
-    chain: EVMBlockchainIncludingTestnet;
+    chain: Blockchain;
 };
 
 export async function getWeb3AuthSigner({
