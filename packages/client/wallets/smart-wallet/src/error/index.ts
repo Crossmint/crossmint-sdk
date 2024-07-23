@@ -3,7 +3,6 @@ export const SmartWalletErrors = {
     TRANSFER: "smart-wallet:transfer.error",
     TRANSACTION: "smart-wallet:transaction.error",
     CROSSMINT_SERVICE: "smart-wallet:crossmint-service.error",
-    PASSKEY_PROMPT: "smart-wallet:passkeys.prompt.error",
     UNCATEGORIZED: "smart-wallet:uncategorized", // catch-all error code
 } as const;
 export type SmartWalletErrorCode = (typeof SmartWalletErrors)[keyof typeof SmartWalletErrors];
@@ -41,14 +40,5 @@ export class CrossmintServiceError extends SmartWalletSDKError {
     constructor(message: string, status?: number) {
         super(message, SmartWalletErrors.CROSSMINT_SERVICE);
         this.status = status;
-    }
-}
-
-export class PasskeyPromptError extends SmartWalletSDKError {
-    public passkeyName: string;
-
-    constructor(passkeyName: string) {
-        super("Passkey prompt was either cancelled or timed out", SmartWalletErrors.PASSKEY_PROMPT);
-        this.passkeyName = passkeyName;
     }
 }

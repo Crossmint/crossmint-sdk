@@ -18,9 +18,7 @@ export {
     TransferError,
     TransactionError,
     CrossmintServiceError,
-    RunningOnServerError,
     SmartWalletSDKError,
-    PasskeyPromptError,
 } from "./error";
 
 export { SmartWalletSDK } from "./SmartWalletSDK";
