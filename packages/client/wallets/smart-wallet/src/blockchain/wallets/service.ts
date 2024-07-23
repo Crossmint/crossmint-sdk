@@ -113,15 +113,12 @@ export class SmartWalletService {
             );
         }
 
-        if (entryPointVersion === "v0.7" && kernelVersion.startsWith("0.2")) {
+        if (
+            (entryPointVersion === "v0.7" && kernelVersion.startsWith("0.2")) ||
+            (entryPointVersion === "v0.6" && kernelVersion.startsWith("0.3"))
+        ) {
             throw new SmartWalletSDKError(
-                "Unsupported combination: entryPoint v0.7 and kernel version 0.2.x. Please contact support"
-            );
-        }
-
-        if (entryPointVersion === "v0.6" && kernelVersion.startsWith("0.3")) {
-            throw new SmartWalletSDKError(
-                "Unsupported combination: entryPoint v0.6 and kernel version 0.3.x. Please contact support"
+                `Unsupported combination: entryPoint ${entryPointVersion} and kernel version ${kernelVersion}. Please contact support`
             );
         }
 
