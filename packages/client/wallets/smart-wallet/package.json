@@ -30,7 +30,6 @@
     "dependencies": {
         "@crossmint/common-sdk-base": "0.0.13",
         "@datadog/browser-logs": "4.42.2",
-        "@simplewebauthn/browser": "10.0.0",
         "@zerodev/ecdsa-validator": "5.3.1",
         "@zerodev/passkey-validator": "5.3.5",
         "@zerodev/sdk": "5.3.3",
