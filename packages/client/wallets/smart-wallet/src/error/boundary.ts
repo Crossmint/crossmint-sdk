@@ -1,9 +1,12 @@
-import { BaseError } from "viem";
+import { logError } from "@/services/logging";
+import { BaseError, stringify } from "viem";
 
 import { SmartWalletSDKError } from ".";
 
-export class ErrorMapper {
+export class ErrorBoundary {
     public map(error: unknown, fallback: SmartWalletSDKError): SmartWalletSDKError | BaseError {
+        logError(stringify(error));
+
         if (error instanceof SmartWalletSDKError) {
             return error;
         }

@@ -32,7 +32,7 @@ function isSignMethod(method: string): method is SignMethod {
 }
 
 export class AccountClientDecorator {
-    constructor(private readonly errorBoundary: ErrorBoundary) {}
+    constructor(private readonly errorBoundary = new ErrorBoundary()) {}
 
     public decorate<Client extends SmartAccountClient<EntryPoint>>({
         crossmintChain,

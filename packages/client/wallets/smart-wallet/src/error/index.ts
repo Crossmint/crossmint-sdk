@@ -3,7 +3,6 @@ export const SmartWalletErrors = {
     TRANSFER: "smart-wallet:transfer.error",
     TRANSACTION: "smart-wallet:transaction.error",
     CROSSMINT_SERVICE: "smart-wallet:crossmint-service.error",
-    RUNNING_ON_SERVER: "smart-wallet:running-on-server",
     PASSKEY_PROMPT: "smart-wallet:passkeys.prompt.error",
     UNCATEGORIZED: "smart-wallet:uncategorized", // catch-all error code
 } as const;
@@ -42,12 +41,6 @@ export class CrossmintServiceError extends SmartWalletSDKError {
     constructor(message: string, status?: number) {
         super(message, SmartWalletErrors.CROSSMINT_SERVICE);
         this.status = status;
-    }
-}
-
-export class RunningOnServerError extends SmartWalletSDKError {
-    constructor() {
-        super("Smart Wallet SDK should only be used client side.", SmartWalletErrors.RUNNING_ON_SERVER);
     }
 }
 

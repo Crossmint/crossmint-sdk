@@ -3,13 +3,17 @@ import { EVMBlockchainIncludingTestnet, validateAPIKey } from "@crossmint/common
 import { CrossmintWalletService } from "./api/CrossmintWalletService";
 import type { EVMSmartWallet } from "./blockchain/wallets";
 import { SmartWalletService } from "./blockchain/wallets/service";
-import { RunningOnServerError } from "./error";
+import { SmartWalletSDKError } from "./error";
+import { ErrorBoundary } from "./error/boundary";
 import type { SmartWalletSDKInitParams, UserParams, WalletConfig } from "./types/Config";
 import { isClient } from "./utils/environment";
 import { LoggerWrapper, logPerformance } from "./utils/log";
 
 export class SmartWalletSDK extends LoggerWrapper {
-    private constructor(private readonly smartWalletService: SmartWalletService) {
+    private constructor(
+        private readonly smartWalletService: SmartWalletService,
+        private readonly errorBoundary: ErrorBoundary
+    ) {
         super("SmartWalletSDK");
     }
 
@@ -19,7 +23,7 @@ export class SmartWalletSDK extends LoggerWrapper {
      */
     static init({ clientApiKey }: SmartWalletSDKInitParams): SmartWalletSDK {
         if (!isClient()) {
-            throw new RunningOnServerError();
+            throw new SmartWalletSDKError("Smart Wallet SDK should only be used client side.");
         }
 
         const validationResult = validateAPIKey(clientApiKey);
@@ -28,7 +32,7 @@ export class SmartWalletSDK extends LoggerWrapper {
         }
 
         const crossmintService = new CrossmintWalletService(clientApiKey);
-        return new SmartWalletSDK(new SmartWalletService(crossmintService));
+        return new SmartWalletSDK(new SmartWalletService(crossmintService), new ErrorBoundary());
     }
 
     /**
@@ -48,7 +52,14 @@ export class SmartWalletSDK extends LoggerWrapper {
         return logPerformance(
             "GET_OR_CREATE_WALLET",
             async () => {
-                return await this.smartWalletService.getOrCreate(user, chain, walletConfig);
+                try {
+                    return await this.smartWalletService.getOrCreate(user, chain, walletConfig);
+                } catch (error: any) {
+                    throw this.errorBoundary.map(
+                        error,
+                        new SmartWalletSDKError(`Wallet creation failed ${error.message ?? ""}.`)
+                    );
+                }
             },
             { user, chain }
         );

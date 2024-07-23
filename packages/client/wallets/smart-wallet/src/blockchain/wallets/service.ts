@@ -1,4 +1,3 @@
-import { ErrorMapper } from "@/error/mapper";
 import type { SignerData } from "@/types/API";
 import { type KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
 import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
@@ -32,8 +31,7 @@ export class SmartWalletService {
         private readonly crossmintWalletService: CrossmintWalletService,
         private readonly eoaWalletService = new EOAWalletService(),
         private readonly passkeyWalletService = new PasskeyWalletService(crossmintWalletService),
-        private readonly errorMapper = new ErrorMapper(),
-        private readonly clientDecorator = new AccountClientDecorator(errorMapper)
+        private readonly clientDecorator = new AccountClientDecorator()
     ) {}
 
     public async getOrCreate(
@@ -51,39 +49,32 @@ export class SmartWalletService {
             entryPoint,
             kernelVersion,
         });
-        try {
-            await this.crossmintWalletService.storeSmartWallet(user, {
-                type: ZERO_DEV_TYPE,
-                smartContractWalletAddress: account.address,
-                signerData,
-                version: CURRENT_VERSION,
-                baseLayer: "evm",
-                chainId: blockchainToChainId(chain),
-                entryPointVersion: entryPoint.version,
-                kernelVersion,
-            });
 
-            const kernelAccountClient: SmartWalletClient = createKernelAccountClient({
-                account,
-                chain: getViemNetwork(chain),
-                entryPoint: account.entryPoint,
-                bundlerTransport: http(getBundlerRPC(chain)),
-                ...(usePaymaster(chain) && paymasterMiddleware({ entryPoint: account.entryPoint, chain })),
-            });
+        await this.crossmintWalletService.storeSmartWallet(user, {
+            type: ZERO_DEV_TYPE,
+            smartContractWalletAddress: account.address,
+            signerData,
+            version: CURRENT_VERSION,
+            baseLayer: "evm",
+            chainId: blockchainToChainId(chain),
+            entryPointVersion: entryPoint.version,
+            kernelVersion,
+        });
 
-            const smartAccountClient = this.clientDecorator.decorate({
-                crossmintChain: chain,
-                signerData,
-                smartAccountClient: kernelAccountClient,
-            });
+        const kernelAccountClient: SmartWalletClient = createKernelAccountClient({
+            account,
+            chain: getViemNetwork(chain),
+            entryPoint: account.entryPoint,
+            bundlerTransport: http(getBundlerRPC(chain)),
+            ...(usePaymaster(chain) && paymasterMiddleware({ entryPoint: account.entryPoint, chain })),
+        });
 
-            return new EVMSmartWallet(this.crossmintWalletService, smartAccountClient, publicClient, chain);
-        } catch (error: any) {
-            throw this.errorMapper.map(
-                error,
-                new SmartWalletSDKError(`Error creating the Wallet ${error?.message ? `: ${error.message}` : ""}`)
-            );
-        }
+        const smartAccountClient = this.clientDecorator.decorate({
+            crossmintChain: chain,
+            smartAccountClient: kernelAccountClient,
+        });
+
+        return new EVMSmartWallet(this.crossmintWalletService, smartAccountClient, publicClient, chain);
     }
 
     private constructAccount(params: WalletCreationParams): Promise<{
