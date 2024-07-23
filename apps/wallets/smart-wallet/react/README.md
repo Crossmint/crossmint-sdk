@@ -41,6 +41,10 @@ REACT_APP_WEB3_AUTH_NETWORK_PROD=your_web3_auth_network_for_production
 REACT_APP_WEB3_AUTH_NETWORK_STG=your_web3_auth_network_for_staging
 REACT_APP_WEB3_AUTH_VERIFIER_ID_PROD=your_web3_auth_verifier_id_for_production
 REACT_APP_WEB3_AUTH_VERIFIER_ID_STG=your_web3_auth_verifier_id_for_staging
+
+GOOGLE_TEST_EMAIL=
+GOOGLE_TEST_PASSWORD=
+GOOGLE_TEST_ACCOUNT_PRIVATE_KEY=
 ```
 
 ## Starting the Application
@@ -52,3 +56,51 @@ pnpm run dev
 ```
 
 This command will launch the application on `http://localhost:3000` by default, allowing you to view and interact with it in your web browser.
+
+## Playwright setup
+
+Authenticating with Google auth requires adding this file to the project.
+
+add `playwright/.auth/user-session.json` file to your project.
+
+> the file can be empty because it gets auto generated via google auth.
+
+### Running the tests
+
+Runs the end-to-end tests.
+
+```bash
+pnpm exec playwright test
+```
+
+Starts the interactive UI mode.
+
+```bash
+pnpm exec playwright test --ui
+```
+
+Runs the tests only on Desktop Chrome.
+
+```bash
+pnpm exec playwright test --project=chromium
+```
+
+Runs the tests in a specific file.
+
+```bash
+pnpm exec playwright test example
+```
+
+Runs the tests in debug mode.
+
+```bash
+pnpm exec playwright test --debug
+
+```
+
+Auto generate tests with Codegen.
+
+```bash
+pnpm exec playwright codegen
+
+```
