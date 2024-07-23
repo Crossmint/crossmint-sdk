@@ -2,6 +2,7 @@ import { EVMBlockchainIncludingTestnet, validateAPIKey } from "@crossmint/common
 
 import { CrossmintWalletService } from "./api/CrossmintWalletService";
 import type { EVMSmartWallet } from "./blockchain/wallets";
+import { ClientDecorator } from "./blockchain/wallets/clientDecorator";
 import { SmartWalletService } from "./blockchain/wallets/service";
 import { SmartWalletSDKError } from "./error";
 import { ErrorBoundary } from "./error/boundary";
@@ -33,7 +34,10 @@ export class SmartWalletSDK extends LoggerWrapper {
 
         const crossmintService = new CrossmintWalletService(clientApiKey);
         const errorBoundary = new ErrorBoundary();
-        return new SmartWalletSDK(new SmartWalletService(crossmintService, errorBoundary), errorBoundary);
+        return new SmartWalletSDK(
+            new SmartWalletService(crossmintService, new ClientDecorator(errorBoundary)),
+            errorBoundary
+        );
     }
 
     /**

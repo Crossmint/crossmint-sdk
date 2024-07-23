@@ -30,8 +30,7 @@ import { paymasterMiddleware, usePaymaster } from "./paymaster";
 export class SmartWalletService {
     constructor(
         private readonly crossmintWalletService: CrossmintWalletService,
-        errorBoundary: ErrorBoundary,
-        private readonly clientDecorator = new ClientDecorator(errorBoundary),
+        private readonly clientDecorator: ClientDecorator,
         private readonly eoaWalletService = new EOAWalletService(),
         private readonly passkeyWalletService = new PasskeyWalletService(crossmintWalletService)
     ) {}
