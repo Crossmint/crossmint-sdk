@@ -1,4 +1,3 @@
-import { ErrorBoundary } from "@/error/boundary";
 import type { SignerData } from "@/types/API";
 import { type KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
 import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
