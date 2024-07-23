@@ -25,12 +25,17 @@ export class ContractMetadataService {
         const credentialCollections: CredentialsCollection[] = [];
 
         for (const collection of collections) {
-            const metadata = await this.getContractMetadata(collection.contractAddress);
-            if (!isVerifiableCredentialContractMetadata(metadata)) {
+            try {
+                const metadata = await this.getContractMetadata(collection.contractAddress);
+                if (!isVerifiableCredentialContractMetadata(metadata)) {
+                    continue;
+                }
+                collection.metadata = metadata;
+                credentialCollections.push(collection);
+            } catch (e: any) {
+                console.error(`Failed to get contract metadata for ${collection.contractAddress}: ${e.message}`);
                 continue;
             }
-            collection.metadata = metadata;
-            credentialCollections.push(collection);
         }
 
         return credentialCollections;
