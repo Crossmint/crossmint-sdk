@@ -1,7 +1,6 @@
 import { SmartWalletSDKError, TransactionError } from "@/error";
-import { ErrorMapper } from "@/error/mapper";
+import { ErrorBoundary } from "@/error/boundary";
 import { logInfo } from "@/services/logging";
-import type { SignerData } from "@/types/API";
 import { gelatoBundlerProperties, usesGelatoBundler } from "@/utils/blockchain";
 import { logPerformance } from "@/utils/log";
 import type { SmartAccountClient } from "permissionless";
@@ -10,94 +9,89 @@ import { stringify } from "viem";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
+const transactionMethods = ["sendTransaction", "writeContract", "sendUserOperation"] as const;
+const signingMethods = ["signMessage", "signTypedMessage"] as const;
+
+function isTxnMethod(method: string): method is (typeof transactionMethods)[number] {
+    return transactionMethods.includes(method as any);
+}
+
+function isSignMethod(method: string): method is (typeof signingMethods)[number] {
+    return signingMethods.includes(method as any);
+}
+
 export class AccountClientDecorator {
-    constructor(private readonly errorMapper: ErrorMapper) {}
+    constructor(private readonly errorBoundary: ErrorBoundary) {}
 
     public decorate<Client extends SmartAccountClient<EntryPoint>>({
         crossmintChain,
         smartAccountClient,
     }: {
         crossmintChain: EVMBlockchainIncludingTestnet;
-        signerData: SignerData;
         smartAccountClient: Client;
     }): Client {
-        return {
-            ...smartAccountClient,
-            signMessage: (args) =>
-                logPerformance("CrossmintSmartWallet.signMessage", async () => {
-                    try {
-                        return await smartAccountClient.signMessage(args);
-                    } catch (error) {
-                        throw this.errorMapper.map(
-                            error,
-                            new SmartWalletSDKError(
-                                "Error signing message. If this error persists, please contact support."
-                            )
-                        );
-                    }
-                }),
-            signTypedData: (data) =>
-                logPerformance("CrossmintSmartWallet.signTypedData", async () => {
-                    try {
-                        return await smartAccountClient.signTypedData(data);
-                    } catch (error) {
-                        throw this.errorMapper.map(
-                            error,
-                            new SmartWalletSDKError(
-                                "Error signing typed data. If this error persists, please contact support."
-                            )
-                        );
-                    }
-                }),
-            sendTransaction: (txn) =>
-                logPerformance("CrossmintSmartWallet.sendTransaction", async () => {
-                    try {
-                        txn = {
-                            ...txn,
-                            ...(usesGelatoBundler(crossmintChain) && gelatoBundlerProperties),
-                        };
+        return new Proxy(smartAccountClient, {
+            get: (target, prop, receiver) => {
+                const originalMethod = Reflect.get(target, prop, receiver);
 
-                        logInfo(`[CrossmintSmartWallet.sendTransaction] - params: ${stringify(txn)}`);
-                        return await smartAccountClient.sendTransaction(txn);
-                    } catch (error) {
-                        throw this.errorMapper.map(error, new TransactionError(`Error sending transaction: ${error}`));
-                    }
-                }),
-            writeContract: (txn) =>
-                logPerformance("CrossmintSmartWallet.writeContract", async () => {
-                    try {
-                        txn = {
-                            ...txn,
-                            ...(usesGelatoBundler(crossmintChain) && gelatoBundlerProperties),
-                        };
+                if (
+                    typeof originalMethod !== "function" ||
+                    typeof prop !== "string" ||
+                    !(isSignMethod(prop) || isTxnMethod(prop))
+                ) {
+                    return originalMethod;
+                }
 
-                        logInfo(`[CrossmintSmartWallet.writeContract] - params: ${stringify(txn)}`);
-                        return await smartAccountClient.writeContract(txn);
-                    } catch (error) {
-                        throw this.errorMapper.map(error, new TransactionError(`Error writing to contract: ${error}`));
-                    }
-                }),
-            sendUserOperation: ({ userOperation, middleware, account }) =>
-                logPerformance("CrossmintSmartWallet.sendUserOperation", async () => {
-                    try {
-                        const params = {
-                            userOperation: {
-                                ...userOperation,
-                                ...(usesGelatoBundler(crossmintChain) && gelatoBundlerProperties),
-                            },
-                            middleware,
-                            account,
-                        };
+                return (...args: any[]) =>
+                    logPerformance(`CrossmintSmartWallet.${prop}`, () =>
+                        this.execute(target, prop, originalMethod, args, crossmintChain)
+                    );
+            },
+        }) as Client;
+    }
 
-                        logInfo(`[CrossmintSmartWallet.sendUserOperation] - params: ${stringify(params)}`);
-                        return smartAccountClient.sendUserOperation(params);
-                    } catch (error) {
-                        throw this.errorMapper.map(
-                            error,
-                            new TransactionError(`Error sending user operation: ${error}`)
-                        );
-                    }
-                }),
-        };
+    private async execute(
+        target: any,
+        prop: string,
+        originalMethod: Function,
+        args: any[],
+        crossmintChain: EVMBlockchainIncludingTestnet
+    ) {
+        try {
+            logInfo(`[CrossmintSmartWallet.${prop}] - params: ${stringify(args)}`);
+            const processedArgs = isTxnMethod(prop) ? this.formatTransaction(prop, crossmintChain, args) : args;
+            return await originalMethod.call(target, processedArgs);
+        } catch (error) {
+            const fallback = isTxnMethod(prop)
+                ? new TransactionError(`Error sending transaction: ${error}`)
+                : new SmartWalletSDKError("Error signing. If this error persists, please contact support.");
+            return this.errorBoundary.map(error, fallback);
+        }
+    }
+
+    private formatTransaction(
+        prop: "sendUserOperation" | "sendTransaction" | "writeContract",
+        crossmintChain: EVMBlockchainIncludingTestnet,
+        args: any
+    ) {
+        if (prop === "sendUserOperation") {
+            const [{ userOperation, middleware, account }] = args as Parameters<
+                SmartAccountClient<EntryPoint>["sendUserOperation"]
+            >;
+            return {
+                userOperation: this.addGelatoBundlerProperties(crossmintChain, userOperation),
+                middleware,
+                account,
+            };
+        }
+
+        return this.addGelatoBundlerProperties(crossmintChain, args[0]);
+    }
+
+    private addGelatoBundlerProperties(crossmintChain: EVMBlockchainIncludingTestnet, txn: any) {
+        if (usesGelatoBundler(crossmintChain)) {
+            return { ...txn, ...gelatoBundlerProperties };
+        }
+        return txn;
     }
 }
