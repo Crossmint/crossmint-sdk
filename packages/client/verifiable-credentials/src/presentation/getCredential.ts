@@ -51,9 +51,9 @@ export class CrossmintCredentialRetrieval {
             }
 
             throw new Error(`Invalid response`);
-        } catch (error) {
-            console.error(error);
-            throw new Error(`Failed to get credential ${JSON.stringify(query)} from crossmint`);
+        } catch (error: any) {
+            console.error(JSON.stringify(error));
+            throw new Error(`Failed to get credential ${JSON.stringify(query)} from crossmint: ${error.message}`);
         }
     }
 }

@@ -55,7 +55,7 @@ describe("getMetadata", () => {
             jest.spyOn(metadataService, "getContractMetadata").mockResolvedValueOnce(mockResponse);
             jest.spyOn(metadataService, "getContractMetadata").mockResolvedValueOnce(null);
 
-            const result = await metadataService.retrieveContractCredentialMetadata(collections);
+            const result = await metadataService.getContractsWithCredentialMetadata(collections);
 
             expect(result).toEqual([{ contractAddress: "contractAddress1", metadata: mockResponse }]);
         });

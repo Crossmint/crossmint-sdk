@@ -2,6 +2,9 @@ import { LitAbility, LitAccessControlConditionResource } from "@lit-protocol/aut
 import * as LitJsSdk from "@lit-protocol/lit-node-client";
 import { AuthSig, LIT_NETWORKS_KEYS, SessionSigsMap } from "@lit-protocol/types";
 
+import { EncryptedVerifiableCredential } from "../types";
+import { isVerifiableCredential } from "../types/utils";
+
 const authNeededCallback = async (params: any) => {
     const authSig = await LitJsSdk.checkAndSignAuthMessage({
         chain: params.chain,
@@ -20,7 +23,7 @@ const LitChain = {
 } as const;
 type LitChain = (typeof LitChain)[keyof typeof LitChain];
 
-const LitNetwork = {
+export const LitNetwork = {
     prodNetwork: "habanero",
     testNetwork: "manzano",
     legacyNetwork: "cayenne",
@@ -102,16 +105,20 @@ export class Lit {
                 `Failed to decrypt file. Hint: Be sure the file was encrypted on the same network, currently using ${this.network} network.`
             );
         }
-
-        const decryptedObj = LitJsSdk.uint8arrayToString(decryptedData?.decryptedFile);
+        const decryptedObj = JSON.parse(LitJsSdk.uint8arrayToString(decryptedData?.decryptedFile));
         return decryptedObj;
     }
 
-    async decrypt(base64Ciphertext: string) {
+    async decrypt(credential: EncryptedVerifiableCredential) {
+        const base64Ciphertext = credential.payload;
         try {
-            return await this.tryDecrypt(base64Ciphertext);
+            const vc = await this.tryDecrypt(base64Ciphertext);
+            if (!isVerifiableCredential(vc)) {
+                throw new Error("Decrypted data is not a valid Verifiable Credential");
+            }
+            return vc;
         } catch (error: any) {
-            console.error("Decryption error", error);
+            console.error("Decryption error", error.message, error);
             if (error.errorCode === "NodeAccessControlConditionsReturnedNotAuthorized") {
                 throw new Error("Unauthorized to decrypt file");
             }

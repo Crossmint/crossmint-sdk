@@ -36,11 +36,13 @@ export function isVerifiableCredential(credential: VerifiableCredentialType): cr
     const fields = [
         "id",
         "credentialSubject",
-        //"expirationDate", expirationDate is optional
+        //"validUntil", validUntil is optional
+        //"description", description is optional
+        //"name", name is optional
         "nft",
         "issuer",
         "type",
-        "issuanceDate",
+        "validFrom",
         "@context",
         "proof",
     ];

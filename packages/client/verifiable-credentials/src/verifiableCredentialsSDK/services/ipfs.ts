@@ -41,8 +41,8 @@ export class IPFSService {
                 const metadata = await response.json();
                 console.debug(`Got file from gateway ${gateway} for ${uri}`);
                 return metadata;
-            } catch (error) {
-                console.error(`Failed to get file for ${uri} with gateway ${gateway}: ${error}`);
+            } catch (error: any) {
+                console.error(`Failed to get file for ${uri} with gateway ${gateway}: ${error.message}`);
             } finally {
                 clearTimeout(timeoutId);
             }
