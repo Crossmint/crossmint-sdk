@@ -5,7 +5,8 @@ import type { EVMSmartWallet } from "./blockchain/wallets";
 import { ClientDecorator } from "./blockchain/wallets/clientDecorator";
 import { SmartWalletService } from "./blockchain/wallets/service";
 import { SmartWalletSDKError } from "./error";
-import { ErrorBoundary } from "./error/boundary";
+import { ErrorProcessor } from "./error/processor";
+import { DatadogProvider } from "./services/logging/DatadogProvider";
 import type { SmartWalletSDKInitParams, UserParams, WalletConfig } from "./types/Config";
 import { isClient } from "./utils/environment";
 import { LoggerWrapper, logPerformance } from "./utils/log";
@@ -13,7 +14,7 @@ import { LoggerWrapper, logPerformance } from "./utils/log";
 export class SmartWalletSDK extends LoggerWrapper {
     private constructor(
         private readonly smartWalletService: SmartWalletService,
-        private readonly errorBoundary: ErrorBoundary
+        private readonly errorBoundary: ErrorProcessor
     ) {
         super("SmartWalletSDK");
     }
@@ -33,7 +34,7 @@ export class SmartWalletSDK extends LoggerWrapper {
         }
 
         const crossmintService = new CrossmintWalletService(clientApiKey);
-        const errorBoundary = new ErrorBoundary();
+        const errorBoundary = new ErrorProcessor(new DatadogProvider());
         return new SmartWalletSDK(
             new SmartWalletService(crossmintService, new ClientDecorator(errorBoundary)),
             errorBoundary

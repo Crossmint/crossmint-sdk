@@ -1,5 +1,5 @@
 import { SmartWalletSDKError, TransactionError } from "@/error";
-import { ErrorBoundary } from "@/error/boundary";
+import { ErrorProcessor } from "@/error/processor";
 import { logInfo } from "@/services/logging";
 import { usesGelatoBundler } from "@/utils/blockchain";
 import { logPerformance } from "@/utils/log";
@@ -47,7 +47,7 @@ const gelatoBundlerProperties = {
  * - Automatic formatting of transactions for Gelato bundler compatibility.
  *  */
 export class ClientDecorator {
-    constructor(private readonly errorBoundary: ErrorBoundary) {}
+    constructor(private readonly errorBoundary: ErrorProcessor) {}
 
     public decorate<Client extends SmartAccountClient<EntryPoint>>({
         crossmintChain,
@@ -92,7 +92,7 @@ export class ClientDecorator {
             const fallback = isTxnMethod(prop)
                 ? new TransactionError(`Error sending transaction: ${error}`)
                 : new SmartWalletSDKError("Error signing. If this error persists, please contact support.");
-            return this.errorBoundary.map(error, fallback);
+            throw this.errorBoundary.map(error, fallback);
         }
     }
 
