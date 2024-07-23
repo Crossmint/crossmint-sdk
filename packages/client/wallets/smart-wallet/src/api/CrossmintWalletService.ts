@@ -1,6 +1,6 @@
 import { PasskeySignerData, StoreSmartWalletParams } from "@/types/API";
 import type { UserParams } from "@/types/Config";
-import { SmartWalletSDKError } from "@/types/Error";
+import { CrossmintServiceError, SmartWalletSDKError } from "@/types/Error";
 
 import type { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
@@ -28,10 +28,11 @@ export class CrossmintWalletService extends BaseCrossmintService {
     }
 
     async getPasskeySigner(user: UserParams): Promise<PasskeySignerData | null> {
+        const errorMessage = "Error fetching passkey validator signer. Please contact support";
         const signers = await this.fetchCrossmintAPI(
             "sdk/smart-wallet/signers?type=passkeys",
             { method: "GET" },
-            "Error fetching passkey validator signer. Please contact support",
+            errorMessage,
             user.jwt
         );
 
@@ -40,7 +41,7 @@ export class CrossmintWalletService extends BaseCrossmintService {
         }
 
         if (signers.length > 1) {
-            throw new SmartWalletSDKError("Passkey Config Error"); // TODO use error as defined by SDK
+            throw new CrossmintServiceError(errorMessage);
         }
 
         return signers[0].signerData;
