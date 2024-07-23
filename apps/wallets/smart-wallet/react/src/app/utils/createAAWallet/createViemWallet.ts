@@ -4,6 +4,7 @@ import { SmartWalletSDK, ViemAccount } from "@crossmint/client-sdk-smart-wallet"
 import { SmartWalletChain } from "@crossmint/client-sdk-smart-wallet";
 
 import { checkAuthState, signInWithGoogle } from "../../auth/FirebaseAuthManager";
+import { env } from "../../env";
 
 export const createViemAAWallet = async (isProd: boolean, privateKey: `0x${string}`) => {
     let jwt = await checkAuthState();
@@ -18,10 +19,10 @@ export const createViemAAWallet = async (isProd: boolean, privateKey: `0x${strin
 
     const xm = isProd
         ? SmartWalletSDK.init({
-              clientApiKey: process.env.REACT_APP_CROSSMINT_API_KEY_PROD || "",
+              clientApiKey: env.REACT_APP_CROSSMINT_API_KEY_PROD || "",
           })
         : SmartWalletSDK.init({
-              clientApiKey: process.env.REACT_APP_CROSSMINT_API_KEY_STG || "",
+              clientApiKey: env.REACT_APP_CROSSMINT_API_KEY_STG || "",
           });
 
     // NOTE: Do NOT do this in production. This is just for demo purposes.

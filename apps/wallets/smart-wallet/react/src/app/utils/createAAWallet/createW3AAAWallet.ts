@@ -3,6 +3,7 @@ import { SmartWalletChain } from "@crossmint/client-sdk-smart-wallet";
 import { TORUS_NETWORK_TYPE, getWeb3AuthSigner } from "@crossmint/client-sdk-smart-wallet-web3auth-adapter";
 
 import { checkAuthState, signInWithGoogle } from "../../auth/FirebaseAuthManager";
+import { env } from "../../env";
 
 export const createW3AAAWallet = async (isProd: boolean) => {
     let jwt = await checkAuthState();
@@ -17,24 +18,24 @@ export const createW3AAAWallet = async (isProd: boolean) => {
 
     const xm = isProd
         ? SmartWalletSDK.init({
-              clientApiKey: process.env.REACT_APP_CROSSMINT_API_KEY_PROD || "",
+              clientApiKey: env.REACT_APP_CROSSMINT_API_KEY_PROD || "",
           })
         : SmartWalletSDK.init({
-              clientApiKey: process.env.REACT_APP_CROSSMINT_API_KEY_STG || "",
+              clientApiKey: env.REACT_APP_CROSSMINT_API_KEY_STG || "",
           });
     const chain = isProd ? SmartWalletChain.POLYGON : SmartWalletChain.POLYGON_AMOY;
 
     const walletConfig = {
         signer: await getWeb3AuthSigner({
             clientId: (isProd
-                ? process.env.REACT_APP_WEB3_AUTH_CLIENT_ID_PROD
-                : process.env.REACT_APP_WEB3_AUTH_CLIENT_ID_STG) as string,
+                ? env.REACT_APP_WEB3_AUTH_CLIENT_ID_PROD
+                : env.REACT_APP_WEB3_AUTH_CLIENT_ID_STG) as string,
             web3AuthNetwork: (isProd
-                ? process.env.REACT_APP_WEB3_AUTH_NETWORK_PROD
-                : process.env.REACT_APP_WEB3_AUTH_NETWORK_STG) as TORUS_NETWORK_TYPE,
+                ? env.REACT_APP_WEB3_AUTH_NETWORK_PROD
+                : env.REACT_APP_WEB3_AUTH_NETWORK_STG) as TORUS_NETWORK_TYPE,
             verifierId: (isProd
-                ? process.env.REACT_APP_WEB3_AUTH_VERIFIER_ID_PROD
-                : process.env.REACT_APP_WEB3_AUTH_VERIFIER_ID_STG) as string,
+                ? env.REACT_APP_WEB3_AUTH_VERIFIER_ID_PROD
+                : env.REACT_APP_WEB3_AUTH_VERIFIER_ID_STG) as string,
             jwt,
             chain,
         }),
