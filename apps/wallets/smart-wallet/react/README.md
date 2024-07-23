@@ -61,7 +61,7 @@ This command will launch the application on `http://localhost:3000` by default, 
 
 Authenticating with Google auth requires adding this file to the project.
 
-add `playwright/.auth/user-session.json` file to your project.
+add `playwright/.auth/user-session.json` to the root of this app.
 
 > the file can be empty because it gets auto generated via google auth.
 
