@@ -9,14 +9,25 @@ import { stringify } from "viem";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
-const transactionMethods = ["sendTransaction", "writeContract", "sendUserOperation"] as const;
-const signingMethods = ["signMessage", "signTypedMessage"] as const;
+const transactionMethods = [
+    "sendTransaction",
+    "writeContract",
+    "sendUserOperation",
+] as const satisfies readonly (keyof SmartAccountClient<EntryPoint>)[];
 
-function isTxnMethod(method: string): method is (typeof transactionMethods)[number] {
+const signingMethods = [
+    "signMessage",
+    "signTypedData",
+] as const satisfies readonly (keyof SmartAccountClient<EntryPoint>)[];
+
+type TxnMethod = (typeof transactionMethods)[number];
+type SignMethod = (typeof signingMethods)[number];
+
+function isTxnMethod(method: string): method is TxnMethod {
     return transactionMethods.includes(method as any);
 }
 
-function isSignMethod(method: string): method is (typeof signingMethods)[number] {
+function isSignMethod(method: string): method is SignMethod {
     return signingMethods.includes(method as any);
 }
 
@@ -50,9 +61,9 @@ export class AccountClientDecorator {
         }) as Client;
     }
 
-    private async execute(
-        target: any,
-        prop: string,
+    private async execute<M extends TxnMethod | SignMethod>(
+        target: SmartAccountClient<EntryPoint>,
+        prop: M,
         originalMethod: Function,
         args: any[],
         crossmintChain: EVMBlockchainIncludingTestnet
@@ -69,11 +80,7 @@ export class AccountClientDecorator {
         }
     }
 
-    private formatTransaction(
-        prop: "sendUserOperation" | "sendTransaction" | "writeContract",
-        crossmintChain: EVMBlockchainIncludingTestnet,
-        args: any
-    ) {
+    private formatTransaction(prop: TxnMethod, crossmintChain: EVMBlockchainIncludingTestnet, args: any) {
         if (prop === "sendUserOperation") {
             const [{ userOperation, middleware, account }] = args as Parameters<
                 SmartAccountClient<EntryPoint>["sendUserOperation"]
