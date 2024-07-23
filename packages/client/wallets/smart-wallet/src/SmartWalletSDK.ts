@@ -32,7 +32,8 @@ export class SmartWalletSDK extends LoggerWrapper {
         }
 
         const crossmintService = new CrossmintWalletService(clientApiKey);
-        return new SmartWalletSDK(new SmartWalletService(crossmintService), new ErrorBoundary());
+        const errorBoundary = new ErrorBoundary();
+        return new SmartWalletSDK(new SmartWalletService(crossmintService, errorBoundary), errorBoundary);
     }
 
     /**

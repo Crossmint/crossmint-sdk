@@ -1,3 +1,4 @@
+import { ErrorBoundary } from "@/error/boundary";
 import type { SignerData } from "@/types/API";
 import { type KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
 import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
@@ -21,7 +22,7 @@ import {
 import { CURRENT_VERSION, ZERO_DEV_TYPE } from "../../utils/constants";
 import { getBundlerRPC, getViemNetwork } from "../BlockchainNetworks";
 import { EVMSmartWallet } from "./EVMSmartWallet";
-import { AccountClientDecorator } from "./clientDecorator";
+import { ClientDecorator } from "./clientDecorator";
 import { type EOAWalletParams, EOAWalletService } from "./eoa";
 import { PasskeyWalletService, isPasskeyParams } from "./passkey";
 import { paymasterMiddleware, usePaymaster } from "./paymaster";
@@ -29,9 +30,10 @@ import { paymasterMiddleware, usePaymaster } from "./paymaster";
 export class SmartWalletService {
     constructor(
         private readonly crossmintWalletService: CrossmintWalletService,
+        errorBoundary: ErrorBoundary,
+        private readonly clientDecorator = new ClientDecorator(errorBoundary),
         private readonly eoaWalletService = new EOAWalletService(),
-        private readonly passkeyWalletService = new PasskeyWalletService(crossmintWalletService),
-        private readonly clientDecorator = new AccountClientDecorator()
+        private readonly passkeyWalletService = new PasskeyWalletService(crossmintWalletService)
     ) {}
 
     public async getOrCreate(

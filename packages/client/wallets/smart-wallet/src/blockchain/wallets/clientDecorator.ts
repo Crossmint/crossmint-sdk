@@ -1,7 +1,7 @@
 import { SmartWalletSDKError, TransactionError } from "@/error";
 import { ErrorBoundary } from "@/error/boundary";
 import { logInfo } from "@/services/logging";
-import { gelatoBundlerProperties, usesGelatoBundler } from "@/utils/blockchain";
+import { usesGelatoBundler } from "@/utils/blockchain";
 import { logPerformance } from "@/utils/log";
 import type { SmartAccountClient } from "permissionless";
 import type { EntryPoint } from "permissionless/types/entrypoint";
@@ -31,8 +31,23 @@ function isSignMethod(method: string): method is SignMethod {
     return signingMethods.includes(method as any);
 }
 
-export class AccountClientDecorator {
-    constructor(private readonly errorBoundary = new ErrorBoundary()) {}
+/*
+ * Chain that ZD uses Gelato as for bundler require special parameters:
+ * https://docs.zerodev.app/sdk/faqs/use-with-gelato#transaction-configuration
+ */
+const gelatoBundlerProperties = {
+    maxFeePerGas: "0x0" as any,
+    maxPriorityFeePerGas: "0x0" as any,
+};
+
+/**
+ * A decorator class for SmartAccountClient instances. It enhances the client with:
+ * - Error handling & logging.
+ * - Performance metrics.
+ * - Automatic formatting of transactions for Gelato bundler compatibility.
+ *  */
+export class ClientDecorator {
+    constructor(private readonly errorBoundary: ErrorBoundary) {}
 
     public decorate<Client extends SmartAccountClient<EntryPoint>>({
         crossmintChain,
