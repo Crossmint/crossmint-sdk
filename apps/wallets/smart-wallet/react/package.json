@@ -33,7 +33,8 @@
         }
     },
     "dependencies": {
-        "@crossmint/client-sdk-aa-passkeys-beta": "1.1.0-beta.19",
+        "@crossmint/client-sdk-aa-passkeys-beta": "1.1.0-beta.20",
+        "@crossmint/client-sdk-smart-wallet-web3auth-adapter": "0.2.1",
         "@emotion/react": "^11.11.1",
         "@emotion/styled": "^11.11.0",
         "@headlessui/react": "^1.7.16",

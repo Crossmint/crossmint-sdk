@@ -46,8 +46,6 @@ export const createViemAAWallet = async (isProd: boolean) => {
         type: "VIEM_ACCOUNT",
         account,
     };
-
-    return await xm.getOrCreateWallet({ id: email, jwt }, isProd ? Blockchain.POLYGON : Blockchain.POLYGON_AMOY, {
-        signer,
-    });
+    const chain = isProd ? Blockchain.POLYGON : Blockchain.POLYGON_AMOY;
+    return await xm.getOrCreateWallet({ jwt }, chain, { signer });
 };
