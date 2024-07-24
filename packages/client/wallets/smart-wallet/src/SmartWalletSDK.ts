@@ -1,3 +1,5 @@
+import { stringify } from "viem";
+
 import { EVMBlockchainIncludingTestnet, validateAPIKey } from "@crossmint/common-sdk-base";
 
 import { CrossmintWalletService } from "./api/CrossmintWalletService";
@@ -63,7 +65,7 @@ export class SmartWalletSDK extends LoggerWrapper {
                 } catch (error: any) {
                     throw this.errorProcessor.map(
                         error,
-                        new SmartWalletSDKError(`Wallet creation failed ${error.message ?? ""}.`)
+                        new SmartWalletSDKError(`Wallet creation failed: ${error.message}.`, stringify(error))
                     );
                 }
             },

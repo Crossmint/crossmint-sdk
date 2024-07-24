@@ -77,18 +77,18 @@ export class ClientDecorator {
     ) {
         try {
             logInfo(`[CrossmintSmartWallet.${prop}] - params: ${stringify(args)}`);
-            const processedArgs = isTxnMethod(prop) ? this.formatTxnArgs(prop, crossmintChain, args) : args;
-            return await originalMethod.call(target, ...processedArgs);
-        } catch (error) {
+            const processed = isTxnMethod(prop) ? this.processTxnArgs(prop, crossmintChain, args) : args;
+            return await originalMethod.call(target, ...processed);
+        } catch (error: any) {
             const description = isTxnMethod(prop) ? "signing" : "sending transaction";
             throw this.errorProcessor.map(
                 error,
-                new SmartWalletSDKError(`Error ${description}. If this error persists, please contact support.`)
+                new SmartWalletSDKError(`Error ${description}: ${error.message}`, stringify(error))
             );
         }
     }
 
-    private formatTxnArgs(prop: TxnMethod, crossmintChain: EVMBlockchainIncludingTestnet, args: any[]): any[] {
+    private processTxnArgs(prop: TxnMethod, crossmintChain: EVMBlockchainIncludingTestnet, args: any[]): any[] {
         if (prop === "sendUserOperation") {
             const [{ userOperation, middleware, account }] = args as Parameters<
                 SmartAccountClient<EntryPoint>["sendUserOperation"]

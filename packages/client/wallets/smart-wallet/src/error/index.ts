@@ -7,16 +7,18 @@ export type SmartWalletErrorCode = (typeof SmartWalletErrors)[keyof typeof Smart
 
 export class SmartWalletSDKError extends Error {
     public readonly code: SmartWalletErrorCode;
+    public readonly details?: string;
 
-    constructor(message: string, code: SmartWalletErrorCode = SmartWalletErrors.UNCATEGORIZED) {
+    constructor(message: string, details?: string, code: SmartWalletErrorCode = SmartWalletErrors.UNCATEGORIZED) {
         super(message);
+        this.details = details;
         this.code = code;
     }
 }
 
 export class TransferError extends SmartWalletSDKError {
     constructor(message: string) {
-        super(message, SmartWalletErrors.TRANSFER);
+        super(message, undefined, SmartWalletErrors.TRANSFER);
     }
 }
 
@@ -24,7 +26,7 @@ export class CrossmintServiceError extends SmartWalletSDKError {
     public status?: number;
 
     constructor(message: string, status?: number) {
-        super(message, SmartWalletErrors.CROSSMINT_SERVICE);
+        super(message, undefined, SmartWalletErrors.CROSSMINT_SERVICE);
         this.status = status;
     }
 }
