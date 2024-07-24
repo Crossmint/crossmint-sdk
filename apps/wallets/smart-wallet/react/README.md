@@ -21,7 +21,7 @@ pnpm i
 
 Before running the application, you need to set up your environment variables:
 
-1. Copy the `.env.example` file in the root directory and rename the copy to `.env`.
+1. Copy the `.env.example` file in the root directory in which this README.md is contained and rename the copy to `.env`.
 2. Open the `.env` file and fill in the necessary values as described below:
 
 ```plaintext
@@ -45,7 +45,7 @@ REACT_APP_WEB3_AUTH_VERIFIER_ID_STG=your_web3_auth_verifier_id_for_staging
 
 ## Starting the Application
 
-After configuring your environment variables, you can start the development server by running:
+After configuring your environment variables, start the development server by opening a terminal in the directory containing this `README.md` file and running the following command:
 
 ```bash
 pnpm run dev
