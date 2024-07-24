@@ -14,7 +14,7 @@ import { LoggerWrapper, logPerformance } from "./utils/log";
 export class SmartWalletSDK extends LoggerWrapper {
     private constructor(
         private readonly smartWalletService: SmartWalletService,
-        private readonly errorBoundary: ErrorProcessor
+        private readonly errorProcessor: ErrorProcessor
     ) {
         super("SmartWalletSDK");
     }
@@ -61,7 +61,7 @@ export class SmartWalletSDK extends LoggerWrapper {
                 try {
                     return await this.smartWalletService.getOrCreate(user, chain, walletConfig);
                 } catch (error: any) {
-                    throw this.errorBoundary.map(
+                    throw this.errorProcessor.map(
                         error,
                         new SmartWalletSDKError(`Wallet creation failed ${error.message ?? ""}.`)
                     );
