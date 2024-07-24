@@ -1,3 +1,4 @@
+import { logError } from "@/services/logging";
 import { DatadogProvider } from "@/services/logging/DatadogProvider";
 import { SDK_VERSION } from "@/utils/constants";
 import { BaseError, stringify } from "viem";
@@ -25,6 +26,13 @@ export class ErrorProcessor {
     private record(error: unknown) {
         const message = error instanceof Error ? error.message : String(error);
 
+        logError(`Smart Wallet SDK Error: ${message}`, {
+            stack: error instanceof Error ? error.stack : undefined,
+            name: error instanceof Error ? error.name : "UnknownError",
+            details: stringify(error),
+            domain: window.location.hostname,
+            sdk_version: SDK_VERSION,
+        });
         this.logger.logError(`Smart Wallet SDK Error: ${message}`, {
             stack: error instanceof Error ? error.stack : undefined,
             name: error instanceof Error ? error.name : "UnknownError",

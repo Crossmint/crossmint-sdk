@@ -34,10 +34,10 @@ export class SmartWalletSDK extends LoggerWrapper {
         }
 
         const crossmintService = new CrossmintWalletService(clientApiKey);
-        const errorBoundary = new ErrorProcessor(new DatadogProvider());
+        const errorProcessor = new ErrorProcessor(new DatadogProvider());
         return new SmartWalletSDK(
-            new SmartWalletService(crossmintService, new ClientDecorator(errorBoundary)),
-            errorBoundary
+            new SmartWalletService(crossmintService, new ClientDecorator(errorProcessor)),
+            errorProcessor
         );
     }
 

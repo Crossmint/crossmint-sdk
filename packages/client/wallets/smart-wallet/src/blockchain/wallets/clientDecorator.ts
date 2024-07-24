@@ -68,10 +68,11 @@ export class ClientDecorator {
                     return originalMethod;
                 }
 
-                return (...args: any[]) =>
-                    logPerformance(`CrossmintSmartWallet.${prop}`, () =>
-                        this.execute(target, prop, originalMethod, args, crossmintChain)
-                    );
+                return (...args: any[]) => {
+                    return logPerformance(`CrossmintSmartWallet.${prop}`, () => {
+                        return this.execute(target, prop, originalMethod, args, crossmintChain);
+                    });
+                };
             },
         }) as Client;
     }
@@ -86,8 +87,8 @@ export class ClientDecorator {
     ) {
         try {
             logInfo(`[CrossmintSmartWallet.${prop}] - params: ${stringify(args)}`);
-            const processedArgs = isTxnMethod(prop) ? this.formatTransaction(prop, crossmintChain, args) : args;
-            return await originalMethod.call(target, processedArgs);
+            const processedArgs = isTxnMethod(prop) ? this.formatTxnArgs(prop, crossmintChain, args) : args;
+            return await originalMethod.call(target, ...processedArgs);
         } catch (error) {
             const fallback = isTxnMethod(prop)
                 ? new TransactionError(`Error sending transaction: ${error}`)
@@ -96,25 +97,29 @@ export class ClientDecorator {
         }
     }
 
-    private formatTransaction(prop: TxnMethod, crossmintChain: EVMBlockchainIncludingTestnet, args: any) {
+    private formatTxnArgs(prop: TxnMethod, crossmintChain: EVMBlockchainIncludingTestnet, args: any[]): any[] {
         if (prop === "sendUserOperation") {
             const [{ userOperation, middleware, account }] = args as Parameters<
                 SmartAccountClient<EntryPoint>["sendUserOperation"]
             >;
-            return {
-                userOperation: this.addGelatoBundlerProperties(crossmintChain, userOperation),
-                middleware,
-                account,
-            };
+            return [
+                {
+                    middleware,
+                    account,
+                    userOperation: this.addGelatoBundlerProperties(crossmintChain, userOperation),
+                },
+                ...args.slice(1),
+            ];
         }
 
-        return this.addGelatoBundlerProperties(crossmintChain, args[0]);
+        return [this.addGelatoBundlerProperties(crossmintChain, args[0]), ...args.slice(1)];
     }
 
-    private addGelatoBundlerProperties(crossmintChain: EVMBlockchainIncludingTestnet, txn: any) {
+    private addGelatoBundlerProperties(crossmintChain: EVMBlockchainIncludingTestnet, txnParams: any) {
         if (usesGelatoBundler(crossmintChain)) {
-            return { ...txn, ...gelatoBundlerProperties };
+            return { ...txnParams, ...gelatoBundlerProperties };
         }
-        return txn;
+
+        return txnParams;
     }
 }
