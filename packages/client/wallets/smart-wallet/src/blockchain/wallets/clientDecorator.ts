@@ -31,15 +31,6 @@ function isSignMethod(method: string): method is SignMethod {
     return signingMethods.includes(method as any);
 }
 
-/*
- * Chain that ZD uses Gelato as for bundler require special parameters:
- * https://docs.zerodev.app/sdk/faqs/use-with-gelato#transaction-configuration
- */
-const gelatoBundlerProperties = {
-    maxFeePerGas: "0x0" as any,
-    maxPriorityFeePerGas: "0x0" as any,
-};
-
 /**
  * A decorator class for SmartAccountClient instances. It enhances the client with:
  * - Error handling & logging.
@@ -114,9 +105,13 @@ export class ClientDecorator {
         return [this.addGelatoBundlerProperties(crossmintChain, args[0]), ...args.slice(1)];
     }
 
+    /*
+     * Chain that ZD uses Gelato as for bundler require special parameters:
+     * https://docs.zerodev.app/sdk/faqs/use-with-gelato#transaction-configuration
+     */
     private addGelatoBundlerProperties(crossmintChain: EVMBlockchainIncludingTestnet, txnParams: any) {
         if (usesGelatoBundler(crossmintChain)) {
-            return { ...txnParams, ...gelatoBundlerProperties };
+            return { ...txnParams, maxFeePerGas: "0x0" as any, maxPriorityFeePerGas: "0x0" as any };
         }
 
         return txnParams;
