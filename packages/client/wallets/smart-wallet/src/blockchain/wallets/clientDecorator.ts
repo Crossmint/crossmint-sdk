@@ -47,7 +47,7 @@ const gelatoBundlerProperties = {
  * - Automatic formatting of transactions for Gelato bundler compatibility.
  *  */
 export class ClientDecorator {
-    constructor(private readonly errorBoundary: ErrorProcessor) {}
+    constructor(private readonly errorProcessor: ErrorProcessor) {}
 
     public decorate<Client extends SmartAccountClient<EntryPoint>>({
         crossmintChain,
@@ -68,11 +68,10 @@ export class ClientDecorator {
                     return originalMethod;
                 }
 
-                return (...args: any[]) => {
-                    return logPerformance(`CrossmintSmartWallet.${prop}`, () => {
-                        return this.execute(target, prop, originalMethod, args, crossmintChain);
-                    });
-                };
+                return (...args: any[]) =>
+                    logPerformance(`CrossmintSmartWallet.${prop}`, () =>
+                        this.execute(target, prop, originalMethod, args, crossmintChain)
+                    );
             },
         }) as Client;
     }
@@ -93,7 +92,7 @@ export class ClientDecorator {
             const fallback = isTxnMethod(prop)
                 ? new TransactionError(`Error sending transaction: ${error}`)
                 : new SmartWalletSDKError("Error signing. If this error persists, please contact support.");
-            throw this.errorBoundary.map(error, fallback);
+            throw this.errorProcessor.map(error, fallback);
         }
     }
 
