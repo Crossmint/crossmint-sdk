@@ -1,15 +1,7 @@
 {
     "name": "@crossmint/client-sdk-vue-ui",
-    "version": "1.1.8",
+    "version": "1.1.9",
     "type": "module",
-    "files": [
-        "dist",
-        "src",
-        "LICENSE"
-    ],
-    "main": "./dist/index.cjs",
-    "module": "./dist/index.js",
-    "types": "./dist/index.d.ts",
     "exports": {
         ".": {
             "import": "./dist/index.js",
@@ -18,6 +10,14 @@
         },
         "./dist/index.css": "./dist/style.css"
     },
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "files": [
+        "dist",
+        "src",
+        "LICENSE"
+    ],
     "scripts": {
         "dev": "vite",
         "type-check-and-build": "run-p type-check build-only",
@@ -29,7 +29,7 @@
         "format": "prettier --write src/"
     },
     "dependencies": {
-        "@crossmint/client-sdk-base": "1.1.9",
+        "@crossmint/client-sdk-base": "workspace:*",
         "vue": "3.3.4"
     },
     "devDependencies": {

@@ -11,8 +11,7 @@ import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { Web3Auth } from "@web3auth/single-factor-auth";
 import { providerToSmartAccountSigner } from "permissionless";
 import type { SmartAccountSigner } from "permissionless/accounts";
-import { Address, EIP1193Provider, Hex } from "viem";
-import { Web3 } from "web3";
+import { Address, EIP1193Provider } from "viem";
 
 import {
     EVMBlockchainIncludingTestnet,
@@ -63,13 +62,9 @@ export const createOwnerSigner = logInputOutput(
                 throw new WalletSdkError("Web3auth returned a null signer");
             }
 
-            const web3 = new Web3(provider);
-            const [address] = await web3.eth.getAccounts();
-            return await providerToSmartAccountSigner(provider as EIP1193Provider, { signerAddress: address as Hex });
+            return await providerToSmartAccountSigner(provider as EIP1193Provider);
         } else if (isEIP1193Provider(walletConfig.signer)) {
-            const web3 = new Web3(walletConfig.signer);
-            const [address] = await web3.eth.getAccounts();
-            return await providerToSmartAccountSigner(walletConfig.signer, { signerAddress: address as Hex });
+            return await providerToSmartAccountSigner(walletConfig.signer);
         } else if (isAccount(walletConfig.signer)) {
             return walletConfig.signer.account;
         } else {

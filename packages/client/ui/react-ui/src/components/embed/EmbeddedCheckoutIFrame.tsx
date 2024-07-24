@@ -49,15 +49,15 @@ export default function CrossmintEmbeddedCheckoutIFrame({
             role="crossmint-embedded-checkout.iframe"
             allow="payment *"
             style={{
-                boxShadow: "none !important",
-                border: "none !important",
-                padding: "0px !important",
-                width: "100% !important",
-                minWidth: "100% !important",
-                overflow: "hidden !important",
-                display: "block !important",
+                boxShadow: "none",
+                border: "none",
+                padding: "0px",
+                width: "100%",
+                minWidth: "100%",
+                overflow: "hidden",
+                display: "block",
                 userSelect: "none",
-                transform: "translate(0px) !important",
+                transform: "translate(0px)",
                 opacity: "1",
                 transition: "ease 0s, opacity 0.4s ease 0.1s",
                 height: `${height}px`,

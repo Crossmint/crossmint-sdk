@@ -1,3 +1,4 @@
+import { generateRandomString } from "@/utils/generateRandomString";
 import { z } from "zod";
 
 import {
@@ -9,7 +10,6 @@ import {
     HandshakeParentEvents,
 } from ".";
 import { EventEmitter, EventMap, SendActionArgs, SendActionOptions } from "../EventEmitter";
-import { generateRandomString } from "@/utils/generateRandomString";
 
 export class HandshakeParent<IncomingEvents extends EventMap, OutgoingEvents extends EventMap> extends EventEmitter<
     IncomingEvents,

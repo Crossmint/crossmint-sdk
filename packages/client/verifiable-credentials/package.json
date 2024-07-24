@@ -1,43 +1,43 @@
 {
+    "name": "@crossmint/client-sdk-verifiable-credentials",
+    "version": "3.2.1",
+    "repository": "https://github.com/Crossmint/crossmint-sdk",
+    "license": "Apache-2.0",
     "author": "Paella Labs Inc",
-    "dependencies": {
-        "@crossmint/common-sdk-base": "0.0.6",
-        "@ethersproject/providers": "5.7.2",
-        "@ethersproject/wallet": "5.7.0",
-        "@krebitdao/eip712-vc": "1.0.3",
-        "@lit-protocol/lit-node-client": "3.1.2",
-        "date-fns": "2.30.0",
-        "ethers": "5.7.2"
-    },
-    "devDependencies": {
-        "@crossmint/client-sdk-base": "1.1.9"
-    },
+    "sideEffects": false,
+    "type": "module",
     "exports": {
         "import": "./dist/index.js",
         "require": "./dist/index.cjs"
     },
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
     "files": [
         "dist",
         "src",
         "LICENSE"
     ],
-    "license": "Apache-2.0",
-    "main": "./dist/index.cjs",
-    "module": "./dist/index.js",
-    "name": "@crossmint/client-sdk-verifiable-credentials",
-    "publishConfig": {
-        "access": "public"
-    },
-    "repository": "https://github.com/Crossmint/crossmint-sdk",
     "scripts": {
-        "build": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
-        "clean": "shx rm -rf dist/*",
+        "build": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
+        "dev": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
         "test": "cross-env NODE_ENV=test jest --silent",
-        "test-coverage": "cross-env NODE_ENV=test jest --coverage --silent",
-        "dev": "yarn clean && tsup src/index.ts --format esm,cjs --outDir ./dist --dts --sourcemap --watch"
+        "test-coverage": "cross-env NODE_ENV=test jest --coverage --silent"
     },
-    "sideEffects": false,
-    "type": "module",
-    "types": "./dist/index.d.ts",
-    "version": "2.1.6"
+    "dependencies": {
+        "@crossmint/common-sdk-base": "0.0.6",
+        "@ethersproject/address": "5.7.0",
+        "@ethersproject/constants": "5.7.0",
+        "@ethersproject/contracts": "5.7.0",
+        "@ethersproject/providers": "5.7.2",
+        "@ethersproject/wallet": "5.7.0",
+        "@lit-protocol/auth-helpers": "5.1.0",
+        "@lit-protocol/lit-node-client": "5.1.0",
+        "@lit-protocol/types": "5.1.0",
+        "date-fns": "2.30.0",
+        "ethers": "5.7.2"
+    },
+    "devDependencies": {
+        "@crossmint/client-sdk-base": "1.1.9"
+    }
 }

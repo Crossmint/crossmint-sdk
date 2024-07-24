@@ -6,28 +6,43 @@ on:
 
 jobs:
     build-and-test:
-        name: Build & Test
+        name: build & test
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v3
+            - name: Checkout
+              uses: actions/checkout@v4
 
-            - name: Set Node.js 18.16.0
-              uses: actions/setup-node@v3
-              with:
-                  node-version: 18.16.0
-                  cache: "yarn"
-
-            - name: Run install
-              uses: borales/actions-yarn@v4
-              with:
-                  cmd: install --frozen-lockfile
+            - name: Setup Node.js, PNPM, and install dependencies
+              uses: ./.github/actions/pnpm-install
 
             - name: Build all
-              uses: borales/actions-yarn@v4
-              with:
-                  cmd: build
+              run: pnpm build
 
             - name: Test all
-              uses: borales/actions-yarn@v4
-              with:
-                  cmd: test
+              run: pnpm test
+
+    prettier:
+        name: prettier:check
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js, PNPM, and install dependencies
+              uses: ./.github/actions/pnpm-install
+
+            - name: Check for unpretty files
+              run: pnpm prettier:check
+
+    lint:
+        name: lint
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js, PNPM, and install dependencies
+              uses: ./.github/actions/pnpm-install
+
+            - name: Check for lint errors
+              run: pnpm lint
