@@ -49,8 +49,7 @@ export class APIErrorService {
             const body = await response.json();
             const code = body.code as CrossmintAPIErrorCodes | undefined;
             if (code != null && this.errors[code] != null) {
-                const error = this.errors[code](body);
-                throw error;
+                throw this.errors[code](body);
             }
             if (body.message != null) {
                 throw new CrossmintServiceError(body.message, response.status);
