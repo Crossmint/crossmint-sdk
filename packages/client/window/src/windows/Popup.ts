@@ -39,7 +39,10 @@ async function createPopup(url: string, options: PopupWindowOptions): Promise<Wi
         throw new Error("Failed to open popup window");
     }
 
-    return _window;
+    return new Promise((resolve, reject) => {
+        _window.onload = () => resolve(_window);
+        _window.onerror = () => reject("Failed to load popup window");
+    });
 }
 
 function createPopupString(width: number, height: number): string {
