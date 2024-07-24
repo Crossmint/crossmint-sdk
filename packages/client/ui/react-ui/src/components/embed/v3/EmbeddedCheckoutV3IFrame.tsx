@@ -4,46 +4,41 @@ import { useEffect, useRef, useState } from "react";
 import {
     CrossmintEmbeddedCheckoutV3Props,
     EmbeddedCheckoutV3IFrameEmitter,
-    embeddedCheckoutV3IncomingEvents,
-    embeddedCheckoutV3OutgoingEvents,
+    crossmintEmbeddedCheckoutV3Service,
 } from "@crossmint/client-sdk-base";
-import { IFrameWindow } from "@crossmint/client-sdk-window";
 
 export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props) {
     const [iframeClient, setIframeClient] = useState<EmbeddedCheckoutV3IFrameEmitter | null>(null);
     const [height, setHeight] = useState(0);
 
     const { apiClient } = useCrossmint();
+    const embedV3Service = crossmintEmbeddedCheckoutV3Service({ apiClient });
+
     const ref = useRef<HTMLIFrameElement>(null);
 
-    async function createIFrameClient(iframe: HTMLIFrameElement) {
-        setIframeClient(
-            await IFrameWindow.init(iframe, {
-                incomingEvents: embeddedCheckoutV3IncomingEvents,
-                outgoingEvents: embeddedCheckoutV3OutgoingEvents,
-            })
-        );
-    }
-
     useEffect(() => {
-        if (!ref.current || iframeClient) {
+        const iframe = ref.current;
+        if (!iframe || iframeClient) {
             return;
         }
-        createIFrameClient(ref.current);
+        setIframeClient(embedV3Service.iframe.createClient(iframe));
     }, [ref.current, iframeClient]);
 
     useEffect(() => {
         if (!iframeClient) {
             return;
         }
-
         iframeClient.on("ui:height.changed", (data) => setHeight(data.height));
+
+        return () => {
+            iframeClient.off("ui:height.changed");
+        };
     }, [iframeClient]);
 
     return (
         <iframe
             ref={ref}
-            src={apiClient.buildUrl("/sdk/2024-03-05/embedded-checkout")}
+            src={embedV3Service.iframe.getUrl(props)}
             id="crossmint-embedded-checkout.iframe"
             role="crossmint-embedded-checkout.iframe"
             allow="payment *"

@@ -406,6 +406,9 @@ importers:
 
   packages/client/base:
     dependencies:
+      '@crossmint/client-sdk-window':
+        specifier: workspace:*
+        version: link:../window
       '@crossmint/common-sdk-base':
         specifier: workspace:*
         version: link:../../common/base
@@ -419,9 +422,6 @@ importers:
         specifier: 3.23.8
         version: 3.23.8
     devDependencies:
-      '@crossmint/client-sdk-window':
-        specifier: workspace:*
-        version: link:../window
       '@ethersproject/transactions':
         specifier: 5.7.0
         version: 5.7.0
