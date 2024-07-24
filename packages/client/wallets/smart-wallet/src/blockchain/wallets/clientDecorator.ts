@@ -102,14 +102,21 @@ export class ClientDecorator {
             ];
         }
 
-        return [this.addGelatoBundlerProperties(crossmintChain, args[0]), ...args.slice(1)];
+        const [txn] = args as
+            | Parameters<SmartAccountClient<EntryPoint>["sendTransaction"]>
+            | Parameters<SmartAccountClient<EntryPoint>["writeContract"]>;
+
+        return [this.addGelatoBundlerProperties(crossmintChain, txn), ...args.slice(1)];
     }
 
     /*
      * Chain that ZD uses Gelato as for bundler require special parameters:
      * https://docs.zerodev.app/sdk/faqs/use-with-gelato#transaction-configuration
      */
-    private addGelatoBundlerProperties(crossmintChain: EVMBlockchainIncludingTestnet, txnParams: any) {
+    private addGelatoBundlerProperties(
+        crossmintChain: EVMBlockchainIncludingTestnet,
+        txnParams: { maxFeePerGas?: bigint; maxPriorityFeePerGas?: bigint }
+    ) {
         if (usesGelatoBundler(crossmintChain)) {
             return { ...txnParams, maxFeePerGas: "0x0" as any, maxPriorityFeePerGas: "0x0" as any };
         }
