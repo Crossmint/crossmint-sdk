@@ -21,6 +21,7 @@
     "scripts": {
         "prebuild": "pnpm run create-version-file",
         "build": "tsup src/index.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
+        "build:prod": "pnpm prebuild && tsup src/index.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts",
         "create-version-file": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/consts/version.ts",
         "dev": "tsup src/index.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
         "test": "jest",

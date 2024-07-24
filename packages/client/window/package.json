@@ -20,6 +20,7 @@
     ],
     "scripts": {
         "build": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
+        "build:prod": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --minify --dts",
         "dev": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --dts --sourcemap --watch"
     },
     "dependencies": {
