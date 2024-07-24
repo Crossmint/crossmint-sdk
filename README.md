@@ -32,40 +32,50 @@ git clone https://github.com/Crossmint/crossmint-sdk.git
 
 ```shell
 cd crossmint-sdk
-yarn install
+pnpm install
 ```
 
 3. Build all packages:
 
 ```shell
-yarn build
+pnpm build
 ```
 
 4. Run locally:
 
 ```shell
-cd packages/client/starters/react-ui-starter
-yarn start
+cd apps/payments/create-react-app
+pnpm start
 ```
 
 Remember that if doing changes on the `@crossmint/client-sdk-react-ui` package, they wont be reflected into your project until you rebuild the package and install it back again:
 
 ```
 # Inside `packages/client/ui/react-ui`. Rebuild package
-yarn build
+pnpm build
 ```
 
 ```
 # Inside the starter. Eg. `packages/client/startes/nextjs-starter`. Install rebuilt package
-yarn
+pnpm install
 ```
 
-## Publish (for the crossmint team)
+## Publish
+
+1. Locally, run `pnpm change:add` - the CLI will guide you through selecting which packages you want to update + adding a short message for the changelog
+2. Commit the generated `changeset` file to your PR
+3. The `changeset-bot` will comment on your PR when it detects a new `changeset` has been added
+4. Merge your PR, with the `changeset`, to `main`
+5. A "Release packages" PR will be created/updated by the `changeset-bot`, detailing the pending updates
+6. Merge the "Release packages" PR to main - the new packages will automatically be published on the NPM registry
+7. Done!
+
+## (OLD) Publish (for the crossmint team)
 
 ```shell
-yarn build
-yarn test
-yarn run lerna version
-yarn build
-yarn run publish
+pnpm build
+pnpm test
+pnpm run lerna version
+pnpm build
+pnpm run publish
 ```

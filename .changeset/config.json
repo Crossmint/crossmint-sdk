@@ -3,7 +3,7 @@
     "changelog": ["@changesets/cli/changelog", { "repo": "Crossmint/crossmint-sdk" }],
     "commit": false,
     "fixed": [],
-    "linked": [["**"]],
+    "linked": [],
     "access": "public",
     "baseBranch": "main",
     "updateInternalDependencies": "patch",

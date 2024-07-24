@@ -1,14 +1,14 @@
 import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
-import { crossmintPaymentService_OLD, crossmintUiService_OLD } from "@crossmint/client-sdk-base";
 import { customElement } from "lit/decorators/custom-element.js";
 
+import { crossmintPaymentService_OLD, crossmintUiService_OLD } from "@crossmint/client-sdk-base";
 import type {
+    CrossmintEvent,
+    FiatEmbeddedCheckoutProps,
     Locale,
     MintConfig,
     Recipient,
-    FiatEmbeddedCheckoutProps,
-    CrossmintEvent,
 } from "@crossmint/client-sdk-base";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 

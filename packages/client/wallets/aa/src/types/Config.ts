@@ -1,8 +1,8 @@
 import { TORUS_NETWORK_TYPE } from "@web3auth/single-factor-auth";
 import { EIP1193Provider, LocalAccount } from "viem";
 
-export type CrossmintAASDKInitParams = {
-    apiKey: string;
+export type SmartWalletSDKInitParams = {
+    clientApiKey: string;
 };
 
 export type UserIdentifierParams = {

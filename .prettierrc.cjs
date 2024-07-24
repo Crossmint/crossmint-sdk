@@ -7,5 +7,6 @@ module.exports = {
     importOrder: ["<THIRD_PARTY_MODULES>", "^@crossmint/(.*)$", "^[./]"],
     importOrderSeparation: true,
     importOrderSortSpecifiers: true,
+    importOrderParserPlugins: ["typescript", "jsx", "decorators"],
     plugins: ["@trivago/prettier-plugin-sort-imports"],
 };
