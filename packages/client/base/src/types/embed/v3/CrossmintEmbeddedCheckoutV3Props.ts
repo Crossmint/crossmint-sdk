@@ -23,8 +23,8 @@ export type EmbeddedCheckoutV3Appearance = {
 };
 
 export type EmbeddedCheckoutV3Payment = {
-    fiat?: EmbeddedCheckoutV3FiatPayment;
-    crypto?: EmbeddedCheckoutV3CryptoPayment;
+    fiat: EmbeddedCheckoutV3FiatPayment;
+    crypto: EmbeddedCheckoutV3CryptoPayment;
 };
 
 export type EmbeddedCheckoutV3FiatPayment = {
