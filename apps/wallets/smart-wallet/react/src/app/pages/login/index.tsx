@@ -41,9 +41,7 @@ export const Login = () => {
         setLoading(true);
         let account: EVMSmartWallet;
         try {
-            console.log("creating wallet");
             account = await createPasskeyWallet(isSwitchOn);
-            console.log("successfully created wallet");
         } catch (e) {
             setLoading(false);
             return;
