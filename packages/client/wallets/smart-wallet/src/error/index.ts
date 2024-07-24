@@ -1,7 +1,5 @@
 export const SmartWalletErrors = {
-    NOT_AUTHORIZED: "smart-wallet:not-authorized",
     TRANSFER: "smart-wallet:transfer.error",
-    TRANSACTION: "smart-wallet:transaction.error",
     CROSSMINT_SERVICE: "smart-wallet:crossmint-service.error",
     UNCATEGORIZED: "smart-wallet:uncategorized", // catch-all error code
 } as const;
@@ -16,21 +14,9 @@ export class SmartWalletSDKError extends Error {
     }
 }
 
-export class NotAuthorizedError extends SmartWalletSDKError {
-    constructor(message: string) {
-        super(message, SmartWalletErrors.NOT_AUTHORIZED);
-    }
-}
-
 export class TransferError extends SmartWalletSDKError {
     constructor(message: string) {
         super(message, SmartWalletErrors.TRANSFER);
-    }
-}
-
-export class TransactionError extends SmartWalletSDKError {
-    constructor(message: string) {
-        super(message, SmartWalletErrors.TRANSACTION);
     }
 }
 

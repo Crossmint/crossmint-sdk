@@ -1,4 +1,4 @@
-import { SmartWalletSDKError, TransactionError } from "@/error";
+import { SmartWalletSDKError } from "@/error";
 import { ErrorProcessor } from "@/error/processor";
 import { logInfo } from "@/services/logging";
 import { usesGelatoBundler } from "@/utils/blockchain";
@@ -80,10 +80,11 @@ export class ClientDecorator {
             const processedArgs = isTxnMethod(prop) ? this.formatTxnArgs(prop, crossmintChain, args) : args;
             return await originalMethod.call(target, ...processedArgs);
         } catch (error) {
-            const fallback = isTxnMethod(prop)
-                ? new TransactionError(`Error sending transaction: ${error}`)
-                : new SmartWalletSDKError("Error signing. If this error persists, please contact support.");
-            throw this.errorProcessor.map(error, fallback);
+            const description = isTxnMethod(prop) ? "signing" : "sending transaction";
+            throw this.errorProcessor.map(
+                error,
+                new SmartWalletSDKError(`Error ${description}. If this error persists, please contact support.`)
+            );
         }
     }
 
