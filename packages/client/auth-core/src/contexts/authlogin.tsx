@@ -6,27 +6,16 @@ import { CrossmintEnvironment } from "@/utils";
 import { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 type AuthContextType = {
-    user: User | null;
     login: () => void;
     logout: () => void;
-    fetchCrossmintAPI: (fetchCrossmintParams: FetchCrossmintParams) => Promise<any> | void;
     jwt: string | null;
 }
 
 const AuthContext = createContext<AuthContextType>({
-    user: null,
     login: () => { },
     logout: () => { },
-    fetchCrossmintAPI: () => { },
     jwt: null,
 });
-
-//TODO: define user interface
-type User = {
-    id: string;
-    email: string;
-    name: string;
-}
 
 type AuthProviderParams = {
     apiKey: string;
@@ -38,7 +27,6 @@ type AuthProviderParams = {
 export function AuthProvider({ children, apiKey, environment }: AuthProviderParams) {
     const [jwtToken, setJwtToken] = useState<string | null>(null);
     const [modalOpen, setModalOpen] = useState(false);
-    const [user, setUser] = useState<User | null>(null);
     const crossmintService = useMemo(() => new CrossmintService(apiKey, jwtToken, environment), [apiKey, jwtToken, environment]);
 
     useEffect(() => {
@@ -46,7 +34,6 @@ export function AuthProvider({ children, apiKey, environment }: AuthProviderPara
         const crossmintSessionCookie = crossmintSession ? crossmintSession.split('=')[1] : null;
         if (crossmintSessionCookie) {
             setJwtToken(crossmintSessionCookie);
-            // here we should check how to get the user data
         }
     }, []);
 
@@ -67,33 +54,23 @@ export function AuthProvider({ children, apiKey, environment }: AuthProviderPara
     const logout = () => {
         document.cookie = "crossmint-session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
         setJwtToken(null);
-        setUser(null);
     };
-
-    const fetchCrossmintAPI = useCallback((fetchCrossmintParams: FetchCrossmintParams) => {
-        if (jwtToken == null) {
-            throw new Error("jwtToken is not set");
-        }
-
-        return crossmintService.fetchCrossmintAPI(fetchCrossmintParams);
-    }, [jwtToken, environment]);
 
     useEffect(() => {
         if (jwtToken) {
-            // todo make endpoint in crossmint that returns the user associated with the jwtToken
-            // also, define the interface that we want to share
-            setUser({
-                id: "1",
-                email: "test@test.com",
-                name: "Test",
-            });
+            // TODO: WAL-2562: get user data from crossmint
+            // setUser({
+            //     id: "1",
+            //     email: "test@test.com",
+            //     name: "Test",
+            // });
 
             document.cookie = `crossmint-session=${jwtToken}; path=/;`
         }
     }, [jwtToken]);
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, fetchCrossmintAPI, jwt: jwtToken }}>
+        <AuthContext.Provider value={{ login, logout, jwt: jwtToken }}>
             {children}
             {modalOpen && <AuthModal baseUrl={crossmintService.crossmintBaseUrl} setModalOpen={setModalOpen} setJwtToken={setJwtToken} apiKey={apiKey} />}
         </AuthContext.Provider>

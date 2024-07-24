@@ -34,6 +34,7 @@ export default function AuthModal({
     apiKey: string;
     baseUrl: string;
 }) {
+    const iframeSrc = `${baseUrl}/sdk/auth/frame?api_key=${apiKey}`;
     const iframeRef = useRef<HTMLIFrameElement | null>(null);
     const [iframe, setIframe] = useState<IFrameWindow<IncomingModalIframeEventsType, OutgoingModalIframeEventsType> | null>(null);
 
@@ -56,15 +57,15 @@ export default function AuthModal({
             setModalOpen(false);
         });
 
-        // return () => {
-        //     if (iframe) {
-        //         iframe.off("jwtToken");
+        return () => {
+            if (iframe) {
+                iframe.off("jwtToken");
 
-        //         if (iframe.iframe.contentWindow != null) {
-        //             iframe.iframe.contentWindow.close();
-        //         }
-        //     }
-        // }
+                if (iframe.iframe.contentWindow != null) {
+                    iframe.iframe.contentWindow.close();
+                }
+            }
+        }
     }, [iframe]);
 
 
@@ -75,7 +76,7 @@ export default function AuthModal({
             return;
         }
 
-        const initIframe = await IFrameWindow.init(`${baseUrl}/sdk/auth/frame?api_key=${apiKey}`, {
+        const initIframe = await IFrameWindow.init(iframeSrc, {
             existingIFrame: iframeRef.current,
             incomingEvents: incomingModalIframeEvents,
             outgoingEvents: outgoingModalIframeEvents
@@ -83,7 +84,6 @@ export default function AuthModal({
         setIframe(initIframe);
     }
 
-    const iframeSrc = `${baseUrl}/sdk/auth/frame?api_key=${apiKey}`;
     return (
         <ActionModal show={true} onClose={() => setModalOpen(false)}>
             <iframe ref={iframeRef} src={iframeSrc} onLoad={handleIframeLoaded} style={{ width: "448px", height: "530px", border: "1px solid #D0D5DD", borderRadius: "16px", padding: "48px 40px", backgroundColor: "#FFFFFF", animation: "fadeIn 3s ease-in-out" }} />

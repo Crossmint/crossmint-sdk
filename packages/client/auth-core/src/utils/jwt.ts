@@ -1,6 +1,6 @@
 import { CrossmintService } from "@/services/CrossmintService";
 
-//TODO: this should resolve the user
+// TODO: WAL-2563: this should resolve the user
 export async function verifyCrossmintSessionToken(
     apiKey: string,
     token: string,
