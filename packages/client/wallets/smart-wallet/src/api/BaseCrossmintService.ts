@@ -32,7 +32,6 @@ export abstract class BaseCrossmintService extends LoggerWrapper {
 
     protected async fetchCrossmintAPI(
         endpoint: string,
-        // biome-ignore lint/style/useDefaultParameterLast: <explanation>
         options: { body?: string; method: string } = { method: "GET" },
         onServerErrorMessage: string,
         authToken?: string

@@ -15,13 +15,7 @@ export type CrossmintAPIErrorCodes =
 
 export class APIErrorService {
     constructor(
-        private errors: Partial<
-            Record<
-                CrossmintAPIErrorCodes,
-                // biome-ignore lint/suspicious/noExplicitAny: we should be able to use 'any' when ingesting JSON from external sources
-                (apiResponse: any) => SmartWalletSDKError
-            >
-        > = {
+        private errors: Partial<Record<CrossmintAPIErrorCodes, (apiResponse: any) => SmartWalletSDKError>> = {
             ERROR_JWT_INVALID: () => new JWTInvalidError(),
             ERROR_JWT_DECRYPTION: () => new JWTDecryptionError(),
             ERROR_JWT_EXPIRED: ({ expiredAt }: { expiredAt: string }) => new JWTExpiredError(new Date(expiredAt)),
