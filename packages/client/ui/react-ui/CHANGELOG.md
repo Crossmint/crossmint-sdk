@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.2.1
+
+### Patch Changes
+
+-   65bcbee: embed: fiat fix live updating params
+
 ## 1.2.0
 
 ### Minor Changes
