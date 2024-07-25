@@ -38,6 +38,6 @@
         "ethers": "5.7.2"
     },
     "devDependencies": {
-        "@crossmint/client-sdk-base": "1.2.0"
+        "@crossmint/client-sdk-base": "workspace:*"
     }
 }

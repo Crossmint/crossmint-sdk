@@ -564,8 +564,8 @@ importers:
         version: 5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10)
     devDependencies:
       '@crossmint/client-sdk-base':
-        specifier: 1.1.9
-        version: 1.1.9
+        specifier: workspace:*
+        version: link:../base
 
   packages/client/wallets/aa:
     dependencies:
@@ -1690,9 +1690,6 @@ packages:
 
   '@crossmint/client-sdk-aa@1.0.3':
     resolution: {integrity: sha512-ckQ+b0xOeJ+Su4QSkzfPiFQEMXE9PraAaArINsvElSTfZRII+AJsWq2D7gQ4R9pNDTKSISFYgaY7/VtBCQPTNQ==}
-
-  '@crossmint/client-sdk-base@1.1.9':
-    resolution: {integrity: sha512-w8f3Z4dVHLqgE9E16qQoV+DEwX1UOiE4lKhD0tAQhHgEYrdNOslY8vekks+94/vutqv3zVA2f5CMzRfBA5fe+g==}
 
   '@crossmint/client-sdk-smart-wallet-web3auth-adapter@0.2.1':
     resolution: {integrity: sha512-t7D+abS0bP5LWAXTp/vvAZ6xbX+/mlDe2mXVAbgLCSBTJFHY1csMlgCXnr3kC0wLn8H0pjWMVqC23wk/PKzKhw==}
@@ -16540,12 +16537,6 @@ snapshots:
       - typescript
       - utf-8-validate
       - zod
-
-  '@crossmint/client-sdk-base@1.1.9':
-    dependencies:
-      '@crossmint/common-sdk-base': 0.0.6
-      exponential-backoff: 3.1.1
-      uuid: 9.0.1
 
   '@crossmint/client-sdk-smart-wallet-web3auth-adapter@0.2.1(@babel/runtime@7.24.8)(buffer@6.0.3)(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)':
     dependencies:
