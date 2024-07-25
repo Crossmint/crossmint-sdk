@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-verifiable-credentials",
-    "version": "3.2.1",
+    "version": "3.3.0",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
@@ -38,6 +38,6 @@
         "ethers": "5.7.2"
     },
     "devDependencies": {
-        "@crossmint/client-sdk-base": "1.1.9"
+        "@crossmint/client-sdk-base": "1.2.0"
     }
 }
