@@ -5,13 +5,15 @@ import {
     JWTIdentifierError,
     JWTInvalidError,
     SmartWalletSDKError,
+    UserWalletAlreadyCreatedError,
 } from "@/error";
 
 export type CrossmintAPIErrorCodes =
     | "ERROR_JWT_INVALID"
     | "ERROR_JWT_DECRYPTION"
     | "ERROR_JWT_IDENTIFIER"
-    | "ERROR_JWT_EXPIRED";
+    | "ERROR_JWT_EXPIRED"
+    | "ERROR_USER_WALLET_ALREADY_CREATED";
 
 export class APIErrorService {
     constructor(
@@ -21,6 +23,8 @@ export class APIErrorService {
             ERROR_JWT_EXPIRED: ({ expiredAt }: { expiredAt: string }) => new JWTExpiredError(new Date(expiredAt)),
             ERROR_JWT_IDENTIFIER: ({ identifierKey }: { identifierKey: string }) =>
                 new JWTIdentifierError(identifierKey),
+            ERROR_USER_WALLET_ALREADY_CREATED: ({ userId }: { userId: string }) =>
+                new UserWalletAlreadyCreatedError(userId),
         }
     ) {}
 

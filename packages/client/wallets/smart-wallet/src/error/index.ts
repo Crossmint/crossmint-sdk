@@ -6,6 +6,7 @@ export const SmartWalletErrors = {
     ERROR_JWT_INVALID: "smart-wallet:not-authorized.jwt-invalid",
     ERROR_JWT_DECRYPTION: "smart-wallet:not-authorized.jwt-decryption",
     ERROR_JWT_IDENTIFIER: "smart-wallet:not-authorized.jwt-identifier",
+    ERROR_USER_WALLET_ALREADY_CREATED: "smart-wallet:user-wallet-already-created.error",
     UNCATEGORIZED: "smart-wallet:uncategorized", // catch-all error code
 } as const;
 export type SmartWalletErrorCode = (typeof SmartWalletErrors)[keyof typeof SmartWalletErrors];
@@ -77,5 +78,13 @@ export class JWTIdentifierError extends NotAuthorizedError {
     constructor(identifierKey: string) {
         super(`Missing required identifier '${identifierKey}' in the JWT`);
         this.identifierKey = identifierKey;
+    }
+}
+
+export class UserWalletAlreadyCreatedError extends SmartWalletSDKError {
+    public readonly code = SmartWalletErrors.ERROR_USER_WALLET_ALREADY_CREATED;
+
+    constructor(userId: string) {
+        super(`The user with userId ${userId.toString()} already has a wallet created for this project`);
     }
 }

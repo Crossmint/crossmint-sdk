@@ -22,6 +22,7 @@ export {
     JWTIdentifierError,
     JWTInvalidError,
     NotAuthorizedError,
+    UserWalletAlreadyCreatedError,
 } from "./error";
 
 export { SmartWalletSDK } from "./SmartWalletSDK";
