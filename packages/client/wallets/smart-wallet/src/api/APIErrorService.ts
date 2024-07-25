@@ -1,4 +1,5 @@
 import {
+    AdminAlreadyUsedError,
     CrossmintServiceError,
     JWTDecryptionError,
     JWTExpiredError,
@@ -11,7 +12,8 @@ export type CrossmintAPIErrorCodes =
     | "ERROR_JWT_INVALID"
     | "ERROR_JWT_DECRYPTION"
     | "ERROR_JWT_IDENTIFIER"
-    | "ERROR_JWT_EXPIRED";
+    | "ERROR_JWT_EXPIRED"
+    | "ERROR_ADMIN_SIGNER_ALREADY_USED";
 
 export class APIErrorService {
     constructor(
@@ -21,6 +23,7 @@ export class APIErrorService {
             ERROR_JWT_EXPIRED: ({ expiredAt }: { expiredAt: string }) => new JWTExpiredError(new Date(expiredAt)),
             ERROR_JWT_IDENTIFIER: ({ identifierKey }: { identifierKey: string }) =>
                 new JWTIdentifierError(identifierKey),
+            ERROR_ADMIN_SIGNER_ALREADY_USED: () => new AdminAlreadyUsedError(),
         }
     ) {}
 
