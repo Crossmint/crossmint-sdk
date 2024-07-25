@@ -2,10 +2,10 @@ export const SmartWalletErrors = {
     NOT_AUTHORIZED: "smart-wallet:not-authorized",
     TRANSFER: "smart-wallet:transfer.error",
     CROSSMINT_SERVICE: "smart-wallet:crossmint-service.error",
-    ERROR_JWT_EXPIRED: "smart-wallet:jwt-expired",
-    ERROR_JWT_INVALID: "smart-wallet:jwt-invalid",
-    ERROR_JWT_DECRYPTION: "smart-wallet:jwt-decryption",
-    ERROR_JWT_IDENTIFIER: "smart-wallet:jwt-identifier",
+    ERROR_JWT_EXPIRED: "smart-wallet:not-authorized.jwt-expired",
+    ERROR_JWT_INVALID: "smart-wallet:not-authorized.jwt-invalid",
+    ERROR_JWT_DECRYPTION: "smart-wallet:not-authorized.jwt-decryption",
+    ERROR_JWT_IDENTIFIER: "smart-wallet:not-authorized.jwt-identifier",
     UNCATEGORIZED: "smart-wallet:uncategorized", // catch-all error code
 } as const;
 export type SmartWalletErrorCode = (typeof SmartWalletErrors)[keyof typeof SmartWalletErrors];
