@@ -9,6 +9,7 @@ import { createPublicClient, http } from "viem";
 import { EVMBlockchainIncludingTestnet, UserIdentifierParams, validateAPIKey } from "@crossmint/common-sdk-base";
 
 import EOAWalletService from "./blockchain/wallets/eoa";
+import { logger } from "./services/logging";
 import { LoggerWrapper, logPerformance } from "./utils/log";
 import { parseUserIdentifier } from "./utils/user";
 
@@ -17,6 +18,7 @@ export class SmartWalletSDK extends LoggerWrapper {
     private readonly eaoWalletService: EOAWalletService;
 
     private constructor(config: SmartWalletSDKInitParams) {
+        logger.setDDLoggerOnLocalhost(Boolean(config.logging));
         super("SmartWalletSDK");
         this.crossmintService = new CrossmintWalletService(config.clientApiKey);
         this.eaoWalletService = new EOAWalletService(this.crossmintService);

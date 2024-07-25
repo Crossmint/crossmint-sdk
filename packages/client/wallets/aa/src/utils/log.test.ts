@@ -1,4 +1,4 @@
-import { logInfo } from "../services/logging";
+import { logger } from "../services/logging";
 import { LoggerWrapper } from "./log";
 import * as logModule from "./log";
 
@@ -28,9 +28,9 @@ describe("Log test", () => {
             const result = base.someMethod(input);
 
             expect(result).toEqual(addOne(input));
-            expect(logInfo).toHaveBeenCalledTimes(2);
+            expect(logger.logInfo).toHaveBeenCalledTimes(2);
 
-            const logInfoCalls = (logInfo as jest.MockedFunction<typeof logInfo>).mock.calls;
+            const logInfoCalls = (logger.logInfo as jest.MockedFunction<typeof logger.logInfo>).mock.calls;
             expect(logInfoCalls[0][0].includes("input")).toBeTruthy();
             expect(logInfoCalls[0][0].includes(String(input))).toBeTruthy();
             expect(logInfoCalls[1][0].includes("output")).toBeTruthy();
@@ -48,9 +48,9 @@ describe("Log test", () => {
             const result = addTwoWithLogging(input);
 
             expect(result).toEqual(addTwo(input));
-            expect(logInfo).toHaveBeenCalledTimes(2);
+            expect(logger.logInfo).toHaveBeenCalledTimes(2);
 
-            const logInfoCalls = (logInfo as jest.MockedFunction<typeof logInfo>).mock.calls;
+            const logInfoCalls = (logger.logInfo as jest.MockedFunction<typeof logger.logInfo>).mock.calls;
             expect(logInfoCalls[0][0].includes("input")).toBeTruthy();
             expect(logInfoCalls[0][0].includes(String(input))).toBeTruthy();
             expect(logInfoCalls[1][0].includes("output")).toBeTruthy();
@@ -67,9 +67,9 @@ describe("Log test", () => {
             const result = await logModule.logPerformance("addThreeString", () => addThree(input));
 
             expect(result).toEqual(await addThree(input));
-            expect(logInfo).toHaveBeenCalledTimes(1);
+            expect(logger.logInfo).toHaveBeenCalledTimes(1);
 
-            const logInfoCalls = (logInfo as jest.MockedFunction<typeof logInfo>).mock.calls;
+            const logInfoCalls = (logger.logInfo as jest.MockedFunction<typeof logger.logInfo>).mock.calls;
             expect(logInfoCalls[0][0].includes("TIME")).toBeTruthy();
         });
     });
