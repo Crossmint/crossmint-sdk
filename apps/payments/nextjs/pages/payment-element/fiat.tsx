@@ -35,6 +35,7 @@ export default function PaymentElementPage() {
 }
 
 function Content({ count }: { count: number }) {
+    const [email, setEmail] = useState("");
     const [quoteMessage, setQuoteMessage] = useState<InitialQuotePayload | undefined>();
 
     return (
@@ -43,7 +44,7 @@ function Content({ count }: { count: number }) {
 
             <CrossmintPaymentElement
                 environment="staging"
-                clientId="1bd7b6b4-a390-4716-82f3-f78f9f2aa335"
+                clientId="02dbf2b7-bbaa-4fb3-a962-05b65518fd4d"
                 recipient={{ wallet: "0xdC9bb9929b79b62d630A7C3568c979a2843eFd8b" }}
                 mintConfig={{ totalPrice: `${0.001 * count}`, quantity: count }}
                 paymentMethod="fiat"
