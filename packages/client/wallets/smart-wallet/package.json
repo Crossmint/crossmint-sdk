@@ -1,5 +1,5 @@
 {
-    "name": "@crossmint/client-sdk-aa-passkeys-beta",
+    "name": "@crossmint/client-sdk-smart-wallet",
     "version": "0.1.0",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
