@@ -19,7 +19,67 @@ export type EmbeddedCheckoutV3LineItem = {
 };
 
 export type EmbeddedCheckoutV3Appearance = {
-    variables?: Record<string, string>; // TODO: Actual implementation
+    fonts?: Array<{ cssSrc: string }>;
+    variables?: EmbeddedCheckoutV3AppearanceVariables;
+    rules?: EmbeddedCheckoutV3AppearanceRules;
+};
+
+export type EmbeddedCheckoutV3AppearanceVariables = {
+    fontFamily?: string;
+    spacingUnit?: string;
+    fontSizeUnit?: string;
+    borderRadius?: string;
+    colors?: {
+        borderPrimary?: string;
+        backgroundPrimary?: string;
+        textPrimary?: string;
+        textSecondary?: string;
+        danger?: string;
+        accent?: string;
+    };
+};
+
+export type EmbeddedCheckoutV3AppearanceRules = {
+    Label?: {
+        font?: {
+            family?: string;
+            size?: string;
+            weight?: string;
+        };
+        colors?: {
+            text?: string;
+        };
+    };
+    Input?: {
+        borderRadius?: string;
+        font?: {
+            family?: string;
+            size?: string;
+            weight?: string;
+        };
+        colors?: {
+            text?: string;
+            background?: string;
+            border?: string;
+            boxShadow?: string;
+            placeholder?: string;
+        };
+        hover?: {
+            colors?: {
+                text?: string;
+                background?: string;
+                border?: string;
+                boxShadow?: string;
+            };
+        };
+        focus?: {
+            colors?: {
+                background?: string;
+                border?: string;
+                boxShadow?: string;
+            };
+        };
+    };
 };
 
 export type EmbeddedCheckoutV3Payment = {

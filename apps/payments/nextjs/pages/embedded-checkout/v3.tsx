@@ -9,6 +9,7 @@ export default function EmbeddedCheckoutV3Page() {
                 alignItems: "center",
                 justifyContent: "start",
                 padding: "20px",
+                backgroundColor: "#f2f2f2",
             }}
         >
             <div
@@ -29,7 +30,7 @@ export default function EmbeddedCheckoutV3Page() {
                         lineItems={{ collectionLocator: "asdasd" }}
                         payment={{
                             crypto: {
-                                enabled: false,
+                                enabled: true,
                             },
                             fiat: {
                                 enabled: true,
