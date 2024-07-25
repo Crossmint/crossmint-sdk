@@ -4,8 +4,8 @@ import { Address, EIP1193Provider } from "viem";
 
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
+import { SmartWalletSDKError } from "../error";
 import { ViemAccount, WalletConfig } from "../types/Config";
-import { SmartWalletSDKError } from "../types/Error";
 import { logInputOutput } from "./log";
 
 type CreateOwnerSignerInput = {

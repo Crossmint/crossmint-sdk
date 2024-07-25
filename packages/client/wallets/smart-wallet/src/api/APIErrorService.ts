@@ -4,8 +4,8 @@ import {
     JWTExpiredError,
     JWTIdentifierError,
     JWTInvalidError,
-    type SmartWalletSDKError,
-} from "@/types/Error";
+    SmartWalletSDKError,
+} from "@/error";
 
 export type CrossmintAPIErrorCodes =
     | "ERROR_JWT_INVALID"
