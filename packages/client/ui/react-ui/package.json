@@ -30,7 +30,7 @@
         "@crossmint/client-sdk-base": "workspace:*",
         "@crossmint/common-sdk-base": "workspace:*",
         "@ethersproject/transactions": "5.7.0",
-        "@solana/web3.js": "1.78.5",
+        "@solana/web3.js": "1.95.1",
         "bs58": "5.0.0",
         "lodash.isequal": "4.5.0",
         "react-jss": "10.10.0"
