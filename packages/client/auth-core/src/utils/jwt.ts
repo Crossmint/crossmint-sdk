@@ -11,7 +11,7 @@ export async function verifyCrossmintSessionToken(
     let response;
     try {
         response = await crossmintService.fetchCrossmintAPI({
-            endpoint: "/sdk/auth/verifyJWT",
+            endpoint: "/sdk/auth/me",
             options: {
                 method: "POST",
             },
