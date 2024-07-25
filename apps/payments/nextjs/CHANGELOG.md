@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-nextjs-starter
 
+## 1.2.1
+
+### Patch Changes
+
+-   65bcbee: embed: fiat fix live updating params
+-   Updated dependencies [65bcbee]
+    -   @crossmint/client-sdk-react-ui@1.2.1
+
 ## 1.2.0
 
 ### Minor Changes
