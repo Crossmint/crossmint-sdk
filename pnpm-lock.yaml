@@ -116,9 +116,6 @@ importers:
       react-scripts:
         specifier: 5.0.1
         version: 5.0.1(@babel/plugin-syntax-flow@7.22.5(@babel/core@7.22.17))(@babel/plugin-transform-react-jsx@7.22.15(@babel/core@7.22.17))(@types/babel__core@7.20.1)(bufferutil@4.0.7)(esbuild@0.21.5)(eslint@8.57.0)(react@18.2.0)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.3.3))(type-fest@0.21.3)(typescript@5.3.3)(utf-8-validate@5.0.10)(vue-template-compiler@2.7.14)
-      rpc-websockets:
-        specifier: 7.11.0
-        version: 7.11.0
       web-vitals:
         specifier: 3.4.0
         version: 3.4.0
