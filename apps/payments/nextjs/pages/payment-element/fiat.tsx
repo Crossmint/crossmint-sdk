@@ -35,7 +35,6 @@ export default function PaymentElementPage() {
 }
 
 function Content({ count }: { count: number }) {
-    const [email, setEmail] = useState("");
     const [quoteMessage, setQuoteMessage] = useState<InitialQuotePayload | undefined>();
 
     return (
