@@ -1,15 +1,23 @@
+import { stringify } from "viem";
+
 import { EVMBlockchainIncludingTestnet, validateAPIKey } from "@crossmint/common-sdk-base";
 
 import { CrossmintWalletService } from "./api/CrossmintWalletService";
 import type { EVMSmartWallet } from "./blockchain/wallets";
+import { ClientDecorator } from "./blockchain/wallets/clientDecorator";
 import { SmartWalletService } from "./blockchain/wallets/service";
+import { SmartWalletSDKError } from "./error";
+import { ErrorProcessor } from "./error/processor";
+import { DatadogProvider } from "./services/logging/DatadogProvider";
 import type { SmartWalletSDKInitParams, UserParams, WalletConfig } from "./types/Config";
-import { RunningOnServerError } from "./types/Error";
 import { isClient } from "./utils/environment";
 import { LoggerWrapper, logPerformance } from "./utils/log";
 
 export class SmartWalletSDK extends LoggerWrapper {
-    private constructor(private readonly smartWalletService: SmartWalletService) {
+    private constructor(
+        private readonly smartWalletService: SmartWalletService,
+        private readonly errorProcessor: ErrorProcessor
+    ) {
         super("SmartWalletSDK");
     }
 
@@ -19,7 +27,7 @@ export class SmartWalletSDK extends LoggerWrapper {
      */
     static init({ clientApiKey }: SmartWalletSDKInitParams): SmartWalletSDK {
         if (!isClient()) {
-            throw new RunningOnServerError();
+            throw new SmartWalletSDKError("Smart Wallet SDK should only be used client side.");
         }
 
         const validationResult = validateAPIKey(clientApiKey);
@@ -28,7 +36,11 @@ export class SmartWalletSDK extends LoggerWrapper {
         }
 
         const crossmintService = new CrossmintWalletService(clientApiKey);
-        return new SmartWalletSDK(new SmartWalletService(crossmintService));
+        const errorProcessor = new ErrorProcessor(new DatadogProvider());
+        return new SmartWalletSDK(
+            new SmartWalletService(crossmintService, new ClientDecorator(errorProcessor)),
+            errorProcessor
+        );
     }
 
     /**
@@ -48,7 +60,14 @@ export class SmartWalletSDK extends LoggerWrapper {
         return logPerformance(
             "GET_OR_CREATE_WALLET",
             async () => {
-                return await this.smartWalletService.getOrCreate(user, chain, walletConfig);
+                try {
+                    return await this.smartWalletService.getOrCreate(user, chain, walletConfig);
+                } catch (error: any) {
+                    throw this.errorProcessor.map(
+                        error,
+                        new SmartWalletSDKError(`Wallet creation failed: ${error.message}.`, stringify(error))
+                    );
+                }
             },
             { user, chain }
         );

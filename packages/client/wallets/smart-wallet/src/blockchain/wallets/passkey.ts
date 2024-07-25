@@ -1,11 +1,11 @@
-import { CrossmintWalletService } from "@/api/CrossmintWalletService";
-import { PasskeySignerData } from "@/types/API";
-import { PasskeySigner, UserParams, WalletConfig } from "@/types/Config";
-import { AccountAndSigner, WalletCreationParams } from "@/types/internal";
+import type { CrossmintWalletService } from "@/api/CrossmintWalletService";
+import type { PasskeySignerData } from "@/types/API";
+import type { PasskeySigner, UserParams, WalletConfig } from "@/types/Config";
+import type { AccountAndSigner, WalletCreationParams } from "@/types/internal";
 import { WebAuthnMode, deserializePasskeyValidator, toPasskeyValidator } from "@zerodev/passkey-validator";
-import { KernelValidator, createKernelAccount } from "@zerodev/sdk";
+import { type KernelValidator, createKernelAccount } from "@zerodev/sdk";
 import { toWebAuthnKey } from "@zerodev/webauthn-key";
-import { EntryPoint } from "permissionless/types/entrypoint";
+import type { EntryPoint } from "permissionless/types/entrypoint";
 
 import { deserializePasskeyValidatorData, serializePasskeyValidatorData } from "../../utils/passkey";
 
@@ -45,7 +45,10 @@ export class PasskeyWalletService {
             kernelVersion,
         });
 
-        return { signerData: this.getSignerData(validator, walletConfig.signer.passkeyName), account: kernelAccount };
+        return {
+            signerData: this.getSignerData(validator, walletConfig.signer.passkeyName),
+            account: kernelAccount,
+        };
     }
 
     private async getValidator({

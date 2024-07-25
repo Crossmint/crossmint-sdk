@@ -1,9 +1,9 @@
 import { PasskeySignerData, StoreSmartWalletParams } from "@/types/API";
 import type { UserParams } from "@/types/Config";
-import { CrossmintServiceError, SmartWalletSDKError } from "@/types/Error";
 
 import type { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
+import { CrossmintServiceError } from "../error";
 import { BaseCrossmintService } from "./BaseCrossmintService";
 
 export { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
