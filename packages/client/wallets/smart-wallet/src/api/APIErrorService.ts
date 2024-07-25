@@ -4,6 +4,7 @@ import {
     JWTExpiredError,
     JWTIdentifierError,
     JWTInvalidError,
+    OutOfCreditsError,
     SmartWalletSDKError,
 } from "@/error";
 
@@ -37,6 +38,10 @@ export class APIErrorService {
 
         if (response.status >= 500) {
             throw new CrossmintServiceError(onServerErrorMessage, response.status);
+        }
+
+        if (response.status === 402) {
+            throw new OutOfCreditsError();
         }
 
         try {

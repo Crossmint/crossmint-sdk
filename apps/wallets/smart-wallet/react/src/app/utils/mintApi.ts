@@ -99,7 +99,7 @@ export const walletContent = async (account: EVMSmartWallet, isProd: boolean) =>
 };
 
 export const getTokenBalances = async (address: string, isProd: boolean, chain: Blockchain) => {
-    const baseURL = isProd ? "https://www.crossmint.com" : "https://staging.crossmint.com";
+    const baseURL = isProd ? "https://www.crossmint.com" : "http://localhost:3000";
     const apikey = isProd ? process.env.REACT_APP_CROSSMINT_API_KEY_PROD : process.env.REACT_APP_CROSSMINT_API_KEY_STG;
 
     const fetchURL = `${baseURL}/api/unstable/wallets/${chain}:${address}/tokens`;
