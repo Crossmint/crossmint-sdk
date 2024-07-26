@@ -60,7 +60,7 @@ export class PasskeyMismatchError extends SmartWalletSDKError {
     public readonly used?: PasskeyDisplay;
 
     constructor(message: string, required: PasskeyDisplay, used?: PasskeyDisplay) {
-        super(message, SmartWalletErrors.ERROR_ADMIN_MISMATCH);
+        super(message, SmartWalletErrors.ERROR_PASSKEY_MISMATCH);
         this.required = required;
         this.used = used;
     }
