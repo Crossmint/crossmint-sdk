@@ -22,6 +22,8 @@ export {
     JWTIdentifierError,
     JWTInvalidError,
     NotAuthorizedError,
+    UserWalletAlreadyCreatedError,
+    OutOfCreditsError,
     AdminAlreadyUsedError,
     ConfigError,
 } from "./error";
