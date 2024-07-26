@@ -1,6 +1,6 @@
 export abstract class ApiClient {
-    #authHeaders: HeadersInit;
-    constructor(authHeaders: HeadersInit) {
+    #authHeaders?: HeadersInit;
+    constructor(authHeaders?: HeadersInit) {
         this.#authHeaders = authHeaders;
     }
 
