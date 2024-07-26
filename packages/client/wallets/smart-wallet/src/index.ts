@@ -26,6 +26,7 @@ export {
     OutOfCreditsError,
     AdminAlreadyUsedError,
     ConfigError,
+    NonCustodialWalletsNotEnabledError,
 } from "./error";
 
 export { SmartWalletSDK } from "./SmartWalletSDK";
