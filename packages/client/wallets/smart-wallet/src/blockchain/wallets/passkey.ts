@@ -1,13 +1,13 @@
 import { CrossmintWalletService } from "@/api/CrossmintWalletService";
 import { PasskeySignerData } from "@/types/API";
 import { PasskeySigner, UserParams, WalletParams } from "@/types/Config";
-import { SmartWalletSDKError } from "@/types/Error";
 import { AccountAndSigner, WalletCreationParams } from "@/types/internal";
 import { WebAuthnMode, deserializePasskeyValidator, toPasskeyValidator } from "@zerodev/passkey-validator";
-import { KernelValidator, createKernelAccount } from "@zerodev/sdk";
+import { type KernelValidator, createKernelAccount } from "@zerodev/sdk";
 import { toWebAuthnKey } from "@zerodev/webauthn-key";
-import { EntryPoint } from "permissionless/types/entrypoint";
+import type { EntryPoint } from "permissionless/types/entrypoint";
 
+import { SmartWalletSDKError } from "../../error";
 import { deserializePasskeyValidatorData, serializePasskeyValidatorData } from "../../utils/passkey";
 
 export interface PasskeyWalletParams extends WalletCreationParams {

@@ -13,13 +13,15 @@ export type {
 
 export type { TransferType, ERC20TransferType, NFTTransferType, SFTTransferType } from "./types/Tokens";
 
-export type {
-    NotAuthorizedError,
+export {
     TransferError,
-    TransactionError,
     CrossmintServiceError,
-    RunningOnServerError,
     SmartWalletSDKError,
-} from "./types/Error";
+    JWTDecryptionError,
+    JWTExpiredError,
+    JWTIdentifierError,
+    JWTInvalidError,
+    NotAuthorizedError,
+} from "./error";
 
 export { SmartWalletSDK } from "./SmartWalletSDK";

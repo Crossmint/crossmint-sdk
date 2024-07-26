@@ -3,6 +3,7 @@ import type { UserParams } from "@/types/Config";
 
 import type { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
+import { CrossmintServiceError } from "../error";
 import { BaseCrossmintService } from "./BaseCrossmintService";
 
 export { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";

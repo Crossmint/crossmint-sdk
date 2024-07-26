@@ -1,12 +1,14 @@
 import { validateAPIKey } from "@crossmint/common-sdk-base";
 
-import { CrossmintServiceError } from "../types/Error";
+import { CrossmintServiceError } from "../error";
 import { CROSSMINT_DEV_URL, CROSSMINT_PROD_URL, CROSSMINT_STG_URL } from "../utils/constants";
 import { LoggerWrapper, logPerformance } from "../utils/log";
+import { APIErrorService } from "./APIErrorService";
 
 export abstract class BaseCrossmintService extends LoggerWrapper {
     public crossmintAPIHeaders: Record<string, string>;
     protected crossmintBaseUrl: string;
+    protected apiErrorService: APIErrorService;
     private static urlMap: Record<string, string> = {
         development: CROSSMINT_DEV_URL,
         staging: CROSSMINT_STG_URL,
@@ -25,6 +27,7 @@ export abstract class BaseCrossmintService extends LoggerWrapper {
             "x-api-key": apiKey,
         };
         this.crossmintBaseUrl = this.getUrlFromEnv(result.environment);
+        this.apiErrorService = new APIErrorService();
     }
 
     protected async fetchCrossmintAPI(
@@ -46,7 +49,9 @@ export abstract class BaseCrossmintService extends LoggerWrapper {
                         method,
                         headers: {
                             ...this.crossmintAPIHeaders,
-                            ...(authToken != null && { Authorization: `Bearer ${authToken}` }),
+                            ...(authToken != null && {
+                                Authorization: `Bearer ${authToken}`,
+                            }),
                         },
                     });
                 } catch (error) {
@@ -54,12 +59,10 @@ export abstract class BaseCrossmintService extends LoggerWrapper {
                 }
 
                 if (!response.ok) {
-                    // Crossmint throws a generic “An error occurred” error for all 5XX errors.
-                    // We throw a more specific error depending on the endpoint that was called.
-                    // We forward all 4XX errors. This includes rate limit errors.
-                    // It also includes chain not found, as it is a bad request error.
-                    const message = response.status >= 500 ? onServerErrorMessage : await response.text();
-                    throw new CrossmintServiceError(message, response.status);
+                    await this.apiErrorService.throwErrorFromResponse({
+                        response,
+                        onServerErrorMessage,
+                    });
                 }
 
                 return await response.json();

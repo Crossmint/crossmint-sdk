@@ -7,8 +7,8 @@ import { type HttpTransport, createPublicClient, http } from "viem";
 import { blockchainToChainId } from "@crossmint/common-sdk-base";
 
 import type { CrossmintWalletService, EVMBlockchainIncludingTestnet } from "../../api/CrossmintWalletService";
+import { CrossmintServiceError, SmartWalletSDKError } from "../../error";
 import type { EntryPointDetails, UserParams, WalletParams } from "../../types/Config";
-import { CrossmintServiceError, SmartWalletSDKError } from "../../types/Error";
 import {
     SUPPORTED_ENTRYPOINT_VERSIONS,
     SUPPORTED_KERNEL_VERSIONS,
@@ -21,14 +21,15 @@ import {
 import { CURRENT_VERSION, ZERO_DEV_TYPE } from "../../utils/constants";
 import { getBundlerRPC, getViemNetwork } from "../BlockchainNetworks";
 import { EVMSmartWallet } from "./EVMSmartWallet";
+import { ClientDecorator } from "./clientDecorator";
 import { EOAAccountService, type EOAWalletParams } from "./eoa";
 import { PasskeyAccountService, isPasskeyParams } from "./passkey";
 import { paymasterMiddleware, usePaymaster } from "./paymaster";
-import { toCrossmintSmartAccountClient } from "./smartAccount";
 
 export class SmartWalletService {
     constructor(
         private readonly crossmintWalletService: CrossmintWalletService,
+        private readonly clientDecorator: ClientDecorator,
         private readonly accountFactory = new AccountFactory(
             new EOAAccountService(),
             new PasskeyAccountService(crossmintWalletService)
@@ -40,58 +41,48 @@ export class SmartWalletService {
         chain: EVMBlockchainIncludingTestnet,
         walletParams: WalletParams
     ): Promise<EVMSmartWallet> {
-        try {
-            const { entryPoint, kernelVersion, existingSignerConfig } = await this.fetchConfig(user, chain);
-            const publicClient = createPublicClient({ transport: http(getBundlerRPC(chain)) });
+        const { entryPoint, kernelVersion, existingSignerConfig } = await this.fetchConfig(user, chain);
+        const publicClient = createPublicClient({ transport: http(getBundlerRPC(chain)) });
 
-            const { account, signerData } = await this.accountFactory.get(
-                {
-                    chain,
-                    walletParams,
-                    publicClient,
-                    user,
-                    entryPoint,
-                    kernelVersion,
-                },
-                existingSignerConfig
-            );
+        const { account, signerData } = await this.accountFactory.get(
+            {
+                chain,
+                walletParams,
+                publicClient,
+                user,
+                entryPoint,
+                kernelVersion,
+            },
+            existingSignerConfig
+        );
 
-            if (existingSignerConfig == null) {
-                await this.crossmintWalletService.storeSmartWallet(user, {
-                    type: ZERO_DEV_TYPE,
-                    smartContractWalletAddress: account.address,
-                    signerData: signerData,
-                    version: CURRENT_VERSION,
-                    baseLayer: "evm",
-                    chainId: blockchainToChainId(chain),
-                    entryPointVersion: entryPoint.version,
-                    kernelVersion,
-                });
-            }
-
-            const kernelAccountClient: SmartWalletClient = createKernelAccountClient({
-                account,
-                chain: getViemNetwork(chain),
-                entryPoint: account.entryPoint,
-                bundlerTransport: http(getBundlerRPC(chain)),
-                ...(usePaymaster(chain) && paymasterMiddleware({ entryPoint: account.entryPoint, chain })),
+        if (existingSignerConfig == null) {
+            await this.crossmintWalletService.storeSmartWallet(user, {
+                type: ZERO_DEV_TYPE,
+                smartContractWalletAddress: account.address,
+                signerData: signerData,
+                version: CURRENT_VERSION,
+                baseLayer: "evm",
+                chainId: blockchainToChainId(chain),
+                entryPointVersion: entryPoint.version,
+                kernelVersion,
             });
-
-            const smartAccountClient = toCrossmintSmartAccountClient({
-                crossmintChain: chain,
-                smartAccountClient: kernelAccountClient,
-            });
-
-            return new EVMSmartWallet(this.crossmintWalletService, smartAccountClient, publicClient, chain);
-        } catch (error: any) {
-            if (error.code == null) {
-                throw new SmartWalletSDKError(
-                    `Error creating the Wallet ${error?.message ? `: ${error.message}` : ""}`
-                );
-            }
-
-            throw error;
         }
+
+        const kernelAccountClient: SmartWalletClient = createKernelAccountClient({
+            account,
+            chain: getViemNetwork(chain),
+            entryPoint: account.entryPoint,
+            bundlerTransport: http(getBundlerRPC(chain)),
+            ...(usePaymaster(chain) && paymasterMiddleware({ entryPoint: account.entryPoint, chain })),
+        });
+
+        const smartAccountClient = this.clientDecorator.decorate({
+            crossmintChain: chain,
+            smartAccountClient: kernelAccountClient,
+        });
+
+        return new EVMSmartWallet(this.crossmintWalletService, smartAccountClient, publicClient, chain);
     }
 
     private async fetchConfig(
@@ -108,7 +99,7 @@ export class SmartWalletService {
         );
 
         if (!isSupportedKernelVersion(kernelVersion)) {
-            throw new Error(
+            throw new SmartWalletSDKError(
                 `Unsupported kernel version. Supported versions: ${SUPPORTED_KERNEL_VERSIONS.join(
                     ", "
                 )}. Version used: ${kernelVersion}, Please contact support`
@@ -116,22 +107,19 @@ export class SmartWalletService {
         }
 
         if (!isSupportedEntryPointVersion(entryPointVersion)) {
-            throw new Error(
+            throw new SmartWalletSDKError(
                 `Unsupported entry point version. Supported versions: ${SUPPORTED_ENTRYPOINT_VERSIONS.join(
                     ", "
                 )}. Version used: ${entryPointVersion}. Please contact support`
             );
         }
 
-        if (entryPointVersion === "v0.7" && kernelVersion.startsWith("0.2")) {
-            throw new Error(
-                "Unsupported combination: entryPoint v0.7 and kernel version 0.2.x. Please contact support"
-            );
-        }
-
-        if (entryPointVersion === "v0.6" && kernelVersion.startsWith("0.3")) {
-            throw new Error(
-                "Unsupported combination: entryPoint v0.6 and kernel version 0.3.x. Please contact support"
+        if (
+            (entryPointVersion === "v0.7" && kernelVersion.startsWith("0.2")) ||
+            (entryPointVersion === "v0.6" && kernelVersion.startsWith("0.3"))
+        ) {
+            throw new SmartWalletSDKError(
+                `Unsupported combination: entryPoint ${entryPointVersion} and kernel version ${kernelVersion}. Please contact support`
             );
         }
 
