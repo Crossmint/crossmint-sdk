@@ -7,8 +7,8 @@ import { type HttpTransport, createPublicClient, http } from "viem";
 import { blockchainToChainId } from "@crossmint/common-sdk-base";
 
 import type { CrossmintWalletService, EVMBlockchainIncludingTestnet } from "../../api/CrossmintWalletService";
-import type { EntryPointDetails, UserParams, WalletConfig } from "../../types/Config";
-import { SmartWalletSDKError } from "../../types/Error";
+import type { EntryPointDetails, UserParams, WalletParams } from "../../types/Config";
+import { CrossmintServiceError, SmartWalletSDKError } from "../../types/Error";
 import {
     SUPPORTED_ENTRYPOINT_VERSIONS,
     SUPPORTED_KERNEL_VERSIONS,
@@ -21,46 +21,53 @@ import {
 import { CURRENT_VERSION, ZERO_DEV_TYPE } from "../../utils/constants";
 import { getBundlerRPC, getViemNetwork } from "../BlockchainNetworks";
 import { EVMSmartWallet } from "./EVMSmartWallet";
-import { type EOAWalletParams, EOAWalletService } from "./eoa";
-import { PasskeyWalletService, isPasskeyParams } from "./passkey";
+import { EOAAccountService, type EOAWalletParams } from "./eoa";
+import { PasskeyAccountService, isPasskeyParams } from "./passkey";
 import { paymasterMiddleware, usePaymaster } from "./paymaster";
 import { toCrossmintSmartAccountClient } from "./smartAccount";
 
 export class SmartWalletService {
     constructor(
         private readonly crossmintWalletService: CrossmintWalletService,
-        private readonly eoaWalletService = new EOAWalletService(),
-        private readonly passkeyWalletService = new PasskeyWalletService(crossmintWalletService)
+        private readonly accountFactory = new AccountFactory(
+            new EOAAccountService(),
+            new PasskeyAccountService(crossmintWalletService)
+        )
     ) {}
 
     public async getOrCreate(
         user: UserParams,
         chain: EVMBlockchainIncludingTestnet,
-        walletConfig: WalletConfig
+        walletParams: WalletParams
     ): Promise<EVMSmartWallet> {
         try {
-            const { entryPoint, kernelVersion } = await this.fetchVersions(user, chain);
+            const { entryPoint, kernelVersion, existingSignerConfig } = await this.fetchConfig(user, chain);
             const publicClient = createPublicClient({ transport: http(getBundlerRPC(chain)) });
 
-            const { signerData, account } = await this.constructAccount({
-                chain,
-                walletConfig,
-                publicClient,
-                user,
-                entryPoint,
-                kernelVersion,
-            });
+            const { account, signerData } = await this.accountFactory.get(
+                {
+                    chain,
+                    walletParams,
+                    publicClient,
+                    user,
+                    entryPoint,
+                    kernelVersion,
+                },
+                existingSignerConfig
+            );
 
-            await this.crossmintWalletService.storeSmartWallet(user, {
-                type: ZERO_DEV_TYPE,
-                smartContractWalletAddress: account.address,
-                signerData: signerData,
-                version: CURRENT_VERSION,
-                baseLayer: "evm",
-                chainId: blockchainToChainId(chain),
-                entryPointVersion: entryPoint.version,
-                kernelVersion,
-            });
+            if (existingSignerConfig == null) {
+                await this.crossmintWalletService.storeSmartWallet(user, {
+                    type: ZERO_DEV_TYPE,
+                    smartContractWalletAddress: account.address,
+                    signerData: signerData,
+                    version: CURRENT_VERSION,
+                    baseLayer: "evm",
+                    chainId: blockchainToChainId(chain),
+                    entryPointVersion: entryPoint.version,
+                    kernelVersion,
+                });
+            }
 
             const kernelAccountClient: SmartWalletClient = createKernelAccountClient({
                 account,
@@ -87,22 +94,15 @@ export class SmartWalletService {
         }
     }
 
-    private constructAccount(params: WalletCreationParams): Promise<{
-        signerData: SignerData;
-        account: KernelSmartAccount<EntryPoint, HttpTransport>;
-    }> {
-        if (isPasskeyParams(params)) {
-            return this.passkeyWalletService.getAccount(params);
-        } else {
-            return this.eoaWalletService.getAccount(params as EOAWalletParams);
-        }
-    }
-
-    private async fetchVersions(
+    private async fetchConfig(
         user: UserParams,
         chain: EVMBlockchainIncludingTestnet
-    ): Promise<{ entryPoint: EntryPointDetails; kernelVersion: SupportedKernelVersion }> {
-        const { entryPointVersion, kernelVersion } = await this.crossmintWalletService.getSmartWalletConfig(
+    ): Promise<{
+        entryPoint: EntryPointDetails;
+        kernelVersion: SupportedKernelVersion;
+        existingSignerConfig?: SignerData;
+    }> {
+        const { entryPointVersion, kernelVersion, signers } = await this.crossmintWalletService.getSmartWalletConfig(
             user,
             chain
         );
@@ -141,6 +141,41 @@ export class SmartWalletService {
                 address: entryPointVersion === "v0.6" ? ENTRYPOINT_ADDRESS_V06 : ENTRYPOINT_ADDRESS_V07,
             },
             kernelVersion,
+            existingSignerConfig: this.getSigner(signers),
         };
+    }
+
+    private getSigner(signers: any[]): SignerData | undefined {
+        if (signers.length === 0) {
+            return undefined;
+        }
+
+        if (signers.length > 1) {
+            throw new CrossmintServiceError("Invalid wallet signer configuration. Please contact support");
+        }
+
+        return signers[0].signerData;
+    }
+}
+
+class AccountFactory {
+    constructor(private readonly eoa: EOAAccountService, private readonly passkey: PasskeyAccountService) {}
+
+    public get(
+        params: WalletCreationParams,
+        existingSignerConfig?: SignerData
+    ): Promise<{
+        signerData: SignerData;
+        account: KernelSmartAccount<EntryPoint, HttpTransport>;
+    }> {
+        if (isPasskeyParams(params) && existingSignerConfig?.type === "passkeys") {
+            return this.passkey.get(params, existingSignerConfig);
+        }
+
+        if (existingSignerConfig?.type === "eoa") {
+            return this.eoa.get(params as EOAWalletParams, existingSignerConfig);
+        }
+
+        throw new Error("Invalid signer configuration");
     }
 }

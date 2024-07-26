@@ -1,25 +1,28 @@
-import type { EOASigner, WalletConfig } from "@/types/Config";
+import { EOASignerData } from "@/types/API";
+import type { EOASigner, WalletParams } from "@/types/Config";
 import { AccountAndSigner, WalletCreationParams } from "@/types/internal";
 import { createOwnerSigner } from "@/utils/signer";
 import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
 import { createKernelAccount } from "@zerodev/sdk";
 
 export interface EOAWalletParams extends WalletCreationParams {
-    walletConfig: WalletConfig & { signer: EOASigner };
+    walletParams: WalletParams & { signer: EOASigner };
 }
 
-export class EOAWalletService {
-    public async getAccount({
-        chain,
-        publicClient,
-        entryPoint,
-        walletConfig,
-        kernelVersion,
-    }: EOAWalletParams): Promise<AccountAndSigner> {
+export class EOAAccountService {
+    public async get(
+        { chain, publicClient, entryPoint, walletParams, kernelVersion }: EOAWalletParams,
+        existingSignerConfig?: EOASignerData
+    ): Promise<AccountAndSigner> {
         const eoa = await createOwnerSigner({
             chain,
-            walletConfig,
+            walletParams,
         });
+
+        if (existingSignerConfig != null && eoa.address !== existingSignerConfig.eoaAddress) {
+            throw new Error("Ahhhhhhh");
+        }
+
         const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
             signer: eoa,
             entryPoint: entryPoint.address,

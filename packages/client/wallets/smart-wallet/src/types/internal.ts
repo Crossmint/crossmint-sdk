@@ -7,7 +7,7 @@ import type { Chain, Hex, HttpTransport, PublicClient } from "viem";
 import type { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 import type { SignerData } from "./API";
-import type { EntryPointDetails, UserParams, WalletConfig } from "./Config";
+import type { EntryPointDetails, UserParams, WalletParams } from "./Config";
 
 export const SUPPORTED_KERNEL_VERSIONS = ["0.3.1", "0.3.0", "0.2.4"] as const;
 export type SupportedKernelVersion = (typeof SUPPORTED_KERNEL_VERSIONS)[number];
@@ -27,7 +27,7 @@ export interface WalletCreationParams {
     user: UserParams;
     chain: EVMBlockchainIncludingTestnet;
     publicClient: PublicClient<HttpTransport>;
-    walletConfig: WalletConfig;
+    walletParams: WalletParams;
     entryPoint: EntryPointDetails;
     kernelVersion: SupportedKernelVersion;
 }

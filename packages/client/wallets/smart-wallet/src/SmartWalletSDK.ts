@@ -3,7 +3,7 @@ import { EVMBlockchainIncludingTestnet, validateAPIKey } from "@crossmint/common
 import { CrossmintWalletService } from "./api/CrossmintWalletService";
 import type { EVMSmartWallet } from "./blockchain/wallets";
 import { SmartWalletService } from "./blockchain/wallets/service";
-import type { SmartWalletSDKInitParams, UserParams, WalletConfig } from "./types/Config";
+import type { SmartWalletSDKInitParams, UserParams, WalletParams } from "./types/Config";
 import { RunningOnServerError } from "./types/Error";
 import { isClient } from "./utils/environment";
 import { LoggerWrapper, logPerformance } from "./utils/log";
@@ -43,12 +43,12 @@ export class SmartWalletSDK extends LoggerWrapper {
     async getOrCreateWallet(
         user: UserParams,
         chain: EVMBlockchainIncludingTestnet,
-        walletConfig: WalletConfig = { signer: { type: "PASSKEY" } }
+        walletParams: WalletParams = { signer: { type: "PASSKEY" } }
     ): Promise<EVMSmartWallet> {
         return logPerformance(
             "GET_OR_CREATE_WALLET",
             async () => {
-                return await this.smartWalletService.getOrCreate(user, chain, walletConfig);
+                return await this.smartWalletService.getOrCreate(user, chain, walletParams);
             },
             { user, chain }
         );
