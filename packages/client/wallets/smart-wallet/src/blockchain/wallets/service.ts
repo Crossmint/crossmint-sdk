@@ -156,11 +156,11 @@ class AccountFactory {
         signerData: SignerData;
         account: KernelSmartAccount<EntryPoint, HttpTransport>;
     }> {
-        if (isPasskeyParams(params) && existingSignerConfig?.type === "passkeys") {
+        if (isPasskeyParams(params) && (existingSignerConfig == null || existingSignerConfig?.type === "passkeys")) {
             return this.passkey.get(params, existingSignerConfig);
         }
 
-        if (existingSignerConfig?.type === "eoa") {
+        if (existingSignerConfig == null || existingSignerConfig?.type === "eoa") {
             return this.eoa.get(params as EOAWalletParams, existingSignerConfig);
         }
 
