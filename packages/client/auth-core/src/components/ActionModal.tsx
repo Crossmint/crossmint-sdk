@@ -1,7 +1,6 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment, ReactNode } from "react";
 
-
 export type ActionModalProps = {
     show: boolean;
     onClose?: () => void;
@@ -9,10 +8,10 @@ export type ActionModalProps = {
 
 export default function ActionModal({
     show,
-    onClose = () => { },
+    onClose = () => {},
     children,
 }: ActionModalProps & { children: ReactNode }) {
-
+    // WAL-2574 - because of a recent change from another sdk in @headlessui/react, this file started complaining about the types
     return (
         <Transition.Root show={show} as={Fragment}>
             <Dialog
@@ -35,7 +34,6 @@ export default function ActionModal({
                         style={{ zIndex: -10 }}
                     />
                 </Transition.Child>
-
                 <Transition.Child
                     as={Fragment}
                     enter="ease-out duration-400"
