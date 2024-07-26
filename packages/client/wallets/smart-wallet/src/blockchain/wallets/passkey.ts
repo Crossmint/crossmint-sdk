@@ -1,6 +1,7 @@
 import { CrossmintWalletService } from "@/api/CrossmintWalletService";
 import { PasskeySignerData } from "@/types/API";
 import { PasskeySigner, UserParams, WalletParams } from "@/types/Config";
+import { SmartWalletSDKError } from "@/types/Error";
 import { AccountAndSigner, WalletCreationParams } from "@/types/internal";
 import { WebAuthnMode, deserializePasskeyValidator, toPasskeyValidator } from "@zerodev/passkey-validator";
 import { KernelValidator, createKernelAccount } from "@zerodev/sdk";
@@ -33,7 +34,7 @@ export class PasskeyAccountService {
             walletParams.signer.passkeyName != null &&
             existingSignerConfig.passkeyName !== walletParams.signer.passkeyName
         ) {
-            throw new Error("Ahhh");
+            throw new SmartWalletSDKError("Passkey Mismatch");
         }
 
         const validator = await this.getValidator(

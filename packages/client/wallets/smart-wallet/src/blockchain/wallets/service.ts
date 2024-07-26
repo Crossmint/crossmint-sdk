@@ -176,6 +176,6 @@ class AccountFactory {
             return this.eoa.get(params as EOAWalletParams, existingSignerConfig);
         }
 
-        throw new Error("Invalid signer configuration");
+        throw new SmartWalletSDKError("Admin Mismatch");
     }
 }

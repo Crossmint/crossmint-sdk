@@ -1,5 +1,6 @@
 import { EOASignerData } from "@/types/API";
 import type { EOASigner, WalletParams } from "@/types/Config";
+import { SmartWalletSDKError } from "@/types/Error";
 import { AccountAndSigner, WalletCreationParams } from "@/types/internal";
 import { createOwnerSigner } from "@/utils/signer";
 import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
@@ -20,7 +21,7 @@ export class EOAAccountService {
         });
 
         if (existingSignerConfig != null && eoa.address !== existingSignerConfig.eoaAddress) {
-            throw new Error("Ahhhhhhh");
+            throw new SmartWalletSDKError("Admin Mismatch");
         }
 
         const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
