@@ -27,11 +27,11 @@ export class CrossmintApiClient extends ApiClient {
     }
 
     get baseUrl() {
-        let url: string;
         if (this.overrideBaseUrl) {
-            url = this.overrideBaseUrl;
+            return CrossmintApiClient.normalizePath(this.overrideBaseUrl);
         }
 
+        let url: string;
         const { environment } = this.parsedAPIKey;
         switch (environment) {
             case "production":
