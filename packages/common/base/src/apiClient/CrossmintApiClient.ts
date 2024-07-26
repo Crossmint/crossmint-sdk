@@ -10,18 +10,19 @@ export type CrossmintApiClientCtorParams = CrossmintApiClientCtorWithoutExpectat
 export type CrossmintApiClientCtorWithoutExpectationsParams = {
     apiKey: string;
     overrideBaseUrl?: string;
+    extraHeaders?: HeadersInit;
 };
 
 export class CrossmintApiClient extends ApiClient {
     protected parsedAPIKey: ValidateAPIKeyPrefixSuccessResult;
     protected overrideBaseUrl?: string;
 
-    constructor({ apiKey, expectations, overrideBaseUrl }: CrossmintApiClientCtorParams) {
+    constructor({ apiKey, expectations, overrideBaseUrl, extraHeaders }: CrossmintApiClientCtorParams) {
         const apiKeyValidationResult = validateAPIKey(apiKey, expectations);
         if (!apiKeyValidationResult.isValid) {
             throw new Error(apiKeyValidationResult.message);
         }
-        super({ "x-api-key": apiKey });
+        super({ "x-api-key": apiKey, ...extraHeaders });
         this.parsedAPIKey = apiKeyValidationResult;
         this.overrideBaseUrl = overrideBaseUrl;
     }
