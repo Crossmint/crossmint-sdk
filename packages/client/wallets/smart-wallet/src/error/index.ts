@@ -6,6 +6,7 @@ export const SmartWalletErrors = {
     ERROR_JWT_INVALID: "smart-wallet:not-authorized.jwt-invalid",
     ERROR_JWT_DECRYPTION: "smart-wallet:not-authorized.jwt-decryption",
     ERROR_JWT_IDENTIFIER: "smart-wallet:not-authorized.jwt-identifier",
+    ERROR_OUT_OF_CREDITS: "smart-wallet:out-of-credits.error",
     ERROR_WALLET_CONFIG: "smart-wallet:wallet-config.error",
     ERROR_ADMIN_SIGNER_ALREADY_USED: "smart-wallet:wallet-config.admin-signer-already-used",
     UNCATEGORIZED: "smart-wallet:uncategorized", // catch-all error code
@@ -79,6 +80,16 @@ export class JWTIdentifierError extends NotAuthorizedError {
     constructor(identifierKey: string) {
         super(`Missing required identifier '${identifierKey}' in the JWT`);
         this.identifierKey = identifierKey;
+    }
+}
+
+export class OutOfCreditsError extends SmartWalletSDKError {
+    constructor(message?: string) {
+        super(
+            "You've run out of Crossmint API credits. Visit https://docs.crossmint.com/docs/errors for more information",
+            undefined,
+            SmartWalletErrors.ERROR_OUT_OF_CREDITS
+        );
     }
 }
 

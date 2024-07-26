@@ -22,6 +22,7 @@ export {
     JWTIdentifierError,
     JWTInvalidError,
     NotAuthorizedError,
+    OutOfCreditsError,
     AdminAlreadyUsedError,
     ConfigError,
 } from "./error";
