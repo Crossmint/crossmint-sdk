@@ -24,7 +24,7 @@ export class EOAAccountService {
 
         if (existingSignerConfig != null && !equalsIgnoreCase(eoa.address, existingSignerConfig.eoaAddress)) {
             throw new AdminMismatchError(
-                `User '${user.id}' has an existing wallet with an eoa signer '${existingSignerConfig.eoaAddress}', this does not match input eoa signer '${existingSignerConfig.eoaAddress}'.`,
+                `User '${user.id}' has an existing wallet with an eoa signer '${existingSignerConfig.eoaAddress}', this does not match input eoa signer '${eoa.address}'.`,
                 existingSignerConfig,
                 { type: "eoa", eoaAddress: existingSignerConfig.eoaAddress }
             );
