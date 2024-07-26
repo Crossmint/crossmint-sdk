@@ -6,6 +6,8 @@ export const SmartWalletErrors = {
     ERROR_JWT_INVALID: "smart-wallet:not-authorized.jwt-invalid",
     ERROR_JWT_DECRYPTION: "smart-wallet:not-authorized.jwt-decryption",
     ERROR_JWT_IDENTIFIER: "smart-wallet:not-authorized.jwt-identifier",
+    ERROR_WALLET_CONFIG: "smart-wallet:wallet-config.error",
+    ERROR_ADMIN_SIGNER_ALREADY_USED: "smart-wallet:wallet-config.admin-signer-already-used",
     UNCATEGORIZED: "smart-wallet:uncategorized", // catch-all error code
 } as const;
 export type SmartWalletErrorCode = (typeof SmartWalletErrors)[keyof typeof SmartWalletErrors];
@@ -38,7 +40,7 @@ export class CrossmintServiceError extends SmartWalletSDKError {
 
 export class NotAuthorizedError extends SmartWalletSDKError {
     constructor(message: string) {
-        super(message, SmartWalletErrors.NOT_AUTHORIZED);
+        super(message, undefined, SmartWalletErrors.NOT_AUTHORIZED);
     }
 }
 
@@ -77,5 +79,18 @@ export class JWTIdentifierError extends NotAuthorizedError {
     constructor(identifierKey: string) {
         super(`Missing required identifier '${identifierKey}' in the JWT`);
         this.identifierKey = identifierKey;
+    }
+}
+
+export class ConfigError extends SmartWalletSDKError {
+    constructor(message: string) {
+        super(message, undefined, SmartWalletErrors.ERROR_WALLET_CONFIG);
+    }
+}
+
+export class AdminAlreadyUsedError extends ConfigError {
+    public readonly code = SmartWalletErrors.ERROR_ADMIN_SIGNER_ALREADY_USED;
+    constructor() {
+        super("This signer was already used to create another wallet. Please use a different signer.");
     }
 }
