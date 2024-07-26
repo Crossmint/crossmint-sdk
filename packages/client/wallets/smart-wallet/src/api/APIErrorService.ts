@@ -1,9 +1,11 @@
 import {
+    AdminAlreadyUsedError,
     CrossmintServiceError,
     JWTDecryptionError,
     JWTExpiredError,
     JWTIdentifierError,
     JWTInvalidError,
+    OutOfCreditsError,
     SmartWalletSDKError,
     UserWalletAlreadyCreatedError,
 } from "@/error";
@@ -13,7 +15,8 @@ export type CrossmintAPIErrorCodes =
     | "ERROR_JWT_DECRYPTION"
     | "ERROR_JWT_IDENTIFIER"
     | "ERROR_JWT_EXPIRED"
-    | "ERROR_USER_WALLET_ALREADY_CREATED";
+    | "ERROR_USER_WALLET_ALREADY_CREATED"
+    | "ERROR_ADMIN_SIGNER_ALREADY_USED";
 
 export class APIErrorService {
     constructor(
@@ -25,6 +28,7 @@ export class APIErrorService {
                 new JWTIdentifierError(identifierKey),
             ERROR_USER_WALLET_ALREADY_CREATED: ({ userId }: { userId: string }) =>
                 new UserWalletAlreadyCreatedError(userId),
+            ERROR_ADMIN_SIGNER_ALREADY_USED: () => new AdminAlreadyUsedError(),
         }
     ) {}
 
@@ -41,6 +45,10 @@ export class APIErrorService {
 
         if (response.status >= 500) {
             throw new CrossmintServiceError(onServerErrorMessage, response.status);
+        }
+
+        if (response.status === 402) {
+            throw new OutOfCreditsError();
         }
 
         try {
