@@ -25,8 +25,9 @@ export class PopupWindow<IncomingEvents extends EventMap, OutgoingEvents extends
         url: string,
         options: PopupWindowOptions & EventEmitterWithHandshakeOptions<IncomingEvents, OutgoingEvents>
     ) {
+        const popup = await createPopup(url, options);
         return new PopupWindow<IncomingEvents, OutgoingEvents>(
-            await createPopup(url, options),
+            popup,
             options?.targetOrigin || urlToOrigin(url),
             options
         );
@@ -39,7 +40,10 @@ async function createPopup(url: string, options: PopupWindowOptions): Promise<Wi
         throw new Error("Failed to open popup window");
     }
 
-    return _window;
+    return new Promise((resolve, reject) => {
+        _window.onload = () => resolve(_window);
+        _window.onerror = () => reject("Failed to load popup window");
+    });
 }
 
 function createPopupString(width: number, height: number): string {
@@ -49,10 +53,9 @@ function createPopupString(width: number, height: number): string {
                 ? window.top.outerWidth / 2 + window.top.screenX - width / 2
                 : window.outerWidth / 2 + window.screenX - width / 2;
         } catch (e) {
-            console.error(e);
+            console.log("Error could be due to cross-origin policy", e);
+            return (screen.width - width) / 2;
         }
-
-        return window.outerWidth / 2 + window.screenX - width / 2;
     }
 
     function getTop() {
@@ -61,10 +64,10 @@ function createPopupString(width: number, height: number): string {
                 ? window.top.outerHeight / 2 + window.top.screenY - height / 2
                 : window.outerHeight / 2 + window.screenY - height / 2;
         } catch (e) {
+            console.log("Error could be due to cross-origin policy", e);
             console.error(e);
+            return (screen.height - height) / 2;
         }
-
-        return window.outerHeight / 2 + window.screenY - height / 2;
     }
 
     function getChromeVersion() {
