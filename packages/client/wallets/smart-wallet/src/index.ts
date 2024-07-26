@@ -23,6 +23,8 @@ export {
     JWTInvalidError,
     NotAuthorizedError,
     OutOfCreditsError,
+    AdminAlreadyUsedError,
+    ConfigError,
 } from "./error";
 
 export { SmartWalletSDK } from "./SmartWalletSDK";
