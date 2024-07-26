@@ -91,6 +91,6 @@ export class ConfigError extends SmartWalletSDKError {
 export class AdminAlreadyUsedError extends ConfigError {
     public readonly code = SmartWalletErrors.ERROR_ADMIN_SIGNER_ALREADY_USED;
     constructor() {
-        super("This external signer was already used to create another wallet. Please use a different signer.");
+        super("This signer was already used to create another wallet. Please use a different signer.");
     }
 }
