@@ -1,6 +1,7 @@
 import { validateAPIKey } from "@/apiKey/validateAPIKey";
 import { ValidateAPIKeyPrefixExpectations, ValidateAPIKeyPrefixSuccessResult } from "@/apiKey/validateAPIKeyPrefix";
 
+import { environmentToCrossmintBaseURL } from "../apiKey/utils/environmentToCrossmintBaseURL";
 import { ApiClient } from "./ApiClient";
 
 export type CrossmintApiClientCtorParams = CrossmintApiClientCtorWithoutExpectationsParams & {
@@ -29,25 +30,9 @@ export class CrossmintApiClient extends ApiClient {
 
     get baseUrl() {
         if (this.overrideBaseUrl) {
-            return CrossmintApiClient.normalizePath(this.overrideBaseUrl);
+            return ApiClient.normalizePath(this.overrideBaseUrl);
         }
-
-        let url: string;
-        const { environment } = this.parsedAPIKey;
-        switch (environment) {
-            case "production":
-                url = "https://www.crossmint.com";
-                break;
-            case "staging":
-                url = "https://staging.crossmint.com";
-                break;
-            case "development":
-                url = "http://localhost:3000";
-                break;
-            default:
-                throw new Error(`[CrossmintApiClient.baseUrl()] Unknown environment: ${environment}`);
-        }
-
-        return CrossmintApiClient.normalizePath(url);
+        const baseUrl = environmentToCrossmintBaseURL(this.parsedAPIKey.environment);
+        return ApiClient.normalizePath(baseUrl);
     }
 }
