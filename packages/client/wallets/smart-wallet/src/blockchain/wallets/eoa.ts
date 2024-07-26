@@ -1,11 +1,12 @@
 import { EOASignerData } from "@/types/API";
 import type { EOASigner, WalletParams } from "@/types/Config";
 import { AccountAndSigner, WalletCreationParams } from "@/types/internal";
+import { equalsIgnoreCase } from "@/utils/helpers";
 import { createOwnerSigner } from "@/utils/signer";
 import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
 import { createKernelAccount } from "@zerodev/sdk";
 
-import { SmartWalletSDKError } from "../../error";
+import { AdminMismatchError } from "../../error";
 
 export interface EOAWalletParams extends WalletCreationParams {
     walletParams: WalletParams & { signer: EOASigner };
@@ -13,7 +14,7 @@ export interface EOAWalletParams extends WalletCreationParams {
 
 export class EOAAccountService {
     public async get(
-        { chain, publicClient, entryPoint, walletParams, kernelVersion }: EOAWalletParams,
+        { chain, publicClient, entryPoint, walletParams, kernelVersion, user }: EOAWalletParams,
         existingSignerConfig?: EOASignerData
     ): Promise<AccountAndSigner> {
         const eoa = await createOwnerSigner({
@@ -21,8 +22,12 @@ export class EOAAccountService {
             walletParams,
         });
 
-        if (existingSignerConfig != null && eoa.address !== existingSignerConfig.eoaAddress) {
-            throw new SmartWalletSDKError("Admin Mismatch");
+        if (existingSignerConfig != null && !equalsIgnoreCase(eoa.address, existingSignerConfig.eoaAddress)) {
+            throw new AdminMismatchError(
+                `User '${user.id}' has an existing wallet with an eoa signer '${existingSignerConfig.eoaAddress}', this does not match input eoa signer '${existingSignerConfig.eoaAddress}'.`,
+                existingSignerConfig,
+                { type: "eoa", eoaAddress: existingSignerConfig.eoaAddress }
+            );
         }
 
         const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
