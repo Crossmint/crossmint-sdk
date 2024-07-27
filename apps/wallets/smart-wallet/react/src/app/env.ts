@@ -3,7 +3,7 @@ import { z } from "zod";
 
 export const env = createEnv({
     server: {
-        /* add server .env here */
+        /* add server side .env here */
     },
 
     /**
