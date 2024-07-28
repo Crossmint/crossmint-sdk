@@ -33,7 +33,7 @@ function init() {
     datadogLogs.init({
         clientToken: DATADOG_CLIENT_TOKEN,
         site: "datadoghq.com",
-        forwardErrorsToLogs: true,
+        forwardErrorsToLogs: false,
         sampleRate: 100,
     });
 }
