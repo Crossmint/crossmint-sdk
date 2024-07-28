@@ -140,3 +140,9 @@ export class AdminAlreadyUsedError extends ConfigError {
         super("This signer was already used to create another wallet. Please use a different signer.");
     }
 }
+
+export class NonCustodialWalletsNotEnabledError extends ConfigError {
+    constructor() {
+        super("Non-custodial wallets are not enabled for this project");
+    }
+}

@@ -28,6 +28,7 @@ export {
     AdminMismatchError,
     PasskeyMismatchError,
     ConfigError,
+    NonCustodialWalletsNotEnabledError,
 } from "./error";
 
 export { SmartWalletSDK } from "./SmartWalletSDK";
