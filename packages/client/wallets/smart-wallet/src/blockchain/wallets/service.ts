@@ -68,7 +68,7 @@ export class SmartWalletService {
         }
 
         if (existingSignerConfig == null) {
-            await this.crossmintWalletService.storeSmartWallet(user, {
+            await this.crossmintWalletService.idempotentCreateSmartWallet(user, {
                 type: ZERO_DEV_TYPE,
                 smartContractWalletAddress: account.address,
                 signerData: signerData,
