@@ -8,7 +8,7 @@ export type {
     ViemAccount,
     PasskeySigner,
     EOASigner,
-    WalletConfig,
+    WalletParams,
 } from "./types/Config";
 
 export type { TransferType, ERC20TransferType, NFTTransferType, SFTTransferType } from "./types/Tokens";
@@ -25,6 +25,8 @@ export {
     UserWalletAlreadyCreatedError,
     OutOfCreditsError,
     AdminAlreadyUsedError,
+    AdminMismatchError,
+    PasskeyMismatchError,
     ConfigError,
 } from "./error";
 

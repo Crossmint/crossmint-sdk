@@ -5,22 +5,22 @@ import { Address, EIP1193Provider } from "viem";
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 import { SmartWalletSDKError } from "../error";
-import { ViemAccount, WalletConfig } from "../types/Config";
+import { ViemAccount, WalletParams } from "../types/Config";
 import { logInputOutput } from "./log";
 
 type CreateOwnerSignerInput = {
     chain: EVMBlockchainIncludingTestnet;
-    walletConfig: WalletConfig;
+    walletParams: WalletParams;
 };
 
 export const createOwnerSigner = logInputOutput(
-    async ({ walletConfig }: CreateOwnerSignerInput): Promise<SmartAccountSigner<"custom", Address>> => {
-        if (isEIP1193Provider(walletConfig.signer)) {
-            return await providerToSmartAccountSigner(walletConfig.signer);
-        } else if (isAccount(walletConfig.signer)) {
-            return walletConfig.signer.account;
+    async ({ walletParams }: CreateOwnerSignerInput): Promise<SmartAccountSigner<"custom", Address>> => {
+        if (isEIP1193Provider(walletParams.signer)) {
+            return await providerToSmartAccountSigner(walletParams.signer);
+        } else if (isAccount(walletParams.signer)) {
+            return walletParams.signer.account;
         } else {
-            const signer = walletConfig.signer as any;
+            const signer = walletParams.signer as any;
             throw new SmartWalletSDKError(`The signer type ${signer.type} is not supported`);
         }
     },

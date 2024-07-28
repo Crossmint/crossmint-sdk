@@ -1,43 +1,52 @@
 import type { CrossmintWalletService } from "@/api/CrossmintWalletService";
-import type { PasskeySignerData } from "@/types/API";
-import type { PasskeySigner, UserParams, WalletConfig } from "@/types/Config";
+import { type PasskeySignerData, displayPasskey } from "@/types/API";
+import type { PasskeySigner, UserParams, WalletParams } from "@/types/Config";
 import type { AccountAndSigner, WalletCreationParams } from "@/types/internal";
 import { WebAuthnMode, deserializePasskeyValidator, toPasskeyValidator } from "@zerodev/passkey-validator";
 import { type KernelValidator, createKernelAccount } from "@zerodev/sdk";
 import { toWebAuthnKey } from "@zerodev/webauthn-key";
 import type { EntryPoint } from "permissionless/types/entrypoint";
 
+import { PasskeyMismatchError } from "../../error";
 import { deserializePasskeyValidatorData, serializePasskeyValidatorData } from "../../utils/passkey";
 
 export interface PasskeyWalletParams extends WalletCreationParams {
-    walletConfig: WalletConfig & { signer: PasskeySigner };
+    walletParams: WalletParams & { signer: PasskeySigner };
 }
 
 export function isPasskeyParams(params: WalletCreationParams): params is PasskeyWalletParams {
-    return (params.walletConfig.signer as PasskeySigner).type === "PASSKEY";
+    return (params.walletParams.signer as PasskeySigner).type === "PASSKEY";
 }
 
 type PasskeyValidator = KernelValidator<EntryPoint, "WebAuthnValidator"> & {
     getSerializedData: () => string;
 };
 
-export class PasskeyWalletService {
+export class PasskeyAccountService {
     constructor(private readonly crossmintService: CrossmintWalletService) {}
 
-    public async getAccount({
-        user,
-        publicClient,
-        walletConfig,
-        entryPoint,
-        kernelVersion,
-    }: PasskeyWalletParams): Promise<AccountAndSigner> {
-        const validator = await this.getValidator({
-            user,
-            entryPoint,
-            publicClient,
-            walletConfig,
-            kernelVersion,
-        });
+    public async get(
+        { user, publicClient, walletParams, entryPoint, kernelVersion }: PasskeyWalletParams,
+        existingSignerConfig?: PasskeySignerData
+    ): Promise<AccountAndSigner> {
+        const inputPasskeyName = walletParams.signer.passkeyName ?? user.id;
+        if (existingSignerConfig != null && existingSignerConfig.passkeyName !== inputPasskeyName) {
+            throw new PasskeyMismatchError(
+                `User '${user.id}' has an existing wallet created with a passkey named '${existingSignerConfig.passkeyName}', this does match input passkey name '${inputPasskeyName}'.`,
+                displayPasskey(existingSignerConfig)
+            );
+        }
+
+        const validator = await this.getValidator(
+            {
+                user,
+                entryPoint,
+                publicClient,
+                walletParams,
+                kernelVersion,
+            },
+            existingSignerConfig
+        );
 
         const kernelAccount = await createKernelAccount(publicClient, {
             plugins: { sudo: validator },
@@ -45,30 +54,23 @@ export class PasskeyWalletService {
             kernelVersion,
         });
 
-        return {
-            signerData: this.getSignerData(validator, walletConfig.signer.passkeyName),
-            account: kernelAccount,
-        };
+        return { signerData: this.getSignerData(validator, walletParams.signer.passkeyName), account: kernelAccount };
     }
 
-    private async getValidator({
-        user,
-        entryPoint,
-        publicClient,
-        walletConfig,
-        kernelVersion,
-    }: Omit<PasskeyWalletParams, "chain">): Promise<PasskeyValidator> {
-        const serializedData = await this.fetchSerializedSigner(user);
-        if (serializedData != null) {
-            return deserializePasskeyValidator(publicClient, {
-                serializedData,
+    private async getValidator(
+        { user, entryPoint, publicClient, walletParams, kernelVersion }: Omit<PasskeyWalletParams, "chain">,
+        existingSignerConfig?: PasskeySignerData
+    ): Promise<PasskeyValidator> {
+        if (existingSignerConfig != null) {
+            return await deserializePasskeyValidator(publicClient, {
+                serializedData: serializePasskeyValidatorData(existingSignerConfig),
                 entryPoint: entryPoint.address,
                 kernelVersion,
             });
         }
 
         const webAuthnKey = await toWebAuthnKey({
-            passkeyName: walletConfig.signer.passkeyName ?? "",
+            passkeyName: walletParams.signer.passkeyName ?? "",
             passkeyServerUrl: this.crossmintService.getPasskeyServerUrl(),
             mode: WebAuthnMode.Register,
             passkeyServerHeaders: this.createPasskeysServerHeaders(user),
@@ -79,15 +81,6 @@ export class PasskeyWalletService {
             entryPoint: entryPoint.address,
             kernelVersion,
         });
-    }
-
-    private async fetchSerializedSigner(user: UserParams): Promise<string | null> {
-        const signer = await this.crossmintService.getPasskeySigner(user);
-        if (signer == null) {
-            return null;
-        }
-
-        return serializePasskeyValidatorData(signer);
     }
 
     private getSignerData(validator: PasskeyValidator, passkeyName: string = ""): PasskeySignerData {

@@ -9,7 +9,7 @@ import { SmartWalletService } from "./blockchain/wallets/service";
 import { SmartWalletSDKError } from "./error";
 import { ErrorProcessor } from "./error/processor";
 import { DatadogProvider } from "./services/logging/DatadogProvider";
-import type { SmartWalletSDKInitParams, UserParams, WalletConfig } from "./types/Config";
+import type { SmartWalletSDKInitParams, UserParams, WalletParams } from "./types/Config";
 import { isClient } from "./utils/environment";
 import { LoggerWrapper, logPerformance } from "./utils/log";
 
@@ -55,13 +55,13 @@ export class SmartWalletSDK extends LoggerWrapper {
     async getOrCreateWallet(
         user: UserParams,
         chain: EVMBlockchainIncludingTestnet,
-        walletConfig: WalletConfig = { signer: { type: "PASSKEY" } }
+        walletParams: WalletParams = { signer: { type: "PASSKEY" } }
     ): Promise<EVMSmartWallet> {
         return logPerformance(
             "GET_OR_CREATE_WALLET",
             async () => {
                 try {
-                    return await this.smartWalletService.getOrCreate(user, chain, walletConfig);
+                    return await this.smartWalletService.getOrCreate(user, chain, walletParams);
                 } catch (error: any) {
                     throw this.errorProcessor.map(
                         error,

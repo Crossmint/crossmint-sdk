@@ -1,3 +1,5 @@
+import { PasskeyDisplay, SignerDisplay } from "@/types/API";
+
 export const SmartWalletErrors = {
     NOT_AUTHORIZED: "smart-wallet:not-authorized",
     TRANSFER: "smart-wallet:transfer.error",
@@ -9,6 +11,8 @@ export const SmartWalletErrors = {
     ERROR_USER_WALLET_ALREADY_CREATED: "smart-wallet:user-wallet-already-created.error",
     ERROR_OUT_OF_CREDITS: "smart-wallet:out-of-credits.error",
     ERROR_WALLET_CONFIG: "smart-wallet:wallet-config.error",
+    ERROR_ADMIN_MISMATCH: "smart-wallet:wallet-config.admin-mismatch",
+    ERROR_PASSKEY_MISMATCH: "smart-wallet:wallet-config.passkey-mismatch",
     ERROR_ADMIN_SIGNER_ALREADY_USED: "smart-wallet:wallet-config.admin-signer-already-used",
     UNCATEGORIZED: "smart-wallet:uncategorized", // catch-all error code
 } as const;
@@ -37,6 +41,28 @@ export class CrossmintServiceError extends SmartWalletSDKError {
     constructor(message: string, status?: number) {
         super(message, undefined, SmartWalletErrors.CROSSMINT_SERVICE);
         this.status = status;
+    }
+}
+
+export class AdminMismatchError extends SmartWalletSDKError {
+    public readonly required: SignerDisplay;
+    public readonly used?: SignerDisplay;
+
+    constructor(message: string, required: SignerDisplay, used?: SignerDisplay) {
+        super(message, SmartWalletErrors.ERROR_ADMIN_MISMATCH);
+        this.required = required;
+        this.used = used;
+    }
+}
+
+export class PasskeyMismatchError extends SmartWalletSDKError {
+    public readonly required: PasskeyDisplay;
+    public readonly used?: PasskeyDisplay;
+
+    constructor(message: string, required: PasskeyDisplay, used?: PasskeyDisplay) {
+        super(message, SmartWalletErrors.ERROR_PASSKEY_MISMATCH);
+        this.required = required;
+        this.used = used;
     }
 }
 

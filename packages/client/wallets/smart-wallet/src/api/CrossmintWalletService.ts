@@ -1,9 +1,8 @@
-import { PasskeySignerData, StoreSmartWalletParams } from "@/types/API";
+import { SignerData, StoreSmartWalletParams } from "@/types/API";
 import type { UserParams } from "@/types/Config";
 
 import type { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
-import { CrossmintServiceError } from "../error";
 import { BaseCrossmintService } from "./BaseCrossmintService";
 
 export { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
@@ -18,33 +17,22 @@ export class CrossmintWalletService extends BaseCrossmintService {
         );
     }
 
-    async getSmartWalletConfig(user: UserParams, chain: EVMBlockchainIncludingTestnet) {
+    async getSmartWalletConfig(
+        user: UserParams,
+        chain: EVMBlockchainIncludingTestnet
+    ): Promise<{
+        kernelVersion: string;
+        entryPointVersion: string;
+        userId: string;
+        signers: { signerData: SignerData }[];
+        smartContractWalletAddress?: string;
+    }> {
         return this.fetchCrossmintAPI(
-            `sdk/smart-wallet/versions?chain=${chain}`,
+            `sdk/smart-wallet/config?chain=${chain}`,
             { method: "GET" },
             "Error getting smart wallet version configuration. Please contact support",
             user.jwt
         );
-    }
-
-    async getPasskeySigner(user: UserParams): Promise<PasskeySignerData | null> {
-        const errorMessage = "Error fetching passkey validator signer. Please contact support";
-        const signers = await this.fetchCrossmintAPI(
-            "sdk/smart-wallet/signers?type=passkeys",
-            { method: "GET" },
-            errorMessage,
-            user.jwt
-        );
-
-        if (signers.length === 0) {
-            return null;
-        }
-
-        if (signers.length > 1) {
-            throw new CrossmintServiceError(errorMessage);
-        }
-
-        return signers[0].signerData;
     }
 
     async fetchNFTs(address: string, chain: EVMBlockchainIncludingTestnet) {
