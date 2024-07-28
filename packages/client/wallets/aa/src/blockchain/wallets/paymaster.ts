@@ -36,7 +36,7 @@ export function paymasterMiddleware({
             sponsorUserOperation: async ({ userOperation }) => {
                 const paymasterClient = createZeroDevPaymasterClient({
                     chain: getViemNetwork(chain),
-                    transport: http(getPaymasterRPC(chain)),
+                    transport: http(getPaymasterRPC(chain), { timeout: 20000 }),
                     entryPoint,
                 });
                 return paymasterClient.sponsorUserOperation({
