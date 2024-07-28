@@ -1,5 +1,5 @@
 import type { CrossmintWalletService } from "@/api/CrossmintWalletService";
-import type { PasskeySignerData } from "@/types/API";
+import { type PasskeySignerData, displayPasskey } from "@/types/API";
 import type { PasskeySigner, UserParams, WalletParams } from "@/types/Config";
 import type { AccountAndSigner, WalletCreationParams } from "@/types/internal";
 import { WebAuthnMode, deserializePasskeyValidator, toPasskeyValidator } from "@zerodev/passkey-validator";
@@ -7,7 +7,7 @@ import { type KernelValidator, createKernelAccount } from "@zerodev/sdk";
 import { toWebAuthnKey } from "@zerodev/webauthn-key";
 import type { EntryPoint } from "permissionless/types/entrypoint";
 
-import { SmartWalletSDKError } from "../../error";
+import { PasskeyMismatchError } from "../../error";
 import { deserializePasskeyValidatorData, serializePasskeyValidatorData } from "../../utils/passkey";
 
 export interface PasskeyWalletParams extends WalletCreationParams {
@@ -29,12 +29,12 @@ export class PasskeyAccountService {
         { user, publicClient, walletParams, entryPoint, kernelVersion }: PasskeyWalletParams,
         existingSignerConfig?: PasskeySignerData
     ): Promise<AccountAndSigner> {
-        if (
-            existingSignerConfig != null &&
-            walletParams.signer.passkeyName != null &&
-            existingSignerConfig.passkeyName !== walletParams.signer.passkeyName
-        ) {
-            throw new SmartWalletSDKError("Passkey Mismatch");
+        const inputPasskeyName = walletParams.signer.passkeyName ?? user.id;
+        if (existingSignerConfig != null && existingSignerConfig.passkeyName !== inputPasskeyName) {
+            throw new PasskeyMismatchError(
+                `User '${user.id}' has an existing wallet created with a passkey named '${existingSignerConfig.passkeyName}', this does match input passkey name '${inputPasskeyName}'.`,
+                displayPasskey(existingSignerConfig)
+            );
         }
 
         const validator = await this.getValidator(

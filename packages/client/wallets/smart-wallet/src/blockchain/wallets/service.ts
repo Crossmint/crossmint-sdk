@@ -1,13 +1,19 @@
-import type { SignerData } from "@/types/API";
+import { type SignerData, displayPasskey } from "@/types/API";
+import { equalsIgnoreCase } from "@/utils/helpers";
 import { type KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
 import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
 import type { EntryPoint } from "permissionless/types/entrypoint";
-import { type HttpTransport, createPublicClient, http } from "viem";
+import { Address, type HttpTransport, createPublicClient, getAddress, http } from "viem";
 
 import { blockchainToChainId } from "@crossmint/common-sdk-base";
 
 import type { CrossmintWalletService, EVMBlockchainIncludingTestnet } from "../../api/CrossmintWalletService";
-import { CrossmintServiceError, SmartWalletSDKError } from "../../error";
+import {
+    AdminMismatchError,
+    CrossmintServiceError,
+    SmartWalletSDKError,
+    UserWalletAlreadyCreatedError,
+} from "../../error";
 import type { EntryPointDetails, UserParams, WalletParams } from "../../types/Config";
 import {
     SUPPORTED_ENTRYPOINT_VERSIONS,
@@ -41,7 +47,8 @@ export class SmartWalletService {
         chain: EVMBlockchainIncludingTestnet,
         walletParams: WalletParams
     ): Promise<EVMSmartWallet> {
-        const { entryPoint, kernelVersion, existingSignerConfig } = await this.fetchConfig(user, chain);
+        const { entryPoint, kernelVersion, existingSignerConfig, smartContractWalletAddress, userId } =
+            await this.fetchConfig(user, chain);
         const publicClient = createPublicClient({ transport: http(getBundlerRPC(chain)) });
 
         const { account, signerData } = await this.accountFactory.get(
@@ -49,12 +56,16 @@ export class SmartWalletService {
                 chain,
                 walletParams,
                 publicClient,
-                user,
+                user: { ...user, id: userId },
                 entryPoint,
                 kernelVersion,
             },
             existingSignerConfig
         );
+
+        if (smartContractWalletAddress != null && !equalsIgnoreCase(smartContractWalletAddress, account.address)) {
+            throw new UserWalletAlreadyCreatedError(userId);
+        }
 
         if (existingSignerConfig == null) {
             await this.crossmintWalletService.storeSmartWallet(user, {
@@ -91,12 +102,12 @@ export class SmartWalletService {
     ): Promise<{
         entryPoint: EntryPointDetails;
         kernelVersion: SupportedKernelVersion;
+        userId: string;
         existingSignerConfig?: SignerData;
+        smartContractWalletAddress?: Address;
     }> {
-        const { entryPointVersion, kernelVersion, signers } = await this.crossmintWalletService.getSmartWalletConfig(
-            user,
-            chain
-        );
+        const { entryPointVersion, kernelVersion, signers, smartContractWalletAddress, userId } =
+            await this.crossmintWalletService.getSmartWalletConfig(user, chain);
 
         if (!isSupportedKernelVersion(kernelVersion)) {
             throw new SmartWalletSDKError(
@@ -129,7 +140,10 @@ export class SmartWalletService {
                 address: entryPointVersion === "v0.6" ? ENTRYPOINT_ADDRESS_V06 : ENTRYPOINT_ADDRESS_V07,
             },
             kernelVersion,
+            userId,
             existingSignerConfig: this.getSigner(signers),
+            smartContractWalletAddress:
+                smartContractWalletAddress != null ? getAddress(smartContractWalletAddress) : undefined,
         };
     }
 
@@ -156,14 +170,24 @@ class AccountFactory {
         signerData: SignerData;
         account: KernelSmartAccount<EntryPoint, HttpTransport>;
     }> {
-        if (isPasskeyParams(params) && (existingSignerConfig == null || existingSignerConfig?.type === "passkeys")) {
+        if (isPasskeyParams(params)) {
+            if (existingSignerConfig != null && existingSignerConfig?.type !== "passkeys") {
+                throw new AdminMismatchError(
+                    `Cannot create wallet with passkey signer for user '${params.user.id}', they have an existing wallet with eoa signer '${existingSignerConfig.eoaAddress}.'`,
+                    existingSignerConfig
+                );
+            }
+
             return this.passkey.get(params, existingSignerConfig);
         }
 
-        if (existingSignerConfig == null || existingSignerConfig?.type === "eoa") {
-            return this.eoa.get(params as EOAWalletParams, existingSignerConfig);
+        if (existingSignerConfig != null && existingSignerConfig?.type !== "eoa") {
+            throw new AdminMismatchError(
+                `Cannot create wallet with eoa signer for user '${params.user.id}', they already have a wallet with a passkey named '${existingSignerConfig.passkeyName}' as it's signer.`,
+                displayPasskey(existingSignerConfig)
+            );
         }
 
-        throw new SmartWalletSDKError("Admin Mismatch");
+        return this.eoa.get(params as EOAWalletParams, existingSignerConfig);
     }
 }

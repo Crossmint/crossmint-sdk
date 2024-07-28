@@ -3,7 +3,6 @@ import type { UserParams } from "@/types/Config";
 
 import type { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
-import { CrossmintServiceError } from "../error";
 import { BaseCrossmintService } from "./BaseCrossmintService";
 
 export { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
@@ -21,7 +20,13 @@ export class CrossmintWalletService extends BaseCrossmintService {
     async getSmartWalletConfig(
         user: UserParams,
         chain: EVMBlockchainIncludingTestnet
-    ): Promise<{ kernelVersion: string; entryPointVersion: string; signers: { signerData: SignerData }[] }> {
+    ): Promise<{
+        kernelVersion: string;
+        entryPointVersion: string;
+        userId: string;
+        signers: { signerData: SignerData }[];
+        smartContractWalletAddress?: string;
+    }> {
         return this.fetchCrossmintAPI(
             `sdk/smart-wallet/config?chain=${chain}`,
             { method: "GET" },

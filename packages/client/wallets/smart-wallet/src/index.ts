@@ -25,6 +25,8 @@ export {
     UserWalletAlreadyCreatedError,
     OutOfCreditsError,
     AdminAlreadyUsedError,
+    AdminMismatchError,
+    PasskeyMismatchError,
     ConfigError,
 } from "./error";
 

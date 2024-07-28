@@ -24,3 +24,14 @@ export type PasskeySignerData = PasskeyValidatorSerializedData & {
     domain: string;
     type: "passkeys";
 };
+
+export type PasskeyDisplay = Pick<PasskeySignerData, "type" | "passkeyName" | "pubKeyX" | "pubKeyY">;
+export type SignerDisplay = EOASignerData | PasskeyDisplay;
+export function displayPasskey(data: PasskeySignerData): PasskeyDisplay {
+    return {
+        pubKeyX: data.pubKeyX,
+        pubKeyY: data.pubKeyY,
+        passkeyName: data.passkeyName,
+        type: "passkeys",
+    };
+}

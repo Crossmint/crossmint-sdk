@@ -24,7 +24,7 @@ export function isSupportedEntryPointVersion(version: string): version is Suppor
 }
 
 export interface WalletCreationParams {
-    user: UserParams;
+    user: UserParams & { id: string };
     chain: EVMBlockchainIncludingTestnet;
     publicClient: PublicClient<HttpTransport>;
     walletParams: WalletParams;
