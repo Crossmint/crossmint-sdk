@@ -12,7 +12,7 @@ export class CrossmintWalletService extends BaseCrossmintService {
     async idempotentCreateSmartWallet(user: UserParams, input: StoreSmartWalletParams) {
         return this.fetchCrossmintAPI(
             `${API_VERSION}/sdk/smart-wallet`,
-            { method: "POST", body: JSON.stringify(input) },
+            { method: "PUT", body: JSON.stringify(input) },
             "Error creating abstract wallet. Please contact support",
             user.jwt
         );
