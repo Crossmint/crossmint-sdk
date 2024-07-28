@@ -6,7 +6,7 @@ export class DelegationSignature {
         const baseUrl = crossmintAPI.getBaseUrl();
         const headers = crossmintAPI.getHeaders();
 
-        const url = `${baseUrl}/api/unstable/credentials/decryption/delegateLitCapacity`;
+        const url = `${baseUrl}/api/v1-alpha1/credentials/decryption/delegateLitCapacity`;
 
         const options = { method: "GET", headers: headers };
         console.log(url, options);
