@@ -1,90 +1,87 @@
-import { Page, expect, test } from "@playwright/test";
-
-// import { authFile } from "../playwright.config";
+import { expect, test } from "@playwright/test";
 
 const baseURL = process.env.REACT_APP_BASE_URL ?? "/";
+const testAccountPrivateKey = process.env.GOOGLE_TEST_ACCOUNT_PRIVATE_KEY as string;
 
-const usePasskeyListenerClient = async (page: Page) => {
-    // Initialize Passkeys stuff (CDP session for the current page)
-    const client = await page.context().newCDPSession(page);
-
-    // Enable WebAuthn environment in this session
-    await client.send("WebAuthn.enable");
-
-    // Attach a virtual authenticator with specific options
-    await client.send("WebAuthn.addVirtualAuthenticator", {
-        options: {
-            protocol: "ctap2",
-            transport: "internal",
-            hasResidentKey: true,
-            hasUserVerification: true,
-            isUserVerified: true,
-            automaticPresenceSimulation: true, // todo might need to change to true.
-        },
+test.beforeEach("Clear all browser data and set the test account private key in localstorage", async ({ context }) => {
+    // clear cookies to ensure we are not logged in.
+    await context.clearCookies();
+    // set our test google account's private key in local storage.
+    await context.addInitScript({
+        content: `localStorage.setItem("testAccountPrivateKey", "${testAccountPrivateKey}");`,
     });
-
-    return client;
-};
+});
 
 test.describe("Signing in, creating wallet, and asserting nft works as expected", () => {
-    test("login with our pre-authed google account", async ({ page }) => {
+    test("login with our test google account", async ({ page, context }) => {
         await page.goto(baseURL);
 
-        const client = await usePasskeyListenerClient(page);
-
         expect(page.getByText("Crossmint AA Wallet Demo"));
-
         await page.getByText("Try it!").click();
+        // wait for popup window to show up loaded.
+        const popup = await page.waitForEvent("popup");
+        await popup.waitForLoadState("domcontentloaded");
+        await popup.waitForLoadState("load");
 
-        console.log("waiting for passkey listener");
+        await popup.getByLabel("Email or phone").fill(process.env.GOOGLE_TEST_EMAIL as string);
 
-        const credentialPromise = new Promise((resolve) => {
-            client.once("WebAuthn.credentialAdded", (credential) => {
-                console.log("Passkey added");
-                console.log({ credential });
-                resolve(credential); // Resolve the promise with the credential data
-            });
-        });
+        // Wait for the "Next" button to be visible and then click it.
+        const nextButton = popup.getByRole("button", { name: "Next" });
+        await nextButton.waitFor({ state: "visible" });
+        await nextButton.click();
 
-        await credentialPromise;
-        // wait an additional 5 seconds to make sure the credential is added
-        await page.waitForTimeout(5000);
-        console.log("waited for a while");
+        await popup.getByLabel("Enter your password").fill(process.env.GOOGLE_TEST_PASSWORD as string);
 
-        // wait for popup window to show up loaded
-        // await popup.waitForLoadState("domcontentloaded");
-        // await popup.waitForLoadState("load");
+        // Wait for the "Next" button to be visible and then click it.
+        await nextButton.waitFor({ state: "visible" });
+        await nextButton.click();
 
-        // // await popup.waitForSelector("text=Choose an account", { timeout: 5000 });
-        // await popup.waitForSelector("text=Sign in to crossmint-aa-dev.firebaseapp.com", { timeout: 5000 });
-        // await popup.getByText("crossmint-test").click();
-        // await popup.getByText("Continue").click();
-        // // Wait for the popup to close
+        // Wait for the google sign in and wallet creation to complete (10 second timeout should be enough).
+        await page.waitForURL("/mint", { timeout: 10000 });
+        await expect(page.getByText("Login Successfully")).toBeVisible();
 
-        // await page.waitForEvent("close", { timeout: 100000 });
-        // await passkeyListenerSigner(page);
-        // expect(popup.isClosed()).toBeTruthy();
+        await page.getByRole("heading", { name: "Wallet" }).click();
+        await page.waitForURL("/wallet", { timeout: 1000 });
+        await expect(page.getByText("Assets")).toBeVisible();
+
+        // Get the current number of assets in wallet
+        const itemsText = await page.getByText("Items").innerText();
+        const numberOfAssetsInWallet = parseInt(itemsText.split(" ")[0], 10);
+        console.log(`Number of assets in wallet: ${numberOfAssetsInWallet}`);
+
+        // Go back to mint page and mint a new NFT
+        await page.getByRole("heading", { name: "Mint", exact: true }).click();
+        await page.waitForURL("/mint", { timeout: 1000 });
+        await page.getByRole("button", { name: "Mint" }).click();
+
+        // Wait for the minting process to complete, a redirect back to wallet page will happen.
+        await page.waitForURL("/wallet", { timeout: 20000 });
+        await expect(page.getByText("NFT Minted Successfully")).toBeVisible();
+        await expect(page.getByText("Assets")).toBeVisible();
+
+        // hard refresh page to get the updated number of assets in wallet
+        // todo: could be improved but is up to front end to handle this better.
+        // reload the page twice to ensure the nft is minted and added to wallet.
+        const maxRetries = 5;
+        let retries = 0;
+        let assetsUpdated = false;
+
+        while (retries < maxRetries && !assetsUpdated) {
+            await page.reload({ waitUntil: "networkidle" });
+            await page.waitForTimeout(5000); // Wait for 5 seconds to ensure the page is fully loaded
+            const updatedAssets = await page.$(`text=${numberOfAssetsInWallet + 1} Items`);
+            if (updatedAssets) {
+                assetsUpdated = true;
+            } else {
+                retries++;
+                if (retries < maxRetries) {
+                    console.log(`Assets not updated, retrying... (${retries}/${maxRetries})`);
+                } else {
+                    console.log("Assets not updated after maximum retries.");
+                }
+            }
+        }
+
+        expect(assetsUpdated).toBe(true);
     });
-
-    // test("go to passkeys.eu", async ({ page }) => {
-    //     await page.goto("https://passkeys.eu");
-
-    //     const client = await usePasskeyListenerClient(page);
-    //     await page.waitForSelector("input[name='email']");
-    //     const randomNumber = Math.floor(Math.random() * 9999) + 1000;
-    //     await page.getByLabel("Email").fill(`test${randomNumber}@gmail.com`);
-    //     await page.keyboard.press("Enter");
-
-    //     const credentialPromise = new Promise((resolve) => {
-    //         client.once("WebAuthn.credentialAdded", (credential) => {
-    //             console.log("Passkey added");
-    //             console.log({ credential });
-    //             resolve(credential); // Resolve the promise with the credential data
-    //         });
-    //     });
-
-    //     await credentialPromise;
-    //     // wait an additional 5 seconds to make sure the credential is added
-    //     await page.waitForTimeout(5000);
-    // });
 });

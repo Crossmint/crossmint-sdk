@@ -1,6 +1,6 @@
 {
-    "name": "@crossmint/client-sdk-smart-wallet",
-    "version": "0.1.0",
+    "name": "@crossmint/client-sdk-aa-passkeys-beta",
+    "version": "1.1.0-beta.20",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
@@ -25,6 +25,7 @@
         "link:common-sdk-base": "yalc add @crossmint/common-sdk-base && yalc link @crossmint/common-sdk-base && pnpm i && pnpm build && yalc push",
         "test": "cross-env NODE_ENV=test jest",
         "test-coverage": "cross-env NODE_ENV=test jest --coverage",
+        "test:client-sdk-smart-wallet-react-starter": "pnpm link --global @crossmint/client-sdk-aa-passkeys-beta && cd ../../../../apps/wallets/smart-wallet/react && pnpm link --global @crossmint/client-sdk-aa-passkeys-beta && pnpm exec playwright test",
         "unlink:common-sdk-base": "yalc remove @crossmint/common-sdk-base && pnpm i"
     },
     "dependencies": {

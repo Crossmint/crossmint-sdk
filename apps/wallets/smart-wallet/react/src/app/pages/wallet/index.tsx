@@ -8,6 +8,7 @@ import nftCardIcon from "../../assets/icons/no_nfts.svg";
 import Button from "../../components/button/Button";
 import Card from "../../components/card/Card";
 import { createPasskeyWallet } from "../../utils/createAAWallet/createPasskeyWallet";
+import { createViemAAWallet } from "../../utils/createAAWallet/createViemWallet";
 import { getTokenBalances, hexBalanceToDecimalValue, walletContent } from "../../utils/mintApi";
 import NftBurn from "./NftBurn";
 import NftTransfer from "./NftTransfer";
@@ -33,7 +34,11 @@ export const Wallet = () => {
     const [totalBalance, setTotalBalance] = useState("0.00");
 
     const createAndSetAAWallet = async () => {
-        const account = await createPasskeyWallet(isProd);
+        const testAccountPrivateKey = localStorage.getItem("testAccountPrivateKey") as `0x${string}` | null;
+        const account = testAccountPrivateKey
+            ? await createViemAAWallet(isProd, testAccountPrivateKey)
+            : await createPasskeyWallet(isProd);
+
         setIsAuthenticated(true);
         localStorage.setItem("isUserConnected", "true");
         setValue(account);
