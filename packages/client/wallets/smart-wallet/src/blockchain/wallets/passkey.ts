@@ -36,15 +36,11 @@ export class PasskeyAccountService {
             );
         }
 
+        const passkey = await this.getPasskey(user, inputPasskeyName, existingSignerConfig);
+
         const latestValidatorVersion = PasskeyValidatorContractVersion.V0_0_2;
         const validatorContractVersion =
             existingSignerConfig == null ? latestValidatorVersion : existingSignerConfig.validatorContractVersion;
-
-        const passkey = await this.getPasskey({
-            user,
-            passkeyName: walletParams.signer.passkeyName,
-            existing: existingSignerConfig,
-        });
         const validator = await toPasskeyValidator(publicClient, {
             webAuthnKey: passkey,
             entryPoint: entryPoint.address,
@@ -59,20 +55,16 @@ export class PasskeyAccountService {
         });
 
         return {
-            signerData: this.getSignerData(validator, validatorContractVersion, walletParams.signer.passkeyName),
+            signerData: this.getSignerData(validator, validatorContractVersion, inputPasskeyName),
             account: kernelAccount,
         };
     }
 
-    private async getPasskey({
-        user,
-        passkeyName,
-        existing,
-    }: {
-        user: UserParams;
-        passkeyName?: string;
-        existing?: PasskeySignerData;
-    }): Promise<WebAuthnKey> {
+    private async getPasskey(
+        user: UserParams,
+        passkeyName: string,
+        existing?: PasskeySignerData
+    ): Promise<WebAuthnKey> {
         if (existing != null) {
             return {
                 pubX: BigInt(existing.pubKeyX),
@@ -83,7 +75,7 @@ export class PasskeyAccountService {
         }
 
         return toWebAuthnKey({
-            passkeyName: passkeyName ?? "",
+            passkeyName,
             passkeyServerUrl: this.crossmintService.getPasskeyServerUrl(),
             mode: WebAuthnMode.Register,
             passkeyServerHeaders: this.createPasskeysServerHeaders(user),
@@ -93,12 +85,10 @@ export class PasskeyAccountService {
     private getSignerData(
         validator: PasskeyValidator,
         validatorContractVersion: PasskeyValidatorContractVersion,
-        passkeyName: string = ""
+        passkeyName: string
     ): PasskeySignerData {
-        const fields = deserializePasskeyValidatorData(validator.getSerializedData());
-
         return {
-            ...fields,
+            ...deserializePasskeyValidatorData(validator.getSerializedData()),
             passkeyName,
             validatorContractVersion,
             domain: window.location.hostname,
