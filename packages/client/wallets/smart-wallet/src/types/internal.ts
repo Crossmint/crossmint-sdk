@@ -39,7 +39,6 @@ export interface AccountAndSigner {
 
 export type PasskeyValidatorSerializedData = {
     passkeyServerUrl: string;
-    credentials: string;
     entryPoint: Hex;
     validatorAddress: Hex;
     pubKeyX: string;
