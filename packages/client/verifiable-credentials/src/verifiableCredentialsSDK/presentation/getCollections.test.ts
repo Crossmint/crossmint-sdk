@@ -1,6 +1,6 @@
 import { CredentialsCollection, Nft } from "../types";
 import { ContractMetadataService } from "./contractMetadata";
-import { bundleNfts, getUsersCredentialNfts } from "./getCollections";
+import { bundleNfts, getCredentialNfts } from "./getCollections";
 
 jest.mock("./contractMetadata");
 
@@ -26,7 +26,7 @@ describe("getCredentialCollections", () => {
     beforeEach(() => {});
 
     it("should throw error if chain is not polygon", async () => {
-        await expect(getUsersCredentialNfts("someChain" as any, "wallet", getNftsFunction, {})).rejects.toThrow(
+        await expect(getCredentialNfts("someChain" as any, "wallet", getNftsFunction, {})).rejects.toThrow(
             "Verifiable credentials are not supported on someChain chain"
         );
     });
@@ -36,11 +36,11 @@ describe("getCredentialCollections", () => {
             { metadata: { credentialMetadata: { type: ["type1"] } } } as any,
             { metadata: { credentialMetadata: { type: ["type2"] } } } as any,
         ];
-        jest.spyOn(ContractMetadataService.prototype, "retrieveContractCredentialMetadata").mockResolvedValue(
+        jest.spyOn(ContractMetadataService.prototype, "getContractsWithCredentialMetadata").mockResolvedValue(
             collections as any
         );
 
-        const result = await getUsersCredentialNfts("polygon", "wallet", getNftsFunction, { types: ["type1"] });
+        const result = await getCredentialNfts("polygon", "wallet", getNftsFunction, { types: ["type1"] });
 
         expect(result).toEqual([collections[0]]);
     });

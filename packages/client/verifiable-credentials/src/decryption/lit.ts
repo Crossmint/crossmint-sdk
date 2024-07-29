@@ -3,8 +3,13 @@ import { AuthSig } from "@lit-protocol/types";
 import { APIKeyUsageOrigin } from "@crossmint/common-sdk-base";
 
 import { crossmintAPI } from "../crossmintAPI";
-import { LitNetwork, Lit as LitRaw } from "../verifiableCredentialsSDK";
-import { DelegationSignature } from "./delegationSignature";
+import { DelegationSignature } from "../services/delegationSignature";
+import {
+    EncryptedVerifiableCredential,
+    LitNetwork,
+    Lit as LitRaw,
+    VerifiableCredential,
+} from "../verifiableCredentialsSDK";
 
 export class Lit extends LitRaw {
     constructor(network: LitNetwork, capacityDelegationAuthSig?: AuthSig, debug = false) {
@@ -22,11 +27,11 @@ export class Lit extends LitRaw {
         super(network, capacityDelegationAuthSig, debug);
     }
 
-    async decrypt(base64Ciphertext: string): Promise<string> {
+    async decrypt(credential: EncryptedVerifiableCredential): Promise<VerifiableCredential> {
         if (this.capacityDelegationAuthSig == null) {
             console.debug("No capacity delegation auth sig provided, retrieving from Crossmint");
             this.capacityDelegationAuthSig = await new DelegationSignature().getSignature();
         }
-        return super.decrypt(base64Ciphertext);
+        return super.decrypt(credential);
     }
 }

@@ -32,9 +32,9 @@ export async function getWalletNfts(chain: string, wallet: string) {
                 console.debug(`Got ${data.length} nfts from page ${page}`);
                 page++;
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            throw new Error(`Failed to get nfts`);
+            throw new Error(`Failed to get nfts: ${error.message}`);
         }
     }
 

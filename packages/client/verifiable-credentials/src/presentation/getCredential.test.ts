@@ -27,7 +27,7 @@ describe("getCredentialFromId", () => {
         jest.spyOn(crossmintAPI, "getBaseUrl").mockReturnValue("test.com");
         const credential = await credentialService.getById("test-id");
         expect(credential).toEqual({ id: "test", type: "VerifiableCredential" });
-        expect(fetch).toHaveBeenCalledWith("test.com/api/unstable/credentials/test-id", {
+        expect(fetch).toHaveBeenCalledWith("test.com/api/v1-alpha1/credentials/test-id", {
             method: "GET",
             headers: {},
         });

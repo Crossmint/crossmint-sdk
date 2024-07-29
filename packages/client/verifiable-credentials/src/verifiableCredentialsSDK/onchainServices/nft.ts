@@ -49,8 +49,8 @@ export class NFTService {
         let uri: string;
         try {
             uri = await contract.contractURI();
-        } catch (error) {
-            console.error(`Failed call contractURI() on ${contractAddress}: ${error}`);
+        } catch (error: any) {
+            console.error(`Failed call contractURI() on ${contractAddress}: ${error.message}`);
             return null;
         }
 

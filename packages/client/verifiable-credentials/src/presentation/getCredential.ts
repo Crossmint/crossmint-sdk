@@ -28,11 +28,11 @@ export class CrossmintCredentialRetrieval {
         if (query.credentialId != null) {
             const credentialId = query.credentialId;
             console.debug(`Fetching credential ${credentialId}`);
-            url = `${baseUrl}/api/unstable/credentials/${credentialId}`;
+            url = `${baseUrl}/api/v1-alpha1/credentials/${credentialId}`;
         } else {
             const locator = query.locator;
             console.debug(`Fetching credential from locator ${locator}`);
-            url = `${baseUrl}/api/unstable/nfts/${locator}/credentials`;
+            url = `${baseUrl}/api/v1-alpha1/nfts/${locator}/credentials`;
         }
 
         const options = { method: "GET", headers: headers };
@@ -51,9 +51,9 @@ export class CrossmintCredentialRetrieval {
             }
 
             throw new Error(`Invalid response`);
-        } catch (error) {
-            console.error(error);
-            throw new Error(`Failed to get credential ${JSON.stringify(query)} from crossmint`);
+        } catch (error: any) {
+            console.error(JSON.stringify(error));
+            throw new Error(`Failed to get credential ${JSON.stringify(query)} from crossmint: ${error.message}`);
         }
     }
 }
