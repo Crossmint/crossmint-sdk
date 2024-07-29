@@ -85,7 +85,7 @@ export class EVMSmartWallet extends LoggerWrapper {
             try {
                 const client = this.accountClient.extend(publicActions);
                 const { request } = await client.simulateContract(tx);
-                return client.writeContract(request);
+                return await client.writeContract(request);
             } catch (error) {
                 logError("[TRANSFER] - ERROR_TRANSFERRING_TOKEN", {
                     service: SCW_SERVICE,
