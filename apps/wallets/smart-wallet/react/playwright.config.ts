@@ -81,7 +81,7 @@ export default defineConfig({
 
     /* Run your local dev server before starting the tests */
     webServer: {
-        command: "pnpm run start",
+        command: "pnpm run dev",
         url: process.env.REACT_APP_BASE_URL,
         reuseExistingServer: !process.env.CI,
     },

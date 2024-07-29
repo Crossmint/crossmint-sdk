@@ -23,6 +23,7 @@ Before running the application, you need to set up your environment variables:
 
 1. Copy the `.env.example` file in the root directory in which this README.md is contained and rename the copy to `.env`.
 2. Open the `.env` file and fill in the necessary values as described below:
+    > The credentials can be found in our shared 1Pass (see admin for access).
 
 ```plaintext
 REACT_APP_CROSSMINT_API_KEY_PROD=your_crossmint_api_key_for_production

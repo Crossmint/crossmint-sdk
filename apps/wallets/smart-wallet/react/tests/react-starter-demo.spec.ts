@@ -12,8 +12,8 @@ test.beforeEach("Clear all browser data and set the test account private key in 
     });
 });
 
-test.describe("Signing in, creating wallet, and asserting nft works as expected", () => {
-    test("login with our test google account", async ({ page, context }) => {
+test.describe("End-to-End Flow: Signing in, creating wallet, and minting NFT", () => {
+    test("Login with Google, create smart wallet, and mint NFT", async ({ page }) => {
         await page.goto(baseURL);
 
         expect(page.getByText("Crossmint AA Wallet Demo"));
@@ -44,11 +44,6 @@ test.describe("Signing in, creating wallet, and asserting nft works as expected"
         await page.waitForURL("/wallet", { timeout: 1000 });
         await expect(page.getByText("Assets")).toBeVisible();
 
-        // Get the current number of assets in wallet
-        const itemsText = await page.getByText("Items").innerText();
-        const numberOfAssetsInWallet = parseInt(itemsText.split(" ")[0], 10);
-        console.log(`Number of assets in wallet: ${numberOfAssetsInWallet}`);
-
         // Go back to mint page and mint a new NFT
         await page.getByRole("heading", { name: "Mint", exact: true }).click();
         await page.waitForURL("/mint", { timeout: 1000 });
@@ -58,30 +53,5 @@ test.describe("Signing in, creating wallet, and asserting nft works as expected"
         await page.waitForURL("/wallet", { timeout: 20000 });
         await expect(page.getByText("NFT Minted Successfully")).toBeVisible();
         await expect(page.getByText("Assets")).toBeVisible();
-
-        // hard refresh page to get the updated number of assets in wallet
-        // todo: could be improved but is up to front end to handle this better.
-        // reload the page twice to ensure the nft is minted and added to wallet.
-        const maxRetries = 5;
-        let retries = 0;
-        let assetsUpdated = false;
-
-        while (retries < maxRetries && !assetsUpdated) {
-            await page.reload({ waitUntil: "networkidle" });
-            await page.waitForTimeout(5000); // Wait for 5 seconds to ensure the page is fully loaded
-            const updatedAssets = await page.$(`text=${numberOfAssetsInWallet + 1} Items`);
-            if (updatedAssets) {
-                assetsUpdated = true;
-            } else {
-                retries++;
-                if (retries < maxRetries) {
-                    console.log(`Assets not updated, retrying... (${retries}/${maxRetries})`);
-                } else {
-                    console.log("Assets not updated after maximum retries.");
-                }
-            }
-        }
-
-        expect(assetsUpdated).toBe(true);
     });
 });

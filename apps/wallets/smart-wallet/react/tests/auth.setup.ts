@@ -45,7 +45,6 @@ const checkIfUserIsAuthenticated = async (): Promise<boolean> => {
 setup("authenticate with google account", async ({ page }) => {
     // check if the user is already authenticated
     const isUserAuthenticated = await checkIfUserIsAuthenticated();
-    console.log({ isUserAuthenticated });
     if (isUserAuthenticated) {
         setup.skip();
     }
