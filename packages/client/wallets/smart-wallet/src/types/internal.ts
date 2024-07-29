@@ -45,6 +45,7 @@ export type PasskeyValidatorSerializedData = {
     pubKeyX: string;
     pubKeyY: string;
     authenticatorIdHash: Hex;
+    authenticatorId: string;
 };
 
 export type SmartWalletClient = SmartAccountClient<EntryPoint, HttpTransport, Chain, SmartAccount<EntryPoint>>;

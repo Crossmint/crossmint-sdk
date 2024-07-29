@@ -1,3 +1,5 @@
+import { PasskeyValidatorContractVersion } from "@zerodev/passkey-validator";
+
 import { PasskeyValidatorSerializedData, SupportedEntryPointVersion, SupportedKernelVersion } from "./internal";
 
 export type StoreSmartWalletParams = {
@@ -21,6 +23,7 @@ export interface EOASignerData {
 
 export type PasskeySignerData = PasskeyValidatorSerializedData & {
     passkeyName: string;
+    validatorContractVersion: PasskeyValidatorContractVersion;
     domain: string;
     type: "passkeys";
 };
