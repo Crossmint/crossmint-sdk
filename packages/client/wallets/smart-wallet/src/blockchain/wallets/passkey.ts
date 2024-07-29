@@ -40,7 +40,11 @@ export class PasskeyAccountService {
         const validatorContractVersion =
             existingSignerConfig == null ? latestValidatorVersion : existingSignerConfig.validatorContractVersion;
 
-        const passkey = await this.getPasskey({ user, walletParams }, existingSignerConfig);
+        const passkey = await this.getPasskey({
+            user,
+            passkeyName: walletParams.signer.passkeyName,
+            existing: existingSignerConfig,
+        });
         const validator = await toPasskeyValidator(publicClient, {
             webAuthnKey: passkey,
             entryPoint: entryPoint.address,
@@ -60,21 +64,26 @@ export class PasskeyAccountService {
         };
     }
 
-    private async getPasskey(
-        { user, walletParams }: { user: UserParams; walletParams: WalletParams & { signer: PasskeySigner } },
-        existingSignerConfig?: PasskeySignerData
-    ): Promise<WebAuthnKey> {
-        if (existingSignerConfig != null) {
+    private async getPasskey({
+        user,
+        passkeyName,
+        existing,
+    }: {
+        user: UserParams;
+        passkeyName?: string;
+        existing?: PasskeySignerData;
+    }): Promise<WebAuthnKey> {
+        if (existing != null) {
             return {
-                pubX: BigInt(existingSignerConfig.pubKeyX),
-                pubY: BigInt(existingSignerConfig.pubKeyY),
-                authenticatorId: existingSignerConfig.authenticatorId,
-                authenticatorIdHash: existingSignerConfig.authenticatorIdHash,
+                pubX: BigInt(existing.pubKeyX),
+                pubY: BigInt(existing.pubKeyY),
+                authenticatorId: existing.authenticatorId,
+                authenticatorIdHash: existing.authenticatorIdHash,
             };
         }
 
         return toWebAuthnKey({
-            passkeyName: walletParams.signer.passkeyName ?? "",
+            passkeyName: passkeyName ?? "",
             passkeyServerUrl: this.crossmintService.getPasskeyServerUrl(),
             mode: WebAuthnMode.Register,
             passkeyServerHeaders: this.createPasskeysServerHeaders(user),
