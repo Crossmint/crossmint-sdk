@@ -64,6 +64,9 @@ export class APIErrorService {
                 throw new CrossmintServiceError(body.message, response.status);
             }
         } catch (e) {
+            if (e instanceof SmartWalletSDKError) {
+                throw e;
+            }
             console.error("Error parsing response", e);
         }
 

@@ -14,6 +14,7 @@ export const SmartWalletErrors = {
     ERROR_ADMIN_MISMATCH: "smart-wallet:wallet-config.admin-mismatch",
     ERROR_PASSKEY_MISMATCH: "smart-wallet:wallet-config.passkey-mismatch",
     ERROR_ADMIN_SIGNER_ALREADY_USED: "smart-wallet:wallet-config.admin-signer-already-used",
+    ERROR_PROJECT_NONCUSTODIAL_WALLETS_NOT_ENABLED: "smart-wallet:wallet-config.non-custodial-wallets-not-enabled",
     UNCATEGORIZED: "smart-wallet:uncategorized", // catch-all error code
 } as const;
 export type SmartWalletErrorCode = (typeof SmartWalletErrors)[keyof typeof SmartWalletErrors];
@@ -142,6 +143,7 @@ export class AdminAlreadyUsedError extends ConfigError {
 }
 
 export class NonCustodialWalletsNotEnabledError extends ConfigError {
+    public readonly code = SmartWalletErrors.ERROR_PROJECT_NONCUSTODIAL_WALLETS_NOT_ENABLED;
     constructor() {
         super("Non-custodial wallets are not enabled for this project");
     }
