@@ -1,5 +1,5 @@
 import { Dialog, Transition } from "@headlessui/react";
-import { Fragment, ReactNode } from "react";
+import { CSSProperties, Fragment, ReactNode } from "react";
 
 export type ActionModalProps = {
     show: boolean;
@@ -14,11 +14,7 @@ export default function ActionModal({
     // WAL-2574 - because of a recent change from another sdk in @headlessui/react, this file started complaining about the types
     return (
         <Transition.Root show={show} as={Fragment}>
-            <Dialog
-                as="div"
-                className="fixed inset-0 z-20 flex items-center justify-center overflow-y-auto"
-                onClose={onClose}
-            >
+            <Dialog as="div" style={styles.dialog} onClose={onClose}>
                 <Transition.Child
                     as={Fragment}
                     enter="ease-out duration-400"
@@ -28,11 +24,7 @@ export default function ActionModal({
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                 >
-                    <div
-                        onClick={onClose}
-                        className=" fixed inset-0 transition-opacity bg-[#8b9797] bg-opacity-20 backdrop-blur-sm"
-                        style={{ zIndex: -10 }}
-                    />
+                    <div style={styles.transitionBegin} onClick={onClose} />
                 </Transition.Child>
                 <Transition.Child
                     as={Fragment}
@@ -43,10 +35,7 @@ export default function ActionModal({
                     leaveFrom="opacity-100 translate-y-0 sm:scale-100"
                     leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                 >
-                    <div
-                        className="z-30 flex flex-col items-center rounded-xl p-5 md:p-7 shadow-sm m-6"
-                        onClick={(e) => e.stopPropagation()}
-                    >
+                    <div style={styles.transitionEnd} onClick={(e) => e.stopPropagation()}>
                         {children}
                     </div>
                 </Transition.Child>
@@ -54,3 +43,41 @@ export default function ActionModal({
         </Transition.Root>
     );
 }
+
+const styles: { [key: string]: CSSProperties } = {
+    dialog: {
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        overflowY: "auto",
+        position: "fixed",
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
+        zIndex: 20,
+    },
+    transitionBegin: {
+        background: "rgba(139, 151, 151, 0.2)",
+        filter: "blur(4px)",
+        position: "fixed",
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
+        transitionProperty: "opacity",
+        transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
+        transitionDuration: "300ms",
+        zIndex: -10,
+    },
+    transitionEnd: {
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        padding: "1.25rem",
+        margin: "1.5rem",
+        borderRadius: "0.75rem",
+        boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+        zIndex: 30,
+    },
+};
