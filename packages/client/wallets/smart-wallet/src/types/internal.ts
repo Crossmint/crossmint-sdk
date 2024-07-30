@@ -39,12 +39,12 @@ export interface AccountAndSigner {
 
 export type PasskeyValidatorSerializedData = {
     passkeyServerUrl: string;
-    credentials: string;
     entryPoint: Hex;
     validatorAddress: Hex;
     pubKeyX: string;
     pubKeyY: string;
     authenticatorIdHash: Hex;
+    authenticatorId: string;
 };
 
 export type SmartWalletClient = SmartAccountClient<EntryPoint, HttpTransport, Chain, SmartAccount<EntryPoint>>;

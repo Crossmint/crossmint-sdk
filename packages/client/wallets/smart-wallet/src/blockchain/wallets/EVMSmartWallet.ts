@@ -104,8 +104,6 @@ export class EVMSmartWallet extends LoggerWrapper {
      * @returns A list of NFTs owned by the wallet.
      */
     public async nfts() {
-        return this.logPerformance("GET_NFTS", async () => {
-            return this.crossmintService.fetchNFTs(this.accountClient.account.address, this.chain);
-        });
+        return this.crossmintService.fetchNFTs(this.address, this.chain);
     }
 }

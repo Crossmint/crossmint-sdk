@@ -31,7 +31,7 @@
         "@crossmint/common-sdk-base": "0.0.13",
         "@datadog/browser-logs": "4.42.2",
         "@zerodev/ecdsa-validator": "5.3.1",
-        "@zerodev/passkey-validator": "5.3.5",
+        "@zerodev/passkey-validator": "5.4.0",
         "@zerodev/sdk": "5.3.3",
         "@zerodev/webauthn-key": "5.3.1",
         "permissionless": "0.1.36",
