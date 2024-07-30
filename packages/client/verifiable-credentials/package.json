@@ -25,7 +25,7 @@
         "test-coverage": "cross-env NODE_ENV=test jest --coverage --silent"
     },
     "dependencies": {
-        "@crossmint/common-sdk-base": "0.1.0",
+        "@crossmint/common-sdk-base": "workspace:*",
         "@ethersproject/address": "5.7.0",
         "@ethersproject/constants": "5.7.0",
         "@ethersproject/contracts": "5.7.0",
