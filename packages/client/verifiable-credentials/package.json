@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-verifiable-credentials",
-    "version": "3.2.1",
+    "version": "3.4.0",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
@@ -25,7 +25,7 @@
         "test-coverage": "cross-env NODE_ENV=test jest --coverage --silent"
     },
     "dependencies": {
-        "@crossmint/common-sdk-base": "0.0.6",
+        "@crossmint/common-sdk-base": "workspace:*",
         "@ethersproject/address": "5.7.0",
         "@ethersproject/constants": "5.7.0",
         "@ethersproject/contracts": "5.7.0",
@@ -38,6 +38,6 @@
         "ethers": "5.7.2"
     },
     "devDependencies": {
-        "@crossmint/client-sdk-base": "1.1.9"
+        "@crossmint/client-sdk-base": "workspace:*"
     }
 }

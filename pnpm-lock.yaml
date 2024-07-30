@@ -116,9 +116,6 @@ importers:
       react-scripts:
         specifier: 5.0.1
         version: 5.0.1(@babel/plugin-syntax-flow@7.22.5(@babel/core@7.22.17))(@babel/plugin-transform-react-jsx@7.22.15(@babel/core@7.22.17))(@types/babel__core@7.20.1)(bufferutil@4.0.7)(esbuild@0.21.5)(eslint@8.57.0)(react@18.2.0)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.3.3))(type-fest@0.21.3)(typescript@5.3.3)(utf-8-validate@5.0.10)(vue-template-compiler@2.7.14)
-      rpc-websockets:
-        specifier: 7.11.0
-        version: 7.11.0
       web-vitals:
         specifier: 3.4.0
         version: 3.4.0
@@ -143,10 +140,10 @@ importers:
         version: link:../../../packages/client/ui/react-ui
       '@dynamic-labs/ethereum-all':
         specifier: 0.17.29
-        version: 0.17.29(@babel/core@7.22.17)(@dynamic-labs/logger@0.17.29)(@dynamic-labs/rpc-providers@0.17.29(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(@dynamic-labs/utils@0.17.29(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@dynamic-labs/wallet-book@0.17.29(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(@solana/web3.js@1.94.0(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(bufferutil@4.0.7)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(utf-8-validate@5.0.10)
+        version: 0.17.29(@babel/core@7.22.17)(@dynamic-labs/logger@0.17.29)(@dynamic-labs/rpc-providers@0.17.29(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(@dynamic-labs/utils@0.17.29(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@dynamic-labs/wallet-book@0.17.29(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(@solana/web3.js@1.95.1(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(bufferutil@4.0.7)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(utf-8-validate@5.0.10)
       '@dynamic-labs/sdk-react':
         specifier: 0.17.29
-        version: 0.17.29(@babel/core@7.22.17)(@dynamic-labs/logger@0.17.29)(@dynamic-labs/rpc-providers@0.17.29(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(@dynamic-labs/utils@0.17.29(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@dynamic-labs/wallet-book@0.17.29(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(@solana/web3.js@1.94.0(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(@types/react@18.2.21)(bufferutil@4.0.7)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(utf-8-validate@5.0.10)
+        version: 0.17.29(@babel/core@7.22.17)(@dynamic-labs/logger@0.17.29)(@dynamic-labs/rpc-providers@0.17.29(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(@dynamic-labs/utils@0.17.29(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@dynamic-labs/wallet-book@0.17.29(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(@solana/web3.js@1.95.1(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(@types/react@18.2.21)(bufferutil@4.0.7)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(utf-8-validate@5.0.10)
       '@dynamic-labs/solana-all':
         specifier: 0.17.29
         version: 0.17.29(@dynamic-labs/logger@0.17.29)(@dynamic-labs/wallet-book@0.17.29(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
@@ -159,9 +156,6 @@ importers:
       react-dom:
         specifier: 18.2.0
         version: 18.2.0(react@18.2.0)
-      rpc-websockets:
-        specifier: 7.11.0
-        version: 7.11.0
     devDependencies:
       '@types/react':
         specifier: 18.2.21
@@ -176,8 +170,8 @@ importers:
   apps/payments/vue:
     dependencies:
       '@crossmint/client-sdk-aa':
-        specifier: 1.0.3
-        version: 1.0.3(@babel/runtime@7.24.7)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.7)(encoding@0.1.13)(react@18.2.0)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+        specifier: workspace:*
+        version: link:../../../packages/client/wallets/aa
       '@crossmint/client-sdk-base':
         specifier: workspace:*
         version: link:../../../packages/client/base
@@ -214,7 +208,7 @@ importers:
     dependencies:
       '@crossmint/client-sdk-aa':
         specifier: 0.2.1
-        version: 0.2.1(@babel/runtime@7.24.7)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.7)(encoding@0.1.13)(react@18.2.0)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+        version: 0.2.1(@babel/runtime@7.24.8)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.7)(encoding@0.1.13)(react@18.2.0)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
       '@crossmint/common-sdk-base':
         specifier: workspace:*
         version: link:../../../../packages/common/base
@@ -257,7 +251,7 @@ importers:
         version: 1.1.0-beta.20(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)
       '@crossmint/client-sdk-smart-wallet-web3auth-adapter':
         specifier: 0.2.1
-        version: 0.2.1(@babel/runtime@7.24.7)(buffer@6.0.3)(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)
+        version: 0.2.1(@babel/runtime@7.24.8)(buffer@6.0.3)(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)
       '@emotion/react':
         specifier: ^11.11.1
         version: 11.13.0(@types/react@18.3.3)(react@18.2.0)
@@ -423,8 +417,8 @@ importers:
         specifier: 5.7.0
         version: 5.7.0
       '@solana/web3.js':
-        specifier: 1.78.5
-        version: 1.78.5(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
+        specifier: 1.95.1
+        version: 1.95.1(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
       '@types/uuid':
         specifier: 9.0.4
         version: 9.0.4
@@ -441,8 +435,8 @@ importers:
         specifier: 5.7.0
         version: 5.7.0
       '@solana/web3.js':
-        specifier: 1.78.5
-        version: 1.78.5(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
+        specifier: 1.95.1
+        version: 1.95.1(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
       bs58:
         specifier: 5.0.0
         version: 5.0.0
@@ -536,8 +530,8 @@ importers:
   packages/client/verifiable-credentials:
     dependencies:
       '@crossmint/common-sdk-base':
-        specifier: 0.0.6
-        version: 0.0.6
+        specifier: workspace:*
+        version: link:../../common/base
       '@ethersproject/address':
         specifier: 5.7.0
         version: 5.7.0
@@ -570,14 +564,14 @@ importers:
         version: 5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10)
     devDependencies:
       '@crossmint/client-sdk-base':
-        specifier: 1.1.9
-        version: 1.1.9
+        specifier: workspace:*
+        version: link:../base
 
   packages/client/wallets/aa:
     dependencies:
       '@crossmint/common-sdk-base':
-        specifier: 0.0.13
-        version: 0.0.13
+        specifier: workspace:*
+        version: link:../../../common/base
       '@datadog/browser-logs':
         specifier: 4.42.2
         version: 4.42.2
@@ -663,7 +657,7 @@ importers:
     devDependencies:
       '@crossmint/client-sdk-aa':
         specifier: 1.0.0-alpha.1
-        version: 1.0.0-alpha.1(@babel/runtime@7.24.7)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.7)(encoding@0.1.13)(react@18.2.0)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+        version: 1.0.0-alpha.1(@babel/runtime@7.24.8)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.7)(encoding@0.1.13)(react@18.2.0)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
       '@ethersproject/abstract-provider':
         specifier: 5.7.0
         version: 5.7.0
@@ -671,8 +665,8 @@ importers:
         specifier: 5.7.2
         version: 5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       '@solana/web3.js':
-        specifier: 1.90.0
-        version: 1.90.0(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
+        specifier: 1.95.1
+        version: 1.95.1(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
       '@types/react':
         specifier: 18.2.21
         version: 18.2.21
@@ -1550,6 +1544,10 @@ packages:
     resolution: {integrity: sha512-UwgBRMjJP+xv857DCngvqXI3Iq6J4v0wXmwc6sapg+zyhbwmQX67LUEFrkK5tbyJ30jGuG3ZvWpBiB9LCy1kWw==}
     engines: {node: '>=6.9.0'}
 
+  '@babel/runtime@7.24.8':
+    resolution: {integrity: sha512-5F7SDGs1T72ZczbRwbGO9lQi0NLjQxzl6i4lJxLxfW9U5UluCSyEJeniWvnhl3/euNiqQVbo8zruhsDfid0esA==}
+    engines: {node: '>=6.9.0'}
+
   '@babel/template@7.24.7':
     resolution: {integrity: sha512-jYqfPrU9JTF0PmPy1tLYHW4Mp4KlgxJD9l2nP9fD6yT/ICi554DmrWBAEYpIelzjHf1msDP3PxJIRt/nFNfBig==}
     engines: {node: '>=6.9.0'}
@@ -1692,12 +1690,6 @@ packages:
 
   '@crossmint/client-sdk-aa@1.0.0-alpha.1':
     resolution: {integrity: sha512-iz3T2eG29xwi1WTY1NYMAQsRo82JPR/HGFTuXL1YGu+7sVh8PAOeK48eV2EsXfCsyJNOjYcOXsYHhHmwZbD1yw==}
-
-  '@crossmint/client-sdk-aa@1.0.3':
-    resolution: {integrity: sha512-ckQ+b0xOeJ+Su4QSkzfPiFQEMXE9PraAaArINsvElSTfZRII+AJsWq2D7gQ4R9pNDTKSISFYgaY7/VtBCQPTNQ==}
-
-  '@crossmint/client-sdk-base@1.1.9':
-    resolution: {integrity: sha512-w8f3Z4dVHLqgE9E16qQoV+DEwX1UOiE4lKhD0tAQhHgEYrdNOslY8vekks+94/vutqv3zVA2f5CMzRfBA5fe+g==}
 
   '@crossmint/client-sdk-smart-wallet-web3auth-adapter@0.2.1':
     resolution: {integrity: sha512-t7D+abS0bP5LWAXTp/vvAZ6xbX+/mlDe2mXVAbgLCSBTJFHY1csMlgCXnr3kC0wLn8H0pjWMVqC23wk/PKzKhw==}
@@ -3869,8 +3861,8 @@ packages:
   '@onflow/util-uid@1.2.2':
     resolution: {integrity: sha512-OluJ7/huiaGTMNQ8r9Jz0ReMy4e0pemO94xXmQjrtmyMXZCg9BhWlVR3qHPQG94JOFE3LDmd4RSxGc27T3EJGg==}
 
-  '@openzeppelin/merkle-tree@1.0.6':
-    resolution: {integrity: sha512-cGWOb2WBWbJhqvupzxjnKAwGLxxAEYPg51sk76yZ5nVe5D03mw7Vx5yo8llaIEqYhP5O39M8QlrNWclgLfKVrA==}
+  '@openzeppelin/merkle-tree@1.0.7':
+    resolution: {integrity: sha512-i93t0YYv6ZxTCYU3CdO5Q+DXK0JH10A4dCBOMlzYbX+ujTXm+k1lXiEyVqmf94t3sqmv8sm/XT5zTa0+efnPgQ==}
 
   '@parcel/watcher-android-arm64@2.3.0':
     resolution: {integrity: sha512-f4o9eA3dgk0XRT3XhB0UWpWpLnKgrh1IwNJKJ7UJek7eTYccQ8LR7XUWFKqw6aEq5KUNlCcGvSzKqSX/vtWVVA==}
@@ -4464,12 +4456,6 @@ packages:
   '@simplewebauthn/browser@8.3.7':
     resolution: {integrity: sha512-ZtRf+pUEgOCvjrYsbMsJfiHOdKcrSZt2zrAnIIpfmA06r0FxBovFYq0rJ171soZbe13KmWzAoLKjSxVW7KxCdQ==}
 
-  '@simplewebauthn/browser@9.0.1':
-    resolution: {integrity: sha512-wD2WpbkaEP4170s13/HUxPcAV5y4ZXaKo1TfNklS5zDefPinIgXOpgz1kpEvobAsaLPa2KeH7AKKX/od1mrBJw==}
-
-  '@simplewebauthn/types@9.0.1':
-    resolution: {integrity: sha512-tGSRP1QvsAvsJmnOlRQyw/mvK9gnPtjEc5fg2+m8n+QUa+D7rvrKkOYyfpy42GTs90X3RDOnqJgfHt+qO67/+w==}
-
   '@simplewebauthn/typescript-types@7.4.0':
     resolution: {integrity: sha512-8/ZjHeUPe210Bt5oyaOIGx4h8lHdsQs19BiOT44gi/jBEgK7uBGA0Fy7NRsyh777al3m6WM0mBf0UR7xd4R7WQ==}
     deprecated: This package has been renamed to @simplewebauthn/types. Please install @simplewebauthn/types instead to ensure you receive future updates.
@@ -4507,14 +4493,8 @@ packages:
     resolution: {integrity: sha512-AnaqCF1cJ3w7d0yhvLGAKAcRI+n5o+ursQihhoTe4cUh8/9d4gbT73SoHYElS7e67OtAgLmSfbcC5hcOAgdvnQ==}
     engines: {node: '>=12.20.0'}
 
-  '@solana/web3.js@1.78.5':
-    resolution: {integrity: sha512-2ZHsDNqkKdglJQrIvJ3p2DmgS3cGnary3VJyqt9C1SPrpAtLYzcElr3xyXJOznyQTU/8AMw+GoF11lFoKbicKg==}
-
-  '@solana/web3.js@1.90.0':
-    resolution: {integrity: sha512-p0cb/COXb8NNVSMkGMPwqQ6NvObZgUitN80uOedMB+jbYWOKOeJBuPnzhenkIV9RX0krGwyuY1Ltn5O8MGFsEw==}
-
-  '@solana/web3.js@1.94.0':
-    resolution: {integrity: sha512-wMiBebzu5I2fTSz623uj6VXpWFhl0d7qJKqPFK2I4IBLTNUdv+bOeA4H7OBM7Gworv7sOvB3xibRql6l61MeqA==}
+  '@solana/web3.js@1.95.1':
+    resolution: {integrity: sha512-mRX/AjV6QbiOXpWcy5Rz1ZWEH2lVkwO7T0pcv9t97ACpv3/i3tPiqXwk0JIZgSR3wOSTiT26JfygnJH2ulS6dQ==}
 
   '@spruceid/siwe-parser@1.1.3':
     resolution: {integrity: sha512-oQ8PcwDqjGWJvLmvAF2yzd6iniiWxK0Qtz+Dw+gLD/W5zOQJiKIUXwslHOm8VB8OOOKW9vfR3dnPBhHaZDvRsw==}
@@ -4886,8 +4866,8 @@ packages:
   '@types/debug@4.1.12':
     resolution: {integrity: sha512-vIChWdVG3LG1SMxEvI/AK+FWJthlrqlTu7fbrlywTkkaONwk/UAGaULXRlf8vkzFBLVm0zkMdCquhL5aOjhXPQ==}
 
-  '@types/emscripten@1.39.10':
-    resolution: {integrity: sha512-TB/6hBkYQJxsZHSqyeuO1Jt0AB/bW6G7rHt9g7lML7SOF6lbgcHvw/Lr+69iqN0qxgXLhWKScAon73JNnptuDw==}
+  '@types/emscripten@1.39.13':
+    resolution: {integrity: sha512-cFq+fO/isvhvmuP/+Sl4K4jtU6E23DoivtbO4r50e3odaxAiVdbfSYRDdJ4gCdxx+3aRjhphS5ZMwIH4hFy/Cw==}
 
   '@types/eslint-plugin-prettier@3.1.0':
     resolution: {integrity: sha512-6/UIuz99F0IvtDez4U3bRwAmN4VKnuw10Ibblf0iZhtNbmbonMSLqs/qqsXrGIAWvjy+vXqYwOljgtLhrETSMg==}
@@ -5632,13 +5612,6 @@ packages:
       permissionless: ^0.0.34
       viem: ^2.0.0
 
-  '@zerodev/ecdsa-validator@5.2.1':
-    resolution: {integrity: sha512-/VDxntTzalQFGOEY3JbM1c39p0jiLbrF97E2V4NR5L4cRgNiWBu/QycW10zUeoeyFuqeghc6vPhNe/M1e7HTig==}
-    peerDependencies:
-      '@zerodev/sdk': ^5.2.1
-      permissionless: ^0.1.17
-      viem: ^2.9.17
-
   '@zerodev/ecdsa-validator@5.2.3':
     resolution: {integrity: sha512-zeJjYhOW5EWK6XnctPt3iVnrqmrHfb81p/fJKaY4yQnL2ZYPrH37ZgtY1z5COETPCDTm65+jPfc1Zn/dziyAXQ==}
     peerDependencies:
@@ -5661,13 +5634,6 @@ packages:
       permissionless: ^0.1.18
       viem: ^2.16.3
 
-  '@zerodev/permissions@5.2.5':
-    resolution: {integrity: sha512-9bnKB+pzKETIXaVgjy/Gg4oALIn0tM/6EQbeMU4wiWr5i/XD0sMCCkoTwiBWLsgVRKxiSJcX6xmTPtOC5rhi6A==}
-    peerDependencies:
-      '@zerodev/sdk': ^5.2.1
-      permissionless: ^0.1.18
-      viem: ^2.9.17
-
   '@zerodev/sdk@4.5.2':
     resolution: {integrity: sha512-xfTnZpYbt0U5YmyC1ay662j7hx9PrJAuGjkDIpuUVgfedoPJq4IMbJ9KOS9BYweryLNeFD8lbIMlUQlFDHxLtA==}
 
@@ -5675,12 +5641,6 @@ packages:
     resolution: {integrity: sha512-osX5WTpLzVdjXpJKCJ5B0n5Wq9OO7sLydJ1tRzobP7bg5Dfy1444nUmS/1pzGtBTNP5NTmehLfPEWZDjzCs+0A==}
     peerDependencies:
       viem: ^2.0.0
-
-  '@zerodev/sdk@5.2.1':
-    resolution: {integrity: sha512-RM05e/8hKP2q75Bb3/y8Nd65sJ6XmFOrS7CcNVwJZpOK0wu4fbisJPstCTZEyl55lYMfDBwx+0KUUTyl9LIb8w==}
-    peerDependencies:
-      permissionless: ^0.1.17
-      viem: ^2.9.17
 
   '@zerodev/sdk@5.2.15':
     resolution: {integrity: sha512-c88ByIINOa+wcpdZRRDL6y6Nx9gUOZwHWJWpZESxQwhkh0tPabBGKaqqYmiCdzFZWMjvSNly7L2yS8DSQWkWeA==}
@@ -5700,13 +5660,6 @@ packages:
       '@zerodev/sdk': ^5.1.0
       permissionless: ^0.0.34
       viem: ^2.0.0
-
-  '@zerodev/session-key@5.2.1':
-    resolution: {integrity: sha512-W5yY1mY38RVmhOIICGymlkeYMsXndf9EeC2xWKqqudU+YWQa0prsVWxaZJlybDzapH0w+ON6rszFGahHI9YaNQ==}
-    peerDependencies:
-      '@zerodev/sdk': ^5.2.1
-      permissionless: ^0.1.17
-      viem: ^2.9.17
 
   '@zerodev/webauthn-key@5.3.1':
     resolution: {integrity: sha512-8s/gdKppXgh15wrER50nAIhaD/QTEwecN288RbXI+TWVmdwzuLOpbMuzfgBvisfiE1kNJlfYEl9qos7aKm6EkQ==}
@@ -9507,8 +9460,8 @@ packages:
     engines: {node: '>=8'}
     hasBin: true
 
-  jayson@4.1.0:
-    resolution: {integrity: sha512-R6JlbyLN53Mjku329XoRT2zJAE6ZgOQ8f91ucYdMCD4nkGCF9kZSrcGXpHIU4jeKj58zUZke2p+cdQchU7Ly7A==}
+  jayson@4.1.1:
+    resolution: {integrity: sha512-5ZWm4Q/0DHPyeMfAsrwViwUS2DMVsQgWh8bEEIVTkfb3DzHZ2L3G5WUnF+AKmGjjM9r1uAv73SaqC1/U4RL45w==}
     engines: {node: '>=8'}
     hasBin: true
 
@@ -11271,11 +11224,6 @@ packages:
     resolution: {integrity: sha512-lP59+7VmjLO7dPctH69kgcJ8evxGkrjQ9hruOA+7ymWvUMiuXAfVxvXSWCV+lg67N2TGs1JneEuhwK+iI3kPvA==}
     peerDependencies:
       viem: ^2.0.0
-
-  permissionless@0.1.18:
-    resolution: {integrity: sha512-A3OBQfA/wj+Qj5zXyMEoKwuwd+GgImG9EFYYtLHPooDJ26CL44HJpY27owH5MPsUS6IX+1E9N6mF4J/frQhXoQ==}
-    peerDependencies:
-      viem: ^2.9.17
 
   permissionless@0.1.29:
     resolution: {integrity: sha512-jKkgl3G2b4hv5DvX2U8v0OI3JfX+nEzj9a6zsrcXuJaLZdS14td4tExnlmBY93nUN6lRC6NfPZjdLbi8Dkzz7w==}
@@ -13160,6 +13108,10 @@ packages:
 
   superstruct@1.0.4:
     resolution: {integrity: sha512-7JpaAoX2NGyoFlI9NBh66BQXGONc+uE+MRS5i2iOBKuS4e+ccgMDjATgZldkah+33DakBxDHiss9kvUcGAO8UQ==}
+    engines: {node: '>=14.0.0'}
+
+  superstruct@2.0.2:
+    resolution: {integrity: sha512-uV+TFRZdXsqXTL2pRvujROjdZQ4RAlBUS5BTh9IGm+jTqQntYThciG/qu57Gs69yjnVUSqdxF9YLmSnpupBW9A==}
     engines: {node: '>=14.0.0'}
 
   supports-color@2.0.0:
@@ -15998,6 +15950,10 @@ snapshots:
     dependencies:
       regenerator-runtime: 0.14.0
 
+  '@babel/runtime@7.24.8':
+    dependencies:
+      regenerator-runtime: 0.14.0
+
   '@babel/template@7.24.7':
     dependencies:
       '@babel/code-frame': 7.24.7
@@ -16068,14 +16024,14 @@ snapshots:
 
   '@bcoe/v8-coverage@0.2.3': {}
 
-  '@blocto/sdk@0.3.3(@solana/web3.js@1.94.0(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(bufferutil@4.0.7)(utf-8-validate@5.0.10)':
+  '@blocto/sdk@0.3.3(@solana/web3.js@1.95.1(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(bufferutil@4.0.7)(utf-8-validate@5.0.10)':
     dependencies:
       bs58: 4.0.1
       buffer: 6.0.3
       eip1193-provider: 1.0.1(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       js-sha3: 0.8.0
     optionalDependencies:
-      '@solana/web3.js': 1.94.0(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
+      '@solana/web3.js': 1.95.1(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
       - bufferutil
       - debug
@@ -16232,7 +16188,7 @@ snapshots:
   '@coinbase/wallet-sdk@3.6.4(@babel/core@7.22.17)(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)':
     dependencies:
       '@metamask/safe-event-emitter': 2.0.0
-      '@solana/web3.js': 1.90.0(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
+      '@solana/web3.js': 1.95.1(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
       bind-decorator: 1.0.11
       bn.js: 5.2.1
       buffer: 6.0.3
@@ -16372,7 +16328,7 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@crossmint/client-sdk-aa@0.2.1(@babel/runtime@7.24.7)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.7)(encoding@0.1.13)(react@18.2.0)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)':
+  '@crossmint/client-sdk-aa@0.2.1(@babel/runtime@7.24.8)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.7)(encoding@0.1.13)(react@18.2.0)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)':
     dependencies:
       '@ambire/signature-validator': 1.3.1(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       '@crossmint/common-sdk-base': 0.0.6
@@ -16386,9 +16342,9 @@ snapshots:
       '@lit-protocol/pkp-ethers': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.7)(encoding@0.1.13)(react@18.2.0)(utf-8-validate@5.0.10)
       '@lit-protocol/types': 3.1.2(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       '@types/node-forge': 1.3.1
-      '@web3auth/base': 7.3.2(@babel/runtime@7.24.7)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      '@web3auth/ethereum-provider': 7.3.2(@babel/runtime@7.24.7)(buffer@6.0.3)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      '@web3auth/single-factor-auth': 7.3.0(@babel/runtime@7.24.7)(@types/bn.js@5.1.5)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
+      '@web3auth/base': 7.3.2(@babel/runtime@7.24.8)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
+      '@web3auth/ethereum-provider': 7.3.2(@babel/runtime@7.24.8)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
+      '@web3auth/single-factor-auth': 7.3.0(@babel/runtime@7.24.8)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       '@zerodev/sdk': 4.5.2(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
       email-validator: 2.0.4
       ethers: 5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10)
@@ -16428,7 +16384,7 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@crossmint/client-sdk-aa@1.0.0-alpha.1(@babel/runtime@7.24.7)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.7)(encoding@0.1.13)(react@18.2.0)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)':
+  '@crossmint/client-sdk-aa@1.0.0-alpha.1(@babel/runtime@7.24.8)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.7)(encoding@0.1.13)(react@18.2.0)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)':
     dependencies:
       '@ambire/signature-validator': 1.3.1(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       '@crossmint/common-sdk-base': 0.0.12
@@ -16442,9 +16398,9 @@ snapshots:
       '@lit-protocol/types': 3.1.2(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       '@reservoir0x/reservoir-sdk': 2.0.11(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
       '@types/node-forge': 1.3.1
-      '@web3auth/base': 7.3.2(@babel/runtime@7.24.7)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      '@web3auth/ethereum-provider': 7.3.2(@babel/runtime@7.24.7)(buffer@6.0.3)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      '@web3auth/single-factor-auth': 7.3.0(@babel/runtime@7.24.7)(@types/bn.js@5.1.5)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
+      '@web3auth/base': 7.3.2(@babel/runtime@7.24.8)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
+      '@web3auth/ethereum-provider': 7.3.2(@babel/runtime@7.24.8)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
+      '@web3auth/single-factor-auth': 7.3.0(@babel/runtime@7.24.8)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       '@zerodev/ecdsa-validator': 5.1.0(@zerodev/sdk@5.1.12(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.0.34(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
       '@zerodev/sdk': 5.1.12(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
       '@zerodev/session-key': 5.1.0(@zerodev/sdk@5.1.12(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.0.34(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
@@ -16488,79 +16444,12 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@crossmint/client-sdk-aa@1.0.3(@babel/runtime@7.24.7)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.7)(encoding@0.1.13)(react@18.2.0)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)':
-    dependencies:
-      '@ambire/signature-validator': 1.3.1(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      '@crossmint/common-sdk-base': 0.0.13
-      '@datadog/browser-logs': 4.42.2
-      '@lit-protocol/auth-helpers': 3.1.2(ethers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))
-      '@lit-protocol/constants': 3.1.2(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      '@lit-protocol/contracts-sdk': 3.1.2(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      '@lit-protocol/lit-auth-client': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.7)(encoding@0.1.13)(react@18.2.0)(utf-8-validate@5.0.10)
-      '@lit-protocol/lit-node-client': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.7)(encoding@0.1.13)(react@18.2.0)(utf-8-validate@5.0.10)
-      '@lit-protocol/pkp-ethers': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.7)(encoding@0.1.13)(react@18.2.0)(utf-8-validate@5.0.10)
-      '@lit-protocol/types': 3.1.2(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      '@reservoir0x/reservoir-sdk': 2.0.11(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))
-      '@types/node-forge': 1.3.1
-      '@web3auth/base': 7.3.2(@babel/runtime@7.24.7)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      '@web3auth/ethereum-provider': 7.3.2(@babel/runtime@7.24.7)(buffer@6.0.3)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      '@web3auth/single-factor-auth': 7.3.0(@babel/runtime@7.24.7)(@types/bn.js@5.1.5)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      '@zerodev/ecdsa-validator': 5.2.1(@zerodev/sdk@5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))
-      '@zerodev/permissions': 5.2.5(@zerodev/sdk@5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))
-      '@zerodev/sdk': 5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))
-      '@zerodev/session-key': 5.2.1(@zerodev/sdk@5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))
-      email-validator: 2.0.4
-      ethers: 5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      libphonenumber-js: 1.10.44
-      node-forge: 1.3.1
-      permissionless: 0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))
-      siwe: 2.1.4(ethers@5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10))
-      viem: 2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
-      web3: 4.5.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
-    transitivePeerDependencies:
-      - '@azure/app-configuration'
-      - '@azure/cosmos'
-      - '@azure/data-tables'
-      - '@azure/identity'
-      - '@azure/keyvault-secrets'
-      - '@azure/storage-blob'
-      - '@babel/runtime'
-      - '@capacitor/preferences'
-      - '@datadog/browser-rum'
-      - '@ethersproject/contracts'
-      - '@ethersproject/hash'
-      - '@ethersproject/providers'
-      - '@ethersproject/wallet'
-      - '@netlify/blobs'
-      - '@planetscale/database'
-      - '@react-native-async-storage/async-storage'
-      - '@sentry/types'
-      - '@types/bn.js'
-      - '@upstash/redis'
-      - '@vercel/kv'
-      - buffer
-      - bufferutil
-      - c-kzg
-      - debug
-      - encoding
-      - react
-      - supports-color
-      - typescript
-      - utf-8-validate
-      - zod
-
-  '@crossmint/client-sdk-base@1.1.9':
-    dependencies:
-      '@crossmint/common-sdk-base': 0.0.6
-      exponential-backoff: 3.1.1
-      uuid: 9.0.1
-
-  '@crossmint/client-sdk-smart-wallet-web3auth-adapter@0.2.1(@babel/runtime@7.24.7)(buffer@6.0.3)(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)':
+  '@crossmint/client-sdk-smart-wallet-web3auth-adapter@0.2.1(@babel/runtime@7.24.8)(buffer@6.0.3)(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)':
     dependencies:
       '@crossmint/common-sdk-base': 0.0.13
-      '@web3auth/base': 7.3.2(@babel/runtime@7.24.7)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      '@web3auth/ethereum-provider': 7.3.2(@babel/runtime@7.24.7)(buffer@6.0.3)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      '@web3auth/single-factor-auth': 7.3.0(@babel/runtime@7.24.7)(@types/bn.js@5.1.5)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
+      '@web3auth/base': 7.3.2(@babel/runtime@7.24.8)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
+      '@web3auth/ethereum-provider': 7.3.2(@babel/runtime@7.24.8)(buffer@6.0.3)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
+      '@web3auth/single-factor-auth': 7.3.0(@babel/runtime@7.24.8)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       viem: 2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)
     transitivePeerDependencies:
       - '@azure/app-configuration'
@@ -16702,9 +16591,9 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@dynamic-labs/blocto@0.17.29(@dynamic-labs/logger@0.17.29)(@dynamic-labs/rpc-providers@0.17.29(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(@dynamic-labs/utils@0.17.29(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@dynamic-labs/wallet-book@0.17.29(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(@solana/web3.js@1.94.0(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(bufferutil@4.0.7)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(utf-8-validate@5.0.10)':
+  '@dynamic-labs/blocto@0.17.29(@dynamic-labs/logger@0.17.29)(@dynamic-labs/rpc-providers@0.17.29(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(@dynamic-labs/utils@0.17.29(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@dynamic-labs/wallet-book@0.17.29(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(@solana/web3.js@1.95.1(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(bufferutil@4.0.7)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(utf-8-validate@5.0.10)':
     dependencies:
-      '@blocto/sdk': 0.3.3(@solana/web3.js@1.94.0(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(bufferutil@4.0.7)(utf-8-validate@5.0.10)
+      '@blocto/sdk': 0.3.3(@solana/web3.js@1.95.1(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       '@dynamic-labs/ethereum': 0.17.29(@dynamic-labs/logger@0.17.29)(bufferutil@4.0.7)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(utf-8-validate@5.0.10)
       '@dynamic-labs/wallet-connector-core': 0.17.29(@dynamic-labs/logger@0.17.29)(@dynamic-labs/rpc-providers@0.17.29(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(@dynamic-labs/utils@0.17.29(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@dynamic-labs/wallet-book@0.17.29(react-dom@18.2.0(react@18.2.0))(react@18.2.0))
       ethers: 5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10)
@@ -16780,9 +16669,9 @@ snapshots:
       - react-dom
       - utf-8-validate
 
-  '@dynamic-labs/ethereum-all@0.17.29(@babel/core@7.22.17)(@dynamic-labs/logger@0.17.29)(@dynamic-labs/rpc-providers@0.17.29(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(@dynamic-labs/utils@0.17.29(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@dynamic-labs/wallet-book@0.17.29(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(@solana/web3.js@1.94.0(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(bufferutil@4.0.7)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(utf-8-validate@5.0.10)':
+  '@dynamic-labs/ethereum-all@0.17.29(@babel/core@7.22.17)(@dynamic-labs/logger@0.17.29)(@dynamic-labs/rpc-providers@0.17.29(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(@dynamic-labs/utils@0.17.29(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@dynamic-labs/wallet-book@0.17.29(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(@solana/web3.js@1.95.1(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(bufferutil@4.0.7)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(utf-8-validate@5.0.10)':
     dependencies:
-      '@dynamic-labs/blocto': 0.17.29(@dynamic-labs/logger@0.17.29)(@dynamic-labs/rpc-providers@0.17.29(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(@dynamic-labs/utils@0.17.29(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@dynamic-labs/wallet-book@0.17.29(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(@solana/web3.js@1.94.0(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(bufferutil@4.0.7)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(utf-8-validate@5.0.10)
+      '@dynamic-labs/blocto': 0.17.29(@dynamic-labs/logger@0.17.29)(@dynamic-labs/rpc-providers@0.17.29(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(@dynamic-labs/utils@0.17.29(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@dynamic-labs/wallet-book@0.17.29(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(@solana/web3.js@1.95.1(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(bufferutil@4.0.7)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(utf-8-validate@5.0.10)
       '@dynamic-labs/coinbase': 0.17.29(@babel/core@7.22.17)(@dynamic-labs/logger@0.17.29)(@dynamic-labs/rpc-providers@0.17.29(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(@dynamic-labs/wallet-book@0.17.29(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(bufferutil@4.0.7)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(utf-8-validate@5.0.10)
       '@dynamic-labs/ethereum': 0.17.29(@dynamic-labs/logger@0.17.29)(bufferutil@4.0.7)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(utf-8-validate@5.0.10)
       '@dynamic-labs/magic': 0.17.29(@dynamic-labs/rpc-providers@0.17.29(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(@dynamic-labs/wallet-book@0.17.29(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(bufferutil@4.0.7)(utf-8-validate@5.0.10)
@@ -16990,11 +16879,11 @@ snapshots:
       - encoding
       - utf-8-validate
 
-  '@dynamic-labs/sdk-react@0.17.29(@babel/core@7.22.17)(@dynamic-labs/logger@0.17.29)(@dynamic-labs/rpc-providers@0.17.29(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(@dynamic-labs/utils@0.17.29(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@dynamic-labs/wallet-book@0.17.29(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(@solana/web3.js@1.94.0(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(@types/react@18.2.21)(bufferutil@4.0.7)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(utf-8-validate@5.0.10)':
+  '@dynamic-labs/sdk-react@0.17.29(@babel/core@7.22.17)(@dynamic-labs/logger@0.17.29)(@dynamic-labs/rpc-providers@0.17.29(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(@dynamic-labs/utils@0.17.29(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@dynamic-labs/wallet-book@0.17.29(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(@solana/web3.js@1.95.1(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(@types/react@18.2.21)(bufferutil@4.0.7)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(utf-8-validate@5.0.10)':
     dependencies:
       '@dynamic-labs/algorand-all': 0.17.29(@dynamic-labs/logger@0.17.29)(@dynamic-labs/rpc-providers@0.17.29(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(@dynamic-labs/wallet-book@0.17.29(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       '@dynamic-labs/cosmos-all': 0.17.29(@dynamic-labs/logger@0.17.29)(@dynamic-labs/rpc-providers@0.17.29(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(bufferutil@4.0.7)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(utf-8-validate@5.0.10)
-      '@dynamic-labs/ethereum-all': 0.17.29(@babel/core@7.22.17)(@dynamic-labs/logger@0.17.29)(@dynamic-labs/rpc-providers@0.17.29(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(@dynamic-labs/utils@0.17.29(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@dynamic-labs/wallet-book@0.17.29(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(@solana/web3.js@1.94.0(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(bufferutil@4.0.7)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(utf-8-validate@5.0.10)
+      '@dynamic-labs/ethereum-all': 0.17.29(@babel/core@7.22.17)(@dynamic-labs/logger@0.17.29)(@dynamic-labs/rpc-providers@0.17.29(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(@dynamic-labs/utils@0.17.29(bufferutil@4.0.7)(utf-8-validate@5.0.10))(@dynamic-labs/wallet-book@0.17.29(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(@solana/web3.js@1.95.1(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(bufferutil@4.0.7)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(utf-8-validate@5.0.10)
       '@dynamic-labs/flow-all': 0.17.29(@dynamic-labs/logger@0.17.29)(@dynamic-labs/rpc-providers@0.17.29(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(@dynamic-labs/wallet-book@0.17.29(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
       '@dynamic-labs/magic': 0.17.29(@dynamic-labs/rpc-providers@0.17.29(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10))(@dynamic-labs/wallet-book@0.17.29(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       '@dynamic-labs/sdk-react-core': 0.17.29(@types/react@18.2.21)(bufferutil@4.0.7)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(utf-8-validate@5.0.10)
@@ -18059,7 +17948,7 @@ snapshots:
 
   '@fireblocks/ncw-js-infra@1.0.17':
     dependencies:
-      '@types/emscripten': 1.39.10
+      '@types/emscripten': 1.39.13
 
   '@fireblocks/ncw-js-sdk@11.0.2':
     dependencies:
@@ -20643,10 +20532,12 @@ snapshots:
     dependencies:
       '@babel/runtime': 7.24.7
 
-  '@openzeppelin/merkle-tree@1.0.6':
+  '@openzeppelin/merkle-tree@1.0.7':
     dependencies:
       '@ethersproject/abi': 5.7.0
-      ethereum-cryptography: 1.2.0
+      '@ethersproject/bytes': 5.7.0
+      '@ethersproject/constants': 5.7.0
+      '@ethersproject/keccak256': 5.7.0
 
   '@parcel/watcher-android-arm64@2.3.0':
     optional: true
@@ -20957,13 +20848,6 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  '@reservoir0x/reservoir-sdk@2.0.11(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))':
-    dependencies:
-      axios: 1.6.8
-      viem: 2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
-    transitivePeerDependencies:
-      - debug
-
   '@reservoir0x/reservoir-sdk@2.2.7(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))':
     dependencies:
       axios: 1.6.8
@@ -21215,12 +21099,6 @@ snapshots:
     dependencies:
       '@simplewebauthn/typescript-types': 8.3.4
 
-  '@simplewebauthn/browser@9.0.1':
-    dependencies:
-      '@simplewebauthn/types': 9.0.1
-
-  '@simplewebauthn/types@9.0.1': {}
-
   '@simplewebauthn/typescript-types@7.4.0': {}
 
   '@simplewebauthn/typescript-types@8.3.4': {}
@@ -21273,9 +21151,9 @@ snapshots:
       - encoding
       - utf-8-validate
 
-  '@solana/web3.js@1.78.5(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)':
+  '@solana/web3.js@1.95.1(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)':
     dependencies:
-      '@babel/runtime': 7.24.7
+      '@babel/runtime': 7.24.8
       '@noble/curves': 1.4.2
       '@noble/hashes': 1.4.0
       '@solana/buffer-layout': 4.0.1
@@ -21286,59 +21164,14 @@ snapshots:
       bs58: 4.0.1
       buffer: 6.0.3
       fast-stable-stringify: 1.0.0
-      jayson: 4.1.0(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      node-fetch: 2.7.0(encoding@0.1.13)
-      rpc-websockets: 7.11.0
-      superstruct: 0.14.2
-    transitivePeerDependencies:
-      - bufferutil
-      - encoding
-      - utf-8-validate
-
-  '@solana/web3.js@1.90.0(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)':
-    dependencies:
-      '@babel/runtime': 7.24.7
-      '@noble/curves': 1.4.2
-      '@noble/hashes': 1.4.0
-      '@solana/buffer-layout': 4.0.1
-      agentkeepalive: 4.5.0
-      bigint-buffer: 1.1.5
-      bn.js: 5.2.1
-      borsh: 0.7.0
-      bs58: 4.0.1
-      buffer: 6.0.3
-      fast-stable-stringify: 1.0.0
-      jayson: 4.1.0(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      node-fetch: 2.7.0(encoding@0.1.13)
-      rpc-websockets: 7.11.0
-      superstruct: 0.14.2
-    transitivePeerDependencies:
-      - bufferutil
-      - encoding
-      - utf-8-validate
-
-  '@solana/web3.js@1.94.0(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)':
-    dependencies:
-      '@babel/runtime': 7.24.7
-      '@noble/curves': 1.4.2
-      '@noble/hashes': 1.4.0
-      '@solana/buffer-layout': 4.0.1
-      agentkeepalive: 4.5.0
-      bigint-buffer: 1.1.5
-      bn.js: 5.2.1
-      borsh: 0.7.0
-      bs58: 4.0.1
-      buffer: 6.0.3
-      fast-stable-stringify: 1.0.0
-      jayson: 4.1.0(bufferutil@4.0.7)(utf-8-validate@5.0.10)
+      jayson: 4.1.1(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       node-fetch: 2.7.0(encoding@0.1.13)
       rpc-websockets: 9.0.2
-      superstruct: 1.0.4
+      superstruct: 2.0.2
     transitivePeerDependencies:
       - bufferutil
       - encoding
       - utf-8-validate
-    optional: true
 
   '@spruceid/siwe-parser@1.1.3':
     dependencies:
@@ -21512,7 +21345,6 @@ snapshots:
   '@swc/helpers@0.5.11':
     dependencies:
       tslib: 2.6.3
-    optional: true
 
   '@swc/helpers@0.5.2':
     dependencies:
@@ -21597,10 +21429,37 @@ snapshots:
       - supports-color
       - utf-8-validate
 
+  '@toruslabs/base-controllers@4.11.0(@babel/runtime@7.24.8)(bufferutil@4.0.7)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@babel/runtime': 7.24.8
+      '@ethereumjs/util': 9.0.1
+      '@metamask/rpc-errors': 6.1.0
+      '@toruslabs/broadcast-channel': 9.0.1(bufferutil@4.0.7)(utf-8-validate@5.0.10)
+      '@toruslabs/http-helpers': 6.0.0(@babel/runtime@7.24.8)
+      '@toruslabs/openlogin-jrpc': 6.2.11(@babel/runtime@7.24.8)
+      async-mutex: 0.4.0
+      bignumber.js: 9.1.2
+      bowser: 2.11.0
+      lodash: 4.17.21
+      loglevel: 1.8.1
+    transitivePeerDependencies:
+      - '@sentry/types'
+      - bufferutil
+      - c-kzg
+      - supports-color
+      - utf-8-validate
+
   '@toruslabs/base-session-manager@3.0.0(@babel/runtime@7.24.7)':
     dependencies:
       '@babel/runtime': 7.24.7
       '@toruslabs/http-helpers': 5.0.0(@babel/runtime@7.24.7)
+    transitivePeerDependencies:
+      - '@sentry/types'
+
+  '@toruslabs/base-session-manager@3.0.0(@babel/runtime@7.24.8)':
+    dependencies:
+      '@babel/runtime': 7.24.8
+      '@toruslabs/http-helpers': 5.0.0(@babel/runtime@7.24.8)
     transitivePeerDependencies:
       - '@sentry/types'
 
@@ -21624,6 +21483,10 @@ snapshots:
     dependencies:
       '@babel/runtime': 7.24.7
 
+  '@toruslabs/constants@13.1.0(@babel/runtime@7.24.8)':
+    dependencies:
+      '@babel/runtime': 7.24.8
+
   '@toruslabs/eccrypto@4.0.0':
     dependencies:
       elliptic: 6.5.5
@@ -21638,6 +21501,16 @@ snapshots:
     transitivePeerDependencies:
       - '@sentry/types'
 
+  '@toruslabs/fetch-node-details@13.1.1(@babel/runtime@7.24.8)':
+    dependencies:
+      '@babel/runtime': 7.24.8
+      '@toruslabs/constants': 13.1.0(@babel/runtime@7.24.8)
+      '@toruslabs/fnd-base': 13.1.1(@babel/runtime@7.24.8)
+      '@toruslabs/http-helpers': 5.0.0(@babel/runtime@7.24.8)
+      loglevel: 1.8.1
+    transitivePeerDependencies:
+      - '@sentry/types'
+
   '@toruslabs/ffjavascript@2.0.0': {}
 
   '@toruslabs/fnd-base@13.1.1(@babel/runtime@7.24.7)':
@@ -21645,9 +21518,20 @@ snapshots:
       '@babel/runtime': 7.24.7
       '@toruslabs/constants': 13.1.0(@babel/runtime@7.24.7)
 
+  '@toruslabs/fnd-base@13.1.1(@babel/runtime@7.24.8)':
+    dependencies:
+      '@babel/runtime': 7.24.8
+      '@toruslabs/constants': 13.1.0(@babel/runtime@7.24.8)
+
   '@toruslabs/http-helpers@5.0.0(@babel/runtime@7.24.7)':
     dependencies:
       '@babel/runtime': 7.24.7
+      lodash.merge: 4.6.2
+      loglevel: 1.8.1
+
+  '@toruslabs/http-helpers@5.0.0(@babel/runtime@7.24.8)':
+    dependencies:
+      '@babel/runtime': 7.24.8
       lodash.merge: 4.6.2
       loglevel: 1.8.1
 
@@ -21657,11 +21541,28 @@ snapshots:
       lodash.merge: 4.6.2
       loglevel: 1.8.1
 
+  '@toruslabs/http-helpers@6.0.0(@babel/runtime@7.24.8)':
+    dependencies:
+      '@babel/runtime': 7.24.8
+      lodash.merge: 4.6.2
+      loglevel: 1.8.1
+
   '@toruslabs/metadata-helpers@5.0.0(@babel/runtime@7.24.7)':
     dependencies:
       '@babel/runtime': 7.24.7
       '@toruslabs/eccrypto': 4.0.0
       '@toruslabs/http-helpers': 5.0.0(@babel/runtime@7.24.7)
+      elliptic: 6.5.5
+      ethereum-cryptography: 2.1.2
+      json-stable-stringify: 1.1.1
+    transitivePeerDependencies:
+      - '@sentry/types'
+
+  '@toruslabs/metadata-helpers@5.0.0(@babel/runtime@7.24.8)':
+    dependencies:
+      '@babel/runtime': 7.24.8
+      '@toruslabs/eccrypto': 4.0.0
+      '@toruslabs/http-helpers': 5.0.0(@babel/runtime@7.24.8)
       elliptic: 6.5.5
       ethereum-cryptography: 2.1.2
       json-stable-stringify: 1.1.1
@@ -21682,12 +21583,35 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@toruslabs/openlogin-jrpc@6.2.11(@babel/runtime@7.24.8)':
+    dependencies:
+      '@babel/runtime': 7.24.8
+      '@metamask/rpc-errors': 6.1.0
+      '@toruslabs/openlogin-utils': 6.2.11(@babel/runtime@7.24.8)
+      end-of-stream: 1.4.4
+      events: 3.3.0
+      fast-safe-stringify: 2.1.1
+      once: 1.4.0
+      pump: 3.0.0
+      readable-stream: 4.5.2
+    transitivePeerDependencies:
+      - supports-color
+
   '@toruslabs/openlogin-session-manager@3.0.0(@babel/runtime@7.24.7)':
     dependencies:
       '@babel/runtime': 7.24.7
       '@toruslabs/base-session-manager': 3.0.0(@babel/runtime@7.24.7)
       '@toruslabs/eccrypto': 4.0.0
       '@toruslabs/metadata-helpers': 5.0.0(@babel/runtime@7.24.7)
+    transitivePeerDependencies:
+      - '@sentry/types'
+
+  '@toruslabs/openlogin-session-manager@3.0.0(@babel/runtime@7.24.8)':
+    dependencies:
+      '@babel/runtime': 7.24.8
+      '@toruslabs/base-session-manager': 3.0.0(@babel/runtime@7.24.8)
+      '@toruslabs/eccrypto': 4.0.0
+      '@toruslabs/metadata-helpers': 5.0.0(@babel/runtime@7.24.8)
     transitivePeerDependencies:
       - '@sentry/types'
 
@@ -21701,10 +21625,25 @@ snapshots:
     transitivePeerDependencies:
       - '@sentry/types'
 
+  '@toruslabs/openlogin-subkey@6.0.0(@babel/runtime@7.24.8)':
+    dependencies:
+      '@babel/runtime': 7.24.8
+      '@toruslabs/ffjavascript': 2.0.0
+      '@toruslabs/metadata-helpers': 5.0.0(@babel/runtime@7.24.8)
+      bn.js: 5.2.1
+    transitivePeerDependencies:
+      - '@sentry/types'
+
   '@toruslabs/openlogin-utils@6.2.11(@babel/runtime@7.24.7)':
     dependencies:
       '@babel/runtime': 7.24.7
       '@toruslabs/constants': 13.1.0(@babel/runtime@7.24.7)
+      base64url: 3.0.1
+
+  '@toruslabs/openlogin-utils@6.2.11(@babel/runtime@7.24.8)':
+    dependencies:
+      '@babel/runtime': 7.24.8
+      '@toruslabs/constants': 13.1.0(@babel/runtime@7.24.8)
       base64url: 3.0.1
 
   '@toruslabs/openlogin@6.2.11(@babel/runtime@7.24.7)(bufferutil@4.0.7)(utf-8-validate@5.0.10)':
@@ -21715,6 +21654,24 @@ snapshots:
       '@toruslabs/openlogin-session-manager': 3.0.0(@babel/runtime@7.24.7)
       '@toruslabs/openlogin-utils': 6.2.11(@babel/runtime@7.24.7)
       '@toruslabs/secure-pub-sub': 0.0.1(@babel/runtime@7.24.7)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
+      bowser: 2.11.0
+      events: 3.3.0
+      loglevel: 1.8.1
+      ts-custom-error: 3.3.1
+    transitivePeerDependencies:
+      - '@sentry/types'
+      - bufferutil
+      - supports-color
+      - utf-8-validate
+
+  '@toruslabs/openlogin@6.2.11(@babel/runtime@7.24.8)(bufferutil@4.0.7)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@babel/runtime': 7.24.8
+      '@toruslabs/eccrypto': 4.0.0
+      '@toruslabs/metadata-helpers': 5.0.0(@babel/runtime@7.24.8)
+      '@toruslabs/openlogin-session-manager': 3.0.0(@babel/runtime@7.24.8)
+      '@toruslabs/openlogin-utils': 6.2.11(@babel/runtime@7.24.8)
+      '@toruslabs/secure-pub-sub': 0.0.1(@babel/runtime@7.24.8)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       bowser: 2.11.0
       events: 3.3.0
       loglevel: 1.8.1
@@ -21739,12 +21696,40 @@ snapshots:
       - supports-color
       - utf-8-validate
 
+  '@toruslabs/secure-pub-sub@0.0.1(@babel/runtime@7.24.8)(bufferutil@4.0.7)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@babel/runtime': 7.24.8
+      '@toruslabs/eccrypto': 4.0.0
+      '@toruslabs/http-helpers': 5.0.0(@babel/runtime@7.24.8)
+      '@toruslabs/metadata-helpers': 5.0.0(@babel/runtime@7.24.8)
+      loglevel: 1.8.1
+      socket.io-client: 4.7.4(bufferutil@4.0.7)(utf-8-validate@5.0.10)
+    transitivePeerDependencies:
+      - '@sentry/types'
+      - bufferutil
+      - supports-color
+      - utf-8-validate
+
   '@toruslabs/torus.js@12.1.1(@babel/runtime@7.24.7)':
     dependencies:
       '@babel/runtime': 7.24.7
       '@toruslabs/constants': 13.1.0(@babel/runtime@7.24.7)
       '@toruslabs/eccrypto': 4.0.0
       '@toruslabs/http-helpers': 5.0.0(@babel/runtime@7.24.7)
+      bn.js: 5.2.1
+      elliptic: 6.5.5
+      ethereum-cryptography: 2.1.2
+      json-stable-stringify: 1.1.1
+      loglevel: 1.8.1
+    transitivePeerDependencies:
+      - '@sentry/types'
+
+  '@toruslabs/torus.js@12.1.1(@babel/runtime@7.24.8)':
+    dependencies:
+      '@babel/runtime': 7.24.8
+      '@toruslabs/constants': 13.1.0(@babel/runtime@7.24.8)
+      '@toruslabs/eccrypto': 4.0.0
+      '@toruslabs/http-helpers': 5.0.0(@babel/runtime@7.24.8)
       bn.js: 5.2.1
       elliptic: 6.5.5
       ethereum-cryptography: 2.1.2
@@ -21854,7 +21839,7 @@ snapshots:
     dependencies:
       '@types/ms': 0.7.34
 
-  '@types/emscripten@1.39.10': {}
+  '@types/emscripten@1.39.13': {}
 
   '@types/eslint-plugin-prettier@3.1.0':
     dependencies:
@@ -22060,8 +22045,7 @@ snapshots:
 
   '@types/uuid@10.0.0': {}
 
-  '@types/uuid@8.3.4':
-    optional: true
+  '@types/uuid@8.3.4': {}
 
   '@types/uuid@9.0.4': {}
 
@@ -23478,6 +23462,21 @@ snapshots:
       - supports-color
       - utf-8-validate
 
+  '@web3auth/base-provider@7.3.2(@babel/runtime@7.24.8)(bufferutil@4.0.7)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@babel/runtime': 7.24.8
+      '@metamask/rpc-errors': 6.1.0
+      '@toruslabs/base-controllers': 4.11.0(@babel/runtime@7.24.8)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
+      '@toruslabs/openlogin-jrpc': 6.2.11(@babel/runtime@7.24.8)
+      '@web3auth/base': 7.3.2(@babel/runtime@7.24.8)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
+      json-rpc-random-id: 1.0.1
+    transitivePeerDependencies:
+      - '@sentry/types'
+      - bufferutil
+      - c-kzg
+      - supports-color
+      - utf-8-validate
+
   '@web3auth/base@7.3.2(@babel/runtime@7.24.7)(bufferutil@4.0.7)(utf-8-validate@5.0.10)':
     dependencies:
       '@babel/runtime': 7.24.7
@@ -23485,6 +23484,22 @@ snapshots:
       '@toruslabs/openlogin': 6.2.11(@babel/runtime@7.24.7)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       '@toruslabs/openlogin-jrpc': 6.2.11(@babel/runtime@7.24.7)
       '@toruslabs/openlogin-utils': 6.2.11(@babel/runtime@7.24.7)
+      jwt-decode: 4.0.0
+      loglevel: 1.8.1
+      ts-custom-error: 3.3.1
+    transitivePeerDependencies:
+      - '@sentry/types'
+      - bufferutil
+      - supports-color
+      - utf-8-validate
+
+  '@web3auth/base@7.3.2(@babel/runtime@7.24.8)(bufferutil@4.0.7)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@babel/runtime': 7.24.8
+      '@toruslabs/http-helpers': 6.0.0(@babel/runtime@7.24.8)
+      '@toruslabs/openlogin': 6.2.11(@babel/runtime@7.24.8)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
+      '@toruslabs/openlogin-jrpc': 6.2.11(@babel/runtime@7.24.8)
+      '@toruslabs/openlogin-utils': 6.2.11(@babel/runtime@7.24.8)
       jwt-decode: 4.0.0
       loglevel: 1.8.1
       ts-custom-error: 3.3.1
@@ -23532,6 +23547,82 @@ snapshots:
       - supports-color
       - utf-8-validate
 
+  '@web3auth/ethereum-provider@7.3.2(@babel/runtime@7.24.8)(buffer@6.0.3)(bufferutil@4.0.7)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@babel/runtime': 7.24.8
+      '@ethereumjs/common': 4.1.0(buffer@6.0.3)
+      '@ethereumjs/tx': 5.1.0(buffer@6.0.3)
+      '@ethereumjs/util': 9.0.1
+      '@metamask/eth-sig-util': 7.0.1
+      '@metamask/rpc-errors': 6.1.0
+      '@toruslabs/base-controllers': 4.11.0(@babel/runtime@7.24.8)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
+      '@toruslabs/http-helpers': 6.0.0(@babel/runtime@7.24.8)
+      '@toruslabs/openlogin-jrpc': 6.2.11(@babel/runtime@7.24.8)
+      '@walletconnect/utils': 2.11.1
+      '@web3auth/base': 7.3.2(@babel/runtime@7.24.8)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
+      '@web3auth/base-provider': 7.3.2(@babel/runtime@7.24.8)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
+      assert: 2.1.0
+      bignumber.js: 9.1.2
+      bn.js: 5.2.1
+      jsonschema: 1.4.1
+    transitivePeerDependencies:
+      - '@azure/app-configuration'
+      - '@azure/cosmos'
+      - '@azure/data-tables'
+      - '@azure/identity'
+      - '@azure/keyvault-secrets'
+      - '@azure/storage-blob'
+      - '@capacitor/preferences'
+      - '@netlify/blobs'
+      - '@planetscale/database'
+      - '@react-native-async-storage/async-storage'
+      - '@sentry/types'
+      - '@upstash/redis'
+      - '@vercel/kv'
+      - buffer
+      - bufferutil
+      - c-kzg
+      - supports-color
+      - utf-8-validate
+
+  '@web3auth/ethereum-provider@7.3.2(@babel/runtime@7.24.8)(bufferutil@4.0.7)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@babel/runtime': 7.24.8
+      '@ethereumjs/common': 4.1.0(buffer@6.0.3)
+      '@ethereumjs/tx': 5.1.0(buffer@6.0.3)
+      '@ethereumjs/util': 9.0.1
+      '@metamask/eth-sig-util': 7.0.1
+      '@metamask/rpc-errors': 6.1.0
+      '@toruslabs/base-controllers': 4.11.0(@babel/runtime@7.24.8)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
+      '@toruslabs/http-helpers': 6.0.0(@babel/runtime@7.24.8)
+      '@toruslabs/openlogin-jrpc': 6.2.11(@babel/runtime@7.24.8)
+      '@walletconnect/utils': 2.11.1
+      '@web3auth/base': 7.3.2(@babel/runtime@7.24.8)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
+      '@web3auth/base-provider': 7.3.2(@babel/runtime@7.24.8)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
+      assert: 2.1.0
+      bignumber.js: 9.1.2
+      bn.js: 5.2.1
+      jsonschema: 1.4.1
+    transitivePeerDependencies:
+      - '@azure/app-configuration'
+      - '@azure/cosmos'
+      - '@azure/data-tables'
+      - '@azure/identity'
+      - '@azure/keyvault-secrets'
+      - '@azure/storage-blob'
+      - '@capacitor/preferences'
+      - '@netlify/blobs'
+      - '@planetscale/database'
+      - '@react-native-async-storage/async-storage'
+      - '@sentry/types'
+      - '@upstash/redis'
+      - '@vercel/kv'
+      - buffer
+      - bufferutil
+      - c-kzg
+      - supports-color
+      - utf-8-validate
+
   '@web3auth/single-factor-auth@7.3.0(@babel/runtime@7.24.7)(@types/bn.js@5.1.5)(bufferutil@4.0.7)(utf-8-validate@5.0.10)':
     dependencies:
       '@babel/runtime': 7.24.7
@@ -23543,6 +23634,25 @@ snapshots:
       '@toruslabs/openlogin-utils': 6.2.11(@babel/runtime@7.24.7)
       '@toruslabs/torus.js': 12.1.1(@babel/runtime@7.24.7)
       '@web3auth/base': 7.3.2(@babel/runtime@7.24.7)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
+      jwt-decode: 4.0.0
+    transitivePeerDependencies:
+      - '@sentry/types'
+      - '@types/bn.js'
+      - bufferutil
+      - supports-color
+      - utf-8-validate
+
+  '@web3auth/single-factor-auth@7.3.0(@babel/runtime@7.24.8)(bufferutil@4.0.7)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@babel/runtime': 7.24.8
+      '@toruslabs/constants': 13.1.0(@babel/runtime@7.24.8)
+      '@toruslabs/fetch-node-details': 13.1.1(@babel/runtime@7.24.8)
+      '@toruslabs/openlogin-jrpc': 6.2.11(@babel/runtime@7.24.8)
+      '@toruslabs/openlogin-session-manager': 3.0.0(@babel/runtime@7.24.8)
+      '@toruslabs/openlogin-subkey': 6.0.0(@babel/runtime@7.24.8)
+      '@toruslabs/openlogin-utils': 6.2.11(@babel/runtime@7.24.8)
+      '@toruslabs/torus.js': 12.1.1(@babel/runtime@7.24.8)
+      '@web3auth/base': 7.3.2(@babel/runtime@7.24.8)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       jwt-decode: 4.0.0
     transitivePeerDependencies:
       - '@sentry/types'
@@ -23644,12 +23754,6 @@ snapshots:
       permissionless: 0.0.34(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
       viem: 2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
 
-  '@zerodev/ecdsa-validator@5.2.1(@zerodev/sdk@5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))':
-    dependencies:
-      '@zerodev/sdk': 5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))
-      permissionless: 0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))
-      viem: 2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
-
   '@zerodev/ecdsa-validator@5.2.3(@zerodev/sdk@5.2.15(permissionless@0.1.29(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.29(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))':
     dependencies:
       '@zerodev/sdk': 5.2.15(permissionless@0.1.29(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
@@ -23671,19 +23775,11 @@ snapshots:
       permissionless: 0.1.36(viem@2.9.17(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4))
       viem: 2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)
 
-  '@zerodev/permissions@5.2.5(@zerodev/sdk@5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))':
-    dependencies:
-      '@simplewebauthn/browser': 9.0.1
-      '@zerodev/sdk': 5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))
-      merkletreejs: 0.3.11
-      permissionless: 0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))
-      viem: 2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
-
   '@zerodev/sdk@4.5.2(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)':
     dependencies:
       '@alchemy/aa-core': 0.1.0-alpha.23(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
       '@alchemy/aa-ethers': 0.1.0-alpha.23(@alchemy/aa-core@0.1.0-alpha.23(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
-      '@openzeppelin/merkle-tree': 1.0.6
+      '@openzeppelin/merkle-tree': 1.0.7
       axios: 1.6.8
       merkletreejs: 0.3.11
       viem: 1.21.4(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
@@ -23698,12 +23794,6 @@ snapshots:
     dependencies:
       permissionless: 0.0.34(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
       viem: 2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
-
-  '@zerodev/sdk@5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))':
-    dependencies:
-      permissionless: 0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))
-      semver: 7.6.0
-      viem: 2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
 
   '@zerodev/sdk@5.2.15(permissionless@0.1.29(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))':
     dependencies:
@@ -23723,13 +23813,6 @@ snapshots:
       merkletreejs: 0.3.11
       permissionless: 0.0.34(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
       viem: 2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
-
-  '@zerodev/session-key@5.2.1(@zerodev/sdk@5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))':
-    dependencies:
-      '@zerodev/sdk': 5.2.1(permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))
-      merkletreejs: 0.3.11
-      permissionless: 0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4))
-      viem: 2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
 
   '@zerodev/webauthn-key@5.3.1(viem@2.9.17(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4))':
     dependencies:
@@ -23752,12 +23835,6 @@ snapshots:
 
   abbrev@2.0.0: {}
 
-  abitype@0.7.1(typescript@5.3.3)(zod@3.22.4):
-    dependencies:
-      typescript: 5.3.3
-    optionalDependencies:
-      zod: 3.22.4
-
   abitype@0.7.1(typescript@5.5.3)(zod@3.22.4):
     dependencies:
       typescript: 5.5.3
@@ -23773,11 +23850,6 @@ snapshots:
   abitype@0.9.8(typescript@5.5.3)(zod@3.22.4):
     optionalDependencies:
       typescript: 5.5.3
-      zod: 3.22.4
-
-  abitype@1.0.0(typescript@5.3.3)(zod@3.22.4):
-    optionalDependencies:
-      typescript: 5.3.3
       zod: 3.22.4
 
   abitype@1.0.0(typescript@5.4.2)(zod@3.22.4):
@@ -24015,8 +24087,8 @@ snapshots:
   array.prototype.every@1.1.5:
     dependencies:
       call-bind: 1.0.7
-      define-properties: 1.2.0
-      es-abstract: 1.22.1
+      define-properties: 1.2.1
+      es-abstract: 1.23.3
       is-string: 1.0.7
 
   array.prototype.findlast@1.2.5:
@@ -28812,7 +28884,7 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  jayson@4.1.0(bufferutil@4.0.7)(utf-8-validate@5.0.10):
+  jayson@4.1.1(bufferutil@4.0.7)(utf-8-validate@5.0.10):
     dependencies:
       '@types/connect': 3.4.36
       '@types/node': 12.20.55
@@ -30701,7 +30773,7 @@ snapshots:
       functions-have-names: 1.2.3
       gopd: 1.0.1
       has-property-descriptors: 1.0.2
-      hasown: 2.0.0
+      hasown: 2.0.2
       isarray: 2.0.5
 
   modify-values@1.0.1: {}
@@ -31554,10 +31626,6 @@ snapshots:
   permissionless@0.0.34(viem@2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)):
     dependencies:
       viem: 2.8.16(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
-
-  permissionless@0.1.18(viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)):
-    dependencies:
-      viem: 2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
 
   permissionless@0.1.29(viem@2.13.1(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)):
     dependencies:
@@ -33077,7 +33145,6 @@ snapshots:
     optionalDependencies:
       bufferutil: 4.0.7
       utf-8-validate: 5.0.10
-    optional: true
 
   rrweb-cssom@0.6.0: {}
 
@@ -33890,6 +33957,8 @@ snapshots:
 
   superstruct@1.0.4: {}
 
+  superstruct@2.0.2: {}
+
   supports-color@2.0.0: {}
 
   supports-color@5.5.0:
@@ -34066,7 +34135,7 @@ snapshots:
       get-package-type: 0.1.0
       glob: 7.2.3
       has-dynamic-import: 2.0.1
-      hasown: 2.0.0
+      hasown: 2.0.2
       inherits: 2.0.4
       is-regex: 1.1.4
       minimist: 1.2.8
@@ -34074,9 +34143,9 @@ snapshots:
       object-inspect: 1.13.1
       object-is: 1.1.5
       object-keys: 1.1.1
-      object.assign: 4.1.4
+      object.assign: 4.1.5
       resolve: 2.0.0-next.5
-      string.prototype.trim: 1.2.8
+      string.prototype.trim: 1.2.9
 
   tar-stream@2.2.0:
     dependencies:
@@ -34877,23 +34946,6 @@ snapshots:
       - utf-8-validate
       - zod
 
-  viem@2.9.17(bufferutil@4.0.7)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4):
-    dependencies:
-      '@adraffy/ens-normalize': 1.10.0
-      '@noble/curves': 1.2.0
-      '@noble/hashes': 1.3.2
-      '@scure/bip32': 1.3.2
-      '@scure/bip39': 1.2.1
-      abitype: 1.0.0(typescript@5.3.3)(zod@3.22.4)
-      isows: 1.0.3(ws@8.13.0(bufferutil@4.0.7)(utf-8-validate@5.0.10))
-      ws: 8.13.0(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-    optionalDependencies:
-      typescript: 5.3.3
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-      - zod
-
   viem@2.9.17(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4):
     dependencies:
       '@adraffy/ens-normalize': 1.10.0
@@ -35210,17 +35262,6 @@ snapshots:
     dependencies:
       web3-types: 1.4.0
 
-  web3-eth-abi@4.2.0(typescript@5.3.3)(zod@3.22.4):
-    dependencies:
-      abitype: 0.7.1(typescript@5.3.3)(zod@3.22.4)
-      web3-errors: 1.1.4
-      web3-types: 1.4.0
-      web3-utils: 4.2.0
-      web3-validator: 2.0.4
-    transitivePeerDependencies:
-      - typescript
-      - zod
-
   web3-eth-abi@4.2.0(typescript@5.5.3)(zod@3.22.4):
     dependencies:
       abitype: 0.7.1(typescript@5.5.3)(zod@3.22.4)
@@ -35242,46 +35283,12 @@ snapshots:
       web3-utils: 4.2.0
       web3-validator: 2.0.4
 
-  web3-eth-contract@4.2.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4):
-    dependencies:
-      web3-core: 4.3.2(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
-      web3-errors: 1.1.4
-      web3-eth: 4.4.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
-      web3-eth-abi: 4.2.0(typescript@5.3.3)(zod@3.22.4)
-      web3-types: 1.4.0
-      web3-utils: 4.2.0
-      web3-validator: 2.0.4
-    transitivePeerDependencies:
-      - bufferutil
-      - encoding
-      - typescript
-      - utf-8-validate
-      - zod
-
   web3-eth-contract@4.2.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4):
     dependencies:
       web3-core: 4.3.2(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
       web3-errors: 1.1.4
       web3-eth: 4.4.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
       web3-eth-abi: 4.2.0(typescript@5.5.3)(zod@3.22.4)
-      web3-types: 1.4.0
-      web3-utils: 4.2.0
-      web3-validator: 2.0.4
-    transitivePeerDependencies:
-      - bufferutil
-      - encoding
-      - typescript
-      - utf-8-validate
-      - zod
-
-  web3-eth-ens@4.0.8(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4):
-    dependencies:
-      '@adraffy/ens-normalize': 1.10.1
-      web3-core: 4.3.2(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
-      web3-errors: 1.1.4
-      web3-eth: 4.4.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
-      web3-eth-contract: 4.2.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
-      web3-net: 4.0.7(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
       web3-types: 1.4.0
       web3-utils: 4.2.0
       web3-validator: 2.0.4
@@ -35322,45 +35329,10 @@ snapshots:
       web3-utils: 4.2.0
       web3-validator: 2.0.4
 
-  web3-eth-personal@4.0.8(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4):
-    dependencies:
-      web3-core: 4.3.2(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
-      web3-eth: 4.4.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
-      web3-rpc-methods: 1.1.4(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
-      web3-types: 1.4.0
-      web3-utils: 4.2.0
-      web3-validator: 2.0.4
-    transitivePeerDependencies:
-      - bufferutil
-      - encoding
-      - typescript
-      - utf-8-validate
-      - zod
-
   web3-eth-personal@4.0.8(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4):
     dependencies:
       web3-core: 4.3.2(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
       web3-eth: 4.4.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
-      web3-rpc-methods: 1.1.4(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
-      web3-types: 1.4.0
-      web3-utils: 4.2.0
-      web3-validator: 2.0.4
-    transitivePeerDependencies:
-      - bufferutil
-      - encoding
-      - typescript
-      - utf-8-validate
-      - zod
-
-  web3-eth@4.4.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4):
-    dependencies:
-      setimmediate: 1.0.5
-      web3-core: 4.3.2(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
-      web3-errors: 1.1.4
-      web3-eth-abi: 4.2.0(typescript@5.3.3)(zod@3.22.4)
-      web3-eth-accounts: 4.1.1
-      web3-net: 4.0.7(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
-      web3-providers-ws: 4.0.7(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       web3-rpc-methods: 1.1.4(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
       web3-types: 1.4.0
       web3-utils: 4.2.0
@@ -35496,31 +35468,6 @@ snapshots:
       web3-errors: 1.1.4
       web3-types: 1.4.0
       zod: 3.22.4
-
-  web3@4.5.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4):
-    dependencies:
-      web3-core: 4.3.2(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
-      web3-errors: 1.1.4
-      web3-eth: 4.4.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
-      web3-eth-abi: 4.2.0(typescript@5.3.3)(zod@3.22.4)
-      web3-eth-accounts: 4.1.1
-      web3-eth-contract: 4.2.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
-      web3-eth-ens: 4.0.8(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
-      web3-eth-iban: 4.0.7
-      web3-eth-personal: 4.0.8(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.3.3)(utf-8-validate@5.0.10)(zod@3.22.4)
-      web3-net: 4.0.7(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
-      web3-providers-http: 4.1.0(encoding@0.1.13)
-      web3-providers-ws: 4.0.7(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      web3-rpc-methods: 1.1.4(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
-      web3-types: 1.4.0
-      web3-utils: 4.2.0
-      web3-validator: 2.0.4
-    transitivePeerDependencies:
-      - bufferutil
-      - encoding
-      - typescript
-      - utf-8-validate
-      - zod
 
   web3@4.5.0(bufferutil@4.0.7)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4):
     dependencies:

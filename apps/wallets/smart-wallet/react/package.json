@@ -4,9 +4,9 @@
     "private": true,
     "scripts": {
         "build": "react-app-rewired build",
+        "dev": "react-app-rewired start",
         "eject": "react-scripts eject",
-        "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-        "start": "react-app-rewired start"
+        "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
     },
     "browserslist": {
         "production": [
