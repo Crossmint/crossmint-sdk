@@ -5,12 +5,6 @@ import { Blockchain, SmartWalletSDK, ViemAccount } from "@crossmint/client-sdk-a
 import { checkAuthState, signInWithGoogle } from "../../auth/FirebaseAuthManager";
 
 export const createViemAAWallet = async (isProd: boolean, privateKey: `0x${string}`) => {
-    if (!privateKey) {
-        throw new Error(
-            "No private key found: Please provide a private key to this function or use the createPasskeyWallet function"
-        );
-    }
-
     let jwt = await checkAuthState();
 
     if (!jwt) {
@@ -34,7 +28,7 @@ export const createViemAAWallet = async (isProd: boolean, privateKey: `0x${strin
     // Crossmint supports several secure signer options, documented later in the guide.
     const signer: ViemAccount = {
         type: "VIEM_ACCOUNT",
-        account: privateKeyToAccount(privateKey) as any,
+        account: privateKeyToAccount(privateKey) as unknown as ViemAccount["account"],
     };
     const chain = isProd ? Blockchain.POLYGON : Blockchain.POLYGON_AMOY;
     return await xm.getOrCreateWallet({ jwt }, chain, { signer });
