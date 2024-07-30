@@ -1,8 +1,9 @@
 import { stringify } from "viem";
 
-import { EVMBlockchainIncludingTestnet, validateAPIKey } from "@crossmint/common-sdk-base";
+import { validateAPIKey } from "@crossmint/common-sdk-base";
 
 import { CrossmintWalletService } from "./api/CrossmintWalletService";
+import { SmartWalletChain } from "./blockchain/chains";
 import type { EVMSmartWallet } from "./blockchain/wallets";
 import { ClientDecorator } from "./blockchain/wallets/clientDecorator";
 import { SmartWalletService } from "./blockchain/wallets/service";
@@ -54,7 +55,7 @@ export class SmartWalletSDK extends LoggerWrapper {
      */
     async getOrCreateWallet(
         user: UserParams,
-        chain: EVMBlockchainIncludingTestnet,
+        chain: SmartWalletChain,
         walletParams: WalletParams = { signer: { type: "PASSKEY" } }
     ): Promise<EVMSmartWallet> {
         return logPerformance(

@@ -7,7 +7,7 @@ import type { SmartAccountClient } from "permissionless";
 import type { EntryPoint } from "permissionless/types/entrypoint";
 import { stringify } from "viem";
 
-import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
+import { SmartWalletChain } from "../chains";
 
 const transactionMethods = [
     "sendTransaction",
@@ -44,7 +44,7 @@ export class ClientDecorator {
         crossmintChain,
         smartAccountClient,
     }: {
-        crossmintChain: EVMBlockchainIncludingTestnet;
+        crossmintChain: SmartWalletChain;
         smartAccountClient: Client;
     }): Client {
         return new Proxy(smartAccountClient, {
@@ -73,7 +73,7 @@ export class ClientDecorator {
         // eslint-disable-next-line @typescript-eslint/ban-types
         originalMethod: Function,
         args: any[],
-        crossmintChain: EVMBlockchainIncludingTestnet
+        crossmintChain: SmartWalletChain
     ) {
         try {
             logInfo(`[CrossmintSmartWallet.${prop}] - params: ${stringify(args)}`);
@@ -88,7 +88,7 @@ export class ClientDecorator {
         }
     }
 
-    private processTxnArgs(prop: TxnMethod, crossmintChain: EVMBlockchainIncludingTestnet, args: any[]): any[] {
+    private processTxnArgs(prop: TxnMethod, crossmintChain: SmartWalletChain, args: any[]): any[] {
         if (prop === "sendUserOperation") {
             const [{ userOperation, middleware, account }] = args as Parameters<
                 SmartAccountClient<EntryPoint>["sendUserOperation"]
@@ -115,7 +115,7 @@ export class ClientDecorator {
      * https://docs.zerodev.app/sdk/faqs/use-with-gelato#transaction-configuration
      */
     private addGelatoBundlerProperties(
-        crossmintChain: EVMBlockchainIncludingTestnet,
+        crossmintChain: SmartWalletChain,
         txnParams: { maxFeePerGas?: bigint; maxPriorityFeePerGas?: bigint }
     ) {
         if (usesGelatoBundler(crossmintChain)) {

@@ -2,14 +2,13 @@ import { providerToSmartAccountSigner } from "permissionless";
 import type { SmartAccountSigner } from "permissionless/accounts";
 import { Address, EIP1193Provider } from "viem";
 
-import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
-
+import { SmartWalletChain } from "..";
 import { SmartWalletSDKError } from "../error";
 import { ViemAccount, WalletParams } from "../types/Config";
 import { logInputOutput } from "./log";
 
 type CreateOwnerSignerInput = {
-    chain: EVMBlockchainIncludingTestnet;
+    chain: SmartWalletChain;
     walletParams: WalletParams;
 };
 

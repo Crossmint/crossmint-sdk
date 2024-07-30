@@ -1,5 +1,7 @@
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
+import { SmartWalletChain } from "..";
+
 function isPolygonCDK(chain: EVMBlockchainIncludingTestnet) {
     const polygonCDKchains: EVMBlockchainIncludingTestnet[] = [
         EVMBlockchainIncludingTestnet.ZKYOTO,
@@ -10,6 +12,6 @@ function isPolygonCDK(chain: EVMBlockchainIncludingTestnet) {
     return polygonCDKchains.includes(chain);
 }
 
-export function usesGelatoBundler(chain: EVMBlockchainIncludingTestnet) {
-    return isPolygonCDK(chain);
+export function usesGelatoBundler(chain: SmartWalletChain) {
+    return false;
 }

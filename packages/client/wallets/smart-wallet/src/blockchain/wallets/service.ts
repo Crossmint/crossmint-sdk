@@ -7,7 +7,7 @@ import { Address, type HttpTransport, createPublicClient, getAddress, http } fro
 
 import { blockchainToChainId } from "@crossmint/common-sdk-base";
 
-import type { CrossmintWalletService, EVMBlockchainIncludingTestnet } from "../../api/CrossmintWalletService";
+import type { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import {
     AdminMismatchError,
     CrossmintServiceError,
@@ -25,7 +25,7 @@ import {
     isSupportedKernelVersion,
 } from "../../types/internal";
 import { CURRENT_VERSION, ZERO_DEV_TYPE } from "../../utils/constants";
-import { getBundlerRPC, getViemNetwork } from "../BlockchainNetworks";
+import { SmartWalletChain, getBundlerRPC, viemNetworks } from "../chains";
 import { EVMSmartWallet } from "./EVMSmartWallet";
 import { ClientDecorator } from "./clientDecorator";
 import { EOAAccountService, type EOAWalletParams } from "./eoa";
@@ -44,7 +44,7 @@ export class SmartWalletService {
 
     public async getOrCreate(
         user: UserParams,
-        chain: EVMBlockchainIncludingTestnet,
+        chain: SmartWalletChain,
         walletParams: WalletParams
     ): Promise<EVMSmartWallet> {
         const { entryPoint, kernelVersion, existingSignerConfig, smartContractWalletAddress, userId } =
@@ -82,7 +82,7 @@ export class SmartWalletService {
 
         const kernelAccountClient: SmartWalletClient = createKernelAccountClient({
             account,
-            chain: getViemNetwork(chain),
+            chain: viemNetworks[chain],
             entryPoint: account.entryPoint,
             bundlerTransport: http(getBundlerRPC(chain)),
             ...(usePaymaster(chain) && paymasterMiddleware({ entryPoint: account.entryPoint, chain })),
@@ -98,7 +98,7 @@ export class SmartWalletService {
 
     private async fetchConfig(
         user: UserParams,
-        chain: EVMBlockchainIncludingTestnet
+        chain: SmartWalletChain
     ): Promise<{
         entryPoint: EntryPointDetails;
         kernelVersion: SupportedKernelVersion;

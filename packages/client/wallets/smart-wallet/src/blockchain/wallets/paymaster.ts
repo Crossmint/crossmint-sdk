@@ -1,27 +1,18 @@
-import { PAYMASTER_RPC, PM_BASE_RPC, PM_BASE_SEPOLIA_RPC } from "@/utils/constants";
+import { PAYMASTER_RPC } from "@/utils/constants";
 import { createZeroDevPaymasterClient } from "@zerodev/sdk";
 import { Middleware } from "permissionless/actions/smartAccount";
 import { EntryPoint } from "permissionless/types/entrypoint";
 import { http } from "viem";
 
-import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
-
 import { usesGelatoBundler } from "../../utils/blockchain";
-import { getViemNetwork, getZeroDevProjectIdByBlockchain } from "../BlockchainNetworks";
+import { SmartWalletChain, viemNetworks, zerodevProjects } from "../chains";
 
-export function usePaymaster(chain: EVMBlockchainIncludingTestnet) {
+export function usePaymaster(chain: SmartWalletChain) {
     return !usesGelatoBundler(chain);
 }
 
-const getPaymasterRPC = (chain: EVMBlockchainIncludingTestnet) => {
-    switch (chain) {
-        case EVMBlockchainIncludingTestnet.BASE_SEPOLIA:
-            return PM_BASE_SEPOLIA_RPC;
-        case EVMBlockchainIncludingTestnet.BASE:
-            return PM_BASE_RPC;
-        default:
-            return PAYMASTER_RPC + getZeroDevProjectIdByBlockchain(chain) + "?paymasterProvider=STACKUP";
-    }
+const getPaymasterRPC = (chain: SmartWalletChain) => {
+    return PAYMASTER_RPC + zerodevProjects[chain];
 };
 
 export function paymasterMiddleware({
@@ -29,13 +20,13 @@ export function paymasterMiddleware({
     chain,
 }: {
     entryPoint: EntryPoint;
-    chain: EVMBlockchainIncludingTestnet;
+    chain: SmartWalletChain;
 }): Middleware<EntryPoint> {
     return {
         middleware: {
             sponsorUserOperation: async ({ userOperation }) => {
                 const paymasterClient = createZeroDevPaymasterClient({
-                    chain: getViemNetwork(chain),
+                    chain: viemNetworks[chain],
                     transport: http(getPaymasterRPC(chain)),
                     entryPoint,
                 });

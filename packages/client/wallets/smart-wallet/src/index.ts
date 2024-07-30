@@ -1,4 +1,4 @@
-export { EVMBlockchainIncludingTestnet as Blockchain, blockchainToChainId } from "@crossmint/common-sdk-base";
+export { blockchainToChainId } from "@crossmint/common-sdk-base";
 
 export { EVMSmartWallet } from "./blockchain/wallets/EVMSmartWallet";
 
@@ -12,6 +12,7 @@ export type {
 } from "./types/Config";
 
 export type { TransferType, ERC20TransferType, NFTTransferType, SFTTransferType } from "./types/Tokens";
+export { SmartWalletChain } from "./blockchain/chains";
 
 export {
     TransferError,

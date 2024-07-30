@@ -1,12 +1,9 @@
+import { SmartWalletChain } from "@/blockchain/chains";
 import { SignerData, StoreSmartWalletParams } from "@/types/API";
 import type { UserParams } from "@/types/Config";
 import { API_VERSION } from "@/utils/constants";
 
-import type { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
-
 import { BaseCrossmintService } from "./BaseCrossmintService";
-
-export { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 export class CrossmintWalletService extends BaseCrossmintService {
     async idempotentCreateSmartWallet(user: UserParams, input: StoreSmartWalletParams) {
@@ -20,7 +17,7 @@ export class CrossmintWalletService extends BaseCrossmintService {
 
     async getSmartWalletConfig(
         user: UserParams,
-        chain: EVMBlockchainIncludingTestnet
+        chain: SmartWalletChain
     ): Promise<{
         kernelVersion: string;
         entryPointVersion: string;
@@ -36,7 +33,7 @@ export class CrossmintWalletService extends BaseCrossmintService {
         );
     }
 
-    async fetchNFTs(address: string, chain: EVMBlockchainIncludingTestnet) {
+    async fetchNFTs(address: string, chain: SmartWalletChain) {
         return this.fetchCrossmintAPI(
             `v1-alpha1/wallets/${chain}:${address}/nfts`,
             { method: "GET" },
