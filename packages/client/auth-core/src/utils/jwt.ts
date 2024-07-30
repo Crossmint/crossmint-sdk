@@ -17,7 +17,7 @@ export async function verifyCrossmintSessionToken(
             },
         });
     } catch (error) {
-        //TODO: track error
+        //TODO (WAL-2616): track error
         return false;
     }
 
