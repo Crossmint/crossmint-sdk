@@ -1,14 +1,13 @@
 import { logError } from "@/services/logging";
 import { type HttpTransport, type PublicClient, isAddress, publicActions } from "viem";
 
-import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
-
 import type { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import { TransferError } from "../../error";
 import type { TransferType } from "../../types/Tokens";
 import { SmartWalletClient } from "../../types/internal";
 import { SCW_SERVICE } from "../../utils/constants";
 import { LoggerWrapper, errorToJSON } from "../../utils/log";
+import { SmartWalletChain } from "../chains";
 import { transferParams } from "../transfer";
 
 /**
@@ -16,7 +15,7 @@ import { transferParams } from "../transfer";
  * Core functionality is exposed via [viem](https://viem.sh/) clients within the `client` property of the class.
  */
 export class EVMSmartWallet extends LoggerWrapper {
-    public readonly chain: EVMBlockchainIncludingTestnet;
+    public readonly chain: SmartWalletChain;
 
     /**
      * [viem](https://viem.sh/) clients that provide an interface for core wallet functionality.
@@ -37,7 +36,7 @@ export class EVMSmartWallet extends LoggerWrapper {
         private readonly crossmintService: CrossmintWalletService,
         private readonly accountClient: SmartWalletClient,
         publicClient: PublicClient<HttpTransport>,
-        chain: EVMBlockchainIncludingTestnet
+        chain: SmartWalletChain
     ) {
         super("EVMSmartWallet", { chain, address: accountClient.account.address });
         this.chain = chain;

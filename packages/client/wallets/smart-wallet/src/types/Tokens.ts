@@ -1,7 +1,7 @@
-import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
+import { SmartWalletChain } from "..";
 
 export interface EVMToken {
-    chain: EVMBlockchainIncludingTestnet;
+    chain: SmartWalletChain;
     contractAddress: string;
 }
 

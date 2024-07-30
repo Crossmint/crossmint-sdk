@@ -4,8 +4,7 @@ import type { SmartAccount } from "permissionless/accounts";
 import type { EntryPoint } from "permissionless/types/entrypoint";
 import type { Chain, Hex, HttpTransport, PublicClient } from "viem";
 
-import type { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
-
+import { SmartWalletChain } from "..";
 import type { SignerData } from "./API";
 import type { EntryPointDetails, UserParams, WalletParams } from "./Config";
 
@@ -25,7 +24,7 @@ export function isSupportedEntryPointVersion(version: string): version is Suppor
 
 export interface WalletCreationParams {
     user: UserParams & { id: string };
-    chain: EVMBlockchainIncludingTestnet;
+    chain: SmartWalletChain;
     publicClient: PublicClient<HttpTransport>;
     walletParams: WalletParams;
     entryPoint: EntryPointDetails;
