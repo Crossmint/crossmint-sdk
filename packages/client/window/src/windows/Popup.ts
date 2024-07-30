@@ -47,41 +47,76 @@ async function createPopup(url: string, options: PopupWindowOptions): Promise<Wi
 }
 
 function createPopupString(width: number, height: number): string {
-    function getLeft() {
-        try {
-            return window?.top != null
-                ? window.top.outerWidth / 2 + window.top.screenX - width / 2
-                : window.outerWidth / 2 + window.screenX - width / 2;
-        } catch (e) {
-            console.log("Error could be due to cross-origin policy", e);
-            return (screen.width - width) / 2;
-        }
-    }
-
-    function getTop() {
-        try {
-            return window?.top != null
-                ? window.top.outerHeight / 2 + window.top.screenY - height / 2
-                : window.outerHeight / 2 + window.screenY - height / 2;
-        } catch (e) {
-            console.log("Error could be due to cross-origin policy", e);
-            console.error(e);
-            return (screen.height - height) / 2;
-        }
-    }
-
-    function getChromeVersion() {
-        const raw = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
-        return raw ? parseInt(raw[2]) : null;
-    }
-    function isFirefox() {
-        return navigator.userAgent.toLowerCase().indexOf("firefox") > -1;
-    }
+    const createPopupStrategy = new CreatePopupStrategy();
 
     // In newer versions of chrome (>99) you need to add the `popup=true` for the new window to actually open in a popup
     const chromeVersion = getChromeVersion();
     const chromeVersionGreaterThan99 = chromeVersion != null && chromeVersion > 99;
     const popupStringBase = isFirefox() || chromeVersionGreaterThan99 ? "popup=true," : "";
 
-    return `${popupStringBase}height=${height},width=${width},left=${getLeft()},top=${getTop()},resizable=yes,scrollbars=yes,toolbar=yes,menubar=true,location=no,directories=no,status=yes`;
+    return `${popupStringBase}height=${height},width=${width},left=${createPopupStrategy.getLeft(
+        width
+    )},top=${createPopupStrategy.getTop(
+        height
+    )},resizable=yes,scrollbars=yes,toolbar=yes,menubar=true,location=no,directories=no,status=yes`;
+}
+
+function getChromeVersion() {
+    const raw = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
+    return raw ? parseInt(raw[2]) : null;
+}
+function isFirefox() {
+    return navigator.userAgent.toLowerCase().indexOf("firefox") > -1;
+}
+
+interface CreatePopupService {
+    getTop(height: number): number;
+    getLeft(width: number): number;
+}
+class CreatePopupStrategy {
+    protected createPopupService: CreatePopupService;
+
+    constructor() {
+        this.createPopupService = this.isCrossmintOrigin() ? new CrossmintService() : new CrossOriginService();
+    }
+
+    private isCrossmintOrigin(): boolean {
+        try {
+            const url = new URL(window.location.origin);
+            return url.hostname.endsWith("crossmint.com");
+        } catch (e) {
+            console.error("Invalid URL", e);
+            return false;
+        }
+    }
+
+    getTop(height: number): number {
+        return this.createPopupService.getTop(height);
+    }
+
+    getLeft(width: number): number {
+        return this.createPopupService.getLeft(width);
+    }
+}
+
+class CrossOriginService implements CreatePopupService {
+    getTop(height: number): number {
+        return (screen.height - height) / 2;
+    }
+    getLeft(width: number): number {
+        return (screen.width - width) / 2;
+    }
+}
+
+class CrossmintService implements CreatePopupService {
+    getTop(height: number): number {
+        return window?.top != null
+            ? window.top.outerHeight / 2 + window.top.screenY - height / 2
+            : window.outerHeight / 2 + window.screenY - height / 2;
+    }
+    getLeft(width: number): number {
+        return window?.top != null
+            ? window.top.outerWidth / 2 + window.top.screenX - width / 2
+            : window.outerWidth / 2 + window.screenX - width / 2;
+    }
 }
