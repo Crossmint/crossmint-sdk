@@ -1,4 +1,4 @@
-import { Blockchain, SmartWalletSDK } from "@crossmint/client-sdk-aa-passkeys-beta";
+import { Blockchain, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
 
 import { checkAuthState, parseToken, signInWithGoogle } from "../../auth/FirebaseAuthManager";
 

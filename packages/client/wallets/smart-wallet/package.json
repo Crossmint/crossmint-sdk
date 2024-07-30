@@ -23,10 +23,9 @@
         "build-no-minify": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --dts --sourcemap",
         "dev": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
         "link:common-sdk-base": "yalc add @crossmint/common-sdk-base && yalc link @crossmint/common-sdk-base && pnpm i && pnpm build && yalc push",
-        "link:starter": "pnpm link --global @crossmint/client-sdk-smart-wallet && pnpm --filter @crossmint/client-sdk-smart-wallet-react-starter exec pnpm link --global @crossmint/client-sdk-smart-wallet",
         "test": "cross-env NODE_ENV=test jest",
         "test-coverage": "cross-env NODE_ENV=test jest --coverage",
-        "test:starter": "pnpm --filter @crossmint/client-sdk-smart-wallet-react-starter exec playwright test",
+        "test:starter": "pnpm run build && pnpm --filter @crossmint/client-sdk-smart-wallet-react-starter exec playwright test",
         "unlink:common-sdk-base": "yalc remove @crossmint/common-sdk-base && pnpm i"
     },
     "dependencies": {
@@ -38,7 +37,7 @@
         "@zerodev/webauthn-key": "5.3.1",
         "permissionless": "0.1.36",
         "uuid": "10.0.0",
-        "viem": "2.9.17"
+        "viem": "2.17.5"
     },
     "devDependencies": {
         "@playwright/test": "^1.41.2",

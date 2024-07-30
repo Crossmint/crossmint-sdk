@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import { encodeFunctionData } from "viem";
 
-import { Blockchain, EVMSmartWallet } from "@crossmint/client-sdk-aa-passkeys-beta";
+import { Blockchain, EVMSmartWallet } from "@crossmint/client-sdk-smart-wallet";
 
 import contractAbi from "./MintBurnABI.json";
 import contractERC20abi from "./erc20tokenSell.json";

@@ -1,4 +1,4 @@
-import { Blockchain } from "@crossmint/client-sdk-aa-passkeys-beta";
+import { Blockchain } from "@crossmint/client-sdk-smart-wallet";
 
 type GetContractAddressFunction = (chain: Blockchain) => `0x${string}`;
 

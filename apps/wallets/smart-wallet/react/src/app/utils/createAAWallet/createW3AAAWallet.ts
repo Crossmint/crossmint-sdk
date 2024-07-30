@@ -1,4 +1,4 @@
-import { Blockchain, SmartWalletSDK } from "@crossmint/client-sdk-aa-passkeys-beta";
+import { Blockchain, SmartWalletSDK, WalletParams } from "@crossmint/client-sdk-smart-wallet";
 import { TORUS_NETWORK_TYPE, getWeb3AuthSigner } from "@crossmint/client-sdk-smart-wallet-web3auth-adapter";
 
 import { checkAuthState, signInWithGoogle } from "../../auth/FirebaseAuthManager";
@@ -39,5 +39,5 @@ export const createW3AAAWallet = async (isProd: boolean) => {
         }),
     };
 
-    return await xm.getOrCreateWallet({ jwt }, chain, walletConfig);
+    return await xm.getOrCreateWallet({ jwt }, chain, walletConfig as WalletParams);
 };

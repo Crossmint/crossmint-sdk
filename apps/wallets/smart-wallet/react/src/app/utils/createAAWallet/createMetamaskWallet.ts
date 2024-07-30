@@ -1,6 +1,6 @@
 import { EIP1193Provider } from "viem";
 
-import { Blockchain, SmartWalletSDK } from "@crossmint/client-sdk-aa-passkeys-beta";
+import { Blockchain, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
 
 type WindowWithEthereum = Window & {
     ethereum: EIP1193Provider;
