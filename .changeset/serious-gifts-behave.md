@@ -1,5 +1,5 @@
 ---
-"@crossmint/client-sdk-window": major
+"@crossmint/client-sdk-window": patch
 ---
 
-Releasing Windows SDK to be used in cross origin communication
+Releasing Window SDK to be used in cross origin communication
