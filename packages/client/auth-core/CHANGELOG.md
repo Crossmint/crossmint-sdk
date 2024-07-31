@@ -1,5 +1,12 @@
 # @crossmint/client-sdk-auth-core
 
+## 1.0.2
+
+### Patch Changes
+
+-   Updated dependencies [11a9bb8]
+    -   @crossmint/client-sdk-window@0.0.9
+
 ## 1.0.1
 
 ### Patch Changes

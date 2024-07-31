@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-window
 
+## 0.0.9
+
+### Patch Changes
+
+-   11a9bb8: Add Cross origin option
+
 ## 0.0.8
 
 ### Patch Changes
