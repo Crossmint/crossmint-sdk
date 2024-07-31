@@ -36,7 +36,7 @@
     "scripts": {
         "build": "tsup src/clientIndex.ts src/serverIndex.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
         "dev": "tsup src/clientIndex.ts src/serverIndex.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
-        "test": "jest"
+        "test": "jest --passWithNoTests"
     },
     "dependencies": {
         "@crossmint/client-sdk-window": "workspace:*",
