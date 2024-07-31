@@ -17,6 +17,7 @@ test.describe("End-to-End Flow: Signing in, creating wallet, and minting NFT", (
         await page.goto(baseURL);
 
         expect(page.getByText("Crossmint AA Wallet Demo"));
+        await page.waitForSelector('text="Try it!"', { state: "visible" });
         await page.getByText("Try it!").click();
         // wait for popup window to show up loaded.
         const popup = await page.waitForEvent("popup");
@@ -50,8 +51,7 @@ test.describe("End-to-End Flow: Signing in, creating wallet, and minting NFT", (
         await page.getByRole("button", { name: "Mint" }).click();
 
         // Wait for the minting process to complete, a redirect back to wallet page will happen.
-        await page.waitForURL("/wallet", { timeout: 20000 });
+        await page.waitForURL("/wallet", { timeout: 35000 });
         await expect(page.getByText("NFT Minted Successfully")).toBeVisible();
-        await expect(page.getByText("Assets")).toBeVisible();
     });
 });

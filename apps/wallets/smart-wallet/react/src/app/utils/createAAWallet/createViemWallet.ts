@@ -1,6 +1,7 @@
 import { privateKeyToAccount } from "viem/accounts";
 
-import { Blockchain, SmartWalletSDK, ViemAccount } from "@crossmint/client-sdk-smart-wallet";
+import { SmartWalletSDK, ViemAccount } from "@crossmint/client-sdk-smart-wallet";
+import { SmartWalletChain } from "@crossmint/client-sdk-smart-wallet";
 
 import { checkAuthState, signInWithGoogle } from "../../auth/FirebaseAuthManager";
 
@@ -30,6 +31,6 @@ export const createViemAAWallet = async (isProd: boolean, privateKey: `0x${strin
         type: "VIEM_ACCOUNT",
         account: privateKeyToAccount(privateKey) as unknown as ViemAccount["account"],
     };
-    const chain = isProd ? Blockchain.POLYGON : Blockchain.POLYGON_AMOY;
+    const chain = isProd ? SmartWalletChain.POLYGON : SmartWalletChain.POLYGON_AMOY;
     return await xm.getOrCreateWallet({ jwt }, chain, { signer });
 };

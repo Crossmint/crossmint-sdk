@@ -60,6 +60,12 @@ This command will launch the application on `http://localhost:3000` by default, 
 
 ### Running the tests
 
+You can run the tests in ui mode by using the script:
+
+```bash
+pnpm run test:ui
+```
+
 Runs the end-to-end tests.
 
 ```bash
