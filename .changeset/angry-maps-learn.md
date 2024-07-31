@@ -1,5 +1,5 @@
 ---
-"@crossmint/client-sdk-window": minor
+"@crossmint/client-sdk-window": patch
 ---
 
 Add Cross origin option
