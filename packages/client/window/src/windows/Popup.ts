@@ -1,4 +1,4 @@
-import { CreatePopupStrategy } from "@/utils/popupstrategy";
+import { CreatePopupStrategy } from "@/utils/popupStrategy";
 import { urlToOrigin } from "@/utils/urlToOrigin";
 
 import { EventMap } from "../EventEmitter";
