@@ -23,6 +23,7 @@
         "dev": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --dts --sourcemap --watch"
     },
     "dependencies": {
+        "nanoid": "5.0.4",
         "zod": "3.22.4"
     }
 }

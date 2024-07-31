@@ -726,6 +726,9 @@ importers:
 
   packages/client/window:
     dependencies:
+      nanoid:
+        specifier: 5.0.4
+        version: 5.0.4
       zod:
         specifier: 3.22.4
         version: 3.22.4
@@ -10628,6 +10631,11 @@ packages:
   nanoid@3.3.7:
     resolution: {integrity: sha512-eSRppjcPIatRIMC1U6UngP8XFcz8MQWGQdt1MTBQ7NaAmvXDfvNxbvWV3x2y6CdEUciCSsDHDQZbhYaB8QEo2g==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
+    hasBin: true
+
+  nanoid@5.0.4:
+    resolution: {integrity: sha512-vAjmBf13gsmhXSgBrtIclinISzFFy22WwCYoyilZlsrRXNIHSwgFQ1bEdjRwMT3aoadeIF6HMuDRlOxzfXV8ig==}
+    engines: {node: ^18 || >=20}
     hasBin: true
 
   native-fetch@3.0.0:
@@ -30874,6 +30882,8 @@ snapshots:
   nanoid@3.3.4: {}
 
   nanoid@3.3.7: {}
+
+  nanoid@5.0.4: {}
 
   native-fetch@3.0.0(node-fetch@2.7.0(encoding@0.1.13)):
     dependencies:
