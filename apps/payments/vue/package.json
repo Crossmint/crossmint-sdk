@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-vue-ui-starter",
-    "version": "1.1.10",
+    "version": "1.1.11",
     "private": true,
     "scripts": {
         "dev": "vite",
@@ -10,7 +10,7 @@
         "type-check": "vue-tsc --noEmit"
     },
     "dependencies": {
-        "@crossmint/client-sdk-aa": "1.0.3",
+        "@crossmint/client-sdk-smart-wallet": "workspace:*",
         "@crossmint/client-sdk-base": "workspace:*",
         "@crossmint/client-sdk-vue-ui": "workspace:*",
         "vue": "3.3.4",
