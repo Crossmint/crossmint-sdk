@@ -25,10 +25,10 @@ export type SmartWalletChain = ObjectValues<typeof SmartWalletChain>;
 export const SMART_WALLET_CHAINS = objectValues(SmartWalletChain);
 
 export const zerodevProjects: Record<SmartWalletChain, string> = {
-    polygon: "023d4a21-d801-4450-b629-24439ab1369d",
-    "polygon-amoy": "3b24773b-d91e-4c01-8ce5-04807463bbca",
-    "base-sepolia": "3eb830c5-f91b-48e0-bb7d-dc30103a60b2",
-    base: "5535aa3b-4f9c-45af-9c38-0072369564a3",
+    polygon: "5c9f4865-ca8e-44bb-9b9e-3810b2b46f9f",
+    "polygon-amoy": "3deef404-ca06-4a5d-9a58-907c99e7ef00",
+    "base-sepolia": "5a127978-6473-4784-9dfb-f74395b220a6",
+    base: "e8b3020f-4dde-4176-8a7d-be8102527a5c",
 };
 
 export const viemNetworks: Record<SmartWalletChain, Chain> = {
