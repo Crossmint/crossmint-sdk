@@ -1,3 +1,4 @@
+import { CreatePopupStrategy } from "@/utils/popupstrategy";
 import { urlToOrigin } from "@/utils/urlToOrigin";
 
 import { EventMap } from "../EventEmitter";
@@ -67,56 +68,4 @@ function getChromeVersion() {
 }
 function isFirefox() {
     return navigator.userAgent.toLowerCase().indexOf("firefox") > -1;
-}
-
-interface CreatePopupService {
-    getTop(height: number): number;
-    getLeft(width: number): number;
-}
-class CreatePopupStrategy {
-    protected createPopupService: CreatePopupService;
-
-    constructor() {
-        this.createPopupService = this.isCrossmintOrigin() ? new CrossmintService() : new CrossOriginService();
-    }
-
-    private isCrossmintOrigin(): boolean {
-        try {
-            const url = new URL(window.location.origin);
-            return url.hostname.endsWith("crossmint.com");
-        } catch (e) {
-            console.error("Invalid URL", e);
-            return false;
-        }
-    }
-
-    getTop(height: number): number {
-        return this.createPopupService.getTop(height);
-    }
-
-    getLeft(width: number): number {
-        return this.createPopupService.getLeft(width);
-    }
-}
-
-class CrossOriginService implements CreatePopupService {
-    getTop(height: number): number {
-        return (screen.height - height) / 2;
-    }
-    getLeft(width: number): number {
-        return (screen.width - width) / 2;
-    }
-}
-
-class CrossmintService implements CreatePopupService {
-    getTop(height: number): number {
-        return window?.top != null
-            ? window.top.outerHeight / 2 + window.top.screenY - height / 2
-            : window.outerHeight / 2 + window.screenY - height / 2;
-    }
-    getLeft(width: number): number {
-        return window?.top != null
-            ? window.top.outerWidth / 2 + window.top.screenX - width / 2
-            : window.outerWidth / 2 + window.screenX - width / 2;
-    }
 }
