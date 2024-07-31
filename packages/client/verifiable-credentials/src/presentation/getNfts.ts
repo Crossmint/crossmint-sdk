@@ -41,6 +41,29 @@ export async function getWalletNfts(chain: string, wallet: string) {
     return allData;
 }
 
+export async function getWalletVCNfts(chain: string, wallet: string): Promise<CrossmintWalletNft[]> {
+    const baseUrl = crossmintAPI.getBaseUrl();
+    const headers = crossmintAPI.getHeaders();
+
+    const url = `${baseUrl}/api/v1-alpha1/wallets/${chain}:${wallet}/nfts/credentials`;
+    const options = { method: "GET", headers: headers };
+
+    try {
+        const response = await fetch(url, options);
+
+        if (!response.ok) {
+            throw new Error(
+                `HTTP error! status: ${response.status}, responses: ${JSON.stringify(await response.json())}`
+            );
+        }
+        const data = (await response.json()) as CrossmintWalletNft[];
+        return data;
+    } catch (error: any) {
+        console.error(error);
+        throw new Error(`Failed to get nfts: ${error.message}`);
+    }
+}
+
 export function filterVCCompErc721(nfts: CrossmintWalletNft[]): Nft[] {
     const vcNfts: Nft[] = [];
     for (const nft of nfts) {
@@ -56,7 +79,7 @@ export function filterVCCompErc721(nfts: CrossmintWalletNft[]): Nft[] {
 }
 
 export async function getWalletVcCompatibleNfts(chain: string, wallet: string): Promise<Nft[]> {
-    const nfts = await getWalletNfts(chain, wallet);
+    const nfts = await getWalletVCNfts(chain, wallet);
     if (nfts == null) {
         throw new Error("Failed to get nfts");
     }
