@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-auth-core
 
+## 1.0.1
+
+### Patch Changes
+
+-   82e429b: Make the package public
+
 ## 1.0.0
 
 ### Major Changes
