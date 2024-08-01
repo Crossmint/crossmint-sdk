@@ -1,6 +1,6 @@
 import { Execute, createClient, reservoirChains } from "@reservoir0x/reservoir-sdk";
 
-import { EVMSmartWallet } from "@crossmint/client-sdk-aa-passkeys-beta";
+import { EVMSmartWallet } from "@crossmint/client-sdk-smart-wallet";
 
 export const listReservoirToken = async (account: EVMSmartWallet, contractAddress: string, tokenId: string) => {
     const client = createClient({

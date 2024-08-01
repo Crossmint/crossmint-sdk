@@ -25,6 +25,7 @@
         "link:common-sdk-base": "yalc add @crossmint/common-sdk-base && yalc link @crossmint/common-sdk-base && pnpm i && pnpm build && yalc push",
         "test": "cross-env NODE_ENV=test jest",
         "test-coverage": "cross-env NODE_ENV=test jest --coverage",
+        "test:starter": "pnpm run build && pnpm --filter @crossmint/client-sdk-smart-wallet-react-starter exec playwright test",
         "unlink:common-sdk-base": "yalc remove @crossmint/common-sdk-base && pnpm i"
     },
     "dependencies": {

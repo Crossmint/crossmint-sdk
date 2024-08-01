@@ -23,6 +23,7 @@ Before running the application, you need to set up your environment variables:
 
 1. Copy the `.env.example` file in the root directory in which this README.md is contained and rename the copy to `.env`.
 2. Open the `.env` file and fill in the necessary values as described below:
+    > The credentials can be found in our shared 1Pass (see admin for access).
 
 ```plaintext
 REACT_APP_CROSSMINT_API_KEY_PROD=your_crossmint_api_key_for_production
@@ -41,6 +42,10 @@ REACT_APP_WEB3_AUTH_NETWORK_PROD=your_web3_auth_network_for_production
 REACT_APP_WEB3_AUTH_NETWORK_STG=your_web3_auth_network_for_staging
 REACT_APP_WEB3_AUTH_VERIFIER_ID_PROD=your_web3_auth_verifier_id_for_production
 REACT_APP_WEB3_AUTH_VERIFIER_ID_STG=your_web3_auth_verifier_id_for_staging
+
+GOOGLE_TEST_EMAIL=
+GOOGLE_TEST_PASSWORD=
+GOOGLE_TEST_ACCOUNT_PRIVATE_KEY=
 ```
 
 ## Starting the Application
@@ -52,3 +57,17 @@ pnpm run dev
 ```
 
 This command will launch the application on `http://localhost:3000` by default, allowing you to view and interact with it in your web browser.
+
+### Running the tests
+
+Runs the end-to-end tests.
+
+```bash
+pnpm test:e2e
+```
+
+Starts the interactive UI mode.
+
+```bash
+pnpm test:e2e-ui
+```

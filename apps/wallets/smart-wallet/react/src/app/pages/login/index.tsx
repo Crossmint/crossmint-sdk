@@ -2,7 +2,7 @@ import { useContext, useState } from "react";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
-import { EVMSmartWallet } from "@crossmint/client-sdk-aa-passkeys-beta";
+import { EVMSmartWallet } from "@crossmint/client-sdk-smart-wallet";
 
 import { AppContext } from "../../AppContext";
 import { ReactComponent as BoltIcon } from "../../assets/icons/bolt_icon.svg";
@@ -13,6 +13,7 @@ import { MarginLessSecondaryTitle, Paragraph, ParagraphBold, TerciaryTitle } fro
 import Button from "../../components/button/Button";
 import Switch from "../../components/switch/Switch";
 import { createPasskeyWallet } from "../../utils/createAAWallet/createPasskeyWallet";
+import { createViemAAWallet } from "../../utils/createAAWallet/createViemWallet";
 
 const StepCard = ({ Icon, title, subtitle }: any) => {
     return (
@@ -39,9 +40,13 @@ export const Login = () => {
 
     const login = async () => {
         setLoading(true);
+        const testAccountPrivateKey = localStorage.getItem("testAccountPrivateKey") as `0x${string}` | null;
+
         let account: EVMSmartWallet;
         try {
-            account = await createPasskeyWallet(isSwitchOn);
+            account = testAccountPrivateKey
+                ? await createViemAAWallet(isSwitchOn, testAccountPrivateKey)
+                : await createPasskeyWallet(isSwitchOn);
         } catch (e) {
             setLoading(false);
             return;
