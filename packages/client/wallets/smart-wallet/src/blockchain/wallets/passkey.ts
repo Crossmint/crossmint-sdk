@@ -3,7 +3,7 @@ import { type PasskeySignerData, displayPasskey } from "@/types/API";
 import type { PasskeySigner, UserParams, WalletParams } from "@/types/Config";
 import type { AccountAndSigner, PasskeyValidatorSerializedData, WalletCreationParams } from "@/types/internal";
 import { PasskeyValidatorContractVersion, WebAuthnMode, toPasskeyValidator } from "@zerodev/passkey-validator";
-import { KernelSmartAccount, type KernelValidator, createKernelAccount } from "@zerodev/sdk";
+import { type KernelSmartAccount, type KernelValidator, createKernelAccount } from "@zerodev/sdk";
 import { WebAuthnKey, toWebAuthnKey } from "@zerodev/webauthn-key";
 import type { EntryPoint } from "permissionless/types/entrypoint";
 

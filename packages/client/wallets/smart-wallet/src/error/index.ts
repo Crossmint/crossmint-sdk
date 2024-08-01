@@ -124,7 +124,10 @@ export class PasskeyPromptError extends SmartWalletSDKError {
     public passkeyName: string;
 
     constructor(passkeyName: string) {
-        super("Passkey prompt was either cancelled or timed out", SmartWalletErrors.ERROR_PASSKEY_PROMPT);
+        super(
+            `Prompt was either cancelled or timed out for passkey ${passkeyName}`,
+            SmartWalletErrors.ERROR_PASSKEY_PROMPT
+        );
         this.passkeyName = passkeyName;
     }
 }
