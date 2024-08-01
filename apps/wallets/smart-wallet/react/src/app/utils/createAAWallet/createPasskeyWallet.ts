@@ -1,4 +1,4 @@
-import { SmartWalletSDK, Chain } from "@crossmint/client-sdk-smart-wallet";
+import { Chain, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
 
 import { checkAuthState, signInWithGoogle } from "../../auth/FirebaseAuthManager";
 
