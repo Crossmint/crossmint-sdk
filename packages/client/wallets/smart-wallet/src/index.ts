@@ -29,6 +29,7 @@ export {
     PasskeyMismatchError,
     PasskeyPromptError,
     PasskeyRegistrationError,
+    PasskeyIncompatibleAuthenticatorError,
     ConfigError,
     NonCustodialWalletsNotEnabledError,
 } from "./error";
