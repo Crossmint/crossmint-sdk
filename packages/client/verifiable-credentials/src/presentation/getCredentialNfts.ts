@@ -12,7 +12,7 @@ import { getWalletVcCompatibleNfts } from "./getNfts";
  * To use this method an api key with the `credentials.read` scope  must have been provided.
  * @param chain - Chain to get the NFTs from
  * @param wallet - Wallet address of the user
- * @param filters - Filters to select only desired credentials
+ * @param filters - Filters to select only desired credentials (i.e. credential type, credential issuer)
  * @returns - List CredentialsCollection that match the filters each containing a list of nfts
  */
 export async function getCredentialNfts(

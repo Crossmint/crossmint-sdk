@@ -36,12 +36,32 @@ export const ipfsRetrievalProcedure: CredentialRetrievalProcedure = {
     procedure: ipfsProcedure,
 };
 
+/**
+ * Service for managing and retrieving Verifiable Credentials.
+ * 
+ * The `CredentialService` class allows for retrieving credentials from a collection using various procedures defined by the user or default procedures like IPFS retrieval.
+ */
 export class CredentialService {
     retrievalProcedures: CredentialRetrievalProcedure[];
+
+    /**
+     * Creates an instance of `CredentialService`.
+     * @param retrievalProcedures - An array of retrieval procedures to use. Defaults to using `ipfsRetrievalProcedure`.
+     */
     constructor(retrievalProcedures = [ipfsRetrievalProcedure]) {
         this.retrievalProcedures = retrievalProcedures;
     }
 
+    /**
+     * Retrieves a Verifiable Credential from a given collection and token ID.
+     * 
+     * This function finds the appropriate retrieval procedure based on the collection's metadata and uses it to fetch the credential.
+     * 
+     * @param collection - The `CredentialsCollection` containing the credential's metadata.
+     * @param tokenId - The token ID of the credential to retrieve.
+     * @returns A promise that resolves to a `VerifiableCredentialType`.
+     * @throws Will throw an error if the collection is not a verifiable credential collection or if the retrieval endpoint is unsupported.
+     */
     async getCredential(collection: CredentialsCollection, tokenId: string): Promise<VerifiableCredentialType> {
         const metadata = collection.metadata;
         if (!isVerifiableCredentialContractMetadata(metadata)) {

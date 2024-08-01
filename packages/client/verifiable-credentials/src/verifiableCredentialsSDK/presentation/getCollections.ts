@@ -5,6 +5,14 @@ import { Nft } from "../types/nft";
 import { isVcChain, isVcNft } from "../types/utils";
 import { ContractMetadataService } from "./contractMetadata";
 
+/**
+ * Groups NFTs by their contract address and returns an array of `Collection` objects.
+ * 
+ * This function takes an array of NFTs, groups them by their contract address, and returns an array of `Collection` objects where each collection contains NFTs associated with the same contract.
+ * 
+ * @param nfts - An array of `Nft` objects to group into collections.
+ * @returns An array of `Collection` objects, each representing a group of NFTs that share the same contract address.
+ */
 export function bundleNfts(nfts: Nft[]): Collection[] {
     // Group NFTs by their contract address
     const nftsByAddress: Record<string, Nft[]> = nfts.reduce((acc, nft) => {
@@ -26,6 +34,19 @@ export function bundleNfts(nfts: Nft[]): Collection[] {
     }));
 }
 
+/**
+ * Retrieves verifiable credential NFTs for a specified wallet on a specific blockchain.
+ * 
+ * This function fetches NFTs compatible with verifiable credentials from the provided wallet address on the specified chain. It then filters these NFTs based on the provided credential filters, such as issuers and types.
+ * 
+ * @param chain - The blockchain chain on which to retrieve the NFTs.
+ * @param wallet - The wallet address from which to retrieve the NFTs.
+ * @param getVcCompatibleNftsFromWallet - A function that fetches NFTs compatible with verifiable credentials from a wallet.
+ * @param filters - Optional filters to apply when retrieving the credential collections, such as specific issuers or credential types.
+ * @returns A promise that resolves to an array of `CredentialsCollection` objects, each representing a collection of NFTs that are associated with verifiable credentials.
+ * 
+ * @throws Will throw an error if the chain is not supported for verifiable credentials or if any of the retrieved NFTs are invalid.
+ */
 export async function getCredentialNfts(
     chain: VCChain,
     wallet: string,
