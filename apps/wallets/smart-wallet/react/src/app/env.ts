@@ -3,7 +3,10 @@ import { z } from "zod";
 
 export const env = createEnv({
     server: {
-        /* add server side .env here */
+        CI: z.boolean().optional(),
+        GOOGLE_TEST_EMAIL: z.string().optional(),
+        GOOGLE_TEST_PASSWORD: z.string().optional(),
+        GOOGLE_TEST_ACCOUNT_PRIVATE_KEY: z.string().optional(),
     },
 
     /**
@@ -12,6 +15,7 @@ export const env = createEnv({
      */
     clientPrefix: "REACT_APP_",
     client: {
+        REACT_APP_BASE_URL: z.string().optional(),
         REACT_APP_CROSSMINT_API_KEY_PROD: z.string().optional(),
         REACT_APP_CROSSMINT_API_KEY_STG: z.string().min(1),
         REACT_APP_FIREBASE_API_KEY: z.string().min(1),
