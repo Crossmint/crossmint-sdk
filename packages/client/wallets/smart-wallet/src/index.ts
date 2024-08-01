@@ -28,6 +28,7 @@ export {
     AdminMismatchError,
     PasskeyMismatchError,
     PasskeyPromptError,
+    PasskeyRegistrationError,
     ConfigError,
     NonCustodialWalletsNotEnabledError,
 } from "./error";

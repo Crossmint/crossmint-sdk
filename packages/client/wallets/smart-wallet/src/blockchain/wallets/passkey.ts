@@ -7,7 +7,7 @@ import { type KernelSmartAccount, type KernelValidator, createKernelAccount } fr
 import { WebAuthnKey, toWebAuthnKey } from "@zerodev/webauthn-key";
 import type { EntryPoint } from "permissionless/types/entrypoint";
 
-import { PasskeyMismatchError, PasskeyPromptError } from "../../error";
+import { PasskeyMismatchError, PasskeyPromptError, PasskeyRegistrationError } from "../../error";
 
 export interface PasskeyWalletParams extends WalletCreationParams {
     walletParams: WalletParams & { signer: PasskeySigner };
@@ -108,6 +108,10 @@ export class PasskeyAccountService {
     }
 
     private mapError(error: any, passkeyName: string) {
+        if (error.message === "Registration not verified") {
+            return new PasskeyRegistrationError(passkeyName);
+        }
+
         if (error.code === "ERROR_PASSTHROUGH_SEE_CAUSE_PROPERTY" && error.name === "NotAllowedError") {
             return new PasskeyPromptError(passkeyName);
         }
