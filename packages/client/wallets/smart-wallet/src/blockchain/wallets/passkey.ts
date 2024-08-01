@@ -3,11 +3,11 @@ import { type PasskeySignerData, displayPasskey } from "@/types/API";
 import type { PasskeySigner, UserParams, WalletParams } from "@/types/Config";
 import type { AccountAndSigner, PasskeyValidatorSerializedData, WalletCreationParams } from "@/types/internal";
 import { PasskeyValidatorContractVersion, WebAuthnMode, toPasskeyValidator } from "@zerodev/passkey-validator";
-import { type KernelValidator, createKernelAccount } from "@zerodev/sdk";
+import { KernelSmartAccount, type KernelValidator, createKernelAccount } from "@zerodev/sdk";
 import { WebAuthnKey, toWebAuthnKey } from "@zerodev/webauthn-key";
 import type { EntryPoint } from "permissionless/types/entrypoint";
 
-import { PasskeyMismatchError } from "../../error";
+import { PasskeyMismatchError, PasskeyPromptError } from "../../error";
 
 export interface PasskeyWalletParams extends WalletCreationParams {
     walletParams: WalletParams & { signer: PasskeySigner };
@@ -36,28 +36,32 @@ export class PasskeyAccountService {
             );
         }
 
-        const passkey = await this.getPasskey(user, inputPasskeyName, existingSignerConfig);
+        try {
+            const passkey = await this.getPasskey(user, inputPasskeyName, existingSignerConfig);
 
-        const latestValidatorVersion = PasskeyValidatorContractVersion.V0_0_2;
-        const validatorContractVersion =
-            existingSignerConfig == null ? latestValidatorVersion : existingSignerConfig.validatorContractVersion;
-        const validator = await toPasskeyValidator(publicClient, {
-            webAuthnKey: passkey,
-            entryPoint: entryPoint.address,
-            validatorContractVersion,
-            kernelVersion,
-        });
+            const latestValidatorVersion = PasskeyValidatorContractVersion.V0_0_2;
+            const validatorContractVersion =
+                existingSignerConfig == null ? latestValidatorVersion : existingSignerConfig.validatorContractVersion;
+            const validator = await toPasskeyValidator(publicClient, {
+                webAuthnKey: passkey,
+                entryPoint: entryPoint.address,
+                validatorContractVersion,
+                kernelVersion,
+            });
 
-        const kernelAccount = await createKernelAccount(publicClient, {
-            plugins: { sudo: validator },
-            entryPoint: entryPoint.address,
-            kernelVersion,
-        });
+            const kernelAccount = await createKernelAccount(publicClient, {
+                plugins: { sudo: validator },
+                entryPoint: entryPoint.address,
+                kernelVersion,
+            });
 
-        return {
-            signerData: this.getSignerData(validator, validatorContractVersion, inputPasskeyName),
-            account: kernelAccount,
-        };
+            return {
+                signerData: this.getSignerData(validator, validatorContractVersion, inputPasskeyName),
+                account: this.decorate(kernelAccount, inputPasskeyName),
+            };
+        } catch (error) {
+            throw this.mapError(error, inputPasskeyName);
+        }
     }
 
     private async getPasskey(
@@ -101,6 +105,32 @@ export class PasskeyAccountService {
             "x-api-key": this.crossmintService.crossmintAPIHeaders["x-api-key"],
             Authorization: `Bearer ${user.jwt}`,
         };
+    }
+
+    private mapError(error: any, passkeyName: string) {
+        if (error.code === "ERROR_PASSTHROUGH_SEE_CAUSE_PROPERTY" && error.name === "NotAllowedError") {
+            return new PasskeyPromptError(passkeyName);
+        }
+
+        return error;
+    }
+
+    private decorate<Client extends KernelSmartAccount<EntryPoint>>(account: Client, passkeyName: string): Client {
+        return new Proxy(account, {
+            get: (target, prop, receiver) => {
+                if (prop !== "signUserOperation") {
+                    return Reflect.get(target, prop, receiver);
+                }
+
+                return async (...args: Parameters<Client["signUserOperation"]>) => {
+                    try {
+                        return await Reflect.get(target, prop, receiver).call(target, ...args);
+                    } catch (error) {
+                        throw this.mapError(error, passkeyName);
+                    }
+                };
+            },
+        });
     }
 }
 
