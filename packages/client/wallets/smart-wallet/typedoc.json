@@ -1,0 +1,25 @@
+{
+    "entryPoints": ["src/index.ts"],
+    "out": "docs",
+    "plugin": ["typedoc-plugin-markdown"],
+    "tsconfig": "tsconfig.typedoc.json",
+    // "excludeExternals": true,
+    // "externalPattern": [
+    // 	"node_modules",
+    // 	"**/node_modules/**",
+    // 	"../node_modules/**",
+    // 	"../../node_modules/**",
+    // 	"../../../node_modules/**",
+    // 	"../../../../node_modules/**"
+    // ],
+    // "excludeNotDocumented": true,
+    // "exclude": [
+    // 	"node_modules",
+    // 	"**/node_modules/**",
+    // 	"../node_modules/**",
+    // 	"../../node_modules/**",
+    // 	"../../../node_modules/**",
+    // 	"../../../../node_modules/**"
+    // ],
+    "skipErrorChecking": true
+}
