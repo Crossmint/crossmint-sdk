@@ -106,4 +106,19 @@ class CrossmintAPI {
     }
 }
 
+/**
+ * Crossmint API singleton, used to init the SDK
+ * To use the SDK you must call `init` before any other method
+ * @example
+ * ```typescript
+ * crossmintAPI.init(
+ *  "your-api-key",
+ *  config: {
+ *    environment: "staging",
+ *    ipfsGateways: ["https://ipfs.io"], // Optional, a list of defualt ones is provided
+ *    ipfsTimeout: 5000, // ms, Optional, default is 10 seconds
+ *    blockchainRpcs: {...} // Optional, default rpcs for polygon are provided
+ *  }
+ * )
+ */
 export const crossmintAPI = CrossmintAPI.getInstance();

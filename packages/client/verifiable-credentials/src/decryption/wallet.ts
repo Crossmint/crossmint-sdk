@@ -6,6 +6,11 @@ import {
     isVerifiableCredential,
 } from "@/verifiableCredentialsSDK";
 
+/**
+ * Class for decrypting verifiable credentials that have been encrypted with the VerifiableCredentialEncryptionType.CROSSMINT_RECOVERABLE encryption type.
+ * This class will use the provided sign callback to sign a message to authenticate the user and decrypt the credential.
+ * To use the crossmint decrypt endpoint an api key with the `credentials.decrypt` scope  must have been provided.
+ */
 export class CrossmintDecrypt {
     userAddress: string;
     signCallback: (wallet: string, challenge: string) => Promise<string>;
@@ -34,6 +39,12 @@ export class CrossmintDecrypt {
     }
 }
 
+/**
+ * Class for decrypting verifiable credentials that have been encrypted with the VerifiableCredentialEncryptionType.CROSSMINT_RECOVERABLE encryption type.
+ * This class will use metamask to prompt the user to sign a message to decrypt the credential.
+ * To use a different signature method refer to the CrossmintDecrypt class.
+ * To use the crossmint decrypt endpoint an api key with the `credentials.decrypt` scope  must have been provided.
+ */
 export class CrossmintMetamaskDecrypt {
     constructor(private readonly metamask = new MetamaskService()) {
         this.metamask.metamaskSignMessage = this.metamask.metamaskSignMessage.bind(this.metamask);

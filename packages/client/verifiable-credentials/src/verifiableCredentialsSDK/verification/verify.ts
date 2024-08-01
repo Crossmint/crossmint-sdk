@@ -4,6 +4,11 @@ import { NFTService } from "../onchainServices/nft";
 import { VerifiableCredential } from "../types/verifiableCredential";
 import { VerifiableCredentialSignatureService } from "./signature";
 
+/**
+ *  Verify a Verifiable Credential
+ * @param credential the credential object to verify
+ * @returns {validVC: boolean, error: string | undefined} validVC is true if the credential is valid, error is a string with the error message if the credential is invalid
+ */
 export async function verifyCredential(
     credential: VerifiableCredential
 ): Promise<{ validVC: boolean; error: string | undefined }> {

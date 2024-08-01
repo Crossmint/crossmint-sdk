@@ -11,6 +11,12 @@ import {
     VerifiableCredential,
 } from "../verifiableCredentialsSDK";
 
+/**
+ * Lit class for decrypting verifiable credentials that have been encrypted with the VerifiableCredentialEncryptionType.LIT encryption type.
+ * @param network - The network on which the credentials are encrypted (use CredentialMetadata.encryption.details.network)
+ * @param capacityDelegationAuthSig - The capacity delegation signature used to pay for decrypting the credentials, if not provided the crossmint one will be used.
+ * To use the crossmint delegation signature the user must have provided an api key with the `credentials.decrypt` scope.
+ */
 export class Lit extends LitRaw {
     constructor(network: LitNetwork, capacityDelegationAuthSig?: AuthSig, debug = false) {
         const usageOrigin = crossmintAPI.getOrigin();

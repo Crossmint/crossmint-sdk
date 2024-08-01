@@ -26,7 +26,11 @@ function ipfsCondition(endpoint: string): boolean {
     return endpoint.startsWith("ipfs://");
 }
 
-// Default retrieval procedure for ipfs, can be overridden by the user
+/**
+ * Default retrieval procedure for ipfs, can be overridden by the user.
+ * Will match all credentials with a retrieval endpoint starting with ipfs://
+ * Will use the ipfs gataways provided in SDK init to fetch the credential
+ */
 export const ipfsRetrievalProcedure: CredentialRetrievalProcedure = {
     endpointCondition: ipfsCondition,
     procedure: ipfsProcedure,

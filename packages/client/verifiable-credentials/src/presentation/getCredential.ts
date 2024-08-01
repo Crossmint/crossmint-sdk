@@ -58,6 +58,11 @@ export class CrossmintCredentialRetrieval {
     }
 }
 
+/**
+ * Crossmint retrieval procedure for ipfs, will use the crossmint api to fetch the credentials.
+ * Will match all credentials that are stored in crossmint
+ * Requires a crossmint api key with the `credentials.read` scope
+ */
 export const crossmintRetrievalProcedure: CredentialRetrievalProcedure = {
     endpointCondition: (endpoint: string) => endpoint.includes("crossmint"),
     procedure: async ({ locator }: { locator: string; retrievalPath: string }) => {
@@ -65,6 +70,16 @@ export const crossmintRetrievalProcedure: CredentialRetrievalProcedure = {
     },
 };
 
+/**
+ * Credential service is used to fetch credentials from different sources
+ * By deafult the procedures provided are the ipfs and crossmint procedures,
+ * but the user can add more procedures to fetch credentials from other sources.
+ *
+ * For using the crossmint procedure, the user must have set a crossmint api key with the `credentials.read` scope
+ *
+ * CredentialService().getCredential(collection: CredentialsCollection, tokenId: string) will fetch the credential from the source that matches the storage location of the credential
+ * CredentialService().getById(credentialId: string) will fetch the credential from crossmint using the credentialId
+ */
 export class CredentialService extends CredentialServiceRaw {
     constructor(retrievalProcedures = [ipfsRetrievalProcedure, crossmintRetrievalProcedure]) {
         super(retrievalProcedures);

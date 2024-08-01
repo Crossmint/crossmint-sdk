@@ -5,6 +5,12 @@ import { NftWithMetadata } from "../types/nft";
 import { isVcChain, isVerifiableCredentialContractMetadata, parseLocator } from "../types/utils";
 import { ContractMetadataService } from "./contractMetadata";
 
+/**
+ * Get a Verifiable Credential nft from a locator
+ * Will return both the nft and the corresponding collection with the credentials metadata
+ * @param locator the locator of the credential eg "polygon:0x1B887669437644aA348c518844660ef8d63bd643:1"
+ * @returns {nft: NftWithMetadata, collection: CredentialsCollection} the nft and the collection
+ */
 export async function getCredentialNFTFromLocator(locator: string) {
     const nft = parseLocator(locator);
     if (!isVcChain(nft.chain)) {

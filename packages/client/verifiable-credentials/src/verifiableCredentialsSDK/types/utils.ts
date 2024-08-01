@@ -17,6 +17,9 @@ export function parseLocator(locator: string): Nft {
     };
 }
 
+/**
+ * Returns true if the object is a VerifiableCredential or EncryptedVerifiableCredential
+ */
 export function isCredentialType(obj: any): obj is VerifiableCredentialType {
     if (obj == null || typeof obj.id !== "string") {
         return false;
