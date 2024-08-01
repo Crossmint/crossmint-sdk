@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import { encodeFunctionData } from "viem";
 
-import { EVMSmartWallet, SmartWalletChain } from "@crossmint/client-sdk-smart-wallet";
+import type { Chain, EVMSmartWallet } from "@crossmint/client-sdk-smart-wallet";
 
 import contractAbi from "./MintBurnABI.json";
 import contractERC20abi from "./erc20tokenSell.json";
@@ -98,7 +98,7 @@ export const walletContent = async (account: EVMSmartWallet, isProd: boolean) =>
     }
 };
 
-export const getTokenBalances = async (address: string, isProd: boolean, chain: SmartWalletChain) => {
+export const getTokenBalances = async (address: string, isProd: boolean, chain: Chain) => {
     const baseURL = isProd ? "https://www.crossmint.com" : "https://staging.crossmint.com";
     const apikey = isProd ? process.env.REACT_APP_CROSSMINT_API_KEY_PROD : process.env.REACT_APP_CROSSMINT_API_KEY_STG;
 

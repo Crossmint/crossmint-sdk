@@ -2,7 +2,7 @@ import { providerToSmartAccountSigner } from "permissionless";
 import type { SmartAccountSigner } from "permissionless/accounts";
 import { Address, EIP1193Provider } from "viem";
 
-import { SmartWalletChain } from "..";
+import { SmartWalletChain } from "../blockchain/chains";
 import { SmartWalletSDKError } from "../error";
 import { ViemAccount, WalletParams } from "../types/Config";
 import { logInputOutput } from "./log";

@@ -1,4 +1,4 @@
-import { SmartWalletChain } from "..";
+import type { SmartWalletChain } from "../blockchain/chains";
 
 export interface EVMToken {
     chain: SmartWalletChain;
