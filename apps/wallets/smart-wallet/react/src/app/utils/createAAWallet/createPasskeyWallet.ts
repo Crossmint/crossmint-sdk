@@ -1,5 +1,4 @@
-import { SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
-import { SmartWalletChain } from "@crossmint/client-sdk-smart-wallet";
+import { SmartWalletSDK, Chain } from "@crossmint/client-sdk-smart-wallet";
 
 import { checkAuthState, signInWithGoogle } from "../../auth/FirebaseAuthManager";
 
@@ -22,7 +21,7 @@ export async function createPasskeyWallet(isProd: boolean) {
               clientApiKey: process.env.REACT_APP_CROSSMINT_API_KEY_STG || "",
           });
 
-    const chain = isProd ? SmartWalletChain.POLYGON : SmartWalletChain.POLYGON_AMOY;
+    const chain = isProd ? Chain.POLYGON : Chain.POLYGON_AMOY;
 
     const test = await xm.getOrCreateWallet({ jwt }, chain);
 

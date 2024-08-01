@@ -4,7 +4,7 @@ import type { SmartAccount } from "permissionless/accounts";
 import type { EntryPoint } from "permissionless/types/entrypoint";
 import type { Chain, Hex, HttpTransport, PublicClient } from "viem";
 
-import { SmartWalletChain } from "..";
+import type { SmartWalletChain } from "../blockchain/chains";
 import type { SignerData } from "./API";
 import type { EntryPointDetails, UserParams, WalletParams } from "./Config";
 
