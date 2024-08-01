@@ -250,8 +250,8 @@ importers:
         specifier: workspace:*
         version: link:../../../../packages/client/wallets/smart-wallet
       '@crossmint/client-sdk-smart-wallet-web3auth-adapter':
-        specifier: 0.2.1
-        version: 0.2.1(@babel/runtime@7.24.8)(buffer@6.0.3)(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)
+        specifier: workspace:*
+        version: link:../../../../packages/client/wallets/web3auth-adapter
       '@emotion/react':
         specifier: ^11.11.1
         version: 11.13.0(@types/react@18.3.3)(react@18.2.0)
@@ -1731,9 +1731,6 @@ packages:
 
   '@crossmint/client-sdk-aa@1.0.0-alpha.1':
     resolution: {integrity: sha512-iz3T2eG29xwi1WTY1NYMAQsRo82JPR/HGFTuXL1YGu+7sVh8PAOeK48eV2EsXfCsyJNOjYcOXsYHhHmwZbD1yw==}
-
-  '@crossmint/client-sdk-smart-wallet-web3auth-adapter@0.2.1':
-    resolution: {integrity: sha512-t7D+abS0bP5LWAXTp/vvAZ6xbX+/mlDe2mXVAbgLCSBTJFHY1csMlgCXnr3kC0wLn8H0pjWMVqC23wk/PKzKhw==}
 
   '@crossmint/common-sdk-base@0.0.12':
     resolution: {integrity: sha512-KFbUX/HwdtLjh2UHN06Rzu1kla7AExulZinIv43k2U/5JkwI3WB4b0BGV7YZ5DGGPsXTkZs1XVLmsQT7fE3KkA==}
@@ -16441,37 +16438,6 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@crossmint/client-sdk-smart-wallet-web3auth-adapter@0.2.1(@babel/runtime@7.24.8)(buffer@6.0.3)(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)':
-    dependencies:
-      '@crossmint/common-sdk-base': 0.0.13
-      '@web3auth/base': 7.3.2(@babel/runtime@7.24.8)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      '@web3auth/ethereum-provider': 7.3.2(@babel/runtime@7.24.8)(buffer@6.0.3)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      '@web3auth/single-factor-auth': 7.3.0(@babel/runtime@7.24.8)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      viem: 2.17.5(bufferutil@4.0.7)(typescript@5.4.2)(utf-8-validate@5.0.10)(zod@3.22.4)
-    transitivePeerDependencies:
-      - '@azure/app-configuration'
-      - '@azure/cosmos'
-      - '@azure/data-tables'
-      - '@azure/identity'
-      - '@azure/keyvault-secrets'
-      - '@azure/storage-blob'
-      - '@babel/runtime'
-      - '@capacitor/preferences'
-      - '@netlify/blobs'
-      - '@planetscale/database'
-      - '@react-native-async-storage/async-storage'
-      - '@sentry/types'
-      - '@types/bn.js'
-      - '@upstash/redis'
-      - '@vercel/kv'
-      - buffer
-      - bufferutil
-      - c-kzg
-      - supports-color
-      - typescript
-      - utf-8-validate
-      - zod
-
   '@crossmint/common-sdk-base@0.0.12':
     dependencies:
       bs58: 5.0.0
@@ -23551,44 +23517,6 @@ snapshots:
       '@walletconnect/utils': 2.11.1
       '@web3auth/base': 7.3.2(@babel/runtime@7.24.7)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       '@web3auth/base-provider': 7.3.2(@babel/runtime@7.24.7)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      assert: 2.1.0
-      bignumber.js: 9.1.2
-      bn.js: 5.2.1
-      jsonschema: 1.4.1
-    transitivePeerDependencies:
-      - '@azure/app-configuration'
-      - '@azure/cosmos'
-      - '@azure/data-tables'
-      - '@azure/identity'
-      - '@azure/keyvault-secrets'
-      - '@azure/storage-blob'
-      - '@capacitor/preferences'
-      - '@netlify/blobs'
-      - '@planetscale/database'
-      - '@react-native-async-storage/async-storage'
-      - '@sentry/types'
-      - '@upstash/redis'
-      - '@vercel/kv'
-      - buffer
-      - bufferutil
-      - c-kzg
-      - supports-color
-      - utf-8-validate
-
-  '@web3auth/ethereum-provider@7.3.2(@babel/runtime@7.24.8)(buffer@6.0.3)(bufferutil@4.0.7)(utf-8-validate@5.0.10)':
-    dependencies:
-      '@babel/runtime': 7.24.8
-      '@ethereumjs/common': 4.1.0(buffer@6.0.3)
-      '@ethereumjs/tx': 5.1.0(buffer@6.0.3)
-      '@ethereumjs/util': 9.0.1
-      '@metamask/eth-sig-util': 7.0.1
-      '@metamask/rpc-errors': 6.1.0
-      '@toruslabs/base-controllers': 4.11.0(@babel/runtime@7.24.8)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      '@toruslabs/http-helpers': 6.0.0(@babel/runtime@7.24.8)
-      '@toruslabs/openlogin-jrpc': 6.2.11(@babel/runtime@7.24.8)
-      '@walletconnect/utils': 2.11.1
-      '@web3auth/base': 7.3.2(@babel/runtime@7.24.8)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
-      '@web3auth/base-provider': 7.3.2(@babel/runtime@7.24.8)(bufferutil@4.0.7)(utf-8-validate@5.0.10)
       assert: 2.1.0
       bignumber.js: 9.1.2
       bn.js: 5.2.1

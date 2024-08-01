@@ -29,7 +29,7 @@
             "path": "packages/client/ui/react-ui"
         },
         {
-            "name": "⚛️ @client-sdk-smart-wallet-react-starter",
+            "name": "⚛️ @crossmint/client-sdk-smart-wallet-react-starter",
             "path": "apps/wallets/smart-wallet/react"
         },
         {
