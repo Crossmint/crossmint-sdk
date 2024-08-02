@@ -3,10 +3,10 @@
 import { Button } from "@/components/button";
 import { Typography } from "@/components/typography";
 
-import { useAuth } from "./_lib/use-auth";
+import { useAuth } from "../hooks/useAuth";
 
 export default function Home() {
-    const { login, isLoading } = useAuth();
+    const { signInAndGetOrCreateWallet, isLoading } = useAuth();
 
     return (
         <div className="flex h-full w-full items-center pt-24 justify-center">
@@ -14,7 +14,7 @@ export default function Home() {
                 <Typography variant={"h1"}>Smart Wallet - Mint NFT</Typography>
                 <Button
                     className="bg-[#278272] rounded-lg shadow-md text-base text-[#FFF] font-semibold max-w-60 w-full"
-                    onClick={login}
+                    onClick={signInAndGetOrCreateWallet}
                     disabled={isLoading}
                 >
                     {isLoading ? "Loading..." : "Try it!"}

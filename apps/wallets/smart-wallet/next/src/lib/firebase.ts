@@ -1,7 +1,14 @@
 import { env } from "@/env";
-import { createOrGetPasskeyWallet } from "@/utils/create-or-get-passkey-wallet";
-import { getApp, getApps, initializeApp } from "firebase/app";
-import { GoogleAuthProvider, getAuth, onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
+import { FirebaseError, getApp, getApps, initializeApp } from "firebase/app";
+import {
+    GoogleAuthProvider,
+    UserCredential,
+    getAuth,
+    indexedDBLocalPersistence,
+    onAuthStateChanged,
+    signInWithPopup,
+    signOut,
+} from "firebase/auth";
 
 const firebaseConfig = {
     apiKey: env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -32,12 +39,21 @@ const getAuthedJWT = (): Promise<string | undefined> => {
     });
 };
 
-const getSmartWallet = async () => {
-    const jwt = await getAuthedJWT();
-    if (!jwt) {
+const signInWithGoogle = async (): Promise<string | undefined> => {
+    auth.setPersistence(indexedDBLocalPersistence);
+    const googleProvider = new GoogleAuthProvider();
+    let res: UserCredential;
+    try {
+        res = await signInWithPopup(auth, googleProvider);
+    } catch (e) {
+        console.log(
+            e instanceof FirebaseError && e.code === "auth/popup-closed-by-user"
+                ? "Pop-up closed without selecting an account"
+                : e
+        );
         return;
     }
-    return await createOrGetPasskeyWallet(jwt);
-};
 
-export { auth, onAuthStateChanged, getSmartWallet, getAuthedJWT, signInWithPopup, GoogleAuthProvider, signOut };
+    return res.user.getIdToken(true);
+};
+export { auth, onAuthStateChanged, signInWithGoogle, getAuthedJWT, signInWithPopup, signOut };

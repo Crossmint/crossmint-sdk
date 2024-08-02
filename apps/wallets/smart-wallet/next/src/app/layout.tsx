@@ -5,7 +5,6 @@ import { Inter, Raleway } from "next/font/google";
 import React from "react";
 
 import { cn } from "../lib/utils";
-import { HandleUnauthedRedirect } from "./_lib/handle-redirects";
 import { Providers } from "./_lib/providers";
 import "./globals.css";
 
@@ -29,7 +28,6 @@ const raleway = Raleway({
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
     return (
         <Providers>
-            <HandleUnauthedRedirect />
             <html
                 // Add font variables so they'll be available for tailwind
                 className={cn(inter.variable, raleway.variable)}

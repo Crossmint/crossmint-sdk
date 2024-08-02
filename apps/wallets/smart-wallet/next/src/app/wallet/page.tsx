@@ -31,6 +31,9 @@ export default function Index() {
             const nfts = await wallet?.nfts();
             return (nfts || []) as NFT[];
         },
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
+        staleTime: 1000 * 60 * 5, // 5 minutes
     });
 
     return (

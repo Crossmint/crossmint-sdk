@@ -1,51 +1,10 @@
 "use client";
 
 import { Button } from "@/components/button";
-import { useToast } from "@/components/use-toast";
-import { getAuthedJWT } from "@/lib/firebase";
-import { createOrGetPasskeyWallet } from "@/utils/create-or-get-passkey-wallet";
-import { mintNFT } from "@/utils/mintApi";
-import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-
-import { useAppContext } from "../_lib/providers";
+import { useWallet } from "@/hooks/useWallet";
 
 export default function Index() {
-    const [isLoading, setIsLoading] = useState(false);
-    const { smartWallet, setSmartWallet } = useAppContext();
-    const router = useRouter();
-    const queryClient = useQueryClient();
-
-    const { toast } = useToast();
-
-    const createAndSetAAWallet = async () => {
-        const authedJWT = await getAuthedJWT();
-        const wallet = await createOrGetPasskeyWallet(authedJWT as unknown as string);
-        setSmartWallet(wallet);
-        return wallet;
-    };
-
-    const mint = async () => {
-        setIsLoading(true);
-        try {
-            const wallet = smartWallet || (await createAndSetAAWallet());
-            if (wallet) {
-                const mintedSuccessfully = await mintNFT(wallet);
-                if (mintedSuccessfully) {
-                    // invalidate the useQuery cache
-                    await queryClient.invalidateQueries({ queryKey: ["smart-wallet"] });
-                    toast({ title: "NFT Minted Successfully" });
-                    router.push("/wallet");
-                }
-            }
-        } catch (error) {
-            console.log({ error });
-            toast({ title: "Error occurred during minting" });
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    const { handleMint, isLoading } = useWallet();
 
     return (
         <div className="flex h-full w-full items-center pt-24 justify-center">
@@ -65,7 +24,7 @@ export default function Index() {
 
                         <Button
                             disabled={isLoading}
-                            onClick={mint}
+                            onClick={handleMint}
                             className="flex text-[#FFF] mt-[2rem] font-semibold h-[2.625rem] py-0.5 px-1.125 flex-col justify-center items-center gap-0.5 self-stretch rounded-md bg-[#278272] shadow-md"
                         >
                             {isLoading ? "Minting..." : "Mint"}

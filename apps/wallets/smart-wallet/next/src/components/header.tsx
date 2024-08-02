@@ -1,6 +1,7 @@
 "use client";
 
-import { useAppContext } from "@/app/_lib/providers";
+import { useAuth } from "@/hooks/useAuth";
+import { useWallet } from "@/hooks/useWallet";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,10 +15,12 @@ export const Header = () => {
     const router = useRouter();
     const pathname = usePathname();
 
-    const { isAuthenticated, signOutUser } = useAppContext();
+    const { signOut, authedUser } = useAuth();
+    const { setSmartWallet } = useWallet();
 
     const handleLogout = async () => {
-        signOutUser();
+        signOut();
+        setSmartWallet(null);
         router.push("/");
     };
 
@@ -26,7 +29,7 @@ export const Header = () => {
             <div className="justify-center items-center flex ">
                 <Image
                     src={
-                        isAuthenticated
+                        authedUser
                             ? "/assets/icons/crossmint_logo_original.svg"
                             : "/assets/icons/crossmint_logo_white.svg"
                     }
@@ -39,7 +42,7 @@ export const Header = () => {
                     Crossmint Logo
                 </Typography>
             </div>
-            {isAuthenticated ? (
+            {authedUser ? (
                 <div className="flex gap-4">
                     <Link href="/mint">
                         <Typography
@@ -59,7 +62,7 @@ export const Header = () => {
                     </Link>
                 </div>
             ) : null}
-            {isAuthenticated ? (
+            {authedUser ? (
                 <div className="flex">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
