@@ -13,6 +13,7 @@ export const SmartWalletErrors = {
     ERROR_WALLET_CONFIG: "smart-wallet:wallet-config.error",
     ERROR_ADMIN_MISMATCH: "smart-wallet:wallet-config.admin-mismatch",
     ERROR_PASSKEY_MISMATCH: "smart-wallet:wallet-config.passkey-mismatch",
+    ERROR_PASSKEY_PROMPT: "smart-wallet:passkey.prompt",
     ERROR_ADMIN_SIGNER_ALREADY_USED: "smart-wallet:wallet-config.admin-signer-already-used",
     ERROR_PROJECT_NONCUSTODIAL_WALLETS_NOT_ENABLED: "smart-wallet:wallet-config.non-custodial-wallets-not-enabled",
     UNCATEGORIZED: "smart-wallet:uncategorized", // catch-all error code
@@ -116,6 +117,18 @@ export class UserWalletAlreadyCreatedError extends SmartWalletSDKError {
 
     constructor(userId: string) {
         super(`The user with userId ${userId.toString()} already has a wallet created for this project`);
+    }
+}
+
+export class PasskeyPromptError extends SmartWalletSDKError {
+    public passkeyName: string;
+
+    constructor(passkeyName: string) {
+        super(
+            `Prompt was either cancelled or timed out for passkey ${passkeyName}`,
+            SmartWalletErrors.ERROR_PASSKEY_PROMPT
+        );
+        this.passkeyName = passkeyName;
     }
 }
 
