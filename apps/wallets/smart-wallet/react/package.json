@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-smart-wallet-react-starter",
-    "version": "1.5.0",
+    "version": "1.5.1",
     "private": true,
     "scripts": {
         "build": "react-app-rewired build",
