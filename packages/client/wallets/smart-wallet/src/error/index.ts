@@ -14,6 +14,7 @@ export const SmartWalletErrors = {
     ERROR_ADMIN_MISMATCH: "smart-wallet:wallet-config.admin-mismatch",
     ERROR_PASSKEY_MISMATCH: "smart-wallet:wallet-config.passkey-mismatch",
     ERROR_PASSKEY_PROMPT: "smart-wallet:passkey.prompt",
+    ERROR_PASSKEY_INCOMPATIBLE_AUTHENTICATOR: "smart-wallet.passkey.incompatible-authenticator",
     ERROR_PASSKEY_REGISTRATION: "smart-wallet:passkey.registration",
     ERROR_ADMIN_SIGNER_ALREADY_USED: "smart-wallet:wallet-config.admin-signer-already-used",
     ERROR_PROJECT_NONCUSTODIAL_WALLETS_NOT_ENABLED: "smart-wallet:wallet-config.non-custodial-wallets-not-enabled",
@@ -142,6 +143,19 @@ export class PasskeyRegistrationError extends SmartWalletSDKError {
             `Registration for passkey ${passkeyName} failed, either the registration took too long, or passkey signature vaildation failed.`,
             undefined,
             SmartWalletErrors.ERROR_PASSKEY_REGISTRATION
+        );
+        this.passkeyName = passkeyName;
+    }
+}
+
+export class PasskeyIncompatibleAuthenticatorError extends SmartWalletSDKError {
+    public passkeyName: string;
+
+    constructor(passkeyName: string) {
+        super(
+            `User selected authenticator for passkey ${passkeyName} is not compatible with Crossmint's Smart Wallets.`,
+            undefined,
+            SmartWalletErrors.ERROR_PASSKEY_INCOMPATIBLE_AUTHENTICATOR
         );
         this.passkeyName = passkeyName;
     }

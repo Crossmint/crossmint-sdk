@@ -8,7 +8,12 @@ import { type WebAuthnKey, toWebAuthnKey } from "@zerodev/webauthn-key";
 import type { SmartAccount } from "permissionless/accounts";
 import type { EntryPoint } from "permissionless/types/entrypoint";
 
-import { PasskeyMismatchError, PasskeyPromptError, PasskeyRegistrationError } from "../../error";
+import {
+    PasskeyIncompatibleAuthenticatorError,
+    PasskeyMismatchError,
+    PasskeyPromptError,
+    PasskeyRegistrationError,
+} from "../../error";
 
 export interface PasskeyWalletParams extends WalletCreationParams {
     walletParams: WalletParams & { signer: PasskeySigner };
@@ -108,6 +113,10 @@ export class PasskeyAccountService {
     }
 
     private mapError(error: any, passkeyName: string) {
+        if (error.code === 0 && error.name === "DataError") {
+            return new PasskeyIncompatibleAuthenticatorError(passkeyName);
+        }
+
         if (error.message === "Registration not verified") {
             return new PasskeyRegistrationError(passkeyName);
         }
