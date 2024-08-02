@@ -4,7 +4,8 @@ import type { PasskeySigner, UserParams, WalletParams } from "@/types/Config";
 import type { AccountAndSigner, PasskeyValidatorSerializedData, WalletCreationParams } from "@/types/internal";
 import { PasskeyValidatorContractVersion, WebAuthnMode, toPasskeyValidator } from "@zerodev/passkey-validator";
 import { type KernelSmartAccount, type KernelValidator, createKernelAccount } from "@zerodev/sdk";
-import { WebAuthnKey, toWebAuthnKey } from "@zerodev/webauthn-key";
+import { type WebAuthnKey, toWebAuthnKey } from "@zerodev/webauthn-key";
+import type { SmartAccount } from "permissionless/accounts";
 import type { EntryPoint } from "permissionless/types/entrypoint";
 
 import { PasskeyMismatchError, PasskeyPromptError } from "../../error";
@@ -20,7 +21,6 @@ export function isPasskeyParams(params: WalletCreationParams): params is Passkey
 type PasskeyValidator = KernelValidator<EntryPoint, "WebAuthnValidator"> & {
     getSerializedData: () => string;
 };
-
 export class PasskeyAccountService {
     constructor(private readonly crossmintService: CrossmintWalletService) {}
 
@@ -115,16 +115,17 @@ export class PasskeyAccountService {
         return error;
     }
 
-    private decorate<Client extends KernelSmartAccount<EntryPoint>>(account: Client, passkeyName: string): Client {
+    private decorate<Account extends KernelSmartAccount<EntryPoint>>(account: Account, passkeyName: string): Account {
         return new Proxy(account, {
             get: (target, prop, receiver) => {
-                if (prop !== "signUserOperation") {
-                    return Reflect.get(target, prop, receiver);
+                const original = Reflect.get(target, prop, receiver);
+                if (typeof original !== "function" || typeof prop !== "string" || !isAccountSigningMethod(prop)) {
+                    return original;
                 }
 
-                return async (...args: Parameters<Client["signUserOperation"]>) => {
+                return async (...args: any[]) => {
                     try {
-                        return await Reflect.get(target, prop, receiver).call(target, ...args);
+                        return await original.call(target, ...args);
                     } catch (error) {
                         throw this.mapError(error, passkeyName);
                     }
@@ -132,6 +133,17 @@ export class PasskeyAccountService {
             },
         });
     }
+}
+
+const accountSigningMethods = [
+    "signMessage",
+    "signTypedData",
+    "signUserOperation",
+    "signTransaction",
+] as const satisfies readonly (keyof SmartAccount<EntryPoint>)[];
+
+function isAccountSigningMethod(method: string): method is (typeof accountSigningMethods)[number] {
+    return accountSigningMethods.includes(method as any);
 }
 
 const deserializePasskeyValidatorData = (params: string) => {
