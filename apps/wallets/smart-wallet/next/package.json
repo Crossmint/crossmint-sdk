@@ -1,0 +1,42 @@
+{
+    "name": "@crossmint/client-sdk-smart-wallet-next-starter",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "build": "next build",
+        "dev": "next dev",
+        "lint": "next lint",
+        "start": "next start"
+    },
+    "dependencies": {
+        "@crossmint/client-sdk-smart-wallet": "workspace:*",
+        "@crossmint/client-sdk-smart-wallet-web3auth-adapter": "workspace:*",
+        "@radix-ui/react-avatar": "1.1.0",
+        "@radix-ui/react-dropdown-menu": "2.1.1",
+        "@radix-ui/react-slot": "1.1.0",
+        "@radix-ui/react-toast": "1.2.1",
+        "@t3-oss/env-nextjs": "0.11.0",
+        "@tanstack/react-query": "5.51.18",
+        "class-variance-authority": "0.7.0",
+        "clsx": "2.1.1",
+        "ethers": "^5.7.2",
+        "firebase": "^10.3.1",
+        "lucide-react": "0.419.0",
+        "next": "14.2.5",
+        "react": "^18",
+        "react-dom": "^18",
+        "tailwind-merge": "2.4.0",
+        "viem": "2.17.5",
+        "zod": "3.22.4"
+    },
+    "devDependencies": {
+        "@types/node": "^20",
+        "@types/react": "^18",
+        "@types/react-dom": "^18",
+        "eslint": "^8",
+        "eslint-config-next": "14.2.5",
+        "postcss": "^8",
+        "tailwindcss": "^3.4.1",
+        "typescript": "^5"
+    }
+}

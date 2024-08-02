@@ -67,14 +67,14 @@ export default function NftBurn({ show, onClose, nft }: Props) {
         <div className="flex items-center justify-center h-screen">
             <Modal
                 defaultPadding={false}
-                className="w-[25rem] h-auto h-auto bg-white rounded-[1rem] overflow-auto !m-0 p-8"
+                className="w-[25rem] h-auto bg-white rounded-[1rem] overflow-auto !m-0 p-8"
                 show={show}
                 onClose={onClose}
                 closeOnOverlayClick={false}
             >
                 <XIcon
                     onClick={onCancel}
-                    className="absolute w-[1.25rem] h-[1.25rem] text-[#ABADC6] absolute top-6 right-6 cursor-pointer font-light"
+                    className="absolute w-[1.25rem] h-[1.25rem] text-[#ABADC6] top-6 right-6 cursor-pointer font-light"
                 />
                 <div className="flex flex-col items-center w-full sm:px-1.5rem md:px-4rem text-center">
                     <img src={sellIcon} alt="warning" width={72} height={72} className="mb-[1.5rem]" />

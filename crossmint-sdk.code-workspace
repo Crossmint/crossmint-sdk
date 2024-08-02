@@ -33,6 +33,10 @@
             "path": "apps/wallets/smart-wallet/react"
         },
         {
+            "name": "⚛️🔒 @crossmint/client-sdk-smart-wallet-next-starter",
+            "path": "apps/wallets/smart-wallet/next"
+        },
+        {
             "name": "⚪ @crossmint/client-sdk-vanilla-ui",
             "path": "packages/client/ui/vanilla-ui"
         },
