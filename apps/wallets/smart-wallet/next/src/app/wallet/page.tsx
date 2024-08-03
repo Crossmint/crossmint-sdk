@@ -1,10 +1,14 @@
 "use client";
 
+import { PoweredByCrossmint } from "@/components/powered-by-crossmint";
 import { Skeleton } from "@/components/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/tabs";
 import { Typography } from "@/components/typography";
+import { useAuth } from "@/hooks/useAuth";
 import { getAuthedJWT } from "@/lib/firebase";
 import { createOrGetPasskeyWallet } from "@/utils/create-or-get-passkey-wallet";
 import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 
 type NFT = {
     chain: string;
@@ -22,7 +26,46 @@ type NFT = {
     tokenStandard: string;
 };
 
+const SkeletonLoader = () => {
+    return (
+        <div className="p-6 flex h-full w-full items-center  gap-6 justify-center flex-col">
+            <div className="w-full flex-col sm:max-w-[418px] bg-card rounded-2xl shadow-dropdown min-h-[560px] p-6">
+                <div className="h-24 rounded-lg border border-border flex flex-col gap-4 items-center justify-center">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-4 w-16" />
+                </div>
+                <div className="flex p-8 justify-between">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-4 w-32" />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 justify-items-center gap-x-4 gap-y-8 pb-6">
+                    <div className="w-full sm:w-auto flex flex-col gap-4">
+                        <Skeleton className="w-full h-40 sm:w-40 rounded-[10px]" />
+                        <Skeleton className="h-4 w-24" />
+                    </div>
+                    <div className="w-full sm:w-auto flex flex-col gap-4">
+                        <Skeleton className="w-full h-40 sm:w-40 rounded-[10px]" />
+                        <Skeleton className="h-4 w-24" />
+                    </div>
+                    <div className="w-full sm:w-auto flex flex-col gap-4">
+                        <Skeleton className="w-full h-40 sm:w-40 rounded-[10px]" />
+                        <Skeleton className="h-4 w-24" />
+                    </div>
+                    <div className="w-full sm:w-auto flex flex-col gap-4">
+                        <Skeleton className="w-full h-40 sm:w-40 rounded-[10px]" />
+                        <Skeleton className="h-4 w-24" />
+                    </div>
+                </div>
+            </div>
+            <PoweredByCrossmint className="pt-6" />
+        </div>
+    );
+};
+
 export default function Index() {
+    const { authedUser, isLoading: isLoadingAuth } = useAuth();
+    const router = useRouter();
+
     const { data, isLoading } = useQuery({
         queryKey: ["smart-wallet"],
         queryFn: async () => {
@@ -36,48 +79,67 @@ export default function Index() {
         staleTime: 1000 * 60 * 5, // 5 minutes
     });
 
+    if (!authedUser && !isLoadingAuth) {
+        router.push("/");
+        return;
+    }
+
+    if (isLoading) {
+        return <SkeletonLoader />;
+    }
+
     return (
-        <div className="flex h-full w-full items-center pt-24 justify-center flex-col">
-            <Typography variant="h1" className="p-6">
-                Your Smart Wallet
-            </Typography>
-            <div className="w-full flex-col md:w-5/6 bg-card rounded-lg shadow-lg min-h-[560px]">
-                <div className="flex gap-3 p-6 items-center">
-                    <Typography variant="h2">Assets</Typography>
-                    <Typography variant="h5">
-                        {isLoading ? <Skeleton className="w-24 bg-secondary h-8" /> : `${data?.length || 0} assets`}
+        <div className="flex h-full w-full items-center pt-6 gap-6 justify-center flex-col">
+            <div className="w-full flex-col sm:max-w-[418px] bg-card rounded-2xl shadow-dropdown min-h-[560px] p-6">
+                <div className="h-24 rounded-lg border border-border flex flex-col gap-1 items-center justify-center">
+                    <Typography className="text-secondary-foreground" variant="h3">
+                        Smart Wallet
+                    </Typography>
+                    <Typography className="text-[#C9BCB1]" variant="h3">
+                        $0.00
                     </Typography>
                 </div>
-
-                <div className="flex gap-6 p-6 flex-wrap">
-                    {isLoading ? (
-                        <>
-                            <Skeleton className="bg-background flex flex-col gap-4 w-[212px] p-4 border border-primary rounded-2xl">
-                                <Skeleton className="rounded-xl bg-card h-48 w-full" />
-                                <Skeleton className="h-6 bg-card rounded w-full" />
-                                <Skeleton className="h-4 bg-card rounded w-2/3" />
-                            </Skeleton>
-                            <Skeleton className="bg-background flex flex-col gap-4 w-[212px] p-4 border border-primary rounded-2xl ">
-                                <Skeleton className="rounded-xl bg-card h-48 w-full" />
-                                <Skeleton className="h-6 bg-card rounded w-full" />
-                                <Skeleton className="h-4 bg-card rounded w-2/3" />
-                            </Skeleton>
-                        </>
-                    ) : (
-                        (data || []).map((nft) => (
-                            <div
-                                key={nft.tokenId}
-                                className="bg-background flex flex-col gap-4 w-full md:max-w-[212px] p-4 border border-primary rounded-2xl"
-                            >
+                <Tabs defaultValue="collectibles" className="my-2">
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="collectibles">Collectibles</TabsTrigger>
+                        <TabsTrigger value="tokens">Tokens</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="collectibles">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 justify-items-center gap-x-4 gap-y-8 py-6">
+                            {/* todo replace static nft with data above */}
+                            <div className="flex flex-col gap-4">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img className="rounded-xl" src={nft.metadata.image} alt={nft.metadata.name} />
-                                <Typography variant="h3"> {nft.metadata.name}</Typography>
-                                <Typography variant="h5">by name here</Typography>
+                                <img
+                                    className="rounded-[10px] max-w-full sm:max-w-[164px]"
+                                    src={"/emoji-nft.png"}
+                                    alt={"nice nft"}
+                                />
+                                <div className="flex flex-col">
+                                    <Typography className="text-base text-[#754736] leading-none">
+                                        Smart Wallets Pioneer
+                                    </Typography>
+                                    <Typography className="text-sm text-[#C9BCB1]">by Logoipsum</Typography>
+                                </div>
                             </div>
-                        ))
-                    )}
-                </div>
+                            <div className="w-full sm:w-auto flex flex-col gap-4">
+                                <Skeleton className="w-full h-40 sm:w-40 rounded-[10px]" />
+                            </div>
+                            <div className="w-full sm:w-auto flex flex-col gap-4">
+                                <Skeleton className="w-full h-40 sm:w-40 rounded-[10px]" />
+                            </div>
+                            <div className="w-full sm:w-auto flex flex-col gap-4">
+                                <Skeleton className="w-full h-40 sm:w-40 rounded-[10px]" />
+                            </div>
+                        </div>
+                    </TabsContent>
+                    <TabsContent value="tokens">
+                        <Typography className="text-base text-primary-foreground p-4">
+                            {"You have no tokens :-("}
+                        </Typography>
+                    </TabsContent>
+                </Tabs>
             </div>
+            <PoweredByCrossmint className="pt-6" />
         </div>
     );
 }

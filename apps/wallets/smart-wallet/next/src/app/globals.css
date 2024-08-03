@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap");
+
 @layer base {
     :root {
         /* Define color variables */
@@ -12,16 +14,16 @@
         --color-popover: 0 0% 100%; /* #ffffff */
         --color-popover-foreground: 20 14.3% 4.1%; /* #2d2d2d */
         --color-primary: 24.6 95% 53.1%; /* #ff8c00 */
-        --color-primary-foreground: 60 9.1% 97.8%; /* #f5f5f5 */
+        --color-primary-foreground: 26 30% 62%; /* #BC9B82 */
         --color-secondary: 60 4.8% 95.9%; /* #f2f2f2 */
-        --color-secondary-foreground: 24 9.8% 10%; /* #3d3d3d */
+        --color-secondary-foreground: 15 56% 24%; /* #602C1B */
         --color-muted: 60 4.8% 95.9%; /* #f2f2f2 */
         --color-muted-foreground: 25 5.3% 44.7%; /* #6f6f6f */
         --color-accent: 60 4.8% 95.9%; /* #f2f2f2 */
         --color-accent-foreground: 24 9.8% 10%; /* #3d3d3d */
         --color-destructive: 0 84.2% 60.2%; /* #ff3333 */
         --color-destructive-foreground: 60 9.1% 97.8%; /* #f5f5f5 */
-        --color-border: 20 5.9% 90%; /* #e6e6e6 */
+        --color-border: 21 26% 80%; /* #DAC9C0 */
         --color-input: 20 5.9% 90%; /* #e6e6e6 */
         --color-ring: 24.6 95% 53.1%; /* #ff8c00 */
         --color-chart-1: 12 76% 61%; /* #ffb347 */
@@ -29,6 +31,7 @@
         --color-chart-3: 197 37% 24%; /* #4682b4 */
         --color-chart-4: 43 74% 66%; /* #ffd700 */
         --color-chart-5: 27 87% 67%; /* #ffcc99 */
+        --color-skeleton: 27 33% 88%; /* #EBE0D7 */
 
         /* Use color variables */
         --background: var(--color-background);
@@ -50,9 +53,9 @@
         --border: var(--color-border);
         --input: var(--color-input);
         --ring: var(--color-ring);
-        --shadow-light: 0 4px 4px 0 rgba(0, 0, 0, 0.1);
-        --shadow-heavy: 0 4px 8px 0 rgba(0, 0, 0, 0.15);
-        --shadow-dropdown: 0 2px 12px 0 rgba(0, 0, 0, 0.15);
+        --shadow-light: 0 1px 2px 0 #ead7c1;
+        --shadow-heavy: 0 4px 8px 0 #ead7c1;
+        --shadow-dropdown: 0 2px 12px 0 #ead7c1;
         --chart-1: var(--color-chart-1);
         --chart-2: var(--color-chart-2);
         --chart-3: var(--color-chart-3);
@@ -64,6 +67,7 @@
 @layer base {
     body {
         @apply bg-background text-foreground;
+        font-family: "Poppins", sans-serif;
         font-feature-settings: "rlig" 1, "calt" 1;
     }
 }

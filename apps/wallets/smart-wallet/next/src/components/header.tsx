@@ -2,18 +2,14 @@
 
 import { useAuth } from "@/hooks/useAuth";
 import { useWallet } from "@/hooks/useWallet";
-import { cn } from "@/lib/utils";
-import Image from "next/image";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { Logo } from "@/icons/logo";
+import { useRouter } from "next/navigation";
 
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "./dropdown-menu";
-import { Typography } from "./typography";
 
 export const Header = () => {
     const router = useRouter();
-    const pathname = usePathname();
 
     const { signOut, authedUser } = useAuth();
     const { setSmartWallet } = useWallet();
@@ -25,51 +21,19 @@ export const Header = () => {
     };
 
     return (
-        <div className="flex justify-between p-2 items-center">
+        <div className="flex justify-between p-6 items-center">
             <div className="justify-center items-center flex ">
-                <Image
-                    src={
-                        authedUser
-                            ? "/assets/icons/crossmint_logo_original.svg"
-                            : "/assets/icons/crossmint_logo_white.svg"
-                    }
-                    width="32"
-                    height="32"
-                    alt="Crossmint logo"
-                    className="[&>path]:stroke-[2] h-[2rem] w-[2rem]"
-                />
-                <Typography variant={"tag"} className={"font-bold text-primary"}>
-                    Crossmint Logo
-                </Typography>
+                <Logo />
             </div>
-            {authedUser ? (
-                <div className="flex gap-4">
-                    <Link href="/mint">
-                        <Typography
-                            variant={"h4"}
-                            className={cn("font-normal", pathname === "/mint" ? "font-semibold" : "")}
-                        >
-                            Mint
-                        </Typography>
-                    </Link>
-                    <Link href="/wallet">
-                        <Typography
-                            variant={"h4"}
-                            className={cn("font-normal", pathname === "/wallet" ? "font-semibold" : "")}
-                        >
-                            Wallet
-                        </Typography>
-                    </Link>
-                </div>
-            ) : null}
-            {authedUser ? (
-                <div className="flex">
+            <div className="flex">
+                {/* todo add the wallet button and dropdown here */}
+                {authedUser ? (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Avatar>
                                 <AvatarImage
                                     alt="User Avatar"
-                                    src="/path-to-user-image.jpg"
+                                    src={authedUser?.photoURL ?? "/sample-avatar.jpg"}
                                     className="cursor-pointer"
                                 />
                                 <AvatarFallback className="cursor-pointer">ME</AvatarFallback>
@@ -84,8 +48,8 @@ export const Header = () => {
                             </button>
                         </DropdownMenuContent>
                     </DropdownMenu>
-                </div>
-            ) : null}
+                ) : null}
+            </div>
         </div>
     );
 };

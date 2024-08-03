@@ -32,6 +32,13 @@ const config: Config = {
             "chart-3": "hsl(var(--color-chart-3) / <alpha-value>)",
             "chart-4": "hsl(var(--color-chart-4) / <alpha-value>)",
             "chart-5": "hsl(var(--color-chart-5) / <alpha-value>)",
+            skeleton: "hsl(var(--color-skeleton) / <alpha-value>)",
+        },
+        boxShadow: {
+            light: "var(--shadow-light)",
+            heavy: "var(--shadow-heavy)",
+            dropdown: "var(--shadow-dropdown)",
+            primary: "0 1px 2px 0 #602C1B",
         },
         extend: {
             backgroundImage: {

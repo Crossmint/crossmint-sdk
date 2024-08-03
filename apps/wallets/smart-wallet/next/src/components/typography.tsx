@@ -6,9 +6,9 @@ import { cn } from "../lib/utils";
 export const typographyVariants = cva("font-body transition-colors", {
     variants: {
         variant: {
-            h1: "font-display text-3xl font-extrabold",
+            h1: "font-display text-4xl font-extrabold",
             h2: "font-display text-2xl font-extrabold leading-7",
-            h3: "font-display text-lg font-extrabold leading-6",
+            h3: "font-display text-xl font-extrabold leading-6",
             h4: "font-body text-lg font-semibold leading-6",
             h5: "font-body text-sm font-medium leading-6",
             h6: "font-body text-xs font-medium",
