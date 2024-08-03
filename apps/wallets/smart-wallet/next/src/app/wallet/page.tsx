@@ -89,8 +89,8 @@ export default function Index() {
     }
 
     return (
-        <div className="flex h-full w-full items-center pt-6 gap-6 justify-center flex-col">
-            <div className="w-full flex-col sm:max-w-[418px] bg-card rounded-2xl shadow-dropdown min-h-[560px] p-6">
+        <div className="p-6 flex h-full w-full items-center pt-6 gap-6 justify-center flex-col">
+            <div className="w-full flex-col sm:max-w-[418px] bg-card rounded-2xl shadow-dropdown min-h-[664px] p-6">
                 <div className="h-24 rounded-lg border border-border flex flex-col gap-1 items-center justify-center">
                     <Typography className="text-secondary-foreground" variant="h3">
                         Smart Wallet
@@ -106,30 +106,24 @@ export default function Index() {
                     </TabsList>
                     <TabsContent value="collectibles">
                         <div className="grid grid-cols-1 sm:grid-cols-2 justify-items-center gap-x-4 gap-y-8 py-6">
-                            {/* todo replace static nft with data above */}
-                            <div className="flex flex-col gap-4">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img
-                                    className="rounded-[10px] max-w-full sm:max-w-[164px]"
-                                    src={"/emoji-nft.png"}
-                                    alt={"nice nft"}
-                                />
-                                <div className="flex flex-col">
-                                    <Typography className="text-base text-[#754736] leading-none">
-                                        Smart Wallets Pioneer
-                                    </Typography>
-                                    <Typography className="text-sm text-[#C9BCB1]">by Logoipsum</Typography>
+                            {(data || []).map((nft) => (
+                                <div className="flex flex-col gap-4" key={nft.tokenId + nft.contractAddress}>
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                        className="rounded-[10px] max-w-full sm:max-w-[164px]"
+                                        src={nft.metadata.image}
+                                        alt={nft.metadata.description}
+                                    />
+                                    <div className="flex flex-col">
+                                        <Typography className="text-base text-[#754736] leading-none">
+                                            {nft.metadata.name}
+                                        </Typography>
+                                        <Typography className="text-sm text-[#C9BCB1]">
+                                            {nft.metadata.description}
+                                        </Typography>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="w-full sm:w-auto flex flex-col gap-4">
-                                <Skeleton className="w-full h-40 sm:w-40 rounded-[10px]" />
-                            </div>
-                            <div className="w-full sm:w-auto flex flex-col gap-4">
-                                <Skeleton className="w-full h-40 sm:w-40 rounded-[10px]" />
-                            </div>
-                            <div className="w-full sm:w-auto flex flex-col gap-4">
-                                <Skeleton className="w-full h-40 sm:w-40 rounded-[10px]" />
-                            </div>
+                            ))}
                         </div>
                     </TabsContent>
                     <TabsContent value="tokens">
