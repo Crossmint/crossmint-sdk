@@ -1,7 +1,6 @@
 import { useToast } from "@/components/use-toast";
 import { mintNFT } from "@/utils/mintApi";
 import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { EVMSmartWallet } from "@crossmint/client-sdk-smart-wallet";
@@ -10,7 +9,6 @@ import { useAuth } from "./useAuth";
 
 export const useWallet = () => {
     const queryClient = useQueryClient();
-    const router = useRouter();
     const { toast } = useToast();
 
     const { signInAndGetOrCreateWallet } = useAuth();
@@ -31,7 +29,6 @@ export const useWallet = () => {
                 // invalidate the useQuery cache
                 await queryClient.invalidateQueries({ queryKey: ["smart-wallet"] });
                 toast({ title: "NFT Minted Successfully" });
-                router.push("/wallet");
             }
         } catch (error) {
             console.log({ error });
