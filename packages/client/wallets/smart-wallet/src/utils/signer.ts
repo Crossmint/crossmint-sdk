@@ -3,7 +3,7 @@ import type { SmartAccountSigner } from "permissionless/accounts";
 import { Address, EIP1193Provider } from "viem";
 
 import { SmartWalletChain } from "../blockchain/chains";
-import { SmartWalletSDKError } from "../error";
+import { SmartWalletError } from "../error";
 import { ViemAccount, WalletParams } from "../types/Config";
 import { logInputOutput } from "./log";
 
@@ -20,7 +20,7 @@ export const createOwnerSigner = logInputOutput(
             return walletParams.signer.account;
         } else {
             const signer = walletParams.signer as any;
-            throw new SmartWalletSDKError(`The signer type ${signer.type} is not supported`);
+            throw new SmartWalletError(`The signer type ${signer.type} is not supported`);
         }
     },
     "createOwnerSigner"
