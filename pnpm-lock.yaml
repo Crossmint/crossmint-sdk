@@ -206,12 +206,12 @@ importers:
 
   apps/wallets/smart-wallet/next:
     dependencies:
+      '@crossmint/client-sdk-auth-core':
+        specifier: workspace:*
+        version: link:../../../../packages/client/auth-core
       '@crossmint/client-sdk-smart-wallet':
         specifier: workspace:*
         version: link:../../../../packages/client/wallets/smart-wallet
-      '@crossmint/client-sdk-smart-wallet-web3auth-adapter':
-        specifier: workspace:*
-        version: link:../../../../packages/client/wallets/web3auth-adapter
       '@radix-ui/react-avatar':
         specifier: 1.1.0
         version: 1.1.0(@types/react-dom@18.3.0)(@types/react@18.3.3)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -257,9 +257,6 @@ importers:
       viem:
         specifier: 2.17.5
         version: 2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
-      zod:
-        specifier: 3.22.4
-        version: 3.22.4
     devDependencies:
       '@types/node':
         specifier: ^20
@@ -288,6 +285,9 @@ importers:
 
   apps/wallets/smart-wallet/react:
     dependencies:
+      '@crossmint/client-sdk-auth-core':
+        specifier: workspace:*
+        version: link:../../../../packages/client/auth-core
       '@crossmint/client-sdk-smart-wallet':
         specifier: workspace:*
         version: link:../../../../packages/client/wallets/smart-wallet
@@ -454,6 +454,9 @@ importers:
 
   packages/client/auth-core:
     dependencies:
+      '@crossmint/client-sdk-smart-wallet':
+        specifier: workspace:*
+        version: link:../wallets/smart-wallet
       '@crossmint/client-sdk-window':
         specifier: workspace:*
         version: link:../window

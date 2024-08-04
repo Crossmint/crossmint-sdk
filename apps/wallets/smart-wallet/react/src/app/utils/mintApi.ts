@@ -51,9 +51,24 @@ export const mintNFT = async (account: EVMSmartWallet) => {
         });
 
         console.log("NFT mint. Tx hash:", transactionHash);
-        return true;
-    } catch (error) {
+        const signature = await account.client.wallet.signMessage({ message: data });
+        const result = await account.client.public.verifyMessage({
+            signature,
+            message: data,
+            address: account.address,
+        });
+
+        console.log("Here's the signing result");
+        console.log(result);
+
+        return false;
+    } catch (error: any) {
         console.error("Error minting NFT:", error);
+
+        console.error("Error creating passkey wallet:", error);
+        console.log(error);
+        console.log(error.message);
+
         return false;
     }
 };

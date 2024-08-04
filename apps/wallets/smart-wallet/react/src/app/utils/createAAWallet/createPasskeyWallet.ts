@@ -13,17 +13,24 @@ export async function createPasskeyWallet(isProd: boolean) {
         throw new Error("No JWT token found");
     }
 
-    const xm = isProd
-        ? SmartWalletSDK.init({
-              clientApiKey: process.env.REACT_APP_CROSSMINT_API_KEY_PROD || "",
-          })
-        : SmartWalletSDK.init({
-              clientApiKey: process.env.REACT_APP_CROSSMINT_API_KEY_STG || "",
-          });
+    try {
+        const xm = isProd
+            ? SmartWalletSDK.init({
+                  clientApiKey: process.env.REACT_APP_CROSSMINT_API_KEY_PROD || "",
+              })
+            : SmartWalletSDK.init({
+                  clientApiKey: process.env.REACT_APP_CROSSMINT_API_KEY_STG || "",
+              });
 
-    const chain = isProd ? Chain.POLYGON : Chain.POLYGON_AMOY;
+        const chain = isProd ? Chain.POLYGON : Chain.POLYGON_AMOY;
 
-    const test = await xm.getOrCreateWallet({ jwt }, chain);
+        const test = await xm.getOrCreateWallet({ jwt }, chain);
 
-    return test;
+        return test;
+    } catch (error: any) {
+        console.error("Error creating passkey wallet:", error);
+        console.log(error);
+        console.log(error.message);
+        throw error;
+    }
 }
