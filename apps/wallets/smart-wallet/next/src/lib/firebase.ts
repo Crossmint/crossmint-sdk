@@ -1,3 +1,4 @@
+import { env } from "@/env";
 import { FirebaseError, getApp, getApps, initializeApp } from "firebase/app";
 import {
     GoogleAuthProvider,
@@ -10,12 +11,12 @@ import {
 } from "firebase/auth";
 
 const firebaseConfig = {
-    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+    apiKey: env.NEXT_PUBLIC_FIREBASE_API_KEY || "default_api_key",
+    authDomain: env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "default_auth_domain",
+    projectId: env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "default_project_id",
+    storageBucket: env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "default_storage",
+    messagingSenderId: env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "default_sender_id",
+    appId: env.NEXT_PUBLIC_FIREBASE_APP_ID || "default_app_id",
 };
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
