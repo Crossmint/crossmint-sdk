@@ -1,0 +1,7 @@
+{
+    "entryPoints": ["src/index.ts"],
+    "out": "docs",
+    "plugin": ["typedoc-plugin-markdown"],
+    "tsconfig": "tsconfig.typedoc.json",
+    "skipErrorChecking": true
+}
