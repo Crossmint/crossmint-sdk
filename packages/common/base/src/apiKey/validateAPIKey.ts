@@ -5,20 +5,21 @@ import { CROSSMINT_API_KEY_SIGNER_PUBLICKEY_PROD, CROSSMINT_API_KEY_SIGNER_PUBLI
 import { APIKeyPrefix } from "./types";
 import { environmentToExpectedPublicKey } from "./utils/environmentToExpectedPublicKey";
 import {
+    ValidateAPIKeyFailResult,
     ValidateAPIKeyPrefixExpectations,
     ValidateAPIKeyPrefixSuccessData,
     validateAPIKeyPrefix,
 } from "./validateAPIKeyPrefix";
 
-export type ValidateAPIKeyResult =
-    | ({
-          isValid: true;
-          projectId: string;
-      } & ValidateAPIKeyPrefixSuccessData)
-    | {
-          isValid: false;
-          message: string;
-      };
+export type ValidateAPIKeyResult = ValidateApiKeySuccessResult | ValidateAPIKeyFailResult;
+
+export type ValidateApiKeySuccessResult = {
+    isValid: true;
+} & ValidateApiKeySuccessData;
+
+export type ValidateApiKeySuccessData = ValidateAPIKeyPrefixSuccessData & {
+    projectId: string;
+};
 
 export function validateAPIKey(apiKey: string, expectations?: ValidateAPIKeyPrefixExpectations): ValidateAPIKeyResult {
     const prefixValidationResult = validateAPIKeyPrefix(apiKey, expectations);
