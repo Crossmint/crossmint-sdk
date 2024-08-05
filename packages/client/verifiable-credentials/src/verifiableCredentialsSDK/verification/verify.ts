@@ -6,19 +6,19 @@ import { VerifiableCredentialSignatureService } from "./signature";
 
 /**
  *  Verify a Verifiable Credential
- * 
+ *
  * This function checks the validity of a given Verifiable Credential (VC) by performing several checks:
  * 1. Ensures the `validUntil` date is a valid ISO string and not expired.
  * 2. Verifies the cryptographic proof attached to the credential.
  * 3. Checks if the associated NFT has been revoked (burned).
- * 
+ *
  * @param credential the credential object to verify
- * @returns {validVC: boolean, error: string | undefined} 
+ * @returns {validVC: boolean, error: string | undefined}
  * - `validVC`: A boolean indicating if the credential is valid.
  * - `error`: A string with the error message if the credential is invalid, or `undefined` if the credential is valid.
  *
- * @throws Will throw an error if `validUntil` is present and is not a valid ISO string or if the date is invalid. 
-*/
+ * @throws Will throw an error if `validUntil` is present and is not a valid ISO string or if the date is invalid.
+ */
 export async function verifyCredential(
     credential: VerifiableCredential
 ): Promise<{ validVC: boolean; error: string | undefined }> {

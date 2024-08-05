@@ -9,13 +9,13 @@ import { isVerifiableCredentialContractMetadata } from "../types/utils";
  */
 export class ContractMetadataService {
     /**
-     * The blockchain chain instance used for fetching contract data.
+     * The blockchain on which the contract is deployed.
      */
     chain: VCChain;
 
     /**
      * Initializes a new instance of the ContractMetadataService.
-     * @param chain - The blockchain chain instance to be used.
+     * @param chain - The blockchain to be used.
      */
     constructor(chain: VCChain) {
         this.chain = chain;
@@ -23,9 +23,9 @@ export class ContractMetadataService {
 
     /**
      * Retrieves metadata for a given contract.
-     * 
+     *
      * @param contractAddress - The address of the contract.
-     * @returns The metadata object or `null` if the metadata cannot be retrieved.
+     * @returns The metadata object or `null` if the contractURI call returns null.
      * @throws Will throw an error if the retrieval process fails.
      */
     async getContractMetadata(contractAddress: string) {
@@ -39,8 +39,8 @@ export class ContractMetadataService {
     }
 
     /**
-     * Retrieves metadata for multiple contracts and filters those that have verifiable credentials.
-     * 
+     * Retrieves metadata for multiple contracts and filters those that are verifiable credentials collections.
+     *
      * @param collections - An array of collections containing contract addresses.
      * @returns A promise that resolves to an array of collections with valid verifiable credential metadata.
      * @throws Will continue to the next collection if an error occurs during metadata retrieval.
