@@ -1,5 +1,3 @@
-"use client";
-
 import { Logo } from "@/icons/logo";
 
 export const Header = () => {

@@ -7,7 +7,5 @@ export async function createOrGetPasskeyWallet(jwt: string) {
         clientApiKey: env.NEXT_PUBLIC_CROSSMINT_API_KEY || "default_api_key",
     });
 
-    const test = await xm.getOrCreateWallet({ jwt }, Chain.POLYGON_AMOY);
-
-    return test;
+    return await xm.getOrCreateWallet({ jwt }, Chain.POLYGON_AMOY);
 }

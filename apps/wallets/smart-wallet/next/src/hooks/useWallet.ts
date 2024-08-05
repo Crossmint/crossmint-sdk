@@ -1,5 +1,5 @@
 import { useToast } from "@/components/use-toast";
-import { mintNFT } from "@/utils/mintApi";
+import { mintNFT } from "@/utils/mint-api";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 

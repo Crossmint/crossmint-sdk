@@ -3,6 +3,7 @@
 import { PoweredByCrossmint } from "@/components/powered-by-crossmint";
 import { Skeleton } from "@/components/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/tabs";
+import { Toaster } from "@/components/toaster";
 import { Typography } from "@/components/typography";
 import { useAuth } from "@/hooks/useAuth";
 import { getAuthedJWT } from "@/lib/firebase";
@@ -134,6 +135,7 @@ export default function Index() {
                 </Tabs>
             </div>
             <PoweredByCrossmint className="pt-6" />
+            <Toaster />
         </div>
     );
 }

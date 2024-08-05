@@ -2,8 +2,8 @@ import { encodeFunctionData } from "viem";
 
 import type { EVMSmartWallet } from "@crossmint/client-sdk-smart-wallet";
 
-import { CollectionABI } from "./collectionABI";
-import { getNFTContractAddress } from "./getContracts";
+import { CollectionABI } from "./collection-abi";
+import { getNFTContractAddress } from "./get-contracts";
 
 export const mintNFT = async (account: EVMSmartWallet) => {
     if (!account) {

@@ -209,9 +209,6 @@ importers:
       '@crossmint/client-sdk-smart-wallet':
         specifier: workspace:*
         version: link:../../../../packages/client/wallets/smart-wallet
-      '@crossmint/client-sdk-smart-wallet-web3auth-adapter':
-        specifier: workspace:*
-        version: link:../../../../packages/client/wallets/web3auth-adapter
       '@radix-ui/react-avatar':
         specifier: 1.1.0
         version: 1.1.0(@types/react-dom@18.3.0)(@types/react@18.3.3)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)

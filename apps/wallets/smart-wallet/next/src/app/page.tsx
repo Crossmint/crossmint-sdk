@@ -3,6 +3,7 @@
 import { GoogleSignInButton } from "@/components/google-signin-button";
 import { MintNFTButton } from "@/components/mint-nft-button";
 import { PoweredByCrossmint } from "@/components/powered-by-crossmint";
+import { Toaster } from "@/components/toaster";
 import { Typography } from "@/components/typography";
 import { useToast } from "@/components/use-toast";
 import Link from "next/link";
@@ -68,6 +69,7 @@ export default function Home() {
                     <PoweredByCrossmint />
                 </div>
             </div>
+            <Toaster />
         </div>
     );
 }
