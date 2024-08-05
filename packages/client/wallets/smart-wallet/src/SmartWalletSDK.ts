@@ -7,7 +7,7 @@ import { SmartWalletChain } from "./blockchain/chains";
 import type { EVMSmartWallet } from "./blockchain/wallets";
 import { ClientDecorator } from "./blockchain/wallets/clientDecorator";
 import { SmartWalletService } from "./blockchain/wallets/service";
-import { SmartWalletSDKError } from "./error";
+import { SmartWalletError } from "./error";
 import { ErrorProcessor } from "./error/processor";
 import { DatadogProvider } from "./services/logging/DatadogProvider";
 import type { SmartWalletSDKInitParams, UserParams, WalletParams } from "./types/Config";
@@ -28,7 +28,7 @@ export class SmartWalletSDK extends LoggerWrapper {
      */
     static init({ clientApiKey }: SmartWalletSDKInitParams): SmartWalletSDK {
         if (!isClient()) {
-            throw new SmartWalletSDKError("Smart Wallet SDK should only be used client side.");
+            throw new SmartWalletError("Smart Wallet SDK should only be used client side.");
         }
 
         const validationResult = validateAPIKey(clientApiKey);
@@ -66,7 +66,7 @@ export class SmartWalletSDK extends LoggerWrapper {
                 } catch (error: any) {
                     throw this.errorProcessor.map(
                         error,
-                        new SmartWalletSDKError(`Wallet creation failed: ${error.message}.`, stringify(error))
+                        new SmartWalletError(`Wallet creation failed: ${error.message}.`, stringify(error))
                     );
                 }
             },

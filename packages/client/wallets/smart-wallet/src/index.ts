@@ -16,7 +16,7 @@ export type { TransferType, ERC20TransferType, NFTTransferType, SFTTransferType 
 export {
     TransferError,
     CrossmintServiceError,
-    SmartWalletSDKError,
+    SmartWalletError,
     JWTDecryptionError,
     JWTExpiredError,
     JWTIdentifierError,
@@ -32,6 +32,7 @@ export {
     PasskeyIncompatibleAuthenticatorError,
     ConfigError,
     NonCustodialWalletsNotEnabledError,
+    SmartWalletErrorCode,
 } from "./error";
 
 export { SmartWalletSDK } from "./SmartWalletSDK";

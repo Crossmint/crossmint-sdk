@@ -7,7 +7,7 @@ import {
     JWTInvalidError,
     NonCustodialWalletsNotEnabledError,
     OutOfCreditsError,
-    SmartWalletSDKError,
+    SmartWalletError,
     UserWalletAlreadyCreatedError,
 } from "@/error";
 
@@ -22,7 +22,7 @@ export type CrossmintAPIErrorCodes =
 
 export class APIErrorService {
     constructor(
-        private errors: Partial<Record<CrossmintAPIErrorCodes, (apiResponse: any) => SmartWalletSDKError>> = {
+        private errors: Partial<Record<CrossmintAPIErrorCodes, (apiResponse: any) => SmartWalletError>> = {
             ERROR_JWT_INVALID: () => new JWTInvalidError(),
             ERROR_JWT_DECRYPTION: () => new JWTDecryptionError(),
             ERROR_JWT_EXPIRED: ({ expiredAt }: { expiredAt: string }) => new JWTExpiredError(new Date(expiredAt)),
@@ -64,7 +64,7 @@ export class APIErrorService {
                 throw new CrossmintServiceError(body.message, response.status);
             }
         } catch (e) {
-            if (e instanceof SmartWalletSDKError) {
+            if (e instanceof SmartWalletError) {
                 throw e;
             }
             console.error("Error parsing response", e);

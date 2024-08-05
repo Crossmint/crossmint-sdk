@@ -1,4 +1,4 @@
-import { SmartWalletSDKError } from "@/error";
+import { SmartWalletError } from "@/error";
 import { ErrorProcessor } from "@/error/processor";
 import { logInfo } from "@/services/logging";
 import { usesGelatoBundler } from "@/utils/blockchain";
@@ -83,7 +83,7 @@ export class ClientDecorator {
             const description = isTxnMethod(prop) ? "signing" : "sending transaction";
             throw this.errorProcessor.map(
                 error,
-                new SmartWalletSDKError(`Error ${description}: ${error.message}`, stringify(error))
+                new SmartWalletError(`Error ${description}: ${error.message}`, stringify(error))
             );
         }
     }
