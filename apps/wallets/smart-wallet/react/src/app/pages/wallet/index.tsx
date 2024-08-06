@@ -1,5 +1,6 @@
 /** @format */
 import CircularProgress from "@mui/material/CircularProgress";
+import { usePrivy } from "@privy-io/react-auth";
 import { useContext, useEffect, useState } from "react";
 
 import { AppContext } from "../../AppContext";
@@ -21,7 +22,7 @@ interface Tokens {
 }
 
 export const Wallet = () => {
-    const { value, transferSuccess, soldNft, isProd, setSoldNft, setIsAuthenticated, setValue } =
+    const { value, transferSuccess, soldNft, isProd, setSoldNft, setIsAuthenticated, setValue, isFirebase } =
         useContext(AppContext);
     const [tokensArray, setTokens] = useState<Tokens[]>([]);
     const [nftsArray, setNfts] = useState<any>([]);
@@ -32,12 +33,13 @@ export const Wallet = () => {
     const [currentToken, setCurrentToken] = useState<any>(null);
     const [loading, setLoading] = useState(false);
     const [totalBalance, setTotalBalance] = useState("0.00");
+    const privy = usePrivy();
 
     const createAndSetAAWallet = async () => {
         const testAccountPrivateKey = localStorage.getItem("testAccountPrivateKey") as `0x${string}` | null;
         const account = testAccountPrivateKey
-            ? await createViemAAWallet(isProd, testAccountPrivateKey)
-            : await createPasskeyWallet(isProd);
+            ? await createViemAAWallet(isProd, testAccountPrivateKey, isFirebase, privy)
+            : await createPasskeyWallet(isProd, isFirebase, privy);
 
         setIsAuthenticated(true);
         localStorage.setItem("isUserConnected", "true");

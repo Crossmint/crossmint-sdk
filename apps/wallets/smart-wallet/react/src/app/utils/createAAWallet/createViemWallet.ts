@@ -1,14 +1,21 @@
+import { PrivyInterface } from "@privy-io/react-auth";
 import { privateKeyToAccount } from "viem/accounts";
 
 import { Chain, SmartWalletSDK, ViemAccount } from "@crossmint/client-sdk-smart-wallet";
 
 import { checkAuthState, signInWithGoogle } from "../../auth/FirebaseAuthManager";
+import { checkPrivyAuth, signInWithPrivy } from "../../auth/PrivyAuthManager";
 
-export const createViemAAWallet = async (isProd: boolean, privateKey: `0x${string}`) => {
-    let jwt = await checkAuthState();
+export const createViemAAWallet = async (
+    isProd: boolean,
+    privateKey: `0x${string}`,
+    isFirebase: boolean,
+    privy: PrivyInterface
+) => {
+    let jwt = isFirebase ? await checkAuthState() : await checkPrivyAuth(privy);
 
     if (!jwt) {
-        jwt = await signInWithGoogle();
+        jwt = isFirebase ? await signInWithGoogle() : await signInWithPrivy(privy);
     }
 
     if (!jwt) {

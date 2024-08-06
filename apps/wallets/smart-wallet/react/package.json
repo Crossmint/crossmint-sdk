@@ -42,6 +42,7 @@
         "@headlessui/react": "^1.7.16",
         "@heroicons/react": "^1.0.6",
         "@mui/material": "^5.14.4",
+        "@privy-io/react-auth": "1.77.0",
         "@radix-ui/react-tooltip": "^1.0.6",
         "@reservoir0x/reservoir-sdk": "^2.0.16",
         "@testing-library/jest-dom": "^5.16.5",

@@ -1,12 +1,15 @@
+import { PrivyInterface } from "@privy-io/react-auth";
+
 import { Chain, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
 
 import { checkAuthState, signInWithGoogle } from "../../auth/FirebaseAuthManager";
+import { checkPrivyAuth, signInWithPrivy } from "../../auth/PrivyAuthManager";
 
-export async function createPasskeyWallet(isProd: boolean) {
-    let jwt = await checkAuthState();
+export async function createPasskeyWallet(isProd: boolean, isFirebase: boolean, privy: PrivyInterface) {
+    let jwt = isFirebase ? await checkAuthState() : await checkPrivyAuth(privy);
 
     if (!jwt) {
-        jwt = await signInWithGoogle();
+        jwt = isFirebase ? await signInWithGoogle() : await signInWithPrivy(privy);
     }
 
     if (!jwt) {
