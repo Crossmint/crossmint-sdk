@@ -1,36 +1,45 @@
-import { validateAPIKey } from "@/apiKey/validateAPIKey";
-import { ValidateAPIKeyPrefixExpectations, ValidateAPIKeyPrefixSuccessResult } from "@/apiKey/validateAPIKeyPrefix";
+import { Crossmint } from "@/Crossmint/Crossmint";
+import { environmentToCrossmintBaseURL } from "@/apiKey/utils/environmentToCrossmintBaseURL";
+import { ValidateApiKeySuccessResult, validateAPIKey } from "@/apiKey/validateAPIKey";
+import { ValidateAPIKeyPrefixExpectations } from "@/apiKey/validateAPIKeyPrefix";
 
-import { environmentToCrossmintBaseURL } from "../apiKey/utils/environmentToCrossmintBaseURL";
 import { ApiClient } from "./ApiClient";
 
-export type CrossmintApiClientCtorParams = CrossmintApiClientCtorWithoutExpectationsParams & {
-    expectations?: ValidateAPIKeyPrefixExpectations;
-};
-
-export type CrossmintApiClientCtorWithoutExpectationsParams = {
-    apiKey: string;
-    overrideBaseUrl?: string;
-    extraAuthHeaders?: HeadersInit;
+export type CrossmintApiClientInternalConfig = {
+    sdkMetadata: {
+        name: string;
+        version: string;
+    };
+    apiKeyExpectations?: ValidateAPIKeyPrefixExpectations;
 };
 
 export class CrossmintApiClient extends ApiClient {
-    protected parsedAPIKey: ValidateAPIKeyPrefixSuccessResult;
-    protected overrideBaseUrl?: string;
+    protected parsedAPIKey: ValidateApiKeySuccessResult;
+    protected internalConfig: CrossmintApiClientInternalConfig;
 
-    constructor({ apiKey, expectations, overrideBaseUrl, extraAuthHeaders }: CrossmintApiClientCtorParams) {
-        const apiKeyValidationResult = validateAPIKey(apiKey, expectations);
+    constructor(
+        public crossmint: Crossmint,
+        {
+            internalConfig,
+        }: {
+            internalConfig: CrossmintApiClientInternalConfig;
+        }
+    ) {
+        const apiKeyValidationResult = validateAPIKey(crossmint.apiKey, internalConfig.apiKeyExpectations);
         if (!apiKeyValidationResult.isValid) {
             throw new Error(apiKeyValidationResult.message);
         }
-        super({ "x-api-key": apiKey, ...extraAuthHeaders });
+        super({
+            "x-api-key": crossmint.apiKey,
+            ...(crossmint.jwt ? { Authorization: `Bearer ${crossmint.jwt}` } : {}),
+        });
         this.parsedAPIKey = apiKeyValidationResult;
-        this.overrideBaseUrl = overrideBaseUrl;
+        this.internalConfig = internalConfig;
     }
 
     get baseUrl() {
-        if (this.overrideBaseUrl) {
-            return ApiClient.normalizePath(this.overrideBaseUrl);
+        if (this.crossmint.overrideBaseUrl) {
+            return ApiClient.normalizePath(this.crossmint.overrideBaseUrl);
         }
         const baseUrl = environmentToCrossmintBaseURL(this.parsedAPIKey.environment);
         return ApiClient.normalizePath(baseUrl);
