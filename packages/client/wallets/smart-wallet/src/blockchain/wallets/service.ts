@@ -1,8 +1,14 @@
 import { type SignerData, displayPasskey } from "@/types/API";
 import { equalsIgnoreCase } from "@/utils/helpers";
 import { type KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
-import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
-import type { EntryPoint } from "permissionless/types/entrypoint";
+import {
+    ENTRYPOINT_ADDRESS_V06,
+    ENTRYPOINT_ADDRESS_V07,
+    UserOperation,
+    createSmartAccountClient,
+} from "permissionless";
+import { GetEntryPointVersion } from "permissionless/_types/types";
+import type { EntryPoint, EntryPointVersion } from "permissionless/types/entrypoint";
 import { Address, type HttpTransport, createPublicClient, getAddress, http } from "viem";
 
 import { blockchainToChainId } from "@crossmint/common-sdk-base";
@@ -85,7 +91,13 @@ export class SmartWalletService {
             chain: viemNetworks[chain],
             entryPoint: account.entryPoint,
             bundlerTransport: http(getBundlerRPC(chain)),
-            ...(usePaymaster(chain) && paymasterMiddleware({ entryPoint: account.entryPoint, chain })),
+            ...(usePaymaster(chain) &&
+                paymasterMiddleware({
+                    entryPoint: account.entryPoint,
+                    chain,
+                    walletService: this.crossmintWalletService,
+                    user,
+                })),
         });
 
         const smartAccountClient = this.clientDecorator.decorate({
@@ -94,6 +106,15 @@ export class SmartWalletService {
         });
 
         return new EVMSmartWallet(this.crossmintWalletService, smartAccountClient, publicClient, chain);
+    }
+
+    public async sponsorUserOperation<E extends EntryPoint>(
+        user: UserParams,
+        userOp: UserOperation<GetEntryPointVersion<E>>,
+        entryPoint: E,
+        chain: SmartWalletChain
+    ) {
+        return this.crossmintWalletService.sponsorUserOperation(user, userOp, entryPoint, chain);
     }
 
     private async fetchConfig(
