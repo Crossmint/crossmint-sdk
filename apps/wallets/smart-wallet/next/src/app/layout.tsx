@@ -1,5 +1,4 @@
 import { Header } from "@/components/header";
-import { Toaster } from "@/components/toaster";
 import { Metadata } from "next";
 import { Inter, Raleway } from "next/font/google";
 import React from "react";
@@ -38,7 +37,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <body className="bg-background font-body text-foreground min-h-screen antialiased">
                     <Header />
                     <main id="main">{children}</main>
-                    <Toaster />
                 </body>
             </html>
         </Providers>

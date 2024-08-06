@@ -1,33 +1,14 @@
-"use client";
-
-import { useAuth } from "@/hooks/useAuth";
-import { useWallet } from "@/hooks/useWallet";
 import { Logo } from "@/icons/logo";
-import { useRouter } from "next/navigation";
-
-import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "./dropdown-menu";
 
 export const Header = () => {
-    const router = useRouter();
-
-    const { signOut, authedUser } = useAuth();
-    const { setSmartWallet } = useWallet();
-
-    const handleLogout = async () => {
-        signOut();
-        setSmartWallet(null);
-        router.push("/");
-    };
-
     return (
         <div className="flex justify-between p-6 items-center">
             <div className="justify-center items-center flex ">
                 <Logo />
             </div>
             <div className="flex">
-                {/* todo add the wallet button and dropdown here */}
-                {authedUser ? (
+                {/* todo add the wallet button and dropdown here once auth is added */}
+                {/* {authedUser ? (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Avatar>
@@ -48,7 +29,7 @@ export const Header = () => {
                             </button>
                         </DropdownMenuContent>
                     </DropdownMenu>
-                ) : null}
+                ) : null} */}
             </div>
         </div>
     );

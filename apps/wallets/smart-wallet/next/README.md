@@ -1,30 +1,47 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Smart Wallets Demo (Nextjs Starter Kit)
 
-## Getting Started
+This application demonstrates the use of Abstract Accounts with a built-in passkey authenticator. Simply sign in with Google, authorize your passkey, and create your smart wallet in seconds.
 
-First, run the development server:
+## Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+-   Node.js (v20.12 or later)
+-   npm (comes with Node.js)
+-   pnpm (`npm install -g pnpm`)
+
+After installing the prerequisites, clone the repository and install the dependencies:
+
+```bash
+git clone <repository-url>
+pnpm i
+```
+
+## Configuration
+
+Before running the application, you need to set up your environment variables:
+
+1. Where this README.md is contained, rename the `.env.example` file to `.env`.
+2. Open the `.env` file and fill in the necessary values as described below:
+    > The credentials can be found in our shared 1Pass (see admin for access).
+
+```plaintext
+NEXT_PUBLIC_BASE_URL=
+NEXT_PUBLIC_CROSSMINT_API_KEY=
+NEXT_PUBLIC_FIREBASE_API_KEY=
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+NEXT_PUBLIC_FIREBASE_APP_ID=
+```
+
+## Starting the Application
+
+After configuring your environment variables, start the development server by opening a terminal in the directory containing this `README.md` file and running the following command:
 
 ```bash
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
--   [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
--   [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Once you start the nextjs development server, the application can be found at `http://localhost:3000`.
