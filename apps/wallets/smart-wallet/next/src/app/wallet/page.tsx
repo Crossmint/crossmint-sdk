@@ -3,7 +3,6 @@
 import { PoweredByCrossmint } from "@/components/powered-by-crossmint";
 import { Skeleton } from "@/components/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/tabs";
-import { Toaster } from "@/components/toaster";
 import { Typography } from "@/components/typography";
 import { useAuth } from "@/hooks/useAuth";
 import { getAuthedJWT } from "@/lib/firebase";
@@ -96,7 +95,7 @@ export default function Index() {
                     <Typography className="text-secondary-foreground" variant="h3">
                         Smart Wallet
                     </Typography>
-                    <Typography className="text-[#C9BCB1]" variant="h3">
+                    <Typography className="text-muted" variant="h3">
                         $0.00
                     </Typography>
                 </div>
@@ -116,10 +115,10 @@ export default function Index() {
                                         alt={nft.metadata.description}
                                     />
                                     <div className="flex flex-col">
-                                        <Typography className="text-base text-[#754736] leading-none">
+                                        <Typography className="text-base text-color-secondary-foreground leading-none">
                                             {nft.metadata.name}
                                         </Typography>
-                                        <Typography className="text-sm text-[#C9BCB1]">
+                                        <Typography className="text-sm text-muted">
                                             {nft.metadata.description}
                                         </Typography>
                                     </div>
@@ -135,7 +134,6 @@ export default function Index() {
                 </Tabs>
             </div>
             <PoweredByCrossmint className="pt-6" />
-            <Toaster />
         </div>
     );
 }

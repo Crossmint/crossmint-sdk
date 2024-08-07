@@ -34,7 +34,7 @@ export const MintNFTButton = () => {
 
     return (
         <Button
-            className="bg-card rounded-full text-secondary-foreground font-semibold text-[17px] gap-2 shadow-primary border border-[#B97A67]"
+            className="bg-card rounded-full text-secondary-foreground font-semibold text-[17px] gap-2 shadow-primary border border-color-secondary-foreground"
             onClick={handleMint}
         >
             <div
