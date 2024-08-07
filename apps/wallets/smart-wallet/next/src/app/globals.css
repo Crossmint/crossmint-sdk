@@ -17,8 +17,8 @@
         --color-primary-foreground: 26 30% 62%; /* #BC9B82 */
         --color-secondary: 60 4.8% 95.9%; /* #f2f2f2 */
         --color-secondary-foreground: 15 56% 24%; /* #602C1B */
-        --color-muted: 60 4.8% 95.9%; /* #f2f2f2 */
-        --color-muted-foreground: 25 5.3% 44.7%; /* #6f6f6f */
+        --color-muted: 28 18% 74%; /* #C9BCB1 */
+        --color-muted-foreground: 38 77% 29%; /* #835911 */
         --color-accent: 60 4.8% 95.9%; /* #f2f2f2 */
         --color-accent-foreground: 24 9.8% 10%; /* #3d3d3d */
         --color-destructive: 0 84.2% 60.2%; /* #ff3333 */
@@ -27,10 +27,6 @@
         --color-input: 20 5.9% 90%; /* #e6e6e6 */
         --color-ring: 24.6 95% 53.1%; /* #ff8c00 */
         --color-chart-1: 12 76% 61%; /* #ffb347 */
-        --color-chart-2: 173 58% 39%; /* #2e8b57 */
-        --color-chart-3: 197 37% 24%; /* #4682b4 */
-        --color-chart-4: 43 74% 66%; /* #ffd700 */
-        --color-chart-5: 27 87% 67%; /* #ffcc99 */
         --color-skeleton: 27 33% 88%; /* #EBE0D7 */
 
         /* Use color variables */
@@ -57,10 +53,6 @@
         --shadow-heavy: 0 4px 8px 0 #ead7c1;
         --shadow-dropdown: 0 2px 12px 0 #ead7c1;
         --chart-1: var(--color-chart-1);
-        --chart-2: var(--color-chart-2);
-        --chart-3: var(--color-chart-3);
-        --chart-4: var(--color-chart-4);
-        --chart-5: var(--color-chart-5);
         --radius: 0.5rem;
     }
 }

@@ -28,10 +28,6 @@ const config: Config = {
             input: "hsl(var(--color-input) / <alpha-value>)",
             ring: "hsl(var(--color-ring) / <alpha-value>)",
             "chart-1": "hsl(var(--color-chart-1) / <alpha-value>)",
-            "chart-2": "hsl(var(--color-chart-2) / <alpha-value>)",
-            "chart-3": "hsl(var(--color-chart-3) / <alpha-value>)",
-            "chart-4": "hsl(var(--color-chart-4) / <alpha-value>)",
-            "chart-5": "hsl(var(--color-chart-5) / <alpha-value>)",
             skeleton: "hsl(var(--color-skeleton) / <alpha-value>)",
         },
         boxShadow: {

@@ -3,7 +3,6 @@
 import { GoogleSignInButton } from "@/components/google-signin-button";
 import { MintNFTButton } from "@/components/mint-nft-button";
 import { PoweredByCrossmint } from "@/components/powered-by-crossmint";
-import { Toaster } from "@/components/toaster";
 import { Typography } from "@/components/typography";
 import { useToast } from "@/components/use-toast";
 import Link from "next/link";
@@ -47,7 +46,7 @@ export default function Home() {
                             <Typography className="text-secondary-foreground" variant="h3">
                                 Smart Wallets Pioneer
                             </Typography>
-                            <Typography className="text-[#855B11]" variant="h5">
+                            <Typography className="text-muted-foreground" variant="h5">
                                 by Logoipsum
                             </Typography>
                         </div>
@@ -69,7 +68,6 @@ export default function Home() {
                     <PoweredByCrossmint />
                 </div>
             </div>
-            <Toaster />
         </div>
     );
 }
