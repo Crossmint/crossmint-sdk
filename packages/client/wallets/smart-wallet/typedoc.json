@@ -1,25 +1,19 @@
 {
     "entryPoints": ["src/index.ts"],
     "out": "docs",
-    "plugin": ["typedoc-plugin-markdown"],
+    "plugin": [
+        "typedoc-plugin-markdown",
+        "typedoc-plugin-frontmatter",
+        //"typedoc-plugin-missing-exports", // this can be used to document way more stuff
+        "./custom-plugin.mjs"
+    ],
     "tsconfig": "tsconfig.typedoc.json",
-    // "excludeExternals": true,
-    // "externalPattern": [
-    // 	"node_modules",
-    // 	"**/node_modules/**",
-    // 	"../node_modules/**",
-    // 	"../../node_modules/**",
-    // 	"../../../node_modules/**",
-    // 	"../../../../node_modules/**"
-    // ],
-    // "excludeNotDocumented": true,
-    // "exclude": [
-    // 	"node_modules",
-    // 	"**/node_modules/**",
-    // 	"../node_modules/**",
-    // 	"../../node_modules/**",
-    // 	"../../../node_modules/**",
-    // 	"../../../../node_modules/**"
-    // ],
-    "skipErrorChecking": true
+    "fileExtension": ".mdx",
+    "skipErrorChecking": true,
+    "excludeNotDocumented": false,
+    "hidePageHeader": true,
+    "hideBreadcrumbs": true,
+    "hidePageTitle": true,
+    "parametersFormat": "table"
+    //"placeInternalsInOwningModule": true // for missing exports plugin"
 }
