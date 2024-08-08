@@ -20,7 +20,6 @@ export default function Home() {
 
     const showMintButton = jwt != null && wallet != null;
 
-    // This is so hacky lol
     const nftSuccessfullyMinted = !!toasts.find((toast) => toast.title?.includes("NFT Minted"));
 
     return (
