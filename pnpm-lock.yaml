@@ -206,6 +206,9 @@ importers:
 
   apps/wallets/smart-wallet/next:
     dependencies:
+      '@crossmint/client-sdk-auth-core':
+        specifier: workspace:*
+        version: link:../../../../packages/client/auth-core
       '@crossmint/client-sdk-smart-wallet':
         specifier: workspace:*
         version: link:../../../../packages/client/wallets/smart-wallet

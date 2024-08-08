@@ -1,12 +1,20 @@
-import { useWallet } from "@/hooks/useWallet";
+import { mintNFT } from "@/utils/mint-api";
+import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+
+import { useAuth } from "@crossmint/client-sdk-auth-core";
 
 import { Button } from "./button";
 import { Typography } from "./typography";
+import { useToast } from "./use-toast";
 
 export const MintNFTButton = () => {
-    const { handleMint, isLoading } = useWallet();
+    const { wallet, isLoadingWallet } = useAuth();
+    const queryClient = useQueryClient();
+    const [isLoadingMint, setIsLoadingMint] = useState(false);
+    const { toast } = useToast();
 
-    if (isLoading) {
+    if (isLoadingWallet) {
         return (
             <div className="flex gap-2 items-center self-center min-h-12" role="status">
                 <svg
@@ -32,31 +40,78 @@ export const MintNFTButton = () => {
         );
     }
 
+    const mint = async () => {
+        setIsLoadingMint(true);
+        try {
+            if (!wallet) {
+                toast({ title: "Error occurred during wallet creation" });
+                return;
+            }
+            const mintedSuccessfully = await mintNFT(wallet);
+            if (mintedSuccessfully) {
+                await queryClient.invalidateQueries({ queryKey: ["smart-wallet"] });
+                toast({ title: "NFT Minted Successfully" });
+            }
+        } catch (error) {
+            console.log({ error });
+            toast({ title: "Error occurred during minting" });
+        } finally {
+            setIsLoadingMint(false);
+        }
+    };
+
     return (
         <Button
             className="bg-card rounded-full text-secondary-foreground font-semibold text-[17px] gap-2 shadow-primary border border-color-secondary-foreground"
-            onClick={handleMint}
+            onClick={mint}
+            disabled={isLoadingMint}
         >
-            <div
-                style={{
-                    display: "flex",
-                    gap: 8,
-                    background: "linear-gradient(to right, #602C1B, #eb987d)",
-                    WebkitBackgroundClip: "text",
-                    color: "transparent",
-                }}
-            >
-                <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                        d="M6.50219 19.0304C6.5199 19.0005 6.53804 18.9709 6.55662 18.9413C7.91111 16.7881 8.69522 14.2418 8.69522 11.5C8.69522 9.29086 10.4861 7.5 12.6952 7.5C14.9044 7.5 16.6952 9.29086 16.6952 11.5C16.6952 12.517 16.626 13.5186 16.4919 14.5M14.3745 21.3436C14.9862 20.1226 15.4877 18.8369 15.866 17.5M19.705 18.632C20.35 16.3657 20.6953 13.9732 20.6953 11.5C20.6953 7.08172 17.1136 3.5 12.6953 3.5C11.2382 3.5 9.87201 3.88958 8.69531 4.57026M3.69531 15.8641C4.33597 14.5454 4.69531 13.0646 4.69531 11.5C4.69531 10.0429 5.08489 8.67669 5.76557 7.5M12.6952 11.5C12.6952 15.0172 11.6864 18.2988 9.94238 21.0712"
-                        stroke="#602C1B"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                    />
-                </svg>
-                Mint NFT
-            </div>
+            {isLoadingMint ? (
+                <div className="flex items-center gap-2">
+                    <svg
+                        className="animate-spin h-5 w-5 text-secondary-foreground"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                    >
+                        <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                        ></circle>
+                        <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                    </svg>
+                    <span>Minting...</span>
+                </div>
+            ) : (
+                <div
+                    style={{
+                        display: "flex",
+                        gap: 8,
+                        background: "linear-gradient(to right, #602C1B, #eb987d)",
+                        WebkitBackgroundClip: "text",
+                        color: "transparent",
+                    }}
+                >
+                    <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M6.50219 19.0304C6.5199 19.0005 6.53804 18.9709 6.55662 18.9413C7.91111 16.7881 8.69522 14.2418 8.69522 11.5C8.69522 9.29086 10.4861 7.5 12.6952 7.5C14.9044 7.5 16.6952 9.29086 16.6952 11.5C16.6952 12.517 16.626 13.5186 16.4919 14.5M14.3745 21.3436C14.9862 20.1226 15.4877 18.8369 15.866 17.5M19.705 18.632C20.35 16.3657 20.6953 13.9732 20.6953 11.5C20.6953 7.08172 17.1136 3.5 12.6953 3.5C11.2382 3.5 9.87201 3.88958 8.69531 4.57026M3.69531 15.8641C4.33597 14.5454 4.69531 13.0646 4.69531 11.5C4.69531 10.0429 5.08489 8.67669 5.76557 7.5M12.6952 11.5C12.6952 15.0172 11.6864 18.2988 9.94238 21.0712"
+                            stroke="#602C1B"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        />
+                    </svg>
+                    Mint NFT
+                </div>
+            )}
         </Button>
     );
 };

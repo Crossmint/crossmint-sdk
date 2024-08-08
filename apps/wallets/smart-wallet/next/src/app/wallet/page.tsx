@@ -4,11 +4,10 @@ import { PoweredByCrossmint } from "@/components/powered-by-crossmint";
 import { Skeleton } from "@/components/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/tabs";
 import { Typography } from "@/components/typography";
-import { useAuth } from "@/hooks/useAuth";
-import { getAuthedJWT } from "@/lib/firebase";
-import { createOrGetPasskeyWallet } from "@/utils/create-or-get-passkey-wallet";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+
+import { useAuth } from "@crossmint/client-sdk-auth-core";
 
 type NFT = {
     chain: string;
@@ -63,28 +62,28 @@ const SkeletonLoader = () => {
 };
 
 export default function Index() {
-    const { authedUser, isLoading: isLoadingAuth } = useAuth();
+    const { jwt, wallet, isLoadingWallet } = useAuth();
+    console.log("here's the jwt");
+    console.log(jwt);
+
     const router = useRouter();
 
     const { data, isLoading } = useQuery({
         queryKey: ["smart-wallet"],
         queryFn: async () => {
-            const authedJWT = await getAuthedJWT();
-            const wallet = await createOrGetPasskeyWallet(authedJWT as unknown as string);
-            const nfts = await wallet?.nfts();
-            return (nfts || []) as NFT[];
+            if (wallet && !isLoadingWallet) {
+                const nfts = await wallet.nfts();
+                return nfts as NFT[];
+            }
+            return [] as NFT[];
         },
         refetchOnWindowFocus: false,
         refetchOnMount: false,
         staleTime: 1000 * 60 * 5, // 5 minutes
+        enabled: wallet != null,
     });
 
-    if (!authedUser && !isLoadingAuth) {
-        router.push("/");
-        return;
-    }
-
-    if (isLoading) {
+    if (isLoading || isLoadingWallet) {
         return <SkeletonLoader />;
     }
 
@@ -104,7 +103,7 @@ export default function Index() {
                         <TabsTrigger value="collectibles">Collectibles</TabsTrigger>
                         <TabsTrigger value="tokens">Tokens</TabsTrigger>
                     </TabsList>
-                    <TabsContent value="collectibles">
+                    <TabsContent value="collectibles" className="h-[420px] overflow-y-auto">
                         <div className="grid grid-cols-1 sm:grid-cols-2 justify-items-center gap-x-4 gap-y-8 py-6">
                             {(data || []).map((nft) => (
                                 <div className="flex flex-col gap-4" key={nft.tokenId + nft.contractAddress}>
@@ -126,7 +125,7 @@ export default function Index() {
                             ))}
                         </div>
                     </TabsContent>
-                    <TabsContent value="tokens">
+                    <TabsContent value="tokens" className="h-[420px] overflow-y-auto">
                         <Typography className="text-base text-primary-foreground p-4">
                             {"You have no tokens :-("}
                         </Typography>

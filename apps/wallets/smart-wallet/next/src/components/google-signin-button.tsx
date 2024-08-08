@@ -1,13 +1,17 @@
-import { useAuth } from "@/hooks/useAuth";
+"use client";
+
 import { GoogleIcon } from "@/icons/google";
+import { useEffect } from "react";
+
+import { useAuth } from "@crossmint/client-sdk-auth-core";
 
 import { Button } from "./button";
 import { Typography } from "./typography";
 
 export const GoogleSignInButton = () => {
-    const { signInAndGetOrCreateWallet, isLoading } = useAuth();
+    const { jwt, login } = useAuth();
 
-    if (isLoading) {
+    if (jwt != null) {
         return (
             <div className="flex gap-2 items-center self-center min-h-12" role="status">
                 <svg
@@ -35,11 +39,10 @@ export const GoogleSignInButton = () => {
     return (
         <Button
             className="bg-card text-[#00150D] font-semibold text-[17px] gap-2 shadow-light rounded-xl"
-            onClick={signInAndGetOrCreateWallet}
-            disabled={isLoading}
+            onClick={login}
+            disabled={jwt != null}
         >
-            <GoogleIcon />
-            Sign in with Google
+            Sign in
         </Button>
     );
 };
