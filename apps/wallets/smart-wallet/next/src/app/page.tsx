@@ -7,14 +7,13 @@ import { Typography } from "@/components/typography";
 import { useToast } from "@/components/use-toast";
 import Link from "next/link";
 
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "@crossmint/client-sdk-auth-core";
 
 export default function Home() {
-    const { isLoading, authedUser } = useAuth();
+    const { jwt, wallet } = useAuth();
     const { toasts } = useToast();
 
-    const showMintButton = !isLoading && authedUser;
-
+    const showMintButton = jwt != null && wallet != null;
     const nftSuccessfullyMinted = !!toasts.find((toast) => toast.title?.includes("NFT Minted"));
 
     return (

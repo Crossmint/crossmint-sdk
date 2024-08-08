@@ -1,5 +1,10 @@
+"use client";
+
 import { Header } from "@/components/header";
 import { Toaster } from "@/components/toaster";
+import { env } from "@/env";
+
+import { AuthProvider } from "@crossmint/client-sdk-auth-core";
 
 // Reference: https://nextjs.org/docs/app/building-your-application/routing/pages-and-layouts#templates
 // Since our home page is located in the root directory, we cannot use a layout component to wrap it.
@@ -8,10 +13,16 @@ import { Toaster } from "@/components/toaster";
 
 export default function Template({ children }: { children: React.ReactNode }) {
     return (
-        <div>
-            <Header />
-            <Toaster />
-            {children}
-        </div>
+        <AuthProvider
+            apiKey={env.NEXT_PUBLIC_CROSSMINT_API_KEY}
+            environment="staging"
+            embeddedWallets={{ createOnLogin: "all-users", type: "evm-smart-wallet", defaultChain: "polygon-amoy" }}
+        >
+            <div>
+                <Header />
+                <Toaster />
+                {children}
+            </div>
+        </AuthProvider>
     );
 }
