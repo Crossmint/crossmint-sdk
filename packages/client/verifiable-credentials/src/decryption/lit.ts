@@ -13,9 +13,9 @@ import {
 
 /**
  * Lit class for decrypting verifiable credentials that have been encrypted with the VerifiableCredentialEncryptionType.LIT encryption type.
- * @param network - The network on which the credentials are encrypted (use CredentialMetadata.encryption.details.network)
- * @param capacityDelegationAuthSig - The capacity delegation signature used to pay for decrypting the credentials, if not provided the crossmint one will be used.
- * To use the crossmint delegation signature the user must have provided an api key with the `credentials.decrypt` scope.
+ * @param network - The network on which the credentials are encrypted. Use `CredentialMetadata.encryption.details.network` to specify the network.
+ * @param capacityDelegationAuthSig - The capacity delegation signature used to pay for decrypting the credentials. If not provided, the Crossmint delegation signature will be used. To use the Crossmint delegation signature, the user must have provided an API key with the `credentials.decrypt` scope.
+ * @param debug - A boolean flag to enable or disable debug mode. Defaults to `false`.
  */
 export class Lit extends LitRaw {
     constructor(network: LitNetwork, capacityDelegationAuthSig?: AuthSig, debug = false) {
@@ -33,6 +33,16 @@ export class Lit extends LitRaw {
         super(network, capacityDelegationAuthSig, debug);
     }
 
+    /**
+     * Decrypts an encrypted verifiable credential.
+     *
+     * This method decrypts a credential that has been encrypted with the `VerifiableCredentialEncryptionType.LIT` encryption type.
+     *
+     * @param credential - The encrypted verifiable credential to decrypt.
+     * @returns A promise that resolves to a `VerifiableCredential`.
+     *
+     * @throws Will throw an error if the decryption fails.
+     */
     async decrypt(credential: EncryptedVerifiableCredential): Promise<VerifiableCredential> {
         if (this.capacityDelegationAuthSig == null) {
             console.debug("No capacity delegation auth sig provided, retrieving from Crossmint");

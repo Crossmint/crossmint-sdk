@@ -17,8 +17,8 @@ import { ContractMetadataService } from "./contractMetadata";
  * @param locator - The locator string of the credential, formatted as "chain:contractAddress:tokenId" (e.g., "polygon:0x1B887669437644aA348c518844660ef8d63bd643:1").
  * @returns {nft: NftWithMetadata, collection: CredentialsCollection}
  * An object containing:
- * - `nft`: The NFT with its metadata.
  * - `collection`: The collection that the NFT belongs to, including the credential metadata.
+ * - `nft`: The NFT with its metadata.
  *
  * @throws Will throw an error if the NFT is not on a supported Verifiable Credentials chain or if the NFT is not associated with a Verifiable Credentials collection.
  */

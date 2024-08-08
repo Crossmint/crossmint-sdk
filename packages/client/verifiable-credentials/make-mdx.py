@@ -25,6 +25,6 @@ def copy_and_rename_md_files(src, dest):
             print(f'Copied {src_file} to {dest_file}')
 
 # Example usage:
-source_folder = '/Users/dmulvi/Projects/crossmint/code/crossmint-sdk/packages/client/verifiable-credentials/docs'
-destination_folder = '/Users/dmulvi/Projects/crossmint/code/crossbit-main/apps/crossmint-mintlify-docs/src/verifiable-credentials/client-sdk/'
+source_folder = '/Users/filipposlymperopoulos/Documents/Crossmint/crossmint-sdk/packages/client/verifiable-credentials/docs/.'
+destination_folder = '/Users/filipposlymperopoulos/crossmint-main/apps/crossmint-mintlify-docs/src/sdk-reference/verifiable-credentials/client-sdk/'
 copy_and_rename_md_files(source_folder, destination_folder)
