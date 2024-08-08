@@ -62,11 +62,7 @@ const SkeletonLoader = () => {
 };
 
 export default function Index() {
-    const { jwt, wallet, isLoadingWallet } = useAuth();
-    console.log("here's the jwt");
-    console.log(jwt);
-
-    const router = useRouter();
+    const { wallet, isLoadingWallet } = useAuth();
 
     const { data, isLoading } = useQuery({
         queryKey: ["smart-wallet"],

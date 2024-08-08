@@ -42,19 +42,32 @@ const getJwtFromCookie = (): string | null => {
 
 export function AuthProvider({ children, apiKey, environment, embeddedWallets }: AuthProviderParams) {
     const [jwtToken, setJwtToken] = useState<string | null>(() => getJwtFromCookie());
+
     const [modalOpen, setModalOpen] = useState(false);
-    const crossmintService = useMemo(
-        () => new CrossmintService(apiKey, jwtToken, environment),
-        [apiKey, jwtToken, environment]
-    );
     const [wallet, setWallet] = useState<EVMSmartWallet | null>(null);
     const [isLoadingWallet, setIsLoadingWallet] = useState<boolean>(false);
-    const smartWalletSDK = useMemo(() => SmartWalletSDK.init({ clientApiKey: apiKey }), [apiKey, jwtToken]);
+
+    const crossmintService = useMemo(() => new CrossmintService(apiKey, jwtToken, environment), undefined);
+    const smartWalletSDK = useMemo(() => SmartWalletSDK.init({ clientApiKey: apiKey }), undefined);
 
     const login = () => {
-        console.log("Setting modal open to true");
         setModalOpen(true);
-        console.log("Done setting modal open to true");
+    };
+
+    const createWallet = async (jwt: string) => {
+        setIsLoadingWallet(true);
+
+        try {
+            const wallet = await smartWalletSDK.getOrCreateWallet({ jwt }, embeddedWallets.defaultChain);
+            setWallet(wallet);
+        } catch (e: any) {
+            console.log("There was an error creating a wallet");
+            console.log(e);
+            console.log(e.message);
+            throw e;
+        } finally {
+            setIsLoadingWallet(false);
+        }
     };
 
     useEffect(() => {
@@ -62,27 +75,12 @@ export function AuthProvider({ children, apiKey, environment, embeddedWallets }:
             return;
         }
 
-        const createWallet = async () => {
-            setIsLoadingWallet(true);
-
-            try {
-                const wallet = await smartWalletSDK.getOrCreateWallet({ jwt: jwtToken }, embeddedWallets.defaultChain);
-                setWallet(wallet);
-            } catch (e: any) {
-                console.log("There was an error creating a wallet");
-                console.log(e);
-                console.log(e.message);
-                throw e;
-            } finally {
-                setIsLoadingWallet(false);
-            }
-        };
-
-        if (embeddedWallets.createOnLogin) {
-            createWallet();
+        if (embeddedWallets.createOnLogin && wallet == null) {
+            createWallet(jwtToken);
         }
+
         setModalOpen(false);
-    }, [modalOpen, jwtToken, smartWalletSDK]);
+    }, [jwtToken, embeddedWallets.createOnLogin, wallet]);
 
     const logout = () => {
         document.cookie = "crossmint-session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";

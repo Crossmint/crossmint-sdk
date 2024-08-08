@@ -11,15 +11,9 @@ import { useAuth } from "@crossmint/client-sdk-auth-core";
 
 export default function Home() {
     const { jwt, wallet } = useAuth();
-
-    console.log("Here's the jwt");
-    console.log(jwt);
-    console.log("Here's the wallet");
-    console.log(wallet);
     const { toasts } = useToast();
 
     const showMintButton = jwt != null && wallet != null;
-
     const nftSuccessfullyMinted = !!toasts.find((toast) => toast.title?.includes("NFT Minted"));
 
     return (
