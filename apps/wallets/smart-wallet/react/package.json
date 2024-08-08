@@ -37,7 +37,6 @@
     "dependencies": {
         "@crossmint/client-sdk-smart-wallet": "workspace:*",
         "@crossmint/client-sdk-smart-wallet-web3auth-adapter": "workspace:*",
-        "@crossmint/client-sdk-auth-core": "workspace:*",
         "@emotion/react": "^11.11.1",
         "@emotion/styled": "^11.11.0",
         "@headlessui/react": "^1.7.16",

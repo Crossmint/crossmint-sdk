@@ -1,8 +1,7 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
-import { useAuth } from "@crossmint/client-sdk-auth-core";
 import { EVMSmartWallet } from "@crossmint/client-sdk-smart-wallet";
 
 import { AppContext } from "../../AppContext";
@@ -29,25 +28,41 @@ const StepCard = ({ Icon, title, subtitle }: any) => {
 };
 
 export const Login = () => {
-    const { setIsProd } = useContext(AppContext);
+    const { setValue, setIsAuthenticated, setIsProd } = useContext(AppContext);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const [isSwitchOn, setIsSwitchOn] = useState(false);
 
-    const { login, jwt, smartWallet } = useAuth();
-
-    useEffect(() => {
-        if (smartWallet != null) {
-            navigate("/mint");
-        }
-    }, [smartWallet]);
-
-    console.log("here's the jwt");
-    console.log(jwt);
-
     const handleSwitchChange = (checked: boolean) => {
         setIsSwitchOn(checked);
         setIsProd(checked);
+    };
+
+    const login = async () => {
+        setLoading(true);
+        const testAccountPrivateKey = localStorage.getItem("testAccountPrivateKey") as `0x${string}` | null;
+
+        let account: EVMSmartWallet;
+        try {
+            account = testAccountPrivateKey
+                ? await createViemAAWallet(isSwitchOn, testAccountPrivateKey)
+                : await createPasskeyWallet(isSwitchOn);
+        } catch (e) {
+            setLoading(false);
+            return;
+        }
+        setLoading(false);
+
+        if (!account) {
+            toast.error(`Error occurred during account register`);
+            return;
+        }
+
+        toast.success(`Login Successfully`);
+        setIsAuthenticated(true);
+        localStorage.setItem("isUserConnected", "true");
+        setValue(account);
+        navigate("/mint");
     };
 
     return (
