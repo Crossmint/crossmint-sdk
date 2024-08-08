@@ -75,32 +75,4 @@ export class SmartWalletSDK extends LoggerWrapper {
             { user, chain }
         );
     }
-
-    async sponsorUserOperation<E extends EntryPoint>(
-        user: UserParams,
-        userOp: UserOperation<GetEntryPointVersion<E>>,
-        entryPoint: E,
-        chain: SmartWalletChain
-    ) {
-        return logPerformance(
-            "SPONSOR_USER_OPERATION",
-            async () => {
-                try {
-                    const { sponsorUserOpParams } = await this.smartWalletService.sponsorUserOperation(
-                        user,
-                        userOp,
-                        entryPoint,
-                        chain
-                    );
-                    return sponsorUserOpParams;
-                } catch (error: any) {
-                    throw this.errorProcessor.map(
-                        error,
-                        new SmartWalletSDKError(`Sponsoring user operation failed: ${error.message}.`, stringify(error))
-                    );
-                }
-            },
-            { chain }
-        );
-    }
 }

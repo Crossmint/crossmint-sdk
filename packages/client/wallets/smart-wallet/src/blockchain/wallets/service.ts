@@ -108,15 +108,6 @@ export class SmartWalletService {
         return new EVMSmartWallet(this.crossmintWalletService, smartAccountClient, publicClient, chain);
     }
 
-    public async sponsorUserOperation<E extends EntryPoint>(
-        user: UserParams,
-        userOp: UserOperation<GetEntryPointVersion<E>>,
-        entryPoint: E,
-        chain: SmartWalletChain
-    ) {
-        return this.crossmintWalletService.sponsorUserOperation(user, userOp, entryPoint, chain);
-    }
-
     private async fetchConfig(
         user: UserParams,
         chain: SmartWalletChain
