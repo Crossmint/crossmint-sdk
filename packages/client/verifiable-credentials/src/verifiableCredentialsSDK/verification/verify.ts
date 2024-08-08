@@ -14,8 +14,8 @@ import { VerifiableCredentialSignatureService } from "./signature";
  *
  * @param credential the credential object to verify
  * @returns {validVC: boolean, error: string | undefined}
- * - `validVC`: A boolean indicating if the credential is valid.
  * - `error`: A string with the error message if the credential is invalid, or `undefined` if the credential is valid.
+ * - `validVC`: A boolean indicating if the credential is valid.
  *
  * @throws Will throw an error if `validUntil` is present and is not a valid ISO string or if the date is invalid.
  */
