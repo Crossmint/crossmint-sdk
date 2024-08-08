@@ -9,5 +9,9 @@
     "hidePageHeader": true,
     "hideBreadcrumbs": true,
     "hidePageTitle": true,
-    "parametersFormat": "table"
+    "parametersFormat": "table",
+    "navigation": {
+        "includeFolders": true,
+        "includeGroups": true
+    }
 }
