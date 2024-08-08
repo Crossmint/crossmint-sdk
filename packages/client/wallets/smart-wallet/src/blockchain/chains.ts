@@ -2,7 +2,10 @@ import { BUNDLER_RPC } from "@/utils/constants";
 import {
     Chain,
     arbitrum,
+    arbitrumNova,
     arbitrumSepolia,
+    astarZkEVM,
+    astarZkyoto,
     base,
     baseSepolia,
     optimism,
@@ -18,6 +21,7 @@ export const SmartWalletTestnet = {
     POLYGON_AMOY: Blockchain.POLYGON_AMOY,
     OPTIMISM_SEPOLIA: Blockchain.OPTIMISM_SEPOLIA,
     ARBITRUM_SEPOLIA: Blockchain.ARBITRUM_SEPOLIA,
+    ZKYOTO: Blockchain.ZKYOTO,
 } as const;
 export type SmartWalletTestnet = ObjectValues<typeof SmartWalletTestnet>;
 export const SMART_WALLET_TESTNETS = objectValues(SmartWalletTestnet);
@@ -27,6 +31,8 @@ export const SmartWalletMainnet = {
     POLYGON: Blockchain.POLYGON,
     OPTIMISM: Blockchain.OPTIMISM,
     ARBITRUM: Blockchain.ARBITRUM,
+    ARBITRUMNOVA: Blockchain.ARBITRUMNOVA,
+    ASTAR_ZKEVM: Blockchain.ASTAR_ZKEVM,
 } as const;
 export type SmartWalletMainnet = ObjectValues<typeof SmartWalletMainnet>;
 export const SMART_WALLET_MAINNETS = objectValues(SmartWalletMainnet);
@@ -47,6 +53,9 @@ export const zerodevProjects: Record<SmartWalletChain, string> = {
     optimism: "505950ab-ee07-4a9c-bd16-320ac71a9350",
     arbitrum: "a965100f-fedf-4e6b-a207-20f5687fcc4f",
     "arbitrum-sepolia": "76c860ca-af77-4fb1-8eac-07825952f6f4",
+    zkyoto: "d9ecb4da-8d94-4b72-969a-6c53dbec8a9b",
+    "astar-zkevm": "633e11e7-ab9c-405c-86e3-493ddc0ee1ef",
+    arbitrumnova: "f6d574ed-9f4f-4bdd-8533-6de36106dd87",
 };
 
 export const viemNetworks: Record<SmartWalletChain, Chain> = {
@@ -58,6 +67,9 @@ export const viemNetworks: Record<SmartWalletChain, Chain> = {
     "optimism-sepolia": optimismSepolia,
     arbitrum: arbitrum,
     "arbitrum-sepolia": arbitrumSepolia,
+    zkyoto: astarZkyoto,
+    "astar-zkevm": astarZkEVM,
+    arbitrumnova: arbitrumNova,
 };
 
 export const getBundlerRPC = (chain: SmartWalletChain) => {
