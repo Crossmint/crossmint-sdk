@@ -1,5 +1,3 @@
-import { UserOperation } from "permissionless";
-import { EntryPoint, GetEntryPointVersion } from "permissionless/types/entrypoint";
 import { stringify } from "viem";
 
 import { validateAPIKey } from "@crossmint/common-sdk-base";
