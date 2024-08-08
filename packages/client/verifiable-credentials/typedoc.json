@@ -10,6 +10,7 @@
     "hideBreadcrumbs": true,
     "hidePageTitle": true,
     "parametersFormat": "table",
+    "categorizeByGroup": false,
     "navigation": {
         "includeFolders": true,
         "includeGroups": true
