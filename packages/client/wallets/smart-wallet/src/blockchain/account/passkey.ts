@@ -1,42 +1,40 @@
-import type { CrossmintWalletService } from "@/api/CrossmintWalletService";
-import { type PasskeySignerData, displayPasskey } from "@/types/API";
-import type { PasskeySigner, UserParams, WalletParams } from "@/types/Config";
-import type { AccountAndSigner, PasskeyValidatorSerializedData, WalletCreationParams } from "@/types/internal";
 import { PasskeyValidatorContractVersion, WebAuthnMode, toPasskeyValidator } from "@zerodev/passkey-validator";
 import { type KernelSmartAccount, type KernelValidator, createKernelAccount } from "@zerodev/sdk";
 import { type WebAuthnKey, toWebAuthnKey } from "@zerodev/webauthn-key";
 import type { SmartAccount } from "permissionless/accounts";
 import type { EntryPoint } from "permissionless/types/entrypoint";
 
+import type { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import {
     PasskeyIncompatibleAuthenticatorError,
     PasskeyMismatchError,
     PasskeyPromptError,
     PasskeyRegistrationError,
 } from "../../error";
-import { AccountConfigCache } from "./accountConfig";
-
-export interface PasskeyWalletParams extends WalletCreationParams {
-    walletParams: WalletParams & { signer: PasskeySigner };
-}
-
-export function isPasskeyParams(params: WalletCreationParams): params is PasskeyWalletParams {
-    return (params.walletParams.signer as PasskeySigner).type === "PASSKEY";
-}
+import { type PasskeySignerData, displayPasskey } from "../../types/API";
+import type { UserParams } from "../../types/Config";
+import type { AccountAndSigner, PasskeyCreationParams, PasskeyValidatorSerializedData } from "../../types/internal";
+import type { AccountConfigCache } from "./config";
 
 type PasskeyValidator = KernelValidator<EntryPoint, "WebAuthnValidator"> & {
     getSerializedData: () => string;
 };
-export class PasskeyAccountService {
+
+export class PasskeyAccountBuilder {
     constructor(
         private readonly crossmintService: CrossmintWalletService,
         private readonly accountConfigCache: AccountConfigCache
     ) {}
 
-    public async get(
-        { user, publicClient, walletParams, entryPoint, kernelVersion }: PasskeyWalletParams,
-        existingSignerConfig?: PasskeySignerData
-    ): Promise<AccountAndSigner> {
+    public async build({
+        user,
+        publicClient,
+        walletParams,
+        entryPoint,
+        kernelVersion,
+        existingSignerConfig,
+        smartContractWalletAddress,
+    }: PasskeyCreationParams): Promise<AccountAndSigner> {
         const inputPasskeyName = walletParams.signer.passkeyName ?? user.id;
         if (existingSignerConfig != null && existingSignerConfig.passkeyName !== inputPasskeyName) {
             throw new PasskeyMismatchError(
@@ -57,11 +55,15 @@ export class PasskeyAccountService {
                 kernelVersion,
             });
 
+            console.log("Existing address");
+            console.log(smartContractWalletAddress);
+
             // Use already deployed address here to save a network call and speed things up. It's safer too.
             const kernelAccount = await createKernelAccount(publicClient, {
                 plugins: { sudo: validator },
                 entryPoint: entryPoint.address,
                 kernelVersion,
+                deployedAccountAddress: smartContractWalletAddress,
             });
 
             const signerData = this.getSignerData(validator, validatorContractVersion, inputPasskeyName);

@@ -32,4 +32,12 @@ export interface WalletParams {
     signer: EOASigner | PasskeySigner;
 }
 
+export function isEOAWalletParams(params: WalletParams): params is WalletParams & { signer: EOASigner } {
+    return "type" in params.signer ? params.signer.type === "VIEM_ACCOUNT" : "request" in params.signer;
+}
+
+export function isPasskeyWalletParams(params: WalletParams): params is WalletParams & { signer: PasskeySigner } {
+    return "type" in params.signer && params.signer.type === "PASSKEY";
+}
+
 export type EntryPointDetails = { version: SupportedEntryPointVersion; address: EntryPoint };

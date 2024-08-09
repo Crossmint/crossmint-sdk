@@ -1,26 +1,16 @@
-import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
-import { Address, getAddress } from "viem";
+import { getAddress } from "viem";
 
-import { CrossmintWalletService } from "../../api/CrossmintWalletService";
+import type { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import { SmartWalletError } from "../../error";
-import { SignerData } from "../../types/API";
-import { EntryPointDetails, UserParams } from "../../types/Config";
+import type { UserParams } from "../../types/Config";
 import {
+    type AccountConfig,
     SUPPORTED_ENTRYPOINT_VERSIONS,
     SUPPORTED_KERNEL_VERSIONS,
-    SupportedKernelVersion,
     isSupportedEntryPointVersion,
     isSupportedKernelVersion,
 } from "../../types/internal";
-import { SmartWalletChain } from "../chains";
-
-type AccountConfig = {
-    entryPointVersion: string;
-    kernelVersion: string;
-    userId: string;
-    existingSignerConfig?: SignerData;
-    smartContractWalletAddress?: Address;
-};
+import type { SmartWalletChain } from "../chains";
 
 export class AccountConfigFacade {
     constructor(
@@ -28,17 +18,11 @@ export class AccountConfigFacade {
         private readonly cache: AccountConfigCache
     ) {}
 
-    public async get(
-        user: UserParams,
-        chain: SmartWalletChain
-    ): Promise<{
-        entryPoint: EntryPointDetails;
-        kernelVersion: SupportedKernelVersion;
-        userId: string;
-        existingSignerConfig?: SignerData;
-        smartContractWalletAddress?: Address;
-    }> {
+    public async get(user: UserParams, chain: SmartWalletChain): Promise<AccountConfig> {
         const config = this.cache.get() ?? (await this.crossmintWalletService.getSmartWalletConfig(user, chain));
+        console.log("Config from the source within the facade");
+        console.log(config);
+
         const { entryPointVersion, kernelVersion, existingSignerConfig, smartContractWalletAddress, userId } = config;
 
         console.log("Here's config in AccountConfigFacade");
@@ -70,10 +54,7 @@ export class AccountConfigFacade {
         }
 
         return {
-            entryPoint: {
-                version: entryPointVersion,
-                address: entryPointVersion === "v0.6" ? ENTRYPOINT_ADDRESS_V06 : ENTRYPOINT_ADDRESS_V07,
-            },
+            entryPointVersion,
             kernelVersion,
             userId, // not validated
             existingSignerConfig, // not validated
@@ -87,18 +68,23 @@ export class AccountConfigCache {
     private KEY = "cm-smart-wallet-config";
 
     set(config: AccountConfig) {
+        console.log("Setting cookie data");
+
         const cookieData = JSON.stringify(config);
         document.cookie = `${this.KEY}=${encodeURIComponent(cookieData)}; path=/;`;
     }
 
-    get(): AccountConfig | null {
+    get(): any | null {
+        // TODO treat as unknown and validate better
         const cookieValue = document.cookie.split("; ").find((row) => row.startsWith(this.KEY));
 
         if (cookieValue == null) {
             return null;
         }
 
+        const test = JSON.parse(decodeURIComponent(cookieValue.split("=")[1]));
         console.log("Returning cached smart wallet config");
-        return JSON.parse(decodeURIComponent(cookieValue.split("=")[1]));
+        console.log(test);
+        return test;
     }
 }
