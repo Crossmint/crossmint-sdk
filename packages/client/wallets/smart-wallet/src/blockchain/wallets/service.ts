@@ -8,13 +8,13 @@ import { blockchainToChainId } from "@crossmint/common-sdk-base";
 import type { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import { UserWalletAlreadyCreatedError } from "../../error";
 import type { UserParams, WalletParams } from "../../types/Config";
-import { SmartWalletClient } from "../../types/internal";
+import type { SmartWalletClient } from "../../types/internal";
 import { CURRENT_VERSION, ZERO_DEV_TYPE } from "../../utils/constants";
-import { AccountBuilder } from "../account/builder";
-import { AccountConfigFacade } from "../account/config";
-import { SmartWalletChain, getBundlerRPC, viemNetworks } from "../chains";
+import type { AccountBuilder } from "../account/builder";
+import type { AccountConfigFacade } from "../account/config";
+import { type SmartWalletChain, getBundlerRPC, viemNetworks } from "../chains";
 import { EVMSmartWallet } from "./EVMSmartWallet";
-import { ClientDecorator } from "./clientDecorator";
+import type { ClientDecorator } from "./clientDecorator";
 import { paymasterMiddleware, usePaymaster } from "./paymaster";
 
 export class SmartWalletService {
