@@ -600,9 +600,6 @@ importers:
       typedoc-plugin-markdown:
         specifier: 4.2.3
         version: 4.2.3(typedoc@0.26.5(typescript@5.5.3))
-      typedoc-plugin-replace-text:
-        specifier: 4.0.0
-        version: 4.0.0(typedoc@0.26.5(typescript@5.5.3))
 
   packages/client/wallets/smart-wallet:
     dependencies:
@@ -13673,11 +13670,6 @@ packages:
   typedoc-plugin-markdown@4.2.3:
     resolution: {integrity: sha512-esucQj79SFYOv0f5XVha7QWdLUH5C5HRlDf7Z8CXzHedmVPn7jox6Gt7FdoBXN8AFxyHpa3Lbuxu65Dobwt+4Q==}
     engines: {node: '>= 18'}
-    peerDependencies:
-      typedoc: 0.26.x
-
-  typedoc-plugin-replace-text@4.0.0:
-    resolution: {integrity: sha512-nl/QJPO3fOfJUTv3gHJhmhs7g3m2k4VfbN9YIQIvKoSC4rsjLUYQHUn/6/lXmDMIY3pTfULyDo78PWQFHxqBSg==}
     peerDependencies:
       typedoc: 0.26.x
 
@@ -34755,10 +34747,6 @@ snapshots:
       yaml: 2.4.5
 
   typedoc-plugin-markdown@4.2.3(typedoc@0.26.5(typescript@5.5.3)):
-    dependencies:
-      typedoc: 0.26.5(typescript@5.5.3)
-
-  typedoc-plugin-replace-text@4.0.0(typedoc@0.26.5(typescript@5.5.3)):
     dependencies:
       typedoc: 0.26.5(typescript@5.5.3)
 

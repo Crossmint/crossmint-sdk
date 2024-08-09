@@ -6,13 +6,13 @@
     "fileExtension": ".mdx",
     "skipErrorChecking": true,
     "excludeNotDocumented": false,
+    "excludeInternal": true,
+    "excludePrivate": true,
+    "excludeProtected": true,
+    "sanitizeComments": true,
     "hidePageHeader": true,
     "hideBreadcrumbs": true,
     "hidePageTitle": true,
     "parametersFormat": "table",
-    "categorizeByGroup": false,
-    "navigation": {
-        "includeFolders": true,
-        "includeGroups": true
-    }
+    "classPropertiesFormat": "table"
 }

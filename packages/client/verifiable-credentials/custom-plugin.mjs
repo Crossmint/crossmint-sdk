@@ -5,18 +5,6 @@ export function load(app) {
   app.renderer.postRenderAsyncJobs.push(async (renderer) => {
     const navigation = renderer.navigation;
 
-    // sort the Error classes to the end of the list
-    const classesIndex = navigation.findIndex(item => item.title === "Classes");
-    if (classesIndex !== -1) {
-        navigation[classesIndex].children.sort((a, b) => {
-            const isErrorA = a.title.endsWith("Error");
-            const isErrorB = b.title.endsWith("Error");
-            if (isErrorA && !isErrorB) return 1;
-            if (!isErrorA && isErrorB) return -1;
-            return a.title.localeCompare(b.title);
-        });
-    }
-
     const resultArray = navigation.map(item => ({
         group: item.title,
         pages: item.children.map(child => `sdk-reference/credentials/${child.path.replace('.mdx', '')}`)
