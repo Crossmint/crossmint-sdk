@@ -1,5 +1,5 @@
 import pkg from 'typedoc-plugin-markdown';
-const { MarkdownPageEvent, MarkdownTheme, MarkdownThemeContext, partials } = pkg;
+const { MarkdownPageEvent, MarkdownTheme, MarkdownThemeContext } = pkg;
  
 export function load(app) {
   app.renderer.defineTheme('crossmintTheme', CrossmintTheme);
@@ -7,7 +7,7 @@ export function load(app) {
   app.renderer.postRenderAsyncJobs.push(async (renderer) => {
     const navigation = renderer.navigation;
 
-    // sort the Error classes to the end of the list
+    // sort the Error classes to the end of the list for navigation
     const classesIndex = navigation.findIndex(item => item.title === "Classes");
     if (classesIndex !== -1) {
         navigation[classesIndex].children.sort((a, b) => {
@@ -48,9 +48,6 @@ class CrossmintTheme extends MarkdownTheme {
     return new CrossmintThemeContext(this, page, this.application.options);
   }
 }
- 
-import { ReflectionKind } from 'typedoc';
-import { table } from 'libs/markdown';
 
 class CrossmintThemeContext extends MarkdownThemeContext {
   // customise templates
@@ -59,40 +56,11 @@ class CrossmintThemeContext extends MarkdownThemeContext {
     
   };
   
-  
   // customise partials
   partials = {
     ...this.partials,
     parametersTable: (model) => {
-
-      const parseParams = (current, acc) => {
-        const shouldFlatten =
-          current.type?.declaration?.kind === ReflectionKind.TypeLiteral &&
-          current.type?.declaration?.children;
-        return shouldFlatten
-          ? [...acc, current, ...flattenParams(current)]
-          : [...acc, current];
-      };
-
-      const flattenParams = (current) => {
-        return current.type?.declaration?.children?.reduce(
-          (acc, child) => {
-            const childObj = {
-              ...child,
-              name: `${current.name}.${child.name}`,
-            };
-            return parseParams(childObj, acc);
-          },
-          [],
-        );
-      };
-      
-      const parsedParams = model.reduce(
-        (acc, current) => parseParams(current, acc),
-        [],
-      );
-      
-      return "test 2";
+      return "test";
 
     },
   };
