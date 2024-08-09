@@ -14,6 +14,7 @@ import {
     PasskeyPromptError,
     PasskeyRegistrationError,
 } from "../../error";
+import { AccountConfigCache } from "./accountConfig";
 
 export interface PasskeyWalletParams extends WalletCreationParams {
     walletParams: WalletParams & { signer: PasskeySigner };
@@ -27,7 +28,10 @@ type PasskeyValidator = KernelValidator<EntryPoint, "WebAuthnValidator"> & {
     getSerializedData: () => string;
 };
 export class PasskeyAccountService {
-    constructor(private readonly crossmintService: CrossmintWalletService) {}
+    constructor(
+        private readonly crossmintService: CrossmintWalletService,
+        private readonly accountConfigCache: AccountConfigCache
+    ) {}
 
     public async get(
         { user, publicClient, walletParams, entryPoint, kernelVersion }: PasskeyWalletParams,
@@ -43,7 +47,6 @@ export class PasskeyAccountService {
 
         try {
             const passkey = await this.getPasskey(user, inputPasskeyName, existingSignerConfig);
-
             const latestValidatorVersion = PasskeyValidatorContractVersion.V0_0_2;
             const validatorContractVersion =
                 existingSignerConfig == null ? latestValidatorVersion : existingSignerConfig.validatorContractVersion;
@@ -54,14 +57,24 @@ export class PasskeyAccountService {
                 kernelVersion,
             });
 
+            // Use already deployed address here to save a network call and speed things up. It's safer too.
             const kernelAccount = await createKernelAccount(publicClient, {
                 plugins: { sudo: validator },
                 entryPoint: entryPoint.address,
                 kernelVersion,
             });
 
+            const signerData = this.getSignerData(validator, validatorContractVersion, inputPasskeyName);
+            this.accountConfigCache.set({
+                existingSignerConfig: signerData,
+                entryPointVersion: entryPoint.version,
+                kernelVersion,
+                userId: user.id,
+                smartContractWalletAddress: kernelAccount.address,
+            });
+
             return {
-                signerData: this.getSignerData(validator, validatorContractVersion, inputPasskeyName),
+                signerData,
                 account: this.decorate(kernelAccount, inputPasskeyName),
             };
         } catch (error) {

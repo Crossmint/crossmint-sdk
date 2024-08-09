@@ -1,4 +1,5 @@
 import { SmartWalletChain } from "@/blockchain/chains";
+import { CrossmintServiceError } from "@/error";
 import { SignerData, StoreSmartWalletParams } from "@/types/API";
 import type { UserParams } from "@/types/Config";
 import { API_VERSION } from "@/utils/constants";
@@ -22,15 +23,25 @@ export class CrossmintWalletService extends BaseCrossmintService {
         kernelVersion: string;
         entryPointVersion: string;
         userId: string;
-        signers: { signerData: SignerData }[];
+        existingSignerConfig?: SignerData;
         smartContractWalletAddress?: string;
     }> {
-        return this.fetchCrossmintAPI(
+        const { signers, ...data } = await this.fetchCrossmintAPI(
             `${API_VERSION}/sdk/smart-wallet/config?chain=${chain}`,
             { method: "GET" },
             "Error getting smart wallet version configuration. Please contact support",
             user.jwt
         );
+
+        if (signers.length === 0) {
+            return { ...data, signer: undefined };
+        }
+
+        if (signers.length > 1) {
+            throw new CrossmintServiceError("Invalid wallet signer configuration. Please contact support");
+        }
+
+        return { ...data, existingSignerConfig: signers[0].signerData };
     }
 
     async fetchNFTs(address: string, chain: SmartWalletChain) {

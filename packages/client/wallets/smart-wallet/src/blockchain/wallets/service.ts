@@ -1,32 +1,19 @@
 import { type SignerData, displayPasskey } from "@/types/API";
 import { equalsIgnoreCase } from "@/utils/helpers";
 import { type KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
-import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
 import type { EntryPoint } from "permissionless/types/entrypoint";
-import { Address, type HttpTransport, createPublicClient, getAddress, http } from "viem";
+import { type HttpTransport, createPublicClient, http } from "viem";
 
 import { blockchainToChainId } from "@crossmint/common-sdk-base";
 
 import type { CrossmintWalletService } from "../../api/CrossmintWalletService";
-import {
-    AdminMismatchError,
-    CrossmintServiceError,
-    SmartWalletError,
-    UserWalletAlreadyCreatedError,
-} from "../../error";
-import type { EntryPointDetails, UserParams, WalletParams } from "../../types/Config";
-import {
-    SUPPORTED_ENTRYPOINT_VERSIONS,
-    SUPPORTED_KERNEL_VERSIONS,
-    SmartWalletClient,
-    type SupportedKernelVersion,
-    type WalletCreationParams,
-    isSupportedEntryPointVersion,
-    isSupportedKernelVersion,
-} from "../../types/internal";
+import { AdminMismatchError, UserWalletAlreadyCreatedError } from "../../error";
+import type { UserParams, WalletParams } from "../../types/Config";
+import { SmartWalletClient, type WalletCreationParams } from "../../types/internal";
 import { CURRENT_VERSION, ZERO_DEV_TYPE } from "../../utils/constants";
 import { SmartWalletChain, getBundlerRPC, viemNetworks } from "../chains";
 import { EVMSmartWallet } from "./EVMSmartWallet";
+import { AccountConfigFacade } from "./accountConfig";
 import { ClientDecorator } from "./clientDecorator";
 import { EOAAccountService, type EOAWalletParams } from "./eoa";
 import { PasskeyAccountService, isPasskeyParams } from "./passkey";
@@ -36,10 +23,8 @@ export class SmartWalletService {
     constructor(
         private readonly crossmintWalletService: CrossmintWalletService,
         private readonly clientDecorator: ClientDecorator,
-        private readonly accountFactory = new AccountFactory(
-            new EOAAccountService(),
-            new PasskeyAccountService(crossmintWalletService)
-        )
+        private readonly accountFactory: AccountBuilder,
+        private readonly accountConfigFacade: AccountConfigFacade
     ) {}
 
     public async getOrCreate(
@@ -48,10 +33,13 @@ export class SmartWalletService {
         walletParams: WalletParams
     ): Promise<EVMSmartWallet> {
         const { entryPoint, kernelVersion, existingSignerConfig, smartContractWalletAddress, userId } =
-            await this.fetchConfig(user, chain);
-        const publicClient = createPublicClient({ transport: http(getBundlerRPC(chain)) });
+            await this.accountConfigFacade.get(user, chain);
 
-        const { account, signerData } = await this.accountFactory.get(
+        console.log("Here's config from `getOrCreate`");
+        console.log({ entryPoint, kernelVersion, existingSignerConfig, smartContractWalletAddress, userId });
+
+        const publicClient = createPublicClient({ transport: http(getBundlerRPC(chain)) });
+        const { account, signerData } = await this.accountFactory.build(
             {
                 chain,
                 walletParams,
@@ -63,11 +51,17 @@ export class SmartWalletService {
             existingSignerConfig
         );
 
+        console.log(`Created new account: ${account.address}`);
+
         if (smartContractWalletAddress != null && !equalsIgnoreCase(smartContractWalletAddress, account.address)) {
+            console.error(
+                `Mismatch in smart contract wallet address. Expected: ${smartContractWalletAddress}, Got: ${account.address}`
+            );
             throw new UserWalletAlreadyCreatedError(userId);
         }
 
         if (existingSignerConfig == null) {
+            console.log(`No existing signer config. Creating new smart wallet.`);
             await this.crossmintWalletService.idempotentCreateSmartWallet(user, {
                 type: ZERO_DEV_TYPE,
                 smartContractWalletAddress: account.address,
@@ -78,8 +72,10 @@ export class SmartWalletService {
                 entryPointVersion: entryPoint.version,
                 kernelVersion,
             });
+            console.log(`Created new smart wallet: ${account.address}`);
         }
 
+        console.log(`Creating kernel account client for account: ${account.address}`);
         const kernelAccountClient: SmartWalletClient = createKernelAccountClient({
             account,
             chain: viemNetworks[chain],
@@ -93,77 +89,15 @@ export class SmartWalletService {
             smartAccountClient: kernelAccountClient,
         });
 
+        console.log(`Returning new EVMSmartWallet instance for account: ${account.address}`);
         return new EVMSmartWallet(this.crossmintWalletService, smartAccountClient, publicClient, chain);
-    }
-
-    private async fetchConfig(
-        user: UserParams,
-        chain: SmartWalletChain
-    ): Promise<{
-        entryPoint: EntryPointDetails;
-        kernelVersion: SupportedKernelVersion;
-        userId: string;
-        existingSignerConfig?: SignerData;
-        smartContractWalletAddress?: Address;
-    }> {
-        const { entryPointVersion, kernelVersion, signers, smartContractWalletAddress, userId } =
-            await this.crossmintWalletService.getSmartWalletConfig(user, chain);
-
-        if (!isSupportedKernelVersion(kernelVersion)) {
-            throw new SmartWalletError(
-                `Unsupported kernel version. Supported versions: ${SUPPORTED_KERNEL_VERSIONS.join(
-                    ", "
-                )}. Version used: ${kernelVersion}, Please contact support`
-            );
-        }
-
-        if (!isSupportedEntryPointVersion(entryPointVersion)) {
-            throw new SmartWalletError(
-                `Unsupported entry point version. Supported versions: ${SUPPORTED_ENTRYPOINT_VERSIONS.join(
-                    ", "
-                )}. Version used: ${entryPointVersion}. Please contact support`
-            );
-        }
-
-        if (
-            (entryPointVersion === "v0.7" && kernelVersion.startsWith("0.2")) ||
-            (entryPointVersion === "v0.6" && kernelVersion.startsWith("0.3"))
-        ) {
-            throw new SmartWalletError(
-                `Unsupported combination: entryPoint ${entryPointVersion} and kernel version ${kernelVersion}. Please contact support`
-            );
-        }
-
-        return {
-            entryPoint: {
-                version: entryPointVersion,
-                address: entryPointVersion === "v0.6" ? ENTRYPOINT_ADDRESS_V06 : ENTRYPOINT_ADDRESS_V07,
-            },
-            kernelVersion,
-            userId,
-            existingSignerConfig: this.getSigner(signers),
-            smartContractWalletAddress:
-                smartContractWalletAddress != null ? getAddress(smartContractWalletAddress) : undefined,
-        };
-    }
-
-    private getSigner(signers: any[]): SignerData | undefined {
-        if (signers.length === 0) {
-            return undefined;
-        }
-
-        if (signers.length > 1) {
-            throw new CrossmintServiceError("Invalid wallet signer configuration. Please contact support");
-        }
-
-        return signers[0].signerData;
     }
 }
 
-class AccountFactory {
+export class AccountBuilder {
     constructor(private readonly eoa: EOAAccountService, private readonly passkey: PasskeyAccountService) {}
 
-    public get(
+    public build(
         params: WalletCreationParams,
         existingSignerConfig?: SignerData
     ): Promise<{

@@ -5,22 +5,23 @@ import { validateAPIKey } from "@crossmint/common-sdk-base";
 import { CrossmintWalletService } from "./api/CrossmintWalletService";
 import { SmartWalletChain } from "./blockchain/chains";
 import type { EVMSmartWallet } from "./blockchain/wallets";
+import { AccountConfigCache, AccountConfigFacade } from "./blockchain/wallets/accountConfig";
 import { ClientDecorator } from "./blockchain/wallets/clientDecorator";
-import { SmartWalletService } from "./blockchain/wallets/service";
+import { EOAAccountService } from "./blockchain/wallets/eoa";
+import { PasskeyAccountService } from "./blockchain/wallets/passkey";
+import { AccountBuilder, SmartWalletService } from "./blockchain/wallets/service";
 import { SmartWalletError } from "./error";
 import { ErrorProcessor } from "./error/processor";
 import { DatadogProvider } from "./services/logging/DatadogProvider";
 import type { SmartWalletSDKInitParams, UserParams, WalletParams } from "./types/Config";
 import { isClient } from "./utils/environment";
-import { LoggerWrapper, logPerformance } from "./utils/log";
+import { logPerformance } from "./utils/log";
 
-export class SmartWalletSDK extends LoggerWrapper {
+export class SmartWalletSDK {
     private constructor(
         private readonly smartWalletService: SmartWalletService,
         private readonly errorProcessor: ErrorProcessor
-    ) {
-        super("SmartWalletSDK");
-    }
+    ) {}
 
     /**
      * Initializes the SDK with the **client side** API key obtained from the Crossmint console.
@@ -38,10 +39,21 @@ export class SmartWalletSDK extends LoggerWrapper {
 
         const crossmintService = new CrossmintWalletService(clientApiKey);
         const errorProcessor = new ErrorProcessor(new DatadogProvider());
-        return new SmartWalletSDK(
-            new SmartWalletService(crossmintService, new ClientDecorator(errorProcessor)),
-            errorProcessor
+        const accountConfigCache = new AccountConfigCache();
+
+        const accountFactory = new AccountBuilder(
+            new EOAAccountService(),
+            new PasskeyAccountService(crossmintService, accountConfigCache)
         );
+
+        const smartWalletService = new SmartWalletService(
+            crossmintService,
+            new ClientDecorator(errorProcessor),
+            accountFactory,
+            new AccountConfigFacade(crossmintService, accountConfigCache)
+        );
+
+        return new SmartWalletSDK(smartWalletService, errorProcessor);
     }
 
     /**
