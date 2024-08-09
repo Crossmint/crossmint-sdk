@@ -85,7 +85,13 @@ export class SmartWalletService {
             chain: viemNetworks[chain],
             entryPoint: account.entryPoint,
             bundlerTransport: http(getBundlerRPC(chain)),
-            ...(usePaymaster(chain) && paymasterMiddleware({ entryPoint: account.entryPoint, chain })),
+            ...(usePaymaster(chain) &&
+                paymasterMiddleware({
+                    entryPoint: account.entryPoint,
+                    chain,
+                    walletService: this.crossmintWalletService,
+                    user,
+                })),
         });
 
         const smartAccountClient = this.clientDecorator.decorate({

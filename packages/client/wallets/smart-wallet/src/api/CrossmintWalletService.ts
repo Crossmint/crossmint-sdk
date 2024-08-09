@@ -2,7 +2,13 @@ import { SmartWalletChain } from "@/blockchain/chains";
 import { SignerData, StoreSmartWalletParams } from "@/types/API";
 import type { UserParams } from "@/types/Config";
 import { API_VERSION } from "@/utils/constants";
+import { UserOperation } from "permissionless";
+import { GetEntryPointVersion } from "permissionless/_types/types";
+import { EntryPoint } from "permissionless/types/entrypoint";
 
+import { blockchainToChainId } from "@crossmint/common-sdk-base";
+
+import { bigintsToHex, parseBigintAPIResponse } from "../utils/api";
 import { BaseCrossmintService } from "./BaseCrossmintService";
 
 export class CrossmintWalletService extends BaseCrossmintService {
@@ -13,6 +19,22 @@ export class CrossmintWalletService extends BaseCrossmintService {
             "Error creating abstract wallet. Please contact support",
             user.jwt
         );
+    }
+
+    async sponsorUserOperation<E extends EntryPoint>(
+        user: UserParams,
+        userOp: UserOperation<GetEntryPointVersion<E>>,
+        entryPoint: E,
+        chain: SmartWalletChain
+    ): Promise<{ sponsorUserOpParams: UserOperation<GetEntryPointVersion<E>> }> {
+        const chainId = blockchainToChainId(chain);
+        const result = await this.fetchCrossmintAPI(
+            `${API_VERSION}/sdk/paymaster`,
+            { method: "POST", body: JSON.stringify({ userOp: bigintsToHex(userOp), entryPoint, chainId }) },
+            "Error sponsoring user operation. Please contact support",
+            user.jwt
+        );
+        return parseBigintAPIResponse(result);
     }
 
     async getSmartWalletConfig(
