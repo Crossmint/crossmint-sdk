@@ -1,7 +1,9 @@
 import pkg from 'typedoc-plugin-markdown';
-const { MarkdownPageEvent } = pkg;
+const { MarkdownPageEvent, MarkdownTheme, MarkdownThemeContext, partials } = pkg;
  
 export function load(app) {
+  app.renderer.defineTheme('crossmintTheme', CrossmintTheme);
+
   app.renderer.postRenderAsyncJobs.push(async (renderer) => {
     const navigation = renderer.navigation;
 
@@ -39,4 +41,64 @@ export function load(app) {
     // remove .mdx from links so it works with mintlify
     page.contents = page.contents.replace(/\.mdx/g, "");
   });
+}
+
+class CrossmintTheme extends MarkdownTheme {
+  getRenderContext(page) {
+    return new CrossmintThemeContext(this, page, this.application.options);
+  }
+}
+ 
+import { ReflectionKind } from 'typedoc';
+import { table } from 'libs/markdown';
+
+class CrossmintThemeContext extends MarkdownThemeContext {
+  // customise templates
+  templates = {
+    ...this.templates,
+    
+  };
+  
+  
+  // customise partials
+  partials = {
+    ...this.partials,
+    parametersTable: (model) => {
+
+      const parseParams = (current, acc) => {
+        const shouldFlatten =
+          current.type?.declaration?.kind === ReflectionKind.TypeLiteral &&
+          current.type?.declaration?.children;
+        return shouldFlatten
+          ? [...acc, current, ...flattenParams(current)]
+          : [...acc, current];
+      };
+
+      const flattenParams = (current) => {
+        return current.type?.declaration?.children?.reduce(
+          (acc, child) => {
+            const childObj = {
+              ...child,
+              name: `${current.name}.${child.name}`,
+            };
+            return parseParams(childObj, acc);
+          },
+          [],
+        );
+      };
+      
+      const parsedParams = model.reduce(
+        (acc, current) => parseParams(current, acc),
+        [],
+      );
+      
+      return "test 2";
+
+    },
+  };
+ 
+  // customise helpers
+  helpers = {
+    ...this.helpers
+  };
 }
