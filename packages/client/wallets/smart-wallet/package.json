@@ -40,6 +40,7 @@
         "@playwright/test": "^1.41.2",
         "@types/node": "20.12.7",
         "@types/uuid": "10.0.0",
+        "typedoc": "0.26.5",
         "typedoc-plugin-frontmatter": "1.0.0",
         "typedoc-plugin-markdown": "4.2.3"
     }
