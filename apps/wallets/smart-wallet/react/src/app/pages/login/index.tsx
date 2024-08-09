@@ -1,3 +1,4 @@
+import { usePrivy } from "@privy-io/react-auth";
 import { useContext, useState } from "react";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -28,30 +29,38 @@ const StepCard = ({ Icon, title, subtitle }: any) => {
 };
 
 export const Login = () => {
-    const { setValue, setIsAuthenticated, setIsProd } = useContext(AppContext);
+    const { setValue, setIsAuthenticated, setIsProd, setIsFirebase } = useContext(AppContext);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const [isSwitchOn, setIsSwitchOn] = useState(false);
+    const [isFirebaseSwitchOn, setIsFirebaseSwitchOn] = useState(true);
+    const privy = usePrivy();
 
     const handleSwitchChange = (checked: boolean) => {
         setIsSwitchOn(checked);
         setIsProd(checked);
     };
 
+    const handleFirebaseSwitchChange = (checked: boolean) => {
+        setIsFirebaseSwitchOn(checked);
+        setIsFirebase(checked);
+    };
+
     const login = async () => {
         setLoading(true);
         const testAccountPrivateKey = localStorage.getItem("testAccountPrivateKey") as `0x${string}` | null;
-
         let account: EVMSmartWallet;
         try {
             account = testAccountPrivateKey
-                ? await createViemAAWallet(isSwitchOn, testAccountPrivateKey)
-                : await createPasskeyWallet(isSwitchOn);
+                ? await createViemAAWallet(isSwitchOn, testAccountPrivateKey, isFirebaseSwitchOn, privy)
+                : await createPasskeyWallet(isSwitchOn, isFirebaseSwitchOn, privy);
         } catch (e) {
+            console.error(e);
             setLoading(false);
             return;
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
 
         if (!account) {
             toast.error(`Error occurred during account register`);
@@ -97,6 +106,10 @@ export const Login = () => {
                 <TerciaryTitle className="text-[#20343E] !font-normal !mt-1 max-w-[40rem]">
                     Our unique architecture ensures NFTs are never at risk of loss while remaining non-custodial.
                 </TerciaryTitle>
+                <div className="flex items-center mt-4">
+                    <Switch checked={isFirebaseSwitchOn} onChange={handleFirebaseSwitchChange} />
+                    <span className="ml-2">{isFirebaseSwitchOn ? "Firebase" : "Privy"}</span>
+                </div>
 
                 <Button
                     loading={loading}

@@ -1,4 +1,5 @@
 /** @format */
+import { usePrivy } from "@privy-io/react-auth";
 import { useContext, useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -12,13 +13,14 @@ import { mintNFT } from "../../utils/mintApi";
 export const Mint = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
-    const { value, isProd, setIsAuthenticated, setValue } = useContext(AppContext);
+    const { value, isProd, setIsAuthenticated, setValue, isFirebase } = useContext(AppContext);
+    const privy = usePrivy();
 
     const createAndSetAAWallet = async () => {
         const testAccountPrivateKey = localStorage.getItem("testAccountPrivateKey") as `0x${string}` | null;
         const account = testAccountPrivateKey
-            ? await createViemAAWallet(isProd, testAccountPrivateKey)
-            : await createPasskeyWallet(isProd);
+            ? await createViemAAWallet(isProd, testAccountPrivateKey, isFirebase, privy)
+            : await createPasskeyWallet(isProd, isFirebase, privy);
 
         setIsAuthenticated(true);
         localStorage.setItem("isUserConnected", "true");
