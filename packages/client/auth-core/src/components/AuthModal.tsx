@@ -36,7 +36,7 @@ export default function AuthModal({
     apiKey: string;
     baseUrl: string;
 }) {
-    const iframeSrc = `${baseUrl}/sdk/auth/frame?api_key=${apiKey}`;
+    const iframeSrc = `${baseUrl}/sdk/auth/frame?apiKey=${apiKey}`;
     const iframeRef = useRef<HTMLIFrameElement | null>(null);
     const [iframe, setIframe] = useState<IFrameWindow<
         IncomingModalIframeEventsType,

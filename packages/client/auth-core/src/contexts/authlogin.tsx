@@ -40,6 +40,11 @@ export function AuthProvider({ children, apiKey, environment }: AuthProviderPara
     }, []);
 
     const login = () => {
+        if (jwtToken) {
+            console.log("User already logged in");
+            return;
+        }
+
         setModalOpen(true);
     };
 
