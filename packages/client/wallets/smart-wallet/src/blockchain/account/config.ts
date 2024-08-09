@@ -20,13 +20,7 @@ export class AccountConfigFacade {
 
     public async get(user: UserParams, chain: SmartWalletChain): Promise<AccountConfig> {
         const config = this.cache.get() ?? (await this.crossmintWalletService.getSmartWalletConfig(user, chain));
-        console.log("Config from the source within the facade");
-        console.log(config);
-
         const { entryPointVersion, kernelVersion, existingSignerConfig, smartContractWalletAddress, userId } = config;
-
-        console.log("Here's config in AccountConfigFacade");
-        console.log(config);
 
         if (!isSupportedKernelVersion(kernelVersion)) {
             throw new SmartWalletError(

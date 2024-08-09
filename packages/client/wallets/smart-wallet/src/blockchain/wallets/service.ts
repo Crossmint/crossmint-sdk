@@ -48,17 +48,11 @@ export class SmartWalletService {
             smartContractWalletAddress,
         });
 
-        console.log(`Created new account: ${account.address}`);
-
         if (smartContractWalletAddress != null && !equalsIgnoreCase(smartContractWalletAddress, account.address)) {
-            console.error(
-                `Mismatch in smart contract wallet address. Expected: ${smartContractWalletAddress}, Got: ${account.address}`
-            );
             throw new UserWalletAlreadyCreatedError(userId);
         }
 
         if (existingSignerConfig == null) {
-            console.log(`No existing signer config. Creating new smart wallet.`);
             await this.crossmintWalletService.idempotentCreateSmartWallet(user, {
                 type: ZERO_DEV_TYPE,
                 smartContractWalletAddress: account.address,
@@ -69,10 +63,8 @@ export class SmartWalletService {
                 entryPointVersion,
                 kernelVersion,
             });
-            console.log(`Created new smart wallet: ${account.address}`);
         }
 
-        console.log(`Creating kernel account client for account: ${account.address}`);
         const kernelAccountClient: SmartWalletClient = createKernelAccountClient({
             account,
             chain: viemNetworks[chain],

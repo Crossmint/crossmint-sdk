@@ -17,8 +17,6 @@ export class AccountBuilder {
         account: KernelSmartAccount<EntryPoint, HttpTransport>;
     }> {
         this.assertValidParams(params);
-        console.log("Here are the params from AccountBuilder");
-        console.log(params);
 
         if (isPasskeyCreationParams(params)) {
             return this.passkey.build(params);

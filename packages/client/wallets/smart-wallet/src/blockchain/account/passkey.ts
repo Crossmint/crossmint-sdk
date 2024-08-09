@@ -55,9 +55,6 @@ export class PasskeyAccountBuilder {
                 kernelVersion,
             });
 
-            console.log("Existing address");
-            console.log(smartContractWalletAddress);
-
             // Use already deployed address here to save a network call and speed things up. It's safer too.
             const kernelAccount = await createKernelAccount(publicClient, {
                 plugins: { sudo: validator },
