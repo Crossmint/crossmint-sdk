@@ -25,12 +25,11 @@ export class CrossmintApiClient extends ApiClient {
             internalConfig: CrossmintApiClientInternalConfig;
         }
     ) {
-        super();
-
         const apiKeyValidationResult = validateAPIKey(crossmint.apiKey, internalConfig.apiKeyExpectations);
         if (!apiKeyValidationResult.isValid) {
             throw new Error(apiKeyValidationResult.message);
         }
+        super();
         this.parsedAPIKey = apiKeyValidationResult;
         this.internalConfig = internalConfig;
     }
