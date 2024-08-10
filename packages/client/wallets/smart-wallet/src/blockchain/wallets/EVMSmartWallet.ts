@@ -85,7 +85,10 @@ export class EVMSmartWallet {
                 try {
                     const client = this.accountClient.extend(publicActions);
                     const { request } = await client.simulateContract(tx);
-                    return await client.writeContract(request);
+                    const hash = await client.writeContract(request);
+                    logInfo(`[TRANSFER] - Transaction hash from transfer: ${hash}`);
+
+                    return hash;
                 } catch (error) {
                     logError("[TRANSFER] - ERROR_TRANSFERRING_TOKEN", {
                         service: SCW_SERVICE,
