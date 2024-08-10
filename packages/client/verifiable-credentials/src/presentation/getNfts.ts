@@ -42,26 +42,41 @@ export async function getWalletNfts(chain: string, wallet: string) {
 }
 
 export async function getWalletVCNfts(chain: string, wallet: string): Promise<CrossmintWalletNft[]> {
+    let page = 1;
+    let hasMore = true;
+    let allData: CrossmintWalletNft[] = [];
+    const perPage = 50;
+
     const baseUrl = crossmintAPI.getBaseUrl();
     const headers = crossmintAPI.getHeaders();
 
-    const url = `${baseUrl}/api/v1-alpha1/wallets/${chain}:${wallet}/nfts/credentials`;
-    const options = { method: "GET", headers: headers };
+    while (hasMore) {
+        const url = `${baseUrl}/api/v1-alpha1/wallets/${chain}:${wallet}/credential_nfts?perPage=${perPage}&page=${page}`;
+        const options = { method: "GET", headers: headers };
 
-    try {
-        const response = await fetch(url, options);
+        try {
+            const response = await fetch(url, options);
 
-        if (!response.ok) {
-            throw new Error(
-                `HTTP error! status: ${response.status}, responses: ${JSON.stringify(await response.json())}`
-            );
+            if (!response.ok) {
+                throw new Error(
+                    `HTTP error! status: ${response.status}, responses: ${JSON.stringify(await response.json())}`
+                );
+            }
+            const data = (await response.json()) as CrossmintWalletNft[];
+            allData = [...allData, ...data];
+            if (data.length < perPage) {
+                hasMore = false;
+            } else {
+                console.debug(`Got ${data.length} credential nfts from page ${page}`);
+                page++;
+            }
+        } catch (error: any) {
+            console.error(error);
+            throw new Error(`Failed to get credential nfts: ${error.message}`);
         }
-        const data = (await response.json()) as CrossmintWalletNft[];
-        return data;
-    } catch (error: any) {
-        console.error(error);
-        throw new Error(`Failed to get nfts: ${error.message}`);
     }
+
+    return allData;
 }
 
 export function filterVCCompErc721(nfts: CrossmintWalletNft[]): Nft[] {
