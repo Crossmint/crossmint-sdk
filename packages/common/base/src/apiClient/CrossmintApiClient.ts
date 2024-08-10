@@ -25,14 +25,12 @@ export class CrossmintApiClient extends ApiClient {
             internalConfig: CrossmintApiClientInternalConfig;
         }
     ) {
+        super();
+
         const apiKeyValidationResult = validateAPIKey(crossmint.apiKey, internalConfig.apiKeyExpectations);
         if (!apiKeyValidationResult.isValid) {
             throw new Error(apiKeyValidationResult.message);
         }
-        super({
-            "x-api-key": crossmint.apiKey,
-            ...(crossmint.jwt ? { Authorization: `Bearer ${crossmint.jwt}` } : {}),
-        });
         this.parsedAPIKey = apiKeyValidationResult;
         this.internalConfig = internalConfig;
     }
@@ -43,5 +41,12 @@ export class CrossmintApiClient extends ApiClient {
         }
         const baseUrl = environmentToCrossmintBaseURL(this.parsedAPIKey.environment);
         return ApiClient.normalizePath(baseUrl);
+    }
+
+    get authHeaders() {
+        return {
+            "x-api-key": this.crossmint.apiKey,
+            ...(this.crossmint.jwt ? { Authorization: `Bearer ${this.crossmint.jwt}` } : {}),
+        };
     }
 }
