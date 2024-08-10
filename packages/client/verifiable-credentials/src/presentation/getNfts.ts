@@ -3,80 +3,55 @@ import { Nft, isVcChain } from "@/verifiableCredentialsSDK";
 import { crossmintAPI } from "../crossmintAPI";
 import { CrossmintWalletNft } from "../types/nfts";
 
-export async function getWalletNfts(chain: string, wallet: string) {
+async function fetchPaginatedData(url: string): Promise<any[]> {
     let page = 1;
     let hasMore = true;
-    let allData: CrossmintWalletNft[] = [];
+    let allData: any[] = [];
     const perPage = 50;
-
-    const baseUrl = crossmintAPI.getBaseUrl();
     const headers = crossmintAPI.getHeaders();
 
     while (hasMore) {
-        const url = `${baseUrl}/api/v1-alpha1/wallets/${chain}:${wallet}/nfts?perPage=${perPage}&page=${page}`;
+        const paginatedUrl = `${url}?perPage=${perPage}&page=${page}`;
         const options = { method: "GET", headers: headers };
 
         try {
-            const response = await fetch(url, options);
+            const response = await fetch(paginatedUrl, options);
 
             if (!response.ok) {
                 throw new Error(
                     `HTTP error! status: ${response.status}, responses: ${JSON.stringify(await response.json())}`
                 );
             }
-            const data = (await response.json()) as any[];
+            const data = await response.json();
             allData = [...allData, ...data];
             if (data.length < perPage) {
                 hasMore = false;
             } else {
-                console.debug(`Got ${data.length} nfts from page ${page}`);
+                console.debug(`Got ${data.length} items from page ${page}`);
                 page++;
             }
         } catch (error: any) {
             console.error(error);
-            throw new Error(`Failed to get nfts: ${error.message}`);
+            throw new Error(`Failed to fetch data: ${error.message}`);
         }
     }
 
     return allData;
 }
 
-export async function getWalletVCNfts(chain: string, wallet: string): Promise<CrossmintWalletNft[]> {
-    let page = 1;
-    let hasMore = true;
-    let allData: CrossmintWalletNft[] = [];
-    const perPage = 50;
-
+export async function getWalletNfts(chain: string, wallet: string): Promise<CrossmintWalletNft[]> {
     const baseUrl = crossmintAPI.getBaseUrl();
     const headers = crossmintAPI.getHeaders();
+    const url = `${baseUrl}/api/v1-alpha1/wallets/${chain}:${wallet}/nfts`;
 
-    while (hasMore) {
-        const url = `${baseUrl}/api/v1-alpha1/wallets/${chain}:${wallet}/credential_nfts?perPage=${perPage}&page=${page}`;
-        const options = { method: "GET", headers: headers };
+    return (await fetchPaginatedData(url)) as CrossmintWalletNft[];
+}
 
-        try {
-            const response = await fetch(url, options);
+export async function getWalletVCNfts(chain: string, wallet: string): Promise<CrossmintWalletNft[]> {
+    const baseUrl = crossmintAPI.getBaseUrl();
+    const url = `${baseUrl}/api/v1-alpha1/wallets/${chain}:${wallet}/credential_nfts`;
 
-            if (!response.ok) {
-                throw new Error(
-                    `HTTP error! status: ${response.status}, responses: ${JSON.stringify(await response.json())}`
-                );
-            }
-            const data = (await response.json()) as CrossmintWalletNft[];
-            allData = [...allData, ...data];
-            if (data.length < perPage) {
-                hasMore = false;
-            } else {
-                console.debug(`Got ${data.length} credential nfts from page ${page}`);
-                page++;
-            }
-        } catch (error: any) {
-            console.error(error);
-            throw new Error(`Failed to get credential nfts: ${error.message}`);
-        }
-    }
-
-    return allData;
+    return (await fetchPaginatedData(url)) as CrossmintWalletNft[];
 }
 
 export function filterVCCompErc721(nfts: CrossmintWalletNft[]): Nft[] {
