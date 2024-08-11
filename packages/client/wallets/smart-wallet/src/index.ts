@@ -32,7 +32,6 @@ export {
     PasskeyIncompatibleAuthenticatorError,
     ConfigError,
     NonCustodialWalletsNotEnabledError,
-    SmartWalletErrorCode,
 } from "./error";
 
 export { SmartWalletSDK } from "./SmartWalletSDK";

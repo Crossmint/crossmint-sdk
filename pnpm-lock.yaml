@@ -645,6 +645,9 @@ importers:
 
   packages/client/wallets/smart-wallet:
     dependencies:
+      '@crossmint/client-sdk-base':
+        specifier: workspace:*
+        version: link:../../base
       '@crossmint/common-sdk-base':
         specifier: workspace:*
         version: link:../../../common/base
