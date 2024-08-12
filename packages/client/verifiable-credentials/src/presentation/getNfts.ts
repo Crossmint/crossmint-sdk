@@ -3,10 +3,9 @@ import { Nft, isVcChain } from "@/verifiableCredentialsSDK";
 import { crossmintAPI } from "../crossmintAPI";
 import { CrossmintWalletNft } from "../types/nfts";
 
-async function fetchPaginatedData(url: string): Promise<any[]> {
+async function* fetchPaginatedData(url: string): AsyncGenerator<any[]> {
     let page = 1;
     let hasMore = true;
-    let allData: any[] = [];
     const perPage = 50;
     const headers = crossmintAPI.getHeaders();
 
@@ -23,7 +22,7 @@ async function fetchPaginatedData(url: string): Promise<any[]> {
                 );
             }
             const data = await response.json();
-            allData = [...allData, ...data];
+            yield data;
             if (data.length < perPage) {
                 hasMore = false;
             } else {
@@ -35,8 +34,6 @@ async function fetchPaginatedData(url: string): Promise<any[]> {
             throw new Error(`Failed to fetch data: ${error.message}`);
         }
     }
-
-    return allData;
 }
 
 export async function getWalletNfts(chain: string, wallet: string): Promise<CrossmintWalletNft[]> {
@@ -44,14 +41,24 @@ export async function getWalletNfts(chain: string, wallet: string): Promise<Cros
     const headers = crossmintAPI.getHeaders();
     const url = `${baseUrl}/api/v1-alpha1/wallets/${chain}:${wallet}/nfts`;
 
-    return (await fetchPaginatedData(url)) as CrossmintWalletNft[];
+    const allData: CrossmintWalletNft[] = [];
+    for await (const data of fetchPaginatedData(url)) {
+        allData.push(...data);
+    }
+
+    return allData;
 }
 
 export async function getWalletVCNfts(chain: string, wallet: string): Promise<CrossmintWalletNft[]> {
     const baseUrl = crossmintAPI.getBaseUrl();
     const url = `${baseUrl}/api/v1-alpha1/wallets/${chain}:${wallet}/credential_nfts`;
 
-    return (await fetchPaginatedData(url)) as CrossmintWalletNft[];
+    const allData: CrossmintWalletNft[] = [];
+    for await (const data of fetchPaginatedData(url)) {
+        allData.push(...data);
+    }
+
+    return allData;
 }
 
 export function filterVCCompErc721(nfts: CrossmintWalletNft[]): Nft[] {
