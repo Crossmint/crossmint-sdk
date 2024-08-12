@@ -29,7 +29,7 @@ export const PaymentErrors = {
 } as const;
 export type PaymentErrors = (typeof PaymentErrors)[keyof typeof PaymentErrors];
 
-export const SmartWalletErrors = {
+export const SmartWalletErrorCode = {
     TRANSFER: "smart-wallet:transfer",
     SMART_WALLETS_NOT_ENABLED: "smart-wallet:not-enabled",
     USER_WALLET_ALREADY_CREATED: "smart-wallet:user-wallet-already-created",
@@ -42,11 +42,11 @@ export const SmartWalletErrors = {
     PASSKEY_REGISTRATION: "smart-wallet:passkey.registration",
     UNCATEGORIZED: "smart-wallet:uncategorized", // smart wallet specific catch-all error code
 } as const;
-export type SmartWalletErrors = (typeof SmartWalletErrors)[keyof typeof SmartWalletErrors];
+export type SmartWalletErrorCode = (typeof SmartWalletErrorCode)[keyof typeof SmartWalletErrorCode];
 
 export const CrossmintErrors = {
     ...PaymentErrors,
-    ...SmartWalletErrors,
+    ...SmartWalletErrorCode,
     NOT_AUTHORIZED: "not-authorized",
     CROSSMINT_SERVICE: "crossmint-service",
     JWT_EXPIRED: "not-authorized.jwt-expired",
