@@ -1,15 +1,11 @@
 export abstract class ApiClient {
-    #authHeaders?: HeadersInit;
-    constructor(authHeaders?: HeadersInit) {
-        this.#authHeaders = authHeaders;
-    }
-
+    abstract get authHeaders(): HeadersInit;
     abstract get baseUrl(): string;
 
     private async makeRequest(path: string, init: RequestInit) {
         return fetch(this.buildUrl(path), {
             ...init,
-            headers: { ...this.#authHeaders, ...init.headers }, // #authHeaders intentionally first, in case sub class wants to override
+            headers: { ...this.authHeaders, ...init.headers }, // authHeaders intentionally first, in case sub class wants to override
         });
     }
 
