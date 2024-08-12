@@ -35,7 +35,7 @@ export const Header = () => {
                 </div>
             </div>
             {authedUser ? (
-                <div className="flex gap-5">
+                <div className="flex gap-5 items-center">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <div className="flex items-center bg-skeleton rounded-full px-4 py-2 gap-2 cursor-pointer text-secondary-foreground">
@@ -84,7 +84,7 @@ export const Header = () => {
 
                     <Avatar className="h-9 w-9">
                         <AvatarImage alt="User Avatar" src={authedUser?.photoURL ?? ""} />
-                        <AvatarFallback>
+                        <AvatarFallback className="bg-skeleton">
                             <User className="h-5 w-5" />
                         </AvatarFallback>
                     </Avatar>

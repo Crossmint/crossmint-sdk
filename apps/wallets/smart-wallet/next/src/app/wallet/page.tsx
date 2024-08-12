@@ -128,6 +128,7 @@ export default function Index() {
                     </TabsContent>
                     <TabsContent value="tokens">
                         <Typography className="text-base text-primary-foreground p-4">
+                            {/* todo talk to Pablo about UX here */}
                             {"You have no tokens :-("}
                         </Typography>
                     </TabsContent>

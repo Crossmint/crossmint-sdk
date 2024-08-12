@@ -1,5 +1,6 @@
 "use client";
 
+import { Fireworks } from "@/components/fireworks";
 import { GoogleSignInButton } from "@/components/google-signin-button";
 import { MintNFTButton } from "@/components/mint-nft-button";
 import { PoweredByCrossmint } from "@/components/powered-by-crossmint";
@@ -52,6 +53,7 @@ export default function Home() {
                         </div>
                     </div>
 
+                    <Fireworks play={nftSuccessfullyMinted} />
                     {showMintButton && nftSuccessfullyMinted ? (
                         <div className="flex gap-2 items-center self-center min-h-12">
                             <Link
