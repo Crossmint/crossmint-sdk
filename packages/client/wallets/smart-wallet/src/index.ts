@@ -14,14 +14,7 @@ export type {
 export type { TransferType, ERC20TransferType, NFTTransferType, SFTTransferType } from "./types/Tokens";
 
 export {
-    TransferError,
-    CrossmintServiceError,
     SmartWalletError,
-    JWTDecryptionError,
-    JWTExpiredError,
-    JWTIdentifierError,
-    JWTInvalidError,
-    NotAuthorizedError,
     UserWalletAlreadyCreatedError,
     OutOfCreditsError,
     AdminAlreadyUsedError,
@@ -33,5 +26,7 @@ export {
     ConfigError,
     NonCustodialWalletsNotEnabledError,
 } from "./error";
+
+export { SmartWalletErrorCode } from "@crossmint/client-sdk-base";
 
 export { SmartWalletSDK } from "./SmartWalletSDK";

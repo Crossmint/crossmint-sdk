@@ -1,8 +1,6 @@
 import { PasskeyDisplay, SignerDisplay } from "@/types/API";
 
-import { CrossmintErrors, CrossmintSDKError, SmartWalletErrorCode } from "@crossmint/client-sdk-base";
-
-export { SmartWalletErrorCode };
+import { CrossmintErrors, CrossmintSDKError } from "@crossmint/client-sdk-base";
 
 export class SmartWalletError extends CrossmintSDKError {
     constructor(message: string, details?: string, code: CrossmintErrors = CrossmintErrors.UNCATEGORIZED) {
