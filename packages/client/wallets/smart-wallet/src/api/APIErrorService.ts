@@ -18,7 +18,7 @@ export type CrossmintAPIErrorCodes =
     | "ERROR_JWT_EXPIRED"
     | "ERROR_USER_WALLET_ALREADY_CREATED"
     | "ERROR_ADMIN_SIGNER_ALREADY_USED"
-    | "ERROR_PROJECT_SMART_WALLETS_NOT_ENABLED";
+    | "ERROR_PROJECT_NONCUSTODIAL_WALLETS_NOT_ENABLED";
 
 export class APIErrorService {
     constructor(
@@ -31,7 +31,7 @@ export class APIErrorService {
             ERROR_USER_WALLET_ALREADY_CREATED: ({ userId }: { userId: string }) =>
                 new UserWalletAlreadyCreatedError(userId),
             ERROR_ADMIN_SIGNER_ALREADY_USED: () => new AdminAlreadyUsedError(),
-            ERROR_PROJECT_SMART_WALLETS_NOT_ENABLED: () => new SmartWalletsNotEnabledError(),
+            ERROR_PROJECT_NONCUSTODIAL_WALLETS_NOT_ENABLED: () => new SmartWalletsNotEnabledError(),
         }
     ) {}
 
