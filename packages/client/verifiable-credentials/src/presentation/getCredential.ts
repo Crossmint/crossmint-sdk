@@ -90,8 +90,8 @@ export const crossmintRetrievalProcedure: CredentialRetrievalProcedure = {
 /**
  * Service for managing and retrieving verifiable credentials from different sources. By default, it includes procedures for IPFS and Crossmint, but additional procedures can be added by the user.
  *
- * CredentialService().getCredential(collection: CredentialsCollection, tokenId: string) will fetch the credential from the source that matches the storage location of the credential
- * CredentialService().getById(credentialId: string) will fetch the credential from crossmint using the credentialId
+ * - CredentialService().getById(credentialId: string) : Fetches the credential from crossmint using the credentialId.
+ * - CredentialService().getCredential(collection: CredentialsCollection, tokenId: string) : Fetches the credential from the source that matches the storage location of the credential.
  *
  * @remarks
  * To use the Crossmint procedure, a Crossmint API key with the `credentials.read` scope must be set.

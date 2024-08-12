@@ -645,6 +645,9 @@ importers:
       typedoc:
         specifier: 0.26.5
         version: 0.26.5(typescript@5.5.3)
+      typedoc-plugin-frontmatter:
+        specifier: 1.0.0
+        version: 1.0.0(typedoc-plugin-markdown@4.2.3(typedoc@0.26.5(typescript@5.5.3)))
       typedoc-plugin-markdown:
         specifier: 4.2.3
         version: 4.2.3(typedoc@0.26.5(typescript@5.5.3))
@@ -13857,6 +13860,11 @@ packages:
   typedarray@0.0.6:
     resolution: {integrity: sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA==}
 
+  typedoc-plugin-frontmatter@1.0.0:
+    resolution: {integrity: sha512-Mqn96+RjUjPUz/42H8MOp/8eOKjE5MVIgZRFDGmSI2YuggnMZSfh5MMpvd6ykjNTpq7gV5D2iwjqLt8nYRg9rg==}
+    peerDependencies:
+      typedoc-plugin-markdown: '>=4.0.0'
+
   typedoc-plugin-markdown@4.2.3:
     resolution: {integrity: sha512-esucQj79SFYOv0f5XVha7QWdLUH5C5HRlDf7Z8CXzHedmVPn7jox6Gt7FdoBXN8AFxyHpa3Lbuxu65Dobwt+4Q==}
     engines: {node: '>= 18'}
@@ -26611,7 +26619,11 @@ snapshots:
       eslint: 8.57.0
       eslint-import-resolver-node: 0.3.9
       eslint-import-resolver-typescript: 3.6.0(@typescript-eslint/parser@6.7.0(eslint@8.57.0)(typescript@5.4.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.28.1)(eslint@8.57.0)
+<<<<<<< HEAD
       eslint-plugin-import: 2.28.1(@typescript-eslint/parser@6.7.0(eslint@8.57.0)(typescript@5.4.2))(eslint-import-resolver-typescript@3.6.0)(eslint@8.57.0)
+=======
+      eslint-plugin-import: 2.28.1(@typescript-eslint/parser@6.7.0(eslint@8.49.0)(typescript@5.5.3))(eslint@8.57.0)
+>>>>>>> b9da920392b2f4e08fa0d19e8bb8006efdc4cded
       eslint-plugin-jsx-a11y: 6.7.1(eslint@8.57.0)
       eslint-plugin-react: 7.34.4(eslint@8.57.0)
       eslint-plugin-react-hooks: 4.6.0(eslint@8.57.0)
@@ -26742,7 +26754,11 @@ snapshots:
       enhanced-resolve: 5.15.0
       eslint: 8.57.0
       eslint-module-utils: 2.8.0(@typescript-eslint/parser@6.7.0(eslint@8.57.0)(typescript@5.4.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.0(@typescript-eslint/parser@6.7.0(eslint@8.57.0)(typescript@5.4.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.28.1)(eslint@8.57.0))(eslint@8.57.0)
+<<<<<<< HEAD
       eslint-plugin-import: 2.28.1(@typescript-eslint/parser@6.7.0(eslint@8.57.0)(typescript@5.4.2))(eslint-import-resolver-typescript@3.6.0)(eslint@8.57.0)
+=======
+      eslint-plugin-import: 2.28.1(@typescript-eslint/parser@6.7.0(eslint@8.49.0)(typescript@5.5.3))(eslint@8.57.0)
+>>>>>>> b9da920392b2f4e08fa0d19e8bb8006efdc4cded
       fast-glob: 3.3.1
       get-tsconfig: 4.7.0
       is-core-module: 2.13.1
@@ -26919,6 +26935,7 @@ snapshots:
       - eslint-import-resolver-webpack
       - supports-color
 
+<<<<<<< HEAD
   eslint-plugin-import@2.28.1(@typescript-eslint/parser@6.7.0(eslint@8.57.0)(typescript@5.4.2))(eslint-import-resolver-typescript@3.6.0)(eslint@8.57.0):
     dependencies:
       array-includes: 3.1.7
@@ -26946,6 +26963,8 @@ snapshots:
       - eslint-import-resolver-webpack
       - supports-color
 
+=======
+>>>>>>> b9da920392b2f4e08fa0d19e8bb8006efdc4cded
   eslint-plugin-jest@25.7.0(@typescript-eslint/eslint-plugin@5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.3.3))(eslint@8.57.0)(typescript@5.3.3))(eslint@8.57.0)(jest@27.5.1(bufferutil@4.0.7)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.3.3))(utf-8-validate@5.0.10))(typescript@5.3.3):
     dependencies:
       '@typescript-eslint/experimental-utils': 5.62.0(eslint@8.57.0)(typescript@5.3.3)
@@ -35031,6 +35050,11 @@ snapshots:
       is-typedarray: 1.0.0
 
   typedarray@0.0.6: {}
+
+  typedoc-plugin-frontmatter@1.0.0(typedoc-plugin-markdown@4.2.3(typedoc@0.26.5(typescript@5.5.3))):
+    dependencies:
+      typedoc-plugin-markdown: 4.2.3(typedoc@0.26.5(typescript@5.5.3))
+      yaml: 2.4.5
 
   typedoc-plugin-markdown@4.2.3(typedoc@0.26.5(typescript@5.5.3)):
     dependencies:

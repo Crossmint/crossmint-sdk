@@ -40,6 +40,7 @@
     "devDependencies": {
         "@crossmint/client-sdk-base": "workspace:*",
         "typedoc": "0.26.5",
+        "typedoc-plugin-frontmatter": "1.0.0",
         "typedoc-plugin-markdown": "4.2.3"
     }
 }
