@@ -23,9 +23,9 @@ export const Header = () => {
         router.push("/");
     };
 
-    if (jwt == null) {
-        router.push("/");
-    }
+    // if (jwt == null) {
+    //     router.push("/");
+    // }
 
     return (
         <div className="flex justify-between p-6 items-center">

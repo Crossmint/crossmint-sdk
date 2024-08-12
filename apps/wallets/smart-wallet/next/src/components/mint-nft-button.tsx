@@ -1,3 +1,5 @@
+"use client";
+
 import { mintNFT } from "@/utils/mint-api";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";

@@ -1,14 +1,11 @@
 "use client";
 
-import { GoogleIcon } from "@/icons/google";
-import { useEffect } from "react";
-
 import { useAuth } from "@crossmint/client-sdk-auth-core";
 
 import { Button } from "./button";
 import { Typography } from "./typography";
 
-export const GoogleSignInButton = () => {
+export const SignInAuthButton = () => {
     const { jwt, login } = useAuth();
 
     if (jwt != null) {
@@ -40,7 +37,7 @@ export const GoogleSignInButton = () => {
         <Button
             className="bg-card text-[#00150D] font-semibold text-[17px] gap-2 shadow-light rounded-xl"
             onClick={login}
-            disabled={jwt != null}
+            // disabled={jwt != null}
         >
             Sign in
         </Button>

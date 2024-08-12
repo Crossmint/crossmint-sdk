@@ -1,8 +1,8 @@
 "use client";
 
-import { GoogleSignInButton } from "@/components/google-signin-button";
 import { MintNFTButton } from "@/components/mint-nft-button";
 import { PoweredByCrossmint } from "@/components/powered-by-crossmint";
+import { SignInAuthButton } from "@/components/signin-auth-button";
 import { Typography } from "@/components/typography";
 import { useToast } from "@/components/use-toast";
 import Link from "next/link";
@@ -62,7 +62,7 @@ export default function Home() {
                         </div>
                     ) : null}
                     {showMintButton && !nftSuccessfullyMinted ? <MintNFTButton /> : null}
-                    {!showMintButton && !nftSuccessfullyMinted ? <GoogleSignInButton /> : null}
+                    {!showMintButton && !nftSuccessfullyMinted ? <SignInAuthButton /> : null}
 
                     <PoweredByCrossmint />
                 </div>
