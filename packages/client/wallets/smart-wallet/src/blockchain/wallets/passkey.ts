@@ -3,11 +3,17 @@ import { type PasskeySignerData, displayPasskey } from "@/types/API";
 import type { PasskeySigner, UserParams, WalletParams } from "@/types/Config";
 import type { AccountAndSigner, PasskeyValidatorSerializedData, WalletCreationParams } from "@/types/internal";
 import { PasskeyValidatorContractVersion, WebAuthnMode, toPasskeyValidator } from "@zerodev/passkey-validator";
-import { type KernelValidator, createKernelAccount } from "@zerodev/sdk";
-import { WebAuthnKey, toWebAuthnKey } from "@zerodev/webauthn-key";
+import { type KernelSmartAccount, type KernelValidator, createKernelAccount } from "@zerodev/sdk";
+import { type WebAuthnKey, toWebAuthnKey } from "@zerodev/webauthn-key";
+import type { SmartAccount } from "permissionless/accounts";
 import type { EntryPoint } from "permissionless/types/entrypoint";
 
-import { PasskeyMismatchError } from "../../error";
+import {
+    PasskeyIncompatibleAuthenticatorError,
+    PasskeyMismatchError,
+    PasskeyPromptError,
+    PasskeyRegistrationError,
+} from "../../error";
 
 export interface PasskeyWalletParams extends WalletCreationParams {
     walletParams: WalletParams & { signer: PasskeySigner };
@@ -20,7 +26,6 @@ export function isPasskeyParams(params: WalletCreationParams): params is Passkey
 type PasskeyValidator = KernelValidator<EntryPoint, "WebAuthnValidator"> & {
     getSerializedData: () => string;
 };
-
 export class PasskeyAccountService {
     constructor(private readonly crossmintService: CrossmintWalletService) {}
 
@@ -36,28 +41,32 @@ export class PasskeyAccountService {
             );
         }
 
-        const passkey = await this.getPasskey(user, inputPasskeyName, existingSignerConfig);
+        try {
+            const passkey = await this.getPasskey(user, inputPasskeyName, existingSignerConfig);
 
-        const latestValidatorVersion = PasskeyValidatorContractVersion.V0_0_2;
-        const validatorContractVersion =
-            existingSignerConfig == null ? latestValidatorVersion : existingSignerConfig.validatorContractVersion;
-        const validator = await toPasskeyValidator(publicClient, {
-            webAuthnKey: passkey,
-            entryPoint: entryPoint.address,
-            validatorContractVersion,
-            kernelVersion,
-        });
+            const latestValidatorVersion = PasskeyValidatorContractVersion.V0_0_2;
+            const validatorContractVersion =
+                existingSignerConfig == null ? latestValidatorVersion : existingSignerConfig.validatorContractVersion;
+            const validator = await toPasskeyValidator(publicClient, {
+                webAuthnKey: passkey,
+                entryPoint: entryPoint.address,
+                validatorContractVersion,
+                kernelVersion,
+            });
 
-        const kernelAccount = await createKernelAccount(publicClient, {
-            plugins: { sudo: validator },
-            entryPoint: entryPoint.address,
-            kernelVersion,
-        });
+            const kernelAccount = await createKernelAccount(publicClient, {
+                plugins: { sudo: validator },
+                entryPoint: entryPoint.address,
+                kernelVersion,
+            });
 
-        return {
-            signerData: this.getSignerData(validator, validatorContractVersion, inputPasskeyName),
-            account: kernelAccount,
-        };
+            return {
+                signerData: this.getSignerData(validator, validatorContractVersion, inputPasskeyName),
+                account: this.decorate(kernelAccount, inputPasskeyName),
+            };
+        } catch (error) {
+            throw this.mapError(error, inputPasskeyName);
+        }
     }
 
     private async getPasskey(
@@ -102,6 +111,52 @@ export class PasskeyAccountService {
             Authorization: `Bearer ${user.jwt}`,
         };
     }
+
+    private mapError(error: any, passkeyName: string) {
+        if (error.code === 0 && error.name === "DataError") {
+            return new PasskeyIncompatibleAuthenticatorError(passkeyName);
+        }
+
+        if (error.message === "Registration not verified") {
+            return new PasskeyRegistrationError(passkeyName);
+        }
+
+        if (error.code === "ERROR_PASSTHROUGH_SEE_CAUSE_PROPERTY" && error.name === "NotAllowedError") {
+            return new PasskeyPromptError(passkeyName);
+        }
+
+        return error;
+    }
+
+    private decorate<Account extends KernelSmartAccount<EntryPoint>>(account: Account, passkeyName: string): Account {
+        return new Proxy(account, {
+            get: (target, prop, receiver) => {
+                const original = Reflect.get(target, prop, receiver);
+                if (typeof original !== "function" || typeof prop !== "string" || !isAccountSigningMethod(prop)) {
+                    return original;
+                }
+
+                return async (...args: any[]) => {
+                    try {
+                        return await original.call(target, ...args);
+                    } catch (error) {
+                        throw this.mapError(error, passkeyName);
+                    }
+                };
+            },
+        });
+    }
+}
+
+const accountSigningMethods = [
+    "signMessage",
+    "signTypedData",
+    "signUserOperation",
+    "signTransaction",
+] as const satisfies readonly (keyof SmartAccount<EntryPoint>)[];
+
+function isAccountSigningMethod(method: string): method is (typeof accountSigningMethods)[number] {
+    return accountSigningMethods.includes(method as any);
 }
 
 const deserializePasskeyValidatorData = (params: string) => {

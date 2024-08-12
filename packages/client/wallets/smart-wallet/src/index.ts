@@ -1,4 +1,4 @@
-export { blockchainToChainId } from "@crossmint/common-sdk-base";
+export { blockchainToChainId, EVMBlockchainIncludingTestnet as Chain } from "@crossmint/common-sdk-base";
 
 export { EVMSmartWallet } from "./blockchain/wallets/EVMSmartWallet";
 
@@ -12,12 +12,11 @@ export type {
 } from "./types/Config";
 
 export type { TransferType, ERC20TransferType, NFTTransferType, SFTTransferType } from "./types/Tokens";
-export { SmartWalletChain } from "./blockchain/chains";
 
 export {
     TransferError,
     CrossmintServiceError,
-    SmartWalletSDKError,
+    SmartWalletError,
     JWTDecryptionError,
     JWTExpiredError,
     JWTIdentifierError,
@@ -28,8 +27,12 @@ export {
     AdminAlreadyUsedError,
     AdminMismatchError,
     PasskeyMismatchError,
+    PasskeyPromptError,
+    PasskeyRegistrationError,
+    PasskeyIncompatibleAuthenticatorError,
     ConfigError,
     NonCustodialWalletsNotEnabledError,
+    SmartWalletErrorCode,
 } from "./error";
 
 export { SmartWalletSDK } from "./SmartWalletSDK";

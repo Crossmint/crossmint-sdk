@@ -8,6 +8,7 @@ import { HandshakeParent } from "../handshake/Parent";
 export interface PopupWindowOptions {
     width: number;
     height: number;
+    crossOrigin?: boolean;
 }
 
 export class PopupWindow<IncomingEvents extends EventMap, OutgoingEvents extends EventMap> extends HandshakeParent<
@@ -36,7 +37,11 @@ export class PopupWindow<IncomingEvents extends EventMap, OutgoingEvents extends
 }
 
 async function createPopup(url: string, options: PopupWindowOptions): Promise<Window> {
-    const _window = window.open(url, "popupWindow", createPopupString(options.width, options.height));
+    const _window = window.open(
+        url,
+        "popupWindow",
+        createPopupString(options.width, options.height, options?.crossOrigin || false)
+    );
     if (!_window) {
         throw new Error("Failed to open popup window");
     }
@@ -47,8 +52,8 @@ async function createPopup(url: string, options: PopupWindowOptions): Promise<Wi
     });
 }
 
-function createPopupString(width: number, height: number): string {
-    const createPopupStrategy = new CreatePopupStrategy();
+function createPopupString(width: number, height: number, crossOrigin: boolean): string {
+    const createPopupStrategy = new CreatePopupStrategy(crossOrigin);
 
     // In newer versions of chrome (>99) you need to add the `popup=true` for the new window to actually open in a popup
     const chromeVersion = getChromeVersion();

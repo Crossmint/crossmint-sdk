@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { AppContext } from "../../AppContext";
 import Button from "../../components/button/Button";
 import { createPasskeyWallet } from "../../utils/createAAWallet/createPasskeyWallet";
+import { createViemAAWallet } from "../../utils/createAAWallet/createViemWallet";
 import { mintNFT } from "../../utils/mintApi";
 
 export const Mint = () => {
@@ -14,7 +15,11 @@ export const Mint = () => {
     const { value, isProd, setIsAuthenticated, setValue } = useContext(AppContext);
 
     const createAndSetAAWallet = async () => {
-        const account = await createPasskeyWallet(isProd);
+        const testAccountPrivateKey = localStorage.getItem("testAccountPrivateKey") as `0x${string}` | null;
+        const account = testAccountPrivateKey
+            ? await createViemAAWallet(isProd, testAccountPrivateKey)
+            : await createPasskeyWallet(isProd);
+
         setIsAuthenticated(true);
         localStorage.setItem("isUserConnected", "true");
         setValue(account);

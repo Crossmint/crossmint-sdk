@@ -3,15 +3,15 @@ import { DatadogProvider } from "@/services/logging/DatadogProvider";
 import { SDK_VERSION } from "@/utils/constants";
 import { BaseError, stringify } from "viem";
 
-import { SmartWalletSDKError } from ".";
+import { SmartWalletError } from ".";
 
 export class ErrorProcessor {
     constructor(private readonly logger: DatadogProvider) {}
 
-    public map(error: unknown, fallback: SmartWalletSDKError): SmartWalletSDKError | BaseError {
+    public map(error: unknown, fallback: SmartWalletError): SmartWalletError | BaseError {
         this.record(error);
 
-        if (error instanceof SmartWalletSDKError) {
+        if (error instanceof SmartWalletError) {
             return error;
         }
 

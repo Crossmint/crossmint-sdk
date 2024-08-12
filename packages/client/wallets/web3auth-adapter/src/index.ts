@@ -18,7 +18,7 @@ import {
 } from "./networks";
 
 export type { TORUS_NETWORK_TYPE } from "@web3auth/single-factor-auth";
-export { EVMBlockchainIncludingTestnet as Blockchain } from "@crossmint/common-sdk-base";
+export { EVMBlockchainIncludingTestnet as Chain } from "@crossmint/common-sdk-base";
 export type Web3AuthSignerParams = {
     clientId: string;
     verifierId: string;

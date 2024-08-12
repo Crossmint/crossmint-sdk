@@ -1,10 +1,10 @@
-import { mnemonicToAccount } from "viem/accounts";
+import { privateKeyToAccount } from "viem/accounts";
 
-import { Blockchain, SmartWalletSDK, ViemAccount } from "@crossmint/client-sdk-aa-passkeys-beta";
+import { Chain, SmartWalletSDK, ViemAccount } from "@crossmint/client-sdk-smart-wallet";
 
-import { checkAuthState, parseToken, signInWithGoogle } from "../../auth/FirebaseAuthManager";
+import { checkAuthState, signInWithGoogle } from "../../auth/FirebaseAuthManager";
 
-export const createViemAAWallet = async (isProd: boolean) => {
+export const createViemAAWallet = async (isProd: boolean, privateKey: `0x${string}`) => {
     let jwt = await checkAuthState();
 
     if (!jwt) {
@@ -15,8 +15,6 @@ export const createViemAAWallet = async (isProd: boolean) => {
         throw new Error("No JWT token found");
     }
 
-    const { email } = parseToken(jwt);
-
     const xm = isProd
         ? SmartWalletSDK.init({
               clientApiKey: process.env.REACT_APP_CROSSMINT_API_KEY_PROD || "",
@@ -25,27 +23,13 @@ export const createViemAAWallet = async (isProd: boolean) => {
               clientApiKey: process.env.REACT_APP_CROSSMINT_API_KEY_STG || "",
           });
 
-    let mnemonic = localStorage.getItem(`mnemonic-${email}`);
-
-    if (!mnemonic) {
-        try {
-            mnemonic = "legal winner thank year wave sausage worth useful legal winner thank yellow";
-            localStorage.setItem(`mnemonic-${email}`, mnemonic);
-        } catch (error) {
-            console.error("Error generating mnemonic:", error);
-            throw error;
-        }
-    }
-
-    const account = mnemonicToAccount(mnemonic) as any;
     // NOTE: Do NOT do this in production. This is just for demo purposes.
     // Proper storage of private key material is critical.
     // Crossmint supports several secure signer options, documented later in the guide.
-
     const signer: ViemAccount = {
         type: "VIEM_ACCOUNT",
-        account,
+        account: privateKeyToAccount(privateKey) as unknown as ViemAccount["account"],
     };
-    const chain = isProd ? Blockchain.POLYGON : Blockchain.POLYGON_AMOY;
+    const chain = isProd ? Chain.POLYGON : Chain.POLYGON_AMOY;
     return await xm.getOrCreateWallet({ jwt }, chain, { signer });
 };

@@ -11,7 +11,7 @@ import type { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import {
     AdminMismatchError,
     CrossmintServiceError,
-    SmartWalletSDKError,
+    SmartWalletError,
     UserWalletAlreadyCreatedError,
 } from "../../error";
 import type { EntryPointDetails, UserParams, WalletParams } from "../../types/Config";
@@ -85,7 +85,13 @@ export class SmartWalletService {
             chain: viemNetworks[chain],
             entryPoint: account.entryPoint,
             bundlerTransport: http(getBundlerRPC(chain)),
-            ...(usePaymaster(chain) && paymasterMiddleware({ entryPoint: account.entryPoint, chain })),
+            ...(usePaymaster(chain) &&
+                paymasterMiddleware({
+                    entryPoint: account.entryPoint,
+                    chain,
+                    walletService: this.crossmintWalletService,
+                    user,
+                })),
         });
 
         const smartAccountClient = this.clientDecorator.decorate({
@@ -110,7 +116,7 @@ export class SmartWalletService {
             await this.crossmintWalletService.getSmartWalletConfig(user, chain);
 
         if (!isSupportedKernelVersion(kernelVersion)) {
-            throw new SmartWalletSDKError(
+            throw new SmartWalletError(
                 `Unsupported kernel version. Supported versions: ${SUPPORTED_KERNEL_VERSIONS.join(
                     ", "
                 )}. Version used: ${kernelVersion}, Please contact support`
@@ -118,7 +124,7 @@ export class SmartWalletService {
         }
 
         if (!isSupportedEntryPointVersion(entryPointVersion)) {
-            throw new SmartWalletSDKError(
+            throw new SmartWalletError(
                 `Unsupported entry point version. Supported versions: ${SUPPORTED_ENTRYPOINT_VERSIONS.join(
                     ", "
                 )}. Version used: ${entryPointVersion}. Please contact support`
@@ -129,7 +135,7 @@ export class SmartWalletService {
             (entryPointVersion === "v0.7" && kernelVersion.startsWith("0.2")) ||
             (entryPointVersion === "v0.6" && kernelVersion.startsWith("0.3"))
         ) {
-            throw new SmartWalletSDKError(
+            throw new SmartWalletError(
                 `Unsupported combination: entryPoint ${entryPointVersion} and kernel version ${kernelVersion}. Please contact support`
             );
         }

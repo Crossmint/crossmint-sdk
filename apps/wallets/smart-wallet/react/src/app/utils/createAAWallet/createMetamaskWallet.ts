@@ -1,6 +1,6 @@
 import { EIP1193Provider } from "viem";
 
-import { Blockchain, SmartWalletSDK } from "@crossmint/client-sdk-aa-passkeys-beta";
+import { Chain, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
 
 type WindowWithEthereum = Window & {
     ethereum: EIP1193Provider;
@@ -23,7 +23,7 @@ export const createMetamaskAAWallet = async (isProd: boolean) => {
                   clientApiKey: process.env.REACT_APP_CROSSMINT_API_KEY_STG || "",
               });
 
-        return await xm.getOrCreateWallet(userIdentifier, isProd ? Blockchain.POLYGON : Blockchain.POLYGON_AMOY, {
+        return await xm.getOrCreateWallet(userIdentifier, isProd ? Chain.POLYGON : Chain.POLYGON_AMOY, {
             signer: window.ethereum as any,
         });
     } catch (error) {

@@ -6,20 +6,8 @@ interface CreatePopupService {
 export class CreatePopupStrategy {
     protected createPopupService: CreatePopupService;
 
-    constructor() {
-        this.createPopupService = this.isCrossmintOrigin()
-            ? new CrossmintPopupService()
-            : new CrossOriginPopupService();
-    }
-
-    private isCrossmintOrigin(): boolean {
-        try {
-            const url = new URL(window.location.origin);
-            return url.hostname.endsWith("crossmint.com");
-        } catch (e) {
-            console.error("Invalid URL", e);
-            return false;
-        }
+    constructor(crossOrigin: boolean) {
+        this.createPopupService = crossOrigin ? new CrossOriginPopupService() : new CrossmintPopupService();
     }
 
     getTop(height: number): number {
