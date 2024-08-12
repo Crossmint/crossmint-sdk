@@ -38,7 +38,6 @@ async function* fetchPaginatedData(url: string): AsyncGenerator<any[]> {
 
 export async function getWalletNfts(chain: string, wallet: string): Promise<CrossmintWalletNft[]> {
     const baseUrl = crossmintAPI.getBaseUrl();
-    const headers = crossmintAPI.getHeaders();
     const url = `${baseUrl}/api/v1-alpha1/wallets/${chain}:${wallet}/nfts`;
 
     const allData: CrossmintWalletNft[] = [];
