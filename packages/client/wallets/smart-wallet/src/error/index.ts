@@ -188,7 +188,7 @@ export class SmartWalletsNotEnabledError extends ConfigError {
     public readonly code = SmartWalletErrorCode.SMART_WALLETS_NOT_ENABLED;
     constructor() {
         super(
-            "Smart wallets are not enabled for this project, they can be enabled on the project settings page in the developer console."
+            "Smart wallets are not enabled for this project. They can be enabled on the project settings page in the developer console."
         );
     }
 }
