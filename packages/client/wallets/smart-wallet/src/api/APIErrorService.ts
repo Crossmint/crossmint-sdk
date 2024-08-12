@@ -1,15 +1,18 @@
 import {
     AdminAlreadyUsedError,
-    CrossmintServiceError,
-    JWTDecryptionError,
-    JWTExpiredError,
-    JWTIdentifierError,
-    JWTInvalidError,
     NonCustodialWalletsNotEnabledError,
     OutOfCreditsError,
     SmartWalletError,
     UserWalletAlreadyCreatedError,
 } from "@/error";
+
+import {
+    CrossmintServiceError,
+    JWTDecryptionError,
+    JWTExpiredError,
+    JWTIdentifierError,
+    JWTInvalidError,
+} from "@crossmint/client-sdk-base";
 
 export type CrossmintAPIErrorCodes =
     | "ERROR_JWT_INVALID"
@@ -22,7 +25,7 @@ export type CrossmintAPIErrorCodes =
 
 export class APIErrorService {
     constructor(
-        private errors: Partial<Record<CrossmintAPIErrorCodes, (apiResponse: any) => SmartWalletError>> = {
+        private errors: Record<CrossmintAPIErrorCodes, (apiResponse: any) => SmartWalletError> = {
             ERROR_JWT_INVALID: () => new JWTInvalidError(),
             ERROR_JWT_DECRYPTION: () => new JWTDecryptionError(),
             ERROR_JWT_EXPIRED: ({ expiredAt }: { expiredAt: string }) => new JWTExpiredError(new Date(expiredAt)),

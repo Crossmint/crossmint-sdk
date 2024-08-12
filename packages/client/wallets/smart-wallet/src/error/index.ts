@@ -1,30 +1,12 @@
 import { PasskeyDisplay, SignerDisplay } from "@/types/API";
 
-import { CrossmintErrors } from "@crossmint/client-sdk-base";
+import { CrossmintErrors, CrossmintSDKError, SmartWalletErrorCode } from "@crossmint/client-sdk-base";
 
-export class SmartWalletError extends Error {
-    public readonly code: CrossmintErrors;
-    public readonly details?: string;
+export { SmartWalletErrorCode };
 
+export class SmartWalletError extends CrossmintSDKError {
     constructor(message: string, details?: string, code: CrossmintErrors = CrossmintErrors.UNCATEGORIZED) {
-        super(message);
-        this.details = details;
-        this.code = code;
-    }
-}
-
-export class TransferError extends SmartWalletError {
-    constructor(message: string) {
-        super(message, undefined, CrossmintErrors.TRANSFER);
-    }
-}
-
-export class CrossmintServiceError extends SmartWalletError {
-    public status?: number;
-
-    constructor(message: string, status?: number) {
-        super(message, undefined, CrossmintErrors.CROSSMINT_SERVICE);
-        this.status = status;
+        super(message, code, details);
     }
 }
 
@@ -50,47 +32,12 @@ export class PasskeyMismatchError extends SmartWalletError {
     }
 }
 
-export class NotAuthorizedError extends SmartWalletError {
-    constructor(message: string) {
-        super(message, undefined, CrossmintErrors.NOT_AUTHORIZED);
-    }
-}
-
-export class JWTExpiredError extends NotAuthorizedError {
-    public readonly code = CrossmintErrors.JWT_EXPIRED;
-
-    /**
-     * The expiry time of the JWT as an ISO 8601 timestamp.
-     */
-    public readonly expiredAt: string;
-
-    constructor(expiredAt: Date) {
-        super(`JWT provided expired at timestamp ${expiredAt}`);
-        this.expiredAt = expiredAt.toISOString();
-    }
-}
-
-export class JWTInvalidError extends NotAuthorizedError {
-    public readonly code = CrossmintErrors.JWT_INVALID;
+export class OutOfCreditsError extends CrossmintSDKError {
     constructor() {
-        super("Invalid JWT provided");
-    }
-}
-
-export class JWTDecryptionError extends NotAuthorizedError {
-    public readonly code = CrossmintErrors.JWT_DECRYPTION;
-    constructor() {
-        super("Error decrypting JWT");
-    }
-}
-
-export class JWTIdentifierError extends NotAuthorizedError {
-    public readonly code = CrossmintErrors.JWT_IDENTIFIER;
-    public readonly identifierKey: string;
-
-    constructor(identifierKey: string) {
-        super(`Missing required identifier '${identifierKey}' in the JWT`);
-        this.identifierKey = identifierKey;
+        super(
+            "You've run out of Crossmint API credits. Visit https://docs.crossmint.com/docs/errors for more information",
+            CrossmintErrors.OUT_OF_CREDITS
+        );
     }
 }
 
@@ -138,16 +85,6 @@ export class PasskeyIncompatibleAuthenticatorError extends SmartWalletError {
             CrossmintErrors.PASSKEY_INCOMPATIBLE_AUTHENTICATOR
         );
         this.passkeyName = passkeyName;
-    }
-}
-
-export class OutOfCreditsError extends SmartWalletError {
-    constructor(message?: string) {
-        super(
-            "You've run out of Crossmint API credits. Visit https://docs.crossmint.com/docs/errors for more information",
-            undefined,
-            CrossmintErrors.OUT_OF_CREDITS
-        );
     }
 }
 
