@@ -34,6 +34,7 @@ describe("VerifiableCredentialSignatureService", () => {
     it("should throw error for invalid issuer DID", async () => {
         const mockCredential: VerifiableCredential = {
             issuer: { id: "invalidDID" },
+            proof: {},
         } as any;
 
         (await expect(service.verify(mockCredential)).rejects.toThrow(
@@ -47,5 +48,14 @@ describe("VerifiableCredentialSignatureService", () => {
         } as any;
 
         await expect(service.verify(mockCredential)).rejects.toThrow("No proof associated with credential");
+    });
+
+    it("should throw error for tampered issuer address", async () => {
+        const mockCredential: VerifiableCredential = {
+            issuer: { id: "did:chain:address" },
+            proof: {},
+        } as any;
+
+        await expect(service.verify(mockCredential)).rejects.toThrow("Malformed issuer address");
     });
 });

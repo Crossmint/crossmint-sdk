@@ -5,9 +5,9 @@ import {
     JWTExpiredError,
     JWTIdentifierError,
     JWTInvalidError,
-    NonCustodialWalletsNotEnabledError,
     OutOfCreditsError,
     SmartWalletError,
+    SmartWalletsNotEnabledError,
     UserWalletAlreadyCreatedError,
 } from "@/error";
 
@@ -31,7 +31,7 @@ export class APIErrorService {
             ERROR_USER_WALLET_ALREADY_CREATED: ({ userId }: { userId: string }) =>
                 new UserWalletAlreadyCreatedError(userId),
             ERROR_ADMIN_SIGNER_ALREADY_USED: () => new AdminAlreadyUsedError(),
-            ERROR_PROJECT_NONCUSTODIAL_WALLETS_NOT_ENABLED: () => new NonCustodialWalletsNotEnabledError(),
+            ERROR_PROJECT_NONCUSTODIAL_WALLETS_NOT_ENABLED: () => new SmartWalletsNotEnabledError(),
         }
     ) {}
 

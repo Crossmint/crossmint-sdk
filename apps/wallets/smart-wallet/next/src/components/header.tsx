@@ -64,8 +64,8 @@ export const Header = () => {
                                     </Typography>
                                 </div>
                                 <Avatar className="h-9 w-9">
-                                    <AvatarImage alt="User Avatar" src={""} />
-                                    <AvatarFallback>
+                                    <AvatarImage alt="User Avatar" src="" />
+                                    <AvatarFallback className="bg-skeleton">
                                         <User className="h-5 w-5" />
                                     </AvatarFallback>
                                 </Avatar>

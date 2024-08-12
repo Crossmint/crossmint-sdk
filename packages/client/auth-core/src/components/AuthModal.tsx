@@ -37,7 +37,7 @@ export default function AuthModal({
     baseUrl: string;
 }) {
     console.log("Attempting to render auth modal");
-    const iframeSrc = `${baseUrl}/sdk/auth/frame?api_key=${apiKey}`;
+    const iframeSrc = `${baseUrl}/sdk/auth/frame?apiKey=${apiKey}`;
     const iframeRef = useRef<HTMLIFrameElement | null>(null);
     const [iframe, setIframe] = useState<IFrameWindow<
         IncomingModalIframeEventsType,

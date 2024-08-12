@@ -11,9 +11,23 @@ import type {
 
 import { crossmintAPI } from "../crossmintAPI";
 
+/**
+ * Service for retrieving credentials from Crossmint.
+ *
+ * This class handles fetching verifiable credentials from the Crossmint API using either a credential ID or a locator.
+ */
 export class CrossmintCredentialRetrieval {
     constructor() {}
 
+    /**
+     * Fetches a verifiable credential from Crossmint based on a given query.
+     *
+     * @param query - An object containing either `credentialId` or `locator` to specify the credential to retrieve.
+     * @returns A promise that resolves to a `VerifiableCredentialType`, which could be either an `EncryptedVerifiableCredential` or a `VerifiableCredential`.
+     *
+     * @throws Will throw an error if neither `credentialId` nor `locator` is provided, or if both are provided.
+     * @throws Will throw an error if the HTTP request fails or the response is invalid.
+     */
     async getCredential(query: { credentialId?: string; locator?: string }): Promise<VerifiableCredentialType> {
         const baseUrl = crossmintAPI.getBaseUrl();
         const headers = crossmintAPI.getHeaders();
@@ -58,6 +72,14 @@ export class CrossmintCredentialRetrieval {
     }
 }
 
+/**
+ * Crossmint retrieval procedure for credentials stored in Crossmint.
+ *
+ * This procedure uses the Crossmint API to fetch credentials and matches all credentials that are stored in Crossmint.
+ *
+ * @remarks
+ * This procedure requires a Crossmint API key with the `credentials.read` scope.
+ */
 export const crossmintRetrievalProcedure: CredentialRetrievalProcedure = {
     endpointCondition: (endpoint: string) => endpoint.includes("crossmint"),
     procedure: async ({ locator }: { locator: string; retrievalPath: string }) => {
@@ -65,11 +87,28 @@ export const crossmintRetrievalProcedure: CredentialRetrievalProcedure = {
     },
 };
 
+/**
+ * Service for managing and retrieving verifiable credentials from different sources. By default, it includes procedures for IPFS and Crossmint, but additional procedures can be added by the user.
+ *
+ * - CredentialService().getById(credentialId: string) : Fetches the credential from crossmint using the credentialId.
+ * - CredentialService().getCredential(collection: CredentialsCollection, tokenId: string) : Fetches the credential from the source that matches the storage location of the credential.
+ *
+ * @remarks
+ * To use the Crossmint procedure, a Crossmint API key with the `credentials.read` scope must be set.
+ */
 export class CredentialService extends CredentialServiceRaw {
     constructor(retrievalProcedures = [ipfsRetrievalProcedure, crossmintRetrievalProcedure]) {
         super(retrievalProcedures);
     }
 
+    /**
+     * Retrieves a verifiable credential from Crossmint using its credential ID.
+     *
+     * @param credentialId - The ID of the credential to retrieve.
+     * @returns A promise that resolves to a `VerifiableCredentialType` or `null` if the credential is not found.
+     *
+     * @throws Will throw an error if the credential retrieval fails.
+     */
     async getById(credentialId: string): Promise<VerifiableCredentialType | null> {
         return await new CrossmintCredentialRetrieval().getCredential({ credentialId });
     }

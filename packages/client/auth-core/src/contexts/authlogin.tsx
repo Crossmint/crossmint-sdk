@@ -51,6 +51,11 @@ export function AuthProvider({ children, apiKey, environment, embeddedWallets }:
     const smartWalletSDK = useMemo(() => SmartWalletSDK.init({ clientApiKey: apiKey }), undefined);
 
     const login = () => {
+        if (jwtToken) {
+            console.log("User already logged in");
+            return;
+        }
+
         setModalOpen(true);
     };
 
