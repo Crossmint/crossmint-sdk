@@ -1,4 +1,3 @@
-import type { CrossmintWalletService } from "@/api/CrossmintWalletService";
 import { type PasskeySignerData } from "@/types/API";
 import type { UserParams } from "@/types/Config";
 import type { AccountAndSigner, PasskeyCreationParams, PasskeyValidatorSerializedData } from "@/types/internal";
@@ -13,16 +12,17 @@ import {
     PasskeyMismatchError,
     PasskeyPromptError,
     PasskeyRegistrationError,
-} from "../../error";
-import { PasskeySignerConfig } from "./account/signer";
+} from "../../../error";
+import { PasskeySignerConfig } from "./signer";
+import { AccountCreationStrategy } from "./strategy";
 
 type PasskeyValidator = KernelValidator<EntryPoint, "WebAuthnValidator"> & {
     getSerializedData: () => string;
 };
-export class PasskeyAccountService {
-    constructor(private readonly crossmintService: CrossmintWalletService) {}
+export class PasskeyCreationStrategy implements AccountCreationStrategy {
+    constructor(private readonly passkeyServerUrl: string, private readonly apiKey: string) {}
 
-    public async get({
+    public async create({
         user,
         publicClient,
         walletParams,
@@ -84,7 +84,7 @@ export class PasskeyAccountService {
 
         return toWebAuthnKey({
             passkeyName,
-            passkeyServerUrl: this.crossmintService.getPasskeyServerUrl(),
+            passkeyServerUrl: this.passkeyServerUrl,
             mode: WebAuthnMode.Register,
             passkeyServerHeaders: this.createPasskeysServerHeaders(user),
         });
@@ -106,7 +106,7 @@ export class PasskeyAccountService {
 
     private createPasskeysServerHeaders(user: UserParams) {
         return {
-            "x-api-key": this.crossmintService.crossmintAPIHeaders["x-api-key"],
+            "x-api-key": this.apiKey,
             Authorization: `Bearer ${user.jwt}`,
         };
     }

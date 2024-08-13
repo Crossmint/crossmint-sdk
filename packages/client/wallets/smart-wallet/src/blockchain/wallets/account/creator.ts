@@ -5,19 +5,22 @@ import {
     isEOACreationParams,
     isPasskeyCreationParams,
 } from "../../../types/internal";
-import { EOAAccountService } from "../eoa";
-import { PasskeyAccountService } from "../passkey";
+import { EOACreationStrategy } from "./eoa";
+import { PasskeyCreationStrategy } from "./passkey";
 
 export class AccountCreator {
-    constructor(private readonly eoa: EOAAccountService, private readonly passkey: PasskeyAccountService) {}
+    constructor(
+        private readonly eoaStrategy: EOACreationStrategy,
+        private readonly passkeyStrategy: PasskeyCreationStrategy
+    ) {}
 
     public get(params: WalletCreationParams): Promise<AccountAndSigner> {
         if (isPasskeyCreationParams(params)) {
-            return this.passkey.get(params);
+            return this.passkeyStrategy.create(params);
         }
 
         if (isEOACreationParams(params)) {
-            return this.eoa.get(params);
+            return this.eoaStrategy.create(params);
         }
 
         if (params.existingSignerConfig == null) {

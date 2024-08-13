@@ -4,11 +4,12 @@ import { createOwnerSigner } from "@/utils/signer";
 import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
 import { createKernelAccount } from "@zerodev/sdk";
 
-import { AdminMismatchError } from "../../error";
-import { EOASignerConfig } from "./account/signer";
+import { AdminMismatchError } from "../../../error";
+import { EOASignerConfig } from "./signer";
+import { AccountCreationStrategy } from "./strategy";
 
-export class EOAAccountService {
-    public async get({
+export class EOACreationStrategy implements AccountCreationStrategy {
+    public async create({
         chain,
         publicClient,
         entryPoint,

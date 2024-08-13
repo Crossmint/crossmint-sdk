@@ -13,20 +13,23 @@ import { SmartWalletChain, getBundlerRPC, viemNetworks } from "../chains";
 import { EVMSmartWallet } from "./EVMSmartWallet";
 import { AccountConfigFacade } from "./account/config";
 import { AccountCreator } from "./account/creator";
+import { EOACreationStrategy } from "./account/eoa";
+import { PasskeyCreationStrategy } from "./account/passkey";
 import type { ClientDecorator } from "./clientDecorator";
-import { EOAAccountService } from "./eoa";
-import { PasskeyAccountService } from "./passkey";
 import { paymasterMiddleware, usePaymaster } from "./paymaster";
 
 export class SmartWalletService {
     constructor(
-        private readonly crossmintWalletService: CrossmintWalletService,
+        private readonly crossmintService: CrossmintWalletService,
         private readonly clientDecorator: ClientDecorator,
-        private readonly accountFactory = new AccountCreator(
-            new EOAAccountService(),
-            new PasskeyAccountService(crossmintWalletService)
+        private readonly accountCreator = new AccountCreator(
+            new EOACreationStrategy(),
+            new PasskeyCreationStrategy(
+                crossmintService.getPasskeyServerUrl(),
+                crossmintService.crossmintAPIHeaders["x-api-key"]
+            )
         ),
-        private readonly accountConfigFacade = new AccountConfigFacade(crossmintWalletService)
+        private readonly accountConfigFacade = new AccountConfigFacade(crossmintService)
     ) {}
 
     public async getOrCreate(
@@ -38,7 +41,7 @@ export class SmartWalletService {
             await this.accountConfigFacade.get(user, chain);
         const publicClient = createPublicClient({ transport: http(getBundlerRPC(chain)) });
 
-        const { account, signerConfig } = await this.accountFactory.get({
+        const { account, signerConfig } = await this.accountCreator.get({
             chain,
             walletParams,
             publicClient,
@@ -53,7 +56,7 @@ export class SmartWalletService {
         }
 
         if (existingSignerConfig == null) {
-            await this.crossmintWalletService.idempotentCreateSmartWallet(user, {
+            await this.crossmintService.idempotentCreateSmartWallet(user, {
                 type: ZERO_DEV_TYPE,
                 smartContractWalletAddress: account.address,
                 signerData: signerConfig.data,
@@ -74,7 +77,7 @@ export class SmartWalletService {
                 paymasterMiddleware({
                     entryPoint: account.entryPoint,
                     chain,
-                    walletService: this.crossmintWalletService,
+                    walletService: this.crossmintService,
                     user,
                 })),
         });
@@ -84,6 +87,6 @@ export class SmartWalletService {
             smartAccountClient: kernelAccountClient,
         });
 
-        return new EVMSmartWallet(this.crossmintWalletService, smartAccountClient, publicClient, chain);
+        return new EVMSmartWallet(this.crossmintService, smartAccountClient, publicClient, chain);
     }
 }
