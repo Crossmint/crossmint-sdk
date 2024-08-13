@@ -1,11 +1,12 @@
-import { SmartWalletChain } from "@/blockchain/chains";
+import type { SmartWalletChain } from "@/blockchain/chains";
 import { CrossmintServiceError } from "@/error";
-import { SignerData, SmartWalletConfigSchema, StoreSmartWalletParams } from "@/types/api";
+import type { StoreSmartWalletParams } from "@/types/api";
 import type { UserParams } from "@/types/config";
+import { SmartWalletConfigSchema } from "@/types/schema";
 import { API_VERSION } from "@/utils/constants";
-import { UserOperation } from "permissionless";
+import type { UserOperation } from "permissionless";
 import { GetEntryPointVersion } from "permissionless/_types/types";
-import { EntryPoint } from "permissionless/types/entrypoint";
+import type { EntryPoint } from "permissionless/types/entrypoint";
 
 import { blockchainToChainId } from "@crossmint/common-sdk-base";
 
