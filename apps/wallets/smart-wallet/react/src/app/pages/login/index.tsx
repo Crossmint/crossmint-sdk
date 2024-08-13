@@ -29,11 +29,12 @@ const StepCard = ({ Icon, title, subtitle }: any) => {
 };
 
 export const Login = () => {
-    const { setValue, setIsAuthenticated, setIsProd, setAuthProviderContext } = useContext(AppContext);
+    const { setValue, setIsAuthenticated, setIsProd, setAuthProviderContext, authProviderContext } =
+        useContext(AppContext);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const [isSwitchOn, setIsSwitchOn] = useState(false);
-    const [authProvider, setAuthProvider] = useState("Firebase");
+    const [authProvider, setAuthProvider] = useState(authProviderContext ?? "Firebase");
     const authProviders = useAuthProviders();
 
     const handleSwitchChange = (checked: boolean) => {

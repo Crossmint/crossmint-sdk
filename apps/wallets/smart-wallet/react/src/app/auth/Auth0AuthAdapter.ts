@@ -19,4 +19,8 @@ export class Auth0AuthAdapter implements AuthAdapter {
     async check() {
         return this.auth0.isAuthenticated ? await this.auth0.getAccessTokenWithPopup(this.options) : undefined;
     }
+
+    async logout() {
+        return this.auth0.logout({ openUrl: false });
+    }
 }

@@ -31,11 +31,15 @@ export const checkPrivyAuth = (privy: PrivyInterface): Promise<string | undefine
 export class PrivyAuthAdapter implements AuthAdapter {
     constructor(private readonly privy: PrivyInterface) {}
 
-    login() {
+    async login() {
         return signInWithPrivy(this.privy);
     }
 
-    check() {
+    async check() {
         return checkPrivyAuth(this.privy);
+    }
+
+    async logout() {
+        return this.privy.logout();
     }
 }

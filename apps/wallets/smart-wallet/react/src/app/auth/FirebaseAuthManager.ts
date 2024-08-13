@@ -74,10 +74,13 @@ export const checkAuthState = (): Promise<string | undefined> => {
 };
 
 export class FirebaseAuthAdapter implements AuthAdapter {
-    login() {
+    async login() {
         return signInWithGoogle();
     }
-    check() {
+    async check() {
         return checkAuthState();
+    }
+    async logout() {
+        return firebaseAuth().signOut();
     }
 }

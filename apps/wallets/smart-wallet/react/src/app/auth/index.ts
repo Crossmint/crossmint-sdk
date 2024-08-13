@@ -6,6 +6,7 @@ import { PrivyAuthAdapter } from "./PrivyAuthManager";
 export interface AuthAdapter {
     login: () => Promise<string>;
     check: () => Promise<string | undefined>;
+    logout: () => Promise<void>;
 }
 
 export class AuthStrategy {
