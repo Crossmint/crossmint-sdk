@@ -64,3 +64,12 @@ export class JWTIdentifierError extends NotAuthorizedError {
         this.identifierKey = identifierKey;
     }
 }
+
+export class OutOfCreditsError extends CrossmintSDKError {
+    constructor() {
+        super(
+            "You've run out of Crossmint API credits. Visit https://docs.crossmint.com/docs/errors for more information",
+            CrossmintErrors.OUT_OF_CREDITS
+        );
+    }
+}
