@@ -6,11 +6,13 @@ import type {
     PasskeySignerDataSchema,
     PasskeyValidatorSerializedDataSchema,
     SignerDataSchema,
+    SmartWalletConfigSchema,
 } from "./schema";
 
 export type EOASignerData = z.infer<typeof EOASignerDataSchema>;
 export type PasskeyValidatorSerializedData = z.infer<typeof PasskeyValidatorSerializedDataSchema>;
 export type PasskeySignerData = z.infer<typeof PasskeySignerDataSchema>;
+export type SmartWalletConfig = z.infer<typeof SmartWalletConfigSchema>;
 export type SignerData = z.infer<typeof SignerDataSchema>;
 
 export type PasskeyDisplay = Pick<PasskeySignerData, "type" | "passkeyName" | "pubKeyX" | "pubKeyY">;

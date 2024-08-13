@@ -1,21 +1,20 @@
-import type { SmartWalletChain } from "@/blockchain/chains";
-import { CrossmintServiceError } from "@/error";
-import type { StoreSmartWalletParams } from "@/types/api";
-import type { UserParams } from "@/types/config";
-import { SmartWalletConfigSchema } from "@/types/schema";
-import { API_VERSION } from "@/utils/constants";
 import type { UserOperation } from "permissionless";
-import { GetEntryPointVersion } from "permissionless/_types/types";
-import type { EntryPoint } from "permissionless/types/entrypoint";
+import type { EntryPoint, GetEntryPointVersion } from "permissionless/types/entrypoint";
 
 import { blockchainToChainId } from "@crossmint/common-sdk-base";
 
+import type { SmartWalletChain } from "../blockchain/chains";
+import { CrossmintServiceError } from "../error";
+import type { SmartWalletConfig, StoreSmartWalletParams } from "../types/api";
+import type { UserParams } from "../types/config";
+import { SmartWalletConfigSchema } from "../types/schema";
 import { bigintsToHex, parseBigintAPIResponse } from "../utils/api";
+import { API_VERSION } from "../utils/constants";
 import { BaseCrossmintService } from "./BaseCrossmintService";
 
 export class CrossmintWalletService extends BaseCrossmintService {
-    async idempotentCreateSmartWallet(user: UserParams, input: StoreSmartWalletParams) {
-        return this.fetchCrossmintAPI(
+    async idempotentCreateSmartWallet(user: UserParams, input: StoreSmartWalletParams): Promise<void> {
+        await this.fetchCrossmintAPI(
             `${API_VERSION}/sdk/smart-wallet`,
             { method: "PUT", body: JSON.stringify(input) },
             "Error creating abstract wallet. Please contact support",
@@ -39,7 +38,7 @@ export class CrossmintWalletService extends BaseCrossmintService {
         return parseBigintAPIResponse(result);
     }
 
-    async getSmartWalletConfig(user: UserParams, chain: SmartWalletChain) {
+    async getSmartWalletConfig(user: UserParams, chain: SmartWalletChain): Promise<SmartWalletConfig> {
         const data: unknown = await this.fetchCrossmintAPI(
             `${API_VERSION}/sdk/smart-wallet/config?chain=${chain}`,
             { method: "GET" },
