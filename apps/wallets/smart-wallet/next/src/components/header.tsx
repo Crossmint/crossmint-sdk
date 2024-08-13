@@ -64,10 +64,7 @@ export const Header = () => {
                                 <div
                                     className="flex gap-3 text-muted items-center cursor-pointer py-2"
                                     onClick={async () => {
-                                        if (!wallet) {
-                                            return;
-                                        }
-                                        await navigator.clipboard.writeText(wallet.address);
+                                        await navigator.clipboard.writeText(wallet?.address ?? "");
                                         toast({ title: "Address copied to clipboard", duration: 5000 });
                                     }}
                                 >

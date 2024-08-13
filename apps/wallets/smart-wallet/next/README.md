@@ -26,7 +26,6 @@ Before running the application, you need to set up your environment variables:
     > The credentials can be found in our shared 1Pass (see admin for access).
 
 ```plaintext
-NEXT_PUBLIC_BASE_URL=
 NEXT_PUBLIC_CROSSMINT_API_KEY=
 ```
 
