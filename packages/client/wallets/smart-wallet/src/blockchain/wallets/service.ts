@@ -1,4 +1,4 @@
-import { type SignerData, displayPasskey } from "@/types/API";
+import { SignerData } from "@/types/API";
 import { equalsIgnoreCase } from "@/utils/helpers";
 import { type KernelSmartAccount, createKernelAccountClient } from "@zerodev/sdk";
 import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
@@ -10,6 +10,7 @@ import { blockchainToChainId } from "@crossmint/common-sdk-base";
 import type { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import {
     AdminMismatchError,
+    ConfigError,
     CrossmintServiceError,
     SmartWalletError,
     UserWalletAlreadyCreatedError,
@@ -21,15 +22,18 @@ import {
     SmartWalletClient,
     type SupportedKernelVersion,
     type WalletCreationParams,
+    isEOACreationParams,
+    isPasskeyCreationParams,
     isSupportedEntryPointVersion,
     isSupportedKernelVersion,
 } from "../../types/internal";
 import { CURRENT_VERSION, ZERO_DEV_TYPE } from "../../utils/constants";
 import { SmartWalletChain, getBundlerRPC, viemNetworks } from "../chains";
 import { EVMSmartWallet } from "./EVMSmartWallet";
+import { EOASignerConfig, PasskeySignerConfig, SignerConfig } from "./account/signer";
 import { ClientDecorator } from "./clientDecorator";
-import { EOAAccountService, type EOAWalletParams } from "./eoa";
-import { PasskeyAccountService, isPasskeyParams } from "./passkey";
+import { EOAAccountService } from "./eoa";
+import { PasskeyAccountService } from "./passkey";
 import { paymasterMiddleware, usePaymaster } from "./paymaster";
 
 export class SmartWalletService {
@@ -51,17 +55,15 @@ export class SmartWalletService {
             await this.fetchConfig(user, chain);
         const publicClient = createPublicClient({ transport: http(getBundlerRPC(chain)) });
 
-        const { account, signerData } = await this.accountFactory.get(
-            {
-                chain,
-                walletParams,
-                publicClient,
-                user: { ...user, id: userId },
-                entryPoint,
-                kernelVersion,
-            },
-            existingSignerConfig
-        );
+        const { account, signerData } = await this.accountFactory.get({
+            chain,
+            walletParams,
+            publicClient,
+            user: { ...user, id: userId },
+            entryPoint,
+            kernelVersion,
+            existingSignerConfig,
+        });
 
         if (smartContractWalletAddress != null && !equalsIgnoreCase(smartContractWalletAddress, account.address)) {
             throw new UserWalletAlreadyCreatedError(userId);
@@ -109,7 +111,7 @@ export class SmartWalletService {
         entryPoint: EntryPointDetails;
         kernelVersion: SupportedKernelVersion;
         userId: string;
-        existingSignerConfig?: SignerData;
+        existingSignerConfig?: SignerConfig;
         smartContractWalletAddress?: Address;
     }> {
         const { entryPointVersion, kernelVersion, signers, smartContractWalletAddress, userId } =
@@ -153,7 +155,7 @@ export class SmartWalletService {
         };
     }
 
-    private getSigner(signers: any[]): SignerData | undefined {
+    private getSigner(signers: any[]): SignerConfig | undefined {
         if (signers.length === 0) {
             return undefined;
         }
@@ -162,38 +164,41 @@ export class SmartWalletService {
             throw new CrossmintServiceError("Invalid wallet signer configuration. Please contact support");
         }
 
-        return signers[0].signerData;
+        const data = signers[0].signerData;
+
+        if (data.type === "eoa") {
+            return new EOASignerConfig(data);
+        }
+
+        if (data.type === "passkeys") {
+            return new PasskeySignerConfig(data);
+        }
     }
 }
 
 class AccountFactory {
     constructor(private readonly eoa: EOAAccountService, private readonly passkey: PasskeyAccountService) {}
 
-    public get(
-        params: WalletCreationParams,
-        existingSignerConfig?: SignerData
-    ): Promise<{
+    public get(params: WalletCreationParams): Promise<{
         signerData: SignerData;
         account: KernelSmartAccount<EntryPoint, HttpTransport>;
     }> {
-        if (isPasskeyParams(params)) {
-            if (existingSignerConfig != null && existingSignerConfig?.type !== "passkeys") {
-                throw new AdminMismatchError(
-                    `Cannot create wallet with passkey signer for user '${params.user.id}', they have an existing wallet with eoa signer '${existingSignerConfig.eoaAddress}.'`,
-                    existingSignerConfig
-                );
-            }
-
-            return this.passkey.get(params, existingSignerConfig);
+        if (isPasskeyCreationParams(params)) {
+            return this.passkey.get(params);
         }
 
-        if (existingSignerConfig != null && existingSignerConfig?.type !== "eoa") {
-            throw new AdminMismatchError(
-                `Cannot create wallet with eoa signer for user '${params.user.id}', they already have a wallet with a passkey named '${existingSignerConfig.passkeyName}' as it's signer.`,
-                displayPasskey(existingSignerConfig)
-            );
+        if (isEOACreationParams(params)) {
+            return this.eoa.get(params);
         }
 
-        return this.eoa.get(params as EOAWalletParams, existingSignerConfig);
+        if (params.existingSignerConfig == null) {
+            throw new ConfigError("Unsupported signer type");
+        }
+
+        const signerDisplay = params.existingSignerConfig.display();
+        throw new AdminMismatchError(
+            `Cannot create wallet with ${params.existingSignerConfig.type} signer for user ${params.user.id}', they already have a wallet with signer:\n'${signerDisplay}'`,
+            signerDisplay
+        );
     }
 }
