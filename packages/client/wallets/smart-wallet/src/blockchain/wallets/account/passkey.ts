@@ -46,6 +46,7 @@ export class PasskeyCreationStrategy implements AccountCreationStrategy {
                 existingSignerConfig == null
                     ? latestValidatorVersion
                     : existingSignerConfig.data.validatorContractVersion;
+
             const validator = await toPasskeyValidator(publicClient, {
                 webAuthnKey: passkey,
                 entryPoint: entryPoint.address,

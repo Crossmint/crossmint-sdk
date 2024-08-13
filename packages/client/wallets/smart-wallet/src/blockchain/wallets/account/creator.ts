@@ -24,7 +24,7 @@ export class AccountCreator {
         }
 
         if (params.existingSignerConfig == null) {
-            throw new ConfigError("Unsupported signer type");
+            throw new ConfigError(`Unsupported wallet params:\n${params.walletParams}`);
         }
 
         const signerDisplay = params.existingSignerConfig.display();
