@@ -5,22 +5,20 @@ import { MintNFTButton } from "@/components/mint-nft-button";
 import { PoweredByCrossmint } from "@/components/powered-by-crossmint";
 import { SignInAuthButton } from "@/components/signin-auth-button";
 import { Typography } from "@/components/typography";
-import { useToast } from "@/components/use-toast";
 import Link from "next/link";
+import { useState } from "react";
 
-import { useAuth } from "@crossmint/client-sdk-auth-core";
+import { useAuth } from "@crossmint/client-sdk-react-ui";
 
 export default function Home() {
     const { jwt, wallet } = useAuth();
-    const { toasts } = useToast();
+    const [nftSuccessfullyMinted, setNftSuccessfullyMinted] = useState(false);
 
     const showMintButton = jwt != null && wallet != null;
-    const nftSuccessfullyMinted = !!toasts.find((toast) => toast.title?.includes("NFT Minted"));
 
     return (
         <div className="flex h-full w-full items-center pt-6 justify-center">
             <div className="flex flex-col pb-12 items-center max-w-[505px] p-4">
-                {/* todo: Only show the demo verbiage if nft hasn't been minted. */}
                 <div className="flex flex-col gap-2 text-center pb-8">
                     <Typography
                         style={{
@@ -51,8 +49,8 @@ export default function Home() {
                             </Typography>
                         </div>
                     </div>
-
                     <Fireworks play={nftSuccessfullyMinted} />
+
                     {showMintButton && nftSuccessfullyMinted ? (
                         <div className="flex gap-2 items-center self-center min-h-12">
                             <Link
@@ -63,7 +61,9 @@ export default function Home() {
                             </Link>
                         </div>
                     ) : null}
-                    {showMintButton && !nftSuccessfullyMinted ? <MintNFTButton /> : null}
+                    {showMintButton && !nftSuccessfullyMinted ? (
+                        <MintNFTButton setNftSuccessfullyMinted={setNftSuccessfullyMinted} />
+                    ) : null}
                     {!showMintButton && !nftSuccessfullyMinted ? <SignInAuthButton /> : null}
 
                     <PoweredByCrossmint />

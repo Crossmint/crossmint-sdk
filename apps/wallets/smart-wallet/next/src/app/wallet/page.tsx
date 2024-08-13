@@ -5,9 +5,8 @@ import { Skeleton } from "@/components/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/tabs";
 import { Typography } from "@/components/typography";
 import { useQuery } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 
-import { useAuth } from "@crossmint/client-sdk-auth-core";
+import { useAuth } from "@crossmint/client-sdk-react-ui";
 
 type NFT = {
     chain: string;

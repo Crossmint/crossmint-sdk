@@ -14,7 +14,7 @@ export const PoweredByCrossmint = ({ className }: { className?: string }) => {
         >
             Powered by
             <span className="self-center pr-1 pl-1.5">
-                <CrossmintLeaf />
+                <CrossmintLeaf color="#BC9B82" />
             </span>
             crossmint
         </Typography>

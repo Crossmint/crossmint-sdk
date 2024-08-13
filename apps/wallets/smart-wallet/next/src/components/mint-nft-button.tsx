@@ -1,18 +1,16 @@
 "use client";
 
 import { mintNFT } from "@/utils/mint-api";
-import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
-import { useAuth } from "@crossmint/client-sdk-auth-core";
+import { useAuth } from "@crossmint/client-sdk-react-ui";
 
 import { Button } from "./button";
 import { Typography } from "./typography";
 import { useToast } from "./use-toast";
 
-export const MintNFTButton = () => {
+export const MintNFTButton = ({ setNftSuccessfullyMinted }: { setNftSuccessfullyMinted: (a: boolean) => void }) => {
     const { wallet, isLoadingWallet } = useAuth();
-    const queryClient = useQueryClient();
     const [isLoadingMint, setIsLoadingMint] = useState(false);
     const { toast } = useToast();
 
@@ -49,13 +47,10 @@ export const MintNFTButton = () => {
                 toast({ title: "Error occurred during wallet creation" });
                 return;
             }
-            const mintedSuccessfully = await mintNFT(wallet);
-            if (mintedSuccessfully) {
-                await queryClient.invalidateQueries({ queryKey: ["smart-wallet"] });
-                toast({ title: "NFT Minted Successfully" });
-            }
+            await mintNFT(wallet);
+            setNftSuccessfullyMinted(true);
         } catch (error) {
-            console.log({ error });
+            console.error("Error minting NFT:", error);
             toast({ title: "Error occurred during minting" });
         } finally {
             setIsLoadingMint(false);
@@ -64,7 +59,7 @@ export const MintNFTButton = () => {
 
     return (
         <Button
-            className="bg-card rounded-full text-secondary-foreground font-semibold text-[17px] gap-2 shadow-primary border border-color-secondary-foreground"
+            className="bg-background rounded-full text-secondary-foreground font-semibold text-[17px] gap-2 shadow-primary border border-color-secondary-foreground"
             onClick={mint}
             disabled={isLoadingMint}
         >
