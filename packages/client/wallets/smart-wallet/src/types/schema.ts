@@ -18,7 +18,6 @@ export const EOASignerDataSchema = z.object({
 });
 
 export const PasskeyValidatorSerializedDataSchema = z.object({
-    passkeyServerUrl: z.string().url(),
     entryPoint: evmAddressSchema,
     validatorAddress: evmAddressSchema,
     pubKeyX: z.string(),
