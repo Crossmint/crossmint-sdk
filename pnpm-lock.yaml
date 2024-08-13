@@ -510,9 +510,15 @@ importers:
 
   packages/client/ui/react-ui:
     dependencies:
+      '@crossmint/client-sdk-auth-core':
+        specifier: workspace:*
+        version: link:../../auth-core
       '@crossmint/client-sdk-base':
         specifier: workspace:*
         version: link:../../base
+      '@crossmint/client-sdk-smart-wallet':
+        specifier: workspace:*
+        version: link:../../wallets/smart-wallet
       '@crossmint/common-sdk-base':
         specifier: workspace:*
         version: link:../../../common/base
