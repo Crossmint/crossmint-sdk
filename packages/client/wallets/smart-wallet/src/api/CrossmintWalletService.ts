@@ -1,6 +1,7 @@
 import { SmartWalletChain } from "@/blockchain/chains";
-import { SignerData, StoreSmartWalletParams } from "@/types/API";
-import type { UserParams } from "@/types/Config";
+import { CrossmintServiceError } from "@/error";
+import { SignerData, SmartWalletConfigSchema, StoreSmartWalletParams } from "@/types/api";
+import type { UserParams } from "@/types/config";
 import { API_VERSION } from "@/utils/constants";
 import { UserOperation } from "permissionless";
 import { GetEntryPointVersion } from "permissionless/_types/types";
@@ -37,21 +38,21 @@ export class CrossmintWalletService extends BaseCrossmintService {
         return parseBigintAPIResponse(result);
     }
 
-    async getSmartWalletConfig(
-        user: UserParams,
-        chain: SmartWalletChain
-    ): Promise<{
-        kernelVersion: string;
-        entryPointVersion: string;
-        userId: string;
-        signers: { signerData: SignerData }[];
-        smartContractWalletAddress?: string;
-    }> {
-        return this.fetchCrossmintAPI(
+    async getSmartWalletConfig(user: UserParams, chain: SmartWalletChain) {
+        const data: unknown = await this.fetchCrossmintAPI(
             `${API_VERSION}/sdk/smart-wallet/config?chain=${chain}`,
             { method: "GET" },
             "Error getting smart wallet version configuration. Please contact support",
             user.jwt
+        );
+
+        const result = SmartWalletConfigSchema.safeParse(data);
+        if (result.success) {
+            return result.data;
+        }
+
+        throw new CrossmintServiceError(
+            `Invalid smart wallet config, please contact support. Details below:\n${result.error.toString()}`
         );
     }
 

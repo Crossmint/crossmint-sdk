@@ -1,13 +1,12 @@
-import { EOASignerConfig, PasskeySignerConfig, SignerConfig } from "@/blockchain/wallets/account/signer";
+import type { EOASignerConfig, PasskeySignerConfig, SignerConfig } from "@/blockchain/wallets/account/signer";
 import type { KernelSmartAccount } from "@zerodev/sdk";
 import type { SmartAccountClient } from "permissionless";
 import type { SmartAccount } from "permissionless/accounts";
 import type { EntryPoint } from "permissionless/types/entrypoint";
-import type { Chain, Hex, HttpTransport, PublicClient } from "viem";
+import type { Chain, HttpTransport, PublicClient } from "viem";
 
 import type { SmartWalletChain } from "../blockchain/chains";
-import type { SignerData } from "./API";
-import type { EOASigner, EntryPointDetails, PasskeySigner, UserParams, WalletParams } from "./Config";
+import type { EOASigner, EntryPointDetails, PasskeySigner, UserParams, WalletParams } from "./config";
 
 export const SUPPORTED_KERNEL_VERSIONS = ["0.3.1", "0.3.0", "0.2.4"] as const;
 export type SupportedKernelVersion = (typeof SUPPORTED_KERNEL_VERSIONS)[number];
@@ -70,15 +69,5 @@ export interface AccountAndSigner {
     account: KernelSmartAccount<EntryPoint, HttpTransport>;
     signerConfig: SignerConfig;
 }
-
-export type PasskeyValidatorSerializedData = {
-    passkeyServerUrl: string;
-    entryPoint: Hex;
-    validatorAddress: Hex;
-    pubKeyX: string;
-    pubKeyY: string;
-    authenticatorIdHash: Hex;
-    authenticatorId: string;
-};
 
 export type SmartWalletClient = SmartAccountClient<EntryPoint, HttpTransport, Chain, SmartAccount<EntryPoint>>;

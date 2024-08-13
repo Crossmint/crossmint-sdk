@@ -1,6 +1,20 @@
-import { PasskeyValidatorContractVersion } from "@zerodev/passkey-validator";
+import { z } from "zod";
 
-import { PasskeyValidatorSerializedData, SupportedEntryPointVersion, SupportedKernelVersion } from "./internal";
+import type { SupportedEntryPointVersion, SupportedKernelVersion } from "./internal";
+import type {
+    EOASignerDataSchema,
+    PasskeySignerDataSchema,
+    PasskeyValidatorSerializedDataSchema,
+    SignerDataSchema,
+} from "./schema";
+
+export type EOASignerData = z.infer<typeof EOASignerDataSchema>;
+export type PasskeyValidatorSerializedData = z.infer<typeof PasskeyValidatorSerializedDataSchema>;
+export type PasskeySignerData = z.infer<typeof PasskeySignerDataSchema>;
+export type SignerData = z.infer<typeof SignerDataSchema>;
+
+export type PasskeyDisplay = Pick<PasskeySignerData, "type" | "passkeyName" | "pubKeyX" | "pubKeyY">;
+export type SignerDisplay = EOASignerData | PasskeyDisplay;
 
 export type StoreSmartWalletParams = {
     type: string;
@@ -13,20 +27,3 @@ export type StoreSmartWalletParams = {
     entryPointVersion: SupportedEntryPointVersion;
     kernelVersion: SupportedKernelVersion;
 };
-
-export type SignerData = EOASignerData | PasskeySignerData;
-
-export interface EOASignerData {
-    eoaAddress: string;
-    type: "eoa";
-}
-
-export type PasskeySignerData = PasskeyValidatorSerializedData & {
-    passkeyName: string;
-    validatorContractVersion: PasskeyValidatorContractVersion;
-    domain: string;
-    type: "passkeys";
-};
-
-export type PasskeyDisplay = Pick<PasskeySignerData, "type" | "passkeyName" | "pubKeyX" | "pubKeyY">;
-export type SignerDisplay = EOASignerData | PasskeyDisplay;

@@ -1,6 +1,3 @@
-import { type PasskeySignerData } from "@/types/API";
-import type { UserParams } from "@/types/Config";
-import type { AccountAndSigner, PasskeyCreationParams, PasskeyValidatorSerializedData } from "@/types/internal";
 import { PasskeyValidatorContractVersion, WebAuthnMode, toPasskeyValidator } from "@zerodev/passkey-validator";
 import { type KernelSmartAccount, type KernelValidator, createKernelAccount } from "@zerodev/sdk";
 import { type WebAuthnKey, toWebAuthnKey } from "@zerodev/webauthn-key";
@@ -13,6 +10,9 @@ import {
     PasskeyPromptError,
     PasskeyRegistrationError,
 } from "../../../error";
+import { type PasskeySignerData, PasskeyValidatorSerializedData } from "../../../types/api";
+import type { UserParams } from "../../../types/config";
+import type { AccountAndSigner, PasskeyCreationParams } from "../../../types/internal";
 import { PasskeySignerConfig } from "./signer";
 import { AccountCreationStrategy } from "./strategy";
 

@@ -1,7 +1,7 @@
 import { Abi, Account, Address, erc20Abi, erc721Abi } from "viem";
 
 import erc1155Abi from "../ABI/ERC1155.json";
-import type { ERC20TransferType, SFTTransferType, TransferType } from "../types/Tokens";
+import type { ERC20TransferType, SFTTransferType, TransferType } from "../types/token";
 
 type TransferInputParams = {
     from: Account;

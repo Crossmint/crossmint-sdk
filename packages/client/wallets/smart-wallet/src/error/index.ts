@@ -1,4 +1,4 @@
-import { PasskeyDisplay, SignerDisplay } from "@/types/API";
+import { PasskeyDisplay, SignerDisplay } from "../types/api";
 
 export const SmartWalletErrorCode = {
     NOT_AUTHORIZED: "not-authorized",

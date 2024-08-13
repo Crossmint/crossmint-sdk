@@ -1,4 +1,4 @@
-import type { EOASignerData, PasskeyDisplay, PasskeySignerData, SignerData, SignerDisplay } from "../../../types/API";
+import type { EOASignerData, PasskeyDisplay, PasskeySignerData, SignerData, SignerDisplay } from "../../../types/api";
 
 export interface SignerConfig {
     readonly type: "passkeys" | "eoa";
