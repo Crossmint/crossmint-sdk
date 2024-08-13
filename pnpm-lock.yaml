@@ -209,6 +209,9 @@ importers:
       '@crossmint/client-sdk-auth-core':
         specifier: workspace:*
         version: link:../../../../packages/client/auth-core
+      '@crossmint/client-sdk-react-ui':
+        specifier: workspace:*
+        version: link:../../../../packages/client/ui/react-ui
       '@crossmint/client-sdk-smart-wallet':
         specifier: workspace:*
         version: link:../../../../packages/client/wallets/smart-wallet

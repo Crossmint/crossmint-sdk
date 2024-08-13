@@ -12,7 +12,7 @@ export const SignInAuthButton = () => {
 
     if (jwt != null) {
         return (
-            <div className="flex gap-2 items-center self-center min-h-12" role="status">
+            <div className="flex gap-2 items-center self-center min-h-[52px]" role="status">
                 <svg
                     aria-hidden="true"
                     className="w-6 h-6 fill-secondary-foreground animate-spin text-primary-foreground"
@@ -36,11 +36,9 @@ export const SignInAuthButton = () => {
         );
     }
     return (
-        <Button
-            className="bg-card text-[#00150D] font-semibold text-[17px] gap-2 shadow-light rounded-xl"
-            onClick={login}
-        >
-            <CrossmintLeaf color="#04AA6D" /> Sign in with Crossmint
+        <Button className="bg-card gap-[10px] shadow-light rounded-xl py-3" onClick={login}>
+            <CrossmintLeaf />
+            <Typography className="text-[#00150D] font-semibold text-[17px]">Sign in with Crossmint</Typography>
         </Button>
     );
 };

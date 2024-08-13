@@ -18,7 +18,7 @@ export default function Home() {
 
     return (
         <div className="flex h-full w-full items-center pt-6 justify-center">
-            <div className="flex flex-col pb-12 items-center max-w-[505px] p-4">
+            <div className="flex flex-col pb-12 items-center max-w-[538px] p-4">
                 <div className="flex flex-col gap-2 text-center pb-8">
                     <Typography
                         style={{
@@ -37,7 +37,7 @@ export default function Home() {
                 </div>
 
                 <div className="flex flex-col w-full md:max-w-[340px] gap-10">
-                    <div className="bg-card flex flex-col  p-5 rounded-3xl shadow-dropdown">
+                    <div className="bg-card flex flex-col p-5 rounded-3xl shadow-dropdown">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img className="rounded-xl rounded-bl-none rounded-br-none" src={"/emoji-nft.png"} alt="nft" />
                         <div className="py-4">
@@ -52,7 +52,7 @@ export default function Home() {
                     <Fireworks play={nftSuccessfullyMinted} />
 
                     {showMintButton && nftSuccessfullyMinted ? (
-                        <div className="flex gap-2 items-center self-center min-h-12">
+                        <div className="flex gap-2 items-center self-center min-h-[52px]">
                             <Link
                                 href="/wallet"
                                 className="underline text-secondary-foreground text-lg font-semibold underline-offset-4"
