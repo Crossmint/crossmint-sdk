@@ -10,9 +10,9 @@ import {
     PasskeyPromptError,
     PasskeyRegistrationError,
 } from "../../../error";
-import { type PasskeySignerData, PasskeyValidatorSerializedData } from "../../../types/api";
 import type { AccountAndSigner, PasskeyCreationParams } from "../../../types/internal";
 import type { UserParams } from "../../../types/params";
+import { type PasskeySignerData, PasskeyValidatorSerializedData } from "../../../types/service";
 import { PasskeySignerConfig } from "./signer";
 import { AccountCreationStrategy } from "./strategy";
 
