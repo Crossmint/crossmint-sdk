@@ -1,8 +1,7 @@
 import {
     AdminAlreadyUsedError,
-    NonCustodialWalletsNotEnabledError,
-    OutOfCreditsError,
     SmartWalletError,
+    SmartWalletsNotEnabledError,
     UserWalletAlreadyCreatedError,
 } from "@/error";
 
@@ -12,6 +11,7 @@ import {
     JWTExpiredError,
     JWTIdentifierError,
     JWTInvalidError,
+    OutOfCreditsError,
 } from "@crossmint/client-sdk-base";
 
 export type CrossmintAPIErrorCodes =
@@ -34,7 +34,7 @@ export class APIErrorService {
             ERROR_USER_WALLET_ALREADY_CREATED: ({ userId }: { userId: string }) =>
                 new UserWalletAlreadyCreatedError(userId),
             ERROR_ADMIN_SIGNER_ALREADY_USED: () => new AdminAlreadyUsedError(),
-            ERROR_PROJECT_NONCUSTODIAL_WALLETS_NOT_ENABLED: () => new NonCustodialWalletsNotEnabledError(),
+            ERROR_PROJECT_NONCUSTODIAL_WALLETS_NOT_ENABLED: () => new SmartWalletsNotEnabledError(),
         }
     ) {}
 

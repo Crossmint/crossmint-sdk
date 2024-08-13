@@ -12,15 +12,13 @@ import { ErrorProcessor } from "./error/processor";
 import { DatadogProvider } from "./services/logging/DatadogProvider";
 import type { SmartWalletSDKInitParams, UserParams, WalletParams } from "./types/Config";
 import { isClient } from "./utils/environment";
-import { LoggerWrapper, logPerformance } from "./utils/log";
+import { logPerformance } from "./utils/log";
 
-export class SmartWalletSDK extends LoggerWrapper {
+export class SmartWalletSDK {
     private constructor(
         private readonly smartWalletService: SmartWalletService,
         private readonly errorProcessor: ErrorProcessor
-    ) {
-        super("SmartWalletSDK");
-    }
+    ) {}
 
     /**
      * Initializes the SDK with the **client side** API key obtained from the Crossmint console.
@@ -58,19 +56,15 @@ export class SmartWalletSDK extends LoggerWrapper {
         chain: SmartWalletChain,
         walletParams: WalletParams = { signer: { type: "PASSKEY" } }
     ): Promise<EVMSmartWallet> {
-        return logPerformance(
-            "GET_OR_CREATE_WALLET",
-            async () => {
-                try {
-                    return await this.smartWalletService.getOrCreate(user, chain, walletParams);
-                } catch (error: any) {
-                    throw this.errorProcessor.map(
-                        error,
-                        new SmartWalletError(`Wallet creation failed: ${error.message}.`, stringify(error))
-                    );
-                }
-            },
-            { user, chain }
-        );
+        return logPerformance("GET_OR_CREATE_WALLET", async () => {
+            try {
+                return await this.smartWalletService.getOrCreate(user, chain, walletParams);
+            } catch (error: any) {
+                throw this.errorProcessor.map(
+                    error,
+                    new SmartWalletError(`Wallet creation failed: ${error.message}.`, stringify(error))
+                );
+            }
+        });
     }
 }

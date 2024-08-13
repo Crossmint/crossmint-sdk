@@ -23,7 +23,7 @@ export {
     PasskeyRegistrationError,
     PasskeyIncompatibleAuthenticatorError,
     ConfigError,
-    NonCustodialWalletsNotEnabledError,
+    SmartWalletsNotEnabledError,
 } from "./error";
 
 export {

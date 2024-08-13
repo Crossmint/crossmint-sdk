@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-auth-core
 
+## 1.1.0
+
+### Minor Changes
+
+-   dc97a9a: Change query parameter
+
 ## 1.0.2
 
 ### Patch Changes

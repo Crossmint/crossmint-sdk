@@ -4,7 +4,7 @@ import { Middleware } from "permissionless/actions/smartAccount";
 import { EntryPoint } from "permissionless/types/entrypoint";
 
 import { usesGelatoBundler } from "../../utils/blockchain";
-import { SmartWalletChain, viemNetworks, zerodevProjects } from "../chains";
+import { SmartWalletChain } from "../chains";
 
 export function usePaymaster(chain: SmartWalletChain) {
     return !usesGelatoBundler(chain);

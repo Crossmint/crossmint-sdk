@@ -1,4 +1,4 @@
-import { logError } from "@/services/logging";
+import { logError, logInfo } from "@/services/logging";
 import { type HttpTransport, type PublicClient, isAddress, publicActions } from "viem";
 
 import { TransferError } from "@crossmint/client-sdk-base";
@@ -7,7 +7,7 @@ import type { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import type { TransferType } from "../../types/Tokens";
 import { SmartWalletClient } from "../../types/internal";
 import { SCW_SERVICE } from "../../utils/constants";
-import { LoggerWrapper, errorToJSON } from "../../utils/log";
+import { errorToJSON, logPerformance } from "../../utils/log";
 import { SmartWalletChain } from "../chains";
 import { transferParams } from "../transfer";
 
@@ -15,7 +15,7 @@ import { transferParams } from "../transfer";
  * Smart wallet interface for EVM chains enhanced with Crossmint capabilities.
  * Core functionality is exposed via [viem](https://viem.sh/) clients within the `client` property of the class.
  */
-export class EVMSmartWallet extends LoggerWrapper {
+export class EVMSmartWallet {
     public readonly chain: SmartWalletChain;
 
     /**
@@ -39,7 +39,6 @@ export class EVMSmartWallet extends LoggerWrapper {
         publicClient: PublicClient<HttpTransport>,
         chain: SmartWalletChain
     ) {
-        super("EVMSmartWallet", { chain, address: accountClient.account.address });
         this.chain = chain;
         this.client = {
             wallet: accountClient,
@@ -58,46 +57,53 @@ export class EVMSmartWallet extends LoggerWrapper {
      * @returns The transaction hash.
      */
     public async transferToken(toAddress: string, config: TransferType): Promise<string> {
-        return this.logPerformance("TRANSFER", async () => {
-            if (this.chain !== config.token.chain) {
-                throw new Error(
-                    `Chain mismatch: Expected ${config.token.chain}, but got ${this.chain}. Ensure you are interacting with the correct blockchain.`
-                );
-            }
+        return logPerformance(
+            "TRANSFER",
+            async () => {
+                if (this.chain !== config.token.chain) {
+                    throw new Error(
+                        `Chain mismatch: Expected ${config.token.chain}, but got ${this.chain}. Ensure you are interacting with the correct blockchain.`
+                    );
+                }
 
-            if (!isAddress(toAddress)) {
-                throw new Error(`Invalid recipient address: '${toAddress}' is not a valid EVM address.`);
-            }
+                if (!isAddress(toAddress)) {
+                    throw new Error(`Invalid recipient address: '${toAddress}' is not a valid EVM address.`);
+                }
 
-            if (!isAddress(config.token.contractAddress)) {
-                throw new Error(
-                    `Invalid contract address: '${config.token.contractAddress}' is not a valid EVM address.`
-                );
-            }
+                if (!isAddress(config.token.contractAddress)) {
+                    throw new Error(
+                        `Invalid contract address: '${config.token.contractAddress}' is not a valid EVM address.`
+                    );
+                }
 
-            const tx = transferParams({
-                contract: config.token.contractAddress,
-                to: toAddress,
-                from: this.accountClient.account,
-                config,
-            });
-
-            try {
-                const client = this.accountClient.extend(publicActions);
-                const { request } = await client.simulateContract(tx);
-                return await client.writeContract(request);
-            } catch (error) {
-                logError("[TRANSFER] - ERROR_TRANSFERRING_TOKEN", {
-                    service: SCW_SERVICE,
-                    error: errorToJSON(error),
-                    tokenId: tx.tokenId,
-                    contractAddress: config.token.contractAddress,
-                    chain: config.token.chain,
+                const tx = transferParams({
+                    contract: config.token.contractAddress,
+                    to: toAddress,
+                    from: this.accountClient.account,
+                    config,
                 });
-                const tokenIdString = tx.tokenId == null ? "" : `:${tx.tokenId}}`;
-                throw new TransferError(`Error transferring token ${config.token.contractAddress}${tokenIdString}`);
-            }
-        });
+
+                try {
+                    const client = this.accountClient.extend(publicActions);
+                    const { request } = await client.simulateContract(tx);
+                    const hash = await client.writeContract(request);
+                    logInfo(`[TRANSFER] - Transaction hash from transfer: ${hash}`);
+
+                    return hash;
+                } catch (error) {
+                    logError("[TRANSFER] - ERROR_TRANSFERRING_TOKEN", {
+                        service: SCW_SERVICE,
+                        error: errorToJSON(error),
+                        tokenId: tx.tokenId,
+                        contractAddress: config.token.contractAddress,
+                        chain: config.token.chain,
+                    });
+                    const tokenIdString = tx.tokenId == null ? "" : `:${tx.tokenId}}`;
+                    throw new TransferError(`Error transferring token ${config.token.contractAddress}${tokenIdString}`);
+                }
+            },
+            { toAddress, config }
+        );
     }
 
     /**

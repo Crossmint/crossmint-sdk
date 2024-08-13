@@ -1,0 +1,18 @@
+{
+    "entryPoints": ["src/index.ts"],
+    "out": "docs",
+    "plugin": ["typedoc-plugin-markdown", "typedoc-plugin-frontmatter", "./custom-plugin.mjs"],
+    "tsconfig": "tsconfig.typedoc.json",
+    "fileExtension": ".mdx",
+    "skipErrorChecking": true,
+    "excludeNotDocumented": false,
+    "excludeInternal": true,
+    "excludePrivate": true,
+    "excludeProtected": true,
+    "sanitizeComments": true,
+    "hidePageHeader": true,
+    "hideBreadcrumbs": true,
+    "hidePageTitle": true,
+    "parametersFormat": "table",
+    "classPropertiesFormat": "table"
+}
