@@ -7,29 +7,21 @@ import { blockchainToChainId } from "@crossmint/common-sdk-base";
 import type { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import { UserWalletAlreadyCreatedError } from "../../error";
 import type { UserParams, WalletParams } from "../../types/Config";
-import { SmartWalletClient } from "../../types/internal";
+import type { SmartWalletClient } from "../../types/internal";
 import { CURRENT_VERSION, ZERO_DEV_TYPE } from "../../utils/constants";
 import { SmartWalletChain, getBundlerRPC, viemNetworks } from "../chains";
 import { EVMSmartWallet } from "./EVMSmartWallet";
-import { AccountConfigFacade } from "./account/config";
-import { AccountCreator } from "./account/creator";
-import { EOACreationStrategy } from "./account/eoa";
-import { PasskeyCreationStrategy } from "./account/passkey";
+import type { AccountConfigFacade } from "./account/config";
+import type { AccountCreator } from "./account/creator";
 import type { ClientDecorator } from "./clientDecorator";
 import { paymasterMiddleware, usePaymaster } from "./paymaster";
 
 export class SmartWalletService {
     constructor(
         private readonly crossmintService: CrossmintWalletService,
-        private readonly clientDecorator: ClientDecorator,
-        private readonly accountCreator = new AccountCreator(
-            new EOACreationStrategy(),
-            new PasskeyCreationStrategy(
-                crossmintService.getPasskeyServerUrl(),
-                crossmintService.crossmintAPIHeaders["x-api-key"]
-            )
-        ),
-        private readonly accountConfigFacade = new AccountConfigFacade(crossmintService)
+        private readonly accountConfigFacade: AccountConfigFacade,
+        private readonly accountCreator: AccountCreator,
+        private readonly clientDecorator: ClientDecorator
     ) {}
 
     public async getOrCreate(

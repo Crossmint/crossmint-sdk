@@ -3,8 +3,12 @@ import { stringify } from "viem";
 import { validateAPIKey } from "@crossmint/common-sdk-base";
 
 import { CrossmintWalletService } from "./api/CrossmintWalletService";
-import { SmartWalletChain } from "./blockchain/chains";
+import type { SmartWalletChain } from "./blockchain/chains";
 import type { EVMSmartWallet } from "./blockchain/wallets";
+import { AccountConfigFacade } from "./blockchain/wallets/account/config";
+import { AccountCreator } from "./blockchain/wallets/account/creator";
+import { EOACreationStrategy } from "./blockchain/wallets/account/eoa";
+import { PasskeyCreationStrategy } from "./blockchain/wallets/account/passkey";
 import { ClientDecorator } from "./blockchain/wallets/clientDecorator";
 import { SmartWalletService } from "./blockchain/wallets/service";
 import { SmartWalletError } from "./error";
@@ -36,10 +40,18 @@ export class SmartWalletSDK {
 
         const crossmintService = new CrossmintWalletService(clientApiKey);
         const errorProcessor = new ErrorProcessor(new DatadogProvider());
-        return new SmartWalletSDK(
-            new SmartWalletService(crossmintService, new ClientDecorator(errorProcessor)),
-            errorProcessor
+        const accountCreator = new AccountCreator(
+            new EOACreationStrategy(),
+            new PasskeyCreationStrategy(crossmintService.getPasskeyServerUrl(), clientApiKey)
         );
+        const smartWalletService = new SmartWalletService(
+            crossmintService,
+            new AccountConfigFacade(crossmintService),
+            accountCreator,
+            new ClientDecorator(errorProcessor)
+        );
+
+        return new SmartWalletSDK(smartWalletService, errorProcessor);
     }
 
     /**
