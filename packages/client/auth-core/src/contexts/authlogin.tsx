@@ -5,25 +5,19 @@ import { CrossmintService } from "@/services/CrossmintService";
 import { CrossmintEnvironment } from "@/utils";
 import { ReactNode, createContext, useContext, useEffect, useMemo, useState } from "react";
 
-import { Chain, EVMSmartWallet, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
-
 type AuthContextType = {
     login: () => void;
     logout: () => void;
     jwt: string | null;
-    wallet: EVMSmartWallet | null;
-    isLoadingWallet: boolean;
 };
 
 const AuthContext = createContext<AuthContextType>({
     login: () => {},
     logout: () => {},
     jwt: null,
-    wallet: null,
-    isLoadingWallet: false,
 });
 
-type AuthProviderParams = {
+export type AuthProviderParams = {
     apiKey: string;
     environment: CrossmintEnvironment;
     children: ReactNode;
@@ -44,11 +38,8 @@ export function AuthProvider({ children, apiKey, environment, embeddedWallets }:
     const [jwtToken, setJwtToken] = useState<string | null>(() => getJwtFromCookie());
 
     const [modalOpen, setModalOpen] = useState(false);
-    const [wallet, setWallet] = useState<EVMSmartWallet | null>(null);
-    const [isLoadingWallet, setIsLoadingWallet] = useState<boolean>(false);
 
     const crossmintService = useMemo(() => new CrossmintService(apiKey, jwtToken, environment), undefined);
-    const smartWalletSDK = useMemo(() => SmartWalletSDK.init({ clientApiKey: apiKey }), undefined);
 
     const login = () => {
         if (jwtToken) {
@@ -59,38 +50,17 @@ export function AuthProvider({ children, apiKey, environment, embeddedWallets }:
         setModalOpen(true);
     };
 
-    const createWallet = async (jwt: string) => {
-        setIsLoadingWallet(true);
-
-        try {
-            const wallet = await smartWalletSDK.getOrCreateWallet({ jwt }, embeddedWallets.defaultChain);
-            setWallet(wallet);
-        } catch (e: any) {
-            console.log("There was an error creating a wallet");
-            console.log(e);
-            console.log(e.message);
-            throw e;
-        } finally {
-            setIsLoadingWallet(false);
-        }
-    };
-
     useEffect(() => {
         if (jwtToken == null) {
             return;
         }
 
-        if (embeddedWallets.createOnLogin && wallet == null) {
-            createWallet(jwtToken);
-        }
-
         setModalOpen(false);
-    }, [jwtToken, embeddedWallets.createOnLogin, wallet]);
+    }, [jwtToken, embeddedWallets.createOnLogin]);
 
     const logout = () => {
         document.cookie = "crossmint-session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
         setJwtToken(null);
-        setWallet(null);
     };
 
     useEffect(() => {
@@ -107,7 +77,7 @@ export function AuthProvider({ children, apiKey, environment, embeddedWallets }:
     }, [jwtToken]);
 
     return (
-        <AuthContext.Provider value={{ login, logout, jwt: jwtToken, wallet, isLoadingWallet }}>
+        <AuthContext.Provider value={{ login, logout, jwt: jwtToken }}>
             {children}
             {modalOpen && (
                 <AuthModal

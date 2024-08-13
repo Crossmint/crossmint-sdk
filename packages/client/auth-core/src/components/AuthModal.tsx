@@ -36,7 +36,6 @@ export default function AuthModal({
     apiKey: string;
     baseUrl: string;
 }) {
-    console.log("Attempting to render auth modal");
     const iframeSrc = `${baseUrl}/sdk/auth/frame?apiKey=${apiKey}`;
     const iframeRef = useRef<HTMLIFrameElement | null>(null);
     const [iframe, setIframe] = useState<IFrameWindow<
@@ -44,35 +43,22 @@ export default function AuthModal({
         OutgoingModalIframeEventsType
     > | null>(null);
 
-    console.log("After var declaration");
-
     useEffect(() => {
-        console.log("In use effect");
-
         if (iframe == null) {
-            console.log("iframe == null, returning");
             return;
         }
 
         iframe.on("jwtToken", (data) => {
-            console.log("Setting jwt token");
             setJwtToken(data.jwtToken);
-
-            console.log("iframe.off");
             iframe.off("jwtToken");
 
-            console.log("iframe.send");
             iframe.send("closeWindow", {
                 closeWindow: "closeWindow",
             });
 
-            console.log("iframe?.iframe.contentWindow != null");
             if (iframe?.iframe.contentWindow != null) {
-                console.log("iframe.iframe.contentWindow.close();");
                 iframe.iframe.contentWindow.close();
             }
-
-            console.log("Set modal open false");
             setModalOpen(false);
         });
 
