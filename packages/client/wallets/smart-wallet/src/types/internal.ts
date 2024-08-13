@@ -6,7 +6,7 @@ import type { EntryPoint } from "permissionless/types/entrypoint";
 import type { Chain, HttpTransport, PublicClient } from "viem";
 
 import type { SmartWalletChain } from "../blockchain/chains";
-import type { EOASigner, EntryPointDetails, PasskeySigner, UserParams, WalletParams } from "./config";
+import type { EOASigner, PasskeySigner, UserParams, WalletParams } from "./config";
 
 export const SUPPORTED_KERNEL_VERSIONS = ["0.3.1", "0.3.0", "0.2.4"] as const;
 export type SupportedKernelVersion = (typeof SUPPORTED_KERNEL_VERSIONS)[number];
@@ -27,7 +27,7 @@ export interface WalletCreationParams {
     chain: SmartWalletChain;
     publicClient: PublicClient<HttpTransport>;
     walletParams: WalletParams;
-    entryPoint: EntryPointDetails;
+    entryPoint: { version: SupportedEntryPointVersion; address: EntryPoint };
     kernelVersion: SupportedKernelVersion;
     existingSignerConfig?: SignerConfig;
 }
