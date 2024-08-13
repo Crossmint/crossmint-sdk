@@ -1,5 +1,5 @@
 import { SmartWalletSDK } from "./SmartWalletSDK";
-import { SmartWalletSDKInitParams } from "./types/config";
+import { SmartWalletSDKInitParams } from "./types/params";
 
 jest.mock("./services/logging");
 
