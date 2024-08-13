@@ -1,34 +1,18 @@
-import { PrivyProvider } from "@privy-io/react-auth";
 import { Toaster } from "react-hot-toast";
 
 import { AppProvider } from "./AppContext";
 import { AppRouter } from "./Router";
+import { withProviders } from "./providers/Providers";
 
 function App() {
     return (
-        <PrivyProvider
-            appId="clz8iksv40d95odgp6jcai4vp"
-            config={{
-                // Customize Privy's appearance in your app
-                appearance: {
-                    theme: "light",
-                    accentColor: "#676FFF",
-                    logo: "https://cdn.prod.website-files.com/653a93effa45d5e5a3b8e1e8/653b06fbe475503198236e11_LOGO.svg",
-                },
-                // Create embedded wallets for users who don't have a wallet
-                embeddedWallets: {
-                    createOnLogin: "users-without-wallets",
-                },
-            }}
-        >
-            <AppProvider>
-                <>
-                    <Toaster position="top-right" />
-                    <AppRouter />
-                </>
-            </AppProvider>
-        </PrivyProvider>
+        <AppProvider>
+            <>
+                <Toaster position="top-right" />
+                <AppRouter />
+            </>
+        </AppProvider>
     );
 }
 
-export default App;
+export default withProviders(App);

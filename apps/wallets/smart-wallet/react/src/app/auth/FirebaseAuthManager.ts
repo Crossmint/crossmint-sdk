@@ -8,6 +8,8 @@ import {
     signInWithPopup,
 } from "firebase/auth";
 
+import { AuthAdapter } from ".";
+
 const FIREBASE_CONFIG = {
     apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
     authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
@@ -33,7 +35,7 @@ export const firebaseAuth = () => {
     return getAuth(app);
 };
 
-export const signInWithGoogle = async (): Promise<string | undefined> => {
+export const signInWithGoogle = async (): Promise<string> => {
     const auth = firebaseAuth();
 
     auth.setPersistence(indexedDBLocalPersistence);
@@ -47,7 +49,7 @@ export const signInWithGoogle = async (): Promise<string | undefined> => {
                 ? "Pop-up closed without selecting an account"
                 : e
         );
-        return;
+        throw e;
     }
 
     return res.user.getIdToken(true);
@@ -70,3 +72,12 @@ export const checkAuthState = (): Promise<string | undefined> => {
         });
     });
 };
+
+export class FirebaseAuthAdapter implements AuthAdapter {
+    login() {
+        return signInWithGoogle();
+    }
+    check() {
+        return checkAuthState();
+    }
+}

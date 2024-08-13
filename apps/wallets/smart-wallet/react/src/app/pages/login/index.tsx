@@ -1,4 +1,3 @@
-import { usePrivy } from "@privy-io/react-auth";
 import { useContext, useState } from "react";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -13,6 +12,7 @@ import landingBackground from "../../assets/images/landing_background.svg";
 import { MarginLessSecondaryTitle, Paragraph, ParagraphBold, TerciaryTitle } from "../../components/Common/Text";
 import Button from "../../components/button/Button";
 import Switch from "../../components/switch/Switch";
+import { useAuthProviders } from "../../providers/Providers";
 import { createPasskeyWallet } from "../../utils/createAAWallet/createPasskeyWallet";
 import { createViemAAWallet } from "../../utils/createAAWallet/createViemWallet";
 
@@ -29,21 +29,21 @@ const StepCard = ({ Icon, title, subtitle }: any) => {
 };
 
 export const Login = () => {
-    const { setValue, setIsAuthenticated, setIsProd, setIsFirebase } = useContext(AppContext);
+    const { setValue, setIsAuthenticated, setIsProd, setAuthProviderContext } = useContext(AppContext);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const [isSwitchOn, setIsSwitchOn] = useState(false);
-    const [isFirebaseSwitchOn, setIsFirebaseSwitchOn] = useState(true);
-    const privy = usePrivy();
+    const [authProvider, setAuthProvider] = useState("Firebase");
+    const authProviders = useAuthProviders();
 
     const handleSwitchChange = (checked: boolean) => {
         setIsSwitchOn(checked);
         setIsProd(checked);
     };
 
-    const handleFirebaseSwitchChange = (checked: boolean) => {
-        setIsFirebaseSwitchOn(checked);
-        setIsFirebase(checked);
+    const handleAuthProviderChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        setAuthProvider(event.target.value);
+        setAuthProviderContext(event.target.value);
     };
 
     const login = async () => {
@@ -52,8 +52,8 @@ export const Login = () => {
         let account: EVMSmartWallet;
         try {
             account = testAccountPrivateKey
-                ? await createViemAAWallet(isSwitchOn, testAccountPrivateKey, isFirebaseSwitchOn, privy)
-                : await createPasskeyWallet(isSwitchOn, isFirebaseSwitchOn, privy);
+                ? await createViemAAWallet(isSwitchOn, testAccountPrivateKey, authProvider, authProviders)
+                : await createPasskeyWallet(isSwitchOn, authProvider, authProviders);
         } catch (e) {
             console.error(e);
             setLoading(false);
@@ -106,9 +106,14 @@ export const Login = () => {
                 <TerciaryTitle className="text-[#20343E] !font-normal !mt-1 max-w-[40rem]">
                     Our unique architecture ensures NFTs are never at risk of loss while remaining non-custodial.
                 </TerciaryTitle>
-                <div className="flex items-center mt-4">
-                    <Switch checked={isFirebaseSwitchOn} onChange={handleFirebaseSwitchChange} />
-                    <span className="ml-2">{isFirebaseSwitchOn ? "Firebase" : "Privy"}</span>
+                <div className="flex flex-col items-center justify-center">
+                    <div className="flex items-center mt-4">
+                        <select value={authProvider} onChange={handleAuthProviderChange} className="ml-2">
+                            <option value="Firebase">Firebase</option>
+                            <option value="Privy">Privy</option>
+                            <option value="Auth0">Auth0</option>
+                        </select>
+                    </div>
                 </div>
 
                 <Button

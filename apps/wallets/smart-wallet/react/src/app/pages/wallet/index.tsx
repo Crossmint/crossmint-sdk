@@ -1,6 +1,5 @@
 /** @format */
 import CircularProgress from "@mui/material/CircularProgress";
-import { usePrivy } from "@privy-io/react-auth";
 import { useContext, useEffect, useState } from "react";
 
 import { AppContext } from "../../AppContext";
@@ -8,6 +7,7 @@ import coinCoin from "../../assets/icons/coin_icon.svg";
 import nftCardIcon from "../../assets/icons/no_nfts.svg";
 import Button from "../../components/button/Button";
 import Card from "../../components/card/Card";
+import { useAuthProviders } from "../../providers/Providers";
 import { createPasskeyWallet } from "../../utils/createAAWallet/createPasskeyWallet";
 import { createViemAAWallet } from "../../utils/createAAWallet/createViemWallet";
 import { getTokenBalances, hexBalanceToDecimalValue, walletContent } from "../../utils/mintApi";
@@ -22,7 +22,7 @@ interface Tokens {
 }
 
 export const Wallet = () => {
-    const { value, transferSuccess, soldNft, isProd, setSoldNft, setIsAuthenticated, setValue, isFirebase } =
+    const { value, transferSuccess, soldNft, isProd, setSoldNft, setIsAuthenticated, setValue, authProviderContext } =
         useContext(AppContext);
     const [tokensArray, setTokens] = useState<Tokens[]>([]);
     const [nftsArray, setNfts] = useState<any>([]);
@@ -33,13 +33,13 @@ export const Wallet = () => {
     const [currentToken, setCurrentToken] = useState<any>(null);
     const [loading, setLoading] = useState(false);
     const [totalBalance, setTotalBalance] = useState("0.00");
-    const privy = usePrivy();
+    const authProviders = useAuthProviders();
 
     const createAndSetAAWallet = async () => {
         const testAccountPrivateKey = localStorage.getItem("testAccountPrivateKey") as `0x${string}` | null;
         const account = testAccountPrivateKey
-            ? await createViemAAWallet(isProd, testAccountPrivateKey, isFirebase, privy)
-            : await createPasskeyWallet(isProd, isFirebase, privy);
+            ? await createViemAAWallet(isProd, testAccountPrivateKey, authProviderContext, authProviders)
+            : await createPasskeyWallet(isProd, authProviderContext, authProviders);
 
         setIsAuthenticated(true);
         localStorage.setItem("isUserConnected", "true");

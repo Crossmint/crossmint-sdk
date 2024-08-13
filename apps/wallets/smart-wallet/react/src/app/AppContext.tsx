@@ -13,8 +13,8 @@ type AppContextData = {
     setSoldNft: (value: boolean) => void;
     isProd: boolean;
     setIsProd: (value: boolean) => void;
-    isFirebase: boolean;
-    setIsFirebase: (value: boolean) => void;
+    authProviderContext: string;
+    setAuthProviderContext: (value: string) => void;
 };
 
 const AppContext = createContext<AppContextData>({
@@ -28,8 +28,8 @@ const AppContext = createContext<AppContextData>({
     setSoldNft: (value) => console.warn("no provider for setSoldNft:", value),
     isProd: false,
     setIsProd: (value) => console.warn("no value for setIsProd:", value),
-    isFirebase: true,
-    setIsFirebase: (value) => console.warn("no value for setIsFirebase:", value),
+    authProviderContext: "Firebase",
+    setAuthProviderContext: (value) => console.warn("no value for setAuthProviderContext:", value),
 });
 
 const AppProvider = ({ children }: { children: JSX.Element }) => {
@@ -38,7 +38,7 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     const [transferSuccess, setTransferSuccess] = useState(false);
     const [soldNft, setSoldNft] = useState(false);
     const [isProd, setIsProd] = useState(false);
-    const [isFirebase, setIsFirebase] = useState(true);
+    const [authProviderContext, setAuthProviderContext] = useState("Firebase");
 
     useEffect(() => {
         // Initialize authentication from local storage
@@ -61,8 +61,8 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
         setSoldNft,
         isProd,
         setIsProd,
-        isFirebase,
-        setIsFirebase,
+        authProviderContext,
+        setAuthProviderContext,
     };
 
     return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;
