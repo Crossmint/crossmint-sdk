@@ -11,8 +11,8 @@ import {
     PasskeyRegistrationError,
 } from "../../../error";
 import { type PasskeySignerData, PasskeyValidatorSerializedData } from "../../../types/api";
-import type { UserParams } from "../../../types/config";
 import type { AccountAndSigner, PasskeyCreationParams } from "../../../types/internal";
+import type { UserParams } from "../../../types/params";
 import { PasskeySignerConfig } from "./signer";
 import { AccountCreationStrategy } from "./strategy";
 

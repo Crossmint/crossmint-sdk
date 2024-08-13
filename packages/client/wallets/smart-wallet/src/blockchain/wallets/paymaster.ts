@@ -2,7 +2,7 @@ import { CrossmintWalletService } from "@/api/CrossmintWalletService";
 import { Middleware } from "permissionless/actions/smartAccount";
 import { EntryPoint } from "permissionless/types/entrypoint";
 
-import { UserParams } from "../../types/config";
+import { UserParams } from "../../types/params";
 import { usesGelatoBundler } from "../../utils/blockchain";
 import { SmartWalletChain } from "../chains";
 

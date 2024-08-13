@@ -9,7 +9,7 @@ export type {
     PasskeySigner,
     EOASigner,
     WalletParams,
-} from "./types/config";
+} from "./types/params";
 
 export type { TransferType, ERC20TransferType, NFTTransferType, SFTTransferType } from "./types/token";
 

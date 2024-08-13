@@ -6,7 +6,7 @@ import { blockchainToChainId } from "@crossmint/common-sdk-base";
 import type { SmartWalletChain } from "../blockchain/chains";
 import { CrossmintServiceError } from "../error";
 import type { SmartWalletConfig, StoreSmartWalletParams } from "../types/api";
-import type { UserParams } from "../types/config";
+import type { UserParams } from "../types/params";
 import { SmartWalletConfigSchema } from "../types/schema";
 import { bigintsToHex, parseBigintAPIResponse } from "../utils/api";
 import { API_VERSION } from "../utils/constants";

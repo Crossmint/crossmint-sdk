@@ -7,8 +7,8 @@ import { blockchainToChainId } from "@crossmint/common-sdk-base";
 
 import type { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import { UserWalletAlreadyCreatedError } from "../../error";
-import type { UserParams, WalletParams } from "../../types/config";
 import type { SmartWalletClient } from "../../types/internal";
+import type { UserParams, WalletParams } from "../../types/params";
 import { CURRENT_VERSION, ZERO_DEV_TYPE } from "../../utils/constants";
 import { SmartWalletChain, getBundlerRPC, viemNetworks } from "../chains";
 import { EVMSmartWallet } from "./EVMSmartWallet";

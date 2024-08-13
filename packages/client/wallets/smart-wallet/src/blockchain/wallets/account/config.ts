@@ -4,8 +4,8 @@ import type { CrossmintWalletService } from "../../../api/CrossmintWalletService
 import type { SmartWalletChain } from "../../../blockchain/chains";
 import { SmartWalletError } from "../../../error";
 import type { SignerData } from "../../../types/api";
-import type { UserParams } from "../../../types/config";
 import type { SupportedEntryPointVersion, SupportedKernelVersion } from "../../../types/internal";
+import type { UserParams } from "../../../types/params";
 import { EOASignerConfig, PasskeySignerConfig, SignerConfig } from "./signer";
 
 export class AccountConfigFacade {
