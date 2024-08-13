@@ -5,6 +5,7 @@ import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
 import { createKernelAccount } from "@zerodev/sdk";
 
 import { AdminMismatchError } from "../../error";
+import { EOASignerConfig } from "./account/signer";
 
 export class EOAAccountService {
     public async get({
@@ -43,6 +44,6 @@ export class EOAAccountService {
             kernelVersion,
         });
 
-        return { account, signerData: { eoaAddress: eoa.address, type: "eoa" } };
+        return { account, signerConfig: new EOASignerConfig({ eoaAddress: eoa.address, type: "eoa" }) };
     }
 }

@@ -14,6 +14,7 @@ import {
     PasskeyPromptError,
     PasskeyRegistrationError,
 } from "../../error";
+import { PasskeySignerConfig } from "./account/signer";
 
 type PasskeyValidator = KernelValidator<EntryPoint, "WebAuthnValidator"> & {
     getSerializedData: () => string;
@@ -59,7 +60,7 @@ export class PasskeyAccountService {
             });
 
             return {
-                signerData: this.getSignerData(validator, validatorContractVersion, inputPasskeyName),
+                signerConfig: this.getSignerConfig(validator, validatorContractVersion, inputPasskeyName),
                 account: this.decorate(kernelAccount, inputPasskeyName),
             };
         } catch (error) {
@@ -89,18 +90,18 @@ export class PasskeyAccountService {
         });
     }
 
-    private getSignerData(
+    private getSignerConfig(
         validator: PasskeyValidator,
         validatorContractVersion: PasskeyValidatorContractVersion,
         passkeyName: string
-    ): PasskeySignerData {
-        return {
+    ): PasskeySignerConfig {
+        return new PasskeySignerConfig({
             ...deserializePasskeyValidatorData(validator.getSerializedData()),
             passkeyName,
             validatorContractVersion,
             domain: window.location.hostname,
             type: "passkeys",
-        };
+        });
     }
 
     private createPasskeysServerHeaders(user: UserParams) {

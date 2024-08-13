@@ -68,7 +68,7 @@ export function isEOACreationParams(params: WalletCreationParams): params is EOA
 
 export interface AccountAndSigner {
     account: KernelSmartAccount<EntryPoint, HttpTransport>;
-    signerData: SignerData;
+    signerConfig: SignerConfig;
 }
 
 export type PasskeyValidatorSerializedData = {
