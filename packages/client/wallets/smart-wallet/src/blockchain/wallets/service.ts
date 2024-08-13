@@ -5,15 +5,11 @@ import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
 import type { EntryPoint } from "permissionless/types/entrypoint";
 import { Address, type HttpTransport, createPublicClient, getAddress, http } from "viem";
 
+import { CrossmintServiceError } from "@crossmint/client-sdk-base";
 import { blockchainToChainId } from "@crossmint/common-sdk-base";
 
 import type { CrossmintWalletService } from "../../api/CrossmintWalletService";
-import {
-    AdminMismatchError,
-    CrossmintServiceError,
-    SmartWalletError,
-    UserWalletAlreadyCreatedError,
-} from "../../error";
+import { AdminMismatchError, SmartWalletError, UserWalletAlreadyCreatedError } from "../../error";
 import type { EntryPointDetails, UserParams, WalletParams } from "../../types/Config";
 import {
     SUPPORTED_ENTRYPOINT_VERSIONS,
