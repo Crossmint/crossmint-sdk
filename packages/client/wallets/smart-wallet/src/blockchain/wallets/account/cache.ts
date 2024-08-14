@@ -1,39 +1,34 @@
 import { logInfo } from "@/services/logging";
+import { UserParams } from "@/types/params";
+import { keccak256, toHex } from "viem";
 
 import { SmartWalletConfigSchema } from "../../../types/schema";
 import type { SmartWalletConfig } from "../../../types/service";
 import { SDK_VERSION } from "../../../utils/constants";
 
 export class AccountConfigCache {
-    private key = `smart-wallet-${SDK_VERSION}`;
+    private keyPrefix = `smart-wallet-${SDK_VERSION}`;
 
     constructor(private readonly storage: Storage) {}
 
-    set(config: SmartWalletConfig) {
+    set(user: UserParams, config: SmartWalletConfig) {
         console.log("SET: Setting for cached config");
         console.log("Setting local storage data");
-
-        const expiration = Date.now() + 7 * 24 * 60 * 60;
-        this.storage.setItem(this.key, JSON.stringify({ config, expiration }));
+        this.storage.setItem(this.key(user), JSON.stringify(config));
     }
 
-    get(): SmartWalletConfig | null {
-        const data = this.storage.getItem(this.key);
+    get(user: UserParams): SmartWalletConfig | null {
+        const key = this.key(user);
+        const data = this.storage.getItem(key);
         if (data == null) {
             this.clear(); // To keep local storage tidy
             return null;
         }
 
-        const parsed = JSON.parse(data);
-        if (typeof parsed.expiration !== "number" || parsed.expiration < Date.now()) {
-            this.storage.removeItem(this.key);
-            return null;
-        }
-
-        const result = SmartWalletConfigSchema.safeParse(parsed.config);
+        const result = SmartWalletConfigSchema.safeParse(JSON.parse(data));
         if (!result.success) {
             logInfo(`Invalid cached smart wallet config. Details:\n${result.error.toString()}`);
-            this.storage.removeItem(this.key);
+            this.storage.removeItem(key);
             return null;
         }
 
@@ -44,10 +39,14 @@ export class AccountConfigCache {
         console.log("Clearing all smart wallet data from local storage");
         for (let i = 0; i < this.storage.length; i++) {
             const key = this.storage.key(i);
-            if (key && key.startsWith(this.key)) {
+            if (key && key.startsWith(this.keyPrefix)) {
                 this.storage.removeItem(key);
                 i--; // Decrement i since we've removed an item
             }
         }
+    }
+
+    private key(user: UserParams) {
+        return `${this.keyPrefix}-${keccak256(toHex(user.jwt))}`;
     }
 }
