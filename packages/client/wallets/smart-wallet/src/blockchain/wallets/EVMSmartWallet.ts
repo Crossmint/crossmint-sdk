@@ -126,6 +126,15 @@ export class EVMSmartWallet {
         return this.crossmintService.fetchNFTs(this.address, this.chain);
     }
 
+    /**
+     * Sends a contract call transaction and returns the hash of a confirmed transaction.
+     * @param address the address of the contract to be called
+     * @param abi the ABI of the contract - ***should be defined as a typed variable*** to enable type checking of the contract arguments, see https://viem.sh/docs/typescript#type-inference for guidance
+     * @param functionName the name of the function to be called
+     * @param args the arguments to be passed to the function
+     * @param resendCallback a callback function that will be called if the transaction needs to be resent. Returns a value that controls transaction rebroadcasting See the type of `TransactionServiceResendCallback` for more information.
+     * @returns The transaction hash.
+     */
     public async sendTransaction<
         const TAbi extends Abi | readonly unknown[],
         TFunctionName extends ContractFunctionName<TAbi, "nonpayable" | "payable"> = ContractFunctionName<
@@ -142,6 +151,7 @@ export class EVMSmartWallet {
         abi,
         functionName,
         args,
+        value,
         resendCallback,
     }: Omit<
         WriteContractParameters<TAbi, TFunctionName, TArgs, typeof this.accountClient.chain>,
@@ -155,6 +165,7 @@ export class EVMSmartWallet {
                 abi: abi as Abi,
                 functionName,
                 args,
+                value,
             },
             this.accountClient,
             resendCallback

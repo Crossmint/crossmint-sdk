@@ -44,9 +44,16 @@ export const SmartWalletErrorCode = {
 } as const;
 export type SmartWalletErrorCode = (typeof SmartWalletErrorCode)[keyof typeof SmartWalletErrorCode];
 
+export const WalletErrorCode = {
+    SEND_TRANSACTION_FAILED: "wallet:send-transaction-failed",
+    SEND_TRANSACTION_EXECUTION_REVERTED: "wallet:send-transaction-execution-reverted",
+};
+export type WalletErrorCode = (typeof WalletErrorCode)[keyof typeof WalletErrorCode];
+
 export const CrossmintErrors = {
     ...PaymentErrors,
     ...SmartWalletErrorCode,
+    ...WalletErrorCode,
     NOT_AUTHORIZED: "not-authorized",
     CROSSMINT_SERVICE: "crossmint-service",
     JWT_EXPIRED: "not-authorized.jwt-expired",
@@ -54,8 +61,6 @@ export const CrossmintErrors = {
     JWT_DECRYPTION: "not-authorized.jwt-decryption",
     JWT_IDENTIFIER: "not-authorized.jwt-identifier",
     OUT_OF_CREDITS: "out-of-credits",
-    SEND_TRANSACTION_FAILED: "send-transaction-failed",
-    SEND_TRANSACTION_EXECUTION_REVERTED: "send-transaction-execution-reverted",
 };
 
 export type CrossmintErrors = (typeof CrossmintErrors)[keyof typeof CrossmintErrors];

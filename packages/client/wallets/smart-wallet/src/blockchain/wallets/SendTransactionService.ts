@@ -15,20 +15,35 @@ import {
     WaitForTransactionReceiptTimeoutError,
 } from "viem";
 
-import { CrossmintErrors, CrossmintSDKError } from "@crossmint/client-sdk-base";
+import { CrossmintSDKError, WalletErrorCode } from "@crossmint/client-sdk-base";
 
 export type TransactionServiceTransactionRequest = {
     address: Address;
     abi: Abi;
     functionName: string;
     args: any;
+    value?: bigint;
 };
 
-export type TransactionServiceResendCallback = (resendAttempts: number) => Promise<{ resend: boolean }>;
+/**
+ * @param resend Whether the transaction should be resent.
+ */
+export type TransactionServiceResendCallbackReturnType = {
+    resend: boolean;
+};
+
+/**
+ * Callback to determine if the transaction should be resent.
+ * @param resendAttempts The number of resend attempts that have been made. Starts at 1.
+ * @returns An object that determines if the transaction should be resent. See `TransactionServiceResendCallbackReturnType`.
+ */
+export type TransactionServiceResendCallback = (
+    resendAttempts: number
+) => Promise<TransactionServiceResendCallbackReturnType>;
 
 export class SendTransactionError extends CrossmintSDKError {
     constructor(message: string, public readonly viemError: BaseError) {
-        super(message, CrossmintErrors.SEND_TRANSACTION_FAILED);
+        super(message, WalletErrorCode.SEND_TRANSACTION_FAILED);
     }
 }
 
@@ -39,7 +54,7 @@ export class SendTransactionExecutionRevertedError extends CrossmintSDKError {
         public readonly revertError: ContractFunctionRevertedError,
         public txId: string | undefined
     ) {
-        super(message, CrossmintErrors.SEND_TRANSACTION_EXECUTION_REVERTED);
+        super(message, WalletErrorCode.SEND_TRANSACTION_EXECUTION_REVERTED);
     }
 }
 
