@@ -1,5 +1,15 @@
 import { logError, logInfo } from "@/services/logging";
-import { type HttpTransport, type PublicClient, isAddress, publicActions } from "viem";
+import {
+    Abi,
+    ContractFunctionArgs,
+    ContractFunctionName,
+    Hex,
+    type HttpTransport,
+    type PublicClient,
+    WriteContractParameters,
+    isAddress,
+    publicActions,
+} from "viem";
 
 import { TransferError } from "@crossmint/client-sdk-base";
 
@@ -10,6 +20,7 @@ import { SCW_SERVICE } from "../../utils/constants";
 import { errorToJSON, logPerformance } from "../../utils/log";
 import { SmartWalletChain } from "../chains";
 import { transferParams } from "../transfer";
+import { SendTransactionService, TransactionServiceResendCallback } from "./SendTransactionService";
 
 /**
  * Smart wallet interface for EVM chains enhanced with Crossmint capabilities.
@@ -32,6 +43,7 @@ export class EVMSmartWallet {
          */
         public: PublicClient;
     };
+    private readonly sendTransactionService: SendTransactionService;
 
     constructor(
         private readonly crossmintService: CrossmintWalletService,
@@ -44,6 +56,7 @@ export class EVMSmartWallet {
             wallet: accountClient,
             public: publicClient,
         };
+        this.sendTransactionService = new SendTransactionService(publicClient);
     }
 
     /**
@@ -111,5 +124,40 @@ export class EVMSmartWallet {
      */
     public async nfts() {
         return this.crossmintService.fetchNFTs(this.address, this.chain);
+    }
+
+    public async sendTransaction<
+        const TAbi extends Abi | readonly unknown[],
+        TFunctionName extends ContractFunctionName<TAbi, "nonpayable" | "payable"> = ContractFunctionName<
+            TAbi,
+            "nonpayable" | "payable"
+        >,
+        TArgs extends ContractFunctionArgs<TAbi, "nonpayable" | "payable", TFunctionName> = ContractFunctionArgs<
+            TAbi,
+            "nonpayable" | "payable",
+            TFunctionName
+        >
+    >({
+        address,
+        abi,
+        functionName,
+        args,
+        resendCallback,
+    }: Omit<
+        WriteContractParameters<TAbi, TFunctionName, TArgs, typeof this.accountClient.chain>,
+        "chain" | "account"
+    > & {
+        resendCallback?: TransactionServiceResendCallback;
+    }): Promise<Hex> {
+        return this.sendTransactionService.sendTransaction(
+            {
+                address,
+                abi: abi as Abi,
+                functionName,
+                args,
+            },
+            this.accountClient,
+            resendCallback
+        );
     }
 }
