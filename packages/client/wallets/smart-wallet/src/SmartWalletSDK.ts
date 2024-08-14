@@ -14,7 +14,7 @@ import { SmartWalletService } from "./blockchain/wallets/service";
 import { SmartWalletError } from "./error";
 import { ErrorProcessor } from "./error/processor";
 import { DatadogProvider } from "./services/logging/DatadogProvider";
-import type { SmartWalletSDKInitParams, UserParams, WalletParams } from "./types/Config";
+import type { SmartWalletSDKInitParams, UserParams, WalletParams } from "./types/params";
 import { isClient } from "./utils/environment";
 import { logPerformance } from "./utils/log";
 

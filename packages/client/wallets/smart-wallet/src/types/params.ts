@@ -1,7 +1,4 @@
-import type { EntryPoint } from "permissionless/types/entrypoint";
 import type { EIP1193Provider, LocalAccount } from "viem";
-
-import type { SupportedEntryPointVersion } from "./internal";
 
 export type SmartWalletSDKInitParams = {
     clientApiKey: string;
@@ -31,5 +28,3 @@ export type EOASigner = EIP1193Provider | ViemAccount;
 export interface WalletParams {
     signer: EOASigner | PasskeySigner;
 }
-
-export type EntryPointDetails = { version: SupportedEntryPointVersion; address: EntryPoint };

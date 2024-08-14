@@ -4,7 +4,7 @@ import { Address, EIP1193Provider } from "viem";
 
 import { SmartWalletChain } from "../blockchain/chains";
 import { SmartWalletError } from "../error";
-import { ViemAccount, WalletParams } from "../types/Config";
+import { ViemAccount, WalletParams } from "../types/params";
 
 type CreateOwnerSignerInput = {
     chain: SmartWalletChain;

@@ -1,13 +1,14 @@
 import { equalsIgnoreCase } from "@/utils/helpers";
 import { createKernelAccountClient } from "@zerodev/sdk";
+import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
 import { createPublicClient, http } from "viem";
 
 import { blockchainToChainId } from "@crossmint/common-sdk-base";
 
 import type { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import { UserWalletAlreadyCreatedError } from "../../error";
-import type { UserParams, WalletParams } from "../../types/Config";
 import type { SmartWalletClient } from "../../types/internal";
+import type { UserParams, WalletParams } from "../../types/params";
 import { CURRENT_VERSION, ZERO_DEV_TYPE } from "../../utils/constants";
 import { type SmartWalletChain, getBundlerRPC, viemNetworks } from "../chains";
 import { EVMSmartWallet } from "./EVMSmartWallet";
@@ -29,7 +30,7 @@ export class SmartWalletService {
         chain: SmartWalletChain,
         walletParams: WalletParams
     ): Promise<EVMSmartWallet> {
-        const { entryPoint, kernelVersion, existingSignerConfig, smartContractWalletAddress, userId } =
+        const { entryPointVersion, kernelVersion, existingSignerConfig, smartContractWalletAddress, userId } =
             await this.accountConfigFacade.get(user, chain);
         const publicClient = createPublicClient({ transport: http(getBundlerRPC(chain)) });
 
@@ -38,7 +39,10 @@ export class SmartWalletService {
             walletParams,
             publicClient,
             user: { ...user, id: userId },
-            entryPoint,
+            entryPoint: {
+                version: entryPointVersion,
+                address: entryPointVersion === "v0.6" ? ENTRYPOINT_ADDRESS_V06 : ENTRYPOINT_ADDRESS_V07,
+            },
             kernelVersion,
             existingSignerConfig,
         });
@@ -55,7 +59,7 @@ export class SmartWalletService {
                 version: CURRENT_VERSION,
                 baseLayer: "evm",
                 chainId: blockchainToChainId(chain),
-                entryPointVersion: entryPoint.version,
+                entryPointVersion,
                 kernelVersion,
             });
         }

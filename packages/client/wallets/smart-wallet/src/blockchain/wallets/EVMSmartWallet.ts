@@ -4,8 +4,8 @@ import { type HttpTransport, type PublicClient, isAddress, publicActions } from 
 import { TransferError } from "@crossmint/client-sdk-base";
 
 import type { CrossmintWalletService } from "../../api/CrossmintWalletService";
-import type { TransferType } from "../../types/Tokens";
 import { SmartWalletClient } from "../../types/internal";
+import type { TransferType } from "../../types/token";
 import { SCW_SERVICE } from "../../utils/constants";
 import { errorToJSON, logPerformance } from "../../utils/log";
 import { SmartWalletChain } from "../chains";
