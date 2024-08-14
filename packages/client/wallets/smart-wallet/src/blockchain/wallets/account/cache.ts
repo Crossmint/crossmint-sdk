@@ -12,8 +12,6 @@ export class AccountConfigCache {
     constructor(private readonly storage: Storage) {}
 
     set(user: UserParams, config: SmartWalletConfig) {
-        console.log("SET: Setting for cached config");
-        console.log("Setting local storage data");
         this.storage.setItem(this.key(user), JSON.stringify(config));
     }
 
@@ -36,7 +34,6 @@ export class AccountConfigCache {
     }
 
     private clear() {
-        console.log("Clearing all smart wallet data from local storage");
         for (let i = 0; i < this.storage.length; i++) {
             const key = this.storage.key(i);
             if (key && key.startsWith(this.keyPrefix)) {
