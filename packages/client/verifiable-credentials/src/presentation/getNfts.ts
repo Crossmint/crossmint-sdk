@@ -3,7 +3,7 @@ import { Nft, isVcChain } from "@/verifiableCredentialsSDK";
 import { crossmintAPI } from "../crossmintAPI";
 import { CrossmintWalletNft } from "../types/nfts";
 
-async function* fetchPaginatedData(url: string): AsyncGenerator<any[]> {
+async function* fetchPaginatedData(url: string): AsyncGenerator<any> {
     let page = 1;
     let hasMore = true;
     const perPage = 50;
@@ -22,7 +22,9 @@ async function* fetchPaginatedData(url: string): AsyncGenerator<any[]> {
                 );
             }
             const data = await response.json();
-            yield data;
+            for (const item of data) {
+                yield item;
+            }
             if (data.length < perPage) {
                 hasMore = false;
             } else {
@@ -42,7 +44,7 @@ export async function getWalletNfts(chain: string, wallet: string): Promise<Cros
 
     const allData: CrossmintWalletNft[] = [];
     for await (const data of fetchPaginatedData(url)) {
-        allData.push(...data);
+        allData.push(data);
     }
 
     return allData;
@@ -54,7 +56,7 @@ export async function getWalletVCNfts(chain: string, wallet: string): Promise<Cr
 
     const allData: CrossmintWalletNft[] = [];
     for await (const data of fetchPaginatedData(url)) {
-        allData.push(...data);
+        allData.push(data);
     }
 
     return allData;
