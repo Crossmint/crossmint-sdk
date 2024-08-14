@@ -25,7 +25,7 @@ export type TransactionServiceTransactionRequest = {
 
 /**
  * Error thrown when a transaction fails to send.
- * @param viemError The error thrown by the viem client. (see https://viem.sh/docs/glossary/errors.html)
+ * @param viemError The error thrown by the viem client. See https://viem.sh/docs/glossary/errors.html
  */
 export class EVMSendTransactionError extends CrossmintSDKError {
     constructor(message: string, public readonly viemError: BaseError, code = WalletErrorCode.SEND_TRANSACTION_FAILED) {
@@ -35,13 +35,13 @@ export class EVMSendTransactionError extends CrossmintSDKError {
 
 /**
  * Error thrown when a transaction is sent successfully but fails to confirm.
- * @param viemError The error thrown by the viem client. (see https://viem.sh/docs/glossary/errors.html)
+ * @param viemError The error thrown by the viem client. See https://viem.sh/docs/glossary/errors.html
  */
-export class EVMSendTransactionConfirmError extends EVMSendTransactionError {
+export class EVMSendTransactionConfirmationError extends EVMSendTransactionError {
     constructor(
         message: string,
         public readonly viemError: BaseError,
-        code = WalletErrorCode.SEND_TRANSACTION_CONFIRM_FAILED
+        code = WalletErrorCode.SEND_TRANSACTION_CONFIRMATION_FAILED
     ) {
         super(message, viemError, code);
     }
@@ -49,7 +49,7 @@ export class EVMSendTransactionConfirmError extends EVMSendTransactionError {
 
 /**
  * Error thrown when a transaction simulation fails.
- * @param viemError The error thrown by the viem client. (see https://viem.sh/docs/glossary/errors.html)
+ * @param viemError The error thrown by the viem client. See https://viem.sh/docs/glossary/errors.html
  */
 export class EVMSendTransactionSimulationError extends EVMSendTransactionError {
     constructor(
@@ -63,7 +63,7 @@ export class EVMSendTransactionSimulationError extends EVMSendTransactionError {
 
 /**
  * Error thrown when a transaction fails due to a contract execution error.
- * @param viemError The error thrown by the viem client. (see https://viem.sh/docs/glossary/errors.html)
+ * @param viemError The error thrown by the viem client. See https://viem.sh/docs/glossary/errors.html
  * @param revertError The revert error from viem containing the reason for the revert.
  * @param revertError.reason The reason for the revert.
  * @param revertError.data The decoded revert error data.
@@ -82,7 +82,7 @@ export class EVMSendTransactionSimulationError extends EVMSendTransactionError {
  *   throw e;
  * }
  */
-export class SendTransactionExecutionRevertedError extends EVMSendTransactionSimulationError {
+export class EVMSendTransactionExecutionRevertedError extends EVMSendTransactionSimulationError {
     constructor(
         message: string,
         public readonly viemError: BaseError,
@@ -132,7 +132,7 @@ export class SendTransactionService {
                     return await this.handleReceipt(receipt, request);
                 } catch (e) {
                     if (e instanceof BaseError) {
-                        throw new EVMSendTransactionConfirmError(e.message, e);
+                        throw new EVMSendTransactionConfirmationError(e.message, e);
                     }
                     throw e;
                 }
@@ -159,7 +159,7 @@ export class SendTransactionService {
             // This should revert and throw the full reason
             await this.simulateCall(request, receipt.transactionHash);
             // Otherwise, throw a generic error (this should practically never happen)
-            throw new SendTransactionExecutionRevertedError(
+            throw new EVMSendTransactionExecutionRevertedError(
                 "Transaction reverted but unable to detect the reason",
                 new ContractFunctionRevertedError({ abi: request.abi as Abi, functionName: request.functionName }),
                 new ContractFunctionRevertedError({ abi: request.abi as Abi, functionName: request.functionName }),
@@ -180,7 +180,7 @@ export class SendTransactionService {
             if (e instanceof BaseError) {
                 const revertError = e.walk((err) => err instanceof ContractFunctionRevertedError);
                 if (revertError instanceof ContractFunctionRevertedError) {
-                    throw new SendTransactionExecutionRevertedError(
+                    throw new EVMSendTransactionExecutionRevertedError(
                         revertError.message,
                         e,
                         revertError,

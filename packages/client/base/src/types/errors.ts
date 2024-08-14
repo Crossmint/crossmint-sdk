@@ -47,7 +47,7 @@ export type SmartWalletErrorCode = (typeof SmartWalletErrorCode)[keyof typeof Sm
 export const WalletErrorCode = {
     SEND_TRANSACTION_FAILED: "wallet:send-transaction-failed",
     SEND_TRANSACTION_EXECUTION_REVERTED: "wallet:send-transaction-execution-reverted",
-    SEND_TRANSACTION_CONFIRM_FAILED: "wallet:send-transaction-confirm-failed",
+    SEND_TRANSACTION_CONFIRMATION_FAILED: "wallet:send-transaction-confirmation-failed",
     SEND_TRANSACTION_SIMULATION_FAILED: "wallet:send-transaction-simulation-failed",
 };
 export type WalletErrorCode = (typeof WalletErrorCode)[keyof typeof WalletErrorCode];
