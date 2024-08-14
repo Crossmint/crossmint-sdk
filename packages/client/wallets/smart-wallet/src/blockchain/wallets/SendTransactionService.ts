@@ -41,12 +41,21 @@ export type TransactionServiceResendCallback = (
     resendAttempts: number
 ) => Promise<TransactionServiceResendCallbackReturnType>;
 
+/**
+ * Error thrown when a transaction fails to send.
+ * @param viemError The error thrown by the viem client.
+ */
 export class SendTransactionError extends CrossmintSDKError {
     constructor(message: string, public readonly viemError: BaseError, code = WalletErrorCode.SEND_TRANSACTION_FAILED) {
         super(message, code);
     }
 }
 
+/**
+ * Error thrown when a transaction fails due to a contract execution error.
+ * @param viemError The error thrown by the viem client.
+ * @param revertError The revert error from viem containing the reason for the revert.
+ */
 export class SendTransactionExecutionRevertedError extends SendTransactionError {
     constructor(
         message: string,
@@ -77,12 +86,20 @@ export class SendTransactionService {
         for (let attempt = 0; attempt == 0 || (await resendCallback(attempt)).resend; attempt++) {
             const gas = this.modifyGas(attempt, await this.publicClient.estimateFeesPerGas());
             await this.simulateCall(request, undefined);
-            const hash = await client.writeContract({
-                ...request,
-                account: client.account,
-                chain: client.chain,
-                ...gas,
-            });
+            let hash;
+            try {
+                hash = await client.writeContract({
+                    ...request,
+                    account: client.account,
+                    chain: client.chain,
+                    ...gas,
+                });
+            } catch (e) {
+                if (e instanceof BaseError) {
+                    throw new SendTransactionError(e.message, e);
+                }
+                throw e;
+            }
             try {
                 const receipt = await this.publicClient.waitForTransactionReceipt({
                     hash,
