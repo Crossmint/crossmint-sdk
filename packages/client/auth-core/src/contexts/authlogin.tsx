@@ -17,7 +17,7 @@ const AuthContext = createContext<AuthContextType>({
     jwt: null,
 });
 
-type AuthProviderParams = {
+export type AuthProviderParams = {
     apiKey: string;
     environment: CrossmintEnvironment;
     children: ReactNode;

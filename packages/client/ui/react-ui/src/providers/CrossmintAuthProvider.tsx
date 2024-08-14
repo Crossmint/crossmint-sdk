@@ -4,12 +4,19 @@ import { AuthProvider, useAuth as useAuthCore } from "@crossmint/client-sdk-auth
 import type { AuthProviderParams } from "@crossmint/client-sdk-auth-core/src/contexts/authlogin";
 import { EVMSmartWallet, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
 
-export const WalletContext = createContext<{ wallet: EVMSmartWallet | null; isLoadingWallet: boolean }>({
+type AuthWalletProviderParams = AuthProviderParams & {
+    embeddedWallets: {
+        type: "evm-smart-wallet";
+        defaultChain: "polygon-amoy" | "base-sepolia";
+        createOnLogin: "all-users" | "off";
+    };
+};
+
+export const WalletContext = createContext<{ wallet: EVMSmartWallet | null }>({
     wallet: null,
-    isLoadingWallet: false,
 });
 
-export function CrossmintAuthProvider(props: AuthProviderParams) {
+export function CrossmintAuthProvider(props: AuthWalletProviderParams) {
     return (
         <AuthProvider {...props}>
             <AuthWalletProvider {...props}></AuthWalletProvider>
@@ -17,25 +24,20 @@ export function CrossmintAuthProvider(props: AuthProviderParams) {
     );
 }
 
-function AuthWalletProvider(props: AuthProviderParams) {
+function AuthWalletProvider(props: AuthWalletProviderParams) {
     const { jwt } = useAuthCore();
 
     const [wallet, setWallet] = useState<EVMSmartWallet | null>(null);
-    const [isLoadingWallet, setIsLoadingWallet] = useState<boolean>(false);
 
     const smartWalletSDK = useMemo(() => SmartWalletSDK.init({ clientApiKey: props.apiKey }), undefined);
 
     const createWallet = async (jwt: string) => {
-        setIsLoadingWallet(true);
-
         try {
             const wallet = await smartWalletSDK.getOrCreateWallet({ jwt }, props.embeddedWallets.defaultChain);
             setWallet(wallet);
         } catch (e: any) {
-            console.log("There was an error creating a wallet ", e);
+            console.error("There was an error creating a wallet ", e);
             throw e;
-        } finally {
-            setIsLoadingWallet(false);
         }
     };
 
@@ -52,5 +54,5 @@ function AuthWalletProvider(props: AuthProviderParams) {
         }
     }, [jwt, props.embeddedWallets.createOnLogin, wallet]);
 
-    return <WalletContext.Provider value={{ wallet, isLoadingWallet }}>{props.children}</WalletContext.Provider>;
+    return <WalletContext.Provider value={{ wallet }}>{props.children}</WalletContext.Provider>;
 }
