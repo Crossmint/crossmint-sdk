@@ -42,19 +42,19 @@ export type TransactionServiceResendCallback = (
 ) => Promise<TransactionServiceResendCallbackReturnType>;
 
 export class SendTransactionError extends CrossmintSDKError {
-    constructor(message: string, public readonly viemError: BaseError) {
-        super(message, WalletErrorCode.SEND_TRANSACTION_FAILED);
+    constructor(message: string, public readonly viemError: BaseError, code = WalletErrorCode.SEND_TRANSACTION_FAILED) {
+        super(message, code);
     }
 }
 
-export class SendTransactionExecutionRevertedError extends CrossmintSDKError {
+export class SendTransactionExecutionRevertedError extends SendTransactionError {
     constructor(
         message: string,
         public readonly viemError: BaseError,
         public readonly revertError: ContractFunctionRevertedError,
         public txId: string | undefined
     ) {
-        super(message, WalletErrorCode.SEND_TRANSACTION_EXECUTION_REVERTED);
+        super(message, viemError, WalletErrorCode.SEND_TRANSACTION_EXECUTION_REVERTED);
     }
 }
 

@@ -134,6 +134,7 @@ export class EVMSmartWallet {
      * @param args the arguments to be passed to the function
      * @param resendCallback a callback function that will be called if the transaction needs to be resent. Returns a value that controls transaction rebroadcasting See the type of `TransactionServiceResendCallback` for more information.
      * @returns The transaction hash.
+     * @throws `SendTransactionError` if the transaction fails to send. Will be subclass `SendTransactionExecutionRevertedError` if the transaction reverted either during simulation or on-chain.
      */
     public async sendTransaction<
         const TAbi extends Abi | readonly unknown[],
