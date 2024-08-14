@@ -39,7 +39,7 @@ export class SendTransactionExecutionRevertedError extends CrossmintSDKError {
         public readonly revertError: ContractFunctionRevertedError,
         public txId: string | undefined
     ) {
-        super(message, CrossmintErrors.SEND_TRANSACTION_FAILED);
+        super(message, CrossmintErrors.SEND_TRANSACTION_EXECUTION_REVERTED);
     }
 }
 

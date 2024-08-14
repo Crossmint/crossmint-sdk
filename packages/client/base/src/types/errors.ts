@@ -55,6 +55,7 @@ export const CrossmintErrors = {
     JWT_IDENTIFIER: "not-authorized.jwt-identifier",
     OUT_OF_CREDITS: "out-of-credits",
     SEND_TRANSACTION_FAILED: "send-transaction-failed",
+    SEND_TRANSACTION_EXECUTION_REVERTED: "send-transaction-execution-reverted",
 };
 
 export type CrossmintErrors = (typeof CrossmintErrors)[keyof typeof CrossmintErrors];
