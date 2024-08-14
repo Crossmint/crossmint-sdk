@@ -454,6 +454,9 @@ importers:
 
   packages/client/auth-core:
     dependencies:
+      '@crossmint/client-sdk-smart-wallet':
+        specifier: workspace:*
+        version: link:../wallets/smart-wallet
       '@crossmint/client-sdk-window':
         specifier: workspace:*
         version: link:../window
