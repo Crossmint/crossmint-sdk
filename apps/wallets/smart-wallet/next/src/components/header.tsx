@@ -8,17 +8,16 @@ import { useRouter } from "next/navigation";
 
 import { useAuth } from "@crossmint/client-sdk-react-ui";
 
-import { Avatar, AvatarFallback } from "./avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "./dropdown-menu";
 import { Typography } from "./typography";
 import { useToast } from "./use-toast";
 
 export const Header = () => {
-    const { jwt, logout, wallet } = useAuth();
+    const { jwt, logout, wallet, isLoadingWallet } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
 
-    const isLoadingWallet = !wallet;
     const hasWalletAndJwt = jwt != null && wallet != null && !isLoadingWallet;
 
     const handleLogout = () => {
@@ -53,6 +52,7 @@ export const Header = () => {
                                     </Typography>
                                 </div>
                                 <Avatar className="h-9 w-9">
+                                    <AvatarImage alt="User Avatar" src="" />
                                     <AvatarFallback className="bg-skeleton">
                                         <User className="h-5 w-5" />
                                     </AvatarFallback>
