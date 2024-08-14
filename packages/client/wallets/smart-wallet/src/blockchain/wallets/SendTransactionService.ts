@@ -7,6 +7,7 @@ import {
     BaseError,
     Chain,
     ContractFunctionRevertedError,
+    Hex,
     PublicClient,
     TransactionReceipt,
     Transport,
@@ -24,20 +25,64 @@ export type TransactionServiceTransactionRequest = {
 
 /**
  * Error thrown when a transaction fails to send.
- * @param viemError The error thrown by the viem client.
+ * @param viemError The error thrown by the viem client. (see https://viem.sh/docs/glossary/errors.html)
  */
-export class SendTransactionError extends CrossmintSDKError {
+export class EVMSendTransactionError extends CrossmintSDKError {
     constructor(message: string, public readonly viemError: BaseError, code = WalletErrorCode.SEND_TRANSACTION_FAILED) {
         super(message, code);
     }
 }
 
 /**
- * Error thrown when a transaction fails due to a contract execution error.
- * @param viemError The error thrown by the viem client.
- * @param revertError The revert error from viem containing the reason for the revert.
+ * Error thrown when a transaction is sent successfully but fails to confirm.
+ * @param viemError The error thrown by the viem client. (see https://viem.sh/docs/glossary/errors.html)
  */
-export class SendTransactionExecutionRevertedError extends SendTransactionError {
+export class EVMSendTransactionConfirmError extends EVMSendTransactionError {
+    constructor(
+        message: string,
+        public readonly viemError: BaseError,
+        code = WalletErrorCode.SEND_TRANSACTION_CONFIRM_FAILED
+    ) {
+        super(message, viemError, code);
+    }
+}
+
+/**
+ * Error thrown when a transaction simulation fails.
+ * @param viemError The error thrown by the viem client. (see https://viem.sh/docs/glossary/errors.html)
+ */
+export class EVMSendTransactionSimulationError extends EVMSendTransactionError {
+    constructor(
+        message: string,
+        public readonly viemError: BaseError,
+        code = WalletErrorCode.SEND_TRANSACTION_SIMULATION_FAILED
+    ) {
+        super(message, viemError, code);
+    }
+}
+
+/**
+ * Error thrown when a transaction fails due to a contract execution error.
+ * @param viemError The error thrown by the viem client. (see https://viem.sh/docs/glossary/errors.html)
+ * @param revertError The revert error from viem containing the reason for the revert.
+ * @param revertError.reason The reason for the revert.
+ * @param revertError.data The decoded revert error data.
+ * @example
+ * try {
+ *   await wallet.sendTransaction({
+ *     address: contractAddress,
+ *     abi,
+ *     functionName: "mintNFT",
+ *     args: [recipientAddress],
+ *   });
+ * } catch (e) {
+ *   if (e instanceof SendTransactionExecutionRevertedError) {
+ *     alert(`Transaction reverted: ${e.revertError.reason}`);
+ *   }
+ *   throw e;
+ * }
+ */
+export class SendTransactionExecutionRevertedError extends EVMSendTransactionSimulationError {
     constructor(
         message: string,
         public readonly viemError: BaseError,
@@ -68,7 +113,7 @@ export class SendTransactionService {
         request: TransactionServiceTransactionRequest,
         client: SmartAccountClient<EntryPoint, Transport, Chain, SmartAccount<EntryPoint>>,
         config: Partial<SendTransactionOptions> = {}
-    ) {
+    ): Promise<Hex> {
         const { confirmations, transactionConfirmationTimeout, awaitConfirmation } = this.getConfig(config);
         try {
             await this.simulateCall(request, undefined);
@@ -78,18 +123,25 @@ export class SendTransactionService {
                 chain: client.chain,
             });
             if (awaitConfirmation) {
-                const receipt = await this.publicClient.waitForTransactionReceipt({
-                    hash,
-                    confirmations,
-                    timeout: transactionConfirmationTimeout,
-                });
-                return await this.handleReceipt(receipt, request);
+                try {
+                    const receipt = await this.publicClient.waitForTransactionReceipt({
+                        hash,
+                        confirmations,
+                        timeout: transactionConfirmationTimeout,
+                    });
+                    return await this.handleReceipt(receipt, request);
+                } catch (e) {
+                    if (e instanceof BaseError) {
+                        throw new EVMSendTransactionConfirmError(e.message, e);
+                    }
+                    throw e;
+                }
             } else {
                 return hash;
             }
         } catch (e) {
             if (e instanceof BaseError) {
-                throw new SendTransactionError(e.message, e);
+                throw new EVMSendTransactionError(e.message, e);
             }
             throw e;
         }
@@ -124,19 +176,20 @@ export class SendTransactionService {
                 account: request.address,
                 chain: this.publicClient.chain,
             });
-        } catch (err) {
-            if (err instanceof BaseError) {
-                const revertError = err.walk((err) => err instanceof ContractFunctionRevertedError);
+        } catch (e) {
+            if (e instanceof BaseError) {
+                const revertError = e.walk((err) => err instanceof ContractFunctionRevertedError);
                 if (revertError instanceof ContractFunctionRevertedError) {
                     throw new SendTransactionExecutionRevertedError(
                         revertError.message,
-                        err,
+                        e,
                         revertError,
                         passthroughTxId
                     );
                 }
+                throw new EVMSendTransactionSimulationError(e.message, e);
             }
-            throw err;
+            throw e;
         }
     }
 }
