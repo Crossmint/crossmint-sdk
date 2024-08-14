@@ -1,4 +1,4 @@
-import { Address } from "viem";
+import type { Address } from "viem";
 
 import type { CrossmintWalletService } from "../../../api/CrossmintWalletService";
 import type { SmartWalletChain } from "../../../blockchain/chains";
@@ -6,7 +6,7 @@ import { SmartWalletError } from "../../../error";
 import type { SupportedEntryPointVersion, SupportedKernelVersion } from "../../../types/internal";
 import type { UserParams } from "../../../types/params";
 import type { SignerData } from "../../../types/service";
-import { EOASignerConfig, PasskeySignerConfig, SignerConfig } from "./signer";
+import { EOASignerConfig, PasskeySignerConfig, type SignerConfig } from "./signer";
 
 export class AccountConfigFacade {
     constructor(private readonly crossmintService: CrossmintWalletService) {}
