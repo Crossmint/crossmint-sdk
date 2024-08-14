@@ -17,52 +17,47 @@ const AuthContext = createContext<AuthContextType>({
     jwt: null,
 });
 
-export type AuthProviderParams = {
+type AuthProviderParams = {
     apiKey: string;
     environment: CrossmintEnvironment;
     children: ReactNode;
-    embeddedWallets: {
-        type: "evm-smart-wallet";
-        defaultChain: "polygon-amoy" | "base-sepolia";
-        createOnLogin: "all-users" | "off";
-    };
 };
 
-const getJwtFromCookie = (): string | null => {
-    if (typeof document === "undefined") return null; // Check if we're on the client-side
-    const crossmintSession = document.cookie.split("; ").find((row) => row.startsWith("crossmint-session"));
-    return crossmintSession ? crossmintSession.split("=")[1] : null;
-};
-
-export function AuthProvider({ children, apiKey, environment, embeddedWallets }: AuthProviderParams) {
-    const [jwtToken, setJwtToken] = useState<string | null>(() => getJwtFromCookie());
-
+export function AuthProvider({ children, apiKey, environment }: AuthProviderParams) {
+    const [jwtToken, setJwtToken] = useState<string | null>(null);
     const [modalOpen, setModalOpen] = useState(false);
+    const crossmintService = useMemo(
+        () => new CrossmintService(apiKey, jwtToken, environment),
+        [apiKey, jwtToken, environment]
+    );
 
-    const crossmintService = useMemo(() => new CrossmintService(apiKey, jwtToken, environment), undefined);
+    useEffect(() => {
+        const crossmintSession = document.cookie.split("; ").find((row) => row.startsWith("crossmint-session"));
+        const crossmintSessionCookie = crossmintSession ? crossmintSession.split("=")[1] : null;
+        if (crossmintSessionCookie) {
+            setJwtToken(crossmintSessionCookie);
+        }
+    }, []);
 
     const login = () => {
         if (jwtToken) {
             console.log("User already logged in");
             return;
         }
-
         setModalOpen(true);
     };
-
     useEffect(() => {
         if (jwtToken == null) {
             return;
         }
 
         setModalOpen(false);
-    }, [jwtToken, embeddedWallets.createOnLogin]);
+    }, [modalOpen, jwtToken]);
 
     const logout = () => {
         document.cookie = "crossmint-session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
         setJwtToken(null);
     };
-
     useEffect(() => {
         if (jwtToken) {
             // TODO: WAL-2562: get user data from crossmint
@@ -71,11 +66,9 @@ export function AuthProvider({ children, apiKey, environment, embeddedWallets }:
             //     email: "test@test.com",
             //     name: "Test",
             // });
-
             document.cookie = `crossmint-session=${jwtToken}; path=/;`;
         }
     }, [jwtToken]);
-
     return (
         <AuthContext.Provider value={{ login, logout, jwt: jwtToken }}>
             {children}
