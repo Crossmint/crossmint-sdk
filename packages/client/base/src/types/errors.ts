@@ -29,7 +29,31 @@ export const PaymentErrors = {
 } as const;
 export type PaymentErrors = (typeof PaymentErrors)[keyof typeof PaymentErrors];
 
+export const SmartWalletErrorCode = {
+    TRANSFER: "smart-wallet:transfer",
+    SMART_WALLETS_NOT_ENABLED: "smart-wallet:not-enabled",
+    USER_WALLET_ALREADY_CREATED: "smart-wallet:user-wallet-already-created",
+    WALLET_CONFIG: "smart-wallet:config",
+    ADMIN_MISMATCH: "smart-wallet:config.admin-mismatch",
+    PASSKEY_MISMATCH: "smart-wallet:config.passkey-mismatch",
+    ADMIN_SIGNER_ALREADY_USED: "smart-wallet:config.admin-signer-already-used",
+    PASSKEY_PROMPT: "smart-wallet:passkey.prompt",
+    PASSKEY_INCOMPATIBLE_AUTHENTICATOR: "smart-wallet:passkey.incompatible-authenticator",
+    PASSKEY_REGISTRATION: "smart-wallet:passkey.registration",
+    UNCATEGORIZED: "smart-wallet:uncategorized", // smart wallet specific catch-all error code
+} as const;
+export type SmartWalletErrorCode = (typeof SmartWalletErrorCode)[keyof typeof SmartWalletErrorCode];
+
 export const CrossmintErrors = {
     ...PaymentErrors,
+    ...SmartWalletErrorCode,
+    NOT_AUTHORIZED: "not-authorized",
+    CROSSMINT_SERVICE: "crossmint-service",
+    JWT_EXPIRED: "not-authorized.jwt-expired",
+    JWT_INVALID: "not-authorized.jwt-invalid",
+    JWT_DECRYPTION: "not-authorized.jwt-decryption",
+    JWT_IDENTIFIER: "not-authorized.jwt-identifier",
+    OUT_OF_CREDITS: "out-of-credits",
 };
+
 export type CrossmintErrors = (typeof CrossmintErrors)[keyof typeof CrossmintErrors];

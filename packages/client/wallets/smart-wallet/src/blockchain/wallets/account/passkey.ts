@@ -12,7 +12,7 @@ import {
 } from "../../../error";
 import type { AccountAndSigner, PasskeyCreationParams } from "../../../types/internal";
 import type { UserParams } from "../../../types/params";
-import { type PasskeySignerData, PasskeyValidatorSerializedData } from "../../../types/service";
+import type { PasskeySignerData, PasskeyValidatorSerializedData } from "../../../types/service";
 import { PasskeySignerConfig } from "./signer";
 import { AccountCreationStrategy } from "./strategy";
 
