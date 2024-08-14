@@ -11,7 +11,7 @@ type AuthWalletProviderParams = AuthProviderParams & {
     };
 };
 
-export const WalletContext = createContext<{ wallet: null }>({
+export const WalletContext = createContext<{ wallet: EVMSmartWallet | null }>({
     wallet: null,
 });
 
