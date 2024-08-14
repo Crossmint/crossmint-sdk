@@ -4,7 +4,9 @@ import { EntryPointDetails, UserParams } from "@/types/Config";
 import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
 import { Address, getAddress } from "viem";
 
-import { CrossmintServiceError, SmartWalletError } from "../../../error";
+import { CrossmintServiceError } from "@crossmint/client-sdk-base";
+
+import { SmartWalletError } from "../../../error";
 import {
     SUPPORTED_ENTRYPOINT_VERSIONS,
     SUPPORTED_KERNEL_VERSIONS,

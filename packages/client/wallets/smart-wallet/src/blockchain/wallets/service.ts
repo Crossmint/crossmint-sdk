@@ -9,7 +9,7 @@ import { UserWalletAlreadyCreatedError } from "../../error";
 import type { UserParams, WalletParams } from "../../types/Config";
 import type { SmartWalletClient } from "../../types/internal";
 import { CURRENT_VERSION, ZERO_DEV_TYPE } from "../../utils/constants";
-import { SmartWalletChain, getBundlerRPC, viemNetworks } from "../chains";
+import { type SmartWalletChain, getBundlerRPC, viemNetworks } from "../chains";
 import { EVMSmartWallet } from "./EVMSmartWallet";
 import type { AccountConfigFacade } from "./account/config";
 import type { AccountCreator } from "./account/creator";
