@@ -40,7 +40,7 @@ export class EOACreationStrategy implements AccountCreationStrategy {
             plugins: {
                 sudo: ecdsaValidator,
             },
-            index: BigInt(0),
+            index: 0n,
             entryPoint: entryPoint.address,
             kernelVersion,
         });
