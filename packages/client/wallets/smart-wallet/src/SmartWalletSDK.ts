@@ -5,6 +5,7 @@ import { validateAPIKey } from "@crossmint/common-sdk-base";
 import { CrossmintWalletService } from "./api/CrossmintWalletService";
 import type { SmartWalletChain } from "./blockchain/chains";
 import type { EVMSmartWallet } from "./blockchain/wallets";
+import { AccountConfigCache } from "./blockchain/wallets/account/cache";
 import { AccountConfigFacade } from "./blockchain/wallets/account/config";
 import { AccountCreator } from "./blockchain/wallets/account/creator";
 import { EOACreationStrategy } from "./blockchain/wallets/account/eoa";
@@ -44,9 +45,11 @@ export class SmartWalletSDK {
             new EOACreationStrategy(),
             new PasskeyCreationStrategy(crossmintService.getPasskeyServerUrl(), clientApiKey)
         );
+        const accountCache = new AccountConfigCache(localStorage);
+
         const smartWalletService = new SmartWalletService(
             crossmintService,
-            new AccountConfigFacade(crossmintService),
+            new AccountConfigFacade(crossmintService, accountCache),
             accountCreator,
             new ClientDecorator(errorProcessor)
         );

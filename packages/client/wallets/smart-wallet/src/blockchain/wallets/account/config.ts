@@ -5,11 +5,15 @@ import type { SmartWalletChain } from "../../../blockchain/chains";
 import { SmartWalletError } from "../../../error";
 import type { SupportedEntryPointVersion, SupportedKernelVersion } from "../../../types/internal";
 import type { UserParams } from "../../../types/params";
-import type { SignerData } from "../../../types/service";
+import type { SignerData, SmartWalletConfig } from "../../../types/service";
+import { AccountConfigCache } from "./cache";
 import { EOASignerConfig, PasskeySignerConfig, type SignerConfig } from "./signer";
 
 export class AccountConfigFacade {
-    constructor(private readonly crossmintService: CrossmintWalletService) {}
+    constructor(
+        private readonly crossmintService: CrossmintWalletService,
+        private readonly cache: AccountConfigCache
+    ) {}
 
     public async get(
         user: UserParams,
@@ -21,8 +25,10 @@ export class AccountConfigFacade {
         existingSignerConfig?: SignerConfig;
         smartContractWalletAddress?: Address;
     }> {
-        const { entryPointVersion, kernelVersion, signers, smartContractWalletAddress, userId } =
-            await this.crossmintService.getSmartWalletConfig(user, chain);
+        const { entryPointVersion, kernelVersion, signers, smartContractWalletAddress, userId } = await this.config(
+            user,
+            chain
+        );
 
         if (
             (entryPointVersion === "v0.7" && kernelVersion.startsWith("0.2")) ||
@@ -40,6 +46,25 @@ export class AccountConfigFacade {
             existingSignerConfig: this.getSigner(signers.map((x) => x.signerData)),
             smartContractWalletAddress,
         };
+    }
+
+    private async config(user: UserParams, chain: SmartWalletChain): Promise<SmartWalletConfig> {
+        console.log(`Fetching smart wallet config for user: ${user.jwt.substring(0, 10)}... on chain: ${chain}`);
+
+        const cached = this.cache.get();
+        if (cached != null) {
+            console.log("Using cached smart wallet config");
+            return cached;
+        }
+
+        console.log("Cache miss. Fetching config from CrossmintWalletService...");
+        const config = await this.crossmintService.getSmartWalletConfig(user, chain);
+
+        console.log("Caching newly fetched config");
+        this.cache.set(config);
+
+        console.log("Smart wallet config retrieved successfully");
+        return config;
     }
 
     private getSigner(signers: SignerData[]): SignerConfig | undefined {

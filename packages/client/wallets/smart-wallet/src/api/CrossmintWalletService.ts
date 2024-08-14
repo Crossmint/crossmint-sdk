@@ -46,13 +46,13 @@ export class CrossmintWalletService extends BaseCrossmintService {
         );
 
         const result = SmartWalletConfigSchema.safeParse(data);
-        if (result.success) {
-            return result.data;
+        if (!result.success) {
+            throw new CrossmintServiceError(
+                `Invalid smart wallet config, please contact support. Details below:\n${result.error.toString()}`
+            );
         }
 
-        throw new CrossmintServiceError(
-            `Invalid smart wallet config, please contact support. Details below:\n${result.error.toString()}`
-        );
+        return result.data;
     }
 
     async fetchNFTs(address: string, chain: SmartWalletChain) {
