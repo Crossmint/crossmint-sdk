@@ -61,24 +61,18 @@ const SkeletonLoader = () => {
 };
 
 export default function Index() {
-    const { wallet, isLoadingWallet } = useAuth();
+    const { wallet } = useAuth();
 
     const { data, isLoading } = useQuery({
         queryKey: ["smart-wallet"],
-        queryFn: async () => {
-            if (wallet && !isLoadingWallet) {
-                const nfts = await wallet.nfts();
-                return nfts as NFT[];
-            }
-            return [] as NFT[];
-        },
+        queryFn: async () => ((await wallet?.nfts()) ?? []) as NFT[],
         refetchOnWindowFocus: false,
         refetchOnMount: false,
         staleTime: 1000 * 60 * 5, // 5 minutes
         enabled: wallet != null,
     });
 
-    if (isLoading || isLoadingWallet) {
+    if (isLoading) {
         return <SkeletonLoader />;
     }
 

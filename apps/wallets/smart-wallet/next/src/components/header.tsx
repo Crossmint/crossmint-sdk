@@ -14,10 +14,11 @@ import { Typography } from "./typography";
 import { useToast } from "./use-toast";
 
 export const Header = () => {
-    const { jwt, logout, wallet, isLoadingWallet } = useAuth();
+    const { jwt, logout, wallet } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
 
+    const isLoadingWallet = !wallet;
     const hasWalletAndJwt = jwt != null && wallet != null && !isLoadingWallet;
 
     const handleLogout = () => {
