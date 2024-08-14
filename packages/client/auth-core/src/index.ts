@@ -1,2 +1,2 @@
-export { useAuth, AuthProvider } from "./contexts/authlogin";
+export { useAuth, AuthProvider, type AuthProviderParams } from "./contexts/authlogin";
 export { verifyCrossmintSessionToken, CrossmintEnvironment } from "./utils";

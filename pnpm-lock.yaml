@@ -157,6 +157,9 @@ importers:
         specifier: 18.2.0
         version: 18.2.0(react@18.2.0)
     devDependencies:
+      '@crossmint/client-sdk-smart-wallet':
+        specifier: workspace:*
+        version: link:../../../packages/client/wallets/smart-wallet
       '@types/react':
         specifier: 18.2.21
         version: 18.2.21
@@ -669,6 +672,9 @@ importers:
 
   packages/client/wallets/smart-wallet:
     dependencies:
+      '@crossmint/client-sdk-base':
+        specifier: workspace:*
+        version: link:../../base
       '@crossmint/common-sdk-base':
         specifier: workspace:*
         version: link:../../../common/base
