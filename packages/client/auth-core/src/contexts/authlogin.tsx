@@ -44,8 +44,10 @@ export function AuthProvider({ children, apiKey, environment }: AuthProviderPara
             console.log("User already logged in");
             return;
         }
+
         setModalOpen(true);
     };
+
     useEffect(() => {
         if (jwtToken == null) {
             return;
@@ -58,6 +60,7 @@ export function AuthProvider({ children, apiKey, environment }: AuthProviderPara
         document.cookie = "crossmint-session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
         setJwtToken(null);
     };
+
     useEffect(() => {
         if (jwtToken) {
             // TODO: WAL-2562: get user data from crossmint
@@ -66,9 +69,11 @@ export function AuthProvider({ children, apiKey, environment }: AuthProviderPara
             //     email: "test@test.com",
             //     name: "Test",
             // });
+
             document.cookie = `crossmint-session=${jwtToken}; path=/;`;
         }
     }, [jwtToken]);
+
     return (
         <AuthContext.Provider value={{ login, logout, jwt: jwtToken }}>
             {children}
