@@ -20,7 +20,7 @@ import { SCW_SERVICE } from "../../utils/constants";
 import { errorToJSON, logPerformance } from "../../utils/log";
 import { SmartWalletChain } from "../chains";
 import { transferParams } from "../transfer";
-import { SendTransactionService, TransactionServiceResendCallback } from "./SendTransactionService";
+import { SendTransactionService } from "./SendTransactionService";
 
 /**
  * Smart wallet interface for EVM chains enhanced with Crossmint capabilities.
@@ -130,11 +130,35 @@ export class EVMSmartWallet {
      * Sends a contract call transaction and returns the hash of a confirmed transaction.
      * @param address the address of the contract to be called
      * @param abi the ABI of the contract - ***should be defined as a typed variable*** to enable type checking of the contract arguments, see https://viem.sh/docs/typescript#type-inference for guidance
-     * @param functionName the name of the function to be called
+     * @param functionName the name of the smart contract function to be called
      * @param args the arguments to be passed to the function
      * @param resendCallback a callback function that will be called if the transaction needs to be resent. Returns a value that controls transaction rebroadcasting See the type of `TransactionServiceResendCallback` for more information.
      * @returns The transaction hash.
-     * @throws `SendTransactionError` if the transaction fails to send. Will be subclass `SendTransactionExecutionRevertedError` if the transaction reverted either during simulation or on-chain.
+     * @throws `SendTransactionError` if the transaction fails to send. Contains the error thrown by the viem client.
+     * @throws `SendTransactionExecutionRevertedError`, a subclass of `SendTransactionError` if the transaction fails due to a contract execution error.
+     *
+     * **Passing a typed ABI:**
+     * @example
+     * const abi = [{
+     *   "inputs": [
+     *     {
+     *       "internalType": "address",
+     *         "name": "recipient",
+     *         "type": "address"
+     *       },
+     *   ],
+     *   "name": "mintNFT",
+     *   "outputs": [],
+     *   "stateMutability": "nonpayable",
+     *   "type": "function"
+     * }] as const;
+     *
+     * await wallet.sendTransaction({
+     *   address: contractAddress,
+     *   abi,
+     *   functionName: "mintNFT",
+     *   args: [recipientAddress],
+     * });
      */
     public async sendTransaction<
         const TAbi extends Abi | readonly unknown[],
@@ -153,13 +177,10 @@ export class EVMSmartWallet {
         functionName,
         args,
         value,
-        resendCallback,
     }: Omit<
         WriteContractParameters<TAbi, TFunctionName, TArgs, typeof this.accountClient.chain>,
         "chain" | "account"
-    > & {
-        resendCallback?: TransactionServiceResendCallback;
-    }): Promise<Hex> {
+    >): Promise<Hex> {
         return this.sendTransactionService.sendTransaction(
             {
                 address,
@@ -168,8 +189,7 @@ export class EVMSmartWallet {
                 args,
                 value,
             },
-            this.accountClient,
-            resendCallback
+            this.accountClient
         );
     }
 }

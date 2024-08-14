@@ -7,12 +7,9 @@ import {
     BaseError,
     Chain,
     ContractFunctionRevertedError,
-    EstimateFeesPerGasReturnType,
-    Hex,
     PublicClient,
     TransactionReceipt,
     Transport,
-    WaitForTransactionReceiptTimeoutError,
 } from "viem";
 
 import { CrossmintSDKError, WalletErrorCode } from "@crossmint/client-sdk-base";
@@ -24,22 +21,6 @@ export type TransactionServiceTransactionRequest = {
     args: any;
     value?: bigint;
 };
-
-/**
- * @param resend Whether the transaction should be resent.
- */
-export type TransactionServiceResendCallbackReturnType = {
-    resend: boolean;
-};
-
-/**
- * Callback to determine if the transaction should be resent.
- * @param resendAttempts The number of resend attempts that have been made. Starts at 1.
- * @returns An object that determines if the transaction should be resent. See `TransactionServiceResendCallbackReturnType`.
- */
-export type TransactionServiceResendCallback = (
-    resendAttempts: number
-) => Promise<TransactionServiceResendCallbackReturnType>;
 
 /**
  * Error thrown when a transaction fails to send.
@@ -67,55 +48,58 @@ export class SendTransactionExecutionRevertedError extends SendTransactionError 
     }
 }
 
+export interface SendTransactionOptions {
+    confirmations: number;
+    transactionConfirmationTimeout: number;
+    awaitConfirmation?: boolean;
+}
+
 export class SendTransactionService {
     constructor(
         private publicClient: PublicClient,
-        private gasIncreaseFactor = 1.2,
-        private confirmations = 2,
-        private transactionConfirmationTimeout = 15_000,
-        private defaultResendCallback: TransactionServiceResendCallback = async (resendAttempts) => ({
-            resend: resendAttempts <= 3,
-        })
+        private defaultSendTransactionOptions: SendTransactionOptions = {
+            confirmations: 2,
+            transactionConfirmationTimeout: 30_000,
+            awaitConfirmation: true,
+        }
     ) {}
 
     async sendTransaction(
         request: TransactionServiceTransactionRequest,
         client: SmartAccountClient<EntryPoint, Transport, Chain, SmartAccount<EntryPoint>>,
-        resendCallback = this.defaultResendCallback
+        config: Partial<SendTransactionOptions> = {}
     ) {
-        for (let attempt = 0; attempt == 0 || (await resendCallback(attempt)).resend; attempt++) {
-            const gas = this.modifyGas(attempt, await this.publicClient.estimateFeesPerGas());
+        const { confirmations, transactionConfirmationTimeout, awaitConfirmation } = this.getConfig(config);
+        try {
             await this.simulateCall(request, undefined);
-            let hash;
-            try {
-                hash = await client.writeContract({
-                    ...request,
-                    account: client.account,
-                    chain: client.chain,
-                    ...gas,
-                });
-            } catch (e) {
-                if (e instanceof BaseError) {
-                    throw new SendTransactionError(e.message, e);
-                }
-                throw e;
-            }
-            try {
+            const hash = await client.writeContract({
+                ...request,
+                account: client.account,
+                chain: client.chain,
+            });
+            if (awaitConfirmation) {
                 const receipt = await this.publicClient.waitForTransactionReceipt({
                     hash,
-                    confirmations: this.confirmations,
-                    timeout: this.transactionConfirmationTimeout,
+                    confirmations,
+                    timeout: transactionConfirmationTimeout,
                 });
                 return await this.handleReceipt(receipt, request);
-            } catch (e) {
-                if (e instanceof WaitForTransactionReceiptTimeoutError) {
-                    continue;
-                }
-                throw e;
+            } else {
+                return hash;
             }
+        } catch (e) {
+            if (e instanceof BaseError) {
+                throw new SendTransactionError(e.message, e);
+            }
+            throw e;
         }
-        // TODO discuss
-        throw new Error("Retries exceeded");
+    }
+
+    private getConfig(config: Partial<SendTransactionOptions>): SendTransactionOptions {
+        return {
+            ...this.defaultSendTransactionOptions,
+            ...config,
+        };
     }
 
     private async handleReceipt(receipt: TransactionReceipt, request: TransactionServiceTransactionRequest) {
@@ -131,17 +115,6 @@ export class SendTransactionService {
             );
         }
         return receipt.transactionHash;
-    }
-
-    private modifyGas(attempt: number, gas: EstimateFeesPerGasReturnType) {
-        if (gas.maxPriorityFeePerGas != null) {
-            gas.maxFeePerGas *= BigInt(this.gasIncreaseFactor * (attempt + 1));
-            gas.maxPriorityFeePerGas *= BigInt(this.gasIncreaseFactor * (attempt + 1));
-        }
-        if (gas.gasPrice != null) {
-            gas.gasPrice *= BigInt(this.gasIncreaseFactor * (attempt + 1));
-        }
-        return gas;
     }
 
     private async simulateCall(request: TransactionServiceTransactionRequest, passthroughTxId: string | undefined) {
