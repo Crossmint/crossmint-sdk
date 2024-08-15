@@ -1,3 +1,4 @@
+import { mock } from "jest-mock-extended";
 import { SmartAccountClient } from "permissionless";
 import { SmartAccount } from "permissionless/accounts";
 import { EntryPoint } from "permissionless/types";
@@ -6,12 +7,11 @@ import {
     Chain,
     ContractFunctionRevertedError,
     PublicClient,
+    SimulateContractReturnType,
     TransactionReceipt,
     Transport,
     zeroAddress,
 } from "viem";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { mock } from "vitest-mock-extended";
 
 import {
     EVMSendTransactionConfirmationError,
@@ -32,11 +32,11 @@ describe("SendTransactionService", () => {
     const sendTransactionService = new SendTransactionService(mockPublicClient);
 
     beforeEach(() => {
-        vi.resetAllMocks();
+        jest.resetAllMocks();
     });
 
     it("Throws EVMSendTransactionExecutionRevertedError when a transaction simulation fails", async () => {
-        const mockError = makeMockError(BaseError.prototype, { walk: vi.fn() });
+        const mockError = makeMockError(BaseError.prototype, { walk: jest.fn() });
         const mockRevertError = new ContractFunctionRevertedError({
             abi: [],
             functionName: "mockFunction",
@@ -111,8 +111,14 @@ describe("SendTransactionService", () => {
         const mockReceipt = mock<TransactionReceipt>();
         mockPublicClient.waitForTransactionReceipt.mockResolvedValueOnce(mockReceipt);
         const callOrder: string[] = [];
-        mockPublicClient.simulateContract.mockImplementation(() => callOrder.push("simulateContract"));
-        mockAccountClient.writeContract.mockImplementation(() => callOrder.push("sendTransaction"));
+        mockPublicClient.simulateContract.mockImplementation(async () => {
+            callOrder.push("simulateContract");
+            return mock<SimulateContractReturnType>();
+        });
+        mockAccountClient.writeContract.mockImplementation(async () => {
+            callOrder.push("sendTransaction");
+            return "0xmockTxHash";
+        });
         await expect(
             sendTransactionService.sendTransaction(
                 {
@@ -128,7 +134,7 @@ describe("SendTransactionService", () => {
     });
 
     it("Only waits for confirmation if awaitConfirmation is true", async () => {
-        mockAccountClient.writeContract.mockResolvedValue("mockHash");
+        mockAccountClient.writeContract.mockResolvedValue("0xmockTxHash");
         const sendTransactionService = new SendTransactionService(mockPublicClient, {
             awaitConfirmation: false,
             confirmations: 1,
