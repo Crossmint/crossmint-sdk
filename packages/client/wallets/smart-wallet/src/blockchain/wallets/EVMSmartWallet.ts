@@ -177,10 +177,7 @@ export class EVMSmartWallet {
         functionName,
         args,
         value,
-    }: Omit<
-        WriteContractParameters<TAbi, TFunctionName, TArgs, typeof this.accountClient.chain>,
-        "chain" | "account"
-    >): Promise<Hex> {
+    }: Omit<WriteContractParameters<TAbi, TFunctionName, TArgs>, "chain" | "account">): Promise<Hex> {
         return this.sendTransactionService.sendTransaction(
             {
                 address,
