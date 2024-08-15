@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import { fontFamily } from "tailwindcss/defaultTheme";
 
 const config: Config = {
     content: [
@@ -29,6 +30,9 @@ const config: Config = {
             ring: "hsl(var(--color-ring) / <alpha-value>)",
             "chart-1": "hsl(var(--color-chart-1) / <alpha-value>)",
             skeleton: "hsl(var(--color-skeleton) / <alpha-value>)",
+        },
+        fontFamily: {
+            body: ["var(--font-inter)", ...fontFamily.sans],
         },
         boxShadow: {
             light: "var(--shadow-light)",
