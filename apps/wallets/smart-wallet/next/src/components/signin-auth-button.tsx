@@ -8,9 +8,10 @@ import { Button } from "./button";
 import { Typography } from "./typography";
 
 export const SignInAuthButton = () => {
-    const { jwt, login } = useAuth();
+    const { jwt, wallet, login } = useAuth();
+    const isLoadingWallet = jwt && !wallet;
 
-    if (jwt != null) {
+    if (isLoadingWallet) {
         return (
             <div className="flex gap-2 items-center self-center min-h-[52px]" role="status">
                 <svg
