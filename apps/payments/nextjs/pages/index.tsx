@@ -1,6 +1,10 @@
-import { CrossmintPayButton } from "@crossmint/client-sdk-react-ui";
+import { SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
 
 export default function Index() {
+    const handleClick = () => {
+        SmartWalletSDK.init({ clientApiKey: "ahhhh" });
+    };
+
     return (
         <div
             style={{
@@ -11,7 +15,16 @@ export default function Index() {
                 alignItems: "center",
             }}
         >
-            <CrossmintPayButton collectionId="<COLLECTION_ID>" projectId="<PROJECT_ID>" />
+            <button
+                style={{
+                    padding: "10px 20px",
+                    fontSize: "16px",
+                    cursor: "pointer",
+                }}
+                onClick={handleClick}
+            >
+                Click me
+            </button>
         </div>
     );
 }
