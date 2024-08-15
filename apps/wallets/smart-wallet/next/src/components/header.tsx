@@ -18,7 +18,7 @@ export const Header = () => {
     const router = useRouter();
     const { toast } = useToast();
 
-    const isLoadingWallet = !wallet;
+    const isLoadingWallet = jwt && !wallet;
     const hasWalletAndJwt = jwt != null && wallet != null && !isLoadingWallet;
 
     const handleLogout = () => {
