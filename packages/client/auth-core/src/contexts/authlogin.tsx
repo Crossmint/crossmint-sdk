@@ -23,8 +23,16 @@ export type AuthProviderParams = {
     children: ReactNode;
 };
 
+const getJwtFromCookie = (): string | null => {
+    if (typeof document === "undefined") {
+        return null; // Check if we're on the client-side
+    }
+    const crossmintSession = document.cookie.split("; ").find((row) => row.startsWith("crossmint-session"));
+    return crossmintSession ? crossmintSession.split("=")[1] : null;
+};
+
 export function AuthProvider({ children, apiKey, environment }: AuthProviderParams) {
-    const [jwtToken, setJwtToken] = useState<string | null>(null);
+    const [jwtToken, setJwtToken] = useState<string | null>(() => getJwtFromCookie());
     const [modalOpen, setModalOpen] = useState(false);
     const crossmintService = useMemo(
         () => new CrossmintService(apiKey, jwtToken, environment),
