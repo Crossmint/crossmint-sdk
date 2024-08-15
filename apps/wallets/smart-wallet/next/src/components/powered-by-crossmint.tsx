@@ -1,4 +1,4 @@
-import { CrossmintLeaf } from "@/icons/crossmint-leaf";
+import { PoweredByLeaf } from "@/icons/crossmint-leaf";
 import { cn } from "@/lib/utils";
 
 import { Typography } from "./typography";
@@ -14,7 +14,7 @@ export const PoweredByCrossmint = ({ className }: { className?: string }) => {
         >
             Powered by
             <span className="self-center pr-1 pl-1.5">
-                <CrossmintLeaf />
+                <PoweredByLeaf />
             </span>
             crossmint
         </Typography>

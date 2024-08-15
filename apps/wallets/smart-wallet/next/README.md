@@ -26,14 +26,7 @@ Before running the application, you need to set up your environment variables:
     > The credentials can be found in our shared 1Pass (see admin for access).
 
 ```plaintext
-NEXT_PUBLIC_BASE_URL=
 NEXT_PUBLIC_CROSSMINT_API_KEY=
-NEXT_PUBLIC_FIREBASE_API_KEY=
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
-NEXT_PUBLIC_FIREBASE_APP_ID=
 ```
 
 ## Starting the Application
