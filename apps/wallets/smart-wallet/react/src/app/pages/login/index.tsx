@@ -47,7 +47,10 @@ export const Login = () => {
             account = testAccountPrivateKey
                 ? await createViemAAWallet(isSwitchOn, testAccountPrivateKey)
                 : await createPasskeyWallet(isSwitchOn);
-        } catch (e) {
+        } catch (e: any) {
+            console.log("There's been an error");
+            console.log(e);
+            console.log(e.message);
             setLoading(false);
             return;
         }

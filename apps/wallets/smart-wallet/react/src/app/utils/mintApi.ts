@@ -51,9 +51,11 @@ export const mintNFT = async (account: EVMSmartWallet) => {
         });
 
         console.log("NFT mint. Tx hash:", transactionHash);
-        return true;
-    } catch (error) {
-        console.error("Error minting NFT:", error);
+        return false;
+    } catch (error: any) {
+        console.error("Error minting NFT");
+        console.log(error);
+        console.log(error.message);
         return false;
     }
 };

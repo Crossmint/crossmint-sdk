@@ -53,5 +53,5 @@ function AuthWalletProvider(props: AuthWalletProviderParams) {
         }
     }, [jwt, props.embeddedWallets.createOnLogin]);
 
-    return <WalletContext.Provider value={{ wallet: null }}>{props.children}</WalletContext.Provider>;
+    return <WalletContext.Provider value={{ wallet }}>{props.children}</WalletContext.Provider>;
 }

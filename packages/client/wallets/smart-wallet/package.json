@@ -19,14 +19,12 @@
         "LICENSE"
     ],
     "scripts": {
-        "build": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
-        "build-no-minify": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --dts --sourcemap",
-        "dev": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
-        "link:common-sdk-base": "yalc add @crossmint/common-sdk-base && yalc link @crossmint/common-sdk-base && pnpm i && pnpm build && yalc push",
+        "build": "tsup src/index.ts --clean --format esm --outDir ./dist --minify --dts --sourcemap",
+        "build-no-minify": "tsup src/index.ts --clean --format esm --outDir ./dist --dts --sourcemap",
+        "dev": "tsup src/index.ts --clean --format esm --outDir ./dist --dts --sourcemap --watch",
         "test": "cross-env NODE_ENV=test jest",
         "test-coverage": "cross-env NODE_ENV=test jest --coverage",
-        "test:starter": "pnpm run build && pnpm --filter @crossmint/client-sdk-smart-wallet-react-starter exec playwright test",
-        "unlink:common-sdk-base": "yalc remove @crossmint/common-sdk-base && pnpm i"
+        "test:starter": "pnpm run build && pnpm --filter @crossmint/client-sdk-smart-wallet-react-starter exec playwright test"
     },
     "dependencies": {
         "@crossmint/client-sdk-base": "workspace:*",
