@@ -1,11 +1,8 @@
 import { Chain, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
 
-import { AuthStrategy } from "../../auth";
-import { AuthProviders } from "../../providers/Providers";
+import { AuthAdapter } from "../../auth";
 
-export async function createPasskeyWallet(isProd: boolean, authProvider: string, providers: AuthProviders) {
-    const authAdapter = AuthStrategy.forProvider(authProvider, providers);
-
+export async function createPasskeyWallet(isProd: boolean, authAdapter: AuthAdapter) {
     let jwt = await authAdapter.check();
 
     if (!jwt) {

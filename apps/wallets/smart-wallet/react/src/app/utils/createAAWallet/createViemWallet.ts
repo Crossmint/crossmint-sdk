@@ -2,17 +2,9 @@ import { privateKeyToAccount } from "viem/accounts";
 
 import { Chain, SmartWalletSDK, ViemAccount } from "@crossmint/client-sdk-smart-wallet";
 
-import { AuthStrategy } from "../../auth";
-import { AuthProviders } from "../../providers/Providers";
+import { AuthAdapter } from "../../auth";
 
-export const createViemAAWallet = async (
-    isProd: boolean,
-    privateKey: `0x${string}`,
-    authProvider: string,
-    providers: AuthProviders
-) => {
-    const authAdapter = AuthStrategy.forProvider(authProvider, providers);
-
+export const createViemAAWallet = async (isProd: boolean, privateKey: `0x${string}`, authAdapter: AuthAdapter) => {
     let jwt = await authAdapter.check();
 
     if (!jwt) {

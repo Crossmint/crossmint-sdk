@@ -2,17 +2,19 @@ import { Toaster } from "react-hot-toast";
 
 import { AppProvider } from "./AppContext";
 import { AppRouter } from "./Router";
-import { withProviders } from "./providers/Providers";
+import { ConfiguredAuthProviders } from "./providers/auth-providers";
 
 function App() {
     return (
         <AppProvider>
-            <>
-                <Toaster position="top-right" />
-                <AppRouter />
-            </>
+            <ConfiguredAuthProviders>
+                <>
+                    <Toaster position="top-right" />
+                    <AppRouter />
+                </>
+            </ConfiguredAuthProviders>
         </AppProvider>
     );
 }
 
-export default withProviders(App);
+export default App;

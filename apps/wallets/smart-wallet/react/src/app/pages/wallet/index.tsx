@@ -7,7 +7,7 @@ import coinCoin from "../../assets/icons/coin_icon.svg";
 import nftCardIcon from "../../assets/icons/no_nfts.svg";
 import Button from "../../components/button/Button";
 import Card from "../../components/card/Card";
-import { useAuthProviders } from "../../providers/Providers";
+import { useAuthProvider } from "../../hooks/useAuthProvider";
 import { createPasskeyWallet } from "../../utils/createAAWallet/createPasskeyWallet";
 import { createViemAAWallet } from "../../utils/createAAWallet/createViemWallet";
 import { getTokenBalances, hexBalanceToDecimalValue, walletContent } from "../../utils/mintApi";
@@ -22,7 +22,7 @@ interface Tokens {
 }
 
 export const Wallet = () => {
-    const { value, transferSuccess, soldNft, isProd, setSoldNft, setIsAuthenticated, setValue, authProviderContext } =
+    const { value, transferSuccess, soldNft, isProd, setSoldNft, setIsAuthenticated, setValue } =
         useContext(AppContext);
     const [tokensArray, setTokens] = useState<Tokens[]>([]);
     const [nftsArray, setNfts] = useState<any>([]);
@@ -33,13 +33,13 @@ export const Wallet = () => {
     const [currentToken, setCurrentToken] = useState<any>(null);
     const [loading, setLoading] = useState(false);
     const [totalBalance, setTotalBalance] = useState("0.00");
-    const authProviders = useAuthProviders();
+    const authAdapter = useAuthProvider();
 
     const createAndSetAAWallet = async () => {
         const testAccountPrivateKey = localStorage.getItem("testAccountPrivateKey") as `0x${string}` | null;
         const account = testAccountPrivateKey
-            ? await createViemAAWallet(isProd, testAccountPrivateKey, authProviderContext, authProviders)
-            : await createPasskeyWallet(isProd, authProviderContext, authProviders);
+            ? await createViemAAWallet(isProd, testAccountPrivateKey, authAdapter)
+            : await createPasskeyWallet(isProd, authAdapter);
 
         setIsAuthenticated(true);
         localStorage.setItem("isUserConnected", "true");

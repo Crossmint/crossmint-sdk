@@ -12,7 +12,7 @@ import landingBackground from "../../assets/images/landing_background.svg";
 import { MarginLessSecondaryTitle, Paragraph, ParagraphBold, TerciaryTitle } from "../../components/Common/Text";
 import Button from "../../components/button/Button";
 import Switch from "../../components/switch/Switch";
-import { useAuthProviders } from "../../providers/Providers";
+import { useAuthProvider } from "../../hooks/useAuthProvider";
 import { createPasskeyWallet } from "../../utils/createAAWallet/createPasskeyWallet";
 import { createViemAAWallet } from "../../utils/createAAWallet/createViemWallet";
 
@@ -34,8 +34,7 @@ export const Login = () => {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const [isSwitchOn, setIsSwitchOn] = useState(false);
-    const [authProvider, setAuthProvider] = useState(authProviderContext ?? "Firebase");
-    const authProviders = useAuthProviders();
+    const authAdapter = useAuthProvider();
 
     const handleSwitchChange = (checked: boolean) => {
         setIsSwitchOn(checked);
@@ -43,7 +42,6 @@ export const Login = () => {
     };
 
     const handleAuthProviderChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        setAuthProvider(event.target.value);
         setAuthProviderContext(event.target.value);
     };
 
@@ -53,8 +51,8 @@ export const Login = () => {
         let account: EVMSmartWallet;
         try {
             account = testAccountPrivateKey
-                ? await createViemAAWallet(isSwitchOn, testAccountPrivateKey, authProvider, authProviders)
-                : await createPasskeyWallet(isSwitchOn, authProvider, authProviders);
+                ? await createViemAAWallet(isSwitchOn, testAccountPrivateKey, authAdapter)
+                : await createPasskeyWallet(isSwitchOn, authAdapter);
         } catch (e) {
             console.error(e);
             setLoading(false);
@@ -109,7 +107,7 @@ export const Login = () => {
                 </TerciaryTitle>
                 <div className="flex flex-col items-center justify-center">
                     <div className="flex items-center mt-4">
-                        <select value={authProvider} onChange={handleAuthProviderChange} className="ml-2">
+                        <select value={authProviderContext} onChange={handleAuthProviderChange} className="ml-2">
                             <option value="Firebase">Firebase</option>
                             <option value="Privy">Privy</option>
                             <option value="Auth0">Auth0</option>

@@ -8,17 +8,17 @@ import { ReactComponent as CrossmintLogoOriginal } from "../../assets/icons/cros
 import { ReactComponent as CrossmintLogoWhite } from "../../assets/icons/crossmint_logo_white.svg";
 import { ReactComponent as MintIcon } from "../../assets/icons/mint_icon.svg";
 import { ReactComponent as WalletIcon } from "../../assets/icons/wallet_icon.svg";
-import { AuthStrategy } from "../../auth";
-import { useAuthProviders } from "../../providers/Providers";
+import { useAuthProvider } from "../../hooks/useAuthProvider";
 import { MarginLessSecondaryTitle, Paragraph, TerciaryTitle } from "../Common/Text";
 
 const HeaderComponent = () => {
-    const { isAuthenticated, value, setIsAuthenticated, authProviderContext } = useContext(AppContext);
+    const { isAuthenticated, value, setIsAuthenticated } = useContext(AppContext);
     const [showDropdown, setShowDropdown] = useState(false);
     const [selectedTab, setSelectedTab] = useState(0);
     const navigate = useNavigate();
     const location = useLocation();
-    const authProviders = useAuthProviders();
+
+    const authAdapter = useAuthProvider();
 
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -36,7 +36,7 @@ const HeaderComponent = () => {
     }, []);
 
     const handleLogout = async () => {
-        AuthStrategy.forProvider(authProviderContext, authProviders).logout();
+        authAdapter.logout();
 
         // purgeData(isProd);
         if (value === undefined) {
