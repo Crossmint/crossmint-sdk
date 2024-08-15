@@ -30,7 +30,7 @@ function AuthWalletProvider(props: AuthWalletProviderParams) {
 
     const smartWalletSDK = useMemo(() => SmartWalletSDK.init({ clientApiKey: props.apiKey }), [props.apiKey]);
 
-    const createWallet = async (jwt: string) => {
+    const getOrCreateWallet = async (jwt: string) => {
         try {
             const wallet = await smartWalletSDK.getOrCreateWallet({ jwt }, props.embeddedWallets.defaultChain);
             setWallet(wallet);
@@ -42,8 +42,8 @@ function AuthWalletProvider(props: AuthWalletProviderParams) {
 
     useEffect(() => {
         if (props.embeddedWallets.createOnLogin && jwt) {
-            console.log("Creating wallet");
-            createWallet(jwt);
+            console.log("Getting or Creating wallet");
+            getOrCreateWallet(jwt);
         }
 
         if (wallet && !jwt) {
@@ -53,5 +53,5 @@ function AuthWalletProvider(props: AuthWalletProviderParams) {
         }
     }, [jwt, props.embeddedWallets.createOnLogin]);
 
-    return <WalletContext.Provider value={{ wallet: null }}>{props.children}</WalletContext.Provider>;
+    return <WalletContext.Provider value={{ wallet }}>{props.children}</WalletContext.Provider>;
 }
