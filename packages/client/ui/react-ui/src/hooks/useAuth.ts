@@ -7,7 +7,7 @@ export function useAuth() {
     const walletContext = useContext(WalletContext);
 
     if (!walletContext) {
-        throw new Error("useAuth must be used within an WalletProvider");
+        throw new Error("useAuth must be used within a CrossmintAuthProvider");
     }
 
     const authContext = useAuthCore();
