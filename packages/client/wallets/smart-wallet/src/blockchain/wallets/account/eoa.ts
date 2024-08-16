@@ -1,10 +1,10 @@
-import type { AccountAndSigner, EOACreationParams } from "@/types/internal";
-import { equalsIgnoreCase } from "@/utils/helpers";
-import { createOwnerSigner } from "@/utils/signer";
 import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
 import { createKernelAccount } from "@zerodev/sdk";
 
 import { AdminMismatchError } from "../../../error";
+import type { AccountAndSigner, EOACreationParams } from "../../../types/internal";
+import { equalsIgnoreCase } from "../../../utils/helpers";
+import { createOwnerSigner } from "../../../utils/signer";
 import { EOASignerConfig } from "./signer";
 import { AccountCreationStrategy } from "./strategy";
 

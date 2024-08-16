@@ -22,11 +22,7 @@
         "build": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
         "build-no-minify": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --dts --sourcemap",
         "dev": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
-        "link:common-sdk-base": "yalc add @crossmint/common-sdk-base && yalc link @crossmint/common-sdk-base && pnpm i && pnpm build && yalc push",
-        "test": "cross-env NODE_ENV=test jest",
-        "test-coverage": "cross-env NODE_ENV=test jest --coverage",
-        "test:starter": "pnpm run build && pnpm --filter @crossmint/client-sdk-smart-wallet-react-starter exec playwright test",
-        "unlink:common-sdk-base": "yalc remove @crossmint/common-sdk-base && pnpm i"
+        "test": "vitest run"
     },
     "dependencies": {
         "@crossmint/client-sdk-base": "workspace:*",
@@ -41,8 +37,6 @@
         "zod": "3.22.4"
     },
     "devDependencies": {
-        "@playwright/test": "^1.41.2",
-        "@types/node": "20.12.7",
-        "@types/uuid": "10.0.0"
+        "@types/node": "20.12.7"
     }
 }

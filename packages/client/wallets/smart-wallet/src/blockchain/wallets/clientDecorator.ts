@@ -1,12 +1,12 @@
-import { SmartWalletError } from "@/error";
-import { ErrorProcessor } from "@/error/processor";
-import { logInfo } from "@/services/logging";
-import { usesGelatoBundler } from "@/utils/blockchain";
-import { logPerformance } from "@/utils/log";
 import type { SmartAccountClient } from "permissionless";
 import type { EntryPoint } from "permissionless/types/entrypoint";
 import { stringify } from "viem";
 
+import { SmartWalletError } from "../../error";
+import { ErrorProcessor } from "../../error/processor";
+import { logInfo } from "../../services/logging";
+import { usesGelatoBundler } from "../../utils/blockchain";
+import { logPerformance } from "../../utils/log";
 import { SmartWalletChain } from "../chains";
 
 const transactionMethods = [

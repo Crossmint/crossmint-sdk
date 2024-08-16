@@ -2,7 +2,7 @@ import { PasskeyValidatorContractVersion } from "@zerodev/passkey-validator";
 import { isAddress, isHex } from "viem";
 import { z } from "zod";
 
-import { SUPPORTED_ENTRYPOINT_VERSIONS, SUPPORTED_KERNEL_VERSIONS } from "./internal";
+import { SUPPORTED_ENTRYPOINT_VERSIONS, SUPPORTED_KERNEL_VERSIONS } from "../utils/constants";
 
 const HexSchema = z.custom<`0x${string}`>((val): val is `0x${string}` => isHex(val as string), {
     message: "Invalid hex string",

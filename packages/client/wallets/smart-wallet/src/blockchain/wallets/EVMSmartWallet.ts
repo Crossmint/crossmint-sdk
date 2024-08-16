@@ -1,9 +1,9 @@
-import { logError, logInfo } from "@/services/logging";
 import { type HttpTransport, type PublicClient, isAddress, publicActions } from "viem";
 
 import { TransferError } from "@crossmint/client-sdk-base";
 
 import type { CrossmintWalletService } from "../../api/CrossmintWalletService";
+import { logError, logInfo } from "../../services/logging";
 import { SmartWalletClient } from "../../types/internal";
 import type { TransferType } from "../../types/token";
 import { SCW_SERVICE } from "../../utils/constants";
