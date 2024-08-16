@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.3.2
+
+### Patch Changes
+
+-   5c60365: Export EVMSmartWallet & Chain types
+
 ## 1.3.1
 
 ### Patch Changes
