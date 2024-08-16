@@ -1,43 +1,37 @@
-import { logInfo } from "@/services/logging";
-import { UserParams } from "@/types/params";
 import { keccak256, toHex } from "viem";
 
+import { UserParams } from "../../../types/params";
 import { SmartWalletConfigSchema } from "../../../types/schema";
 import type { SmartWalletConfig } from "../../../types/service";
-import { SDK_VERSION } from "../../../utils/constants";
 
 export class AccountConfigCache {
-    private keyPrefix = `smart-wallet-${SDK_VERSION}`;
-
-    constructor(private readonly storage: Storage) {}
+    constructor(private readonly keyPrefix: string) {}
 
     set(user: UserParams, config: SmartWalletConfig) {
-        this.storage.setItem(this.key(user), JSON.stringify(config));
+        localStorage.setItem(this.key(user), JSON.stringify(config));
     }
 
     get(user: UserParams): SmartWalletConfig | null {
         const key = this.key(user);
-        const data = this.storage.getItem(key);
+        const data = localStorage.getItem(key);
         if (data == null) {
-            this.clear(); // To keep local storage tidy
             return null;
         }
 
         const result = SmartWalletConfigSchema.safeParse(JSON.parse(data));
         if (!result.success) {
-            logInfo(`Invalid cached smart wallet config. Details:\n${result.error.toString()}`);
-            this.storage.removeItem(key);
+            localStorage.removeItem(key);
             return null;
         }
 
         return result.data;
     }
 
-    private clear() {
-        for (let i = 0; i < this.storage.length; i++) {
-            const key = this.storage.key(i);
+    public clear() {
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
             if (key && key.startsWith(this.keyPrefix)) {
-                this.storage.removeItem(key);
+                localStorage.removeItem(key);
                 i--; // Decrement i since we've removed an item
             }
         }

@@ -55,6 +55,7 @@ export class AccountConfigFacade {
         }
 
         const config = await this.crossmintService.getSmartWalletConfig(user, chain);
+        this.cache.clear();
         this.cache.set(user, config);
 
         return config;
