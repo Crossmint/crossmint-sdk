@@ -6,7 +6,6 @@ import type { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import { scwLogger } from "../../services/logger";
 import { SmartWalletClient } from "../../types/internal";
 import type { TransferType } from "../../types/token";
-import { SCW_SERVICE } from "../../utils/constants";
 import { errorToJSON } from "../../utils/log";
 import { SmartWalletChain } from "../chains";
 import { transferParams } from "../transfer";
@@ -93,7 +92,6 @@ export class EVMSmartWallet {
                     return hash;
                 } catch (error) {
                     this.logger.error("[TRANSFER] - ERROR_TRANSFERRING_TOKEN", {
-                        service: SCW_SERVICE,
                         error: errorToJSON(error, this.logger),
                         tokenId: tx.tokenId,
                         contractAddress: config.token.contractAddress,
