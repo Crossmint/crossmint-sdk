@@ -2,7 +2,6 @@
 
 import { Header } from "@/components/header";
 import { Toaster } from "@/components/toaster";
-import { env } from "@/env";
 import { useEffect, useState } from "react";
 
 import { CrossmintAuthProvider } from "@crossmint/client-sdk-react-ui";
@@ -30,7 +29,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
         </>
     ) : (
         <CrossmintAuthProvider
-            apiKey={env.NEXT_PUBLIC_CROSSMINT_API_KEY}
+            apiKey={process.env.NEXT_PUBLIC_CROSSMINT_API_KEY ?? ""}
             environment="staging"
             embeddedWallets={{ createOnLogin: "all-users", type: "evm-smart-wallet", defaultChain: "polygon-amoy" }}
         >
