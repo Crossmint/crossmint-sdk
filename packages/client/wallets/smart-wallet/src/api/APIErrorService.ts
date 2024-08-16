@@ -1,11 +1,4 @@
 import {
-    AdminAlreadyUsedError,
-    SmartWalletError,
-    SmartWalletsNotEnabledError,
-    UserWalletAlreadyCreatedError,
-} from "@/error";
-
-import {
     CrossmintServiceError,
     JWTDecryptionError,
     JWTExpiredError,
@@ -13,6 +6,13 @@ import {
     JWTInvalidError,
     OutOfCreditsError,
 } from "@crossmint/client-sdk-base";
+
+import {
+    AdminAlreadyUsedError,
+    SmartWalletError,
+    SmartWalletsNotEnabledError,
+    UserWalletAlreadyCreatedError,
+} from "../error";
 
 export type CrossmintAPIErrorCodes =
     | "ERROR_JWT_INVALID"

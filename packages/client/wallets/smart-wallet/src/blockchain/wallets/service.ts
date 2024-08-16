@@ -1,4 +1,3 @@
-import { equalsIgnoreCase } from "@/utils/helpers";
 import { createKernelAccountClient } from "@zerodev/sdk";
 import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
 import { createPublicClient, http } from "viem";
@@ -10,6 +9,7 @@ import { UserWalletAlreadyCreatedError } from "../../error";
 import type { SmartWalletClient } from "../../types/internal";
 import type { UserParams, WalletParams } from "../../types/params";
 import { CURRENT_VERSION, ZERO_DEV_TYPE } from "../../utils/constants";
+import { equalsIgnoreCase } from "../../utils/helpers";
 import { type SmartWalletChain, getBundlerRPC, viemNetworks } from "../chains";
 import { EVMSmartWallet } from "./EVMSmartWallet";
 import type { AccountConfigFacade } from "./account/config";

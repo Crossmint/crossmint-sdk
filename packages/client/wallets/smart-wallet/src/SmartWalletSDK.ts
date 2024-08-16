@@ -44,6 +44,7 @@ export class SmartWalletSDK {
             new EOACreationStrategy(),
             new PasskeyCreationStrategy(crossmintService.getPasskeyServerUrl(), clientApiKey)
         );
+
         const smartWalletService = new SmartWalletService(
             crossmintService,
             new AccountConfigFacade(crossmintService),

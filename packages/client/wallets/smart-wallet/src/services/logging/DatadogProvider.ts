@@ -1,6 +1,6 @@
-import { DATADOG_CLIENT_TOKEN, SCW_SERVICE } from "@/utils/constants";
 import { datadogLogs } from "@datadog/browser-logs";
 
+import { DATADOG_CLIENT_TOKEN, SCW_SERVICE } from "../../utils/constants";
 import { BrowserLoggerInterface } from "./BrowserLoggerInterface";
 
 export class DatadogProvider implements BrowserLoggerInterface {
