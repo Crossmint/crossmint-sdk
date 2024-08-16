@@ -1,5 +1,12 @@
 # @crossmint/client-sdk-react-ui-starter
 
+## 1.2.5
+
+### Patch Changes
+
+-   Updated dependencies [5c60365]
+    -   @crossmint/client-sdk-react-ui@1.3.2
+
 ## 1.2.4
 
 ### Patch Changes
