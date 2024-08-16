@@ -1,5 +1,18 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.3.0
+
+### Minor Changes
+
+-   71b3778: Added Crossmint auth provider
+
+### Patch Changes
+
+-   Updated dependencies [e9060b6]
+-   Updated dependencies [7bdb67f]
+    -   @crossmint/client-sdk-auth-core@1.1.1
+    -   @crossmint/client-sdk-smart-wallet@0.1.3
+
 ## 1.2.2
 
 ### Patch Changes
