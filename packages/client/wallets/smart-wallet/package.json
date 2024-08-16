@@ -35,8 +35,5 @@
         "permissionless": "0.1.36",
         "viem": "2.17.5",
         "zod": "3.22.4"
-    },
-    "devDependencies": {
-        "@types/node": "20.12.7"
     }
 }
