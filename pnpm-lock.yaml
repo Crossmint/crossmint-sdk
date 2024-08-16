@@ -163,6 +163,12 @@ importers:
       '@types/react-dom':
         specifier: 18.2.7
         version: 18.2.7
+      '@zerodev/passkey-validator':
+        specifier: 5.4.0
+        version: 5.4.0(@zerodev/sdk@5.3.3(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(@zerodev/webauthn-key@5.3.1(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
+      '@zerodev/webauthn-key':
+        specifier: 5.3.1
+        version: 5.3.1(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
       eslint-config-next:
         specifier: 13.4.19
         version: 13.4.19(eslint@8.57.0)(typescript@5.5.3)
@@ -206,6 +212,12 @@ importers:
 
   apps/wallets/smart-wallet/next:
     dependencies:
+      '@crossmint/client-sdk-auth-core':
+        specifier: workspace:*
+        version: link:../../../../packages/client/auth-core
+      '@crossmint/client-sdk-react-ui':
+        specifier: workspace:*
+        version: link:../../../../packages/client/ui/react-ui
       '@crossmint/client-sdk-smart-wallet':
         specifier: workspace:*
         version: link:../../../../packages/client/wallets/smart-wallet
@@ -501,9 +513,15 @@ importers:
 
   packages/client/ui/react-ui:
     dependencies:
+      '@crossmint/client-sdk-auth-core':
+        specifier: workspace:*
+        version: link:../../auth-core
       '@crossmint/client-sdk-base':
         specifier: workspace:*
         version: link:../../base
+      '@crossmint/client-sdk-smart-wallet':
+        specifier: workspace:*
+        version: link:../../wallets/smart-wallet
       '@crossmint/common-sdk-base':
         specifier: workspace:*
         version: link:../../../common/base
