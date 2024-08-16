@@ -494,6 +494,9 @@ importers:
       '@crossmint/common-sdk-base':
         specifier: workspace:*
         version: link:../../common/base
+      '@datadog/browser-logs':
+        specifier: 4.42.2
+        version: 4.42.2
       exponential-backoff:
         specifier: 3.1.1
         version: 3.1.1
