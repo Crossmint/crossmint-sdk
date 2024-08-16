@@ -1,4 +1,3 @@
-import { scwLogger } from "@/services";
 import type { UserOperation } from "permissionless";
 import type { EntryPoint, GetEntryPointVersion } from "permissionless/types/entrypoint";
 
@@ -7,6 +6,7 @@ import { blockchainToChainId } from "@crossmint/common-sdk-base";
 
 import type { SmartWalletChain } from "../blockchain/chains";
 import { AdminAlreadyUsedError, SmartWalletsNotEnabledError, UserWalletAlreadyCreatedError } from "../error";
+import { scwLogger } from "../services";
 import type { UserParams } from "../types/params";
 import { SmartWalletConfigSchema } from "../types/schema";
 import type { SmartWalletConfig, StoreSmartWalletParams } from "../types/service";
