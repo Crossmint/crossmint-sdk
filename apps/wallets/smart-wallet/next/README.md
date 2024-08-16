@@ -4,7 +4,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/Crossmint/crossmint-sdk">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
+    <img src="https://github.com/user-attachments/assets/573d5995-831f-4e27-ab9e-9ab346c9c680" alt="Logo" width="80" height="80">
   </a>
 
 <h3 align="center">Smart Wallets Demo (Nextjs Starter Kit)</h3>
@@ -15,11 +15,11 @@
     <a href="https://github.com/Crossmint/crossmint-sdk"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/Crossmint/crossmint-sdk">todo: View Demo</a>
+    <a href="https://github.com/Crossmint/crossmint-sdk">todo:View Demo</a>
     ·
-    <a href="https://github.com/Crossmint/crossmint-sdk/issues/new?labels=bug&template=bug-report---.md">todo: Report Bug</a>
+    <a href="https://github.com/Crossmint/crossmint-sdk/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
     ·
-    <a href="https://github.com/Crossmint/crossmint-sdk/issues/new?labels=enhancement&template=feature-request---.md">todo: Request Feature</a>
+    <a href="https://github.com/Crossmint/crossmint-sdk/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
   </p>
 </div>
 
@@ -48,16 +48,15 @@
 
 ## About The Project
 
-todo replace image here
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
+![Smart Wallets Demo (Nextjs Starter Kit) Screenshot](https://github.com/user-attachments/assets/5248334a-bc8b-4906-a8ef-f83e3041fed6)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Built With
 
--   [![Next][Next.js]][https://nextjs.org/docs]
--   [![React][React.js]][https://react.dev/]
--   [![Crossmint][Crossmint]][https://www.crossmint.com/]
+-   [![Next.js](https://img.shields.io/badge/next%20js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+-   [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
+-   [![Crossmint](https://img.shields.io/badge/Crossmint-04CD6C?style=for-the-badge&logoColor=04CD6C&link=https://www.crossmint.com/)](https://www.crossmint.com/)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -104,6 +103,51 @@ Before you begin, ensure you have the following installed:
 ## Usage
 
 Spin up your own instance of the Smart Wallets Demo in under 5 minutes!
+
+### 1. Adding the Provider
+
+First, wrap your application with the `CrossmintAuthProvider` to provide authentication context to your components. This is typically done in the root of your app.
+
+```tsx
+import { CrossmintAuthProvider } from "@crossmint/client-sdk-react-ui";
+
+export default function App({ Component, pageProps }) {
+  return (
+    <CrossmintAuthProvider
+      apiKey="YOUR_CROSSMINT_API_KEY"
+      embeddedWallets={{
+        createOnLogin: "all-users",
+        defaultChain: "polygon-amoy",
+        type: "evm-smart-wallet",
+      }}
+    >
+      <Component {...pageProps} />
+    </CrossmintAuthProvider>
+  );
+}
+```
+
+### 2. Using the useAuth Hook
+
+Next, use the useAuth hook in your components to access the JWT, wallet state, and login/logout functions.
+
+```tsx
+import { useAuth } from "@crossmint/client-sdk-react-ui";
+
+export default function Home() {
+  const { jwt, wallet, login, logout } = useAuth();
+
+  return (
+    <div>
+      {jwt ? (
+        <button onClick={logout}>Log out</button>
+      ) : (
+        <button onClick={login}>Log in</button>
+      )}
+    </div>
+  );
+}
+```
 
 _For more examples, please refer to the [Documentation](https://example.com)_
 
