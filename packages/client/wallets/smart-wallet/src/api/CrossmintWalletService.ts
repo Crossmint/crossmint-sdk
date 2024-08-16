@@ -1,15 +1,16 @@
-import { BaseCrossmintService } from "@/api/BaseCrossmintService";
-import type { SmartWalletChain } from "@/blockchain/chains";
-import type { UserParams } from "@/types/params";
-import { SmartWalletConfigSchema } from "@/types/schema";
-import type { SmartWalletConfig, StoreSmartWalletParams } from "@/types/service";
-import { bigintsToHex, parseBigintAPIResponse } from "@/utils/api";
-import { API_VERSION } from "@/utils/constants";
 import type { UserOperation } from "permissionless";
 import type { EntryPoint, GetEntryPointVersion } from "permissionless/types/entrypoint";
 
 import { CrossmintServiceError } from "@crossmint/client-sdk-base";
 import { blockchainToChainId } from "@crossmint/common-sdk-base";
+
+import { BaseCrossmintService } from "../api/BaseCrossmintService";
+import type { SmartWalletChain } from "../blockchain/chains";
+import type { UserParams } from "../types/params";
+import { SmartWalletConfigSchema } from "../types/schema";
+import type { SmartWalletConfig, StoreSmartWalletParams } from "../types/service";
+import { bigintsToHex, parseBigintAPIResponse } from "../utils/api";
+import { API_VERSION } from "../utils/constants";
 
 export class CrossmintWalletService extends BaseCrossmintService {
     async idempotentCreateSmartWallet(user: UserParams, input: StoreSmartWalletParams): Promise<void> {

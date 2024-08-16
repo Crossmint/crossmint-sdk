@@ -16,6 +16,7 @@ import { SmartWalletError } from "./error";
 import { ErrorProcessor } from "./error/processor";
 import { DatadogProvider } from "./services/logging/DatadogProvider";
 import type { SmartWalletSDKInitParams, UserParams, WalletParams } from "./types/params";
+import { SDK_VERSION } from "./utils/constants";
 import { isClient } from "./utils/environment";
 import { logPerformance } from "./utils/log";
 
@@ -45,7 +46,7 @@ export class SmartWalletSDK {
             new EOACreationStrategy(),
             new PasskeyCreationStrategy(crossmintService.getPasskeyServerUrl(), clientApiKey)
         );
-        const accountCache = new AccountConfigCache(localStorage);
+        const accountCache = new AccountConfigCache(`smart-wallet-${SDK_VERSION}`);
 
         const smartWalletService = new SmartWalletService(
             crossmintService,
