@@ -13,15 +13,15 @@ import { ClientDecorator } from "./blockchain/wallets/clientDecorator";
 import { SmartWalletService } from "./blockchain/wallets/service";
 import { SmartWalletError } from "./error";
 import { ErrorProcessor } from "./error/processor";
-import { DatadogProvider } from "./services/logging/DatadogProvider";
+import { scwLogger } from "./services";
 import type { SmartWalletSDKInitParams, UserParams, WalletParams } from "./types/params";
 import { isClient } from "./utils/environment";
-import { logPerformance } from "./utils/log";
 
 export class SmartWalletSDK {
     private constructor(
         private readonly smartWalletService: SmartWalletService,
-        private readonly errorProcessor: ErrorProcessor
+        private readonly errorProcessor: ErrorProcessor,
+        private readonly logger = scwLogger
     ) {}
 
     /**
@@ -39,7 +39,7 @@ export class SmartWalletSDK {
         }
 
         const crossmintService = new CrossmintWalletService(clientApiKey);
-        const errorProcessor = new ErrorProcessor(new DatadogProvider());
+        const errorProcessor = new ErrorProcessor(scwLogger);
         const accountCreator = new AccountCreator(
             new EOACreationStrategy(),
             new PasskeyCreationStrategy(crossmintService.getPasskeyServerUrl(), clientApiKey)
@@ -69,7 +69,7 @@ export class SmartWalletSDK {
         chain: SmartWalletChain,
         walletParams: WalletParams = { signer: { type: "PASSKEY" } }
     ): Promise<EVMSmartWallet> {
-        return logPerformance("GET_OR_CREATE_WALLET", async () => {
+        return this.logger.logPerformance("GET_OR_CREATE_WALLET", async () => {
             try {
                 return await this.smartWalletService.getOrCreate(user, chain, walletParams);
             } catch (error: any) {

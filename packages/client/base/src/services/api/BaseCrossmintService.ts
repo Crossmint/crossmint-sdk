@@ -1,14 +1,16 @@
-import { CrossmintServiceError } from "@crossmint/client-sdk-base";
+import { CrossmintServiceError } from "@/error";
+import { SDKLogger } from "@/utils/SDKLogger";
+
 import { validateAPIKey } from "@crossmint/common-sdk-base";
 
-import { CROSSMINT_DEV_URL, CROSSMINT_PROD_URL, CROSSMINT_STG_URL } from "../utils/constants";
-import { logPerformance } from "../utils/log";
+import { CROSSMINT_DEV_URL, CROSSMINT_PROD_URL, CROSSMINT_STG_URL } from "../../consts";
 import { APIErrorService } from "./APIErrorService";
 
 export abstract class BaseCrossmintService {
     public crossmintAPIHeaders: Record<string, string>;
     protected crossmintBaseUrl: string;
-    protected apiErrorService: APIErrorService;
+    protected abstract apiErrorService: APIErrorService<string>;
+    protected abstract logger: SDKLogger;
     private static urlMap: Record<string, string> = {
         development: CROSSMINT_DEV_URL,
         staging: CROSSMINT_STG_URL,
@@ -26,7 +28,6 @@ export abstract class BaseCrossmintService {
             "x-api-key": apiKey,
         };
         this.crossmintBaseUrl = this.getUrlFromEnv(result.environment);
-        this.apiErrorService = new APIErrorService();
     }
 
     protected async fetchCrossmintAPI(
@@ -35,10 +36,10 @@ export abstract class BaseCrossmintService {
         onServerErrorMessage: string,
         authToken?: string
     ) {
-        return logPerformance(
+        return this.logger.logPerformance(
             "FETCH_CROSSMINT_API",
             async () => {
-                const url = `${this.crossmintBaseUrl}/${endpoint}`;
+                const url = `${this.crossmintBaseUrl}/api/${endpoint}`;
                 const { body, method } = options;
 
                 let response: Response;
