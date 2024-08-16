@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.1.1
+
+### Patch Changes
+
+-   12b5eac: internal improvements
+
 ## 0.1.0
 
 ### Minor Changes

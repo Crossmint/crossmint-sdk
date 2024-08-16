@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-auth-core
 
+## 1.1.1
+
+### Patch Changes
+
+-   e9060b6: Consolidated exports and improved initial jwt state
+
 ## 1.1.0
 
 ### Minor Changes

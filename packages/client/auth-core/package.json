@@ -1,20 +1,14 @@
 {
     "name": "@crossmint/client-sdk-auth-core",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
     "sideEffects": false,
     "type": "module",
     "exports": {
-        "./client": {
-            "import": "./dist/clientIndex.js",
-            "require": "./dist/clientIndex.cjs"
-        },
-        "./server": {
-            "import": "./dist/serverIndex.js",
-            "require": "./dist/serverIndex.cjs"
-        }
+        "import": "./dist/index.js",
+        "require": "./dist/index.cjs"
     },
     "main": "./dist/index.cjs",
     "module": "./dist/index.js",
@@ -34,8 +28,8 @@
         "LICENSE"
     ],
     "scripts": {
-        "build": "tsup src/clientIndex.ts src/serverIndex.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
-        "dev": "tsup src/clientIndex.ts src/serverIndex.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
+        "build": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
+        "dev": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
         "test": "jest --passWithNoTests"
     },
     "dependencies": {
