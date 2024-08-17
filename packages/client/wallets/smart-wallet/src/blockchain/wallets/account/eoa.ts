@@ -33,7 +33,7 @@ export class EOACreationStrategy implements AccountCreationStrategy {
 
         const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
             signer: eoa,
-            entryPoint: entryPoint.address,
+            entryPoint,
             kernelVersion,
         });
         const account = await createKernelAccount(publicClient, {
@@ -41,7 +41,7 @@ export class EOACreationStrategy implements AccountCreationStrategy {
                 sudo: ecdsaValidator,
             },
             index: 0n,
-            entryPoint: entryPoint.address,
+            entryPoint,
             kernelVersion,
         });
 

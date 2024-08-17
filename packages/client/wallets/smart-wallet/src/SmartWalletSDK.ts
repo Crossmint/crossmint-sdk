@@ -52,7 +52,8 @@ export class SmartWalletSDK {
             crossmintService,
             new AccountConfigFacade(crossmintService, accountCache),
             accountCreator,
-            new ClientDecorator(errorProcessor)
+            new ClientDecorator(errorProcessor),
+            accountCache
         );
 
         return new SmartWalletSDK(smartWalletService, errorProcessor);

@@ -49,17 +49,18 @@ export class AccountConfigFacade {
     }
 
     private async config(user: UserParams, chain: SmartWalletChain): Promise<SmartWalletConfig> {
+        console.log(`Fetching config`);
+
         const cached = this.cache.get(user);
         if (cached != null) {
+            console.log("Config found in cache");
             return cached;
         }
 
+        console.log("Config not found in cache, fetching from service");
         const config = await this.crossmintService.getSmartWalletConfig(user, chain);
-        if (config.signers.length > 0) {
-            this.cache.clear();
-            this.cache.set(user, config);
-        }
 
+        console.log("Config fetched successfully");
         return config;
     }
 

@@ -2,7 +2,7 @@ import type { KernelSmartAccount } from "@zerodev/sdk";
 import type { SmartAccountClient } from "permissionless";
 import type { SmartAccount } from "permissionless/accounts";
 import type { EntryPoint } from "permissionless/types/entrypoint";
-import type { Chain, HttpTransport, PublicClient } from "viem";
+import type { Address, Chain, HttpTransport, PublicClient } from "viem";
 
 import type { SmartWalletChain } from "../blockchain/chains";
 import type { EOASignerConfig, PasskeySignerConfig, SignerConfig } from "../blockchain/wallets/account/signer";
@@ -24,7 +24,7 @@ export interface WalletCreationParams {
     chain: SmartWalletChain;
     publicClient: PublicClient<HttpTransport>;
     walletParams: WalletParams;
-    entryPoint: { version: SupportedEntryPointVersion; address: EntryPoint };
+    entryPoint: EntryPoint;
     kernelVersion: SupportedKernelVersion;
     existingSignerConfig?: SignerConfig;
 }
@@ -39,27 +39,29 @@ export interface EOACreationParams extends WalletCreationParams {
     existingSignerConfig?: EOASignerConfig;
 }
 
-export function isPasskeyCreationParams(params: WalletCreationParams): params is PasskeyCreationParams {
-    const hasPasskeyWalletParams =
-        "signer" in params.walletParams &&
-        "type" in params.walletParams.signer &&
-        params.walletParams.signer.type === "PASSKEY";
+export function isPasskeyWalletParams(params: WalletParams): params is WalletParams & { signer: PasskeySigner } {
+    return "signer" in params && "type" in params.signer && params.signer.type === "PASSKEY";
+}
 
+export function isPasskeyCreationParams(params: WalletCreationParams): params is PasskeyCreationParams {
     const signerIsPasskeyOrUndefined =
         params.existingSignerConfig == null || params.existingSignerConfig.type === "passkeys";
 
-    return hasPasskeyWalletParams && signerIsPasskeyOrUndefined;
+    return isPasskeyWalletParams(params.walletParams) && signerIsPasskeyOrUndefined;
+}
+
+export function isEOAWalletParams(params: WalletParams): params is WalletParams & { signer: EOASigner } {
+    return (
+        "signer" in params &&
+        (("type" in params.signer && params.signer.type === "VIEM_ACCOUNT") ||
+            ("request" in params.signer && typeof params.signer.request === "function"))
+    );
 }
 
 export function isEOACreationParams(params: WalletCreationParams): params is EOACreationParams {
-    const hasEOAWalletParams =
-        "signer" in params.walletParams &&
-        (("type" in params.walletParams.signer && params.walletParams.signer.type === "VIEM_ACCOUNT") ||
-            ("request" in params.walletParams.signer && typeof params.walletParams.signer.request === "function"));
-
     const signerIsEOAOrUndefined = params.existingSignerConfig == null || params.existingSignerConfig.type === "eoa";
 
-    return hasEOAWalletParams && signerIsEOAOrUndefined;
+    return isEOAWalletParams(params.walletParams) && signerIsEOAOrUndefined;
 }
 
 export interface AccountAndSigner {

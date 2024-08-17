@@ -12,6 +12,7 @@ import { CURRENT_VERSION, ZERO_DEV_TYPE } from "../../utils/constants";
 import { equalsIgnoreCase } from "../../utils/helpers";
 import { type SmartWalletChain, getBundlerRPC, viemNetworks } from "../chains";
 import { EVMSmartWallet } from "./EVMSmartWallet";
+import { AccountConfigCache } from "./account/cache";
 import type { AccountConfigFacade } from "./account/config";
 import type { AccountCreator } from "./account/creator";
 import type { ClientDecorator } from "./clientDecorator";
@@ -22,7 +23,8 @@ export class SmartWalletService {
         private readonly crossmintService: CrossmintWalletService,
         private readonly accountConfigFacade: AccountConfigFacade,
         private readonly accountCreator: AccountCreator,
-        private readonly clientDecorator: ClientDecorator
+        private readonly clientDecorator: ClientDecorator,
+        private readonly accountConfigCache: AccountConfigCache
     ) {}
 
     public async getOrCreate(
@@ -30,8 +32,8 @@ export class SmartWalletService {
         chain: SmartWalletChain,
         walletParams: WalletParams
     ): Promise<EVMSmartWallet> {
-        const { entryPointVersion, kernelVersion, existingSignerConfig, smartContractWalletAddress, userId } =
-            await this.accountConfigFacade.get(user, chain);
+        const config = await this.accountConfigFacade.get(user, chain);
+        const { entryPointVersion, kernelVersion, existingSignerConfig, smartContractWalletAddress, userId } = config;
         const publicClient = createPublicClient({ transport: http(getBundlerRPC(chain)) });
 
         const { account, signerConfig } = await this.accountCreator.get({
@@ -39,10 +41,7 @@ export class SmartWalletService {
             walletParams,
             publicClient,
             user: { ...user, id: userId },
-            entryPoint: {
-                version: entryPointVersion,
-                address: entryPointVersion === "v0.6" ? ENTRYPOINT_ADDRESS_V06 : ENTRYPOINT_ADDRESS_V07,
-            },
+            entryPoint: entryPointVersion === "v0.6" ? ENTRYPOINT_ADDRESS_V06 : ENTRYPOINT_ADDRESS_V07,
             kernelVersion,
             existingSignerConfig,
         });
@@ -63,6 +62,13 @@ export class SmartWalletService {
                 kernelVersion,
             });
         }
+
+        // TODO doesn't feel like the right spot.
+        this.accountConfigCache.set(user, {
+            ...config,
+            signers: [{ signerData: signerConfig.data }],
+            smartContractWalletAddress: account.address,
+        });
 
         const kernelAccountClient: SmartWalletClient = createKernelAccountClient({
             account,

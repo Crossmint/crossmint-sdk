@@ -1,9 +1,10 @@
 import { AdminMismatchError, ConfigError } from "../../../error";
 import {
-    AccountAndSigner,
+    type AccountAndSigner,
     type WalletCreationParams,
     isEOACreationParams,
     isPasskeyCreationParams,
+    isPasskeyWalletParams,
 } from "../../../types/internal";
 import { EOACreationStrategy } from "./eoa";
 import { PasskeyCreationStrategy } from "./passkey";
@@ -27,10 +28,13 @@ export class AccountCreator {
             throw new ConfigError(`Unsupported wallet params:\n${params.walletParams}`);
         }
 
-        const signerDisplay = params.existingSignerConfig.display();
+        const existingSignerDisplay = params.existingSignerConfig.display();
+        const inputSignerType = isPasskeyWalletParams(params.walletParams) ? "passkey" : "eoa";
         throw new AdminMismatchError(
-            `Cannot create wallet with ${params.existingSignerConfig.type} signer for user ${params.user.id}', they already have a wallet with signer:\n'${signerDisplay}'`,
-            signerDisplay
+            `Cannot create wallet with ${inputSignerType} signer for user ${
+                params.user.id
+            }', they already have a wallet with signer:\n'${JSON.stringify(existingSignerDisplay, null, 2)}'`,
+            existingSignerDisplay
         );
     }
 }

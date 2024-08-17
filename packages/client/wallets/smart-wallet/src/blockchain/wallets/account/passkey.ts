@@ -49,14 +49,14 @@ export class PasskeyCreationStrategy implements AccountCreationStrategy {
 
             const validator = await toPasskeyValidator(publicClient, {
                 webAuthnKey: passkey,
-                entryPoint: entryPoint.address,
+                entryPoint,
                 validatorContractVersion,
                 kernelVersion,
             });
 
             const kernelAccount = await createKernelAccount(publicClient, {
                 plugins: { sudo: validator },
-                entryPoint: entryPoint.address,
+                entryPoint,
                 kernelVersion,
             });
 
