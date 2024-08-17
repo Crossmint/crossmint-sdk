@@ -1,10 +1,10 @@
-import { scwLogger } from "@/services";
 import type { SmartAccountClient } from "permissionless";
 import type { EntryPoint } from "permissionless/types/entrypoint";
 import { stringify } from "viem";
 
 import { SmartWalletError } from "../../error";
 import { ErrorProcessor } from "../../error/processor";
+import { scwLogger } from "../../services";
 import { usesGelatoBundler } from "../../utils/blockchain";
 import { SmartWalletChain } from "../chains";
 
