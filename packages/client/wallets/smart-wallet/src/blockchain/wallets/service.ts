@@ -12,8 +12,7 @@ import { CURRENT_VERSION, ZERO_DEV_TYPE } from "../../utils/constants";
 import { equalsIgnoreCase } from "../../utils/helpers";
 import { type SmartWalletChain, getBundlerRPC, viemNetworks } from "../chains";
 import { EVMSmartWallet } from "./EVMSmartWallet";
-import { AccountConfigCache } from "./account/cache";
-import type { AccountConfigFacade } from "./account/config";
+import type { AccountConfigService } from "./account/config";
 import type { AccountCreator } from "./account/creator";
 import type { ClientDecorator } from "./clientDecorator";
 import { paymasterMiddleware, usePaymaster } from "./paymaster";
@@ -21,10 +20,9 @@ import { paymasterMiddleware, usePaymaster } from "./paymaster";
 export class SmartWalletService {
     constructor(
         private readonly crossmintService: CrossmintWalletService,
-        private readonly accountConfigFacade: AccountConfigFacade,
+        private readonly accountConfigService: AccountConfigService,
         private readonly accountCreator: AccountCreator,
-        private readonly clientDecorator: ClientDecorator,
-        private readonly accountConfigCache: AccountConfigCache
+        private readonly clientDecorator: ClientDecorator
     ) {}
 
     public async getOrCreate(
@@ -32,8 +30,11 @@ export class SmartWalletService {
         chain: SmartWalletChain,
         walletParams: WalletParams
     ): Promise<EVMSmartWallet> {
-        const config = await this.accountConfigFacade.get(user, chain);
-        const { entryPointVersion, kernelVersion, existing, userId } = config;
+        const {
+            config: { entryPointVersion, kernelVersion, existing, userId },
+            cached,
+        } = await this.accountConfigService.get(user, chain);
+
         const publicClient = createPublicClient({ transport: http(getBundlerRPC(chain)) });
 
         const userWithId = { ...user, id: userId };
@@ -64,12 +65,14 @@ export class SmartWalletService {
             });
         }
 
-        this.accountConfigFacade.cache({
-            entryPointVersion,
-            kernelVersion,
-            user: userWithId,
-            existing: { address: account.address, signerConfig },
-        });
+        if (!cached) {
+            this.accountConfigService.cache({
+                entryPointVersion,
+                kernelVersion,
+                user: userWithId,
+                existing: { address: account.address, signerConfig },
+            });
+        }
 
         const kernelAccountClient: SmartWalletClient = createKernelAccountClient({
             account,

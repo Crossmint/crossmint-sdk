@@ -11,28 +11,65 @@ import type { SignerData, SmartWalletConfig } from "../../../types/service";
 import { AccountConfigCache } from "./cache";
 import { EOASignerConfig, PasskeySignerConfig, type SignerConfig } from "./signer";
 
-// Rename, this isn't really a facade if we include the cache method.
-export class AccountConfigFacade {
+interface AccountConfig {
+    entryPointVersion: SupportedEntryPointVersion;
+    kernelVersion: SupportedKernelVersion;
+    userId: string;
+    existing?: PreExistingWalletProperties;
+}
+export class AccountConfigService {
     constructor(
         private readonly crossmintService: CrossmintWalletService,
         private readonly configCache: AccountConfigCache
     ) {}
 
-    // TODO Expose whether this used the cache or not
     public async get(
         user: UserParams,
         chain: SmartWalletChain
     ): Promise<{
+        config: AccountConfig;
+        cached: boolean;
+    }> {
+        const cached = this.configCache.get(user);
+        if (cached != null) {
+            return {
+                config: this.validateAndFormat(cached),
+                cached: true,
+            };
+        }
+
+        const config = await this.crossmintService.getSmartWalletConfig(user, chain);
+        return { config: this.validateAndFormat(config), cached: false };
+    }
+
+    public cache({
+        entryPointVersion,
+        kernelVersion,
+        user,
+        existing,
+    }: {
         entryPointVersion: SupportedEntryPointVersion;
         kernelVersion: SupportedKernelVersion;
-        userId: string;
-        existing?: PreExistingWalletProperties;
-    }> {
-        const { entryPointVersion, kernelVersion, signers, smartContractWalletAddress, userId } = await this.config(
-            user,
-            chain
-        );
+        user: UserParams & { id: string };
+        existing: PreExistingWalletProperties;
+    }) {
+        this.configCache.clear();
+        this.configCache.set(user, {
+            entryPointVersion,
+            kernelVersion,
+            userId: user.id,
+            signers: [{ signerData: existing.signerConfig.data }],
+            smartContractWalletAddress: existing.address,
+        });
+    }
 
+    private validateAndFormat({
+        entryPointVersion,
+        kernelVersion,
+        signers,
+        smartContractWalletAddress,
+        userId,
+    }: SmartWalletConfig): AccountConfig {
         if (
             (entryPointVersion === "v0.7" && kernelVersion.startsWith("0.2")) ||
             (entryPointVersion === "v0.6" && kernelVersion.startsWith("0.3"))
@@ -62,42 +99,6 @@ export class AccountConfigFacade {
             userId,
             existing: { signerConfig: signer, address: smartContractWalletAddress },
         };
-    }
-
-    public cache({
-        entryPointVersion,
-        kernelVersion,
-        user,
-        existing,
-    }: {
-        entryPointVersion: SupportedEntryPointVersion;
-        kernelVersion: SupportedKernelVersion;
-        user: UserParams & { id: string };
-        existing: PreExistingWalletProperties;
-    }) {
-        this.configCache.set(user, {
-            entryPointVersion,
-            kernelVersion,
-            userId: user.id,
-            signers: [{ signerData: existing.signerConfig.data }],
-            smartContractWalletAddress: existing.address,
-        });
-    }
-
-    private async config(user: UserParams, chain: SmartWalletChain): Promise<SmartWalletConfig> {
-        console.log(`Fetching config`);
-
-        const cached = this.configCache.get(user);
-        if (cached != null) {
-            console.log("Config found in cache");
-            return cached;
-        }
-
-        console.log("Config not found in cache, fetching from service");
-        const config = await this.crossmintService.getSmartWalletConfig(user, chain);
-
-        console.log("Config fetched successfully");
-        return config;
     }
 
     private getSigner(signers: SignerData[]): SignerConfig | undefined {

@@ -2,15 +2,14 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { mock } from "vitest-mock-extended";
 
 import { CrossmintWalletService } from "../../../api/CrossmintWalletService";
-import { SmartWalletError } from "../../../error";
 import { SmartWalletConfig } from "../../../types/service";
 import { SmartWalletChain } from "../../chains";
 import { AccountConfigCache } from "./cache";
-import { AccountConfigFacade } from "./config";
+import { AccountConfigService } from "./config";
 import { PasskeySignerConfig } from "./signer";
 
-describe("AccountConfigFacade", () => {
-    let facade: AccountConfigFacade;
+describe("AccountConfigService", () => {
+    let service: AccountConfigService;
     const mockCrossmintService = mock<CrossmintWalletService>();
     const mockCache = mock<AccountConfigCache>();
 
@@ -41,19 +40,25 @@ describe("AccountConfigFacade", () => {
     };
 
     beforeEach(() => {
-        facade = new AccountConfigFacade(mockCrossmintService, mockCache);
+        service = new AccountConfigService(mockCrossmintService, mockCache);
     });
 
     describe("get", () => {
         it("should return config from cache if available", async () => {
             mockCache.get.mockReturnValue(mockConfig);
-            const result = await facade.get(mockUser, mockChain);
+            const result = await service.get(mockUser, mockChain);
 
             expect(result).toEqual({
-                entryPointVersion: mockConfig.entryPointVersion,
-                kernelVersion: mockConfig.kernelVersion,
-                userId: mockConfig.userId,
-                existing: { signer: expect.any(PasskeySignerConfig), address: mockConfig.smartContractWalletAddress },
+                config: {
+                    entryPointVersion: mockConfig.entryPointVersion,
+                    kernelVersion: mockConfig.kernelVersion,
+                    userId: mockConfig.userId,
+                    existing: {
+                        signerConfig: expect.any(PasskeySignerConfig),
+                        address: mockConfig.smartContractWalletAddress,
+                    },
+                },
+                cached: true,
             });
             expect(mockCache.get).toHaveBeenCalledWith(mockUser);
             expect(mockCrossmintService.getSmartWalletConfig).not.toHaveBeenCalled();
@@ -63,13 +68,19 @@ describe("AccountConfigFacade", () => {
             mockCache.get.mockReturnValue(null);
             mockCrossmintService.getSmartWalletConfig.mockResolvedValue(mockConfig);
 
-            const result = await facade.get(mockUser, mockChain);
+            const result = await service.get(mockUser, mockChain);
 
             expect(result).toEqual({
-                entryPointVersion: mockConfig.entryPointVersion,
-                kernelVersion: mockConfig.kernelVersion,
-                userId: mockConfig.userId,
-                existing: { signer: expect.any(PasskeySignerConfig), address: mockConfig.smartContractWalletAddress },
+                config: {
+                    entryPointVersion: mockConfig.entryPointVersion,
+                    kernelVersion: mockConfig.kernelVersion,
+                    userId: mockConfig.userId,
+                    existing: {
+                        signerConfig: expect.any(PasskeySignerConfig),
+                        address: mockConfig.smartContractWalletAddress,
+                    },
+                },
+                cached: false,
             });
 
             expect(mockCache.get).toHaveBeenCalledWith(mockUser);
@@ -84,7 +95,7 @@ describe("AccountConfigFacade", () => {
             };
             mockCache.get.mockReturnValue(unsupportedConfig);
 
-            await expect(facade.get(mockUser, mockChain)).rejects.toThrow(
+            await expect(service.get(mockUser, mockChain)).rejects.toThrow(
                 "Unsupported combination: entryPoint v0.7 and kernel version 0.2.4. Please contact support"
             );
         });
@@ -96,7 +107,7 @@ describe("AccountConfigFacade", () => {
             };
             mockCache.get.mockReturnValue(incompleteConfig);
 
-            await expect(facade.get(mockUser, mockChain)).rejects.toThrow(
+            await expect(service.get(mockUser, mockChain)).rejects.toThrow(
                 "Either both signer and address must be present, or both must be null"
             );
         });
