@@ -78,16 +78,26 @@ describe("AccountConfigService", () => {
             );
         });
 
-        it("should throw error when only signer is present", async () => {
-            const incompleteConfig: SmartWalletConfig = {
-                ...mockConfig,
-                smartContractWalletAddress: undefined,
-            };
-            mockCache.get.mockReturnValue(incompleteConfig);
+        describe("incomplete configurations", () => {
+            const testCases = [
+                {
+                    name: "only signer is present",
+                    config: { ...mockConfig, smartContractWalletAddress: undefined },
+                },
+                {
+                    name: "only address is present",
+                    config: { ...mockConfig, signers: [] },
+                },
+            ];
 
-            await expect(service.get(mockUser, mockChain)).rejects.toThrow(
-                "Either both signer and address must be present, or both must be null"
-            );
+            testCases.forEach(({ name, config }) => {
+                it(`should throw error when ${name}`, async () => {
+                    mockCache.get.mockReturnValue(config);
+                    await expect(service.get(mockUser, mockChain)).rejects.toThrow(
+                        "Either both signer and address must be present, or both must be null"
+                    );
+                });
+            });
         });
     });
 });
