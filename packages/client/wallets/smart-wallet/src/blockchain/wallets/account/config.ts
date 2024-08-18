@@ -32,7 +32,6 @@ export class AccountConfigService {
     }> {
         const cached = this.configCache.get(user);
         if (cached != null) {
-            console.log("cached!");
             return {
                 config: this.validateAndFormat(user, cached),
                 cached: true,

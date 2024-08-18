@@ -52,7 +52,7 @@ describe("AccountConfigService", () => {
                 config: {
                     entryPointVersion: mockConfig.entryPointVersion,
                     kernelVersion: mockConfig.kernelVersion,
-                    userId: mockConfig.userId,
+                    userWithId: { ...mockUser, id: mockConfig.userId },
                     existing: {
                         signerConfig: expect.any(PasskeySignerConfig),
                         address: mockConfig.smartContractWalletAddress,
@@ -74,7 +74,7 @@ describe("AccountConfigService", () => {
                 config: {
                     entryPointVersion: mockConfig.entryPointVersion,
                     kernelVersion: mockConfig.kernelVersion,
-                    userId: mockConfig.userId,
+                    userWithId: { ...mockUser, id: mockConfig.userId },
                     existing: {
                         signerConfig: expect.any(PasskeySignerConfig),
                         address: mockConfig.smartContractWalletAddress,
