@@ -31,13 +31,12 @@ export class SmartWalletService {
         walletParams: WalletParams
     ): Promise<EVMSmartWallet> {
         const {
-            config: { entryPointVersion, kernelVersion, existing, userId },
+            config: { entryPointVersion, kernelVersion, existing, userWithId },
             cached,
         } = await this.accountConfigService.get(user, chain);
 
         const publicClient = createPublicClient({ transport: http(getBundlerRPC(chain)) });
 
-        const userWithId = { ...user, id: userId };
         const { account, signerConfig } = await this.accountCreator.get({
             chain,
             walletParams,
@@ -49,7 +48,7 @@ export class SmartWalletService {
         });
 
         if (existing != null && !equalsIgnoreCase(existing.address, account.address)) {
-            throw new UserWalletAlreadyCreatedError(userId);
+            throw new UserWalletAlreadyCreatedError(userWithId.id);
         }
 
         if (existing == null) {

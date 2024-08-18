@@ -14,7 +14,7 @@ import { EOASignerConfig, PasskeySignerConfig, type SignerConfig } from "./signe
 interface AccountConfig {
     entryPointVersion: SupportedEntryPointVersion;
     kernelVersion: SupportedKernelVersion;
-    userId: string;
+    userWithId: UserParams & { id: string };
     existing?: PreExistingWalletProperties;
 }
 export class AccountConfigService {
@@ -32,14 +32,15 @@ export class AccountConfigService {
     }> {
         const cached = this.configCache.get(user);
         if (cached != null) {
+            console.log("cached!");
             return {
-                config: this.validateAndFormat(cached),
+                config: this.validateAndFormat(user, cached),
                 cached: true,
             };
         }
 
         const config = await this.crossmintService.getSmartWalletConfig(user, chain);
-        return { config: this.validateAndFormat(config), cached: false };
+        return { config: this.validateAndFormat(user, config), cached: false };
     }
 
     public cache({
@@ -63,13 +64,10 @@ export class AccountConfigService {
         });
     }
 
-    private validateAndFormat({
-        entryPointVersion,
-        kernelVersion,
-        signers,
-        smartContractWalletAddress,
-        userId,
-    }: SmartWalletConfig): AccountConfig {
+    private validateAndFormat(
+        user: UserParams,
+        { entryPointVersion, kernelVersion, signers, smartContractWalletAddress, userId }: SmartWalletConfig
+    ): AccountConfig {
         if (
             (entryPointVersion === "v0.7" && kernelVersion.startsWith("0.2")) ||
             (entryPointVersion === "v0.6" && kernelVersion.startsWith("0.3"))
@@ -90,13 +88,13 @@ export class AccountConfigService {
         }
 
         if (signer == null || smartContractWalletAddress == null) {
-            return { entryPointVersion, kernelVersion, userId };
+            return { entryPointVersion, kernelVersion, userWithId: { ...user, id: userId } };
         }
 
         return {
             entryPointVersion,
             kernelVersion,
-            userId,
+            userWithId: { ...user, id: userId },
             existing: { signerConfig: signer, address: smartContractWalletAddress },
         };
     }
