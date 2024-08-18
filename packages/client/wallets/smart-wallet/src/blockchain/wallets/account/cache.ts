@@ -7,11 +7,11 @@ import type { SmartWalletConfig } from "../../../types/service";
 export class AccountConfigCache {
     constructor(private readonly keyPrefix: string) {}
 
-    set(user: UserParams, config: SmartWalletConfig) {
+    public set(user: UserParams, config: SmartWalletConfig) {
         localStorage.setItem(this.key(user), JSON.stringify(config));
     }
 
-    get(user: UserParams): SmartWalletConfig | null {
+    public get(user: UserParams): SmartWalletConfig | null {
         const key = this.key(user);
         const data = localStorage.getItem(key);
         if (data == null) {
