@@ -15,24 +15,24 @@ export class AccountCreator {
         private readonly passkeyStrategy: PasskeyCreationStrategy
     ) {}
 
-    public get(params: WalletCreationContext): Promise<AccountAndSigner> {
-        if (isPasskeyCreationContext(params)) {
-            return this.passkeyStrategy.create(params);
+    public get(context: WalletCreationContext): Promise<AccountAndSigner> {
+        if (isPasskeyCreationContext(context)) {
+            return this.passkeyStrategy.create(context);
         }
 
-        if (isEOACreationContext(params)) {
-            return this.eoaStrategy.create(params);
+        if (isEOACreationContext(context)) {
+            return this.eoaStrategy.create(context);
         }
 
-        if (params.existing == null) {
-            throw new ConfigError(`Unsupported wallet params:\n${params.walletParams}`);
+        if (context.existing == null) {
+            throw new ConfigError(`Unsupported wallet params:\n${context.walletParams}`);
         }
 
-        const display = params.existing.signerConfig.display();
-        const inputSignerType = isPasskeyWalletParams(params.walletParams) ? "passkey" : "eoa";
+        const display = context.existing.signerConfig.display();
+        const inputSignerType = isPasskeyWalletParams(context.walletParams) ? "passkey" : "eoa";
         throw new AdminMismatchError(
             `Cannot create wallet with ${inputSignerType} signer for user ${
-                params.user.id
+                context.user.id
             }', they already have a wallet with signer:\n'${JSON.stringify(display, null, 2)}'`,
             display
         );
