@@ -7,7 +7,7 @@ import { SmartWalletConfig } from "../../../types/service";
 import { SmartWalletChain } from "../../chains";
 import { AccountConfigCache } from "./cache";
 import { AccountConfigFacade } from "./config";
-import { EOASignerConfig, PasskeySignerConfig } from "./signer";
+import { PasskeySignerConfig } from "./signer";
 
 describe("AccountConfigFacade", () => {
     let facade: AccountConfigFacade;
@@ -47,15 +47,13 @@ describe("AccountConfigFacade", () => {
     describe("get", () => {
         it("should return config from cache if available", async () => {
             mockCache.get.mockReturnValue(mockConfig);
-
             const result = await facade.get(mockUser, mockChain);
 
             expect(result).toEqual({
                 entryPointVersion: mockConfig.entryPointVersion,
                 kernelVersion: mockConfig.kernelVersion,
                 userId: mockConfig.userId,
-                existingSignerConfig: expect.any(PasskeySignerConfig),
-                smartContractWalletAddress: mockConfig.smartContractWalletAddress,
+                existing: { signer: expect.any(PasskeySignerConfig), address: mockConfig.smartContractWalletAddress },
             });
             expect(mockCache.get).toHaveBeenCalledWith(mockUser);
             expect(mockCrossmintService.getSmartWalletConfig).not.toHaveBeenCalled();
@@ -71,13 +69,11 @@ describe("AccountConfigFacade", () => {
                 entryPointVersion: mockConfig.entryPointVersion,
                 kernelVersion: mockConfig.kernelVersion,
                 userId: mockConfig.userId,
-                existingSignerConfig: expect.any(PasskeySignerConfig),
-                smartContractWalletAddress: mockConfig.smartContractWalletAddress,
+                existing: { signer: expect.any(PasskeySignerConfig), address: mockConfig.smartContractWalletAddress },
             });
+
             expect(mockCache.get).toHaveBeenCalledWith(mockUser);
             expect(mockCrossmintService.getSmartWalletConfig).toHaveBeenCalledWith(mockUser, mockChain);
-            expect(mockCache.clear).toHaveBeenCalled();
-            expect(mockCache.set).toHaveBeenCalledWith(mockUser, mockConfig);
         });
 
         it("should throw error for unsupported entryPoint and kernel version combination", async () => {
@@ -88,7 +84,21 @@ describe("AccountConfigFacade", () => {
             };
             mockCache.get.mockReturnValue(unsupportedConfig);
 
-            await expect(facade.get(mockUser, mockChain)).rejects.toThrow(SmartWalletError);
+            await expect(facade.get(mockUser, mockChain)).rejects.toThrow(
+                "Unsupported combination: entryPoint v0.7 and kernel version 0.2.4. Please contact support"
+            );
+        });
+
+        it("should throw error when only signer is present", async () => {
+            const incompleteConfig: SmartWalletConfig = {
+                ...mockConfig,
+                smartContractWalletAddress: undefined,
+            };
+            mockCache.get.mockReturnValue(incompleteConfig);
+
+            await expect(facade.get(mockUser, mockChain)).rejects.toThrow(
+                "Either both signer and address must be present, or both must be null"
+            );
         });
     });
 });

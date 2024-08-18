@@ -1,20 +1,24 @@
-import type { Address } from "viem";
-
 import type { CrossmintWalletService } from "../../../api/CrossmintWalletService";
 import type { SmartWalletChain } from "../../../blockchain/chains";
 import { SmartWalletError } from "../../../error";
-import type { SupportedEntryPointVersion, SupportedKernelVersion } from "../../../types/internal";
+import type {
+    PreExistingWalletProperties,
+    SupportedEntryPointVersion,
+    SupportedKernelVersion,
+} from "../../../types/internal";
 import type { UserParams } from "../../../types/params";
 import type { SignerData, SmartWalletConfig } from "../../../types/service";
 import { AccountConfigCache } from "./cache";
 import { EOASignerConfig, PasskeySignerConfig, type SignerConfig } from "./signer";
 
+// Rename, this isn't really a facade if we include the cache method.
 export class AccountConfigFacade {
     constructor(
         private readonly crossmintService: CrossmintWalletService,
         private readonly cache: AccountConfigCache
     ) {}
 
+    // Expose whether this was cached or not
     public async get(
         user: UserParams,
         chain: SmartWalletChain
@@ -22,8 +26,7 @@ export class AccountConfigFacade {
         entryPointVersion: SupportedEntryPointVersion;
         kernelVersion: SupportedKernelVersion;
         userId: string;
-        existingSignerConfig?: SignerConfig;
-        smartContractWalletAddress?: Address;
+        existing?: PreExistingWalletProperties;
     }> {
         const { entryPointVersion, kernelVersion, signers, smartContractWalletAddress, userId } = await this.config(
             user,
@@ -39,14 +42,35 @@ export class AccountConfigFacade {
             );
         }
 
+        const signerData = signers.map((x) => x.signerData);
+        const signer = this.getSigner(signerData);
+
+        if (
+            (smartContractWalletAddress != null && signer == null) ||
+            (signer != null && smartContractWalletAddress == null)
+        ) {
+            throw new SmartWalletError("Either both signer and address must be present, or both must be null");
+        }
+
+        if (signer == null || smartContractWalletAddress == null) {
+            return { entryPointVersion, kernelVersion, userId };
+        }
+
         return {
             entryPointVersion,
             kernelVersion,
             userId,
-            existingSignerConfig: this.getSigner(signers.map((x) => x.signerData)),
-            smartContractWalletAddress,
+            existing: { signerConfig: signer, address: smartContractWalletAddress },
         };
     }
+
+    // public cache({
+    //     entryPointVersion: SupportedEntryPointVersion;
+    //     kernelVersion: SupportedKernelVersion;
+    //     userId: string;
+    //     existingSignerConfig?: SignerConfig;
+    //     smartContractWalletAddress?: Address;
+    // })
 
     private async config(user: UserParams, chain: SmartWalletChain): Promise<SmartWalletConfig> {
         console.log(`Fetching config`);

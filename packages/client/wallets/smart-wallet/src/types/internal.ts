@@ -19,33 +19,37 @@ export function isSupportedEntryPointVersion(version: string): version is Suppor
     return SUPPORTED_ENTRYPOINT_VERSIONS.includes(version as any);
 }
 
-export interface WalletCreationParams {
+export interface PreExistingWalletProperties {
+    signerConfig: SignerConfig;
+    address: Address;
+}
+
+export interface WalletCreationContext {
     user: UserParams & { id: string };
     chain: SmartWalletChain;
     publicClient: PublicClient<HttpTransport>;
     walletParams: WalletParams;
     entryPoint: EntryPoint;
     kernelVersion: SupportedKernelVersion;
-    existingSignerConfig?: SignerConfig;
+    existing?: PreExistingWalletProperties;
 }
 
-export interface PasskeyCreationParams extends WalletCreationParams {
+export interface PasskeyCreationContext extends WalletCreationContext {
     walletParams: WalletParams & { signer: PasskeySigner };
-    existingSignerConfig?: PasskeySignerConfig;
+    existing?: { signerConfig: PasskeySignerConfig; address: Address };
 }
 
-export interface EOACreationParams extends WalletCreationParams {
+export interface EOACreationContext extends WalletCreationContext {
     walletParams: WalletParams & { signer: EOASigner };
-    existingSignerConfig?: EOASignerConfig;
+    existing?: { signerConfig: EOASignerConfig; address: Address };
 }
 
 export function isPasskeyWalletParams(params: WalletParams): params is WalletParams & { signer: PasskeySigner } {
     return "signer" in params && "type" in params.signer && params.signer.type === "PASSKEY";
 }
 
-export function isPasskeyCreationParams(params: WalletCreationParams): params is PasskeyCreationParams {
-    const signerIsPasskeyOrUndefined =
-        params.existingSignerConfig == null || params.existingSignerConfig.type === "passkeys";
+export function isPasskeyCreationContext(params: WalletCreationContext): params is PasskeyCreationContext {
+    const signerIsPasskeyOrUndefined = params.existing == null || params.existing.signerConfig.type === "passkeys";
 
     return isPasskeyWalletParams(params.walletParams) && signerIsPasskeyOrUndefined;
 }
@@ -58,8 +62,8 @@ export function isEOAWalletParams(params: WalletParams): params is WalletParams 
     );
 }
 
-export function isEOACreationParams(params: WalletCreationParams): params is EOACreationParams {
-    const signerIsEOAOrUndefined = params.existingSignerConfig == null || params.existingSignerConfig.type === "eoa";
+export function isEOACreationContext(params: WalletCreationContext): params is EOACreationContext {
+    const signerIsEOAOrUndefined = params.existing == null || params.existing.signerConfig.type === "eoa";
 
     return isEOAWalletParams(params.walletParams) && signerIsEOAOrUndefined;
 }
