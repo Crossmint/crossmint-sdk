@@ -15,10 +15,10 @@ import { EOASignerConfig, PasskeySignerConfig, type SignerConfig } from "./signe
 export class AccountConfigFacade {
     constructor(
         private readonly crossmintService: CrossmintWalletService,
-        private readonly cache: AccountConfigCache
+        private readonly configCache: AccountConfigCache
     ) {}
 
-    // Expose whether this was cached or not
+    // TODO Expose whether this used the cache or not
     public async get(
         user: UserParams,
         chain: SmartWalletChain
@@ -64,18 +64,30 @@ export class AccountConfigFacade {
         };
     }
 
-    // public cache({
-    //     entryPointVersion: SupportedEntryPointVersion;
-    //     kernelVersion: SupportedKernelVersion;
-    //     userId: string;
-    //     existingSignerConfig?: SignerConfig;
-    //     smartContractWalletAddress?: Address;
-    // })
+    public cache({
+        entryPointVersion,
+        kernelVersion,
+        user,
+        existing,
+    }: {
+        entryPointVersion: SupportedEntryPointVersion;
+        kernelVersion: SupportedKernelVersion;
+        user: UserParams & { id: string };
+        existing: PreExistingWalletProperties;
+    }) {
+        this.configCache.set(user, {
+            entryPointVersion,
+            kernelVersion,
+            userId: user.id,
+            signers: [{ signerData: existing.signerConfig.data }],
+            smartContractWalletAddress: existing.address,
+        });
+    }
 
     private async config(user: UserParams, chain: SmartWalletChain): Promise<SmartWalletConfig> {
         console.log(`Fetching config`);
 
-        const cached = this.cache.get(user);
+        const cached = this.configCache.get(user);
         if (cached != null) {
             console.log("Config found in cache");
             return cached;

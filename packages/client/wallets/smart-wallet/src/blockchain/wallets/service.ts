@@ -36,11 +36,12 @@ export class SmartWalletService {
         const { entryPointVersion, kernelVersion, existing, userId } = config;
         const publicClient = createPublicClient({ transport: http(getBundlerRPC(chain)) });
 
+        const userWithId = { ...user, id: userId };
         const { account, signerConfig } = await this.accountCreator.get({
             chain,
             walletParams,
             publicClient,
-            user: { ...user, id: userId },
+            user: userWithId,
             entryPoint: entryPointVersion === "v0.6" ? ENTRYPOINT_ADDRESS_V06 : ENTRYPOINT_ADDRESS_V07,
             kernelVersion,
             existing,
@@ -63,11 +64,11 @@ export class SmartWalletService {
             });
         }
 
-        // TODO doesn't feel like the right spot.
-        this.accountConfigCache.set(user, {
-            ...config,
-            signers: [{ signerData: signerConfig.data }],
-            smartContractWalletAddress: account.address,
+        this.accountConfigFacade.cache({
+            entryPointVersion,
+            kernelVersion,
+            user: userWithId,
+            existing: { address: account.address, signerConfig },
         });
 
         const kernelAccountClient: SmartWalletClient = createKernelAccountClient({
