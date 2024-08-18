@@ -56,6 +56,7 @@ export class PasskeyCreationStrategy implements AccountCreationStrategy {
                 plugins: { sudo: validator },
                 entryPoint,
                 kernelVersion,
+                deployedAccountAddress: existing?.address,
             });
 
             return {
