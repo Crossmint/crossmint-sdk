@@ -1,13 +1,11 @@
 import pkg from 'typedoc-plugin-markdown';
-const { MarkdownPageEvent, MarkdownTheme, MarkdownThemeContext } = pkg;
+const { MarkdownPageEvent } = pkg;
  
 export function load(app) {
-  app.renderer.defineTheme('crossmintTheme', CrossmintTheme);
-
   app.renderer.postRenderAsyncJobs.push(async (renderer) => {
     const navigation = renderer.navigation;
 
-    // sort the Error classes to the end of the list for navigation
+    // sort the Error classes to the end of the list
     const classesIndex = navigation.findIndex(item => item.title === "Classes");
     if (classesIndex !== -1) {
         navigation[classesIndex].children.sort((a, b) => {
@@ -41,32 +39,4 @@ export function load(app) {
     // remove .mdx from links so it works with mintlify
     page.contents = page.contents.replace(/\.mdx/g, "");
   });
-}
-
-class CrossmintTheme extends MarkdownTheme {
-  getRenderContext(page) {
-    return new CrossmintThemeContext(this, page, this.application.options);
-  }
-}
-
-class CrossmintThemeContext extends MarkdownThemeContext {
-  // customise templates
-  templates = {
-    ...this.templates,
-    
-  };
-  
-  // customise partials
-  partials = {
-    ...this.partials,
-    parametersTable: (model) => {
-      return "test";
-
-    },
-  };
- 
-  // customise helpers
-  helpers = {
-    ...this.helpers
-  };
 }
