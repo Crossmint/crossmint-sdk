@@ -6,7 +6,6 @@ import type { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import { scwLogger } from "../../services/logger";
 import { SmartWalletClient } from "../../types/internal";
 import type { TransferType } from "../../types/token";
-import { errorToJSON } from "../../utils/log";
 import { SmartWalletChain } from "../chains";
 import { transferParams } from "../transfer";
 
