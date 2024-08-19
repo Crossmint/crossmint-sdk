@@ -7,7 +7,7 @@
     <img src="https://github.com/user-attachments/assets/573d5995-831f-4e27-ab9e-9ab346c9c680" alt="Logo" width="80" height="80">
   </a>
 
-<h3 align="center">Smart Wallets Demo (Nextjs Starter Kit)</h3>
+<h3 align="center">Smart Wallets Demo (Next.js Starter Kit)</h3>
 
   <p align="center">
   This application demonstrates the use of Abstract Accounts with a built-in passkey authenticator. Simply sign in with Google or Crossmint's built-in SSO login, authorize your passkey, and create your smart wallet in seconds.
@@ -54,7 +54,7 @@
 
 ## About The Project
 
-![Smart Wallets Demo (Nextjs Starter Kit) Screenshot](https://github.com/user-attachments/assets/5248334a-bc8b-4906-a8ef-f83e3041fed6)
+![Smart Wallets Demo (Next.js Starter Kit) Screenshot](https://github.com/user-attachments/assets/5248334a-bc8b-4906-a8ef-f83e3041fed6)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -82,7 +82,8 @@ Before you begin, ensure you have the following installed:
 
 ### Installation
 
-1. Obtain a free API Key from the Crossmint console. Refer to the [Quickstart documentation](https://docs.crossmint.com/wallets/smart-wallets/quickstart#2-get-an-api-key) for detailed instructions.
+1. Obtain a free API Key from the Crossmint Console. Refer to [Get an API Key](https://docs.crossmint.com/wallets/smart-wallets/quickstart#2-get-an-api-key) from the Quickstart guide for detailed instructions.
+
 2. Clone the repo
     ```sh
     git clone https://github.com/Crossmint/crossmint-sdk.git
@@ -91,7 +92,7 @@ Before you begin, ensure you have the following installed:
     ```sh
     pnpm i
     ```
-4. Where this README.md is contained, rename the `.env.example` file to `.env` and add your API key to the file.
+4. In the directory containing this README.md file, rename the `.env.example` file to `.env` and add your API key to the file.
     ```bash
     NEXT_PUBLIC_CROSSMINT_API_KEY="ENTER YOUR CROSSMINT API KEY";
     ```
@@ -99,7 +100,7 @@ Before you begin, ensure you have the following installed:
     ```sh
     pnpm dev
     ```
-6. Once you start the nextjs development server, the application can be found at `http://localhost:3000`.
+6. Once you start the Next.js development server, the application can be found at `http://localhost:3000`.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -152,4 +153,3 @@ export default function Home() {
 _For additional information, please refer to the [Quickstart Documentation](https://docs.crossmint.com/wallets/smart-wallets/quickstart)._
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-ß
