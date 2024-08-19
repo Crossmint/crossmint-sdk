@@ -138,7 +138,7 @@ export default function App({ Component, pageProps }) {
 
 ### Implementing the useAuth hook
 
-Next, use the useAuth hook in your components to access the JWT, wallet state, and login/logout functions.
+Next, add the useAuth hook in your component to access the JWT, wallet state, and login/logout functions.
 
 ```tsx
 import { useAuth } from "@crossmint/client-sdk-react-ui";
