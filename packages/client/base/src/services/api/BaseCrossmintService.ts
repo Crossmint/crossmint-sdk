@@ -39,7 +39,7 @@ export abstract class BaseCrossmintService {
         return this.logger.logPerformance(
             "FETCH_CROSSMINT_API",
             async () => {
-                const url = `${this.crossmintBaseUrl}/api/${endpoint}`;
+                const url = `${this.crossmintBaseUrl}api/${endpoint}`;
                 const { body, method } = options;
 
                 let response: Response;

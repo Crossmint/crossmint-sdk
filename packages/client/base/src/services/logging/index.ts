@@ -4,8 +4,8 @@ import { DatadogProvider } from "./DatadogProvider";
 
 export type BrowserLogger = ConsoleProvider | DatadogProvider;
 
-function getBrowserLogger(service: string) {
-    if (isClient() && isLocalhost()) {
+function getBrowserLogger(service: string, { onlyDatadog }: { onlyDatadog?: boolean } = {}): BrowserLogger {
+    if (isClient() && isLocalhost() && !onlyDatadog) {
         return new ConsoleProvider();
     }
 

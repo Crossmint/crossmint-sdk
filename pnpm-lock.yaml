@@ -681,9 +681,6 @@ importers:
       '@crossmint/common-sdk-base':
         specifier: workspace:*
         version: link:../../../common/base
-      '@datadog/browser-logs':
-        specifier: 4.42.2
-        version: 4.42.2
       '@zerodev/ecdsa-validator':
         specifier: 5.3.1
         version: 5.3.1(@zerodev/sdk@5.3.3(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))

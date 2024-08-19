@@ -92,7 +92,7 @@ export class EVMSmartWallet {
                     return hash;
                 } catch (error) {
                     this.logger.error("[TRANSFER] - ERROR_TRANSFERRING_TOKEN", {
-                        error: errorToJSON(error, this.logger),
+                        error: error instanceof Error ? error.message : JSON.stringify(error),
                         tokenId: tx.tokenId,
                         contractAddress: config.token.contractAddress,
                         chain: config.token.chain,

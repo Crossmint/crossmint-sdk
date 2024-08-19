@@ -13,7 +13,7 @@ import { ClientDecorator } from "./blockchain/wallets/clientDecorator";
 import { SmartWalletService } from "./blockchain/wallets/service";
 import { SmartWalletError } from "./error";
 import { ErrorProcessor } from "./error/processor";
-import { scwLogger } from "./services";
+import { scwDatadogLogger, scwLogger } from "./services";
 import type { SmartWalletSDKInitParams, UserParams, WalletParams } from "./types/params";
 import { isClient } from "./utils/environment";
 
@@ -39,7 +39,7 @@ export class SmartWalletSDK {
         }
 
         const crossmintService = new CrossmintWalletService(clientApiKey);
-        const errorProcessor = new ErrorProcessor(scwLogger);
+        const errorProcessor = new ErrorProcessor(scwDatadogLogger);
         const accountCreator = new AccountCreator(
             new EOACreationStrategy(),
             new PasskeyCreationStrategy(crossmintService.getPasskeyServerUrl(), clientApiKey)
