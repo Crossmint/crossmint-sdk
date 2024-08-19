@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-smart-wallet-next-starter
 
+## 0.1.3
+
+### Patch Changes
+
+-   5c60365: Export EVMSmartWallet & Chain types
+-   Updated dependencies [5c60365]
+    -   @crossmint/client-sdk-react-ui@1.3.2
+
 ## 0.1.2
 
 ### Patch Changes
