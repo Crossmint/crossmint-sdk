@@ -10,12 +10,12 @@
 <h3 align="center">Smart Wallets Demo (Nextjs Starter Kit)</h3>
 
   <p align="center">
-    This application demonstrates the use of Abstract Accounts with a built-in passkey authenticator. Simply sign in with Google, authorize your passkey, and create your smart wallet in seconds.
+  This application demonstrates the use of Abstract Accounts with a built-in passkey authenticator. Simply sign in with Google or Crossmint's built-in SSO login, authorize your passkey, and create your smart wallet in seconds.
     <br />
-    <a href="https://github.com/Crossmint/crossmint-sdk"><strong>Explore the docs »</strong></a>
+    <a href="https://docs.crossmint.com/wallets/smart-wallets/quickstart"><strong>Explore the quickstart docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/Crossmint/crossmint-sdk">todo:View Demo</a>
+    <a href="https://www.smarterwallet.dev/">View Demo</a>
     ·
     <a href="https://github.com/Crossmint/crossmint-sdk/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
     ·
@@ -40,7 +40,13 @@
         <li><a href="#installation">Installation</a></li>
       </ul>
     </li>
-    <li><a href="#usage">Usage</a></li>
+    <li>
+    <a href="#usage">Usage</a>
+    <ul>
+        <li><a href="#adding-the-provider">Adding the Provider</a></li>
+        <li><a href="#implementing-the-useauth-hook">Implementing the useAuth hook</a></li>
+      </ul>
+      </li>
   </ol>
 </details>
 
@@ -64,8 +70,7 @@
 
 ## Getting Started
 
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
+Follow these steps to set up your project locally and get it running. This guide provides clear instructions to help you get started quickly.
 
 ### Prerequisites
 
@@ -77,7 +82,7 @@ Before you begin, ensure you have the following installed:
 
 ### Installation
 
-1. todo: Get a free API Key at [https://example.com](https://example.com)
+1. Obtain a free API Key from the Crossmint console. Refer to the [Quickstart documentation](https://docs.crossmint.com/wallets/smart-wallets/quickstart#2-get-an-api-key) for detailed instructions.
 2. Clone the repo
     ```sh
     git clone https://github.com/Crossmint/crossmint-sdk.git
@@ -102,32 +107,35 @@ Before you begin, ensure you have the following installed:
 
 ## Usage
 
-Spin up your own instance of the Smart Wallets Demo in under 5 minutes!
+Spin up your own instance of the Smart Wallets Demo in under 5 minutes! Below, you'll see how to add the provider and use the hook to integrate authentication into your application.
 
-### 1. Adding the Provider
+### Adding the Provider
 
 First, wrap your application with the `CrossmintAuthProvider` to provide authentication context to your components. This is typically done in the root of your app.
 
 ```tsx
+"use client";
+
+// Important: this ensures the client SDK only runs on the client
 import { CrossmintAuthProvider } from "@crossmint/client-sdk-react-ui";
 
 export default function App({ Component, pageProps }) {
-  return (
-    <CrossmintAuthProvider
-      apiKey="YOUR_CROSSMINT_API_KEY"
-      embeddedWallets={{
-        createOnLogin: "all-users",
-        defaultChain: "polygon-amoy",
-        type: "evm-smart-wallet",
-      }}
-    >
-      <Component {...pageProps} />
-    </CrossmintAuthProvider>
-  );
+    return (
+        <CrossmintAuthProvider
+            apiKey="YOUR_CROSSMINT_API_KEY"
+            embeddedWallets={{
+                createOnLogin: "all-users",
+                defaultChain: "polygon-amoy",
+                type: "evm-smart-wallet",
+            }}
+        >
+            <Component {...pageProps} />
+        </CrossmintAuthProvider>
+    );
 }
 ```
 
-### 2. Using the useAuth Hook
+### Implementing the useAuth hook
 
 Next, use the useAuth hook in your components to access the JWT, wallet state, and login/logout functions.
 
@@ -135,20 +143,13 @@ Next, use the useAuth hook in your components to access the JWT, wallet state, a
 import { useAuth } from "@crossmint/client-sdk-react-ui";
 
 export default function Home() {
-  const { jwt, wallet, login, logout } = useAuth();
+    const { jwt, wallet, login, logout } = useAuth();
 
-  return (
-    <div>
-      {jwt ? (
-        <button onClick={logout}>Log out</button>
-      ) : (
-        <button onClick={login}>Log in</button>
-      )}
-    </div>
-  );
+    return <div>{jwt ? <button onClick={logout}>Log out</button> : <button onClick={login}>Log in</button>}</div>;
 }
 ```
 
-_For more examples, please refer to the [Documentation](https://example.com)_
+_For additional information, please refer to the [Quickstart Documentation](https://docs.crossmint.com/wallets/smart-wallets/quickstart)._
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+ß
