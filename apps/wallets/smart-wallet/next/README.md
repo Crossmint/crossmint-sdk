@@ -124,6 +124,7 @@ export default function App({ Component, pageProps }) {
     return (
         <CrossmintAuthProvider
             apiKey="YOUR_CROSSMINT_API_KEY"
+            environment="staging" // or "production"
             embeddedWallets={{
                 createOnLogin: "all-users",
                 defaultChain: "polygon-amoy",
