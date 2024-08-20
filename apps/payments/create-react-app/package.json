@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-react-ui-starter",
-    "version": "1.2.6",
+    "version": "1.2.7",
     "private": true,
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
