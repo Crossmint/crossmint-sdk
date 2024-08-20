@@ -10,8 +10,6 @@ export class CrossmintService {
         production: CROSSMINT_PROD_URL,
     };
 
-    public readonly issuer: string;
-
     constructor(public apiKey: string, public jwtToken: string | null) {
         this.crossmintAPIHeaders = {
             accept: "application/json",
@@ -23,11 +21,6 @@ export class CrossmintService {
             getEnvironmentForKey(apiKey) === "production"
                 ? this.getUrlFromEnv("production")
                 : this.getUrlFromEnv("staging");
-
-        this.issuer =
-            getEnvironmentForKey(apiKey) === "production"
-                ? "https://www.crossmint.com"
-                : "https://staging.crossmint.com";
     }
 
     protected getUrlFromEnv(environment: CrossmintEnvironment) {
