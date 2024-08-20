@@ -47,10 +47,6 @@ export class SmartWalletService {
             existing,
         });
 
-        if (existing != null && !equalsIgnoreCase(existing.address, account.address)) {
-            throw new UserWalletAlreadyCreatedError(userWithId.id);
-        }
-
         if (existing == null) {
             await this.crossmintService.idempotentCreateSmartWallet(user, {
                 type: ZERO_DEV_TYPE,

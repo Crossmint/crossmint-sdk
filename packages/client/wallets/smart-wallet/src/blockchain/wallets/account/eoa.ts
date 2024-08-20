@@ -43,6 +43,7 @@ export class EOACreationStrategy implements AccountCreationStrategy {
             index: 0n,
             entryPoint,
             kernelVersion,
+            deployedAccountAddress: existing?.address,
         });
 
         return { account, signerConfig: new EOASignerConfig({ eoaAddress: eoa.address, type: "eoa" }) };
