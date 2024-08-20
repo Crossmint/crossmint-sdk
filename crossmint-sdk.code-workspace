@@ -29,11 +29,11 @@
             "path": "packages/client/ui/react-ui"
         },
         {
-            "name": "⚛️🔒 @crossmint/client-sdk-smart-wallet-react-starter",
+            "name": "⚛️🔒 Smart Wallet SDK Playground",
             "path": "apps/wallets/smart-wallet/react"
         },
         {
-            "name": "⚛️🔒 @crossmint/client-sdk-smart-wallet-next-starter",
+            "name": "⚛️🔒 Smart Wallet + Auth Demo",
             "path": "apps/wallets/smart-wallet/next"
         },
         {

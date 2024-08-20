@@ -1,4 +1,3 @@
-import { BUNDLER_RPC } from "@/utils/constants";
 import {
     Chain,
     arbitrum,
@@ -12,6 +11,8 @@ import {
 } from "viem/chains";
 
 import { BlockchainIncludingTestnet as Blockchain, ObjectValues, objectValues } from "@crossmint/common-sdk-base";
+
+import { BUNDLER_RPC } from "../utils/constants";
 
 export const SmartWalletTestnet = {
     BASE_SEPOLIA: Blockchain.BASE_SEPOLIA,

@@ -163,6 +163,12 @@ importers:
       '@types/react-dom':
         specifier: 18.2.7
         version: 18.2.7
+      '@zerodev/passkey-validator':
+        specifier: 5.4.0
+        version: 5.4.0(@zerodev/sdk@5.3.3(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(@zerodev/webauthn-key@5.3.1(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
+      '@zerodev/webauthn-key':
+        specifier: 5.3.1
+        version: 5.3.1(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
       eslint-config-next:
         specifier: 13.4.19
         version: 13.4.19(eslint@8.57.0)(typescript@5.5.3)
@@ -206,9 +212,9 @@ importers:
 
   apps/wallets/smart-wallet/next:
     dependencies:
-      '@crossmint/client-sdk-smart-wallet':
-        specifier: workspace:*
-        version: link:../../../../packages/client/wallets/smart-wallet
+      '@crossmint/client-sdk-react-ui':
+        specifier: 1.3.2
+        version: 1.3.2(bufferutil@4.0.7)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(typescript@5.5.3)(utf-8-validate@5.0.10)
       '@radix-ui/react-avatar':
         specifier: 1.1.0
         version: 1.1.0(@types/react-dom@18.3.0)(@types/react@18.3.3)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -224,9 +230,6 @@ importers:
       '@radix-ui/react-toast':
         specifier: 1.2.1
         version: 1.2.1(@types/react-dom@18.3.0)(@types/react@18.3.3)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      '@t3-oss/env-nextjs':
-        specifier: 0.11.0
-        version: 0.11.0(typescript@5.5.3)(zod@3.22.4)
       '@tanstack/react-query':
         specifier: 5.51.18
         version: 5.51.18(react@18.2.0)
@@ -236,9 +239,6 @@ importers:
       clsx:
         specifier: 2.1.1
         version: 2.1.1
-      firebase:
-        specifier: ^10.3.1
-        version: 10.12.4
       lucide-react:
         specifier: 0.419.0
         version: 0.419.0(react@18.2.0)
@@ -257,9 +257,6 @@ importers:
       viem:
         specifier: 2.17.5
         version: 2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
-      zod:
-        specifier: 3.22.4
-        version: 3.22.4
     devDependencies:
       '@types/node':
         specifier: ^20
@@ -510,9 +507,15 @@ importers:
 
   packages/client/ui/react-ui:
     dependencies:
+      '@crossmint/client-sdk-auth-core':
+        specifier: workspace:*
+        version: link:../../auth-core
       '@crossmint/client-sdk-base':
         specifier: workspace:*
         version: link:../../base
+      '@crossmint/client-sdk-smart-wallet':
+        specifier: workspace:*
+        version: link:../../wallets/smart-wallet
       '@crossmint/common-sdk-base':
         specifier: workspace:*
         version: link:../../../common/base
@@ -651,9 +654,21 @@ importers:
       '@crossmint/client-sdk-base':
         specifier: workspace:*
         version: link:../base
+      typedoc:
+        specifier: 0.26.5
+        version: 0.26.5(typescript@5.5.3)
+      typedoc-plugin-frontmatter:
+        specifier: 1.0.0
+        version: 1.0.0(typedoc-plugin-markdown@4.2.3(typedoc@0.26.5(typescript@5.5.3)))
+      typedoc-plugin-markdown:
+        specifier: 4.2.3
+        version: 4.2.3(typedoc@0.26.5(typescript@5.5.3))
 
   packages/client/wallets/smart-wallet:
     dependencies:
+      '@crossmint/client-sdk-base':
+        specifier: workspace:*
+        version: link:../../base
       '@crossmint/common-sdk-base':
         specifier: workspace:*
         version: link:../../../common/base
@@ -675,22 +690,25 @@ importers:
       permissionless:
         specifier: 0.1.36
         version: 0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
-      uuid:
-        specifier: 10.0.0
-        version: 10.0.0
       viem:
         specifier: 2.17.5
         version: 2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      zod:
+        specifier: 3.22.4
+        version: 3.22.4
     devDependencies:
-      '@playwright/test':
-        specifier: ^1.41.2
-        version: 1.41.2
-      '@types/node':
-        specifier: 20.12.7
-        version: 20.12.7
-      '@types/uuid':
-        specifier: 10.0.0
-        version: 10.0.0
+      typedoc:
+        specifier: 0.26.5
+        version: 0.26.5(typescript@5.5.3)
+      typedoc-plugin-frontmatter:
+        specifier: 1.0.0
+        version: 1.0.0(typedoc-plugin-markdown@4.2.3(typedoc@0.26.5(typescript@5.5.3)))
+      typedoc-plugin-markdown:
+        specifier: 4.2.3
+        version: 4.2.3(typedoc@0.26.5(typescript@5.5.3))
+      vitest-mock-extended:
+        specifier: 2.0.0
+        version: 2.0.0(typescript@5.5.3)(vitest@1.0.2(@types/node@20.14.11)(jsdom@22.1.0(bufferutil@4.0.7)(utf-8-validate@5.0.10))(terser@5.19.4))
 
   packages/client/wallets/walletconnect:
     dependencies:
@@ -1772,11 +1790,35 @@ packages:
   '@crossmint/client-sdk-aa@1.0.0-alpha.1':
     resolution: {integrity: sha512-iz3T2eG29xwi1WTY1NYMAQsRo82JPR/HGFTuXL1YGu+7sVh8PAOeK48eV2EsXfCsyJNOjYcOXsYHhHmwZbD1yw==}
 
+  '@crossmint/client-sdk-auth-core@1.1.1':
+    resolution: {integrity: sha512-IyIhzdG4b+zZxnXvaHe9LwOvy8z01qEkN0uV15b7JTUqaR3bdQwdqmAoFdwg/y8HpMoZkZiNENgCiMsz1wJDvw==}
+    peerDependencies:
+      react: '>=17.0.2'
+      react-dom: '>=17.0.2'
+
+  '@crossmint/client-sdk-base@1.2.2':
+    resolution: {integrity: sha512-iUfpMm7tNIUrsQA1tZM+hthZdJTUMoafbCjkckrINtqSpC8eFU7PI3B+TG+hjfTV2ZkNgGycCh4WvtZ4RpLr7g==}
+
+  '@crossmint/client-sdk-react-ui@1.3.2':
+    resolution: {integrity: sha512-k1mp4qRRLrXVgC3cxqkT8Q428n9sgB/DX345Fo5tceyLM0cjJ/N6ZZAnS55HNjBPSuUp7+Dnp6+tNEXGAx/sdw==}
+    peerDependencies:
+      react: '>=17.0.2'
+      react-dom: '>=17.0.2'
+
+  '@crossmint/client-sdk-smart-wallet@0.1.4':
+    resolution: {integrity: sha512-PxeiLGxW0ae9HDVfZPe2BNcLyzofo1Dh7rHPKUt/CxJEKkBh5MjTncBCut2EMrmUa9u0ses306Y6VjxpMQX47g==}
+
+  '@crossmint/client-sdk-window@0.0.9':
+    resolution: {integrity: sha512-A8+TsQeWyVs9tAFnGHoylMStsVllG14vJLr+zgr31h5zwp7eLWTs8xGN610+P/zOxyokBQkT0xPITLP3aiiFKQ==}
+
   '@crossmint/common-sdk-base@0.0.12':
     resolution: {integrity: sha512-KFbUX/HwdtLjh2UHN06Rzu1kla7AExulZinIv43k2U/5JkwI3WB4b0BGV7YZ5DGGPsXTkZs1XVLmsQT7fE3KkA==}
 
   '@crossmint/common-sdk-base@0.0.13':
     resolution: {integrity: sha512-FeMVHpgHDoEIpq2UW+5RsU5/VikkBtCjWy/lKBrItqsou58rlEk0eSW/g9n+edi1v8xtzVHX36K+Se9jGD4Y9A==}
+
+  '@crossmint/common-sdk-base@0.1.1':
+    resolution: {integrity: sha512-yQsIC0uuYzOTTWa76dWPHRr0+5wudn3RNLPd1rD59huP7atF6vpIU0xU+XaLv40Hkb2azqZeS0PrZ/xqO5Egxw==}
 
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -4618,6 +4660,9 @@ packages:
     resolution: {integrity: sha512-zaYmoH0NWWtvnJjC9/CBseXMtKHm/tm40sz3YfJRxeQjyzRqNQPgivpd9R/oDJCYj999mzdW382p/qi2ypjLww==}
     engines: {node: '>=6'}
 
+  '@shikijs/core@1.12.1':
+    resolution: {integrity: sha512-biCz/mnkMktImI6hMfMX3H9kOeqsInxWEyCHbSlL8C/2TR1FqfmGxTLRNwYCKsyCyxWLbB8rEqXRVZuyxuLFmA==}
+
   '@sigstore/bundle@1.1.0':
     resolution: {integrity: sha512-PFutXEy0SmQxYI4texPw3dd2KewuNqv7OuK1ZFtY2fM754yhvG2KdgwIhRnoEE2uHdtdGNQ8s0lb94dW9sELog==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
@@ -4811,24 +4856,6 @@ packages:
   '@swc/helpers@0.5.5':
     resolution: {integrity: sha512-KGYxvIOXcceOAbEk4bi/dVLEK9z8sZ0uBB3Il5b1rhfClSpcX0yfRO0KmTkqR2cnQDymwLB+25ZyMzICg/cm/A==}
 
-  '@t3-oss/env-core@0.11.0':
-    resolution: {integrity: sha512-PSalC5bG0a7XbyoLydiQdAnx3gICX6IQNctvh+TyLrdFxsxgocdj9Ui7sd061UlBzi+z4aIGjnem1kZx9QtUgQ==}
-    peerDependencies:
-      typescript: '>=5.0.0'
-      zod: ^3.0.0
-    peerDependenciesMeta:
-      typescript:
-        optional: true
-
-  '@t3-oss/env-nextjs@0.11.0':
-    resolution: {integrity: sha512-gcRrY2CzSMSrxDf5+fKCUfzbBK125IxOcJHcoMVdjcTmYxEgIZFZ5qPPtngOY3UmTeXSqRZOGuNiosqWTFTkMw==}
-    peerDependencies:
-      typescript: '>=5.0.0'
-      zod: ^3.0.0
-    peerDependenciesMeta:
-      typescript:
-        optional: true
-
   '@tanstack/query-core@5.51.17':
     resolution: {integrity: sha512-AtVNOgVrZNz4C7RzMfx7sCn1/gf0Ype4nX8UP2BOh0C2tTMszwXk98iCLRacTn5vTRNJCZxz3fgEcTJq0uv8GQ==}
 
@@ -4916,6 +4943,7 @@ packages:
   '@toruslabs/fetch-node-details@13.1.1':
     resolution: {integrity: sha512-RjAPh+KAaXL406MaAJacyNhekIHojHJlgB5oU45o5l9rnCJrIEhcLVpWVeucdyDyq0L+btko1RYvIRUNqALPyQ==}
     engines: {node: '>=18.x', npm: '>=9.x'}
+    deprecated: Not supported. Pls upgrade
     peerDependencies:
       '@babel/runtime': 7.x
 
@@ -4983,6 +5011,7 @@ packages:
   '@toruslabs/openlogin@6.2.11':
     resolution: {integrity: sha512-5lZASmN2ff6cVam1Y0Wq77Wkk21pA34+mtByxGL27ByWnKKJZP/uJuxsxCLQ0yrZYCR2WeTn9S1alYWaPnFgZQ==}
     engines: {node: '>=18.x', npm: '>=9.x'}
+    deprecated: Not supported. Pls upgrade
     peerDependencies:
       '@babel/runtime': 7.x
 
@@ -4995,6 +5024,7 @@ packages:
   '@toruslabs/torus.js@12.1.1':
     resolution: {integrity: sha512-M0kJeq3VKcx+gsPa24YoRkGxbV5IHOQzTkmknGr9Z8ISYYxgh4nHdShhTC5luVFMHovej+UGu/jZof4VtZ6WKw==}
     engines: {node: '>=18.x', npm: '>=9.x'}
+    deprecated: Not supported. Pls upgrade
     peerDependencies:
       '@babel/runtime': 7.x
 
@@ -5102,6 +5132,9 @@ packages:
 
   '@types/graceful-fs@4.1.6':
     resolution: {integrity: sha512-Sig0SNORX9fdW+bQuTEovKj3uHcUL6LQKbCrrqb1X7J6/ReAbhCXRAhc+SMejhLELFj2QcyuxmUooZ4bt5ReSw==}
+
+  '@types/hast@3.0.4':
+    resolution: {integrity: sha512-WPs+bbQw5aCj+x6laNGWLH3wviHtoCv/P3+otBhbOhJgG8qtpdAMlTCxLtsTWA7LH1Oh/bFCHsBn0TPS5m30EQ==}
 
   '@types/hoist-non-react-statics@3.3.5':
     resolution: {integrity: sha512-SbcrWzkKBw2cdwRTwQAswfpB9g9LJWfjtUeW/jvNwbhC8cpmmNYVePa+ncbUe0rGTQ7G3Ff6mYUN2VMfLVr+Sg==}
@@ -5262,8 +5295,8 @@ packages:
   '@types/trusted-types@2.0.3':
     resolution: {integrity: sha512-NfQ4gyz38SL8sDNrSixxU2Os1a5xcdFxipAFxYEuLUlvU2uDwS4NUpsImcf1//SlWItCVMMLiylsxbmNMToV/g==}
 
-  '@types/uuid@10.0.0':
-    resolution: {integrity: sha512-7gqG38EyHgyP1S+7+xomFtL+ZNHcKv6DwNaCZmJmo1vgMugyF3TCnXVg4t1uk89mLNwnLtnY3TpOpCOyp1/xHQ==}
+  '@types/unist@3.0.2':
+    resolution: {integrity: sha512-dqId9J8K/vGi5Zr7oo212BGii5m3q5Hxlkwy3WpYuKPklmBEvsbMYYyLxAQpSffdLl/gdW0XUpKWFvYmyoWCoQ==}
 
   '@types/uuid@8.3.4':
     resolution: {integrity: sha512-c/I8ZRb51j+pYGAu5CrFMRxqZ2ke4y2grEBO5AUjgSkSk+qT2Ea+OdWElz/OiMf5MNpn2b17kuVBwZLQJXzihw==}
@@ -5674,12 +5707,15 @@ packages:
 
   '@walletconnect/sign-client@2.11.1':
     resolution: {integrity: sha512-s3oKSx6/F5X2WmkV1jfJImBFACf9Km5HpTb+n5q+mobJVpUQw/clvoVyIrNNppLhm1V1S/ylHXh0qCrDppDpCA==}
+    deprecated: Reliability and performance greatly improved - please see https://github.com/WalletConnect/walletconnect-monorepo/releases
 
   '@walletconnect/sign-client@2.8.3':
     resolution: {integrity: sha512-fOlyZfzV4xJO0CDCMrQ3hw4bIuboncqVpJ0BgTF5yQtKklv+5pEqlFnhU8GN2rE6GThU1zyPQNibT/jRG7lCAw==}
+    deprecated: Reliability and performance greatly improved - please see https://github.com/WalletConnect/walletconnect-monorepo/releases
 
   '@walletconnect/sign-client@2.9.2':
     resolution: {integrity: sha512-anRwnXKlR08lYllFMEarS01hp1gr6Q9XUgvacr749hoaC/AwGVlxYFdM8+MyYr3ozlA+2i599kjbK/mAebqdXg==}
+    deprecated: Reliability and performance greatly improved - please see https://github.com/WalletConnect/walletconnect-monorepo/releases
 
   '@walletconnect/signer-connection@1.8.0':
     resolution: {integrity: sha512-+YAaTAP52MWZJ2wWnqKClKCPlPHBo6reURFe0cWidLADh9mi/kPWGALZ5AENK22zpem1bbKV466rF5Rzvu0ehA==}
@@ -5745,6 +5781,7 @@ packages:
   '@web3auth/base@7.3.2':
     resolution: {integrity: sha512-Bg5Mjqr51ETTRtya+4+v2G/OUjHPbkuRbtLGFjQ4uzrBuFokbEaE70kodnR7ZpIhOn41p8nciSxEo1ZJT+rBUQ==}
     engines: {node: '>=18.x', npm: '>=9.x'}
+    deprecated: Not supported. Pls upgrade
     peerDependencies:
       '@babel/runtime': ^7.x
 
@@ -10289,6 +10326,9 @@ packages:
     resolution: {integrity: sha512-wM1+Z03eypVAVUCE7QdSqpVIvelbOakn1M0bPDoA4SGWPx3sNDVUiMo3L6To6WWGClB7VyXnhQ4Sn7gxiJbE6A==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
+  linkify-it@5.0.0:
+    resolution: {integrity: sha512-5aHCbzQRADcdP+ATqnDuhhJ/MRIqDkZX5pyjFHRRysS8vZ5AbqGEoFIb6pYHPZ+L/OC2Lc+xT8uHVVR5CAK/wQ==}
+
   lint-staged@15.2.7:
     resolution: {integrity: sha512-+FdVbbCZ+yoh7E/RosSdqKJyUM2OEjTciH0TFNkawKgvFp1zbGlEC39RADg+xKBG1R4mhoH2j85myBQZ5wR+lw==}
     engines: {node: '>=18.12.0'}
@@ -10504,6 +10544,9 @@ packages:
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
+  lunr@2.3.9:
+    resolution: {integrity: sha512-zTU3DaZaF3Rt9rhN3uBMGQD3dD2/vFQqnvZCDv4dl5iOzq2IZQqTxu90r4E5J+nP70J3ilqVCrbho2eWaeW8Ow==}
+
   lz-string@1.5.0:
     resolution: {integrity: sha512-h5bgJWpxJNswbU7qCrV0tIKQCaS3blPDrqKWx+QxzuzL1zGUzij9XCWLrSLsJPu5t+eWA/ycetzYAO5IOMcWAQ==}
     hasBin: true
@@ -10552,6 +10595,10 @@ packages:
     resolution: {integrity: sha512-hdN1wVrZbb29eBGiGjJbeP8JbKjq1urkHJ/LIP/NY48MZ1QVXUsQBV1G1zvYFHn1XE06cwjBsOI2K3Ulnj1YXQ==}
     engines: {node: '>=8'}
 
+  markdown-it@14.1.0:
+    resolution: {integrity: sha512-a54IwgWPaeBCAAsv13YgmALOF1elABB08FxO9i+r4VFk5Vl4pKokRPeX8u5TCgSsPi6ec1otfLjdOpVcgbpshg==}
+    hasBin: true
+
   md5.js@1.3.5:
     resolution: {integrity: sha512-xitP+WxNPcTTOgnTJcrhM0xvdPepipPSf3I8EIpGKeFLjt3PlJLIDG3u8EX53ZIubkb+5U2+3rELYpEhHhzdkg==}
 
@@ -10560,6 +10607,9 @@ packages:
 
   mdn-data@2.0.4:
     resolution: {integrity: sha512-iV3XNKw06j5Q7mi6h+9vbx23Tv7JkjEVgKHW4pimwyDGWm0OIQntJJ+u1C6mg6mK1EaTv42XQ7w76yuzH7M2cA==}
+
+  mdurl@2.0.0:
+    resolution: {integrity: sha512-Lf+9+2r+Tdp5wXDXC4PcIBjTDtq4UKjCPMQhKIuzpJNW0b96kVqSwW0bT7FhRSfmAiFYgP+SCRvdrDozfh0U5w==}
 
   media-typer@0.3.0:
     resolution: {integrity: sha512-dq+qelQ9akHpcOl/gUVRTxVIOkAJ1wR3QAvb4RsVjS8oVoFjDGTc679wJYmUmknUF5HwMLOgb5O+a3KxfWapPQ==}
@@ -12162,6 +12212,10 @@ packages:
   pump@3.0.0:
     resolution: {integrity: sha512-LwZy+p3SFs1Pytd/jYct4wpv49HiYCqd9Rlc5ZVdk0V+8Yzv6jR5Blk3TRmPL1ft69TxP0IMZGJ+WPFU2BFhww==}
 
+  punycode.js@2.3.1:
+    resolution: {integrity: sha512-uxFIHU0YlHYhDQtV4R9J6a52SLx28BCjT+4ieh7IGbgwVJWO+km431c4yRlREUAsAmt/uMjQUyQHNEPf0M39CA==}
+    engines: {node: '>=6'}
+
   punycode@1.4.1:
     resolution: {integrity: sha512-jmYNElW7yvO7TV33CjSmvSiE2yco3bV2czu/OzDKdMNVZQWfxCblURLhf+47syQRBntjfLdd/H0egrzIG+oaFQ==}
 
@@ -12939,6 +12993,9 @@ packages:
     engines: {node: '>=4'}
     hasBin: true
 
+  shiki@1.12.1:
+    resolution: {integrity: sha512-nwmjbHKnOYYAe1aaQyEBHvQymJgfm86ZSS7fT8OaPRr4sbAcBNz7PbfAikMEFSDQ6se2j2zobkXvVKcBOm0ysg==}
+
   shx@0.3.4:
     resolution: {integrity: sha512-N6A9MLVqjxZYcVn8hLmtneQWIJtp8IKzMP4eMnx+nqkvXoqinUPCbUFLp2UcWTEIUONhlk0ewxr/jaVGlc+J+g==}
     engines: {node: '>=6'}
@@ -13692,6 +13749,14 @@ packages:
     resolution: {integrity: sha512-5OX1tzOjxWEgsr/YEUWSuPrQ00deKLh6D7OTWcvNHm12/7QPyRh8SYpyWvA4IZv8H/+GQWQEh/kwo95Q9OVW1A==}
     engines: {node: '>=14.0.0'}
 
+  ts-essentials@10.0.2:
+    resolution: {integrity: sha512-Xwag0TULqriaugXqVdDiGZ5wuZpqABZlpwQ2Ho4GDyiu/R2Xjkp/9+zcFxL7uzeLl/QCPrflnvpVYyS3ouT7Zw==}
+    peerDependencies:
+      typescript: '>=4.5.0'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
   ts-interface-checker@0.1.13:
     resolution: {integrity: sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA==}
 
@@ -13884,6 +13949,24 @@ packages:
   typedarray@0.0.6:
     resolution: {integrity: sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA==}
 
+  typedoc-plugin-frontmatter@1.0.0:
+    resolution: {integrity: sha512-Mqn96+RjUjPUz/42H8MOp/8eOKjE5MVIgZRFDGmSI2YuggnMZSfh5MMpvd6ykjNTpq7gV5D2iwjqLt8nYRg9rg==}
+    peerDependencies:
+      typedoc-plugin-markdown: '>=4.0.0'
+
+  typedoc-plugin-markdown@4.2.3:
+    resolution: {integrity: sha512-esucQj79SFYOv0f5XVha7QWdLUH5C5HRlDf7Z8CXzHedmVPn7jox6Gt7FdoBXN8AFxyHpa3Lbuxu65Dobwt+4Q==}
+    engines: {node: '>= 18'}
+    peerDependencies:
+      typedoc: 0.26.x
+
+  typedoc@0.26.5:
+    resolution: {integrity: sha512-Vn9YKdjKtDZqSk+by7beZ+xzkkr8T8CYoiasqyt4TTRFy5+UHzL/mF/o4wGBjRF+rlWQHDb0t6xCpA3JNL5phg==}
+    engines: {node: '>= 18'}
+    hasBin: true
+    peerDependencies:
+      typescript: 4.6.x || 4.7.x || 4.8.x || 4.9.x || 5.0.x || 5.1.x || 5.2.x || 5.3.x || 5.4.x || 5.5.x
+
   typeforce@1.18.0:
     resolution: {integrity: sha512-7uc1O8h1M1g0rArakJdf0uLRSSgFcYexrVoKo+bzJd32gd4gDy2L/Z+8/FjPnU9ydY3pEnVPtr9FyscYY60K1g==}
 
@@ -13911,6 +13994,9 @@ packages:
     resolution: {integrity: sha512-/hreyEujaB0w76zKo6717l3L0o/qEUtRgdvUBvlkhoWeOVMjMuHNHk0BRBzikzuGDqNmPQbg5ifMEqsHLiIUcQ==}
     engines: {node: '>=14.17'}
     hasBin: true
+
+  uc.micro@2.1.0:
+    resolution: {integrity: sha512-ARDJmphmdvUk6Glw7y9DQ2bFkKBHwQHLi2lsaH6PPmz/Ka9sFOBsBluozhDltWmnv9u/cF6Rt87znRTPV+yp/A==}
 
   ufo@1.3.2:
     resolution: {integrity: sha512-o+ORpgGwaYQXgqGDwd+hkS4PuZ3QnmqMMxRuajK/a38L6fTpcE5GPIfrf+L/KemFzfUpeUQc1rRS1iDBozvnFA==}
@@ -14141,10 +14227,6 @@ packages:
     resolution: {integrity: sha512-pMZTvIkT1d+TFGvDOqodOclx0QWkkgi6Tdoa8gC8ffGAAqz9pzPTZWAybbsHHoED/ztMtkv/VoYTYyShUn81hA==}
     engines: {node: '>= 0.4.0'}
 
-  uuid@10.0.0:
-    resolution: {integrity: sha512-8XkAphELsDnEGrDxUOHB3RGvXz6TeuYSGEZBOjtTtPm2lwhGBjLgOzLHB63IUWfBpNucQjND6d3AOudO+H3RWQ==}
-    hasBin: true
-
   uuid@8.3.2:
     resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
     hasBin: true
@@ -14298,6 +14380,12 @@ packages:
         optional: true
       terser:
         optional: true
+
+  vitest-mock-extended@2.0.0:
+    resolution: {integrity: sha512-iDV40gSKlN5RZRSfpOv5SKTdEeBvu4VMpLNNakDSHMWnUmnlfsEVGXHndWAfUD+nZBR+HDcQw7p/JO5sCWo1VQ==}
+    peerDependencies:
+      typescript: 3.x || 4.x || 5.x
+      vitest: '>=2.0.0'
 
   vitest@0.34.4:
     resolution: {integrity: sha512-SE/laOsB6995QlbSE6BtkpXDeVNLJc1u2LHRG/OpnN4RsRzM3GQm4nm3PQCK5OBtrsUqnhzLdnT7se3aeNGdlw==}
@@ -16598,12 +16686,74 @@ snapshots:
       - utf-8-validate
       - zod
 
+  '@crossmint/client-sdk-auth-core@1.1.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
+    dependencies:
+      '@crossmint/client-sdk-window': 0.0.9
+      '@headlessui/react': 1.7.18(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+      zod: 3.22.4
+
+  '@crossmint/client-sdk-base@1.2.2':
+    dependencies:
+      '@crossmint/common-sdk-base': 0.1.1
+      exponential-backoff: 3.1.1
+      uuid: 9.0.1
+
+  '@crossmint/client-sdk-react-ui@1.3.2(bufferutil@4.0.7)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(typescript@5.5.3)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@crossmint/client-sdk-auth-core': 1.1.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      '@crossmint/client-sdk-base': 1.2.2
+      '@crossmint/client-sdk-smart-wallet': 0.1.4(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)
+      '@crossmint/common-sdk-base': 0.1.1
+      '@ethersproject/transactions': 5.7.0
+      '@solana/web3.js': 1.95.1(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
+      bs58: 5.0.0
+      lodash.isequal: 4.5.0
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+      react-jss: 10.10.0(react@18.2.0)
+    transitivePeerDependencies:
+      - '@datadog/browser-rum'
+      - bufferutil
+      - encoding
+      - typescript
+      - utf-8-validate
+
+  '@crossmint/client-sdk-smart-wallet@0.1.4(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@crossmint/client-sdk-base': 1.2.2
+      '@crossmint/common-sdk-base': 0.1.1
+      '@datadog/browser-logs': 4.42.2
+      '@zerodev/ecdsa-validator': 5.3.1(@zerodev/sdk@5.3.3(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
+      '@zerodev/passkey-validator': 5.4.0(@zerodev/sdk@5.3.3(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(@zerodev/webauthn-key@5.3.1(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
+      '@zerodev/sdk': 5.3.3(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
+      '@zerodev/webauthn-key': 5.3.1(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
+      permissionless: 0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
+      viem: 2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      zod: 3.22.4
+    transitivePeerDependencies:
+      - '@datadog/browser-rum'
+      - bufferutil
+      - typescript
+      - utf-8-validate
+
+  '@crossmint/client-sdk-window@0.0.9':
+    dependencies:
+      nanoid: 5.0.4
+      zod: 3.22.4
+
   '@crossmint/common-sdk-base@0.0.12':
     dependencies:
       bs58: 5.0.0
       tweetnacl: 1.0.3
 
   '@crossmint/common-sdk-base@0.0.13':
+    dependencies:
+      bs58: 5.0.0
+      tweetnacl: 1.0.3
+
+  '@crossmint/common-sdk-base@0.1.1':
     dependencies:
       bs58: 5.0.0
       tweetnacl: 1.0.3
@@ -21343,6 +21493,10 @@ snapshots:
       '@sentry/types': 5.30.0
       tslib: 1.14.1
 
+  '@shikijs/core@1.12.1':
+    dependencies:
+      '@types/hast': 3.0.4
+
   '@sigstore/bundle@1.1.0':
     dependencies:
       '@sigstore/protobuf-specs': 0.2.1
@@ -21625,19 +21779,6 @@ snapshots:
     dependencies:
       '@swc/counter': 0.1.3
       tslib: 2.6.3
-
-  '@t3-oss/env-core@0.11.0(typescript@5.5.3)(zod@3.22.4)':
-    dependencies:
-      zod: 3.22.4
-    optionalDependencies:
-      typescript: 5.5.3
-
-  '@t3-oss/env-nextjs@0.11.0(typescript@5.5.3)(zod@3.22.4)':
-    dependencies:
-      '@t3-oss/env-core': 0.11.0(typescript@5.5.3)(zod@3.22.4)
-      zod: 3.22.4
-    optionalDependencies:
-      typescript: 5.5.3
 
   '@tanstack/query-core@5.51.17': {}
 
@@ -22171,6 +22312,10 @@ snapshots:
     dependencies:
       '@types/node': 20.14.11
 
+  '@types/hast@3.0.4':
+    dependencies:
+      '@types/unist': 3.0.2
+
   '@types/hoist-non-react-statics@3.3.5':
     dependencies:
       '@types/react': 18.3.3
@@ -22343,7 +22488,7 @@ snapshots:
 
   '@types/trusted-types@2.0.3': {}
 
-  '@types/uuid@10.0.0': {}
+  '@types/unist@3.0.2': {}
 
   '@types/uuid@8.3.4': {}
 
@@ -30569,6 +30714,10 @@ snapshots:
 
   lines-and-columns@2.0.4: {}
 
+  linkify-it@5.0.0:
+    dependencies:
+      uc.micro: 2.1.0
+
   lint-staged@15.2.7:
     dependencies:
       chalk: 5.3.0
@@ -30812,6 +30961,8 @@ snapshots:
     dependencies:
       react: 18.2.0
 
+  lunr@2.3.9: {}
+
   lz-string@1.5.0: {}
 
   magic-sdk@18.4.1:
@@ -30896,6 +31047,15 @@ snapshots:
 
   map-obj@4.3.0: {}
 
+  markdown-it@14.1.0:
+    dependencies:
+      argparse: 2.0.1
+      entities: 4.5.0
+      linkify-it: 5.0.0
+      mdurl: 2.0.0
+      punycode.js: 2.3.1
+      uc.micro: 2.1.0
+
   md5.js@1.3.5:
     dependencies:
       hash-base: 3.1.0
@@ -30905,6 +31065,8 @@ snapshots:
   mdn-data@2.0.14: {}
 
   mdn-data@2.0.4: {}
+
+  mdurl@2.0.0: {}
 
   media-typer@0.3.0: {}
 
@@ -32717,6 +32879,8 @@ snapshots:
       end-of-stream: 1.4.4
       once: 1.4.0
 
+  punycode.js@2.3.1: {}
+
   punycode@1.4.1: {}
 
   punycode@2.3.1: {}
@@ -33820,6 +33984,11 @@ snapshots:
       interpret: 1.4.0
       rechoir: 0.6.2
 
+  shiki@1.12.1:
+    dependencies:
+      '@shikijs/core': 1.12.1
+      '@types/hast': 3.0.4
+
   shx@0.3.4:
     dependencies:
       minimist: 1.2.8
@@ -34797,6 +34966,10 @@ snapshots:
 
   ts-custom-error@3.3.1: {}
 
+  ts-essentials@10.0.2(typescript@5.5.3):
+    optionalDependencies:
+      typescript: 5.5.3
+
   ts-interface-checker@0.1.13: {}
 
   ts-jest@29.1.1(@babel/core@7.21.8)(@jest/types@29.6.3)(babel-jest@29.6.4(@babel/core@7.21.8))(esbuild@0.21.5)(jest@29.6.4(@types/node@20.12.7)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.5.3)))(typescript@5.5.3):
@@ -35077,6 +35250,24 @@ snapshots:
 
   typedarray@0.0.6: {}
 
+  typedoc-plugin-frontmatter@1.0.0(typedoc-plugin-markdown@4.2.3(typedoc@0.26.5(typescript@5.5.3))):
+    dependencies:
+      typedoc-plugin-markdown: 4.2.3(typedoc@0.26.5(typescript@5.5.3))
+      yaml: 2.4.5
+
+  typedoc-plugin-markdown@4.2.3(typedoc@0.26.5(typescript@5.5.3)):
+    dependencies:
+      typedoc: 0.26.5(typescript@5.5.3)
+
+  typedoc@0.26.5(typescript@5.5.3):
+    dependencies:
+      lunr: 2.3.9
+      markdown-it: 14.1.0
+      minimatch: 9.0.5
+      shiki: 1.12.1
+      typescript: 5.5.3
+      yaml: 2.4.5
+
   typeforce@1.18.0: {}
 
   typescript@4.9.5: {}
@@ -35088,6 +35279,8 @@ snapshots:
   typescript@5.4.2: {}
 
   typescript@5.5.3: {}
+
+  uc.micro@2.1.0: {}
 
   ufo@1.3.2: {}
 
@@ -35295,8 +35488,6 @@ snapshots:
 
   utils-merge@1.0.1: {}
 
-  uuid@10.0.0: {}
-
   uuid@8.3.2: {}
 
   uuid@9.0.1: {}
@@ -35440,6 +35631,23 @@ snapshots:
       - supports-color
       - terser
 
+  vite-node@1.0.2(@types/node@20.14.11)(terser@5.19.4):
+    dependencies:
+      cac: 6.7.14
+      debug: 4.3.5(supports-color@8.1.1)
+      pathe: 1.1.1
+      picocolors: 1.0.1
+      vite: 5.0.11(@types/node@20.14.11)(terser@5.19.4)
+    transitivePeerDependencies:
+      - '@types/node'
+      - less
+      - lightningcss
+      - sass
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+
   vite-plugin-dts@3.5.3(@types/node@20.14.11)(rollup@3.29.1)(typescript@5.5.3)(vite@4.4.9(@types/node@20.14.11)(terser@5.19.4)):
     dependencies:
       '@microsoft/api-extractor': 7.36.4(@types/node@20.14.11)
@@ -35475,6 +35683,22 @@ snapshots:
       '@types/node': 20.12.7
       fsevents: 2.3.3
       terser: 5.19.4
+
+  vite@5.0.11(@types/node@20.14.11)(terser@5.19.4):
+    dependencies:
+      esbuild: 0.19.12
+      postcss: 8.4.35
+      rollup: 4.16.4
+    optionalDependencies:
+      '@types/node': 20.14.11
+      fsevents: 2.3.3
+      terser: 5.19.4
+
+  vitest-mock-extended@2.0.0(typescript@5.5.3)(vitest@1.0.2(@types/node@20.14.11)(jsdom@22.1.0(bufferutil@4.0.7)(utf-8-validate@5.0.10))(terser@5.19.4)):
+    dependencies:
+      ts-essentials: 10.0.2(typescript@5.5.3)
+      typescript: 5.5.3
+      vitest: 1.0.2(@types/node@20.14.11)(jsdom@22.1.0(bufferutil@4.0.7)(utf-8-validate@5.0.10))(terser@5.19.4)
 
   vitest@0.34.4(jsdom@22.1.0(bufferutil@4.0.7)(utf-8-validate@5.0.10))(playwright@1.41.2)(terser@5.19.4):
     dependencies:
@@ -35539,6 +35763,41 @@ snapshots:
       why-is-node-running: 2.2.2
     optionalDependencies:
       '@types/node': 20.12.7
+      jsdom: 22.1.0(bufferutil@4.0.7)(utf-8-validate@5.0.10)
+    transitivePeerDependencies:
+      - less
+      - lightningcss
+      - sass
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+
+  vitest@1.0.2(@types/node@20.14.11)(jsdom@22.1.0(bufferutil@4.0.7)(utf-8-validate@5.0.10))(terser@5.19.4):
+    dependencies:
+      '@vitest/expect': 1.0.2
+      '@vitest/runner': 1.0.2
+      '@vitest/snapshot': 1.0.2
+      '@vitest/spy': 1.0.2
+      '@vitest/utils': 1.0.2
+      acorn-walk: 8.3.1
+      cac: 6.7.14
+      chai: 4.4.0
+      debug: 4.3.5(supports-color@8.1.1)
+      execa: 8.0.1
+      local-pkg: 0.5.0
+      magic-string: 0.30.5
+      pathe: 1.1.1
+      picocolors: 1.0.1
+      std-env: 3.7.0
+      strip-literal: 1.3.0
+      tinybench: 2.5.1
+      tinypool: 0.8.1
+      vite: 5.0.11(@types/node@20.14.11)(terser@5.19.4)
+      vite-node: 1.0.2(@types/node@20.14.11)(terser@5.19.4)
+      why-is-node-running: 2.2.2
+    optionalDependencies:
+      '@types/node': 20.14.11
       jsdom: 22.1.0(bufferutil@4.0.7)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
       - less

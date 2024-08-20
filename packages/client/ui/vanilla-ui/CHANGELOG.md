@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-vanilla-ui
 
+## 1.1.12
+
+### Patch Changes
+
+-   Updated dependencies [12b5eac]
+    -   @crossmint/client-sdk-base@1.2.2
+    -   @crossmint/common-sdk-base@0.1.1
+
 ## 1.1.11
 
 ### Patch Changes

@@ -1,7 +1,3 @@
-import type { CrossmintWalletService } from "@/api/CrossmintWalletService";
-import { type PasskeySignerData, displayPasskey } from "@/types/API";
-import type { PasskeySigner, UserParams, WalletParams } from "@/types/Config";
-import type { AccountAndSigner, PasskeyValidatorSerializedData, WalletCreationParams } from "@/types/internal";
 import { PasskeyValidatorContractVersion, WebAuthnMode, toPasskeyValidator } from "@zerodev/passkey-validator";
 import { type KernelSmartAccount, type KernelValidator, createKernelAccount } from "@zerodev/sdk";
 import { type WebAuthnKey, toWebAuthnKey } from "@zerodev/webauthn-key";
@@ -13,55 +9,58 @@ import {
     PasskeyMismatchError,
     PasskeyPromptError,
     PasskeyRegistrationError,
-} from "../../error";
-
-export interface PasskeyWalletParams extends WalletCreationParams {
-    walletParams: WalletParams & { signer: PasskeySigner };
-}
-
-export function isPasskeyParams(params: WalletCreationParams): params is PasskeyWalletParams {
-    return (params.walletParams.signer as PasskeySigner).type === "PASSKEY";
-}
+} from "../../../error";
+import type { AccountAndSigner, PasskeyCreationContext } from "../../../types/internal";
+import type { UserParams } from "../../../types/params";
+import type { PasskeySignerData, PasskeyValidatorSerializedData } from "../../../types/service";
+import { PasskeySignerConfig } from "./signer";
+import { AccountCreationStrategy } from "./strategy";
 
 type PasskeyValidator = KernelValidator<EntryPoint, "WebAuthnValidator"> & {
     getSerializedData: () => string;
 };
-export class PasskeyAccountService {
-    constructor(private readonly crossmintService: CrossmintWalletService) {}
+export class PasskeyCreationStrategy implements AccountCreationStrategy {
+    constructor(private readonly passkeyServerUrl: string, private readonly apiKey: string) {}
 
-    public async get(
-        { user, publicClient, walletParams, entryPoint, kernelVersion }: PasskeyWalletParams,
-        existingSignerConfig?: PasskeySignerData
-    ): Promise<AccountAndSigner> {
+    public async create({
+        user,
+        publicClient,
+        walletParams,
+        entryPoint,
+        kernelVersion,
+        existing,
+    }: PasskeyCreationContext): Promise<AccountAndSigner> {
         const inputPasskeyName = walletParams.signer.passkeyName ?? user.id;
-        if (existingSignerConfig != null && existingSignerConfig.passkeyName !== inputPasskeyName) {
+        if (existing != null && existing.signerConfig.data.passkeyName !== inputPasskeyName) {
             throw new PasskeyMismatchError(
-                `User '${user.id}' has an existing wallet created with a passkey named '${existingSignerConfig.passkeyName}', this does match input passkey name '${inputPasskeyName}'.`,
-                displayPasskey(existingSignerConfig)
+                `User '${user.id}' has an existing wallet created with a passkey named '${existing.signerConfig.data.passkeyName}', this does match input passkey name '${inputPasskeyName}'.`,
+                existing.signerConfig.display()
             );
         }
 
         try {
-            const passkey = await this.getPasskey(user, inputPasskeyName, existingSignerConfig);
+            const passkey = await this.getPasskey(user, inputPasskeyName, existing?.signerConfig.data);
 
             const latestValidatorVersion = PasskeyValidatorContractVersion.V0_0_2;
             const validatorContractVersion =
-                existingSignerConfig == null ? latestValidatorVersion : existingSignerConfig.validatorContractVersion;
+                existing == null ? latestValidatorVersion : existing.signerConfig.data.validatorContractVersion;
+
             const validator = await toPasskeyValidator(publicClient, {
                 webAuthnKey: passkey,
-                entryPoint: entryPoint.address,
+                entryPoint,
                 validatorContractVersion,
                 kernelVersion,
             });
 
             const kernelAccount = await createKernelAccount(publicClient, {
                 plugins: { sudo: validator },
-                entryPoint: entryPoint.address,
+                entryPoint,
                 kernelVersion,
+                deployedAccountAddress: existing?.address,
             });
 
             return {
-                signerData: this.getSignerData(validator, validatorContractVersion, inputPasskeyName),
+                signerConfig: this.getSignerConfig(validator, validatorContractVersion, inputPasskeyName),
                 account: this.decorate(kernelAccount, inputPasskeyName),
             };
         } catch (error) {
@@ -85,29 +84,29 @@ export class PasskeyAccountService {
 
         return toWebAuthnKey({
             passkeyName,
-            passkeyServerUrl: this.crossmintService.getPasskeyServerUrl(),
+            passkeyServerUrl: this.passkeyServerUrl,
             mode: WebAuthnMode.Register,
             passkeyServerHeaders: this.createPasskeysServerHeaders(user),
         });
     }
 
-    private getSignerData(
+    private getSignerConfig(
         validator: PasskeyValidator,
         validatorContractVersion: PasskeyValidatorContractVersion,
         passkeyName: string
-    ): PasskeySignerData {
-        return {
+    ): PasskeySignerConfig {
+        return new PasskeySignerConfig({
             ...deserializePasskeyValidatorData(validator.getSerializedData()),
             passkeyName,
             validatorContractVersion,
             domain: window.location.hostname,
             type: "passkeys",
-        };
+        });
     }
 
     private createPasskeysServerHeaders(user: UserParams) {
         return {
-            "x-api-key": this.crossmintService.crossmintAPIHeaders["x-api-key"],
+            "x-api-key": this.apiKey,
             Authorization: `Bearer ${user.jwt}`,
         };
     }

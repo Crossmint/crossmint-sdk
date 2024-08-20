@@ -9,21 +9,13 @@ export type {
     PasskeySigner,
     EOASigner,
     WalletParams,
-} from "./types/Config";
+} from "./types/params";
 
-export type { TransferType, ERC20TransferType, NFTTransferType, SFTTransferType } from "./types/Tokens";
+export type { TransferType, ERC20TransferType, NFTTransferType, SFTTransferType } from "./types/token";
 
 export {
-    TransferError,
-    CrossmintServiceError,
     SmartWalletError,
-    JWTDecryptionError,
-    JWTExpiredError,
-    JWTIdentifierError,
-    JWTInvalidError,
-    NotAuthorizedError,
     UserWalletAlreadyCreatedError,
-    OutOfCreditsError,
     AdminAlreadyUsedError,
     AdminMismatchError,
     PasskeyMismatchError,
@@ -31,8 +23,19 @@ export {
     PasskeyRegistrationError,
     PasskeyIncompatibleAuthenticatorError,
     ConfigError,
-    NonCustodialWalletsNotEnabledError,
-    SmartWalletErrorCode,
+    SmartWalletsNotEnabledError,
 } from "./error";
+
+export {
+    SmartWalletErrorCode,
+    CrossmintSDKError,
+    CrossmintServiceError,
+    TransferError,
+    JWTDecryptionError,
+    JWTExpiredError,
+    JWTIdentifierError,
+    JWTInvalidError,
+    NotAuthorizedError,
+} from "@crossmint/client-sdk-base";
 
 export { SmartWalletSDK } from "./SmartWalletSDK";

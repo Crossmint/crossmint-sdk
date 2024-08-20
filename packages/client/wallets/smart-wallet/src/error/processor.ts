@@ -1,9 +1,8 @@
-import { logError } from "@/services/logging";
-import { DatadogProvider } from "@/services/logging/DatadogProvider";
-import { SDK_VERSION } from "@/utils/constants";
 import { BaseError, stringify } from "viem";
 
 import { SmartWalletError } from ".";
+import { DatadogProvider } from "../services/logging/DatadogProvider";
+import { SDK_VERSION } from "../utils/constants";
 
 export class ErrorProcessor {
     constructor(private readonly logger: DatadogProvider) {}

@@ -19,4 +19,8 @@ export interface EncryptedVerifiableCredential {
     payload: string;
 }
 
+/**
+ * VerifiableCredentialType
+ * A wrapper type for VerifiableCredential and EncryptedVerifiableCredential
+ */
 export type VerifiableCredentialType = VerifiableCredential | EncryptedVerifiableCredential;
