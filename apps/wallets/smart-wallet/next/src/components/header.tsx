@@ -27,7 +27,7 @@ export const Header = () => {
     };
 
     return (
-        <div className="flex justify-between p-6 items-center">
+        <div className="flex justify-between p-4 items-center">
             <Link href="/" className="justify-center items-center flex">
                 <div className="hidden sm:block">
                     <Logo />

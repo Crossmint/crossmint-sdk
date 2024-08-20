@@ -17,7 +17,7 @@ export default function Home() {
     const showMintButton = jwt != null && wallet != null;
 
     return (
-        <div className="flex h-full w-full items-center pt-6 justify-center">
+        <div className="flex h-full w-full items-center md:p-4 justify-center">
             <div className="flex flex-col pb-12 items-center max-w-[538px] p-4">
                 <div className="flex flex-col gap-2 text-center pb-8">
                     <Typography
