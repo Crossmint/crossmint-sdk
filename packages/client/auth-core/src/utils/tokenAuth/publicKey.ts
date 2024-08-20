@@ -31,7 +31,6 @@ async function getSigningKey(jwksUri: string, kid?: string) {
         cache: true,
     });
 
-    console.log("Getting signing key from jwksUri", jwksUri);
     try {
         const signingKey = await client.getSigningKey(kid);
         return signingKey;
