@@ -5,7 +5,7 @@ export interface PublicKeyCacheProvider {
 
 const CROSSMINT_PUBLIC_KEY_CACHE_KEY = "CROSSMINT_PUBLIC_KEY";
 
-//TODO: Implement a class that expects a Redis client as a dependency
+//TODO (WAL-2756): Implement a class that expects a Redis client as a dependency
 class InMemoryPublicKeyCacheProvider implements PublicKeyCacheProvider {
     private cache: Map<string, { value: string }> = new Map();
 
