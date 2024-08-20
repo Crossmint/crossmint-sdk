@@ -12,7 +12,7 @@ import { CURRENT_VERSION, ZERO_DEV_TYPE } from "../../utils/constants";
 import { equalsIgnoreCase } from "../../utils/helpers";
 import { type SmartWalletChain, getBundlerRPC, viemNetworks } from "../chains";
 import { EVMSmartWallet } from "./EVMSmartWallet";
-import type { AccountConfigFacade } from "./account/config";
+import type { AccountConfigService } from "./account/config";
 import type { AccountCreator } from "./account/creator";
 import type { ClientDecorator } from "./clientDecorator";
 import { paymasterMiddleware, usePaymaster } from "./paymaster";
@@ -20,7 +20,7 @@ import { paymasterMiddleware, usePaymaster } from "./paymaster";
 export class SmartWalletService {
     constructor(
         private readonly crossmintService: CrossmintWalletService,
-        private readonly accountConfigFacade: AccountConfigFacade,
+        private readonly accountConfigService: AccountConfigService,
         private readonly accountCreator: AccountCreator,
         private readonly clientDecorator: ClientDecorator
     ) {}
@@ -30,28 +30,28 @@ export class SmartWalletService {
         chain: SmartWalletChain,
         walletParams: WalletParams
     ): Promise<EVMSmartWallet> {
-        const { entryPointVersion, kernelVersion, existingSignerConfig, smartContractWalletAddress, userId } =
-            await this.accountConfigFacade.get(user, chain);
+        const {
+            config: { entryPointVersion, kernelVersion, existing, userWithId },
+            cached,
+        } = await this.accountConfigService.get(user, chain);
+
         const publicClient = createPublicClient({ transport: http(getBundlerRPC(chain)) });
 
         const { account, signerConfig } = await this.accountCreator.get({
             chain,
             walletParams,
             publicClient,
-            user: { ...user, id: userId },
-            entryPoint: {
-                version: entryPointVersion,
-                address: entryPointVersion === "v0.6" ? ENTRYPOINT_ADDRESS_V06 : ENTRYPOINT_ADDRESS_V07,
-            },
+            user: userWithId,
+            entryPoint: entryPointVersion === "v0.6" ? ENTRYPOINT_ADDRESS_V06 : ENTRYPOINT_ADDRESS_V07,
             kernelVersion,
-            existingSignerConfig,
+            existing,
         });
 
-        if (smartContractWalletAddress != null && !equalsIgnoreCase(smartContractWalletAddress, account.address)) {
-            throw new UserWalletAlreadyCreatedError(userId);
+        if (existing != null && !equalsIgnoreCase(existing.address, account.address)) {
+            throw new UserWalletAlreadyCreatedError(userWithId.id);
         }
 
-        if (existingSignerConfig == null) {
+        if (existing == null) {
             await this.crossmintService.idempotentCreateSmartWallet(user, {
                 type: ZERO_DEV_TYPE,
                 smartContractWalletAddress: account.address,
@@ -61,6 +61,15 @@ export class SmartWalletService {
                 chainId: blockchainToChainId(chain),
                 entryPointVersion,
                 kernelVersion,
+            });
+        }
+
+        if (!cached) {
+            this.accountConfigService.cache({
+                entryPointVersion,
+                kernelVersion,
+                user: userWithId,
+                existing: { address: account.address, signerConfig },
             });
         }
 

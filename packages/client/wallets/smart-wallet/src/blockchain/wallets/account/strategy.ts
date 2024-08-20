@@ -1,5 +1,5 @@
-import { AccountAndSigner, WalletCreationParams } from "../../../types/internal";
+import { AccountAndSigner, WalletCreationContext } from "../../../types/internal";
 
 export interface AccountCreationStrategy {
-    create(params: WalletCreationParams): Promise<AccountAndSigner>;
+    create(params: WalletCreationContext): Promise<AccountAndSigner>;
 }

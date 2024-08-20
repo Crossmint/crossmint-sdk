@@ -10,7 +10,7 @@ import {
     PasskeyPromptError,
     PasskeyRegistrationError,
 } from "../../../error";
-import type { AccountAndSigner, PasskeyCreationParams } from "../../../types/internal";
+import type { AccountAndSigner, PasskeyCreationContext } from "../../../types/internal";
 import type { UserParams } from "../../../types/params";
 import type { PasskeySignerData, PasskeyValidatorSerializedData } from "../../../types/service";
 import { PasskeySignerConfig } from "./signer";
@@ -28,35 +28,33 @@ export class PasskeyCreationStrategy implements AccountCreationStrategy {
         walletParams,
         entryPoint,
         kernelVersion,
-        existingSignerConfig,
-    }: PasskeyCreationParams): Promise<AccountAndSigner> {
+        existing,
+    }: PasskeyCreationContext): Promise<AccountAndSigner> {
         const inputPasskeyName = walletParams.signer.passkeyName ?? user.id;
-        if (existingSignerConfig != null && existingSignerConfig.data.passkeyName !== inputPasskeyName) {
+        if (existing != null && existing.signerConfig.data.passkeyName !== inputPasskeyName) {
             throw new PasskeyMismatchError(
-                `User '${user.id}' has an existing wallet created with a passkey named '${existingSignerConfig.data.passkeyName}', this does match input passkey name '${inputPasskeyName}'.`,
-                existingSignerConfig.display()
+                `User '${user.id}' has an existing wallet created with a passkey named '${existing.signerConfig.data.passkeyName}', this does match input passkey name '${inputPasskeyName}'.`,
+                existing.signerConfig.display()
             );
         }
 
         try {
-            const passkey = await this.getPasskey(user, inputPasskeyName, existingSignerConfig?.data);
+            const passkey = await this.getPasskey(user, inputPasskeyName, existing?.signerConfig.data);
 
             const latestValidatorVersion = PasskeyValidatorContractVersion.V0_0_2;
             const validatorContractVersion =
-                existingSignerConfig == null
-                    ? latestValidatorVersion
-                    : existingSignerConfig.data.validatorContractVersion;
+                existing == null ? latestValidatorVersion : existing.signerConfig.data.validatorContractVersion;
 
             const validator = await toPasskeyValidator(publicClient, {
                 webAuthnKey: passkey,
-                entryPoint: entryPoint.address,
+                entryPoint,
                 validatorContractVersion,
                 kernelVersion,
             });
 
             const kernelAccount = await createKernelAccount(publicClient, {
                 plugins: { sudo: validator },
-                entryPoint: entryPoint.address,
+                entryPoint,
                 kernelVersion,
             });
 
