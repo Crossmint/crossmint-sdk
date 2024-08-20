@@ -39,6 +39,6 @@ export class CrossmintService {
     }
 
     public getJWKSUri() {
-        return `${this.crossmintBaseUrl}/api/.well-known/jwks.json/`;
+        return `${this.crossmintBaseUrl}/api/.well-known/jwks.json`;
     }
 }
