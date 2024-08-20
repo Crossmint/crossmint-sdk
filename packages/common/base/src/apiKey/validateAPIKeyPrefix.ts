@@ -83,7 +83,7 @@ function getUsageOriginForKey(apiKey: string): APIKeyUsageOrigin | null {
     return null;
 }
 
-function getEnvironmentForKey(apiKey: string): APIKeyEnvironmentPrefix | null {
+export function getEnvironmentForKey(apiKey: string): APIKeyEnvironmentPrefix | null {
     const keyWithoutUsageOrigin = apiKey.slice(3);
     if (keyWithoutUsageOrigin.startsWith(APIKeyEnvironmentPrefix.DEVELOPMENT + "_")) {
         return APIKeyEnvironmentPrefix.DEVELOPMENT;

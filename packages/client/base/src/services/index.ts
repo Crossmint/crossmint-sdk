@@ -6,3 +6,5 @@ export * from "./hosted/crossmintModalService";
 export * from "./hosted/crossmintPayButtonService";
 
 export * from "./useCrossmintEvents";
+export * from "./api";
+export * from "./logging";

@@ -1,11 +1,12 @@
 import { BaseError, stringify } from "viem";
 
+import { SDKLogger } from "@crossmint/client-sdk-base";
+
 import { SmartWalletError } from ".";
-import { DatadogProvider } from "../services/logging/DatadogProvider";
 import { SDK_VERSION } from "../utils/constants";
 
 export class ErrorProcessor {
-    constructor(private readonly logger: DatadogProvider) {}
+    constructor(private readonly logger: SDKLogger) {}
 
     public map(error: unknown, fallback: SmartWalletError): SmartWalletError | BaseError {
         this.record(error);
@@ -24,7 +25,7 @@ export class ErrorProcessor {
 
     private record(error: unknown) {
         const message = error instanceof Error ? error.message : String(error);
-        this.logger.logError(`Smart Wallet SDK Error: ${message}`, {
+        this.logger.error(`Smart Wallet SDK Error: ${message}`, {
             stack: error instanceof Error ? error.stack : undefined,
             name: error instanceof Error ? error.name : "UnknownError",
             details: stringify(error),

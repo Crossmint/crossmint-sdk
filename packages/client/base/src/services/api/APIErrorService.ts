@@ -1,42 +1,37 @@
 import {
+    CrossmintSDKError,
     CrossmintServiceError,
     JWTDecryptionError,
     JWTExpiredError,
     JWTIdentifierError,
     JWTInvalidError,
     OutOfCreditsError,
-} from "@crossmint/client-sdk-base";
-
-import {
-    AdminAlreadyUsedError,
-    SmartWalletError,
-    SmartWalletsNotEnabledError,
-    UserWalletAlreadyCreatedError,
-} from "../error";
+} from "../../error";
 
 export type CrossmintAPIErrorCodes =
     | "ERROR_JWT_INVALID"
     | "ERROR_JWT_DECRYPTION"
     | "ERROR_JWT_IDENTIFIER"
-    | "ERROR_JWT_EXPIRED"
-    | "ERROR_USER_WALLET_ALREADY_CREATED"
-    | "ERROR_ADMIN_SIGNER_ALREADY_USED"
-    | "ERROR_PROJECT_NONCUSTODIAL_WALLETS_NOT_ENABLED";
+    | "ERROR_JWT_EXPIRED";
 
-export class APIErrorService {
+export class APIErrorService<PackageErrorCodes extends string> {
     constructor(
-        private errors: Record<CrossmintAPIErrorCodes, (apiResponse: any) => SmartWalletError> = {
+        private packageErrors: Record<PackageErrorCodes, (apiResponse: any) => CrossmintSDKError>,
+        private baseErrors: Record<CrossmintAPIErrorCodes, (apiResponse: any) => CrossmintSDKError> = {
             ERROR_JWT_INVALID: () => new JWTInvalidError(),
             ERROR_JWT_DECRYPTION: () => new JWTDecryptionError(),
             ERROR_JWT_EXPIRED: ({ expiredAt }: { expiredAt: string }) => new JWTExpiredError(new Date(expiredAt)),
             ERROR_JWT_IDENTIFIER: ({ identifierKey }: { identifierKey: string }) =>
                 new JWTIdentifierError(identifierKey),
-            ERROR_USER_WALLET_ALREADY_CREATED: ({ userId }: { userId: string }) =>
-                new UserWalletAlreadyCreatedError(userId),
-            ERROR_ADMIN_SIGNER_ALREADY_USED: () => new AdminAlreadyUsedError(),
-            ERROR_PROJECT_NONCUSTODIAL_WALLETS_NOT_ENABLED: () => new SmartWalletsNotEnabledError(),
         }
     ) {}
+
+    private get errors() {
+        return {
+            ...this.baseErrors,
+            ...this.packageErrors,
+        };
+    }
 
     async throwErrorFromResponse({
         response,
@@ -67,7 +62,7 @@ export class APIErrorService {
                 throw new CrossmintServiceError(body.message, response.status);
             }
         } catch (e) {
-            if (e instanceof SmartWalletError) {
+            if (e instanceof CrossmintSDKError) {
                 throw e;
             }
             console.error("Error parsing response", e);
