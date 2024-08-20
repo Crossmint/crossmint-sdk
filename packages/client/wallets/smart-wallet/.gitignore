@@ -1,5 +1,6 @@
 dist
 node_modules/
+docs/*
 /test-results/
 /playwright-report/
 /blob-report/
