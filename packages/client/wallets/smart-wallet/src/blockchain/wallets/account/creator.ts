@@ -1,9 +1,10 @@
 import { AdminMismatchError, ConfigError } from "../../../error";
 import {
-    AccountAndSigner,
-    type WalletCreationParams,
-    isEOACreationParams,
-    isPasskeyCreationParams,
+    type AccountAndSigner,
+    type WalletCreationContext,
+    isEOACreationContext,
+    isPasskeyCreationContext,
+    isPasskeyWalletParams,
 } from "../../../types/internal";
 import { EOACreationStrategy } from "./eoa";
 import { PasskeyCreationStrategy } from "./passkey";
@@ -14,23 +15,26 @@ export class AccountCreator {
         private readonly passkeyStrategy: PasskeyCreationStrategy
     ) {}
 
-    public get(params: WalletCreationParams): Promise<AccountAndSigner> {
-        if (isPasskeyCreationParams(params)) {
-            return this.passkeyStrategy.create(params);
+    public get(context: WalletCreationContext): Promise<AccountAndSigner> {
+        if (isPasskeyCreationContext(context)) {
+            return this.passkeyStrategy.create(context);
         }
 
-        if (isEOACreationParams(params)) {
-            return this.eoaStrategy.create(params);
+        if (isEOACreationContext(context)) {
+            return this.eoaStrategy.create(context);
         }
 
-        if (params.existingSignerConfig == null) {
-            throw new ConfigError(`Unsupported wallet params:\n${params.walletParams}`);
+        if (context.existing == null) {
+            throw new ConfigError(`Unsupported wallet params:\n${context.walletParams}`);
         }
 
-        const signerDisplay = params.existingSignerConfig.display();
+        const display = context.existing.signerConfig.display();
+        const inputSignerType = isPasskeyWalletParams(context.walletParams) ? "passkey" : "eoa";
         throw new AdminMismatchError(
-            `Cannot create wallet with ${params.existingSignerConfig.type} signer for user ${params.user.id}', they already have a wallet with signer:\n'${signerDisplay}'`,
-            signerDisplay
+            `Cannot create wallet with ${inputSignerType} signer for user ${
+                context.user.id
+            }', they already have a wallet with signer:\n'${JSON.stringify(display, null, 2)}'`,
+            display
         );
     }
 }

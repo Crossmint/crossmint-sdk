@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-smart-wallet
 
+## 0.1.5
+
+### Patch Changes
+
+-   443372b: Speed improvements
+
 ## 0.1.4
 
 ### Patch Changes

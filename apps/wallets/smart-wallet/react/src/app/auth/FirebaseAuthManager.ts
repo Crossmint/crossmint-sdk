@@ -59,7 +59,7 @@ export const checkAuthState = (): Promise<string | undefined> => {
         onAuthStateChanged(auth, async (user) => {
             try {
                 if (user) {
-                    const jwt = await user.getIdToken(true);
+                    const jwt = await user.getIdToken();
                     resolve(jwt);
                 } else {
                     resolve(undefined);

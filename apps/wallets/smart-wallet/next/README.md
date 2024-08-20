@@ -1,8 +1,78 @@
-# Smart Wallets Demo (Nextjs Starter Kit)
+<a id="readme-top"></a>
 
-This application demonstrates the use of Abstract Accounts with a built-in passkey authenticator. Simply sign in with Google, authorize your passkey, and create your smart wallet in seconds.
+<!-- PROJECT LOGO -->
+<br />
+<div align="center">
+  <a href="https://github.com/Crossmint/crossmint-sdk">
+    <img src="https://github.com/user-attachments/assets/573d5995-831f-4e27-ab9e-9ab346c9c680" alt="Logo" width="80" height="80">
+  </a>
 
-## Prerequisites
+<h3 align="center">Smart Wallets Demo (Next.js Starter Kit)</h3>
+
+  <p align="center">
+  This application demonstrates the use of Abstract Accounts with a built-in passkey authenticator. Simply sign in with Google or Crossmint's built-in SSO login, authorize your passkey, and create your smart wallet in seconds.
+    <br />
+    <a href="https://docs.crossmint.com/wallets/smart-wallets/quickstart"><strong>Explore the quickstart docs »</strong></a>
+    <br />
+    <br />
+    <a href="https://www.smarterwallet.dev/">View Demo</a>
+    ·
+    <a href="https://github.com/Crossmint/crossmint-sdk/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
+    ·
+    <a href="https://github.com/Crossmint/crossmint-sdk/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
+  </p>
+</div>
+
+<!-- TABLE OF CONTENTS -->
+<details>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li>
+      <a href="#about-the-project">About The Project</a>
+      <ul>
+        <li><a href="#built-with">Built With</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="#getting-started">Getting Started</a>
+      <ul>
+        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#installation">Installation</a></li>
+      </ul>
+    </li>
+    <li>
+    <a href="#usage">Usage</a>
+    <ul>
+        <li><a href="#adding-the-provider">Adding the Provider</a></li>
+        <li><a href="#implementing-the-useauth-hook">Implementing the useAuth hook</a></li>
+      </ul>
+      </li>
+  </ol>
+</details>
+
+<!-- ABOUT THE PROJECT -->
+
+## About The Project
+
+![Smart Wallets Demo (Next.js Starter Kit) Screenshot](https://github.com/user-attachments/assets/5248334a-bc8b-4906-a8ef-f83e3041fed6)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+### Built With
+
+-   [![Next.js](https://img.shields.io/badge/next%20js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+-   [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
+-   [![Crossmint](https://img.shields.io/badge/Crossmint-04CD6C?style=for-the-badge&logoColor=04CD6C&link=https://www.crossmint.com/)](https://www.crossmint.com/)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- GETTING STARTED -->
+
+## Getting Started
+
+Follow these steps to set up your project locally and get it running. This guide provides clear instructions to help you get started quickly.
+
+### Prerequisites
 
 Before you begin, ensure you have the following installed:
 
@@ -10,31 +80,77 @@ Before you begin, ensure you have the following installed:
 -   npm (comes with Node.js)
 -   pnpm (`npm install -g pnpm`)
 
-After installing the prerequisites, clone the repository and install the dependencies:
+### Installation
 
-```bash
-git clone <repository-url>
-pnpm i
+1. Obtain a free API Key from the Crossmint Console. Refer to [Get an API Key](https://docs.crossmint.com/wallets/smart-wallets/quickstart#2-get-an-api-key) from the Quickstart guide for detailed instructions.
+
+2. Clone the repo
+    ```sh
+    git clone https://github.com/Crossmint/crossmint-sdk.git
+    ```
+3. Install PNPM packages
+    ```sh
+    pnpm i
+    ```
+4. In the directory containing this README.md file, rename the `.env.example` file to `.env` and add your API key to the file.
+    ```bash
+    NEXT_PUBLIC_CROSSMINT_API_KEY="ENTER YOUR CROSSMINT API KEY";
+    ```
+5. Start the development server
+    ```sh
+    pnpm dev
+    ```
+6. Once you start the Next.js development server, the application can be found at `http://localhost:3000`.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- USAGE EXAMPLES -->
+
+## Usage
+
+Spin up your own instance of the Smart Wallets Demo in under 5 minutes! Below, you'll see how to add the provider and use the hook to integrate authentication into your application.
+
+### Adding the Provider
+
+First, wrap your application with the `CrossmintAuthProvider` to provide authentication context to your components. This is typically done in the root of your app.
+
+```tsx
+"use client";
+
+// Important: this ensures the client SDK only runs on the client
+import { CrossmintAuthProvider } from "@crossmint/client-sdk-react-ui";
+
+export default function App({ Component, pageProps }) {
+    return (
+        <CrossmintAuthProvider
+            apiKey="YOUR_CROSSMINT_API_KEY"
+            environment="staging" // or "production"
+            embeddedWallets={{
+                createOnLogin: "all-users",
+                defaultChain: "polygon-amoy",
+                type: "evm-smart-wallet",
+            }}
+        >
+            <Component {...pageProps} />
+        </CrossmintAuthProvider>
+    );
+}
 ```
 
-## Configuration
+### Implementing the useAuth hook
 
-Before running the application, you need to set up your environment variables:
+Next, add the useAuth hook in your component to access the JWT, wallet state, and login/logout functions.
 
-1. Where this README.md is contained, rename the `.env.example` file to `.env`.
-2. Open the `.env` file and fill in the necessary values as described below:
-    > The credentials can be found in our shared 1Pass (see admin for access).
+```tsx
+import { useAuth } from "@crossmint/client-sdk-react-ui";
 
-```plaintext
-NEXT_PUBLIC_CROSSMINT_API_KEY=
+export default function Home() {
+    const { jwt, wallet, login, logout } = useAuth();
+
+    return <div>{jwt ? <button onClick={logout}>Log out</button> : <button onClick={login}>Log in</button>}</div>;
+}
 ```
 
-## Starting the Application
+_For additional information, please refer to the [Quickstart Documentation](https://docs.crossmint.com/wallets/smart-wallets/quickstart)._
 
-After configuring your environment variables, start the development server by opening a terminal in the directory containing this `README.md` file and running the following command:
-
-```bash
-pnpm dev
-```
-
-Once you start the nextjs development server, the application can be found at `http://localhost:3000`.
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
