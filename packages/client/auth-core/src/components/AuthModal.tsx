@@ -71,7 +71,7 @@ export default function AuthModal({
                 }
             }
         };
-    }, [iframe]);
+    }, [iframe, setJwtToken, setModalOpen]);
 
     const handleIframeLoaded = async () => {
         if (iframeRef.current == null) {
@@ -93,6 +93,7 @@ export default function AuthModal({
                 ref={iframeRef}
                 src={iframeSrc}
                 onLoad={handleIframeLoaded}
+                title="Authentication Modal"
                 style={{
                     width: "448px",
                     height: "530px",

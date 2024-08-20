@@ -7,8 +7,14 @@
     "sideEffects": false,
     "type": "module",
     "exports": {
-        "import": "./dist/index.js",
-        "require": "./dist/index.cjs"
+        "./client": {
+            "import": "./dist/clientIndex.js",
+            "require": "./dist/clientIndex.cjs"
+        },
+        "./server": {
+            "import": "./dist/serverIndex.js",
+            "require": "./dist/serverIndex.cjs"
+        }
     },
     "main": "./dist/index.cjs",
     "module": "./dist/index.js",
@@ -28,8 +34,8 @@
         "LICENSE"
     ],
     "scripts": {
-        "build": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
-        "dev": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
+        "build": "tsup src/clientIndex.ts src/serverIndex.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
+        "dev": "tsup src/clientIndex.ts src/serverIndex.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
         "test": "jest --passWithNoTests"
     },
     "dependencies": {
