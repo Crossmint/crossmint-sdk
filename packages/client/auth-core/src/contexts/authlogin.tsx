@@ -2,7 +2,6 @@
 
 import AuthModal from "@/components/AuthModal";
 import { CrossmintService } from "@/services/CrossmintService";
-import { CrossmintEnvironment } from "@/utils";
 import { type ReactNode, createContext, useContext, useEffect, useMemo, useState } from "react";
 
 type AuthContextType = {

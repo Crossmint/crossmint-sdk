@@ -40,6 +40,7 @@
     },
     "dependencies": {
         "@crossmint/client-sdk-window": "workspace:*",
+        "@crossmint/common-sdk-base": "workspace:*",
         "@headlessui/react": "1.7.18",
         "jsonwebtoken": "9.0.2",
         "jwks-rsa": "3.1.0",
