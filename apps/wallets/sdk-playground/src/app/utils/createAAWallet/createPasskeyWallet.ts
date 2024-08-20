@@ -23,7 +23,12 @@ export async function createPasskeyWallet(isProd: boolean) {
 
     const chain = isProd ? Chain.POLYGON : Chain.POLYGON_AMOY;
 
-    const test = await xm.getOrCreateWallet({ jwt }, chain);
-
-    return test;
+    try {
+        return await xm.getOrCreateWallet({ jwt }, chain);
+    } catch (e: any) {
+        console.log("Error creating wallet");
+        console.log(e);
+        console.log(e.message);
+        throw e;
+    }
 }

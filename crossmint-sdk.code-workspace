@@ -29,12 +29,12 @@
             "path": "packages/client/ui/react-ui"
         },
         {
-            "name": "⚛️🔒 @crossmint/client-sdk-smart-wallet-react-starter",
-            "path": "apps/wallets/smart-wallet/react"
+            "name": "⚛️🔒 Smart Wallet Playground",
+            "path": "apps/wallets/sdk-playground"
         },
         {
-            "name": "⚛️🔒 @crossmint/client-sdk-smart-wallet-next-starter",
-            "path": "apps/wallets/smart-wallet/next"
+            "name": "⚛️🔒 Smart Wallet + Auth Demo",
+            "path": "apps/wallets/demo"
         },
         {
             "name": "⚪ @crossmint/client-sdk-vanilla-ui",
@@ -49,7 +49,7 @@
             "path": "packages/client/verifiable-credentials"
         },
         {
-            "name": "🔒 @crossmint/client-sdk-smart-wallet",
+            "name": "🔒 Smart Wallet SDK",
             "path": "packages/client/wallets/smart-wallet"
         },
         {
