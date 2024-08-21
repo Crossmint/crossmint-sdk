@@ -19,8 +19,8 @@ export class SDKLogger {
         const start = new Date().getTime();
         const result = await cb();
         const durationInMs = new Date().getTime() - start;
-        const args = { durationInMs, ...extraInfo };
-        this.log(`[${name} - TIME] - ${this.beautify(args)}`, { args: { ...args, name } });
+        const args = { durationInMs, ...extraInfo, name };
+        this.log(`[${name} - TIME] - ${this.beautify(args)}`, { args });
         return result;
     }
 
