@@ -79,6 +79,6 @@ export class CrossmintWalletService extends BaseCrossmintService {
     }
 
     public getPasskeyServerUrl(): string {
-        return this.crossmintBaseUrl + "/internal/passkeys";
+        return this.crossmintBaseUrl + "api/internal/passkeys";
     }
 }
