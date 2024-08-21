@@ -1,15 +1,22 @@
-import { CROSSMINT_PROD_URL, CROSSMINT_STG_URL, CrossmintEnvironment } from "../utils";
+import { getEnvironmentForKey } from "@crossmint/common-sdk-base";
 
-export type FetchCrossmintParams = {
-    endpoint: string;
-    options: {
-        method: "GET" | "POST" | "PUT" | "DELETE";
-        body?: any;
-    };
-    onServerErrorMessage?: string;
-};
+import { CROSSMINT_PROD_URL, CROSSMINT_STG_URL, type CrossmintEnvironment } from "../utils";
 
-export class CrossmintService {
+export interface CrossmintServiceBase {
+    apiKey: string;
+    crossmintBaseUrl: string;
+    getJWKSUri(): string;
+}
+
+export interface CrossmintServiceWithToken extends CrossmintServiceBase {
+    jwtToken: string;
+}
+
+export interface CrossmintServiceWithoutToken extends CrossmintServiceBase {
+    jwtToken: string | null;
+}
+
+class CrossmintService implements CrossmintServiceBase {
     protected crossmintAPIHeaders: Record<string, string>;
     public readonly crossmintBaseUrl: string;
     private static urlMap: Record<CrossmintEnvironment, string> = {
@@ -17,36 +24,17 @@ export class CrossmintService {
         production: CROSSMINT_PROD_URL,
     };
 
-    constructor(apiKey: string, jwtToken: string | null, environment?: CrossmintEnvironment) {
+    constructor(public apiKey: string, public jwtToken: string | null) {
         this.crossmintAPIHeaders = {
             accept: "application/json",
             "content-type": "application/json",
-            authorization: `Bearer ${jwtToken}`,
             "x-api-key": apiKey,
         };
-        this.crossmintBaseUrl = this.getUrlFromEnv(environment ?? "production");
-    }
 
-    async fetchCrossmintAPI({ endpoint, options = { method: "GET" }, onServerErrorMessage }: FetchCrossmintParams) {
-        const url = `${this.crossmintBaseUrl}/api/${endpoint}`;
-        const { body, method } = options;
-
-        try {
-            const response = await fetch(url, {
-                body: body ? JSON.stringify(body) : undefined,
-                method,
-                headers: this.crossmintAPIHeaders,
-            });
-            if (!response.ok) {
-                // We forward all 4XX errors. This includes rate limit errors.
-                // It also includes chain not found, as it is a bad request error.
-                throw new Error(onServerErrorMessage ?? (await response.text()));
-            }
-            return await response.json();
-        } catch (error) {
-            console.error("Error fetching Crossmint API: ", error);
-            throw new Error(`Error fetching Crossmint API: ${error}`);
-        }
+        this.crossmintBaseUrl =
+            getEnvironmentForKey(apiKey) === "production"
+                ? this.getUrlFromEnv("production")
+                : this.getUrlFromEnv("staging");
     }
 
     protected getUrlFromEnv(environment: CrossmintEnvironment) {
@@ -55,5 +43,22 @@ export class CrossmintService {
             throw new Error(`URL not found for environment: ${environment}`);
         }
         return url;
+    }
+
+    public getJWKSUri() {
+        return `${this.crossmintBaseUrl}/.well-known/jwks.json`;
+    }
+}
+
+export class CrossmintServiceFactory {
+    static create(apiKey: string, jwtToken: string): CrossmintServiceWithToken;
+    static create(apiKey: string, jwtToken: null): CrossmintServiceWithoutToken;
+    static create(apiKey: string, jwtToken: string | null): CrossmintServiceWithoutToken;
+    static create(apiKey: string, jwtToken: string | null): CrossmintServiceWithoutToken {
+        if (jwtToken == null) {
+            return new CrossmintService(apiKey, jwtToken) as CrossmintServiceWithoutToken;
+        }
+
+        return new CrossmintService(apiKey, jwtToken) as CrossmintServiceWithToken;
     }
 }

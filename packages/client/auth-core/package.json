@@ -7,19 +7,13 @@
     "sideEffects": false,
     "type": "module",
     "exports": {
-        "import": "./dist/index.js",
-        "require": "./dist/index.cjs"
-    },
-    "main": "./dist/index.cjs",
-    "module": "./dist/index.js",
-    "typesVersions": {
-        "*": {
-            "clientComponents": [
-                "./dist/types/clientComponents.d.ts"
-            ],
-            "serverComponents": [
-                "./dist/types/serverComponents.d.ts"
-            ]
+        "./client": {
+            "import": "./dist/client/index.js",
+            "require": "./dist/client/index.cjs"
+        },
+        "./server": {
+            "import": "./dist/server/index.js",
+            "require": "./dist/server/index.cjs"
         }
     },
     "files": [
@@ -28,16 +22,20 @@
         "LICENSE"
     ],
     "scripts": {
-        "build": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
-        "dev": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
+        "build": "tsup client/index.ts server/index.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
+        "dev": "tsup client/index.ts server/index.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
         "test": "jest --passWithNoTests"
     },
     "dependencies": {
         "@crossmint/client-sdk-window": "workspace:*",
+        "@crossmint/common-sdk-base": "workspace:*",
         "@headlessui/react": "1.7.18",
+        "jsonwebtoken": "9.0.2",
+        "jwks-rsa": "3.1.0",
         "zod": "3.22.4"
     },
     "devDependencies": {
+        "@types/jsonwebtoken": "9.0.6",
         "@types/react": "18.2.21",
         "@types/react-dom": "18.2.7",
         "react": "18.2.0",

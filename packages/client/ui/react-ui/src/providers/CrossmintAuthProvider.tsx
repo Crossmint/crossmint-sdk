@@ -1,6 +1,6 @@
 import { createContext, useEffect, useMemo, useState } from "react";
 
-import { AuthProvider, type AuthProviderParams, useAuth as useAuthCore } from "@crossmint/client-sdk-auth-core";
+import { AuthProvider, type AuthProviderParams, useAuth as useAuthCore } from "@crossmint/client-sdk-auth-core/client";
 import { EVMSmartWallet, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
 
 type AuthWalletProviderParams = AuthProviderParams & {

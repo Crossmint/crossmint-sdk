@@ -1,9 +1,8 @@
 "use client";
 
 import AuthModal from "@/components/AuthModal";
-import { CrossmintService } from "@/services/CrossmintService";
-import { CrossmintEnvironment } from "@/utils";
-import { ReactNode, createContext, useContext, useEffect, useMemo, useState } from "react";
+import { CrossmintServiceFactory } from "@/services/CrossmintService";
+import { type ReactNode, createContext, useContext, useEffect, useMemo, useState } from "react";
 
 type AuthContextType = {
     login: () => void;
@@ -19,7 +18,6 @@ const AuthContext = createContext<AuthContextType>({
 
 export type AuthProviderParams = {
     apiKey: string;
-    environment: CrossmintEnvironment;
     children: ReactNode;
 };
 
@@ -31,13 +29,10 @@ const getJwtFromCookie = (): string | null => {
     return crossmintSession ? crossmintSession.split("=")[1] : null;
 };
 
-export function AuthProvider({ children, apiKey, environment }: AuthProviderParams) {
+export function AuthProvider({ children, apiKey }: AuthProviderParams) {
     const [jwtToken, setJwtToken] = useState<string | null>(() => getJwtFromCookie());
     const [modalOpen, setModalOpen] = useState(false);
-    const crossmintService = useMemo(
-        () => new CrossmintService(apiKey, jwtToken, environment),
-        [apiKey, jwtToken, environment]
-    );
+    const crossmintService = useMemo(() => CrossmintServiceFactory.create(apiKey, jwtToken), [apiKey, jwtToken]);
 
     useEffect(() => {
         const crossmintSession = document.cookie.split("; ").find((row) => row.startsWith("crossmint-session"));
@@ -62,7 +57,7 @@ export function AuthProvider({ children, apiKey, environment }: AuthProviderPara
         }
 
         setModalOpen(false);
-    }, [modalOpen, jwtToken]);
+    }, [jwtToken]);
 
     const logout = () => {
         document.cookie = "crossmint-session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
