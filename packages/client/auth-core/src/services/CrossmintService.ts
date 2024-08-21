@@ -2,7 +2,21 @@ import { getEnvironmentForKey } from "@crossmint/common-sdk-base";
 
 import { CROSSMINT_PROD_URL, CROSSMINT_STG_URL, type CrossmintEnvironment } from "../utils";
 
-export class CrossmintService {
+export interface CrossmintServiceBase {
+    apiKey: string;
+    crossmintBaseUrl: string;
+    getJWKSUri(): string;
+}
+
+export interface CrossmintServiceWithToken extends CrossmintServiceBase {
+    jwtToken: string;
+}
+
+export interface CrossmintServiceWithoutToken extends CrossmintServiceBase {
+    jwtToken: string | null;
+}
+
+class CrossmintService implements CrossmintServiceBase {
     protected crossmintAPIHeaders: Record<string, string>;
     public readonly crossmintBaseUrl: string;
     private static urlMap: Record<CrossmintEnvironment, string> = {
@@ -33,5 +47,19 @@ export class CrossmintService {
 
     public getJWKSUri() {
         return `${this.crossmintBaseUrl}/.well-known/jwks.json`;
+    }
+}
+
+// biome-ignore lint/complexity/noStaticOnlyClass: <explanation>
+export class CrossmintServiceFactory {
+    static create(apiKey: string, jwtToken: string): CrossmintServiceWithToken;
+    static create(apiKey: string, jwtToken: null): CrossmintServiceWithoutToken;
+    static create(apiKey: string, jwtToken: string | null): CrossmintServiceWithoutToken;
+    static create(apiKey: string, jwtToken: string | null): CrossmintServiceWithoutToken {
+        if (jwtToken == null) {
+            return new CrossmintService(apiKey, jwtToken) as CrossmintServiceWithoutToken;
+        }
+
+        return new CrossmintService(apiKey, jwtToken) as CrossmintServiceWithToken;
     }
 }
