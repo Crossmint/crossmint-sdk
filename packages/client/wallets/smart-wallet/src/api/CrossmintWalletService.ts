@@ -1,18 +1,32 @@
 import type { UserOperation } from "permissionless";
 import type { EntryPoint, GetEntryPointVersion } from "permissionless/types/entrypoint";
 
-import { CrossmintServiceError } from "@crossmint/client-sdk-base";
+import { APIErrorService, BaseCrossmintService, CrossmintServiceError } from "@crossmint/client-sdk-base";
 import { blockchainToChainId } from "@crossmint/common-sdk-base";
 
-import { BaseCrossmintService } from "../api/BaseCrossmintService";
 import type { SmartWalletChain } from "../blockchain/chains";
+import { AdminAlreadyUsedError, SmartWalletsNotEnabledError, UserWalletAlreadyCreatedError } from "../error";
+import { scwLogger } from "../services";
 import type { UserParams } from "../types/params";
 import { SmartWalletConfigSchema } from "../types/schema";
 import type { SmartWalletConfig, StoreSmartWalletParams } from "../types/service";
 import { bigintsToHex, parseBigintAPIResponse } from "../utils/api";
 import { API_VERSION } from "../utils/constants";
 
+type WalletsAPIErrorCodes =
+    | "ERROR_USER_WALLET_ALREADY_CREATED"
+    | "ERROR_ADMIN_SIGNER_ALREADY_USED"
+    | "ERROR_PROJECT_NONCUSTODIAL_WALLETS_NOT_ENABLED";
+
 export class CrossmintWalletService extends BaseCrossmintService {
+    logger = scwLogger;
+    protected apiErrorService = new APIErrorService<WalletsAPIErrorCodes>({
+        ERROR_USER_WALLET_ALREADY_CREATED: ({ userId }: { userId: string }) =>
+            new UserWalletAlreadyCreatedError(userId),
+        ERROR_ADMIN_SIGNER_ALREADY_USED: () => new AdminAlreadyUsedError(),
+        ERROR_PROJECT_NONCUSTODIAL_WALLETS_NOT_ENABLED: () => new SmartWalletsNotEnabledError(),
+    });
+
     async idempotentCreateSmartWallet(user: UserParams, input: StoreSmartWalletParams): Promise<void> {
         await this.fetchCrossmintAPI(
             `${API_VERSION}/sdk/smart-wallet`,

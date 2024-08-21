@@ -61,6 +61,6 @@ export const viemNetworks: Record<SmartWalletChain, Chain> = {
     "arbitrum-sepolia": arbitrumSepolia,
 };
 
-export const getBundlerRPC = (chain: SmartWalletChain) => {
+export function getBundlerRPC(chain: SmartWalletChain) {
     return BUNDLER_RPC + zerodevProjects[chain];
-};
+}

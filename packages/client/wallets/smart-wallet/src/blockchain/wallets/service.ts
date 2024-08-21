@@ -5,12 +5,11 @@ import { createPublicClient, http } from "viem";
 import { blockchainToChainId } from "@crossmint/common-sdk-base";
 
 import type { CrossmintWalletService } from "../../api/CrossmintWalletService";
-import { UserWalletAlreadyCreatedError } from "../../error";
 import type { SmartWalletClient } from "../../types/internal";
 import type { UserParams, WalletParams } from "../../types/params";
 import { CURRENT_VERSION, ZERO_DEV_TYPE } from "../../utils/constants";
-import { equalsIgnoreCase } from "../../utils/helpers";
 import { type SmartWalletChain, getBundlerRPC, viemNetworks } from "../chains";
+import { getAlchemyRPC } from "../rpc";
 import { EVMSmartWallet } from "./EVMSmartWallet";
 import type { AccountConfigService } from "./account/config";
 import type { AccountCreator } from "./account/creator";
@@ -35,7 +34,7 @@ export class SmartWalletService {
             cached,
         } = await this.accountConfigService.get(user, chain);
 
-        const publicClient = createPublicClient({ transport: http(getBundlerRPC(chain)) });
+        const publicClient = createPublicClient({ transport: http(getAlchemyRPC(chain)) });
 
         const { account, signerConfig } = await this.accountCreator.get({
             chain,
