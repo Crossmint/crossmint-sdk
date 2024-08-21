@@ -132,7 +132,6 @@ export class EVMSmartWallet {
      * @param abi the ABI of the contract - ***should be defined as a typed variable*** to enable type checking of the contract arguments, see https://viem.sh/docs/typescript#type-inference for guidance
      * @param functionName the name of the smart contract function to be called
      * @param args the arguments to be passed to the function
-     * @param resendCallback a callback function that will be called if the transaction needs to be resent. Returns a value that controls transaction rebroadcasting See the type of `TransactionServiceResendCallback` for more information.
      * @returns The transaction hash.
      * @throws `SendTransactionError` if the transaction fails to send. Contains the error thrown by the viem client.
      * @throws `SendTransactionExecutionRevertedError`, a subclass of `SendTransactionError` if the transaction fails due to a contract execution error.
