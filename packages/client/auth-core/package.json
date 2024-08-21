@@ -8,24 +8,12 @@
     "type": "module",
     "exports": {
         "./client": {
-            "import": "./dist/clientIndex.js",
-            "require": "./dist/clientIndex.cjs"
+            "import": "./dist/client/index.js",
+            "require": "./dist/client/index.cjs"
         },
         "./server": {
-            "import": "./dist/serverIndex.js",
-            "require": "./dist/serverIndex.cjs"
-        }
-    },
-    "main": "./dist/index.cjs",
-    "module": "./dist/index.js",
-    "typesVersions": {
-        "*": {
-            "clientComponents": [
-                "./dist/types/clientComponents.d.ts"
-            ],
-            "serverComponents": [
-                "./dist/types/serverComponents.d.ts"
-            ]
+            "import": "./dist/server/index.js",
+            "require": "./dist/server/index.cjs"
         }
     },
     "files": [
@@ -34,8 +22,8 @@
         "LICENSE"
     ],
     "scripts": {
-        "build": "tsup src/clientIndex.ts src/serverIndex.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
-        "dev": "tsup src/clientIndex.ts src/serverIndex.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
+        "build": "tsup client/index.ts server/index.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
+        "dev": "tsup client/index.ts server/index.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
         "test": "jest --passWithNoTests"
     },
     "dependencies": {
