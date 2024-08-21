@@ -50,7 +50,6 @@ class CrossmintService implements CrossmintServiceBase {
     }
 }
 
-// biome-ignore lint/complexity/noStaticOnlyClass: <explanation>
 export class CrossmintServiceFactory {
     static create(apiKey: string, jwtToken: string): CrossmintServiceWithToken;
     static create(apiKey: string, jwtToken: null): CrossmintServiceWithoutToken;
