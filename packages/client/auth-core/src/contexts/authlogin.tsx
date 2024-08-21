@@ -73,7 +73,7 @@ export function AuthProvider({ children, apiKey }: AuthProviderParams) {
             //     name: "Test",
             // });
 
-            document.cookie = `crossmint-session=${jwtToken}; path=/;`;
+            document.cookie = `crossmint-session=${jwtToken}; path=/;SameSite=Lax;`;
         }
     }, [jwtToken]);
 
