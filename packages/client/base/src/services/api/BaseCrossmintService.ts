@@ -36,10 +36,11 @@ export abstract class BaseCrossmintService {
         onServerErrorMessage: string,
         authToken?: string
     ) {
+        const url = `${this.crossmintBaseUrl}api/${endpoint}`;
+        const urlPath = new URL(url).pathname;
         return this.logger.logPerformance(
             "FETCH_CROSSMINT_API",
             async () => {
-                const url = `${this.crossmintBaseUrl}api/${endpoint}`;
                 const { body, method } = options;
 
                 let response: Response;
@@ -67,7 +68,7 @@ export abstract class BaseCrossmintService {
 
                 return await response.json();
             },
-            { endpoint }
+            { endpoint: urlPath }
         );
     }
 
