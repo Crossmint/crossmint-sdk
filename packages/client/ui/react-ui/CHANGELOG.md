@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.3.6
+
+### Patch Changes
+
+-   @crossmint/client-sdk-auth-core@1.1.2
+
 ## 1.3.5
 
 ### Patch Changes

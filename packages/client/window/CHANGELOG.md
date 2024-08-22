@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-window
 
+## 0.0.10
+
+### Patch Changes
+
+-   2979be2: Refactor popup window as sometimes the promise never ends
+
 ## 0.0.9
 
 ### Patch Changes
