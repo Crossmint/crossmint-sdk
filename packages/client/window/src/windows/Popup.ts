@@ -51,7 +51,7 @@ function createPopup(url: string, options: PopupWindowOptions) {
         return _window;
     }
 
-    return new Promise((resolve, reject) => {
+    return new Promise<Window>((resolve, reject) => {
         _window.onload = () => resolve(_window);
         _window.onerror = () => reject("Failed to load popup window");
     });
