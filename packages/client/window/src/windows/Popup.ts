@@ -37,7 +37,7 @@ export class PopupWindow<IncomingEvents extends EventMap, OutgoingEvents extends
     }
 }
 
-async function createPopup(url: string, options: PopupWindowOptions): Promise<Window> {
+function createPopup(url: string, options: PopupWindowOptions) {
     const _window = window.open(
         url,
         "popupWindow",
