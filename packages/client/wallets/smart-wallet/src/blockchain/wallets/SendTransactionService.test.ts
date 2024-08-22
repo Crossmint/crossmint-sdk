@@ -14,7 +14,6 @@ import {
 } from "viem";
 
 import {
-    EVMSendTransactionConfirmationError,
     EVMSendTransactionError,
     EVMSendTransactionExecutionRevertedError,
     SendTransactionService,
@@ -77,8 +76,9 @@ describe("SendTransactionService", () => {
     it("Throws EVMSendTransactionConfirmationError when a transaction confirmation fails", async () => {
         const mockError = makeMockError(BaseError.prototype);
         mockPublicClient.waitForTransactionReceipt.mockRejectedValue(mockError);
-        await expect(
-            sendTransactionService.sendTransaction(
+        let rejected = false;
+        try {
+            await sendTransactionService.sendTransaction(
                 {
                     address: zeroAddress,
                     abi: [],
@@ -87,8 +87,13 @@ describe("SendTransactionService", () => {
                 },
                 mockAccountClient,
                 { awaitConfirmation: true }
-            )
-        ).rejects.toThrow(EVMSendTransactionConfirmationError);
+            );
+        } catch (e) {
+            rejected = true;
+            expect(e).toBeInstanceOf(EVMSendTransactionError);
+            expect((e as EVMSendTransactionError).stage).toBe("confirmation");
+        }
+        expect(rejected).toBe(true);
     });
 
     it("Throws EVMSendTransactionError when a transaction fails to send", async () => {

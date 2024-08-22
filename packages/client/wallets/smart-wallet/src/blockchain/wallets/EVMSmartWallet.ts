@@ -159,7 +159,7 @@ export class EVMSmartWallet {
      *   args: [recipientAddress],
      * });
      */
-    public async sendTransaction<
+    public async callContract<
         const TAbi extends Abi | readonly unknown[],
         TFunctionName extends ContractFunctionName<TAbi, "nonpayable" | "payable"> = ContractFunctionName<
             TAbi,
