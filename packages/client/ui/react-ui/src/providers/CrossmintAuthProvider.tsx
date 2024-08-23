@@ -19,7 +19,7 @@ export const WalletContext = createContext<{ wallet: EVMSmartWallet | null }>({
 });
 
 export function CrossmintAuthProvider({ embeddedWallets, children }: AuthWalletProviderParams) {
-    const { crossmint, setJwt } = useCrossmint();
+    const { crossmint, setJwt } = useCrossmint("CrossmintAuthProvider must be used within CrossmintProvider");
 
     return (
         <AuthProvider setJwtToken={setJwt} crossmint={crossmint}>

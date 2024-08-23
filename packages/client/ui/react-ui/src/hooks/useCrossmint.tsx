@@ -46,10 +46,10 @@ export function CrossmintProvider({
     return <CrossmintContext.Provider value={value}>{children}</CrossmintContext.Provider>;
 }
 
-export function useCrossmint() {
+export function useCrossmint(missingContextMessage?: string) {
     const context = useContext(CrossmintContext);
     if (context == null) {
-        throw new Error("useCrossmint must be used within a CrossmintProvider");
+        throw new Error(missingContextMessage ?? "useCrossmint must be used within a CrossmintProvider");
     }
     return context;
 }
