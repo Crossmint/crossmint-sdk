@@ -24,7 +24,7 @@ export default function ActionModal({
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                 >
-                    <div style={styles.transitionBegin} onClick={onClose} />
+                    <div style={styles.transitionBegin} />
                 </Transition.Child>
                 <Transition.Child
                     as={Fragment}

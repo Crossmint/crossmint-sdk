@@ -1,7 +1,5 @@
 "use client";
 
-import { CrossmintLeaf } from "@/icons/crossmint-leaf";
-
 import { useAuth } from "@crossmint/client-sdk-react-ui";
 
 import { Button } from "./button";
@@ -38,8 +36,7 @@ export const SignInAuthButton = () => {
     }
     return (
         <Button className="bg-card gap-[10px] shadow-light rounded-xl py-3" onClick={login}>
-            <CrossmintLeaf />
-            <Typography className="text-[#00150D] font-semibold text-[17px]">Sign in with Crossmint</Typography>
+            <Typography className="text-[#00150D] font-semibold text-[17px]">Sign in</Typography>
         </Button>
     );
 };
