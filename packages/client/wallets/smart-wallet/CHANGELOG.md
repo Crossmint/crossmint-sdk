@@ -1,5 +1,17 @@
 # @crossmint/client-sdk-smart-wallet
 
+## 0.1.8
+
+### Patch Changes
+
+-   a124584: performance monitoring enhancement
+
+## 0.1.7
+
+### Patch Changes
+
+-   691f8f8: passkey registration fix
+
 ## 0.1.6
 
 ### Patch Changes
