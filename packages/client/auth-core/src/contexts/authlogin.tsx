@@ -6,11 +6,13 @@ import { type ReactNode, createContext, useContext, useEffect, useMemo, useState
 
 import { Crossmint } from "@crossmint/common-sdk-base";
 
+const SESSION_PREFIX = "crossmint-session";
+
 export function getCachedJwt(): string | undefined {
     if (typeof document === "undefined") {
         return undefined; // Check if we're on the client-side
     }
-    const crossmintSession = document.cookie.split("; ").find((row) => row.startsWith("crossmint-session"));
+    const crossmintSession = document.cookie.split("; ").find((row) => row.startsWith(SESSION_PREFIX));
     return crossmintSession ? crossmintSession.split("=")[1] : undefined;
 }
 
@@ -58,7 +60,7 @@ export function AuthProvider({ children, crossmint, setJwtToken }: AuthProviderP
     }, [crossmint.jwt]);
 
     const logout = () => {
-        document.cookie = "crossmint-session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        document.cookie = `${SESSION_PREFIX}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
         setJwtToken(undefined);
     };
 
@@ -71,7 +73,7 @@ export function AuthProvider({ children, crossmint, setJwtToken }: AuthProviderP
             //     name: "Test",
             // });
 
-            document.cookie = `crossmint-session=${crossmint.jwt}; path=/;SameSite=Lax;`;
+            document.cookie = `${SESSION_PREFIX}=${crossmint.jwt}; path=/;SameSite=Lax;`;
         }
     }, [crossmint.jwt]);
 
