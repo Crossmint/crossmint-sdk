@@ -1,5 +1,12 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.3.7
+
+### Patch Changes
+
+-   Updated dependencies [a124584]
+    -   @crossmint/client-sdk-smart-wallet@0.1.8
+
 ## 1.3.6
 
 ### Patch Changes
