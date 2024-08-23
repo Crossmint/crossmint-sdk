@@ -26,18 +26,11 @@ export type AuthProviderParams = {
 
 export function AuthProvider({ children, crossmint, setJwtToken }: AuthProviderParams) {
     const [modalOpen, setModalOpen] = useState(false);
+
     const crossmintService = useMemo(
         () => CrossmintServiceFactory.create(crossmint.apiKey, crossmint.jwt),
         [crossmint.apiKey, crossmint.jwt]
     );
-
-    useEffect(() => {
-        const crossmintSession = document.cookie.split("; ").find((row) => row.startsWith("crossmint-session"));
-        const crossmintSessionCookie = crossmintSession ? crossmintSession.split("=")[1] : null;
-        if (crossmintSessionCookie) {
-            setJwtToken(crossmintSessionCookie);
-        }
-    }, []);
 
     const login = () => {
         if (crossmint.jwt) {

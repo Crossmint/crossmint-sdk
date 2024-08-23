@@ -1,5 +1,6 @@
-import { ReactNode, createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
+import { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
+import { getCachedJwt } from "@crossmint/client-sdk-auth-core/client";
 import { Crossmint, createCrossmint } from "@crossmint/common-sdk-base";
 
 export interface CrossmintContext {
@@ -16,7 +17,7 @@ export function CrossmintProvider({
     const [version, setVersion] = useState(0);
 
     const crossmintRef = useRef<Crossmint>(
-        new Proxy<Crossmint>(createCrossmint(createCrossmintParams), {
+        new Proxy<Crossmint>(createCrossmint({ ...createCrossmintParams, jwt: getCachedJwt() }), {
             set(target, prop, value) {
                 if (prop === "jwt" && target.jwt !== value) {
                     setVersion((v) => v + 1);
