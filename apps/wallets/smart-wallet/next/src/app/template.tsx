@@ -4,7 +4,7 @@ import { Header } from "@/components/header";
 import { Toaster } from "@/components/toaster";
 import { useEffect, useState } from "react";
 
-import { CrossmintAuthProvider } from "@crossmint/client-sdk-react-ui";
+import { CrossmintAuthProvider, CrossmintProvider } from "@crossmint/client-sdk-react-ui";
 
 // Reference: https://nextjs.org/docs/app/building-your-application/routing/pages-and-layouts#templates
 // Since our home page is located in the root directory, we cannot use a layout component to wrap it.
@@ -28,15 +28,16 @@ export default function Template({ children }: { children: React.ReactNode }) {
             {children}
         </>
     ) : (
-        <CrossmintAuthProvider
-            apiKey={process.env.NEXT_PUBLIC_CROSSMINT_API_KEY ?? ""}
-            embeddedWallets={{ createOnLogin: "all-users", type: "evm-smart-wallet", defaultChain: "polygon-amoy" }}
-        >
-            <div>
-                <Header />
-                <Toaster />
-                {children}
-            </div>
-        </CrossmintAuthProvider>
+        <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_API_KEY ?? ""}>
+            <CrossmintAuthProvider
+                embeddedWallets={{ createOnLogin: "all-users", type: "evm-smart-wallet", defaultChain: "polygon-amoy" }}
+            >
+                <div>
+                    <Header />
+                    <Toaster />
+                    {children}
+                </div>
+            </CrossmintAuthProvider>
+        </CrossmintProvider>
     );
 }

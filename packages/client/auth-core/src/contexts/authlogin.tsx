@@ -4,35 +4,32 @@ import AuthModal from "@/components/AuthModal";
 import { CrossmintServiceFactory } from "@/services/CrossmintService";
 import { type ReactNode, createContext, useContext, useEffect, useMemo, useState } from "react";
 
+import { Crossmint } from "@crossmint/common-sdk-base";
+
 type AuthContextType = {
     login: () => void;
     logout: () => void;
-    jwt: string | null;
+    jwt: string | undefined;
 };
 
 const AuthContext = createContext<AuthContextType>({
     login: () => {},
     logout: () => {},
-    jwt: null,
+    jwt: undefined,
 });
 
 export type AuthProviderParams = {
-    apiKey: string;
+    setJwtToken: (jwtToken: string | undefined) => void;
+    crossmint: Crossmint;
     children: ReactNode;
 };
 
-const getJwtFromCookie = (): string | null => {
-    if (typeof document === "undefined") {
-        return null; // Check if we're on the client-side
-    }
-    const crossmintSession = document.cookie.split("; ").find((row) => row.startsWith("crossmint-session"));
-    return crossmintSession ? crossmintSession.split("=")[1] : null;
-};
-
-export function AuthProvider({ children, apiKey }: AuthProviderParams) {
-    const [jwtToken, setJwtToken] = useState<string | null>(() => getJwtFromCookie());
+export function AuthProvider({ children, crossmint, setJwtToken }: AuthProviderParams) {
     const [modalOpen, setModalOpen] = useState(false);
-    const crossmintService = useMemo(() => CrossmintServiceFactory.create(apiKey, jwtToken), [apiKey, jwtToken]);
+    const crossmintService = useMemo(
+        () => CrossmintServiceFactory.create(crossmint.apiKey, crossmint.jwt),
+        [crossmint.apiKey, crossmint.jwt]
+    );
 
     useEffect(() => {
         const crossmintSession = document.cookie.split("; ").find((row) => row.startsWith("crossmint-session"));
@@ -43,7 +40,7 @@ export function AuthProvider({ children, apiKey }: AuthProviderParams) {
     }, []);
 
     const login = () => {
-        if (jwtToken) {
+        if (crossmint.jwt) {
             console.log("User already logged in");
             return;
         }
@@ -52,20 +49,20 @@ export function AuthProvider({ children, apiKey }: AuthProviderParams) {
     };
 
     useEffect(() => {
-        if (jwtToken == null) {
+        if (crossmint.jwt == null) {
             return;
         }
 
         setModalOpen(false);
-    }, [jwtToken]);
+    }, [crossmint.jwt]);
 
     const logout = () => {
         document.cookie = "crossmint-session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        setJwtToken(null);
+        setJwtToken(undefined);
     };
 
     useEffect(() => {
-        if (jwtToken) {
+        if (crossmint.jwt) {
             // TODO: WAL-2562: get user data from crossmint
             // setUser({
             //     id: "1",
@@ -73,19 +70,19 @@ export function AuthProvider({ children, apiKey }: AuthProviderParams) {
             //     name: "Test",
             // });
 
-            document.cookie = `crossmint-session=${jwtToken}; path=/;SameSite=Lax;`;
+            document.cookie = `crossmint-session=${crossmint.jwt}; path=/;SameSite=Lax;`;
         }
-    }, [jwtToken]);
+    }, [crossmint.jwt]);
 
     return (
-        <AuthContext.Provider value={{ login, logout, jwt: jwtToken }}>
+        <AuthContext.Provider value={{ login, logout, jwt: crossmint.jwt }}>
             {children}
             {modalOpen && (
                 <AuthModal
                     baseUrl={crossmintService.crossmintBaseUrl}
                     setModalOpen={setModalOpen}
                     setJwtToken={setJwtToken}
-                    apiKey={apiKey}
+                    apiKey={crossmint.apiKey}
                 />
             )}
         </AuthContext.Provider>
