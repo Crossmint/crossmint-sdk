@@ -11,10 +11,8 @@ import { useState } from "react";
 import { useWallet } from "@crossmint/client-sdk-react-ui";
 
 export default function Home() {
-    const wallet = useWallet();
+    const { status: walletStatus } = useWallet();
     const [nftSuccessfullyMinted, setNftSuccessfullyMinted] = useState(false);
-
-    const showMintButton = wallet.status === "loaded";
 
     return (
         <div className="flex h-full w-full items-center md:p-4 justify-center">
@@ -51,7 +49,7 @@ export default function Home() {
                     </div>
                     <Fireworks play={nftSuccessfullyMinted} />
 
-                    {showMintButton && nftSuccessfullyMinted ? (
+                    {walletStatus === "loaded" && nftSuccessfullyMinted ? (
                         <div className="flex gap-2 items-center self-center min-h-[52px]">
                             <Link
                                 href="/wallet"
@@ -61,10 +59,10 @@ export default function Home() {
                             </Link>
                         </div>
                     ) : null}
-                    {showMintButton && !nftSuccessfullyMinted ? (
+                    {walletStatus === "loaded" && !nftSuccessfullyMinted ? (
                         <MintNFTButton setNftSuccessfullyMinted={setNftSuccessfullyMinted} />
                     ) : null}
-                    {!showMintButton && !nftSuccessfullyMinted ? <SignInAuthButton /> : null}
+                    {walletStatus !== "loaded" && !nftSuccessfullyMinted ? <SignInAuthButton /> : null}
 
                     <PoweredByCrossmint />
                 </div>

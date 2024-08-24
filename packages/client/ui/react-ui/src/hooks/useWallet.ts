@@ -5,7 +5,7 @@ export function useWallet() {
     const walletContext = useContext(WalletContext);
 
     if (!walletContext) {
-        throw new Error("useWallet must be used within a CrossmintAuthProvider or CrossmintWalletProvider");
+        throw new Error("useWallet must be used within CrossmintAuthProvider or CrossmintWalletProvider");
     }
 
     return { ...walletContext };
