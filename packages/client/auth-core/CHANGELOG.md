@@ -1,5 +1,24 @@
 # @crossmint/client-sdk-auth-core
 
+## 1.1.3
+
+### Patch Changes
+
+-   c63fafe: Added close icon button to auth modal
+
+## 1.1.2
+
+### Patch Changes
+
+-   Updated dependencies [2979be2]
+    -   @crossmint/client-sdk-window@0.0.10
+
+## 1.1.1
+
+### Patch Changes
+
+-   e9060b6: Consolidated exports and improved initial jwt state
+
 ## 1.1.0
 
 ### Minor Changes

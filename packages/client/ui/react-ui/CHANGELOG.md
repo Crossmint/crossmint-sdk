@@ -1,5 +1,76 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.3.8
+
+### Patch Changes
+
+-   Updated dependencies [c63fafe]
+    -   @crossmint/client-sdk-auth-core@1.1.3
+
+## 1.3.7
+
+### Patch Changes
+
+-   Updated dependencies [a124584]
+    -   @crossmint/client-sdk-smart-wallet@0.1.8
+
+## 1.3.6
+
+### Patch Changes
+
+-   @crossmint/client-sdk-auth-core@1.1.2
+
+## 1.3.5
+
+### Patch Changes
+
+-   Updated dependencies [691f8f8]
+    -   @crossmint/client-sdk-smart-wallet@0.1.7
+
+## 1.3.4
+
+### Patch Changes
+
+-   Updated dependencies [8f56ddf]
+    -   @crossmint/common-sdk-base@0.1.2
+    -   @crossmint/client-sdk-base@1.2.3
+    -   @crossmint/client-sdk-smart-wallet@0.1.6
+
+## 1.3.3
+
+### Patch Changes
+
+-   Updated dependencies [443372b]
+    -   @crossmint/client-sdk-smart-wallet@0.1.5
+
+## 1.3.2
+
+### Patch Changes
+
+-   5c60365: Export EVMSmartWallet & Chain types
+
+## 1.3.1
+
+### Patch Changes
+
+-   Updated dependencies [12b5eac]
+    -   @crossmint/client-sdk-base@1.2.2
+    -   @crossmint/common-sdk-base@0.1.1
+    -   @crossmint/client-sdk-smart-wallet@0.1.4
+
+## 1.3.0
+
+### Minor Changes
+
+-   71b3778: Added Crossmint auth provider
+
+### Patch Changes
+
+-   Updated dependencies [e9060b6]
+-   Updated dependencies [7bdb67f]
+    -   @crossmint/client-sdk-auth-core@1.1.1
+    -   @crossmint/client-sdk-smart-wallet@0.1.3
+
 ## 1.2.2
 
 ### Patch Changes

@@ -1,4 +1,3 @@
-import { logError, logInfo } from "@/services/logging";
 import {
     Abi,
     ContractFunctionArgs,
@@ -14,10 +13,9 @@ import {
 import { TransferError } from "@crossmint/client-sdk-base";
 
 import type { CrossmintWalletService } from "../../api/CrossmintWalletService";
-import type { TransferType } from "../../types/Tokens";
+import { scwLogger } from "../../services/logger";
 import { SmartWalletClient } from "../../types/internal";
-import { SCW_SERVICE } from "../../utils/constants";
-import { errorToJSON, logPerformance } from "../../utils/log";
+import type { TransferType } from "../../types/token";
 import { SmartWalletChain } from "../chains";
 import { transferParams } from "../transfer";
 import { SendTransactionService } from "./SendTransactionService";
@@ -49,7 +47,8 @@ export class EVMSmartWallet {
         private readonly crossmintService: CrossmintWalletService,
         private readonly accountClient: SmartWalletClient,
         publicClient: PublicClient<HttpTransport>,
-        chain: SmartWalletChain
+        chain: SmartWalletChain,
+        protected readonly logger = scwLogger
     ) {
         this.chain = chain;
         this.client = {
@@ -70,7 +69,7 @@ export class EVMSmartWallet {
      * @returns The transaction hash.
      */
     public async transferToken(toAddress: string, config: TransferType): Promise<string> {
-        return logPerformance(
+        return this.logger.logPerformance(
             "TRANSFER",
             async () => {
                 if (this.chain !== config.token.chain) {
@@ -100,13 +99,12 @@ export class EVMSmartWallet {
                     const client = this.accountClient.extend(publicActions);
                     const { request } = await client.simulateContract(tx);
                     const hash = await client.writeContract(request);
-                    logInfo(`[TRANSFER] - Transaction hash from transfer: ${hash}`);
+                    this.logger.log(`[TRANSFER] - Transaction hash from transfer: ${hash}`);
 
                     return hash;
                 } catch (error) {
-                    logError("[TRANSFER] - ERROR_TRANSFERRING_TOKEN", {
-                        service: SCW_SERVICE,
-                        error: errorToJSON(error),
+                    this.logger.error("[TRANSFER] - ERROR_TRANSFERRING_TOKEN", {
+                        error: error instanceof Error ? error.message : JSON.stringify(error),
                         tokenId: tx.tokenId,
                         contractAddress: config.token.contractAddress,
                         chain: config.token.chain,

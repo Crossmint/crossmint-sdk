@@ -1,4 +1,3 @@
-import { BUNDLER_RPC } from "@/utils/constants";
 import {
     Chain,
     arbitrum,
@@ -12,6 +11,8 @@ import {
 } from "viem/chains";
 
 import { BlockchainIncludingTestnet as Blockchain, ObjectValues, objectValues } from "@crossmint/common-sdk-base";
+
+import { BUNDLER_RPC } from "../utils/constants";
 
 export const SmartWalletTestnet = {
     BASE_SEPOLIA: Blockchain.BASE_SEPOLIA,
@@ -60,6 +61,6 @@ export const viemNetworks: Record<SmartWalletChain, Chain> = {
     "arbitrum-sepolia": arbitrumSepolia,
 };
 
-export const getBundlerRPC = (chain: SmartWalletChain) => {
+export function getBundlerRPC(chain: SmartWalletChain) {
     return BUNDLER_RPC + zerodevProjects[chain];
-};
+}

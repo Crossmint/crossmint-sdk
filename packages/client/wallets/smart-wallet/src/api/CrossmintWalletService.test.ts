@@ -1,16 +1,17 @@
-import { CROSSMINT_STG_URL } from "../utils/constants";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import { CROSSMINT_STG_URL } from "@crossmint/client-sdk-base";
+
 import { CrossmintWalletService } from "./CrossmintWalletService";
 
-jest.mock("../services/logging", () => ({
-    logError: jest.fn(),
-    logInfo: jest.fn(),
+vi.mock("../services/logging", () => ({
+    logError: vi.fn(),
+    logInfo: vi.fn(),
 }));
 
-jest.mock("../utils/helpers", () => {
-    return {
-        isLocalhost: jest.fn().mockReturnValue(true),
-    };
-});
+vi.mock("../utils/helpers", () => ({
+    isLocalhost: vi.fn().mockReturnValue(true),
+}));
 
 describe("CrossmintService", () => {
     let crossmintService: CrossmintWalletService;
@@ -37,6 +38,6 @@ describe("CrossmintService", () => {
     });
 
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 });

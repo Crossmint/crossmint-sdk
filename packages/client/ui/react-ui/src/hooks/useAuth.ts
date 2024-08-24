@@ -1,0 +1,15 @@
+import { WalletContext } from "@/providers/CrossmintAuthProvider";
+import { useContext } from "react";
+
+import { useAuth as useAuthCore } from "@crossmint/client-sdk-auth-core/client";
+
+export function useAuth() {
+    const walletContext = useContext(WalletContext);
+
+    if (!walletContext) {
+        throw new Error("useAuth must be used within a CrossmintAuthProvider");
+    }
+
+    const authContext = useAuthCore();
+    return { ...authContext, ...walletContext };
+}

@@ -1,33 +1,27 @@
-import { encodeFunctionData } from "viem";
+import { Address, encodeFunctionData } from "viem";
 
-import type { EVMSmartWallet } from "@crossmint/client-sdk-smart-wallet";
+import { EVMSmartWallet } from "@crossmint/client-sdk-react-ui";
 
 import { CollectionABI } from "./collection-abi";
-import { getNFTContractAddress } from "./get-contracts";
 
-export const mintNFT = async (account: EVMSmartWallet) => {
-    if (!account) {
+const AMOY_CONTRACT: Address = "0x5c030a01e9d2c4bb78212d06f88b7724b494b755";
+
+export const mintNFT = async (wallet: EVMSmartWallet) => {
+    if (!wallet) {
         throw new Error("Wallet is not provided");
     }
-    console.log("Minting NFT", account.address);
-    const contractAddress = getNFTContractAddress(account.chain);
+    console.log("Minting NFT", wallet.address);
 
-    try {
-        const data = encodeFunctionData({
-            abi: CollectionABI,
-            functionName: "mintTo",
-            args: [account.address],
-        });
+    const data = encodeFunctionData({
+        abi: CollectionABI,
+        functionName: "mintTo",
+        args: [wallet.address],
+    });
 
-        const transactionHash = await account.client.wallet.sendTransaction({
-            to: contractAddress,
-            data: data,
-        });
+    const transactionHash = await wallet.client.wallet.sendTransaction({
+        to: AMOY_CONTRACT,
+        data: data,
+    });
 
-        console.log("NFT mint. Tx hash:", transactionHash);
-        return true;
-    } catch (error) {
-        console.error("Error minting NFT:", error);
-        return false;
-    }
+    console.log("NFT mint. Tx hash:", transactionHash);
 };

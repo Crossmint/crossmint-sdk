@@ -1,12 +1,11 @@
-import { SmartWalletError } from "@/error";
-import { ErrorProcessor } from "@/error/processor";
-import { logInfo } from "@/services/logging";
-import { usesGelatoBundler } from "@/utils/blockchain";
-import { logPerformance } from "@/utils/log";
 import type { SmartAccountClient } from "permissionless";
 import type { EntryPoint } from "permissionless/types/entrypoint";
 import { stringify } from "viem";
 
+import { SmartWalletError } from "../../error";
+import { ErrorProcessor } from "../../error/processor";
+import { scwLogger } from "../../services";
+import { usesGelatoBundler } from "../../utils/blockchain";
 import { SmartWalletChain } from "../chains";
 
 const transactionMethods = [
@@ -38,7 +37,7 @@ function isSignMethod(method: string): method is SignMethod {
  * - Automatic formatting of transactions for Gelato bundler compatibility.
  *  */
 export class ClientDecorator {
-    constructor(private readonly errorProcessor: ErrorProcessor) {}
+    constructor(private readonly errorProcessor: ErrorProcessor, protected logger = scwLogger) {}
 
     public decorate<Client extends SmartAccountClient<EntryPoint>>({
         crossmintChain,
@@ -60,7 +59,7 @@ export class ClientDecorator {
                 }
 
                 return (...args: any[]) =>
-                    logPerformance(`CrossmintSmartWallet.${prop}`, () =>
+                    this.logger.logPerformance(`CrossmintSmartWallet.${prop}`, () =>
                         this.execute(target, prop, originalMethod, args, crossmintChain)
                     );
             },
@@ -76,7 +75,7 @@ export class ClientDecorator {
         crossmintChain: SmartWalletChain
     ) {
         try {
-            logInfo(`[CrossmintSmartWallet.${prop}] - params: ${stringify(args)}`);
+            this.logger.log(`[CrossmintSmartWallet.${prop}] - params: ${stringify(args)}`);
             const processed = isTxnMethod(prop) ? this.processTxnArgs(prop, crossmintChain, args) : args;
             return await originalMethod.call(target, ...processed);
         } catch (error: any) {

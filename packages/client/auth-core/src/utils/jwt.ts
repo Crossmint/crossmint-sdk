@@ -1,25 +1,44 @@
-import { CrossmintService } from "@/services/CrossmintService";
+import { CrossmintServiceFactory, type CrossmintServiceWithToken } from "@/services/CrossmintService";
+import { JsonWebTokenError, TokenExpiredError, verify } from "jsonwebtoken";
 
-// TODO: WAL-2563: this should resolve the user
-export async function verifyCrossmintSessionToken(
-    apiKey: string,
-    token: string,
-    environment: "production" | "staging"
-) {
-    const crossmintService = new CrossmintService(apiKey, token, environment);
+import { getPublicKey } from "./tokenAuth/publicKey";
 
-    let response;
+export async function verifyCrossmintSessionToken(apiKey: string, token: string) {
+    const crossmintService = CrossmintServiceFactory.create(apiKey, token);
     try {
-        response = await crossmintService.fetchCrossmintAPI({
-            endpoint: "/sdk/auth/me",
-            options: {
-                method: "POST",
-            },
-        });
+        return await verifyJWTWithPublicKey(crossmintService);
     } catch (error) {
-        //TODO (WAL-2616): track error
-        return false;
+        throw new Error("Invalid token");
     }
+}
 
-    return response;
+async function verifyJWT(crossmintService: CrossmintServiceWithToken, signingKey: string) {
+    try {
+        const verifiedToken = await verify(crossmintService.jwtToken, signingKey);
+
+        if (verifiedToken == null || typeof verifiedToken === "string") {
+            throw new Error("Invalid token");
+        }
+        return verifiedToken;
+    } catch (err: unknown) {
+        if (err != null && err instanceof TokenExpiredError) {
+            throw new Error(`JWT provided expired at timestamp ${err.expiredAt.toISOString()}`);
+        }
+
+        if (
+            err != null &&
+            err instanceof JsonWebTokenError &&
+            (err.message.includes("invalid signature") || err.message.includes("invalid algorithm"))
+        ) {
+            throw new Error(err.message);
+        }
+
+        throw new Error("Invalid token");
+    }
+}
+
+async function verifyJWTWithPublicKey(crossmintService: CrossmintServiceWithToken) {
+    const publicKey = await getPublicKey(crossmintService.jwtToken, crossmintService.getJWKSUri());
+
+    return verifyJWT(crossmintService, publicKey);
 }

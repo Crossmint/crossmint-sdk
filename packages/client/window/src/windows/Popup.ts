@@ -9,6 +9,7 @@ export interface PopupWindowOptions {
     width: number;
     height: number;
     crossOrigin?: boolean;
+    awaitToLoad?: boolean;
 }
 
 export class PopupWindow<IncomingEvents extends EventMap, OutgoingEvents extends EventMap> extends HandshakeParent<
@@ -36,7 +37,7 @@ export class PopupWindow<IncomingEvents extends EventMap, OutgoingEvents extends
     }
 }
 
-async function createPopup(url: string, options: PopupWindowOptions): Promise<Window> {
+function createPopup(url: string, options: PopupWindowOptions) {
     const _window = window.open(
         url,
         "popupWindow",
@@ -46,7 +47,11 @@ async function createPopup(url: string, options: PopupWindowOptions): Promise<Wi
         throw new Error("Failed to open popup window");
     }
 
-    return new Promise((resolve, reject) => {
+    if (options.awaitToLoad === false) {
+        return _window;
+    }
+
+    return new Promise<Window>((resolve, reject) => {
         _window.onload = () => resolve(_window);
         _window.onerror = () => reject("Failed to load popup window");
     });

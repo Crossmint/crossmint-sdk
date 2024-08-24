@@ -71,7 +71,7 @@ export default function AuthModal({
                 }
             }
         };
-    }, [iframe]);
+    }, [iframe, setJwtToken, setModalOpen]);
 
     const handleIframeLoaded = async () => {
         if (iframeRef.current == null) {
@@ -89,16 +89,20 @@ export default function AuthModal({
 
     return (
         <ActionModal show={true} onClose={() => setModalOpen(false)}>
+            <div style={{ position: "relative", width: "100%" }}>
+                <CloseIconButton onClick={() => setModalOpen(false)} />
+            </div>
             <iframe
                 ref={iframeRef}
                 src={iframeSrc}
                 onLoad={handleIframeLoaded}
+                title="Authentication Modal"
                 style={{
                     width: "448px",
-                    height: "530px",
+                    height: "475px",
                     border: "1px solid #D0D5DD",
                     borderRadius: "16px",
-                    padding: "48px 40px",
+                    padding: "48px 40px 32px",
                     backgroundColor: "#FFFFFF",
                     animation: "fadeIn 3s ease-in-out",
                 }}
@@ -106,3 +110,35 @@ export default function AuthModal({
         </ActionModal>
     );
 }
+
+const CloseIconButton = ({ onClick }: { onClick: () => void }) => (
+    <button
+        aria-label="Close"
+        style={{
+            width: "1.5rem",
+            position: "absolute",
+            right: "1.5rem",
+            top: "1.5rem",
+            cursor: "pointer",
+            color: "#67797F",
+            outlineOffset: "4px",
+            borderRadius: "100%",
+        }}
+        onClick={onClick}
+    >
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        >
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12" />
+        </svg>
+    </button>
+);

@@ -1,27 +1,26 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { SmartWalletSDK } from "./SmartWalletSDK";
-import { SmartWalletSDKInitParams } from "./types/Config";
 
-jest.mock("./services/logging");
+vi.mock("./services/logging");
 
-Object.defineProperty(global, "window", {
-    value: {
-        location: {
-            origin: "http://localhost",
-        },
+// Mock global window object
+vi.stubGlobal("window", {
+    location: {
+        origin: "http://localhost",
     },
 });
 
 describe("SmartWalletSDK", () => {
     let sdk: SmartWalletSDK;
-    const mockInitParams: SmartWalletSDKInitParams = {
-        clientApiKey:
-            "sk_staging_A4vDwAp4t5az6fVQMpQK6qapBnAqgpxrrD35TaFQnyKgxehNbd959uZeaHjNCadWDXrgLRAK1CxeasZjtYEq4TbFkKMBBvbQ9oinAxQf8LbHsSYW2DMzT8fBko3YGLq9t7ZiXZjmgkTioxGVUUjyLtWLeBKwNUDLgpshWjaoR7pKRnSE9SqhwjQbiK62VKiBTdA3KvHsyG9k8mLMcKrDyfXp",
-    };
 
     beforeEach(() => {
         // Reset mocks before each test
-        jest.clearAllMocks();
-        sdk = SmartWalletSDK.init(mockInitParams);
+        vi.clearAllMocks();
+        sdk = SmartWalletSDK.init({
+            clientApiKey:
+                "sk_staging_A4vDwAp4t5az6fVQMpQK6qapBnAqgpxrrD35TaFQnyKgxehNbd959uZeaHjNCadWDXrgLRAK1CxeasZjtYEq4TbFkKMBBvbQ9oinAxQf8LbHsSYW2DMzT8fBko3YGLq9t7ZiXZjmgkTioxGVUUjyLtWLeBKwNUDLgpshWjaoR7pKRnSE9SqhwjQbiK62VKiBTdA3KvHsyG9k8mLMcKrDyfXp",
+        });
     });
 
     describe("init", () => {

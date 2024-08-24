@@ -2,8 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap");
-
 @layer base {
     :root {
         /* Define color variables */
@@ -59,7 +57,6 @@
 @layer base {
     body {
         @apply bg-background text-foreground;
-        font-family: "Poppins", sans-serif;
         font-feature-settings: "rlig" 1, "calt" 1;
     }
 }
