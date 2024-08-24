@@ -1,4 +1,3 @@
-import { mock } from "jest-mock-extended";
 import { SmartAccountClient } from "permissionless";
 import { SmartAccount } from "permissionless/accounts";
 import { EntryPoint } from "permissionless/types";
@@ -12,6 +11,8 @@ import {
     Transport,
     zeroAddress,
 } from "viem";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { mock } from "vitest-mock-extended";
 
 import {
     EVMSendTransactionError,
@@ -31,11 +32,11 @@ describe("SendTransactionService", () => {
     const sendTransactionService = new SendTransactionService(mockPublicClient);
 
     beforeEach(() => {
-        jest.resetAllMocks();
+        vi.resetAllMocks();
     });
 
     it("Throws EVMSendTransactionExecutionRevertedError when a transaction simulation fails", async () => {
-        const mockError = makeMockError(BaseError.prototype, { walk: jest.fn() });
+        const mockError = makeMockError(BaseError.prototype, { walk: vi.fn() });
         const mockRevertError = new ContractFunctionRevertedError({
             abi: [],
             functionName: "mockFunction",
