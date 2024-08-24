@@ -8,13 +8,13 @@ import { Typography } from "@/components/typography";
 import Link from "next/link";
 import { useState } from "react";
 
-import { useAuth } from "@crossmint/client-sdk-react-ui";
+import { useWallet } from "@crossmint/client-sdk-react-ui";
 
 export default function Home() {
-    const { jwt, wallet } = useAuth();
+    const wallet = useWallet();
     const [nftSuccessfullyMinted, setNftSuccessfullyMinted] = useState(false);
 
-    const showMintButton = jwt != null && wallet != null;
+    const showMintButton = wallet.status === "loaded";
 
     return (
         <div className="flex h-full w-full items-center md:p-4 justify-center">

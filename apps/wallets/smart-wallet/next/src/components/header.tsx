@@ -6,20 +6,22 @@ import { Copy, Image as ImageIcon, User, WalletMinimal } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { useAuth } from "@crossmint/client-sdk-react-ui";
+import { useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
 
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "./dropdown-menu";
 import { Typography } from "./typography";
 import { useToast } from "./use-toast";
 
+function formatWalletAddress(address: string, startLength: number, endLength: number) {
+    return `${address.substring(0, startLength)}...${address.substring(address.length - endLength)}`;
+}
+
 export const Header = () => {
-    const { jwt, logout, wallet } = useAuth();
+    const { logout } = useAuth();
+    const { wallet, status: walletStatus } = useWallet();
     const router = useRouter();
     const { toast } = useToast();
-
-    const isLoadingWallet = jwt && !wallet;
-    const hasWalletAndJwt = jwt != null && wallet != null && !isLoadingWallet;
 
     const handleLogout = () => {
         logout();
@@ -37,19 +39,15 @@ export const Header = () => {
                 </div>
             </Link>
 
-            {hasWalletAndJwt || isLoadingWallet ? (
+            {walletStatus === "loaded" || walletStatus === "in-progress" ? (
                 <div className="flex gap-5">
                     <DropdownMenu>
-                        <DropdownMenuTrigger asChild disabled={!hasWalletAndJwt}>
+                        <DropdownMenuTrigger asChild disabled={walletStatus !== "loaded"}>
                             <div className="flex items-center gap-5 cursor-pointer">
                                 <div className="flex items-center min-w-[150px] bg-skeleton rounded-full px-4 py-2 gap-2 text-secondary-foreground">
                                     <WalletMinimal className="h-4 w-4" />
                                     <Typography>
-                                        {hasWalletAndJwt
-                                            ? wallet.address.substring(0, 6) +
-                                              "..." +
-                                              wallet.address.substring(wallet.address.length - 3, wallet.address.length)
-                                            : "Loading..."}
+                                        {wallet != null ? formatWalletAddress(wallet.address, 6, 3) : "Loading..."}
                                     </Typography>
                                 </div>
                                 <Avatar className="h-9 w-9">
@@ -69,15 +67,8 @@ export const Header = () => {
                                         toast({ title: "Address copied to clipboard", duration: 5000 });
                                     }}
                                 >
-                                    {hasWalletAndJwt ? (
-                                        <Typography>
-                                            {wallet.address.substring(0, 14) +
-                                                "..." +
-                                                wallet.address.substring(
-                                                    wallet.address.length - 6,
-                                                    wallet.address.length
-                                                )}
-                                        </Typography>
+                                    {wallet ? (
+                                        <Typography>{formatWalletAddress(wallet.address, 14, 6)}</Typography>
                                     ) : null}
                                     <Copy className="h-5 w-5" />
                                 </div>
