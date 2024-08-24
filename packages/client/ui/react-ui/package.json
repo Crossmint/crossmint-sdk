@@ -23,7 +23,7 @@
         "build": "tsup src/index.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
         "create-version-file": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/consts/version.ts",
         "dev": "tsup src/index.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
-        "test": "jest",
+        "test": "vitest run",
         "version": "pnpm run create-version-file && git add ."
     },
     "dependencies": {
