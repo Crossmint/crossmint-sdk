@@ -2,6 +2,7 @@ import { useCrossmint } from "@/hooks";
 import { ReactNode, createContext, useEffect, useMemo, useState } from "react";
 
 import { EVMSmartWallet, SmartWalletError, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
+import { Crossmint } from "@crossmint/common-sdk-base";
 
 export type CrossmintWalletConfig = {
     type: "evm-smart-wallet";
@@ -11,13 +12,11 @@ export type CrossmintWalletConfig = {
 
 type WalletStatus = "not-loaded" | "in-progress" | "loaded" | "loading-error";
 
-// Valid states
-type WalletState =
+type ValidWalletState =
     | { status: "not-loaded" | "in-progress" }
     | { status: "loaded"; wallet: EVMSmartWallet }
     | { status: "loading-error"; error: SmartWalletError };
 
-// Intersections are not ergonomic, expose this instead.
 type WalletContext = {
     status: WalletStatus;
     wallet?: EVMSmartWallet;
@@ -30,12 +29,18 @@ export const WalletContext = createContext<WalletContext>({
     getOrCreateWallet: async () => {},
 });
 
+function deriveInitialState(config: CrossmintWalletConfig, crossmint: Crossmint): ValidWalletState {
+    if (config.createOnLogin === "all-users" && crossmint.jwt !== null) {
+        return { status: "in-progress" };
+    }
+
+    return { status: "not-loaded" };
+}
+
 export function CrossmintWalletProvider({ children, config }: { config: CrossmintWalletConfig; children: ReactNode }) {
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
 
-    const [state, setState] = useState<WalletState>({
-        status: "not-loaded",
-    });
+    const [state, setState] = useState<ValidWalletState>(deriveInitialState(config, crossmint));
 
     const smartWalletSDK = useMemo(() => SmartWalletSDK.init({ clientApiKey: crossmint.apiKey }), [crossmint.apiKey]);
 
