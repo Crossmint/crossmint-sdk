@@ -1,6 +1,8 @@
-import { createKernelAccountClient } from "@zerodev/sdk";
-import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
-import { createPublicClient, http } from "viem";
+import { KernelSmartAccount } from "@zerodev/sdk";
+import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07, createSmartAccountClient } from "permissionless";
+import { createPimlicoBundlerClient } from "permissionless/clients/pimlico";
+import { EntryPoint } from "permissionless/types/entrypoint";
+import { HttpTransport, createPublicClient, http } from "viem";
 
 import { blockchainToChainId } from "@crossmint/common-sdk-base";
 
@@ -8,8 +10,8 @@ import type { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import type { SmartWalletClient } from "../../types/internal";
 import type { UserParams, WalletParams } from "../../types/params";
 import { CURRENT_VERSION, ZERO_DEV_TYPE } from "../../utils/constants";
-import { type SmartWalletChain, getBundlerRPC, viemNetworks } from "../chains";
-import { getAlchemyRPC } from "../rpc";
+import { type SmartWalletChain, viemNetworks } from "../chains";
+import { getAlchemyRPC, getPimlicoBundlerRPC } from "../rpc";
 import { EVMSmartWallet } from "./EVMSmartWallet";
 import type { AccountConfigService } from "./account/config";
 import type { AccountCreator } from "./account/creator";
@@ -68,13 +70,29 @@ export class SmartWalletService {
             });
         }
 
-        const kernelAccountClient: SmartWalletClient = createKernelAccountClient({
+        return new EVMSmartWallet(
+            this.crossmintService,
+            this.smartAccountClient(chain, account, user),
+            publicClient,
+            chain
+        );
+    }
+
+    private smartAccountClient(
+        chain: SmartWalletChain,
+        account: KernelSmartAccount<EntryPoint, HttpTransport>,
+        user: UserParams
+    ): SmartWalletClient {
+        const transport = http(getPimlicoBundlerRPC(chain));
+        const bundlerConfig = { chain: viemNetworks[chain], entryPoint: account.entryPoint };
+        const bundlerClient = createPimlicoBundlerClient({ ...bundlerConfig, transport });
+        const smartAccountClient: SmartWalletClient = createSmartAccountClient({
             account,
-            chain: viemNetworks[chain],
-            entryPoint: account.entryPoint,
-            bundlerTransport: http(getBundlerRPC(chain)),
+            bundlerTransport: transport,
+            ...bundlerConfig,
             ...(usePaymaster(chain) &&
                 paymasterMiddleware({
+                    bundlerClient,
                     entryPoint: account.entryPoint,
                     chain,
                     walletService: this.crossmintService,
@@ -82,11 +100,9 @@ export class SmartWalletService {
                 })),
         });
 
-        const smartAccountClient = this.clientDecorator.decorate({
+        return this.clientDecorator.decorate({
             crossmintChain: chain,
-            smartAccountClient: kernelAccountClient,
+            smartAccountClient,
         });
-
-        return new EVMSmartWallet(this.crossmintService, smartAccountClient, publicClient, chain);
     }
 }
