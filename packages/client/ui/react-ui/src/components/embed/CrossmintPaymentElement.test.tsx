@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom/vitest";
-import { cleanup, render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 
 import { CrossmintEvents } from "@crossmint/client-sdk-base";
 
@@ -11,10 +11,6 @@ const embeddedCheckoutProps = {
 };
 
 describe("CrossmintPaymentElement", () => {
-    beforeEach(() => {
-        cleanup();
-    });
-
     it("renders an iframe with the correct props", () => {
         render(<CrossmintPaymentElement {...embeddedCheckoutProps} />);
         const iframe = screen.getByRole("crossmint-embedded-checkout.iframe");
