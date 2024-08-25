@@ -1,15 +1,11 @@
-import { cleanup, render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, test } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { describe, expect, test } from "vitest";
 
 import { CrossmintNFTCollectionView } from "./CrossmintNFTCollectionView";
 
 const wallets = [{ chain: "solana", publicKey: "12345" }];
 
 describe("CrossmintNFTCollectionView", () => {
-    beforeEach(() => {
-        cleanup();
-    });
-
     describe("when only passing mandatory fields", () => {
         test("should add them to the iframe query params", () => {
             render(<CrossmintNFTCollectionView wallets={wallets} />);

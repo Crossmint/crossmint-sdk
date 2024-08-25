@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { useEffect } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -26,7 +26,6 @@ function renderCrossmintProvider({ children }: { children: JSX.Element }) {
 
 describe("CrossmintProvider", () => {
     beforeEach(() => {
-        cleanup();
         vi.resetAllMocks();
         vi.mocked(createCrossmint).mockImplementation(() => ({
             apiKey: MOCK_API_KEY,
