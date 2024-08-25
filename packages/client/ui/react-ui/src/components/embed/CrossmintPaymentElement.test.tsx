@@ -1,5 +1,6 @@
-import "@testing-library/jest-dom";
-import { render, screen } from "@testing-library/react";
+import "@testing-library/jest-dom/vitest";
+import { cleanup, render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { CrossmintEvents } from "@crossmint/client-sdk-base";
 
@@ -10,6 +11,10 @@ const embeddedCheckoutProps = {
 };
 
 describe("CrossmintPaymentElement", () => {
+    beforeEach(() => {
+        cleanup();
+    });
+
     it("renders an iframe with the correct props", () => {
         render(<CrossmintPaymentElement {...embeddedCheckoutProps} />);
         const iframe = screen.getByRole("crossmint-embedded-checkout.iframe");
@@ -30,7 +35,7 @@ describe("CrossmintPaymentElement", () => {
     });
 
     it("calls the onEvent prop when a CrossmintEvents is received", () => {
-        const onEvent = jest.fn();
+        const onEvent = vi.fn();
         render(<CrossmintPaymentElement {...embeddedCheckoutProps} onEvent={onEvent} environment="" />);
         screen.getByRole("crossmint-embedded-checkout.iframe");
 
@@ -43,7 +48,7 @@ describe("CrossmintPaymentElement", () => {
     });
 
     it("does not call the onEvent prop when a different origin than the environment is received in the event", () => {
-        const onEvent = jest.fn();
+        const onEvent = vi.fn();
         render(<CrossmintPaymentElement {...embeddedCheckoutProps} onEvent={onEvent} environment="" />);
         screen.getByRole("crossmint-embedded-checkout.iframe");
 

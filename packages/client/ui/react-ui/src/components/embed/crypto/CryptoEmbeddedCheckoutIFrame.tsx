@@ -1,4 +1,3 @@
-import useDeepEffect from "@/hooks/useDeepEffect";
 import bs58 from "bs58";
 
 import {
@@ -13,6 +12,7 @@ import {
 } from "@crossmint/client-sdk-base";
 import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
+import useDeepEffect from "../../../hooks/useDeepEffect";
 import CrossmintEmbeddedCheckoutIFrame from "../EmbeddedCheckoutIFrame";
 
 export default function CryptoEmbeddedCheckoutIFrame(props: CryptoEmbeddedCheckoutPropsWithSigner) {
