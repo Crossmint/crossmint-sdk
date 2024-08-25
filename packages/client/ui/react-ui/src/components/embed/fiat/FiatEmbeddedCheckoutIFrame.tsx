@@ -1,11 +1,10 @@
-import useDeepEffect from "@/hooks/useDeepEffect";
-
 import {
     FiatEmbeddedCheckoutProps,
     crossmintIFrameService,
     embeddedCheckoutPropsToUpdatableParamsPayload,
 } from "@crossmint/client-sdk-base";
 
+import useDeepEffect from "../../../hooks/useDeepEffect";
 import CrossmintEmbeddedCheckoutIFrame from "../EmbeddedCheckoutIFrame";
 
 export default function FiatEmbeddedCheckoutIFrame(props: FiatEmbeddedCheckoutProps) {

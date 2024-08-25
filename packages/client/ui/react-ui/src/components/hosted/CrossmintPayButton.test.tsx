@@ -1,5 +1,6 @@
-import "@testing-library/jest-dom";
+import "@testing-library/jest-dom/vitest";
 import { act, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { CrossmintPayButton } from ".";
 import { LIB_VERSION } from "../../consts/version";
@@ -8,27 +9,27 @@ import { LIB_VERSION } from "../../consts/version";
 const fetchReturns = Promise.resolve({
     json: () => Promise.resolve({}),
 }) as any;
-global.fetch = jest.fn(() => fetchReturns);
+global.fetch = vi.fn(() => fetchReturns);
 
 // TODO(#61): make this automatically mocked in every test suite
 const openReturns = {} as Window;
-global.open = jest.fn(() => openReturns);
+global.open = vi.fn(() => openReturns);
 global.console = {
-    log: jest.fn(),
-    error: jest.fn(),
-    warn: jest.fn(),
+    log: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
 } as any;
 
 const defaultProps = {
     clientId: "a4e1bfcc-9884-11ec-b909-0242ac120002",
 };
 
-afterEach(() => {
-    jest.clearAllMocks();
-});
-
 describe("CrossmintPayButton", () => {
-    test("should open window with correct url", async () => {
+    afterEach(() => {
+        vi.clearAllMocks();
+    });
+
+    it("should open window with correct url", async () => {
         render(<CrossmintPayButton {...defaultProps} />);
 
         await act(async () => {
@@ -61,7 +62,7 @@ describe("CrossmintPayButton", () => {
         );
     });
 
-    test("should add the `whPassThroughArgs` prop on the window url", async () => {
+    it("should add the `whPassThroughArgs` prop on the window url", async () => {
         const whPassThroughArgs = { hello: "hi" };
         render(<CrossmintPayButton {...defaultProps} whPassThroughArgs={whPassThroughArgs} />);
 
@@ -76,7 +77,7 @@ describe("CrossmintPayButton", () => {
     });
 
     describe("when passing the prepay prop", () => {
-        test("should pass the prepay query param", async () => {
+        it("should pass the prepay query param", async () => {
             render(<CrossmintPayButton {...defaultProps} prepay />);
 
             await act(async () => {
@@ -91,7 +92,7 @@ describe("CrossmintPayButton", () => {
     });
 
     describe("when passing the prepay prop as false", () => {
-        test("should not pass the prepay query param", async () => {
+        it("should not pass the prepay query param", async () => {
             render(<CrossmintPayButton {...defaultProps} prepay={false} />);
 
             await act(async () => {
@@ -106,7 +107,7 @@ describe("CrossmintPayButton", () => {
     });
 
     describe("when passing the loginEmail prop", () => {
-        test("should pass an email in the email query param", async () => {
+        it("should pass an email in the email query param", async () => {
             render(<CrossmintPayButton {...defaultProps} loginEmail="user@gmail.com" />);
 
             await act(async () => {
@@ -119,7 +120,7 @@ describe("CrossmintPayButton", () => {
             );
         });
 
-        test("should pass the email query param empty if loginEmail is empty", async () => {
+        it("should pass the email query param empty if loginEmail is empty", async () => {
             render(<CrossmintPayButton {...defaultProps} loginEmail="" />);
 
             await act(async () => {
@@ -132,7 +133,7 @@ describe("CrossmintPayButton", () => {
             );
         });
 
-        test("should pass the email query param empty if loginEmail is not present as a param", async () => {
+        it("should pass the email query param empty if loginEmail is not present as a param", async () => {
             render(<CrossmintPayButton {...defaultProps} />);
 
             await act(async () => {
@@ -147,7 +148,7 @@ describe("CrossmintPayButton", () => {
     });
 
     describe("when passing collectionId instead of clientId", () => {
-        test("should open window with correct url", async () => {
+        it("should open window with correct url", async () => {
             render(<CrossmintPayButton collectionId={defaultProps.clientId} />);
 
             await act(async () => {
@@ -163,7 +164,7 @@ describe("CrossmintPayButton", () => {
     });
 
     describe("when passing projectId", () => {
-        test("should open window with projectId included in query params", async () => {
+        it("should open window with projectId included in query params", async () => {
             render(<CrossmintPayButton {...defaultProps} projectId="123" />);
 
             await act(async () => {
@@ -179,7 +180,7 @@ describe("CrossmintPayButton", () => {
     });
 
     describe("when passing getButtonText prop", () => {
-        test("should show custom text", async () => {
+        it("should show custom text", async () => {
             render(<CrossmintPayButton {...defaultProps} getButtonText={() => "Custom text"} />);
             expect(screen.getByText("Custom text")).toBeInTheDocument();
         });

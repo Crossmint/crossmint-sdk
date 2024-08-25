@@ -1,23 +1,17 @@
-import { act, render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { useEffect } from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { Crossmint } from "@crossmint/common-sdk-base";
+import { Crossmint, createCrossmint } from "@crossmint/common-sdk-base";
 
 import { CrossmintProvider, useCrossmint } from "./useCrossmint";
 
 const MOCK_API_KEY =
     "sk_development_5ZUNkuhjP8aYZEgUTDfWToqFpo5zakEqte1db4pHZgPAVKZ9JuSvnKeGiqY654DoBuuZEzYz4Eb8gRV2ePqQ1fxTjEP8tTaUQdzbGfyG9RgyeN5YbqViXinqxk8EayEkAGtvSSgjpjEr6iaBptJtUFwPW59DjQzTQP6P8uZdiajenVg7bARGKjzFyByNuVEoz41DpRB4hDZNFdwCTuf5joFv";
 
-jest.mock("@crossmint/common-sdk-base", () => {
-    const actualModule = jest.requireActual("@crossmint/common-sdk-base");
-
-    return {
-        ...actualModule,
-        createCrossmint: jest.fn(() => ({
-            apiKey: MOCK_API_KEY,
-        })),
-    };
-});
+vi.mock("@crossmint/common-sdk-base", () => ({
+    createCrossmint: vi.fn(),
+}));
 
 class MockSDK {
     constructor(public crossmint: Crossmint) {}
@@ -31,6 +25,14 @@ function renderCrossmintProvider({ children }: { children: JSX.Element }) {
 }
 
 describe("CrossmintProvider", () => {
+    beforeEach(() => {
+        vi.resetAllMocks();
+        vi.mocked(createCrossmint).mockImplementation(() => ({
+            apiKey: MOCK_API_KEY,
+            jwt: "",
+        }));
+    });
+
     it("provides initial JWT value", () => {
         const TestComponent = () => {
             const { crossmint } = useCrossmint();
@@ -51,9 +53,7 @@ describe("CrossmintProvider", () => {
             );
         };
         const { getByTestId, getByText } = renderCrossmintProvider({ children: <TestComponent /> });
-        act(() => {
-            getByText("Update JWT").click();
-        });
+        fireEvent.click(getByText("Update JWT"));
         expect(getByTestId("jwt").textContent).toBe("new_jwt");
     });
 
@@ -71,7 +71,7 @@ describe("CrossmintProvider", () => {
     });
 
     it("triggers re-render on JWT change", () => {
-        const renderCount = jest.fn();
+        const renderCount = vi.fn();
         const TestComponent = () => {
             const { crossmint, setJwt } = useCrossmint();
             useEffect(() => {
@@ -89,9 +89,7 @@ describe("CrossmintProvider", () => {
 
         expect(renderCount).toHaveBeenCalledTimes(1);
 
-        act(() => {
-            getByText("Update JWT").click();
-        });
+        fireEvent.click(getByText("Update JWT"));
 
         expect(renderCount).toHaveBeenCalledTimes(2);
     });
