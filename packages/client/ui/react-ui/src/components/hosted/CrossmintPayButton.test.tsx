@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom/vitest";
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { CrossmintPayButton } from ".";
 import { LIB_VERSION } from "../../consts/version";
@@ -25,10 +25,6 @@ const defaultProps = {
 };
 
 describe("CrossmintPayButton", () => {
-    beforeEach(() => {
-        cleanup();
-    });
-
     afterEach(() => {
         vi.clearAllMocks();
     });

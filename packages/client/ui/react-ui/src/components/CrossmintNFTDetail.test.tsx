@@ -1,5 +1,5 @@
-import { cleanup, render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
 
 import { NFT } from "@crossmint/common-sdk-base";
 
@@ -8,10 +8,6 @@ import { CrossmintNFTDetail } from "./CrossmintNFTDetail";
 const nft: NFT = { chain: "ethereum", contractAddress: "0x12345", tokenId: "12" };
 
 describe("CrossmintNFTDetail", () => {
-    beforeEach(() => {
-        cleanup();
-    });
-
     describe("when only passing mandatory fields", () => {
         it("should add them to the iframe query params", () => {
             render(<CrossmintNFTDetail nft={nft} />);
