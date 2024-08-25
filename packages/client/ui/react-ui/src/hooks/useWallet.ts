@@ -8,5 +8,5 @@ export function useWallet() {
         throw new Error("useWallet must be used within CrossmintAuthProvider or CrossmintWalletProvider");
     }
 
-    return { ...walletContext };
+    return walletContext;
 }
