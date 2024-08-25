@@ -1,4 +1,5 @@
 import { useCrossmint } from "@/hooks";
+import { kMaxLength } from "buffer";
 import { ReactNode, createContext, useEffect, useMemo, useState } from "react";
 
 import { EVMSmartWallet, SmartWalletError, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
@@ -27,6 +28,10 @@ function deriveErrorState(error: unknown): { status: "loading-error"; error: Sma
     return { status: "loading-error", error: new SmartWalletError(`Unknown Wallet Error: ${message}`, stack) };
 }
 
+function shouldGetOrCreateWallet(status: WalletStatus, jwt: string | undefined): jwt is string {
+    return jwt != null && !(status === "in-progress" || status === "loaded");
+}
+
 type WalletContext = {
     status: WalletStatus;
     wallet?: EVMSmartWallet;
@@ -45,13 +50,7 @@ export function CrossmintWalletProvider({ children, config }: { config: Crossmin
     const smartWalletSDK = useMemo(() => SmartWalletSDK.init({ clientApiKey: crossmint.apiKey }), [crossmint.apiKey]);
 
     const getOrCreateWallet = async () => {
-        if (!crossmint.jwt) {
-            console.error("JWT is not available");
-            return;
-        }
-
-        if (state.status === "in-progress" || state.status === "loaded") {
-            console.error("Wallet is already loaded or being created");
+        if (!shouldGetOrCreateWallet(state.status, crossmint.jwt)) {
             return;
         }
 
@@ -66,7 +65,7 @@ export function CrossmintWalletProvider({ children, config }: { config: Crossmin
     };
 
     useEffect(() => {
-        if (config.createOnLogin === "all-users" && crossmint.jwt != null) {
+        if (config.createOnLogin === "all-users" && shouldGetOrCreateWallet(state.status, crossmint.jwt)) {
             console.log("Getting or Creating wallet");
             getOrCreateWallet();
             return;
@@ -77,7 +76,7 @@ export function CrossmintWalletProvider({ children, config }: { config: Crossmin
             setState({ status: "not-loaded" });
             return;
         }
-    }, [crossmint.jwt, config.createOnLogin]);
+    }, [crossmint.jwt, config.createOnLogin, state.status]);
 
     return <WalletContext.Provider value={{ ...state, getOrCreateWallet }}>{children}</WalletContext.Provider>;
 }
