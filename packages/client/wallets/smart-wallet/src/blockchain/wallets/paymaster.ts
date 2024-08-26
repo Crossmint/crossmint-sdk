@@ -1,5 +1,6 @@
 import { CrossmintWalletService } from "@/api/CrossmintWalletService";
 import { Middleware } from "permissionless/actions/smartAccount";
+import { PimlicoBundlerClient } from "permissionless/clients/pimlico";
 import { EntryPoint } from "permissionless/types/entrypoint";
 
 import { UserParams } from "../../types/params";
@@ -11,11 +12,13 @@ export function usePaymaster(chain: SmartWalletChain) {
 }
 
 export function paymasterMiddleware({
+    bundlerClient,
     entryPoint,
     chain,
     walletService,
     user,
 }: {
+    bundlerClient: PimlicoBundlerClient<EntryPoint>;
     entryPoint: EntryPoint;
     chain: SmartWalletChain;
     walletService: CrossmintWalletService;
@@ -23,6 +26,7 @@ export function paymasterMiddleware({
 }): Middleware<EntryPoint> {
     return {
         middleware: {
+            gasPrice: async () => (await bundlerClient.getUserOperationGasPrice()).fast,
             sponsorUserOperation: async ({ userOperation }) => {
                 const { sponsorUserOpParams } = await walletService.sponsorUserOperation(
                     user,
