@@ -38,5 +38,8 @@ export function load(app) {
   app.renderer.on(MarkdownPageEvent.END, (page) => {
     // remove .mdx from links so it works with mintlify
     page.contents = page.contents.replace(/\.mdx/g, "");
+
+    // add "./" to beginning of links so they open in same tab in mintlify
+    page.contents = page.contents.replace(/\]\((?!http)/g, '](./');
   });
 }
