@@ -40,6 +40,6 @@ export function load(app) {
     page.contents = page.contents.replace(/\.mdx/g, "");
 
     // add "./" to beginning of links so they open in same tab in mintlify
-    page.contents = page.contents.replace(/\]\((?!http)/g, '](./');
+    page.contents = page.contents.replace(/\]\((?!http|\.{2}\/)/g, '](./');
   });
 }
