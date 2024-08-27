@@ -1,9 +1,7 @@
 import { useCrossmint } from "@/hooks";
-import { kMaxLength } from "buffer";
 import { ReactNode, createContext, useEffect, useMemo, useState } from "react";
 
 import { EVMSmartWallet, SmartWalletError, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
-import { Crossmint } from "@crossmint/common-sdk-base";
 
 export type CrossmintWalletConfig = {
     type: "evm-smart-wallet";
