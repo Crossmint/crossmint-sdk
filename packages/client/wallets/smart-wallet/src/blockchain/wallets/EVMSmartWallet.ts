@@ -150,7 +150,7 @@ export class EVMSmartWallet {
      *   "type": "function"
      * }] as const;
      *
-     * await wallet.sendTransaction({
+     * await wallet.callContract({
      *   address: contractAddress,
      *   abi,
      *   functionName: "mintNFT",

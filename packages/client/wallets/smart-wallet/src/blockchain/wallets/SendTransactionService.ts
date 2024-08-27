@@ -43,9 +43,9 @@ export class EVMSendTransactionError extends CrossmintSDKError {
 /**
  * Error thrown when a transaction fails due to a contract execution error.
  * @param viemError The error thrown by the viem client. See https://viem.sh/docs/glossary/errors.html
- * @param revertError The revert error from viem containing the reason for the revert.
- * @param revertError.reason The reason for the revert.
- * @param revertError.data The decoded revert error data.
+ * @param data TODO
+ * @param reason TODO
+ * @param signature TODO
  * @example
  * try {
  *   await wallet.sendTransaction({
@@ -103,10 +103,8 @@ export class SendTransactionService {
     ): Promise<Hex> {
         const { confirmations, transactionConfirmationTimeout } = this.getConfig(config);
 
-        // Simulate
         await this.simulateCall(request, undefined, "simulation");
 
-        // Send
         let hash;
         try {
             hash = await client.writeContract({
@@ -121,7 +119,6 @@ export class SendTransactionService {
             throw e;
         }
 
-        // Confirm
         try {
             const receipt = await this.publicClient.waitForTransactionReceipt({
                 hash,

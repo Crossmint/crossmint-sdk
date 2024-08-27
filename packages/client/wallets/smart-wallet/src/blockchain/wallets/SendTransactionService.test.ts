@@ -44,8 +44,9 @@ describe("SendTransactionService", () => {
         });
         mockError.walk.mockReturnValue(mockRevertError);
         mockPublicClient.simulateContract.mockRejectedValue(mockError);
-        await expect(
-            sendTransactionService.sendTransaction(
+        let rejected = false;
+        try {
+            await sendTransactionService.sendTransaction(
                 {
                     address: zeroAddress,
                     abi: [],
@@ -53,16 +54,22 @@ describe("SendTransactionService", () => {
                     args: [],
                 },
                 mockAccountClient
-            )
-        ).rejects.toThrow(EVMSendTransactionExecutionRevertedError);
+            );
+        } catch (e) {
+            rejected = true;
+            expect(e).toBeInstanceOf(EVMSendTransactionExecutionRevertedError);
+            expect((e as EVMSendTransactionExecutionRevertedError).stage).toBe("simulation");
+        }
+        expect(rejected).toBe(true);
     });
 
     it("Throws EVMSendTransactionExecutionRevertedError when a transaction reverts on chain", async () => {
         const mockReceipt = mock<TransactionReceipt>();
         mockReceipt.status = "reverted";
         mockPublicClient.waitForTransactionReceipt.mockResolvedValueOnce(mockReceipt);
-        await expect(
-            sendTransactionService.sendTransaction(
+        let rejected = false;
+        try {
+            await sendTransactionService.sendTransaction(
                 {
                     address: zeroAddress,
                     abi: [],
@@ -70,8 +77,13 @@ describe("SendTransactionService", () => {
                     args: [],
                 },
                 mockAccountClient
-            )
-        ).rejects.toThrow(EVMSendTransactionExecutionRevertedError);
+            );
+        } catch (e) {
+            rejected = true;
+            expect(e).toBeInstanceOf(EVMSendTransactionExecutionRevertedError);
+            expect((e as EVMSendTransactionExecutionRevertedError).stage).toBe("execution");
+        }
+        expect(rejected).toBe(true);
     });
 
     it("Throws a confirmation error when a transaction confirmation fails", async () => {
@@ -99,8 +111,9 @@ describe("SendTransactionService", () => {
     it("Throws EVMSendTransactionError when a transaction fails to send", async () => {
         const mockError = makeMockError(BaseError.prototype);
         mockAccountClient.writeContract.mockRejectedValue(mockError);
-        await expect(
-            sendTransactionService.sendTransaction(
+        let rejected = false;
+        try {
+            await sendTransactionService.sendTransaction(
                 {
                     address: zeroAddress,
                     abi: [],
@@ -108,8 +121,13 @@ describe("SendTransactionService", () => {
                     args: [],
                 },
                 mockAccountClient
-            )
-        ).rejects.toThrow(EVMSendTransactionError);
+            );
+        } catch (e) {
+            rejected = true;
+            expect(e).toBeInstanceOf(EVMSendTransactionError);
+            expect((e as EVMSendTransactionError).stage).toBe("send");
+        }
+        expect(rejected).toBe(true);
     });
 
     it("Simulates before sending a transaction", async () => {
