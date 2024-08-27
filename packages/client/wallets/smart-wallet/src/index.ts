@@ -3,7 +3,7 @@ export { blockchainToChainId, EVMBlockchainIncludingTestnet as Chain } from "@cr
 export { EVMSmartWallet } from "./blockchain/wallets/EVMSmartWallet";
 
 export type {
-    SmartWalletSDKInitParams,
+    WalletSDKInitParams,
     UserParams,
     ViemAccount,
     PasskeySigner,
@@ -38,4 +38,4 @@ export {
     NotAuthorizedError,
 } from "@crossmint/client-sdk-base";
 
-export { SmartWalletSDK } from "./SmartWalletSDK";
+export { WalletSDK } from "./WalletSDK";

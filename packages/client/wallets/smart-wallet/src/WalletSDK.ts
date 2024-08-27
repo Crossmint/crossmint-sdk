@@ -15,11 +15,11 @@ import { SmartWalletService } from "./blockchain/wallets/service";
 import { SmartWalletError } from "./error";
 import { ErrorProcessor } from "./error/processor";
 import { scwDatadogLogger, scwLogger } from "./services";
-import type { SmartWalletSDKInitParams, UserParams, WalletParams } from "./types/params";
+import type { UserParams, WalletParams, WalletSDKInitParams } from "./types/params";
 import { SDK_VERSION } from "./utils/constants";
 import { isClient } from "./utils/environment";
 
-export class SmartWalletSDK {
+export class WalletSDK {
     private constructor(
         private readonly smartWalletService: SmartWalletService,
         private readonly errorProcessor: ErrorProcessor,
@@ -30,7 +30,7 @@ export class SmartWalletSDK {
      * Initializes the SDK with the **client side** API key obtained from the Crossmint console.
      * @throws error if the api key is not formatted correctly.
      */
-    static init({ clientApiKey }: SmartWalletSDKInitParams): SmartWalletSDK {
+    static init({ clientApiKey }: WalletSDKInitParams): WalletSDK {
         if (!isClient()) {
             throw new SmartWalletError("Smart Wallet SDK should only be used client side.");
         }
@@ -55,7 +55,7 @@ export class SmartWalletSDK {
             new ClientDecorator(errorProcessor)
         );
 
-        return new SmartWalletSDK(smartWalletService, errorProcessor);
+        return new WalletSDK(smartWalletService, errorProcessor);
     }
 
     /**
@@ -64,13 +64,13 @@ export class SmartWalletSDK {
      *
      * Example using the default passkey signer:
      * ```ts
-     * const wallet = await smartWalletSDK.getOrCreateWallet({ jwt: "xxx" }, "base");
+     * const wallet = await walletSDK.getOrCreateWallet({ jwt: "xxx" }, "base");
      * ```
      */
     async getOrCreateWallet(
         user: UserParams,
         chain: SmartWalletChain,
-        walletParams: WalletParams = { signer: { type: "PASSKEY" } }
+        walletParams: WalletParams = { type: "evm-smart-wallet", signer: { type: "PASSKEY" } }
     ): Promise<EVMSmartWallet> {
         return this.logger.logPerformance("GET_OR_CREATE_WALLET", async () => {
             try {

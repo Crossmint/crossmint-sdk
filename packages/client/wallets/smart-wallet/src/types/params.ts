@@ -1,6 +1,6 @@
 import type { EIP1193Provider, LocalAccount } from "viem";
 
-export type SmartWalletSDKInitParams = {
+export type WalletSDKInitParams = {
     clientApiKey: string;
 };
 
@@ -26,5 +26,6 @@ export type PasskeySigner = {
 
 export type EOASigner = EIP1193Provider | ViemAccount;
 export interface WalletParams {
+    type: "evm-smart-wallet";
     signer: EOASigner | PasskeySigner;
 }

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { SmartWalletSDK } from "./SmartWalletSDK";
+import { WalletSDK } from "./WalletSDK";
 
 vi.mock("./services/logging");
 
@@ -12,12 +12,12 @@ vi.stubGlobal("window", {
 });
 
 describe("SmartWalletSDK", () => {
-    let sdk: SmartWalletSDK;
+    let sdk: WalletSDK;
 
     beforeEach(() => {
         // Reset mocks before each test
         vi.clearAllMocks();
-        sdk = SmartWalletSDK.init({
+        sdk = WalletSDK.init({
             clientApiKey:
                 "sk_staging_A4vDwAp4t5az6fVQMpQK6qapBnAqgpxrrD35TaFQnyKgxehNbd959uZeaHjNCadWDXrgLRAK1CxeasZjtYEq4TbFkKMBBvbQ9oinAxQf8LbHsSYW2DMzT8fBko3YGLq9t7ZiXZjmgkTioxGVUUjyLtWLeBKwNUDLgpshWjaoR7pKRnSE9SqhwjQbiK62VKiBTdA3KvHsyG9k8mLMcKrDyfXp",
         });
@@ -25,7 +25,7 @@ describe("SmartWalletSDK", () => {
 
     describe("init", () => {
         it("should initialize the SDK correctly", () => {
-            expect(sdk).toBeInstanceOf(SmartWalletSDK);
+            expect(sdk).toBeInstanceOf(WalletSDK);
         });
     });
 });
