@@ -1,16 +1,16 @@
-import { SmartAccountClient } from "permissionless";
-import { EntryPoint } from "permissionless/_types/types";
-import { SmartAccount } from "permissionless/accounts";
+import type { SmartAccountClient } from "permissionless";
+import type { EntryPoint } from "permissionless/_types/types";
+import type { SmartAccount } from "permissionless/accounts";
 import {
-    Abi,
-    Address,
+    type Abi,
+    type Address,
     BaseError,
-    Chain,
+    type Chain,
     ContractFunctionRevertedError,
-    Hex,
-    PublicClient,
-    TransactionReceipt,
-    Transport,
+    type Hex,
+    type PublicClient,
+    type TransactionReceipt,
+    type Transport,
 } from "viem";
 
 import { CrossmintSDKError, WalletErrorCode } from "@crossmint/client-sdk-base";
@@ -77,9 +77,14 @@ export class EVMSendTransactionExecutionRevertedError extends EVMSendTransaction
 }
 
 export interface SendTransactionOptions {
+    /**
+     * The number of confirmations to wait for before yielding the transaction hash.
+     */
     confirmations: number;
+    /**
+     * The timeout in milliseconds to wait for a transaction to confirm before throwing an error.
+     */
     transactionConfirmationTimeout: number;
-    awaitConfirmation?: boolean;
 }
 
 export class SendTransactionService {
@@ -88,7 +93,6 @@ export class SendTransactionService {
         private defaultSendTransactionOptions: SendTransactionOptions = {
             confirmations: 2,
             transactionConfirmationTimeout: 30_000,
-            awaitConfirmation: true,
         }
     ) {}
 
@@ -97,7 +101,7 @@ export class SendTransactionService {
         client: SmartAccountClient<EntryPoint, Transport, Chain, SmartAccount<EntryPoint>>,
         config: Partial<SendTransactionOptions> = {}
     ): Promise<Hex> {
-        const { confirmations, transactionConfirmationTimeout, awaitConfirmation } = this.getConfig(config);
+        const { confirmations, transactionConfirmationTimeout } = this.getConfig(config);
 
         // Simulate
         await this.simulateCall(request, undefined, "simulation");
@@ -119,16 +123,12 @@ export class SendTransactionService {
 
         // Confirm
         try {
-            if (awaitConfirmation) {
-                const receipt = await this.publicClient.waitForTransactionReceipt({
-                    hash,
-                    confirmations,
-                    timeout: transactionConfirmationTimeout,
-                });
-                return await this.handleReceipt(receipt, request);
-            } else {
-                return hash;
-            }
+            const receipt = await this.publicClient.waitForTransactionReceipt({
+                hash,
+                confirmations,
+                timeout: transactionConfirmationTimeout,
+            });
+            return await this.handleReceipt(receipt, request);
         } catch (e) {
             if (e instanceof BaseError) {
                 throw new EVMSendTransactionError(e.message, e, "confirmation");

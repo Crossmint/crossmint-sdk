@@ -18,7 +18,7 @@ import { SmartWalletClient } from "../../types/internal";
 import type { TransferType } from "../../types/token";
 import { SmartWalletChain } from "../chains";
 import { transferParams } from "../transfer";
-import { SendTransactionService } from "./SendTransactionService";
+import { SendTransactionOptions, SendTransactionService } from "./SendTransactionService";
 
 /**
  * Smart wallet interface for EVM chains enhanced with Crossmint capabilities.
@@ -174,7 +174,10 @@ export class EVMSmartWallet {
         functionName,
         args,
         value,
-    }: Omit<WriteContractParameters<TAbi, TFunctionName, TArgs>, "chain" | "account">): Promise<Hex> {
+        config,
+    }: Omit<WriteContractParameters<TAbi, TFunctionName, TArgs>, "chain" | "account"> & {
+        config: SendTransactionOptions;
+    }): Promise<Hex> {
         return this.sendTransactionService.sendTransaction(
             {
                 address,
@@ -183,7 +186,8 @@ export class EVMSmartWallet {
                 args,
                 value,
             },
-            this.accountClient
+            this.accountClient,
+            config
         );
     }
 }

@@ -74,7 +74,7 @@ describe("SendTransactionService", () => {
         ).rejects.toThrow(EVMSendTransactionExecutionRevertedError);
     });
 
-    it("Throws EVMSendTransactionConfirmationError when a transaction confirmation fails", async () => {
+    it("Throws a confirmation error when a transaction confirmation fails", async () => {
         const mockError = makeMockError(BaseError.prototype);
         mockPublicClient.waitForTransactionReceipt.mockRejectedValue(mockError);
         let rejected = false;
@@ -86,8 +86,7 @@ describe("SendTransactionService", () => {
                     functionName: "mockFunction",
                     args: [],
                 },
-                mockAccountClient,
-                { awaitConfirmation: true }
+                mockAccountClient
             );
         } catch (e) {
             rejected = true;
@@ -137,26 +136,5 @@ describe("SendTransactionService", () => {
             )
         ).resolves.toBeDefined();
         expect(callOrder).toEqual(["simulateContract", "sendTransaction"]);
-    });
-
-    it("Only waits for confirmation if awaitConfirmation is true", async () => {
-        mockAccountClient.writeContract.mockResolvedValue("0xmockTxHash");
-        const sendTransactionService = new SendTransactionService(mockPublicClient, {
-            awaitConfirmation: false,
-            confirmations: 1,
-            transactionConfirmationTimeout: 10_000,
-        });
-        await expect(
-            sendTransactionService.sendTransaction(
-                {
-                    address: zeroAddress,
-                    abi: [],
-                    functionName: "mockFunction",
-                    args: [],
-                },
-                mockAccountClient
-            )
-        ).resolves.toBeDefined();
-        expect(mockPublicClient.waitForTransactionReceipt).not.toHaveBeenCalled();
     });
 });
