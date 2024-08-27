@@ -49,8 +49,8 @@
             "path": "packages/client/verifiable-credentials"
         },
         {
-            "name": "🔒 @crossmint/client-sdk-smart-wallet",
-            "path": "packages/client/wallets/smart-wallet"
+            "name": "🔒 @crossmint/client-sdk-wallet",
+            "path": "packages/client/wallets/core"
         },
         {
             "name": "🏁 Apps",
