@@ -5,12 +5,13 @@ import { AuthProvider as AuthCoreProvider } from "@crossmint/client-sdk-auth-cor
 
 import { CrossmintWalletConfig, CrossmintWalletProvider } from "./CrossmintWalletProvider";
 
-type CrossmintWalletProviderParams = {
+export function CrossmintAuthProvider({
+    embeddedWallets,
+    children,
+}: {
     embeddedWallets: CrossmintWalletConfig;
     children: ReactNode;
-};
-
-export function CrossmintAuthProvider({ embeddedWallets, children }: CrossmintWalletProviderParams) {
+}) {
     const { crossmint, setJwt } = useCrossmint("CrossmintAuthProvider must be used within CrossmintProvider");
 
     return (
