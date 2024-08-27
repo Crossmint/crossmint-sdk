@@ -44,7 +44,7 @@
     <a href="#usage">Usage</a>
     <ul>
         <li><a href="#adding-the-provider">Adding the Provider</a></li>
-        <li><a href="#implementing-the-useauth-hook">Implementing the useAuth hook</a></li>
+        <li><a href="#hooks">Hooks</a></li>
       </ul>
       </li>
   </ol>
@@ -124,7 +124,6 @@ export default function App({ Component, pageProps }) {
     return (
         <CrossmintAuthProvider
             apiKey="YOUR_CROSSMINT_API_KEY"
-            environment="staging" // or "production"
             embeddedWallets={{
                 createOnLogin: "all-users",
                 defaultChain: "polygon-amoy",
@@ -137,15 +136,16 @@ export default function App({ Component, pageProps }) {
 }
 ```
 
-### Implementing the useAuth hook
+### Hooks
 
-Next, add the useAuth hook in your component to access the JWT, wallet state, and login/logout functions.
+Next, add the `useAuth` and `useWallet` hooks in your component to access authentication and wallet functionality.
 
 ```tsx
-import { useAuth } from "@crossmint/client-sdk-react-ui";
+import { useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
 
 export default function Home() {
-    const { jwt, wallet, login, logout } = useAuth();
+    const { login, logout, jwt } = useAuth();
+		const { wallet } = useWallet();
 
     return <div>{jwt ? <button onClick={logout}>Log out</button> : <button onClick={login}>Log in</button>}</div>;
 }

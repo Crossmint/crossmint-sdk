@@ -1,15 +1,15 @@
 "use client";
 
-import { useAuth } from "@crossmint/client-sdk-react-ui";
+import { useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
 
 import { Button } from "./button";
 import { Typography } from "./typography";
 
 export const SignInAuthButton = () => {
-    const { jwt, wallet, login } = useAuth();
-    const isLoadingWallet = jwt && !wallet;
+    const { login } = useAuth();
+    const { status: walletStatus } = useWallet();
 
-    if (isLoadingWallet) {
+    if (walletStatus === "in-progress") {
         return (
             <div className="flex gap-2 items-center self-center min-h-[52px]" role="status">
                 <svg

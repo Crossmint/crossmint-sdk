@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/tabs";
 import { Typography } from "@/components/typography";
 import { useQuery } from "@tanstack/react-query";
 
-import { useAuth } from "@crossmint/client-sdk-react-ui";
+import { useWallet } from "@crossmint/client-sdk-react-ui";
 
 type NFT = {
     chain: string;
@@ -61,19 +61,18 @@ const SkeletonLoader = () => {
 };
 
 export default function Index() {
-    const { jwt, wallet } = useAuth();
-    const isLoadingWallet = jwt && !wallet;
+    const { wallet, status: walletStatus } = useWallet();
 
-    const { data, isLoading } = useQuery({
+    const { data, isLoading: isLoadingNFTs } = useQuery({
         queryKey: ["smart-wallet"],
-        queryFn: async () => ((await wallet?.nfts()) ?? []) as NFT[],
+        queryFn: async () => (wallet != null ? await wallet.nfts() : []) as NFT[],
         refetchOnWindowFocus: false,
         refetchOnMount: false,
         staleTime: 1000 * 60 * 5, // 5 minutes
         enabled: wallet != null,
     });
 
-    if (isLoading || isLoadingWallet) {
+    if (walletStatus === "in-progress" || isLoadingNFTs) {
         return <SkeletonLoader />;
     }
 
