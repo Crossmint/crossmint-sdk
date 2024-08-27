@@ -176,7 +176,7 @@ export class EVMSmartWallet {
         value,
         config,
     }: Omit<WriteContractParameters<TAbi, TFunctionName, TArgs>, "chain" | "account"> & {
-        config: SendTransactionOptions;
+        config?: Partial<SendTransactionOptions>;
     }): Promise<Hex> {
         return this.sendTransactionService.sendTransaction(
             {

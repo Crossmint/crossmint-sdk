@@ -43,9 +43,7 @@ export class EVMSendTransactionError extends CrossmintSDKError {
 /**
  * Error thrown when a transaction fails due to a contract execution error.
  * @param viemError The error thrown by the viem client. See https://viem.sh/docs/glossary/errors.html
- * @param data Arguments and data associated with the revert error.
- * @param reason Decoded revert reason
- * @param signature The signature of the revert error
+ * @param data The name and arguments of the revert error from the provided ABI
  * @example
  * try {
  *   await wallet.sendTransaction({
@@ -68,9 +66,7 @@ export class EVMSendTransactionExecutionRevertedError extends EVMSendTransaction
         revertError: ContractFunctionRevertedError,
         public readonly txId: string | undefined,
         public readonly stage: SendTransactionFailureStage,
-        public readonly data = revertError.data,
-        public readonly reason = revertError.reason,
-        public readonly signature = revertError.signature
+        public readonly data = revertError.data
     ) {
         super(message, viemError, stage, WalletErrorCode.SEND_TRANSACTION_EXECUTION_REVERTED);
     }
