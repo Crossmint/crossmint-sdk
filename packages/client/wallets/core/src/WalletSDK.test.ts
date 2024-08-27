@@ -11,7 +11,7 @@ vi.stubGlobal("window", {
     },
 });
 
-describe("SmartWalletSDK", () => {
+describe("WalletSDK", () => {
     let sdk: WalletSDK;
 
     beforeEach(() => {
