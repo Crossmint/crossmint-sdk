@@ -13,7 +13,7 @@ export interface CrossmintServiceWithToken extends CrossmintServiceBase {
 }
 
 export interface CrossmintServiceWithoutToken extends CrossmintServiceBase {
-    jwtToken: string | null;
+    jwtToken: string | undefined;
 }
 
 class CrossmintService implements CrossmintServiceBase {
@@ -24,7 +24,7 @@ class CrossmintService implements CrossmintServiceBase {
         production: CROSSMINT_PROD_URL,
     };
 
-    constructor(public apiKey: string, public jwtToken: string | null) {
+    constructor(public apiKey: string, public jwtToken: string | undefined) {
         this.crossmintAPIHeaders = {
             accept: "application/json",
             "content-type": "application/json",
@@ -52,9 +52,9 @@ class CrossmintService implements CrossmintServiceBase {
 
 export class CrossmintServiceFactory {
     static create(apiKey: string, jwtToken: string): CrossmintServiceWithToken;
-    static create(apiKey: string, jwtToken: null): CrossmintServiceWithoutToken;
-    static create(apiKey: string, jwtToken: string | null): CrossmintServiceWithoutToken;
-    static create(apiKey: string, jwtToken: string | null): CrossmintServiceWithoutToken {
+    static create(apiKey: string, jwtToken: undefined): CrossmintServiceWithoutToken;
+    static create(apiKey: string, jwtToken: string | undefined): CrossmintServiceWithoutToken;
+    static create(apiKey: string, jwtToken: string | undefined): CrossmintServiceWithoutToken {
         if (jwtToken == null) {
             return new CrossmintService(apiKey, jwtToken) as CrossmintServiceWithoutToken;
         }

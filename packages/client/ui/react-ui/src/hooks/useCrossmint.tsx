@@ -1,5 +1,6 @@
 import { ReactNode, createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 
+import { getCachedJwt } from "@crossmint/client-sdk-auth-core/client";
 import { Crossmint, createCrossmint } from "@crossmint/common-sdk-base";
 
 export interface CrossmintContext {
@@ -16,14 +17,17 @@ export function CrossmintProvider({
     const [version, setVersion] = useState(0);
 
     const crossmintRef = useRef<Crossmint>(
-        new Proxy<Crossmint>(createCrossmint(createCrossmintParams), {
-            set(target, prop, value) {
-                if (prop === "jwt" && target.jwt !== value) {
-                    setVersion((v) => v + 1);
-                }
-                return Reflect.set(target, prop, value);
-            },
-        })
+        new Proxy<Crossmint>(
+            createCrossmint({ ...createCrossmintParams, jwt: createCrossmintParams.jwt ?? getCachedJwt() }),
+            {
+                set(target, prop, value) {
+                    if (prop === "jwt" && target.jwt !== value) {
+                        setVersion((v) => v + 1);
+                    }
+                    return Reflect.set(target, prop, value);
+                },
+            }
+        )
     );
 
     const setJwt = useCallback((jwt: string | undefined) => {
@@ -45,10 +49,10 @@ export function CrossmintProvider({
     return <CrossmintContext.Provider value={value}>{children}</CrossmintContext.Provider>;
 }
 
-export function useCrossmint() {
+export function useCrossmint(missingContextMessage?: string) {
     const context = useContext(CrossmintContext);
     if (context == null) {
-        throw new Error("useCrossmint must be used within a CrossmintProvider");
+        throw new Error(missingContextMessage ?? "useCrossmint must be used within a CrossmintProvider");
     }
     return context;
 }
