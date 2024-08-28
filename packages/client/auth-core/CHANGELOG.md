@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-auth-core
 
+## 1.1.4
+
+### Patch Changes
+
+-   ab9f579: export method to grab jwt
+
 ## 1.1.3
 
 ### Patch Changes

@@ -1,6 +1,5 @@
 {
     "name": "@crossmint/wallet-react-playground",
-    "version": "0.1.0",
     "private": true,
     "scripts": {
         "build": "react-app-rewired build",

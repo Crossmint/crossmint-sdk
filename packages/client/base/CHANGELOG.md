@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-base
 
+## 1.2.4
+
+### Patch Changes
+
+-   f8f0c66: Add wallet error codes
+
 ## 1.2.3
 
 ### Patch Changes
