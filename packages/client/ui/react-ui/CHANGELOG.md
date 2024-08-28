@@ -1,5 +1,20 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.3.10
+
+### Patch Changes
+
+-   Updated dependencies [ab9f579]
+    -   @crossmint/client-sdk-auth-core@1.1.4
+
+## 1.3.9
+
+### Patch Changes
+
+-   171924e: Add CrossmintWalletProvider and improve speed
+-   Updated dependencies [171924e]
+    -   @crossmint/client-sdk-smart-wallet@0.1.9
+
 ## 1.3.8
 
 ### Patch Changes
