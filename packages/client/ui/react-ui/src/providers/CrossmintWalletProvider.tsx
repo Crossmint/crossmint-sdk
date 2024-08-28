@@ -27,7 +27,7 @@ function deriveErrorState(error: unknown): { status: "loading-error"; error: Sma
 }
 
 function shouldGetOrCreateWallet(status: WalletStatus, jwt: string | undefined): jwt is string {
-    return jwt != null && !(status === "in-progress" || status === "loaded");
+    return jwt != null && status === "not-loaded";
 }
 
 type WalletContext = {
