@@ -75,7 +75,7 @@ export function CrossmintWalletProvider({ children, config }: { config: Crossmin
         }
 
         if (!(state.status === "not-loaded" || state.status === "loading-error")) {
-            console.log("Wallet is already loaded, or is currently loading, not creating wallet.");
+            console.log("Wallet is already loaded, or is currently loading.");
             return;
         }
 
