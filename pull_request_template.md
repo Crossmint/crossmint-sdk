@@ -11,3 +11,9 @@
    * V was tested via UI tests
    * W was tested manually
 -->
+
+## Package updates
+
+<!-- 
+  List any package updates and ensure you've added the necessary changesets, running `pnpm change:add` to do so.
+-->
