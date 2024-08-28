@@ -26,10 +26,6 @@ function deriveErrorState(error: unknown): { status: "loading-error"; error: Sma
     return { status: "loading-error", error: new SmartWalletError(`Unknown Wallet Error: ${message}`, stack) };
 }
 
-function shouldGetOrCreateWallet(status: WalletStatus, jwt: string | undefined): jwt is string {
-    return jwt != null && status === "not-loaded";
-}
-
 type WalletContext = {
     status: WalletStatus;
     wallet?: EVMSmartWallet;
@@ -47,14 +43,10 @@ export function CrossmintWalletProvider({ children, config }: { config: Crossmin
     const [state, setState] = useState<ValidWalletState>({ status: "not-loaded" });
     const smartWalletSDK = useMemo(() => SmartWalletSDK.init({ clientApiKey: crossmint.apiKey }), [crossmint.apiKey]);
 
-    const getOrCreateWallet = async () => {
-        if (!shouldGetOrCreateWallet(state.status, crossmint.jwt)) {
-            return;
-        }
-
+    const getOrCreateWalletInternal = async (jwt: string) => {
         try {
             setState({ status: "in-progress" });
-            const wallet = await smartWalletSDK.getOrCreateWallet({ jwt: crossmint.jwt }, config.defaultChain);
+            const wallet = await smartWalletSDK.getOrCreateWallet({ jwt }, config.defaultChain);
             setState({ status: "loaded", wallet });
         } catch (error: unknown) {
             console.error("There was an error creating a wallet ", error);
@@ -63,9 +55,9 @@ export function CrossmintWalletProvider({ children, config }: { config: Crossmin
     };
 
     useEffect(() => {
-        if (config.createOnLogin === "all-users" && shouldGetOrCreateWallet(state.status, crossmint.jwt)) {
+        if (config.createOnLogin === "all-users" && crossmint.jwt != null && state.status === "not-loaded") {
             console.log("Getting or Creating wallet");
-            getOrCreateWallet();
+            getOrCreateWalletInternal(crossmint.jwt);
             return;
         }
 
@@ -75,6 +67,20 @@ export function CrossmintWalletProvider({ children, config }: { config: Crossmin
             return;
         }
     }, [crossmint.jwt, config.createOnLogin, state.status]);
+
+    const getOrCreateWallet = async () => {
+        if (crossmint.jwt == null) {
+            console.log("No authenticated user, not creating wallet.");
+            return;
+        }
+
+        if (!(state.status === "not-loaded" || state.status === "loading-error")) {
+            console.log("Wallet is already loaded, or is currently loading, not creating wallet.");
+            return;
+        }
+
+        return getOrCreateWalletInternal(crossmint.jwt);
+    };
 
     return <WalletContext.Provider value={{ ...state, getOrCreateWallet }}>{children}</WalletContext.Provider>;
 }
