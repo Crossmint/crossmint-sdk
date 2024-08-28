@@ -68,7 +68,7 @@ export function CrossmintWalletProvider({ children, config }: { config: Crossmin
         }
     }, [crossmint.jwt, config.createOnLogin, state.status]);
 
-    const getOrCreateWallet = async () => {
+    const getOrCreateWalletExternal = async () => {
         if (crossmint.jwt == null) {
             console.log("No authenticated user, not creating wallet.");
             return;
@@ -82,5 +82,9 @@ export function CrossmintWalletProvider({ children, config }: { config: Crossmin
         return getOrCreateWalletInternal(crossmint.jwt);
     };
 
-    return <WalletContext.Provider value={{ ...state, getOrCreateWallet }}>{children}</WalletContext.Provider>;
+    return (
+        <WalletContext.Provider value={{ ...state, getOrCreateWallet: getOrCreateWalletExternal }}>
+            {children}
+        </WalletContext.Provider>
+    );
 }
