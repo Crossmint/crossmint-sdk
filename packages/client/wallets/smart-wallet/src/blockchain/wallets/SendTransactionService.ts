@@ -55,7 +55,7 @@ export class EVMSendTransactionError extends CrossmintSDKError {
  *   });
  * } catch (e) {
  *   if (e instanceof SendTransactionExecutionRevertedError) {
- *     alert(`Transaction reverted: ${e.revertError.message}`);
+ *     alert(`Transaction reverted: ${e.message}`);
  *   }
  *   throw e;
  * }
