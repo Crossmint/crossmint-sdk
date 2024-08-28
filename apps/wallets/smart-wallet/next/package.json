@@ -1,6 +1,6 @@
 {
-    "name": "@crossmint/smart-wallet-next-starter",
-    "version": "0.1.4",
+    "name": "@crossmint/smart-wallet-auth-demo",
+    "version": "0.1.0",
     "private": true,
     "scripts": {
         "build": "next build",
