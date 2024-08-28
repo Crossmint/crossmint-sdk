@@ -48,9 +48,10 @@ export default function CrossmintEmbeddedCheckoutIFrame({
 
     return (
         <iframe
+            title="crossmint-auth.iframe"
             src={url}
-            id="crossmint-embedded-checkout.iframe"
-            role="crossmint-embedded-checkout.iframe"
+            id="crossmint-auth.iframe"
+            role="contentinfo"
             allow="payment *"
             style={{
                 boxShadow: "none",
