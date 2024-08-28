@@ -42,6 +42,9 @@ describe("SendTransactionService", () => {
             functionName: "mockFunction",
             message: "mockMessage",
         });
+        mockRevertError.reason = "mockReason";
+        const mockRevertData = mock<ContractFunctionRevertedError["data"]>();
+        mockRevertError.data = mockRevertData;
         mockError.walk.mockReturnValue(mockRevertError);
         mockPublicClient.simulateContract.mockRejectedValue(mockError);
         let rejected = false;
@@ -59,6 +62,8 @@ describe("SendTransactionService", () => {
             rejected = true;
             expect(e).toBeInstanceOf(EVMSendTransactionExecutionRevertedError);
             expect((e as EVMSendTransactionExecutionRevertedError).stage).toBe("simulation");
+            expect((e as EVMSendTransactionExecutionRevertedError).reason).toBe("mockReason");
+            expect((e as EVMSendTransactionExecutionRevertedError).data == mockRevertData).toBe(true);
         }
         expect(rejected).toBe(true);
     });

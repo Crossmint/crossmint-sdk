@@ -47,7 +47,7 @@ export class EVMSendTransactionError extends CrossmintSDKError {
  * @param reason The revert error if it is a string and not an ABI error
  * @example
  * try {
- *   await wallet.sendTransaction({
+ *   await wallet.executeContract({
  *     address: contractAddress,
  *     abi,
  *     functionName: "mintNFT",
@@ -55,7 +55,7 @@ export class EVMSendTransactionError extends CrossmintSDKError {
  *   });
  * } catch (e) {
  *   if (e instanceof SendTransactionExecutionRevertedError) {
- *     alert(`Transaction reverted: ${e.revertError.reason}`);
+ *     alert(`Transaction reverted: ${e.revertError.message}`);
  *   }
  *   throw e;
  * }

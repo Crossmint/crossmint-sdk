@@ -150,14 +150,14 @@ export class EVMSmartWallet {
      *   "type": "function"
      * }] as const;
      *
-     * await wallet.callContract({
+     * await wallet.executeContract({
      *   address: contractAddress,
      *   abi,
      *   functionName: "mintNFT",
      *   args: [recipientAddress],
      * });
      */
-    public async callContract<
+    public async executeContract<
         const TAbi extends Abi | readonly unknown[],
         TFunctionName extends ContractFunctionName<TAbi, "nonpayable" | "payable"> = ContractFunctionName<
             TAbi,
