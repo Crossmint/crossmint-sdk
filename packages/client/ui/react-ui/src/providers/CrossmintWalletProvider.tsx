@@ -1,7 +1,7 @@
 import { useCrossmint } from "@/hooks";
 import { ReactNode, createContext, useEffect, useMemo, useState } from "react";
 
-import { EVMSmartWallet, SmartWalletError, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
+import { EVMSmartWallet, SmartWalletError, WalletSDK } from "@crossmint/client-sdk-wallet";
 
 export type CrossmintWalletConfig = {
     type: "evm-smart-wallet";
@@ -45,7 +45,7 @@ export const WalletContext = createContext<WalletContext>({
 export function CrossmintWalletProvider({ children, config }: { config: CrossmintWalletConfig; children: ReactNode }) {
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
     const [state, setState] = useState<ValidWalletState>({ status: "not-loaded" });
-    const smartWalletSDK = useMemo(() => SmartWalletSDK.init({ clientApiKey: crossmint.apiKey }), [crossmint.apiKey]);
+    const walletSDK = useMemo(() => WalletSDK.init({ clientApiKey: crossmint.apiKey }), [crossmint.apiKey]);
 
     const getOrCreateWallet = async () => {
         if (!shouldGetOrCreateWallet(state.status, crossmint.jwt)) {
@@ -54,7 +54,7 @@ export function CrossmintWalletProvider({ children, config }: { config: Crossmin
 
         try {
             setState({ status: "in-progress" });
-            const wallet = await smartWalletSDK.getOrCreateWallet({ jwt: crossmint.jwt }, config.defaultChain);
+            const wallet = await walletSDK.getOrCreateWallet({ jwt: crossmint.jwt }, config.defaultChain);
             setState({ status: "loaded", wallet });
         } catch (error: unknown) {
             console.error("There was an error creating a wallet ", error);

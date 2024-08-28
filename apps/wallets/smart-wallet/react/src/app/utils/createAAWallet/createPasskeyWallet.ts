@@ -1,4 +1,4 @@
-import { Chain, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
+import { Chain, WalletSDK } from "@crossmint/client-sdk-wallet";
 
 import { checkAuthState, signInWithGoogle } from "../../auth/FirebaseAuthManager";
 
@@ -14,10 +14,10 @@ export async function createPasskeyWallet(isProd: boolean) {
     }
 
     const xm = isProd
-        ? SmartWalletSDK.init({
+        ? WalletSDK.init({
               clientApiKey: process.env.REACT_APP_CROSSMINT_API_KEY_PROD || "",
           })
-        : SmartWalletSDK.init({
+        : WalletSDK.init({
               clientApiKey: process.env.REACT_APP_CROSSMINT_API_KEY_STG || "",
           });
 

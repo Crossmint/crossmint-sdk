@@ -1,6 +1,5 @@
-import { SmartWalletSDK, WalletParams } from "@crossmint/client-sdk-smart-wallet";
-import { Chain } from "@crossmint/client-sdk-smart-wallet";
 import { TORUS_NETWORK_TYPE, getWeb3AuthSigner } from "@crossmint/client-sdk-smart-wallet-web3auth-adapter";
+import { Chain, WalletParams, WalletSDK } from "@crossmint/client-sdk-wallet";
 
 import { checkAuthState, signInWithGoogle } from "../../auth/FirebaseAuthManager";
 
@@ -16,10 +15,10 @@ export const createW3AAAWallet = async (isProd: boolean) => {
     }
 
     const xm = isProd
-        ? SmartWalletSDK.init({
+        ? WalletSDK.init({
               clientApiKey: process.env.REACT_APP_CROSSMINT_API_KEY_PROD || "",
           })
-        : SmartWalletSDK.init({
+        : WalletSDK.init({
               clientApiKey: process.env.REACT_APP_CROSSMINT_API_KEY_STG || "",
           });
     const chain = isProd ? Chain.POLYGON : Chain.POLYGON_AMOY;
@@ -38,6 +37,7 @@ export const createW3AAAWallet = async (isProd: boolean) => {
             jwt,
             chain,
         }),
+        type: "evm-smart-wallet",
     };
 
     return await xm.getOrCreateWallet({ jwt }, chain, walletConfig as WalletParams);

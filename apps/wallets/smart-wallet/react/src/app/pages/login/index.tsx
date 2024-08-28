@@ -2,7 +2,7 @@ import { useContext, useState } from "react";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
-import { EVMSmartWallet } from "@crossmint/client-sdk-smart-wallet";
+import { EVMSmartWallet } from "@crossmint/client-sdk-wallet";
 
 import { AppContext } from "../../AppContext";
 import { ReactComponent as BoltIcon } from "../../assets/icons/bolt_icon.svg";

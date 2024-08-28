@@ -1,5 +1,5 @@
 {
-    "name": "@crossmint/client-sdk-smart-wallet-react-starter",
+    "name": "@crossmint/wallet-react-playground",
     "version": "1.5.7",
     "private": true,
     "scripts": {
@@ -35,7 +35,7 @@
         }
     },
     "dependencies": {
-        "@crossmint/client-sdk-smart-wallet": "workspace:*",
+        "@crossmint/client-sdk-wallet": "workspace:*",
         "@crossmint/client-sdk-smart-wallet-web3auth-adapter": "workspace:*",
         "@emotion/react": "^11.11.1",
         "@emotion/styled": "^11.11.0",

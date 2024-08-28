@@ -1,4 +1,4 @@
-import { Chain } from "@crossmint/client-sdk-smart-wallet";
+import { Chain } from "@crossmint/client-sdk-wallet";
 
 type GetContractAddressFunction = (chain: Chain) => `0x${string}`;
 

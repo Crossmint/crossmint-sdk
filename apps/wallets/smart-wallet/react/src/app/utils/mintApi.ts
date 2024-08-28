@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import { encodeFunctionData } from "viem";
 
-import type { Chain, EVMSmartWallet } from "@crossmint/client-sdk-smart-wallet";
+import type { Chain, EVMSmartWallet } from "@crossmint/client-sdk-wallet";
 
 import contractAbi from "./MintBurnABI.json";
 import contractERC20abi from "./erc20tokenSell.json";
