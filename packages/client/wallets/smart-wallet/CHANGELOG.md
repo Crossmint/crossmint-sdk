@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-smart-wallet
 
+## 0.1.9
+
+### Patch Changes
+
+-   171924e: Add CrossmintWalletProvider and improve speed
+
 ## 0.1.8
 
 ### Patch Changes
