@@ -1,8 +1,8 @@
-import { AuthModalAppearance } from "@/utils";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 
 import { IFrameWindow } from "@crossmint/client-sdk-window";
+import { UIConfig } from "@crossmint/common-sdk-base";
 
 import ActionModal from "./ActionModal";
 
@@ -37,7 +37,7 @@ export default function AuthModal({
     setJwtToken: (jwtToken: string) => void;
     apiKey: string;
     baseUrl: string;
-    appearance?: AuthModalAppearance;
+    appearance?: UIConfig;
 }) {
     let iframeSrc = `${baseUrl}/sdk/auth/frame?apiKey=${apiKey}`;
     if (appearance) {
@@ -98,7 +98,7 @@ export default function AuthModal({
     return (
         <ActionModal show={true} onClose={() => setModalOpen(false)}>
             <div style={{ position: "relative", width: "100%" }}>
-                <CloseIconButton onClick={() => setModalOpen(false)} customColor={appearance?.colors?.borderPrimary} />
+                <CloseIconButton onClick={() => setModalOpen(false)} customColor={appearance?.colors?.border} />
             </div>
             <iframe
                 ref={iframeRef}
@@ -107,11 +107,11 @@ export default function AuthModal({
                 title="Authentication Modal"
                 style={{
                     width: "448px",
-                    height: "475px",
-                    border: `1px solid ${appearance?.colors?.borderPrimary ?? "#D0D5DD"}`,
+                    height: "500px",
+                    border: `1px solid ${appearance?.colors?.border ?? "#D0D5DD"}`,
                     borderRadius: appearance?.borderRadius ?? "16px",
                     padding: "48px 40px 32px",
-                    backgroundColor: appearance?.colors?.backgroundPrimary ?? "#FFFFFF",
+                    backgroundColor: appearance?.colors?.background ?? "#FFFFFF",
                     animation: "fadeIn 3s ease-in-out",
                 }}
             />
