@@ -1,4 +1,4 @@
-import { Nft, isVcChain } from "@/verifiableCredentialsSDK";
+import { NftWithMetadata, isVcChain } from "@/verifiableCredentialsSDK";
 
 import { crossmintAPI } from "../crossmintAPI";
 import { CrossmintWalletNft } from "../types/nfts";
@@ -62,21 +62,22 @@ export async function getWalletVCNfts(chain: string, wallet: string): Promise<Cr
     return allData;
 }
 
-export function filterVCCompErc721(nfts: CrossmintWalletNft[]): Nft[] {
-    const vcNfts: Nft[] = [];
+export function filterVCCompErc721(nfts: CrossmintWalletNft[]): NftWithMetadata[] {
+    const vcNfts: NftWithMetadata[] = [];
     for (const nft of nfts) {
         if (isVcChain(nft.chain) && nft.tokenStandard === "erc-721") {
             vcNfts.push({
                 chain: nft.chain,
                 contractAddress: nft.contractAddress,
                 tokenId: nft.tokenId,
+                metadata: nft.metadata,
             });
         }
     }
     return vcNfts;
 }
 
-export async function getWalletVcCompatibleNfts(chain: string, wallet: string): Promise<Nft[]> {
+export async function getWalletVcCompatibleNfts(chain: string, wallet: string): Promise<NftWithMetadata[]> {
     const nfts = await getWalletVCNfts(chain, wallet);
     if (nfts == null) {
         throw new Error("Failed to get nfts");
