@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-verifiable-credentials
 
+## 3.4.4
+
+### Patch Changes
+
+-   5de8049: Added metadata
+
 ## 3.4.3
 
 ### Patch Changes
