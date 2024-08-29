@@ -1,4 +1,14 @@
-import { type HttpTransport, type PublicClient, isAddress, publicActions } from "viem";
+import {
+    Abi,
+    ContractFunctionArgs,
+    ContractFunctionName,
+    Hex,
+    type HttpTransport,
+    type PublicClient,
+    WriteContractParameters,
+    isAddress,
+    publicActions,
+} from "viem";
 
 import { TransferError } from "@crossmint/client-sdk-base";
 
@@ -8,6 +18,7 @@ import { SmartWalletClient } from "../../types/internal";
 import type { TransferType } from "../../types/token";
 import { SmartWalletChain } from "../chains";
 import { transferParams } from "../transfer";
+import { SendTransactionOptions, SendTransactionService } from "./SendTransactionService";
 
 /**
  * Smart wallet interface for EVM chains enhanced with Crossmint capabilities.
@@ -30,6 +41,7 @@ export class EVMSmartWallet {
          */
         public: PublicClient;
     };
+    private readonly sendTransactionService: SendTransactionService;
 
     constructor(
         private readonly crossmintService: CrossmintWalletService,
@@ -43,6 +55,7 @@ export class EVMSmartWallet {
             wallet: accountClient,
             public: publicClient,
         };
+        this.sendTransactionService = new SendTransactionService(publicClient);
     }
 
     /**
@@ -109,5 +122,72 @@ export class EVMSmartWallet {
      */
     public async nfts() {
         return this.crossmintService.fetchNFTs(this.address, this.chain);
+    }
+
+    /**
+     * Sends a contract call transaction and returns the hash of a confirmed transaction.
+     * @param address the address of the contract to be called
+     * @param abi the ABI of the contract - ***should be defined as a typed variable*** to enable type checking of the contract arguments, see https://viem.sh/docs/typescript#type-inference for guidance
+     * @param functionName the name of the smart contract function to be called
+     * @param args the arguments to be passed to the function
+     * @returns The transaction hash.
+     * @throws `SendTransactionError` if the transaction fails to send. Contains the error thrown by the viem client.
+     * @throws `SendTransactionExecutionRevertedError`, a subclass of `SendTransactionError` if the transaction fails due to a contract execution error.
+     *
+     * **Passing a typed ABI:**
+     * @example
+     * const abi = [{
+     *   "inputs": [
+     *     {
+     *       "internalType": "address",
+     *         "name": "recipient",
+     *         "type": "address"
+     *       },
+     *   ],
+     *   "name": "mintNFT",
+     *   "outputs": [],
+     *   "stateMutability": "nonpayable",
+     *   "type": "function"
+     * }] as const;
+     *
+     * await wallet.executeContract({
+     *   address: contractAddress,
+     *   abi,
+     *   functionName: "mintNFT",
+     *   args: [recipientAddress],
+     * });
+     */
+    public async executeContract<
+        const TAbi extends Abi | readonly unknown[],
+        TFunctionName extends ContractFunctionName<TAbi, "nonpayable" | "payable"> = ContractFunctionName<
+            TAbi,
+            "nonpayable" | "payable"
+        >,
+        TArgs extends ContractFunctionArgs<TAbi, "nonpayable" | "payable", TFunctionName> = ContractFunctionArgs<
+            TAbi,
+            "nonpayable" | "payable",
+            TFunctionName
+        >
+    >({
+        address,
+        abi,
+        functionName,
+        args,
+        value,
+        config,
+    }: Omit<WriteContractParameters<TAbi, TFunctionName, TArgs>, "chain" | "account"> & {
+        config?: Partial<SendTransactionOptions>;
+    }): Promise<Hex> {
+        return this.sendTransactionService.sendTransaction(
+            {
+                address,
+                abi: abi as Abi,
+                functionName,
+                args,
+                value,
+            },
+            this.accountClient,
+            config
+        );
     }
 }

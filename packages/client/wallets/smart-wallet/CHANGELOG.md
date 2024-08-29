@@ -1,5 +1,18 @@
 # @crossmint/client-sdk-smart-wallet
 
+## 0.1.11
+
+### Patch Changes
+
+-   Updated dependencies [f8f0c66]
+    -   @crossmint/client-sdk-base@1.2.4
+
+## 0.1.10
+
+### Patch Changes
+
+-   4c5d88b: Added executeContract method to EVMSmartWallet
+
 ## 0.1.9
 
 ### Patch Changes
