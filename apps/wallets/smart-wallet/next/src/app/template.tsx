@@ -42,7 +42,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
                     colors: {
                         inputBackground: "#fffdf9",
                         buttonBackground: "#fffaf2",
-                        border: "#9a9a9a",
+                        border: "#835911",
                         background: "#FAF5EC",
                         textPrimary: "#5f2c1b",
                         textSecondary: "#835911",
