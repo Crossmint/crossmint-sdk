@@ -40,7 +40,7 @@ export default function AuthModal({
     appearance?: UIConfig;
 }) {
     let iframeSrc = `${baseUrl}/sdk/auth/frame?apiKey=${apiKey}`;
-    if (appearance) {
+    if (appearance != null) {
         // The appearance object is serialized into a query parameter
         iframeSrc += `&uiConfig=${encodeURIComponent(JSON.stringify(appearance))}`;
     }
