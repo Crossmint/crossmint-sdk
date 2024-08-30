@@ -1,5 +1,20 @@
 # @crossmint/client-sdk-auth-core
 
+## 1.1.5
+
+### Patch Changes
+
+-   3865983: Add `appearance` prop to improve UI customization:
+
+    -   `@crossmint/common-sdk-base`: Added two fields to `UIConfigColors`: inputBackground and buttonBackground
+    -   `@crossmint/client-sdk-auth-core`: Implement `appearance` prop functionality
+    -   `@crossmint/client-sdk-react-ui`: Integrate `appearance` prop for UI components
+
+    This change allows for better customization of the UI across all packages that depend on these modules.
+
+-   Updated dependencies [3865983]
+    -   @crossmint/common-sdk-base@0.1.3
+
 ## 1.1.4
 
 ### Patch Changes
