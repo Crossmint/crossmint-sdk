@@ -3,20 +3,33 @@ import { ReactNode } from "react";
 
 import { AuthProvider as AuthCoreProvider } from "@crossmint/client-sdk-auth-core/client";
 
-import { CrossmintWalletConfig, CrossmintWalletProvider } from "./CrossmintWalletProvider";
+import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
+
+export type CrossmintAuthWalletConfig = {
+    type: "evm-smart-wallet";
+    defaultChain: "polygon-amoy" | "base-sepolia" | "optimism-sepolia" | "arbitrum-sepolia";
+    createOnLogin: "all-users" | "off";
+};
 
 export function CrossmintAuthProvider({
     embeddedWallets,
     children,
 }: {
-    embeddedWallets: CrossmintWalletConfig;
+    embeddedWallets: CrossmintAuthWalletConfig;
     children: ReactNode;
 }) {
     const { crossmint, setJwt } = useCrossmint("CrossmintAuthProvider must be used within CrossmintProvider");
 
     return (
         <AuthCoreProvider setJwtToken={setJwt} crossmint={crossmint}>
-            <CrossmintWalletProvider config={embeddedWallets}>{children}</CrossmintWalletProvider>
+            <CrossmintWalletProvider
+                walletType="evm-smart-wallet"
+                walletConfig={{ signer: { type: "PASSKEY" } }}
+                defaultChain={embeddedWallets.defaultChain}
+                createOnInit={embeddedWallets.createOnLogin}
+            >
+                {children}
+            </CrossmintWalletProvider>
         </AuthCoreProvider>
     );
 }
