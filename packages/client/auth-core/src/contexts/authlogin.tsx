@@ -4,7 +4,7 @@ import AuthModal from "@/components/AuthModal";
 import { CrossmintServiceFactory } from "@/services/CrossmintService";
 import { type ReactNode, createContext, useContext, useEffect, useMemo, useState } from "react";
 
-import { Crossmint } from "@crossmint/common-sdk-base";
+import { Crossmint, UIConfig } from "@crossmint/common-sdk-base";
 
 const SESSION_PREFIX = "crossmint-session";
 
@@ -32,9 +32,10 @@ export type AuthProviderParams = {
     setJwtToken: (jwtToken: string | undefined) => void;
     crossmint: Crossmint;
     children: ReactNode;
+    appearance?: UIConfig;
 };
 
-export function AuthProvider({ children, crossmint, setJwtToken }: AuthProviderParams) {
+export function AuthProvider({ children, crossmint, setJwtToken, appearance }: AuthProviderParams) {
     const [modalOpen, setModalOpen] = useState(false);
 
     const crossmintService = useMemo(
@@ -86,6 +87,7 @@ export function AuthProvider({ children, crossmint, setJwtToken }: AuthProviderP
                     setModalOpen={setModalOpen}
                     setJwtToken={setJwtToken}
                     apiKey={crossmint.apiKey}
+                    appearance={appearance}
                 />
             )}
         </AuthContext.Provider>

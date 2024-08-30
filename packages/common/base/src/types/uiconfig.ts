@@ -1,4 +1,6 @@
 export interface UiConfigColors {
+    inputBackground?: string;
+    buttonBackground?: string;
     textPrimary?: string;
     textSecondary?: string;
     accent?: string;

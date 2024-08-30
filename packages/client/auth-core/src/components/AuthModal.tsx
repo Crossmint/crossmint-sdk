@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 
 import { IFrameWindow } from "@crossmint/client-sdk-window";
+import { UIConfig } from "@crossmint/common-sdk-base";
 
 import ActionModal from "./ActionModal";
 
@@ -30,13 +31,20 @@ export default function AuthModal({
     setModalOpen,
     setJwtToken,
     apiKey,
+    appearance,
 }: {
     setModalOpen: (open: boolean) => void;
     setJwtToken: (jwtToken: string) => void;
     apiKey: string;
     baseUrl: string;
+    appearance?: UIConfig;
 }) {
-    const iframeSrc = `${baseUrl}/sdk/auth/frame?apiKey=${apiKey}`;
+    let iframeSrc = `${baseUrl}/sdk/auth/frame?apiKey=${apiKey}`;
+    if (appearance != null) {
+        // The appearance object is serialized into a query parameter
+        iframeSrc += `&uiConfig=${encodeURIComponent(JSON.stringify(appearance))}`;
+    }
+
     const iframeRef = useRef<HTMLIFrameElement | null>(null);
     const [iframe, setIframe] = useState<IFrameWindow<
         IncomingModalIframeEventsType,
@@ -90,7 +98,7 @@ export default function AuthModal({
     return (
         <ActionModal show={true} onClose={() => setModalOpen(false)}>
             <div style={{ position: "relative", width: "100%" }}>
-                <CloseIconButton onClick={() => setModalOpen(false)} />
+                <CloseIconButton onClick={() => setModalOpen(false)} customColor={appearance?.colors?.border} />
             </div>
             <iframe
                 ref={iframeRef}
@@ -99,11 +107,11 @@ export default function AuthModal({
                 title="Authentication Modal"
                 style={{
                     width: "448px",
-                    height: "475px",
-                    border: "1px solid #D0D5DD",
-                    borderRadius: "16px",
+                    height: "500px",
+                    border: `1px solid ${appearance?.colors?.border ?? "#D0D5DD"}`,
+                    borderRadius: appearance?.borderRadius ?? "16px",
                     padding: "48px 40px 32px",
-                    backgroundColor: "#FFFFFF",
+                    backgroundColor: appearance?.colors?.background ?? "#FFFFFF",
                     animation: "fadeIn 3s ease-in-out",
                 }}
             />
@@ -111,8 +119,9 @@ export default function AuthModal({
     );
 }
 
-const CloseIconButton = ({ onClick }: { onClick: () => void }) => (
+const CloseIconButton = ({ onClick, customColor = "#67797F" }: { onClick: () => void; customColor?: string }) => (
     <button
+        type="button"
         aria-label="Close"
         style={{
             width: "1.5rem",
@@ -120,13 +129,15 @@ const CloseIconButton = ({ onClick }: { onClick: () => void }) => (
             right: "1.5rem",
             top: "1.5rem",
             cursor: "pointer",
-            color: "#67797F",
+            color: customColor,
             outlineOffset: "4px",
             borderRadius: "100%",
         }}
         onClick={onClick}
     >
         <svg
+            role="img"
+            aria-label="Close"
             xmlns="http://www.w3.org/2000/svg"
             width="24"
             height="24"
