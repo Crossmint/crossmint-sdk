@@ -6,3 +6,5 @@ export const CrossmintEnvironment = {
     PRODUCTION: "production",
 } as const;
 export type CrossmintEnvironment = (typeof CrossmintEnvironment)[keyof typeof CrossmintEnvironment];
+
+export const AUTH_SERVICE = "AUTH_SDK";

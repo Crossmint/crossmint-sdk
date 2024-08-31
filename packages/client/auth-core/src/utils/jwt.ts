@@ -1,10 +1,10 @@
-import { CrossmintServiceFactory, type CrossmintServiceWithToken } from "@/services/CrossmintService";
+import { CrossmintAuthService } from "@/services/CrossmintAuthService";
 import { JsonWebTokenError, TokenExpiredError, verify } from "jsonwebtoken";
 
 import { getPublicKey } from "./tokenAuth/publicKey";
 
 export async function verifyCrossmintSessionToken(apiKey: string, token: string) {
-    const crossmintService = CrossmintServiceFactory.create(apiKey, token);
+    const crossmintService = new CrossmintAuthService(apiKey, token);
     try {
         return await verifyJWTWithPublicKey(crossmintService);
     } catch (error) {
@@ -12,9 +12,9 @@ export async function verifyCrossmintSessionToken(apiKey: string, token: string)
     }
 }
 
-async function verifyJWT(crossmintService: CrossmintServiceWithToken, signingKey: string) {
+async function verifyJWT(crossmintService: CrossmintAuthService, signingKey: string) {
     try {
-        const verifiedToken = await verify(crossmintService.jwtToken, signingKey);
+        const verifiedToken = verify(crossmintService.jwtToken, signingKey);
 
         if (verifiedToken == null || typeof verifiedToken === "string") {
             throw new Error("Invalid token");
@@ -37,7 +37,7 @@ async function verifyJWT(crossmintService: CrossmintServiceWithToken, signingKey
     }
 }
 
-async function verifyJWTWithPublicKey(crossmintService: CrossmintServiceWithToken) {
+async function verifyJWTWithPublicKey(crossmintService: CrossmintAuthService) {
     const publicKey = await getPublicKey(crossmintService.jwtToken, crossmintService.getJWKSUri());
 
     return verifyJWT(crossmintService, publicKey);
