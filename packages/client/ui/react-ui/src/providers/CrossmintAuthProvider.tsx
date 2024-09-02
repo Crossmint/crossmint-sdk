@@ -23,8 +23,7 @@ export function CrossmintAuthProvider({
     return (
         <AuthCoreProvider setJwtToken={setJwt} crossmint={crossmint}>
             <CrossmintWalletProvider
-                walletType="evm-smart-wallet"
-                walletConfig={{ signer: { type: "PASSKEY" } }}
+                walletConfig={{ type: "evm-smart-wallet", signer: { type: "PASSKEY" } }}
                 defaultChain={embeddedWallets.defaultChain}
                 createOnInit={embeddedWallets.createOnLogin}
             >
