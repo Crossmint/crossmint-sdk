@@ -27,7 +27,7 @@ import { isClient } from "./utils/environment";
 
 export class SmartWalletSDK {
     private constructor(
-        private readonly env: APIKeyEnvironmentPrefix,
+        private readonly crossmintEnv: APIKeyEnvironmentPrefix,
         private readonly smartWalletService: SmartWalletService,
         private readonly errorProcessor: ErrorProcessor,
         private readonly logger = scwLogger
@@ -79,14 +79,7 @@ export class SmartWalletSDK {
         chain: SmartWalletChain,
         walletParams: WalletParams = { signer: { type: "PASSKEY" } }
     ): Promise<EVMSmartWallet> {
-        if (!this.validChain(chain)) {
-            const validChains = this.env === "production" ? SMART_WALLET_MAINNETS : SMART_WALLET_TESTNETS;
-            const formattedChains = validChains.map((chain) => `"${chain}"`).join(", ");
-            throw new SmartWalletError(
-                `Invalid chain "${chain}" for environment "${this.env}" specified by API key.\n` +
-                    `Either update the API key or use one of the following compatible chains:\n ${formattedChains}`
-            );
-        }
+        this.assertValidChain(chain);
 
         return this.logger.logPerformance("GET_OR_CREATE_WALLET", async () => {
             try {
@@ -100,8 +93,19 @@ export class SmartWalletSDK {
         });
     }
 
+    private assertValidChain(chain: SmartWalletChain) {
+        if (!this.validChain(chain)) {
+            const validChains = this.crossmintEnv === "production" ? SMART_WALLET_MAINNETS : SMART_WALLET_TESTNETS;
+            const formattedChains = validChains.map((chain) => `"${chain}"`).join(", ");
+            throw new SmartWalletError(
+                `Invalid chain "${chain}" for environment "${this.crossmintEnv}" specified by API key.\n` +
+                    `Either update the API key or use one of the following compatible chains:\n ${formattedChains}`
+            );
+        }
+    }
+
     private validChain(chain: SmartWalletChain): boolean {
-        if (this.env === "development" || this.env === "staging") {
+        if (this.crossmintEnv === "development" || this.crossmintEnv === "staging") {
             return isTestnetChain(chain);
         }
 
