@@ -31,10 +31,6 @@ export class SmartWalletSDK {
      * @throws error if the api key is not formatted correctly.
      */
     static init({ clientApiKey }: SmartWalletSDKInitParams): SmartWalletSDK {
-        if (!isClient()) {
-            throw new SmartWalletError("Smart Wallet SDK should only be used client side.");
-        }
-
         const validationResult = validateAPIKey(clientApiKey);
         if (!validationResult.isValid) {
             throw new Error("API key invalid");
