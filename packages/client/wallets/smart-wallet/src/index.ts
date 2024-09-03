@@ -11,7 +11,7 @@ export type {
     WalletParams,
 } from "./types/params";
 
-export type { SmartWalletChain } from "./blockchain/chains";
+export type { SmartWalletChain as EVMSmartWalletChain } from "./blockchain/chains";
 
 export type { TransferType, ERC20TransferType, NFTTransferType, SFTTransferType } from "./types/token";
 
