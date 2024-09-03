@@ -1,7 +1,13 @@
 import { useCrossmint } from "@/hooks";
 import { ReactNode, createContext, useEffect, useMemo, useState } from "react";
 
-import { EVMSmartWallet, SmartWalletError, SmartWalletSDK, WalletParams } from "@crossmint/client-sdk-smart-wallet";
+import {
+    EVMSmartWallet,
+    EVMSmartWalletChain,
+    SmartWalletError,
+    SmartWalletSDK,
+    WalletParams,
+} from "@crossmint/client-sdk-smart-wallet";
 
 type WalletStatus = "not-loaded" | "in-progress" | "loaded" | "loading-error";
 
@@ -38,7 +44,7 @@ export function CrossmintWalletProvider({
     createOnInit,
     walletConfig,
 }: {
-    defaultChain: "polygon-amoy" | "base-sepolia" | "optimism-sepolia" | "arbitrum-sepolia";
+    defaultChain: EVMSmartWalletChain;
     createOnInit: "all-users" | "off";
     children: ReactNode;
     walletConfig?: WalletParams & { type: "evm-smart-wallet" };
