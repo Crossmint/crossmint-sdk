@@ -94,7 +94,7 @@ Before you begin, ensure you have the following installed:
     ```
 4. In the directory containing this README.md file, rename the `.env.example` file to `.env` and add your API key to the file.
     ```bash
-    NEXT_PUBLIC_CROSSMINT_API_KEY="ENTER YOUR CROSSMINT API KEY";
+    NEXT_PUBLIC_CROSSMINT_AUTH_SMART_WALLET_API_KEY="ENTER YOUR CROSSMINT API KEY";
     ```
 5. Start the development server
     ```sh
