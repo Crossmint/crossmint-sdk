@@ -77,7 +77,7 @@ export function AuthProvider({ children, crossmint, setJwtToken, appearance }: A
         }
     }, [crossmint.jwt]);
 
-    const value = useMemo(() => ({ login, logout, jwt: crossmint.jwt }), [login, logout]);
+    const value = useMemo(() => ({ login, logout, jwt: crossmint.jwt }), [login, logout, crossmint.jwt]);
 
     return (
         <AuthContext.Provider value={value}>
