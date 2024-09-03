@@ -1,11 +1,11 @@
 import { useCrossmint } from "@/hooks";
 import { ReactNode, createContext, useEffect, useMemo, useState } from "react";
 
-import { EVMSmartWallet, SmartWalletError, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
+import { EVMSmartWallet, SmartWalletChain, SmartWalletError, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
 
 export type CrossmintWalletConfig = {
     type: "evm-smart-wallet";
-    defaultChain: "polygon-amoy" | "base-sepolia" | "optimism-sepolia" | "arbitrum-sepolia";
+    defaultChain: SmartWalletChain;
     createOnLogin: "all-users" | "off";
 };
 
