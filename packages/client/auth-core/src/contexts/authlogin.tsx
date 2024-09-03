@@ -1,7 +1,7 @@
 "use client";
 
 import AuthModal from "@/components/AuthModal";
-import { CrossmintServiceFactory } from "@/services/CrossmintService";
+import { CrossmintAuthService } from "@/services/CrossmintAuthService";
 import { type ReactNode, createContext, useContext, useEffect, useMemo, useState } from "react";
 
 import { Crossmint, UIConfig } from "@crossmint/common-sdk-base";
@@ -39,7 +39,7 @@ export function AuthProvider({ children, crossmint, setJwtToken, appearance }: A
     const [modalOpen, setModalOpen] = useState(false);
 
     const crossmintService = useMemo(
-        () => CrossmintServiceFactory.create(crossmint.apiKey, crossmint.jwt),
+        () => new CrossmintAuthService(crossmint.apiKey),
         [crossmint.apiKey, crossmint.jwt]
     );
 

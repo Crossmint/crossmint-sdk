@@ -27,6 +27,7 @@
         "test": "jest --passWithNoTests"
     },
     "dependencies": {
+        "@crossmint/client-sdk-base": "workspace:*",
         "@crossmint/client-sdk-window": "workspace:*",
         "@crossmint/common-sdk-base": "workspace:*",
         "@headlessui/react": "1.7.18",
