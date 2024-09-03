@@ -1,9 +1,15 @@
 import { stringify } from "viem";
 
-import { validateAPIKey } from "@crossmint/common-sdk-base";
+import { APIKeyEnvironmentPrefix, validateAPIKey } from "@crossmint/common-sdk-base";
 
 import { CrossmintWalletService } from "./api/CrossmintWalletService";
-import type { SmartWalletChain } from "./blockchain/chains";
+import {
+    SMART_WALLET_MAINNETS,
+    SMART_WALLET_TESTNETS,
+    type SmartWalletChain,
+    isMainnetChain,
+    isTestnetChain,
+} from "./blockchain/chains";
 import type { EVMSmartWallet } from "./blockchain/wallets";
 import { AccountConfigCache } from "./blockchain/wallets/account/cache";
 import { AccountConfigService } from "./blockchain/wallets/account/config";
@@ -21,6 +27,7 @@ import { isClient } from "./utils/environment";
 
 export class SmartWalletSDK {
     private constructor(
+        private readonly env: APIKeyEnvironmentPrefix,
         private readonly smartWalletService: SmartWalletService,
         private readonly errorProcessor: ErrorProcessor,
         private readonly logger = scwLogger
@@ -55,7 +62,7 @@ export class SmartWalletSDK {
             new ClientDecorator(errorProcessor)
         );
 
-        return new SmartWalletSDK(smartWalletService, errorProcessor);
+        return new SmartWalletSDK(validationResult.environment, smartWalletService, errorProcessor);
     }
 
     /**
@@ -72,6 +79,15 @@ export class SmartWalletSDK {
         chain: SmartWalletChain,
         walletParams: WalletParams = { signer: { type: "PASSKEY" } }
     ): Promise<EVMSmartWallet> {
+        if (!this.validChain(chain)) {
+            const validChains = this.env === "production" ? SMART_WALLET_MAINNETS : SMART_WALLET_TESTNETS;
+            const formattedChains = validChains.map((chain) => `"${chain}"`).join(", ");
+            throw new SmartWalletError(
+                `Invalid chain "${chain}" for environment "${this.env}" specified by API key.\n` +
+                    `Either update the API key or use one of the following compatible chains:\n ${formattedChains}`
+            );
+        }
+
         return this.logger.logPerformance("GET_OR_CREATE_WALLET", async () => {
             try {
                 return await this.smartWalletService.getOrCreate(user, chain, walletParams);
@@ -82,5 +98,13 @@ export class SmartWalletSDK {
                 );
             }
         });
+    }
+
+    private validChain(chain: SmartWalletChain): boolean {
+        if (this.env === "development" || this.env === "staging") {
+            return isTestnetChain(chain);
+        }
+
+        return isMainnetChain(chain);
     }
 }
