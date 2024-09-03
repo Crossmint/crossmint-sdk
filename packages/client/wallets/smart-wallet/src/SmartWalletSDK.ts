@@ -31,7 +31,7 @@ export class SmartWalletSDK {
      * @throws error if the api key is not formatted correctly.
      */
     static init({ clientApiKey }: SmartWalletSDKInitParams): SmartWalletSDK {
-        const validationResult = process.env.GITHUB_ACTIONS ? { isValid: true } : validateAPIKey(clientApiKey);
+        const validationResult = validateAPIKey(clientApiKey);
         if (!validationResult.isValid) {
             throw new Error("API key invalid");
         }
