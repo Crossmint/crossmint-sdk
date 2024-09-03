@@ -1,8 +1,7 @@
-"use client";
-
 import AuthModal from "@/components/AuthModal";
 import { CrossmintServiceFactory } from "@/services/CrossmintService";
 import { type ReactNode, createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { Crossmint, UIConfig } from "@crossmint/common-sdk-base";
 
@@ -78,18 +77,23 @@ export function AuthProvider({ children, crossmint, setJwtToken, appearance }: A
         }
     }, [crossmint.jwt]);
 
+    const value = useMemo(() => ({ login, logout, jwt: crossmint.jwt }), [login, logout]);
+
     return (
-        <AuthContext.Provider value={{ login, logout, jwt: crossmint.jwt }}>
+        <AuthContext.Provider value={value}>
             {children}
-            {modalOpen && (
-                <AuthModal
-                    baseUrl={crossmintService.crossmintBaseUrl}
-                    setModalOpen={setModalOpen}
-                    setJwtToken={setJwtToken}
-                    apiKey={crossmint.apiKey}
-                    appearance={appearance}
-                />
-            )}
+            {modalOpen
+                ? createPortal(
+                      <AuthModal
+                          baseUrl={crossmintService.crossmintBaseUrl}
+                          setModalOpen={setModalOpen}
+                          setJwtToken={setJwtToken}
+                          apiKey={crossmint.apiKey}
+                          appearance={appearance}
+                      />,
+                      document.body
+                  )
+                : null}
         </AuthContext.Provider>
     );
 }

@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import { Inter, Raleway } from "next/font/google";
-import React from "react";
 
 import { cn } from "../lib/utils";
 import { Providers } from "./_lib/providers";
