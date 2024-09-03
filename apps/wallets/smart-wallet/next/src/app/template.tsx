@@ -28,7 +28,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
             {children}
         </>
     ) : (
-        <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_API_KEY ?? ""}>
+        <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_AUTH_SMART_WALLET_API_KEY ?? ""}>
             <CrossmintAuthProvider
                 embeddedWallets={{ createOnLogin: "all-users", type: "evm-smart-wallet", defaultChain: "polygon-amoy" }}
                 appearance={{
