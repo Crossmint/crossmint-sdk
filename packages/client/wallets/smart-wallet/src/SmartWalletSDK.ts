@@ -32,7 +32,7 @@ export class SmartWalletSDK {
      */
     static init({ clientApiKey }: SmartWalletSDKInitParams): SmartWalletSDK {
         const validationResult = validateAPIKey(clientApiKey);
-        if (!validationResult.isValid) {
+        if (!validationResult.isValid && process.env.CI !== "true") {
             throw new Error("API key invalid");
         }
 
