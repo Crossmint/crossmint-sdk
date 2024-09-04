@@ -2,7 +2,6 @@ import { Metadata } from "next";
 import { Inter, Raleway } from "next/font/google";
 
 import { cn } from "../lib/utils";
-import { Providers } from "./_lib/providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -24,18 +23,16 @@ const raleway = Raleway({
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
     return (
-        <Providers>
-            <html
-                // Add font variables so they'll be available for tailwind
-                className={cn(inter.variable, raleway.variable)}
-            >
-                <head>
-                    <title>{metadata.title as string}</title>
-                </head>
-                <body className="bg-background font-body text-foreground min-h-screen antialiased">
-                    <main id="main">{children}</main>
-                </body>
-            </html>
-        </Providers>
+        <html
+            // Add font variables so they'll be available for tailwind
+            className={cn(inter.variable, raleway.variable)}
+        >
+            <head>
+                <title>{metadata.title as string}</title>
+            </head>
+            <body className="bg-background font-body text-foreground min-h-screen antialiased">
+                <main id="main">{children}</main>
+            </body>
+        </html>
     );
 }
