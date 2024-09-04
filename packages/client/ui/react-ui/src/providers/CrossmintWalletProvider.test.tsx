@@ -103,14 +103,14 @@ describe("CrossmintWalletProvider", () => {
         );
     });
 
-    describe(`When createOnInit is "true"`, () => {
+    describe("When createOnInit is true", () => {
         beforeEach(() => {
             createOnInit = true;
             walletConfig = { type: "evm-smart-wallet", signer: { type: "PASSKEY" } };
         });
 
         describe("Happy path", () => {
-            it("After, the wallet loads in", async () => {
+            it("should load the wallet after initialization", async () => {
                 const { getByTestId } = renderWalletProvider({
                     children: <TestComponent />,
                     createOnInit,
@@ -128,13 +128,13 @@ describe("CrossmintWalletProvider", () => {
             });
         });
 
-        describe("Error handling", async () => {
-            describe("When getOrCreateWallet throws an unknown error", async () => {
+        describe("Error handling", () => {
+            describe("When getOrCreateWallet throws an unknown error", () => {
                 beforeEach(() => {
                     vi.mocked(mockSDK.getOrCreateWallet).mockRejectedValue(new Error("Wallet creation failed"));
                 });
 
-                it("populates the useWallet hook error state letting the developer know it's an unknown error", async () => {
+                it("should populate the useWallet hook error state with an unknown error message", async () => {
                     const { getByTestId } = renderWalletProvider({
                         children: <TestComponent />,
                         createOnInit,
@@ -153,14 +153,14 @@ describe("CrossmintWalletProvider", () => {
                 });
             });
 
-            describe("when getOrCreateWallet throws a known error", async () => {
+            describe("When getOrCreateWallet throws a known error", () => {
                 beforeEach(() => {
                     vi.mocked(mockSDK.getOrCreateWallet).mockRejectedValueOnce(
                         new SmartWalletError("Wallet creation failed")
                     );
                 });
 
-                it("populates the useWallet hook error state with the expected error message", async () => {
+                it("should populate the useWallet hook error state with the expected error message", async () => {
                     const { getByTestId } = renderWalletProvider({
                         children: <TestComponent />,
                         createOnInit,
@@ -179,7 +179,7 @@ describe("CrossmintWalletProvider", () => {
                 });
             });
 
-            test("If the automated wallet creation fails, a dev can recover by calling getOrCreateWallet", async () => {
+            it("should allow recovery by calling getOrCreateWallet if automated wallet creation fails", async () => {
                 vi.mocked(mockSDK.getOrCreateWallet).mockRejectedValueOnce(
                     new SmartWalletError("Wallet creation failed")
                 );
@@ -217,12 +217,12 @@ describe("CrossmintWalletProvider", () => {
         });
 
         describe("Cases where wallet creation is not ready", () => {
-            describe("When wallet config is not defined", async () => {
+            describe("When wallet config is not defined", () => {
                 beforeEach(() => {
                     walletConfig = undefined;
                 });
 
-                it("doesn't make wallet", async () => {
+                it("should not create a wallet", async () => {
                     const { getByTestId } = renderWalletProvider({
                         children: <TestComponent />,
                         createOnInit,
@@ -236,7 +236,7 @@ describe("CrossmintWalletProvider", () => {
                 });
             });
 
-            describe("When the jwt from CrossmintProvider is not defined", async () => {
+            describe("When the jwt from CrossmintProvider is not defined", () => {
                 beforeEach(() => {
                     walletConfig = undefined;
                     vi.mocked(createCrossmint).mockImplementation(() => ({
@@ -245,7 +245,7 @@ describe("CrossmintWalletProvider", () => {
                     }));
                 });
 
-                it("doesn't make a wallet", async () => {
+                it("should not create a wallet", async () => {
                     const { getByTestId } = renderWalletProvider({
                         children: <TestComponent />,
                         createOnInit,
@@ -261,14 +261,14 @@ describe("CrossmintWalletProvider", () => {
         });
     });
 
-    describe(`When createOnInit is "false"`, async () => {
+    describe("When createOnInit is false", () => {
         beforeEach(() => {
             createOnInit = false;
             walletConfig = { type: "evm-smart-wallet", signer: { type: "PASSKEY" } };
         });
 
         describe("Happy path", () => {
-            test("The wallet loads as expected", async () => {
+            it("should load the wallet as expected", async () => {
                 const { getByTestId } = renderWalletProvider({
                     children: <TestComponent />,
                     createOnInit,
@@ -296,14 +296,14 @@ describe("CrossmintWalletProvider", () => {
                 });
             });
 
-            describe("When getOrCreateWallet throws an error", async () => {
+            describe("When getOrCreateWallet throws an error", () => {
                 beforeEach(() => {
                     vi.mocked(mockSDK.getOrCreateWallet).mockRejectedValue(
                         new SmartWalletError("Wallet creation failed")
                     );
                 });
 
-                it("Populates the useWallet hook error state with the error", async () => {
+                it("should populate the useWallet hook error state with the error", async () => {
                     const { getByTestId } = renderWalletProvider({
                         children: <TestComponent />,
                         createOnInit,
@@ -331,7 +331,7 @@ describe("CrossmintWalletProvider", () => {
                     walletConfig = undefined;
                 });
 
-                it("getOrCreateWallet does not instantiate wallet creation", () => {
+                it("should not instantiate wallet creation when calling getOrCreateWallet", () => {
                     const { getByTestId } = renderWalletProvider({
                         children: <TestComponent />,
                         createOnInit,
@@ -356,7 +356,7 @@ describe("CrossmintWalletProvider", () => {
                     }));
                 });
 
-                it("getOrCreateWallet does not instantiate wallet creation", () => {
+                it("should not instantiate wallet creation when calling getOrCreateWallet", () => {
                     const { getByTestId } = renderWalletProvider({
                         children: <TestComponent />,
                         createOnInit,
@@ -373,7 +373,7 @@ describe("CrossmintWalletProvider", () => {
                 });
             });
 
-            test("When the wallet is already loaded or loading, calling getOrCreateWallet from useWallet does not instantiate wallet creation", async () => {
+            it("should not instantiate wallet creation when calling getOrCreateWallet if the wallet is already loaded or loading", async () => {
                 const { getByTestId } = renderWalletProvider({
                     children: <TestComponent />,
                     createOnInit: false,
