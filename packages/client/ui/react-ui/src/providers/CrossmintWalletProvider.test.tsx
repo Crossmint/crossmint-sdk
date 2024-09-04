@@ -31,6 +31,13 @@ vi.mock("@crossmint/common-sdk-base", async () => {
 const MOCK_API_KEY =
     "sk_development_5ZUNkuhjP8aYZEgUTDfWToqFpo5zakEqte1db4pHZgPAVKZ9JuSvnKeGiqY654DoBuuZEzYz4Eb8gRV2ePqQ1fxTjEP8tTaUQdzbGfyG9RgyeN5YbqViXinqxk8EayEkAGtvSSgjpjEr6iaBptJtUFwPW59DjQzTQP6P8uZdiajenVg7bARGKjzFyByNuVEoz41DpRB4hDZNFdwCTuf5joFv";
 
+const WALLET_LOADING_TIME = 25;
+
+const checkSettledState = async (callback: () => void) => {
+    await new Promise((resolve) => setTimeout(resolve, WALLET_LOADING_TIME * 2));
+    callback();
+};
+
 function renderWalletProvider({
     children,
     createOnInit,
@@ -88,7 +95,7 @@ describe("CrossmintWalletProvider", () => {
         vi.mocked(SmartWalletSDK.init).mockReturnValue(mockSDK);
         vi.mocked(mockSDK.getOrCreateWallet).mockReturnValue(
             new Promise((resolve) => {
-                setTimeout(() => resolve(mockWallet), 10);
+                setTimeout(() => resolve(mockWallet), WALLET_LOADING_TIME);
             })
         );
     });
@@ -107,9 +114,10 @@ describe("CrossmintWalletProvider", () => {
                 expect(getByTestId("wallet").textContent).toBe("No Wallet");
 
                 // final state
-                await new Promise((resolve) => setTimeout(resolve, 100));
-                expect(getByTestId("status").textContent).toBe("loaded");
-                expect(getByTestId("wallet").textContent).toBe("Wallet Loaded");
+                await checkSettledState(() => {
+                    expect(getByTestId("status").textContent).toBe("loaded");
+                    expect(getByTestId("wallet").textContent).toBe("Wallet Loaded");
+                });
             });
         });
 
@@ -130,9 +138,10 @@ describe("CrossmintWalletProvider", () => {
                 });
 
                 // final state
-                await new Promise((resolve) => setTimeout(resolve, 100));
-                expect(getByTestId("status").textContent).toBe("loading-error");
-                expect(getByTestId("error").textContent).toBe("Unknown Wallet Error: Wallet creation failed");
+                await checkSettledState(() => {
+                    expect(getByTestId("status").textContent).toBe("loading-error");
+                    expect(getByTestId("error").textContent).toBe("Unknown Wallet Error: Wallet creation failed");
+                });
             });
 
             it("handles smart wallet errors", async () => {
@@ -153,9 +162,10 @@ describe("CrossmintWalletProvider", () => {
                 });
 
                 // final state
-                await new Promise((resolve) => setTimeout(resolve, 100));
-                expect(getByTestId("status").textContent).toBe("loading-error");
-                expect(getByTestId("error").textContent).toBe("Wallet creation failed");
+                await checkSettledState(() => {
+                    expect(getByTestId("status").textContent).toBe("loading-error");
+                    expect(getByTestId("error").textContent).toBe("Wallet creation failed");
+                });
             });
 
             it("If the automated wallet creation fails, a dev can recover by calling getOrCreateWallet", async () => {
@@ -176,9 +186,10 @@ describe("CrossmintWalletProvider", () => {
                 });
 
                 // final failure state
-                await new Promise((resolve) => setTimeout(resolve, 100));
-                expect(getByTestId("status").textContent).toBe("loading-error");
-                expect(getByTestId("error").textContent).toBe("Wallet creation failed");
+                await checkSettledState(() => {
+                    expect(getByTestId("status").textContent).toBe("loading-error");
+                    expect(getByTestId("error").textContent).toBe("Wallet creation failed");
+                });
 
                 vi.mocked(mockSDK.getOrCreateWallet).mockResolvedValueOnce(mockWallet);
                 fireEvent.click(getByTestId("create-wallet-button"));
@@ -190,9 +201,10 @@ describe("CrossmintWalletProvider", () => {
                 });
 
                 // final state
-                await new Promise((resolve) => setTimeout(resolve, 100));
-                expect(getByTestId("status").textContent).toBe("loaded");
-                expect(getByTestId("wallet").textContent).toBe("Wallet Loaded");
+                await checkSettledState(() => {
+                    expect(getByTestId("status").textContent).toBe("loaded");
+                    expect(getByTestId("wallet").textContent).toBe("Wallet Loaded");
+                });
             });
         });
 
@@ -205,9 +217,10 @@ describe("CrossmintWalletProvider", () => {
                 });
 
                 // final state
-                await new Promise((resolve) => setTimeout(resolve, 100));
-                expect(getByTestId("status").textContent).toBe("not-loaded");
-                expect(getByTestId("wallet").textContent).toBe("No Wallet");
+                await checkSettledState(() => {
+                    expect(getByTestId("status").textContent).toBe("not-loaded");
+                    expect(getByTestId("wallet").textContent).toBe("No Wallet");
+                });
             });
 
             it("When the jwt from CrossmintProvider is not defined", async () => {
@@ -223,9 +236,10 @@ describe("CrossmintWalletProvider", () => {
                 }));
 
                 // final state
-                await new Promise((resolve) => setTimeout(resolve, 100));
-                expect(getByTestId("status").textContent).toBe("not-loaded");
-                expect(getByTestId("wallet").textContent).toBe("No Wallet");
+                await checkSettledState(() => {
+                    expect(getByTestId("status").textContent).toBe("not-loaded");
+                    expect(getByTestId("wallet").textContent).toBe("No Wallet");
+                });
             });
         });
     });
@@ -257,9 +271,10 @@ describe("CrossmintWalletProvider", () => {
                 });
 
                 // final state
-                await new Promise((resolve) => setTimeout(resolve, 100));
-                expect(getByTestId("status").textContent).toBe("loaded");
-                expect(getByTestId("wallet").textContent).toBe("Wallet Loaded");
+                await checkSettledState(() => {
+                    expect(getByTestId("status").textContent).toBe("loaded");
+                    expect(getByTestId("wallet").textContent).toBe("Wallet Loaded");
+                });
             });
 
             it("handles smart wallet errors", async () => {
@@ -280,9 +295,10 @@ describe("CrossmintWalletProvider", () => {
                 });
 
                 // final state
-                await new Promise((resolve) => setTimeout(resolve, 100));
-                expect(getByTestId("status").textContent).toBe("loading-error");
-                expect(getByTestId("error").textContent).toBe("Wallet creation failed");
+                await checkSettledState(() => {
+                    expect(getByTestId("status").textContent).toBe("loading-error");
+                    expect(getByTestId("error").textContent).toBe("Wallet creation failed");
+                });
             });
         });
 
@@ -323,6 +339,7 @@ describe("CrossmintWalletProvider", () => {
                     reason: "No authenticated user, not creating wallet.",
                 });
             });
+
             it("should not initiate wallet creation when wallet is already loaded or loading", async () => {
                 const { getByTestId } = renderWalletProvider({
                     children: <TestComponent />,
@@ -331,11 +348,9 @@ describe("CrossmintWalletProvider", () => {
                 });
 
                 fireEvent.click(getByTestId("create-wallet-button"));
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await checkSettledState(() => {});
 
                 fireEvent.click(getByTestId("create-wallet-button"));
-                await new Promise((resolve) => setTimeout(resolve, 100));
-
                 const result = JSON.parse(getByTestId("create-wallet-button-result").textContent!);
                 expect(result).toEqual({
                     initiatedCreation: false,
