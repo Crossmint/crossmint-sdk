@@ -29,7 +29,7 @@ export function CrossmintAuthProvider({
             <CrossmintWalletProvider
                 walletConfig={{ type: "evm-smart-wallet", signer: { type: "PASSKEY" } }}
                 defaultChain={embeddedWallets.defaultChain}
-                createOnInit={embeddedWallets.createOnLogin}
+                createOnInit={embeddedWallets.createOnLogin === "all-users"}
             >
                 {children}
             </CrossmintWalletProvider>
