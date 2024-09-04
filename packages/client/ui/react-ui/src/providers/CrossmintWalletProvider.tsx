@@ -27,16 +27,17 @@ function deriveErrorState(error: unknown): { status: "loading-error"; error: Sma
     return { status: "loading-error", error: new SmartWalletError(`Unknown Wallet Error: ${message}`, stack) };
 }
 
+export type ManualCreationResult = { initiatedCreation: true } | { initiatedCreation: false; reason: string };
 type WalletContext = {
     status: WalletStatus;
     wallet?: EVMSmartWallet;
     error?: SmartWalletError;
-    getOrCreateWallet: () => Promise<boolean>;
+    getOrCreateWallet: () => ManualCreationResult;
 };
 
 export const WalletContext = createContext<WalletContext>({
     status: "not-loaded",
-    getOrCreateWallet: async () => false,
+    getOrCreateWallet: () => ({ initiatedCreation: false, reason: "context not loaded in" }),
 });
 
 export function CrossmintWalletProvider({
@@ -80,24 +81,21 @@ export function CrossmintWalletProvider({
         }
     }, [crossmint, createOnInit, state.status, walletConfig]);
 
-    const getOrCreateWalletExternal = async () => {
+    const getOrCreateWalletExternal = (): ManualCreationResult => {
         if (crossmint.jwt == null) {
-            console.log("No authenticated user, not creating wallet.");
-            return false;
+            return { initiatedCreation: false, reason: "No authenticated user, not creating wallet." };
         }
 
         if (walletConfig == null) {
-            console.log("No wallet config provided, not creating wallet.");
-            return false;
+            return { initiatedCreation: false, reason: "No wallet config provided, not creating wallet." };
         }
 
         if (state.status === "loaded" || state.status === "in-progress") {
-            console.log("Wallet is already loaded, or is currently loading.");
-            return false;
+            return { initiatedCreation: false, reason: "Wallet is already loaded, or is currently loading." };
         }
 
         getOrCreateWalletInternal(crossmint.jwt, walletConfig);
-        return true;
+        return { initiatedCreation: true };
     };
 
     return (
