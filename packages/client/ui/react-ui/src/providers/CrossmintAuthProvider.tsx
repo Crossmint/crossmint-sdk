@@ -1,10 +1,10 @@
 import { useCrossmint } from "@/hooks";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { AuthProvider as AuthCoreProvider } from "@crossmint/client-sdk-auth-core/client";
-import { UIConfig } from "@crossmint/common-sdk-base";
+import type { UIConfig } from "@crossmint/common-sdk-base";
 
-import { CrossmintWalletConfig, CrossmintWalletProvider } from "./CrossmintWalletProvider";
+import { type CrossmintWalletConfig, CrossmintWalletProvider } from "./CrossmintWalletProvider";
 
 type CrossmintAuthProviderProps = {
     embeddedWallets: CrossmintWalletConfig;

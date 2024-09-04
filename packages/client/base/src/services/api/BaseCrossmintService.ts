@@ -8,7 +8,7 @@ import { APIErrorService } from "./APIErrorService";
 
 export abstract class BaseCrossmintService {
     public crossmintAPIHeaders: Record<string, string>;
-    protected crossmintBaseUrl: string;
+    crossmintBaseUrl: string;
     protected abstract apiErrorService: APIErrorService<string>;
     protected abstract logger: SDKLogger;
     private static urlMap: Record<string, string> = {
