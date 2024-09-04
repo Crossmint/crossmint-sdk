@@ -1,4 +1,4 @@
-import { fireEvent, getByText, render, waitFor } from "@testing-library/react";
+import { RenderResult, fireEvent, render, waitFor } from "@testing-library/react";
 import { ReactNode, useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
@@ -63,6 +63,9 @@ function renderWalletProvider({
 describe("CrossmintWalletProvider", () => {
     let mockSDK: SmartWalletSDK;
     let mockWallet: EVMSmartWallet;
+    let createOnInit: boolean;
+    let walletConfig: (WalletParams & { type: "evm-smart-wallet" }) | undefined;
+    let renderResult: RenderResult;
 
     const TestComponent = () => {
         const { status, wallet, error, getOrCreateWallet } = useWallet();
@@ -101,19 +104,23 @@ describe("CrossmintWalletProvider", () => {
     });
 
     describe(`When createOnInit is "true"`, () => {
+        beforeEach(() => {
+            createOnInit = true;
+            walletConfig = { type: "evm-smart-wallet", signer: { type: "PASSKEY" } };
+        });
+
         describe("Happy path", () => {
             it("After, the wallet loads in", async () => {
                 const { getByTestId } = renderWalletProvider({
                     children: <TestComponent />,
-                    createOnInit: true,
-                    walletConfig: { type: "evm-smart-wallet", signer: { type: "PASSKEY" } },
+                    createOnInit,
+                    walletConfig,
                 });
 
                 // initial state
                 expect(getByTestId("status").textContent).toBe("in-progress");
                 expect(getByTestId("wallet").textContent).toBe("No Wallet");
 
-                // final state
                 await checkSettledState(() => {
                     expect(getByTestId("status").textContent).toBe("loaded");
                     expect(getByTestId("wallet").textContent).toBe("Wallet Loaded");
@@ -122,61 +129,65 @@ describe("CrossmintWalletProvider", () => {
         });
 
         describe("Error handling", async () => {
-            it("handles unknown errors", async () => {
-                vi.mocked(mockSDK.getOrCreateWallet).mockRejectedValue(new Error("Wallet creation failed"));
-
-                const { getByTestId } = renderWalletProvider({
-                    children: <TestComponent />,
-                    createOnInit: true,
-                    walletConfig: { type: "evm-smart-wallet", signer: { type: "PASSKEY" } },
+            describe("When getOrCreateWallet throws an unknown error", async () => {
+                beforeEach(() => {
+                    vi.mocked(mockSDK.getOrCreateWallet).mockRejectedValue(new Error("Wallet creation failed"));
                 });
 
-                // loading state
-                await waitFor(() => {
-                    expect(getByTestId("status").textContent).toBe("in-progress");
-                    expect(getByTestId("wallet").textContent).toBe("No Wallet");
-                });
+                it("populates the useWallet hook error state letting the developer know it's an unknown error", async () => {
+                    const { getByTestId } = renderWalletProvider({
+                        children: <TestComponent />,
+                        createOnInit,
+                        walletConfig,
+                    });
 
-                // final state
-                await checkSettledState(() => {
-                    expect(getByTestId("status").textContent).toBe("loading-error");
-                    expect(getByTestId("error").textContent).toBe("Unknown Wallet Error: Wallet creation failed");
+                    await waitFor(() => {
+                        expect(getByTestId("status").textContent).toBe("in-progress");
+                        expect(getByTestId("wallet").textContent).toBe("No Wallet");
+                    });
+
+                    await checkSettledState(() => {
+                        expect(getByTestId("status").textContent).toBe("loading-error");
+                        expect(getByTestId("error").textContent).toBe("Unknown Wallet Error: Wallet creation failed");
+                    });
                 });
             });
 
-            it("handles smart wallet errors", async () => {
+            describe("when getOrCreateWallet throws a known error", async () => {
+                beforeEach(() => {
+                    vi.mocked(mockSDK.getOrCreateWallet).mockRejectedValueOnce(
+                        new SmartWalletError("Wallet creation failed")
+                    );
+                });
+
+                it("populates the useWallet hook error state with the expected error message", async () => {
+                    const { getByTestId } = renderWalletProvider({
+                        children: <TestComponent />,
+                        createOnInit,
+                        walletConfig,
+                    });
+
+                    await waitFor(() => {
+                        expect(getByTestId("status").textContent).toBe("in-progress");
+                        expect(getByTestId("wallet").textContent).toBe("No Wallet");
+                    });
+
+                    await checkSettledState(() => {
+                        expect(getByTestId("status").textContent).toBe("loading-error");
+                        expect(getByTestId("error").textContent).toBe("Wallet creation failed");
+                    });
+                });
+            });
+
+            test("If the automated wallet creation fails, a dev can recover by calling getOrCreateWallet", async () => {
                 vi.mocked(mockSDK.getOrCreateWallet).mockRejectedValueOnce(
                     new SmartWalletError("Wallet creation failed")
                 );
 
                 const { getByTestId } = renderWalletProvider({
                     children: <TestComponent />,
-                    createOnInit: true,
-                    walletConfig: { type: "evm-smart-wallet", signer: { type: "PASSKEY" } },
-                });
-
-                // loading state
-                await waitFor(() => {
-                    expect(getByTestId("status").textContent).toBe("in-progress");
-                    expect(getByTestId("wallet").textContent).toBe("No Wallet");
-                });
-
-                // final state
-                await checkSettledState(() => {
-                    expect(getByTestId("status").textContent).toBe("loading-error");
-                    expect(getByTestId("error").textContent).toBe("Wallet creation failed");
-                });
-            });
-
-            it("If the automated wallet creation fails, a dev can recover by calling getOrCreateWallet", async () => {
-                vi.mocked(mockSDK.getOrCreateWallet).mockRejectedValueOnce(
-                    new SmartWalletError("Wallet creation failed")
-                );
-
-                const { getByTestId } = renderWalletProvider({
-                    children: <TestComponent />,
-                    createOnInit: true,
-                    walletConfig: { type: "evm-smart-wallet", signer: { type: "PASSKEY" } },
+                    createOnInit,
+                    walletConfig,
                 });
 
                 // initial state
@@ -185,7 +196,6 @@ describe("CrossmintWalletProvider", () => {
                     expect(getByTestId("wallet").textContent).toBe("No Wallet");
                 });
 
-                // final failure state
                 await checkSettledState(() => {
                     expect(getByTestId("status").textContent).toBe("loading-error");
                     expect(getByTestId("error").textContent).toBe("Wallet creation failed");
@@ -194,13 +204,11 @@ describe("CrossmintWalletProvider", () => {
                 vi.mocked(mockSDK.getOrCreateWallet).mockResolvedValueOnce(mockWallet);
                 fireEvent.click(getByTestId("create-wallet-button"));
 
-                // loading state
                 await waitFor(() => {
                     expect(getByTestId("status").textContent).toBe("in-progress");
                     expect(getByTestId("wallet").textContent).toBe("No Wallet");
                 });
 
-                // final state
                 await checkSettledState(() => {
                     expect(getByTestId("status").textContent).toBe("loaded");
                     expect(getByTestId("wallet").textContent).toBe("Wallet Loaded");
@@ -209,51 +217,64 @@ describe("CrossmintWalletProvider", () => {
         });
 
         describe("Cases where wallet creation is not ready", () => {
-            it("When wallet config is not defined or null", async () => {
-                const { getByTestId } = renderWalletProvider({
-                    children: <TestComponent />,
-                    createOnInit: true,
-                    walletConfig: undefined,
+            describe("When wallet config is not defined", async () => {
+                beforeEach(() => {
+                    walletConfig = undefined;
                 });
 
-                // final state
-                await checkSettledState(() => {
-                    expect(getByTestId("status").textContent).toBe("not-loaded");
-                    expect(getByTestId("wallet").textContent).toBe("No Wallet");
+                it("doesn't make wallet", async () => {
+                    const { getByTestId } = renderWalletProvider({
+                        children: <TestComponent />,
+                        createOnInit,
+                        walletConfig,
+                    });
+
+                    await checkSettledState(() => {
+                        expect(getByTestId("status").textContent).toBe("not-loaded");
+                        expect(getByTestId("wallet").textContent).toBe("No Wallet");
+                    });
                 });
             });
 
-            it("When the jwt from CrossmintProvider is not defined", async () => {
-                const { getByTestId } = renderWalletProvider({
-                    children: <TestComponent />,
-                    createOnInit: true,
-                    walletConfig: undefined,
+            describe("When the jwt from CrossmintProvider is not defined", async () => {
+                beforeEach(() => {
+                    walletConfig = undefined;
+                    vi.mocked(createCrossmint).mockImplementation(() => ({
+                        apiKey: MOCK_API_KEY,
+                        jwt: undefined,
+                    }));
                 });
 
-                vi.mocked(createCrossmint).mockImplementation(() => ({
-                    apiKey: MOCK_API_KEY,
-                    jwt: undefined,
-                }));
+                it("doesn't make a wallet", async () => {
+                    const { getByTestId } = renderWalletProvider({
+                        children: <TestComponent />,
+                        createOnInit,
+                        walletConfig,
+                    });
 
-                // final state
-                await checkSettledState(() => {
-                    expect(getByTestId("status").textContent).toBe("not-loaded");
-                    expect(getByTestId("wallet").textContent).toBe("No Wallet");
+                    await checkSettledState(() => {
+                        expect(getByTestId("status").textContent).toBe("not-loaded");
+                        expect(getByTestId("wallet").textContent).toBe("No Wallet");
+                    });
                 });
             });
         });
     });
 
     describe(`When createOnInit is "false"`, async () => {
+        beforeEach(() => {
+            createOnInit = false;
+            walletConfig = { type: "evm-smart-wallet", signer: { type: "PASSKEY" } };
+        });
+
         describe("Happy path", () => {
-            it("After, the wallet loads in", async () => {
+            test("The wallet loads as expected", async () => {
                 const { getByTestId } = renderWalletProvider({
                     children: <TestComponent />,
-                    createOnInit: false,
-                    walletConfig: { type: "evm-smart-wallet", signer: { type: "PASSKEY" } },
+                    createOnInit,
+                    walletConfig,
                 });
 
-                // initial state
                 expect(getByTestId("status").textContent).toBe("not-loaded");
                 expect(getByTestId("wallet").textContent).toBe("No Wallet");
                 expect(getByTestId("error").textContent).toBe("No Error");
@@ -264,83 +285,95 @@ describe("CrossmintWalletProvider", () => {
                     initiatedCreation: true,
                 });
 
-                // loading state
                 await waitFor(() => {
                     expect(getByTestId("status").textContent).toBe("in-progress");
                     expect(getByTestId("wallet").textContent).toBe("No Wallet");
                 });
 
-                // final state
                 await checkSettledState(() => {
                     expect(getByTestId("status").textContent).toBe("loaded");
                     expect(getByTestId("wallet").textContent).toBe("Wallet Loaded");
                 });
             });
 
-            it("handles smart wallet errors", async () => {
-                vi.mocked(mockSDK.getOrCreateWallet).mockRejectedValue(new SmartWalletError("Wallet creation failed"));
-
-                const { getByTestId } = renderWalletProvider({
-                    children: <TestComponent />,
-                    createOnInit: false,
-                    walletConfig: { type: "evm-smart-wallet", signer: { type: "PASSKEY" } },
+            describe("When getOrCreateWallet throws an error", async () => {
+                beforeEach(() => {
+                    vi.mocked(mockSDK.getOrCreateWallet).mockRejectedValue(
+                        new SmartWalletError("Wallet creation failed")
+                    );
                 });
 
-                fireEvent.click(getByTestId("create-wallet-button"));
+                it("Populates the useWallet hook error state with the error", async () => {
+                    const { getByTestId } = renderWalletProvider({
+                        children: <TestComponent />,
+                        createOnInit,
+                        walletConfig,
+                    });
 
-                // loading state
-                await waitFor(() => {
-                    expect(getByTestId("status").textContent).toBe("in-progress");
-                    expect(getByTestId("wallet").textContent).toBe("No Wallet");
-                });
+                    fireEvent.click(getByTestId("create-wallet-button"));
 
-                // final state
-                await checkSettledState(() => {
-                    expect(getByTestId("status").textContent).toBe("loading-error");
-                    expect(getByTestId("error").textContent).toBe("Wallet creation failed");
+                    await waitFor(() => {
+                        expect(getByTestId("status").textContent).toBe("in-progress");
+                        expect(getByTestId("wallet").textContent).toBe("No Wallet");
+                    });
+
+                    await checkSettledState(() => {
+                        expect(getByTestId("status").textContent).toBe("loading-error");
+                        expect(getByTestId("error").textContent).toBe("Wallet creation failed");
+                    });
                 });
             });
         });
 
         describe("Cases where wallet creation is not ready", () => {
-            it("When wallet config is not defined, getOrCreateWallet returns appropriate result", () => {
-                const { getByTestId } = renderWalletProvider({
-                    children: <TestComponent />,
-                    createOnInit: false,
-                    walletConfig: undefined,
+            describe("When wallet config is not defined", () => {
+                beforeEach(() => {
+                    walletConfig = undefined;
                 });
 
-                fireEvent.click(getByTestId("create-wallet-button"));
+                it("getOrCreateWallet does not instantiate wallet creation", () => {
+                    const { getByTestId } = renderWalletProvider({
+                        children: <TestComponent />,
+                        createOnInit,
+                        walletConfig,
+                    });
 
-                const result = JSON.parse(getByTestId("create-wallet-button-result").textContent!);
-                expect(result).toEqual({
-                    initiatedCreation: false,
-                    reason: "No wallet config provided, not creating wallet.",
-                });
-            });
+                    fireEvent.click(getByTestId("create-wallet-button"));
 
-            it("When the jwt from CrossmintProvider is not defined, getOrCreateWallet returns appropriate result", () => {
-                vi.mocked(createCrossmint).mockImplementation(() => ({
-                    apiKey: MOCK_API_KEY,
-                    jwt: undefined,
-                }));
-
-                const { getByTestId } = renderWalletProvider({
-                    children: <TestComponent />,
-                    createOnInit: false,
-                    walletConfig: { type: "evm-smart-wallet", signer: { type: "PASSKEY" } },
-                });
-
-                fireEvent.click(getByTestId("create-wallet-button"));
-
-                const result = JSON.parse(getByTestId("create-wallet-button-result").textContent!);
-                expect(result).toEqual({
-                    initiatedCreation: false,
-                    reason: "No authenticated user, not creating wallet.",
+                    const result = JSON.parse(getByTestId("create-wallet-button-result").textContent!);
+                    expect(result).toEqual({
+                        initiatedCreation: false,
+                        reason: "No wallet config provided, not creating wallet.",
+                    });
                 });
             });
 
-            it("should not initiate wallet creation when wallet is already loaded or loading", async () => {
+            describe("When the jwt from CrossmintProvider is not defined", () => {
+                beforeEach(() => {
+                    vi.mocked(createCrossmint).mockImplementation(() => ({
+                        apiKey: MOCK_API_KEY,
+                        jwt: undefined,
+                    }));
+                });
+
+                it("getOrCreateWallet does not instantiate wallet creation", () => {
+                    const { getByTestId } = renderWalletProvider({
+                        children: <TestComponent />,
+                        createOnInit,
+                        walletConfig,
+                    });
+
+                    fireEvent.click(getByTestId("create-wallet-button"));
+
+                    const result = JSON.parse(getByTestId("create-wallet-button-result").textContent!);
+                    expect(result).toEqual({
+                        initiatedCreation: false,
+                        reason: "No authenticated user, not creating wallet.",
+                    });
+                });
+            });
+
+            test("When the wallet is already loaded or loading, calling getOrCreateWallet from useWallet does not instantiate wallet creation", async () => {
                 const { getByTestId } = renderWalletProvider({
                     children: <TestComponent />,
                     createOnInit: false,
