@@ -28,8 +28,7 @@ vi.mock("@crossmint/common-sdk-base", async () => {
     };
 });
 
-const MOCK_API_KEY =
-    "sk_development_5ZUNkuhjP8aYZEgUTDfWToqFpo5zakEqte1db4pHZgPAVKZ9JuSvnKeGiqY654DoBuuZEzYz4Eb8gRV2ePqQ1fxTjEP8tTaUQdzbGfyG9RgyeN5YbqViXinqxk8EayEkAGtvSSgjpjEr6iaBptJtUFwPW59DjQzTQP6P8uZdiajenVg7bARGKjzFyByNuVEoz41DpRB4hDZNFdwCTuf5joFv";
+const MOCK_API_KEY = "sk_development_12341234";
 
 const WALLET_LOADING_TIME = 25;
 
@@ -120,12 +119,12 @@ describe("CrossmintWalletProvider", () => {
             });
         });
 
-        describe("When getOrCreateWallet throws an error", () => {
+        describe("When getOrCreateWallet throws a known error", () => {
             beforeEach(() => {
                 vi.mocked(mockSDK.getOrCreateWallet).mockRejectedValue(new SmartWalletError("Wallet creation failed"));
             });
 
-            it("should populate the useWallet hook error state with the error", async () => {
+            it("should set error directly with the thrown error", async () => {
                 const { getByTestId } = renderWalletProvider({
                     children: <TestComponent />,
                 });
@@ -140,6 +139,30 @@ describe("CrossmintWalletProvider", () => {
                 await checkSettledState(() => {
                     expect(getByTestId("status").textContent).toBe("loading-error");
                     expect(getByTestId("error").textContent).toBe("Wallet creation failed");
+                });
+            });
+        });
+
+        describe("When getOrCreateWallet throws an unknown error", () => {
+            beforeEach(() => {
+                vi.mocked(mockSDK.getOrCreateWallet).mockRejectedValue(new Error("Wallet creation failed"));
+            });
+
+            it("should set the error with the thrown error wrapped with a SmartWalletError", async () => {
+                const { getByTestId } = renderWalletProvider({
+                    children: <TestComponent />,
+                });
+
+                fireEvent.click(getByTestId("create-wallet-button"));
+
+                await waitFor(() => {
+                    expect(getByTestId("status").textContent).toBe("in-progress");
+                    expect(getByTestId("wallet").textContent).toBe("No Wallet");
+                });
+
+                await checkSettledState(() => {
+                    expect(getByTestId("status").textContent).toBe("loading-error");
+                    expect(getByTestId("error").textContent).toBe("Unknown Wallet Error: Wallet creation failed");
                 });
             });
         });

@@ -1,10 +1,10 @@
-import { useCrossmint, useWallet } from "@/hooks";
 import { type ReactNode, useEffect } from "react";
 
 import { AuthProvider as AuthCoreProvider } from "@crossmint/client-sdk-auth-core/client";
 import type { EVMSmartWalletChain, WalletParams } from "@crossmint/client-sdk-smart-wallet";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 
+import { useCrossmint, useWallet } from "../hooks";
 import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
 
 export type CrossmintAuthWalletConfig = {
