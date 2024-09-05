@@ -95,11 +95,8 @@ export class SmartWalletSDK {
 
     private assertValidChain(chain: SmartWalletChain) {
         if (!this.validChain(chain)) {
-            const validChains = this.crossmintEnv === "production" ? SMART_WALLET_MAINNETS : SMART_WALLET_TESTNETS;
-            const formattedChains = validChains.map((chain) => `"${chain}"`).join(", ");
             throw new SmartWalletError(
-                `Invalid chain "${chain}" for environment "${this.crossmintEnv}" specified by API key.\n` +
-                    `Either update the API key or use one of the following compatible chains:\n ${formattedChains}`
+                `The selected chain "${chain}" is not available in "${this.crossmintEnv}". Either set a valid chain or check you're using an API key for the environment you're trying to target.`
             );
         }
     }
