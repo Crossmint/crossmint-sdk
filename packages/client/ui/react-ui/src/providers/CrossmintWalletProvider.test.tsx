@@ -88,11 +88,13 @@ describe("CrossmintWalletProvider", () => {
             await waitFor(() => {
                 expect(getByTestId("status").textContent).toBe("in-progress");
                 expect(getByTestId("wallet").textContent).toBe("No Wallet");
+                expect(getByTestId("error").textContent).toBe("No Error");
             });
 
             await waitForSettledState(() => {
                 expect(getByTestId("status").textContent).toBe("loaded");
                 expect(getByTestId("wallet").textContent).toBe("Wallet Loaded");
+                expect(getByTestId("error").textContent).toBe("No Error");
             });
 
             expect(vi.mocked(mockSDK.getOrCreateWallet)).toHaveBeenCalledOnce();
@@ -137,10 +139,12 @@ describe("CrossmintWalletProvider", () => {
                 await waitFor(() => {
                     expect(getByTestId("status").textContent).toBe("in-progress");
                     expect(getByTestId("wallet").textContent).toBe("No Wallet");
+                    expect(getByTestId("error").textContent).toBe("No Error");
                 });
 
                 await waitForSettledState(() => {
                     expect(getByTestId("status").textContent).toBe("loading-error");
+                    expect(getByTestId("wallet").textContent).toBe("No Wallet");
                     expect(getByTestId("error").textContent).toBe("Wallet creation failed");
                 });
 
@@ -163,10 +167,12 @@ describe("CrossmintWalletProvider", () => {
                 await waitFor(() => {
                     expect(getByTestId("status").textContent).toBe("in-progress");
                     expect(getByTestId("wallet").textContent).toBe("No Wallet");
+                    expect(getByTestId("error").textContent).toBe("No Error");
                 });
 
                 await waitForSettledState(() => {
                     expect(getByTestId("status").textContent).toBe("loading-error");
+                    expect(getByTestId("wallet").textContent).toBe("No Wallet");
                     expect(getByTestId("error").textContent).toBe("Unknown Wallet Error: Wallet creation failed");
                 });
 
@@ -185,6 +191,7 @@ describe("CrossmintWalletProvider", () => {
         await waitForSettledState(() => {
             expect(getByTestId("status").textContent).toBe("loaded");
             expect(getByTestId("wallet").textContent).toBe("Wallet Loaded");
+            expect(getByTestId("error").textContent).toBe("No Error");
         });
 
         fireEvent.click(getByTestId("clear-wallet-button"));
@@ -192,6 +199,7 @@ describe("CrossmintWalletProvider", () => {
         await waitForSettledState(() => {
             expect(getByTestId("status").textContent).toBe("not-loaded");
             expect(getByTestId("wallet").textContent).toBe("No Wallet");
+            expect(getByTestId("error").textContent).toBe("No Error");
         });
     });
 });

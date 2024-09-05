@@ -100,14 +100,14 @@ describe("CrossmintAuthProvider", () => {
             embeddedWallets,
         });
 
-        await waitFor(() => {
-            expect(getByTestId("status").textContent).toBe("in-progress");
-            expect(getByTestId("wallet").textContent).toBe("No Wallet");
-        });
+        expect(getByTestId("status").textContent).toBe("in-progress");
+        expect(getByTestId("wallet").textContent).toBe("No Wallet");
+        expect(getByTestId("error").textContent).toBe("No Error");
 
         await waitForSettledState(() => {
             expect(getByTestId("status").textContent).toBe("loaded");
             expect(getByTestId("wallet").textContent).toBe("Wallet Loaded");
+            expect(getByTestId("error").textContent).toBe("No Error");
         });
 
         expect(vi.mocked(mockSDK.getOrCreateWallet)).toHaveBeenCalledOnce();
