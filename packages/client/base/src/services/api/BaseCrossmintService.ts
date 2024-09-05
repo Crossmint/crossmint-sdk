@@ -2,7 +2,7 @@ import { CrossmintServiceError } from "@/error";
 import { SDKLogger } from "@/utils/SDKLogger";
 
 import { APIErrorService } from "./APIErrorService";
-import { getCrossmintBaseUrl } from "./helpers/getCrossmintBaseUrl";
+import { validateApiKeyAndGetCrossmintBaseUrl } from "./helpers/validateApiKeyAndGetCrossmintBaseUrl";
 
 export abstract class BaseCrossmintService {
     public crossmintAPIHeaders: Record<string, string>;
@@ -11,7 +11,7 @@ export abstract class BaseCrossmintService {
     protected abstract logger: SDKLogger;
 
     constructor(apiKey: string) {
-        this.crossmintBaseUrl = getCrossmintBaseUrl(apiKey);
+        this.crossmintBaseUrl = validateApiKeyAndGetCrossmintBaseUrl(apiKey);
         this.crossmintAPIHeaders = {
             accept: "application/json",
             "content-type": "application/json",

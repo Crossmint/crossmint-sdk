@@ -1,1 +1,1 @@
-export * from "./getCrossmintBaseUrl";
+export * from "./validateApiKeyAndGetCrossmintBaseUrl";
