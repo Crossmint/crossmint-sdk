@@ -59,7 +59,7 @@ const styles: { [key: string]: CSSProperties } = {
     },
     transitionBegin: {
         background: "rgba(139, 151, 151, 0.2)",
-        filter: "blur(4px)",
+        backdropFilter: "blur(2px)",
         position: "fixed",
         top: 0,
         right: 0,
