@@ -27,7 +27,7 @@ export function CrossmintAuthProvider({
 
     return (
         <AuthCoreProvider setJwtToken={setJwt} crossmint={crossmint} appearance={appearance}>
-            <CrossmintWalletProvider>
+            <CrossmintWalletProvider defaultChain={embeddedWallets.defaultChain}>
                 <WalletManager embeddedWallets={embeddedWallets}>{children}</WalletManager>
             </CrossmintWalletProvider>
         </AuthCoreProvider>
@@ -46,10 +46,9 @@ function WalletManager({
 
     useEffect(() => {
         if (embeddedWallets.createOnLogin === "all-users" && status === "not-loaded" && crossmint.jwt != null) {
-            const config: WalletParams = embeddedWallets.config ?? { signer: { type: "PASSKEY" } };
-            getOrCreateWallet({ jwt: crossmint.jwt }, embeddedWallets.defaultChain, {
+            getOrCreateWallet({
                 type: embeddedWallets.type,
-                ...config,
+                ...(embeddedWallets.config ?? { signer: { type: "PASSKEY" } }),
             });
         }
 

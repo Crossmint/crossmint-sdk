@@ -10,7 +10,6 @@ import { useWallet } from "../hooks";
 import { CrossmintProvider, useCrossmint } from "../hooks/useCrossmint";
 import { MOCK_API_KEY, waitForSettledState } from "../testUtils";
 import { CrossmintAuthProvider, CrossmintAuthWalletConfig } from "./CrossmintAuthProvider";
-import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
 
 vi.mock("@crossmint/client-sdk-smart-wallet", async () => {
     const actual = await vi.importActual("@crossmint/client-sdk-smart-wallet");
@@ -39,9 +38,7 @@ function renderAuthProvider({
 }) {
     return render(
         <CrossmintProvider apiKey={MOCK_API_KEY}>
-            <CrossmintWalletProvider>
-                <CrossmintAuthProvider embeddedWallets={embeddedWallets}>{children}</CrossmintAuthProvider>
-            </CrossmintWalletProvider>
+            <CrossmintAuthProvider embeddedWallets={embeddedWallets}>{children}</CrossmintAuthProvider>
         </CrossmintProvider>
     );
 }
