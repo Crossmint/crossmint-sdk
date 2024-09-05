@@ -118,6 +118,7 @@ describe("CrossmintWalletProvider", () => {
                 await waitForSettledState(() => {
                     expect(getByTestId("status").textContent).toBe("not-loaded");
                     expect(getByTestId("wallet").textContent).toBe("No Wallet");
+                    expect(getByTestId("error").textContent).toBe("No Error");
                 });
 
                 expect(vi.mocked(mockSDK.getOrCreateWallet)).not.toHaveBeenCalled();
