@@ -34,7 +34,7 @@ type AuthModalProps = {
     appearance?: UIConfig;
 };
 
-export function AuthModal({ setModalOpen, setJwtToken, apiKey, baseUrl, appearance }: AuthModalProps) {
+export default function AuthModal({ setModalOpen, setJwtToken, apiKey, baseUrl, appearance }: AuthModalProps) {
     let iframeSrc = `${baseUrl}/sdk/auth/frame?apiKey=${apiKey}`;
     if (appearance != null) {
         // The appearance object is serialized into a query parameter

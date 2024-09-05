@@ -1,10 +1,10 @@
-import { AuthModal } from "@/components";
+import AuthModal from "@/components/auth/AuthModal";
 import { useCrossmint } from "@/hooks";
-import { CrossmintAuthService } from "@/services/CrossmintAuthService";
 import { SESSION_PREFIX } from "@/utils";
-import { type ReactNode, createContext, useEffect, useMemo, useState } from "react";
+import { type ReactNode, createContext, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
+import { getCrossmintBaseUrl } from "@crossmint/client-sdk-base";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 
 import { type CrossmintWalletConfig, CrossmintWalletProvider } from "./CrossmintWalletProvider";
@@ -22,13 +22,11 @@ export const AuthContext = createContext({
 });
 
 export function CrossmintAuthProvider({ embeddedWallets, children, appearance }: CrossmintAuthProviderProps) {
+    // TODO: Refactor to return crossmintBaseUrl from useCrossmint hook
     const { crossmint, setJwt } = useCrossmint("CrossmintAuthProvider must be used within CrossmintProvider");
-    const [modalOpen, setModalOpen] = useState(false);
+    const crossmintBaseUrl = getCrossmintBaseUrl(crossmint.apiKey);
 
-    const crossmintService = useMemo(
-        () => new CrossmintAuthService(crossmint.apiKey),
-        [crossmint.apiKey, crossmint.jwt]
-    );
+    const [modalOpen, setModalOpen] = useState(false);
 
     const login = () => {
         if (crossmint.jwt) {
@@ -65,7 +63,7 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
                 {modalOpen
                     ? createPortal(
                           <AuthModal
-                              baseUrl={crossmintService.crossmintBaseUrl}
+                              baseUrl={crossmintBaseUrl}
                               setModalOpen={setModalOpen}
                               setJwtToken={setJwt}
                               apiKey={crossmint.apiKey}
