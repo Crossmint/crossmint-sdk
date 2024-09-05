@@ -37,6 +37,14 @@ export const SmartWalletChain = {
 export type SmartWalletChain = ObjectValues<typeof SmartWalletChain>;
 export const SMART_WALLET_CHAINS = objectValues(SmartWalletChain);
 
+export function isTestnetChain(chain: SmartWalletChain): chain is SmartWalletTestnet {
+    return (SMART_WALLET_TESTNETS as any).includes(chain);
+}
+
+export function isMainnetChain(chain: SmartWalletChain): chain is SmartWalletMainnet {
+    return (SMART_WALLET_MAINNETS as any).includes(chain);
+}
+
 export const viemNetworks: Record<SmartWalletChain, Chain> = {
     polygon: polygon,
     "polygon-amoy": polygonAmoy,

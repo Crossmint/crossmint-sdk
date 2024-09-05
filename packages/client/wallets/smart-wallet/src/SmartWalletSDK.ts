@@ -1,9 +1,15 @@
 import { stringify } from "viem";
 
-import { validateAPIKey } from "@crossmint/common-sdk-base";
+import { APIKeyEnvironmentPrefix, validateAPIKey } from "@crossmint/common-sdk-base";
 
 import { CrossmintWalletService } from "./api/CrossmintWalletService";
-import type { SmartWalletChain } from "./blockchain/chains";
+import {
+    SMART_WALLET_MAINNETS,
+    SMART_WALLET_TESTNETS,
+    type SmartWalletChain,
+    isMainnetChain,
+    isTestnetChain,
+} from "./blockchain/chains";
 import type { EVMSmartWallet } from "./blockchain/wallets";
 import { AccountConfigCache } from "./blockchain/wallets/account/cache";
 import { AccountConfigService } from "./blockchain/wallets/account/config";
@@ -21,6 +27,7 @@ import { isClient } from "./utils/environment";
 
 export class SmartWalletSDK {
     private constructor(
+        private readonly crossmintEnv: APIKeyEnvironmentPrefix,
         private readonly smartWalletService: SmartWalletService,
         private readonly errorProcessor: ErrorProcessor,
         private readonly logger = scwLogger
@@ -55,7 +62,7 @@ export class SmartWalletSDK {
             new ClientDecorator(errorProcessor)
         );
 
-        return new SmartWalletSDK(smartWalletService, errorProcessor);
+        return new SmartWalletSDK(validationResult.environment, smartWalletService, errorProcessor);
     }
 
     /**
@@ -72,6 +79,8 @@ export class SmartWalletSDK {
         chain: SmartWalletChain,
         walletParams: WalletParams = { signer: { type: "PASSKEY" } }
     ): Promise<EVMSmartWallet> {
+        this.assertValidChain(chain);
+
         return this.logger.logPerformance("GET_OR_CREATE_WALLET", async () => {
             try {
                 return await this.smartWalletService.getOrCreate(user, chain, walletParams);
@@ -82,5 +91,21 @@ export class SmartWalletSDK {
                 );
             }
         });
+    }
+
+    private assertValidChain(chain: SmartWalletChain) {
+        if (!this.validChain(chain)) {
+            throw new SmartWalletError(
+                `The selected chain "${chain}" is not available in "${this.crossmintEnv}". Either set a valid chain or check you're using an API key for the environment you're trying to target.`
+            );
+        }
+    }
+
+    private validChain(chain: SmartWalletChain): boolean {
+        if (this.crossmintEnv === "development" || this.crossmintEnv === "staging") {
+            return isTestnetChain(chain);
+        }
+
+        return isMainnetChain(chain);
     }
 }
