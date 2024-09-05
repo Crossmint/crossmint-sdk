@@ -21,7 +21,7 @@ export function CrossmintAuthProvider({
 }: {
     embeddedWallets: CrossmintAuthWalletConfig;
     children: ReactNode;
-    appearance: UIConfig;
+    appearance?: UIConfig;
 }) {
     const { crossmint, setJwt } = useCrossmint("CrossmintAuthProvider must be used within CrossmintProvider");
 
@@ -41,11 +41,11 @@ function WalletManager({
     embeddedWallets: CrossmintAuthWalletConfig;
     children: ReactNode;
 }) {
-    const { getOrCreateWallet, clearWallet, status } = useWallet();
     const { crossmint } = useCrossmint("CrossmintAuthProvider must be used within CrossmintProvider");
+    const { getOrCreateWallet, clearWallet, status } = useWallet();
 
     useEffect(() => {
-        if (embeddedWallets.createOnLogin && status === "not-loaded" && crossmint.jwt != null) {
+        if (embeddedWallets.createOnLogin === "all-users" && status === "not-loaded" && crossmint.jwt != null) {
             const config: WalletParams = embeddedWallets.config ?? { signer: { type: "PASSKEY" } };
             getOrCreateWallet({ jwt: crossmint.jwt }, embeddedWallets.defaultChain, {
                 type: embeddedWallets.type,

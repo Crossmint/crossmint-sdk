@@ -8,6 +8,7 @@ import { createCrossmint } from "@crossmint/common-sdk-base";
 
 import { CrossmintProvider, useCrossmint } from "../hooks/useCrossmint";
 import { useWallet } from "../hooks/useWallet";
+import { MOCK_API_KEY, waitForSettledState } from "../testUtils";
 import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
 
 vi.mock("@crossmint/client-sdk-smart-wallet", async () => {
@@ -27,15 +28,6 @@ vi.mock("@crossmint/common-sdk-base", async () => {
         createCrossmint: vi.fn(),
     };
 });
-
-const MOCK_API_KEY = "sk_development_12341234";
-
-const WALLET_LOADING_TIME = 25;
-
-const checkSettledState = async (callback: () => void) => {
-    await new Promise((resolve) => setTimeout(resolve, WALLET_LOADING_TIME * 2));
-    callback();
-};
 
 function renderWalletProvider({ children }: { children: ReactNode }) {
     return render(
@@ -79,21 +71,15 @@ describe("CrossmintWalletProvider", () => {
     beforeEach(() => {
         vi.resetAllMocks();
 
-        // Mock API Key Validation
         vi.mocked(createCrossmint).mockImplementation(() => ({
             apiKey: MOCK_API_KEY,
             jwt: "mock-jwt",
         }));
 
-        // Mock Wallet SDK
         mockSDK = mock<SmartWalletSDK>();
         mockWallet = mock<EVMSmartWallet>();
         vi.mocked(SmartWalletSDK.init).mockReturnValue(mockSDK);
-        vi.mocked(mockSDK.getOrCreateWallet).mockReturnValue(
-            new Promise((resolve) => {
-                setTimeout(() => resolve(mockWallet), WALLET_LOADING_TIME);
-            })
-        );
+        vi.mocked(mockSDK.getOrCreateWallet).mockResolvedValue(mockWallet);
     });
 
     describe("getOrCreateWallet", () => {
@@ -113,10 +99,12 @@ describe("CrossmintWalletProvider", () => {
                 expect(getByTestId("wallet").textContent).toBe("No Wallet");
             });
 
-            await checkSettledState(() => {
+            await waitForSettledState(() => {
                 expect(getByTestId("status").textContent).toBe("loaded");
                 expect(getByTestId("wallet").textContent).toBe("Wallet Loaded");
             });
+
+            expect(vi.mocked(mockSDK.getOrCreateWallet)).toHaveBeenCalledOnce();
         });
 
         describe("When getOrCreateWallet throws a known error", () => {
@@ -136,10 +124,12 @@ describe("CrossmintWalletProvider", () => {
                     expect(getByTestId("wallet").textContent).toBe("No Wallet");
                 });
 
-                await checkSettledState(() => {
+                await waitForSettledState(() => {
                     expect(getByTestId("status").textContent).toBe("loading-error");
                     expect(getByTestId("error").textContent).toBe("Wallet creation failed");
                 });
+
+                expect(vi.mocked(mockSDK.getOrCreateWallet)).toHaveBeenCalledOnce();
             });
         });
 
@@ -160,10 +150,12 @@ describe("CrossmintWalletProvider", () => {
                     expect(getByTestId("wallet").textContent).toBe("No Wallet");
                 });
 
-                await checkSettledState(() => {
+                await waitForSettledState(() => {
                     expect(getByTestId("status").textContent).toBe("loading-error");
                     expect(getByTestId("error").textContent).toBe("Unknown Wallet Error: Wallet creation failed");
                 });
+
+                expect(vi.mocked(mockSDK.getOrCreateWallet)).toHaveBeenCalledOnce();
             });
         });
     });
@@ -175,14 +167,14 @@ describe("CrossmintWalletProvider", () => {
 
         fireEvent.click(getByTestId("create-wallet-button"));
 
-        await checkSettledState(() => {
+        await waitForSettledState(() => {
             expect(getByTestId("status").textContent).toBe("loaded");
             expect(getByTestId("wallet").textContent).toBe("Wallet Loaded");
         });
 
         fireEvent.click(getByTestId("clear-wallet-button"));
 
-        await checkSettledState(() => {
+        await waitForSettledState(() => {
             expect(getByTestId("status").textContent).toBe("not-loaded");
             expect(getByTestId("wallet").textContent).toBe("No Wallet");
         });
