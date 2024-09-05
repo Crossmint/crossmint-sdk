@@ -47,7 +47,7 @@ function renderAuthProvider({
 }
 
 function TestComponent() {
-    const { crossmint, setJwt } = useCrossmint();
+    const { setJwt } = useCrossmint();
     const { wallet, status, error } = useWallet();
 
     return (
@@ -55,7 +55,6 @@ function TestComponent() {
             <div data-testid="error">{error?.message ?? "No Error"}</div>
             <div data-testid="status">{status}</div>
             <div data-testid="wallet">{wallet ? "Wallet Loaded" : "No Wallet"}</div>
-            <div data-testid="jwt">{crossmint.jwt ?? "No JWT"}</div>
             <input
                 data-testid="jwt-input"
                 type="text"
@@ -165,8 +164,7 @@ describe("CrossmintAuthProvider", () => {
             expect(getByTestId("wallet").textContent).toBe("Wallet Loaded");
         });
 
-        const clearJwtButton = getByTestId("clear-jwt-button");
-        fireEvent.click(clearJwtButton);
+        fireEvent.click(getByTestId("clear-jwt-button"));
 
         await waitForSettledState(() => {
             expect(getByTestId("status").textContent).toBe("not-loaded");
