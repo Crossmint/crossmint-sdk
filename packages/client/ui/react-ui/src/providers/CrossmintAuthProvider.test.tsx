@@ -46,38 +46,38 @@ function renderAuthProvider({
     );
 }
 
+function TestComponent() {
+    const { crossmint, setJwt } = useCrossmint();
+    const { wallet, status, error } = useWallet();
+
+    return (
+        <div>
+            <div data-testid="error">{error?.message ?? "No Error"}</div>
+            <div data-testid="status">{status}</div>
+            <div data-testid="wallet">{wallet ? "Wallet Loaded" : "No Wallet"}</div>
+            <div data-testid="jwt">{crossmint.jwt ?? "No JWT"}</div>
+            <input
+                data-testid="jwt-input"
+                type="text"
+                onChange={(e) => {
+                    console.log("onChange!");
+                    console.log(e.target.value);
+                    return setJwt(e.target.value);
+                }}
+                placeholder="Set JWT"
+            />
+
+            <button data-testid="clear-jwt-button" onClick={() => setJwt(undefined)}>
+                Clear JWT
+            </button>
+        </div>
+    );
+}
+
 describe("CrossmintAuthProvider", () => {
     let mockSDK: SmartWalletSDK;
     let mockWallet: EVMSmartWallet;
     let embeddedWallets: CrossmintAuthWalletConfig;
-
-    const TestComponent = () => {
-        const { crossmint, setJwt } = useCrossmint();
-        const { wallet, status, error } = useWallet();
-
-        return (
-            <div>
-                <div data-testid="error">{error?.message ?? "No Error"}</div>
-                <div data-testid="status">{status}</div>
-                <div data-testid="wallet">{wallet ? "Wallet Loaded" : "No Wallet"}</div>
-                <div data-testid="jwt">{crossmint.jwt ?? "No JWT"}</div>
-                <input
-                    data-testid="jwt-input"
-                    type="text"
-                    onChange={(e) => {
-                        console.log("onChange!");
-                        console.log(e.target.value);
-                        return setJwt(e.target.value);
-                    }}
-                    placeholder="Set JWT"
-                />
-
-                <button data-testid="clear-jwt-button" onClick={() => setJwt(undefined)}>
-                    Clear JWT
-                </button>
-            </div>
-        );
-    };
 
     beforeEach(() => {
         vi.resetAllMocks();
@@ -154,7 +154,7 @@ describe("CrossmintAuthProvider", () => {
         expect(vi.mocked(mockSDK.getOrCreateWallet)).not.toHaveBeenCalled();
     });
 
-    test("should clear JWT when it becomes null", async () => {
+    test("When the jwt is cleared, so is the wallet", async () => {
         const { getByTestId } = renderAuthProvider({
             children: <TestComponent />,
             embeddedWallets,

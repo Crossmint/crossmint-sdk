@@ -37,36 +37,36 @@ function renderWalletProvider({ children }: { children: ReactNode }) {
     );
 }
 
+function TestComponent() {
+    const { status, wallet, error, getOrCreateWallet, clearWallet } = useWallet();
+    const { crossmint } = useCrossmint();
+
+    return (
+        <div>
+            <div data-testid="error">{error?.message ?? "No Error"}</div>
+            <div data-testid="status">{status}</div>
+            <div data-testid="wallet">{wallet ? "Wallet Loaded" : "No Wallet"}</div>
+            <button
+                data-testid="create-wallet-button"
+                onClick={() =>
+                    getOrCreateWallet({ jwt: crossmint.jwt! }, "polygon", {
+                        type: "evm-smart-wallet",
+                        signer: { type: "PASSKEY" },
+                    })
+                }
+            >
+                Create Wallet
+            </button>
+            <button data-testid="clear-wallet-button" onClick={() => clearWallet()}>
+                Clear Wallet
+            </button>
+        </div>
+    );
+}
+
 describe("CrossmintWalletProvider", () => {
     let mockSDK: SmartWalletSDK;
     let mockWallet: EVMSmartWallet;
-
-    const TestComponent = () => {
-        const { status, wallet, error, getOrCreateWallet, clearWallet } = useWallet();
-        const { crossmint } = useCrossmint();
-
-        return (
-            <div>
-                <div data-testid="error">{error?.message ?? "No Error"}</div>
-                <div data-testid="status">{status}</div>
-                <div data-testid="wallet">{wallet ? "Wallet Loaded" : "No Wallet"}</div>
-                <button
-                    data-testid="create-wallet-button"
-                    onClick={() =>
-                        getOrCreateWallet({ jwt: crossmint.jwt! }, "polygon", {
-                            type: "evm-smart-wallet",
-                            signer: { type: "PASSKEY" },
-                        })
-                    }
-                >
-                    Create Wallet
-                </button>
-                <button data-testid="clear-wallet-button" onClick={() => clearWallet()}>
-                    Clear Wallet
-                </button>
-            </div>
-        );
-    };
 
     beforeEach(() => {
         vi.resetAllMocks();
