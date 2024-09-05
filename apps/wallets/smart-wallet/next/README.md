@@ -145,7 +145,7 @@ import { useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
 
 export default function Home() {
     const { login, logout, jwt } = useAuth();
-		const { wallet } = useWallet();
+    const { wallet } = useWallet();
 
     return <div>{jwt ? <button onClick={logout}>Log out</button> : <button onClick={login}>Log in</button>}</div>;
 }
