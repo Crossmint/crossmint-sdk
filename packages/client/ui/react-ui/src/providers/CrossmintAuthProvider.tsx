@@ -9,10 +9,16 @@ import { useCrossmint, useWallet } from "../hooks";
 import { SESSION_PREFIX } from "../utils";
 import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
 
-export type CrossmintAuthWalletConfig = {
+type CrossmintAuthWalletConfig = {
     defaultChain: EVMSmartWalletChain;
     createOnLogin: "all-users" | "off";
     type: "evm-smart-wallet";
+};
+
+export type CrossmintAuthProviderProps = {
+    embeddedWallets: CrossmintAuthWalletConfig;
+    appearance?: UIConfig;
+    children: ReactNode;
 };
 
 export const AuthContext = createContext({
@@ -21,15 +27,7 @@ export const AuthContext = createContext({
     jwt: undefined as string | undefined,
 });
 
-export function CrossmintAuthProvider({
-    embeddedWallets,
-    children,
-    appearance,
-}: {
-    embeddedWallets: CrossmintAuthWalletConfig;
-    children: ReactNode;
-    appearance?: UIConfig;
-}) {
+export function CrossmintAuthProvider({ embeddedWallets, children, appearance }: CrossmintAuthProviderProps) {
     const { crossmint, setJwt } = useCrossmint("CrossmintAuthProvider must be used within CrossmintProvider");
     const crossmintBaseUrl = validateApiKeyAndGetCrossmintBaseUrl(crossmint.apiKey);
     const [modalOpen, setModalOpen] = useState(false);
