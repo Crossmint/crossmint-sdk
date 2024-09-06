@@ -1,7 +1,8 @@
 import { ReactNode, createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 
-import { getCachedJwt } from "@crossmint/client-sdk-auth-core/client";
 import { Crossmint, createCrossmint } from "@crossmint/common-sdk-base";
+
+import { getCachedJwt } from "../utils";
 
 export interface CrossmintContext {
     crossmint: Crossmint;

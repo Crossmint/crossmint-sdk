@@ -30,12 +30,16 @@
         "@crossmint/client-sdk-auth-core": "workspace:*",
         "@crossmint/client-sdk-base": "workspace:*",
         "@crossmint/client-sdk-smart-wallet": "workspace:*",
+        "@crossmint/client-sdk-window": "workspace:*",
         "@crossmint/common-sdk-base": "workspace:*",
         "@ethersproject/transactions": "5.7.0",
+        "@headlessui/react": "2.1.5",
         "@solana/web3.js": "1.95.1",
         "bs58": "5.0.0",
         "lodash.isequal": "4.5.0",
-        "react-jss": "10.10.0"
+        "react-jss": "10.10.0",
+        "tailwindcss": "3.4.10",
+        "zod": "3.22.4"
     },
     "devDependencies": {
         "@types/lodash.isequal": "4.5.6",

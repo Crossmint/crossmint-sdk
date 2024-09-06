@@ -1,8 +1,10 @@
+import AuthModal from "@/components/auth/AuthModal";
 import { useCrossmint } from "@/hooks";
-import type { ReactNode } from "react";
+import { SESSION_PREFIX } from "@/utils";
+import { type ReactNode, createContext, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
-import { AuthProvider as AuthCoreProvider } from "@crossmint/client-sdk-auth-core/client";
-import type { UIConfig } from "@crossmint/common-sdk-base";
+import { type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
 
 import { type CrossmintWalletConfig, CrossmintWalletProvider } from "./CrossmintWalletProvider";
 
@@ -12,12 +14,64 @@ type CrossmintAuthProviderProps = {
     appearance?: UIConfig;
 };
 
+export const AuthContext = createContext({
+    login: () => {},
+    logout: () => {},
+    jwt: undefined as string | undefined,
+});
+
 export function CrossmintAuthProvider({ embeddedWallets, children, appearance }: CrossmintAuthProviderProps) {
     const { crossmint, setJwt } = useCrossmint("CrossmintAuthProvider must be used within CrossmintProvider");
+    const crossmintBaseUrl = validateApiKeyAndGetCrossmintBaseUrl(crossmint.apiKey);
+
+    const [modalOpen, setModalOpen] = useState(false);
+
+    const login = () => {
+        if (crossmint.jwt) {
+            console.log("User already logged in");
+            return;
+        }
+
+        setModalOpen(true);
+    };
+
+    useEffect(() => {
+        if (crossmint.jwt == null) {
+            return;
+        }
+
+        setModalOpen(false);
+    }, [crossmint.jwt]);
+
+    const logout = () => {
+        document.cookie = `${SESSION_PREFIX}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+        setJwt(undefined);
+    };
+
+    useEffect(() => {
+        if (crossmint.jwt) {
+            document.cookie = `${SESSION_PREFIX}=${crossmint.jwt}; path=/;SameSite=Lax;`;
+        }
+    }, [crossmint.jwt]);
 
     return (
-        <AuthCoreProvider setJwtToken={setJwt} crossmint={crossmint} appearance={appearance}>
-            <CrossmintWalletProvider config={embeddedWallets}>{children}</CrossmintWalletProvider>
-        </AuthCoreProvider>
+        <AuthContext.Provider value={{ login, logout, jwt: crossmint.jwt }}>
+            <CrossmintWalletProvider config={embeddedWallets}>
+                {children}
+                {modalOpen
+                    ? createPortal(
+                          <AuthModal
+                              baseUrl={crossmintBaseUrl}
+                              setModalOpen={setModalOpen}
+                              setJwtToken={setJwt}
+                              apiKey={crossmint.apiKey}
+                              appearance={appearance}
+                          />,
+
+                          document.body
+                      )
+                    : null}
+            </CrossmintWalletProvider>
+        </AuthContext.Provider>
     );
 }
