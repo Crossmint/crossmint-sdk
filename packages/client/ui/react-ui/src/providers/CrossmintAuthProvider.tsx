@@ -1,10 +1,10 @@
-import AuthModal from "@/components/auth/AuthModal";
 import { type ReactNode, createContext, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 import type { EVMSmartWalletChain } from "@crossmint/client-sdk-smart-wallet";
 import { type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
 
+import AuthModal from "../components/auth/AuthModal";
 import { useCrossmint, useWallet } from "../hooks";
 import { SESSION_PREFIX } from "../utils";
 import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
@@ -27,8 +27,8 @@ export function CrossmintAuthProvider({
     appearance,
 }: {
     embeddedWallets: CrossmintAuthWalletConfig;
-    appearance: UIConfig;
     children: ReactNode;
+    appearance?: UIConfig;
 }) {
     const { crossmint, setJwt } = useCrossmint("CrossmintAuthProvider must be used within CrossmintProvider");
     const crossmintBaseUrl = validateApiKeyAndGetCrossmintBaseUrl(crossmint.apiKey);

@@ -26,6 +26,7 @@ vi.mock("@crossmint/common-sdk-base", async () => {
     return {
         ...actual,
         createCrossmint: vi.fn(),
+        validateApiKeyAndGetCrossmintBaseUrl: vi.fn(),
     };
 });
 
