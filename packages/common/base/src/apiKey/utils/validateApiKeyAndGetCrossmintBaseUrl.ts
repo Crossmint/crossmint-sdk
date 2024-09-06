@@ -1,6 +1,6 @@
-import { APIKeyEnvironmentPrefix, validateAPIKey } from "@crossmint/common-sdk-base";
-
-import { CROSSMINT_DEV_URL, CROSSMINT_PROD_URL, CROSSMINT_STG_URL } from "../../../consts";
+import { CROSSMINT_DEV_URL, CROSSMINT_PROD_URL, CROSSMINT_STG_URL } from "../consts";
+import { APIKeyEnvironmentPrefix } from "../types";
+import { validateAPIKey } from "../validateAPIKey";
 
 const urlMap: Record<APIKeyEnvironmentPrefix, string> = {
     development: CROSSMINT_DEV_URL,

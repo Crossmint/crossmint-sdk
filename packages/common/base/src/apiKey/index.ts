@@ -4,3 +4,4 @@ export * from "./types";
 
 export * from "./validateAPIKey";
 export * from "./validateAPIKeyPrefix";
+export * from "./utils/validateApiKeyAndGetCrossmintBaseUrl";

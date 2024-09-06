@@ -1,8 +1,9 @@
 import { CrossmintServiceError } from "@/error";
 import { SDKLogger } from "@/utils/SDKLogger";
 
+import { validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
+
 import { APIErrorService } from "./APIErrorService";
-import { validateApiKeyAndGetCrossmintBaseUrl } from "./helpers/validateApiKeyAndGetCrossmintBaseUrl";
 
 export abstract class BaseCrossmintService {
     public crossmintAPIHeaders: Record<string, string>;

@@ -4,8 +4,7 @@ import { SESSION_PREFIX } from "@/utils";
 import { type ReactNode, createContext, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/client-sdk-base";
-import type { UIConfig } from "@crossmint/common-sdk-base";
+import { type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
 
 import { type CrossmintWalletConfig, CrossmintWalletProvider } from "./CrossmintWalletProvider";
 
