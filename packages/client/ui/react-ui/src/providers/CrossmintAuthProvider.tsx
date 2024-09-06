@@ -1,7 +1,7 @@
 import { type ReactNode, useEffect } from "react";
 
 import { AuthProvider as AuthCoreProvider } from "@crossmint/client-sdk-auth-core/client";
-import type { EVMSmartWalletChain, WalletParams } from "@crossmint/client-sdk-smart-wallet";
+import type { EVMSmartWalletChain } from "@crossmint/client-sdk-smart-wallet";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 
 import { useCrossmint, useWallet } from "../hooks";
@@ -11,7 +11,6 @@ export type CrossmintAuthWalletConfig = {
     defaultChain: EVMSmartWalletChain;
     createOnLogin: "all-users" | "off";
     type: "evm-smart-wallet";
-    config?: WalletParams;
 };
 
 export function CrossmintAuthProvider({
@@ -48,7 +47,7 @@ function WalletManager({
         if (embeddedWallets.createOnLogin === "all-users" && status === "not-loaded" && crossmint.jwt != null) {
             getOrCreateWallet({
                 type: embeddedWallets.type,
-                ...(embeddedWallets.config ?? { signer: { type: "PASSKEY" } }),
+                signer: { type: "PASSKEY" },
             });
         }
 
