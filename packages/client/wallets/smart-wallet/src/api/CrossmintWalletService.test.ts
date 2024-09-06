@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { CROSSMINT_STG_URL } from "@crossmint/client-sdk-base";
+import { CROSSMINT_STG_URL } from "@crossmint/common-sdk-base";
 
 import { CrossmintWalletService } from "./CrossmintWalletService";
 

@@ -1,10 +1,12 @@
-import { type ReactNode, useEffect } from "react";
+import AuthModal from "@/components/auth/AuthModal";
+import { type ReactNode, createContext, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
-import { AuthProvider as AuthCoreProvider } from "@crossmint/client-sdk-auth-core/client";
 import type { EVMSmartWalletChain } from "@crossmint/client-sdk-smart-wallet";
-import type { UIConfig } from "@crossmint/common-sdk-base";
+import { type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
 
 import { useCrossmint, useWallet } from "../hooks";
+import { SESSION_PREFIX } from "../utils";
 import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
 
 export type CrossmintAuthWalletConfig = {
@@ -13,48 +15,100 @@ export type CrossmintAuthWalletConfig = {
     type: "evm-smart-wallet";
 };
 
+export const AuthContext = createContext({
+    login: () => {},
+    logout: () => {},
+    jwt: undefined as string | undefined,
+});
+
 export function CrossmintAuthProvider({
     embeddedWallets,
     children,
     appearance,
 }: {
     embeddedWallets: CrossmintAuthWalletConfig;
+    appearance: UIConfig;
     children: ReactNode;
-    appearance?: UIConfig;
 }) {
     const { crossmint, setJwt } = useCrossmint("CrossmintAuthProvider must be used within CrossmintProvider");
+    const crossmintBaseUrl = validateApiKeyAndGetCrossmintBaseUrl(crossmint.apiKey);
+    const [modalOpen, setModalOpen] = useState(false);
+
+    const login = () => {
+        if (crossmint.jwt) {
+            console.log("User already logged in");
+            return;
+        }
+
+        setModalOpen(true);
+    };
+
+    const logout = () => {
+        document.cookie = `${SESSION_PREFIX}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+        setJwt(undefined);
+    };
+
+    useEffect(() => {
+        if (crossmint.jwt == null) {
+            return;
+        }
+
+        setModalOpen(false);
+    }, [crossmint.jwt]);
+
+    useEffect(() => {
+        if (crossmint.jwt) {
+            document.cookie = `${SESSION_PREFIX}=${crossmint.jwt}; path=/;SameSite=Lax;`;
+        }
+    }, [crossmint.jwt]);
 
     return (
-        <AuthCoreProvider setJwtToken={setJwt} crossmint={crossmint} appearance={appearance}>
+        <AuthContext.Provider value={{ login, logout, jwt: crossmint.jwt }}>
             <CrossmintWalletProvider defaultChain={embeddedWallets.defaultChain}>
-                <WalletManager embeddedWallets={embeddedWallets}>{children}</WalletManager>
+                <WalletManager embeddedWallets={embeddedWallets} accessToken={crossmint.jwt}>
+                    {children}
+                </WalletManager>
+                {modalOpen
+                    ? createPortal(
+                          <AuthModal
+                              baseUrl={crossmintBaseUrl}
+                              setModalOpen={setModalOpen}
+                              setJwtToken={setJwt}
+                              apiKey={crossmint.apiKey}
+                              appearance={appearance}
+                          />,
+
+                          document.body
+                      )
+                    : null}
             </CrossmintWalletProvider>
-        </AuthCoreProvider>
+        </AuthContext.Provider>
     );
 }
 
 function WalletManager({
     embeddedWallets,
     children,
+    accessToken,
 }: {
     embeddedWallets: CrossmintAuthWalletConfig;
     children: ReactNode;
+    accessToken: string | undefined;
 }) {
-    const { crossmint } = useCrossmint("CrossmintAuthProvider must be used within CrossmintProvider");
     const { getOrCreateWallet, clearWallet, status } = useWallet();
 
     useEffect(() => {
-        if (embeddedWallets.createOnLogin === "all-users" && status === "not-loaded" && crossmint.jwt != null) {
+        if (embeddedWallets.createOnLogin === "all-users" && status === "not-loaded" && accessToken != null) {
             getOrCreateWallet({
                 type: embeddedWallets.type,
                 signer: { type: "PASSKEY" },
             });
         }
 
-        if (status === "loaded" && crossmint.jwt == null) {
+        if (status === "loaded" && accessToken == null) {
             clearWallet();
         }
-    }, [crossmint.jwt, status]);
+    }, [accessToken, status]);
 
     return <>{children}</>;
 }
