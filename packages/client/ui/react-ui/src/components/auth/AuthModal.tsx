@@ -1,10 +1,11 @@
-import X from "@/icons/x";
 import { Dialog, Transition } from "@headlessui/react";
 import { CSSProperties, Fragment, useEffect, useRef, useState } from "react";
 import { z } from "zod";
 
 import { IFrameWindow } from "@crossmint/client-sdk-window";
 import { UIConfig } from "@crossmint/common-sdk-base";
+
+import X from "../../icons/x";
 
 const incomingModalIframeEvents = {
     jwtToken: z.object({

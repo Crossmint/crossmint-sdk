@@ -56,7 +56,8 @@
         "ts-jest": "29.1.1",
         "tsup": "8.1.0",
         "typescript": "5.5.3",
-        "vitest": "1.0.2"
+        "vitest": "1.0.2",
+        "vitest-mock-extended": "2.0.0"
     },
     "packageManager": "pnpm@9.3.0",
     "engines": {
