@@ -20,7 +20,8 @@
     ],
     "scripts": {
         "prebuild": "pnpm run create-version-file",
-        "build": "tsup src/index.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
+        "build": "pnpm build:css && tsup src/index.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
+        "build:css": "postcss src/tailwind.css -o dist/styles.css",
         "create-version-file": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/consts/version.ts",
         "dev": "tsup src/index.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
         "test": "vitest run",
@@ -34,19 +35,26 @@
         "@crossmint/common-sdk-base": "workspace:*",
         "@ethersproject/transactions": "5.7.0",
         "@headlessui/react": "2.1.5",
+        "@radix-ui/react-dialog": "1.1.1",
         "@solana/web3.js": "1.95.1",
         "bs58": "5.0.0",
+        "clsx": "2.1.1",
         "lodash.isequal": "4.5.0",
         "react-jss": "10.10.0",
-        "tailwindcss": "3.4.10",
+        "tailwind-merge": "2.4.0",
         "zod": "3.22.4"
     },
     "devDependencies": {
         "@types/lodash.isequal": "4.5.6",
         "@types/react": "^18.3.0",
         "@types/react-dom": "^18.3.0",
+        "autoprefixer": "10.4.17",
+        "postcss": "8.4.45",
+        "postcss-cli": "11.0.0",
         "react": "^18.3.0",
-        "react-dom": "^18.3.0"
+        "react-dom": "^18.3.0",
+        "tailwindcss": "3.4.10",
+        "tsup": "8.1.0"
     },
     "peerDependencies": {
         "react": ">=17.0.2",

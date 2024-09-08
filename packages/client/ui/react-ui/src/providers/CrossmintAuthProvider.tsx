@@ -58,7 +58,8 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
         <AuthContext.Provider value={{ login, logout, jwt: crossmint.jwt }}>
             <CrossmintWalletProvider config={embeddedWallets}>
                 {children}
-                {modalOpen
+                <div className="bg-red-500 p-36">test div with tailwind classes</div>
+                {/* {modalOpen
                     ? createPortal(
                           <AuthModal
                               baseUrl={crossmintBaseUrl}
@@ -70,7 +71,7 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
 
                           document.body
                       )
-                    : null}
+                    : null} */}
             </CrossmintWalletProvider>
         </AuthContext.Provider>
     );
