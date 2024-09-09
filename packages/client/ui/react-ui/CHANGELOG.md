@@ -1,5 +1,44 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.3.14
+
+### Patch Changes
+
+-   e5f3904: Responsive modal
+-   f80e488: allow auth and wallet providers to use all smart wallet supported chains. Rename smart wallet SDK chain export.
+-   30f42da: @crossmint/client-sdk-auth-core:
+
+    -   Removed CrossmintAuthProvider and all React-related functionality
+
+    @crossmint/client-sdk-react-ui:
+
+    -   Added CrossmintAuthProvider
+
+    @crossmint/common-sdk-base:
+
+    -   Added helper function for API key validation
+    -   Added helper function for getting base URL
+
+    @crossmint/client-sdk-base:
+
+    -   Removed helper function for API key validation
+    -   Removed helper function for getting base URL
+
+-   16c58af: Add option to specify signer in CrossmintWalletProvider and simplify interface.
+-   910403e: - **@crossmint/client-sdk-smart-wallet**: Fixed an issue where checking if running on the client was done too early, causing issues with Next.js. Moved the check to a function call instead.
+    -   **@crossmint/client-sdk-react-ui**: Updated React version to ^18.3.0.
+    -   **@crossmint/client-sdk-auth-core**: Updated React version to ^18.3.0. Fixed a hydration error when rendering the auth modal.
+-   Updated dependencies [f80e488]
+-   Updated dependencies [d8bf3d5]
+-   Updated dependencies [d69cf70]
+-   Updated dependencies [30f42da]
+-   Updated dependencies [910403e]
+-   Updated dependencies [456daec]
+    -   @crossmint/client-sdk-smart-wallet@0.1.13
+    -   @crossmint/client-sdk-auth-core@1.1.6
+    -   @crossmint/client-sdk-base@1.2.6
+    -   @crossmint/common-sdk-base@0.1.4
+
 ## 1.3.13
 
 ### Patch Changes
