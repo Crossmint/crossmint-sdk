@@ -15,7 +15,7 @@ export default function Home() {
     const { status: walletStatus } = useWallet();
     const [nftSuccessfullyMinted, setNftSuccessfullyMinted] = useState(false);
 
-    const renderWalletContent = () => {
+    const renderActionButton = () => {
         if (walletStatus === "in-progress") {
             return (
                 <div className="flex gap-2 items-center self-center min-h-[52px]" role="status">
@@ -81,7 +81,7 @@ export default function Home() {
                     </div>
                     <Fireworks play={nftSuccessfullyMinted} />
 
-                    {renderWalletContent()}
+                    {renderActionButton()}
 
                     <PoweredByCrossmint />
                 </div>
