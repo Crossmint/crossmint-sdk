@@ -61,7 +61,7 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
         }
 
         setModalOpen(false);
-    }, [crossmint.jwt, modalOpen]);
+    }, [crossmint.jwt]);
 
     useEffect(() => {
         if (crossmint.jwt) {
@@ -73,7 +73,7 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
         if (crossmint.jwt != null) {
             return "logged-in";
         }
-        if (modalOpen === true) {
+        if (modalOpen) {
             return "in-progress";
         }
         return "logged-out";
