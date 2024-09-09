@@ -14,4 +14,4 @@
 
 ## @crossmint/client-sdk-vanilla-ui
 
--   bumped LIB_VERSION from 1.1.14 to 1.1.15
+-   bumped LIB_VERSION from 1.1.13 to 1.1.15
