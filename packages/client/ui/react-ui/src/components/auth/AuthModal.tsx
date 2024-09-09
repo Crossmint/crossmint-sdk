@@ -141,7 +141,7 @@ export default function AuthModal({ setModalOpen, setJwtToken, apiKey, baseUrl, 
                             onLoad={handleIframeLoaded}
                             title="Authentication Modal"
                             style={{
-                                width: "448px",
+                                width: "100%",
                                 height: "500px",
                                 border: `1px solid ${appearance?.colors?.border ?? "#D0D5DD"}`,
                                 borderRadius: appearance?.borderRadius ?? "16px",
@@ -187,8 +187,8 @@ const styles: { [key: string]: CSSProperties } = {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        padding: "1.25rem",
-        margin: "1.5rem",
+        width: "100%",
+        maxWidth: "448px",
         borderRadius: "0.75rem",
         boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
         zIndex: 30,
