@@ -9,7 +9,7 @@ import { useCrossmint, useWallet } from "../hooks";
 import { SESSION_PREFIX } from "../utils";
 import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
 
-type CrossmintAuthWalletConfig = {
+export type CrossmintAuthWalletConfig = {
     defaultChain: EVMSmartWalletChain;
     createOnLogin: "all-users" | "off";
     type: "evm-smart-wallet";
@@ -21,38 +21,54 @@ export type CrossmintAuthProviderProps = {
     children: ReactNode;
 };
 
-export const AuthContext = createContext({
+type AuthStatus = "logged-in" | "logged-out" | "in-progress";
+
+type AuthContextType = {
+    login: () => void;
+    logout: () => void;
+    jwt?: string;
+    status: AuthStatus;
+};
+
+export const AuthContext = createContext<AuthContextType>({
     login: () => {},
     logout: () => {},
-    jwt: undefined as string | undefined,
+    status: "logged-out",
 });
 
 export function CrossmintAuthProvider({ embeddedWallets, children, appearance }: CrossmintAuthProviderProps) {
     const { crossmint, setJwt } = useCrossmint("CrossmintAuthProvider must be used within CrossmintProvider");
     const crossmintBaseUrl = validateApiKeyAndGetCrossmintBaseUrl(crossmint.apiKey);
     const [modalOpen, setModalOpen] = useState(false);
+    const [authStatus, setAuthStatus] = useState<AuthStatus>("logged-out");
 
     const login = () => {
-        if (crossmint.jwt) {
+        if (crossmint.jwt != null) {
             console.log("User already logged in");
             return;
         }
 
+        setAuthStatus("in-progress");
         setModalOpen(true);
     };
 
     const logout = () => {
         document.cookie = `${SESSION_PREFIX}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+        setAuthStatus("logged-out");
         setJwt(undefined);
     };
 
     useEffect(() => {
         if (crossmint.jwt == null) {
+            if (modalOpen === false) {
+                setAuthStatus("logged-out");
+            }
             return;
         }
 
+        setAuthStatus("logged-in");
         setModalOpen(false);
-    }, [crossmint.jwt]);
+    }, [crossmint.jwt, modalOpen]);
 
     useEffect(() => {
         if (crossmint.jwt) {
@@ -61,7 +77,14 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
     }, [crossmint.jwt]);
 
     return (
-        <AuthContext.Provider value={{ login, logout, jwt: crossmint.jwt }}>
+        <AuthContext.Provider
+            value={{
+                login,
+                logout,
+                jwt: crossmint.jwt,
+                status: authStatus,
+            }}
+        >
             <CrossmintWalletProvider defaultChain={embeddedWallets.defaultChain}>
                 <WalletManager embeddedWallets={embeddedWallets} accessToken={crossmint.jwt}>
                     {children}

@@ -5,6 +5,7 @@ import { MintNFTButton } from "@/components/mint-nft-button";
 import { PoweredByCrossmint } from "@/components/powered-by-crossmint";
 import { SignInAuthButton } from "@/components/signin-auth-button";
 import { Typography } from "@/components/typography";
+import { Spinner } from "@/icons/spinner";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -13,6 +14,37 @@ import { useWallet } from "@crossmint/client-sdk-react-ui";
 export default function Home() {
     const { status: walletStatus } = useWallet();
     const [nftSuccessfullyMinted, setNftSuccessfullyMinted] = useState(false);
+
+    const renderWalletContent = () => {
+        if (walletStatus === "in-progress") {
+            return (
+                <div className="flex gap-2 items-center self-center min-h-[52px]" role="status">
+                    <Spinner />
+                    <Typography className="text-primary-foreground" variant="h4">
+                        Waiting for your wallet...
+                    </Typography>
+                </div>
+            );
+        }
+
+        if (walletStatus === "loaded") {
+            if (nftSuccessfullyMinted) {
+                return (
+                    <div className="flex gap-2 items-center self-center min-h-[52px]">
+                        <Link
+                            href="/wallet"
+                            className="underline text-secondary-foreground text-lg font-semibold underline-offset-4"
+                        >
+                            Open in my wallet
+                        </Link>
+                    </div>
+                );
+            }
+            return <MintNFTButton setNftSuccessfullyMinted={setNftSuccessfullyMinted} />;
+        }
+
+        return <SignInAuthButton />;
+    };
 
     return (
         <div className="flex h-full w-full items-center md:p-4 justify-center">
@@ -49,20 +81,7 @@ export default function Home() {
                     </div>
                     <Fireworks play={nftSuccessfullyMinted} />
 
-                    {walletStatus === "loaded" && nftSuccessfullyMinted ? (
-                        <div className="flex gap-2 items-center self-center min-h-[52px]">
-                            <Link
-                                href="/wallet"
-                                className="underline text-secondary-foreground text-lg font-semibold underline-offset-4"
-                            >
-                                Open in my wallet
-                            </Link>
-                        </div>
-                    ) : null}
-                    {walletStatus === "loaded" && !nftSuccessfullyMinted ? (
-                        <MintNFTButton setNftSuccessfullyMinted={setNftSuccessfullyMinted} />
-                    ) : null}
-                    {walletStatus !== "loaded" && !nftSuccessfullyMinted ? <SignInAuthButton /> : null}
+                    {renderWalletContent()}
 
                     <PoweredByCrossmint />
                 </div>
