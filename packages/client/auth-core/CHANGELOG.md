@@ -1,5 +1,35 @@
 # @crossmint/client-sdk-auth-core
 
+## 1.1.6
+
+### Patch Changes
+
+-   d8bf3d5: Added style to blur auth modal background
+-   30f42da: @crossmint/client-sdk-auth-core:
+
+    -   Removed CrossmintAuthProvider and all React-related functionality
+
+    @crossmint/client-sdk-react-ui:
+
+    -   Added CrossmintAuthProvider
+
+    @crossmint/common-sdk-base:
+
+    -   Added helper function for API key validation
+    -   Added helper function for getting base URL
+
+    @crossmint/client-sdk-base:
+
+    -   Removed helper function for API key validation
+    -   Removed helper function for getting base URL
+
+-   910403e: - **@crossmint/client-sdk-smart-wallet**: Fixed an issue where checking if running on the client was done too early, causing issues with Next.js. Moved the check to a function call instead.
+    -   **@crossmint/client-sdk-react-ui**: Updated React version to ^18.3.0.
+    -   **@crossmint/client-sdk-auth-core**: Updated React version to ^18.3.0. Fixed a hydration error when rendering the auth modal.
+-   Updated dependencies [30f42da]
+-   Updated dependencies [456daec]
+    -   @crossmint/client-sdk-base@1.2.6
+
 ## 1.1.5
 
 ### Patch Changes

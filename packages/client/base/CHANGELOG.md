@@ -1,5 +1,43 @@
 # @crossmint/client-sdk-base
 
+## 1.2.6
+
+### Patch Changes
+
+-   30f42da: @crossmint/client-sdk-auth-core:
+
+    -   Removed CrossmintAuthProvider and all React-related functionality
+
+    @crossmint/client-sdk-react-ui:
+
+    -   Added CrossmintAuthProvider
+
+    @crossmint/common-sdk-base:
+
+    -   Added helper function for API key validation
+    -   Added helper function for getting base URL
+
+    @crossmint/client-sdk-base:
+
+    -   Removed helper function for API key validation
+    -   Removed helper function for getting base URL
+
+-   456daec: ## @crossmint/common-sdk-base
+
+    -   added helper fn for api key validation and getting base url
+
+    ## @crossmint/client-sdk-base
+
+    -   removed helper fn for api key validation and getting base url
+
+    ## @crossmint/client-sdk-vanilla-ui
+
+    -   bumped LIB_VERSION from 1.1.13 to 1.1.15
+
+-   Updated dependencies [30f42da]
+-   Updated dependencies [456daec]
+    -   @crossmint/common-sdk-base@0.1.4
+
 ## 1.2.5
 
 ### Patch Changes
