@@ -1,4 +1,4 @@
-import { act, fireEvent, render, waitFor } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { ReactNode } from "react";
 import { beforeEach, describe, expect, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
