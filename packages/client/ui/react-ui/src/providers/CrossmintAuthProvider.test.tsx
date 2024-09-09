@@ -6,7 +6,7 @@ import { mock } from "vitest-mock-extended";
 import { EVMSmartWallet, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
 import { createCrossmint } from "@crossmint/common-sdk-base";
 
-import { useWallet } from "../hooks";
+import { useAuth, useWallet } from "../hooks";
 import { CrossmintProvider, useCrossmint } from "../hooks/useCrossmint";
 import { MOCK_API_KEY, waitForSettledState } from "../testUtils";
 import { CrossmintAuthProvider, CrossmintAuthWalletConfig } from "./CrossmintAuthProvider";
@@ -46,23 +46,18 @@ function renderAuthProvider({
 
 function TestComponent() {
     const { setJwt } = useCrossmint();
-    const { wallet, status, error } = useWallet();
+    const { wallet, status: walletStatus, error } = useWallet();
+    const { status: authStatus } = useAuth();
 
     return (
         <div>
             <div data-testid="error">{error?.message ?? "No Error"}</div>
-            <div data-testid="status">{status}</div>
+            <div data-testid="wallet-status">{walletStatus}</div>
+            <div data-testid="auth-status">{authStatus}</div>
             <div data-testid="wallet">{wallet ? "Wallet Loaded" : "No Wallet"}</div>
-            <input
-                data-testid="jwt-input"
-                type="text"
-                onChange={(e) => {
-                    console.log("onChange!");
-                    console.log(e.target.value);
-                    return setJwt(e.target.value);
-                }}
-                placeholder="Set JWT"
-            />
+            <button data-testid="jwt-input" onClick={() => setJwt("mock-jwt")}>
+                Set JWT
+            </button>
 
             <button data-testid="clear-jwt-button" onClick={() => setJwt(undefined)}>
                 Clear JWT
@@ -101,12 +96,14 @@ describe("CrossmintAuthProvider", () => {
             embeddedWallets,
         });
 
-        expect(getByTestId("status").textContent).toBe("in-progress");
+        expect(getByTestId("wallet-status").textContent).toBe("in-progress");
+        expect(getByTestId("auth-status").textContent).toBe("logged-in");
         expect(getByTestId("wallet").textContent).toBe("No Wallet");
         expect(getByTestId("error").textContent).toBe("No Error");
 
         await waitForSettledState(() => {
-            expect(getByTestId("status").textContent).toBe("loaded");
+            expect(getByTestId("wallet-status").textContent).toBe("loaded");
+            expect(getByTestId("auth-status").textContent).toBe("logged-in");
             expect(getByTestId("wallet").textContent).toBe("Wallet Loaded");
             expect(getByTestId("error").textContent).toBe("No Error");
         });
@@ -126,7 +123,7 @@ describe("CrossmintAuthProvider", () => {
 
         await waitForSettledState(() => {
             expect(getByTestId("wallet").textContent).toBe("No Wallet");
-            expect(getByTestId("status").textContent).toBe("not-loaded");
+            expect(getByTestId("wallet-status").textContent).toBe("not-loaded");
         });
 
         expect(vi.mocked(mockSDK.getOrCreateWallet)).not.toHaveBeenCalled();
@@ -144,7 +141,8 @@ describe("CrossmintAuthProvider", () => {
         });
 
         await waitForSettledState(() => {
-            expect(getByTestId("status").textContent).toBe("not-loaded");
+            expect(getByTestId("wallet-status").textContent).toBe("not-loaded");
+            expect(getByTestId("auth-status").textContent).toBe("logged-out");
             expect(getByTestId("wallet").textContent).toBe("No Wallet");
         });
 
@@ -158,17 +156,43 @@ describe("CrossmintAuthProvider", () => {
         });
 
         await waitForSettledState(() => {
-            expect(getByTestId("status").textContent).toBe("loaded");
+            expect(getByTestId("wallet-status").textContent).toBe("loaded");
+            expect(getByTestId("auth-status").textContent).toBe("logged-in");
             expect(getByTestId("wallet").textContent).toBe("Wallet Loaded");
         });
 
         fireEvent.click(getByTestId("clear-jwt-button"));
 
         await waitForSettledState(() => {
-            expect(getByTestId("status").textContent).toBe("not-loaded");
+            expect(getByTestId("wallet-status").textContent).toBe("not-loaded");
+            expect(getByTestId("auth-status").textContent).toBe("logged-out");
             expect(getByTestId("wallet").textContent).toBe("No Wallet");
         });
 
         expect(vi.mocked(mockSDK.getOrCreateWallet)).toHaveBeenCalledOnce();
+    });
+
+    test(`Logging in and asserting the auth status`, async () => {
+        vi.mocked(createCrossmint).mockImplementation(() => ({
+            apiKey: MOCK_API_KEY,
+            jwt: undefined,
+        }));
+
+        const { getByTestId } = renderAuthProvider({
+            children: <TestComponent />,
+            embeddedWallets,
+        });
+
+        await waitForSettledState(() => {
+            expect(getByTestId("auth-status").textContent).toBe("logged-out");
+        });
+
+        fireEvent.click(getByTestId("jwt-input"));
+
+        // We can't assert the status: "in-progress" because the jwt state is set instantly
+
+        await waitForSettledState(() => {
+            expect(getByTestId("auth-status").textContent).toBe("logged-in");
+        });
     });
 });
