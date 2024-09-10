@@ -29,6 +29,11 @@ export {
 } from "./error";
 
 export {
+    EVMSendTransactionError,
+    EVMSendTransactionExecutionRevertedError,
+} from "./blockchain/wallets/SendTransactionService";
+
+export {
     SmartWalletErrorCode,
     CrossmintSDKError,
     CrossmintServiceError,
