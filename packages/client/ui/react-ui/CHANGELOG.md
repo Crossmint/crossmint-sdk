@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.3.17
+
+### Patch Changes
+
+-   b2439fb: Update readme to include smart wallet quickstart
+
 ## 1.3.16
 
 ### Patch Changes
