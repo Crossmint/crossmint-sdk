@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.3.15
+
+### Patch Changes
+
+-   43806fd: Fixed auth modal string url bug
+
 ## 1.3.14
 
 ### Patch Changes
