@@ -8,15 +8,13 @@ const useJwtState = (defaultValue?: string) => {
     const [jwt, setJwt] = useState<string | undefined>(defaultValue);
 
     useEffect(() => {
-        const crossmintSession = document.cookie.split("; ").find((row) => row.startsWith(SESSION_PREFIX));
-        if (crossmintSession != null) {
-            setJwt(crossmintSession.split("=")[1]);
+        if (typeof document !== "undefined") {
+            const crossmintSession = document.cookie.split("; ").find((row) => row.startsWith(SESSION_PREFIX));
+            if (crossmintSession != null) {
+                setJwt(crossmintSession.split("=")[1]);
+            }
         }
-    }, [document]);
-
-    if (typeof document === "undefined") {
-        return { jwt: undefined, setJwt };
-    }
+    }, []);
 
     return { jwt, setJwt };
 };
