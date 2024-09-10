@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.3.16
+
+### Patch Changes
+
+-   77d1846: Export smart wallet errors
+-   Updated dependencies [77d1846]
+    -   @crossmint/client-sdk-smart-wallet@0.1.14
+
 ## 1.3.15
 
 ### Patch Changes

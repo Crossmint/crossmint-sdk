@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-smart-wallet
 
+## 0.1.14
+
+### Patch Changes
+
+-   77d1846: Export `executeContract` errors
+
 ## 0.1.13
 
 ### Patch Changes
