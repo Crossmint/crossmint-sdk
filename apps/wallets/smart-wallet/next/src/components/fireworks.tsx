@@ -1,18 +1,16 @@
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 
-export const Fireworks = ({ play, className }: { play: boolean; className?: string }) => {
-    const [isPlaying, setIsPlaying] = useState(play);
+export const Fireworks = ({ className }: { className?: string }) => {
+    const [isPlaying, setIsPlaying] = useState(true);
 
     useEffect(() => {
-        if (play) {
-            setIsPlaying(true);
-            const timer = setTimeout(() => {
-                setIsPlaying(false);
-            }, 5000); // 5 seconds is a complete cycle of the fireworks gif
-            return () => clearTimeout(timer);
-        }
-    }, [play]);
+        setIsPlaying(true);
+        const timer = setTimeout(() => {
+            setIsPlaying(false);
+        }, 5000); // 5 seconds is a complete cycle of the fireworks gif
+        return () => clearTimeout(timer);
+    }, []);
 
     if (!isPlaying) {
         return null;
