@@ -1,8 +1,25 @@
-import { ReactNode, createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
+import { ReactNode, createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 import { Crossmint, createCrossmint } from "@crossmint/common-sdk-base";
 
-import { getCachedJwt } from "../utils";
+import { SESSION_PREFIX } from "../utils";
+
+const useJwtState = (defaultValue?: string) => {
+    const [jwt, setJwt] = useState<string | undefined>(defaultValue);
+
+    useEffect(() => {
+        const crossmintSession = document.cookie.split("; ").find((row) => row.startsWith(SESSION_PREFIX));
+        if (crossmintSession != null) {
+            setJwt(crossmintSession.split("=")[1]);
+        }
+    }, [document]);
+
+    if (typeof document === "undefined") {
+        return { jwt: undefined, setJwt };
+    }
+
+    return { jwt, setJwt };
+};
 
 export interface CrossmintContext {
     crossmint: Crossmint;
@@ -17,25 +34,22 @@ export function CrossmintProvider({
 }: { children: ReactNode } & Parameters<typeof createCrossmint>[0]) {
     const [version, setVersion] = useState(0);
 
+    const { jwt, setJwt } = useJwtState(createCrossmintParams.jwt);
+
     const crossmintRef = useRef<Crossmint>(
-        new Proxy<Crossmint>(
-            createCrossmint({ ...createCrossmintParams, jwt: createCrossmintParams.jwt ?? getCachedJwt() }),
-            {
-                set(target, prop, value) {
-                    if (prop === "jwt" && target.jwt !== value) {
-                        setVersion((v) => v + 1);
-                    }
-                    return Reflect.set(target, prop, value);
-                },
-            }
-        )
+        new Proxy<Crossmint>(createCrossmint({ ...createCrossmintParams, jwt }), {
+            set(target, prop, value) {
+                if (prop === "jwt" && target.jwt !== value) {
+                    setVersion((v) => v + 1);
+                }
+                return Reflect.set(target, prop, value);
+            },
+        })
     );
 
-    const setJwt = useCallback((jwt: string | undefined) => {
-        if (jwt !== crossmintRef.current.jwt) {
-            crossmintRef.current.jwt = jwt;
-        }
-    }, []);
+    useEffect(() => {
+        crossmintRef.current.jwt = jwt;
+    }, [jwt]);
 
     const value = useMemo(
         () => ({
