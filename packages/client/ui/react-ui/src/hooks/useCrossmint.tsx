@@ -11,12 +11,15 @@ const CrossmintContext = createContext<CrossmintContext | null>(null);
 
 export function CrossmintProvider({
     children,
-    ...createCrossmintParams
-}: { children: ReactNode } & Parameters<typeof createCrossmint>[0]) {
+    apiKey,
+    overrideBaseUrl,
+}: Omit<Crossmint, "jwt"> & {
+    children: ReactNode;
+}) {
     const [version, setVersion] = useState(0);
 
     const crossmintRef = useRef<Crossmint>(
-        new Proxy<Crossmint>(createCrossmint(createCrossmintParams), {
+        new Proxy<Crossmint>(createCrossmint({ apiKey, overrideBaseUrl }), {
             set(target, prop, value) {
                 if (prop === "jwt" && target.jwt !== value) {
                     setVersion((v) => v + 1);
