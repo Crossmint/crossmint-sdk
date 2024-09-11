@@ -8,6 +8,8 @@ import AuthModal from "../components/auth/AuthModal";
 import { useCrossmint, useWallet } from "../hooks";
 import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
 
+const SESSION_PREFIX = "crossmint-session";
+
 export type CrossmintAuthWalletConfig = {
     defaultChain: EVMSmartWalletChain;
     createOnLogin: "all-users" | "off";
@@ -41,7 +43,7 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
     const [modalOpen, setModalOpen] = useState(false);
 
     useEffect(() => {
-        const session = getCachedJwt();
+        const session = sessionFromClient();
         if (session != null) {
             setJwt(session);
         }
@@ -143,12 +145,7 @@ function WalletManager({
     return <>{children}</>;
 }
 
-function getCachedJwt(): string | undefined {
-    if (typeof document === "undefined") {
-        return undefined; // Check if we're on the client-side
-    }
+function sessionFromClient(): string | undefined {
     const crossmintSession = document.cookie.split("; ").find((row) => row.startsWith(SESSION_PREFIX));
     return crossmintSession ? crossmintSession.split("=")[1] : undefined;
 }
-
-const SESSION_PREFIX = "crossmint-session";
