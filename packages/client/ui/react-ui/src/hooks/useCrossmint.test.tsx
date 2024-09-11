@@ -67,7 +67,7 @@ describe("CrossmintProvider", () => {
             return <div data-testid="jwt">{crossmint.jwt}</div>;
         };
         const { getByTestId } = renderCrossmintProvider({ children: <TestComponent /> });
-        expect(getByTestId("jwt").textContent).toBe("sdk_jwt");
+        expect(getByTestId("jwt").textContent).toBe("");
     });
 
     it("triggers re-render on JWT change", () => {

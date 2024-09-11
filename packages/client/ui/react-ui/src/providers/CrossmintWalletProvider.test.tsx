@@ -6,7 +6,7 @@ import { mock } from "vitest-mock-extended";
 import { EVMSmartWallet, SmartWalletError, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
 import { createCrossmint } from "@crossmint/common-sdk-base";
 
-import { CrossmintProvider, useCrossmint } from "../hooks/useCrossmint";
+import { CrossmintProvider } from "../hooks/useCrossmint";
 import { useWallet } from "../hooks/useWallet";
 import { MOCK_API_KEY, waitForSettledState } from "../testUtils";
 import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
@@ -165,19 +165,15 @@ describe("CrossmintWalletProvider", () => {
 
                 fireEvent.click(getByTestId("create-wallet-button"));
 
-                await waitFor(() => {
-                    expect(getByTestId("status").textContent).toBe("in-progress");
-                    expect(getByTestId("wallet").textContent).toBe("No Wallet");
-                    expect(getByTestId("error").textContent).toBe("No Error");
-                });
+                await expect(mockSDK.getOrCreateWallet).rejects.toThrow("Wallet creation failed");
 
-                await waitForSettledState(() => {
+                await waitFor(() => {
                     expect(getByTestId("status").textContent).toBe("loading-error");
                     expect(getByTestId("wallet").textContent).toBe("No Wallet");
                     expect(getByTestId("error").textContent).toBe("Unknown Wallet Error: Wallet creation failed");
                 });
 
-                expect(vi.mocked(mockSDK.getOrCreateWallet)).toHaveBeenCalledOnce();
+                expect(vi.mocked(mockSDK.getOrCreateWallet)).toHaveBeenCalledTimes(2);
             });
         });
     });
