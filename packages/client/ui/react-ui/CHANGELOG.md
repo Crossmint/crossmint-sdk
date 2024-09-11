@@ -1,5 +1,12 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.3.18
+
+### Patch Changes
+
+-   16d7d56: Fix hydration error issue
+-   bb0d53e: Removes horizontal padding from the AuthModal to avoid clipping iframe.
+
 ## 1.3.17
 
 ### Patch Changes
