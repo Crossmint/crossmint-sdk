@@ -10,21 +10,25 @@ export interface CrossmintContext {
 }
 const CrossmintContext = createContext<CrossmintContext | null>(null);
 
-function parseCookieFromBrowser(document?: Document) {
-    return document?.cookie
+function getSession() {
+    return document.cookie
         .split("; ")
         .find((row) => row.startsWith(SESSION_PREFIX))
         ?.split("=")[1];
 }
 
-export function CrossmintProvider({
-    children,
-    ...createCrossmintParams
-}: { children: ReactNode } & Parameters<typeof createCrossmint>[0]) {
-    const [jwt, setJwt] = useState<string | undefined>(parseCookieFromBrowser(document));
-    const crossmint = createCrossmint({ ...createCrossmintParams, jwt });
+export function CrossmintProvider({ children, apiKey }: { children: ReactNode; apiKey: string }) {
+    const [jwt, setJwt] = useState<string | undefined>();
 
-    return <CrossmintContext.Provider value={{ setJwt, crossmint }}>{children}</CrossmintContext.Provider>;
+    useEffect(() => {
+        setJwt(getSession());
+    }, []);
+
+    return (
+        <CrossmintContext.Provider value={{ crossmint: { ...createCrossmint({ apiKey }), jwt }, setJwt }}>
+            {children}
+        </CrossmintContext.Provider>
+    );
 }
 
 export function useCrossmint(missingContextMessage?: string) {

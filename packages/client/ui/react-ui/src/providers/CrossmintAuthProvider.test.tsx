@@ -4,11 +4,11 @@ import { beforeEach, describe, expect, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 
 import { EVMSmartWallet, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
-import { createCrossmint } from "@crossmint/common-sdk-base";
 
 import { useAuth, useWallet } from "../hooks";
 import { CrossmintProvider, useCrossmint } from "../hooks/useCrossmint";
 import { MOCK_API_KEY, waitForSettledState } from "../testUtils";
+import { SESSION_PREFIX } from "../utils";
 import { CrossmintAuthProvider, CrossmintAuthWalletConfig } from "./CrossmintAuthProvider";
 
 vi.mock("@crossmint/client-sdk-smart-wallet", async () => {
@@ -73,10 +73,6 @@ describe("CrossmintAuthProvider", () => {
 
     beforeEach(() => {
         vi.resetAllMocks();
-        vi.mocked(createCrossmint).mockImplementation(() => ({
-            apiKey: MOCK_API_KEY,
-            jwt: "mock-jwt",
-        }));
 
         mockSDK = mock<SmartWalletSDK>();
         mockWallet = mock<EVMSmartWallet>();
@@ -88,9 +84,15 @@ describe("CrossmintAuthProvider", () => {
             createOnLogin: "all-users",
             type: "evm-smart-wallet",
         };
+
+        Object.defineProperty(document, "cookie", {
+            writable: true,
+            value: "",
+        });
     });
 
     test("Happy path", async () => {
+        document.cookie = `${SESSION_PREFIX}=mock-jwt; path=/;SameSite=Lax;`;
         const { getByTestId } = renderAuthProvider({
             children: <TestComponent />,
             embeddedWallets,
@@ -112,6 +114,7 @@ describe("CrossmintAuthProvider", () => {
     });
 
     test(`When "createOnLogin" is "false", wallet is not loaded`, async () => {
+        document.cookie = `${SESSION_PREFIX}=mock-jwt; path=/;SameSite=Lax;`;
         const { getByTestId } = renderAuthProvider({
             children: <TestComponent />,
             embeddedWallets: {
@@ -130,11 +133,6 @@ describe("CrossmintAuthProvider", () => {
     });
 
     test(`When the jwt from crossmint provider is not defined, wallet is not loaded`, async () => {
-        vi.mocked(createCrossmint).mockImplementation(() => ({
-            apiKey: MOCK_API_KEY,
-            jwt: undefined,
-        }));
-
         const { getByTestId } = renderAuthProvider({
             children: <TestComponent />,
             embeddedWallets,
@@ -150,6 +148,7 @@ describe("CrossmintAuthProvider", () => {
     });
 
     test("When the jwt is cleared, so is the wallet", async () => {
+        document.cookie = `${SESSION_PREFIX}=mock-jwt; path=/;SameSite=Lax;`;
         const { getByTestId } = renderAuthProvider({
             children: <TestComponent />,
             embeddedWallets,
@@ -173,11 +172,6 @@ describe("CrossmintAuthProvider", () => {
     });
 
     test(`Logging in and asserting the auth status`, async () => {
-        vi.mocked(createCrossmint).mockImplementation(() => ({
-            apiKey: MOCK_API_KEY,
-            jwt: undefined,
-        }));
-
         const { getByTestId } = renderAuthProvider({
             children: <TestComponent />,
             embeddedWallets,
@@ -188,8 +182,6 @@ describe("CrossmintAuthProvider", () => {
         });
 
         fireEvent.click(getByTestId("jwt-input"));
-
-        // We can't assert the status: "in-progress" because the jwt state is set instantly
 
         await waitForSettledState(() => {
             expect(getByTestId("auth-status").textContent).toBe("logged-in");

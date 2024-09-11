@@ -4,9 +4,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 
 import { EVMSmartWallet, SmartWalletError, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
-import { createCrossmint } from "@crossmint/common-sdk-base";
 
-import { CrossmintProvider } from "../hooks/useCrossmint";
+import { CrossmintProvider, useCrossmint } from "../hooks/useCrossmint";
 import { useWallet } from "../hooks/useWallet";
 import { MOCK_API_KEY, waitForSettledState } from "../testUtils";
 import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
@@ -26,6 +25,14 @@ vi.mock("@crossmint/common-sdk-base", async () => {
     return {
         ...actual,
         createCrossmint: vi.fn(),
+    };
+});
+
+vi.mock("../hooks/useCrossmint", async () => {
+    const actual = await vi.importActual("../hooks/useCrossmint");
+    return {
+        ...actual,
+        useCrossmint: vi.fn(),
     };
 });
 
@@ -61,11 +68,13 @@ describe("CrossmintWalletProvider", () => {
 
     beforeEach(() => {
         vi.resetAllMocks();
-
-        vi.mocked(createCrossmint).mockImplementation(() => ({
-            apiKey: MOCK_API_KEY,
-            jwt: "mock-jwt",
-        }));
+        vi.mocked(useCrossmint).mockReturnValue({
+            crossmint: {
+                apiKey: MOCK_API_KEY,
+                jwt: "mock-jwt",
+            },
+            setJwt: () => {},
+        });
 
         mockSDK = mock<SmartWalletSDK>();
         mockWallet = mock<EVMSmartWallet>();
@@ -78,8 +87,6 @@ describe("CrossmintWalletProvider", () => {
             const { getByTestId } = renderWalletProvider({
                 children: <TestComponent />,
             });
-
-            expect(getByTestId("status").textContent).toBe("not-loaded");
             expect(getByTestId("wallet").textContent).toBe("No Wallet");
             expect(getByTestId("error").textContent).toBe("No Error");
 
@@ -102,10 +109,13 @@ describe("CrossmintWalletProvider", () => {
 
         describe(`When jwt is not set in "CrossmintProvider"`, () => {
             beforeEach(() => {
-                vi.mocked(createCrossmint).mockImplementation(() => ({
-                    apiKey: MOCK_API_KEY,
-                    jwt: undefined,
-                }));
+                vi.mocked(useCrossmint).mockReturnValue({
+                    crossmint: {
+                        apiKey: MOCK_API_KEY,
+                        jwt: undefined,
+                    },
+                    setJwt: () => {},
+                });
             });
 
             it("does not create a wallet", async () => {
@@ -165,15 +175,19 @@ describe("CrossmintWalletProvider", () => {
 
                 fireEvent.click(getByTestId("create-wallet-button"));
 
-                await expect(mockSDK.getOrCreateWallet).rejects.toThrow("Wallet creation failed");
-
                 await waitFor(() => {
+                    expect(getByTestId("status").textContent).toBe("in-progress");
+                    expect(getByTestId("wallet").textContent).toBe("No Wallet");
+                    expect(getByTestId("error").textContent).toBe("No Error");
+                });
+
+                await waitForSettledState(() => {
                     expect(getByTestId("status").textContent).toBe("loading-error");
                     expect(getByTestId("wallet").textContent).toBe("No Wallet");
                     expect(getByTestId("error").textContent).toBe("Unknown Wallet Error: Wallet creation failed");
                 });
 
-                expect(vi.mocked(mockSDK.getOrCreateWallet)).toHaveBeenCalledTimes(2);
+                expect(vi.mocked(mockSDK.getOrCreateWallet)).toHaveBeenCalledOnce();
             });
         });
     });
