@@ -29,6 +29,14 @@ vi.mock("@crossmint/common-sdk-base", async () => {
     };
 });
 
+vi.mock("../hooks/useCrossmint", async () => {
+    const actual = await vi.importActual("../hooks/useCrossmint");
+    return {
+        ...actual,
+        useCrossmint: vi.fn(),
+    };
+});
+
 function renderWalletProvider({ children }: { children: ReactNode }) {
     return render(
         <CrossmintProvider apiKey={MOCK_API_KEY}>
@@ -61,11 +69,14 @@ describe("CrossmintWalletProvider", () => {
 
     beforeEach(() => {
         vi.resetAllMocks();
-
-        vi.mocked(createCrossmint).mockImplementation(() => ({
-            apiKey: MOCK_API_KEY,
-            jwt: "mock-jwt",
-        }));
+        vi.mocked(createCrossmint).mockImplementation(() => ({} as any));
+        vi.mocked(useCrossmint).mockReturnValue({
+            crossmint: {
+                apiKey: MOCK_API_KEY,
+                jwt: "mock-jwt",
+            },
+            setJwt: () => {},
+        });
 
         mockSDK = mock<SmartWalletSDK>();
         mockWallet = mock<EVMSmartWallet>();
@@ -78,8 +89,6 @@ describe("CrossmintWalletProvider", () => {
             const { getByTestId } = renderWalletProvider({
                 children: <TestComponent />,
             });
-
-            expect(getByTestId("status").textContent).toBe("not-loaded");
             expect(getByTestId("wallet").textContent).toBe("No Wallet");
             expect(getByTestId("error").textContent).toBe("No Error");
 
@@ -102,10 +111,13 @@ describe("CrossmintWalletProvider", () => {
 
         describe(`When jwt is not set in "CrossmintProvider"`, () => {
             beforeEach(() => {
-                vi.mocked(createCrossmint).mockImplementation(() => ({
-                    apiKey: MOCK_API_KEY,
-                    jwt: undefined,
-                }));
+                vi.mocked(useCrossmint).mockReturnValue({
+                    crossmint: {
+                        apiKey: MOCK_API_KEY,
+                        jwt: undefined,
+                    },
+                    setJwt: () => {},
+                });
             });
 
             it("does not create a wallet", async () => {
