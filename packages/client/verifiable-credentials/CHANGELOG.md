@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-verifiable-credentials
 
+## 3.4.7
+
+### Patch Changes
+
+-   b6eb220: dep fix
+
 ## 3.4.6
 
 ### Patch Changes
