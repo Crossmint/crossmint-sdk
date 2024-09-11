@@ -2,7 +2,7 @@ import { fireEvent, render } from "@testing-library/react";
 import { useEffect } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { Crossmint, createCrossmint } from "@crossmint/common-sdk-base";
+import { createCrossmint } from "@crossmint/common-sdk-base";
 
 import { CrossmintProvider, useCrossmint } from "./useCrossmint";
 
@@ -13,13 +13,6 @@ vi.mock("@crossmint/common-sdk-base", () => ({
     createCrossmint: vi.fn(),
 }));
 
-class MockSDK {
-    constructor(public crossmint: Crossmint) {}
-    somethingThatUpdatesJWT(newJWT: string) {
-        this.crossmint.jwt = newJWT;
-    }
-}
-
 function renderCrossmintProvider({ children }: { children: JSX.Element }) {
     return render(<CrossmintProvider apiKey={MOCK_API_KEY}>{children}</CrossmintProvider>);
 }
@@ -29,7 +22,6 @@ describe("CrossmintProvider", () => {
         vi.resetAllMocks();
         vi.mocked(createCrossmint).mockImplementation(() => ({
             apiKey: MOCK_API_KEY,
-            jwt: "",
         }));
     });
 
@@ -55,19 +47,6 @@ describe("CrossmintProvider", () => {
         const { getByTestId, getByText } = renderCrossmintProvider({ children: <TestComponent /> });
         fireEvent.click(getByText("Update JWT"));
         expect(getByTestId("jwt").textContent).toBe("new_jwt");
-    });
-
-    it("updates JWT using WalletSDK", () => {
-        const TestComponent = () => {
-            const { crossmint } = useCrossmint();
-            useEffect(() => {
-                const wallet = new MockSDK(crossmint);
-                wallet.somethingThatUpdatesJWT("sdk_jwt");
-            }, []);
-            return <div data-testid="jwt">{crossmint.jwt}</div>;
-        };
-        const { getByTestId } = renderCrossmintProvider({ children: <TestComponent /> });
-        expect(getByTestId("jwt").textContent).toBe("");
     });
 
     it("triggers re-render on JWT change", () => {
