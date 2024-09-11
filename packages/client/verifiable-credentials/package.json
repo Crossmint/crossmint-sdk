@@ -25,6 +25,7 @@
         "test-coverage": "cross-env NODE_ENV=test jest --coverage --silent"
     },
     "dependencies": {
+        "@crossmint/client-sdk-base": "workspace:*",
         "@crossmint/common-sdk-base": "workspace:*",
         "@ethersproject/address": "5.7.0",
         "@ethersproject/constants": "5.7.0",
@@ -38,7 +39,6 @@
         "ethers": "5.7.2"
     },
     "devDependencies": {
-        "@crossmint/client-sdk-base": "workspace:*",
         "typedoc": "0.26.5",
         "typedoc-plugin-frontmatter": "1.0.0",
         "typedoc-plugin-markdown": "4.2.3"
