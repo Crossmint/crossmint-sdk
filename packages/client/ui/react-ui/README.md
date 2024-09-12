@@ -32,6 +32,10 @@ We offer two components to help you quickly get up and running with your project
 
 Visit [our documentation](https://docs.crossmint.com/docs/wallet-ui-components) for integration instructions.
 
+### Auth and Smart Wallets
+
+Check out our quickstart [in the docs](https://docs.crossmint.com/wallets/smart-wallets/quickstart).
+
 ## Migration guide to 0.1.X versions
 
 Version 0.1.0 introduces breaking changes. To learn how to migrate from a version lower than 0.1.0, [check out the migration guide](https://docs.google.com/document/d/14IKpjrij7kU7Dr0I7rZkf0PyDNbXiklx2v4GuzUrFbw/edit?usp=sharing).

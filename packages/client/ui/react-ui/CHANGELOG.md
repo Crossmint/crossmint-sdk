@@ -1,5 +1,26 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.3.18
+
+### Patch Changes
+
+-   16d7d56: Fix hydration error issue
+-   bb0d53e: Removes horizontal padding from the AuthModal to avoid clipping iframe.
+
+## 1.3.17
+
+### Patch Changes
+
+-   b2439fb: Update readme to include smart wallet quickstart
+
+## 1.3.16
+
+### Patch Changes
+
+-   77d1846: Export smart wallet errors
+-   Updated dependencies [77d1846]
+    -   @crossmint/client-sdk-smart-wallet@0.1.14
+
 ## 1.3.15
 
 ### Patch Changes

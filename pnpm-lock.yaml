@@ -617,6 +617,9 @@ importers:
 
   packages/client/verifiable-credentials:
     dependencies:
+      '@crossmint/client-sdk-base':
+        specifier: workspace:*
+        version: link:../base
       '@crossmint/common-sdk-base':
         specifier: workspace:*
         version: link:../../common/base
@@ -651,9 +654,6 @@ importers:
         specifier: 5.7.2
         version: 5.7.2(bufferutil@4.0.7)(utf-8-validate@5.0.10)
     devDependencies:
-      '@crossmint/client-sdk-base':
-        specifier: workspace:*
-        version: link:../base
       typedoc:
         specifier: 0.26.5
         version: 0.26.5(typescript@5.5.3)

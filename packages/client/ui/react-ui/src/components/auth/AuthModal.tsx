@@ -145,7 +145,7 @@ export default function AuthModal({ setModalOpen, setJwtToken, apiKey, baseUrl, 
                                 height: "500px",
                                 border: `1px solid ${appearance?.colors?.border ?? "#D0D5DD"}`,
                                 borderRadius: appearance?.borderRadius ?? "16px",
-                                padding: "48px 40px 32px",
+                                padding: "48px 0 32px",
                                 backgroundColor: appearance?.colors?.background ?? "#FFFFFF",
                                 animation: "fadeIn 3s ease-in-out",
                             }}
