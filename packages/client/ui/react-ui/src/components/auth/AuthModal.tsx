@@ -126,7 +126,7 @@ export default function AuthModal({ setModalOpen, setJwtToken, apiKey, baseUrl, 
                                     right: "1.5rem",
                                     top: "1.5rem",
                                     cursor: "pointer",
-                                    color: appearance?.colors?.border,
+                                    color: appearance?.colors?.border ?? "#909ca3",
                                     outlineOffset: "4px",
                                     borderRadius: "100%",
                                 }}
