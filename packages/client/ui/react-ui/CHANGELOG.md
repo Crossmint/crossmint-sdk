@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.3.20
+
+### Patch Changes
+
+-   428b8b9: Remove jwt prop from `CrossmintProvider`
+
 ## 1.3.19
 
 ### Patch Changes
