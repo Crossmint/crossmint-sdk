@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.3.19
+
+### Patch Changes
+
+-   ada9c69: Changed auth modal close button default color
+
 ## 1.3.18
 
 ### Patch Changes
