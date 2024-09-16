@@ -20,9 +20,13 @@
     ],
     "scripts": {
         "prebuild": "pnpm run create-version-file",
-        "build": "tsup src/index.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
+        "build": "tsup src/index.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap && pnpm run styles",
+        "postbuild": "pnpm run styles:inject",
         "create-version-file": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/consts/version.ts",
-        "dev": "tsup src/index.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
+        "dev": "concurrently \"node scripts/watch-and-inject.js\" \"pnpm run styles:watch\"",
+        "styles": "npx tailwindcss -i ./src/tailwind.css -o ./dist/styles/output.css",
+        "styles:inject": "node scripts/inject-css-import.js",
+        "styles:watch": "pnpm run styles --watch",
         "test": "vitest run",
         "version": "pnpm run create-version-file && git add ."
     },
@@ -38,18 +42,18 @@
         "bs58": "5.0.0",
         "lodash.isequal": "4.5.0",
         "react-jss": "10.10.0",
-        "tailwindcss": "3.4.10",
         "zod": "3.22.4"
     },
     "devDependencies": {
         "@types/lodash.isequal": "4.5.6",
         "@types/react": "^18.3.0",
         "@types/react-dom": "^18.3.0",
-        "react": "^18.3.0",
-        "react-dom": "^18.3.0"
+        "chokidar": "4.0.0",
+        "concurrently": "9.0.1",
+        "tailwindcss": "3.4.11"
     },
     "peerDependencies": {
-        "react": ">=17.0.2",
-        "react-dom": ">=17.0.2"
+        "react": "^18.3.0",
+        "react-dom": "^18.3.0"
     }
 }

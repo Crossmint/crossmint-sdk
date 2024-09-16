@@ -8,6 +8,6 @@
         },
         "jsx": "react-jsx"
     },
-    "include": ["src/**/*"],
+    "include": ["src/**/*", "scripts"],
     "exclude": ["__tests__"]
 }
