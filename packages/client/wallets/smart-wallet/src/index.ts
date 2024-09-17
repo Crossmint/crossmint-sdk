@@ -7,7 +7,7 @@ export type {
     UserParams,
     ViemAccount,
     PasskeySigner,
-    EOASigner,
+    ExternalSigner,
     WalletParams,
 } from "./types/params";
 
