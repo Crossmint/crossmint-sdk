@@ -19,7 +19,7 @@ const dialogStyles: React.CSSProperties = {
 
 const overlayStyles: React.CSSProperties = {
     background: "rgba(139, 151, 151, 0.2)",
-    backdropFilter: "blur(0.125rem)",
+    backdropFilter: "blur(2px)",
     position: "fixed",
     top: 0,
     right: 0,
@@ -38,8 +38,8 @@ const dialogContentStyles: React.CSSProperties = {
     backgroundColor: "white",
     width: "100%",
     maxWidth: "28rem",
-    borderRadius: "1rem",
-    boxShadow: "0 0.0625rem 0.125rem 0 rgba(0, 0, 0, 0.05)",
+    borderRadius: "16px",
+    boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
     zIndex: 30,
 };
 
@@ -48,7 +48,7 @@ const primaryButtonStyles: React.CSSProperties = {
     width: "100%",
     backgroundColor: "#04AA6D",
     color: "white",
-    borderRadius: "0.5rem",
+    borderRadius: "8px",
     fontWeight: "bold",
 };
 
@@ -57,7 +57,7 @@ const secondaryButtonStyles: React.CSSProperties = {
     width: "100%",
     backgroundColor: "#F0F2F4",
     color: "#00150D",
-    borderRadius: "0.5rem",
+    borderRadius: "8px",
     fontWeight: "bold",
 };
 
