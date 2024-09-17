@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-smart-wallet
 
+## 0.1.15
+
+### Patch Changes
+
+-   df3b150: rename `EOASigner` => `ExternalSigner`
+
 ## 0.1.14
 
 ### Patch Changes
