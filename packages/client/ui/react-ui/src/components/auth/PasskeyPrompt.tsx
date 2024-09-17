@@ -19,7 +19,7 @@ const dialogStyles: React.CSSProperties = {
 
 const overlayStyles: React.CSSProperties = {
     background: "rgba(139, 151, 151, 0.2)",
-    backdropFilter: "blur(2px)",
+    backdropFilter: "blur(0.125rem)",
     position: "fixed",
     top: 0,
     right: 0,
@@ -37,27 +37,27 @@ const dialogContentStyles: React.CSSProperties = {
     alignItems: "center",
     backgroundColor: "white",
     width: "100%",
-    maxWidth: "448px",
-    borderRadius: "16px",
-    boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+    maxWidth: "28rem",
+    borderRadius: "1rem",
+    boxShadow: "0 0.0625rem 0.125rem 0 rgba(0, 0, 0, 0.05)",
     zIndex: 30,
 };
 
 const primaryButtonStyles: React.CSSProperties = {
-    padding: "14px",
+    padding: "0.875rem",
     width: "100%",
     backgroundColor: "#04AA6D",
     color: "white",
-    borderRadius: "8px",
+    borderRadius: "0.5rem",
     fontWeight: "bold",
 };
 
 const secondaryButtonStyles: React.CSSProperties = {
-    padding: "14px",
+    padding: "0.875rem",
     width: "100%",
     backgroundColor: "#F0F2F4",
     color: "#00150D",
-    borderRadius: "8px",
+    borderRadius: "0.5rem",
     fontWeight: "bold",
 };
 
@@ -89,18 +89,18 @@ function PasskeyPromptCore({
                 <div style={overlayStyles} />
             </Transition.Child>
             <div style={dialogContentStyles} onClick={(e) => e.stopPropagation()}>
-                <div style={{ padding: "48px 32px" }}>
-                    <div style={{ display: "flex", justifyContent: "center", left: "12px", position: "relative" }}>
+                <div style={{ padding: "3rem 2rem" }}>
+                    <div style={{ display: "flex", justifyContent: "center", left: "0.75rem", position: "relative" }}>
                         <PasskeyPromptLogo />
                     </div>
 
                     <div style={{ display: "flex", justifyContent: "center" }}>
-                        <p style={{ fontSize: "18px", fontWeight: "bold", color: "#20343E" }}>{title}</p>
+                        <p style={{ fontSize: "1.125rem", fontWeight: "bold", color: "#20343E" }}>{title}</p>
                     </div>
 
-                    <div style={{ marginTop: "24px", marginBottom: "36px" }}>{content}</div>
+                    <div style={{ marginTop: "1.5rem", marginBottom: "2.25rem" }}>{content}</div>
 
-                    <div style={{ display: "flex", justifyContent: "center", flexDirection: "column", gap: "16px" }}>
+                    <div style={{ display: "flex", justifyContent: "center", flexDirection: "column", gap: "1rem" }}>
                         {primaryButton}
                         {secondaryButton}
                     </div>
@@ -131,17 +131,17 @@ export function PasskeyPrompt({
                 title="Create Your Wallet"
                 content={
                     <div style={{ fontWeight: "400", color: "#67797F" }}>
-                        <div style={{ marginBottom: "18px" }}>You're about to create a wallet.</div>
+                        <div style={{ marginBottom: "1.125rem" }}>You're about to create a wallet.</div>
 
-                        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                            <div style={{ display: "flex", gap: "8px" }}>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                            <div style={{ display: "flex", gap: "0.5rem" }}>
                                 <div>
                                     <PasskeyIcon />
                                 </div>
                                 Your wallet will be secured with a passkey
                             </div>
 
-                            <div style={{ display: "flex", gap: "8px" }}>
+                            <div style={{ display: "flex", gap: "0.5rem" }}>
                                 <div>
                                     <FingerprintIcon />
                                 </div>
@@ -166,8 +166,8 @@ export function PasskeyPrompt({
                 title="Wallet Access Failed"
                 content={
                     <div style={{ fontWeight: "400", color: "#67797F" }}>
-                        <div style={{ marginBottom: "24px" }}>
-                            We couldn’t access your wallet. This could be due to rejecting the request, a timeout, or
+                        <div style={{ marginBottom: "1.5rem" }}>
+                            We couldn't access your wallet. This could be due to rejecting the request, a timeout, or
                             not having access to your passkey on this device.
                         </div>
                         <div>You last used your wallet on a [Device Name] with [Browser Name] on [Date/Time].</div>
@@ -194,8 +194,8 @@ export function PasskeyPrompt({
                 title="First Time Using Your Wallet"
                 content={
                     <div style={{ fontWeight: "400", color: "#67797F" }}>
-                        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                            <div style={{ display: "flex", gap: "8px" }}>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                            <div style={{ display: "flex", gap: "0.5rem" }}>
                                 <div>
                                     <FingerprintIcon />
                                 </div>
@@ -221,7 +221,7 @@ export function PasskeyPrompt({
                 title="Passkeys Not Supported on This Device"
                 content={
                     <div style={{ fontWeight: "400", color: "#67797F" }}>
-                        <div style={{ marginBottom: "18px" }}>
+                        <div style={{ marginBottom: "1.125rem" }}>
                             To access your wallet with a passkey, switch to a device or browser that supports passkeys,
                             such as Chrome or Safari on a smartphone, tablet, or modern computer
                         </div>
