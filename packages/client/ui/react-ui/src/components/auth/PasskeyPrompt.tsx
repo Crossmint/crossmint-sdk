@@ -1,8 +1,9 @@
-import FingerprintIcon from "@/icons/fingerprint";
-import PasskeyIcon from "@/icons/passkey";
-import PasskeyPromptLogo from "@/icons/passkeyPromptLogo";
 import { Button, Dialog, Transition } from "@headlessui/react";
 import React, { Fragment, ReactNode } from "react";
+
+import FingerprintIcon from "../../icons/fingerprint";
+import PasskeyIcon from "../../icons/passkey";
+import PasskeyPromptLogo from "../../icons/passkeyPromptLogo";
 
 const dialogStyles: React.CSSProperties = {
     display: "flex",

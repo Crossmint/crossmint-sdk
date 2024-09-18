@@ -1,4 +1,3 @@
-import { PasskeyPrompt } from "@/components";
 import { ReactNode, createContext, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -10,6 +9,7 @@ import {
     WalletParams,
 } from "@crossmint/client-sdk-smart-wallet";
 
+import { PasskeyPrompt } from "../components";
 import { useCrossmint } from "../hooks";
 
 type WalletStatus = "not-loaded" | "in-progress" | "loaded" | "loading-error";
