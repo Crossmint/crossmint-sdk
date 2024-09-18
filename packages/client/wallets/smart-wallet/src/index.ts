@@ -37,7 +37,6 @@ export {
     SmartWalletErrorCode,
     CrossmintSDKError,
     CrossmintServiceError,
-    TransferError,
     JWTDecryptionError,
     JWTExpiredError,
     JWTIdentifierError,

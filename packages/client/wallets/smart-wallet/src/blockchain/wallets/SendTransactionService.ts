@@ -101,7 +101,7 @@ export class SendTransactionService {
     ): Promise<Hex> {
         const { confirmations, transactionConfirmationTimeout } = this.getConfig(config);
 
-        await this.simulateCall(request, undefined, "simulation");
+        await this.simulateCall(request, client.account.address, undefined, "simulation");
 
         let hash;
         try {
@@ -123,7 +123,7 @@ export class SendTransactionService {
                 confirmations,
                 timeout: transactionConfirmationTimeout,
             });
-            return await this.handleReceipt(receipt, request);
+            return await this.handleReceipt(receipt, client.account.address, request);
         } catch (e) {
             if (e instanceof BaseError) {
                 throw new EVMSendTransactionError(e.message, e, "confirmation");
@@ -139,10 +139,14 @@ export class SendTransactionService {
         };
     }
 
-    private async handleReceipt(receipt: TransactionReceipt, request: TransactionServiceTransactionRequest) {
+    private async handleReceipt(
+        receipt: TransactionReceipt,
+        account: Address,
+        request: TransactionServiceTransactionRequest
+    ) {
         if (receipt.status === "reverted") {
             // This should revert and throw the full reason
-            await this.simulateCall(request, receipt.transactionHash, "execution");
+            await this.simulateCall(request, account, receipt.transactionHash, "execution");
             // Otherwise, throw a generic error (this should practically never happen)
             throw new EVMSendTransactionExecutionRevertedError(
                 "Transaction reverted but unable to detect the reason",
@@ -157,13 +161,14 @@ export class SendTransactionService {
 
     private async simulateCall(
         request: TransactionServiceTransactionRequest,
+        account: Address,
         passthroughTxId: string | undefined,
         stage: SendTransactionFailureStage
     ) {
         try {
             await this.publicClient.simulateContract({
                 ...request,
-                account: request.address,
+                account,
                 chain: this.publicClient.chain,
             });
         } catch (e) {
