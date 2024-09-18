@@ -72,7 +72,6 @@ export class ClientDecorator {
     private async execute<M extends TxnMethod | SignMethod>(
         target: SmartAccountClient<EntryPoint>,
         prop: M,
-        // eslint-disable-next-line @typescript-eslint/ban-types
         originalMethod: Function,
         args: any[],
         crossmintChain: SmartWalletChain
