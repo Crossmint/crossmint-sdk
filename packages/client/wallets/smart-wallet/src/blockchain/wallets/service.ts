@@ -71,10 +71,9 @@ export class SmartWalletService {
         }
 
         return new EVMSmartWallet(
-            this.crossmintService,
-            this.smartAccountClient(chain, account, user),
-            publicClient,
-            chain
+            { wallet: this.smartAccountClient(chain, account, user), public: publicClient },
+            chain,
+            this.crossmintService
         );
     }
 
