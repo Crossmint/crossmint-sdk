@@ -17,8 +17,6 @@
         "lint": "biome check --diagnostic-level=error --max-diagnostics=1",
         "lint-fix": "biome check --write",
         "prepare": "husky",
-        "prettier:check": "prettier --check \"{*,**/*}.{js,ts,jsx,tsx,json,mdx}\" --ignore-unknown",
-        "prettier:write": "prettier --write \"{*,**/*}.{js,ts,jsx,tsx,json,mdx}\" --ignore-unknown",
         "publish": "lerna publish from-package",
         "test": "lerna run test"
     },
@@ -33,7 +31,6 @@
         "@testing-library/react": "14.0.0",
         "@types/jest": "29.5.4",
         "@types/node": "20.12.7",
-        "@types/prettier": "2.7.3",
         "cross-env": "7.0.3",
         "gh-pages": "6.0.0",
         "husky": "9.0.11",
