@@ -2,6 +2,7 @@ import { SmartAccountClient } from "permissionless";
 import { SmartAccount } from "permissionless/accounts";
 import { EntryPoint } from "permissionless/types";
 import {
+    Address,
     BaseError,
     Chain,
     ContractFunctionRevertedError,
@@ -27,8 +28,12 @@ function makeMockError<E extends Error, F extends object>(error: E, fields?: F):
 }
 
 describe("SendTransactionService", () => {
+    const walletAddress: Address = "0xE898BBd704CCE799e9593a9ADe2c1cA0351Ab660";
+    const mockSmartAccount = mock<SmartAccount<EntryPoint>>({ address: walletAddress });
     const mockPublicClient = mock<PublicClient>();
-    const mockAccountClient = mock<SmartAccountClient<EntryPoint, Transport, Chain, SmartAccount<EntryPoint>>>();
+    const mockAccountClient = mock<SmartAccountClient<EntryPoint, Transport, Chain, SmartAccount<EntryPoint>>>({
+        account: mockSmartAccount,
+    });
     const sendTransactionService = new SendTransactionService({ public: mockPublicClient, wallet: mockAccountClient });
 
     beforeEach(() => {
@@ -144,5 +149,11 @@ describe("SendTransactionService", () => {
             })
         ).resolves.toBeDefined();
         expect(callOrder).toEqual(["simulateContract", "sendTransaction"]);
+
+        expect(mockPublicClient.simulateContract).toHaveBeenCalledWith(
+            expect.objectContaining({
+                account: walletAddress,
+            })
+        );
     });
 });
