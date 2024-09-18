@@ -7,7 +7,7 @@ export type {
     UserParams,
     ViemAccount,
     PasskeySigner,
-    EOASigner,
+    ExternalSigner,
     WalletParams,
 } from "./types/params";
 
@@ -37,7 +37,6 @@ export {
     SmartWalletErrorCode,
     CrossmintSDKError,
     CrossmintServiceError,
-    TransferError,
     JWTDecryptionError,
     JWTExpiredError,
     JWTIdentifierError,
