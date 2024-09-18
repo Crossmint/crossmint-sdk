@@ -78,6 +78,14 @@ export class SmartWalletService {
         );
     }
 
+    public async hasExistingWallet(user: UserParams, chain: SmartWalletChain): Promise<boolean> {
+        const {
+            config: { existing },
+        } = await this.accountConfigService.get(user, chain);
+
+        return existing != null;
+    }
+
     private smartAccountClient(
         chain: SmartWalletChain,
         account: KernelSmartAccount<EntryPoint, HttpTransport>,

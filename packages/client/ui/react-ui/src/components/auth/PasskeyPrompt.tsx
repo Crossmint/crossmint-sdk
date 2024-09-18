@@ -66,16 +66,15 @@ function PasskeyPromptCore({
     content,
     primaryButton,
     secondaryButton,
-    handleOnClose,
 }: {
     title: string;
     content: ReactNode;
     primaryButton: ReactNode;
     secondaryButton?: ReactNode;
-    handleOnClose?: () => void;
 }) {
     return (
-        <Dialog open onClose={handleOnClose ?? (() => {})} style={dialogStyles}>
+        // As of rn, onClose won't be used. All state will be handled in the WalletProvider
+        <Dialog open onClose={() => {}} style={dialogStyles}>
             {/* This is a hacky workaround to have the foreground transparent styles to work. */}
             <Transition.Child
                 as={Fragment}
@@ -110,24 +109,21 @@ function PasskeyPromptCore({
     );
 }
 
-type PromptType = "create-wallet" | "transaction" | "error" | "not-supported";
+type PromptType = "create-wallet" | "transaction" | "not-supported" | "create-wallet-error" | "transaction-error";
 
 export function PasskeyPrompt({
-    type,
-    primaryActionOnClick,
-    secondaryActionOnClick,
-    handleOnClose,
+    state,
 }: {
-    type: PromptType;
-    primaryActionOnClick: () => void;
-    secondaryActionOnClick?: () => void;
-    handleOnClose?: () => void;
+    state: {
+        type: PromptType;
+        primaryActionOnClick: () => void;
+        secondaryActionOnClick?: () => void;
+    };
 }) {
     // These components are currently assembled based on the mockups.
-    if (type === "create-wallet") {
+    if (state.type === "create-wallet") {
         return (
             <PasskeyPromptCore
-                handleOnClose={handleOnClose}
                 title="Create Your Wallet"
                 content={
                     <div style={{ fontWeight: "400", color: "#67797F" }}>
@@ -151,7 +147,7 @@ export function PasskeyPrompt({
                     </div>
                 }
                 primaryButton={
-                    <Button style={primaryButtonStyles} onClick={primaryActionOnClick}>
+                    <Button style={primaryButtonStyles} onClick={state.primaryActionOnClick}>
                         Create Wallet
                     </Button>
                 }
@@ -159,27 +155,25 @@ export function PasskeyPrompt({
         );
     }
 
-    if (type === "error") {
+    if (state.type === "create-wallet-error") {
         return (
             <PasskeyPromptCore
-                handleOnClose={handleOnClose}
-                title="Wallet Access Failed"
+                title="Wallet Creation Failed"
                 content={
                     <div style={{ fontWeight: "400", color: "#67797F" }}>
                         <div style={{ marginBottom: "1.5rem" }}>
-                            We couldn't access your wallet. This could be due to rejecting the request, a timeout, or
+                            We couldn't create your wallet. This could be due to rejecting the request, a timeout, or
                             not having access to your passkey on this device.
                         </div>
-                        <div>You last used your wallet on a [Device Name] with [Browser Name] on [Date/Time].</div>
                     </div>
                 }
                 primaryButton={
-                    <Button style={primaryButtonStyles} onClick={primaryActionOnClick}>
+                    <Button style={primaryButtonStyles} onClick={state.primaryActionOnClick}>
                         Try again
                     </Button>
                 }
                 secondaryButton={
-                    <Button style={secondaryButtonStyles} onClick={secondaryActionOnClick}>
+                    <Button style={secondaryButtonStyles} onClick={state.secondaryActionOnClick}>
                         Troubleshoot
                     </Button>
                 }
@@ -187,10 +181,9 @@ export function PasskeyPrompt({
         );
     }
 
-    if (type === "transaction") {
+    if (state.type === "transaction") {
         return (
             <PasskeyPromptCore
-                handleOnClose={handleOnClose}
                 title="First Time Using Your Wallet"
                 content={
                     <div style={{ fontWeight: "400", color: "#67797F" }}>
@@ -206,7 +199,7 @@ export function PasskeyPrompt({
                     </div>
                 }
                 primaryButton={
-                    <Button style={primaryButtonStyles} onClick={primaryActionOnClick}>
+                    <Button style={primaryButtonStyles} onClick={state.primaryActionOnClick}>
                         Use Wallet
                     </Button>
                 }
@@ -214,10 +207,36 @@ export function PasskeyPrompt({
         );
     }
 
-    if (type === "not-supported") {
+    if (state.type === "transaction-error") {
         return (
             <PasskeyPromptCore
-                handleOnClose={handleOnClose}
+                title="Wallet Access Failed"
+                content={
+                    <div style={{ fontWeight: "400", color: "#67797F" }}>
+                        <div style={{ marginBottom: "1.5rem" }}>
+                            We couldn't access your wallet. This could be due to rejecting the request, a timeout, or
+                            not having access to your passkey on this device.
+                        </div>
+                        <div>You last used your wallet on a [Device Name] with [Browser Name] on [Date/Time].</div>
+                    </div>
+                }
+                primaryButton={
+                    <Button style={primaryButtonStyles} onClick={state.primaryActionOnClick}>
+                        Try again
+                    </Button>
+                }
+                secondaryButton={
+                    <Button style={secondaryButtonStyles} onClick={state.secondaryActionOnClick}>
+                        Troubleshoot
+                    </Button>
+                }
+            />
+        );
+    }
+
+    if (state.type === "not-supported") {
+        return (
+            <PasskeyPromptCore
                 title="Passkeys Not Supported on This Device"
                 content={
                     <div style={{ fontWeight: "400", color: "#67797F" }}>
@@ -228,7 +247,7 @@ export function PasskeyPrompt({
                     </div>
                 }
                 primaryButton={
-                    <Button style={primaryButtonStyles} onClick={primaryActionOnClick}>
+                    <Button style={primaryButtonStyles} onClick={state.primaryActionOnClick}>
                         Understood
                     </Button>
                 }
