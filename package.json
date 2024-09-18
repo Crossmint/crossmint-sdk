@@ -15,7 +15,7 @@
         "clean:next": "pnpm rimraf \"**/.next\" --glob",
         "clean:node_modules": "pnpm dlx rimraf \"**/node_modules\" --glob",
         "lint": "biome check --diagnostic-level=error --max-diagnostics=200",
-        "lint-fix": "biome check --write",
+        "lint:fix": "biome check --write",
         "prepare": "husky",
         "publish": "lerna publish from-package",
         "test": "lerna run test"
