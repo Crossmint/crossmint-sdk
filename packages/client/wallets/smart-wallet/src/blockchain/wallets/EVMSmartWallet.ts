@@ -1,22 +1,19 @@
-import {
+import type {
     Abi,
+    Address,
     ContractFunctionArgs,
     ContractFunctionName,
     Hex,
-    type HttpTransport,
-    type PublicClient,
+    HttpTransport,
+    PublicClient,
     WriteContractParameters,
-    isAddress,
-    publicActions,
 } from "viem";
 
-import { TransferError } from "@crossmint/client-sdk-base";
-
 import type { CrossmintWalletService } from "../../api/CrossmintWalletService";
-import { scwLogger } from "../../services/logger";
-import { SmartWalletClient } from "../../types/internal";
+import { SmartWalletError } from "../../error";
+import type { SmartWalletClient } from "../../types/internal";
 import type { TransferType } from "../../types/token";
-import { SmartWalletChain } from "../chains";
+import type { SmartWalletChain } from "../chains";
 import { transferParams } from "../transfer";
 import { SendTransactionOptions, SendTransactionService } from "./SendTransactionService";
 
@@ -41,79 +38,47 @@ export class EVMSmartWallet {
          */
         public: PublicClient;
     };
-    private readonly sendTransactionService: SendTransactionService;
 
     constructor(
-        private readonly crossmintService: CrossmintWalletService,
-        private readonly accountClient: SmartWalletClient,
-        publicClient: PublicClient<HttpTransport>,
+        client: { public: PublicClient<HttpTransport>; wallet: SmartWalletClient },
         chain: SmartWalletChain,
-        protected readonly logger = scwLogger
+        private readonly crossmintService: CrossmintWalletService,
+        private readonly sendTransactionService = new SendTransactionService(client)
     ) {
         this.chain = chain;
-        this.client = {
-            wallet: accountClient,
-            public: publicClient,
-        };
-        this.sendTransactionService = new SendTransactionService(publicClient);
+        this.client = client;
     }
 
     /**
      * The address of the smart wallet.
      */
     public get address() {
-        return this.accountClient.account.address;
+        return this.client.wallet.account.address;
     }
 
     /**
+     * Transfers tokens from the smart wallet to a specified address.
+     * @param toAddress The recipient's address.
+     * @param config The transfer configuration, including token details and amount.
      * @returns The transaction hash.
+     * @throws {SmartWalletError} If there's a chain mismatch between this wallet and the input configuration.
+     * @throws {SendTransactionError} If the transaction fails to send. Contains the error thrown by the viem client.
+     * @throws {SendTransactionExecutionRevertedError} A subclass of SendTransactionError if the transaction fails due to a contract execution error.
      */
-    public async transferToken(toAddress: string, config: TransferType): Promise<string> {
-        return this.logger.logPerformance(
-            "TRANSFER",
-            async () => {
-                if (this.chain !== config.token.chain) {
-                    throw new Error(
-                        `Chain mismatch: Expected ${config.token.chain}, but got ${this.chain}. Ensure you are interacting with the correct blockchain.`
-                    );
-                }
+    public async transferToken(toAddress: Address, config: TransferType): Promise<string> {
+        if (this.chain !== config.token.chain) {
+            throw new SmartWalletError(
+                `Chain mismatch: Expected ${config.token.chain}, but got ${this.chain}. Ensure you are interacting with the correct blockchain.`
+            );
+        }
 
-                if (!isAddress(toAddress)) {
-                    throw new Error(`Invalid recipient address: '${toAddress}' is not a valid EVM address.`);
-                }
-
-                if (!isAddress(config.token.contractAddress)) {
-                    throw new Error(
-                        `Invalid contract address: '${config.token.contractAddress}' is not a valid EVM address.`
-                    );
-                }
-
-                const tx = transferParams({
-                    contract: config.token.contractAddress,
-                    to: toAddress,
-                    from: this.accountClient.account,
-                    config,
-                });
-
-                try {
-                    const client = this.accountClient.extend(publicActions);
-                    const { request } = await client.simulateContract(tx);
-                    const hash = await client.writeContract(request);
-                    this.logger.log(`[TRANSFER] - Transaction hash from transfer: ${hash}`);
-
-                    return hash;
-                } catch (error) {
-                    this.logger.error("[TRANSFER] - ERROR_TRANSFERRING_TOKEN", {
-                        error: error instanceof Error ? error.message : JSON.stringify(error),
-                        tokenId: tx.tokenId,
-                        contractAddress: config.token.contractAddress,
-                        chain: config.token.chain,
-                    });
-                    const tokenIdString = tx.tokenId == null ? "" : `:${tx.tokenId}}`;
-                    throw new TransferError(`Error transferring token ${config.token.contractAddress}${tokenIdString}`);
-                }
-            },
-            { toAddress, config }
+        return this.executeContract(
+            transferParams({
+                contract: config.token.contractAddress,
+                to: toAddress,
+                from: this.client.wallet.account,
+                config,
+            })
         );
     }
 
@@ -186,7 +151,6 @@ export class EVMSmartWallet {
                 args,
                 value,
             },
-            this.accountClient,
             config
         );
     }

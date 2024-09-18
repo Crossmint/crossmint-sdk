@@ -87,8 +87,11 @@ export interface SendTransactionOptions {
 
 export class SendTransactionService {
     constructor(
-        private publicClient: PublicClient,
-        private defaultSendTransactionOptions: SendTransactionOptions = {
+        private readonly client: {
+            public: PublicClient;
+            wallet: SmartAccountClient<EntryPoint, Transport, Chain, SmartAccount<EntryPoint>>;
+        },
+        private readonly defaultSendTransactionOptions: SendTransactionOptions = {
             confirmations: 2,
             transactionConfirmationTimeout: 30_000,
         }
@@ -96,7 +99,6 @@ export class SendTransactionService {
 
     async sendTransaction(
         request: TransactionServiceTransactionRequest,
-        client: SmartAccountClient<EntryPoint, Transport, Chain, SmartAccount<EntryPoint>>,
         config: Partial<SendTransactionOptions> = {}
     ): Promise<Hex> {
         const { confirmations, transactionConfirmationTimeout } = this.getConfig(config);
@@ -105,10 +107,10 @@ export class SendTransactionService {
 
         let hash;
         try {
-            hash = await client.writeContract({
+            hash = await this.client.wallet.writeContract({
                 ...request,
-                account: client.account,
-                chain: client.chain,
+                account: this.client.wallet.account,
+                chain: this.client.wallet.chain,
             });
         } catch (e) {
             if (e instanceof BaseError) {
@@ -118,7 +120,7 @@ export class SendTransactionService {
         }
 
         try {
-            const receipt = await this.publicClient.waitForTransactionReceipt({
+            const receipt = await this.client.public.waitForTransactionReceipt({
                 hash,
                 confirmations,
                 timeout: transactionConfirmationTimeout,
@@ -161,10 +163,10 @@ export class SendTransactionService {
         stage: SendTransactionFailureStage
     ) {
         try {
-            await this.publicClient.simulateContract({
+            await this.client.public.simulateContract({
                 ...request,
-                account: request.address,
-                chain: this.publicClient.chain,
+                account: this.client.wallet.account.address,
+                chain: this.client.public.chain,
             });
         } catch (e) {
             if (e instanceof BaseError) {
