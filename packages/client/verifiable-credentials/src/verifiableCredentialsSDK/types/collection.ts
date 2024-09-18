@@ -1,5 +1,5 @@
-import { VCChain } from "./chain";
-import { Nft } from "./nft";
+import type { VCChain } from "./chain";
+import type { Nft } from "./nft";
 
 /**
  * Collection represents a generic collection of NFTs.

@@ -1,7 +1,7 @@
 import { StaticJsonRpcProvider } from "@ethersproject/providers";
 
 import { configManager } from "../configs";
-import { VCChain } from "../types/chain";
+import type { VCChain } from "../types/chain";
 
 export function getProvider(chain: VCChain) {
     const rpcs = configManager.getBlockchainRpcs();

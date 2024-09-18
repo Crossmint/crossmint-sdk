@@ -1,8 +1,8 @@
 import { LitAbility, LitAccessControlConditionResource } from "@lit-protocol/auth-helpers";
 import * as LitJsSdk from "@lit-protocol/lit-node-client";
-import { AuthSig, LIT_NETWORKS_KEYS, SessionSigsMap } from "@lit-protocol/types";
+import type { AuthSig, LIT_NETWORKS_KEYS, SessionSigsMap } from "@lit-protocol/types";
 
-import { EncryptedVerifiableCredential } from "../types";
+import type { EncryptedVerifiableCredential } from "../types";
 import { isVerifiableCredential } from "../types/utils";
 
 const authNeededCallback = async (params: any) => {

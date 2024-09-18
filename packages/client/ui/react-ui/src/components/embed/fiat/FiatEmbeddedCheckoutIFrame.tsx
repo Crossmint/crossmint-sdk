@@ -1,5 +1,5 @@
 import {
-    FiatEmbeddedCheckoutProps,
+    type FiatEmbeddedCheckoutProps,
     crossmintIFrameService,
     embeddedCheckoutPropsToUpdatableParamsPayload,
 } from "@crossmint/client-sdk-base";

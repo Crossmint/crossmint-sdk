@@ -1,14 +1,14 @@
-import { AuthSig } from "@lit-protocol/types";
+import type { AuthSig } from "@lit-protocol/types";
 
 import { APIKeyUsageOrigin } from "@crossmint/common-sdk-base";
 
 import { crossmintAPI } from "../crossmintAPI";
 import { DelegationSignature } from "../services/delegationSignature";
 import {
-    EncryptedVerifiableCredential,
-    LitNetwork,
+    type EncryptedVerifiableCredential,
+    type LitNetwork,
     Lit as LitRaw,
-    VerifiableCredential,
+    type VerifiableCredential,
 } from "../verifiableCredentialsSDK";
 
 /**

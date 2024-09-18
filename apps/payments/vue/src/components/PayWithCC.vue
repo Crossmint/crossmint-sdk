@@ -3,7 +3,6 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 
 import type { CrossmintEvent } from "@crossmint/client-sdk-base";
-import { CrossmintPaymentElement } from "@crossmint/client-sdk-vue-ui";
 import "@crossmint/client-sdk-vue-ui/dist/index.css";
 
 const email = ref("");

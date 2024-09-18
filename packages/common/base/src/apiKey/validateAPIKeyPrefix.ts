@@ -1,4 +1,4 @@
-import { APIKeyEnvironmentPrefix, APIKeyPrefix, APIKeyUsageOrigin, APIKeyUsageOriginPrefix } from "./types";
+import { APIKeyEnvironmentPrefix, type APIKeyPrefix, APIKeyUsageOrigin, APIKeyUsageOriginPrefix } from "./types";
 import { usageOriginToPrefix } from "./utils";
 
 export type ValidateAPIKeyPrefixResult = ValidateAPIKeyPrefixSuccessResult | ValidateAPIKeyFailResult;

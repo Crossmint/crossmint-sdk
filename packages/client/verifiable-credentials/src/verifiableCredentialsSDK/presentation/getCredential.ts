@@ -1,7 +1,7 @@
 import { IPFSService } from "../services/ipfs";
-import { CredentialsCollection } from "../types/collection";
+import type { CredentialsCollection } from "../types/collection";
 import { isCredentialType, isVerifiableCredentialContractMetadata } from "../types/utils";
-import { VerifiableCredentialType } from "../types/verifiableCredential";
+import type { VerifiableCredentialType } from "../types/verifiableCredential";
 
 export type CredentialRetrievalProcedure = {
     endpointCondition: (endpoint: string) => boolean;

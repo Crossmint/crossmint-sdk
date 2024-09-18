@@ -1,5 +1,5 @@
-import { CommonEmbeddedCheckoutPropsJSONParsed, CommonEmbeddedCheckoutPropsJSONStringified } from ".";
-import { CardWalletPaymentMethod, EmailInputOptions, EmbeddedCheckoutExperimentalOptions } from "../fiat";
+import type { CommonEmbeddedCheckoutPropsJSONParsed, CommonEmbeddedCheckoutPropsJSONStringified } from ".";
+import type { CardWalletPaymentMethod, EmailInputOptions, EmbeddedCheckoutExperimentalOptions } from "../fiat";
 
 export type FiatEmbeddedCheckoutPropsJSONStringified = CommonEmbeddedCheckoutPropsJSONStringified<"fiat"> & {
     cardWalletPaymentMethods?: string;

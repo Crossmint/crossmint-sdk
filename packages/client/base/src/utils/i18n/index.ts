@@ -1,5 +1,5 @@
-import { Locale } from "../../types";
-import { NestedPaths, TypeFromPath } from "../../types/system";
+import type { Locale } from "../../types";
+import type { NestedPaths, TypeFromPath } from "../../types/system";
 import Klingon from "./dictionaries/Klingon";
 import deDE from "./dictionaries/deDE";
 import enUS from "./dictionaries/enUS";

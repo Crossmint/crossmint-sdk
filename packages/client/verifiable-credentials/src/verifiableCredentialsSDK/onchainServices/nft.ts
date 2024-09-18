@@ -1,9 +1,9 @@
 import { AddressZero } from "@ethersproject/constants";
 import { Contract } from "@ethersproject/contracts";
-import { StaticJsonRpcProvider } from "@ethersproject/providers";
+import type { StaticJsonRpcProvider } from "@ethersproject/providers";
 
-import { VCChain } from "../types/chain";
-import { Nft } from "../types/nft";
+import type { VCChain } from "../types/chain";
+import type { Nft } from "../types/nft";
 import { isVcChain } from "../types/utils";
 import { abi_ERC_721 } from "./ABI/ERC721";
 import { abi_ERC_7572 } from "./ABI/ERC7572";

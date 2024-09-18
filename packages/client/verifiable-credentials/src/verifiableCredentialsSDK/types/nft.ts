@@ -1,4 +1,4 @@
-import { VCChain } from "./chain";
+import type { VCChain } from "./chain";
 
 export interface Nft {
     chain: VCChain;

@@ -1,7 +1,7 @@
 import { useWalletConnectWallets } from "@/hooks/useWalletConnectWallets";
 import { supportedNamespacesSatisfiesRequiredChains } from "@/utils/wallet/supportedNamespacesSatisfiesRequiredChains";
-import { BuildApprovedNamespacesParams } from "@walletconnect/utils";
-import { Web3WalletTypes } from "@walletconnect/web3wallet";
+import type { BuildApprovedNamespacesParams } from "@walletconnect/utils";
+import type { Web3WalletTypes } from "@walletconnect/web3wallet";
 import { useEffect, useState } from "react";
 
 import RequestedPermissionsModal from "./RequestedPermissionsModal";

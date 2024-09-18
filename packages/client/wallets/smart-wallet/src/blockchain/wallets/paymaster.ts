@@ -1,11 +1,11 @@
-import { CrossmintWalletService } from "@/api/CrossmintWalletService";
-import { Middleware } from "permissionless/actions/smartAccount";
-import { PimlicoBundlerClient } from "permissionless/clients/pimlico";
-import { EntryPoint } from "permissionless/types/entrypoint";
+import type { CrossmintWalletService } from "@/api/CrossmintWalletService";
+import type { Middleware } from "permissionless/actions/smartAccount";
+import type { PimlicoBundlerClient } from "permissionless/clients/pimlico";
+import type { EntryPoint } from "permissionless/types/entrypoint";
 
-import { UserParams } from "../../types/params";
+import type { UserParams } from "../../types/params";
 import { usesGelatoBundler } from "../../utils/blockchain";
-import { SmartWalletChain } from "../chains";
+import type { SmartWalletChain } from "../chains";
 
 export function usePaymaster(chain: SmartWalletChain) {
     return !usesGelatoBundler(chain);

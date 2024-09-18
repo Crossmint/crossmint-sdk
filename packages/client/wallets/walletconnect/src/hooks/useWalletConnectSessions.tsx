@@ -1,8 +1,8 @@
 import { mockRequiredNamespaceMethods } from "@/utils/walletconnect/mockRequiredNamespaceMethods";
-import { SessionTypes } from "@walletconnect/types";
-import { SdkErrorKey, buildApprovedNamespaces, getSdkError } from "@walletconnect/utils";
-import { Web3WalletTypes } from "@walletconnect/web3wallet";
-import { Dispatch, SetStateAction, createContext, useCallback, useContext, useEffect, useState } from "react";
+import type { SessionTypes } from "@walletconnect/types";
+import { type SdkErrorKey, buildApprovedNamespaces, getSdkError } from "@walletconnect/utils";
+import type { Web3WalletTypes } from "@walletconnect/web3wallet";
+import { type Dispatch, type SetStateAction, createContext, useCallback, useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 import { useWalletConnectProvider } from "./useWalletConnectProvider";

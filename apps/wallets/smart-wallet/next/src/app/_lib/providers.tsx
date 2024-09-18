@@ -1,7 +1,7 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { CrossmintAuthProvider, CrossmintProvider } from "@crossmint/client-sdk-react-ui";
 

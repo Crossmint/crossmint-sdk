@@ -1,7 +1,7 @@
 import Loader from "@/components/common/Loader";
-import { CrossmintWalletConnectLocale } from "@/i18n/dictionary";
-import { CrossmintWalletConnectUIConfig } from "@/types/UIConfig";
-import { CrossmintWalletConnectWallet } from "@/types/wallet";
+import type { CrossmintWalletConnectLocale } from "@/i18n/dictionary";
+import type { CrossmintWalletConnectUIConfig } from "@/types/UIConfig";
+import type { CrossmintWalletConnectWallet } from "@/types/wallet";
 import { Toaster } from "react-hot-toast";
 
 import { CrossmintWalletConnectProvider, useCrossmintWalletConnect } from "../hooks/useCrossmintWalletConnect";

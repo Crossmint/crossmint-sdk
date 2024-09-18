@@ -3,10 +3,10 @@ import type { EntryPoint } from "permissionless/types/entrypoint";
 import { stringify } from "viem";
 
 import { SmartWalletError } from "../../error";
-import { ErrorProcessor } from "../../error/processor";
+import type { ErrorProcessor } from "../../error/processor";
 import { scwLogger } from "../../services";
 import { usesGelatoBundler } from "../../utils/blockchain";
-import { SmartWalletChain } from "../chains";
+import type { SmartWalletChain } from "../chains";
 
 const transactionMethods = [
     "sendTransaction",
@@ -37,7 +37,10 @@ function isSignMethod(method: string): method is SignMethod {
  * - Automatic formatting of transactions for Gelato bundler compatibility.
  *  */
 export class ClientDecorator {
-    constructor(private readonly errorProcessor: ErrorProcessor, protected logger = scwLogger) {}
+    constructor(
+        private readonly errorProcessor: ErrorProcessor,
+        protected logger = scwLogger
+    ) {}
 
     public decorate<Client extends SmartAccountClient<EntryPoint>>({
         crossmintChain,

@@ -1,6 +1,6 @@
-import { CoreTypes } from "@walletconnect/types";
-import { IWeb3Wallet } from "@walletconnect/web3wallet";
-import { ReactNode, createContext, useContext, useEffect, useState } from "react";
+import type { CoreTypes } from "@walletconnect/types";
+import type { IWeb3Wallet } from "@walletconnect/web3wallet";
+import { type ReactNode, createContext, useContext, useEffect, useState } from "react";
 
 import { createProvider } from "../utils/walletconnect/createProvider";
 
