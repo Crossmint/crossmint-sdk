@@ -82,6 +82,7 @@ describe("CrossmintWalletProvider", () => {
         mockWallet = mock<EVMSmartWallet>();
         vi.mocked(SmartWalletSDK.init).mockReturnValue(mockSDK);
         vi.mocked(mockSDK.getOrCreateWallet).mockResolvedValue(mockWallet);
+        vi.mocked(mockSDK.checkWalletExists).mockResolvedValue(true);
     });
 
     describe("getOrCreateWallet", () => {

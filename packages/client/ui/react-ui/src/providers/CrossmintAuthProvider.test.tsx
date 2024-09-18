@@ -81,6 +81,7 @@ describe("CrossmintAuthProvider", () => {
         mockWallet = mock<EVMSmartWallet>();
         vi.mocked(SmartWalletSDK.init).mockReturnValue(mockSDK);
         vi.mocked(mockSDK.getOrCreateWallet).mockResolvedValue(mockWallet);
+        vi.mocked(mockSDK.checkWalletExists).mockResolvedValue(true);
 
         embeddedWallets = {
             defaultChain: "polygon",
@@ -101,7 +102,7 @@ describe("CrossmintAuthProvider", () => {
             embeddedWallets,
         });
 
-        expect(getByTestId("wallet-status").textContent).toBe("in-progress");
+        expect(getByTestId("wallet-status").textContent).toBe("not-loaded");
         expect(getByTestId("auth-status").textContent).toBe("logged-in");
         expect(getByTestId("wallet").textContent).toBe("No Wallet");
         expect(getByTestId("error").textContent).toBe("No Error");
