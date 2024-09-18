@@ -102,7 +102,7 @@ describe("CrossmintAuthProvider", () => {
             embeddedWallets,
         });
 
-        expect(getByTestId("wallet-status").textContent).toBe("not-loaded");
+        expect(getByTestId("wallet-status").textContent).toBe("in-progress");
         expect(getByTestId("auth-status").textContent).toBe("logged-in");
         expect(getByTestId("wallet").textContent).toBe("No Wallet");
         expect(getByTestId("error").textContent).toBe("No Error");

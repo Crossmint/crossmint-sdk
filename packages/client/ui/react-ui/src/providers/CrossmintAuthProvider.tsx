@@ -20,6 +20,7 @@ export type CrossmintAuthProviderProps = {
     embeddedWallets: CrossmintAuthWalletConfig;
     appearance?: UIConfig;
     children: ReactNode;
+    enablePasskeyPrompt?: boolean;
 };
 
 type AuthStatus = "logged-in" | "logged-out" | "in-progress";
@@ -37,7 +38,12 @@ export const AuthContext = createContext<AuthContextType>({
     status: "logged-out",
 });
 
-export function CrossmintAuthProvider({ embeddedWallets, children, appearance }: CrossmintAuthProviderProps) {
+export function CrossmintAuthProvider({
+    embeddedWallets,
+    children,
+    appearance,
+    enablePasskeyPrompt = false,
+}: CrossmintAuthProviderProps) {
     const { crossmint, setJwt } = useCrossmint("CrossmintAuthProvider must be used within CrossmintProvider");
     const crossmintBaseUrl = validateApiKeyAndGetCrossmintBaseUrl(crossmint.apiKey);
     const [modalOpen, setModalOpen] = useState(false);
@@ -96,7 +102,10 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
                 status: getAuthStatus(),
             }}
         >
-            <CrossmintWalletProvider defaultChain={embeddedWallets.defaultChain}>
+            <CrossmintWalletProvider
+                defaultChain={embeddedWallets.defaultChain}
+                enablePasskeyPrompt={enablePasskeyPrompt}
+            >
                 <WalletManager embeddedWallets={embeddedWallets} accessToken={crossmint.jwt}>
                     {children}
                 </WalletManager>
