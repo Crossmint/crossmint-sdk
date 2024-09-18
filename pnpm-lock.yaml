@@ -20,9 +20,6 @@ importers:
       '@testing-library/react':
         specifier: 14.0.0
         version: 14.0.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@trivago/prettier-plugin-sort-imports':
-        specifier: 4.2.0
-        version: 4.2.0(@vue/compiler-sfc@3.3.4)(prettier@2.8.8)
       '@types/jest':
         specifier: 29.5.4
         version: 29.5.4
@@ -864,10 +861,6 @@ packages:
       '@babel/core': ^7.11.0
       eslint: ^7.5.0 || ^8.0.0
 
-  '@babel/generator@7.17.7':
-    resolution: {integrity: sha512-oLcVCTeIFadUoArDTwpluncplrYBmTCCZZgXCbgNGvOBBiSDDK3eWO4b/+eOTli5tKv1lg+a5/NAXg+nTcei1w==}
-    engines: {node: '>=6.9.0'}
-
   '@babel/generator@7.24.10':
     resolution: {integrity: sha512-o9HBZL1G2129luEUlG1hB4N/nlYNWHnpwlND9eOMclRqqu1YDy2sSYVCFUZwl8I1Gxh+QSRrP2vD7EpUmFVXxg==}
     engines: {node: '>=6.9.0'}
@@ -1639,20 +1632,12 @@ packages:
     resolution: {integrity: sha512-jYqfPrU9JTF0PmPy1tLYHW4Mp4KlgxJD9l2nP9fD6yT/ICi554DmrWBAEYpIelzjHf1msDP3PxJIRt/nFNfBig==}
     engines: {node: '>=6.9.0'}
 
-  '@babel/traverse@7.17.3':
-    resolution: {integrity: sha512-5irClVky7TxRWIRtxlh2WPUUOLhcPN06AGgaQSB8AEwuyEBgJVuJ5imdHm5zxk8w0QS5T+tDfnDxAlhWjpb7cw==}
-    engines: {node: '>=6.9.0'}
-
   '@babel/traverse@7.24.7':
     resolution: {integrity: sha512-yb65Ed5S/QAcewNPh0nZczy9JdYXkkAbIsEo+P7BE7yO3txAY30Y/oPa3QkQ5It3xVG2kpKMg9MsdxZaO31uKA==}
     engines: {node: '>=6.9.0'}
 
   '@babel/traverse@7.24.8':
     resolution: {integrity: sha512-t0P1xxAPzEDcEPmjprAQq19NWum4K0EQPjMwZQZbHt+GiZqvjCHjj755Weq1YRPVzBI+3zSfvScfpnuIecVFJQ==}
-    engines: {node: '>=6.9.0'}
-
-  '@babel/types@7.17.0':
-    resolution: {integrity: sha512-TmKSNO4D5rzhL5bjWFcVHHLETzfQ/AmbKpKPOSjlP0WoHZ6L911fgoOKY4Alp/emzG4cHJdyN49zpgkbXFEHHw==}
     engines: {node: '>=6.9.0'}
 
   '@babel/types@7.24.7':
@@ -5087,15 +5072,6 @@ packages:
     deprecated: Not supported. Pls upgrade
     peerDependencies:
       '@babel/runtime': 7.x
-
-  '@trivago/prettier-plugin-sort-imports@4.2.0':
-    resolution: {integrity: sha512-YBepjbt+ZNBVmN3ev1amQH3lWCmHyt5qTbLCp/syXJRu/Kw2koXh44qayB1gMRxcL/gV8egmjN5xWSrYyfUtyw==}
-    peerDependencies:
-      '@vue/compiler-sfc': 3.x
-      prettier: 2.x - 3.x
-    peerDependenciesMeta:
-      '@vue/compiler-sfc':
-        optional: true
 
   '@trysound/sax@0.2.0':
     resolution: {integrity: sha512-L7z9BgrNEcYyUYtF+HaEfiS5ebkh9jXqbszz7pC0hRBPaatV0XjSD3+eHrpqFemQfgwiFF0QPIarnIihIDn7OA==}
@@ -9709,9 +9685,6 @@ packages:
     resolution: {integrity: sha512-ZDi3aP+fG/LchyBzUM804VjddnwfSfsdeYkwt8NcbKRvo4rFkjhs456iLFn3k2ZUWvNe4i48WACDbza8fhq2+w==}
     engines: {node: '>=10'}
     hasBin: true
-
-  javascript-natural-sort@0.7.1:
-    resolution: {integrity: sha512-nO6jcEfZWQXDhOiBtG2KvKyEptz7RVbpGP4vTD2hLBdmNQSsCiicO2Ioinv6UI4y9ukqnBpy+XZ9H6uLNgJTlw==}
 
   jayson@3.7.0:
     resolution: {integrity: sha512-tfy39KJMrrXJ+mFcMpxwBvFDetS8LAID93+rycFglIQM4kl3uNR3W4lBLE/FFhsoUCEox5Dt2adVpDm/XtebbQ==}
@@ -15249,12 +15222,6 @@ snapshots:
       eslint-visitor-keys: 2.1.0
       semver: 6.3.1
 
-  '@babel/generator@7.17.7':
-    dependencies:
-      '@babel/types': 7.24.7
-      jsesc: 2.5.2
-      source-map: 0.5.7
-
   '@babel/generator@7.24.10':
     dependencies:
       '@babel/types': 7.24.9
@@ -16313,21 +16280,6 @@ snapshots:
       '@babel/parser': 7.24.7
       '@babel/types': 7.24.7
 
-  '@babel/traverse@7.17.3':
-    dependencies:
-      '@babel/code-frame': 7.24.7
-      '@babel/generator': 7.24.7
-      '@babel/helper-environment-visitor': 7.24.7
-      '@babel/helper-function-name': 7.24.7
-      '@babel/helper-hoist-variables': 7.24.7
-      '@babel/helper-split-export-declaration': 7.24.7
-      '@babel/parser': 7.24.7
-      '@babel/types': 7.24.7
-      debug: 4.3.5(supports-color@8.1.1)
-      globals: 11.12.0
-    transitivePeerDependencies:
-      - supports-color
-
   '@babel/traverse@7.24.7':
     dependencies:
       '@babel/code-frame': 7.24.7
@@ -16357,11 +16309,6 @@ snapshots:
       globals: 11.12.0
     transitivePeerDependencies:
       - supports-color
-
-  '@babel/types@7.17.0':
-    dependencies:
-      '@babel/helper-validator-identifier': 7.24.7
-      to-fast-properties: 2.0.0
 
   '@babel/types@7.24.7':
     dependencies:
@@ -22405,20 +22352,6 @@ snapshots:
       loglevel: 1.8.1
     transitivePeerDependencies:
       - '@sentry/types'
-
-  '@trivago/prettier-plugin-sort-imports@4.2.0(@vue/compiler-sfc@3.3.4)(prettier@2.8.8)':
-    dependencies:
-      '@babel/generator': 7.17.7
-      '@babel/parser': 7.24.7
-      '@babel/traverse': 7.17.3
-      '@babel/types': 7.17.0
-      javascript-natural-sort: 0.7.1
-      lodash: 4.17.21
-      prettier: 2.8.8
-    optionalDependencies:
-      '@vue/compiler-sfc': 3.3.4
-    transitivePeerDependencies:
-      - supports-color
 
   '@trysound/sax@0.2.0': {}
 
@@ -29489,8 +29422,6 @@ snapshots:
       chalk: 4.1.2
       filelist: 1.0.4
       minimatch: 3.1.2
-
-  javascript-natural-sort@0.7.1: {}
 
   jayson@3.7.0(bufferutil@4.0.7)(utf-8-validate@5.0.10):
     dependencies:
