@@ -8,8 +8,9 @@ import { UIConfig } from "@crossmint/common-sdk-base";
 import X from "../../icons/x";
 
 const incomingModalIframeEvents = {
-    jwtToken: z.object({
+    authMaterialFromAuthFrame: z.object({
         jwtToken: z.string(),
+        refreshToken: z.string(),
     }),
 };
 
@@ -20,7 +21,7 @@ const outgoingModalIframeEvents = {
 };
 
 type IncomingModalIframeEventsType = {
-    jwtToken: typeof incomingModalIframeEvents.jwtToken;
+    authMaterialFromAuthFrame: typeof incomingModalIframeEvents.authMaterialFromAuthFrame;
 };
 
 type OutgoingModalIframeEventsType = {
@@ -29,13 +30,13 @@ type OutgoingModalIframeEventsType = {
 
 type AuthModalProps = {
     setModalOpen: (open: boolean) => void;
-    setJwtToken: (jwtToken: string) => void;
+    setAuthMaterial: (authMaterial: { jwtToken: string; refreshToken: string }) => void;
     apiKey: string;
     baseUrl: string;
     appearance?: UIConfig;
 };
 
-export default function AuthModal({ setModalOpen, setJwtToken, apiKey, baseUrl, appearance }: AuthModalProps) {
+export default function AuthModal({ setModalOpen, setAuthMaterial, apiKey, baseUrl, appearance }: AuthModalProps) {
     let iframeSrc = `${baseUrl}sdk/auth/frame?apiKey=${apiKey}`;
     if (appearance != null) {
         // The appearance object is serialized into a query parameter
@@ -53,9 +54,9 @@ export default function AuthModal({ setModalOpen, setJwtToken, apiKey, baseUrl, 
             return;
         }
 
-        iframe.on("jwtToken", (data) => {
-            setJwtToken(data.jwtToken);
-            iframe.off("jwtToken");
+        iframe.on("authMaterialFromAuthFrame", (data) => {
+            setAuthMaterial(data);
+            iframe.off("authMaterialFromAuthFrame");
 
             iframe.send("closeWindow", {
                 closeWindow: "closeWindow",
@@ -69,14 +70,14 @@ export default function AuthModal({ setModalOpen, setJwtToken, apiKey, baseUrl, 
 
         return () => {
             if (iframe) {
-                iframe.off("jwtToken");
+                iframe.off("authMaterialFromAuthFrame");
 
                 if (iframe.iframe.contentWindow != null) {
                     iframe.iframe.contentWindow.close();
                 }
             }
         };
-    }, [iframe, setJwtToken, setModalOpen]);
+    }, [iframe, setAuthMaterial, setModalOpen]);
 
     const handleIframeLoaded = async () => {
         if (iframeRef.current == null) {

@@ -87,6 +87,10 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
         return "logged-out";
     };
 
+    function setAuthMaterial(authMaterial: { jwtToken: string; refreshToken: string }) {
+        setJwt(authMaterial.jwtToken);
+    }
+
     return (
         <AuthContext.Provider
             value={{
@@ -105,7 +109,7 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
                           <AuthModal
                               baseUrl={crossmintBaseUrl}
                               setModalOpen={setModalOpen}
-                              setJwtToken={setJwt}
+                              setAuthMaterial={setAuthMaterial}
                               apiKey={crossmint.apiKey}
                               appearance={appearance}
                           />,
