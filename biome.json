@@ -10,7 +10,6 @@
         "attributePosition": "auto",
         "ignore": [
             "node_modules",
-            "dist",
             "public",
             ".next",
             ".vercel",
@@ -18,6 +17,7 @@
             "pnpm-lock.yaml",
             ".github",
             ".husky",
+            "**/dist/**",
             "**/build/**"
         ]
     },
@@ -80,7 +80,8 @@
             "playwright-report",
             "services/snowcrash",
             "pnpm-lock.yaml",
-            "**/build/**"
+            "**/build/**",
+            "**/dist/**"
         ]
     },
     "javascript": {
