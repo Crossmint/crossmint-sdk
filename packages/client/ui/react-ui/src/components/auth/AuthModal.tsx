@@ -6,7 +6,7 @@ import { IFrameWindow } from "@crossmint/client-sdk-window";
 import { UIConfig } from "@crossmint/common-sdk-base";
 
 import X from "../../icons/x";
-import { cn } from "../../lib/utils";
+import { classNames } from "../../utils/classNames";
 
 const incomingModalIframeEvents = {
     jwtToken: z.object({
@@ -141,7 +141,7 @@ export default function AuthModal({ setModalOpen, setJwtToken, apiKey, baseUrl, 
                             src={iframeSrc}
                             onLoad={handleIframeLoaded}
                             title="Authentication Modal"
-                            className={cn(
+                            className={classNames(
                                 "w-full h-[500px] border pt-12 pb-8",
                                 appearance?.colors?.border
                                     ? `border-[${appearance.colors.border}]`
