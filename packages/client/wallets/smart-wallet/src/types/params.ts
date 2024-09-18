@@ -24,7 +24,7 @@ export type PasskeySigner = {
     passkeyName?: string;
 };
 
-export type EOASigner = EIP1193Provider | ViemAccount;
+export type ExternalSigner = EIP1193Provider | ViemAccount;
 export interface WalletParams {
-    signer: EOASigner | PasskeySigner;
+    signer: ExternalSigner | PasskeySigner;
 }

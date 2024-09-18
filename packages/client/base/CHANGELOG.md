@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-base
 
+## 1.2.7
+
+### Patch Changes
+
+-   08177a6: Strip transferToken function
+
 ## 1.2.6
 
 ### Patch Changes
