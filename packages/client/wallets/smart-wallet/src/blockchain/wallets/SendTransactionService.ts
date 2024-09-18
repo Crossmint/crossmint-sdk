@@ -87,8 +87,11 @@ export interface SendTransactionOptions {
 
 export class SendTransactionService {
     constructor(
-        private publicClient: PublicClient,
-        private defaultSendTransactionOptions: SendTransactionOptions = {
+        private readonly client: {
+            public: PublicClient;
+            wallet: SmartAccountClient<EntryPoint, Transport, Chain, SmartAccount<EntryPoint>>;
+        },
+        private readonly defaultSendTransactionOptions: SendTransactionOptions = {
             confirmations: 2,
             transactionConfirmationTimeout: 30_000,
         }
@@ -96,19 +99,18 @@ export class SendTransactionService {
 
     async sendTransaction(
         request: TransactionServiceTransactionRequest,
-        client: SmartAccountClient<EntryPoint, Transport, Chain, SmartAccount<EntryPoint>>,
         config: Partial<SendTransactionOptions> = {}
     ): Promise<Hex> {
         const { confirmations, transactionConfirmationTimeout } = this.getConfig(config);
 
-        await this.simulateCall(request, client.account.address, undefined, "simulation");
+        await this.simulateCall(request, undefined, "simulation");
 
         let hash;
         try {
-            hash = await client.writeContract({
+            hash = await this.client.wallet.writeContract({
                 ...request,
-                account: client.account,
-                chain: client.chain,
+                account: this.client.wallet.account,
+                chain: this.client.wallet.chain,
             });
         } catch (e) {
             if (e instanceof BaseError) {
@@ -118,12 +120,12 @@ export class SendTransactionService {
         }
 
         try {
-            const receipt = await this.publicClient.waitForTransactionReceipt({
+            const receipt = await this.client.public.waitForTransactionReceipt({
                 hash,
                 confirmations,
                 timeout: transactionConfirmationTimeout,
             });
-            return await this.handleReceipt(receipt, client.account.address, request);
+            return await this.handleReceipt(receipt, request);
         } catch (e) {
             if (e instanceof BaseError) {
                 throw new EVMSendTransactionError(e.message, e, "confirmation");
@@ -139,14 +141,10 @@ export class SendTransactionService {
         };
     }
 
-    private async handleReceipt(
-        receipt: TransactionReceipt,
-        account: Address,
-        request: TransactionServiceTransactionRequest
-    ) {
+    private async handleReceipt(receipt: TransactionReceipt, request: TransactionServiceTransactionRequest) {
         if (receipt.status === "reverted") {
             // This should revert and throw the full reason
-            await this.simulateCall(request, account, receipt.transactionHash, "execution");
+            await this.simulateCall(request, receipt.transactionHash, "execution");
             // Otherwise, throw a generic error (this should practically never happen)
             throw new EVMSendTransactionExecutionRevertedError(
                 "Transaction reverted but unable to detect the reason",
@@ -161,15 +159,14 @@ export class SendTransactionService {
 
     private async simulateCall(
         request: TransactionServiceTransactionRequest,
-        account: Address,
         passthroughTxId: string | undefined,
         stage: SendTransactionFailureStage
     ) {
         try {
-            await this.publicClient.simulateContract({
+            await this.client.public.simulateContract({
                 ...request,
-                account,
-                chain: this.publicClient.chain,
+                account: this.client.wallet.account.address,
+                chain: this.client.public.chain,
             });
         } catch (e) {
             if (e instanceof BaseError) {

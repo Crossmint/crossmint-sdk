@@ -11,7 +11,6 @@ import type {
 
 import type { CrossmintWalletService } from "../../api/CrossmintWalletService";
 import { SmartWalletError } from "../../error";
-import { scwLogger } from "../../services/logger";
 import type { SmartWalletClient } from "../../types/internal";
 import type { TransferType } from "../../types/token";
 import type { SmartWalletChain } from "../chains";
@@ -39,28 +38,22 @@ export class EVMSmartWallet {
          */
         public: PublicClient;
     };
-    private readonly sendTransactionService: SendTransactionService;
 
     constructor(
-        private readonly crossmintService: CrossmintWalletService,
-        private readonly accountClient: SmartWalletClient,
-        publicClient: PublicClient<HttpTransport>,
+        client: { public: PublicClient<HttpTransport>; wallet: SmartWalletClient },
         chain: SmartWalletChain,
-        protected readonly logger = scwLogger
+        private readonly crossmintService: CrossmintWalletService,
+        private readonly sendTransactionService = new SendTransactionService(client)
     ) {
         this.chain = chain;
-        this.client = {
-            wallet: accountClient,
-            public: publicClient,
-        };
-        this.sendTransactionService = new SendTransactionService(publicClient);
+        this.client = client;
     }
 
     /**
      * The address of the smart wallet.
      */
     public get address() {
-        return this.accountClient.account.address;
+        return this.client.wallet.account.address;
     }
 
     /**
@@ -83,7 +76,7 @@ export class EVMSmartWallet {
             transferParams({
                 contract: config.token.contractAddress,
                 to: toAddress,
-                from: this.accountClient.account,
+                from: this.client.wallet.account,
                 config,
             })
         );
@@ -158,7 +151,6 @@ export class EVMSmartWallet {
                 args,
                 value,
             },
-            this.accountClient,
             config
         );
     }

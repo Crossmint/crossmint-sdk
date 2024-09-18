@@ -29,7 +29,7 @@ function makeMockError<E extends Error, F extends object>(error: E, fields?: F):
 describe("SendTransactionService", () => {
     const mockPublicClient = mock<PublicClient>();
     const mockAccountClient = mock<SmartAccountClient<EntryPoint, Transport, Chain, SmartAccount<EntryPoint>>>();
-    const sendTransactionService = new SendTransactionService(mockPublicClient);
+    const sendTransactionService = new SendTransactionService({ public: mockPublicClient, wallet: mockAccountClient });
 
     beforeEach(() => {
         vi.resetAllMocks();
@@ -49,15 +49,12 @@ describe("SendTransactionService", () => {
         mockPublicClient.simulateContract.mockRejectedValue(mockError);
         let rejected = false;
         try {
-            await sendTransactionService.sendTransaction(
-                {
-                    address: zeroAddress,
-                    abi: [],
-                    functionName: "mockFunction",
-                    args: [],
-                },
-                mockAccountClient
-            );
+            await sendTransactionService.sendTransaction({
+                address: zeroAddress,
+                abi: [],
+                functionName: "mockFunction",
+                args: [],
+            });
         } catch (e) {
             rejected = true;
             expect(e).toBeInstanceOf(EVMSendTransactionExecutionRevertedError);
@@ -74,15 +71,12 @@ describe("SendTransactionService", () => {
         mockPublicClient.waitForTransactionReceipt.mockResolvedValueOnce(mockReceipt);
         let rejected = false;
         try {
-            await sendTransactionService.sendTransaction(
-                {
-                    address: zeroAddress,
-                    abi: [],
-                    functionName: "mockFunction",
-                    args: [],
-                },
-                mockAccountClient
-            );
+            await sendTransactionService.sendTransaction({
+                address: zeroAddress,
+                abi: [],
+                functionName: "mockFunction",
+                args: [],
+            });
         } catch (e) {
             rejected = true;
             expect(e).toBeInstanceOf(EVMSendTransactionExecutionRevertedError);
@@ -96,15 +90,12 @@ describe("SendTransactionService", () => {
         mockPublicClient.waitForTransactionReceipt.mockRejectedValue(mockError);
         let rejected = false;
         try {
-            await sendTransactionService.sendTransaction(
-                {
-                    address: zeroAddress,
-                    abi: [],
-                    functionName: "mockFunction",
-                    args: [],
-                },
-                mockAccountClient
-            );
+            await sendTransactionService.sendTransaction({
+                address: zeroAddress,
+                abi: [],
+                functionName: "mockFunction",
+                args: [],
+            });
         } catch (e) {
             rejected = true;
             expect(e).toBeInstanceOf(EVMSendTransactionError);
@@ -118,15 +109,12 @@ describe("SendTransactionService", () => {
         mockAccountClient.writeContract.mockRejectedValue(mockError);
         let rejected = false;
         try {
-            await sendTransactionService.sendTransaction(
-                {
-                    address: zeroAddress,
-                    abi: [],
-                    functionName: "mockFunction",
-                    args: [],
-                },
-                mockAccountClient
-            );
+            await sendTransactionService.sendTransaction({
+                address: zeroAddress,
+                abi: [],
+                functionName: "mockFunction",
+                args: [],
+            });
         } catch (e) {
             rejected = true;
             expect(e).toBeInstanceOf(EVMSendTransactionError);
@@ -148,15 +136,12 @@ describe("SendTransactionService", () => {
             return "0xmockTxHash";
         });
         await expect(
-            sendTransactionService.sendTransaction(
-                {
-                    address: zeroAddress,
-                    abi: [],
-                    functionName: "mockFunction",
-                    args: [],
-                },
-                mockAccountClient
-            )
+            sendTransactionService.sendTransaction({
+                address: zeroAddress,
+                abi: [],
+                functionName: "mockFunction",
+                args: [],
+            })
         ).resolves.toBeDefined();
         expect(callOrder).toEqual(["simulateContract", "sendTransaction"]);
     });
