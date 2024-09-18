@@ -69,16 +69,14 @@ export function CrossmintWalletProvider({
             return { startedCreation: false, reason: `Jwt not set in "CrossmintProvider".` };
         }
 
-        // This is the wallet status that we get from the getWalletStatus call.
-        // We will default to false but set during the passkey prompt stuff.
+        // Flag to track if wallet exists, updated during passkey prompt flow
         let hasWallet = false;
         const handleWalletPasskeyPromptStuff = async () => {
             const walletExists = await smartWalletSDK.checkWalletExists({ jwt: crossmint.jwt as string }, defaultChain);
             hasWallet = walletExists;
 
             if (!walletExists) {
-                // If there isn't a wallet yet, we need to prompt the user a pre browser passkey prompt
-                // to inform them of what's going on.
+                // If no wallet yet, prompt the user a pre browser passkey prompt.
                 return new Promise<void>((resolve) => {
                     setPasskeyPromptState({
                         type: "create-wallet",
@@ -105,8 +103,7 @@ export function CrossmintWalletProvider({
                 console.error("There was an error creating a wallet ", error);
                 setWalletState(deriveErrorState(error));
 
-                // If an error occurs during wallet creation, we need to show the user a passkey prompt
-                // to inform them of what's going on.
+                // If an error occurs during wallet creation, show the user a passkey prompt.
                 if (!hasWallet) {
                     setPasskeyPromptState({
                         type: "create-wallet-error",
