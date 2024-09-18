@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { Dialog, Transition } from "@headlessui/react";
 import { CSSProperties, Fragment, useEffect, useRef, useState } from "react";
 import { z } from "zod";
@@ -140,15 +141,14 @@ export default function AuthModal({ setModalOpen, setJwtToken, apiKey, baseUrl, 
                             src={iframeSrc}
                             onLoad={handleIframeLoaded}
                             title="Authentication Modal"
-                            style={{
-                                width: "100%",
-                                height: "500px",
-                                border: `1px solid ${appearance?.colors?.border ?? "#D0D5DD"}`,
-                                borderRadius: appearance?.borderRadius ?? "16px",
-                                padding: "48px 0 32px",
-                                backgroundColor: appearance?.colors?.background ?? "#FFFFFF",
-                                animation: "fadeIn 3s ease-in-out",
-                            }}
+                            className={cn(
+                                "w-full h-[500px] border pt-12 pb-8",
+                                appearance?.colors?.border
+                                    ? `border-[${appearance.colors.border}]`
+                                    : "border-[#D0D5DD]",
+                                appearance?.borderRadius ? `rounded-[${appearance.borderRadius}]` : "rounded-2xl",
+                                appearance?.colors?.background ? `bg-[${appearance.colors.background}]` : "bg-white"
+                            )}
                         />
                     </div>
                 </Transition.Child>
