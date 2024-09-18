@@ -26,9 +26,6 @@ importers:
       '@types/node':
         specifier: 20.12.7
         version: 20.12.7
-      '@types/prettier':
-        specifier: 2.7.3
-        version: 2.7.3
       cross-env:
         specifier: 7.0.3
         version: 7.0.3
