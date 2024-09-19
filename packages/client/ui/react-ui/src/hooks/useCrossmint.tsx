@@ -1,11 +1,11 @@
 import { ReactNode, createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 
-import { Crossmint, RefreshToken, createCrossmint } from "@crossmint/common-sdk-base";
+import { Crossmint, createCrossmint } from "@crossmint/common-sdk-base";
 
 export interface CrossmintContext {
     crossmint: Crossmint;
     setJwt: (jwt: string | undefined) => void;
-    setRefreshToken: (refreshToken: RefreshToken | undefined) => void;
+    setRefreshToken: (refreshToken: string | undefined) => void;
 }
 
 const CrossmintContext = createContext<CrossmintContext | null>(null);
@@ -39,7 +39,7 @@ export function CrossmintProvider({
         }
     }, []);
 
-    const setRefreshToken = useCallback((refreshToken: RefreshToken | undefined) => {
+    const setRefreshToken = useCallback((refreshToken: string | undefined) => {
         if (refreshToken !== crossmintRef.current.refreshToken) {
             crossmintRef.current.refreshToken = refreshToken;
         }

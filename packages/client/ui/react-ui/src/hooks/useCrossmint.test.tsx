@@ -19,7 +19,7 @@ class MockSDK {
         this.crossmint.jwt = newJWT;
     }
     somethingThatUpdatesRefreshToken(newRefreshToken: string) {
-        this.crossmint.refreshToken = { secret: newRefreshToken, expiresAt: new Date().toISOString() };
+        this.crossmint.refreshToken = newRefreshToken;
     }
 }
 
@@ -33,7 +33,7 @@ describe("CrossmintProvider", () => {
         vi.mocked(createCrossmint).mockImplementation(() => ({
             apiKey: MOCK_API_KEY,
             jwt: "",
-            refreshToken: { secret: "", expiresAt: new Date().toISOString() },
+            refreshToken: "",
         }));
     });
 
@@ -43,7 +43,7 @@ describe("CrossmintProvider", () => {
             return (
                 <div>
                     <div data-testid="jwt">{crossmint.jwt}</div>
-                    <div data-testid="refreshToken">{crossmint.refreshToken?.secret}</div>
+                    <div data-testid="refreshToken">{crossmint.refreshToken}</div>
                 </div>
             );
         };
@@ -72,14 +72,8 @@ describe("CrossmintProvider", () => {
             const { crossmint, setRefreshToken } = useCrossmint();
             return (
                 <div>
-                    <div data-testid="refreshToken">{crossmint.refreshToken?.secret}</div>
-                    <button
-                        onClick={() =>
-                            setRefreshToken({ secret: "new_refresh_token", expiresAt: new Date().toISOString() })
-                        }
-                    >
-                        Update Refresh Token
-                    </button>
+                    <div data-testid="refreshToken">{crossmint.refreshToken}</div>
+                    <button onClick={() => setRefreshToken("new_refresh_token")}>Update Refresh Token</button>
                 </div>
             );
         };
@@ -99,7 +93,7 @@ describe("CrossmintProvider", () => {
             return (
                 <div>
                     <div data-testid="jwt">{crossmint.jwt}</div>
-                    <div data-testid="refreshToken">{crossmint.refreshToken?.secret}</div>
+                    <div data-testid="refreshToken">{crossmint.refreshToken}</div>
                 </div>
             );
         };
@@ -118,15 +112,9 @@ describe("CrossmintProvider", () => {
             return (
                 <div>
                     <div data-testid="jwt">{crossmint.jwt}</div>
-                    <div data-testid="refreshToken">{crossmint.refreshToken?.secret}</div>
+                    <div data-testid="refreshToken">{crossmint.refreshToken}</div>
                     <button onClick={() => setJwt("new_jwt")}>Update JWT</button>
-                    <button
-                        onClick={() =>
-                            setRefreshToken({ secret: "new_refresh_token", expiresAt: new Date().toISOString() })
-                        }
-                    >
-                        Update Refresh Token
-                    </button>
+                    <button onClick={() => setRefreshToken("new_refresh_token")}>Update Refresh Token</button>
                 </div>
             );
         };

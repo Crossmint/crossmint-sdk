@@ -65,11 +65,8 @@ function TestComponent() {
                 Clear JWT
             </button>
 
-            <div data-testid="refresh-token">{refreshToken?.secret ?? "No Refresh Token"}</div>
-            <button
-                data-testid="set-refresh-token"
-                onClick={() => setRefreshToken({ secret: "mock-refresh-token", expiresAt: new Date().toISOString() })}
-            >
+            <div data-testid="refresh-token">{refreshToken ?? "No Refresh Token"}</div>
+            <button data-testid="set-refresh-token" onClick={() => setRefreshToken("mock-refresh-token")}>
                 Set Refresh Token
             </button>
             <button data-testid="clear-refresh-token-button" onClick={() => setRefreshToken(undefined)}>

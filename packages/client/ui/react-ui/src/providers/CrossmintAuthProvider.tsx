@@ -2,7 +2,7 @@ import { type ReactNode, createContext, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 import type { EVMSmartWalletChain } from "@crossmint/client-sdk-smart-wallet";
-import { type RefreshToken, type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
+import { type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
 
 import AuthModal from "../components/auth/AuthModal";
 import { useCrossmint, useWallet } from "../hooks";
@@ -29,7 +29,7 @@ type AuthContextType = {
     login: () => void;
     logout: () => void;
     jwt?: string;
-    refreshToken?: RefreshToken;
+    refreshToken?: string;
     status: AuthStatus;
 };
 
@@ -80,18 +80,6 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
         setModalOpen(false);
     }, [crossmint.jwt]);
 
-    useEffect(() => {
-        if (crossmint.jwt) {
-            document.cookie = `${SESSION_PREFIX}=${crossmint.jwt}; path=/;SameSite=Lax;`;
-        }
-    }, [crossmint.jwt]);
-
-    useEffect(() => {
-        if (crossmint.refreshToken) {
-            document.cookie = `${REFRESH_TOKEN_PREFIX}=${crossmint.refreshToken.secret}; path=/;SameSite=Lax;`;
-        }
-    }, [crossmint.refreshToken]);
-
     const getAuthStatus = (): AuthStatus => {
         if (crossmint.jwt != null) {
             return "logged-in";
@@ -109,8 +97,14 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
             expiresAt: string;
         };
     }) {
+        document.cookie = `${SESSION_PREFIX}=${crossmint.jwt}; path=/;SameSite=Lax;`;
         setJwt(authMaterial.jwtToken);
-        setRefreshToken(authMaterial.refreshToken);
+        console.log(
+            "setting refresh cookie",
+            `${REFRESH_TOKEN_PREFIX}=${authMaterial.refreshToken.secret}; path=/; expires=${authMaterial.refreshToken.expiresAt}; SameSite=Lax;`
+        );
+        document.cookie = `${REFRESH_TOKEN_PREFIX}=${authMaterial.refreshToken.secret}; path=/; expires=${authMaterial.refreshToken.expiresAt}; SameSite=Lax;`;
+        setRefreshToken(authMaterial.refreshToken.secret);
     }
 
     return (
@@ -177,15 +171,7 @@ function sessionFromClient(): string | undefined {
     return crossmintSession ? crossmintSession.split("=")[1] : undefined;
 }
 
-function refreshTokenFromClient(): RefreshToken | undefined {
+function refreshTokenFromClient(): string | undefined {
     const crossmintRefreshToken = document.cookie.split("; ").find((row) => row.startsWith(REFRESH_TOKEN_PREFIX));
-    const refreshToken = crossmintRefreshToken ? crossmintRefreshToken.split("=")[1] : undefined;
-    console.log("refreshTokenFromClient", refreshToken);
-    if (refreshToken == null) {
-        return;
-    }
-    return {
-        secret: refreshToken,
-        expiresAt: new Date().toISOString(),
-    };
+    return crossmintRefreshToken ? crossmintRefreshToken.split("=")[1] : undefined;
 }
