@@ -21,7 +21,7 @@
         "test": "lerna run test"
     },
     "lint-staged": {
-        "**/*.+(js|json|md|mdx|ts|tsx)": "biome check --write",
+        "**/*.+(js|json|ts|tsx)": "biome check --write",
         "**/package.json": "sort-package-json"
     },
     "devDependencies": {
