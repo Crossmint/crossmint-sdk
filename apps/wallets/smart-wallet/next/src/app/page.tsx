@@ -60,7 +60,6 @@ export default function Home() {
 
                 <div className="flex flex-col w-full md:max-w-[340px] gap-10">
                     <div className="bg-card flex flex-col p-5 rounded-3xl shadow-dropdown">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img className="rounded-xl rounded-bl-none rounded-br-none" src={"/emoji-nft.png"} alt="nft" />
                         <div className="py-4">
                             <Typography className="text-secondary-foreground" variant="h3">

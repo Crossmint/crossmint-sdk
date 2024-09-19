@@ -21,7 +21,9 @@
             "**/build/**"
         ]
     },
-    "organizeImports": { "enabled": false },
+    "organizeImports": {
+        "enabled": false
+    },
     "linter": {
         "enabled": true,
         "rules": {
@@ -51,7 +53,9 @@
             "nursery": {
                 "noDuplicateAtImportRules": "error"
             },
-            "security": { "noDangerouslySetInnerHtml": "error" },
+            "security": {
+                "noDangerouslySetInnerHtml": "error"
+            },
             "style": {
                 "noInferrableTypes": "error",
                 "noNamespace": "warn",
