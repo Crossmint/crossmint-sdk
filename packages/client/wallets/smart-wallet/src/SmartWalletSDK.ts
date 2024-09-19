@@ -74,7 +74,7 @@ export class SmartWalletSDK {
         }
         this.assertValidChain(chain);
 
-        return this.logger.logPerformance("GET_OR_CREATE_WALLET", async () => {
+        return await this.logger.logPerformance("GET_OR_CREATE_WALLET", async () => {
             try {
                 return await this.smartWalletService.getOrCreate(user, chain, walletParams);
             } catch (error: any) {
