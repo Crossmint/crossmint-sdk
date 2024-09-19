@@ -172,11 +172,6 @@ export function PasskeyPrompt({
                         Try again
                     </Button>
                 }
-                secondaryButton={
-                    <Button style={secondaryButtonStyles} onClick={state.secondaryActionOnClick}>
-                        Troubleshoot
-                    </Button>
-                }
             />
         );
     }
