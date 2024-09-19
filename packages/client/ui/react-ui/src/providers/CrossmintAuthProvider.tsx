@@ -2,13 +2,14 @@ import { type ReactNode, createContext, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 import type { EVMSmartWalletChain } from "@crossmint/client-sdk-smart-wallet";
-import { type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
+import { type RefreshToken, type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
 
 import AuthModal from "../components/auth/AuthModal";
 import { useCrossmint, useWallet } from "../hooks";
 import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
 
 const SESSION_PREFIX = "crossmint-session";
+const REFRESH_TOKEN_PREFIX = "crossmint-refresh-token";
 
 export type CrossmintAuthWalletConfig = {
     defaultChain: EVMSmartWalletChain;
@@ -28,6 +29,7 @@ type AuthContextType = {
     login: () => void;
     logout: () => void;
     jwt?: string;
+    refreshToken?: RefreshToken;
     status: AuthStatus;
 };
 
@@ -38,16 +40,22 @@ export const AuthContext = createContext<AuthContextType>({
 });
 
 export function CrossmintAuthProvider({ embeddedWallets, children, appearance }: CrossmintAuthProviderProps) {
-    const { crossmint, setJwt } = useCrossmint("CrossmintAuthProvider must be used within CrossmintProvider");
+    const { crossmint, setJwt, setRefreshToken } = useCrossmint(
+        "CrossmintAuthProvider must be used within CrossmintProvider"
+    );
     const crossmintBaseUrl = validateApiKeyAndGetCrossmintBaseUrl(crossmint.apiKey);
     const [modalOpen, setModalOpen] = useState(false);
 
     useEffect(() => {
         const session = sessionFromClient();
+        const refreshToken = refreshTokenFromClient();
         if (session != null) {
             setJwt(session);
         }
-    }, []);
+        if (refreshToken != null) {
+            setRefreshToken(refreshToken);
+        }
+    }, [setJwt, setRefreshToken]);
 
     const login = () => {
         if (crossmint.jwt != null) {
@@ -60,6 +68,7 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
 
     const logout = () => {
         document.cookie = `${SESSION_PREFIX}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+        document.cookie = `${REFRESH_TOKEN_PREFIX}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
         setJwt(undefined);
     };
 
@@ -77,6 +86,12 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
         }
     }, [crossmint.jwt]);
 
+    useEffect(() => {
+        if (crossmint.refreshToken) {
+            document.cookie = `${REFRESH_TOKEN_PREFIX}=${crossmint.refreshToken.secret}; path=/;SameSite=Lax;`;
+        }
+    }, [crossmint.refreshToken]);
+
     const getAuthStatus = (): AuthStatus => {
         if (crossmint.jwt != null) {
             return "logged-in";
@@ -87,8 +102,15 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
         return "logged-out";
     };
 
-    function setAuthMaterial(authMaterial: { jwtToken: string; refreshToken: string }) {
+    function setAuthMaterial(authMaterial: {
+        jwtToken: string;
+        refreshToken: {
+            secret: string;
+            expiresAt: string;
+        };
+    }) {
         setJwt(authMaterial.jwtToken);
+        setRefreshToken(authMaterial.refreshToken);
     }
 
     return (
@@ -97,6 +119,7 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
                 login,
                 logout,
                 jwt: crossmint.jwt,
+                refreshToken: crossmint.refreshToken,
                 status: getAuthStatus(),
             }}
         >
@@ -152,4 +175,17 @@ function WalletManager({
 function sessionFromClient(): string | undefined {
     const crossmintSession = document.cookie.split("; ").find((row) => row.startsWith(SESSION_PREFIX));
     return crossmintSession ? crossmintSession.split("=")[1] : undefined;
+}
+
+function refreshTokenFromClient(): RefreshToken | undefined {
+    const crossmintRefreshToken = document.cookie.split("; ").find((row) => row.startsWith(REFRESH_TOKEN_PREFIX));
+    const refreshToken = crossmintRefreshToken ? crossmintRefreshToken.split("=")[1] : undefined;
+    console.log("refreshTokenFromClient", refreshToken);
+    if (refreshToken == null) {
+        return;
+    }
+    return {
+        secret: refreshToken,
+        expiresAt: new Date().toISOString(),
+    };
 }

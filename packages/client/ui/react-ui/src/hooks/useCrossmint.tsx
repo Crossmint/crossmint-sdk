@@ -1,10 +1,11 @@
 import { ReactNode, createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 
-import { Crossmint, createCrossmint } from "@crossmint/common-sdk-base";
+import { Crossmint, RefreshToken, createCrossmint } from "@crossmint/common-sdk-base";
 
 export interface CrossmintContext {
     crossmint: Crossmint;
     setJwt: (jwt: string | undefined) => void;
+    setRefreshToken: (refreshToken: RefreshToken | undefined) => void;
 }
 
 const CrossmintContext = createContext<CrossmintContext | null>(null);
@@ -24,6 +25,9 @@ export function CrossmintProvider({
                 if (prop === "jwt" && target.jwt !== value) {
                     setVersion((v) => v + 1);
                 }
+                if (prop === "refreshToken" && target.refreshToken !== value) {
+                    setVersion((v) => v + 1);
+                }
                 return Reflect.set(target, prop, value);
             },
         })
@@ -35,14 +39,21 @@ export function CrossmintProvider({
         }
     }, []);
 
+    const setRefreshToken = useCallback((refreshToken: RefreshToken | undefined) => {
+        if (refreshToken !== crossmintRef.current.refreshToken) {
+            crossmintRef.current.refreshToken = refreshToken;
+        }
+    }, []);
+
     const value = useMemo(
         () => ({
             get crossmint() {
                 return crossmintRef.current;
             },
             setJwt,
+            setRefreshToken,
         }),
-        [setJwt, version]
+        [setJwt, setRefreshToken, version]
     );
 
     return <CrossmintContext.Provider value={value}>{children}</CrossmintContext.Provider>;

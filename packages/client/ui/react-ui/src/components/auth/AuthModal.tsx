@@ -3,14 +3,17 @@ import { CSSProperties, Fragment, useEffect, useRef, useState } from "react";
 import { z } from "zod";
 
 import { IFrameWindow } from "@crossmint/client-sdk-window";
-import { UIConfig } from "@crossmint/common-sdk-base";
+import { RefreshToken, UIConfig } from "@crossmint/common-sdk-base";
 
 import X from "../../icons/x";
 
 const incomingModalIframeEvents = {
     authMaterialFromAuthFrame: z.object({
         jwtToken: z.string(),
-        refreshToken: z.string(),
+        refreshToken: z.object({
+            secret: z.string(),
+            expiresAt: z.string(),
+        }),
     }),
 };
 
@@ -30,7 +33,7 @@ type OutgoingModalIframeEventsType = {
 
 type AuthModalProps = {
     setModalOpen: (open: boolean) => void;
-    setAuthMaterial: (authMaterial: { jwtToken: string; refreshToken: string }) => void;
+    setAuthMaterial: (authMaterial: { jwtToken: string; refreshToken: RefreshToken }) => void;
     apiKey: string;
     baseUrl: string;
     appearance?: UIConfig;
