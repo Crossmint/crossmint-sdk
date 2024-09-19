@@ -1,15 +1,15 @@
 import { fireEvent, render } from "@testing-library/react";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import { beforeEach, describe, expect, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 
-import { EVMSmartWallet, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
+import { type EVMSmartWallet, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
 import { createCrossmint } from "@crossmint/common-sdk-base";
 
 import { useAuth, useWallet } from "../hooks";
 import { CrossmintProvider, useCrossmint } from "../hooks/useCrossmint";
 import { MOCK_API_KEY, waitForSettledState } from "../testUtils";
-import { CrossmintAuthProvider, CrossmintAuthWalletConfig } from "./CrossmintAuthProvider";
+import { CrossmintAuthProvider, type CrossmintAuthWalletConfig } from "./CrossmintAuthProvider";
 
 const SESSION_PREFIX = "crossmint-session";
 
@@ -75,7 +75,7 @@ describe("CrossmintAuthProvider", () => {
 
     beforeEach(() => {
         vi.resetAllMocks();
-        vi.mocked(createCrossmint).mockImplementation(() => ({} as any));
+        vi.mocked(createCrossmint).mockImplementation(() => ({}) as any);
 
         mockSDK = mock<SmartWalletSDK>();
         mockWallet = mock<EVMSmartWallet>();

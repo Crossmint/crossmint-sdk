@@ -1,6 +1,6 @@
 import { classNames } from "@/utils/classNames";
 import { Dialog, Transition } from "@headlessui/react";
-import { Fragment, ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 
 import { useCrossmintWalletConnect } from "../../../../hooks/useCrossmintWalletConnect";
 

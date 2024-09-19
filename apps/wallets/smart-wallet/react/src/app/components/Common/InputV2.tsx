@@ -1,5 +1,6 @@
 import { ExclamationIcon, QuestionMarkCircleIcon } from "@heroicons/react/outline";
-import React, { FocusEventHandler, MouseEventHandler, useCallback, useEffect, useState } from "react";
+import type React from "react";
+import { type FocusEventHandler, type MouseEventHandler, useCallback, useEffect, useState } from "react";
 import { FiAlertTriangle } from "react-icons/fi";
 
 import { classNames } from "../../utils/uiUtils";

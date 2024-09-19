@@ -1,4 +1,4 @@
-import { EVMBlockchainIncludingTestnet } from "../../types/evm";
+import type { EVMBlockchainIncludingTestnet } from "../../types/evm";
 
 export const BLOCKCHAIN_TO_CHAIN_ID: Record<EVMBlockchainIncludingTestnet, number> = {
     ethereum: 1,

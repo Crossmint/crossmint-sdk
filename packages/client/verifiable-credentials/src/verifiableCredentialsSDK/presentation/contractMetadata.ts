@@ -1,7 +1,7 @@
 import { NFTService } from "../onchainServices/nft";
 import { IPFSService } from "../services/ipfs";
-import { VCChain } from "../types/chain";
-import { Collection, CredentialsCollection } from "../types/collection";
+import type { VCChain } from "../types/chain";
+import type { Collection, CredentialsCollection } from "../types/collection";
 import { isVerifiableCredentialContractMetadata } from "../types/utils";
 
 /**

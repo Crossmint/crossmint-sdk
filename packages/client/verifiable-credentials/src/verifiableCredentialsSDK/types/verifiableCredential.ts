@@ -1,4 +1,4 @@
-import { Nft } from "./nft";
+import type { Nft } from "./nft";
 
 export interface VerifiableCredential {
     id: string;

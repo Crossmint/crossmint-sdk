@@ -1,4 +1,4 @@
-import { z } from "zod";
+import type { z } from "zod";
 
 import { generateRandomString } from "./utils/generateRandomString";
 
@@ -6,7 +6,7 @@ export type EventMap = Record<string, z.ZodTypeAny>;
 
 export interface EventEmitterOptions<
     IncomingEvents extends EventMap = EventMap,
-    OutgoingEvents extends EventMap = EventMap
+    OutgoingEvents extends EventMap = EventMap,
 > {
     incomingEvents?: IncomingEvents;
     outgoingEvents?: OutgoingEvents;
@@ -21,7 +21,7 @@ export type SendActionArgs<
     IncomingEvents extends EventMap,
     OutgoingEvents extends EventMap,
     K extends keyof OutgoingEvents,
-    R extends keyof IncomingEvents
+    R extends keyof IncomingEvents,
 > = {
     event: K;
     data: z.infer<OutgoingEvents[K]>;
@@ -37,7 +37,7 @@ export type OnActionArgs<
     IncomingEvents extends EventMap,
     OutgoingEvents extends EventMap,
     K extends keyof IncomingEvents,
-    R extends keyof OutgoingEvents
+    R extends keyof OutgoingEvents,
 > =
     | {
           event: K;

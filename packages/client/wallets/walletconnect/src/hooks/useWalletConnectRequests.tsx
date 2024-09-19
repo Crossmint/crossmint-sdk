@@ -1,12 +1,12 @@
 import { handleAcceptSendTransaction } from "@/utils/sendTransaction/handleAcceptSendTransaction";
 import { handleAcceptSignMessage } from "@/utils/signMessage/handleAcceptSignMessage";
-import { JsonRpcResult, formatJsonRpcError } from "@walletconnect/jsonrpc-utils";
-import { SdkErrorKey, getSdkError } from "@walletconnect/utils";
-import { Web3WalletTypes } from "@walletconnect/web3wallet";
+import { type JsonRpcResult, formatJsonRpcError } from "@walletconnect/jsonrpc-utils";
+import { type SdkErrorKey, getSdkError } from "@walletconnect/utils";
+import type { Web3WalletTypes } from "@walletconnect/web3wallet";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
-import { CrossmintWalletConnectWallet } from "..";
+import type { CrossmintWalletConnectWallet } from "..";
 import { isSendTransactionMethod } from "../utils/sendTransaction/isSendTransactionMethod";
 import { isSignMessageMethod } from "../utils/signMessage/isSignMessageMethod";
 import { useWalletConnectProvider } from "./useWalletConnectProvider";

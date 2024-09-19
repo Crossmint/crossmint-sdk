@@ -1,4 +1,4 @@
-import { BLOCKCHAINS_INCLUDING_TESTNETS, Blockchain, BlockchainIncludingTestnet } from "../types";
+import { BLOCKCHAINS_INCLUDING_TESTNETS, type Blockchain, type BlockchainIncludingTestnet } from "../types";
 
 export function isBlockchainIncludingTestnets<T extends BlockchainIncludingTestnet = BlockchainIncludingTestnet>(
     value: unknown,

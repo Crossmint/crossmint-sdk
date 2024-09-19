@@ -1,4 +1,4 @@
-import { BuildApprovedNamespacesParams } from "@walletconnect/utils";
+import type { BuildApprovedNamespacesParams } from "@walletconnect/utils";
 
 export function mergeSupportedNamespaces(
     supportedNamespaces: BuildApprovedNamespacesParams["supportedNamespaces"][]

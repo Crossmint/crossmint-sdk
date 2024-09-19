@@ -1,4 +1,4 @@
-import { CrossmintWalletConnectWallet } from "@/types/wallet";
+import type { CrossmintWalletConnectWallet } from "@/types/wallet";
 import { SessionRequestMethods } from "@/types/walletconnect/RequestMethods";
 
 import { isEVMBlockchain } from "@crossmint/common-sdk-base";

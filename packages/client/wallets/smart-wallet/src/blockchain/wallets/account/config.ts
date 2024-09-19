@@ -8,7 +8,7 @@ import type {
 } from "../../../types/internal";
 import type { UserParams } from "../../../types/params";
 import type { SignerData, SmartWalletConfig } from "../../../types/service";
-import { AccountConfigCache } from "./cache";
+import type { AccountConfigCache } from "./cache";
 import { EOASignerConfig, PasskeySignerConfig, type SignerConfig } from "./signer";
 
 interface AccountConfig {

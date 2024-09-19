@@ -1,5 +1,5 @@
-import { ProposalTypes } from "@walletconnect/types";
-import { BuildApprovedNamespacesParams } from "@walletconnect/utils";
+import type { ProposalTypes } from "@walletconnect/types";
+import type { BuildApprovedNamespacesParams } from "@walletconnect/utils";
 
 export function mockRequiredNamespaceMethods(
     requiredNamespaces: ProposalTypes.RequiredNamespaces,

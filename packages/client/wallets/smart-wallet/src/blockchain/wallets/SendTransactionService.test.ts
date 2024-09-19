@@ -1,15 +1,15 @@
-import { SmartAccountClient } from "permissionless";
-import { SmartAccount } from "permissionless/accounts";
-import { EntryPoint } from "permissionless/types";
+import type { SmartAccountClient } from "permissionless";
+import type { SmartAccount } from "permissionless/accounts";
+import type { EntryPoint } from "permissionless/types";
 import {
-    Address,
+    type Address,
     BaseError,
-    Chain,
+    type Chain,
     ContractFunctionRevertedError,
-    PublicClient,
-    SimulateContractReturnType,
-    TransactionReceipt,
-    Transport,
+    type PublicClient,
+    type SimulateContractReturnType,
+    type TransactionReceipt,
+    type Transport,
     zeroAddress,
 } from "viem";
 import { beforeEach, describe, expect, it, vi } from "vitest";

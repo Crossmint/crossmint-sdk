@@ -1,5 +1,5 @@
 import {
-    Chain,
+    type Chain,
     arbitrum,
     arbitrumSepolia,
     base,
@@ -10,7 +10,7 @@ import {
     polygonAmoy,
 } from "viem/chains";
 
-import { BlockchainIncludingTestnet as Blockchain, ObjectValues, objectValues } from "@crossmint/common-sdk-base";
+import { BlockchainIncludingTestnet as Blockchain, type ObjectValues, objectValues } from "@crossmint/common-sdk-base";
 
 export const SmartWalletTestnet = {
     BASE_SEPOLIA: Blockchain.BASE_SEPOLIA,

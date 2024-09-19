@@ -1,15 +1,9 @@
 import { stringify } from "viem";
 
-import { APIKeyEnvironmentPrefix, validateAPIKey } from "@crossmint/common-sdk-base";
+import { type APIKeyEnvironmentPrefix, validateAPIKey } from "@crossmint/common-sdk-base";
 
 import { CrossmintWalletService } from "./api/CrossmintWalletService";
-import {
-    SMART_WALLET_MAINNETS,
-    SMART_WALLET_TESTNETS,
-    type SmartWalletChain,
-    isMainnetChain,
-    isTestnetChain,
-} from "./blockchain/chains";
+import { type SmartWalletChain, isMainnetChain, isTestnetChain } from "./blockchain/chains";
 import type { EVMSmartWallet } from "./blockchain/wallets";
 import { AccountConfigCache } from "./blockchain/wallets/account/cache";
 import { AccountConfigService } from "./blockchain/wallets/account/config";

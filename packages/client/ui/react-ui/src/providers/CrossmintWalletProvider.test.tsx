@@ -1,9 +1,9 @@
 import { fireEvent, render, waitFor } from "@testing-library/react";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 
-import { EVMSmartWallet, SmartWalletError, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
+import { type EVMSmartWallet, SmartWalletError, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
 import { createCrossmint } from "@crossmint/common-sdk-base";
 
 import { CrossmintProvider, useCrossmint } from "../hooks/useCrossmint";
@@ -69,7 +69,7 @@ describe("CrossmintWalletProvider", () => {
 
     beforeEach(() => {
         vi.resetAllMocks();
-        vi.mocked(createCrossmint).mockImplementation(() => ({} as any));
+        vi.mocked(createCrossmint).mockImplementation(() => ({}) as any);
         vi.mocked(useCrossmint).mockReturnValue({
             crossmint: {
                 apiKey: MOCK_API_KEY,

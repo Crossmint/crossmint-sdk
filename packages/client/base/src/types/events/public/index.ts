@@ -1,5 +1,5 @@
-import { CrossmintEvents } from "./events";
-import { CrossmintEventMap } from "./payloads";
+import type { CrossmintEvents } from "./events";
+import type { CrossmintEventMap } from "./payloads";
 
 export * from "./events";
 export * from "./payloads";

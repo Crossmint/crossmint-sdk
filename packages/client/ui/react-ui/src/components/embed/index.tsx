@@ -1,5 +1,5 @@
 import {
-    CrossmintEmbeddedCheckoutProps,
+    type CrossmintEmbeddedCheckoutProps,
     isCryptoEmbeddedCheckoutProps,
     isFiatEmbeddedCheckoutProps,
 } from "@crossmint/client-sdk-base";

@@ -1,4 +1,4 @@
-import { BlockchainIncludingTestnet } from "../types";
+import type { BlockchainIncludingTestnet } from "../types";
 
 export const BLOCKCHAIN_TO_COPY_NAME: Record<BlockchainIncludingTestnet, string> = {
     aptos: "Aptos",

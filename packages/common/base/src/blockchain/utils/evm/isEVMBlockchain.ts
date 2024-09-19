@@ -1,4 +1,4 @@
-import { EVMBlockchainIncludingTestnet, EVM_BLOCKCHAINS_INCLUDING_TESTNETS } from "../../types";
+import { type EVMBlockchainIncludingTestnet, EVM_BLOCKCHAINS_INCLUDING_TESTNETS } from "../../types";
 import { isBlockchainIncludingTestnets } from "../isBlockchainIncludingTestnets";
 
 export function isEVMBlockchain(value: unknown): value is EVMBlockchainIncludingTestnet {

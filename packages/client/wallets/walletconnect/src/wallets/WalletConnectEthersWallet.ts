@@ -1,5 +1,5 @@
-import { CrossmintWalletConnectEVMWallet } from "@/types/wallet";
-import { JsonRpcSigner, TransactionRequest } from "@ethersproject/providers";
+import type { CrossmintWalletConnectEVMWallet } from "@/types/wallet";
+import type { JsonRpcSigner, TransactionRequest } from "@ethersproject/providers";
 
 import { chainIdToBlockchain } from "@crossmint/common-sdk-base";
 

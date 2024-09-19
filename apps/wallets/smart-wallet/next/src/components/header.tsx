@@ -6,7 +6,7 @@ import { Copy, Image as ImageIcon, User, WalletMinimal } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { EVMSmartWallet, useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
+import { type EVMSmartWallet, useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
 
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "./dropdown-menu";

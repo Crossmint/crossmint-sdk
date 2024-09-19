@@ -1,4 +1,4 @@
-import { APIKeyEnvironmentPrefix } from "../types";
+import type { APIKeyEnvironmentPrefix } from "../types";
 
 export function environmentToCrossmintBaseURL(
     environment: APIKeyEnvironmentPrefix,

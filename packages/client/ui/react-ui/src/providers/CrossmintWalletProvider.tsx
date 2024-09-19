@@ -1,11 +1,11 @@
-import { ReactNode, createContext, useMemo, useState } from "react";
+import { type ReactNode, createContext, useMemo, useState } from "react";
 
 import {
-    EVMSmartWallet,
-    EVMSmartWalletChain,
+    type EVMSmartWallet,
+    type EVMSmartWalletChain,
     SmartWalletError,
     SmartWalletSDK,
-    WalletParams,
+    type WalletParams,
 } from "@crossmint/client-sdk-smart-wallet";
 
 import { useCrossmint } from "../hooks";

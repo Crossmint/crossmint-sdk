@@ -1,7 +1,10 @@
 import { getBrowserLogger } from "../services/logging";
 
 export class SDKLogger {
-    constructor(private service: string, private logger = getBrowserLogger(service)) {}
+    constructor(
+        private service: string,
+        private logger = getBrowserLogger(service)
+    ) {}
 
     log(message: string, ...args: any[]) {
         this.logger.logInfo(message, ...args);
