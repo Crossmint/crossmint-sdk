@@ -99,10 +99,6 @@ export function CrossmintWalletProvider({
                                 await handleWalletStuff();
                                 resolve();
                             },
-                            secondaryActionOnClick: () => {
-                                console.error("__TROUBLESHOOT__\n\nA BUNCH OF TROUBLESHOOT STUFF");
-                                resolve();
-                            },
                         });
                     });
                 };

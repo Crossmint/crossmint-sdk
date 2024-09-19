@@ -74,7 +74,6 @@ function PasskeyPromptCore({
     secondaryButton?: ReactNode;
 }) {
     return (
-        // As of rn, onClose won't be used. All state will be handled in the WalletProvider
         <Dialog open onClose={() => {}} style={dialogStyles}>
             {/* This is a hacky workaround to have the foreground transparent styles to work. */}
             <Transition.Child
