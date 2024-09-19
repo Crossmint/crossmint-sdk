@@ -6,12 +6,6 @@ export class CrossmintSDKError extends Error {
     }
 }
 
-export class TransferError extends CrossmintSDKError {
-    constructor(message: string) {
-        super(message, CrossmintErrors.TRANSFER);
-    }
-}
-
 export class CrossmintServiceError extends CrossmintSDKError {
     public status?: number;
 

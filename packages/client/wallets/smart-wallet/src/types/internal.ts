@@ -7,7 +7,7 @@ import type { Address, Chain, HttpTransport, PublicClient } from "viem";
 import type { SmartWalletChain } from "../blockchain/chains";
 import type { EOASignerConfig, PasskeySignerConfig, SignerConfig } from "../blockchain/wallets/account/signer";
 import { SUPPORTED_ENTRYPOINT_VERSIONS, SUPPORTED_KERNEL_VERSIONS } from "../utils/constants";
-import type { EOASigner, PasskeySigner, UserParams, WalletParams } from "./params";
+import type { ExternalSigner, PasskeySigner, UserParams, WalletParams } from "./params";
 
 export type SupportedKernelVersion = (typeof SUPPORTED_KERNEL_VERSIONS)[number];
 export function isSupportedKernelVersion(version: string): version is SupportedKernelVersion {
@@ -40,7 +40,7 @@ export interface PasskeyCreationContext extends WalletCreationContext {
 }
 
 export interface EOACreationContext extends WalletCreationContext {
-    walletParams: WalletParams & { signer: EOASigner };
+    walletParams: WalletParams & { signer: ExternalSigner };
     existing?: { signerConfig: EOASignerConfig; address: Address };
 }
 
@@ -54,7 +54,7 @@ export function isPasskeyCreationContext(params: WalletCreationContext): params 
     return isPasskeyWalletParams(params.walletParams) && signerIsPasskeyOrUndefined;
 }
 
-export function isEOAWalletParams(params: WalletParams): params is WalletParams & { signer: EOASigner } {
+export function isEOAWalletParams(params: WalletParams): params is WalletParams & { signer: ExternalSigner } {
     return (
         "signer" in params &&
         (("type" in params.signer && params.signer.type === "VIEM_ACCOUNT") ||

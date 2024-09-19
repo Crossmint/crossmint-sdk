@@ -1,8 +1,10 @@
+import type { Address } from "viem";
+
 import type { SmartWalletChain } from "../blockchain/chains";
 
 export interface EVMToken {
     chain: SmartWalletChain;
-    contractAddress: string;
+    contractAddress: Address;
 }
 
 export interface NFTEVMToken extends EVMToken {

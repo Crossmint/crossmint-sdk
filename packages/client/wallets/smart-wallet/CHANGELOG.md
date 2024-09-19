@@ -1,5 +1,19 @@
 # @crossmint/client-sdk-smart-wallet
 
+## 0.1.16
+
+### Patch Changes
+
+-   08177a6: Strip transferToken function
+-   Updated dependencies [08177a6]
+    -   @crossmint/client-sdk-base@1.2.7
+
+## 0.1.15
+
+### Patch Changes
+
+-   df3b150: rename `EOASigner` => `ExternalSigner`
+
 ## 0.1.14
 
 ### Patch Changes

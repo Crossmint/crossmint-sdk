@@ -1,5 +1,22 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.3.22
+
+### Patch Changes
+
+-   6dc362a: Added Twind, a lightweight css-in-js tailwind compiler
+-   Updated dependencies [08177a6]
+    -   @crossmint/client-sdk-smart-wallet@0.1.16
+    -   @crossmint/client-sdk-base@1.2.7
+    -   @crossmint/client-sdk-auth-core@1.1.7
+
+## 1.3.21
+
+### Patch Changes
+
+-   Updated dependencies [df3b150]
+    -   @crossmint/client-sdk-smart-wallet@0.1.15
+
 ## 1.3.20
 
 ### Patch Changes
