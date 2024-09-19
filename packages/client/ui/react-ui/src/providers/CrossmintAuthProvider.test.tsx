@@ -242,8 +242,6 @@ describe("CrossmintAuthProvider", () => {
             embeddedWallets,
         });
 
-        fireEvent.click(getByTestId("jwt-input"));
-
         await waitForSettledState(() => {
             expect(getByTestId("auth-status").textContent).toBe("logged-in");
             expect(getByTestId("refresh-token").textContent).toBe("mock-refresh-token");

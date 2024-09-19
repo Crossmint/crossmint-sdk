@@ -33,17 +33,17 @@ export function CrossmintProvider({
         })
     );
 
-    const setJwt = (jwt: string | undefined) => {
+    const setJwt = useCallback((jwt: string | undefined) => {
         if (jwt !== crossmintRef.current.jwt) {
             crossmintRef.current.jwt = jwt;
         }
-    };
+    }, []);
 
-    const setRefreshToken = (refreshToken: string | undefined) => {
+    const setRefreshToken = useCallback((refreshToken: string | undefined) => {
         if (refreshToken !== crossmintRef.current.refreshToken) {
             crossmintRef.current.refreshToken = refreshToken;
         }
-    };
+    }, []);
 
     const value = useMemo(
         () => ({

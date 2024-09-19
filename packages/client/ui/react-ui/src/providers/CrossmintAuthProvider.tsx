@@ -70,6 +70,7 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
         document.cookie = `${SESSION_PREFIX}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
         document.cookie = `${REFRESH_TOKEN_PREFIX}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
         setJwt(undefined);
+        setRefreshToken(undefined);
     };
 
     useEffect(() => {
@@ -99,10 +100,6 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
     }) {
         document.cookie = `${SESSION_PREFIX}=${crossmint.jwt}; path=/;SameSite=Lax;`;
         setJwt(authMaterial.jwtToken);
-        console.log(
-            "setting refresh cookie",
-            `${REFRESH_TOKEN_PREFIX}=${authMaterial.refreshToken.secret}; path=/; expires=${authMaterial.refreshToken.expiresAt}; SameSite=Lax;`
-        );
         document.cookie = `${REFRESH_TOKEN_PREFIX}=${authMaterial.refreshToken.secret}; path=/; expires=${authMaterial.refreshToken.expiresAt}; SameSite=Lax;`;
         setRefreshToken(authMaterial.refreshToken.secret);
     }
