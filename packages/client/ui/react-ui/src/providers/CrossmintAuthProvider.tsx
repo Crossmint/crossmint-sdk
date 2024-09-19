@@ -47,8 +47,8 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
     const [modalOpen, setModalOpen] = useState(false);
 
     useEffect(() => {
-        const session = sessionFromClient();
-        const refreshToken = refreshTokenFromClient();
+        const session = getSessionTokenFromCookie();
+        const refreshToken = getRefreshTokenFromCookie();
         if (session != null) {
             setJwt(session);
         }
@@ -166,12 +166,12 @@ function WalletManager({
     return <>{children}</>;
 }
 
-function sessionFromClient(): string | undefined {
+function getSessionTokenFromCookie(): string | undefined {
     const crossmintSession = document.cookie.split("; ").find((row) => row.startsWith(SESSION_PREFIX));
     return crossmintSession ? crossmintSession.split("=")[1] : undefined;
 }
 
-function refreshTokenFromClient(): string | undefined {
+function getRefreshTokenFromCookie(): string | undefined {
     const crossmintRefreshToken = document.cookie.split("; ").find((row) => row.startsWith(REFRESH_TOKEN_PREFIX));
     return crossmintRefreshToken ? crossmintRefreshToken.split("=")[1] : undefined;
 }
