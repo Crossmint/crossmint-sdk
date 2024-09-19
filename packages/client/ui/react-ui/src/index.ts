@@ -13,6 +13,8 @@ export * from "./providers";
 export { CrossmintEvents, useCrossmintEvents } from "@crossmint/client-sdk-base";
 export {
     type EVMSmartWallet,
+    type ExternalSigner,
+    type PasskeySigner,
     Chain,
     SmartWalletError,
     UserWalletAlreadyCreatedError,
