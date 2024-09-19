@@ -71,26 +71,43 @@ export function CrossmintWalletProvider({
             return { startedCreation: false, reason: `Jwt not set in "CrossmintProvider".` };
         }
 
-        // Flag to track if wallet exists, updated during passkey prompt flow
-        let hasWallet = false;
-        const handleWalletPasskeyPromptStuff = async () => {
-            const walletExists = await smartWalletSDK.checkWalletExists({ jwt: crossmint.jwt as string }, defaultChain);
-            hasWallet = walletExists;
-
-            if (!walletExists) {
-                // If no wallet yet, prompt the user a pre browser passkey prompt.
-                return new Promise<void>((resolve) => {
-                    setPasskeyPromptState({
-                        type: "create-wallet",
-                        open: true,
-                        primaryActionOnClick: () => {
-                            setPasskeyPromptState({ open: false });
-                            resolve();
-                        },
+        if (enablePasskeyPrompt && config.signer && "type" in config.signer && config.signer.type === "PASSKEY") {
+            if (config.onCreateWalletPasskeyCallback == null) {
+                config.onCreateWalletPasskeyCallback = () =>
+                    new Promise<void>((resolve) => {
+                        setPasskeyPromptState({
+                            type: "create-wallet",
+                            open: true,
+                            primaryActionOnClick: () => {
+                                setPasskeyPromptState({ open: false });
+                                resolve();
+                            },
+                        });
                     });
-                });
             }
-        };
+
+            if (config.onErrorCreateWalletCallback == null) {
+                config.onErrorCreateWalletCallback = () => {
+                    return new Promise<void>((resolve) => {
+                        setPasskeyPromptState({
+                            type: "create-wallet-error",
+                            open: true,
+                            primaryActionOnClick: async () => {
+                                setPasskeyPromptState({ open: false });
+                                // When retrying, we don't want to show the passkey prompt again so unset the wallet creation callback
+                                config.onCreateWalletPasskeyCallback = undefined;
+                                await handleWalletStuff();
+                                resolve();
+                            },
+                            secondaryActionOnClick: () => {
+                                console.error("__TROUBLESHOOT__\n\nA BUNCH OF TROUBLESHOOT STUFF");
+                                resolve();
+                            },
+                        });
+                    });
+                };
+            }
+        }
 
         const handleWalletStuff = async () => {
             try {
@@ -100,32 +117,13 @@ export function CrossmintWalletProvider({
                     defaultChain,
                     config
                 );
-                hasWallet = true;
                 setWalletState({ status: "loaded", wallet });
             } catch (error: unknown) {
                 console.error("There was an error creating a wallet ", error);
                 setWalletState(deriveErrorState(error));
-
-                // If an error occurs during wallet creation, show the user a passkey prompt (if enabled).
-                if (enablePasskeyPrompt && !hasWallet) {
-                    setPasskeyPromptState({
-                        type: "create-wallet-error",
-                        open: true,
-                        primaryActionOnClick: async () => {
-                            // Retrying wallet creation will close the passkey prompt and re-attempt wallet creation flow.
-                            setPasskeyPromptState({ open: false });
-                            await handleWalletStuff();
-                        },
-                        secondaryActionOnClick: () =>
-                            console.error("__TROUBLESHOOT__\n\nA BUNCH OF TROUBLESHOOT STUFF"),
-                    });
-                }
             }
         };
 
-        if (enablePasskeyPrompt) {
-            await handleWalletPasskeyPromptStuff();
-        }
         await handleWalletStuff();
 
         return { startedCreation: true };

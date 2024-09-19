@@ -86,18 +86,6 @@ export class SmartWalletSDK {
         });
     }
 
-    /**
-     * Checks if a wallet exists for the specified user.
-     */
-    async checkWalletExists(user: UserParams, chain: SmartWalletChain): Promise<boolean> {
-        if (!isClient()) {
-            throw new SmartWalletError("Smart Wallet SDK should only be used client side.");
-        }
-        this.assertValidChain(chain);
-
-        return await this.smartWalletService.hasExistingWallet(user, chain);
-    }
-
     private assertValidChain(chain: SmartWalletChain) {
         if (!this.validChain(chain)) {
             throw new SmartWalletError(

@@ -39,6 +39,10 @@ export class PasskeyCreationStrategy implements AccountCreationStrategy {
         }
 
         try {
+            if (existing == null && walletParams.onCreateWalletPasskeyCallback) {
+                await walletParams.onCreateWalletPasskeyCallback();
+            }
+
             const passkey = await this.getPasskey(user, inputPasskeyName, existing?.signerConfig.data);
 
             const latestValidatorVersion = PasskeyValidatorContractVersion.V0_0_2;
@@ -64,6 +68,7 @@ export class PasskeyCreationStrategy implements AccountCreationStrategy {
                 account: this.decorate(kernelAccount, inputPasskeyName),
             };
         } catch (error) {
+            walletParams?.onErrorCreateWalletCallback?.(error);
             throw this.mapError(error, inputPasskeyName);
         }
     }
