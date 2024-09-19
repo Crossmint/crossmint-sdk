@@ -28,5 +28,5 @@ export type ExternalSigner = EIP1193Provider | ViemAccount;
 export interface WalletParams {
     signer: ExternalSigner | PasskeySigner;
     onCreateWalletPasskeyCallback?: () => Promise<void>;
-    onErrorCreateWalletCallback?: (error: unknown) => void;
+    onErrorCreateWalletCallback?: (error: unknown) => Promise<void>;
 }
