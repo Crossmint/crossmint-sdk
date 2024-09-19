@@ -170,11 +170,12 @@ When we release a new version of `@crossmint/client-sdk-react-ui`, we need to up
 
 ### Instructions
 
-1. Ensure your local `main` branch is up to date
-2. Checkout `smart-wallet-auth-demo-prod`
+1. Ensure your local `main` branch is up-to-date
+2. Checkout a branch from `main` ie. `git checkout -b smart-wallet-demo-sdk-v1.2.3`
 3. Update the version of `@crossmint/client-sdk-react-ui` to the latest on npm. (Package link: [npmjs.com/package/@crossmint/client-sdk-react-ui](https://www.npmjs.com/package/@crossmint/client-sdk-react-ui))
-4. Commit the changes and force-push them directly to `smart-wallet-auth-demo-prod`
-5. Vercel will then deploy the changes to production
-6. Demo will be live on [https://www.smarterwallet.dev/](https://www.smarterwallet.dev/)!
+4. Commit the changes and push branch ie. `smart-wallet-demo-sdk-v1.2.3`
+5. Open a PR from `smart-wallet-demo-sdk-v1.2.3` against `smart-wallet-auth-demo-prod`
+6. After merging branch into `smart-wallet-auth-demo-prod`, Vercel will then deploy the changes to production
+7. Demo will be live on [https://www.smarterwallet.dev/](https://www.smarterwallet.dev/)!
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
