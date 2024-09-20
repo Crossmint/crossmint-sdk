@@ -15,7 +15,7 @@ import type { SmartWalletClient } from "../../types/internal";
 import type { TransferType } from "../../types/token";
 import type { SmartWalletChain } from "../chains";
 import { transferParams } from "../transfer";
-import { SendTransactionOptions, SendTransactionService } from "./SendTransactionService";
+import { type SendTransactionOptions, SendTransactionService } from "./SendTransactionService";
 
 /**
  * Smart wallet interface for EVM chains enhanced with Crossmint capabilities.
@@ -132,7 +132,7 @@ export class EVMSmartWallet {
             TAbi,
             "nonpayable" | "payable",
             TFunctionName
-        >
+        >,
     >({
         address,
         abi,

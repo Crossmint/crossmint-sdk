@@ -1,5 +1,5 @@
 import { crossmintAPI } from "@/crossmintAPI";
-import { AuthSig } from "@lit-protocol/types";
+import type { AuthSig } from "@lit-protocol/types";
 
 export class DelegationSignature {
     async getSignature(): Promise<AuthSig> {

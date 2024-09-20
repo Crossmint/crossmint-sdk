@@ -1,7 +1,7 @@
-import { VCChain } from "../types/chain";
-import { Collection, CredentialsCollection } from "../types/collection";
-import { CredentialFilter } from "../types/credentialFilter";
-import { Nft } from "../types/nft";
+import type { VCChain } from "../types/chain";
+import type { Collection, CredentialsCollection } from "../types/collection";
+import type { CredentialFilter } from "../types/credentialFilter";
+import type { Nft } from "../types/nft";
 import { isVcChain, isVcNft } from "../types/utils";
 import { ContractMetadataService } from "./contractMetadata";
 
@@ -15,15 +15,18 @@ import { ContractMetadataService } from "./contractMetadata";
  */
 export function bundleNfts(nfts: Nft[]): Collection[] {
     // Group NFTs by their contract address
-    const nftsByAddress: Record<string, Nft[]> = nfts.reduce((acc, nft) => {
-        if (!acc[nft.contractAddress]) {
-            acc[nft.contractAddress] = [];
-        }
+    const nftsByAddress: Record<string, Nft[]> = nfts.reduce(
+        (acc, nft) => {
+            if (!acc[nft.contractAddress]) {
+                acc[nft.contractAddress] = [];
+            }
 
-        // Push the current NFT to the array associated with its contract address
-        acc[nft.contractAddress].push(nft);
-        return acc;
-    }, {} as Record<string, Nft[]>);
+            // Push the current NFT to the array associated with its contract address
+            acc[nft.contractAddress].push(nft);
+            return acc;
+        },
+        {} as Record<string, Nft[]>
+    );
 
     // Map each contract address and its associated NFTs to a Collection object
     return Object.entries(nftsByAddress).map(([contractAddress, nfts]) => ({

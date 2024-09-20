@@ -1,5 +1,4 @@
-import Tabs, { Tab, TabId } from "../../components/Common/Tabs";
-import { EmailInput } from "../../helpers/emailInput";
+import Tabs, { type Tab, type TabId } from "../../components/Common/Tabs";
 import { WalletInput } from "../../helpers/walletInput";
 import { classNames } from "../../utils/uiUtils";
 

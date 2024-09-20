@@ -1,4 +1,4 @@
-import { CheckoutProps, Locale, PaymentMethod } from "../../types";
+import type { CheckoutProps, Locale, PaymentMethod } from "../../types";
 import { t } from "../../utils/i18n";
 
 interface IProps {

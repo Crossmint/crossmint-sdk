@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { UserParams } from "../../../types/params";
+import type { UserParams } from "../../../types/params";
 import { mockConfig } from "../../../utils/test";
 import { AccountConfigCache } from "./cache";
 

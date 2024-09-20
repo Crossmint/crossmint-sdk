@@ -1,4 +1,4 @@
-import { HTMLAttributeAnchorTarget } from "react";
+import type { HTMLAttributeAnchorTarget } from "react";
 
 export function isEmpty(str: string | undefined | null): str is undefined | null {
     return !str || str.length === 0 || str.trim().length === 0;

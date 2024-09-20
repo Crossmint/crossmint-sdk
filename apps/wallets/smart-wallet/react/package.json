@@ -6,33 +6,12 @@
         "build": "react-app-rewired build",
         "dev": "react-app-rewired start",
         "eject": "react-scripts eject",
-        "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
         "test:e2e": "pnpm exec playwright test",
         "test:e2e-ui": "pnpm exec playwright test --ui"
     },
     "browserslist": {
-        "production": [
-            "chrome >= 67",
-            "edge >= 79",
-            "firefox >= 68",
-            "opera >= 54",
-            "safari >= 14"
-        ],
-        "development": [
-            "last 1 chrome version",
-            "last 1 firefox version",
-            "last 1 safari version"
-        ]
-    },
-    "eslintConfig": {
-        "extends": [
-            "react-app",
-            "react-app/jest"
-        ],
-        "rules": {
-            "react/jsx-uses-react": "off",
-            "react/react-in-jsx-scope": "off"
-        }
+        "production": ["chrome >= 67", "edge >= 79", "firefox >= 68", "opera >= 54", "safari >= 14"],
+        "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
     },
     "dependencies": {
         "@crossmint/client-sdk-smart-wallet": "workspace:*",
@@ -78,10 +57,6 @@
         "buffer": "^6.0.3",
         "crypto-browserify": "^3.12.0",
         "dotenv": "16.4.5",
-        "eslint": "^8.54.0",
-        "eslint-config-next": "^14.0.3",
-        "eslint-config-react-app": "^7.0.1",
-        "eslint-plugin-react": "7.34.4",
         "ethers": "^5.7.2",
         "https-browserify": "^1.0.0",
         "os-browserify": "^0.3.0",

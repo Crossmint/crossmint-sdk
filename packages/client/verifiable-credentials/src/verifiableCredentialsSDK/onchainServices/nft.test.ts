@@ -1,4 +1,4 @@
-import { Nft } from "../types";
+import type { Nft } from "../types";
 import { NFTService } from "./nft";
 
 jest.mock("./provider");

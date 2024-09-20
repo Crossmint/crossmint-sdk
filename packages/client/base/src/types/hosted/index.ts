@@ -1,5 +1,5 @@
-import { Currency, Locale, PaymentMethod } from "..";
-import { CaseInsensitive } from "../system";
+import type { Currency, Locale, PaymentMethod } from "..";
+import type { CaseInsensitive } from "../system";
 
 export type MintConfig = Record<string, any> | Record<string, any>[];
 export type MintConfigs = MintConfig | MintConfig[];

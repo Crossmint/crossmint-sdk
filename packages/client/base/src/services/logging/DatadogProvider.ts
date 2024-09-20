@@ -1,7 +1,7 @@
 import { DATADOG_CLIENT_TOKEN } from "@/consts";
 import { datadogLogs } from "@datadog/browser-logs";
 
-import { BrowserLoggerInterface } from "./BrowserLoggerInterface";
+import type { BrowserLoggerInterface } from "./BrowserLoggerInterface";
 
 export class DatadogProvider implements BrowserLoggerInterface {
     constructor(private service: string) {}

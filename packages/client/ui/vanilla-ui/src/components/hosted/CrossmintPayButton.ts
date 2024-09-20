@@ -4,7 +4,7 @@ import { property } from "lit/decorators/property.js";
 import { classMap } from "lit/directives/class-map.js";
 
 import {
-    CrossmintPayButtonProps,
+    type CrossmintPayButtonProps,
     clientNames,
     crossmintModalService,
     crossmintPayButtonService,

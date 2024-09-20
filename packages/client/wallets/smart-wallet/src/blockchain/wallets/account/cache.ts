@@ -1,6 +1,6 @@
 import { keccak256, toHex } from "viem";
 
-import { UserParams } from "../../../types/params";
+import type { UserParams } from "../../../types/params";
 import { SmartWalletConfigSchema } from "../../../types/schema";
 import type { SmartWalletConfig } from "../../../types/service";
 

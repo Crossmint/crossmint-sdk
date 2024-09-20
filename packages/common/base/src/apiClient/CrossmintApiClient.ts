@@ -1,7 +1,7 @@
 import { environmentToCrossmintBaseURL } from "@/apiKey/utils/environmentToCrossmintBaseURL";
-import { ValidateApiKeySuccessResult, validateAPIKey } from "@/apiKey/validateAPIKey";
-import { ValidateAPIKeyPrefixExpectations } from "@/apiKey/validateAPIKeyPrefix";
-import { Crossmint } from "@/types/Crossmint";
+import { type ValidateApiKeySuccessResult, validateAPIKey } from "@/apiKey/validateAPIKey";
+import type { ValidateAPIKeyPrefixExpectations } from "@/apiKey/validateAPIKeyPrefix";
+import type { Crossmint } from "@/types/Crossmint";
 
 import { ApiClient } from "./ApiClient";
 

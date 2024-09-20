@@ -1,4 +1,4 @@
-import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
+import type { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 export function getUrlProviderByBlockchain(chain: EVMBlockchainIncludingTestnet) {
     const url = new Map<EVMBlockchainIncludingTestnet, string | null>([

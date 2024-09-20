@@ -6,8 +6,8 @@ import {
     isPasskeyCreationContext,
     isPasskeyWalletParams,
 } from "../../../types/internal";
-import { EOACreationStrategy } from "./eoa";
-import { PasskeyCreationStrategy } from "./passkey";
+import type { EOACreationStrategy } from "./eoa";
+import type { PasskeyCreationStrategy } from "./passkey";
 
 export class AccountCreator {
     constructor(

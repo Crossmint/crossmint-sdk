@@ -1,4 +1,4 @@
-import { SVGProps } from "react";
+import type { SVGProps } from "react";
 
 import { isEmpty } from "../../utils/stringUtils";
 import { classNames } from "../../utils/uiUtils";

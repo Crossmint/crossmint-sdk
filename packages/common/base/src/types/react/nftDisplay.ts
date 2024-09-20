@@ -1,6 +1,6 @@
-import { NFTOrNFTLocator, Wallet } from "@/blockchain/types";
+import type { NFTOrNFTLocator, Wallet } from "@/blockchain/types";
 
-import { UIConfig } from "../uiconfig";
+import type { UIConfig } from "../uiconfig";
 
 interface CommonProps {
     uiConfig?: UIConfig;

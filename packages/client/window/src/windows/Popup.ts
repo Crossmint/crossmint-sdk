@@ -1,8 +1,8 @@
 import { CreatePopupStrategy } from "@/utils/popupStrategy";
 import { urlToOrigin } from "@/utils/urlToOrigin";
 
-import { EventMap } from "../EventEmitter";
-import { EventEmitterWithHandshakeOptions } from "../handshake";
+import type { EventMap } from "../EventEmitter";
+import type { EventEmitterWithHandshakeOptions } from "../handshake";
 import { HandshakeParent } from "../handshake/Parent";
 
 export interface PopupWindowOptions {
