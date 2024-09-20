@@ -42,8 +42,8 @@ export class PasskeyCreationStrategy implements AccountCreationStrategy {
         }
 
         try {
-            if (existing == null && walletParams.onCreateWalletPasskeyCallback) {
-                await walletParams.onCreateWalletPasskeyCallback();
+            if (existing == null && walletParams.signer.onPrePasskeyRegistration != null) {
+                await walletParams.signer.onPrePasskeyRegistration();
             }
 
             const passkey = await this.getPasskey(user, inputPasskeyName, existing?.signerConfig.data);
@@ -71,7 +71,9 @@ export class PasskeyCreationStrategy implements AccountCreationStrategy {
                 account: this.decorate(kernelAccount, inputPasskeyName),
             };
         } catch (error) {
-            walletParams?.onErrorCreateWalletCallback?.(error);
+            if (walletParams.signer.onPasskeyRegistrationError != null) {
+                walletParams.signer.onPasskeyRegistrationError(error);
+            }
             throw this.mapError(error, inputPasskeyName);
         }
     }

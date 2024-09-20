@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 import {
     type EVMSmartWallet,
     type EVMSmartWalletChain,
+    type PasskeySigner,
     SmartWalletError,
     SmartWalletSDK,
     type WalletParams,
@@ -32,7 +33,9 @@ type WalletContext = {
     status: WalletStatus;
     wallet?: EVMSmartWallet;
     error?: SmartWalletError;
-    getOrCreateWallet: (config?: WalletConfig) => Promise<{ startedCreation: boolean; reason?: string }>;
+    getOrCreateWallet: (
+        config?: Omit<WalletConfig, "onCreateWalletPasskeyCallback" | "onErrorCreateWalletCallback">
+    ) => Promise<{ startedCreation: boolean; reason?: string }>;
     clearWallet: () => void;
 };
 
@@ -72,8 +75,9 @@ export function CrossmintWalletProvider({
         }
 
         if (enablePasskeyPrompt && config.signer && "type" in config.signer && config.signer.type === "PASSKEY") {
-            if (config.onCreateWalletPasskeyCallback == null) {
-                config.onCreateWalletPasskeyCallback = () =>
+            const passkeySigner = config.signer as PasskeySigner;
+            if (passkeySigner.onPrePasskeyRegistration == null) {
+                passkeySigner.onPrePasskeyRegistration = () =>
                     new Promise<void>((resolve) => {
                         setPasskeyPromptState({
                             type: "create-wallet",
@@ -86,8 +90,8 @@ export function CrossmintWalletProvider({
                     });
             }
 
-            if (config.onErrorCreateWalletCallback == null) {
-                config.onErrorCreateWalletCallback = () => {
+            if (passkeySigner.onPasskeyRegistrationError == null) {
+                passkeySigner.onPasskeyRegistrationError = () => {
                     return new Promise<void>((resolve) => {
                         setPasskeyPromptState({
                             type: "create-wallet-error",
@@ -95,8 +99,8 @@ export function CrossmintWalletProvider({
                             primaryActionOnClick: async () => {
                                 setPasskeyPromptState({ open: false });
                                 // When retrying, we don't want to show the passkey prompt again so unset the wallet creation callback
-                                config.onCreateWalletPasskeyCallback = undefined;
-                                await handleWalletStuff();
+                                passkeySigner.onPrePasskeyRegistration = undefined;
+                                await initializeWallet();
                                 resolve();
                             },
                         });
@@ -105,7 +109,7 @@ export function CrossmintWalletProvider({
             }
         }
 
-        const handleWalletStuff = async () => {
+        const initializeWallet = async () => {
             try {
                 setWalletState({ status: "in-progress" });
                 const wallet = await smartWalletSDK.getOrCreateWallet(
@@ -120,7 +124,7 @@ export function CrossmintWalletProvider({
             }
         };
 
-        await handleWalletStuff();
+        await initializeWallet();
 
         return { startedCreation: true };
     };
