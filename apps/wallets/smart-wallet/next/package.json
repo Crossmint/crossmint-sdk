@@ -18,6 +18,7 @@
         "@tanstack/react-query": "5.51.18",
         "class-variance-authority": "0.7.0",
         "clsx": "2.1.1",
+        "dotenv": "16.4.5",
         "lucide-react": "0.419.0",
         "next": "14.2.5",
         "react": "^18",
@@ -26,6 +27,7 @@
         "viem": "2.17.5"
     },
     "devDependencies": {
+        "@playwright/test": "^1.41.2",
         "@types/node": "^20",
         "@types/react": "^18",
         "@types/react-dom": "^18",

@@ -212,6 +212,9 @@ importers:
       clsx:
         specifier: 2.1.1
         version: 2.1.1
+      dotenv:
+        specifier: 16.4.5
+        version: 16.4.5
       lucide-react:
         specifier: 0.419.0
         version: 0.419.0(react@18.2.0)
@@ -231,6 +234,9 @@ importers:
         specifier: 2.17.5
         version: 2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
     devDependencies:
+      '@playwright/test':
+        specifier: ^1.41.2
+        version: 1.41.2
       '@types/node':
         specifier: ^20
         version: 20.14.11
