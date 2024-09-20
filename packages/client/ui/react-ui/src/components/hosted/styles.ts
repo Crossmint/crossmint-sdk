@@ -1,4 +1,4 @@
-import { Styles, createUseStyles } from "react-jss";
+import { type Styles, createUseStyles } from "react-jss";
 
 const DARK_BG = "#1e1e1e";
 
@@ -52,8 +52,7 @@ const styles: Styles<"crossmintButton" | "crossmintImg" | "crossmintParagraph" |
 };
 
 export const useStyles: (
-    data?:
-        | CustomStylingProps & {
-              theme?: any;
-          }
+    data?: CustomStylingProps & {
+        theme?: any;
+    }
 ) => Classes<"crossmintButton" | "crossmintImg" | "crossmintParagraph" | "@global"> = createUseStyles(styles);

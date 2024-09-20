@@ -1,12 +1,12 @@
-import { ReactNode, createContext, useMemo, useState } from "react";
+import { type ReactNode, createContext, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 
 import {
-    EVMSmartWallet,
-    EVMSmartWalletChain,
+    type EVMSmartWallet,
+    type EVMSmartWalletChain,
     SmartWalletError,
     SmartWalletSDK,
-    WalletParams,
+    type WalletParams,
 } from "@crossmint/client-sdk-smart-wallet";
 
 import { PasskeyPrompt } from "../components";

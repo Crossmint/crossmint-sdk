@@ -1,4 +1,4 @@
-import { WalletConnectConfig } from "@/hooks/useWalletConnectProvider";
+import type { WalletConnectConfig } from "@/hooks/useWalletConnectProvider";
 import { Core } from "@walletconnect/core";
 import { Web3Wallet } from "@walletconnect/web3wallet";
 

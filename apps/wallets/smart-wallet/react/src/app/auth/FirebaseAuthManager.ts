@@ -1,7 +1,7 @@
 import { FirebaseError, initializeApp } from "firebase/app";
 import {
     GoogleAuthProvider,
-    UserCredential,
+    type UserCredential,
     getAuth,
     indexedDBLocalPersistence,
     onAuthStateChanged,

@@ -1,7 +1,7 @@
-import { TransactionRequest } from "@ethersproject/abstract-provider";
-import { Transaction as SolanaLegacyTransaction } from "@solana/web3.js";
+import type { TransactionRequest } from "@ethersproject/abstract-provider";
+import type { Transaction as SolanaLegacyTransaction } from "@solana/web3.js";
 
-import { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
+import type { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 export type SignMessage = {
     signMessage?: (message: Uint8Array) => Promise<string>;

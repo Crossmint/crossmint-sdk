@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { EventEmitterOptions, EventMap } from "../EventEmitter";
+import type { EventEmitterOptions, EventMap } from "../EventEmitter";
 
 export * from "./Child";
 export * from "./Parent";
@@ -11,7 +11,7 @@ export interface HandshakeOptions {
 }
 export type EventEmitterWithHandshakeOptions<
     IncomingEvents extends EventMap = EventMap,
-    OutgoingEvents extends EventMap = EventMap
+    OutgoingEvents extends EventMap = EventMap,
 > = EventEmitterOptions<IncomingEvents, OutgoingEvents> & {
     handshakeOptions?: HandshakeOptions;
     targetOrigin?: string;

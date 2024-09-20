@@ -1,5 +1,5 @@
-import { FormikErrors, FormikTouched } from "formik";
-import { DivProps } from "react-html-props";
+import type { FormikErrors, FormikTouched } from "formik";
+import type { DivProps } from "react-html-props";
 
 export function classNames(...classes: (boolean | string | undefined)[]) {
     return classes.filter(Boolean).join(" ");

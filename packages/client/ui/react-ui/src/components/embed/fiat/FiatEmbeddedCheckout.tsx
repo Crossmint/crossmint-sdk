@@ -1,4 +1,4 @@
-import { FiatEmbeddedCheckoutProps } from "@crossmint/client-sdk-base";
+import type { FiatEmbeddedCheckoutProps } from "@crossmint/client-sdk-base";
 
 import FiatEmbeddedCheckoutIFrame from "../../../components/embed/fiat/FiatEmbeddedCheckoutIFrame";
 

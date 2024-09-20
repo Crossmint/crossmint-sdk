@@ -1,4 +1,4 @@
-import { CommonEmbeddedCheckoutProps } from ".";
+import type { CommonEmbeddedCheckoutProps } from ".";
 
 export type FiatEmbeddedCheckoutProps = CommonEmbeddedCheckoutProps<"fiat"> & {
     // TODO: Audit old params

@@ -1,8 +1,8 @@
 import { MetamaskService } from "@/services/metamaskSign";
 import { WalletAuthService } from "@/services/walletAuth";
 import {
-    EncryptedVerifiableCredential,
-    VerifiableCredential,
+    type EncryptedVerifiableCredential,
+    type VerifiableCredential,
     isVerifiableCredential,
 } from "@/verifiableCredentialsSDK";
 

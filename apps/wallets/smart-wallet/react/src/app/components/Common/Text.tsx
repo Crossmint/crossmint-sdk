@@ -1,6 +1,6 @@
-import { AProps, PProps } from "react-html-props";
+import type { AProps, PProps } from "react-html-props";
 
-import { CrossmintElementProps, classNames } from "../../utils/uiUtils";
+import { type CrossmintElementProps, classNames } from "../../utils/uiUtils";
 import { getTarget } from "../../utils/urls";
 
 export const PrimaryTitle = ({ className, children, ...props }: CrossmintElementProps<PProps>) => (

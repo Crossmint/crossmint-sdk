@@ -1,4 +1,4 @@
-import { ChainRPCConfig, VCChain } from "./types/chain";
+import { type ChainRPCConfig, VCChain } from "./types/chain";
 
 const POLYGON_RPC_URL = "https://polygon.llamarpc.com/";
 const POLYGON_RPC_URL_TEST = "https://rpc-amoy.polygon.technology/";

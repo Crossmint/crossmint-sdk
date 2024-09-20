@@ -1,9 +1,9 @@
 import {
-    CrossmintEvent,
+    type CrossmintEvent,
     CrossmintEvents,
     CrossmintInternalEvents,
-    FiatEmbeddedCheckoutProps,
-    UpdatableEmbeddedCheckoutParams,
+    type FiatEmbeddedCheckoutProps,
+    type UpdatableEmbeddedCheckoutParams,
 } from "../../types";
 import { getEnvironmentBaseUrl } from "../../utils";
 

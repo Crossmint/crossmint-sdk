@@ -25,19 +25,6 @@ jobs:
             - name: Test all
               run: pnpm test
 
-    prettier:
-        name: prettier:check
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
-
-            - name: Setup Node.js, PNPM, and install dependencies
-              uses: ./.github/actions/pnpm-install
-
-            - name: Check for unpretty files
-              run: pnpm prettier:check
-
     lint:
         name: lint
         runs-on: ubuntu-latest

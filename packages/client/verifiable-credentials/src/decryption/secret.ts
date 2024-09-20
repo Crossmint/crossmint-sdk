@@ -1,4 +1,4 @@
-import { EncryptedVerifiableCredential, isVerifiableCredential } from "@/verifiableCredentialsSDK";
+import { type EncryptedVerifiableCredential, isVerifiableCredential } from "@/verifiableCredentialsSDK";
 import crypto from "crypto";
 
 export class VCSymmetricEncryptionService {

@@ -1,11 +1,11 @@
-import { RequesterMetadata } from "@/components/common/layouts/modal/DAppRequestHeader";
+import type { RequesterMetadata } from "@/components/common/layouts/modal/DAppRequestHeader";
 import { ErrorModal } from "@/components/common/layouts/modal/ErrorModal";
 import { useCrossmintWalletConnect } from "@/hooks/useCrossmintWalletConnect";
 import { useWalletConnectRequests } from "@/hooks/useWalletConnectRequests";
-import { CrossmintWalletConnectDictionary } from "@/i18n/dictionary";
+import type { CrossmintWalletConnectDictionary } from "@/i18n/dictionary";
 import { isSendTransactionMethod } from "@/utils/sendTransaction/isSendTransactionMethod";
 import { isSignMessageMethod } from "@/utils/signMessage/isSignMessageMethod";
-import { Web3WalletTypes } from "@walletconnect/web3wallet";
+import type { Web3WalletTypes } from "@walletconnect/web3wallet";
 import { useState } from "react";
 
 export default function UnsupportedMethodRequestedModal({

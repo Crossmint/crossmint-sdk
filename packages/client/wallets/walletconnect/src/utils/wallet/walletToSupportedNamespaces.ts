@@ -2,8 +2,8 @@ import {
     WALLETCONNECT_SOLANA_DEVNET_CHAIN_IDENTIFIER,
     WALLETCONNECT_SOLANA_MAINNET_CHAIN_IDENTIFIER,
 } from "@/consts/walletconnect";
-import { CrossmintWalletConnectWallet } from "@/types/wallet";
-import { BuildApprovedNamespacesParams } from "@walletconnect/utils";
+import type { CrossmintWalletConnectWallet } from "@/types/wallet";
+import type { BuildApprovedNamespacesParams } from "@walletconnect/utils";
 
 import { blockchainToChainId, isEVMBlockchain } from "@crossmint/common-sdk-base";
 

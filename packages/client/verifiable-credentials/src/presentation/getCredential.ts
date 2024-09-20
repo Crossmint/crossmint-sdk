@@ -1,5 +1,5 @@
 import {
-    CredentialRetrievalProcedure,
+    type CredentialRetrievalProcedure,
     CredentialService as CredentialServiceRaw,
     ipfsRetrievalProcedure,
 } from "@/verifiableCredentialsSDK";

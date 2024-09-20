@@ -1,7 +1,11 @@
 import { VCChain } from "./chain";
-import { VCContractMetadata } from "./collection";
-import { Nft } from "./nft";
-import { EncryptedVerifiableCredential, VerifiableCredential, VerifiableCredentialType } from "./verifiableCredential";
+import type { VCContractMetadata } from "./collection";
+import type { Nft } from "./nft";
+import type {
+    EncryptedVerifiableCredential,
+    VerifiableCredential,
+    VerifiableCredentialType,
+} from "./verifiableCredential";
 
 /**
  * Parses a locator string and returns an NFT object.

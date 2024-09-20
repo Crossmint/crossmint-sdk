@@ -1,8 +1,16 @@
-import { UIConfig } from "@crossmint/common-sdk-base";
+import type { UIConfig } from "@crossmint/common-sdk-base";
 
-import { CaseInsensitive, CollectionOrClientId, Currency, Locale, MintConfigs, PaymentMethod, Recipient } from "../..";
-import { CryptoEmbeddedCheckoutPropsJSONParsed, CryptoEmbeddedCheckoutPropsJSONStringified } from "./crypto";
-import { FiatEmbeddedCheckoutPropsJSONParsed, FiatEmbeddedCheckoutPropsJSONStringified } from "./fiat";
+import type {
+    CaseInsensitive,
+    CollectionOrClientId,
+    Currency,
+    Locale,
+    MintConfigs,
+    PaymentMethod,
+    Recipient,
+} from "../..";
+import type { CryptoEmbeddedCheckoutPropsJSONParsed, CryptoEmbeddedCheckoutPropsJSONStringified } from "./crypto";
+import type { FiatEmbeddedCheckoutPropsJSONParsed, FiatEmbeddedCheckoutPropsJSONStringified } from "./fiat";
 
 export type CommonEmbeddedCheckoutPropsJSONStringified<PM extends PaymentMethod = PaymentMethod> = {
     paymentMethod?: PM;

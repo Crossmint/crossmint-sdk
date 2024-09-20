@@ -2,10 +2,10 @@ import ModalLayout from "@/components/common/layouts/modal/ModalLayout";
 import { useCrossmintWalletConnect } from "@/hooks/useCrossmintWalletConnect";
 import { useWalletConnectRequests } from "@/hooks/useWalletConnectRequests";
 import { decodeSendTransactionRequest } from "@/utils/sendTransaction/decodeSendTransactionRequest";
-import { Web3WalletTypes } from "@walletconnect/web3wallet";
+import type { Web3WalletTypes } from "@walletconnect/web3wallet";
 import { useState } from "react";
 
-import { RequesterMetadata } from "../../common/layouts/modal/DAppRequestHeader";
+import type { RequesterMetadata } from "../../common/layouts/modal/DAppRequestHeader";
 
 export default function SendTransactionModal({
     request,

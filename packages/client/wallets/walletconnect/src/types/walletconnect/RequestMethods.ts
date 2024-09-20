@@ -1,4 +1,4 @@
-import { ObjectValues } from "@crossmint/common-sdk-base";
+import type { ObjectValues } from "@crossmint/common-sdk-base";
 
 export const SessionRequestMethods = {
     EVM_PERSONAL_SIGN: "personal_sign",

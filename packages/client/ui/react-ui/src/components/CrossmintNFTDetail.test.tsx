@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import { NFT } from "@crossmint/common-sdk-base";
+import type { NFT } from "@crossmint/common-sdk-base";
 
 import { CrossmintNFTDetail } from "./CrossmintNFTDetail";
 
