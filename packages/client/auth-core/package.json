@@ -7,19 +7,20 @@
     "sideEffects": false,
     "type": "module",
     "exports": {
-        "./server": {
-            "import": "./dist/server/index.js",
-            "require": "./dist/server/index.cjs"
-        }
+        "import": "./dist/index.js",
+        "require": "./dist/index.cjs"
     },
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
     "files": [
         "dist",
         "src",
         "LICENSE"
     ],
     "scripts": {
-        "build": "tsup server/index.ts --clean --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
-        "dev": "tsup server/index.ts --clean --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
+        "build": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
+        "dev": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
         "test": "jest --passWithNoTests"
     },
     "dependencies": {

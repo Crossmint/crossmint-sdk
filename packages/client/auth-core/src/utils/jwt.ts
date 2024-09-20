@@ -1,5 +1,5 @@
 import { CrossmintAuthService } from "@/services/CrossmintAuthService";
-import { JsonWebTokenError, TokenExpiredError, verify } from "jsonwebtoken";
+import { JsonWebTokenError, JwtPayload, TokenExpiredError, decode, verify } from "jsonwebtoken";
 
 import { getPublicKey } from "./tokenAuth/publicKey";
 
@@ -41,4 +41,13 @@ async function verifyJWTWithPublicKey(crossmintService: CrossmintAuthService, to
     const publicKey = await getPublicKey(token, crossmintService.getJWKSUri());
 
     return verifyJWT(publicKey, token);
+}
+
+export async function getJWTExpiration(token: string) {
+    const decoded = decode(token, { complete: true }) as JwtPayload;
+    if (decoded?.header == null) {
+        throw new Error("Invalid Token: Header Formatted Incorrectly");
+    }
+
+    return decoded.payload.exp;
 }

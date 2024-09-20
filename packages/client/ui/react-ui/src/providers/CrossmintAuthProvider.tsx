@@ -1,15 +1,14 @@
+import { REFRESH_TOKEN_PREFIX, SESSION_PREFIX, deleteCookie, getCookie, setCookie } from "@/utils/authCookies";
 import { type ReactNode, createContext, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
+import { CrossmintAuthService } from "@crossmint/client-sdk-auth-core";
 import type { EVMSmartWalletChain } from "@crossmint/client-sdk-smart-wallet";
 import { type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
 
 import AuthModal from "../components/auth/AuthModal";
-import { useCrossmint, useWallet } from "../hooks";
+import { AuthMaterial, useCrossmint, useRefreshToken, useWallet } from "../hooks";
 import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
-
-const SESSION_PREFIX = "crossmint-session";
-const REFRESH_TOKEN_PREFIX = "crossmint-refresh-token";
 
 export type CrossmintAuthWalletConfig = {
     defaultChain: EVMSmartWalletChain;
@@ -43,19 +42,18 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
     const { crossmint, setJwt, setRefreshToken } = useCrossmint(
         "CrossmintAuthProvider must be used within CrossmintProvider"
     );
+    const crossmintAuthService = new CrossmintAuthService(crossmint.apiKey);
     const crossmintBaseUrl = validateApiKeyAndGetCrossmintBaseUrl(crossmint.apiKey);
     const [modalOpen, setModalOpen] = useState(false);
 
-    useEffect(() => {
-        const session = getSessionTokenFromCookie();
-        const refreshToken = getRefreshTokenFromCookie();
-        if (session != null) {
-            setJwt(session);
-        }
-        if (refreshToken != null) {
-            setRefreshToken(refreshToken);
-        }
-    }, [setJwt, setRefreshToken]);
+    const setAuthMaterial = (authMaterial: AuthMaterial) => {
+        setCookie(SESSION_PREFIX, authMaterial.jwtToken);
+        setCookie(REFRESH_TOKEN_PREFIX, authMaterial.refreshToken.secret, authMaterial.refreshToken.expiresAt);
+        setJwt(authMaterial.jwtToken);
+        setRefreshToken(authMaterial.refreshToken.secret);
+    };
+
+    useRefreshToken({ crossmintAuthService, setAuthMaterial });
 
     const login = () => {
         if (crossmint.jwt != null) {
@@ -67,11 +65,18 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
     };
 
     const logout = () => {
-        document.cookie = `${SESSION_PREFIX}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-        document.cookie = `${REFRESH_TOKEN_PREFIX}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+        deleteCookie(SESSION_PREFIX);
+        deleteCookie(REFRESH_TOKEN_PREFIX);
         setJwt(undefined);
         setRefreshToken(undefined);
     };
+
+    useEffect(() => {
+        if (crossmint.jwt == null) {
+            const jwt = getCookie(SESSION_PREFIX);
+            setJwt(jwt);
+        }
+    }, []);
 
     useEffect(() => {
         if (crossmint.jwt == null) {
@@ -90,19 +95,6 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
         }
         return "logged-out";
     };
-
-    function setAuthMaterial(authMaterial: {
-        jwtToken: string;
-        refreshToken: {
-            secret: string;
-            expiresAt: string;
-        };
-    }) {
-        document.cookie = `${SESSION_PREFIX}=${crossmint.jwt}; path=/;SameSite=Lax;`;
-        setJwt(authMaterial.jwtToken);
-        document.cookie = `${REFRESH_TOKEN_PREFIX}=${authMaterial.refreshToken.secret}; path=/; expires=${authMaterial.refreshToken.expiresAt}; SameSite=Lax;`;
-        setRefreshToken(authMaterial.refreshToken.secret);
-    }
 
     return (
         <AuthContext.Provider
@@ -161,14 +153,4 @@ function WalletManager({
     }, [accessToken, status]);
 
     return <>{children}</>;
-}
-
-function getSessionTokenFromCookie(): string | undefined {
-    const crossmintSession = document.cookie.split("; ").find((row) => row.startsWith(SESSION_PREFIX));
-    return crossmintSession ? crossmintSession.split("=")[1] : undefined;
-}
-
-function getRefreshTokenFromCookie(): string | undefined {
-    const crossmintRefreshToken = document.cookie.split("; ").find((row) => row.startsWith(REFRESH_TOKEN_PREFIX));
-    return crossmintRefreshToken ? crossmintRefreshToken.split("=")[1] : undefined;
 }
