@@ -1,5 +1,6 @@
 import { Button, Dialog, Transition } from "@headlessui/react";
-import React, { Fragment, ReactNode } from "react";
+import type React from "react";
+import { Fragment, type ReactNode } from "react";
 
 import FingerprintIcon from "../../icons/fingerprint";
 import PasskeyIcon from "../../icons/passkey";
