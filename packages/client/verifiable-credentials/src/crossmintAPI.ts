@@ -1,7 +1,7 @@
 import { getEnvironmentBaseUrl } from "@crossmint/client-sdk-base";
 import { APIKeyUsageOrigin, validateAPIKey } from "@crossmint/common-sdk-base";
 
-import { ChainRPCConfig, VCSDKConfig, configManager } from "./verifiableCredentialsSDK";
+import { type ChainRPCConfig, type VCSDKConfig, configManager } from "./verifiableCredentialsSDK";
 
 class CrossmintAPI {
     private apiKey?: string;

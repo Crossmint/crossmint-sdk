@@ -1,6 +1,6 @@
-import { Currency, Locale, PaymentMethod, SigninMethods, clientNames } from "../../types";
-import { CheckoutProps, MintConfigs } from "../../types/hosted";
-import { CaseInsensitive } from "../../types/system";
+import type { Currency, Locale, PaymentMethod, SigninMethods, clientNames } from "../../types";
+import type { CheckoutProps, MintConfigs } from "../../types/hosted";
+import type { CaseInsensitive } from "../../types/system";
 import { getEnvironmentBaseUrl } from "../../utils/ui";
 
 type MintQueryParams = {

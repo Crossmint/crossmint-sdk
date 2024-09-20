@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { mock } from "vitest-mock-extended";
 
-import { CrossmintWalletService } from "../../../api/CrossmintWalletService";
-import { SmartWalletConfig } from "../../../types/service";
+import type { CrossmintWalletService } from "../../../api/CrossmintWalletService";
+import type { SmartWalletConfig } from "../../../types/service";
 import { mockConfig } from "../../../utils/test";
 import { SmartWalletChain } from "../../chains";
-import { AccountConfigCache } from "./cache";
+import type { AccountConfigCache } from "./cache";
 import { AccountConfigService } from "./config";
 import { PasskeySignerConfig } from "./signer";
 

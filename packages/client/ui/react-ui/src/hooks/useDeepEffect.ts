@@ -1,5 +1,5 @@
 import isEqual from "lodash.isequal";
-import { DependencyList, EffectCallback, useEffect, useRef } from "react";
+import { type DependencyList, type EffectCallback, useEffect, useRef } from "react";
 
 export default function useDeepEffect(callback: EffectCallback, dependencies: DependencyList): void {
     const dependenciesRef = useRef(dependencies);

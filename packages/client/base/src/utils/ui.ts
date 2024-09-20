@@ -1,4 +1,4 @@
-import { NFTCollectionViewProps, NFTDetailProps, NFTOrNFTLocator } from "@crossmint/common-sdk-base";
+import type { NFTCollectionViewProps, NFTDetailProps, NFTOrNFTLocator } from "@crossmint/common-sdk-base";
 
 import { BaseUrls } from "../types";
 

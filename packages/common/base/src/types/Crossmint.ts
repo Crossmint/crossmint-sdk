@@ -1,4 +1,4 @@
-import { ValidateAPIKeyPrefixExpectations, validateAPIKey } from "@/apiKey";
+import { type ValidateAPIKeyPrefixExpectations, validateAPIKey } from "@/apiKey";
 
 export type Crossmint = {
     apiKey: string;

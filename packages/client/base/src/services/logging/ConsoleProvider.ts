@@ -1,4 +1,4 @@
-import { BrowserLoggerInterface } from "./BrowserLoggerInterface";
+import type { BrowserLoggerInterface } from "./BrowserLoggerInterface";
 
 export class ConsoleProvider implements BrowserLoggerInterface {
     logInfo(message: string, context?: object) {

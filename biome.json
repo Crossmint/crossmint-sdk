@@ -1,0 +1,141 @@
+{
+    "$schema": "https://biomejs.dev/schemas/1.8.3/schema.json",
+    "formatter": {
+        "enabled": true,
+        "formatWithErrors": false,
+        "indentStyle": "space",
+        "indentWidth": 4,
+        "lineEnding": "lf",
+        "lineWidth": 120,
+        "attributePosition": "auto",
+        "ignore": [
+            "node_modules",
+            "public",
+            ".next",
+            ".vercel",
+            "playwright-report",
+            "pnpm-lock.yaml",
+            ".github",
+            "**/dist/**",
+            "**/build/**"
+        ]
+    },
+    "organizeImports": {
+        "enabled": false
+    },
+    "linter": {
+        "enabled": true,
+        "rules": {
+            "recommended": false,
+            "a11y": {
+                "noAriaUnsupportedElements": "warn",
+                "noBlankTarget": "warn",
+                "useAltText": "warn",
+                "useAriaPropsForRole": "warn",
+                "useValidAriaProps": "warn",
+                "useValidAriaValues": "warn"
+            },
+            "complexity": {
+                "noBannedTypes": "warn",
+                "noUselessTypeConstraint": "error"
+            },
+            "correctness": {
+                "noPrecisionLoss": "error",
+                "noUnusedImports": "error",
+                "noChildrenProp": "error",
+                "useHookAtTopLevel": "warn",
+                "useJsxKeyInIterable": "warn",
+                "noUnusedVariables": "warn",
+                "useExhaustiveDependencies": "warn",
+                "useArrayLiterals": "warn"
+            },
+            "nursery": {
+                "noDuplicateAtImportRules": "error"
+            },
+            "security": {
+                "noDangerouslySetInnerHtml": "error"
+            },
+            "style": {
+                "noInferrableTypes": "error",
+                "noNamespace": "warn",
+                "useAsConstAssertion": "error",
+                "useBlockStatements": "warn",
+                "noNonNullAssertion": "warn",
+                "noParameterAssign": "warn",
+                "useImportType": "warn"
+            },
+            "suspicious": {
+                "noExtraNonNullAssertion": "error",
+                "noFallthroughSwitchClause": "error",
+                "noMisleadingInstantiator": "error",
+                "useNamespaceKeyword": "error",
+                "noCommentText": "error",
+                "noDuplicateJsxProps": "error",
+                "noEmptyBlockStatements": "warn",
+                "noExplicitAny": "warn",
+                "useAwait": "warn"
+            }
+        },
+        "ignore": [
+            "coverage",
+            ".next",
+            ".vercel",
+            "playwright-report",
+            "services/snowcrash",
+            "pnpm-lock.yaml",
+            "**/build/**",
+            "**/dist/**"
+        ]
+    },
+    "javascript": {
+        "formatter": {
+            "jsxQuoteStyle": "double",
+            "quoteProperties": "asNeeded",
+            "trailingCommas": "es5",
+            "semicolons": "always",
+            "arrowParentheses": "always",
+            "bracketSpacing": true,
+            "bracketSameLine": false,
+            "quoteStyle": "double",
+            "attributePosition": "auto"
+        },
+        "parser": {
+            "unsafeParameterDecoratorsEnabled": true
+        }
+    },
+    "overrides": [
+        {
+            "include": ["*.ts", "*.tsx", "*.mts", "*.cts"],
+            "linter": {
+                "rules": {
+                    "correctness": {
+                        "noConstAssign": "warn",
+                        "noGlobalObjectCalls": "warn",
+                        "noInvalidConstructorSuper": "warn",
+                        "noNewSymbol": "warn",
+                        "noSetterReturn": "warn",
+                        "noUndeclaredVariables": "warn",
+                        "noUnreachable": "warn",
+                        "noUnreachableSuper": "warn"
+                    },
+                    "style": {
+                        "noArguments": "error",
+                        "noVar": "warn",
+                        "useConst": "warn"
+                    },
+                    "suspicious": {
+                        "noDuplicateClassMembers": "warn",
+                        "noDuplicateObjectKeys": "warn",
+                        "noDuplicateParameters": "warn",
+                        "noFunctionAssign": "warn",
+                        "noImportAssign": "warn",
+                        "noRedeclare": "warn",
+                        "noUnsafeNegation": "warn",
+                        "useGetterReturn": "warn",
+                        "useValidTypeof": "warn"
+                    }
+                }
+            }
+        }
+    ]
+}

@@ -1,9 +1,9 @@
 import {
-    CrossmintEmbeddedCheckoutProps,
-    CryptoEmbeddedCheckoutProps,
-    CryptoEmbeddedCheckoutPropsWithSigner,
+    type CrossmintEmbeddedCheckoutProps,
+    type CryptoEmbeddedCheckoutProps,
+    type CryptoEmbeddedCheckoutPropsWithSigner,
     CryptoPaymentMethod,
-    FiatEmbeddedCheckoutProps,
+    type FiatEmbeddedCheckoutProps,
 } from "../../types";
 
 export * from "./updatableParams";

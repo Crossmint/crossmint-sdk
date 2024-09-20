@@ -1,4 +1,4 @@
-import { CoreTypes } from "@walletconnect/types";
+import type { CoreTypes } from "@walletconnect/types";
 
 export type CrossmintWalletConnectUIConfig = {
     colors?: CrossmintWalletConnectUIConfigColors;

@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.3.23
+
+### Patch Changes
+
+-   cc901c2: Expose smart wallet signer types
+
 ## 1.3.22
 
 ### Patch Changes

@@ -1,4 +1,4 @@
-import { NFTCollectionViewProps, NFTDetailProps } from "@crossmint/common-sdk-base";
+import type { NFTCollectionViewProps, NFTDetailProps } from "@crossmint/common-sdk-base";
 
 export function assertValidNFTCollectionViewProps({ wallets }: NFTCollectionViewProps) {
     if (wallets.length === 0) {

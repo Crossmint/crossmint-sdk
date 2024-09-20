@@ -1,8 +1,8 @@
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
-import ActionModal, { ActionModalProps } from "./ActionModal";
-import DAppRequestHeader, { DAppRequestHeaderProps } from "./DAppRequestHeader";
-import DualActionButtons, { DualActionButtonsProps } from "./DualActionButtons";
+import ActionModal, { type ActionModalProps } from "./ActionModal";
+import DAppRequestHeader, { type DAppRequestHeaderProps } from "./DAppRequestHeader";
+import DualActionButtons, { type DualActionButtonsProps } from "./DualActionButtons";
 
 export type ModalLayoutProps = {
     modal: ActionModalProps;

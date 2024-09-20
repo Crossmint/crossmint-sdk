@@ -1,9 +1,9 @@
 import { Dialog, Transition } from "@headlessui/react";
-import { CSSProperties, Fragment, useEffect, useRef, useState } from "react";
+import { type CSSProperties, Fragment, useEffect, useRef, useState } from "react";
 import { z } from "zod";
 
 import { IFrameWindow } from "@crossmint/client-sdk-window";
-import { UIConfig } from "@crossmint/common-sdk-base";
+import type { UIConfig } from "@crossmint/common-sdk-base";
 
 import X from "../../icons/x";
 import { classNames } from "../../utils/classNames";

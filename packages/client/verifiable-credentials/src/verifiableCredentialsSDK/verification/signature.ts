@@ -1,7 +1,7 @@
 import { getAddress } from "@ethersproject/address";
 import { verifyTypedData } from "@ethersproject/wallet";
 
-import { VerifiableCredential } from "../types/verifiableCredential";
+import type { VerifiableCredential } from "../types/verifiableCredential";
 
 export class VerifiableCredentialSignatureService {
     async verify(vc: VerifiableCredential) {

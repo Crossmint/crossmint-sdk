@@ -2,7 +2,7 @@ import { fireEvent, render } from "@testing-library/react";
 import { useEffect } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { Crossmint, createCrossmint } from "@crossmint/common-sdk-base";
+import { type Crossmint, createCrossmint } from "@crossmint/common-sdk-base";
 
 import { CrossmintProvider, useCrossmint } from "./useCrossmint";
 

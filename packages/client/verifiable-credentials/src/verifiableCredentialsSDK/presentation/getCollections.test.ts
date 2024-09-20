@@ -1,4 +1,4 @@
-import { CredentialsCollection, Nft } from "../types";
+import type { CredentialsCollection, Nft } from "../types";
 import { ContractMetadataService } from "./contractMetadata";
 import { bundleNfts, getCredentialNfts } from "./getCollections";
 

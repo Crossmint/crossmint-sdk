@@ -1,4 +1,4 @@
-import { z } from "zod";
+import type { z } from "zod";
 
 import type { SupportedEntryPointVersion, SupportedKernelVersion } from "./internal";
 import type {

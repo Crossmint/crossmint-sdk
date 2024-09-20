@@ -2,7 +2,7 @@ import { DynamicConnectButton, DynamicContextProvider, useDynamicContext } from 
 import { SolanaWalletConnectors } from "@dynamic-labs/solana-all";
 import { useEffect, useState } from "react";
 
-import { InitialQuotePayload } from "@crossmint/client-sdk-base";
+import type { InitialQuotePayload } from "@crossmint/client-sdk-base";
 import { CrossmintPaymentElement } from "@crossmint/client-sdk-react-ui";
 
 import QuoteSummary from "../../components/quote-summary";

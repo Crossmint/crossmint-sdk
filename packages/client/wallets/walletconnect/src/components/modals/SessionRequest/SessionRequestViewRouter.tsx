@@ -4,12 +4,12 @@ import { useWalletConnectWallets } from "@/hooks/useWalletConnectWallets";
 import { isSendTransactionMethod } from "@/utils/sendTransaction/isSendTransactionMethod";
 import { isSignMessageMethod } from "@/utils/signMessage/isSignMessageMethod";
 import { supportedNamespacesSatisfiesMethod } from "@/utils/wallet/supportedNamespacesSatisfiesMethod";
-import { SessionTypes } from "@walletconnect/types";
-import { BuildApprovedNamespacesParams } from "@walletconnect/utils";
-import { Web3WalletTypes } from "@walletconnect/web3wallet";
+import type { SessionTypes } from "@walletconnect/types";
+import type { BuildApprovedNamespacesParams } from "@walletconnect/utils";
+import type { Web3WalletTypes } from "@walletconnect/web3wallet";
 import { useEffect, useState } from "react";
 
-import { RequesterMetadata } from "../../common/layouts/modal/DAppRequestHeader";
+import type { RequesterMetadata } from "../../common/layouts/modal/DAppRequestHeader";
 import SendTransactionModal from "./SendTransactionModal";
 import SignMessageModal from "./SignMessageModal";
 import UnsupportedMethodRequestedModal from "./UnsupportedMethodRequestedModal";

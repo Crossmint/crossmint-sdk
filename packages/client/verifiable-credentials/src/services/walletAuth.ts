@@ -1,5 +1,5 @@
 import { crossmintAPI } from "@/crossmintAPI";
-import { EncryptedVerifiableCredential } from "@/verifiableCredentialsSDK";
+import type { EncryptedVerifiableCredential } from "@/verifiableCredentialsSDK";
 
 /**
  * Service for handling wallet-based authentication and decryption with Crossmint.

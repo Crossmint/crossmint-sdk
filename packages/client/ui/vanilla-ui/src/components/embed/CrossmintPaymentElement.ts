@@ -79,9 +79,7 @@ export class CrossmintPaymentElement extends LitElement {
     experimental?: FiatEmbeddedCheckoutProps["experimental"] = propertyDefaults.experimental;
 
     height = 0;
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     removeEventListener = () => {};
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     removeUIEventListener = () => {};
 
     connectedCallback() {

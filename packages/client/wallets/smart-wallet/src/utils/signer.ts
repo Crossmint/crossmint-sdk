@@ -1,10 +1,10 @@
 import { providerToSmartAccountSigner } from "permissionless";
 import type { SmartAccountSigner } from "permissionless/accounts";
-import { Address, EIP1193Provider } from "viem";
+import type { Address, EIP1193Provider } from "viem";
 
-import { SmartWalletChain } from "../blockchain/chains";
+import type { SmartWalletChain } from "../blockchain/chains";
 import { SmartWalletError } from "../error";
-import { ViemAccount, WalletParams } from "../types/params";
+import type { ViemAccount, WalletParams } from "../types/params";
 
 type CreateOwnerSignerInput = {
     chain: SmartWalletChain;

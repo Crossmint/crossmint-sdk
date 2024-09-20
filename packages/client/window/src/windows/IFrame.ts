@@ -1,7 +1,7 @@
 import { urlToOrigin } from "@/utils/urlToOrigin";
 
-import { EventMap } from "../EventEmitter";
-import { EventEmitterWithHandshakeOptions } from "../handshake";
+import type { EventMap } from "../EventEmitter";
+import type { EventEmitterWithHandshakeOptions } from "../handshake";
 import { HandshakeParent } from "../handshake/Parent";
 
 export class IFrameWindow<IncomingEvents extends EventMap, OutgoingEvents extends EventMap> extends HandshakeParent<

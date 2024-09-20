@@ -1,15 +1,15 @@
 import { generateRandomString } from "@/utils/generateRandomString";
-import { z } from "zod";
+import type { z } from "zod";
 
 import {
     DEFAULT_HANDSHAKE_OPTIONS,
-    EventEmitterWithHandshakeOptions,
+    type EventEmitterWithHandshakeOptions,
     HANDSHAKE_EVENTS,
-    HandshakeChildEvents,
-    HandshakeOptions,
-    HandshakeParentEvents,
+    type HandshakeChildEvents,
+    type HandshakeOptions,
+    type HandshakeParentEvents,
 } from ".";
-import { EventEmitter, EventMap, SendActionArgs, SendActionOptions } from "../EventEmitter";
+import { EventEmitter, type EventMap, type SendActionArgs, type SendActionOptions } from "../EventEmitter";
 
 export class HandshakeParent<IncomingEvents extends EventMap, OutgoingEvents extends EventMap> extends EventEmitter<
     IncomingEvents,

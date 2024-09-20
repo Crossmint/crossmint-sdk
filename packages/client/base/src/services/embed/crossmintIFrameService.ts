@@ -1,13 +1,13 @@
 import { embeddedCheckoutIFrameId } from "@/consts";
 import {
-    CrossmintEmbeddedCheckoutProps,
-    CrossmintEvent,
+    type CrossmintEmbeddedCheckoutProps,
+    type CrossmintEvent,
     CrossmintEvents,
-    CrossmintInternalEvent,
-    CrossmintInternalEvents,
-    IncomingInternalEvent,
+    type CrossmintInternalEvent,
+    type CrossmintInternalEvents,
+    type IncomingInternalEvent,
     IncomingInternalEvents,
-    OutgoingInternalEvent,
+    type OutgoingInternalEvent,
 } from "@/types";
 
 import { getEnvironmentBaseUrl } from "../../utils";

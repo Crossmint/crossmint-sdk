@@ -1,4 +1,4 @@
-import { EncryptedVerifiableCredential, VerifiableCredential } from "@/verifiableCredentialsSDK";
+import type { EncryptedVerifiableCredential } from "@/verifiableCredentialsSDK";
 
 import { mockCredential } from "../verifiableCredentialsSDK/types/mockCredential";
 import { CrossmintDecrypt } from "./wallet";

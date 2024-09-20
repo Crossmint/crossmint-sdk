@@ -96,7 +96,6 @@ export default function Index() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 justify-items-center gap-x-4 gap-y-8 py-6">
                             {(data || []).map((nft) => (
                                 <div className="flex flex-col gap-4" key={nft.tokenId + nft.contractAddress}>
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img
                                         className="rounded-[10px] max-w-full sm:max-w-[164px]"
                                         src={nft.metadata.image}

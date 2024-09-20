@@ -1,5 +1,5 @@
 import { updatableCryptoParams, updatableFiatParams } from "@/consts";
-import {
+import type {
     CrossmintEmbeddedCheckoutProps,
     CryptoEmbeddedCheckoutPropsWithSigner,
     UpdatableCryptoParams,

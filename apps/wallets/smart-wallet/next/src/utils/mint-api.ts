@@ -1,6 +1,6 @@
-import { Address, encodeFunctionData } from "viem";
+import type { Address } from "viem";
 
-import { EVMSmartWallet } from "@crossmint/client-sdk-react-ui";
+import type { EVMSmartWallet } from "@crossmint/client-sdk-react-ui";
 
 import { CollectionABI } from "./collection-abi";
 
@@ -11,16 +11,11 @@ export const mintNFT = async (wallet: EVMSmartWallet) => {
         throw new Error("Wallet is not provided");
     }
     console.log("Minting NFT", wallet.address);
-
-    const data = encodeFunctionData({
+    const transactionHash = await wallet.executeContract({
+        address: AMOY_CONTRACT,
         abi: CollectionABI,
         functionName: "mintTo",
         args: [wallet.address],
-    });
-
-    const transactionHash = await wallet.client.wallet.sendTransaction({
-        to: AMOY_CONTRACT,
-        data: data,
     });
 
     console.log("NFT mint. Tx hash:", transactionHash);
