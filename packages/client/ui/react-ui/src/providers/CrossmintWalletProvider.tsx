@@ -4,7 +4,6 @@ import { createPortal } from "react-dom";
 import {
     type EVMSmartWallet,
     type EVMSmartWalletChain,
-    type PasskeySigner,
     SmartWalletError,
     SmartWalletSDK,
     type WalletParams,
@@ -15,9 +14,15 @@ import { useCrossmint } from "../hooks";
 
 type WalletStatus = "not-loaded" | "in-progress" | "loaded" | "loading-error";
 
+type ValidPasskeyPromptType =
+    | "create-wallet"
+    | "transaction"
+    | "not-supported"
+    | "create-wallet-error"
+    | "transaction-error";
 type PasskeyPromptState =
     | {
-          type: "create-wallet" | "transaction" | "not-supported" | "create-wallet-error" | "transaction-error";
+          type: ValidPasskeyPromptType;
           open: true;
           primaryActionOnClick: () => void;
           secondaryActionOnClick?: () => void;
@@ -34,7 +39,7 @@ type WalletContext = {
     wallet?: EVMSmartWallet;
     error?: SmartWalletError;
     getOrCreateWallet: (
-        config?: Omit<WalletConfig, "onCreateWalletPasskeyCallback" | "onErrorCreateWalletCallback">
+        config?: Pick<WalletConfig, "signer" | "type">
     ) => Promise<{ startedCreation: boolean; reason?: string }>;
     clearWallet: () => void;
 };
@@ -74,60 +79,46 @@ export function CrossmintWalletProvider({
             return { startedCreation: false, reason: `Jwt not set in "CrossmintProvider".` };
         }
 
-        if (enablePasskeyPrompt && config.signer && "type" in config.signer && config.signer.type === "PASSKEY") {
-            const passkeySigner = config.signer as PasskeySigner;
-            if (passkeySigner.onPrePasskeyRegistration == null) {
-                passkeySigner.onPrePasskeyRegistration = () =>
-                    new Promise<void>((resolve) => {
-                        setPasskeyPromptState({
-                            type: "create-wallet",
-                            open: true,
-                            primaryActionOnClick: () => {
-                                setPasskeyPromptState({ open: false });
-                                resolve();
-                            },
-                        });
-                    });
-            }
-
-            if (passkeySigner.onPasskeyRegistrationError == null) {
-                passkeySigner.onPasskeyRegistrationError = () => {
-                    return new Promise<void>((resolve) => {
-                        setPasskeyPromptState({
-                            type: "create-wallet-error",
-                            open: true,
-                            primaryActionOnClick: async () => {
-                                setPasskeyPromptState({ open: false });
-                                // When retrying, we don't want to show the passkey prompt again so unset the wallet creation callback
-                                passkeySigner.onPrePasskeyRegistration = undefined;
-                                await initializeWallet();
-                                resolve();
-                            },
-                        });
-                    });
-                };
-            }
+        try {
+            setWalletState({ status: "in-progress" });
+            const wallet = await smartWalletSDK.getOrCreateWallet(
+                { jwt: crossmint.jwt as string },
+                defaultChain,
+                enhanceConfigWithPasskeyPrompts(config)
+            );
+            setWalletState({ status: "loaded", wallet });
+        } catch (error: unknown) {
+            console.error("There was an error creating a wallet ", error);
+            setWalletState(deriveErrorState(error));
         }
-
-        const initializeWallet = async () => {
-            try {
-                setWalletState({ status: "in-progress" });
-                const wallet = await smartWalletSDK.getOrCreateWallet(
-                    { jwt: crossmint.jwt as string },
-                    defaultChain,
-                    config
-                );
-                setWalletState({ status: "loaded", wallet });
-            } catch (error: unknown) {
-                console.error("There was an error creating a wallet ", error);
-                setWalletState(deriveErrorState(error));
-            }
-        };
-
-        await initializeWallet();
-
         return { startedCreation: true };
     };
+
+    const enhanceConfigWithPasskeyPrompts = (config: WalletConfig) => {
+        if (enablePasskeyPrompt && config.signer && "type" in config.signer && config.signer.type === "PASSKEY") {
+            return {
+                ...config,
+                signer: {
+                    ...config.signer,
+                    onPrePasskeyRegistration: createPasskeyPrompt("create-wallet"),
+                    onPasskeyRegistrationError: createPasskeyPrompt("create-wallet-error"),
+                },
+            };
+        }
+        return config;
+    };
+
+    const createPasskeyPrompt = (type: ValidPasskeyPromptType) => () =>
+        new Promise<void>((resolve) => {
+            setPasskeyPromptState({
+                type,
+                open: true,
+                primaryActionOnClick: () => {
+                    setPasskeyPromptState({ open: false });
+                    resolve();
+                },
+            });
+        });
 
     const clearWallet = () => {
         setWalletState({ status: "not-loaded" });
