@@ -7,6 +7,7 @@ import {
     SmartWalletError,
     SmartWalletSDK,
     type WalletParams,
+    type PasskeySigner,
 } from "@crossmint/client-sdk-smart-wallet";
 
 import { PasskeyPrompt } from "../components";
@@ -95,7 +96,7 @@ export function CrossmintWalletProvider({
     };
 
     const enhanceConfigWithPasskeyPrompts = (config: WalletConfig) => {
-        if (enablePasskeyPrompt && config.signer && "type" in config.signer && config.signer.type === "PASSKEY") {
+        if (enablePasskeyPrompt && (config.signer as PasskeySigner).type === "PASSKEY") {
             return {
                 ...config,
                 signer: {
