@@ -22,6 +22,8 @@ export type PasskeySigner = {
      * that is specified in the project settings (typically `sub`) will be used.
      */
     passkeyName?: string;
+    onPrePasskeyRegistration?: () => Promise<void> | void;
+    onPasskeyRegistrationError?: (error: unknown) => Promise<void>;
 };
 
 export type ExternalSigner = EIP1193Provider | ViemAccount;
