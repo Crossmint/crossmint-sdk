@@ -14,7 +14,7 @@ export type CrossmintAuthWalletConfig = {
     defaultChain: EVMSmartWalletChain;
     createOnLogin: "all-users" | "off";
     type: "evm-smart-wallet";
-    enablePasskeyPrompt?: boolean;
+    showWalletModals?: boolean;
 };
 
 export type CrossmintAuthProviderProps = {
@@ -99,7 +99,7 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
         >
             <CrossmintWalletProvider
                 defaultChain={embeddedWallets.defaultChain}
-                enablePasskeyPrompt={embeddedWallets.enablePasskeyPrompt ?? false} // disabled by default
+                showWalletModals={embeddedWallets.showWalletModals ?? true} // enabled by default
             >
                 <WalletManager embeddedWallets={embeddedWallets} accessToken={crossmint.jwt}>
                     {children}

@@ -149,9 +149,9 @@ export class PasskeyCreationStrategy implements AccountCreationStrategy {
                     return original;
                 }
 
+                const signer = walletParams.signer as PasskeySigner;
                 return async (...args: any[]) => {
                     const isFirstTransaction = args?.[0]?.factoryData != null;
-                    const signer = walletParams.signer as PasskeySigner;
                     if (
                         isFirstTransaction &&
                         prop === "signUserOperation" &&
@@ -163,6 +163,9 @@ export class PasskeyCreationStrategy implements AccountCreationStrategy {
                     try {
                         return await original.call(target, ...args);
                     } catch (error) {
+                        if (signer.onFirstTimePasskeySigningError != null) {
+                            await signer.onFirstTimePasskeySigningError(error);
+                        }
                         throw this.mapError(error, passkeyName);
                     }
                 };

@@ -55,9 +55,11 @@ const primaryButtonStyles: React.CSSProperties = {
     fontWeight: "bold",
 };
 
-const secondaryButtonStyles: React.CSSProperties = {
+const externalLinkStyles: React.CSSProperties = {
     padding: "0.875rem",
     width: "100%",
+    textDecoration: "none",
+    textAlign: "center",
     backgroundColor: "#F0F2F4",
     color: "#00150D",
     borderRadius: "8px",
@@ -226,9 +228,14 @@ export function PasskeyPrompt({
                     </Button>
                 }
                 secondaryButton={
-                    <Button style={secondaryButtonStyles} onClick={state.secondaryActionOnClick}>
+                    <a
+                        href="https://docs.crossmint.com/wallets/smart-wallets/users/troubleshoot"
+                        rel="noopener noreferrer"
+                        target="_blank"
+                        style={externalLinkStyles}
+                    >
                         Troubleshoot
-                    </Button>
+                    </a>
                 }
             />
         );

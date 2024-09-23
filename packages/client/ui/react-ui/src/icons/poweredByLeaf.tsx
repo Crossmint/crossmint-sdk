@@ -1,14 +1,14 @@
-export const PoweredByLeaf = ({ color }: { color: string }) => {
+export const PoweredByLeaf = ({ color, size = "16" }: { color: string; size?: string }) => {
     return (
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg width={size} height={size} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <mask
                 id="mask0_794_7000"
                 className="mask-type:alpha"
                 maskUnits="userSpaceOnUse"
                 x="0"
                 y="0"
-                width="16"
-                height="16"
+                width={size}
+                height={size}
             >
                 <mask id="path-1-inside-1_794_7000" fill="white">
                     <path
