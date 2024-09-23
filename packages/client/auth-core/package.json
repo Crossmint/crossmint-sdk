@@ -10,18 +10,23 @@
         "./server": {
             "import": "./dist/server/index.js",
             "require": "./dist/server/index.cjs"
+        },
+        "./client": {
+            "import": "./dist/client/index.js",
+            "require": "./dist/client/index.cjs"
         }
     },
     "files": ["dist", "src", "LICENSE"],
     "scripts": {
-        "build": "tsup server/index.ts --clean --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
-        "dev": "tsup server/index.ts --clean --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
+        "build": "tsup server/index.ts client/index.ts --clean --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
+        "dev": "tsup server/index.ts client/index.ts --clean --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
         "test": "jest --passWithNoTests"
     },
     "dependencies": {
         "@crossmint/client-sdk-base": "workspace:*",
         "jsonwebtoken": "9.0.2",
-        "jwks-rsa": "3.1.0"
+        "jwks-rsa": "3.1.0",
+        "jwt-decode": "4.0.0"
     },
     "devDependencies": {
         "@types/jsonwebtoken": "9.0.6"
