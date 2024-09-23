@@ -13,11 +13,7 @@
     "main": "./dist/index.cjs",
     "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
-    "files": [
-        "dist",
-        "src",
-        "LICENSE"
-    ],
+    "files": ["dist", "src", "LICENSE"],
     "scripts": {
         "build": "tsup src/index.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
         "dev": "tsup src/index.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
