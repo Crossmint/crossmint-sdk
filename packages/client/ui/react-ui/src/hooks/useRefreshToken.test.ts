@@ -1,10 +1,11 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { CrossmintAuthService, getJWTExpiration } from "@crossmint/client-sdk-auth-core/client";
+import { type CrossmintAuthService, getJWTExpiration } from "@crossmint/client-sdk-auth-core/client";
+import { queueTask } from "@crossmint/client-sdk-base";
 
 import * as authCookies from "../utils/authCookies";
-import { AuthMaterial, useRefreshToken } from "./useRefreshToken";
+import { type AuthMaterial, useRefreshToken } from "./useRefreshToken";
 
 vi.mock("@crossmint/client-sdk-auth-core", () => ({
     CrossmintAuthService: vi.fn(),
@@ -14,6 +15,10 @@ vi.mock("@crossmint/client-sdk-auth-core", () => ({
 vi.mock("../utils/authCookies", () => ({
     getCookie: vi.fn(),
     REFRESH_TOKEN_PREFIX: "crossmint-refresh-token",
+}));
+
+vi.mock("@crossmint/client-sdk-base", () => ({
+    queueTask: vi.fn(),
 }));
 
 describe("useRefreshToken", () => {
@@ -40,6 +45,7 @@ describe("useRefreshToken", () => {
             useRefreshToken({
                 crossmintAuthService: mockCrossmintAuthService,
                 setAuthMaterial: mockSetAuthMaterial,
+                logout: vi.fn(),
             })
         );
 
@@ -63,12 +69,13 @@ describe("useRefreshToken", () => {
 
         vi.mocked(authCookies.getCookie).mockReturnValue(mockRefreshToken);
         vi.mocked(mockCrossmintAuthService.refreshAuthMaterial).mockResolvedValue(mockAuthMaterial);
-        vi.mocked(getJWTExpiration).mockResolvedValue(Date.now() / 1000 + 3600); // 1 hour from now
+        vi.mocked(getJWTExpiration).mockReturnValue(Date.now() / 1000 + 3600); // 1 hour from now
 
         renderHook(() =>
             useRefreshToken({
                 crossmintAuthService: mockCrossmintAuthService,
                 setAuthMaterial: mockSetAuthMaterial,
+                logout: vi.fn(),
             })
         );
 
@@ -92,13 +99,13 @@ describe("useRefreshToken", () => {
 
         vi.mocked(authCookies.getCookie).mockReturnValue(mockRefreshToken);
         vi.mocked(mockCrossmintAuthService.refreshAuthMaterial).mockResolvedValue(mockAuthMaterial);
-        vi.mocked(getJWTExpiration).mockResolvedValue(Date.now() / 1000 + 3600); // 1 hour from now
-        vi.spyOn(window, "setTimeout");
+        vi.mocked(getJWTExpiration).mockReturnValue(Date.now() / 1000 + 3600); // 1 hour from now
 
         renderHook(() =>
             useRefreshToken({
                 crossmintAuthService: mockCrossmintAuthService,
                 setAuthMaterial: mockSetAuthMaterial,
+                logout: vi.fn(),
             })
         );
 
@@ -106,8 +113,8 @@ describe("useRefreshToken", () => {
             await vi.runAllTimersAsync();
         });
 
-        expect(setTimeout).toHaveBeenCalledTimes(1);
-        expect(setTimeout).toHaveBeenLastCalledWith(expect.any(Function), 3480000); // 58 minutes (3600 - 120 seconds)
+        expect(vi.mocked(queueTask)).toHaveBeenCalledTimes(1);
+        expect(vi.mocked(queueTask)).toHaveBeenCalledWith(expect.any(Function), expect.any(Number));
     });
 
     it("should handle errors during token refresh", async () => {
@@ -121,6 +128,7 @@ describe("useRefreshToken", () => {
             useRefreshToken({
                 crossmintAuthService: mockCrossmintAuthService,
                 setAuthMaterial: mockSetAuthMaterial,
+                logout: vi.fn(),
             })
         );
 

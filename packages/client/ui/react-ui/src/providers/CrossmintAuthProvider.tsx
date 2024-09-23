@@ -53,7 +53,14 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
         setRefreshToken(authMaterial.refreshToken.secret);
     };
 
-    useRefreshToken({ crossmintAuthService, setAuthMaterial });
+    const logout = () => {
+        deleteCookie(SESSION_PREFIX);
+        deleteCookie(REFRESH_TOKEN_PREFIX);
+        setJwt(undefined);
+        setRefreshToken(undefined);
+    };
+
+    useRefreshToken({ crossmintAuthService, setAuthMaterial, logout });
 
     const login = () => {
         if (crossmint.jwt != null) {
@@ -62,13 +69,6 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
         }
 
         setModalOpen(true);
-    };
-
-    const logout = () => {
-        deleteCookie(SESSION_PREFIX);
-        deleteCookie(REFRESH_TOKEN_PREFIX);
-        setJwt(undefined);
-        setRefreshToken(undefined);
     };
 
     useEffect(() => {

@@ -6,12 +6,19 @@
     "author": "Paella Labs Inc",
     "sideEffects": false,
     "type": "module",
+    "main": "./dist/client/index.cjs",
+    "module": "./dist/client/index.js",
+    "types": "./dist/client/index.d.ts",
     "exports": {
         "./server": {
             "import": "./dist/server/index.js",
             "require": "./dist/server/index.cjs"
         },
         "./client": {
+            "import": "./dist/client/index.js",
+            "require": "./dist/client/index.cjs"
+        },
+        ".": {
             "import": "./dist/client/index.js",
             "require": "./dist/client/index.cjs"
         }
