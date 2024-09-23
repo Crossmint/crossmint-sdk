@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 
-import { CrossmintAuthService, getJWTExpiration } from "@crossmint/client-sdk-auth-core";
+import type { CrossmintAuthService } from "@crossmint/client-sdk-auth-core";
+import { getJWTExpiration } from "@crossmint/client-sdk-auth-core";
 
 import { REFRESH_TOKEN_PREFIX, getCookie } from "../utils/authCookies";
 
@@ -23,23 +24,26 @@ type UseAuthTokenRefreshProps = {
 export function useRefreshToken({ crossmintAuthService, setAuthMaterial }: UseAuthTokenRefreshProps) {
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    const refreshAuthMaterial = useCallback(() => {
+    const refreshAuthMaterial = useCallback(async () => {
         const refreshToken = getCookie(REFRESH_TOKEN_PREFIX);
         if (refreshToken != null) {
-            crossmintAuthService
-                .refreshAuthMaterial(refreshToken)
-                .then((result) => {
-                    setAuthMaterial(result);
-                    return getJWTExpiration(result.jwtToken);
-                })
-                .then((jwtExpiration) => {
-                    const currentTime = Date.now() / 1000;
-                    const timeToExpire = jwtExpiration - currentTime - TIME_BEFORE_EXPIRING_JWT_IN_SECONDS;
-                    if (timeToExpire > 0) {
-                        timeoutRef.current = setTimeout(refreshAuthMaterial, timeToExpire * 1000);
-                    }
-                })
-                .catch(console.error);
+            try {
+                const result = await crossmintAuthService.refreshAuthMaterial(refreshToken);
+                setAuthMaterial(result);
+                const jwtExpiration = getJWTExpiration(result.jwtToken);
+
+                if (jwtExpiration == null) {
+                    throw new Error("Invalid JWT");
+                }
+
+                const currentTime = Date.now() / 1000;
+                const timeToExpire = jwtExpiration - currentTime - TIME_BEFORE_EXPIRING_JWT_IN_SECONDS;
+                if (timeToExpire > 0) {
+                    timeoutRef.current = setTimeout(refreshAuthMaterial, timeToExpire * 1000);
+                }
+            } catch (error) {
+                console.error(error);
+            }
         }
     }, []);
 
