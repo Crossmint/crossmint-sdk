@@ -103,6 +103,7 @@ export function CrossmintWalletProvider({
                     ...config.signer,
                     onPrePasskeyRegistration: createPasskeyPrompt("create-wallet"),
                     onPasskeyRegistrationError: createPasskeyPrompt("create-wallet-error"),
+                    onFirstTimePasskeySigning: createPasskeyPrompt("transaction"),
                 },
             };
         }

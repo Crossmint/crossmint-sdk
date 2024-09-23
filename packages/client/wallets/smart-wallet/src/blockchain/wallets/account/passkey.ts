@@ -11,7 +11,7 @@ import {
     PasskeyRegistrationError,
 } from "../../../error";
 import type { AccountAndSigner, PasskeyCreationContext } from "../../../types/internal";
-import type { UserParams } from "../../../types/params";
+import type { PasskeySigner, UserParams, WalletParams } from "../../../types/params";
 import type { PasskeySignerData, PasskeyValidatorSerializedData } from "../../../types/service";
 import { PasskeySignerConfig } from "./signer";
 import type { AccountCreationStrategy } from "./strategy";
@@ -68,7 +68,7 @@ export class PasskeyCreationStrategy implements AccountCreationStrategy {
 
             return {
                 signerConfig: this.getSignerConfig(validator, validatorContractVersion, inputPasskeyName),
-                account: this.decorate(kernelAccount, inputPasskeyName),
+                account: this.decorate(kernelAccount, inputPasskeyName, walletParams),
             };
         } catch (error) {
             if (walletParams.signer.onPasskeyRegistrationError != null) {
@@ -137,7 +137,11 @@ export class PasskeyCreationStrategy implements AccountCreationStrategy {
         return error;
     }
 
-    private decorate<Account extends KernelSmartAccount<EntryPoint>>(account: Account, passkeyName: string): Account {
+    private decorate<Account extends KernelSmartAccount<EntryPoint>>(
+        account: Account,
+        passkeyName: string,
+        walletParams: WalletParams
+    ): Account {
         return new Proxy(account, {
             get: (target, prop, receiver) => {
                 const original = Reflect.get(target, prop, receiver);
@@ -146,6 +150,16 @@ export class PasskeyCreationStrategy implements AccountCreationStrategy {
                 }
 
                 return async (...args: any[]) => {
+                    const isFirstTransaction = args?.[0]?.factoryData != null;
+                    const signer = walletParams.signer as PasskeySigner;
+                    if (
+                        isFirstTransaction &&
+                        prop === "signUserOperation" &&
+                        signer.type === "PASSKEY" &&
+                        signer.onFirstTimePasskeySigning != null
+                    ) {
+                        await signer.onFirstTimePasskeySigning();
+                    }
                     try {
                         return await original.call(target, ...args);
                     } catch (error) {

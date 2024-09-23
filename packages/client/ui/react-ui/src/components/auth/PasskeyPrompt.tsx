@@ -5,6 +5,7 @@ import { Fragment, type ReactNode } from "react";
 import FingerprintIcon from "../../icons/fingerprint";
 import PasskeyIcon from "../../icons/passkey";
 import PasskeyPromptLogo from "../../icons/passkeyPromptLogo";
+import { PoweredByCrossmint } from "../common/PoweredByCrossmint";
 
 const dialogStyles: React.CSSProperties = {
     display: "flex",
@@ -103,6 +104,9 @@ function PasskeyPromptCore({
                     <div style={{ display: "flex", justifyContent: "center", flexDirection: "column", gap: "1rem" }}>
                         {primaryButton}
                         {secondaryButton}
+                    </div>
+                    <div className="flex justify-center pt-4">
+                        <PoweredByCrossmint />
                     </div>
                 </div>
             </div>
