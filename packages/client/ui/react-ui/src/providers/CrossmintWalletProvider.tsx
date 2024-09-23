@@ -12,6 +12,7 @@ import {
 
 import { PasskeyPrompt } from "../components";
 import { useCrossmint } from "../hooks";
+import type { UIConfig } from "@crossmint/common-sdk-base";
 
 type WalletStatus = "not-loaded" | "in-progress" | "loaded" | "loading-error";
 
@@ -57,10 +58,12 @@ export function CrossmintWalletProvider({
     children,
     defaultChain,
     showWalletModals = true,
+    appearance,
 }: {
     children: ReactNode;
     defaultChain: EVMSmartWalletChain;
     showWalletModals?: boolean;
+    appearance?: UIConfig;
 }) {
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
     const smartWalletSDK = useMemo(() => SmartWalletSDK.init({ clientApiKey: crossmint.apiKey }), [crossmint.apiKey]);
@@ -134,7 +137,9 @@ export function CrossmintWalletProvider({
     return (
         <WalletContext.Provider value={{ ...walletState, getOrCreateWallet, clearWallet }}>
             {children}
-            {passkeyPromptState.open ? createPortal(<PasskeyPrompt state={passkeyPromptState} />, document.body) : null}
+            {passkeyPromptState.open
+                ? createPortal(<PasskeyPrompt state={passkeyPromptState} appearance={appearance} />, document.body)
+                : null}
         </WalletContext.Provider>
     );
 }
