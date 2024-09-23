@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { CrossmintAuthService, getJWTExpiration } from "@crossmint/client-sdk-auth-core";
+import { CrossmintAuthService, getJWTExpiration } from "@crossmint/client-sdk-auth-core/client";
 
 import * as authCookies from "../utils/authCookies";
 import { AuthMaterial, useRefreshToken } from "./useRefreshToken";

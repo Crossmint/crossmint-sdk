@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { beforeEach, describe, expect, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 
-import { CrossmintAuthService } from "@crossmint/client-sdk-auth-core";
+import { CrossmintAuthService } from "@crossmint/client-sdk-auth-core/client";
 import { type EVMSmartWallet, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
 import { createCrossmint } from "@crossmint/common-sdk-base";
 
