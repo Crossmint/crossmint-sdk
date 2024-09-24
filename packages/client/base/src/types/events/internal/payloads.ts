@@ -1,7 +1,7 @@
-import { UpdatableEmbeddedCheckoutParams } from "@/types/embed";
-import { EmptyObject } from "@/types/system";
+import type { UpdatableEmbeddedCheckoutParams } from "@/types/embed";
+import type { EmptyObject } from "@/types/system";
 
-import { Blockchain } from "@crossmint/common-sdk-base";
+import type { Blockchain } from "@crossmint/common-sdk-base";
 
 import { CrossmintInternalEvents } from "./events";
 

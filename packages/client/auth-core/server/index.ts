@@ -1,1 +1,1 @@
-export { verifyCrossmintSessionToken } from "../src/utils";
+export * from "./utils";

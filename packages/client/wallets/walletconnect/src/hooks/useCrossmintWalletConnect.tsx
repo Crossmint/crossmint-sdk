@@ -1,8 +1,12 @@
-import { CrossmintWalletConnectDictionary, CrossmintWalletConnectLocale, getDictionary } from "@/i18n/dictionary";
-import { CrossmintWalletConnectRequiredUIConfig } from "@/types/UIConfig";
-import { ReactNode, createContext, useContext } from "react";
+import {
+    type CrossmintWalletConnectDictionary,
+    type CrossmintWalletConnectLocale,
+    getDictionary,
+} from "@/i18n/dictionary";
+import type { CrossmintWalletConnectRequiredUIConfig } from "@/types/UIConfig";
+import { type ReactNode, createContext, useContext } from "react";
 
-import { CrossmintWalletConnectProps } from "../components/CrossmintWalletConnect";
+import type { CrossmintWalletConnectProps } from "../components/CrossmintWalletConnect";
 import { PairWithURIProvider } from "./usePairWithURI";
 import { WalletConnectProviderProvider } from "./useWalletConnectProvider";
 import { WalletConnectRequestsContextProvider } from "./useWalletConnectRequests";

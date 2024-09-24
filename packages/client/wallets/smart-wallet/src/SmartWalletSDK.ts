@@ -1,15 +1,9 @@
 import { stringify } from "viem";
 
-import { APIKeyEnvironmentPrefix, validateAPIKey } from "@crossmint/common-sdk-base";
+import { type APIKeyEnvironmentPrefix, validateAPIKey } from "@crossmint/common-sdk-base";
 
 import { CrossmintWalletService } from "./api/CrossmintWalletService";
-import {
-    SMART_WALLET_MAINNETS,
-    SMART_WALLET_TESTNETS,
-    type SmartWalletChain,
-    isMainnetChain,
-    isTestnetChain,
-} from "./blockchain/chains";
+import { type SmartWalletChain, isMainnetChain, isTestnetChain } from "./blockchain/chains";
 import type { EVMSmartWallet } from "./blockchain/wallets";
 import { AccountConfigCache } from "./blockchain/wallets/account/cache";
 import { AccountConfigService } from "./blockchain/wallets/account/config";
@@ -80,7 +74,7 @@ export class SmartWalletSDK {
         }
         this.assertValidChain(chain);
 
-        return this.logger.logPerformance("GET_OR_CREATE_WALLET", async () => {
+        return await this.logger.logPerformance("GET_OR_CREATE_WALLET", async () => {
             try {
                 return await this.smartWalletService.getOrCreate(user, chain, walletParams);
             } catch (error: any) {

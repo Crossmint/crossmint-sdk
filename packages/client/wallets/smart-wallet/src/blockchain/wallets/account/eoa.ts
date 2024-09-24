@@ -6,7 +6,7 @@ import type { AccountAndSigner, EOACreationContext } from "../../../types/intern
 import { equalsIgnoreCase } from "../../../utils/helpers";
 import { createOwnerSigner } from "../../../utils/signer";
 import { EOASignerConfig } from "./signer";
-import { AccountCreationStrategy } from "./strategy";
+import type { AccountCreationStrategy } from "./strategy";
 
 export class EOACreationStrategy implements AccountCreationStrategy {
     public async create({

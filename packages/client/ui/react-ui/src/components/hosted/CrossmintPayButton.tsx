@@ -1,9 +1,9 @@
-import { CSSProperties, MouseEvent, useMemo } from "react";
+import { type CSSProperties, type MouseEvent, useMemo } from "react";
 import { useState } from "react";
 
 import {
-    CheckoutProps,
-    CrossmintPayButtonProps,
+    type CheckoutProps,
+    type CrossmintPayButtonProps,
     clientNames,
     crossmintModalService,
     crossmintPayButtonService,

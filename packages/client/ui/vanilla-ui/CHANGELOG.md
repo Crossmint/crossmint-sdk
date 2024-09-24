@@ -1,94 +1,109 @@
 # @crossmint/client-sdk-vanilla-ui
 
+## 1.1.18
+
+### Patch Changes
+
+- Updated dependencies [584cd20]
+  - @crossmint/common-sdk-base@0.2.0
+  - @crossmint/client-sdk-base@1.2.8
+
+## 1.1.17
+
+### Patch Changes
+
+- Updated dependencies [08177a6]
+  - @crossmint/client-sdk-base@1.2.7
+
 ## 1.1.16
 
 ### Patch Changes
 
--   30f42da: @crossmint/client-sdk-auth-core:
+- 30f42da: @crossmint/client-sdk-auth-core:
 
-    -   Removed CrossmintAuthProvider and all React-related functionality
+  - Removed CrossmintAuthProvider and all React-related functionality
 
-    @crossmint/client-sdk-react-ui:
+  @crossmint/client-sdk-react-ui:
 
-    -   Added CrossmintAuthProvider
+  - Added CrossmintAuthProvider
 
-    @crossmint/common-sdk-base:
+  @crossmint/common-sdk-base:
 
-    -   Added helper function for API key validation
-    -   Added helper function for getting base URL
+  - Added helper function for API key validation
+  - Added helper function for getting base URL
 
-    @crossmint/client-sdk-base:
+  @crossmint/client-sdk-base:
 
-    -   Removed helper function for API key validation
-    -   Removed helper function for getting base URL
+  - Removed helper function for API key validation
+  - Removed helper function for getting base URL
 
--   456daec: ## @crossmint/common-sdk-base
+- 456daec: ## @crossmint/common-sdk-base
 
-    -   added helper fn for api key validation and getting base url
+  - added helper fn for api key validation and getting base url
 
-    ## @crossmint/client-sdk-base
+  ## @crossmint/client-sdk-base
 
-    -   removed helper fn for api key validation and getting base url
+  - removed helper fn for api key validation and getting base url
 
-    ## @crossmint/client-sdk-vanilla-ui
+  ## @crossmint/client-sdk-vanilla-ui
 
-    -   bumped LIB_VERSION from 1.1.13 to 1.1.15
+  - bumped LIB_VERSION from 1.1.13 to 1.1.15
 
--   Updated dependencies [30f42da]
--   Updated dependencies [456daec]
-    -   @crossmint/client-sdk-base@1.2.6
-    -   @crossmint/common-sdk-base@0.1.4
+- Updated dependencies [30f42da]
+- Updated dependencies [456daec]
+  - @crossmint/client-sdk-base@1.2.6
+  - @crossmint/common-sdk-base@0.1.4
 
 ## 1.1.15
 
 ### Patch Changes
 
--   Updated dependencies [3865983]
-    -   @crossmint/common-sdk-base@0.1.3
-    -   @crossmint/client-sdk-base@1.2.5
+- Updated dependencies [3865983]
+  - @crossmint/common-sdk-base@0.1.3
+  - @crossmint/client-sdk-base@1.2.5
 
 ## 1.1.14
 
 ### Patch Changes
 
--   Updated dependencies [f8f0c66]
-    -   @crossmint/client-sdk-base@1.2.4
+- Updated dependencies [f8f0c66]
+  - @crossmint/client-sdk-base@1.2.4
 
 ## 1.1.13
 
 ### Patch Changes
 
--   Updated dependencies [8f56ddf]
-    -   @crossmint/common-sdk-base@0.1.2
-    -   @crossmint/client-sdk-base@1.2.3
+- Updated dependencies [8f56ddf]
+  - @crossmint/common-sdk-base@0.1.2
+  - @crossmint/client-sdk-base@1.2.3
 
 ## 1.1.12
 
 ### Patch Changes
 
--   Updated dependencies [12b5eac]
-    -   @crossmint/client-sdk-base@1.2.2
-    -   @crossmint/common-sdk-base@0.1.1
+- Updated dependencies [12b5eac]
+  - @crossmint/client-sdk-base@1.2.2
+  - @crossmint/common-sdk-base@0.1.1
 
 ## 1.1.11
 
 ### Patch Changes
 
--   Updated dependencies [a9b57fa]
-    -   @crossmint/common-sdk-base@0.1.0
-    -   @crossmint/client-sdk-base@1.2.1
+- Updated dependencies [a9b57fa]
+  - @crossmint/common-sdk-base@0.1.0
+  - @crossmint/client-sdk-base@1.2.1
 
 ## 1.1.10
 
 ### Patch Changes
 
--   Updated dependencies [c5f8027]
-    -   @crossmint/client-sdk-base@1.2.0
+- Updated dependencies [c5f8027]
+  - @crossmint/client-sdk-base@1.2.0
 
 ## 1.1.9
 
 ### Patch Changes
 
--   655f990: bump
--   Updated dependencies [655f990]
-    -   @crossmint/client-sdk-base@1.1.14
+- 655f990: bump
+- Updated dependencies [655f990]
+  - @crossmint/client-sdk-base@1.1.14

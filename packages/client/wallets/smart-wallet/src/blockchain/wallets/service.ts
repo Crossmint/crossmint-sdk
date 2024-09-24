@@ -1,8 +1,8 @@
-import { KernelSmartAccount } from "@zerodev/sdk";
+import type { KernelSmartAccount } from "@zerodev/sdk";
 import { ENTRYPOINT_ADDRESS_V06, ENTRYPOINT_ADDRESS_V07, createSmartAccountClient } from "permissionless";
 import { createPimlicoBundlerClient } from "permissionless/clients/pimlico";
-import { EntryPoint } from "permissionless/types/entrypoint";
-import { HttpTransport, createPublicClient, http } from "viem";
+import type { EntryPoint } from "permissionless/types/entrypoint";
+import { type HttpTransport, createPublicClient, http } from "viem";
 
 import { blockchainToChainId } from "@crossmint/common-sdk-base";
 
@@ -71,10 +71,9 @@ export class SmartWalletService {
         }
 
         return new EVMSmartWallet(
-            this.crossmintService,
-            this.smartAccountClient(chain, account, user),
-            publicClient,
-            chain
+            { wallet: this.smartAccountClient(chain, account, user), public: publicClient },
+            chain,
+            this.crossmintService
         );
     }
 

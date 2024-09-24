@@ -1,15 +1,20 @@
 import { Dialog, Transition } from "@headlessui/react";
-import { CSSProperties, Fragment, useEffect, useRef, useState } from "react";
+import { type CSSProperties, Fragment, useEffect, useRef, useState } from "react";
 import { z } from "zod";
 
 import { IFrameWindow } from "@crossmint/client-sdk-window";
-import { UIConfig } from "@crossmint/common-sdk-base";
+import type { UIConfig } from "@crossmint/common-sdk-base";
 
 import X from "../../icons/x";
+import { classNames } from "../../utils/classNames";
 
 const incomingModalIframeEvents = {
-    jwtToken: z.object({
+    authMaterialFromAuthFrame: z.object({
         jwtToken: z.string(),
+        refreshToken: z.object({
+            secret: z.string(),
+            expiresAt: z.string(),
+        }),
     }),
 };
 
@@ -20,7 +25,7 @@ const outgoingModalIframeEvents = {
 };
 
 type IncomingModalIframeEventsType = {
-    jwtToken: typeof incomingModalIframeEvents.jwtToken;
+    authMaterialFromAuthFrame: typeof incomingModalIframeEvents.authMaterialFromAuthFrame;
 };
 
 type OutgoingModalIframeEventsType = {
@@ -29,13 +34,13 @@ type OutgoingModalIframeEventsType = {
 
 type AuthModalProps = {
     setModalOpen: (open: boolean) => void;
-    setJwtToken: (jwtToken: string) => void;
+    setAuthMaterial: (authMaterial: { jwtToken: string; refreshToken: { secret: string; expiresAt: string } }) => void;
     apiKey: string;
     baseUrl: string;
     appearance?: UIConfig;
 };
 
-export default function AuthModal({ setModalOpen, setJwtToken, apiKey, baseUrl, appearance }: AuthModalProps) {
+export default function AuthModal({ setModalOpen, setAuthMaterial, apiKey, baseUrl, appearance }: AuthModalProps) {
     let iframeSrc = `${baseUrl}sdk/auth/frame?apiKey=${apiKey}`;
     if (appearance != null) {
         // The appearance object is serialized into a query parameter
@@ -53,9 +58,9 @@ export default function AuthModal({ setModalOpen, setJwtToken, apiKey, baseUrl, 
             return;
         }
 
-        iframe.on("jwtToken", (data) => {
-            setJwtToken(data.jwtToken);
-            iframe.off("jwtToken");
+        iframe.on("authMaterialFromAuthFrame", (data) => {
+            setAuthMaterial(data);
+            iframe.off("authMaterialFromAuthFrame");
 
             iframe.send("closeWindow", {
                 closeWindow: "closeWindow",
@@ -69,14 +74,14 @@ export default function AuthModal({ setModalOpen, setJwtToken, apiKey, baseUrl, 
 
         return () => {
             if (iframe) {
-                iframe.off("jwtToken");
+                iframe.off("authMaterialFromAuthFrame");
 
                 if (iframe.iframe.contentWindow != null) {
                     iframe.iframe.contentWindow.close();
                 }
             }
         };
-    }, [iframe, setJwtToken, setModalOpen]);
+    }, [iframe, setAuthMaterial, setModalOpen]);
 
     const handleIframeLoaded = async () => {
         if (iframeRef.current == null) {
@@ -126,7 +131,7 @@ export default function AuthModal({ setModalOpen, setJwtToken, apiKey, baseUrl, 
                                     right: "1.5rem",
                                     top: "1.5rem",
                                     cursor: "pointer",
-                                    color: appearance?.colors?.border,
+                                    color: appearance?.colors?.border ?? "#909ca3",
                                     outlineOffset: "4px",
                                     borderRadius: "100%",
                                 }}
@@ -140,15 +145,14 @@ export default function AuthModal({ setModalOpen, setJwtToken, apiKey, baseUrl, 
                             src={iframeSrc}
                             onLoad={handleIframeLoaded}
                             title="Authentication Modal"
-                            style={{
-                                width: "100%",
-                                height: "500px",
-                                border: `1px solid ${appearance?.colors?.border ?? "#D0D5DD"}`,
-                                borderRadius: appearance?.borderRadius ?? "16px",
-                                padding: "48px 0 32px",
-                                backgroundColor: appearance?.colors?.background ?? "#FFFFFF",
-                                animation: "fadeIn 3s ease-in-out",
-                            }}
+                            className={classNames(
+                                "w-full h-[500px] border pt-12 pb-8",
+                                appearance?.colors?.border
+                                    ? `border-[${appearance.colors.border}]`
+                                    : "border-[#D0D5DD]",
+                                appearance?.borderRadius ? `rounded-[${appearance.borderRadius}]` : "rounded-2xl",
+                                appearance?.colors?.background ? `bg-[${appearance.colors.background}]` : "bg-white"
+                            )}
                         />
                     </div>
                 </Transition.Child>

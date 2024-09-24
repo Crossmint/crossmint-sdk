@@ -1,7 +1,7 @@
-import { CrossmintWalletConnectWallet } from "@/types/wallet";
+import type { CrossmintWalletConnectWallet } from "@/types/wallet";
 import { walletToSupportedNamespaces } from "@/utils/wallet/walletToSupportedNamespaces";
-import { BuildApprovedNamespacesParams } from "@walletconnect/utils";
-import { Web3WalletTypes } from "@walletconnect/web3wallet";
+import type { BuildApprovedNamespacesParams } from "@walletconnect/utils";
+import type { Web3WalletTypes } from "@walletconnect/web3wallet";
 import { createContext, useContext } from "react";
 
 import { decodeSendTransactionRequest } from "../utils/sendTransaction/decodeSendTransactionRequest";

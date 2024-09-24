@@ -1,14 +1,15 @@
-import { SmartAccountClient } from "permissionless";
-import { SmartAccount } from "permissionless/accounts";
-import { EntryPoint } from "permissionless/types";
+import type { SmartAccountClient } from "permissionless";
+import type { SmartAccount } from "permissionless/accounts";
+import type { EntryPoint } from "permissionless/types";
 import {
+    type Address,
     BaseError,
-    Chain,
+    type Chain,
     ContractFunctionRevertedError,
-    PublicClient,
-    SimulateContractReturnType,
-    TransactionReceipt,
-    Transport,
+    type PublicClient,
+    type SimulateContractReturnType,
+    type TransactionReceipt,
+    type Transport,
     zeroAddress,
 } from "viem";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -27,9 +28,13 @@ function makeMockError<E extends Error, F extends object>(error: E, fields?: F):
 }
 
 describe("SendTransactionService", () => {
+    const walletAddress: Address = "0xE898BBd704CCE799e9593a9ADe2c1cA0351Ab660";
+    const mockSmartAccount = mock<SmartAccount<EntryPoint>>({ address: walletAddress });
     const mockPublicClient = mock<PublicClient>();
-    const mockAccountClient = mock<SmartAccountClient<EntryPoint, Transport, Chain, SmartAccount<EntryPoint>>>();
-    const sendTransactionService = new SendTransactionService(mockPublicClient);
+    const mockAccountClient = mock<SmartAccountClient<EntryPoint, Transport, Chain, SmartAccount<EntryPoint>>>({
+        account: mockSmartAccount,
+    });
+    const sendTransactionService = new SendTransactionService({ public: mockPublicClient, wallet: mockAccountClient });
 
     beforeEach(() => {
         vi.resetAllMocks();
@@ -49,15 +54,12 @@ describe("SendTransactionService", () => {
         mockPublicClient.simulateContract.mockRejectedValue(mockError);
         let rejected = false;
         try {
-            await sendTransactionService.sendTransaction(
-                {
-                    address: zeroAddress,
-                    abi: [],
-                    functionName: "mockFunction",
-                    args: [],
-                },
-                mockAccountClient
-            );
+            await sendTransactionService.sendTransaction({
+                address: zeroAddress,
+                abi: [],
+                functionName: "mockFunction",
+                args: [],
+            });
         } catch (e) {
             rejected = true;
             expect(e).toBeInstanceOf(EVMSendTransactionExecutionRevertedError);
@@ -74,15 +76,12 @@ describe("SendTransactionService", () => {
         mockPublicClient.waitForTransactionReceipt.mockResolvedValueOnce(mockReceipt);
         let rejected = false;
         try {
-            await sendTransactionService.sendTransaction(
-                {
-                    address: zeroAddress,
-                    abi: [],
-                    functionName: "mockFunction",
-                    args: [],
-                },
-                mockAccountClient
-            );
+            await sendTransactionService.sendTransaction({
+                address: zeroAddress,
+                abi: [],
+                functionName: "mockFunction",
+                args: [],
+            });
         } catch (e) {
             rejected = true;
             expect(e).toBeInstanceOf(EVMSendTransactionExecutionRevertedError);
@@ -96,15 +95,12 @@ describe("SendTransactionService", () => {
         mockPublicClient.waitForTransactionReceipt.mockRejectedValue(mockError);
         let rejected = false;
         try {
-            await sendTransactionService.sendTransaction(
-                {
-                    address: zeroAddress,
-                    abi: [],
-                    functionName: "mockFunction",
-                    args: [],
-                },
-                mockAccountClient
-            );
+            await sendTransactionService.sendTransaction({
+                address: zeroAddress,
+                abi: [],
+                functionName: "mockFunction",
+                args: [],
+            });
         } catch (e) {
             rejected = true;
             expect(e).toBeInstanceOf(EVMSendTransactionError);
@@ -118,15 +114,12 @@ describe("SendTransactionService", () => {
         mockAccountClient.writeContract.mockRejectedValue(mockError);
         let rejected = false;
         try {
-            await sendTransactionService.sendTransaction(
-                {
-                    address: zeroAddress,
-                    abi: [],
-                    functionName: "mockFunction",
-                    args: [],
-                },
-                mockAccountClient
-            );
+            await sendTransactionService.sendTransaction({
+                address: zeroAddress,
+                abi: [],
+                functionName: "mockFunction",
+                args: [],
+            });
         } catch (e) {
             rejected = true;
             expect(e).toBeInstanceOf(EVMSendTransactionError);
@@ -148,16 +141,19 @@ describe("SendTransactionService", () => {
             return "0xmockTxHash";
         });
         await expect(
-            sendTransactionService.sendTransaction(
-                {
-                    address: zeroAddress,
-                    abi: [],
-                    functionName: "mockFunction",
-                    args: [],
-                },
-                mockAccountClient
-            )
+            sendTransactionService.sendTransaction({
+                address: zeroAddress,
+                abi: [],
+                functionName: "mockFunction",
+                args: [],
+            })
         ).resolves.toBeDefined();
         expect(callOrder).toEqual(["simulateContract", "sendTransaction"]);
+
+        expect(mockPublicClient.simulateContract).toHaveBeenCalledWith(
+            expect.objectContaining({
+                account: walletAddress,
+            })
+        );
     });
 });

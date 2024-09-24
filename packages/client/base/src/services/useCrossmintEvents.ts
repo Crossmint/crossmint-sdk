@@ -1,6 +1,6 @@
 import { backOff } from "exponential-backoff";
 
-import { CrossmintEvent, CrossmintEvents } from "..";
+import { type CrossmintEvent, CrossmintEvents } from "..";
 import { getEnvironmentBaseUrl } from "../utils";
 
 export function useCrossmintEvents({ environment }: { environment?: string } = {}) {

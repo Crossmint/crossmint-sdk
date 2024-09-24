@@ -1,5 +1,5 @@
-import { IncomingInternalEvents, OutgoingInternalEvents } from "./events";
-import { CrossmintInternalEventMap } from "./payloads";
+import type { IncomingInternalEvents, OutgoingInternalEvents } from "./events";
+import type { CrossmintInternalEventMap } from "./payloads";
 
 export * from "./events";
 export * from "./payloads";

@@ -1,1 +1,3 @@
-export const LIB_VERSION = "1.1.15";
+import { version } from "../../package.json";
+
+export const LIB_VERSION = version;

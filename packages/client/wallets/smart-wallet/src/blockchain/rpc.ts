@@ -1,6 +1,6 @@
 import { blockchainToChainId } from "@crossmint/common-sdk-base";
 
-import { SmartWalletChain } from "./chains";
+import type { SmartWalletChain } from "./chains";
 
 const ALCHEMY_API_KEY = "-7M6vRDBDknwvMxnqah_jbcieWg0qad9";
 const PIMLICO_API_KEY = "pim_9dKmQPxiTCvtbUNF7XFBbA";

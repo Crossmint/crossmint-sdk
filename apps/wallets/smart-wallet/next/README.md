@@ -46,7 +46,13 @@
         <li><a href="#adding-the-provider">Adding the Provider</a></li>
         <li><a href="#hooks">Hooks</a></li>
       </ul>
-      </li>
+    </li>
+    <li>
+      <a href="#process-for-updating-and-deploying-the-nextjs-demo">Process for Updating and Deploying the Next.js Demo</a>
+      <ul>
+        <li><a href="#guide">Guide</a></li>
+      </ul>
+    </li>
   </ol>
 </details>
 
@@ -112,45 +118,64 @@ Spin up your own instance of the Smart Wallets Demo in under 5 minutes! Below, y
 
 ### Adding the Provider
 
-First, wrap your application with the `CrossmintAuthProvider` to provide authentication context to your components. This is typically done in the root of your app.
+First, wrap your application with the `CrossmintProvider` and `CrossmintAuthProvider` to provide authentication context to your components. This is typically done in the root of your app.
 
 ```tsx
 "use client";
 
 // Important: this ensures the client SDK only runs on the client
-import { CrossmintAuthProvider } from "@crossmint/client-sdk-react-ui";
+
+import { CrossmintProvider, CrossmintAuthProvider } from "@crossmint/client-sdk-react-ui";
 
 export default function App({ Component, pageProps }) {
     return (
-        <CrossmintAuthProvider
-            apiKey="YOUR_CROSSMINT_API_KEY"
-            embeddedWallets={{
-                createOnLogin: "all-users",
-                defaultChain: "polygon-amoy",
-                type: "evm-smart-wallet",
-            }}
-        >
-            <Component {...pageProps} />
-        </CrossmintAuthProvider>
+        <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_AUTH_SMART_WALLET_API_KEY ?? ""}>
+            <CrossmintAuthProvider
+                embeddedWallets={{
+                    createOnLogin: "all-users",
+                    defaultChain: "polygon-amoy",
+                    type: "evm-smart-wallet",
+                }}
+            >
+                <Component {...pageProps} />
+            </CrossmintAuthProvider>
+        </CrossmintProvider>
     );
 }
 ```
 
 ### Hooks
 
-Next, add the `useAuth` and `useWallet` hooks in your component to access authentication and wallet functionality.
+Next, add the `useAuth` hooks in your component to access authentication functionality.
 
 ```tsx
-import { useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
+import { useAuth } from "@crossmint/client-sdk-react-ui";
 
 export default function Home() {
     const { login, logout, jwt } = useAuth();
-    const { wallet } = useWallet();
 
-    return <div>{jwt ? <button onClick={logout}>Log out</button> : <button onClick={login}>Log in</button>}</div>;
+    return <div>{jwt != null ? <button onClick={logout}>Log out</button> : <button onClick={login}>Log in</button>}</div>;
 }
 ```
 
 _For additional information, please refer to the [Quickstart Documentation](https://docs.crossmint.com/wallets/smart-wallets/quickstart)._
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- ## Process for Updating and Deploying the Next.js Demo -->
+
+## Process for Updating and Deploying the Next.js Demo
+
+When we release a new version of `@crossmint/client-sdk-react-ui`, we need to update the package in the demo app and deploy it. Here's the process for doing that:
+
+### Instructions
+
+1. Ensure your local `main` branch is up-to-date
+2. Checkout a branch from `main` ie. `git checkout -b smart-wallet-demo-sdk-v1.2.3`
+3. Update the version of `@crossmint/client-sdk-react-ui` to the latest on npm. (Package link: [npmjs.com/package/@crossmint/client-sdk-react-ui](https://www.npmjs.com/package/@crossmint/client-sdk-react-ui))
+4. Commit the changes and push branch ie. `smart-wallet-demo-sdk-v1.2.3`
+5. Open a PR from `smart-wallet-demo-sdk-v1.2.3` against `smart-wallet-auth-demo-prod`
+6. After merging branch into `smart-wallet-auth-demo-prod`, Vercel will then deploy the changes to production
+7. Demo will be live on [https://www.smarterwallet.dev/](https://www.smarterwallet.dev/)!
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

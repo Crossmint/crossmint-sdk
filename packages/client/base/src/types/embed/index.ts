@@ -1,6 +1,6 @@
-import { UIConfig } from "@crossmint/common-sdk-base";
+import type { UIConfig } from "@crossmint/common-sdk-base";
 
-import {
+import type {
     CaseInsensitive,
     CollectionOrClientId,
     CrossmintEvent,
@@ -10,8 +10,8 @@ import {
     PaymentMethod,
     Recipient,
 } from "..";
-import { CryptoEmbeddedCheckoutProps } from "./crypto";
-import { FiatEmbeddedCheckoutProps } from "./fiat";
+import type { CryptoEmbeddedCheckoutProps } from "./crypto";
+import type { FiatEmbeddedCheckoutProps } from "./fiat";
 
 export * from "./crypto";
 export * from "./fiat";

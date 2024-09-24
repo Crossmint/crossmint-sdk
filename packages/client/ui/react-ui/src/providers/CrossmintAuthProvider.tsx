@@ -1,14 +1,14 @@
+import { REFRESH_TOKEN_PREFIX, SESSION_PREFIX, deleteCookie, getCookie, setCookie } from "@/utils/authCookies";
 import { type ReactNode, createContext, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
+import { CrossmintAuthService } from "@crossmint/client-sdk-auth-core/client";
 import type { EVMSmartWalletChain } from "@crossmint/client-sdk-smart-wallet";
 import { type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
 
 import AuthModal from "../components/auth/AuthModal";
-import { useCrossmint, useWallet } from "../hooks";
+import { type AuthMaterial, useCrossmint, useRefreshToken, useWallet } from "../hooks";
 import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
-
-const SESSION_PREFIX = "crossmint-session";
 
 export type CrossmintAuthWalletConfig = {
     defaultChain: EVMSmartWalletChain;
@@ -28,6 +28,7 @@ type AuthContextType = {
     login: () => void;
     logout: () => void;
     jwt?: string;
+    refreshToken?: string;
     status: AuthStatus;
 };
 
@@ -38,16 +39,28 @@ export const AuthContext = createContext<AuthContextType>({
 });
 
 export function CrossmintAuthProvider({ embeddedWallets, children, appearance }: CrossmintAuthProviderProps) {
-    const { crossmint, setJwt } = useCrossmint("CrossmintAuthProvider must be used within CrossmintProvider");
+    const { crossmint, setJwt, setRefreshToken } = useCrossmint(
+        "CrossmintAuthProvider must be used within CrossmintProvider"
+    );
+    const crossmintAuthService = new CrossmintAuthService(crossmint.apiKey);
     const crossmintBaseUrl = validateApiKeyAndGetCrossmintBaseUrl(crossmint.apiKey);
     const [modalOpen, setModalOpen] = useState(false);
 
-    useEffect(() => {
-        const session = sessionFromClient();
-        if (session != null) {
-            setJwt(session);
-        }
-    }, []);
+    const setAuthMaterial = (authMaterial: AuthMaterial) => {
+        setCookie(SESSION_PREFIX, authMaterial.jwtToken);
+        setCookie(REFRESH_TOKEN_PREFIX, authMaterial.refreshToken.secret, authMaterial.refreshToken.expiresAt);
+        setJwt(authMaterial.jwtToken);
+        setRefreshToken(authMaterial.refreshToken.secret);
+    };
+
+    const logout = () => {
+        deleteCookie(SESSION_PREFIX);
+        deleteCookie(REFRESH_TOKEN_PREFIX);
+        setJwt(undefined);
+        setRefreshToken(undefined);
+    };
+
+    useRefreshToken({ crossmintAuthService, setAuthMaterial, logout });
 
     const login = () => {
         if (crossmint.jwt != null) {
@@ -58,10 +71,12 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
         setModalOpen(true);
     };
 
-    const logout = () => {
-        document.cookie = `${SESSION_PREFIX}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-        setJwt(undefined);
-    };
+    useEffect(() => {
+        if (crossmint.jwt == null) {
+            const jwt = getCookie(SESSION_PREFIX);
+            setJwt(jwt);
+        }
+    }, []);
 
     useEffect(() => {
         if (crossmint.jwt == null) {
@@ -69,12 +84,6 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
         }
 
         setModalOpen(false);
-    }, [crossmint.jwt]);
-
-    useEffect(() => {
-        if (crossmint.jwt) {
-            document.cookie = `${SESSION_PREFIX}=${crossmint.jwt}; path=/;SameSite=Lax;`;
-        }
     }, [crossmint.jwt]);
 
     const getAuthStatus = (): AuthStatus => {
@@ -93,6 +102,7 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
                 login,
                 logout,
                 jwt: crossmint.jwt,
+                refreshToken: crossmint.refreshToken,
                 status: getAuthStatus(),
             }}
         >
@@ -105,7 +115,7 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
                           <AuthModal
                               baseUrl={crossmintBaseUrl}
                               setModalOpen={setModalOpen}
-                              setJwtToken={setJwt}
+                              setAuthMaterial={setAuthMaterial}
                               apiKey={crossmint.apiKey}
                               appearance={appearance}
                           />,
@@ -143,9 +153,4 @@ function WalletManager({
     }, [accessToken, status]);
 
     return <>{children}</>;
-}
-
-function sessionFromClient(): string | undefined {
-    const crossmintSession = document.cookie.split("; ").find((row) => row.startsWith(SESSION_PREFIX));
-    return crossmintSession ? crossmintSession.split("=")[1] : undefined;
 }

@@ -1,5 +1,5 @@
-import { Blockchain } from ".";
-import { EVMBlockchainIncludingTestnet } from "./evm";
+import type { Blockchain } from ".";
+import type { EVMBlockchainIncludingTestnet } from "./evm";
 
 export interface EVMNFT {
     chain: EVMBlockchainIncludingTestnet;

@@ -1,6 +1,6 @@
 import { createContext, useEffect, useState } from "react";
 
-import { EVMSmartWallet } from "@crossmint/client-sdk-smart-wallet";
+import type { EVMSmartWallet } from "@crossmint/client-sdk-smart-wallet";
 
 type AppContextData = {
     value: EVMSmartWallet | undefined;

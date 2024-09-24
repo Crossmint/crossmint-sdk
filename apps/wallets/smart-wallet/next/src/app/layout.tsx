@@ -1,4 +1,4 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import { Inter, Raleway } from "next/font/google";
 
 import { cn } from "../lib/utils";

@@ -1,10 +1,10 @@
 import { CHAIN_NAMESPACES } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
-import { TORUS_NETWORK_TYPE, Web3Auth } from "@web3auth/single-factor-auth";
+import { type TORUS_NETWORK_TYPE, Web3Auth } from "@web3auth/single-factor-auth";
 import type { EIP1193Provider } from "viem";
 
 import {
-    EVMBlockchainIncludingTestnet as Blockchain,
+    type EVMBlockchainIncludingTestnet as Blockchain,
     blockchainToChainId,
     blockchainToDisplayName,
 } from "@crossmint/common-sdk-base";

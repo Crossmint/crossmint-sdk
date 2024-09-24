@@ -1,16 +1,16 @@
 import bs58 from "bs58";
 
 import {
-    CryptoEmbeddedCheckoutPropsWithSigner,
-    ETHEmbeddedCheckoutSigner,
-    IncomingInternalEvent,
+    type CryptoEmbeddedCheckoutPropsWithSigner,
+    type ETHEmbeddedCheckoutSigner,
+    type IncomingInternalEvent,
     IncomingInternalEvents,
     OutgoingInternalEvents,
-    SOLEmbeddedCheckoutSigner,
+    type SOLEmbeddedCheckoutSigner,
     crossmintIFrameService,
     embeddedCheckoutPropsToUpdatableParamsPayload,
 } from "@crossmint/client-sdk-base";
-import { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
+import type { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 import useDeepEffect from "../../../hooks/useDeepEffect";
 import CrossmintEmbeddedCheckoutIFrame from "../EmbeddedCheckoutIFrame";

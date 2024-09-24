@@ -1,6 +1,6 @@
 import { BaseError, stringify } from "viem";
 
-import { SDKLogger } from "@crossmint/client-sdk-base";
+import type { SDKLogger } from "@crossmint/client-sdk-base";
 
 import { SmartWalletError } from ".";
 import { SDK_VERSION } from "../utils/constants";

@@ -2,7 +2,7 @@ import { ErrorModal } from "@/components/common/layouts/modal/ErrorModal";
 import { useCrossmintWalletConnect } from "@/hooks/useCrossmintWalletConnect";
 import { useWalletConnectSessions } from "@/hooks/useWalletConnectSessions";
 import { prettifyWalletConnectChain } from "@/utils/walletconnect/prettifyWalletConnectChain";
-import { Web3WalletTypes } from "@walletconnect/web3wallet";
+import type { Web3WalletTypes } from "@walletconnect/web3wallet";
 import { useState } from "react";
 
 export default function UnsupportedChainsRequestedModal({

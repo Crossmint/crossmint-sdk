@@ -1,4 +1,4 @@
-import { SmartWalletConfig } from "../types/service";
+import type { SmartWalletConfig } from "../types/service";
 
 export const mockConfig: SmartWalletConfig = {
     kernelVersion: "0.3.1",

@@ -1,4 +1,4 @@
-import { EncryptedVerifiableCredential, VerifiableCredential } from "../types/verifiableCredential";
+import type { EncryptedVerifiableCredential, VerifiableCredential } from "../types/verifiableCredential";
 import { isEncryptedVerifiableCredential, isVcChain, parseLocator } from "./utils";
 
 describe("utils", () => {

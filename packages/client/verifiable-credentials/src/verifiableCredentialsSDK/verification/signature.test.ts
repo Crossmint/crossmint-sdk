@@ -1,5 +1,5 @@
 import { mockCredential } from "../types/mockCredential";
-import { VerifiableCredential } from "../types/verifiableCredential";
+import type { VerifiableCredential } from "../types/verifiableCredential";
 import { VerifiableCredentialSignatureService } from "./signature";
 
 describe("VerifiableCredentialSignatureService", () => {

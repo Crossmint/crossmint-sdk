@@ -18,7 +18,6 @@ export const Fireworks = ({ className }: { className?: string }) => {
     return (
         <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
             <div className="flex place-content-center pt-28">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/fireworks.gif" alt="fireworks" className={cn("max-w-full md:max-w-[600px]", className)} />
             </div>
         </div>
