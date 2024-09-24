@@ -16,7 +16,8 @@
     "files": ["dist", "src", "LICENSE"],
     "scripts": {
         "build": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
-        "dev": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --dts --sourcemap --watch"
+        "dev": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
+        "test": "vitest run"
     },
     "dependencies": {
         "@crossmint/common-sdk-base": "workspace:*",

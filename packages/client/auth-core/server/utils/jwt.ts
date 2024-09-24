@@ -12,7 +12,7 @@ export async function verifyCrossmintSessionToken(apiKey: string, token: string)
     }
 }
 
-async function verifyJWT(signingKey: string, token: string) {
+function verifyJWT(signingKey: string, token: string) {
     try {
         const verifiedToken = verify(token, signingKey);
 
