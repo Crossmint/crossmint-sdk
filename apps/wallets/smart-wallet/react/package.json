@@ -10,23 +10,8 @@
         "test:e2e-ui": "pnpm exec playwright test --ui"
     },
     "browserslist": {
-<<<<<<< HEAD
-        "production": [
-            "chrome >= 67",
-            "edge >= 79",
-            "firefox >= 68",
-            "opera >= 54",
-            "safari >= 14"
-        ],
-        "development": [
-            "last 1 chrome version",
-            "last 1 firefox version",
-            "last 1 safari version"
-        ]
-=======
         "production": ["chrome >= 67", "edge >= 79", "firefox >= 68", "opera >= 54", "safari >= 14"],
         "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
->>>>>>> 75c14123fa69 (SDK: Use Biome (#767))
     },
     "dependencies": {
         "@crossmint/client-sdk-smart-wallet": "workspace:*",
