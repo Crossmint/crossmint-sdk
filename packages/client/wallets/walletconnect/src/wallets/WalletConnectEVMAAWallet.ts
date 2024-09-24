@@ -1,5 +1,5 @@
-import { CrossmintWalletConnectEVMWallet } from "@/types/wallet";
-import { TransactionRequest } from "@ethersproject/abstract-provider";
+import type { CrossmintWalletConnectEVMWallet } from "@/types/wallet";
+import type { TransactionRequest } from "@ethersproject/abstract-provider";
 
 import type { EVMAAWallet } from "@crossmint/client-sdk-aa";
 

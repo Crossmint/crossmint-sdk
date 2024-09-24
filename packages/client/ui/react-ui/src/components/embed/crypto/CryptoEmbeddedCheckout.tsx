@@ -1,4 +1,4 @@
-import { CryptoEmbeddedCheckoutProps, isCryptoEmbeddedCheckoutPropsWithSigner } from "@crossmint/client-sdk-base";
+import { type CryptoEmbeddedCheckoutProps, isCryptoEmbeddedCheckoutPropsWithSigner } from "@crossmint/client-sdk-base";
 
 import CryptoEmbeddedCheckoutIFrame from "./CryptoEmbeddedCheckoutIFrame";
 

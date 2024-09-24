@@ -1,10 +1,10 @@
 "use client";
 
-import { HTMLAttributeAnchorTarget, MouseEvent, ReactNode } from "react";
-import { ButtonProps } from "react-html-props";
+import type { HTMLAttributeAnchorTarget, MouseEvent, ReactNode } from "react";
+import type { ButtonProps } from "react-html-props";
 
 import { isEmpty } from "../../utils/stringUtils";
-import { CrossmintElementProps, classNames } from "../../utils/uiUtils";
+import { type CrossmintElementProps, classNames } from "../../utils/uiUtils";
 
 export type ButtonType = "primary" | "secondary" | "tertiary" | "text" | "danger" | "custom";
 

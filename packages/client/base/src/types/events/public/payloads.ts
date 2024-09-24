@@ -1,6 +1,6 @@
-import { FiatPrice } from "@/types";
+import type { FiatPrice } from "@/types";
 
-import { EmptyObject } from "../../system";
+import type { EmptyObject } from "../../system";
 import { CrossmintEvents } from "./events";
 
 export interface CrossmintEventMap {

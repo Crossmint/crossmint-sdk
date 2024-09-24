@@ -1,4 +1,4 @@
-import { InitialQuotePayload } from "@crossmint/client-sdk-base";
+import type { InitialQuotePayload } from "@crossmint/client-sdk-base";
 
 export default function QuoteSummary({ initialQuotePayload }: { initialQuotePayload: InitialQuotePayload }) {
     return (

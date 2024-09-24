@@ -1,5 +1,5 @@
 import { SessionRequestMethods } from "@/types/walletconnect/RequestMethods";
-import { Web3WalletTypes } from "@walletconnect/web3wallet";
+import type { Web3WalletTypes } from "@walletconnect/web3wallet";
 
 export function decodeSendTransactionRequest(request: Web3WalletTypes.SessionRequest): {
     uiTransaction: string;

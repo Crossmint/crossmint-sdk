@@ -1,4 +1,4 @@
-import { ObjectValues, objectValues } from "@/types";
+import { type ObjectValues, objectValues } from "@/types";
 
 export const EVMBlockchain = {
     ETHEREUM: "ethereum",

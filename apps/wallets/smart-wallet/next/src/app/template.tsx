@@ -2,7 +2,7 @@
 
 import { Header } from "@/components/header";
 import { Toaster } from "@/components/toaster";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { Providers } from "./_lib/providers";
 

@@ -1,4 +1,4 @@
-import { ObjectValues, objectValues } from "../..";
+import { type ObjectValues, objectValues } from "../..";
 import { EVMBlockchain, EVMBlockchainTestnet } from "./evm";
 
 export const Blockchain = {

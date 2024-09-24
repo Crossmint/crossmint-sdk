@@ -1,7 +1,7 @@
 import {
-    CredentialFilter,
-    CredentialsCollection,
-    VCChain,
+    type CredentialFilter,
+    type CredentialsCollection,
+    type VCChain,
     getCredentialNfts as getCredentialNftsRaw,
 } from "@/verifiableCredentialsSDK";
 

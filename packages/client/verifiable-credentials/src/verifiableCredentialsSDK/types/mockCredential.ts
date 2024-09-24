@@ -1,4 +1,4 @@
-import { VerifiableCredential } from "./verifiableCredential";
+import type { VerifiableCredential } from "./verifiableCredential";
 
 export const mockCredential: VerifiableCredential = {
     id: "urn:uuid:84a101bf-ded2-442d-b766-4e599d35fe89",

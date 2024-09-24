@@ -1,7 +1,7 @@
-import { CrossmintWalletConnectWallet } from "@/types/wallet";
-import { SendEthersTransaction } from "@/types/wallet/features";
-import { JsonRpcResult, formatJsonRpcResult } from "@walletconnect/jsonrpc-utils";
-import { Web3WalletTypes } from "@walletconnect/web3wallet";
+import type { CrossmintWalletConnectWallet } from "@/types/wallet";
+import type { SendEthersTransaction } from "@/types/wallet/features";
+import { type JsonRpcResult, formatJsonRpcResult } from "@walletconnect/jsonrpc-utils";
+import type { Web3WalletTypes } from "@walletconnect/web3wallet";
 
 import { decodeSendTransactionRequest } from "./decodeSendTransactionRequest";
 

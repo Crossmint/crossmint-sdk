@@ -1,7 +1,7 @@
-import { NftWithMetadata, isVcChain } from "@/verifiableCredentialsSDK";
+import { type NftWithMetadata, isVcChain } from "@/verifiableCredentialsSDK";
 
 import { crossmintAPI } from "../crossmintAPI";
-import { CrossmintWalletNft } from "../types/nfts";
+import type { CrossmintWalletNft } from "../types/nfts";
 
 async function* fetchPaginatedData(url: string): AsyncGenerator<any> {
     let page = 1;

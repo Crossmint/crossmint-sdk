@@ -14,13 +14,16 @@ import type { AccountAndSigner, PasskeyCreationContext } from "../../../types/in
 import type { UserParams } from "../../../types/params";
 import type { PasskeySignerData, PasskeyValidatorSerializedData } from "../../../types/service";
 import { PasskeySignerConfig } from "./signer";
-import { AccountCreationStrategy } from "./strategy";
+import type { AccountCreationStrategy } from "./strategy";
 
 type PasskeyValidator = KernelValidator<EntryPoint, "WebAuthnValidator"> & {
     getSerializedData: () => string;
 };
 export class PasskeyCreationStrategy implements AccountCreationStrategy {
-    constructor(private readonly passkeyServerUrl: string, private readonly apiKey: string) {}
+    constructor(
+        private readonly passkeyServerUrl: string,
+        private readonly apiKey: string
+    ) {}
 
     public async create({
         user,

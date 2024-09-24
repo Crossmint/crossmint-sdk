@@ -2,7 +2,7 @@ import * as ethersContracts from "@ethersproject/contracts";
 
 import { configManager } from "../configs";
 import { IPFSService } from "../services/ipfs";
-import { CredentialsCollection } from "../types";
+import type { CredentialsCollection } from "../types";
 import { ContractMetadataService } from "./contractMetadata";
 
 jest.mock("../services/ipfs");
@@ -21,7 +21,7 @@ describe("getMetadata", () => {
                 () =>
                     ({
                         contractURI: jest.fn().mockResolvedValue("ipfs://uri"),
-                    } as any)
+                    }) as any
             );
 
             configManager.init({ ipfsGateways: ["gateway1", "gateway2"] });

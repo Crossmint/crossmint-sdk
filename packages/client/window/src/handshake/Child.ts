@@ -1,14 +1,14 @@
-import { z } from "zod";
+import type { z } from "zod";
 
 import {
     DEFAULT_HANDSHAKE_OPTIONS,
-    EventEmitterWithHandshakeOptions,
+    type EventEmitterWithHandshakeOptions,
     HANDSHAKE_EVENTS,
-    HandshakeChildEvents,
-    HandshakeOptions,
-    HandshakeParentEvents,
+    type HandshakeChildEvents,
+    type HandshakeOptions,
+    type HandshakeParentEvents,
 } from ".";
-import { EventEmitter, EventMap, OnActionArgs, OnActionOptions } from "../EventEmitter";
+import { EventEmitter, type EventMap, type OnActionArgs, type OnActionOptions } from "../EventEmitter";
 
 export class HandshakeChild<IncomingEvents extends EventMap, OutgoingEvents extends EventMap> extends EventEmitter<
     IncomingEvents,

@@ -1,5 +1,5 @@
 import { crossmintAPI } from "../crossmintAPI";
-import { CrossmintWalletNft } from "../types/nfts";
+import type { CrossmintWalletNft } from "../types/nfts";
 import { filterVCCompErc721, getWalletNfts } from "./getNfts";
 
 global.fetch = jest.fn(() =>

@@ -1,6 +1,6 @@
 import { privateKeyToAccount } from "viem/accounts";
 
-import { Chain, SmartWalletSDK, ViemAccount } from "@crossmint/client-sdk-smart-wallet";
+import { Chain, SmartWalletSDK, type ViemAccount } from "@crossmint/client-sdk-smart-wallet";
 
 import { checkAuthState, signInWithGoogle } from "../../auth/FirebaseAuthManager";
 

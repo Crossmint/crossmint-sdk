@@ -1,6 +1,6 @@
-import { SmartWalletSDK, WalletParams } from "@crossmint/client-sdk-smart-wallet";
+import { SmartWalletSDK, type WalletParams } from "@crossmint/client-sdk-smart-wallet";
 import { Chain } from "@crossmint/client-sdk-smart-wallet";
-import { TORUS_NETWORK_TYPE, getWeb3AuthSigner } from "@crossmint/client-sdk-smart-wallet-web3auth-adapter";
+import { type TORUS_NETWORK_TYPE, getWeb3AuthSigner } from "@crossmint/client-sdk-smart-wallet-web3auth-adapter";
 
 import { checkAuthState, signInWithGoogle } from "../../auth/FirebaseAuthManager";
 
