@@ -24,6 +24,8 @@ export type PasskeySigner = {
     passkeyName?: string;
     onPrePasskeyRegistration?: () => Promise<void> | void;
     onPasskeyRegistrationError?: (error: unknown) => Promise<void>;
+    onFirstTimePasskeySigning?: () => Promise<void> | void;
+    onFirstTimePasskeySigningError?: (error: unknown) => Promise<void>;
 };
 
 export type ExternalSigner = EIP1193Provider | ViemAccount;

@@ -56,11 +56,11 @@ export type WalletConfig = WalletParams & { type: "evm-smart-wallet" };
 export function CrossmintWalletProvider({
     children,
     defaultChain,
-    enablePasskeyPrompt = false,
+    showWalletModals = true,
 }: {
     children: ReactNode;
     defaultChain: EVMSmartWalletChain;
-    enablePasskeyPrompt?: boolean;
+    showWalletModals?: boolean;
 }) {
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
     const smartWalletSDK = useMemo(() => SmartWalletSDK.init({ clientApiKey: crossmint.apiKey }), [crossmint.apiKey]);
@@ -96,13 +96,15 @@ export function CrossmintWalletProvider({
     };
 
     const enhanceConfigWithPasskeyPrompts = (config: WalletConfig) => {
-        if (enablePasskeyPrompt && (config.signer as PasskeySigner).type === "PASSKEY") {
+        if (showWalletModals && (config.signer as PasskeySigner).type === "PASSKEY") {
             return {
                 ...config,
                 signer: {
                     ...config.signer,
                     onPrePasskeyRegistration: createPasskeyPrompt("create-wallet"),
                     onPasskeyRegistrationError: createPasskeyPrompt("create-wallet-error"),
+                    onFirstTimePasskeySigning: createPasskeyPrompt("transaction"),
+                    onFirstTimePasskeySigningError: createPasskeyPrompt("transaction-error"),
                 },
             };
         }
@@ -115,6 +117,10 @@ export function CrossmintWalletProvider({
                 type,
                 open: true,
                 primaryActionOnClick: () => {
+                    setPasskeyPromptState({ open: false });
+                    resolve();
+                },
+                secondaryActionOnClick: () => {
                     setPasskeyPromptState({ open: false });
                     resolve();
                 },

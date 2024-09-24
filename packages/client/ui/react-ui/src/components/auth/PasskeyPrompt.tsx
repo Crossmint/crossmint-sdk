@@ -5,6 +5,7 @@ import { Fragment, type ReactNode } from "react";
 import FingerprintIcon from "../../icons/fingerprint";
 import PasskeyIcon from "../../icons/passkey";
 import PasskeyPromptLogo from "../../icons/passkeyPromptLogo";
+import { PoweredByCrossmint } from "../common/PoweredByCrossmint";
 
 const dialogStyles: React.CSSProperties = {
     display: "flex",
@@ -54,9 +55,11 @@ const primaryButtonStyles: React.CSSProperties = {
     fontWeight: "bold",
 };
 
-const secondaryButtonStyles: React.CSSProperties = {
+const externalLinkStyles: React.CSSProperties = {
     padding: "0.875rem",
     width: "100%",
+    textDecoration: "none",
+    textAlign: "center",
     backgroundColor: "#F0F2F4",
     color: "#00150D",
     borderRadius: "8px",
@@ -67,12 +70,12 @@ function PasskeyPromptCore({
     title,
     content,
     primaryButton,
-    secondaryButton,
+    secondaryAction,
 }: {
     title: string;
     content: ReactNode;
     primaryButton: ReactNode;
-    secondaryButton?: ReactNode;
+    secondaryAction?: ReactNode;
 }) {
     return (
         <Dialog open onClose={() => {}} style={dialogStyles}>
@@ -102,7 +105,10 @@ function PasskeyPromptCore({
 
                     <div style={{ display: "flex", justifyContent: "center", flexDirection: "column", gap: "1rem" }}>
                         {primaryButton}
-                        {secondaryButton}
+                        {secondaryAction}
+                    </div>
+                    <div className="flex justify-center pt-4">
+                        <PoweredByCrossmint />
                     </div>
                 </div>
             </div>
@@ -213,7 +219,6 @@ export function PasskeyPrompt({
                             We couldn't access your wallet. This could be due to rejecting the request, a timeout, or
                             not having access to your passkey on this device.
                         </div>
-                        <div>You last used your wallet on a [Device Name] with [Browser Name] on [Date/Time].</div>
                     </div>
                 }
                 primaryButton={
@@ -221,10 +226,15 @@ export function PasskeyPrompt({
                         Try again
                     </Button>
                 }
-                secondaryButton={
-                    <Button style={secondaryButtonStyles} onClick={state.secondaryActionOnClick}>
+                secondaryAction={
+                    <a
+                        href="https://docs.crossmint.com/wallets/smart-wallets/users/troubleshoot"
+                        rel="noopener noreferrer"
+                        target="_blank"
+                        style={externalLinkStyles}
+                    >
                         Troubleshoot
-                    </Button>
+                    </a>
                 }
             />
         );
