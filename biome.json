@@ -16,6 +16,10 @@
             "playwright-report",
             "pnpm-lock.yaml",
             ".github",
+<<<<<<< HEAD
+=======
+            ".husky",
+>>>>>>> 75c14123fa69 (SDK: Use Biome (#767))
             "**/dist/**",
             "**/build/**"
         ]
