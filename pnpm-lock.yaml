@@ -168,8 +168,8 @@ importers:
   apps/wallets/smart-wallet/next:
     dependencies:
       '@crossmint/client-sdk-react-ui':
-        specifier: workspace:*
-        version: link:../../../../packages/client/ui/react-ui
+        specifier: 1.3.15
+        version: 1.3.15(bufferutil@4.0.7)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(ts-node@10.9.2(@types/node@20.14.11)(typescript@5.5.3))(typescript@5.5.3)(utf-8-validate@5.0.10)
       '@radix-ui/react-avatar':
         specifier: 1.1.0
         version: 1.1.0(@types/react-dom@18.3.0)(@types/react@18.3.3)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -1774,11 +1774,32 @@ packages:
   '@crossmint/client-sdk-aa@1.0.0-alpha.1':
     resolution: {integrity: sha512-iz3T2eG29xwi1WTY1NYMAQsRo82JPR/HGFTuXL1YGu+7sVh8PAOeK48eV2EsXfCsyJNOjYcOXsYHhHmwZbD1yw==}
 
+  '@crossmint/client-sdk-auth-core@1.1.6':
+    resolution: {integrity: sha512-tL8jFyQxjpeAFwF1sdLJl3r4dUEFUgEFw3E+PlVqqzP89BxIe7ArMezRAq2Rhn4NuOM17HBPO31HxPp3byl4Tg==}
+
+  '@crossmint/client-sdk-base@1.2.6':
+    resolution: {integrity: sha512-bR+qrQtJ1pDcHyvi9DwUeK7JJ2ZrwCoT1otDGNPbjZeCZInvtZT9iZab8suMBhzQ+h7kQYRqEDZZgw6U9YmETA==}
+
+  '@crossmint/client-sdk-react-ui@1.3.15':
+    resolution: {integrity: sha512-1PBYewdQNMjE/0SroZevew5529Q974ifVoqNCRLISBsvCdX0dBjBBNaqxqnoEaIWJEYYPAoWQkEUEvqa3/VhOA==}
+    peerDependencies:
+      react: '>=17.0.2'
+      react-dom: '>=17.0.2'
+
+  '@crossmint/client-sdk-smart-wallet@0.1.13':
+    resolution: {integrity: sha512-PYtIa88ulo0YRvB32+605EvVAL4Y2ZfyM0/zqxsgAPJTXBDDunZgSfZ06wlx+AhyPiqAXXiGY0auabS2zQfo6Q==}
+
+  '@crossmint/client-sdk-window@0.0.10':
+    resolution: {integrity: sha512-kKmYISKbWH2ECsD20DBFouyDb6d3matnuV330W4PR95S8vJ2tw0CIpeClwvWDOAJgZkx4lNVaaVKXs0fZn2t1g==}
+
   '@crossmint/common-sdk-base@0.0.12':
     resolution: {integrity: sha512-KFbUX/HwdtLjh2UHN06Rzu1kla7AExulZinIv43k2U/5JkwI3WB4b0BGV7YZ5DGGPsXTkZs1XVLmsQT7fE3KkA==}
 
   '@crossmint/common-sdk-base@0.0.13':
     resolution: {integrity: sha512-FeMVHpgHDoEIpq2UW+5RsU5/VikkBtCjWy/lKBrItqsou58rlEk0eSW/g9n+edi1v8xtzVHX36K+Se9jGD4Y9A==}
+
+  '@crossmint/common-sdk-base@0.1.4':
+    resolution: {integrity: sha512-BwIPfplJ3EmQUEGBFVB7pXdCzltpG5T8T/hR4l2H0CWgfaVm92AJpJN33hh6NhEePThC1jcVbPTPP1iOaxrMkQ==}
 
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -16395,12 +16416,83 @@ snapshots:
       - utf-8-validate
       - zod
 
+  '@crossmint/client-sdk-auth-core@1.1.6':
+    dependencies:
+      '@crossmint/client-sdk-base': 1.2.6
+      jsonwebtoken: 9.0.2
+      jwks-rsa: 3.1.0
+    transitivePeerDependencies:
+      - '@datadog/browser-rum'
+      - supports-color
+
+  '@crossmint/client-sdk-base@1.2.6':
+    dependencies:
+      '@crossmint/common-sdk-base': 0.1.4
+      '@datadog/browser-logs': 4.42.2
+      exponential-backoff: 3.1.1
+      uuid: 9.0.1
+    transitivePeerDependencies:
+      - '@datadog/browser-rum'
+
+  '@crossmint/client-sdk-react-ui@1.3.15(bufferutil@4.0.7)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(ts-node@10.9.2(@types/node@20.14.11)(typescript@5.5.3))(typescript@5.5.3)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@crossmint/client-sdk-auth-core': 1.1.6
+      '@crossmint/client-sdk-base': 1.2.6
+      '@crossmint/client-sdk-smart-wallet': 0.1.13(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)
+      '@crossmint/client-sdk-window': 0.0.10
+      '@crossmint/common-sdk-base': 0.1.4
+      '@ethersproject/transactions': 5.7.0
+      '@headlessui/react': 2.1.5(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      '@solana/web3.js': 1.95.1(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
+      bs58: 5.0.0
+      lodash.isequal: 4.5.0
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+      react-jss: 10.10.0(react@18.2.0)
+      tailwindcss: 3.4.10(ts-node@10.9.2(@types/node@20.14.11)(typescript@5.5.3))
+      zod: 3.22.4
+    transitivePeerDependencies:
+      - '@datadog/browser-rum'
+      - bufferutil
+      - encoding
+      - supports-color
+      - ts-node
+      - typescript
+      - utf-8-validate
+
+  '@crossmint/client-sdk-smart-wallet@0.1.13(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@crossmint/client-sdk-base': 1.2.6
+      '@crossmint/common-sdk-base': 0.1.4
+      '@zerodev/ecdsa-validator': 5.3.1(@zerodev/sdk@5.3.3(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
+      '@zerodev/passkey-validator': 5.4.0(@zerodev/sdk@5.3.3(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(@zerodev/webauthn-key@5.3.1(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
+      '@zerodev/sdk': 5.3.3(permissionless@0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
+      '@zerodev/webauthn-key': 5.3.1(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
+      permissionless: 0.1.36(viem@2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
+      viem: 2.17.5(bufferutil@4.0.7)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+      zod: 3.22.4
+    transitivePeerDependencies:
+      - '@datadog/browser-rum'
+      - bufferutil
+      - typescript
+      - utf-8-validate
+
+  '@crossmint/client-sdk-window@0.0.10':
+    dependencies:
+      nanoid: 5.0.4
+      zod: 3.22.4
+
   '@crossmint/common-sdk-base@0.0.12':
     dependencies:
       bs58: 5.0.0
       tweetnacl: 1.0.3
 
   '@crossmint/common-sdk-base@0.0.13':
+    dependencies:
+      bs58: 5.0.0
+      tweetnacl: 1.0.3
+
+  '@crossmint/common-sdk-base@0.1.4':
     dependencies:
       bs58: 5.0.0
       tweetnacl: 1.0.3
@@ -17875,6 +17967,14 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
+  '@floating-ui/react@0.26.23(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
+    dependencies:
+      '@floating-ui/react-dom': 2.1.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      '@floating-ui/utils': 0.2.7
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+      tabbable: 6.2.0
+
   '@floating-ui/react@0.26.23(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@floating-ui/react-dom': 2.1.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -17918,6 +18018,15 @@ snapshots:
       client-only: 0.0.1
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
+
+  '@headlessui/react@2.1.5(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
+    dependencies:
+      '@floating-ui/react': 0.26.23(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      '@react-aria/focus': 3.18.2(react@18.2.0)
+      '@react-aria/interactions': 3.22.2(react@18.2.0)
+      '@tanstack/react-virtual': 3.10.7(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
 
   '@headlessui/react@2.1.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
@@ -21068,6 +21177,15 @@ snapshots:
     dependencies:
       '@randlabs/communication-bridge': 1.0.1
 
+  '@react-aria/focus@3.18.2(react@18.2.0)':
+    dependencies:
+      '@react-aria/interactions': 3.22.2(react@18.2.0)
+      '@react-aria/utils': 3.25.2(react@18.2.0)
+      '@react-types/shared': 3.24.1(react@18.2.0)
+      '@swc/helpers': 0.5.11
+      clsx: 2.1.1
+      react: 18.2.0
+
   '@react-aria/focus@3.18.2(react@18.3.1)':
     dependencies:
       '@react-aria/interactions': 3.22.2(react@18.3.1)
@@ -21077,6 +21195,14 @@ snapshots:
       clsx: 2.1.1
       react: 18.3.1
 
+  '@react-aria/interactions@3.22.2(react@18.2.0)':
+    dependencies:
+      '@react-aria/ssr': 3.9.5(react@18.2.0)
+      '@react-aria/utils': 3.25.2(react@18.2.0)
+      '@react-types/shared': 3.24.1(react@18.2.0)
+      '@swc/helpers': 0.5.11
+      react: 18.2.0
+
   '@react-aria/interactions@3.22.2(react@18.3.1)':
     dependencies:
       '@react-aria/ssr': 3.9.5(react@18.3.1)
@@ -21085,10 +21211,24 @@ snapshots:
       '@swc/helpers': 0.5.11
       react: 18.3.1
 
+  '@react-aria/ssr@3.9.5(react@18.2.0)':
+    dependencies:
+      '@swc/helpers': 0.5.11
+      react: 18.2.0
+
   '@react-aria/ssr@3.9.5(react@18.3.1)':
     dependencies:
       '@swc/helpers': 0.5.11
       react: 18.3.1
+
+  '@react-aria/utils@3.25.2(react@18.2.0)':
+    dependencies:
+      '@react-aria/ssr': 3.9.5(react@18.2.0)
+      '@react-stately/utils': 3.10.3(react@18.2.0)
+      '@react-types/shared': 3.24.1(react@18.2.0)
+      '@swc/helpers': 0.5.11
+      clsx: 2.1.1
+      react: 18.2.0
 
   '@react-aria/utils@3.25.2(react@18.3.1)':
     dependencies:
@@ -21099,10 +21239,19 @@ snapshots:
       clsx: 2.1.1
       react: 18.3.1
 
+  '@react-stately/utils@3.10.3(react@18.2.0)':
+    dependencies:
+      '@swc/helpers': 0.5.11
+      react: 18.2.0
+
   '@react-stately/utils@3.10.3(react@18.3.1)':
     dependencies:
       '@swc/helpers': 0.5.11
       react: 18.3.1
+
+  '@react-types/shared@3.24.1(react@18.2.0)':
+    dependencies:
+      react: 18.2.0
 
   '@react-types/shared@3.24.1(react@18.3.1)':
     dependencies:
@@ -21648,6 +21797,12 @@ snapshots:
       '@tanstack/virtual-core': 3.0.0
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
+
+  '@tanstack/react-virtual@3.10.7(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
+    dependencies:
+      '@tanstack/virtual-core': 3.10.7
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
 
   '@tanstack/react-virtual@3.10.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
@@ -32481,6 +32636,21 @@ snapshots:
 
   react-is@18.3.1: {}
 
+  react-jss@10.10.0(react@18.2.0):
+    dependencies:
+      '@babel/runtime': 7.24.7
+      '@emotion/is-prop-valid': 0.7.3
+      css-jss: 10.10.0
+      hoist-non-react-statics: 3.3.2
+      is-in-browser: 1.1.3
+      jss: 10.10.0
+      jss-preset-default: 10.10.0
+      prop-types: 15.8.1
+      react: 18.2.0
+      shallow-equal: 1.2.1
+      theming: 3.3.0(react@18.2.0)
+      tiny-warning: 1.0.3
+
   react-jss@10.10.0(react@18.3.1):
     dependencies:
       '@babel/runtime': 7.24.7
@@ -34005,6 +34175,33 @@ snapshots:
     transitivePeerDependencies:
       - ts-node
 
+  tailwindcss@3.4.10(ts-node@10.9.2(@types/node@20.14.11)(typescript@5.5.3)):
+    dependencies:
+      '@alloc/quick-lru': 5.2.0
+      arg: 5.0.2
+      chokidar: 3.5.3
+      didyoumean: 1.2.2
+      dlv: 1.1.3
+      fast-glob: 3.3.1
+      glob-parent: 6.0.2
+      is-glob: 4.0.3
+      jiti: 1.21.0
+      lilconfig: 2.1.0
+      micromatch: 4.0.7
+      normalize-path: 3.0.0
+      object-hash: 3.0.0
+      picocolors: 1.0.1
+      postcss: 8.4.35
+      postcss-import: 15.1.0(postcss@8.4.35)
+      postcss-js: 4.0.1(postcss@8.4.35)
+      postcss-load-config: 4.0.1(postcss@8.4.35)(ts-node@10.9.2(@types/node@20.14.11)(typescript@5.5.3))
+      postcss-nested: 6.0.1(postcss@8.4.35)
+      postcss-selector-parser: 6.0.13
+      resolve: 1.22.4
+      sucrase: 3.34.0
+    transitivePeerDependencies:
+      - ts-node
+
   tap-out@2.1.0:
     dependencies:
       re-emitter: 1.1.3
@@ -34133,6 +34330,14 @@ snapshots:
   text-extensions@1.9.0: {}
 
   text-table@0.2.0: {}
+
+  theming@3.3.0(react@18.2.0):
+    dependencies:
+      hoist-non-react-statics: 3.3.2
+      prop-types: 15.8.1
+      react: 18.2.0
+      react-display-name: 0.2.5
+      tiny-warning: 1.0.3
 
   theming@3.3.0(react@18.3.1):
     dependencies:
