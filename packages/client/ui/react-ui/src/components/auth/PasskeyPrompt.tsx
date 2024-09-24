@@ -1,84 +1,44 @@
 import { Button, Dialog, Transition } from "@headlessui/react";
 import type React from "react";
 import { Fragment, type ReactNode } from "react";
+import type { UIConfig } from "@crossmint/common-sdk-base";
 
 import FingerprintIcon from "../../icons/fingerprint";
 import PasskeyIcon from "../../icons/passkey";
 import PasskeyPromptLogo from "../../icons/passkeyPromptLogo";
 import { PoweredByCrossmint } from "../common/PoweredByCrossmint";
+import { classNames } from "@/utils/classNames";
 
-const dialogStyles: React.CSSProperties = {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    overflowY: "auto",
-    position: "fixed",
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    zIndex: 20,
-};
-
-const overlayStyles: React.CSSProperties = {
-    background: "rgba(139, 151, 151, 0.2)",
-    backdropFilter: "blur(2px)",
-    position: "fixed",
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    transitionProperty: "opacity",
-    transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
-    transitionDuration: "300ms",
-    zIndex: -10,
-};
-
-const dialogContentStyles: React.CSSProperties = {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    backgroundColor: "white",
-    width: "100%",
-    maxWidth: "28rem",
-    borderRadius: "16px",
-    boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
-    zIndex: 30,
-};
-
-const primaryButtonStyles: React.CSSProperties = {
+const primaryButtonStyles = (props: { appearance?: UIConfig }): React.CSSProperties => ({
     padding: "0.875rem",
     width: "100%",
-    backgroundColor: "#04AA6D",
-    color: "white",
-    borderRadius: "8px",
+    backgroundColor: props.appearance?.colors?.buttonBackground ?? "#04AA6D",
+    color: props.appearance?.colors?.textPrimary ?? "white",
+    borderRadius: props.appearance?.borderRadius ?? "8px",
+    borderColor: props.appearance?.colors?.border ?? "#04AA6D",
+    borderWidth: "1px",
     fontWeight: "bold",
-};
-
-const externalLinkStyles: React.CSSProperties = {
-    padding: "0.875rem",
-    width: "100%",
-    textDecoration: "none",
-    textAlign: "center",
-    backgroundColor: "#F0F2F4",
-    color: "#00150D",
-    borderRadius: "8px",
-    fontWeight: "bold",
-};
+});
 
 function PasskeyPromptCore({
     title,
     content,
     primaryButton,
     secondaryAction,
+    appearance,
 }: {
     title: string;
     content: ReactNode;
     primaryButton: ReactNode;
     secondaryAction?: ReactNode;
+    appearance?: UIConfig;
 }) {
     return (
-        <Dialog open onClose={() => {}} style={dialogStyles}>
+        <Dialog
+            open
+            onClose={() => {}}
+            className={classNames("fixed inset-0 z-20 flex items-center justify-center overflow-y-auto")}
+        >
             {/* This is a hacky workaround to have the foreground transparent styles to work. */}
             <Transition.Child
                 as={Fragment}
@@ -89,26 +49,58 @@ function PasskeyPromptCore({
                 leaveFrom="opacity-100"
                 leaveTo="opacity-0"
             >
-                <div style={overlayStyles} />
+                <div
+                    className={classNames(
+                        "fixed inset-0 bg-[rgba(139,151,151,0.2)] backdrop-blur-[2px] transition-opacity duration-300 ease-in-out -z-10"
+                    )}
+                />
             </Transition.Child>
-            <div style={dialogContentStyles} onClick={(e) => e.stopPropagation()}>
-                <div style={{ padding: "3rem 2rem" }}>
-                    <div style={{ display: "flex", justifyContent: "center", left: "0.75rem", position: "relative" }}>
-                        <PasskeyPromptLogo />
+            <div
+                className={classNames(
+                    "flex flex-col items-center w-full max-w-[28rem] rounded-2xl shadow-sm z-30 border",
+                    appearance?.colors?.background != null ? `bg-[${appearance.colors.background}]` : "bg-white",
+                    appearance?.colors?.border != null ? `border-[${appearance.colors.border}]` : "border-[#D0D5DD]"
+                )}
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div className="pt-12 pb-10 px-8">
+                    <div className="flex justify-center left-1.5 relative">
+                        <PasskeyPromptLogo appearance={appearance} />
                     </div>
 
-                    <div style={{ display: "flex", justifyContent: "center" }}>
-                        <p style={{ fontSize: "1.125rem", fontWeight: "bold", color: "#20343E" }}>{title}</p>
+                    <div className="flex justify-center">
+                        <p
+                            className={classNames(
+                                "text-lg font-bold",
+
+                                appearance?.colors?.textPrimary != null
+                                    ? `text-[${appearance.colors.textPrimary}]`
+                                    : "text-[#20343E]"
+                            )}
+                        >
+                            {title}
+                        </p>
                     </div>
 
-                    <div style={{ marginTop: "1.5rem", marginBottom: "2.25rem" }}>{content}</div>
+                    <div className="mt-4 mb-9">
+                        <div
+                            className={classNames(
+                                "font-normal",
+                                appearance?.colors?.textSecondary != null
+                                    ? `text-[${appearance.colors.textSecondary}]`
+                                    : "text-[#67797F]"
+                            )}
+                        >
+                            {content}
+                        </div>
+                    </div>
 
-                    <div style={{ display: "flex", justifyContent: "center", flexDirection: "column", gap: "1rem" }}>
+                    <div className="flex flex-col gap-4 justify-center">
                         {primaryButton}
                         {secondaryAction}
                     </div>
                     <div className="flex justify-center pt-4">
-                        <PoweredByCrossmint />
+                        <PoweredByCrossmint color={appearance?.colors?.textSecondary} />
                     </div>
                 </div>
             </div>
@@ -120,41 +112,44 @@ type PromptType = "create-wallet" | "transaction" | "not-supported" | "create-wa
 
 export function PasskeyPrompt({
     state,
+    appearance,
 }: {
     state: {
         type: PromptType;
         primaryActionOnClick: () => void;
         secondaryActionOnClick?: () => void;
     };
+    appearance?: UIConfig;
 }) {
     // These components are currently assembled based on the mockups.
     if (state.type === "create-wallet") {
         return (
             <PasskeyPromptCore
                 title="Create Your Wallet"
+                appearance={appearance}
                 content={
-                    <div style={{ fontWeight: "400", color: "#67797F" }}>
-                        <div style={{ marginBottom: "1.125rem" }}>You're about to create a wallet.</div>
+                    <>
+                        <div className="mb-4">You're about to create a wallet.</div>
 
-                        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                            <div style={{ display: "flex", gap: "0.5rem" }}>
+                        <div className="flex flex-col gap-2">
+                            <div className="flex gap-2">
                                 <div>
                                     <PasskeyIcon />
                                 </div>
                                 Your wallet will be secured with a passkey
                             </div>
 
-                            <div style={{ display: "flex", gap: "0.5rem" }}>
+                            <div className="flex gap-2">
                                 <div>
                                     <FingerprintIcon />
                                 </div>
                                 Your device will ask you for your fingerprint, face, or screen lock to set it up
                             </div>
                         </div>
-                    </div>
+                    </>
                 }
                 primaryButton={
-                    <Button style={primaryButtonStyles} onClick={state.primaryActionOnClick}>
+                    <Button style={primaryButtonStyles({ appearance })} onClick={state.primaryActionOnClick}>
                         Create Wallet
                     </Button>
                 }
@@ -166,16 +161,15 @@ export function PasskeyPrompt({
         return (
             <PasskeyPromptCore
                 title="Wallet Creation Failed"
+                appearance={appearance}
                 content={
-                    <div style={{ fontWeight: "400", color: "#67797F" }}>
-                        <div style={{ marginBottom: "1.5rem" }}>
-                            We couldn't create your wallet. This could be due to rejecting the request, a timeout, or
-                            not having access to your passkey on this device.
-                        </div>
+                    <div className="mb-6">
+                        We couldn't create your wallet. This could be due to rejecting the request, a timeout, or not
+                        having access to your passkey on this device.
                     </div>
                 }
                 primaryButton={
-                    <Button style={primaryButtonStyles} onClick={state.primaryActionOnClick}>
+                    <Button style={primaryButtonStyles({ appearance })} onClick={state.primaryActionOnClick}>
                         Try again
                     </Button>
                 }
@@ -187,21 +181,22 @@ export function PasskeyPrompt({
         return (
             <PasskeyPromptCore
                 title="First Time Using Your Wallet"
+                appearance={appearance}
                 content={
-                    <div style={{ fontWeight: "400", color: "#67797F" }}>
-                        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                            <div style={{ display: "flex", gap: "0.5rem" }}>
-                                <div>
-                                    <FingerprintIcon />
-                                </div>
+                    <div className="flex flex-col gap-2">
+                        <div className="flex gap-2">
+                            <div>
+                                <FingerprintIcon />
+                            </div>
+                            <span>
                                 Your device will ask you for your fingerprint, face, or screen lock to authorize this
                                 action.
-                            </div>
+                            </span>
                         </div>
                     </div>
                 }
                 primaryButton={
-                    <Button style={primaryButtonStyles} onClick={state.primaryActionOnClick}>
+                    <Button style={primaryButtonStyles({ appearance })} onClick={state.primaryActionOnClick}>
                         Use Wallet
                     </Button>
                 }
@@ -213,16 +208,15 @@ export function PasskeyPrompt({
         return (
             <PasskeyPromptCore
                 title="Wallet Access Failed"
+                appearance={appearance}
                 content={
-                    <div style={{ fontWeight: "400", color: "#67797F" }}>
-                        <div style={{ marginBottom: "1.5rem" }}>
-                            We couldn't access your wallet. This could be due to rejecting the request, a timeout, or
-                            not having access to your passkey on this device.
-                        </div>
+                    <div className="mb-6">
+                        We couldn't access your wallet. This could be due to rejecting the request, a timeout, or not
+                        having access to your passkey on this device.
                     </div>
                 }
                 primaryButton={
-                    <Button style={primaryButtonStyles} onClick={state.primaryActionOnClick}>
+                    <Button style={primaryButtonStyles({ appearance })} onClick={state.primaryActionOnClick}>
                         Try again
                     </Button>
                 }
@@ -231,7 +225,15 @@ export function PasskeyPrompt({
                         href="https://docs.crossmint.com/wallets/smart-wallets/users/troubleshoot"
                         rel="noopener noreferrer"
                         target="_blank"
-                        style={externalLinkStyles}
+                        className={classNames(
+                            "p-3.5 w-full text-center no-underline rounded-lg font-bold",
+                            appearance?.colors?.inputBackground != null
+                                ? `bg-[${appearance.colors.inputBackground}]`
+                                : "bg-[#F0F2F4]",
+                            appearance?.colors?.textSecondary != null
+                                ? `text-[${appearance.colors.textSecondary}]`
+                                : "text-[#00150D]"
+                        )}
                     >
                         Troubleshoot
                     </a>
@@ -244,16 +246,15 @@ export function PasskeyPrompt({
         return (
             <PasskeyPromptCore
                 title="Passkeys Not Supported on This Device"
+                appearance={appearance}
                 content={
-                    <div style={{ fontWeight: "400", color: "#67797F" }}>
-                        <div style={{ marginBottom: "1.125rem" }}>
-                            To access your wallet with a passkey, switch to a device or browser that supports passkeys,
-                            such as Chrome or Safari on a smartphone, tablet, or modern computer
-                        </div>
+                    <div className="mb-6">
+                        To access your wallet with a passkey, switch to a device or browser that supports passkeys, such
+                        as Chrome or Safari on a smartphone, tablet, or modern computer
                     </div>
                 }
                 primaryButton={
-                    <Button style={primaryButtonStyles} onClick={state.primaryActionOnClick}>
+                    <Button style={primaryButtonStyles({ appearance })} onClick={state.primaryActionOnClick}>
                         Understood
                     </Button>
                 }
