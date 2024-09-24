@@ -70,12 +70,12 @@ function PasskeyPromptCore({
     title,
     content,
     primaryButton,
-    secondaryButton,
+    secondaryAction,
 }: {
     title: string;
     content: ReactNode;
     primaryButton: ReactNode;
-    secondaryButton?: ReactNode;
+    secondaryAction?: ReactNode;
 }) {
     return (
         <Dialog open onClose={() => {}} style={dialogStyles}>
@@ -105,7 +105,7 @@ function PasskeyPromptCore({
 
                     <div style={{ display: "flex", justifyContent: "center", flexDirection: "column", gap: "1rem" }}>
                         {primaryButton}
-                        {secondaryButton}
+                        {secondaryAction}
                     </div>
                     <div className="flex justify-center pt-4">
                         <PoweredByCrossmint />
@@ -219,7 +219,6 @@ export function PasskeyPrompt({
                             We couldn't access your wallet. This could be due to rejecting the request, a timeout, or
                             not having access to your passkey on this device.
                         </div>
-                        <div>You last used your wallet on a [Device Name] with [Browser Name] on [Date/Time].</div>
                     </div>
                 }
                 primaryButton={
@@ -227,7 +226,7 @@ export function PasskeyPrompt({
                         Try again
                     </Button>
                 }
-                secondaryButton={
+                secondaryAction={
                     <a
                         href="https://docs.crossmint.com/wallets/smart-wallets/users/troubleshoot"
                         rel="noopener noreferrer"
