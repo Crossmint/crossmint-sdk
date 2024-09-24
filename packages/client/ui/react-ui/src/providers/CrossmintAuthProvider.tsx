@@ -7,7 +7,7 @@ import type { EVMSmartWalletChain } from "@crossmint/client-sdk-smart-wallet";
 import { type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
 
 import AuthModal from "../components/auth/AuthModal";
-import { AuthMaterial, useCrossmint, useRefreshToken, useWallet } from "../hooks";
+import { type AuthMaterial, useCrossmint, useRefreshToken, useWallet } from "../hooks";
 import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
 
 export type CrossmintAuthWalletConfig = {
