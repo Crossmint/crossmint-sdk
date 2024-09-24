@@ -16,7 +16,7 @@ importers:
         version: 2.27.1
       '@testing-library/jest-dom':
         specifier: 6.1.3
-        version: 6.1.3(@jest/globals@29.6.4)(@types/jest@29.5.4)(jest@29.6.4(@types/node@20.12.7)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.5.3)))(vitest@1.0.2(@types/node@20.12.7)(jsdom@22.1.0)(terser@5.19.4))
+        version: 6.1.3(@jest/globals@29.6.4)(@types/jest@29.5.4)(jest@29.6.4(@types/node@20.12.7)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.5.3)))(vitest@1.0.2(@types/node@20.12.7)(jsdom@22.1.0(bufferutil@4.0.7)(utf-8-validate@5.0.10))(terser@5.19.4))
       '@testing-library/react':
         specifier: 14.0.0
         version: 14.0.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -49,10 +49,10 @@ importers:
         version: 5.5.3
       vitest:
         specifier: 1.0.2
-        version: 1.0.2(@types/node@20.12.7)(jsdom@22.1.0)(terser@5.19.4)
+        version: 1.0.2(@types/node@20.12.7)(jsdom@22.1.0(bufferutil@4.0.7)(utf-8-validate@5.0.10))(terser@5.19.4)
       vitest-mock-extended:
         specifier: 2.0.0
-        version: 2.0.0(typescript@5.5.3)(vitest@1.0.2(@types/node@20.12.7)(jsdom@22.1.0)(terser@5.19.4))
+        version: 2.0.0(typescript@5.5.3)(vitest@1.0.2(@types/node@20.12.7)(jsdom@22.1.0(bufferutil@4.0.7)(utf-8-validate@5.0.10))(terser@5.19.4))
 
   apps/payments/create-react-app:
     dependencies:
@@ -397,6 +397,9 @@ importers:
       jwks-rsa:
         specifier: 3.1.0
         version: 3.1.0
+      jwt-decode:
+        specifier: 4.0.0
+        version: 4.0.0
     devDependencies:
       '@types/jsonwebtoken':
         specifier: 9.0.6
@@ -21833,7 +21836,7 @@ snapshots:
       lodash: 4.17.21
       redent: 3.0.0
 
-  '@testing-library/jest-dom@6.1.3(@jest/globals@29.6.4)(@types/jest@29.5.4)(jest@29.6.4(@types/node@20.12.7)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.5.3)))(vitest@1.0.2(@types/node@20.12.7)(jsdom@22.1.0)(terser@5.19.4))':
+  '@testing-library/jest-dom@6.1.3(@jest/globals@29.6.4)(@types/jest@29.5.4)(jest@29.6.4(@types/node@20.12.7)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.5.3)))(vitest@1.0.2(@types/node@20.12.7)(jsdom@22.1.0(bufferutil@4.0.7)(utf-8-validate@5.0.10))(terser@5.19.4))':
     dependencies:
       '@adobe/css-tools': 4.3.1
       '@babel/runtime': 7.24.7
@@ -21847,7 +21850,7 @@ snapshots:
       '@jest/globals': 29.6.4
       '@types/jest': 29.5.4
       jest: 29.6.4(@types/node@20.12.7)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.5.3))
-      vitest: 1.0.2(@types/node@20.12.7)(jsdom@22.1.0)(terser@5.19.4)
+      vitest: 1.0.2(@types/node@20.12.7)(jsdom@22.1.0(bufferutil@4.0.7)(utf-8-validate@5.0.10))(terser@5.19.4)
 
   '@testing-library/react@14.0.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
@@ -35180,11 +35183,11 @@ snapshots:
       fsevents: 2.3.3
       terser: 5.19.4
 
-  vitest-mock-extended@2.0.0(typescript@5.5.3)(vitest@1.0.2(@types/node@20.12.7)(jsdom@22.1.0)(terser@5.19.4)):
+  vitest-mock-extended@2.0.0(typescript@5.5.3)(vitest@1.0.2(@types/node@20.12.7)(jsdom@22.1.0(bufferutil@4.0.7)(utf-8-validate@5.0.10))(terser@5.19.4)):
     dependencies:
       ts-essentials: 10.0.2(typescript@5.5.3)
       typescript: 5.5.3
-      vitest: 1.0.2(@types/node@20.12.7)(jsdom@22.1.0)(terser@5.19.4)
+      vitest: 1.0.2(@types/node@20.12.7)(jsdom@22.1.0(bufferutil@4.0.7)(utf-8-validate@5.0.10))(terser@5.19.4)
 
   vitest@0.34.4(jsdom@22.1.0(bufferutil@4.0.7)(utf-8-validate@5.0.10))(playwright@1.41.2)(terser@5.19.4):
     dependencies:
@@ -35224,7 +35227,7 @@ snapshots:
       - supports-color
       - terser
 
-  vitest@1.0.2(@types/node@20.12.7)(jsdom@22.1.0)(terser@5.19.4):
+  vitest@1.0.2(@types/node@20.12.7)(jsdom@22.1.0(bufferutil@4.0.7)(utf-8-validate@5.0.10))(terser@5.19.4):
     dependencies:
       '@vitest/expect': 1.0.2
       '@vitest/runner': 1.0.2
