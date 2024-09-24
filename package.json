@@ -19,10 +19,6 @@
         "publish": "lerna publish from-package",
         "test": "lerna run test"
     },
-    "lint-staged": {
-        "**/*.+(js|json|md|mdx|ts|tsx)": "biome check --write",
-        "**/package.json": "sort-package-json"
-    },
     "devDependencies": {
         "@biomejs/biome": "1.8.3",
         "@changesets/cli": "2.27.1",

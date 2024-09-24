@@ -49,6 +49,7 @@ vi.mock("@crossmint/client-sdk-auth-core/client", async () => {
     };
 });
 
+<<<<<<< HEAD
 vi.mock("@crossmint/client-sdk-auth-core/client", async () => {
     const actual = await vi.importActual("@crossmint/client-sdk-auth-core/client");
     return {
@@ -66,6 +67,8 @@ vi.mock("@crossmint/client-sdk-auth-core/client", async () => {
     };
 });
 
+=======
+>>>>>>> smart-wallet-auth-demo-prod
 function renderAuthProvider({
     children,
     embeddedWallets,
@@ -113,9 +116,13 @@ describe("CrossmintAuthProvider", () => {
     let mockSDK: SmartWalletSDK;
     let mockWallet: EVMSmartWallet;
     let embeddedWallets: CrossmintAuthWalletConfig;
+<<<<<<< HEAD
     let mockCrossmintAuthService: {
         refreshAuthMaterial: ReturnType<typeof vi.fn>;
     };
+=======
+    let mockCrossmintAuthService: { refreshAuthMaterial: ReturnType<typeof vi.fn> };
+>>>>>>> smart-wallet-auth-demo-prod
 
     beforeEach(() => {
         vi.resetAllMocks();
