@@ -24504,13 +24504,20 @@ snapshots:
 
   array-uniq@1.0.3: {}
 
+<<<<<<< HEAD
   array.prototype.every@1.1.5:
+=======
+<<<<<<< HEAD
+  array.prototype.findlast@1.2.5:
+>>>>>>> 062853192499 (SDK: Use Biome (#767))
     dependencies:
       call-bind: 1.0.7
       define-properties: 1.2.1
       es-abstract: 1.23.3
       is-string: 1.0.7
 
+=======
+>>>>>>> 75c14123fa69 (SDK: Use Biome (#767))
   array.prototype.findlastindex@1.2.3:
     dependencies:
       call-bind: 1.0.7
@@ -31420,6 +31427,12 @@ snapshots:
       call-bind: 1.0.7
       define-properties: 1.2.1
       es-abstract: 1.23.3
+  object.getownpropertydescriptors@2.1.7:
+    dependencies:
+      array.prototype.reduce: 1.0.6
+      call-bind: 1.0.7
+      define-properties: 1.2.1
+      es-abstract: 1.23.3
       safe-array-concat: 1.1.2
 
   object.groupby@1.0.1:
@@ -33960,6 +33973,15 @@ snapshots:
       emoji-regex: 9.2.2
       strip-ansi: 7.1.0
 
+<<<<<<< HEAD
+=======
+  string-width@7.2.0:
+    dependencies:
+      emoji-regex: 10.4.0
+      get-east-asian-width: 1.2.0
+      strip-ansi: 7.1.0
+
+>>>>>>> 062853192499 (SDK: Use Biome (#767))
   string.prototype.matchall@4.0.9:
     dependencies:
       call-bind: 1.0.7
