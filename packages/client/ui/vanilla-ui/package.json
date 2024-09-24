@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-vanilla-ui",
-    "version": "1.1.17",
+    "version": "1.1.18",
     "description": "Crossmint client SDK for vanilla JS (no framework required), using web-components",
     "homepage": "https://github.com/Crossmint/crossmint-sdk#readme",
     "bugs": {
@@ -18,7 +18,11 @@
     "main": "./dist/index.cjs",
     "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
-    "files": ["dist", "src", "LICENSE"],
+    "files": [
+        "dist",
+        "src",
+        "LICENSE"
+    ],
     "scripts": {
         "build": "tsup src/index.ts --clean --format esm,cjs,iife --outDir ./dist --minify --dts --sourcemap",
         "dev": "tsup src/index.ts --clean --format esm,cjs,iife --outDir ./dist --dts --sourcemap --watch"

@@ -1,5 +1,22 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.4.0
+
+### Minor Changes
+
+- 584cd20: Updates postmessage events to receive refresh token from auth frame
+  Saves refresh token in cookie
+  Uses refresh token to fetch new authentication material on page load and before session expires
+
+### Patch Changes
+
+- Updated dependencies [584cd20]
+- Updated dependencies [584cd20]
+  - @crossmint/client-sdk-auth-core@1.2.0
+  - @crossmint/common-sdk-base@0.2.0
+  - @crossmint/client-sdk-base@1.2.8
+  - @crossmint/client-sdk-smart-wallet@0.1.18
+
 ## 1.3.24
 
 ### Patch Changes

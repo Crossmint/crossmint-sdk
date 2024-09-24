@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-vue-ui",
-    "version": "1.1.17",
+    "version": "1.1.18",
     "type": "module",
     "exports": {
         ".": {
@@ -13,7 +13,11 @@
     "main": "./dist/index.cjs",
     "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
-    "files": ["dist", "src", "LICENSE"],
+    "files": [
+        "dist",
+        "src",
+        "LICENSE"
+    ],
     "scripts": {
         "dev": "vite",
         "type-check-and-build": "run-p type-check build-only",
