@@ -1,10 +1,10 @@
-import { REFRESH_TOKEN_PREFIX, SESSION_PREFIX } from "@/utils/authCookies";
+import { deleteCookie, REFRESH_TOKEN_PREFIX, SESSION_PREFIX } from "@/utils/authCookies";
 import { fireEvent, render } from "@testing-library/react";
-import type { ReactNode } from "react";
+import { type ReactNode, act } from "react";
 import { beforeEach, describe, expect, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 
-import { CrossmintAuthService } from "@crossmint/client-sdk-auth-core/client";
+import { CrossmintAuthService, getJWTExpiration } from "@crossmint/client-sdk-auth-core/client";
 import { type EVMSmartWallet, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
 import { createCrossmint } from "@crossmint/common-sdk-base";
 
@@ -32,10 +32,11 @@ vi.mock("@crossmint/common-sdk-base", async () => {
     };
 });
 
-vi.mock("@crossmint/client-sdk-auth-core", async () => {
-    const actual = await vi.importActual("@crossmint/client-sdk-auth-core");
+vi.mock("@crossmint/client-sdk-auth-core/client", async () => {
+    const actual = await vi.importActual("@crossmint/client-sdk-auth-core/client");
     return {
         ...actual,
+        getJWTExpiration: vi.fn(),
         CrossmintAuthService: vi.fn().mockImplementation(() => ({
             refreshAuthMaterial: vi.fn().mockResolvedValue({
                 jwtToken: "new-mock-jwt",
@@ -105,6 +106,7 @@ describe("CrossmintAuthProvider", () => {
         mockWallet = mock<EVMSmartWallet>();
         vi.mocked(SmartWalletSDK.init).mockReturnValue(mockSDK);
         vi.mocked(mockSDK.getOrCreateWallet).mockResolvedValue(mockWallet);
+        vi.mocked(getJWTExpiration).mockReturnValue(1000);
 
         embeddedWallets = {
             defaultChain: "polygon",
@@ -112,10 +114,8 @@ describe("CrossmintAuthProvider", () => {
             type: "evm-smart-wallet",
         };
 
-        Object.defineProperty(document, "cookie", {
-            writable: true,
-            value: "",
-        });
+        deleteCookie(REFRESH_TOKEN_PREFIX);
+        deleteCookie(SESSION_PREFIX);
 
         mockCrossmintAuthService = {
             refreshAuthMaterial: vi.fn().mockResolvedValue({
@@ -130,8 +130,11 @@ describe("CrossmintAuthProvider", () => {
     });
 
     test("Happy path", async () => {
-        // Need to set both cookies. Otherwise, the second one overwrites the first one.
-        document.cookie = `${SESSION_PREFIX}=mock-jwt; path=/;SameSite=Lax; ${REFRESH_TOKEN_PREFIX}=mock-refresh-token; path=/;SameSite=Lax;`;
+        await act(() => {
+            document.cookie = `${REFRESH_TOKEN_PREFIX}=mock-refresh-token; path=/; SameSite=Lax;`;
+            document.cookie = `${SESSION_PREFIX}=mock-jwt; path=/; SameSite=Lax;`;
+        });
+
         const { getByTestId } = renderAuthProvider({
             children: <TestComponent />,
             embeddedWallets,
@@ -252,8 +255,11 @@ describe("CrossmintAuthProvider", () => {
     });
 
     test("Logout clears both JWT and refresh token", async () => {
-        // Need to set both cookies. Otherwise, the second one overwrites the first one.
-        document.cookie = `${SESSION_PREFIX}=mock-jwt; path=/;SameSite=Lax; ${REFRESH_TOKEN_PREFIX}=mock-refresh-token; path=/;SameSite=Lax;`;
+        await act(() => {
+            document.cookie = `${REFRESH_TOKEN_PREFIX}=mock-refresh-token; path=/; SameSite=Lax;`;
+            document.cookie = `${SESSION_PREFIX}=mock-jwt; path=/; SameSite=Lax;`;
+        });
+
         const { getByTestId } = renderAuthProvider({
             children: <TestComponent />,
             embeddedWallets,
@@ -264,8 +270,10 @@ describe("CrossmintAuthProvider", () => {
             expect(getByTestId("refresh-token").textContent).toBe("new-mock-refresh-token");
         });
 
-        fireEvent.click(getByTestId("clear-jwt-button"));
-        fireEvent.click(getByTestId("clear-refresh-token-button"));
+        await act(() => {
+            fireEvent.click(getByTestId("clear-jwt-button"));
+            fireEvent.click(getByTestId("clear-refresh-token-button"));
+        });
 
         await waitForSettledState(() => {
             expect(getByTestId("auth-status").textContent).toBe("logged-out");
