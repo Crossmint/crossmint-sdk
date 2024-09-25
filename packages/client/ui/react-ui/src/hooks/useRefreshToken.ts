@@ -23,6 +23,8 @@ type UseAuthTokenRefreshProps = {
     logout: () => void;
 };
 
+// Makes sure that everything inside the async IIFE has finished running before it can be called again.
+// The actual promise just holds that IIFE until it has finished running and it's then set to null
 let refreshPromise: Promise<void> | null = null;
 
 export function useRefreshToken({ crossmintAuthService, setAuthMaterial, logout }: UseAuthTokenRefreshProps) {
