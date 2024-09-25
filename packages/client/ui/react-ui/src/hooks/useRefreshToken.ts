@@ -23,31 +23,41 @@ type UseAuthTokenRefreshProps = {
     logout: () => void;
 };
 
+let refreshPromise: Promise<void> | null = null;
+
 export function useRefreshToken({ crossmintAuthService, setAuthMaterial, logout }: UseAuthTokenRefreshProps) {
     const refreshTaskRef = useRef<CancellableTask | null>(null);
 
-    const refreshAuthMaterial = useCallback(async () => {
+    const refreshAuthMaterial = useCallback(() => {
+        if (refreshPromise != null) {
+            return refreshPromise;
+        }
+
         const refreshToken = getCookie(REFRESH_TOKEN_PREFIX);
         if (refreshToken != null) {
-            try {
-                const result = await crossmintAuthService.refreshAuthMaterial(refreshToken);
-                setAuthMaterial(result);
-                const jwtExpiration = getJWTExpiration(result.jwtToken);
+            refreshPromise = (async () => {
+                try {
+                    const result = await crossmintAuthService.refreshAuthMaterial(refreshToken);
+                    setAuthMaterial(result);
+                    const jwtExpiration = getJWTExpiration(result.jwtToken);
 
-                if (jwtExpiration == null) {
-                    throw new Error("Invalid JWT");
-                }
+                    if (jwtExpiration == null) {
+                        throw new Error("Invalid JWT");
+                    }
 
-                const currentTime = Date.now() / 1000;
-                const timeToExpire = jwtExpiration - currentTime - TIME_BEFORE_EXPIRING_JWT_IN_SECONDS;
-                if (timeToExpire > 0) {
-                    const endTime = Date.now() + timeToExpire * 1000;
-                    refreshTaskRef.current = queueTask(refreshAuthMaterial, endTime);
+                    const currentTime = Date.now() / 1000;
+                    const timeToExpire = jwtExpiration - currentTime - TIME_BEFORE_EXPIRING_JWT_IN_SECONDS;
+                    if (timeToExpire > 0) {
+                        const endTime = Date.now() + timeToExpire * 1000;
+                        refreshTaskRef.current = queueTask(refreshAuthMaterial, endTime);
+                    }
+                } catch (error) {
+                    logout();
+                    console.error(error);
+                } finally {
+                    refreshPromise = null;
                 }
-            } catch (error) {
-                logout();
-                console.error(error);
-            }
+            })();
         }
     }, []);
 
