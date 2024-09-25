@@ -10,9 +10,9 @@ import {
     type PasskeySigner,
 } from "@crossmint/client-sdk-smart-wallet";
 
-import { PasskeyPrompt } from "../components";
 import { useCrossmint } from "../hooks";
 import type { UIConfig } from "@crossmint/common-sdk-base";
+import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
 
 type WalletStatus = "not-loaded" | "in-progress" | "loaded" | "loading-error";
 
