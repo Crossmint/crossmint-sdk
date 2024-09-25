@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.4.1
+
+### Patch Changes
+
+- 1ae2a5a: Makes sure refreshAuthMaterial is only ran once at a time
+
 ## 1.4.0
 
 ### Minor Changes
