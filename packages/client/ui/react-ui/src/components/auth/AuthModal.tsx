@@ -68,7 +68,7 @@ export default function AuthModal({ setModalOpen, apiKey, fetchAuthMaterial, bas
 
         const initIframe = await IFrameWindow.init(iframeRef.current, {
             incomingEvents: incomingModalIframeEvents,
-            outgoingEvents: outgoingModalIframeEvents,
+            outgoingEvents: {},
         });
         setIframe(initIframe);
     };
