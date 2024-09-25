@@ -1,6 +1,5 @@
 import { Button, Dialog, Transition } from "@headlessui/react";
-import type React from "react";
-import { Fragment, type ReactNode } from "react";
+import { type CSSProperties, Fragment, type ReactNode } from "react";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 
 import FingerprintIcon from "../../icons/fingerprint";
@@ -9,30 +8,14 @@ import PasskeyPromptLogo from "../../icons/passkeyPromptLogo";
 import { PoweredByCrossmint } from "../common/PoweredByCrossmint";
 import { classNames } from "@/utils/classNames";
 
-const primaryButtonStyles = (props: { appearance?: UIConfig }): React.CSSProperties => ({
-    padding: "0.875rem",
-    width: "100%",
-    backgroundColor: props.appearance?.colors?.buttonBackground ?? "#04AA6D",
-    color: props.appearance?.colors?.textPrimary ?? "white",
-    borderRadius: props.appearance?.borderRadius ?? "8px",
-    borderColor: props.appearance?.colors?.border ?? "#04AA6D",
-    borderWidth: "1px",
-    fontWeight: "bold",
-});
-
-function PasskeyPromptCore({
-    title,
-    content,
-    primaryButton,
-    secondaryAction,
-    appearance,
-}: {
+type PasskeyPromptCoreProps = {
     title: string;
     content: ReactNode;
     primaryButton: ReactNode;
     secondaryAction?: ReactNode;
     appearance?: UIConfig;
-}) {
+};
+function PasskeyPromptCore({ title, content, primaryButton, secondaryAction, appearance }: PasskeyPromptCoreProps) {
     return (
         <Dialog
             open
@@ -67,12 +50,10 @@ function PasskeyPromptCore({
                     <div className="flex justify-center left-1.5 relative">
                         <PasskeyPromptLogo appearance={appearance} />
                     </div>
-
                     <div className="flex justify-center">
                         <p
                             className={classNames(
                                 "text-lg font-bold",
-
                                 appearance?.colors?.textPrimary != null
                                     ? `text-[${appearance.colors.textPrimary}]`
                                     : "text-[#20343E]"
@@ -81,7 +62,6 @@ function PasskeyPromptCore({
                             {title}
                         </p>
                     </div>
-
                     <div className="mt-4 mb-9">
                         <div
                             className={classNames(
@@ -94,7 +74,6 @@ function PasskeyPromptCore({
                             {content}
                         </div>
                     </div>
-
                     <div className="flex flex-col gap-4 justify-center">
                         {primaryButton}
                         {secondaryAction}
@@ -110,157 +89,163 @@ function PasskeyPromptCore({
 
 type PromptType = "create-wallet" | "transaction" | "not-supported" | "create-wallet-error" | "transaction-error";
 
-export function PasskeyPrompt({
-    state,
-    appearance,
-}: {
+type PasskeyPromptProps = {
     state: {
         type: PromptType;
         primaryActionOnClick: () => void;
         secondaryActionOnClick?: () => void;
     };
     appearance?: UIConfig;
-}) {
+};
+export function PasskeyPrompt({ state, appearance }: PasskeyPromptProps) {
     // These components are currently assembled based on the mockups.
-    if (state.type === "create-wallet") {
-        return (
-            <PasskeyPromptCore
-                title="Create Your Wallet"
-                appearance={appearance}
-                content={
-                    <>
-                        <div className="mb-4">You're about to create a wallet.</div>
-
-                        <div className="flex flex-col gap-2">
-                            <div className="flex gap-2">
-                                <div>
-                                    <PasskeyIcon />
+    switch (state.type) {
+        case "create-wallet":
+            return (
+                <PasskeyPromptCore
+                    title="Create Your Wallet"
+                    appearance={appearance}
+                    content={
+                        <>
+                            <div className="mb-4">You're about to create a wallet.</div>
+                            <div className="flex flex-col gap-2">
+                                <div className="flex gap-2">
+                                    <div>
+                                        <PasskeyIcon />
+                                    </div>
+                                    Your wallet will be secured with a passkey
                                 </div>
-                                Your wallet will be secured with a passkey
-                            </div>
 
+                                <div className="flex gap-2">
+                                    <div>
+                                        <FingerprintIcon />
+                                    </div>
+                                    Your device will ask you for your fingerprint, face, or screen lock to set it up
+                                </div>
+                            </div>
+                        </>
+                    }
+                    primaryButton={
+                        <Button style={primaryButtonStyles(appearance)} onClick={state.primaryActionOnClick}>
+                            Create Wallet
+                        </Button>
+                    }
+                />
+            );
+
+        case "create-wallet-error":
+            return (
+                <PasskeyPromptCore
+                    title="Wallet Creation Failed"
+                    appearance={appearance}
+                    content={
+                        <div className="mb-6">
+                            We couldn't create your wallet. This could be due to rejecting the request, a timeout, or
+                            not having access to your passkey on this device.
+                        </div>
+                    }
+                    primaryButton={
+                        <Button style={primaryButtonStyles(appearance)} onClick={state.primaryActionOnClick}>
+                            Try again
+                        </Button>
+                    }
+                />
+            );
+
+        case "transaction":
+            return (
+                <PasskeyPromptCore
+                    title="First Time Using Your Wallet"
+                    appearance={appearance}
+                    content={
+                        <div className="flex flex-col gap-2">
                             <div className="flex gap-2">
                                 <div>
                                     <FingerprintIcon />
                                 </div>
-                                Your device will ask you for your fingerprint, face, or screen lock to set it up
+                                <span>
+                                    Your device will ask you for your fingerprint, face, or screen lock to authorize
+                                    this action.
+                                </span>
                             </div>
                         </div>
-                    </>
-                }
-                primaryButton={
-                    <Button style={primaryButtonStyles({ appearance })} onClick={state.primaryActionOnClick}>
-                        Create Wallet
-                    </Button>
-                }
-            />
-        );
-    }
+                    }
+                    primaryButton={
+                        <Button style={primaryButtonStyles(appearance)} onClick={state.primaryActionOnClick}>
+                            Use Wallet
+                        </Button>
+                    }
+                />
+            );
 
-    if (state.type === "create-wallet-error") {
-        return (
-            <PasskeyPromptCore
-                title="Wallet Creation Failed"
-                appearance={appearance}
-                content={
-                    <div className="mb-6">
-                        We couldn't create your wallet. This could be due to rejecting the request, a timeout, or not
-                        having access to your passkey on this device.
-                    </div>
-                }
-                primaryButton={
-                    <Button style={primaryButtonStyles({ appearance })} onClick={state.primaryActionOnClick}>
-                        Try again
-                    </Button>
-                }
-            />
-        );
-    }
-
-    if (state.type === "transaction") {
-        return (
-            <PasskeyPromptCore
-                title="First Time Using Your Wallet"
-                appearance={appearance}
-                content={
-                    <div className="flex flex-col gap-2">
-                        <div className="flex gap-2">
-                            <div>
-                                <FingerprintIcon />
-                            </div>
-                            <span>
-                                Your device will ask you for your fingerprint, face, or screen lock to authorize this
-                                action.
-                            </span>
+        case "transaction-error":
+            return (
+                <PasskeyPromptCore
+                    title="Wallet Access Failed"
+                    appearance={appearance}
+                    content={
+                        <div className="mb-6">
+                            We couldn't access your wallet. This could be due to rejecting the request, a timeout, or
+                            not having access to your passkey on this device.
                         </div>
-                    </div>
-                }
-                primaryButton={
-                    <Button style={primaryButtonStyles({ appearance })} onClick={state.primaryActionOnClick}>
-                        Use Wallet
-                    </Button>
-                }
-            />
-        );
-    }
+                    }
+                    primaryButton={
+                        <Button style={primaryButtonStyles(appearance)} onClick={state.primaryActionOnClick}>
+                            Try again
+                        </Button>
+                    }
+                    secondaryAction={
+                        <a
+                            href="https://docs.crossmint.com/wallets/smart-wallets/users/troubleshoot"
+                            rel="noopener noreferrer"
+                            target="_blank"
+                            className={classNames(
+                                "p-3.5 w-full text-center no-underline rounded-lg font-bold",
+                                appearance?.colors?.inputBackground != null
+                                    ? `bg-[${appearance.colors.inputBackground}]`
+                                    : "bg-[#F0F2F4]",
+                                appearance?.colors?.textSecondary != null
+                                    ? `text-[${appearance.colors.textSecondary}]`
+                                    : "text-[#00150D]"
+                            )}
+                        >
+                            Troubleshoot
+                        </a>
+                    }
+                />
+            );
 
-    if (state.type === "transaction-error") {
-        return (
-            <PasskeyPromptCore
-                title="Wallet Access Failed"
-                appearance={appearance}
-                content={
-                    <div className="mb-6">
-                        We couldn't access your wallet. This could be due to rejecting the request, a timeout, or not
-                        having access to your passkey on this device.
-                    </div>
-                }
-                primaryButton={
-                    <Button style={primaryButtonStyles({ appearance })} onClick={state.primaryActionOnClick}>
-                        Try again
-                    </Button>
-                }
-                secondaryAction={
-                    <a
-                        href="https://docs.crossmint.com/wallets/smart-wallets/users/troubleshoot"
-                        rel="noopener noreferrer"
-                        target="_blank"
-                        className={classNames(
-                            "p-3.5 w-full text-center no-underline rounded-lg font-bold",
-                            appearance?.colors?.inputBackground != null
-                                ? `bg-[${appearance.colors.inputBackground}]`
-                                : "bg-[#F0F2F4]",
-                            appearance?.colors?.textSecondary != null
-                                ? `text-[${appearance.colors.textSecondary}]`
-                                : "text-[#00150D]"
-                        )}
-                    >
-                        Troubleshoot
-                    </a>
-                }
-            />
-        );
-    }
+        case "not-supported":
+            return (
+                <PasskeyPromptCore
+                    title="Passkeys Not Supported on This Device"
+                    appearance={appearance}
+                    content={
+                        <div className="mb-6">
+                            To access your wallet with a passkey, switch to a device or browser that supports passkeys,
+                            such as Chrome or Safari on a smartphone, tablet, or modern computer
+                        </div>
+                    }
+                    primaryButton={
+                        <Button style={primaryButtonStyles(appearance)} onClick={state.primaryActionOnClick}>
+                            Understood
+                        </Button>
+                    }
+                />
+            );
 
-    if (state.type === "not-supported") {
-        return (
-            <PasskeyPromptCore
-                title="Passkeys Not Supported on This Device"
-                appearance={appearance}
-                content={
-                    <div className="mb-6">
-                        To access your wallet with a passkey, switch to a device or browser that supports passkeys, such
-                        as Chrome or Safari on a smartphone, tablet, or modern computer
-                    </div>
-                }
-                primaryButton={
-                    <Button style={primaryButtonStyles({ appearance })} onClick={state.primaryActionOnClick}>
-                        Understood
-                    </Button>
-                }
-            />
-        );
+        default:
+            return null;
     }
-
-    return null;
 }
+
+const primaryButtonStyles = (appearance?: UIConfig): CSSProperties => ({
+    padding: "0.875rem",
+    width: "100%",
+    backgroundColor: appearance?.colors?.buttonBackground ?? "#04AA6D",
+    color: appearance?.colors?.textPrimary ?? "white",
+    borderRadius: appearance?.borderRadius ?? "8px",
+    borderColor: appearance?.colors?.border ?? "#04AA6D",
+    borderWidth: "1px",
+    fontWeight: "bold",
+});

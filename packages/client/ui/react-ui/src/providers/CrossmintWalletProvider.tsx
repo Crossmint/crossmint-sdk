@@ -57,7 +57,7 @@ export type WalletConfig = WalletParams & { type: "evm-smart-wallet" };
 export function CrossmintWalletProvider({
     children,
     defaultChain,
-    showWalletModals = true,
+    showWalletModals = true, // enabled by default
     appearance,
 }: {
     children: ReactNode;
