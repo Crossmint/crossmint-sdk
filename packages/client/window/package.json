@@ -15,8 +15,8 @@
     "types": "./dist/index.d.ts",
     "files": ["dist", "src", "LICENSE"],
     "scripts": {
-        "build": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
-        "dev": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --dts --sourcemap --watch"
+        "build": "tsup --minify",
+        "dev": "tsup --watch"
     },
     "dependencies": {
         "nanoid": "5.0.4",
