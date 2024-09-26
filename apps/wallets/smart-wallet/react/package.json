@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-smart-wallet-react-starter",
-    "version": "1.5.17",
+    "version": "1.5.18",
     "private": true,
     "scripts": {
         "build": "react-app-rewired build",
@@ -10,8 +10,18 @@
         "test:e2e-ui": "pnpm exec playwright test --ui"
     },
     "browserslist": {
-        "production": ["chrome >= 67", "edge >= 79", "firefox >= 68", "opera >= 54", "safari >= 14"],
-        "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
+        "production": [
+            "chrome >= 67",
+            "edge >= 79",
+            "firefox >= 68",
+            "opera >= 54",
+            "safari >= 14"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
     },
     "dependencies": {
         "@crossmint/client-sdk-smart-wallet": "workspace:*",

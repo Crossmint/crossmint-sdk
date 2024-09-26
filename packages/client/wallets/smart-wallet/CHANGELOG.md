@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-smart-wallet
 
+## 0.1.19
+
+### Patch Changes
+
+- eff943c: Added wallet passkey prompts
+
 ## 0.1.18
 
 ### Patch Changes
