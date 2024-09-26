@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-auth-core
 
+## 1.3.0
+
+### Minor Changes
+
+- eece432: Updates /refresh route
+
 ## 1.2.0
 
 ### Minor Changes
