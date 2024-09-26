@@ -7,51 +7,39 @@ import type { UIConfig } from "@crossmint/common-sdk-base";
 
 import X from "../../icons/x";
 import { classNames } from "../../utils/classNames";
+import type { AuthMaterial } from "@/hooks/useRefreshToken";
+
+const authMaterialSchema = z.object({
+    oneTimeSecret: z.string(),
+});
 
 const incomingModalIframeEvents = {
-    authMaterialFromAuthFrame: z.object({
-        jwtToken: z.string(),
-        refreshToken: z.object({
-            secret: z.string(),
-            expiresAt: z.string(),
-        }),
-    }),
-};
-
-const outgoingModalIframeEvents = {
-    closeWindow: z.object({
-        closeWindow: z.string(),
-    }),
+    authMaterialFromAuthFrame: authMaterialSchema,
 };
 
 type IncomingModalIframeEventsType = {
     authMaterialFromAuthFrame: typeof incomingModalIframeEvents.authMaterialFromAuthFrame;
 };
 
-type OutgoingModalIframeEventsType = {
-    closeWindow: typeof outgoingModalIframeEvents.closeWindow;
-};
-
 type AuthModalProps = {
     setModalOpen: (open: boolean) => void;
-    setAuthMaterial: (authMaterial: { jwtToken: string; refreshToken: { secret: string; expiresAt: string } }) => void;
     apiKey: string;
+    fetchAuthMaterial: (refreshToken: string) => Promise<AuthMaterial>;
     baseUrl: string;
     appearance?: UIConfig;
 };
 
-export default function AuthModal({ setModalOpen, setAuthMaterial, apiKey, baseUrl, appearance }: AuthModalProps) {
-    let iframeSrc = `${baseUrl}sdk/auth/frame?apiKey=${apiKey}`;
+export default function AuthModal({ setModalOpen, apiKey, fetchAuthMaterial, baseUrl, appearance }: AuthModalProps) {
+    let iframeSrc = `${baseUrl}sdk/2024-09-26/auth/frame?apiKey=${apiKey}`;
     if (appearance != null) {
         // The appearance object is serialized into a query parameter
         iframeSrc += `&uiConfig=${encodeURIComponent(JSON.stringify(appearance))}`;
     }
 
     const iframeRef = useRef<HTMLIFrameElement | null>(null);
-    const [iframe, setIframe] = useState<IFrameWindow<
-        IncomingModalIframeEventsType,
-        OutgoingModalIframeEventsType
-    > | null>(null);
+    const [iframe, setIframe] = useState<IFrameWindow<IncomingModalIframeEventsType, Record<string, never>> | null>(
+        null
+    );
 
     useEffect(() => {
         if (iframe == null) {
@@ -59,29 +47,17 @@ export default function AuthModal({ setModalOpen, setAuthMaterial, apiKey, baseU
         }
 
         iframe.on("authMaterialFromAuthFrame", (data) => {
-            setAuthMaterial(data);
+            fetchAuthMaterial(data.oneTimeSecret);
             iframe.off("authMaterialFromAuthFrame");
-
-            iframe.send("closeWindow", {
-                closeWindow: "closeWindow",
-            });
-
-            if (iframe?.iframe.contentWindow != null) {
-                iframe.iframe.contentWindow.close();
-            }
             setModalOpen(false);
         });
 
         return () => {
             if (iframe) {
                 iframe.off("authMaterialFromAuthFrame");
-
-                if (iframe.iframe.contentWindow != null) {
-                    iframe.iframe.contentWindow.close();
-                }
             }
         };
-    }, [iframe, setAuthMaterial, setModalOpen]);
+    }, [iframe, fetchAuthMaterial, setModalOpen]);
 
     const handleIframeLoaded = async () => {
         if (iframeRef.current == null) {
@@ -92,7 +68,7 @@ export default function AuthModal({ setModalOpen, setAuthMaterial, apiKey, baseU
 
         const initIframe = await IFrameWindow.init(iframeRef.current, {
             incomingEvents: incomingModalIframeEvents,
-            outgoingEvents: outgoingModalIframeEvents,
+            outgoingEvents: {},
         });
         setIframe(initIframe);
     };
