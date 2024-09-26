@@ -7,6 +7,7 @@ import PasskeyIcon from "../../icons/passkey";
 import PasskeyPromptLogo from "../../icons/passkeyPromptLogo";
 import { PoweredByCrossmint } from "../common/PoweredByCrossmint";
 import { classNames } from "@/utils/classNames";
+import X from "../../icons/x";
 
 type PasskeyPromptCoreProps = {
     title: string;
@@ -14,8 +15,16 @@ type PasskeyPromptCoreProps = {
     primaryButton: ReactNode;
     secondaryAction?: ReactNode;
     appearance?: UIConfig;
+    onClose?: () => void;
 };
-function PasskeyPromptCore({ title, content, primaryButton, secondaryAction, appearance }: PasskeyPromptCoreProps) {
+function PasskeyPromptCore({
+    title,
+    content,
+    primaryButton,
+    secondaryAction,
+    appearance,
+    onClose,
+}: PasskeyPromptCoreProps) {
     return (
         <Dialog
             open
@@ -46,6 +55,21 @@ function PasskeyPromptCore({ title, content, primaryButton, secondaryAction, app
                 )}
                 onClick={(e) => e.stopPropagation()}
             >
+                {onClose != null ? (
+                    <div className="relative w-full">
+                        <button
+                            type="button"
+                            aria-label="Close"
+                            className={classNames(
+                                "absolute right-6 top-6 w-6 cursor-pointer outline-offset-4 rounded-full",
+                                appearance?.colors?.border ? `text-[${appearance.colors.border}]` : "text-[#909ca3]"
+                            )}
+                            onClick={onClose}
+                        >
+                            <X />
+                        </button>
+                    </div>
+                ) : null}
                 <div className="pt-12 pb-10 px-8">
                     <div className="flex justify-center left-1.5 relative">
                         <PasskeyPromptLogo appearance={appearance} />
@@ -94,6 +118,7 @@ type PasskeyPromptProps = {
         type: PromptType;
         primaryActionOnClick: () => void;
         secondaryActionOnClick?: () => void;
+        onClose?: () => void;
     };
     appearance?: UIConfig;
 };
@@ -130,6 +155,7 @@ export function PasskeyPrompt({ state, appearance }: PasskeyPromptProps) {
                             Create Wallet
                         </Button>
                     }
+                    onClose={state.onClose}
                 />
             );
 
@@ -149,6 +175,7 @@ export function PasskeyPrompt({ state, appearance }: PasskeyPromptProps) {
                             Try again
                         </Button>
                     }
+                    onClose={state.onClose}
                 />
             );
 
@@ -175,6 +202,7 @@ export function PasskeyPrompt({ state, appearance }: PasskeyPromptProps) {
                             Use Wallet
                         </Button>
                     }
+                    onClose={state.onClose}
                 />
             );
 
@@ -212,6 +240,7 @@ export function PasskeyPrompt({ state, appearance }: PasskeyPromptProps) {
                             Troubleshoot
                         </a>
                     }
+                    onClose={state.onClose}
                 />
             );
 
@@ -231,6 +260,7 @@ export function PasskeyPrompt({ state, appearance }: PasskeyPromptProps) {
                             Understood
                         </Button>
                     }
+                    onClose={state.onClose}
                 />
             );
 

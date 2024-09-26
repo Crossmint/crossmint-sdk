@@ -38,6 +38,7 @@ function HomePrimaryAction() {
 }
 
 export default function Home() {
+    const { getOrCreateWallet } = useWallet();
     return (
         <div className="flex h-full w-full items-center md:p-4 justify-center">
             <div className="flex flex-col pb-12 items-center max-w-[538px] p-4">
@@ -70,6 +71,17 @@ export default function Home() {
                             </Typography>
                         </div>
                     </div>
+
+                    <button
+                        onClick={() => {
+                            getOrCreateWallet({
+                                type: "evm-smart-wallet",
+                                signer: { type: "PASSKEY" },
+                            });
+                        }}
+                    >
+                        Create a wallet
+                    </button>
                     <HomePrimaryAction />
 
                     <PoweredByCrossmint />

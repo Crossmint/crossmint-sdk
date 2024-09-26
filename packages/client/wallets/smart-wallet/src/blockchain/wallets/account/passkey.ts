@@ -70,8 +70,13 @@ export class PasskeyCreationStrategy implements AccountCreationStrategy {
                 signerConfig: this.getSignerConfig(validator, validatorContractVersion, inputPasskeyName),
                 account: this.decorate(kernelAccount, inputPasskeyName, walletParams),
             };
-        } catch (error) {
-            if (walletParams.signer.onPasskeyRegistrationError != null) {
+        } catch (error: unknown) {
+            // improve how we check the prompt if it was closed by the user
+            if (
+                walletParams.signer.onPasskeyRegistrationError != null &&
+                error instanceof Error &&
+                !error.message.includes("Wallet Creation Error: User closed the prompt")
+            ) {
                 walletParams.signer.onPasskeyRegistrationError(error);
             }
             throw this.mapError(error, inputPasskeyName);

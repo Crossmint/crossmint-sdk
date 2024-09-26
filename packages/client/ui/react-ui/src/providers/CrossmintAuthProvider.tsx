@@ -107,11 +107,7 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
                 status: getAuthStatus(),
             }}
         >
-            <CrossmintWalletProvider
-                defaultChain={embeddedWallets.defaultChain}
-                showWalletModals={embeddedWallets.showWalletModals}
-                appearance={appearance}
-            >
+            <CrossmintWalletProvider embeddedWallets={embeddedWallets} appearance={appearance}>
                 <WalletManager embeddedWallets={embeddedWallets} accessToken={crossmint.jwt}>
                     {children}
                 </WalletManager>

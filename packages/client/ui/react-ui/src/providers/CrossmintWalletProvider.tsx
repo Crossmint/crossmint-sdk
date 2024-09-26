@@ -3,7 +3,6 @@ import { createPortal } from "react-dom";
 
 import {
     type EVMSmartWallet,
-    type EVMSmartWalletChain,
     SmartWalletError,
     SmartWalletSDK,
     type WalletParams,
@@ -13,6 +12,7 @@ import {
 import { useCrossmint } from "../hooks";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
+import type { CrossmintAuthWalletConfig } from "./CrossmintAuthProvider";
 
 type WalletStatus = "not-loaded" | "in-progress" | "loaded" | "loading-error";
 
@@ -28,6 +28,7 @@ type PasskeyPromptState =
           open: true;
           primaryActionOnClick: () => void;
           secondaryActionOnClick?: () => void;
+          onClose?: () => void;
       }
     | { open: false };
 
@@ -56,13 +57,11 @@ export type WalletConfig = WalletParams & { type: "evm-smart-wallet" };
 
 export function CrossmintWalletProvider({
     children,
-    defaultChain,
-    showWalletModals = true, // enabled by default
+    embeddedWallets,
     appearance,
 }: {
     children: ReactNode;
-    defaultChain: EVMSmartWalletChain;
-    showWalletModals?: boolean;
+    embeddedWallets: CrossmintAuthWalletConfig;
     appearance?: UIConfig;
 }) {
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
@@ -70,6 +69,7 @@ export function CrossmintWalletProvider({
 
     const [walletState, setWalletState] = useState<ValidWalletState>({ status: "not-loaded" });
     const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
+    const showWalletModals = embeddedWallets.showWalletModals ?? true;
 
     const getOrCreateWallet = async (
         config: WalletConfig = { type: "evm-smart-wallet", signer: { type: "PASSKEY" } }
@@ -87,7 +87,7 @@ export function CrossmintWalletProvider({
             setWalletState({ status: "in-progress" });
             const wallet = await smartWalletSDK.getOrCreateWallet(
                 { jwt: crossmint.jwt as string },
-                defaultChain,
+                embeddedWallets.defaultChain,
                 enhanceConfigWithPasskeyPrompts(config)
             );
             setWalletState({ status: "loaded", wallet });
@@ -104,7 +104,10 @@ export function CrossmintWalletProvider({
                 ...config,
                 signer: {
                     ...config.signer,
-                    onPrePasskeyRegistration: createPasskeyPrompt("create-wallet"),
+                    onPrePasskeyRegistration: createPasskeyPrompt(
+                        "create-wallet",
+                        embeddedWallets.createOnLogin === "off"
+                    ),
                     onPasskeyRegistrationError: createPasskeyPrompt("create-wallet-error"),
                     onFirstTimePasskeySigning: createPasskeyPrompt("transaction"),
                     onFirstTimePasskeySigningError: createPasskeyPrompt("transaction-error"),
@@ -114,21 +117,31 @@ export function CrossmintWalletProvider({
         return config;
     };
 
-    const createPasskeyPrompt = (type: ValidPasskeyPromptType) => () =>
-        new Promise<void>((resolve) => {
-            setPasskeyPromptState({
-                type,
-                open: true,
-                primaryActionOnClick: () => {
-                    setPasskeyPromptState({ open: false });
-                    resolve();
-                },
-                secondaryActionOnClick: () => {
-                    setPasskeyPromptState({ open: false });
-                    resolve();
-                },
+    const createPasskeyPrompt =
+        (type: ValidPasskeyPromptType, isClosable = true) =>
+        () => {
+            return new Promise<void>((resolve, reject) => {
+                setPasskeyPromptState({
+                    type,
+                    open: true,
+                    primaryActionOnClick: () => {
+                        setPasskeyPromptState({ open: false });
+                        resolve();
+                    },
+                    secondaryActionOnClick: () => {
+                        setPasskeyPromptState({ open: false });
+                        resolve();
+                    },
+                    onClose: isClosable
+                        ? () => {
+                              clearWallet();
+                              setPasskeyPromptState({ open: false });
+                              reject(new Error("Wallet Creation Error: User closed the prompt"));
+                          }
+                        : undefined,
+                });
             });
-        });
+        };
 
     const clearWallet = () => {
         setWalletState({ status: "not-loaded" });

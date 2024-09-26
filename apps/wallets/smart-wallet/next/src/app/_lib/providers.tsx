@@ -13,7 +13,7 @@ export function Providers({ children }: { children: ReactNode }) {
             <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_AUTH_SMART_WALLET_API_KEY ?? ""}>
                 <CrossmintAuthProvider
                     embeddedWallets={{
-                        createOnLogin: "all-users",
+                        createOnLogin: "off",
                         type: "evm-smart-wallet",
                         defaultChain: "polygon-amoy",
                     }}
