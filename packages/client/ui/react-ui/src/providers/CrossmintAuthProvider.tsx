@@ -14,6 +14,7 @@ export type CrossmintAuthWalletConfig = {
     defaultChain: EVMSmartWalletChain;
     createOnLogin: "all-users" | "off";
     type: "evm-smart-wallet";
+    showWalletModals?: boolean;
 };
 
 export type CrossmintAuthProviderProps = {
@@ -106,7 +107,11 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
                 status: getAuthStatus(),
             }}
         >
-            <CrossmintWalletProvider defaultChain={embeddedWallets.defaultChain}>
+            <CrossmintWalletProvider
+                defaultChain={embeddedWallets.defaultChain}
+                showWalletModals={embeddedWallets.showWalletModals}
+                appearance={appearance}
+            >
                 <WalletManager embeddedWallets={embeddedWallets} accessToken={crossmint.jwt}>
                     {children}
                 </WalletManager>
