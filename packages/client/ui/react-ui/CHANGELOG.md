@@ -1,5 +1,25 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.5.0
+
+### Minor Changes
+
+- eece432: Makes SDK listen to initial one-time refresh token to then fetch all auth material.
+
+### Patch Changes
+
+- eff943c: Added wallet passkey prompts
+- Updated dependencies [eece432]
+- Updated dependencies [eff943c]
+  - @crossmint/client-sdk-auth-core@1.3.0
+  - @crossmint/client-sdk-smart-wallet@0.1.19
+
+## 1.4.1
+
+### Patch Changes
+
+- 1ae2a5a: Makes sure refreshAuthMaterial is only ran once at a time
+
 ## 1.4.0
 
 ### Minor Changes

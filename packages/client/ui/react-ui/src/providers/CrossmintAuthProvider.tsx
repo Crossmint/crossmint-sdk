@@ -14,6 +14,7 @@ export type CrossmintAuthWalletConfig = {
     defaultChain: EVMSmartWalletChain;
     createOnLogin: "all-users" | "off";
     type: "evm-smart-wallet";
+    showWalletModals?: boolean;
 };
 
 export type CrossmintAuthProviderProps = {
@@ -96,6 +97,12 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
         return "logged-out";
     };
 
+    const fetchAuthMaterial = async (refreshToken: string): Promise<AuthMaterial> => {
+        const authMaterial = await crossmintAuthService.refreshAuthMaterial(refreshToken);
+        setAuthMaterial(authMaterial);
+        return authMaterial;
+    };
+
     return (
         <AuthContext.Provider
             value={{
@@ -106,7 +113,11 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
                 status: getAuthStatus(),
             }}
         >
-            <CrossmintWalletProvider defaultChain={embeddedWallets.defaultChain}>
+            <CrossmintWalletProvider
+                defaultChain={embeddedWallets.defaultChain}
+                showWalletModals={embeddedWallets.showWalletModals}
+                appearance={appearance}
+            >
                 <WalletManager embeddedWallets={embeddedWallets} accessToken={crossmint.jwt}>
                     {children}
                 </WalletManager>
@@ -115,7 +126,7 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
                           <AuthModal
                               baseUrl={crossmintBaseUrl}
                               setModalOpen={setModalOpen}
-                              setAuthMaterial={setAuthMaterial}
+                              fetchAuthMaterial={fetchAuthMaterial}
                               apiKey={crossmint.apiKey}
                               appearance={appearance}
                           />,
