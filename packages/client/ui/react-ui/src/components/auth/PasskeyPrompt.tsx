@@ -243,7 +243,7 @@ export function PasskeyPrompt({ state, appearance }: PasskeyPromptProps) {
                     onClose={state.onClose}
                 />
             );
-
+            1;
         case "not-supported":
             return (
                 <PasskeyPromptCore

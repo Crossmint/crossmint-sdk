@@ -97,6 +97,12 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
         return "logged-out";
     };
 
+    const fetchAuthMaterial = async (refreshToken: string): Promise<AuthMaterial> => {
+        const authMaterial = await crossmintAuthService.refreshAuthMaterial(refreshToken);
+        setAuthMaterial(authMaterial);
+        return authMaterial;
+    };
+
     return (
         <AuthContext.Provider
             value={{
@@ -116,7 +122,7 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
                           <AuthModal
                               baseUrl={crossmintBaseUrl}
                               setModalOpen={setModalOpen}
-                              setAuthMaterial={setAuthMaterial}
+                              fetchAuthMaterial={fetchAuthMaterial}
                               apiKey={crossmint.apiKey}
                               appearance={appearance}
                           />,
