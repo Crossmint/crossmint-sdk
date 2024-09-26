@@ -30,7 +30,7 @@ type AuthModalProps = {
 };
 
 export default function AuthModal({ setModalOpen, apiKey, fetchAuthMaterial, baseUrl, appearance }: AuthModalProps) {
-    let iframeSrc = `${baseUrl}sdk/auth/frame?apiKey=${apiKey}`;
+    let iframeSrc = `${baseUrl}sdk/2024-09-26/auth/frame?apiKey=${apiKey}`;
     if (appearance != null) {
         // The appearance object is serialized into a query parameter
         iframeSrc += `&uiConfig=${encodeURIComponent(JSON.stringify(appearance))}`;

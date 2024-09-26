@@ -12,7 +12,7 @@ export class CrossmintAuthService extends BaseCrossmintService {
 
     async refreshAuthMaterial(refreshToken: string) {
         const result = await this.fetchCrossmintAPI(
-            "session/sdk/auth/refresh",
+            "2024-09-26/session/sdk/auth/refresh",
             { method: "POST", body: JSON.stringify({ refresh: refreshToken }) },
             "Error fetching new refresh and access tokans."
         );
