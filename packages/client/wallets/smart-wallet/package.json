@@ -15,8 +15,7 @@
     "types": "./dist/index.d.ts",
     "files": ["dist", "src", "LICENSE"],
     "scripts": {
-        "build": "tsup --minify",
-        "build-no-minify": "tsup",
+        "build": "tsup",
         "dev": "tsup --watch",
         "test": "vitest run"
     },

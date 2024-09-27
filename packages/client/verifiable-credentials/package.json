@@ -15,7 +15,7 @@
     "types": "./dist/index.d.ts",
     "files": ["dist", "src", "LICENSE"],
     "scripts": {
-        "build": "tsup --minify",
+        "build": "tsup",
         "dev": "tsup --watch",
         "test": "cross-env NODE_ENV=test jest --silent",
         "test-coverage": "cross-env NODE_ENV=test jest --coverage --silent"
