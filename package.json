@@ -9,7 +9,7 @@
         "build:apps": "pnpm --filter \"./apps/**\" build",
         "build:libs": "pnpm --filter \"./packages/**\" build",
         "change:add": "pnpm changeset add",
-        "change:publish": "pnpm build:libs && pnpm changeset publish --no-git-tag",
+        "change:publish": "cross-env NODE_ENV=production pnpm build:libs && pnpm changeset publish --no-git-tag",
         "change:version": "pnpm changeset version",
         "clean:dist": "pnpm rimraf \"**/dist\" --glob",
         "clean:next": "pnpm rimraf \"**/.next\" --glob",
