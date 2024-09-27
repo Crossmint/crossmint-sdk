@@ -7,16 +7,18 @@ import {
     SmartWalletSDK,
     type WalletParams,
     type PasskeySigner,
+    SmartWalletErrorCode,
 } from "@crossmint/client-sdk-smart-wallet";
 
 import { useCrossmint } from "../hooks";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
 import type { CrossmintAuthWalletConfig } from "./CrossmintAuthProvider";
+import { getOnClosePasskeyPromptError } from "@/utils/errorUtils";
 
 type WalletStatus = "not-loaded" | "in-progress" | "loaded" | "loading-error";
 
-type ValidPasskeyPromptType =
+export type ValidPasskeyPromptType =
     | "create-wallet"
     | "transaction"
     | "not-supported"
@@ -92,6 +94,12 @@ export function CrossmintWalletProvider({
             );
             setWalletState({ status: "loaded", wallet });
         } catch (error: unknown) {
+            if (didUserClosePasskeyPrompt(error)) {
+                console.error({ type: error.details, message: error.message });
+                setWalletState({ status: "not-loaded" });
+                return { startedCreation: false, reason: "User closed passkey prompt." };
+            }
+
             console.error("There was an error creating a wallet ", error);
             setWalletState(deriveErrorState(error));
         }
@@ -132,16 +140,16 @@ export function CrossmintWalletProvider({
                         setPasskeyPromptState({ open: false });
                         resolve();
                     },
-                    onClose: isClosable
-                        ? () => {
-                              clearWallet();
-                              setPasskeyPromptState({ open: false });
-                              reject(new Error("Wallet Creation Error: User closed the prompt"));
-                          }
-                        : undefined,
+                    onClose: isClosable ? () => handleClosePasskeyPrompt(type, reject) : undefined,
                 });
             });
         };
+
+    const handleClosePasskeyPrompt = (type: ValidPasskeyPromptType, reject: (reason?: any) => void) => {
+        setPasskeyPromptState({ open: false });
+        const error = getOnClosePasskeyPromptError(type);
+        reject(new SmartWalletError(error.message, error.type, SmartWalletErrorCode.PASSKEY_PROMPT_CLOSED));
+    };
 
     const clearWallet = () => {
         setWalletState({ status: "not-loaded" });
@@ -165,4 +173,11 @@ function deriveErrorState(error: unknown): { status: "loading-error"; error: Sma
     const message = error instanceof Error ? error.message : String(error);
     const stack = error instanceof Error ? error.stack : undefined;
     return { status: "loading-error", error: new SmartWalletError(`Unknown Wallet Error: ${message}`, stack) };
+}
+
+function didUserClosePasskeyPrompt(error: unknown): error is SmartWalletError {
+    if (error instanceof SmartWalletError) {
+        return error.code === SmartWalletErrorCode.PASSKEY_PROMPT_CLOSED;
+    }
+    return false;
 }

@@ -38,6 +38,7 @@ export const SmartWalletErrorCode = {
     PASSKEY_MISMATCH: "smart-wallet:config.passkey-mismatch",
     ADMIN_SIGNER_ALREADY_USED: "smart-wallet:config.admin-signer-already-used",
     PASSKEY_PROMPT: "smart-wallet:passkey.prompt",
+    PASSKEY_PROMPT_CLOSED: "smart-wallet:passkey.prompt-closed",
     PASSKEY_INCOMPATIBLE_AUTHENTICATOR: "smart-wallet:passkey.incompatible-authenticator",
     PASSKEY_REGISTRATION: "smart-wallet:passkey.registration",
     UNCATEGORIZED: "smart-wallet:uncategorized", // smart wallet specific catch-all error code

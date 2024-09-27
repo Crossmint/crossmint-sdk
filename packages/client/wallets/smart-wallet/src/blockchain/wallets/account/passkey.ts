@@ -9,12 +9,14 @@ import {
     PasskeyMismatchError,
     PasskeyPromptError,
     PasskeyRegistrationError,
+    SmartWalletError,
 } from "../../../error";
 import type { AccountAndSigner, PasskeyCreationContext } from "../../../types/internal";
 import type { PasskeySigner, UserParams, WalletParams } from "../../../types/params";
 import type { PasskeySignerData, PasskeyValidatorSerializedData } from "../../../types/service";
 import { PasskeySignerConfig } from "./signer";
 import type { AccountCreationStrategy } from "./strategy";
+import { SmartWalletErrorCode } from "@crossmint/client-sdk-base";
 
 type PasskeyValidator = KernelValidator<EntryPoint, "WebAuthnValidator"> & {
     getSerializedData: () => string;
@@ -71,14 +73,13 @@ export class PasskeyCreationStrategy implements AccountCreationStrategy {
                 account: this.decorate(kernelAccount, inputPasskeyName, walletParams),
             };
         } catch (error: unknown) {
-            // improve how we check the prompt if it was closed by the user
-            if (
-                walletParams.signer.onPasskeyRegistrationError != null &&
-                error instanceof Error &&
-                !error.message.includes("Wallet Creation Error: User closed the prompt")
-            ) {
-                walletParams.signer.onPasskeyRegistrationError(error);
+            const didUserIntentionallyClosePrompt =
+                error instanceof SmartWalletError && error.code === SmartWalletErrorCode.PASSKEY_PROMPT_CLOSED;
+
+            if (walletParams.signer.onPasskeyRegistrationError != null && !didUserIntentionallyClosePrompt) {
+                await walletParams.signer.onPasskeyRegistrationError();
             }
+
             throw this.mapError(error, inputPasskeyName);
         }
     }
@@ -169,7 +170,7 @@ export class PasskeyCreationStrategy implements AccountCreationStrategy {
                         return await original.call(target, ...args);
                     } catch (error) {
                         if (signer.onFirstTimePasskeySigningError != null) {
-                            await signer.onFirstTimePasskeySigningError(error);
+                            await signer.onFirstTimePasskeySigningError();
                         }
                         throw this.mapError(error, passkeyName);
                     }
