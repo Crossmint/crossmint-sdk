@@ -1,5 +1,5 @@
 import { Dialog, Transition } from "@headlessui/react";
-import { type CSSProperties, Fragment, useEffect, useRef, useState } from "react";
+import { type CSSProperties, Fragment, useCallback, useRef } from "react";
 import { z } from "zod";
 
 import { IFrameWindow } from "@crossmint/client-sdk-window";
@@ -37,41 +37,37 @@ export default function AuthModal({ setModalOpen, apiKey, fetchAuthMaterial, bas
     }
 
     const iframeRef = useRef<HTMLIFrameElement | null>(null);
-    const [iframe, setIframe] = useState<IFrameWindow<IncomingModalIframeEventsType, Record<string, never>> | null>(
-        null
-    );
+    const iframeWindowRef = useRef<IFrameWindow<IncomingModalIframeEventsType, Record<string, never>> | null>(null);
 
-    useEffect(() => {
-        if (iframe == null) {
+    const setupIframeWindowListener = useCallback(() => {
+        if (iframeWindowRef.current == null) {
             return;
         }
 
-        iframe.on("authMaterialFromAuthFrame", (data) => {
+        iframeWindowRef.current.on("authMaterialFromAuthFrame", (data) => {
             fetchAuthMaterial(data.oneTimeSecret);
-            iframe.off("authMaterialFromAuthFrame");
+            iframeWindowRef.current?.off("authMaterialFromAuthFrame");
             setModalOpen(false);
         });
+    }, [fetchAuthMaterial, setModalOpen]);
 
-        return () => {
-            if (iframe) {
-                iframe.off("authMaterialFromAuthFrame");
-            }
-        };
-    }, [iframe, fetchAuthMaterial, setModalOpen]);
-
-    const handleIframeLoaded = async () => {
+    const handleIframeLoaded = useCallback(async () => {
         if (iframeRef.current == null) {
             // The iframe should be load, here we should log on DD if possible
             console.error("Something wrong happened, please try again");
             return;
         }
 
-        const initIframe = await IFrameWindow.init(iframeRef.current, {
-            incomingEvents: incomingModalIframeEvents,
-            outgoingEvents: {},
-        });
-        setIframe(initIframe);
-    };
+        if (iframeWindowRef.current == null) {
+            const initIframe = await IFrameWindow.init(iframeRef.current, {
+                incomingEvents: incomingModalIframeEvents,
+                outgoingEvents: {},
+            });
+
+            iframeWindowRef.current = initIframe;
+            setupIframeWindowListener();
+        }
+    }, [setupIframeWindowListener]);
 
     return (
         <Transition.Root show as={Fragment}>
