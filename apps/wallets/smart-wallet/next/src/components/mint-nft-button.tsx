@@ -3,7 +3,7 @@
 import { Passkey } from "@/icons/passkey";
 import { Spinner } from "@/icons/spinner";
 import { mintNFT } from "@/utils/mint-api";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
 
