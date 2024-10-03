@@ -29,11 +29,7 @@ type UseAuthTokenRefreshProps = {
 // The actual promise just holds that IIFE until it has finished running and it's then set to null
 let refreshPromise: Promise<void> | null = null;
 
-export function useRefreshToken({
-    crossmintAuthService,
-    setAuthMaterial,
-    logout,
-}: UseAuthTokenRefreshProps) {
+export function useRefreshToken({ crossmintAuthService, setAuthMaterial, logout }: UseAuthTokenRefreshProps) {
     const refreshTaskRef = useRef<CancellableTask | null>(null);
 
     const refreshAuthMaterial = useCallback(() => {
@@ -45,10 +41,7 @@ export function useRefreshToken({
         if (refreshToken != null) {
             refreshPromise = (async () => {
                 try {
-                    const result =
-                        await crossmintAuthService.refreshAuthMaterial(
-                            refreshToken
-                        );
+                    const result = await crossmintAuthService.refreshAuthMaterial(refreshToken);
                     setAuthMaterial(result);
                     const jwtExpiration = getJWTExpiration(result.jwtToken);
 
@@ -57,16 +50,10 @@ export function useRefreshToken({
                     }
 
                     const currentTime = Date.now() / 1000;
-                    const timeToExpire =
-                        jwtExpiration -
-                        currentTime -
-                        TIME_BEFORE_EXPIRING_JWT_IN_SECONDS;
+                    const timeToExpire = jwtExpiration - currentTime - TIME_BEFORE_EXPIRING_JWT_IN_SECONDS;
                     if (timeToExpire > 0) {
                         const endTime = Date.now() + timeToExpire * 1000;
-                        refreshTaskRef.current = queueTask(
-                            refreshAuthMaterial,
-                            endTime
-                        );
+                        refreshTaskRef.current = queueTask(refreshAuthMaterial, endTime);
                     }
                 } catch (error) {
                     logout();

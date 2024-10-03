@@ -36,10 +36,10 @@ type AuthContextType = {
 };
 
 export const AuthContext = createContext<AuthContextType>({
-    login: () => { },
-    logout: () => { },
+    login: () => {},
+    logout: () => {},
     status: "logged-out",
-    getUser: () => { },
+    getUser: () => {},
 });
 
 export function CrossmintAuthProvider({ embeddedWallets, children, appearance }: CrossmintAuthProviderProps) {
@@ -141,16 +141,16 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
                 </WalletManager>
                 {modalOpen
                     ? createPortal(
-                        <AuthModal
-                            baseUrl={crossmintBaseUrl}
-                            setModalOpen={setModalOpen}
-                            fetchAuthMaterial={fetchAuthMaterial}
-                            apiKey={crossmint.apiKey}
-                            appearance={appearance}
-                        />,
+                          <AuthModal
+                              baseUrl={crossmintBaseUrl}
+                              setModalOpen={setModalOpen}
+                              fetchAuthMaterial={fetchAuthMaterial}
+                              apiKey={crossmint.apiKey}
+                              appearance={appearance}
+                          />,
 
-                        document.body
-                    )
+                          document.body
+                      )
                     : null}
             </CrossmintWalletProvider>
         </AuthContext.Provider>

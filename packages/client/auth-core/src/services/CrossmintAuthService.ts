@@ -1,7 +1,4 @@
-import {
-    APIErrorService,
-    BaseCrossmintService,
-} from "@crossmint/client-sdk-base";
+import { APIErrorService, BaseCrossmintService } from "@crossmint/client-sdk-base";
 
 import { authLogger } from "./logger";
 
@@ -37,12 +34,7 @@ export class CrossmintAuthService extends BaseCrossmintService {
         return result.user;
     }
     async getUserFromClient(jwt: string) {
-        const result = await this.fetchCrossmintAPI(
-            "sdk/auth/user",
-            { method: "GET" },
-            "Error fetching user.",
-            jwt
-        );
+        const result = await this.fetchCrossmintAPI("sdk/auth/user", { method: "GET" }, "Error fetching user.", jwt);
 
         return result;
     }

@@ -1,7 +1,4 @@
-import {
-    type ValidateAPIKeyPrefixExpectations,
-    validateAPIKey,
-} from "@/apiKey";
+import { type ValidateAPIKeyPrefixExpectations, validateAPIKey } from "@/apiKey";
 
 export type FarcasterMetadata = {
     fid: string;
@@ -27,10 +24,7 @@ export type Crossmint = {
     overrideBaseUrl?: string;
 };
 
-export function createCrossmint(
-    config: Crossmint,
-    apiKeyExpectations?: ValidateAPIKeyPrefixExpectations
-): Crossmint {
+export function createCrossmint(config: Crossmint, apiKeyExpectations?: ValidateAPIKeyPrefixExpectations): Crossmint {
     const { apiKey, jwt, refreshToken, overrideBaseUrl } = config;
     const apiKeyValidationResult = validateAPIKey(apiKey, apiKeyExpectations);
     if (!apiKeyValidationResult.isValid) {
