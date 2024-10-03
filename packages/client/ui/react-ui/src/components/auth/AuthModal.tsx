@@ -8,6 +8,7 @@ import type { UIConfig } from "@crossmint/common-sdk-base";
 import X from "../../icons/x";
 import { classNames } from "../../utils/classNames";
 import type { AuthMaterial } from "@/hooks/useRefreshToken";
+import type { LoginMethod } from "@/providers";
 
 const authMaterialSchema = z.object({
     oneTimeSecret: z.string(),
@@ -27,13 +28,25 @@ type AuthModalProps = {
     fetchAuthMaterial: (refreshToken: string) => Promise<AuthMaterial>;
     baseUrl: string;
     appearance?: UIConfig;
+    loginMethods?: LoginMethod[];
 };
 
-export default function AuthModal({ setModalOpen, apiKey, fetchAuthMaterial, baseUrl, appearance }: AuthModalProps) {
+export default function AuthModal({
+    setModalOpen,
+    apiKey,
+    fetchAuthMaterial,
+    baseUrl,
+    appearance,
+    loginMethods,
+}: AuthModalProps) {
     let iframeSrc = `${baseUrl}sdk/2024-09-26/auth/frame?apiKey=${apiKey}`;
     if (appearance != null) {
         // The appearance object is serialized into a query parameter
         iframeSrc += `&uiConfig=${encodeURIComponent(JSON.stringify(appearance))}`;
+    }
+
+    if (loginMethods != null) {
+        iframeSrc += `&loginMethods=${loginMethods.join(",")}`;
     }
 
     const iframeRef = useRef<HTMLIFrameElement | null>(null);
