@@ -4,9 +4,9 @@ import { z } from "zod";
 
 import { IFrameWindow } from "@crossmint/client-sdk-window";
 import type { UIConfig } from "@crossmint/common-sdk-base";
+import { CrossmintInternalEvents } from "@crossmint/client-sdk-base";
 
 import X from "../../icons/x";
-import { classNames } from "../../utils/classNames";
 import type { AuthMaterial } from "@/hooks/useRefreshToken";
 
 const authMaterialSchema = z.object({
@@ -41,6 +41,11 @@ export default function AuthModal({ setModalOpen, apiKey, fetchAuthMaterial, bas
         null
     );
 
+    const [iframeChildrenHeight, setIframeChildrenHeight] = useState(0);
+    const iframePaddingTopPX = 48;
+    const iframePaddingBottomPX = 32;
+    const paddingOffset = iframePaddingTopPX + iframePaddingBottomPX;
+
     useEffect(() => {
         if (iframe == null) {
             return;
@@ -72,6 +77,18 @@ export default function AuthModal({ setModalOpen, apiKey, fetchAuthMaterial, bas
         });
         setIframe(initIframe);
     };
+
+    useEffect(() => {
+        function _onEvent(event: MessageEvent) {
+            if (event.data.type === CrossmintInternalEvents.UI_HEIGHT_CHANGED) {
+                setIframeChildrenHeight(event.data.payload.height);
+            }
+        }
+        window.addEventListener("message", _onEvent);
+        return () => {
+            window.removeEventListener("message", _onEvent);
+        };
+    }, []);
 
     return (
         <Transition.Root show as={Fragment}>
@@ -121,14 +138,16 @@ export default function AuthModal({ setModalOpen, apiKey, fetchAuthMaterial, bas
                             src={iframeSrc}
                             onLoad={handleIframeLoaded}
                             title="Authentication Modal"
-                            className={classNames(
-                                "w-full h-[500px] border pt-12 pb-8",
-                                appearance?.colors?.border
-                                    ? `border-[${appearance.colors.border}]`
-                                    : "border-[#D0D5DD]",
-                                appearance?.borderRadius ? `rounded-[${appearance.borderRadius}]` : "rounded-2xl",
-                                appearance?.colors?.background ? `bg-[${appearance.colors.background}]` : "bg-white"
-                            )}
+                            style={{
+                                width: "100%",
+                                minHeight: "300px",
+                                border: `1px solid ${appearance?.colors?.border ?? "#D0D5DD"}`,
+                                borderRadius: appearance?.borderRadius ?? "16px",
+                                backgroundColor: appearance?.colors?.background ?? "white",
+                                height: iframeChildrenHeight + paddingOffset,
+                                paddingTop: iframePaddingTopPX,
+                                paddingBottom: iframePaddingBottomPX,
+                            }}
                         />
                     </div>
                 </Transition.Child>
