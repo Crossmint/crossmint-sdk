@@ -3,9 +3,9 @@
 import { Passkey } from "@/icons/passkey";
 import { Spinner } from "@/icons/spinner";
 import { mintNFT } from "@/utils/mint-api";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { useWallet } from "@crossmint/client-sdk-react-ui";
+import { useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
 
 import { Button } from "./button";
 import { Typography } from "./typography";
@@ -14,7 +14,18 @@ import { useToast } from "./use-toast";
 export const MintNFTButton = ({ setNftSuccessfullyMinted }: { setNftSuccessfullyMinted: (a: boolean) => void }) => {
     const { wallet } = useWallet();
     const [isLoadingMint, setIsLoadingMint] = useState(false);
+    const { user, getUser } = useAuth();
     const { toast } = useToast();
+
+    useEffect(() => {
+        console.log("user changed");
+        console.log(user);
+    }, [user]);
+
+    useEffect(() => {
+        console.log("user email changed");
+        console.log(user?.email);
+    }, [user?.email]);
 
     if (isLoadingMint) {
         return (
@@ -28,6 +39,9 @@ export const MintNFTButton = ({ setNftSuccessfullyMinted }: { setNftSuccessfully
     }
 
     const mint = async () => {
+        console.log("minting");
+        getUser();
+        console.log("user function executed", user);
         setIsLoadingMint(true);
         try {
             if (!wallet) {

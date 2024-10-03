@@ -5,6 +5,7 @@ import { getJWTExpiration } from "@crossmint/client-sdk-auth-core/client";
 import { queueTask, type CancellableTask } from "@crossmint/client-sdk-base";
 
 import { REFRESH_TOKEN_PREFIX, getCookie } from "../utils/authCookies";
+import type { SDKExternalUser } from "@crossmint/common-sdk-base";
 
 // 2 minutes before jwt expiration
 const TIME_BEFORE_EXPIRING_JWT_IN_SECONDS = 120;
@@ -15,6 +16,7 @@ export type AuthMaterial = {
         secret: string;
         expiresAt: string;
     };
+    user: SDKExternalUser;
 };
 
 type UseAuthTokenRefreshProps = {
@@ -27,7 +29,11 @@ type UseAuthTokenRefreshProps = {
 // The actual promise just holds that IIFE until it has finished running and it's then set to null
 let refreshPromise: Promise<void> | null = null;
 
-export function useRefreshToken({ crossmintAuthService, setAuthMaterial, logout }: UseAuthTokenRefreshProps) {
+export function useRefreshToken({
+    crossmintAuthService,
+    setAuthMaterial,
+    logout,
+}: UseAuthTokenRefreshProps) {
     const refreshTaskRef = useRef<CancellableTask | null>(null);
 
     const refreshAuthMaterial = useCallback(() => {
@@ -39,7 +45,10 @@ export function useRefreshToken({ crossmintAuthService, setAuthMaterial, logout 
         if (refreshToken != null) {
             refreshPromise = (async () => {
                 try {
-                    const result = await crossmintAuthService.refreshAuthMaterial(refreshToken);
+                    const result =
+                        await crossmintAuthService.refreshAuthMaterial(
+                            refreshToken
+                        );
                     setAuthMaterial(result);
                     const jwtExpiration = getJWTExpiration(result.jwtToken);
 
@@ -48,10 +57,16 @@ export function useRefreshToken({ crossmintAuthService, setAuthMaterial, logout 
                     }
 
                     const currentTime = Date.now() / 1000;
-                    const timeToExpire = jwtExpiration - currentTime - TIME_BEFORE_EXPIRING_JWT_IN_SECONDS;
+                    const timeToExpire =
+                        jwtExpiration -
+                        currentTime -
+                        TIME_BEFORE_EXPIRING_JWT_IN_SECONDS;
                     if (timeToExpire > 0) {
                         const endTime = Date.now() + timeToExpire * 1000;
-                        refreshTaskRef.current = queueTask(refreshAuthMaterial, endTime);
+                        refreshTaskRef.current = queueTask(
+                            refreshAuthMaterial,
+                            endTime
+                        );
                     }
                 } catch (error) {
                     logout();

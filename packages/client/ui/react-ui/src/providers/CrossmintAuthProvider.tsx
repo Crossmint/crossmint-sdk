@@ -4,7 +4,7 @@ import { createPortal } from "react-dom";
 
 import { CrossmintAuthService } from "@crossmint/client-sdk-auth-core/client";
 import type { EVMSmartWalletChain } from "@crossmint/client-sdk-smart-wallet";
-import { type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
+import { SDKExternalUser, type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
 
 import AuthModal from "../components/auth/AuthModal";
 import { type AuthMaterial, useCrossmint, useRefreshToken, useWallet } from "../hooks";
@@ -30,16 +30,20 @@ type AuthContextType = {
     logout: () => void;
     jwt?: string;
     refreshToken?: string;
+    user?: SDKExternalUser;
     status: AuthStatus;
+    getUser: () => void;
 };
 
 export const AuthContext = createContext<AuthContextType>({
-    login: () => {},
-    logout: () => {},
+    login: () => { },
+    logout: () => { },
     status: "logged-out",
+    getUser: () => { },
 });
 
 export function CrossmintAuthProvider({ embeddedWallets, children, appearance }: CrossmintAuthProviderProps) {
+    const [user, setUser] = useState<SDKExternalUser | undefined>(undefined);
     const { crossmint, setJwt, setRefreshToken } = useCrossmint(
         "CrossmintAuthProvider must be used within CrossmintProvider"
     );
@@ -47,11 +51,16 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
     const crossmintBaseUrl = validateApiKeyAndGetCrossmintBaseUrl(crossmint.apiKey);
     const [modalOpen, setModalOpen] = useState(false);
 
+    useEffect(() => {
+        console.log("user changed inside the auth provider", user);
+    }, [user]);
+
     const setAuthMaterial = (authMaterial: AuthMaterial) => {
         setCookie(SESSION_PREFIX, authMaterial.jwtToken);
         setCookie(REFRESH_TOKEN_PREFIX, authMaterial.refreshToken.secret, authMaterial.refreshToken.expiresAt);
         setJwt(authMaterial.jwtToken);
         setRefreshToken(authMaterial.refreshToken.secret);
+        setUser(authMaterial.user);
     };
 
     const logout = () => {
@@ -59,6 +68,7 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
         deleteCookie(REFRESH_TOKEN_PREFIX);
         setJwt(undefined);
         setRefreshToken(undefined);
+        setUser(undefined);
     };
 
     useRefreshToken({ crossmintAuthService, setAuthMaterial, logout });
@@ -99,8 +109,21 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
 
     const fetchAuthMaterial = async (refreshToken: string): Promise<AuthMaterial> => {
         const authMaterial = await crossmintAuthService.refreshAuthMaterial(refreshToken);
+        console.log("authMaterial fetched", authMaterial);
         setAuthMaterial(authMaterial);
         return authMaterial;
+    };
+
+    const getUser = async () => {
+        if (crossmint.jwt == null) {
+            console.log("User not logged in");
+            return;
+        }
+
+        console.log("Getting user", crossmint.jwt);
+        const user = await crossmintAuthService.getUserFromClient(crossmint.jwt);
+        console.log("User fetched", user);
+        setUser(user);
     };
 
     return (
@@ -110,7 +133,9 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
                 logout,
                 jwt: crossmint.jwt,
                 refreshToken: crossmint.refreshToken,
+                user,
                 status: getAuthStatus(),
+                getUser,
             }}
         >
             <CrossmintWalletProvider
@@ -123,16 +148,16 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
                 </WalletManager>
                 {modalOpen
                     ? createPortal(
-                          <AuthModal
-                              baseUrl={crossmintBaseUrl}
-                              setModalOpen={setModalOpen}
-                              fetchAuthMaterial={fetchAuthMaterial}
-                              apiKey={crossmint.apiKey}
-                              appearance={appearance}
-                          />,
+                        <AuthModal
+                            baseUrl={crossmintBaseUrl}
+                            setModalOpen={setModalOpen}
+                            fetchAuthMaterial={fetchAuthMaterial}
+                            apiKey={crossmint.apiKey}
+                            appearance={appearance}
+                        />,
 
-                          document.body
-                      )
+                        document.body
+                    )
                     : null}
             </CrossmintWalletProvider>
         </AuthContext.Provider>
