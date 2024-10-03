@@ -45,7 +45,6 @@ export function CrossmintProvider({
         }
     }, []);
 
-
     const value = useMemo(
         () => ({
             get crossmint() {

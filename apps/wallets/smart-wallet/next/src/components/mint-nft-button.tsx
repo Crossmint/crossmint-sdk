@@ -17,16 +17,6 @@ export const MintNFTButton = ({ setNftSuccessfullyMinted }: { setNftSuccessfully
     const { user, getUser } = useAuth();
     const { toast } = useToast();
 
-    useEffect(() => {
-        console.log("user changed");
-        console.log(user);
-    }, [user]);
-
-    useEffect(() => {
-        console.log("user email changed");
-        console.log(user?.email);
-    }, [user?.email]);
-
     if (isLoadingMint) {
         return (
             <div className="flex gap-2 items-center self-center min-h-[52px]" role="status">
@@ -39,9 +29,6 @@ export const MintNFTButton = ({ setNftSuccessfullyMinted }: { setNftSuccessfully
     }
 
     const mint = async () => {
-        console.log("minting");
-        getUser();
-        console.log("user function executed", user);
         setIsLoadingMint(true);
         try {
             if (!wallet) {

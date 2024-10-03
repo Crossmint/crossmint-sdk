@@ -51,10 +51,6 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
     const crossmintBaseUrl = validateApiKeyAndGetCrossmintBaseUrl(crossmint.apiKey);
     const [modalOpen, setModalOpen] = useState(false);
 
-    useEffect(() => {
-        console.log("user changed inside the auth provider", user);
-    }, [user]);
-
     const setAuthMaterial = (authMaterial: AuthMaterial) => {
         setCookie(SESSION_PREFIX, authMaterial.jwtToken);
         setCookie(REFRESH_TOKEN_PREFIX, authMaterial.refreshToken.secret, authMaterial.refreshToken.expiresAt);
@@ -109,7 +105,6 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
 
     const fetchAuthMaterial = async (refreshToken: string): Promise<AuthMaterial> => {
         const authMaterial = await crossmintAuthService.refreshAuthMaterial(refreshToken);
-        console.log("authMaterial fetched", authMaterial);
         setAuthMaterial(authMaterial);
         return authMaterial;
     };
@@ -120,9 +115,7 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
             return;
         }
 
-        console.log("Getting user", crossmint.jwt);
         const user = await crossmintAuthService.getUserFromClient(crossmint.jwt);
-        console.log("User fetched", user);
         setUser(user);
     };
 

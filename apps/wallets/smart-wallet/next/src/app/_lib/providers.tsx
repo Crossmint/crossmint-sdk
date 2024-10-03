@@ -10,7 +10,7 @@ export function Providers({ children }: { children: ReactNode }) {
 
     return (
         <QueryClientProvider client={queryClient}>
-            <CrossmintProvider apiKey={"ck_development_5ZWkfMR1mdtMkcKGTuP6oi2sJkyozzhhH1KeH1XWAfRQYEWVmChGoHq1z3q8YN4J2387QRzVHFciW2h69h93GpjppJJKk5KM3W85oLLzN2cQhjVfm6dqsLo292Ci3AaBAxoamVaJ6FeBMsCB8AFVjkLqbFWKvGEDaTqytHbHjPB6SJFr3KJ9S6ZqTJg1wiLT5EXWGHT5Sufef12hfT9tWr2S"}>
+            <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_AUTH_SMART_WALLET_API_KEY ?? ""}>
                 <CrossmintAuthProvider
                     embeddedWallets={{
                         createOnLogin: "all-users",

@@ -3,7 +3,6 @@ import {
     validateAPIKey,
 } from "@/apiKey";
 
-//TODO: this is duplicated from the one in the auth-sdk
 export type FarcasterMetadata = {
     fid: string;
     username: string;
