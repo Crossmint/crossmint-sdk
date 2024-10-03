@@ -5,7 +5,7 @@ import { Spinner } from "@/icons/spinner";
 import { mintNFT } from "@/utils/mint-api";
 import { useState } from "react";
 
-import { useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
+import { useWallet } from "@crossmint/client-sdk-react-ui";
 
 import { Button } from "./button";
 import { Typography } from "./typography";
@@ -14,7 +14,6 @@ import { useToast } from "./use-toast";
 export const MintNFTButton = ({ setNftSuccessfullyMinted }: { setNftSuccessfullyMinted: (a: boolean) => void }) => {
     const { wallet } = useWallet();
     const [isLoadingMint, setIsLoadingMint] = useState(false);
-    const { user, getUser } = useAuth();
     const { toast } = useToast();
 
     if (isLoadingMint) {
