@@ -34,8 +34,6 @@ export class CrossmintAuthService extends BaseCrossmintService {
         return result.user;
     }
     async getUserFromClient(jwt: string) {
-        const result = await this.fetchCrossmintAPI("sdk/auth/user", { method: "GET" }, "Error fetching user.", jwt);
-
-        return result;
+        return await this.fetchCrossmintAPI("sdk/auth/user", { method: "GET" }, "Error fetching user.", jwt);
     }
 }
