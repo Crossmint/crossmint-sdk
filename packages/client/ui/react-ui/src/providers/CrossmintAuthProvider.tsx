@@ -2,9 +2,9 @@ import { REFRESH_TOKEN_PREFIX, SESSION_PREFIX, deleteCookie, getCookie, setCooki
 import { type ReactNode, createContext, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { CrossmintAuthService } from "@crossmint/client-sdk-auth-core/client";
+import { CrossmintAuthService, type SDKExternalUser } from "@crossmint/client-sdk-auth-core/client";
 import type { EVMSmartWalletChain } from "@crossmint/client-sdk-smart-wallet";
-import { SDKExternalUser, type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
+import { type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
 
 import AuthModal from "../components/auth/AuthModal";
 import { type AuthMaterial, useCrossmint, useRefreshToken, useWallet } from "../hooks";
