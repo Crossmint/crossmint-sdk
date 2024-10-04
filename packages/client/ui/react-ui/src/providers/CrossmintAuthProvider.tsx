@@ -63,15 +63,6 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
 
     useRefreshToken({ crossmintAuthService, setAuthMaterial, logout });
 
-    const login = () => {
-        if (crossmint.jwt != null) {
-            console.log("User already logged in");
-            return;
-        }
-
-        setModalOpen(true);
-    };
-
     useEffect(() => {
         if (crossmint.jwt == null) {
             const jwt = getCookie(SESSION_PREFIX);
@@ -86,6 +77,15 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
 
         setModalOpen(false);
     }, [crossmint.jwt]);
+
+    const login = () => {
+        if (crossmint.jwt != null) {
+            console.log("User already logged in");
+            return;
+        }
+
+        setModalOpen(true);
+    };
 
     const getAuthStatus = (): AuthStatus => {
         if (crossmint.jwt != null) {
