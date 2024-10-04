@@ -1,5 +1,5 @@
 import { Dialog, Transition } from "@headlessui/react";
-import { type CSSProperties, Fragment, useCallback, useRef } from "react";
+import { type CSSProperties, Fragment, useRef } from "react";
 import { z } from "zod";
 
 import { IFrameWindow } from "@crossmint/client-sdk-window";
@@ -39,7 +39,7 @@ export default function AuthModal({ setModalOpen, apiKey, fetchAuthMaterial, bas
     const iframeRef = useRef<HTMLIFrameElement | null>(null);
     const iframeWindowRef = useRef<IFrameWindow<IncomingModalIframeEventsType, Record<string, never>> | null>(null);
 
-    const setupIframeWindowListener = useCallback(() => {
+    const setupIframeWindowListener = () => {
         if (iframeWindowRef.current == null) {
             return;
         }
@@ -49,9 +49,9 @@ export default function AuthModal({ setModalOpen, apiKey, fetchAuthMaterial, bas
             iframeWindowRef.current?.off("authMaterialFromAuthFrame");
             setModalOpen(false);
         });
-    }, [fetchAuthMaterial, setModalOpen]);
+    };
 
-    const handleIframeLoaded = useCallback(async () => {
+    const handleIframeLoaded = async () => {
         if (iframeRef.current == null) {
             // The iframe should be load, here we should log on DD if possible
             console.error("Something wrong happened, please try again");
@@ -67,7 +67,7 @@ export default function AuthModal({ setModalOpen, apiKey, fetchAuthMaterial, bas
             iframeWindowRef.current = initIframe;
             setupIframeWindowListener();
         }
-    }, [setupIframeWindowListener]);
+    };
 
     return (
         <Transition.Root show as={Fragment}>

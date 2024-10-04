@@ -1,5 +1,5 @@
 import { REFRESH_TOKEN_PREFIX, SESSION_PREFIX, deleteCookie, getCookie, setCookie } from "@/utils/authCookies";
-import { type ReactNode, createContext, useCallback, useEffect, useState } from "react";
+import { type ReactNode, createContext, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { CrossmintAuthService } from "@crossmint/client-sdk-auth-core/client";
@@ -47,15 +47,12 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
     const crossmintBaseUrl = validateApiKeyAndGetCrossmintBaseUrl(crossmint.apiKey);
     const [modalOpen, setModalOpen] = useState(false);
 
-    const setAuthMaterial = useCallback(
-        (authMaterial: AuthMaterial) => {
-            setCookie(SESSION_PREFIX, authMaterial.jwtToken);
-            setCookie(REFRESH_TOKEN_PREFIX, authMaterial.refreshToken.secret, authMaterial.refreshToken.expiresAt);
-            setJwt(authMaterial.jwtToken);
-            setRefreshToken(authMaterial.refreshToken.secret);
-        },
-        [setJwt, setRefreshToken]
-    );
+    const setAuthMaterial = (authMaterial: AuthMaterial) => {
+        setCookie(SESSION_PREFIX, authMaterial.jwtToken);
+        setCookie(REFRESH_TOKEN_PREFIX, authMaterial.refreshToken.secret, authMaterial.refreshToken.expiresAt);
+        setJwt(authMaterial.jwtToken);
+        setRefreshToken(authMaterial.refreshToken.secret);
+    };
 
     const logout = () => {
         deleteCookie(SESSION_PREFIX);
@@ -100,14 +97,11 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
         return "logged-out";
     };
 
-    const fetchAuthMaterial = useCallback(
-        async (refreshToken: string): Promise<AuthMaterial> => {
-            const authMaterial = await crossmintAuthService.refreshAuthMaterial(refreshToken);
-            setAuthMaterial(authMaterial);
-            return authMaterial;
-        },
-        [crossmintAuthService, setAuthMaterial]
-    );
+    const fetchAuthMaterial = async (refreshToken: string): Promise<AuthMaterial> => {
+        const authMaterial = await crossmintAuthService.refreshAuthMaterial(refreshToken);
+        setAuthMaterial(authMaterial);
+        return authMaterial;
+    };
 
     return (
         <AuthContext.Provider
