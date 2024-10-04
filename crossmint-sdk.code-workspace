@@ -21,8 +21,16 @@
             "path": "packages/common/base"
         },
         {
+            "name": "🧬 @crossmint/common-sdk-auth",
+            "path": "packages/common/auth"
+        },
+        {
             "name": "🧬 @crossmint/client-sdk-base",
             "path": "packages/client/base"
+        },
+        {
+            "name": "⚛️ @crossmint/client-sdk-auth",
+            "path": "packages/client/auth"
         },
         {
             "name": "⚛️ @crossmint/client-sdk-react-ui",

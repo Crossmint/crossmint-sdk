@@ -386,6 +386,15 @@ importers:
         specifier: ^0.11.0
         version: 0.11.3
 
+  packages/client/auth:
+    dependencies:
+      '@crossmint/common-sdk-auth':
+        specifier: workspace:*
+        version: link:../../common/auth
+      jwt-decode:
+        specifier: 4.0.0
+        version: 4.0.0
+
   packages/client/auth-core:
     dependencies:
       '@crossmint/client-sdk-base':
@@ -432,9 +441,9 @@ importers:
 
   packages/client/ui/react-ui:
     dependencies:
-      '@crossmint/client-sdk-auth-core':
+      '@crossmint/client-sdk-auth':
         specifier: workspace:*
-        version: link:../../auth-core
+        version: link:../../auth
       '@crossmint/client-sdk-base':
         specifier: workspace:*
         version: link:../../base
@@ -754,6 +763,12 @@ importers:
         specifier: 3.22.4
         version: 3.22.4
 
+  packages/common/auth:
+    dependencies:
+      '@crossmint/client-sdk-base':
+        specifier: workspace:*
+        version: link:../../client/base
+
   packages/common/base:
     dependencies:
       bs58:
@@ -766,6 +781,22 @@ importers:
       '@types/bs58':
         specifier: ^4.0.4
         version: 4.0.4
+
+  packages/server/auth:
+    dependencies:
+      '@crossmint/common-sdk-auth':
+        specifier: workspace:*
+        version: link:../../common/auth
+      jsonwebtoken:
+        specifier: 9.0.2
+        version: 9.0.2
+      jwks-rsa:
+        specifier: 3.1.0
+        version: 3.1.0
+    devDependencies:
+      '@types/jsonwebtoken':
+        specifier: 9.0.6
+        version: 9.0.6
 
 packages:
 

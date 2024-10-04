@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 
-import type { CrossmintAuthService } from "@crossmint/client-sdk-auth-core/client";
-import { getJWTExpiration } from "@crossmint/client-sdk-auth-core/client";
+import type { CrossmintAuthService } from "@crossmint/client-sdk-auth";
+import { getJWTExpiration } from "@crossmint/client-sdk-auth";
 import { queueTask, type CancellableTask } from "@crossmint/client-sdk-base";
 
 import { REFRESH_TOKEN_PREFIX, getCookie } from "../utils/authCookies";

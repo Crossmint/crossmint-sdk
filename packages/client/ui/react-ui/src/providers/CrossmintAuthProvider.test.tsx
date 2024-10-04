@@ -4,7 +4,7 @@ import { type ReactNode, act } from "react";
 import { beforeEach, describe, expect, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 
-import { CrossmintAuthService, getJWTExpiration } from "@crossmint/client-sdk-auth-core/client";
+import { CrossmintAuthService, getJWTExpiration } from "@crossmint/client-sdk-auth";
 import { type EVMSmartWallet, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
 import { createCrossmint } from "@crossmint/common-sdk-base";
 
@@ -32,8 +32,8 @@ vi.mock("@crossmint/common-sdk-base", async () => {
     };
 });
 
-vi.mock("@crossmint/client-sdk-auth-core/client", async () => {
-    const actual = await vi.importActual("@crossmint/client-sdk-auth-core/client");
+vi.mock("@crossmint/client-sdk-auth", async () => {
+    const actual = await vi.importActual("@crossmint/client-sdk-auth");
     return {
         ...actual,
         getJWTExpiration: vi.fn(),
