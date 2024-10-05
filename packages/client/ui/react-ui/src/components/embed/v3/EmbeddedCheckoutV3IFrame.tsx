@@ -8,6 +8,7 @@ import {
 } from "@crossmint/client-sdk-base";
 import { LIB_VERSION } from "@/consts/version";
 import { CrossmintApiClient } from "@crossmint/common-sdk-base";
+import { CryptoWalletConnectionHandler } from "./crypto/CryptoWalletConnectionHandler";
 
 export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props) {
     const [iframeClient, setIframeClient] = useState<EmbeddedCheckoutV3IFrameEmitter | null>(null);
@@ -35,38 +36,41 @@ export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props
     }, [ref.current, iframeClient]);
 
     useEffect(() => {
-        if (!iframeClient) {
+        if (iframeClient == null) {
             return;
         }
-        iframeClient.on("ui:height.changed", (data) => setHeight(data.height));
+        const listenerId = iframeClient.on("ui:height.changed", (data) => setHeight(data.height));
 
         return () => {
-            iframeClient.off("ui:height.changed");
+            iframeClient.off(listenerId);
         };
     }, [iframeClient]);
 
     return (
-        <iframe
-            ref={ref}
-            src={embedV3Service.iframe.getUrl(props)}
-            id="crossmint-embedded-checkout.iframe"
-            role="crossmint-embedded-checkout.iframe"
-            allow="payment *"
-            style={{
-                boxShadow: "none",
-                border: "none",
-                padding: "0px",
-                width: "100%",
-                minWidth: "100%",
-                overflow: "hidden",
-                display: "block",
-                userSelect: "none",
-                transform: "translate(0px)",
-                opacity: "1",
-                transition: "ease 0s, opacity 0.4s ease 0.1s",
-                height: `${height}px`,
-                backgroundColor: "transparent",
-            }}
-        />
+        <>
+            <iframe
+                ref={ref}
+                src={embedV3Service.iframe.getUrl(props)}
+                id="crossmint-embedded-checkout.iframe"
+                role="crossmint-embedded-checkout.iframe"
+                allow="payment *"
+                style={{
+                    boxShadow: "none",
+                    border: "none",
+                    padding: "0px",
+                    width: "100%",
+                    minWidth: "100%",
+                    overflow: "hidden",
+                    display: "block",
+                    userSelect: "none",
+                    transform: "translate(0px)",
+                    opacity: "1",
+                    transition: "ease 0s, opacity 0.4s ease 0.1s",
+                    height: `${height}px`,
+                    backgroundColor: "transparent",
+                }}
+            />
+            <CryptoWalletConnectionHandler iframeClient={iframeClient} />
+        </>
     );
 }
