@@ -39,10 +39,10 @@ export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props
         if (iframeClient == null) {
             return;
         }
-        const listenerId = iframeClient.on("ui:height.changed", (data) => setHeight(data.height));
+        iframeClient.on("ui:height.changed", (data) => setHeight(data.height));
 
         return () => {
-            iframeClient.off(listenerId);
+            iframeClient.off("ui:height.changed");
         };
     }, [iframeClient]);
 
