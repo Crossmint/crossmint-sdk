@@ -7,7 +7,8 @@ export async function verifyCrossmintSessionToken(apiKey: string, token: string)
     const crossmintService = new CrossmintAuthService(apiKey);
     try {
         return await verifyJWTWithPublicKey(crossmintService, token);
-    } catch (_) {
+    } catch (error) {
+        console.log("Error verifying JWT", error);
         throw new Error("Invalid token");
     }
 }
