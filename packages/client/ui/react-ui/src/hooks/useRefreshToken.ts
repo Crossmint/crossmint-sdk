@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 
-import type { CrossmintAuthService } from "@crossmint/client-sdk-auth-core/client";
+import type { CrossmintAuthService, SDKExternalUser } from "@crossmint/client-sdk-auth-core/client";
 import { getJWTExpiration } from "@crossmint/client-sdk-auth-core/client";
 import { queueTask, type CancellableTask } from "@crossmint/client-sdk-base";
 
@@ -15,6 +15,7 @@ export type AuthMaterial = {
         secret: string;
         expiresAt: string;
     };
+    user: SDKExternalUser;
 };
 
 type UseAuthTokenRefreshProps = {

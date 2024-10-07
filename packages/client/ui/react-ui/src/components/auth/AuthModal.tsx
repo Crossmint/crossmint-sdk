@@ -1,5 +1,5 @@
 import { Dialog, Transition } from "@headlessui/react";
-import { type CSSProperties, Fragment, useEffect, useRef, useState } from "react";
+import { type CSSProperties, Fragment, useRef } from "react";
 import { z } from "zod";
 
 import { IFrameWindow } from "@crossmint/client-sdk-window";
@@ -50,27 +50,19 @@ export default function AuthModal({
     }
 
     const iframeRef = useRef<HTMLIFrameElement | null>(null);
-    const [iframe, setIframe] = useState<IFrameWindow<IncomingModalIframeEventsType, Record<string, never>> | null>(
-        null
-    );
+    const iframeWindowRef = useRef<IFrameWindow<IncomingModalIframeEventsType, Record<string, never>> | null>(null);
 
-    useEffect(() => {
-        if (iframe == null) {
+    const setupIframeWindowListener = () => {
+        if (iframeWindowRef.current == null) {
             return;
         }
 
-        iframe.on("authMaterialFromAuthFrame", (data) => {
+        iframeWindowRef.current.on("authMaterialFromAuthFrame", (data) => {
             fetchAuthMaterial(data.oneTimeSecret);
-            iframe.off("authMaterialFromAuthFrame");
+            iframeWindowRef.current?.off("authMaterialFromAuthFrame");
             setModalOpen(false);
         });
-
-        return () => {
-            if (iframe) {
-                iframe.off("authMaterialFromAuthFrame");
-            }
-        };
-    }, [iframe, fetchAuthMaterial, setModalOpen]);
+    };
 
     const handleIframeLoaded = async () => {
         if (iframeRef.current == null) {
@@ -79,11 +71,15 @@ export default function AuthModal({
             return;
         }
 
-        const initIframe = await IFrameWindow.init(iframeRef.current, {
-            incomingEvents: incomingModalIframeEvents,
-            outgoingEvents: {},
-        });
-        setIframe(initIframe);
+        if (iframeWindowRef.current == null) {
+            const initIframe = await IFrameWindow.init(iframeRef.current, {
+                incomingEvents: incomingModalIframeEvents,
+                outgoingEvents: {},
+            });
+
+            iframeWindowRef.current = initIframe;
+            setupIframeWindowListener();
+        }
     };
 
     return (
