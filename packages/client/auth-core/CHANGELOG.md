@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-auth-core
 
+## 1.4.0
+
+### Minor Changes
+
+- 5387811: Add the user profile
+
 ## 1.3.0
 
 ### Minor Changes

@@ -44,6 +44,10 @@ vi.mock("@crossmint/client-sdk-auth-core/client", async () => {
                     secret: "new-mock-refresh-token",
                     expiresAt: new Date(Date.now() + 1000 * 60 * 60).toISOString(),
                 },
+                user: {
+                    id: "123",
+                    email: "test@test.com",
+                },
             }),
         })),
     };

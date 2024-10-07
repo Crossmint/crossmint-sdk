@@ -37,32 +37,24 @@ export default function AuthModal({ setModalOpen, apiKey, fetchAuthMaterial, bas
     }
 
     const iframeRef = useRef<HTMLIFrameElement | null>(null);
-    const [iframe, setIframe] = useState<IFrameWindow<IncomingModalIframeEventsType, Record<string, never>> | null>(
-        null
-    );
+    const iframeWindowRef = useRef<IFrameWindow<IncomingModalIframeEventsType, Record<string, never>> | null>(null);
 
     const [iframeChildrenHeight, setIframeChildrenHeight] = useState(0);
     const iframePaddingTopPX = 48;
     const iframePaddingBottomPX = 32;
     const paddingOffset = iframePaddingTopPX + iframePaddingBottomPX;
 
-    useEffect(() => {
-        if (iframe == null) {
+    const setupIframeWindowListener = () => {
+        if (iframeWindowRef.current == null) {
             return;
         }
 
-        iframe.on("authMaterialFromAuthFrame", (data) => {
+        iframeWindowRef.current.on("authMaterialFromAuthFrame", (data) => {
             fetchAuthMaterial(data.oneTimeSecret);
-            iframe.off("authMaterialFromAuthFrame");
+            iframeWindowRef.current?.off("authMaterialFromAuthFrame");
             setModalOpen(false);
         });
-
-        return () => {
-            if (iframe) {
-                iframe.off("authMaterialFromAuthFrame");
-            }
-        };
-    }, [iframe, fetchAuthMaterial, setModalOpen]);
+    };
 
     const handleIframeLoaded = async () => {
         if (iframeRef.current == null) {
@@ -71,11 +63,15 @@ export default function AuthModal({ setModalOpen, apiKey, fetchAuthMaterial, bas
             return;
         }
 
-        const initIframe = await IFrameWindow.init(iframeRef.current, {
-            incomingEvents: incomingModalIframeEvents,
-            outgoingEvents: {},
-        });
-        setIframe(initIframe);
+        if (iframeWindowRef.current == null) {
+            const initIframe = await IFrameWindow.init(iframeRef.current, {
+                incomingEvents: incomingModalIframeEvents,
+                outgoingEvents: {},
+            });
+
+            iframeWindowRef.current = initIframe;
+            setupIframeWindowListener();
+        }
     };
 
     useEffect(() => {
