@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-react-ui",
-    "version": "1.5.0",
+    "version": "1.6.0",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
@@ -25,6 +25,7 @@
         "@crossmint/client-sdk-smart-wallet": "workspace:*",
         "@crossmint/client-sdk-window": "workspace:*",
         "@crossmint/common-sdk-base": "workspace:*",
+        "@crossmint/common-sdk-auth": "workspace:*",
         "@ethersproject/transactions": "5.7.0",
         "@headlessui/react": "2.1.5",
         "@solana/web3.js": "1.95.1",

@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-react-ui-starter
 
+## 1.2.31
+
+### Patch Changes
+
+- Updated dependencies [5387811]
+- Updated dependencies [9bfb18f]
+  - @crossmint/client-sdk-react-ui@1.6.0
+
 ## 1.2.30
 
 ### Patch Changes

@@ -453,6 +453,9 @@ importers:
       '@crossmint/client-sdk-window':
         specifier: workspace:*
         version: link:../../window
+      '@crossmint/common-sdk-auth':
+        specifier: workspace:*
+        version: link:../../../common/auth
       '@crossmint/common-sdk-base':
         specifier: workspace:*
         version: link:../../../common/base
