@@ -4,10 +4,10 @@ import { z } from "zod";
 
 import { IFrameWindow } from "@crossmint/client-sdk-window";
 import type { UIConfig } from "@crossmint/common-sdk-base";
+import type { AuthMaterial } from "@crossmint/common-sdk-auth";
 
 import X from "../../icons/x";
 import { classNames } from "../../utils/classNames";
-import type { AuthMaterial } from "@/hooks/useRefreshToken";
 
 const authMaterialSchema = z.object({
     oneTimeSecret: z.string(),
