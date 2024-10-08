@@ -13,22 +13,19 @@
     "main": "./dist/index.cjs",
     "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
-    "files": [
-        "dist",
-        "src",
-        "LICENSE"
-    ],
+    "files": ["dist", "src", "LICENSE"],
     "scripts": {
         "build": "tsup src/index.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
         "dev": "tsup src/index.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
         "test": "vitest run"
     },
     "dependencies": {
-        "@crossmint/client-sdk-auth-core": "workspace:*",
+        "@crossmint/client-sdk-auth": "workspace:*",
         "@crossmint/client-sdk-base": "workspace:*",
         "@crossmint/client-sdk-smart-wallet": "workspace:*",
         "@crossmint/client-sdk-window": "workspace:*",
         "@crossmint/common-sdk-base": "workspace:*",
+        "@crossmint/common-sdk-auth": "workspace:*",
         "@ethersproject/transactions": "5.7.0",
         "@headlessui/react": "2.1.5",
         "@solana/web3.js": "1.95.1",

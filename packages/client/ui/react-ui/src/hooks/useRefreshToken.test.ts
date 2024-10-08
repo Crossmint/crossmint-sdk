@@ -1,13 +1,13 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { type CrossmintAuthService, getJWTExpiration } from "@crossmint/client-sdk-auth-core/client";
+import { type CrossmintAuthService, getJWTExpiration } from "@crossmint/client-sdk-auth";
 import { queueTask } from "@crossmint/client-sdk-base";
 
 import * as authCookies from "../utils/authCookies";
 import { type AuthMaterial, useRefreshToken } from "./useRefreshToken";
 
-vi.mock("@crossmint/client-sdk-auth-core", () => ({
+vi.mock("@crossmint/client-sdk-auth", () => ({
     CrossmintAuthService: vi.fn(),
     getJWTExpiration: vi.fn(),
 }));
