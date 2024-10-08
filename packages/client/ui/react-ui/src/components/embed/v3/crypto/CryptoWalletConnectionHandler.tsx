@@ -50,10 +50,12 @@ export function CryptoWalletConnectionHandler(props: { iframeClient: EmbeddedChe
                             });
                             return false;
                         }
+                        const walletProviderKey = wallet.connector?.key;
 
                         iframeClient?.send("crypto:connect-wallet.success", {
                             address,
                             chain,
+                            walletProviderKey,
                         });
 
                         return true;
