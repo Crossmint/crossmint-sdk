@@ -1,9 +1,10 @@
 import { Dialog, Transition } from "@headlessui/react";
-import { type CSSProperties, Fragment, useRef } from "react";
+import { type CSSProperties, Fragment, useEffect, useRef, useState } from "react";
 import { z } from "zod";
 
 import { IFrameWindow } from "@crossmint/client-sdk-window";
 import type { UIConfig } from "@crossmint/common-sdk-base";
+import { CrossmintInternalEvents } from "@crossmint/client-sdk-base";
 import type { AuthMaterial } from "@crossmint/common-sdk-auth";
 import type { LoginMethod } from "@/providers";
 
@@ -51,6 +52,11 @@ export default function AuthModal({
     const iframeRef = useRef<HTMLIFrameElement | null>(null);
     const iframeWindowRef = useRef<IFrameWindow<IncomingModalIframeEventsType, Record<string, never>> | null>(null);
 
+    const [iframeChildrenHeight, setIframeChildrenHeight] = useState(0);
+    const iframePaddingTopPX = 48;
+    const iframePaddingBottomPX = 32;
+    const paddingOffset = iframePaddingTopPX + iframePaddingBottomPX;
+
     const setupIframeWindowListener = () => {
         if (iframeWindowRef.current == null) {
             return;
@@ -76,10 +82,23 @@ export default function AuthModal({
                 outgoingEvents: {},
             });
 
+            console.log({ initIframe });
             iframeWindowRef.current = initIframe;
             setupIframeWindowListener();
         }
     };
+
+    useEffect(() => {
+        function _onEvent(event: MessageEvent) {
+            if (event.data.type === CrossmintInternalEvents.UI_HEIGHT_CHANGED) {
+                setIframeChildrenHeight(event.data.payload.height);
+            }
+        }
+        window.addEventListener("message", _onEvent);
+        return () => {
+            window.removeEventListener("message", _onEvent);
+        };
+    }, []);
 
     return (
         <Transition.Root show as={Fragment}>
@@ -131,13 +150,14 @@ export default function AuthModal({
                             title="Authentication Modal"
                             style={{
                                 width: "100%",
-                                height: "500px",
+                                minHeight: "350px",
                                 border: "1px solid",
                                 borderColor: appearance?.colors?.border ?? "#D0D5DD",
                                 borderRadius: appearance?.borderRadius ?? "1rem",
                                 backgroundColor: appearance?.colors?.background ?? "white",
-                                paddingTop: "3rem",
-                                paddingBottom: "2rem",
+                                height: iframeChildrenHeight + paddingOffset,
+                                paddingTop: iframePaddingTopPX,
+                                paddingBottom: iframePaddingBottomPX,
                             }}
                         />
                     </div>
