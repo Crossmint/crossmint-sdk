@@ -1,5 +1,12 @@
 # @crossmint/client-sdk-auth-core
 
+## 1.4.1
+
+### Patch Changes
+
+- 2c38b6c: Updates deprecation notice
+- 127ccc6: Deprecated in favour of @crossmint/common-sdk-auth
+
 ## 1.4.0
 
 ### Minor Changes
