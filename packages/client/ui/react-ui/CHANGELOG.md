@@ -1,5 +1,17 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.6.1
+
+### Patch Changes
+
+- aa255a8: Fixes missing type import
+- 5b6b197: Removes dynamic tailwind classes
+- 127ccc6: Moves from auth core to new auth sdk
+- Updated dependencies [127ccc6]
+- Updated dependencies [127ccc6]
+  - @crossmint/client-sdk-auth@0.2.0
+  - @crossmint/common-sdk-auth@0.2.0
+
 ## 1.6.0
 
 ### Minor Changes
