@@ -5,6 +5,7 @@ import { validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base
 
 import type { APIErrorService } from "./APIErrorService";
 
+// TODO: DEPRECATE AND REMOVE
 export abstract class BaseCrossmintService {
     public crossmintAPIHeaders: Record<string, string>;
     crossmintBaseUrl: string;
