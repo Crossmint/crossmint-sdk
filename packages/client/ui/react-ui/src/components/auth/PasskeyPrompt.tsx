@@ -39,11 +39,19 @@ function PasskeyPromptCore({ title, content, primaryButton, secondaryAction, app
                 />
             </Transition.Child>
             <div
-                className={classNames(
-                    "flex flex-col items-center w-full max-w-[28rem] rounded-2xl shadow-sm z-30 border",
-                    appearance?.colors?.background != null ? `bg-[${appearance.colors.background}]` : "bg-white",
-                    appearance?.colors?.border != null ? `border-[${appearance.colors.border}]` : "border-[#D0D5DD]"
-                )}
+                style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    width: "100%",
+                    maxWidth: "28rem",
+                    borderRadius: "1rem",
+                    boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+                    zIndex: 30,
+                    border: "1px solid",
+                    backgroundColor: appearance?.colors?.background || "white",
+                    borderColor: appearance?.colors?.border || "#D0D5DD",
+                }}
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="pt-12 pb-10 px-8">
@@ -52,24 +60,22 @@ function PasskeyPromptCore({ title, content, primaryButton, secondaryAction, app
                     </div>
                     <div className="flex justify-center">
                         <p
-                            className={classNames(
-                                "text-lg font-bold",
-                                appearance?.colors?.textPrimary != null
-                                    ? `text-[${appearance.colors.textPrimary}]`
-                                    : "text-[#20343E]"
-                            )}
+                            style={{
+                                fontSize: "1.125rem",
+                                lineHeight: "1.75rem",
+                                fontWeight: "bold",
+                                color: appearance?.colors?.textPrimary || "#20343E",
+                            }}
                         >
                             {title}
                         </p>
                     </div>
                     <div className="mt-4 mb-9">
                         <div
-                            className={classNames(
-                                "font-normal",
-                                appearance?.colors?.textSecondary != null
-                                    ? `text-[${appearance.colors.textSecondary}]`
-                                    : "text-[#67797F]"
-                            )}
+                            style={{
+                                fontWeight: "normal",
+                                color: appearance?.colors?.textSecondary || "#67797F",
+                            }}
                         >
                             {content}
                         </div>
@@ -199,15 +205,16 @@ export function PasskeyPrompt({ state, appearance }: PasskeyPromptProps) {
                             href="https://docs.crossmint.com/wallets/smart-wallets/users/troubleshoot"
                             rel="noopener noreferrer"
                             target="_blank"
-                            className={classNames(
-                                "p-3.5 w-full text-center no-underline rounded-lg font-bold",
-                                appearance?.colors?.inputBackground != null
-                                    ? `bg-[${appearance.colors.inputBackground}]`
-                                    : "bg-[#F0F2F4]",
-                                appearance?.colors?.textSecondary != null
-                                    ? `text-[${appearance.colors.textSecondary}]`
-                                    : "text-[#00150D]"
-                            )}
+                            style={{
+                                padding: "0.875rem",
+                                width: "100%",
+                                textAlign: "center",
+                                textDecoration: "none",
+                                borderRadius: "0.5rem",
+                                fontWeight: "bold",
+                                backgroundColor: appearance?.colors?.inputBackground || "#F0F2F4",
+                                color: appearance?.colors?.textSecondary || "#00150D",
+                            }}
                         >
                             Troubleshoot
                         </a>
