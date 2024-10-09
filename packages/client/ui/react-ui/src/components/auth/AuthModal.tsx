@@ -56,6 +56,12 @@ export default function AuthModal({
     const iframePaddingTopPX = 48;
     const iframePaddingBottomPX = 32;
     const paddingOffset = iframePaddingTopPX + iframePaddingBottomPX;
+    let iFrameRenderMinHeightPX = 300;
+
+    if (loginMethods?.includes("farcaster")) {
+        // Farcaster needs more height to render its QR code container.
+        iFrameRenderMinHeightPX = 500;
+    }
 
     const setupIframeWindowListener = () => {
         if (iframeWindowRef.current == null) {
@@ -150,7 +156,7 @@ export default function AuthModal({
                             title="Authentication Modal"
                             style={{
                                 width: "100%",
-                                minHeight: "350px",
+                                minHeight: iFrameRenderMinHeightPX,
                                 border: "1px solid",
                                 borderColor: appearance?.colors?.border ?? "#D0D5DD",
                                 borderRadius: appearance?.borderRadius ?? "1rem",
