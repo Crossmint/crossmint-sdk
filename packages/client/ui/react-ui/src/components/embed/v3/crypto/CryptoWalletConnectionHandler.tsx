@@ -1,7 +1,8 @@
 import DynamicContextProviderWrapper from "@/components/dynamic-xyz/DynamicContextProviderWrapper";
 import type { EmbeddedCheckoutV3IFrameEmitter } from "@crossmint/client-sdk-base";
+import { type BlockchainIncludingTestnet, chainIdToBlockchain } from "@crossmint/common-sdk-base";
 import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
-import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
+import { type HandleConnectedWallet, useDynamicContext } from "@dynamic-labs/sdk-react-core";
 import { SolanaWalletConnectors } from "@dynamic-labs/solana";
 import { useEffect } from "react";
 
@@ -30,7 +31,6 @@ export function CryptoWalletConnectionHandler(props: { iframeClient: EmbeddedChe
                     },
                 },
                 handlers: {
-                    // biome-ignore lint/suspicious/useAwait: don't neeed to use any await, but we need to return a promise
                     handleConnectedWallet: async (wallet) => {
                         console.log("[CryptoWalletConnectionHandler] handleConnectedWallet", wallet);
 
@@ -42,20 +42,13 @@ export function CryptoWalletConnectionHandler(props: { iframeClient: EmbeddedChe
                             });
                             return false;
                         }
-                        const chain = wallet.chain;
-                        if (!chain) {
-                            console.error("[CryptoWalletConnectionHandler] handleConnectedWallet: chain is missing");
-                            iframeClient?.send("crypto:connect-wallet.failed", {
-                                error: "chain is missing",
-                            });
-                            return false;
-                        }
-                        const walletProviderKey = wallet.connector?.key;
+
+                        const chain = await dynamicChainToCrossmintChain(wallet);
 
                         iframeClient?.send("crypto:connect-wallet.success", {
                             address,
                             chain,
-                            walletProviderKey,
+                            walletProviderKey: wallet.connector?.key,
                         });
 
                         return true;
@@ -86,4 +79,22 @@ function _CryptoWalletConnectionHandler({ iframeClient }: Parameters<typeof Cryp
     }, [iframeClient]);
 
     return null;
+}
+
+async function dynamicChainToCrossmintChain(
+    wallet: Parameters<HandleConnectedWallet>[0]
+): Promise<BlockchainIncludingTestnet> {
+    const chain = wallet.chain;
+    if (chain === "SOL") {
+        return "solana";
+    }
+    const chainId = await wallet.connector?.getNetwork();
+    if (typeof chainId !== "number") {
+        throw new Error("chainId is not a number");
+    }
+    const chainFromChainId = chainIdToBlockchain(chainId);
+    if (!chainFromChainId) {
+        throw new Error(`ChainId ${chainId} is not supported`);
+    }
+    return chainFromChainId as BlockchainIncludingTestnet;
 }
