@@ -117,14 +117,16 @@ export default function AuthModal({ setModalOpen, apiKey, fetchAuthMaterial, bas
                             src={iframeSrc}
                             onLoad={handleIframeLoaded}
                             title="Authentication Modal"
-                            className={classNames(
-                                "w-full h-[500px] border pt-12 pb-8",
-                                appearance?.colors?.border
-                                    ? `border-[${appearance.colors.border}]`
-                                    : "border-[#D0D5DD]",
-                                appearance?.borderRadius ? `rounded-[${appearance.borderRadius}]` : "rounded-2xl",
-                                appearance?.colors?.background ? `bg-[${appearance.colors.background}]` : "bg-white"
-                            )}
+                            style={{
+                                width: "100%",
+                                height: "500px",
+                                border: "1px solid",
+                                borderColor: appearance?.colors?.border ?? "#D0D5DD",
+                                borderRadius: appearance?.borderRadius ?? "1rem",
+                                backgroundColor: appearance?.colors?.background ?? "white",
+                                paddingTop: "3rem",
+                                paddingBottom: "2rem",
+                            }}
                         />
                     </div>
                 </Transition.Child>
