@@ -137,7 +137,8 @@ export default function AuthModal({ setModalOpen, apiKey, fetchAuthMaterial, bas
                             style={{
                                 width: "100%",
                                 minHeight: "300px",
-                                border: `1px solid ${appearance?.colors?.border ?? "#D0D5DD"}`,
+                                border: "1px solid",
+                                borderColor: appearance?.colors?.border ?? "#D0D5DD",
                                 borderRadius: appearance?.borderRadius ?? "16px",
                                 backgroundColor: appearance?.colors?.background ?? "white",
                                 height: iframeChildrenHeight + paddingOffset,
