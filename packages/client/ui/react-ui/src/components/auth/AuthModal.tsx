@@ -56,12 +56,8 @@ export default function AuthModal({
     const iframePaddingTopPX = 48;
     const iframePaddingBottomPX = 32;
     const paddingOffset = iframePaddingTopPX + iframePaddingBottomPX;
-    let iFrameRenderMinHeightPX = 300;
-
-    if (loginMethods?.includes("farcaster")) {
-        // Farcaster needs more height to render its QR code container.
-        iFrameRenderMinHeightPX = 500;
-    }
+    // Farcaster needs more height to render its QR code container.
+    const iFrameRenderMinHeightPX = loginMethods?.includes("farcaster") ? 500 : 300;
 
     const setupIframeWindowListener = () => {
         if (iframeWindowRef.current == null) {
@@ -88,7 +84,6 @@ export default function AuthModal({
                 outgoingEvents: {},
             });
 
-            console.log({ initIframe });
             iframeWindowRef.current = initIframe;
             setupIframeWindowListener();
         }
