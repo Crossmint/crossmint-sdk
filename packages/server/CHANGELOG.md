@@ -1,5 +1,11 @@
 # @crossmint/server-sdk
 
+## 0.3.0
+
+### Minor Changes
+
+- 60b4788: Add getUser function
+
 ## 0.2.0
 
 ### Minor Changes
