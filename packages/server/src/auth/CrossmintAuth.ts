@@ -1,7 +1,5 @@
 import { type Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
-import { SDK_NAME, SDK_VERSION } from "./utils/constants";
-
-const CROSSMINT_API_VERSION = "2024-09-26";
+import { CROSSMINT_API_VERSION, SDK_NAME, SDK_VERSION } from "./utils/constants";
 
 export class CrossmintAuth {
     private crossmint: Crossmint;
