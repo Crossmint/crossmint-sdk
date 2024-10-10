@@ -1,7 +1,7 @@
 import { APIErrorService, BaseCrossmintService } from "@crossmint/client-sdk-base";
 
 import { authLogger } from "./logger";
-
+import { CROSSMINT_API_VERSION } from "../utils/constants";
 export class CrossmintAuthService extends BaseCrossmintService {
     protected apiErrorService = new APIErrorService<never>({});
     protected logger = authLogger;
@@ -12,7 +12,7 @@ export class CrossmintAuthService extends BaseCrossmintService {
 
     async refreshAuthMaterial(refreshToken: string) {
         const result = await this.fetchCrossmintAPI(
-            "2024-09-26/session/sdk/auth/refresh",
+            `${CROSSMINT_API_VERSION}/session/sdk/auth/refresh`,
             { method: "POST", body: JSON.stringify({ refresh: refreshToken }) },
             "Error fetching new refresh and access tokans."
         );
@@ -25,6 +25,11 @@ export class CrossmintAuthService extends BaseCrossmintService {
     }
 
     async getUserFromClient(jwt: string) {
-        return await this.fetchCrossmintAPI("2024-09-26/sdk/auth/user", { method: "GET" }, "Error fetching user.", jwt);
+        return await this.fetchCrossmintAPI(
+            `${CROSSMINT_API_VERSION}/sdk/auth/user`,
+            { method: "GET" },
+            "Error fetching user.",
+            jwt
+        );
     }
 }
