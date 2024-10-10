@@ -33,6 +33,8 @@ export function crossmintEmbeddedCheckoutV3Service({ apiClient }: CrossmintEmbed
             }
         }
 
+        queryParams.append("apiKey", apiClient.crossmint.apiKey);
+
         return `${urlWithPath}?${queryParams.toString()}`;
     }
 

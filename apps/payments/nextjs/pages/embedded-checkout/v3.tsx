@@ -24,7 +24,7 @@ export default function EmbeddedCheckoutV3Page() {
             >
                 <CrossmintProvider
                     overrideBaseUrl="https://dserver.maxf.io"
-                    apiKey="ck_development_5zmgbGLxswXuRtUhjg5ACqZNkdZFPuN8UzCamj7kevGknYRL3EpLTRobh3HdSt1iQSRWSiCmRzEkdFQoqWZ71UyK4EhV3XTzcSnXkmorRG5ac1gQwqw8zmmM6bLNtREBb54L77Hzrf9XpDodh1c5awZUJntqbdPqgYRh8N9PaJ7gXTm2TMQDGABHs33Wxd88PxmTbjf8xYNrpPpNp8UfYaeT"
+                    apiKey="sk_development_5ZUNkuhjP8aYZEgUTDfWToqFpo5zakEqte1db4pHZgPAVKZ9JuSvnKeGiqY654DoBuuZEzYz4Eb8gRV2ePqQ1fxTjEP8tTaUQdzbGfyG9RgyeN5YbqViXinqxk8EayEkAGtvSSgjpjEr6iaBptJtUFwPW59DjQzTQP6P8uZdiajenVg7bARGKjzFyByNuVEoz41DpRB4hDZNFdwCTuf5joFv"
                 >
                     <CrossmintEmbeddedCheckout
                         // recipient={{
@@ -50,8 +50,9 @@ export default function EmbeddedCheckoutV3Page() {
                                     applePay: true,
                                     googlePay: true,
                                 },
+                                defaultCurrency: "inr",
                             },
-                            defaultMethod: "crypto",
+                            defaultMethod: "fiat",
                         }}
                     />
                 </CrossmintProvider>
