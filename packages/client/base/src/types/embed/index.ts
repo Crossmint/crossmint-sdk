@@ -18,6 +18,8 @@ export * from "./fiat";
 export * from "./json";
 export * from "./updatable";
 
+export * from "./v3";
+
 export type CommonEmbeddedCheckoutProps<PM extends PaymentMethod = PaymentMethod> = {
     paymentMethod?: PM;
     mintConfig?: MintConfigs;
