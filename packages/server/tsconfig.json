@@ -6,7 +6,7 @@
         "paths": {
             "@/*": ["src/*"]
         },
-        "module": "commonjs"
+        "module": "ESNext"
     },
     "include": ["src/**/*"]
 }

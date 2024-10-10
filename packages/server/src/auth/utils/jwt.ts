@@ -1,12 +1,11 @@
-import { CrossmintAuthService } from "@crossmint/common-sdk-auth";
 import { JsonWebTokenError, TokenExpiredError, verify } from "jsonwebtoken";
 
 import { getPublicKey } from "./tokenAuth/publicKey";
 
-export async function verifyCrossmintSessionToken(apiKey: string, token: string) {
-    const crossmintService = new CrossmintAuthService(apiKey);
+export async function verifyCrossmintJwtToken(token: string, jwksUri: string) {
     try {
-        return await verifyJWTWithPublicKey(crossmintService, token);
+        const publicKey = await getPublicKey(token, jwksUri);
+        return verifyJWT(publicKey, token);
     } catch (error) {
         console.log("Error verifying JWT", error);
         throw new Error("Invalid token");
@@ -36,10 +35,4 @@ function verifyJWT(signingKey: string, token: string) {
 
         throw new Error("Invalid token");
     }
-}
-
-async function verifyJWTWithPublicKey(crossmintService: CrossmintAuthService, token: string) {
-    const publicKey = await getPublicKey(token, crossmintService.getJWKSUri());
-
-    return verifyJWT(publicKey, token);
 }

@@ -23,6 +23,7 @@ async function getSigningKey(jwksUri: string, kid?: string) {
         const signingKey = await client.getSigningKey(kid);
         return signingKey;
     } catch (error) {
+        console.error("Error fetching signing key", error);
         throw new Error("Unable to retrieve signing key");
     }
 }

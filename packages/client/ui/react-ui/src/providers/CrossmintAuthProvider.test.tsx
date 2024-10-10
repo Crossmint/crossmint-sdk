@@ -1,4 +1,5 @@
-import { deleteCookie, REFRESH_TOKEN_PREFIX, SESSION_PREFIX } from "@/utils/authCookies";
+import { deleteCookie } from "@/utils/authCookies";
+import { SESSION_PREFIX, REFRESH_TOKEN_PREFIX } from "@crossmint/common-sdk-auth";
 import { fireEvent, render } from "@testing-library/react";
 import { type ReactNode, act } from "react";
 import { beforeEach, describe, expect, vi } from "vitest";

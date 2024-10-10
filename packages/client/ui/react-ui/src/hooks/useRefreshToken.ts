@@ -4,8 +4,9 @@ import type { AuthMaterial } from "@crossmint/common-sdk-auth";
 import type { CrossmintAuthService } from "@crossmint/client-sdk-auth";
 import { getJWTExpiration } from "@crossmint/client-sdk-auth";
 import { queueTask, type CancellableTask } from "@crossmint/client-sdk-base";
+import { REFRESH_TOKEN_PREFIX } from "@crossmint/common-sdk-auth";
 
-import { REFRESH_TOKEN_PREFIX, getCookie } from "../utils/authCookies";
+import { getCookie } from "../utils/authCookies";
 
 // 2 minutes before jwt expiration
 const TIME_BEFORE_EXPIRING_JWT_IN_SECONDS = 120;
