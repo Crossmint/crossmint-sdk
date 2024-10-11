@@ -1,4 +1,4 @@
-export const SESSION_PREFIX = "crossmint-session";
+export const SESSION_PREFIX = "crossmint-jwt";
 export const REFRESH_TOKEN_PREFIX = "crossmint-refresh-token";
 
 export function getCookie(name: string): string | undefined {
