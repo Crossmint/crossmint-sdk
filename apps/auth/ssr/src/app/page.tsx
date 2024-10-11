@@ -12,7 +12,7 @@ export default async function Home() {
         const crossmintAuth = CrossmintAuth.from(crossmint);
 
         const cookieStore = cookies();
-        const jwtCookie = cookieStore.get("crossmint-session")?.value;
+        const jwtCookie = cookieStore.get("crossmint-jwt")?.value;
         const refreshCookie = cookieStore.get("crossmint-refresh-token")?.value;
 
         if (refreshCookie != null) {
