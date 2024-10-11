@@ -1,15 +1,15 @@
 import { REFRESH_TOKEN_PREFIX, SESSION_PREFIX, deleteCookie, getCookie, setCookie } from "@/utils/authCookies";
 import { type ReactNode, createContext, useEffect, useState } from "react";
-import { createPortal } from "react-dom";
 
 import { CrossmintAuthService } from "@crossmint/client-sdk-auth";
 import type { EVMSmartWalletChain } from "@crossmint/client-sdk-smart-wallet";
 import { type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
 
-import AuthModal from "../components/auth/AuthModal";
+import AuthDialog from "../components/auth/AuthDialog";
 import { useCrossmint, useRefreshToken, useWallet } from "../hooks";
 import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
 import type { AuthMaterial, SDKExternalUser } from "@crossmint/common-sdk-auth";
+import { AuthDialogProvider } from "./auth/AuthDialogProvider";
 
 export type CrossmintAuthWalletConfig = {
     defaultChain: EVMSmartWalletChain;
@@ -140,19 +140,19 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
                 <WalletManager embeddedWallets={embeddedWallets} accessToken={crossmint.jwt}>
                     {children}
                 </WalletManager>
-                {modalOpen
-                    ? createPortal(
-                          <AuthModal
-                              baseUrl={crossmintBaseUrl}
-                              setModalOpen={setModalOpen}
-                              fetchAuthMaterial={fetchAuthMaterial}
-                              apiKey={crossmint.apiKey}
-                              appearance={appearance}
-                          />,
-
-                          document.body
-                      )
-                    : null}
+                {modalOpen ? (
+                    <AuthDialogProvider
+                        initialState={{
+                            apiKey: crossmint.apiKey,
+                            baseUrl: crossmintBaseUrl,
+                            fetchAuthMaterial,
+                            appearance,
+                            setDialogOpen: setModalOpen,
+                        }}
+                    >
+                        <AuthDialog />
+                    </AuthDialogProvider>
+                ) : null}
             </CrossmintWalletProvider>
         </AuthContext.Provider>
     );
