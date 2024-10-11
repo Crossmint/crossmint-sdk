@@ -1,11 +1,12 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { AuthMaterial } from "@crossmint/common-sdk-auth";
 import { type CrossmintAuthService, getJWTExpiration } from "@crossmint/client-sdk-auth";
 import { queueTask } from "@crossmint/client-sdk-base";
 
 import * as authCookies from "../utils/authCookies";
-import { type AuthMaterial, useRefreshToken } from "./useRefreshToken";
+import { useRefreshToken } from "./useRefreshToken";
 
 vi.mock("@crossmint/client-sdk-auth", () => ({
     CrossmintAuthService: vi.fn(),
@@ -17,9 +18,13 @@ vi.mock("../utils/authCookies", () => ({
     REFRESH_TOKEN_PREFIX: "crossmint-refresh-token",
 }));
 
-vi.mock("@crossmint/client-sdk-base", () => ({
-    queueTask: vi.fn(),
-}));
+vi.mock("@crossmint/client-sdk-base", async () => {
+    const actual = await vi.importActual("@crossmint/client-sdk-base");
+    return {
+        ...actual,
+        queueTask: vi.fn(),
+    };
+});
 
 describe("useRefreshToken", () => {
     const mockCrossmintAuthService = {
@@ -65,6 +70,10 @@ describe("useRefreshToken", () => {
                 secret: "mock-secret",
                 expiresAt: "2023-04-01T00:00:00Z",
             },
+            user: {
+                id: "123",
+                email: "test@test.com",
+            },
         };
 
         vi.mocked(authCookies.getCookie).mockReturnValue(mockRefreshToken);
@@ -94,6 +103,10 @@ describe("useRefreshToken", () => {
             refreshToken: {
                 secret: "mock-secret",
                 expiresAt: "2023-04-01T00:00:00Z",
+            },
+            user: {
+                id: "123",
+                email: "test@test.com",
             },
         };
 
