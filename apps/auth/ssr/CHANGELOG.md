@@ -1,5 +1,12 @@
 # @crossmint/server-sdk-next-starter
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [60b4788]
+  - @crossmint/server-sdk@0.3.0
+
 ## 0.1.1
 
 ### Patch Changes

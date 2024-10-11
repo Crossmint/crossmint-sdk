@@ -1,5 +1,15 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.7.0
+
+### Minor Changes
+
+- fef3252: Adds new loginOptions property that specifies different sign in methods
+
+### Patch Changes
+
+- 233740d: Changes jwt cookie name
+
 ## 1.6.1
 
 ### Patch Changes
