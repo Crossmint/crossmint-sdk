@@ -1,13 +1,14 @@
 import { Dialog, Transition } from "@headlessui/react";
-import { type CSSProperties, Fragment, useRef } from "react";
+import { type CSSProperties, Fragment, useEffect, useRef, useState } from "react";
 import { z } from "zod";
 
 import { IFrameWindow } from "@crossmint/client-sdk-window";
 import type { UIConfig } from "@crossmint/common-sdk-base";
+import { CrossmintInternalEvents } from "@crossmint/client-sdk-base";
 import type { AuthMaterial } from "@crossmint/common-sdk-auth";
+import type { LoginMethod } from "@/providers";
 
 import X from "../../icons/x";
-import { classNames } from "../../utils/classNames";
 
 const authMaterialSchema = z.object({
     oneTimeSecret: z.string(),
@@ -27,17 +28,36 @@ type AuthModalProps = {
     fetchAuthMaterial: (refreshToken: string) => Promise<AuthMaterial>;
     baseUrl: string;
     appearance?: UIConfig;
+    loginMethods?: LoginMethod[];
 };
 
-export default function AuthModal({ setModalOpen, apiKey, fetchAuthMaterial, baseUrl, appearance }: AuthModalProps) {
+export default function AuthModal({
+    setModalOpen,
+    apiKey,
+    fetchAuthMaterial,
+    baseUrl,
+    appearance,
+    loginMethods,
+}: AuthModalProps) {
     let iframeSrc = `${baseUrl}sdk/2024-09-26/auth/frame?apiKey=${apiKey}`;
     if (appearance != null) {
         // The appearance object is serialized into a query parameter
         iframeSrc += `&uiConfig=${encodeURIComponent(JSON.stringify(appearance))}`;
     }
 
+    if (loginMethods != null) {
+        iframeSrc += `&loginMethods=${loginMethods.join(",")}`;
+    }
+
     const iframeRef = useRef<HTMLIFrameElement | null>(null);
     const iframeWindowRef = useRef<IFrameWindow<IncomingModalIframeEventsType, Record<string, never>> | null>(null);
+
+    const [iframeChildrenHeight, setIframeChildrenHeight] = useState(0);
+    const iframePaddingTopPX = 48;
+    const iframePaddingBottomPX = 32;
+    const paddingOffset = iframePaddingTopPX + iframePaddingBottomPX;
+    // Farcaster needs more height to render its QR code container.
+    const iFrameRenderMinHeightPX = loginMethods?.includes("farcaster") ? 500 : 300;
 
     const setupIframeWindowListener = () => {
         if (iframeWindowRef.current == null) {
@@ -68,6 +88,18 @@ export default function AuthModal({ setModalOpen, apiKey, fetchAuthMaterial, bas
             setupIframeWindowListener();
         }
     };
+
+    useEffect(() => {
+        function _onEvent(event: MessageEvent) {
+            if (event.data.type === CrossmintInternalEvents.UI_HEIGHT_CHANGED) {
+                setIframeChildrenHeight(event.data.payload.height);
+            }
+        }
+        window.addEventListener("message", _onEvent);
+        return () => {
+            window.removeEventListener("message", _onEvent);
+        };
+    }, []);
 
     return (
         <Transition.Root show as={Fragment}>
@@ -117,14 +149,17 @@ export default function AuthModal({ setModalOpen, apiKey, fetchAuthMaterial, bas
                             src={iframeSrc}
                             onLoad={handleIframeLoaded}
                             title="Authentication Modal"
-                            className={classNames(
-                                "w-full h-[500px] border pt-12 pb-8",
-                                appearance?.colors?.border
-                                    ? `border-[${appearance.colors.border}]`
-                                    : "border-[#D0D5DD]",
-                                appearance?.borderRadius ? `rounded-[${appearance.borderRadius}]` : "rounded-2xl",
-                                appearance?.colors?.background ? `bg-[${appearance.colors.background}]` : "bg-white"
-                            )}
+                            style={{
+                                width: "100%",
+                                minHeight: iFrameRenderMinHeightPX,
+                                border: "1px solid",
+                                borderColor: appearance?.colors?.border ?? "#D0D5DD",
+                                borderRadius: appearance?.borderRadius ?? "1rem",
+                                backgroundColor: appearance?.colors?.background ?? "white",
+                                height: iframeChildrenHeight + paddingOffset,
+                                paddingTop: iframePaddingTopPX,
+                                paddingBottom: iframePaddingBottomPX,
+                            }}
                         />
                     </div>
                 </Transition.Child>
