@@ -8,8 +8,8 @@ import {
 } from "@crossmint/common-sdk-auth";
 import type { GenericRequest } from "./types/request";
 import { getAuthCookies } from "./utils/cookies";
-import { SDK_NAME, SDK_VERSION } from "./utils/constants";
 import { verifyCrossmintJwtToken } from "./utils/jwt";
+import { CROSSMINT_API_VERSION, SDK_NAME, SDK_VERSION } from "./utils/constants";
 
 export class CrossmintAuth {
     private crossmint: Crossmint;
@@ -86,5 +86,16 @@ export class CrossmintAuth {
             jwtToken: refreshedAuthMaterial.jwtToken,
             userId: refreshedAuthMaterial.user.id,
         };
+    }
+
+    async getUser(externalUserId: string) {
+        const result = await this.apiClient.get(`api/${CROSSMINT_API_VERSION}/sdk/auth/user/${externalUserId}`, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+
+        const user = await result.json();
+        return user;
     }
 }
