@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-auth-core
 
+## 1.5.0
+
+### Minor Changes
+
+- 04dd600: Change to versioned controller
+
 ## 1.4.1
 
 ### Patch Changes
