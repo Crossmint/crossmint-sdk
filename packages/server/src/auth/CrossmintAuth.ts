@@ -54,8 +54,7 @@ export class CrossmintAuth {
     }
 
     public async getSession(options: GenericRequest | AuthMaterialBasic): Promise<AuthSession> {
-        const { jwtToken, refreshToken } =
-            "refreshToken" in options ? options : getAuthCookies(options as GenericRequest);
+        const { jwtToken, refreshToken } = "refreshToken" in options ? options : getAuthCookies(options);
 
         if (!refreshToken) {
             throw new CrossmintAuthenticationError("Refresh token not found");

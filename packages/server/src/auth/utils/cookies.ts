@@ -8,6 +8,12 @@ import type { IncomingMessage } from "http";
 import { type GenericRequest, isNodeRequest, isFetchRequest } from "../types/request";
 
 export function getAuthCookies(request: GenericRequest): AuthMaterialBasic {
+    const cookieHeader = getCookieHeader(request);
+    const { [SESSION_PREFIX]: jwtToken, [REFRESH_TOKEN_PREFIX]: refreshToken } = parseCookieHeader(cookieHeader);
+    return { jwtToken, refreshToken };
+}
+
+function getCookieHeader(request: GenericRequest): string {
     let cookieHeader: string;
 
     if (isNodeRequest(request)) {
@@ -18,9 +24,7 @@ export function getAuthCookies(request: GenericRequest): AuthMaterialBasic {
         throw new CrossmintAuthenticationError("Unsupported request type");
     }
 
-    const { [SESSION_PREFIX]: jwtToken, [REFRESH_TOKEN_PREFIX]: refreshToken } = parseCookieHeader(cookieHeader);
-
-    return { jwtToken, refreshToken };
+    return cookieHeader;
 }
 
 function getCookieHeaderFromNodeRequest(request: IncomingMessage): string {
