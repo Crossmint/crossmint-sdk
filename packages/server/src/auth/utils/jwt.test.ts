@@ -1,14 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { verifyCrossmintJwtToken } from "./jwt";
 import { getPublicKey } from "./tokenAuth/publicKey";
-import { JsonWebTokenError, TokenExpiredError, verify } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 
 vi.mock("./tokenAuth/publicKey");
-vi.mock("jsonwebtoken", () => ({
-    verify: vi.fn(),
-    JsonWebTokenError: vi.fn(),
-    TokenExpiredError: vi.fn(),
-}));
+
+vi.mock("jsonwebtoken");
 
 describe("verifyCrossmintJwtToken", () => {
     const mockToken = "mock.jwt.token";
@@ -26,12 +23,12 @@ describe("verifyCrossmintJwtToken", () => {
 
     it("should verify a valid JWT token", async () => {
         vi.mocked(getPublicKey).mockResolvedValue(mockPublicKey);
-        vi.mocked(verify).mockReturnValue(mockVerifiedToken as any);
+        vi.mocked(jwt.verify).mockReturnValue(mockVerifiedToken as any);
 
         const result = await verifyCrossmintJwtToken(mockToken, mockJwksUri);
 
         expect(getPublicKey).toHaveBeenCalledWith(mockToken, mockJwksUri);
-        expect(verify).toHaveBeenCalledWith(mockToken, mockPublicKey);
+        expect(jwt.verify).toHaveBeenCalledWith(mockToken, mockPublicKey);
         expect(result).toEqual(mockVerifiedToken);
     });
 
@@ -43,8 +40,8 @@ describe("verifyCrossmintJwtToken", () => {
 
     it("should throw an error for an expired token", async () => {
         vi.mocked(getPublicKey).mockResolvedValue(mockPublicKey);
-        const expiredError = new TokenExpiredError("jwt expired", new Date());
-        vi.mocked(verify).mockImplementation(() => {
+        const expiredError = new jwt.TokenExpiredError("jwt expired", new Date());
+        vi.mocked(jwt.verify).mockImplementation(() => {
             throw expiredError;
         });
 
@@ -53,8 +50,8 @@ describe("verifyCrossmintJwtToken", () => {
 
     it("should throw an error for an invalid signature", async () => {
         vi.mocked(getPublicKey).mockResolvedValue(mockPublicKey);
-        const invalidSignatureError = new JsonWebTokenError("invalid signature");
-        vi.mocked(verify).mockImplementation(() => {
+        const invalidSignatureError = new jwt.JsonWebTokenError("invalid signature");
+        vi.mocked(jwt.verify).mockImplementation(() => {
             throw invalidSignatureError;
         });
 
@@ -63,8 +60,8 @@ describe("verifyCrossmintJwtToken", () => {
 
     it("should throw an error for an invalid algorithm", async () => {
         vi.mocked(getPublicKey).mockResolvedValue(mockPublicKey);
-        const invalidAlgorithmError = new JsonWebTokenError("invalid algorithm");
-        vi.mocked(verify).mockImplementation(() => {
+        const invalidAlgorithmError = new jwt.JsonWebTokenError("invalid algorithm");
+        vi.mocked(jwt.verify).mockImplementation(() => {
             throw invalidAlgorithmError;
         });
 
@@ -73,7 +70,7 @@ describe("verifyCrossmintJwtToken", () => {
 
     it("should throw a generic error for other verification failures", async () => {
         vi.mocked(getPublicKey).mockResolvedValue(mockPublicKey);
-        vi.mocked(verify).mockImplementation(() => {
+        vi.mocked(jwt.verify).mockImplementation(() => {
             throw new Error("Some other error");
         });
 
@@ -82,14 +79,14 @@ describe("verifyCrossmintJwtToken", () => {
 
     it("should throw an error if verify returns null", async () => {
         vi.mocked(getPublicKey).mockResolvedValue(mockPublicKey);
-        vi.mocked(verify).mockReturnValue(null as any);
+        vi.mocked(jwt.verify).mockReturnValue(null as any);
 
         await expect(verifyCrossmintJwtToken(mockToken, mockJwksUri)).rejects.toThrow("Invalid token");
     });
 
     it("should throw an error if verify returns a string", async () => {
         vi.mocked(getPublicKey).mockResolvedValue(mockPublicKey);
-        vi.mocked(verify).mockReturnValue("some string" as any);
+        vi.mocked(jwt.verify).mockReturnValue("some string" as any);
 
         await expect(verifyCrossmintJwtToken(mockToken, mockJwksUri)).rejects.toThrow("Invalid token");
     });

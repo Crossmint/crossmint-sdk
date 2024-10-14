@@ -94,7 +94,10 @@ describe("CrossmintAuth", () => {
                 jwtToken: "new.jwt.token",
                 userId: "user456",
             });
-            expect(mockApiClient.post).toHaveBeenCalledWith("/session/sdk/auth/refresh", expect.any(Object));
+            expect(mockApiClient.post).toHaveBeenCalledWith(
+                "api/2024-09-26/session/sdk/auth/refresh",
+                expect.any(Object)
+            );
         });
 
         it("should throw CrossmintAuthenticationError when refresh token is not found", async () => {

@@ -40,7 +40,7 @@ export class CrossmintAuth {
     }
 
     private async refreshAuthMaterial(refreshToken: string): Promise<AuthMaterial> {
-        const result = await this.apiClient.post("/session/sdk/auth/refresh", {
+        const result = await this.apiClient.post(`api/${CROSSMINT_API_VERSION}/session/sdk/auth/refresh`, {
             body: JSON.stringify({ refresh: refreshToken }),
         });
 
