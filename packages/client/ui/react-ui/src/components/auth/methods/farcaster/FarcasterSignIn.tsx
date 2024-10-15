@@ -37,7 +37,7 @@ export function FarcasterSignIn() {
             <div>
                 <button
                     className={classNames(
-                        "relative flex text-base p-4 bg-[#F0F2F4] text-[#00150D] border items-center w-full rounded-xl justify-center",
+                        "relative flex text-base p-4 bg-cm-muted-primary text-cm-text-primary border border-cm-border items-center w-full rounded-xl justify-center",
                         "transition-all duration-200 ease-in-out", // Add smooth transition
                         "focus:outline-none focus:ring-1 focus:ring-opacity-50" // Add focus ring
                     )}
@@ -77,18 +77,19 @@ export function FarcasterSignIn() {
                         setStep("initial");
                     }}
                     iconColor={appearance?.colors?.textPrimary}
+                    ringColor={appearance?.colors?.accent}
                 />
 
                 <div className="flex flex-col items-center gap-4 mt-6">
                     <div className="text-center">
                         <h3
-                            className="text-lg font-semibold text-custom-text-primary"
+                            className="text-lg font-semibold text-cm-text-primary"
                             style={{ color: appearance?.colors?.textPrimary }}
                         >
                             Sign in with Farcaster
                         </h3>
                         <p
-                            className="text-base font-normal text-[#67797F]"
+                            className="text-base font-normal text-cm-text-secondary"
                             style={{ color: appearance?.colors?.textSecondary }}
                         >
                             Scan with your phone's camera to continue.
@@ -105,14 +106,19 @@ export function FarcasterSignIn() {
                             <QRCode uri={qrCodeUrl} size={280} />
                         ) : (
                             <div className="min-h-[246px] flex items-center justify-center">
-                                <Spinner />
+                                <Spinner
+                                    style={{
+                                        color: appearance?.colors?.textSecondary,
+                                        fill: appearance?.colors?.textPrimary,
+                                    }}
+                                />
                             </div>
                         )}
                     </div>
                     {qrCodeUrl ? (
                         <>
                             <p
-                                className="text-base text-center font-normal text-[#67797F]"
+                                className="text-base text-center font-normal text-cm-text-secondary"
                                 style={{ color: appearance?.colors?.textSecondary }}
                             >
                                 Alternatively, click on this link to open Warpcast.
@@ -121,7 +127,7 @@ export function FarcasterSignIn() {
                                 href={qrCodeUrl}
                                 rel="noopener noreferrer"
                                 target="_blank"
-                                className="text-base font-normal text-[#67797F]"
+                                className="text-base font-normal text-cm-ring"
                                 style={{ color: appearance?.colors?.textLink }}
                             >
                                 Open Warpcast

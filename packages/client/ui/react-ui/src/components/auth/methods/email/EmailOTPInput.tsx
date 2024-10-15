@@ -41,12 +41,13 @@ export function EmailOTPInput() {
 
     return (
         <div>
-            <AuthFormBackButton onClick={handleOnBack} iconColor={appearance?.colors?.textPrimary} />
+            <AuthFormBackButton
+                onClick={handleOnBack}
+                iconColor={appearance?.colors?.textPrimary}
+                ringColor={appearance?.colors?.accent}
+            />
 
-            <div
-                className="flex flex-col items-center justify-start w-full bg-console-bg-default"
-                style={{ backgroundColor: appearance?.colors?.background }}
-            >
+            <div className="flex flex-col items-center justify-start w-full">
                 <div className="relative left-3">
                     <EmailOtpIcon
                         customAccentColor={appearance?.colors?.accent}

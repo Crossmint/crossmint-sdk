@@ -8,6 +8,15 @@ export default defineConfig({
             xs: "480px",
         },
         extend: {
+            colors: {
+                // Crossmint colors (cm- prefix)
+                "cm-text-primary": "#00150D",
+                "cm-text-secondary": "#67797F",
+                "cm-background-primary": "#FFFFFF",
+                "cm-muted-primary": "#F0F2F4",
+                "cm-border": "#D9D9D9",
+                "cm-ring": "#1A73E8",
+            },
             keyframes: {
                 "caret-blink": {
                     "0%,70%,100%": { opacity: "1" },

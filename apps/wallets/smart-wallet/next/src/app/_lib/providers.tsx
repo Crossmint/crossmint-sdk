@@ -19,7 +19,7 @@ export function Providers({ children }: { children: ReactNode }) {
                     }}
                     appearance={{
                         spacingUnit: "8px",
-                        borderRadius: "12px",
+                        borderRadius: "16px",
                         colors: {
                             inputBackground: "#fffdf9",
                             buttonBackground: "#fffaf2",

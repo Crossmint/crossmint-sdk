@@ -20,7 +20,7 @@ export function DiscordSignIn({ ...props }: ButtonHTMLAttributes<HTMLButtonEleme
     return (
         <button
             className={classNames(
-                "relative flex text-base p-4 bg-[#F0F2F4] text-[#00150D] border items-center w-full rounded-xl justify-center",
+                "relative flex text-base p-4 bg-cm-muted-primary text-cm-text-primary border border-cm-border items-center w-full rounded-xl justify-center",
                 "transition-all duration-200 ease-in-out", // Add smooth transition
                 "focus:outline-none focus:ring-1 focus:ring-opacity-50", // Add focus ring
                 isLoading ? "cursor-not-allowed" : ""
@@ -38,7 +38,12 @@ export function DiscordSignIn({ ...props }: ButtonHTMLAttributes<HTMLButtonEleme
             <>
                 <DiscordIcon className="h-[25px] w-[25px] absolute left-[18px]" />
                 {isLoading ? (
-                    <Spinner />
+                    <Spinner
+                        style={{
+                            color: appearance?.colors?.textSecondary,
+                            fill: appearance?.colors?.textPrimary,
+                        }}
+                    />
                 ) : (
                     <span
                         className="font-medium"

@@ -1,10 +1,10 @@
 import type React from "react";
 import { classNames } from "@/utils/classNames";
 
-export const Spinner = ({ className, style }: { className?: string, style?: React.CSSProperties }) => (
+export const Spinner = ({ className, style }: { className?: string; style?: React.CSSProperties }) => (
     <svg
         aria-hidden="true"
-        className={classNames("w-6 h-6 fill-secondary-foreground animate-spin text-primary-foreground", className)}
+        className={classNames("w-6 h-6 fill-cm-text-primary text-cm-text-secondary animate-spin", className)}
         style={style}
         viewBox="0 0 100 101"
         fill="none"

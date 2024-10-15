@@ -45,7 +45,7 @@ export const useOAuthWindowListener = (
             popupWindowWidth = 600;
         }
 
-        const popup = await PopupWindow.init(generateOAuthUrl(provider, options.apiKey, options.baseUrl), {
+        const popup = await PopupWindow.init(await generateOAuthUrl(provider, options.apiKey, options.baseUrl), {
             awaitToLoad: false,
             crossOrigin: true,
             width: popupWindowWidth,

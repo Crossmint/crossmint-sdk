@@ -12,10 +12,12 @@ export default function AuthFormDialog({ open, loginMethods }: { open: boolean; 
             <DialogContent
                 onInteractOutside={(e) => e.preventDefault()}
                 onOpenAutoFocus={(e) => e.preventDefault()}
-                className="py-12 px-10 rounded-t-lg"
+                closeButtonColor={appearance?.colors?.textPrimary}
+                closeButtonRingColor={appearance?.colors?.accent}
                 style={{
                     borderTopLeftRadius: appearance?.borderRadius,
                     borderTopRightRadius: appearance?.borderRadius,
+                    backgroundColor: appearance?.colors?.background,
                 }}
             >
                 <VisuallyHidden asChild>

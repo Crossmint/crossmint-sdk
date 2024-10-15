@@ -48,7 +48,7 @@ export function EmailSignIn() {
             <div className="flex flex-col items-start justify-start w-full rounded-lg">
                 <div className="w-full">
                     <p
-                        className="text-sm font-inter font-medium text-[#20343E] pb-2"
+                        className="text-sm font-inter font-medium text-cm-text-primary pb-2"
                         style={{ color: appearance?.colors?.textPrimary }}
                     >
                         Email
@@ -64,7 +64,7 @@ export function EmailSignIn() {
                         </label>
                         <input
                             className={classNames(
-                                "flex-grow text-left pl-[16px] pr-[80px] h-[56px] w-full border rounded-xl bg-console-bg-default placeholder:text-sm placeholder:text-opacity-60",
+                                "flex-grow text-left pl-[16px] pr-[80px] h-[58px] w-full border border-cm-border rounded-xl bg-cm-background-primary placeholder:text-sm placeholder:text-opacity-60",
                                 "transition-all duration-200 ease-in-out", // Add smooth transition
                                 "focus:outline-none focus:ring-1 focus:ring-opacity-50", // Add focus ring
                                 emailError ? "border-red-500" : ""
@@ -92,8 +92,10 @@ export function EmailSignIn() {
                             {emailError && <AlertIcon customColor={appearance?.colors?.danger} />}
                             {isLoading && (
                                 <Spinner
-                                // customPrimaryColor={uiConfig?.colors?.textPrimary}
-                                // customSecondaryColor={uiConfig?.colors?.border}
+                                    style={{
+                                        color: appearance?.colors?.textSecondary,
+                                        fill: appearance?.colors?.textPrimary,
+                                    }}
                                 />
                             )}
                             {!emailError && !isLoading && (

@@ -15,17 +15,17 @@ export function AuthForm({ loginMethods }: { loginMethods: LoginMethod[] }) {
     const { step, appearance, baseUrl } = useAuthForm();
 
     return (
-        <div className="flex flex-col gap-4 max-w-[396px]">
+        <div className="flex flex-col gap-4 max-w-[448px]">
             {step === "initial" ? (
                 <div>
                     <h1
-                        className="text-2xl font-semibold text-custom-text-primary"
+                        className="text-2xl font-semibold text-cm-text-primary"
                         style={{ color: appearance?.colors?.textPrimary }}
                     >
                         Sign In
                     </h1>
                     <p
-                        className="text-base font-normal mb-5 text-[#67797F]"
+                        className="text-base font-normal mb-5 text-cm-text-secondary"
                         style={{ color: appearance?.colors?.textSecondary }}
                     >
                         Sign in using one of the options below
@@ -59,14 +59,19 @@ export function AuthForm({ loginMethods }: { loginMethods: LoginMethod[] }) {
 export const AuthFormBackButton = ({
     className,
     iconColor,
+    ringColor,
     ...props
-}: React.HTMLAttributes<HTMLButtonElement> & { iconColor?: string }) => {
+}: React.HTMLAttributes<HTMLButtonElement> & { iconColor?: string; ringColor?: string }) => {
     return (
         <button
             className={classNames(
-                "relative rounded-full opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none",
+                "relative rounded-full opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-cm-ring focus:ring-offset-2 disabled:pointer-events-none",
                 className
             )}
+            style={{
+                // @ts-expect-error --tw-ring-color is not recognized by typescript but gets picked up by tailwind
+                "--tw-ring-color": ringColor ?? "#1A73E8",
+            }}
             {...props}
         >
             <LeftArrowIcon className="w-6 h-6" style={{ color: iconColor }} />
