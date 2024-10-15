@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.7.1
+
+### Patch Changes
+
+- dc2d2a2: Adds entrypoint to make sure twind is instantiated
+
 ## 1.7.0
 
 ### Minor Changes
