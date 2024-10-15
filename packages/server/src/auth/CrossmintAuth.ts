@@ -1,5 +1,5 @@
 import { type Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
-import { SDK_NAME, SDK_VERSION } from "./utils/constants";
+import { CROSSMINT_API_VERSION, SDK_NAME, SDK_VERSION } from "./utils/constants";
 
 export class CrossmintAuth {
     private crossmint: Crossmint;
@@ -19,5 +19,16 @@ export class CrossmintAuth {
 
     public static from(crossmint: Crossmint): CrossmintAuth {
         return new CrossmintAuth(crossmint);
+    }
+
+    async getUser(externalUserId: string) {
+        const result = await this.apiClient.get(`api/${CROSSMINT_API_VERSION}/sdk/auth/user/${externalUserId}`, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+
+        const user = await result.json();
+        return user;
     }
 }

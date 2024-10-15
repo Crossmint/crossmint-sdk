@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/server-sdk",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
@@ -13,11 +13,7 @@
     "main": "./dist/index.cjs",
     "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
-    "files": [
-        "dist",
-        "src",
-        "LICENSE"
-    ],
+    "files": ["dist", "src", "LICENSE"],
     "scripts": {
         "build": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
         "dev": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --dts --sourcemap --watch"

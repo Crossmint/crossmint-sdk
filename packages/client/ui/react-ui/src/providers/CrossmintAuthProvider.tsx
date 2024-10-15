@@ -19,10 +19,13 @@ export type CrossmintAuthWalletConfig = {
     showWalletModals?: boolean;
 };
 
+export type LoginMethod = "email" | "google" | "farcaster";
+
 export type CrossmintAuthProviderProps = {
-    embeddedWallets: CrossmintAuthWalletConfig;
+    embeddedWallets?: CrossmintAuthWalletConfig;
     appearance?: UIConfig;
     children: ReactNode;
+    loginMethods?: LoginMethod[];
 };
 
 type AuthStatus = "logged-in" | "logged-out" | "in-progress";
@@ -46,7 +49,18 @@ export const AuthContext = createContext<AuthContextType>({
     createEmbeddedAuthForm: () => React.Component,
 });
 
-export function CrossmintAuthProvider({ embeddedWallets, children, appearance }: CrossmintAuthProviderProps) {
+const defaultEmbeddedWallets: CrossmintAuthWalletConfig = {
+    defaultChain: "base-sepolia",
+    createOnLogin: "off",
+    type: "evm-smart-wallet",
+};
+
+export function CrossmintAuthProvider({
+    embeddedWallets = defaultEmbeddedWallets,
+    children,
+    appearance,
+    loginMethods = ["email", "google"],
+}: CrossmintAuthProviderProps) {
     const [user, setUser] = useState<SDKExternalUser | undefined>(undefined);
     const { crossmint, setJwt, setRefreshToken } = useCrossmint(
         "CrossmintAuthProvider must be used within CrossmintProvider"
