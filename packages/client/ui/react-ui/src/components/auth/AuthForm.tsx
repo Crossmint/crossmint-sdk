@@ -9,8 +9,9 @@ import { FarcasterProvider } from "../../providers/auth/FarcasterProvider";
 import { DiscordSignIn } from "./methods/discord/DiscordSignIn";
 import { classNames } from "@/utils/classNames";
 import { LeftArrowIcon } from "@/icons/leftArrow";
+import type { LoginMethod } from "../../providers/CrossmintAuthProvider";
 
-export function AuthForm() {
+export function AuthForm({ loginMethods }: { loginMethods: LoginMethod[] }) {
     const { step, appearance, baseUrl } = useAuthForm();
 
     return (
@@ -32,17 +33,21 @@ export function AuthForm() {
                 </div>
             ) : null}
 
-            <EmailAuthFlow />
+            {loginMethods.includes("email") ? (
+                <>
+                    <EmailAuthFlow />
+                    {loginMethods.length > 1 ? <Divider appearance={appearance} text="OR" /> : null}
+                </>
+            ) : null}
 
-            <Divider appearance={appearance} text="OR" />
+            {loginMethods.includes("google") ? <GoogleSignIn /> : null}
+            {loginMethods.includes("farcaster") ? (
+                <FarcasterProvider baseUrl={baseUrl}>
+                    <FarcasterSignIn />
+                </FarcasterProvider>
+            ) : null}
 
-            <GoogleSignIn />
-
-            <FarcasterProvider baseUrl={baseUrl}>
-                <FarcasterSignIn />
-            </FarcasterProvider>
-
-            <DiscordSignIn />
+            {loginMethods.includes("discord") ? <DiscordSignIn /> : null}
 
             {step === "initial" || step === "otp" ? (
                 <PoweredByCrossmint className="justify-center" color={appearance?.colors?.textSecondary ?? "#A4AFB2"} />

@@ -2,8 +2,9 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import { AuthForm } from "./AuthForm";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "../common/Dialog";
+import type { LoginMethod } from "../../providers/CrossmintAuthProvider";
 
-export default function AuthFormDialog({ open }: { open: boolean }) {
+export default function AuthFormDialog({ open, loginMethods }: { open: boolean; loginMethods: LoginMethod[] }) {
     const { appearance, setDialogOpen } = useAuthForm();
 
     return (
@@ -23,7 +24,7 @@ export default function AuthFormDialog({ open }: { open: boolean }) {
                 <VisuallyHidden asChild>
                     <DialogDescription>Sign in via Crossmint</DialogDescription>
                 </VisuallyHidden>
-                <AuthForm />
+                <AuthForm loginMethods={loginMethods} />
             </DialogContent>
         </Dialog>
     );

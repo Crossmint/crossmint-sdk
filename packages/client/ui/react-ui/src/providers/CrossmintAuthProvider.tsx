@@ -19,7 +19,7 @@ export type CrossmintAuthWalletConfig = {
     showWalletModals?: boolean;
 };
 
-export type LoginMethod = "email" | "google" | "farcaster";
+export type LoginMethod = "email" | "google" | "farcaster" | "discord";
 
 export type CrossmintAuthProviderProps = {
     embeddedWallets?: CrossmintAuthWalletConfig;
@@ -149,7 +149,7 @@ export function CrossmintAuthProvider({
                     appearance,
                 }}
             >
-                <AuthForm />
+                <AuthForm loginMethods={loginMethods} />
             </AuthFormProvider>
         );
     };
@@ -185,7 +185,7 @@ export function CrossmintAuthProvider({
                             setDialogOpen: setModalOpen,
                         }}
                     >
-                        <AuthFormDialog open={modalOpen} />
+                        <AuthFormDialog open={modalOpen} loginMethods={loginMethods} />
                     </AuthFormProvider>
                 ) : null}
             </CrossmintWalletProvider>
