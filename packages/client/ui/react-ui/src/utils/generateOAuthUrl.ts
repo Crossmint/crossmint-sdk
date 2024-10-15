@@ -12,7 +12,7 @@ export function generateOAuthUrl(provider: OAuthProvider, apiKey: string, baseUr
     const stytchDomain = baseUrl.includes("localhost") ? "test.stytch.com" : "api.stytch.com";
 
     const oauthUrl = `https://${stytchDomain}/v1/public/oauth/${provider}/start?${new URLSearchParams({
-        public_token: NEXT_PUBLIC_STYTCH_PUBLIC_TOKEN,
+        public_token: "add <NEXT_PUBLIC_STYTCH_PUBLIC_TOKEN> here",
         login_redirect_url: redirectUrl,
         signup_redirect_url: redirectUrl,
     }).toString()}`;

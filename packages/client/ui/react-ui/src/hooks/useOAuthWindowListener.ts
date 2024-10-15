@@ -38,10 +38,17 @@ export const useOAuthWindowListener = (
             throw new Error("Child window not initialized");
         }
         setIsLoading(true);
+
+        let popupWindowWidth = 400;
+        if (provider === "discord") {
+            // discord takes a bit more width
+            popupWindowWidth = 600;
+        }
+
         const popup = await PopupWindow.init(generateOAuthUrl(provider, options.apiKey, options.baseUrl), {
             awaitToLoad: false,
             crossOrigin: true,
-            width: 400,
+            width: popupWindowWidth,
             height: 700,
         });
 

@@ -1,13 +1,13 @@
 import type { ButtonHTMLAttributes } from "react";
-import { GoogleIcon } from "@/icons/google";
 import { useOAuthWindowListener } from "@/hooks/useOAuthWindowListener";
 import { Spinner } from "@/components/common/Spinner";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import { classNames } from "@/utils/classNames";
+import { DiscordIcon } from "@/icons/discord";
 
-export function GoogleSignIn({ ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
+export function DiscordSignIn({ ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
     const { step, apiKey, baseUrl, appearance, fetchAuthMaterial } = useAuthForm();
-    const { createPopupAndSetupListeners, isLoading } = useOAuthWindowListener("google", {
+    const { createPopupAndSetupListeners, isLoading } = useOAuthWindowListener("discord", {
         apiKey,
         baseUrl,
         fetchAuthMaterial,
@@ -36,7 +36,7 @@ export function GoogleSignIn({ ...props }: ButtonHTMLAttributes<HTMLButtonElemen
             {...props}
         >
             <>
-                <GoogleIcon className="h-[25px] w-[25px] absolute left-[18px]" />
+                <DiscordIcon className="h-[25px] w-[25px] absolute left-[18px]" />
                 {isLoading ? (
                     <Spinner />
                 ) : (
@@ -44,13 +44,13 @@ export function GoogleSignIn({ ...props }: ButtonHTMLAttributes<HTMLButtonElemen
                         className="font-medium"
                         style={{ margin: "0px 32px", color: appearance?.colors?.textPrimary }}
                     >
-                        Google
+                        Discord
                     </span>
                 )}
             </>
 
             {/* For accessibility sake   */}
-            <span className="sr-only">Sign in with Google</span>
+            <span className="sr-only">Sign in with Discord</span>
         </button>
     );
 }

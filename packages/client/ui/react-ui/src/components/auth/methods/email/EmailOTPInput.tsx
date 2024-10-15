@@ -2,14 +2,14 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/common/Input
 import { useAuthSignIn } from "@/hooks/useAuthSignIn";
 import { EmailOtpIcon } from "@/icons/emailOTP";
 import { useState } from "react";
-import { useAuthDialog } from "@/providers/auth/AuthDialogProvider";
-import { DialogBackButton } from "@/components/common/Dialog";
+import { useAuthForm } from "@/providers/auth/AuthFormProvider";
+import { AuthFormBackButton } from "../../AuthForm";
 
 export const EMAIL_VERIFICATION_TOKEN_LENGTH = 6;
 
 export function EmailOTPInput() {
     const { appearance, baseUrl, apiKey, fetchAuthMaterial, setDialogOpen, setStep, otpEmailData, setOtpEmailData } =
-        useAuthDialog();
+        useAuthForm();
     const { onConfirmEmailOtp } = useAuthSignIn();
 
     const [token, setToken] = useState("");
@@ -41,7 +41,7 @@ export function EmailOTPInput() {
 
     return (
         <div>
-            <DialogBackButton onClick={handleOnBack} iconColor={appearance?.colors?.textPrimary} />
+            <AuthFormBackButton onClick={handleOnBack} iconColor={appearance?.colors?.textPrimary} />
 
             <div
                 className="flex flex-col items-center justify-start w-full bg-console-bg-default"

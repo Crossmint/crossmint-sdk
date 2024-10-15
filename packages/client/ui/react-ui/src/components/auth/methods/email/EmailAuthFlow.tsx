@@ -1,9 +1,9 @@
 import { EmailOTPInput } from "./EmailOTPInput";
 import { EmailSignIn } from "./EmailSignIn";
-import { useAuthDialog } from "@/providers/auth/AuthDialogProvider";
+import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 
 export function EmailAuthFlow() {
-    const { step } = useAuthDialog();
+    const { step } = useAuthForm();
 
     if (step === "otp") {
         return <EmailOTPInput />;

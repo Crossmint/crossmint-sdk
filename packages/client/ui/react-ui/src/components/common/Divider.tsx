@@ -1,8 +1,8 @@
-import { useAuthDialog } from "@/providers/auth/AuthDialogProvider";
+import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 
 export function Divider({ appearance, text }: { appearance?: UIConfig; text?: string }) {
-    const { step } = useAuthDialog();
+    const { step } = useAuthForm();
 
     if (step !== "initial") {
         return null;

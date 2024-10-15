@@ -1,4 +1,4 @@
-export type OAuthProvider = "google" | "farcaster";
+export type OAuthProvider = "google" | "farcaster" | "discord";
 
 export interface OAuthUrlParams {
     provider: OAuthProvider;

@@ -5,10 +5,10 @@ import { classNames } from "@/utils/classNames";
 import { AlertIcon } from "../../../../icons/alert";
 import { useAuthSignIn } from "@/hooks/useAuthSignIn";
 import { isEmailValid } from "@/utils/isEmailValid";
-import { useAuthDialog } from "@/providers/auth/AuthDialogProvider";
+import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 
 export function EmailSignIn() {
-    const { baseUrl, apiKey, appearance, setStep, setOtpEmailData } = useAuthDialog();
+    const { baseUrl, apiKey, appearance, setStep, setOtpEmailData } = useAuthForm();
     const { onEmailSignIn } = useAuthSignIn();
 
     const [emailInput, setEmailInput] = useState("");

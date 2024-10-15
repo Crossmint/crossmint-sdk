@@ -1,15 +1,16 @@
 import { REFRESH_TOKEN_PREFIX, SESSION_PREFIX, deleteCookie, getCookie, setCookie } from "@/utils/authCookies";
-import { type ReactNode, createContext, useEffect, useState } from "react";
+import React, { type ReactNode, createContext, useEffect, useState } from "react";
 
 import { CrossmintAuthService } from "@crossmint/client-sdk-auth";
 import type { EVMSmartWalletChain } from "@crossmint/client-sdk-smart-wallet";
 import { type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
 
-import AuthDialog from "../components/auth/AuthDialog";
+import AuthFormDialog from "../components/auth/AuthFormDialog";
 import { useCrossmint, useRefreshToken, useWallet } from "../hooks";
 import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
 import type { AuthMaterial, SDKExternalUser } from "@crossmint/common-sdk-auth";
-import { AuthDialogProvider } from "./auth/AuthDialogProvider";
+import { AuthFormProvider } from "./auth/AuthFormProvider";
+import { AuthForm } from "@/components/auth/AuthForm";
 
 export type CrossmintAuthWalletConfig = {
     defaultChain: EVMSmartWalletChain;
@@ -34,6 +35,7 @@ type AuthContextType = {
     user?: SDKExternalUser;
     status: AuthStatus;
     getUser: () => void;
+    createEmbeddedAuthForm: () => React.ComponentType<{}>;
 };
 
 export const AuthContext = createContext<AuthContextType>({
@@ -41,6 +43,7 @@ export const AuthContext = createContext<AuthContextType>({
     logout: () => {},
     status: "logged-out",
     getUser: () => {},
+    createEmbeddedAuthForm: () => React.Component,
 });
 
 export function CrossmintAuthProvider({ embeddedWallets, children, appearance }: CrossmintAuthProviderProps) {
@@ -51,6 +54,7 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
     const crossmintAuthService = new CrossmintAuthService(crossmint.apiKey);
     const crossmintBaseUrl = validateApiKeyAndGetCrossmintBaseUrl(crossmint.apiKey);
     const [modalOpen, setModalOpen] = useState(false);
+    const [isUsingEmbeddedAuthForm, setIsUsingEmbeddedAuthForm] = useState(false);
 
     const setAuthMaterial = (authMaterial: AuthMaterial) => {
         setCookie(SESSION_PREFIX, authMaterial.jwtToken);
@@ -120,6 +124,22 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
         setUser(user);
     };
 
+    const createEmbeddedAuthForm = () => {
+        setIsUsingEmbeddedAuthForm(true);
+        return () => (
+            <AuthFormProvider
+                initialState={{
+                    apiKey: crossmint.apiKey,
+                    baseUrl: crossmintBaseUrl,
+                    fetchAuthMaterial,
+                    appearance,
+                }}
+            >
+                <AuthForm />
+            </AuthFormProvider>
+        );
+    };
+
     return (
         <AuthContext.Provider
             value={{
@@ -130,6 +150,7 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
                 user,
                 status: getAuthStatus(),
                 getUser,
+                createEmbeddedAuthForm,
             }}
         >
             <CrossmintWalletProvider
@@ -140,8 +161,8 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
                 <WalletManager embeddedWallets={embeddedWallets} accessToken={crossmint.jwt}>
                     {children}
                 </WalletManager>
-                {modalOpen ? (
-                    <AuthDialogProvider
+                {!isUsingEmbeddedAuthForm ? (
+                    <AuthFormProvider
                         initialState={{
                             apiKey: crossmint.apiKey,
                             baseUrl: crossmintBaseUrl,
@@ -150,8 +171,8 @@ export function CrossmintAuthProvider({ embeddedWallets, children, appearance }:
                             setDialogOpen: setModalOpen,
                         }}
                     >
-                        <AuthDialog />
-                    </AuthDialogProvider>
+                        <AuthFormDialog open={modalOpen} />
+                    </AuthFormProvider>
                 ) : null}
             </CrossmintWalletProvider>
         </AuthContext.Provider>

@@ -2,13 +2,13 @@ import { useState } from "react";
 import { useSignIn, QRCode } from "@farcaster/auth-kit";
 import { useAuthSignIn } from "@/hooks/useAuthSignIn";
 import { FarcasterIcon } from "@/icons/farcaster";
-import { useAuthDialog } from "@/providers/auth/AuthDialogProvider";
-import { DialogBackButton } from "@/components/common/Dialog";
+import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import { Spinner } from "@/components/common/Spinner";
 import { classNames } from "@/utils/classNames";
+import { AuthFormBackButton } from "../../AuthForm";
 
 export function FarcasterSignIn() {
-    const { step, appearance, setStep } = useAuthDialog();
+    const { step, appearance, setStep } = useAuthForm();
 
     const [isLoading, setIsLoading] = useState(false);
     const { onFarcasterSignIn } = useAuthSignIn();
@@ -71,7 +71,7 @@ export function FarcasterSignIn() {
     if (step === "qrCode") {
         return (
             <div>
-                <DialogBackButton
+                <AuthFormBackButton
                     onClick={() => {
                         signOut();
                         setStep("initial");
@@ -109,6 +109,25 @@ export function FarcasterSignIn() {
                             </div>
                         )}
                     </div>
+                    {qrCodeUrl ? (
+                        <>
+                            <p
+                                className="text-base text-center font-normal text-[#67797F]"
+                                style={{ color: appearance?.colors?.textSecondary }}
+                            >
+                                Alternatively, click on this link to open Warpcast.
+                            </p>
+                            <a
+                                href={qrCodeUrl}
+                                rel="noopener noreferrer"
+                                target="_blank"
+                                className="text-base font-normal text-[#67797F]"
+                                style={{ color: appearance?.colors?.textLink }}
+                            >
+                                Open Warpcast
+                            </a>
+                        </>
+                    ) : null}
                 </div>
             </div>
         );
