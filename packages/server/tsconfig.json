@@ -5,8 +5,7 @@
         "baseUrl": ".",
         "paths": {
             "@/*": ["src/*"]
-        },
-        "module": "commonjs"
+        }
     },
     "include": ["src/**/*"]
 }
