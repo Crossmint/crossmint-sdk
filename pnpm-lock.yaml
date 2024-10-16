@@ -492,9 +492,6 @@ importers:
       '@solana/web3.js':
         specifier: 1.95.1
         version: 1.95.1(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
-      '@stytch/nextjs':
-        specifier: 21.1.0
-        version: 21.1.0(@stytch/vanilla-js@5.5.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@twind/core':
         specifier: 1.1.3
         version: 1.1.3(typescript@5.5.3)
@@ -4991,19 +4988,6 @@ packages:
   '@stablelib/x25519@1.0.3':
     resolution: {integrity: sha512-KnTbKmUhPhHavzobclVJQG5kuivH+qDLpe84iRqX3CLrKp881cF160JvXJ+hjn1aMyCwYOKeIZefIH/P5cJoRw==}
 
-  '@stytch/core@2.28.0':
-    resolution: {integrity: sha512-KZEVFFt9DW6sh7rnyyfLVb+4Iro+gqEghYzcfVC/kOonLVJqdGlG7Sz0g4VMZyXe/QZpZ4kMSwj80lmYGR1QZg==}
-
-  '@stytch/nextjs@21.1.0':
-    resolution: {integrity: sha512-4+f6HBj0ajFg4dW0c4oTIb+xhEJjZVyyvaajLVLdXn1jbhLftn5nYqT37irs4nlpT79FW2pohg5ikcY4nS1IQQ==}
-    peerDependencies:
-      '@stytch/vanilla-js': ^5.0.0
-      react: '>= 17.0.2'
-      react-dom: '>= 17.0.2'
-
-  '@stytch/vanilla-js@5.5.0':
-    resolution: {integrity: sha512-ZqLSem7fgTgbHrZ6pHRcDXd2mO3ZbFAJ3My4nWQJOGJjuxQAph+sw4VLLPMWo9yWSvBF7UTDdnNGPod4FqXtSQ==}
-
   '@surma/rollup-plugin-off-main-thread@2.2.3':
     resolution: {integrity: sha512-lR8q/9W7hZpMWweNiAKU7NQerBnzQQLvi8qnTDU/fxItPhtZVMbPV3lbCwjhIlNBe9Bbr5V+KHshvWmVSG9cxQ==}
 
@@ -5364,9 +5348,6 @@ packages:
 
   '@types/express@4.17.17':
     resolution: {integrity: sha512-Q4FmmuLGBG58btUnfS1c1r/NQdlp3DMfGDGig8WhfpA2YRUtEkxAjkZb0yvplJGYdF1fsQ81iMDcH24sSCNC/Q==}
-
-  '@types/google-one-tap@1.2.6':
-    resolution: {integrity: sha512-REmJsXVHvKb/sgI8DF+7IesMbDbcsEokHBqxU01ENZ8d98UPWdRLhUCtxEm9bhNFFg6PJGy7PNFdvovp0hK3jA==}
 
   '@types/graceful-fs@4.1.6':
     resolution: {integrity: sha512-Sig0SNORX9fdW+bQuTEovKj3uHcUL6LQKbCrrqb1X7J6/ReAbhCXRAhc+SMejhLELFj2QcyuxmUooZ4bt5ReSw==}
@@ -21973,22 +21954,6 @@ snapshots:
       '@stablelib/random': 1.0.2
       '@stablelib/wipe': 1.0.1
 
-  '@stytch/core@2.28.0':
-    dependencies:
-      uuid: 8.3.2
-
-  '@stytch/nextjs@21.1.0(@stytch/vanilla-js@5.5.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
-    dependencies:
-      '@stytch/vanilla-js': 5.5.0
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
-
-  '@stytch/vanilla-js@5.5.0':
-    dependencies:
-      '@stytch/core': 2.28.0
-      '@types/google-one-tap': 1.2.6
-      type-fest: 4.15.0
-
   '@surma/rollup-plugin-off-main-thread@2.2.3':
     dependencies:
       ejs: 3.1.9
@@ -22613,8 +22578,6 @@ snapshots:
       '@types/express-serve-static-core': 4.17.36
       '@types/qs': 6.9.8
       '@types/serve-static': 1.15.7
-
-  '@types/google-one-tap@1.2.6': {}
 
   '@types/graceful-fs@4.1.6':
     dependencies:
@@ -35053,7 +35016,8 @@ snapshots:
 
   type-fest@0.8.1: {}
 
-  type-fest@4.15.0: {}
+  type-fest@4.15.0:
+    optional: true
 
   type-is@1.6.18:
     dependencies:
