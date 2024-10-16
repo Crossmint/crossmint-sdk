@@ -17,26 +17,13 @@ function getCookieHeader(request: GenericRequest): string {
     let cookieHeader: string;
 
     if (isNodeRequest(request)) {
-        cookieHeader = getCookieHeaderFromNodeRequest(request);
+        cookieHeader = request.headers.cookie;
     } else if (isFetchRequest(request)) {
-        cookieHeader = getCookieHeaderFromFetchRequest(request);
+        cookieHeader = request.headers.get("Cookie");
     } else {
         throw new CrossmintAuthenticationError("Unsupported request type");
     }
 
-    return cookieHeader;
-}
-
-function getCookieHeaderFromNodeRequest(request: IncomingMessage): string {
-    const cookieHeader = request.headers.cookie;
-    if (cookieHeader == null) {
-        throw new CrossmintAuthenticationError("Cookie header not found");
-    }
-    return cookieHeader;
-}
-
-function getCookieHeaderFromFetchRequest(request: Request): string {
-    const cookieHeader = request.headers.get("Cookie");
     if (cookieHeader == null) {
         throw new CrossmintAuthenticationError("Cookie header not found");
     }
