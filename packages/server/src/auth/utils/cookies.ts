@@ -9,8 +9,8 @@ import { type GenericRequest, isNodeRequest, isFetchRequest } from "../types/req
 
 export function getAuthCookies(request: GenericRequest): AuthMaterialBasic {
     const cookieHeader = getCookieHeader(request);
-    const { [SESSION_PREFIX]: jwtToken, [REFRESH_TOKEN_PREFIX]: refreshToken } = parseCookieHeader(cookieHeader);
-    return { jwtToken, refreshToken };
+    const { [SESSION_PREFIX]: jwt, [REFRESH_TOKEN_PREFIX]: refreshToken } = parseCookieHeader(cookieHeader);
+    return { jwt, refreshToken };
 }
 
 function getCookieHeader(request: GenericRequest): string {

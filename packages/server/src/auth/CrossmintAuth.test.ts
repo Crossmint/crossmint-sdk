@@ -60,7 +60,7 @@ describe("CrossmintAuth", () => {
     describe("getSession", () => {
         const mockRequest = { headers: { cookie: "mock-cookie" } };
         const mockAuthMaterial = {
-            jwtToken: "mock.jwt.token",
+            jwt: "mock.jwt.token",
             refreshToken: "mock-refresh-token",
         };
 
@@ -71,7 +71,7 @@ describe("CrossmintAuth", () => {
             const result = await crossmintAuth.getSession(mockRequest as GenericRequest);
 
             expect(result).toEqual({
-                jwtToken: "mock.jwt.token",
+                jwt: "mock.jwt.token",
                 userId: "user123",
             });
         });
@@ -91,7 +91,7 @@ describe("CrossmintAuth", () => {
             const result = await crossmintAuth.getSession(mockRequest as GenericRequest);
 
             expect(result).toEqual({
-                jwtToken: "new.jwt.token",
+                jwt: "new.jwt.token",
                 userId: "user456",
             });
             expect(mockApiClient.post).toHaveBeenCalledWith(
@@ -101,7 +101,7 @@ describe("CrossmintAuth", () => {
         });
 
         it("should throw CrossmintAuthenticationError when refresh token is not found", async () => {
-            vi.mocked(cookiesUtils.getAuthCookies).mockReturnValue({ jwtToken: "mock.jwt.token" } as AuthMaterialBasic);
+            vi.mocked(cookiesUtils.getAuthCookies).mockReturnValue({ jwt: "mock.jwt.token" } as AuthMaterialBasic);
 
             await expect(crossmintAuth.getSession(mockRequest as GenericRequest)).rejects.toThrow(
                 CrossmintAuthenticationError

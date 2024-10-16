@@ -36,7 +36,7 @@ describe("getAuthCookies", () => {
         const result = getAuthCookies(mockRequest);
 
         expect(result).toEqual({
-            jwtToken: "mock-jwt-token",
+            jwt: "mock-jwt-token",
             refreshToken: "mock-refresh-token",
         });
     });
@@ -51,7 +51,7 @@ describe("getAuthCookies", () => {
         const result = getAuthCookies(mockRequest);
 
         expect(result).toEqual({
-            jwtToken: "mock-jwt-token",
+            jwt: "mock-jwt-token",
             refreshToken: "mock-refresh-token",
         });
     });

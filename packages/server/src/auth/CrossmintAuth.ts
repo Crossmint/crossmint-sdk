@@ -47,33 +47,33 @@ export class CrossmintAuth {
         const resultJson = (await result.json()) as AuthMaterialResponse;
 
         return {
-            jwtToken: resultJson.jwt,
+            jwt: resultJson.jwt,
             refreshToken: resultJson.refresh,
             user: resultJson.user,
         };
     }
 
     public async getSession(options: GenericRequest | AuthMaterialBasic): Promise<AuthSession> {
-        const { jwtToken, refreshToken } = "refreshToken" in options ? options : getAuthCookies(options);
+        const { jwt, refreshToken } = "refreshToken" in options ? options : getAuthCookies(options);
 
         if (!refreshToken) {
             throw new CrossmintAuthenticationError("Refresh token not found");
         }
 
         try {
-            return await this.validateOrRefreshSession(jwtToken, refreshToken);
+            return await this.validateOrRefreshSession(jwt, refreshToken);
         } catch (error) {
             console.error("Failed to get session", error);
             throw new CrossmintAuthenticationError("Failed to get session");
         }
     }
 
-    private async validateOrRefreshSession(jwtToken: string | undefined, refreshToken: string): Promise<AuthSession> {
-        if (jwtToken) {
+    private async validateOrRefreshSession(jwt: string | undefined, refreshToken: string): Promise<AuthSession> {
+        if (jwt) {
             try {
-                const decodedJwt = await this.verifyCrossmintJwtToken(jwtToken);
+                const decodedJwt = await this.verifyCrossmintJwtToken(jwt);
                 return {
-                    jwtToken,
+                    jwt,
                     userId: decodedJwt.sub as string,
                 };
             } catch (_) {
@@ -83,7 +83,7 @@ export class CrossmintAuth {
 
         const refreshedAuthMaterial = await this.refreshAuthMaterial(refreshToken);
         return {
-            jwtToken: refreshedAuthMaterial.jwtToken,
+            jwt: refreshedAuthMaterial.jwt,
             userId: refreshedAuthMaterial.user.id,
         };
     }

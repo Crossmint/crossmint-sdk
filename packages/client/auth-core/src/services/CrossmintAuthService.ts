@@ -18,7 +18,7 @@ export class CrossmintAuthService extends BaseCrossmintService {
         );
 
         return {
-            jwtToken: result.jwt,
+            jwt: result.jwt,
             refreshToken: result.refresh,
             user: result.user,
         };

@@ -1,28 +1,28 @@
 import type { SDKExternalUser } from "./user";
 
 export type AuthMaterialBasic = {
-    jwtToken?: string;
+    jwt?: string;
     refreshToken: string;
 };
 
-interface refreshTokenObject {
+interface RefreshToken {
     secret: string;
     expiresAt: string;
 }
 
 export type AuthMaterial = {
-    jwtToken: string;
-    refreshToken: refreshTokenObject;
+    jwt: string;
+    refreshToken: RefreshToken;
     user: SDKExternalUser;
 };
 
 export type AuthMaterialResponse = {
     jwt: string;
-    refresh: refreshTokenObject;
+    refresh: RefreshToken;
     user: SDKExternalUser;
 };
 
 export type AuthSession = {
-    jwtToken: string;
+    jwt: string;
     userId: string;
 };

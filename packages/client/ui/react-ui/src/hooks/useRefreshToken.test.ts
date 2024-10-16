@@ -65,7 +65,7 @@ describe("useRefreshToken", () => {
     it("should refresh token if refresh token is present", async () => {
         const mockRefreshToken = "mock-refresh-token";
         const mockAuthMaterial: AuthMaterial = {
-            jwtToken: "mock-jwt-token",
+            jwt: "mock-jwt-token",
             refreshToken: {
                 secret: "mock-secret",
                 expiresAt: "2023-04-01T00:00:00Z",
@@ -99,7 +99,7 @@ describe("useRefreshToken", () => {
     it("should schedule next refresh before token expiration", async () => {
         const mockRefreshToken = "mock-refresh-token";
         const mockAuthMaterial: AuthMaterial = {
-            jwtToken: "mock-jwt-token",
+            jwt: "mock-jwt-token",
             refreshToken: {
                 secret: "mock-secret",
                 expiresAt: "2023-04-01T00:00:00Z",

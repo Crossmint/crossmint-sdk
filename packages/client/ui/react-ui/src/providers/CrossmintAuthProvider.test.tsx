@@ -40,7 +40,7 @@ vi.mock("@crossmint/client-sdk-auth", async () => {
         getJWTExpiration: vi.fn(),
         CrossmintAuthService: vi.fn().mockImplementation(() => ({
             refreshAuthMaterial: vi.fn().mockResolvedValue({
-                jwtToken: "new-mock-jwt",
+                jwt: "new-mock-jwt",
                 refreshToken: {
                     secret: "new-mock-refresh-token",
                     expiresAt: new Date(Date.now() + 1000 * 60 * 60).toISOString(),
@@ -124,7 +124,7 @@ describe("CrossmintAuthProvider", () => {
 
         mockCrossmintAuthService = {
             refreshAuthMaterial: vi.fn().mockResolvedValue({
-                jwtToken: "new-mock-jwt",
+                jwt: "new-mock-jwt",
                 refreshToken: {
                     secret: "new-mock-refresh-token",
                     expiresAt: new Date(Date.now() + 1000 * 60 * 60).toISOString(),

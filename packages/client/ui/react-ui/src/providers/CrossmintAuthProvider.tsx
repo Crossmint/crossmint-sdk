@@ -72,9 +72,9 @@ export function CrossmintAuthProvider({
     const [modalOpen, setModalOpen] = useState(false);
 
     const setAuthMaterial = (authMaterial: AuthMaterial) => {
-        setCookie(SESSION_PREFIX, authMaterial.jwtToken);
+        setCookie(SESSION_PREFIX, authMaterial.jwt);
         setCookie(REFRESH_TOKEN_PREFIX, authMaterial.refreshToken.secret, authMaterial.refreshToken.expiresAt);
-        setJwt(authMaterial.jwtToken);
+        setJwt(authMaterial.jwt);
         setRefreshToken(authMaterial.refreshToken.secret);
         setUser(authMaterial.user);
     };

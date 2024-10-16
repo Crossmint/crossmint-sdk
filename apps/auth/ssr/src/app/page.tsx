@@ -16,13 +16,13 @@ export default async function Home() {
         const refreshCookie = cookieStore.get("crossmint-refresh-token")?.value;
 
         if (refreshCookie != null) {
-            const { jwtToken, userId: fetchedUserId } = await crossmintAuth.getSession({
-                jwtToken: jwtCookie,
+            const { jwt, userId: fetchedUserId } = await crossmintAuth.getSession({
+                jwt: jwtCookie,
                 refreshToken: refreshCookie,
             });
             isLoggedIn = true;
             userId = fetchedUserId;
-            console.log("jwt", jwtToken);
+            console.log("jwt", jwt);
             console.log("userId", userId);
         } else {
             console.log("user not logged in");

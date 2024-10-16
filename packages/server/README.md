@@ -31,7 +31,7 @@ const crossmintAuth = CrossmintAuth.from(crossmint);
 With most frameworks, pass the request object:
 
 ```ts
-const { jwtToken, userId } = await crossmintAuth.getSession(request);
+const { jwt, userId } = await crossmintAuth.getSession(request);
 ```
 
 With Next.js, fetch the cookies and pass them to the `getSession` method:
@@ -43,8 +43,8 @@ const cookieStore = cookies();
 const jwtCookie = cookieStore.get("crossmint-session")?.value;
 const refreshCookie = cookieStore.get("crossmint-refresh-token")?.value;
 
-const { jwtToken, userId } = await crossmintAuth.getSession({
-    jwtToken: jwtCookie,
+const { jwt, userId } = await crossmintAuth.getSession({
+    jwt: jwtCookie,
     refreshToken: refreshCookie,
 });
 ```

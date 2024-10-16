@@ -35,7 +35,7 @@ export function useRefreshToken({ crossmintAuthService, setAuthMaterial, logout 
                 try {
                     const result = await crossmintAuthService.refreshAuthMaterial(refreshToken);
                     setAuthMaterial(result);
-                    const jwtExpiration = getJWTExpiration(result.jwtToken);
+                    const jwtExpiration = getJWTExpiration(result.jwt);
 
                     if (jwtExpiration == null) {
                         throw new Error("Invalid JWT");
