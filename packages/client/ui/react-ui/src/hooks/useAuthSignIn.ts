@@ -21,15 +21,12 @@ async function onEmailSignIn(email: string, options: { baseUrl: string; apiKey: 
             method: "POST",
             body: JSON.stringify({ email }),
         });
-        console.log("Response from initiate-email-authentication", response);
 
         if (!response?.ok) {
             throw new Error("Failed to send email. Please try again or contact support.");
         }
 
-        const resData = await response.json();
-        console.log("Data from initiate-email-authentication", resData);
-        return resData;
+        return await response.json();
     } catch (err) {
         console.error("Error signing in via email ", err);
         throw new Error("Error signing in via email " + err);
@@ -95,15 +92,11 @@ async function onFarcasterSignIn(data: UseSignInData, options: { baseUrl: string
             method: "POST",
         });
 
-        console.log("Response from /authenticate", response);
-
         if (!response?.ok) {
             throw new Error("Failed to sign in via farcaster. Please try again or contact support.");
         }
 
-        const resData = await response.json();
-        console.log("Data from /authenticate", resData);
-        return resData;
+        return await response.json();
     } catch (err) {
         console.error("Error signing in via farcaster ", err);
         throw new Error("Error signing in via farcaster " + err);

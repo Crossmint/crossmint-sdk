@@ -23,7 +23,6 @@ export const useOAuthWindowListener = (
                 incomingEvents,
                 outgoingEvents,
             });
-            console.log("Child window initialized", { url: window.location.origin });
         }
 
         return () => {
