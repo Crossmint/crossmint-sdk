@@ -31,12 +31,38 @@ export class CrossmintAuth {
         return new CrossmintAuth(crossmint);
     }
 
-    public getJWKSUri() {
-        return `${this.apiClient.baseUrl}/.well-known/jwks.json`;
+    public async getSession(options: GenericRequest | AuthMaterialBasic): Promise<AuthSession> {
+        const { jwt, refreshToken } = "refreshToken" in options ? options : getAuthCookies(options);
+
+        if (!refreshToken) {
+            throw new CrossmintAuthenticationError("Refresh token not found");
+        }
+
+        try {
+            return await this.validateOrRefreshSession(jwt, refreshToken);
+        } catch (error) {
+            console.error("Failed to get session", error);
+            throw new CrossmintAuthenticationError("Failed to get session");
+        }
+    }
+
+    async getUser(externalUserId: string) {
+        const result = await this.apiClient.get(`api/${CROSSMINT_API_VERSION}/sdk/auth/user/${externalUserId}`, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+
+        const user = await result.json();
+        return user;
     }
 
     public verifyCrossmintJwtToken(token: string) {
-        return verifyCrossmintJwtToken(token, this.getJWKSUri());
+        return verifyCrossmintJwtToken(token, this.getJwksUri());
+    }
+
+    public getJwksUri() {
+        return `${this.apiClient.baseUrl}/.well-known/jwks.json`;
     }
 
     private async refreshAuthMaterial(refreshToken: string): Promise<AuthMaterial> {
@@ -51,21 +77,6 @@ export class CrossmintAuth {
             refreshToken: resultJson.refresh,
             user: resultJson.user,
         };
-    }
-
-    public async getSession(options: GenericRequest | AuthMaterialBasic): Promise<AuthSession> {
-        const { jwt, refreshToken } = "refreshToken" in options ? options : getAuthCookies(options);
-
-        if (!refreshToken) {
-            throw new CrossmintAuthenticationError("Refresh token not found");
-        }
-
-        try {
-            return await this.validateOrRefreshSession(jwt, refreshToken);
-        } catch (error) {
-            console.error("Failed to get session", error);
-            throw new CrossmintAuthenticationError("Failed to get session");
-        }
     }
 
     private async validateOrRefreshSession(jwt: string | undefined, refreshToken: string): Promise<AuthSession> {
@@ -86,16 +97,5 @@ export class CrossmintAuth {
             jwt: refreshedAuthMaterial.jwt,
             userId: refreshedAuthMaterial.user.id,
         };
-    }
-
-    async getUser(externalUserId: string) {
-        const result = await this.apiClient.get(`api/${CROSSMINT_API_VERSION}/sdk/auth/user/${externalUserId}`, {
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
-
-        const user = await result.json();
-        return user;
     }
 }
