@@ -4,7 +4,6 @@ import {
     CrossmintAuthenticationError,
     type AuthMaterialBasic,
 } from "@crossmint/common-sdk-auth";
-import type { IncomingMessage } from "http";
 import { type GenericRequest, isNodeRequest, isFetchRequest } from "../types/request";
 
 export function getAuthCookies(request: GenericRequest): AuthMaterialBasic {
@@ -14,7 +13,7 @@ export function getAuthCookies(request: GenericRequest): AuthMaterialBasic {
 }
 
 function getCookieHeader(request: GenericRequest): string {
-    let cookieHeader: string;
+    let cookieHeader;
 
     if (isNodeRequest(request)) {
         cookieHeader = request.headers.cookie;

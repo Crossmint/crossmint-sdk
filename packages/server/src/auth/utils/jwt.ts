@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 
 import { getPublicKey } from "./tokenAuth/publicKey";
 
-export async function verifyCrossmintJWT(token: string, jwksUri: string) {
+export async function verifyCrossmintJwt(token: string, jwksUri: string) {
     try {
         const publicKey = await getPublicKey(token, jwksUri);
         return verifyJWT(publicKey, token);

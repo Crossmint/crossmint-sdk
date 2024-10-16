@@ -8,7 +8,7 @@ import {
 } from "@crossmint/common-sdk-auth";
 import type { GenericRequest } from "./types/request";
 import { getAuthCookies } from "./utils/cookies";
-import { verifyCrossmintJwtToken } from "./utils/jwt";
+import { verifyCrossmintJwt } from "./utils/jwt";
 import { CROSSMINT_API_VERSION, SDK_NAME, SDK_VERSION } from "./utils/constants";
 
 export class CrossmintAuth {
@@ -57,8 +57,8 @@ export class CrossmintAuth {
         return user;
     }
 
-    public verifyCrossmintJwtToken(token: string) {
-        return verifyCrossmintJwtToken(token, this.getJwksUri());
+    public verifyCrossmintJwt(token: string) {
+        return verifyCrossmintJwt(token, this.getJwksUri());
     }
 
     public getJwksUri() {
@@ -82,7 +82,7 @@ export class CrossmintAuth {
     private async validateOrRefreshSession(jwt: string | undefined, refreshToken: string): Promise<AuthSession> {
         if (jwt) {
             try {
-                const decodedJwt = await this.verifyCrossmintJwtToken(jwt);
+                const decodedJwt = await this.verifyCrossmintJwt(jwt);
                 return {
                     jwt,
                     userId: decodedJwt.sub as string,

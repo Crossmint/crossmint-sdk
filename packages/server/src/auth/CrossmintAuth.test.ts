@@ -35,21 +35,21 @@ describe("CrossmintAuth", () => {
         });
     });
 
-    describe("getJWKSUri", () => {
+    describe("getJwksUri", () => {
         it("should return the correct JWKS URI", () => {
-            expect(crossmintAuth.getJWKSUri()).toBe("https://api.crossmint.com/.well-known/jwks.json");
+            expect(crossmintAuth.getJwksUri()).toBe("https://api.crossmint.com/.well-known/jwks.json");
         });
     });
 
-    describe("verifyCrossmintJwtToken", () => {
-        it("should call verifyCrossmintJwtToken with correct parameters", async () => {
+    describe("verifyCrossmintJwt", () => {
+        it("should call verifyCrossmintJwt with correct parameters", async () => {
             const mockToken = "mock.jwt.token";
             const mockDecodedJwt = { sub: "user123" };
-            vi.mocked(jwtUtils.verifyCrossmintJwtToken).mockResolvedValue(mockDecodedJwt);
+            vi.mocked(jwtUtils.verifyCrossmintJwt).mockResolvedValue(mockDecodedJwt);
 
-            const result = await crossmintAuth.verifyCrossmintJwtToken(mockToken);
+            const result = await crossmintAuth.verifyCrossmintJwt(mockToken);
 
-            expect(jwtUtils.verifyCrossmintJwtToken).toHaveBeenCalledWith(
+            expect(jwtUtils.verifyCrossmintJwt).toHaveBeenCalledWith(
                 mockToken,
                 "https://api.crossmint.com/.well-known/jwks.json"
             );
@@ -66,7 +66,7 @@ describe("CrossmintAuth", () => {
 
         it("should return a valid session when JWT is valid", async () => {
             vi.mocked(cookiesUtils.getAuthCookies).mockReturnValue(mockAuthMaterial);
-            vi.mocked(jwtUtils.verifyCrossmintJwtToken).mockResolvedValue({ sub: "user123" });
+            vi.mocked(jwtUtils.verifyCrossmintJwt).mockResolvedValue({ sub: "user123" });
 
             const result = await crossmintAuth.getSession(mockRequest as GenericRequest);
 
@@ -78,7 +78,7 @@ describe("CrossmintAuth", () => {
 
         it("should refresh the session when JWT is invalid", async () => {
             vi.mocked(cookiesUtils.getAuthCookies).mockReturnValue(mockAuthMaterial);
-            vi.mocked(jwtUtils.verifyCrossmintJwtToken).mockRejectedValue(new Error("Invalid token"));
+            vi.mocked(jwtUtils.verifyCrossmintJwt).mockRejectedValue(new Error("Invalid token"));
             mockApiClient.post.mockResolvedValue({
                 json: () =>
                     Promise.resolve({
@@ -113,7 +113,7 @@ describe("CrossmintAuth", () => {
 
         it("should throw CrossmintAuthenticationError when session retrieval fails", async () => {
             vi.mocked(cookiesUtils.getAuthCookies).mockReturnValue(mockAuthMaterial);
-            vi.mocked(jwtUtils.verifyCrossmintJwtToken).mockRejectedValue(new Error("Invalid token"));
+            vi.mocked(jwtUtils.verifyCrossmintJwt).mockRejectedValue(new Error("Invalid token"));
             mockApiClient.post.mockRejectedValue(new Error("API error"));
 
             await expect(crossmintAuth.getSession(mockRequest as GenericRequest)).rejects.toThrow(
