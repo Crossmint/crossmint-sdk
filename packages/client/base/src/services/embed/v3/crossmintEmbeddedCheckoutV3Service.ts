@@ -4,9 +4,15 @@ import { embeddedCheckoutV3IncomingEvents, embeddedCheckoutV3OutgoingEvents } fr
 import { IFrameWindow } from "@crossmint/client-sdk-window";
 import type { CrossmintApiClient } from "@crossmint/common-sdk-base";
 
-export type CrossmintEmbeddedCheckoutV3ServiceProps = { apiClient: CrossmintApiClient };
+export type CrossmintEmbeddedCheckoutV3ServiceProps = { 
+    apiClient: CrossmintApiClient,
+    sdkMetadata: {
+        name: string;
+        version: string;
+    }
+};
 
-export function crossmintEmbeddedCheckoutV3Service({ apiClient }: CrossmintEmbeddedCheckoutV3ServiceProps) {
+export function crossmintEmbeddedCheckoutV3Service({ apiClient, sdkMetadata }: CrossmintEmbeddedCheckoutV3ServiceProps) {
     function getIFrameUrl(props: CrossmintEmbeddedCheckoutV3Props) {
         const urlWithPath = apiClient.buildUrl("/sdk/2024-03-05/embedded-checkout");
         const queryParams = new URLSearchParams();
@@ -34,6 +40,7 @@ export function crossmintEmbeddedCheckoutV3Service({ apiClient }: CrossmintEmbed
         }
 
         queryParams.append("apiKey", apiClient.crossmint.apiKey);
+        queryParams.append("sdkMetadata", JSON.stringify(sdkMetadata));
 
         return `${urlWithPath}?${queryParams.toString()}`;
     }
