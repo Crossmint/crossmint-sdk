@@ -4,7 +4,7 @@ import { type Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
 import { type AuthMaterialBasic, CrossmintAuthenticationError } from "@crossmint/common-sdk-auth";
 import * as cookiesUtils from "./utils/cookies";
 import * as jwtUtils from "./utils/jwt";
-import type { GenericRequest } from "./types/request";
+import type { GenericRequest, GenericResponse } from "./types/request";
 
 vi.mock("@crossmint/common-sdk-base");
 vi.mock("./utils/cookies");
@@ -15,6 +15,7 @@ describe("CrossmintAuth", () => {
     const mockCrossmint = { projectId: "test-project-id" };
     const mockApiClient = {
         baseUrl: "https://api.crossmint.com",
+        get: vi.fn(),
         post: vi.fn(),
     };
 
@@ -72,6 +73,10 @@ describe("CrossmintAuth", () => {
 
             expect(result).toEqual({
                 jwt: "mock.jwt.token",
+                refreshToken: {
+                    secret: "mock-refresh-token",
+                    expiresAt: "",
+                },
                 userId: "user123",
             });
         });
@@ -83,15 +88,23 @@ describe("CrossmintAuth", () => {
                 json: () =>
                     Promise.resolve({
                         jwt: "new.jwt.token",
-                        refresh: "new-refresh-token",
+                        refresh: {
+                            secret: "new-refresh-token",
+                            expiresAt: "2023-12-31T23:59:59Z",
+                        },
                         user: { id: "user456" },
                     }),
+                ok: true,
             });
 
             const result = await crossmintAuth.getSession(mockRequest as GenericRequest);
 
             expect(result).toEqual({
                 jwt: "new.jwt.token",
+                refreshToken: {
+                    secret: "new-refresh-token",
+                    expiresAt: "2023-12-31T23:59:59Z",
+                },
                 userId: "user456",
             });
             expect(mockApiClient.post).toHaveBeenCalledWith(
@@ -122,6 +135,41 @@ describe("CrossmintAuth", () => {
             await expect(crossmintAuth.getSession(mockRequest as GenericRequest)).rejects.toThrow(
                 "Failed to get session"
             );
+        });
+    });
+
+    describe("getUser", () => {
+        it("should fetch user data for a given external user ID", async () => {
+            const mockExternalUserId = "external-user-123";
+            const mockUserData = { id: "user456", email: "user@example.com" };
+            mockApiClient.get.mockResolvedValue({
+                json: () => Promise.resolve(mockUserData),
+            });
+
+            const result = await crossmintAuth.getUser(mockExternalUserId);
+
+            expect(result).toEqual(mockUserData);
+            expect(mockApiClient.get).toHaveBeenCalledWith(
+                `api/2024-09-26/sdk/auth/user/${mockExternalUserId}`,
+                expect.any(Object)
+            );
+        });
+    });
+
+    describe("storeAuthMaterial", () => {
+        it("should call setAuthCookies with the provided response and auth material", () => {
+            const mockResponse = {} as GenericResponse;
+            const mockAuthMaterial = {
+                jwt: "new.jwt.token",
+                refreshToken: {
+                    secret: "new-refresh-token",
+                    expiresAt: "2023-12-31T23:59:59Z",
+                },
+            };
+
+            crossmintAuth.storeAuthMaterial(mockResponse, mockAuthMaterial);
+
+            expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(mockResponse, mockAuthMaterial);
         });
     });
 });

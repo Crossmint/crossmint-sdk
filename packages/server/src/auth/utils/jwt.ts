@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-import { getPublicKey } from "./tokenAuth/publicKey";
+import { getPublicKey } from "./publicKey";
 
 export async function verifyCrossmintJwt(token: string, jwksUri: string) {
     try {
