@@ -1,9 +1,9 @@
 import type { OAuthProvider } from "@/types/auth";
-import { generateOAuthUrl } from "@/utils/generateOAuthUrl";
 import { ChildWindow, PopupWindow } from "@crossmint/client-sdk-window";
 import type { AuthMaterial } from "@crossmint/common-sdk-auth";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
+import { useAuthSignIn } from "./useAuthSignIn";
 
 export const useOAuthWindowListener = (
     provider: OAuthProvider,
@@ -13,6 +13,7 @@ export const useOAuthWindowListener = (
         fetchAuthMaterial: (refreshToken: string) => Promise<AuthMaterial>;
     }
 ) => {
+    const { getOAuthUrl } = useAuthSignIn();
     const [isLoading, setIsLoading] = useState(false);
     const childRef = useRef<ChildWindow<IncomingEvents, OutgoingEvents> | null>(null);
     const popupRef = useRef<PopupWindow<IncomingEvents, OutgoingEvents> | null>(null);
@@ -44,7 +45,8 @@ export const useOAuthWindowListener = (
             popupWindowWidth = 600;
         }
 
-        const popup = await PopupWindow.init(await generateOAuthUrl(provider, options.apiKey, options.baseUrl), {
+        const oauthUrl = await getOAuthUrl(provider, { apiKey: options.apiKey, baseUrl: options.baseUrl });
+        const popup = await PopupWindow.init(oauthUrl, {
             awaitToLoad: false,
             crossOrigin: true,
             width: popupWindowWidth,

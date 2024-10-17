@@ -1,3 +1,4 @@
+import type { OAuthProvider } from "@/types/auth";
 import type { UseSignInData } from "@farcaster/auth-kit";
 
 export function useAuthSignIn() {
@@ -5,6 +6,7 @@ export function useAuthSignIn() {
         onEmailSignIn,
         onConfirmEmailOtp,
         onFarcasterSignIn,
+        getOAuthUrl,
     };
 }
 
@@ -100,5 +102,25 @@ async function onFarcasterSignIn(data: UseSignInData, options: { baseUrl: string
     } catch (err) {
         console.error("Error signing in via farcaster ", err);
         throw new Error("Error signing in via farcaster " + err);
+    }
+}
+async function getOAuthUrl(provider: OAuthProvider, options: { baseUrl: string; apiKey: string }) {
+    try {
+        const queryParams = new URLSearchParams({
+            baseUrl: options.baseUrl,
+            apiKey: options.apiKey,
+            signinAuthenticationMethod: provider,
+        });
+        const response = await fetch(`${options.baseUrl}api/2024-09-26/session/sdk/auth/oauth?${queryParams}`);
+
+        if (!response.ok) {
+            throw new Error("Failed to get OAuth URL. Please try again or contact support.");
+        }
+
+        const data = (await response.json()) as { oauthUrl: string };
+        return data.oauthUrl;
+    } catch (error) {
+        console.error("Error fetching OAuth URL:", error);
+        throw new Error("Failed to get OAuth URL. Please try again or contact support.");
     }
 }
