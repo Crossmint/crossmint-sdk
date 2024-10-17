@@ -1,5 +1,16 @@
 # @crossmint/server-sdk-next-starter
 
+## 0.2.0
+
+### Minor Changes
+
+- cd15716: Adds getSession example
+
+### Patch Changes
+
+- Updated dependencies [cd15716]
+  - @crossmint/server-sdk@1.0.0
+
 ## 0.1.2
 
 ### Patch Changes
