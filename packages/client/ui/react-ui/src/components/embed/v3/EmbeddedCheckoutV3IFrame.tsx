@@ -15,15 +15,16 @@ export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props
     const [height, setHeight] = useState(0);
 
     const { crossmint } = useCrossmint();
+    const sdkMetadata = {
+        name: "@crossmint/client-sdk-react-ui",
+        version: LIB_VERSION,
+    };
     const apiClient = new CrossmintApiClient(crossmint, {
         internalConfig: {
-            sdkMetadata: {
-                name: "@crossmint/client-sdk-react-ui",
-                version: LIB_VERSION,
-            },
+            sdkMetadata,
         },
     });
-    const embedV3Service = crossmintEmbeddedCheckoutV3Service({ apiClient });
+    const embedV3Service = crossmintEmbeddedCheckoutV3Service({ apiClient, sdkMetadata });
 
     const ref = useRef<HTMLIFrameElement>(null);
 
