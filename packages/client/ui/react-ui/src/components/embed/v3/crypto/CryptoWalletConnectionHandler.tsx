@@ -5,6 +5,7 @@ import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
 import { type HandleConnectedWallet, useDynamicContext } from "@dynamic-labs/sdk-react-core";
 import { SolanaWalletConnectors } from "@dynamic-labs/solana";
 import { useEffect } from "react";
+import { handleSendTransaction } from "./utils/handleSendTransaction";
 
 export function CryptoWalletConnectionHandler(props: { iframeClient: EmbeddedCheckoutV3IFrameEmitter | null }) {
     const { iframeClient } = props;
@@ -62,21 +63,50 @@ export function CryptoWalletConnectionHandler(props: { iframeClient: EmbeddedChe
 }
 
 function _CryptoWalletConnectionHandler({ iframeClient }: Parameters<typeof CryptoWalletConnectionHandler>[0]) {
-    const { setShowAuthFlow } = useDynamicContext();
+    const { setShowAuthFlow, primaryWallet, handleLogOut } = useDynamicContext();
 
     useEffect(() => {
         if (iframeClient == null) {
             return;
         }
-        const listenerId = iframeClient.on("crypto:connect-wallet.show", ({ show }) => {
-            console.log("crypto:connect-wallet.show", show);
+        const showAuthFlowListener = iframeClient.on("crypto:connect-wallet.show", async ({ show }) => {
+            await handleLogOut();
             setShowAuthFlow(show);
         });
 
         return () => {
-            iframeClient.off(listenerId);
+            iframeClient.off(showAuthFlowListener);
         };
-    }, [iframeClient]);
+    }, [iframeClient, handleLogOut, setShowAuthFlow]);
+
+    useEffect(() => {
+        if (iframeClient == null) {
+            return;
+        }
+        const signTransactionListener = iframeClient.on(
+            "crypto:send-transaction",
+            async ({ chain, serializedTransaction }) => {
+                if (primaryWallet == null) {
+                    console.error("[CryptoWalletConnectionHandler] signTransaction: primaryWallet is missing");
+                    iframeClient.send("crypto:send-transaction:failed", {
+                        error: "primaryWallet is missing",
+                    });
+                    return;
+                }
+
+                await handleSendTransaction(
+                    primaryWallet,
+                    chain as BlockchainIncludingTestnet,
+                    serializedTransaction,
+                    iframeClient
+                );
+            }
+        );
+
+        return () => {
+            iframeClient.off(signTransactionListener);
+        };
+    }, [iframeClient, primaryWallet]);
 
     return null;
 }
