@@ -1,5 +1,14 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.7.2
+
+### Patch Changes
+
+- cd15716: Moves cookie names to @crossmint/common-sdk-auth
+- Updated dependencies [cd15716]
+  - @crossmint/common-sdk-auth@0.2.1
+  - @crossmint/client-sdk-auth@0.2.1
+
 ## 1.7.1
 
 ### Patch Changes

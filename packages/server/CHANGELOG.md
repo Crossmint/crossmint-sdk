@@ -1,5 +1,16 @@
 # @crossmint/server-sdk
 
+## 1.0.0
+
+### Major Changes
+
+- cd15716: Implements getSession to manage authentication server-side for SSR
+
+### Patch Changes
+
+- Updated dependencies [cd15716]
+  - @crossmint/common-sdk-auth@0.2.1
+
 ## 0.3.0
 
 ### Minor Changes
