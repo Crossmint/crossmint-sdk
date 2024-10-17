@@ -1,4 +1,5 @@
-import { deleteCookie, REFRESH_TOKEN_PREFIX, SESSION_PREFIX } from "@/utils/authCookies";
+import { deleteCookie } from "@/utils/authCookies";
+import { SESSION_PREFIX, REFRESH_TOKEN_PREFIX } from "@crossmint/common-sdk-auth";
 import { fireEvent, render } from "@testing-library/react";
 import { type ReactNode, act } from "react";
 import { beforeEach, describe, expect, vi } from "vitest";
@@ -39,7 +40,7 @@ vi.mock("@crossmint/client-sdk-auth", async () => {
         getJWTExpiration: vi.fn(),
         CrossmintAuthService: vi.fn().mockImplementation(() => ({
             refreshAuthMaterial: vi.fn().mockResolvedValue({
-                jwtToken: "new-mock-jwt",
+                jwt: "new-mock-jwt",
                 refreshToken: {
                     secret: "new-mock-refresh-token",
                     expiresAt: new Date(Date.now() + 1000 * 60 * 60).toISOString(),
@@ -123,7 +124,7 @@ describe("CrossmintAuthProvider", () => {
 
         mockCrossmintAuthService = {
             refreshAuthMaterial: vi.fn().mockResolvedValue({
-                jwtToken: "new-mock-jwt",
+                jwt: "new-mock-jwt",
                 refreshToken: {
                     secret: "new-mock-refresh-token",
                     expiresAt: new Date(Date.now() + 1000 * 60 * 60).toISOString(),

@@ -1,15 +1,19 @@
-import { REFRESH_TOKEN_PREFIX, SESSION_PREFIX, deleteCookie, getCookie, setCookie } from "@/utils/authCookies";
-import type React from "react";
 import { type ReactNode, createContext, useCallback, useEffect, useState } from "react";
 
 import { CrossmintAuthService } from "@crossmint/client-sdk-auth";
 import type { EVMSmartWalletChain } from "@crossmint/client-sdk-smart-wallet";
 import { type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
+import {
+    SESSION_PREFIX,
+    REFRESH_TOKEN_PREFIX,
+    type AuthMaterial,
+    type SDKExternalUser,
+} from "@crossmint/common-sdk-auth";
 
 import AuthFormDialog from "../components/auth/AuthFormDialog";
 import { useCrossmint, useRefreshToken, useWallet } from "../hooks";
 import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
-import type { AuthMaterial, SDKExternalUser } from "@crossmint/common-sdk-auth";
+import { deleteCookie, getCookie, setCookie } from "@/utils/authCookies";
 import { AuthFormProvider } from "./auth/AuthFormProvider";
 import { AuthForm } from "@/components/auth/AuthForm";
 
@@ -72,9 +76,9 @@ export function CrossmintAuthProvider({
     const [isUsingEmbeddedAuthForm, setIsUsingEmbeddedAuthForm] = useState(false);
 
     const setAuthMaterial = (authMaterial: AuthMaterial) => {
-        setCookie(SESSION_PREFIX, authMaterial.jwtToken);
+        setCookie(SESSION_PREFIX, authMaterial.jwt);
         setCookie(REFRESH_TOKEN_PREFIX, authMaterial.refreshToken.secret, authMaterial.refreshToken.expiresAt);
-        setJwt(authMaterial.jwtToken);
+        setJwt(authMaterial.jwt);
         setRefreshToken(authMaterial.refreshToken.secret);
         setUser(authMaterial.user);
     };
