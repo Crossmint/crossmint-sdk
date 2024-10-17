@@ -1,7 +1,7 @@
 import { APIErrorService, BaseCrossmintService } from "@crossmint/client-sdk-base";
 
 import { authLogger } from "./logger";
-import type { AuthMaterial } from "@/types";
+import type { AuthMaterialWithUser } from "@/types";
 
 export class CrossmintAuthService extends BaseCrossmintService {
     protected apiErrorService = new APIErrorService<never>({});
@@ -11,7 +11,7 @@ export class CrossmintAuthService extends BaseCrossmintService {
         return `${this.crossmintBaseUrl}/.well-known/jwks.json`;
     }
 
-    async refreshAuthMaterial(refreshToken: string): Promise<AuthMaterial> {
+    async refreshAuthMaterial(refreshToken: string): Promise<AuthMaterialWithUser> {
         const result = await this.fetchCrossmintAPI(
             "2024-09-26/session/sdk/auth/refresh",
             { method: "POST", body: JSON.stringify({ refresh: refreshToken }) },

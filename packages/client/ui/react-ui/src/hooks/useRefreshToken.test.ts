@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { AuthMaterial } from "@crossmint/common-sdk-auth";
+import type { AuthMaterialWithUser } from "@crossmint/common-sdk-auth";
 import { type CrossmintAuthService, getJWTExpiration } from "@crossmint/client-sdk-auth";
 import { queueTask } from "@crossmint/client-sdk-base";
 
@@ -64,7 +64,7 @@ describe("useRefreshToken", () => {
 
     it("should refresh token if refresh token is present", async () => {
         const mockRefreshToken = "mock-refresh-token";
-        const mockAuthMaterial: AuthMaterial = {
+        const mockAuthMaterial: AuthMaterialWithUser = {
             jwt: "mock-jwt-token",
             refreshToken: {
                 secret: "mock-secret",
@@ -98,7 +98,7 @@ describe("useRefreshToken", () => {
 
     it("should schedule next refresh before token expiration", async () => {
         const mockRefreshToken = "mock-refresh-token";
-        const mockAuthMaterial: AuthMaterial = {
+        const mockAuthMaterial: AuthMaterialWithUser = {
             jwt: "mock-jwt-token",
             refreshToken: {
                 secret: "mock-secret",

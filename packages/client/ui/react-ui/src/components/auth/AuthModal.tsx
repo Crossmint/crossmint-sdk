@@ -5,7 +5,7 @@ import { z } from "zod";
 import { IFrameWindow } from "@crossmint/client-sdk-window";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import { CrossmintInternalEvents } from "@crossmint/client-sdk-base";
-import type { AuthMaterial } from "@crossmint/common-sdk-auth";
+import type { AuthMaterialWithUser } from "@crossmint/common-sdk-auth";
 import type { LoginMethod } from "@/providers";
 
 import X from "../../icons/x";
@@ -25,7 +25,7 @@ type IncomingModalIframeEventsType = {
 type AuthModalProps = {
     setModalOpen: (open: boolean) => void;
     apiKey: string;
-    fetchAuthMaterial: (refreshToken: string) => Promise<AuthMaterial>;
+    fetchAuthMaterial: (refreshToken: string) => Promise<AuthMaterialWithUser>;
     baseUrl: string;
     appearance?: UIConfig;
     loginMethods?: LoginMethod[];
