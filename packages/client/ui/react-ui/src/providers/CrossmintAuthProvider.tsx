@@ -1,5 +1,6 @@
 import { REFRESH_TOKEN_PREFIX, SESSION_PREFIX, deleteCookie, getCookie, setCookie } from "@/utils/authCookies";
-import React, { type ReactNode, createContext, useEffect, useState } from "react";
+import type React from "react";
+import { type ReactNode, createContext, useCallback, useEffect, useState } from "react";
 
 import { CrossmintAuthService } from "@crossmint/client-sdk-auth";
 import type { EVMSmartWalletChain } from "@crossmint/client-sdk-smart-wallet";
@@ -38,7 +39,7 @@ type AuthContextType = {
     user?: SDKExternalUser;
     status: AuthStatus;
     getUser: () => void;
-    createEmbeddedAuthForm: () => React.ComponentType<{}>;
+    EmbeddedAuthForm: () => React.JSX.Element;
 };
 
 export const AuthContext = createContext<AuthContextType>({
@@ -46,7 +47,7 @@ export const AuthContext = createContext<AuthContextType>({
     logout: () => {},
     status: "logged-out",
     getUser: () => {},
-    createEmbeddedAuthForm: () => React.Component,
+    EmbeddedAuthForm: () => <></>,
 });
 
 const defaultEmbeddedWallets: CrossmintAuthWalletConfig = {
@@ -138,9 +139,13 @@ export function CrossmintAuthProvider({
         setUser(user);
     };
 
-    const createEmbeddedAuthForm = () => {
-        setIsUsingEmbeddedAuthForm(true);
-        return () => (
+    const EmbeddedAuthForm = useCallback(() => {
+        useEffect(() => {
+            setIsUsingEmbeddedAuthForm(true);
+            return () => setIsUsingEmbeddedAuthForm(false);
+        }, []);
+
+        return (
             <AuthFormProvider
                 initialState={{
                     apiKey: crossmint.apiKey,
@@ -152,7 +157,7 @@ export function CrossmintAuthProvider({
                 <AuthForm loginMethods={loginMethods} />
             </AuthFormProvider>
         );
-    };
+    }, [crossmint.apiKey, crossmintBaseUrl, appearance, loginMethods]);
 
     return (
         <AuthContext.Provider
@@ -164,7 +169,7 @@ export function CrossmintAuthProvider({
                 user,
                 status: getAuthStatus(),
                 getUser,
-                createEmbeddedAuthForm,
+                EmbeddedAuthForm,
             }}
         >
             <CrossmintWalletProvider

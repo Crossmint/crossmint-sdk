@@ -15,7 +15,6 @@ export function FarcasterSignIn() {
 
     const { signIn, url: qrCodeUrl, connect, signOut } = useSignIn({});
 
-    console.log({ qrCodeUrl });
     // const handleFarcasterSignInSuccess = async (data: UseSignInData) => {
     //     setIsLoading(true);
 
