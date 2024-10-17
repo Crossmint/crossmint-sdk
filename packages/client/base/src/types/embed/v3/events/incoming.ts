@@ -7,5 +7,9 @@ export const embeddedCheckoutV3IncomingEvents = {
     "crypto:connect-wallet.show": z.object({
         show: z.boolean(),
     }),
+    "crypto:send-transaction": z.object({
+        chain: z.string(),
+        serializedTransaction: z.string(),
+    }),
 };
 export type EmbeddedCheckoutV3IncomingEventMap = typeof embeddedCheckoutV3IncomingEvents;
