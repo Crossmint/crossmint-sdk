@@ -68,6 +68,8 @@ async function onConfirmEmailOtp(
 
         const data = await response.json();
         const callbackUrl = new URL(data.callbackUrl);
+
+        // parse the oneTimeSecret from the callbackUrl response
         return callbackUrl.searchParams.get("oneTimeSecret");
     } catch (err) {
         console.error("Error confirming email otp ", err);
@@ -80,6 +82,7 @@ async function onFarcasterSignIn(data: UseSignInData, options: { baseUrl: string
         const queryParams = new URLSearchParams({
             signinAuthenticationMethod: "farcaster",
             apiKey: options.apiKey,
+            callbackUrl: `${options.baseUrl}sdk/2024-09-26/auth/callback?isPopup=false`,
         });
 
         const response = await fetch(`${options.baseUrl}api/2024-09-26/session/sdk/auth/authenticate?${queryParams}`, {
@@ -87,7 +90,12 @@ async function onFarcasterSignIn(data: UseSignInData, options: { baseUrl: string
                 "Content-Type": "application/json",
                 "x-api-key": options.apiKey,
             },
-            body: JSON.stringify(data),
+            body: JSON.stringify({
+                ...data,
+                domain: data.signatureParams.domain,
+                redirect: true,
+                callbackUrl: `${options.baseUrl}sdk/2024-09-26/auth/callback?isPopup=false`,
+            }),
             credentials: "same-origin",
             cache: "no-cache",
             mode: "cors",
@@ -98,7 +106,11 @@ async function onFarcasterSignIn(data: UseSignInData, options: { baseUrl: string
             throw new Error("Failed to sign in via farcaster. Please try again or contact support.");
         }
 
-        return await response.json();
+        const resData = await response.json();
+        const callbackUrl = new URL(resData.callbackUrl);
+
+        // parse the oneTimeSecret from the callbackUrl response
+        return callbackUrl.searchParams.get("oneTimeSecret");
     } catch (err) {
         console.error("Error signing in via farcaster ", err);
         throw new Error("Error signing in via farcaster " + err);

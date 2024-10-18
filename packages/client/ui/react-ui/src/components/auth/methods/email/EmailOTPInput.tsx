@@ -24,7 +24,7 @@ export function EmailOTPInput() {
                 apiKey,
             });
 
-            fetchAuthMaterial(oneTimeSecret as string);
+            await fetchAuthMaterial(oneTimeSecret as string);
             setDialogOpen(false);
         } catch (e) {
             console.error("Error signing in via email ", e);

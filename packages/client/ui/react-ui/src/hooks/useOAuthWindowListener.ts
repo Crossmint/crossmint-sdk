@@ -55,8 +55,8 @@ export const useOAuthWindowListener = (
 
         popupRef.current = popup as PopupWindow<IncomingEvents, OutgoingEvents>;
 
-        const handleAuthMaterial = (data: { oneTimeSecret: string }) => {
-            options.fetchAuthMaterial(data.oneTimeSecret);
+        const handleAuthMaterial = async (data: { oneTimeSecret: string }) => {
+            await options.fetchAuthMaterial(data.oneTimeSecret);
             childRef.current?.off("authMaterialFromPopupCallback");
             popup.window.close();
             setIsLoading(false);
