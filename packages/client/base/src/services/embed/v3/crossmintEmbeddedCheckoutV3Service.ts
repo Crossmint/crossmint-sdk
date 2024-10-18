@@ -6,14 +6,11 @@ import type { CrossmintApiClient } from "@crossmint/common-sdk-base";
 
 export type CrossmintEmbeddedCheckoutV3ServiceProps = { 
     apiClient: CrossmintApiClient,
-    sdkMetadata: {
-        name: string;
-        version: string;
-    }
 };
 
-export function crossmintEmbeddedCheckoutV3Service({ apiClient, sdkMetadata }: CrossmintEmbeddedCheckoutV3ServiceProps) {
+export function crossmintEmbeddedCheckoutV3Service({ apiClient }: CrossmintEmbeddedCheckoutV3ServiceProps) {
     function getIFrameUrl(props: CrossmintEmbeddedCheckoutV3Props) {
+        const sdkMetadata = apiClient["internalConfig"].sdkMetadata;
         const urlWithPath = apiClient.buildUrl("/sdk/2024-03-05/embedded-checkout");
         const queryParams = new URLSearchParams();
 
