@@ -9,10 +9,9 @@ import { FarcasterProvider } from "../../providers/auth/FarcasterProvider";
 import { DiscordSignIn } from "./methods/discord/DiscordSignIn";
 import { classNames } from "@/utils/classNames";
 import { LeftArrowIcon } from "@/icons/leftArrow";
-import type { LoginMethod } from "../../providers/CrossmintAuthProvider";
 
-export function AuthForm({ loginMethods }: { loginMethods: LoginMethod[] }) {
-    const { step, appearance, baseUrl } = useAuthForm();
+export function AuthForm() {
+    const { step, appearance, baseUrl, loginMethods } = useAuthForm();
 
     return (
         <div className="flex flex-col gap-4 max-w-[448px]">
@@ -65,7 +64,7 @@ export const AuthFormBackButton = ({
     return (
         <button
             className={classNames(
-                "relative rounded-full opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-cm-ring focus:ring-offset-2 disabled:pointer-events-none",
+                "absolute rounded-full opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-cm-ring focus:ring-offset-2 disabled:pointer-events-none",
                 className
             )}
             style={{

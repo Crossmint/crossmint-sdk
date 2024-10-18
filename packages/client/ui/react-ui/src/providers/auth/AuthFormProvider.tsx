@@ -1,21 +1,21 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
-import type { OAuthProvider, OtpEmailPayload } from "@/types/auth";
+import type { OtpEmailPayload } from "@/types/auth";
 import type { AuthMaterial } from "@crossmint/common-sdk-auth";
 import type { UIConfig } from "@crossmint/common-sdk-base";
+import type { LoginMethod } from "../CrossmintAuthProvider";
 
-type AuthMethod = "email" | OAuthProvider;
+type AuthStep = "initial" | "walletMethod" | "otp" | "qrCode";
 
 interface AuthFormContextType {
-    authMethod: AuthMethod | null;
-    step: "initial" | "otp" | "qrCode";
+    step: AuthStep;
     email: string;
     apiKey: string;
     baseUrl: string;
     fetchAuthMaterial: (refreshToken: string) => Promise<AuthMaterial>;
     appearance?: UIConfig;
+    loginMethods: LoginMethod[];
     otpEmailData: OtpEmailPayload | null;
-    setAuthMethod: (method: AuthMethod) => void;
-    setStep: (step: "initial" | "otp" | "qrCode") => void;
+    setStep: (step: AuthStep) => void;
     setEmail: (email: string) => void;
     setDialogOpen: (open: boolean) => void;
     setOtpEmailData: (data: OtpEmailPayload | null) => void;
@@ -27,6 +27,7 @@ type ContextInitialStateProps = {
     baseUrl: string;
     fetchAuthMaterial: (refreshToken: string) => Promise<AuthMaterial>;
     appearance?: UIConfig;
+    loginMethods: LoginMethod[];
     setDialogOpen?: (open: boolean) => void;
 };
 
@@ -45,18 +46,15 @@ export const AuthFormProvider = ({
     initialState,
 }: { children: ReactNode; initialState: ContextInitialStateProps }) => {
     const [otpEmailData, setOtpEmailData] = useState<OtpEmailPayload | null>(null);
-    const [authMethod, setAuthMethod] = useState<AuthMethod | null>(null);
-    const [step, setStep] = useState<"initial" | "otp" | "qrCode">("initial");
+    const [step, setStep] = useState<AuthStep>("initial");
     const [email, setEmail] = useState("");
 
     const resetState = () => {
-        setAuthMethod(null);
         setStep("initial");
         setEmail("");
     };
 
     const value: AuthFormContextType = {
-        authMethod,
         step,
         email,
         apiKey: initialState.apiKey,
@@ -64,8 +62,8 @@ export const AuthFormProvider = ({
         fetchAuthMaterial: initialState.fetchAuthMaterial,
         appearance: initialState.appearance,
         otpEmailData,
+        loginMethods: initialState.loginMethods,
         setDialogOpen: initialState.setDialogOpen ?? (() => {}),
-        setAuthMethod,
         setStep,
         setEmail,
         setOtpEmailData,

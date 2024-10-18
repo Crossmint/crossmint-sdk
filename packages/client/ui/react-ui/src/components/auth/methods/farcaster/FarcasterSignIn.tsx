@@ -79,10 +79,10 @@ export function FarcasterSignIn() {
                     ringColor={appearance?.colors?.accent}
                 />
 
-                <div className="flex flex-col items-center gap-4 mt-6">
+                <div className="flex flex-col items-center gap-4">
                     <div className="text-center">
                         <h3
-                            className="text-lg font-semibold text-cm-text-primary"
+                            className="text-lg font-semibold text-cm-text-primary mb-2"
                             style={{ color: appearance?.colors?.textPrimary }}
                         >
                             Sign in with Farcaster
