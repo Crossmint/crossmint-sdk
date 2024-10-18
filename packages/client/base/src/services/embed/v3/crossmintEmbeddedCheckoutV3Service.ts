@@ -5,7 +5,7 @@ import { IFrameWindow } from "@crossmint/client-sdk-window";
 import type { CrossmintApiClient } from "@crossmint/common-sdk-base";
 
 export type CrossmintEmbeddedCheckoutV3ServiceProps = {
-    apiClient: CrossmintApiClient,
+    apiClient: CrossmintApiClient;
 };
 
 export function crossmintEmbeddedCheckoutV3Service({ apiClient }: CrossmintEmbeddedCheckoutV3ServiceProps) {
