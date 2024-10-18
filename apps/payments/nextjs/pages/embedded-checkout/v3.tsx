@@ -1,4 +1,4 @@
-import { CrossmintEmbeddedCheckout, CrossmintProvider } from "@crossmint/client-sdk-react-ui";
+import { CrossmintEmbeddedCheckout_Alpha, CrossmintProvider } from "@crossmint/client-sdk-react-ui";
 
 export default function EmbeddedCheckoutV3Page() {
     return (
@@ -26,7 +26,7 @@ export default function EmbeddedCheckoutV3Page() {
                     overrideBaseUrl="https://dserver.maxf.io"
                     apiKey="sk_development_5ZUNkuhjP8aYZEgUTDfWToqFpo5zakEqte1db4pHZgPAVKZ9JuSvnKeGiqY654DoBuuZEzYz4Eb8gRV2ePqQ1fxTjEP8tTaUQdzbGfyG9RgyeN5YbqViXinqxk8EayEkAGtvSSgjpjEr6iaBptJtUFwPW59DjQzTQP6P8uZdiajenVg7bARGKjzFyByNuVEoz41DpRB4hDZNFdwCTuf5joFv"
                 >
-                    <CrossmintEmbeddedCheckout
+                    <CrossmintEmbeddedCheckout_Alpha
                         // recipient={{
                         //     walletAddress: "0x5e575279bf9f4acf0a130c186861454247394c06",
                         // }}
