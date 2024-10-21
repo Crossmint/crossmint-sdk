@@ -1,4 +1,5 @@
 import type { Currency as FiatCurrency, Locale } from "@/types";
+import type { CryptoCurrency } from "@/types/CryptoCurrency";
 
 import type { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
@@ -35,6 +36,7 @@ export type EmbeddedCheckoutV3AppearanceVariables = {
         textPrimary?: string;
         textSecondary?: string;
         danger?: string;
+        warning?: string;
         accent?: string;
     };
 };
@@ -80,6 +82,60 @@ export type EmbeddedCheckoutV3AppearanceRules = {
             };
         };
     };
+    Tab?: {
+        borderRadius?: string;
+        font?: {
+            family?: string;
+            size?: string;
+            weight?: string;
+        };
+        colors?: {
+            text?: string;
+            background?: string;
+            border?: string;
+            boxShadow?: string;
+        };
+        hover?: {
+            colors?: {
+                text?: string;
+                background?: string;
+                border?: string;
+                boxShadow?: string;
+            };
+        };
+        selected?: {
+            colors?: {
+                text?: string;
+                background?: string;
+                border?: string;
+                boxShadow?: string;
+            };
+        };
+    };
+    PrimaryButton?: {
+        borderRadius?: string;
+        font?: {
+            family?: string;
+            size?: string;
+            weight?: string;
+        };
+        colors?: {
+            text?: string;
+            background?: string;
+        };
+        hover?: {
+            colors?: {
+                text?: string;
+                background?: string;
+            };
+        };
+        disabled?: {
+            colors?: {
+                text?: string;
+                background?: string;
+            };
+        };
+    };
 };
 
 export type EmbeddedCheckoutV3Payment = {
@@ -101,7 +157,7 @@ export type EmbeddedCheckoutV3FiatPayment = {
 export type EmbeddedCheckoutV3CryptoPayment = {
     enabled: boolean;
     defaultChain?: BlockchainIncludingTestnet;
-    defaultCurrency?: string; // TODO: Make CryptoCurrency type
-    allowedCurrencies?: Partial<Record<BlockchainIncludingTestnet, false | string[]>>; // TODO: Replace string[] with CryptoCurrency[]
-    payer?: any; // TODO: Ethers, Viem, Solana
+    defaultCurrency?: CryptoCurrency;
+    // allowedCurrencies?: Partial<Record<BlockchainIncludingTestnet, false | CryptoCurrency[]>>; // TODO: Add this back when supported on crossmint-main
+    // payer?: any; // TODO: Add this back when supported on crossmint-main
 };
