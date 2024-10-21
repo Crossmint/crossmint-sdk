@@ -1,4 +1,5 @@
-import { CrossmintEmbeddedCheckout_Alpha, CrossmintProvider } from "@crossmint/client-sdk-react-ui";
+import { EmbeddedCheckoutV3ClientProviders } from "../../components/embed-v3/EmbeddedCheckoutV3ClientProviders";
+import { EmbeddedCheckoutV3Content } from "../../components/embed-v3/EmbeddedCheckoutV3Content";
 
 export default function EmbeddedCheckoutV3Page() {
     return (
@@ -9,7 +10,7 @@ export default function EmbeddedCheckoutV3Page() {
                 alignItems: "center",
                 justifyContent: "start",
                 padding: "20px",
-                // backgroundColor: "#f2f2f2",
+                // backgroundColor: "black",
             }}
         >
             <div
@@ -22,40 +23,9 @@ export default function EmbeddedCheckoutV3Page() {
                     maxWidth: "450px",
                 }}
             >
-                <CrossmintProvider
-                    overrideBaseUrl="https://dserver.maxf.io"
-                    apiKey="sk_development_5ZUNkuhjP8aYZEgUTDfWToqFpo5zakEqte1db4pHZgPAVKZ9JuSvnKeGiqY654DoBuuZEzYz4Eb8gRV2ePqQ1fxTjEP8tTaUQdzbGfyG9RgyeN5YbqViXinqxk8EayEkAGtvSSgjpjEr6iaBptJtUFwPW59DjQzTQP6P8uZdiajenVg7bARGKjzFyByNuVEoz41DpRB4hDZNFdwCTuf5joFv"
-                >
-                    <CrossmintEmbeddedCheckout_Alpha
-                        // recipient={{
-                        //     walletAddress: "0x5e575279bf9f4acf0a130c186861454247394c06",
-                        // }}
-                        lineItems={{
-                            collectionLocator: "crossmint:206b3146-f526-444e-bd9d-0607d581b0e9",
-                            callData: {
-                                totalPrice: "0.001",
-                                quantity: 1,
-                            },
-                        }}
-                        payment={{
-                            crypto: {
-                                enabled: true,
-                                defaultChain: "ethereum-sepolia",
-                                defaultCurrency: "eth",
-                            },
-                            fiat: {
-                                enabled: true,
-                                allowedMethods: {
-                                    card: true,
-                                    applePay: true,
-                                    googlePay: true,
-                                },
-                                defaultCurrency: "inr",
-                            },
-                            defaultMethod: "fiat",
-                        }}
-                    />
-                </CrossmintProvider>
+                <EmbeddedCheckoutV3ClientProviders>
+                    <EmbeddedCheckoutV3Content />
+                </EmbeddedCheckoutV3ClientProviders>
             </div>
         </div>
     );
