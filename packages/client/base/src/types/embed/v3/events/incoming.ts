@@ -11,5 +11,9 @@ export const embeddedCheckoutV3IncomingEvents = {
         chain: z.string(),
         serializedTransaction: z.string(),
     }),
+    "order:updated": z.object({
+        order: z.any().optional(),
+        orderClientSecret: z.string().optional(),
+    }),
 };
 export type EmbeddedCheckoutV3IncomingEventMap = typeof embeddedCheckoutV3IncomingEvents;
