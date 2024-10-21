@@ -6,23 +6,16 @@ import {
     type EmbeddedCheckoutV3IFrameEmitter,
     crossmintEmbeddedCheckoutV3Service,
 } from "@crossmint/client-sdk-base";
-import { LIB_VERSION } from "@/consts/version";
-import { CrossmintApiClient } from "@crossmint/common-sdk-base";
+
 import { CryptoWalletConnectionHandler } from "./crypto/CryptoWalletConnectionHandler";
+import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
 
 export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props) {
     const [iframeClient, setIframeClient] = useState<EmbeddedCheckoutV3IFrameEmitter | null>(null);
     const [height, setHeight] = useState(0);
 
     const { crossmint } = useCrossmint();
-    const apiClient = new CrossmintApiClient(crossmint, {
-        internalConfig: {
-            sdkMetadata: {
-                name: "@crossmint/client-sdk-react-ui",
-                version: LIB_VERSION,
-            },
-        },
-    });
+    const apiClient = createCrossmintApiClient(crossmint);
     const embedV3Service = crossmintEmbeddedCheckoutV3Service({ apiClient });
 
     const ref = useRef<HTMLIFrameElement>(null);
