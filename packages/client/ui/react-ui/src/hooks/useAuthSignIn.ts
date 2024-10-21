@@ -119,7 +119,6 @@ async function onFarcasterSignIn(data: UseSignInData, options: { baseUrl: string
 async function getOAuthUrl(provider: OAuthProvider, options: { baseUrl: string; apiKey: string }) {
     try {
         const queryParams = new URLSearchParams({
-            baseUrl: options.baseUrl,
             apiKey: options.apiKey,
             signinAuthenticationMethod: provider,
         });

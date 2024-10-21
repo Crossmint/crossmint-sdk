@@ -16,7 +16,6 @@ export const useOAuthWindowListener = (
     const { getOAuthUrl } = useAuthSignIn();
     const [isLoading, setIsLoading] = useState(false);
     const childRef = useRef<ChildWindow<IncomingEvents, OutgoingEvents> | null>(null);
-    const popupRef = useRef<PopupWindow<IncomingEvents, OutgoingEvents> | null>(null);
 
     useEffect(() => {
         if (childRef.current == null) {
@@ -52,8 +51,6 @@ export const useOAuthWindowListener = (
             width: popupWindowWidth,
             height: 700,
         });
-
-        popupRef.current = popup as PopupWindow<IncomingEvents, OutgoingEvents>;
 
         const handleAuthMaterial = async (data: { oneTimeSecret: string }) => {
             await options.fetchAuthMaterial(data.oneTimeSecret);
