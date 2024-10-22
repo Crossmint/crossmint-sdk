@@ -6,12 +6,13 @@ import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import { classNames } from "@/utils/classNames";
 
 export function GoogleSignIn({ ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
-    const { step, apiKey, baseUrl, appearance, fetchAuthMaterial } = useAuthForm();
-    const { createPopupAndSetupListeners, isLoading } = useOAuthWindowListener("google", {
+    const { step, apiKey, baseUrl, appearance, isLoadingOauthUrl, fetchAuthMaterial } = useAuthForm();
+    const { createPopupAndSetupListeners, isLoading: isLoadingOAuthWindow } = useOAuthWindowListener("google", {
         apiKey,
         baseUrl,
         fetchAuthMaterial,
     });
+    const isLoading = isLoadingOauthUrl || isLoadingOAuthWindow;
 
     if (step !== "initial") {
         return null;

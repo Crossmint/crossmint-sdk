@@ -3,7 +3,7 @@ import { ChildWindow, PopupWindow } from "@crossmint/client-sdk-window";
 import type { AuthMaterial } from "@crossmint/common-sdk-auth";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
-import { useAuthSignIn } from "./useAuthSignIn";
+import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 
 export const useOAuthWindowListener = (
     provider: OAuthProvider,
@@ -13,20 +13,9 @@ export const useOAuthWindowListener = (
         fetchAuthMaterial: (refreshToken: string) => Promise<AuthMaterial>;
     }
 ) => {
-    const { getOAuthUrl } = useAuthSignIn();
+    const { oauthUrl } = useAuthForm();
     const [isLoading, setIsLoading] = useState(false);
     const childRef = useRef<ChildWindow<IncomingEvents, OutgoingEvents> | null>(null);
-    const [oauthUrl, setOauthUrl] = useState<string>("");
-
-    useEffect(() => {
-        const preFetchAndSetOauthUrl = async () => {
-            setIsLoading(true);
-            const url = await getOAuthUrl(provider, { apiKey: options.apiKey, baseUrl: options.baseUrl });
-            setOauthUrl(url);
-            setIsLoading(false);
-        };
-        preFetchAndSetOauthUrl();
-    }, []);
 
     useEffect(() => {
         if (childRef.current == null) {
@@ -48,8 +37,7 @@ export const useOAuthWindowListener = (
             throw new Error("Child window not initialized");
         }
         setIsLoading(true);
-
-        const popup = await PopupWindow.init(oauthUrl, {
+        const popup = await PopupWindow.init(oauthUrl[provider], {
             awaitToLoad: false,
             crossOrigin: true,
             width: 400,

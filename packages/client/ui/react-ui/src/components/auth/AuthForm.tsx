@@ -5,11 +5,12 @@ import { GoogleSignIn } from "./methods/google/GoogleSignIn";
 import { FarcasterSignIn } from "./methods/farcaster/FarcasterSignIn";
 import { PoweredByCrossmint } from "../common/PoweredByCrossmint";
 import { FarcasterProvider } from "../../providers/auth/FarcasterProvider";
+import { classNames } from "@/utils/classNames";
 
-export function AuthForm() {
+export function AuthForm({ className }: { className?: string }) {
     const { step, appearance, baseUrl, loginMethods } = useAuthForm();
     return (
-        <div className="flex flex-col gap-4 max-w-[448px]">
+        <div className={classNames("flex flex-col gap-4", className)}>
             {step === "initial" ? (
                 <div>
                     <h1

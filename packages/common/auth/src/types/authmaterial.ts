@@ -27,4 +27,4 @@ export type AuthSession = {
     userId: string;
 };
 
-export type OAuthProvider = "google" | "farcaster" | "discord";
+export type OAuthProvider = "google";

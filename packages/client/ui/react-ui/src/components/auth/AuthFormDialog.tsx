@@ -13,9 +13,9 @@ export default function AuthFormDialog({ open }: { open: boolean }) {
                 onOpenAutoFocus={(e) => e.preventDefault()}
                 closeButtonColor={appearance?.colors?.textPrimary}
                 closeButtonRingColor={appearance?.colors?.accent}
+                className="responsive-border-radius-auth-dialog"
                 style={{
-                    borderTopLeftRadius: appearance?.borderRadius,
-                    borderTopRightRadius: appearance?.borderRadius,
+                    borderRadius: appearance?.borderRadius,
                     backgroundColor: appearance?.colors?.background,
                 }}
             >
@@ -26,7 +26,7 @@ export default function AuthFormDialog({ open }: { open: boolean }) {
                     <DialogDescription>Sign in via Crossmint</DialogDescription>
                 </VisuallyHidden>
 
-                <AuthForm />
+                <AuthForm className="max-w-[448px]" />
             </DialogContent>
         </Dialog>
     );
