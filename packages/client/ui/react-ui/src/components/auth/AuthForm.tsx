@@ -5,11 +5,9 @@ import { GoogleSignIn } from "./methods/google/GoogleSignIn";
 import { FarcasterSignIn } from "./methods/farcaster/FarcasterSignIn";
 import { PoweredByCrossmint } from "../common/PoweredByCrossmint";
 import { FarcasterProvider } from "../../providers/auth/FarcasterProvider";
-import { DiscordSignIn } from "./methods/discord/DiscordSignIn";
 
 export function AuthForm() {
     const { step, appearance, baseUrl, loginMethods } = useAuthForm();
-
     return (
         <div className="flex flex-col gap-4 max-w-[448px]">
             {step === "initial" ? (
@@ -42,8 +40,6 @@ export function AuthForm() {
                     <FarcasterSignIn />
                 </FarcasterProvider>
             ) : null}
-
-            {loginMethods.includes("discord") ? <DiscordSignIn /> : null}
 
             {step === "initial" || step === "otp" ? (
                 <PoweredByCrossmint className="justify-center" color={appearance?.colors?.textSecondary ?? "#A4AFB2"} />

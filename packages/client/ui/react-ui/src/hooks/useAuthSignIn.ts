@@ -12,7 +12,7 @@ export function useAuthSignIn() {
 
 async function onEmailSignIn(email: string, options: { baseUrl: string; apiKey: string }) {
     try {
-        const response = await fetch(`${options.baseUrl}api/sdk/auth/user/initiate-email-authentication`, {
+        const response = await fetch(`${options.baseUrl}api/sdk/auth/otps/send`, {
             headers: {
                 "Content-Type": "application/json",
                 "x-api-key": options.apiKey,
@@ -118,11 +118,10 @@ async function onFarcasterSignIn(data: UseSignInData, options: { baseUrl: string
 }
 async function getOAuthUrl(provider: OAuthProvider, options: { baseUrl: string; apiKey: string }) {
     try {
-        const queryParams = new URLSearchParams({
-            apiKey: options.apiKey,
-            signinAuthenticationMethod: provider,
-        });
-        const response = await fetch(`${options.baseUrl}api/2024-09-26/session/sdk/auth/oauth?${queryParams}`);
+        const queryParams = new URLSearchParams({ apiKey: options.apiKey });
+        const response = await fetch(
+            `${options.baseUrl}api/2024-09-26/session/sdk/auth/social/${provider}/start?${queryParams}`
+        );
 
         if (!response.ok) {
             throw new Error("Failed to get OAuth URL. Please try again or contact support.");

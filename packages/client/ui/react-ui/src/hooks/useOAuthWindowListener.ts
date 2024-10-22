@@ -16,6 +16,17 @@ export const useOAuthWindowListener = (
     const { getOAuthUrl } = useAuthSignIn();
     const [isLoading, setIsLoading] = useState(false);
     const childRef = useRef<ChildWindow<IncomingEvents, OutgoingEvents> | null>(null);
+    const [oauthUrl, setOauthUrl] = useState<string>("");
+
+    useEffect(() => {
+        const preFetchAndSetOauthUrl = async () => {
+            setIsLoading(true);
+            const url = await getOAuthUrl(provider, { apiKey: options.apiKey, baseUrl: options.baseUrl });
+            setOauthUrl(url);
+            setIsLoading(false);
+        };
+        preFetchAndSetOauthUrl();
+    }, []);
 
     useEffect(() => {
         if (childRef.current == null) {
@@ -38,17 +49,10 @@ export const useOAuthWindowListener = (
         }
         setIsLoading(true);
 
-        let popupWindowWidth = 400;
-        if (provider === "discord") {
-            // discord takes a bit more width
-            popupWindowWidth = 600;
-        }
-
-        const oauthUrl = await getOAuthUrl(provider, { apiKey: options.apiKey, baseUrl: options.baseUrl });
         const popup = await PopupWindow.init(oauthUrl, {
             awaitToLoad: false,
             crossOrigin: true,
-            width: popupWindowWidth,
+            width: 400,
             height: 700,
         });
 
