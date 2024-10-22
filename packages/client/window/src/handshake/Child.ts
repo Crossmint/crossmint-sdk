@@ -19,7 +19,7 @@ export class HandshakeChild<IncomingEvents extends EventMap, OutgoingEvents exte
 
     constructor(
         otherWindow: Window,
-        targetOrigin: string,
+        targetOrigin: string | string[],
         options?: EventEmitterWithHandshakeOptions<IncomingEvents, OutgoingEvents>
     ) {
         const mergedIncomingEvents = {

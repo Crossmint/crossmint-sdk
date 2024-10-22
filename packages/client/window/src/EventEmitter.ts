@@ -55,7 +55,7 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
 
     constructor(
         public otherWindow: Window,
-        public targetOrigin: string,
+        public targetOrigin: string | string[],
         public incomingEvents: IncomingEvents,
         public outgoingEvents: OutgoingEvents
     ) {
@@ -66,7 +66,13 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
     send<K extends keyof OutgoingEvents>(event: K, data: z.infer<OutgoingEvents[K]>) {
         const result = this.outgoingEvents[event].safeParse(data);
         if (result.success) {
-            this.otherWindow?.postMessage({ event, data }, this.targetOrigin);
+            if (Array.isArray(this.targetOrigin)) {
+                this.targetOrigin.forEach((origin) => {
+                    this.otherWindow?.postMessage({ event, data }, origin);
+                });
+            } else {
+                this.otherWindow?.postMessage({ event, data }, this.targetOrigin);
+            }
         } else {
             console.error("Invalid data for event", event, result.error);
         }
@@ -170,6 +176,10 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
     }
 
     protected isTargetOrigin(otherOrigin: string) {
+        if (Array.isArray(this.targetOrigin)) {
+            return this.targetOrigin.includes(otherOrigin);
+        }
+
         if (this.targetOrigin === "*") {
             return true;
         }
