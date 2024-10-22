@@ -1,6 +1,6 @@
 import type { OAuthProvider } from "@crossmint/common-sdk-auth";
 import { ChildWindow, PopupWindow } from "@crossmint/client-sdk-window";
-import type { AuthMaterial } from "@crossmint/common-sdk-auth";
+import type { AuthMaterialWithUser } from "@crossmint/common-sdk-auth";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
@@ -10,7 +10,7 @@ export const useOAuthWindowListener = (
     options: {
         apiKey: string;
         baseUrl: string;
-        fetchAuthMaterial: (refreshToken: string) => Promise<AuthMaterial>;
+        fetchAuthMaterial: (refreshToken: string) => Promise<AuthMaterialWithUser>;
     }
 ) => {
     const { oauthUrl } = useAuthForm();

@@ -69,7 +69,7 @@ export function CrossmintAuthProvider({
     );
     const crossmintAuthService = new CrossmintAuthService(crossmint.apiKey);
     const crossmintBaseUrl = validateApiKeyAndGetCrossmintBaseUrl(crossmint.apiKey);
-    const [modalOpen, setModalOpen] = useState(false);
+    const [dialogOpen, setDialogOpen] = useState(false);
 
     const setAuthMaterial = (authMaterial: AuthMaterialWithUser) => {
         setCookie(SESSION_PREFIX, authMaterial.jwt);
@@ -101,7 +101,7 @@ export function CrossmintAuthProvider({
             return;
         }
 
-        setModalOpen(false);
+        setDialogOpen(false);
     }, [crossmint.jwt]);
 
     const login = () => {
@@ -110,14 +110,14 @@ export function CrossmintAuthProvider({
             return;
         }
 
-        setModalOpen(true);
+        setDialogOpen(true);
     };
 
     const getAuthStatus = (): AuthStatus => {
         if (crossmint.jwt != null) {
             return "logged-in";
         }
-        if (modalOpen) {
+        if (dialogOpen) {
             return "in-progress";
         }
         return "logged-out";
@@ -162,7 +162,7 @@ export function CrossmintAuthProvider({
                         baseUrl: crossmintBaseUrl,
                         fetchAuthMaterial,
                         appearance,
-                        setDialogOpen: setModalOpen,
+                        setDialogOpen,
                         loginMethods,
                     }}
                 >
@@ -170,7 +170,7 @@ export function CrossmintAuthProvider({
                         {children}
                     </WalletManager>
 
-                    <AuthFormDialog open={modalOpen} />
+                    <AuthFormDialog open={dialogOpen} />
                 </AuthFormProvider>
             </CrossmintWalletProvider>
         </AuthContext.Provider>

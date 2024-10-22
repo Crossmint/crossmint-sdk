@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import type { AuthMaterial, OAuthProvider } from "@crossmint/common-sdk-auth";
+import type { AuthMaterialWithUser, OAuthProvider } from "@crossmint/common-sdk-auth";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import type { LoginMethod } from "../CrossmintAuthProvider";
 
@@ -13,7 +13,7 @@ interface AuthFormContextType {
     step: AuthStep;
     apiKey: string;
     baseUrl: string;
-    fetchAuthMaterial: (refreshToken: string) => Promise<AuthMaterial>;
+    fetchAuthMaterial: (refreshToken: string) => Promise<AuthMaterialWithUser>;
     appearance?: UIConfig;
     loginMethods: LoginMethod[];
     oauthUrl: OAuthUrlMap;
@@ -25,7 +25,7 @@ interface AuthFormContextType {
 type ContextInitialStateProps = {
     apiKey: string;
     baseUrl: string;
-    fetchAuthMaterial: (refreshToken: string) => Promise<AuthMaterial>;
+    fetchAuthMaterial: (refreshToken: string) => Promise<AuthMaterialWithUser>;
     appearance?: UIConfig;
     loginMethods: LoginMethod[];
     setDialogOpen?: (open: boolean) => void;

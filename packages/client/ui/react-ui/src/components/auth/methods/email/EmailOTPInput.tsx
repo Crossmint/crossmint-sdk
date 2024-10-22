@@ -29,7 +29,7 @@ export function EmailOTPInput({
 
             await fetchAuthMaterial(oneTimeSecret as string);
             setDialogOpen(false);
-            setStep("initial")
+            setStep("initial");
         } catch (e) {
             console.error("Error signing in via email ", e);
             setHasError(true);
