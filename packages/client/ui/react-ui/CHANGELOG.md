@@ -1,5 +1,25 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.8.0
+
+### Minor Changes
+
+- 88a801d: feat: embed v3 initial alpha release
+
+### Patch Changes
+
+- cd15716: Moves cookie names to @crossmint/common-sdk-auth
+- fe06a3e: Use new type names for auth
+- Updated dependencies [63ea1dc]
+- Updated dependencies [fe06a3e]
+- Updated dependencies [88a801d]
+- Updated dependencies [cd15716]
+  - @crossmint/client-sdk-window@0.1.0
+  - @crossmint/common-sdk-auth@0.2.1
+  - @crossmint/client-sdk-base@1.3.0
+  - @crossmint/client-sdk-auth@0.2.1
+  - @crossmint/client-sdk-smart-wallet@0.1.20
+
 ## 1.7.1
 
 ### Patch Changes
