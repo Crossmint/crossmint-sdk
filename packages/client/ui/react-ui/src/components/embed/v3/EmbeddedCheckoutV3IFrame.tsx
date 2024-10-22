@@ -63,7 +63,12 @@ export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props
                     backgroundColor: "transparent",
                 }}
             />
-            {props.payment.crypto.enabled ? <CryptoWalletConnectionHandler iframeClient={iframeClient} /> : null}
+            {props.payment.crypto.enabled ? (
+                <CryptoWalletConnectionHandler
+                    iframeClient={iframeClient}
+                    apiKeyEnvironment={apiClient["parsedAPIKey"].environment}
+                />
+            ) : null}
         </>
     );
 }
