@@ -6,7 +6,7 @@ import { type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/
 import {
     SESSION_PREFIX,
     REFRESH_TOKEN_PREFIX,
-    type AuthMaterial,
+    type AuthMaterialWithUser,
     type SDKExternalUser,
 } from "@crossmint/common-sdk-auth";
 
@@ -71,7 +71,7 @@ export function CrossmintAuthProvider({
     const crossmintBaseUrl = validateApiKeyAndGetCrossmintBaseUrl(crossmint.apiKey);
     const [modalOpen, setModalOpen] = useState(false);
 
-    const setAuthMaterial = (authMaterial: AuthMaterial) => {
+    const setAuthMaterial = (authMaterial: AuthMaterialWithUser) => {
         setCookie(SESSION_PREFIX, authMaterial.jwt);
         setCookie(REFRESH_TOKEN_PREFIX, authMaterial.refreshToken.secret, authMaterial.refreshToken.expiresAt);
         setJwt(authMaterial.jwt);
@@ -123,7 +123,7 @@ export function CrossmintAuthProvider({
         return "logged-out";
     };
 
-    const fetchAuthMaterial = async (refreshToken: string): Promise<AuthMaterial> => {
+    const fetchAuthMaterial = async (refreshToken: string): Promise<AuthMaterialWithUser> => {
         const authMaterial = await crossmintAuthService.refreshAuthMaterial(refreshToken);
         setAuthMaterial(authMaterial);
         return authMaterial;

@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { verifyCrossmintJwt } from "./jwt";
-import { getPublicKey } from "./tokenAuth/publicKey";
+import { getPublicKey } from "./publicKey";
 import jwt from "jsonwebtoken";
 
-vi.mock("./tokenAuth/publicKey");
+vi.mock("./publicKey");
 
 vi.mock("jsonwebtoken");
 

@@ -1,5 +1,21 @@
 # @crossmint/server-sdk
 
+## 1.0.0
+
+### Major Changes
+
+- cd15716: Implements getSession to manage authentication server-side for SSR
+
+### Minor Changes
+
+- fe06a3e: Adds storeAuthMaterial to store auth material in cookies and does so in getSession
+
+### Patch Changes
+
+- Updated dependencies [fe06a3e]
+- Updated dependencies [cd15716]
+  - @crossmint/common-sdk-auth@0.2.1
+
 ## 0.3.0
 
 ### Minor Changes
