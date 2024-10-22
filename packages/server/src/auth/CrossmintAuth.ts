@@ -1,13 +1,14 @@
 import { type Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
 import {
     CrossmintAuthenticationError,
-    type AuthSession,
     type AuthMaterialBasic,
-    type AuthMaterial,
+    type AuthMaterialWithUser,
     type AuthMaterialResponse,
+    type AuthSession,
+    type AuthMaterial,
 } from "@crossmint/common-sdk-auth";
-import type { GenericRequest } from "./types/request";
-import { getAuthCookies } from "./utils/cookies";
+import type { GenericRequest, GenericResponse } from "./types/request";
+import { getAuthCookies, setAuthCookies } from "./utils/cookies";
 import { verifyCrossmintJwt } from "./utils/jwt";
 import { CROSSMINT_API_VERSION, SDK_NAME, SDK_VERSION } from "./utils/constants";
 
@@ -31,7 +32,10 @@ export class CrossmintAuth {
         return new CrossmintAuth(crossmint);
     }
 
-    public async getSession(options: GenericRequest | AuthMaterialBasic): Promise<AuthSession> {
+    public async getSession(
+        options: GenericRequest | AuthMaterialBasic,
+        response?: GenericResponse
+    ): Promise<AuthSession> {
         const { jwt, refreshToken } = "refreshToken" in options ? options : getAuthCookies(options);
 
         if (!refreshToken) {
@@ -39,8 +43,17 @@ export class CrossmintAuth {
         }
 
         try {
-            return await this.validateOrRefreshSession(jwt, refreshToken);
+            return await this.validateOrRefreshSession(jwt, refreshToken, response);
         } catch (error) {
+            if (error instanceof CrossmintAuthenticationError && response != null) {
+                this.storeAuthMaterial(response, {
+                    jwt: "",
+                    refreshToken: {
+                        secret: "",
+                        expiresAt: "",
+                    },
+                });
+            }
             console.error("Failed to get session", error);
             throw new CrossmintAuthenticationError("Failed to get session");
         }
@@ -65,10 +78,21 @@ export class CrossmintAuth {
         return `${this.apiClient.baseUrl}/.well-known/jwks.json`;
     }
 
-    private async refreshAuthMaterial(refreshToken: string): Promise<AuthMaterial> {
+    public storeAuthMaterial(response: GenericResponse, authMaterial: AuthMaterial) {
+        setAuthCookies(response, authMaterial);
+    }
+
+    private async refreshAuthMaterial(refreshToken: string): Promise<AuthMaterialWithUser> {
         const result = await this.apiClient.post(`api/${CROSSMINT_API_VERSION}/session/sdk/auth/refresh`, {
             body: JSON.stringify({ refresh: refreshToken }),
+            headers: {
+                "Content-Type": "application/json",
+            },
         });
+
+        if (!result.ok) {
+            throw new CrossmintAuthenticationError(result.statusText);
+        }
 
         const resultJson = (await result.json()) as AuthMaterialResponse;
 
@@ -79,12 +103,20 @@ export class CrossmintAuth {
         };
     }
 
-    private async validateOrRefreshSession(jwt: string | undefined, refreshToken: string): Promise<AuthSession> {
+    private async validateOrRefreshSession(
+        jwt: string | undefined,
+        refreshToken: string,
+        response?: GenericResponse
+    ): Promise<AuthSession> {
         if (jwt) {
             try {
                 const decodedJwt = await this.verifyCrossmintJwt(jwt);
                 return {
                     jwt,
+                    refreshToken: {
+                        secret: refreshToken,
+                        expiresAt: "",
+                    },
                     userId: decodedJwt.sub as string,
                 };
             } catch (_) {
@@ -93,8 +125,14 @@ export class CrossmintAuth {
         }
 
         const refreshedAuthMaterial = await this.refreshAuthMaterial(refreshToken);
+
+        if (response != null) {
+            this.storeAuthMaterial(response, refreshedAuthMaterial);
+        }
+
         return {
             jwt: refreshedAuthMaterial.jwt,
+            refreshToken: refreshedAuthMaterial.refreshToken,
             userId: refreshedAuthMaterial.user.id,
         };
     }
