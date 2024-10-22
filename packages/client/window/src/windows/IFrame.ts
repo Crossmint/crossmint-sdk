@@ -29,6 +29,14 @@ export class IFrameWindow<IncomingEvents extends EventMap, OutgoingEvents extend
         const targetOrigin = options?.targetOrigin || urlToOrigin(iframe.src);
         return new IFrameWindow<IncomingEvents, OutgoingEvents>(iframe, targetOrigin, options);
     }
+
+    static initExistingIFrame<IncomingEvents extends EventMap, OutgoingEvents extends EventMap>(
+        iframe: HTMLIFrameElement,
+        options?: EventEmitterWithHandshakeOptions<IncomingEvents, OutgoingEvents>
+    ) {
+        const targetOrigin = options?.targetOrigin || urlToOrigin(iframe.src);
+        return new IFrameWindow<IncomingEvents, OutgoingEvents>(iframe, targetOrigin, options);
+    }
 }
 
 async function createIFrame(url: string): Promise<HTMLIFrameElement> {
