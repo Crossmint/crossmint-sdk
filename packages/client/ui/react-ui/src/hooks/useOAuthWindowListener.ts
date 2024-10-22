@@ -1,4 +1,4 @@
-import type { OAuthProvider } from "@/types/auth";
+import type { OAuthProvider } from "@crossmint/common-sdk-auth";
 import { ChildWindow, PopupWindow } from "@crossmint/client-sdk-window";
 import type { AuthMaterial } from "@crossmint/common-sdk-auth";
 import { useEffect, useRef, useState } from "react";

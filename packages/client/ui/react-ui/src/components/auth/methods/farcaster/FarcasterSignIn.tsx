@@ -5,7 +5,7 @@ import { FarcasterIcon } from "@/icons/farcaster";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import { Spinner } from "@/components/common/Spinner";
 import { classNames } from "@/utils/classNames";
-import { AuthFormBackButton } from "../../AuthForm";
+import { AuthFormBackButton } from "../../AuthFormBackButton";
 
 export function FarcasterSignIn() {
     const { step, appearance, setStep } = useAuthForm();

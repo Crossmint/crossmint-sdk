@@ -1,15 +1,18 @@
+import { useState } from "react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/common/InputOTP";
 import { useAuthSignIn } from "@/hooks/useAuthSignIn";
 import { EmailOtpIcon } from "@/icons/emailOTP";
-import { useState } from "react";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
-import { AuthFormBackButton } from "../../AuthForm";
+import type { OtpEmailPayload } from "@/types/auth";
+import { AuthFormBackButton } from "../../AuthFormBackButton";
 
 export const EMAIL_VERIFICATION_TOKEN_LENGTH = 6;
 
-export function EmailOTPInput() {
-    const { appearance, baseUrl, apiKey, fetchAuthMaterial, setDialogOpen, setStep, otpEmailData, setOtpEmailData } =
-        useAuthForm();
+export function EmailOTPInput({
+    otpEmailData,
+    setOtpEmailData,
+}: { otpEmailData: OtpEmailPayload | null; setOtpEmailData: (data: OtpEmailPayload | null) => void }) {
+    const { appearance, baseUrl, apiKey, fetchAuthMaterial, setDialogOpen, setStep } = useAuthForm();
     const { onConfirmEmailOtp } = useAuthSignIn();
 
     const [token, setToken] = useState("");

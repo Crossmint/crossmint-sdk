@@ -170,7 +170,6 @@ export function CrossmintAuthProvider({
                         {children}
                     </WalletManager>
 
-                    {/* --- Auth Dialog --- */}
                     <AuthFormDialog open={modalOpen} />
                 </AuthFormProvider>
             </CrossmintWalletProvider>

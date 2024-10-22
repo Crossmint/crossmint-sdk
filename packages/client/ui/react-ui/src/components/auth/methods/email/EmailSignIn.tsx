@@ -4,11 +4,12 @@ import { Spinner } from "@/components/common/Spinner";
 import { classNames } from "@/utils/classNames";
 import { AlertIcon } from "../../../../icons/alert";
 import { useAuthSignIn } from "@/hooks/useAuthSignIn";
-import { isEmailValid } from "@/utils/isEmailValid";
+import { isEmailValid } from "@crossmint/common-sdk-auth";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
+import type { OtpEmailPayload } from "@/types/auth";
 
-export function EmailSignIn() {
-    const { baseUrl, apiKey, appearance, setStep, setOtpEmailData } = useAuthForm();
+export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEmailPayload) => void }) {
+    const { baseUrl, apiKey, appearance, setStep } = useAuthForm();
     const { onEmailSignIn } = useAuthSignIn();
 
     const [emailInput, setEmailInput] = useState("");

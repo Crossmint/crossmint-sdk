@@ -26,3 +26,5 @@ export type AuthSession = {
     jwt: string;
     userId: string;
 };
+
+export type OAuthProvider = "google" | "farcaster" | "discord";

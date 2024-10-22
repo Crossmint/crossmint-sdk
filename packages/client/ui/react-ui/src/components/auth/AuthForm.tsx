@@ -1,4 +1,3 @@
-import type React from "react";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import { EmailAuthFlow } from "./methods/email/EmailAuthFlow";
 import { Divider } from "../common/Divider";
@@ -7,8 +6,6 @@ import { FarcasterSignIn } from "./methods/farcaster/FarcasterSignIn";
 import { PoweredByCrossmint } from "../common/PoweredByCrossmint";
 import { FarcasterProvider } from "../../providers/auth/FarcasterProvider";
 import { DiscordSignIn } from "./methods/discord/DiscordSignIn";
-import { classNames } from "@/utils/classNames";
-import { LeftArrowIcon } from "@/icons/leftArrow";
 
 export function AuthForm() {
     const { step, appearance, baseUrl, loginMethods } = useAuthForm();
@@ -54,26 +51,3 @@ export function AuthForm() {
         </div>
     );
 }
-
-export const AuthFormBackButton = ({
-    className,
-    iconColor,
-    ringColor,
-    ...props
-}: React.HTMLAttributes<HTMLButtonElement> & { iconColor?: string; ringColor?: string }) => {
-    return (
-        <button
-            className={classNames(
-                "absolute rounded-full opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-cm-ring focus:ring-offset-2 disabled:pointer-events-none",
-                className
-            )}
-            style={{
-                // @ts-expect-error --tw-ring-color is not recognized by typescript but gets picked up by tailwind
-                "--tw-ring-color": ringColor ?? "#1A73E8",
-            }}
-            {...props}
-        >
-            <LeftArrowIcon className="w-6 h-6" style={{ color: iconColor }} />
-        </button>
-    );
-};

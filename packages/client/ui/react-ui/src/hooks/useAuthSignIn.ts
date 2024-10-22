@@ -1,4 +1,4 @@
-import type { OAuthProvider } from "@/types/auth";
+import type { OAuthProvider } from "@crossmint/common-sdk-auth";
 import type { UseSignInData } from "@farcaster/auth-kit";
 
 export function useAuthSignIn() {
