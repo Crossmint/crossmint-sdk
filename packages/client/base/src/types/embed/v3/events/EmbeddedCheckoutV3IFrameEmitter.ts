@@ -1,7 +1,7 @@
-import { IFrameWindow } from "@crossmint/client-sdk-window";
+import type { IFrameWindow } from "@crossmint/client-sdk-window";
 
-import { EmbeddedCheckoutV3IncomingEventMap } from "./incoming";
-import { EmbeddedCheckoutV3OutgoingEventMap } from "./outgoing";
+import type { EmbeddedCheckoutV3IncomingEventMap } from "./incoming";
+import type { EmbeddedCheckoutV3OutgoingEventMap } from "./outgoing";
 
 export type EmbeddedCheckoutV3IFrameEmitter = IFrameWindow<
     EmbeddedCheckoutV3IncomingEventMap,

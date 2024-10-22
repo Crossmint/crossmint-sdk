@@ -1,5 +1,17 @@
 # @crossmint/client-sdk-base
 
+## 1.3.0
+
+### Minor Changes
+
+- 88a801d: feat: embed v3 initial alpha release
+
+### Patch Changes
+
+- Updated dependencies [63ea1dc]
+- Updated dependencies [88a801d]
+  - @crossmint/client-sdk-window@0.1.0
+
 ## 1.2.8
 
 ### Patch Changes
