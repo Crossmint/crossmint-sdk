@@ -22,10 +22,15 @@ export function EmailOTPInput({
     const handleOnSubmit = async () => {
         setLoading(true);
         try {
-            const oneTimeSecret = await onConfirmEmailOtp(otpEmailData?.email ?? "", otpEmailData?.state ?? "", token, {
-                baseUrl,
-                apiKey,
-            });
+            const oneTimeSecret = await onConfirmEmailOtp(
+                otpEmailData?.email ?? "",
+                otpEmailData?.emailId ?? "",
+                token,
+                {
+                    baseUrl,
+                    apiKey,
+                }
+            );
 
             await fetchAuthMaterial(oneTimeSecret as string);
             setDialogOpen(false);

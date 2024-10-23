@@ -28,15 +28,9 @@ export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEm
 
         try {
             const trimmedEmailInput = emailInput.trim().toLowerCase();
-            const createSignInTokenRes = (await onEmailSignIn(trimmedEmailInput, { baseUrl, apiKey })) as {
-                user: {
-                    email: string;
-                    emailId: string;
-                    userId: string;
-                };
-            };
+            const emailSignInRes = (await onEmailSignIn(trimmedEmailInput, { baseUrl, apiKey })) as { emailId: string };
 
-            setOtpEmailData({ email: createSignInTokenRes.user.email, state: createSignInTokenRes.user.emailId });
+            setOtpEmailData({ email: trimmedEmailInput, emailId: emailSignInRes.emailId });
             setStep("otp");
         } catch (_e: unknown) {
             setIsLoading(false);

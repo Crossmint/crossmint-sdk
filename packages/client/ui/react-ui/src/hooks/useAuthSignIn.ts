@@ -36,7 +36,7 @@ async function onEmailSignIn(email: string, options: { baseUrl: string; apiKey: 
 
 async function onConfirmEmailOtp(
     email: string,
-    state: string,
+    emailId: string,
     token: string,
     options: { baseUrl: string; apiKey: string }
 ) {
@@ -47,7 +47,7 @@ async function onConfirmEmailOtp(
             apiKey: options.apiKey,
             token,
             locale: "en",
-            state,
+            state: emailId,
             callbackUrl: `${options.baseUrl}api/2024-09-26/session/sdk/auth/we-dont-actually-use-this-anymore`,
         });
         const response = await fetch(`${options.baseUrl}api/2024-09-26/session/sdk/auth/authenticate?${queryParams}`, {

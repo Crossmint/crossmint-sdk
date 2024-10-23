@@ -16,8 +16,8 @@ interface AuthFormContextType {
     fetchAuthMaterial: (refreshToken: string) => Promise<AuthMaterialWithUser>;
     appearance?: UIConfig;
     loginMethods: LoginMethod[];
-    oauthUrl: OAuthUrlMap;
-    isLoadingOauthUrl: boolean;
+    oauthUrlMap: OAuthUrlMap;
+    isLoadingOauthUrlMap: boolean;
     setStep: (step: AuthStep) => void;
     setDialogOpen: (open: boolean) => void;
 }
@@ -46,30 +46,30 @@ export const AuthFormProvider = ({
     initialState,
 }: { children: ReactNode; initialState: ContextInitialStateProps }) => {
     const [step, setStep] = useState<AuthStep>("initial");
-    const [oauthUrl, setOauthUrl] = useState<OAuthUrlMap>(initialOAuthUrlMap);
-    const [isLoadingOauthUrl, setIsLoadingOauthUrl] = useState(true);
+    const [oauthUrlMap, setOauthUrlMap] = useState<OAuthUrlMap>(initialOAuthUrlMap);
+    const [isLoadingOauthUrlMap, setIsLoadingOauthUrlMap] = useState(true);
 
     const { loginMethods, apiKey, baseUrl } = initialState;
 
     useEffect(() => {
         const preFetchAndSetOauthUrl = async () => {
-            setIsLoadingOauthUrl(true);
+            setIsLoadingOauthUrlMap(true);
             try {
                 const oauthProviders = loginMethods.filter(
                     (method): method is OAuthProvider => method in initialOAuthUrlMap
                 );
 
-                const OAuthPromiseList = oauthProviders.map(async (provider) => {
+                const oauthPromiseList = oauthProviders.map(async (provider) => {
                     const url = await getOAuthUrl(provider, { apiKey, baseUrl });
                     return { [provider]: url };
                 });
 
-                const oauthUrlMap = Object.assign({}, ...(await Promise.all(OAuthPromiseList)));
-                setOauthUrl(oauthUrlMap);
+                const oauthUrlMap = Object.assign({}, ...(await Promise.all(oauthPromiseList)));
+                setOauthUrlMap(oauthUrlMap);
             } catch (error) {
                 console.error("Error fetching OAuth URLs:", error);
             } finally {
-                setIsLoadingOauthUrl(false);
+                setIsLoadingOauthUrlMap(false);
             }
         };
         preFetchAndSetOauthUrl();
@@ -82,8 +82,8 @@ export const AuthFormProvider = ({
         fetchAuthMaterial: initialState.fetchAuthMaterial,
         appearance: initialState.appearance,
         loginMethods,
-        oauthUrl,
-        isLoadingOauthUrl,
+        oauthUrlMap,
+        isLoadingOauthUrlMap,
         setDialogOpen: initialState.setDialogOpen ?? (() => {}),
         setStep,
     };

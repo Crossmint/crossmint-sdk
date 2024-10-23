@@ -13,7 +13,7 @@ export const useOAuthWindowListener = (
         fetchAuthMaterial: (refreshToken: string) => Promise<AuthMaterialWithUser>;
     }
 ) => {
-    const { oauthUrl } = useAuthForm();
+    const { oauthUrlMap } = useAuthForm();
     const [isLoading, setIsLoading] = useState(false);
     const childRef = useRef<ChildWindow<IncomingEvents, OutgoingEvents> | null>(null);
 
@@ -37,7 +37,7 @@ export const useOAuthWindowListener = (
             throw new Error("Child window not initialized");
         }
         setIsLoading(true);
-        const popup = await PopupWindow.init(oauthUrl[provider], {
+        const popup = await PopupWindow.init(oauthUrlMap[provider], {
             awaitToLoad: false,
             crossOrigin: true,
             width: 400,

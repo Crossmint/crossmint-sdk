@@ -5,7 +5,8 @@ import type { LoginMethod } from "..";
 
 // Mock component to test the AuthFormProvider
 function TestComponent() {
-    const { step, apiKey, baseUrl, loginMethods, setStep, setDialogOpen, oauthUrl, isLoadingOauthUrl } = useAuthForm();
+    const { step, apiKey, baseUrl, loginMethods, setStep, setDialogOpen, oauthUrlMap, isLoadingOauthUrlMap } =
+        useAuthForm();
 
     return (
         <div>
@@ -19,8 +20,8 @@ function TestComponent() {
             <button onClick={() => setDialogOpen(true)} data-testid="set-dialog-open">
                 Open Dialog
             </button>
-            <div data-testid="oauth-url">{JSON.stringify(oauthUrl)}</div>
-            <div data-testid="is-loading-oauth-url">{isLoadingOauthUrl.toString()}</div>
+            <div data-testid="oauth-url">{JSON.stringify(oauthUrlMap)}</div>
+            <div data-testid="is-loading-oauth-url">{isLoadingOauthUrlMap.toString()}</div>
         </div>
     );
 }
