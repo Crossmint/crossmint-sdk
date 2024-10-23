@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, test } from "vitest";
 
-import { waitForSettledState } from "../testUtils";
-import { deleteCookie, getCookie, setCookie } from "./authCookies";
+import { waitForSettledState } from "../../../ui/react-ui/src/testUtils";
+import { deleteCookie, getCookie, setCookie } from "./cookies";
 
-describe("authCookies", () => {
+describe("cookies", () => {
     beforeEach(() => {
         // Clear all cookies before each test
         document.cookie.split(";").forEach((cookie) => {

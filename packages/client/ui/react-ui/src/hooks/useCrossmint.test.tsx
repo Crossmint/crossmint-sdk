@@ -18,9 +18,6 @@ class MockSDK {
     somethingThatUpdatesJWT(newJWT: string) {
         this.crossmint.jwt = newJWT;
     }
-    somethingThatUpdatesRefreshToken(newRefreshToken: string) {
-        this.crossmint.refreshToken = newRefreshToken;
-    }
 }
 
 function renderCrossmintProvider({ children }: { children: JSX.Element }) {
@@ -43,7 +40,6 @@ describe("CrossmintProvider", () => {
             return (
                 <div>
                     <div data-testid="jwt">{crossmint.jwt}</div>
-                    <div data-testid="refreshToken">{crossmint.refreshToken}</div>
                 </div>
             );
         };
@@ -67,33 +63,16 @@ describe("CrossmintProvider", () => {
         expect(getByTestId("jwt").textContent).toBe("new_jwt");
     });
 
-    it("updates refreshToken using setRefreshToken", () => {
-        const TestComponent = () => {
-            const { crossmint, setRefreshToken } = useCrossmint();
-            return (
-                <div>
-                    <div data-testid="refreshToken">{crossmint.refreshToken}</div>
-                    <button onClick={() => setRefreshToken("new_refresh_token")}>Update Refresh Token</button>
-                </div>
-            );
-        };
-        const { getByTestId, getByText } = renderCrossmintProvider({ children: <TestComponent /> });
-        fireEvent.click(getByText("Update Refresh Token"));
-        expect(getByTestId("refreshToken").textContent).toBe("new_refresh_token");
-    });
-
     it("updates JWT and refreshToken using WalletSDK", () => {
         const TestComponent = () => {
             const { crossmint } = useCrossmint();
             useEffect(() => {
                 const wallet = new MockSDK(crossmint);
                 wallet.somethingThatUpdatesJWT("sdk_jwt");
-                wallet.somethingThatUpdatesRefreshToken("sdk_refresh_token");
             }, []);
             return (
                 <div>
                     <div data-testid="jwt">{crossmint.jwt}</div>
-                    <div data-testid="refreshToken">{crossmint.refreshToken}</div>
                 </div>
             );
         };
@@ -102,19 +81,17 @@ describe("CrossmintProvider", () => {
         expect(getByTestId("refreshToken").textContent).toBe("sdk_refresh_token");
     });
 
-    it("triggers re-render on JWT and refreshToken change", () => {
+    it("triggers re-render on JWT change", () => {
         const renderCount = vi.fn();
         const TestComponent = () => {
-            const { crossmint, setJwt, setRefreshToken } = useCrossmint();
+            const { crossmint, setJwt } = useCrossmint();
             useEffect(() => {
                 renderCount();
             });
             return (
                 <div>
                     <div data-testid="jwt">{crossmint.jwt}</div>
-                    <div data-testid="refreshToken">{crossmint.refreshToken}</div>
                     <button onClick={() => setJwt("new_jwt")}>Update JWT</button>
-                    <button onClick={() => setRefreshToken("new_refresh_token")}>Update Refresh Token</button>
                 </div>
             );
         };
@@ -125,8 +102,5 @@ describe("CrossmintProvider", () => {
 
         fireEvent.click(getByText("Update JWT"));
         expect(renderCount).toHaveBeenCalledTimes(2);
-
-        fireEvent.click(getByText("Update Refresh Token"));
-        expect(renderCount).toHaveBeenCalledTimes(3);
     });
 });

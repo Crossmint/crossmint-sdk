@@ -5,8 +5,8 @@ import { z } from "zod";
 import { IFrameWindow } from "@crossmint/client-sdk-window";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import { CrossmintInternalEvents } from "@crossmint/client-sdk-base";
-import type { AuthMaterialWithUser } from "@crossmint/common-sdk-auth";
 import type { LoginMethod } from "@/providers";
+import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
 
 import X from "../../icons/x";
 
@@ -25,20 +25,13 @@ type IncomingModalIframeEventsType = {
 type AuthModalProps = {
     setModalOpen: (open: boolean) => void;
     apiKey: string;
-    fetchAuthMaterial: (refreshToken: string) => Promise<AuthMaterialWithUser>;
     baseUrl: string;
     appearance?: UIConfig;
     loginMethods?: LoginMethod[];
 };
 
-export default function AuthModal({
-    setModalOpen,
-    apiKey,
-    fetchAuthMaterial,
-    baseUrl,
-    appearance,
-    loginMethods,
-}: AuthModalProps) {
+export default function AuthModal({ setModalOpen, apiKey, baseUrl, appearance, loginMethods }: AuthModalProps) {
+    const { crossmintAuth } = useCrossmintAuth();
     let iframeSrc = `${baseUrl}sdk/2024-09-26/auth/frame?apiKey=${apiKey}`;
     if (appearance != null) {
         // The appearance object is serialized into a query parameter
@@ -65,7 +58,7 @@ export default function AuthModal({
         }
 
         iframeWindowRef.current.on("authMaterialFromAuthFrame", (data) => {
-            fetchAuthMaterial(data.oneTimeSecret);
+            crossmintAuth?.handleRefreshToken(data.oneTimeSecret);
             iframeWindowRef.current?.off("authMaterialFromAuthFrame");
             setModalOpen(false);
         });

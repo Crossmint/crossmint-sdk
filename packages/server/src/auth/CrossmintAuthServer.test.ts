@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { CrossmintAuth } from "./CrossmintAuth";
+import { CrossmintAuthServer } from "./CrossmintAuthServer";
 import { type Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
 import { type AuthMaterialBasic, CrossmintAuthenticationError } from "@crossmint/common-sdk-auth";
 import * as cookiesUtils from "./utils/cookies";
@@ -10,8 +10,8 @@ vi.mock("@crossmint/common-sdk-base");
 vi.mock("./utils/cookies");
 vi.mock("./utils/jwt");
 
-describe("CrossmintAuth", () => {
-    let crossmintAuth: CrossmintAuth;
+describe("CrossmintAuthServer", () => {
+    let crossmintAuthServer: CrossmintAuthServer;
     const mockCrossmint = { projectId: "test-project-id" };
     const mockApiClient = {
         baseUrl: "https://api.crossmint.com",
@@ -22,7 +22,7 @@ describe("CrossmintAuth", () => {
     beforeEach(() => {
         vi.resetAllMocks();
         vi.mocked(CrossmintApiClient).mockReturnValue(mockApiClient as unknown as CrossmintApiClient);
-        crossmintAuth = CrossmintAuth.from(mockCrossmint as unknown as Crossmint);
+        crossmintAuthServer = CrossmintAuthServer.from(mockCrossmint as unknown as Crossmint);
     });
 
     afterEach(() => {
@@ -30,15 +30,15 @@ describe("CrossmintAuth", () => {
     });
 
     describe("from", () => {
-        it("should create a new CrossmintAuth instance", () => {
-            expect(crossmintAuth).toBeInstanceOf(CrossmintAuth);
+        it("should create a new CrossmintAuthServer instance", () => {
+            expect(crossmintAuthServer).toBeInstanceOf(CrossmintAuthServer);
             expect(CrossmintApiClient).toHaveBeenCalledWith(mockCrossmint, expect.any(Object));
         });
     });
 
     describe("getJwksUri", () => {
         it("should return the correct JWKS URI", () => {
-            expect(crossmintAuth.getJwksUri()).toBe("https://api.crossmint.com/.well-known/jwks.json");
+            expect(crossmintAuthServer.getJwksUri()).toBe("https://api.crossmint.com/.well-known/jwks.json");
         });
     });
 
@@ -48,7 +48,7 @@ describe("CrossmintAuth", () => {
             const mockDecodedJwt = { sub: "user123" };
             vi.mocked(jwtUtils.verifyCrossmintJwt).mockResolvedValue(mockDecodedJwt);
 
-            const result = await crossmintAuth.verifyCrossmintJwt(mockToken);
+            const result = await crossmintAuthServer.verifyCrossmintJwt(mockToken);
 
             expect(jwtUtils.verifyCrossmintJwt).toHaveBeenCalledWith(
                 mockToken,
@@ -69,7 +69,7 @@ describe("CrossmintAuth", () => {
             vi.mocked(cookiesUtils.getAuthCookies).mockReturnValue(mockAuthMaterial);
             vi.mocked(jwtUtils.verifyCrossmintJwt).mockResolvedValue({ sub: "user123" });
 
-            const result = await crossmintAuth.getSession(mockRequest as GenericRequest);
+            const result = await crossmintAuthServer.getSession(mockRequest as GenericRequest);
 
             expect(result).toEqual({
                 jwt: "mock.jwt.token",
@@ -97,7 +97,7 @@ describe("CrossmintAuth", () => {
                 ok: true,
             });
 
-            const result = await crossmintAuth.getSession(mockRequest as GenericRequest);
+            const result = await crossmintAuthServer.getSession(mockRequest as GenericRequest);
 
             expect(result).toEqual({
                 jwt: "new.jwt.token",
@@ -116,10 +116,10 @@ describe("CrossmintAuth", () => {
         it("should throw CrossmintAuthenticationError when refresh token is not found", async () => {
             vi.mocked(cookiesUtils.getAuthCookies).mockReturnValue({ jwt: "mock.jwt.token" } as AuthMaterialBasic);
 
-            await expect(crossmintAuth.getSession(mockRequest as GenericRequest)).rejects.toThrow(
+            await expect(crossmintAuthServer.getSession(mockRequest as GenericRequest)).rejects.toThrow(
                 CrossmintAuthenticationError
             );
-            await expect(crossmintAuth.getSession(mockRequest as GenericRequest)).rejects.toThrow(
+            await expect(crossmintAuthServer.getSession(mockRequest as GenericRequest)).rejects.toThrow(
                 "Refresh token not found"
             );
         });
@@ -129,10 +129,10 @@ describe("CrossmintAuth", () => {
             vi.mocked(jwtUtils.verifyCrossmintJwt).mockRejectedValue(new Error("Invalid token"));
             mockApiClient.post.mockRejectedValue(new Error("API error"));
 
-            await expect(crossmintAuth.getSession(mockRequest as GenericRequest)).rejects.toThrow(
+            await expect(crossmintAuthServer.getSession(mockRequest as GenericRequest)).rejects.toThrow(
                 CrossmintAuthenticationError
             );
-            await expect(crossmintAuth.getSession(mockRequest as GenericRequest)).rejects.toThrow(
+            await expect(crossmintAuthServer.getSession(mockRequest as GenericRequest)).rejects.toThrow(
                 "Failed to get session"
             );
         });
@@ -146,7 +146,7 @@ describe("CrossmintAuth", () => {
                 json: () => Promise.resolve(mockUserData),
             });
 
-            const result = await crossmintAuth.getUser(mockExternalUserId);
+            const result = await crossmintAuthServer.getUser(mockExternalUserId);
 
             expect(result).toEqual(mockUserData);
             expect(mockApiClient.get).toHaveBeenCalledWith(
@@ -167,7 +167,7 @@ describe("CrossmintAuth", () => {
                 },
             };
 
-            crossmintAuth.storeAuthMaterial(mockResponse, mockAuthMaterial);
+            crossmintAuthServer.storeAuthMaterial(mockResponse, mockAuthMaterial);
 
             expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(mockResponse, mockAuthMaterial);
         });

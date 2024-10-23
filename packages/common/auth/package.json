@@ -19,6 +19,7 @@
         "dev": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --dts --sourcemap --watch"
     },
     "dependencies": {
-        "@crossmint/client-sdk-base": "workspace:*"
+        "@crossmint/client-sdk-base": "workspace:*",
+        "@crossmint/common-sdk-base": "workspace:*"
     }
 }
