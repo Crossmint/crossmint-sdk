@@ -1,4 +1,4 @@
-# `crossmint-sdk (beta)`
+# `crossmint-sdk`
 
 ## You can check the full documentation at [docs.crossmint.com](https://docs.crossmint.com/)
 
