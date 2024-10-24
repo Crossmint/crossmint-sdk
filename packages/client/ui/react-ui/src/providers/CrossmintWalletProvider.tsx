@@ -57,12 +57,12 @@ export type WalletConfig = WalletParams & { type: "evm-smart-wallet" };
 export function CrossmintWalletProvider({
     children,
     defaultChain,
-    showWalletModals = true, // enabled by default
+    showPasskeyHelpers = true, // enabled by default
     appearance,
 }: {
     children: ReactNode;
     defaultChain: EVMSmartWalletChain;
-    showWalletModals?: boolean;
+    showPasskeyHelpers?: boolean;
     appearance?: UIConfig;
 }) {
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
@@ -99,7 +99,7 @@ export function CrossmintWalletProvider({
     };
 
     const enhanceConfigWithPasskeyPrompts = (config: WalletConfig) => {
-        if (showWalletModals && (config.signer as PasskeySigner).type === "PASSKEY") {
+        if (showPasskeyHelpers && (config.signer as PasskeySigner).type === "PASSKEY") {
             return {
                 ...config,
                 signer: {
