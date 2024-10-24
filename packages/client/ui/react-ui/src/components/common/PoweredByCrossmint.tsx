@@ -1,13 +1,11 @@
 import { PoweredByLeaf } from "@/icons/poweredByLeaf";
 import { classNames } from "@/utils/classNames";
 
-export function PoweredByCrossmint({ color }: { color?: string }) {
+export function PoweredByCrossmint({ color, className }: { color?: string; className?: string }) {
     return (
         <p
-            className={classNames(
-                "flex text-xs font-normal -tracking-[0.2px] p-2",
-                color ? `text-[${color}]` : "text-[#67797F]"
-            )}
+            className={classNames("flex text-xs font-normal tracking-tight p-2 items-center", className)}
+            style={{ color: color || "#67797F" }}
         >
             Powered by
             <span className="flex self-center pl-1 gap-1 items-center font-semibold">

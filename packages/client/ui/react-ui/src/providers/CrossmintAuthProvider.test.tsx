@@ -1,10 +1,11 @@
-import { deleteCookie, REFRESH_TOKEN_PREFIX, SESSION_PREFIX } from "@/utils/authCookies";
+import { deleteCookie } from "@/utils/authCookies";
+import { SESSION_PREFIX, REFRESH_TOKEN_PREFIX } from "@crossmint/common-sdk-auth";
 import { fireEvent, render } from "@testing-library/react";
 import { type ReactNode, act } from "react";
 import { beforeEach, describe, expect, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 
-import { CrossmintAuthService, getJWTExpiration } from "@crossmint/client-sdk-auth-core/client";
+import { CrossmintAuthService, getJWTExpiration } from "@crossmint/client-sdk-auth";
 import { type EVMSmartWallet, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
 import { createCrossmint } from "@crossmint/common-sdk-base";
 
@@ -32,17 +33,21 @@ vi.mock("@crossmint/common-sdk-base", async () => {
     };
 });
 
-vi.mock("@crossmint/client-sdk-auth-core/client", async () => {
-    const actual = await vi.importActual("@crossmint/client-sdk-auth-core/client");
+vi.mock("@crossmint/client-sdk-auth", async () => {
+    const actual = await vi.importActual("@crossmint/client-sdk-auth");
     return {
         ...actual,
         getJWTExpiration: vi.fn(),
         CrossmintAuthService: vi.fn().mockImplementation(() => ({
             refreshAuthMaterial: vi.fn().mockResolvedValue({
-                jwtToken: "new-mock-jwt",
+                jwt: "new-mock-jwt",
                 refreshToken: {
                     secret: "new-mock-refresh-token",
                     expiresAt: new Date(Date.now() + 1000 * 60 * 60).toISOString(),
+                },
+                user: {
+                    id: "123",
+                    email: "test@test.com",
                 },
             }),
         })),
@@ -119,7 +124,7 @@ describe("CrossmintAuthProvider", () => {
 
         mockCrossmintAuthService = {
             refreshAuthMaterial: vi.fn().mockResolvedValue({
-                jwtToken: "new-mock-jwt",
+                jwt: "new-mock-jwt",
                 refreshToken: {
                     secret: "new-mock-refresh-token",
                     expiresAt: new Date(Date.now() + 1000 * 60 * 60).toISOString(),

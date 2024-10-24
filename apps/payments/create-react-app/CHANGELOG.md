@@ -1,5 +1,50 @@
 # @crossmint/client-sdk-react-ui-starter
 
+## 1.3.0
+
+### Minor Changes
+
+- 88a801d: feat: embed v3 initial alpha release
+
+### Patch Changes
+
+- Updated dependencies [cd15716]
+- Updated dependencies [fe06a3e]
+- Updated dependencies [88a801d]
+  - @crossmint/client-sdk-react-ui@1.8.0
+
+## 1.2.34
+
+### Patch Changes
+
+- Updated dependencies [dc2d2a2]
+  - @crossmint/client-sdk-react-ui@1.7.1
+
+## 1.2.33
+
+### Patch Changes
+
+- Updated dependencies [fef3252]
+- Updated dependencies [233740d]
+  - @crossmint/client-sdk-react-ui@1.7.0
+
+## 1.2.32
+
+### Patch Changes
+
+- Updated dependencies [aa255a8]
+- Updated dependencies [5b6b197]
+- Updated dependencies [127ccc6]
+  - @crossmint/client-sdk-react-ui@1.6.1
+
+## 1.2.31
+
+### Patch Changes
+
+- Updated dependencies [5387811]
+- Updated dependencies [9bfb18f]
+  - @crossmint/client-sdk-react-ui@1.6.0
+
 ## 1.2.30
 
 ### Patch Changes

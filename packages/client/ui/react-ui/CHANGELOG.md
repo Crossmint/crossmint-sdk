@@ -1,5 +1,65 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.8.0
+
+### Minor Changes
+
+- 88a801d: feat: embed v3 initial alpha release
+
+### Patch Changes
+
+- cd15716: Moves cookie names to @crossmint/common-sdk-auth
+- fe06a3e: Use new type names for auth
+- Updated dependencies [63ea1dc]
+- Updated dependencies [fe06a3e]
+- Updated dependencies [88a801d]
+- Updated dependencies [cd15716]
+  - @crossmint/client-sdk-window@0.1.0
+  - @crossmint/common-sdk-auth@0.2.1
+  - @crossmint/client-sdk-base@1.3.0
+  - @crossmint/client-sdk-auth@0.2.1
+  - @crossmint/client-sdk-smart-wallet@0.1.20
+
+## 1.7.1
+
+### Patch Changes
+
+- dc2d2a2: Adds entrypoint to make sure twind is instantiated
+
+## 1.7.0
+
+### Minor Changes
+
+- fef3252: Adds new loginOptions property that specifies different sign in methods
+
+### Patch Changes
+
+- 233740d: Changes jwt cookie name
+
+## 1.6.1
+
+### Patch Changes
+
+- aa255a8: Fixes missing type import
+- 5b6b197: Removes dynamic tailwind classes
+- 127ccc6: Moves from auth core to new auth sdk
+- Updated dependencies [127ccc6]
+- Updated dependencies [127ccc6]
+  - @crossmint/client-sdk-auth@0.2.0
+  - @crossmint/common-sdk-auth@0.2.0
+
+## 1.6.0
+
+### Minor Changes
+
+- 5387811: Add the user profile
+
+### Patch Changes
+
+- 9bfb18f: Avoids re-renders with refresh token
+- Updated dependencies [5387811]
+  - @crossmint/client-sdk-auth-core@1.4.0
+
 ## 1.5.0
 
 ### Minor Changes

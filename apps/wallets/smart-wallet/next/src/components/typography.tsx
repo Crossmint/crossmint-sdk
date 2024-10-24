@@ -52,7 +52,6 @@ export function Typography({ variant, tag, className, children, ...props }: Typo
     }
 
     return (
-        // @ts-expect-error todo: fix whatever type error this is
         <Component className={cn(typographyVariants({ variant, className }))} {...props}>
             {children}
         </Component>

@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-verifiable-credentials",
-    "version": "3.4.9",
+    "version": "3.4.10",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
@@ -15,8 +15,8 @@
     "types": "./dist/index.d.ts",
     "files": ["dist", "src", "LICENSE"],
     "scripts": {
-        "build": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
-        "dev": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
+        "build": "tsup",
+        "dev": "tsup --watch",
         "test": "cross-env NODE_ENV=test jest --silent",
         "test-coverage": "cross-env NODE_ENV=test jest --coverage --silent"
     },

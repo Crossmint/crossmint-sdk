@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-window",
-    "version": "0.0.10",
+    "version": "0.1.0",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
@@ -15,8 +15,8 @@
     "types": "./dist/index.d.ts",
     "files": ["dist", "src", "LICENSE"],
     "scripts": {
-        "build": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
-        "dev": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --dts --sourcemap --watch"
+        "build": "tsup",
+        "dev": "tsup --watch"
     },
     "dependencies": {
         "nanoid": "5.0.4",

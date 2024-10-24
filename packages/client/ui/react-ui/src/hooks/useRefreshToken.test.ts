@@ -1,13 +1,14 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { type CrossmintAuthService, getJWTExpiration } from "@crossmint/client-sdk-auth-core/client";
+import type { AuthMaterialWithUser } from "@crossmint/common-sdk-auth";
+import { type CrossmintAuthService, getJWTExpiration } from "@crossmint/client-sdk-auth";
 import { queueTask } from "@crossmint/client-sdk-base";
 
 import * as authCookies from "../utils/authCookies";
-import { type AuthMaterial, useRefreshToken } from "./useRefreshToken";
+import { useRefreshToken } from "./useRefreshToken";
 
-vi.mock("@crossmint/client-sdk-auth-core", () => ({
+vi.mock("@crossmint/client-sdk-auth", () => ({
     CrossmintAuthService: vi.fn(),
     getJWTExpiration: vi.fn(),
 }));
@@ -17,9 +18,13 @@ vi.mock("../utils/authCookies", () => ({
     REFRESH_TOKEN_PREFIX: "crossmint-refresh-token",
 }));
 
-vi.mock("@crossmint/client-sdk-base", () => ({
-    queueTask: vi.fn(),
-}));
+vi.mock("@crossmint/client-sdk-base", async () => {
+    const actual = await vi.importActual("@crossmint/client-sdk-base");
+    return {
+        ...actual,
+        queueTask: vi.fn(),
+    };
+});
 
 describe("useRefreshToken", () => {
     const mockCrossmintAuthService = {
@@ -59,11 +64,15 @@ describe("useRefreshToken", () => {
 
     it("should refresh token if refresh token is present", async () => {
         const mockRefreshToken = "mock-refresh-token";
-        const mockAuthMaterial: AuthMaterial = {
-            jwtToken: "mock-jwt-token",
+        const mockAuthMaterial: AuthMaterialWithUser = {
+            jwt: "mock-jwt-token",
             refreshToken: {
                 secret: "mock-secret",
                 expiresAt: "2023-04-01T00:00:00Z",
+            },
+            user: {
+                id: "123",
+                email: "test@test.com",
             },
         };
 
@@ -89,11 +98,15 @@ describe("useRefreshToken", () => {
 
     it("should schedule next refresh before token expiration", async () => {
         const mockRefreshToken = "mock-refresh-token";
-        const mockAuthMaterial: AuthMaterial = {
-            jwtToken: "mock-jwt-token",
+        const mockAuthMaterial: AuthMaterialWithUser = {
+            jwt: "mock-jwt-token",
             refreshToken: {
                 secret: "mock-secret",
                 expiresAt: "2023-04-01T00:00:00Z",
+            },
+            user: {
+                id: "123",
+                email: "test@test.com",
             },
         };
 

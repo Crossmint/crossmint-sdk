@@ -8,7 +8,7 @@ export class ChildWindow<IncomingEvents extends EventMap, OutgoingEvents extends
 > {
     constructor(
         parentWindow: Window,
-        targetOrigin: string,
+        targetOrigin: string | string[],
         options?: Omit<EventEmitterWithHandshakeOptions<IncomingEvents, OutgoingEvents>, "targetOrigin">
     ) {
         super(parentWindow, targetOrigin, options);

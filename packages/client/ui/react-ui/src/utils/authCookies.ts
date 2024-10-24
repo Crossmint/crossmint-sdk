@@ -1,6 +1,3 @@
-export const SESSION_PREFIX = "crossmint-session";
-export const REFRESH_TOKEN_PREFIX = "crossmint-refresh-token";
-
 export function getCookie(name: string): string | undefined {
     const crossmintRefreshToken = document.cookie.split("; ").find((row) => row.startsWith(name));
     return crossmintRefreshToken ? crossmintRefreshToken.split("=")[1] : undefined;
