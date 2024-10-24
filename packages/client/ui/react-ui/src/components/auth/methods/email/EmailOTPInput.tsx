@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/common/InputOTP";
-import { useAuthSignIn } from "@/hooks/useAuthSignIn";
 import { EmailOtpIcon } from "@/icons/emailOTP";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import type { OtpEmailPayload } from "@/types/auth";
 import { AuthFormBackButton } from "../../AuthFormBackButton";
+import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
 
 export const EMAIL_VERIFICATION_TOKEN_LENGTH = 6;
 
@@ -12,8 +12,8 @@ export function EmailOTPInput({
     otpEmailData,
     setOtpEmailData,
 }: { otpEmailData: OtpEmailPayload | null; setOtpEmailData: (data: OtpEmailPayload | null) => void }) {
-    const { appearance, baseUrl, apiKey, fetchAuthMaterial, setDialogOpen, setStep } = useAuthForm();
-    const { onConfirmEmailOtp } = useAuthSignIn();
+    const { crossmintAuth } = useCrossmintAuth();
+    const { appearance, setDialogOpen, setStep } = useAuthForm();
 
     const [token, setToken] = useState("");
     const [hasError, setHasError] = useState(false);
@@ -22,17 +22,13 @@ export function EmailOTPInput({
     const handleOnSubmit = async () => {
         setLoading(true);
         try {
-            const oneTimeSecret = await onConfirmEmailOtp(
+            const oneTimeSecret = await crossmintAuth?.confirmEmailOtp(
                 otpEmailData?.email ?? "",
                 otpEmailData?.emailId ?? "",
-                token,
-                {
-                    baseUrl,
-                    apiKey,
-                }
+                token
             );
 
-            await fetchAuthMaterial(oneTimeSecret as string);
+            await crossmintAuth?.handleRefreshToken(oneTimeSecret as string);
             setDialogOpen(false);
             setStep("initial");
         } catch (e) {

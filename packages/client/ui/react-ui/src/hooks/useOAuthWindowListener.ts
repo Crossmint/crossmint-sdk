@@ -1,18 +1,12 @@
 import type { OAuthProvider } from "@crossmint/common-sdk-auth";
 import { ChildWindow, PopupWindow } from "@crossmint/client-sdk-window";
-import type { AuthMaterialWithUser } from "@crossmint/common-sdk-auth";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
+import { useCrossmintAuth } from "./useCrossmintAuth";
 
-export const useOAuthWindowListener = (
-    provider: OAuthProvider,
-    options: {
-        apiKey: string;
-        baseUrl: string;
-        fetchAuthMaterial: (refreshToken: string) => Promise<AuthMaterialWithUser>;
-    }
-) => {
+export const useOAuthWindowListener = (provider: OAuthProvider) => {
+    const { crossmintAuth } = useCrossmintAuth();
     const { oauthUrlMap } = useAuthForm();
     const [isLoading, setIsLoading] = useState(false);
     const childRef = useRef<ChildWindow<IncomingEvents, OutgoingEvents> | null>(null);
@@ -45,7 +39,7 @@ export const useOAuthWindowListener = (
         });
 
         const handleAuthMaterial = async (data: { oneTimeSecret: string }) => {
-            await options.fetchAuthMaterial(data.oneTimeSecret);
+            await crossmintAuth?.handleRefreshToken(data.oneTimeSecret);
             childRef.current?.off("authMaterialFromPopupCallback");
             popup.window.close();
             setIsLoading(false);

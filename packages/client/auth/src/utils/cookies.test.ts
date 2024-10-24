@@ -1,9 +1,7 @@
-import { beforeEach, describe, expect, test } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
+import { deleteCookie, getCookie, setCookie } from "./cookies";
 
-import { waitForSettledState } from "../testUtils";
-import { deleteCookie, getCookie, setCookie } from "./authCookies";
-
-describe("authCookies", () => {
+describe("cookies", () => {
     beforeEach(() => {
         // Clear all cookies before each test
         document.cookie.split(";").forEach((cookie) => {
@@ -13,25 +11,25 @@ describe("authCookies", () => {
         });
     });
 
-    test("should return undefined for non-existent cookie", () => {
+    it("should return undefined for non-existent cookie", () => {
         expect(getCookie("non-existent")).toBeUndefined();
     });
 
-    test("should return the correct value for an existing cookie", async () => {
+    it("should return the correct value for an existing cookie", async () => {
         document.cookie = "test-cookie=test-value";
         await waitForSettledState(() => {
             expect(getCookie("test-cookie")).toBe("test-value");
         });
     });
 
-    test("should set a cookie without expiration", async () => {
+    it("should set a cookie without expiration", async () => {
         setCookie("test-cookie", "test-value");
         await waitForSettledState(() => {
             expect(document.cookie).toContain("test-cookie=test-value");
         });
     });
 
-    test("should delete an existing cookie", async () => {
+    it("should delete an existing cookie", async () => {
         document.cookie = "test-cookie=test-value";
         deleteCookie("test-cookie");
         await waitForSettledState(() => {
@@ -39,3 +37,8 @@ describe("authCookies", () => {
         });
     });
 });
+
+const waitForSettledState = async (callback: () => void) => {
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    callback();
+};

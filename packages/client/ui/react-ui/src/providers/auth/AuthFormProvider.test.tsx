@@ -1,17 +1,16 @@
 import { render, fireEvent, waitFor } from "@testing-library/react";
+import { beforeEach } from "vitest";
 import { AuthFormProvider, useAuthForm } from "./AuthFormProvider";
 import { describe, expect, test, vi } from "vitest";
 import type { LoginMethod } from "..";
 
 // Mock component to test the AuthFormProvider
 function TestComponent() {
-    const { step, apiKey, baseUrl, loginMethods, setStep, setDialogOpen, oauthUrlMap, isLoadingOauthUrlMap } =
-        useAuthForm();
+    const { step, baseUrl, loginMethods, setStep, setDialogOpen, oauthUrlMap, isLoadingOauthUrlMap } = useAuthForm();
 
     return (
         <div>
             <div data-testid="step">{step}</div>
-            <div data-testid="api-key">{apiKey}</div>
             <div data-testid="base-url">{baseUrl}</div>
             <div data-testid="login-methods">{JSON.stringify(loginMethods)}</div>
             <button onClick={() => setStep("otp")} data-testid="set-step">
@@ -27,11 +26,8 @@ function TestComponent() {
 }
 
 describe("AuthFormProvider", () => {
-    const mockFetchAuthMaterial = vi.fn().mockResolvedValue({});
     const mockInitialState = {
-        apiKey: "test-api-key",
         baseUrl: "https://api.example.com",
-        fetchAuthMaterial: mockFetchAuthMaterial,
         loginMethods: ["email", "google"] as LoginMethod[],
         setDialogOpen: vi.fn(),
     };
@@ -52,7 +48,6 @@ describe("AuthFormProvider", () => {
         );
 
         expect(getByTestId("step").textContent).toBe("initial");
-        expect(getByTestId("api-key").textContent).toBe("test-api-key");
         expect(getByTestId("base-url").textContent).toBe("https://api.example.com");
         expect(getByTestId("login-methods").textContent).toBe('["email","google"]');
 
