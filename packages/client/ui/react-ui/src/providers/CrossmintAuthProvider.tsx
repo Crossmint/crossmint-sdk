@@ -1,20 +1,20 @@
 import { type ReactNode, createContext, useEffect, useMemo, useState } from "react";
-import { createPortal } from "react-dom";
 
 import { CrossmintAuth, getCookie } from "@crossmint/client-sdk-auth";
 import type { EVMSmartWalletChain } from "@crossmint/client-sdk-smart-wallet";
 import { type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
 import { SESSION_PREFIX, type SDKExternalUser } from "@crossmint/common-sdk-auth";
 
-import AuthModal from "../components/auth/AuthModal";
+import AuthFormDialog from "../components/auth/AuthFormDialog";
 import { useCrossmint, useWallet } from "../hooks";
 import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
+import { AuthFormProvider } from "./auth/AuthFormProvider";
 
 export type CrossmintAuthWalletConfig = {
     defaultChain: EVMSmartWalletChain;
     createOnLogin: "all-users" | "off";
     type: "evm-smart-wallet";
-    showWalletModals?: boolean;
+    showPasskeyHelpers?: boolean;
 };
 
 export type LoginMethod = "email" | "google" | "farcaster";
@@ -76,7 +76,7 @@ export function CrossmintAuthProvider({
         []
     );
     const crossmintBaseUrl = validateApiKeyAndGetCrossmintBaseUrl(crossmint.apiKey);
-    const [modalOpen, setModalOpen] = useState(false);
+    const [dialogOpen, setDialogOpen] = useState(false);
 
     useEffect(() => {
         if (crossmint.jwt == null) {
@@ -90,7 +90,7 @@ export function CrossmintAuthProvider({
             return;
         }
 
-        setModalOpen(false);
+        setDialogOpen(false);
     }, [crossmint.jwt]);
 
     const login = () => {
@@ -99,14 +99,14 @@ export function CrossmintAuthProvider({
             return;
         }
 
-        setModalOpen(true);
+        setDialogOpen(true);
     };
 
     const getAuthStatus = (): AuthStatus => {
         if (crossmint.jwt != null) {
             return "logged-in";
         }
-        if (modalOpen) {
+        if (dialogOpen) {
             return "in-progress";
         }
         return "logged-out";
@@ -136,25 +136,24 @@ export function CrossmintAuthProvider({
         >
             <CrossmintWalletProvider
                 defaultChain={embeddedWallets.defaultChain}
-                showWalletModals={embeddedWallets.showWalletModals}
+                showPasskeyHelpers={embeddedWallets.showPasskeyHelpers}
                 appearance={appearance}
             >
-                <WalletManager embeddedWallets={embeddedWallets} accessToken={crossmint.jwt}>
-                    {children}
-                </WalletManager>
-                {modalOpen
-                    ? createPortal(
-                          <AuthModal
-                              baseUrl={crossmintBaseUrl}
-                              setModalOpen={setModalOpen}
-                              apiKey={crossmint.apiKey}
-                              appearance={appearance}
-                              loginMethods={loginMethods}
-                          />,
+                <AuthFormProvider
+                    initialState={{
+                        apiKey: crossmint.apiKey,
+                        baseUrl: crossmintBaseUrl,
+                        appearance,
+                        setDialogOpen,
+                        loginMethods,
+                    }}
+                >
+                    <WalletManager embeddedWallets={embeddedWallets} accessToken={crossmint.jwt}>
+                        {children}
+                    </WalletManager>
 
-                          document.body
-                      )
-                    : null}
+                    <AuthFormDialog open={dialogOpen} />
+                </AuthFormProvider>
             </CrossmintWalletProvider>
         </AuthContext.Provider>
     );

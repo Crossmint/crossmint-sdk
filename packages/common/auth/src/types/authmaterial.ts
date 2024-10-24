@@ -30,3 +30,5 @@ interface RefreshToken {
     secret: string;
     expiresAt: string;
 }
+
+export type OAuthProvider = "google";

@@ -7,8 +7,8 @@ export const PoweredByLeaf = ({ color, size = "16" }: { color: string; size?: st
                 maskUnits="userSpaceOnUse"
                 x="0"
                 y="0"
-                width={size}
-                height={size}
+                width="16"
+                height="16"
             >
                 <mask id="path-1-inside-1_794_7000" fill="white">
                     <path
