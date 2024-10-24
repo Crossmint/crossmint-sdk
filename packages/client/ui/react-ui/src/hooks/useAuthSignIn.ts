@@ -5,6 +5,8 @@ export function useAuthSignIn() {
         onEmailSignIn,
         onConfirmEmailOtp,
         onFarcasterSignIn,
+        onSmartWalletSignIn,
+        onSmartWalletAuthenticate,
     };
 }
 
@@ -113,5 +115,79 @@ async function onFarcasterSignIn(data: UseSignInData, options: { baseUrl: string
     } catch (err) {
         console.error("Error signing in via farcaster ", err);
         throw new Error("Error signing in via farcaster " + err);
+    }
+}
+
+async function onSmartWalletSignIn(address: string, options: { baseUrl: string; apiKey: string }) {
+    try {
+        const queryParams = new URLSearchParams({
+            signinAuthenticationMethod: "evm",
+            apiKey: options.apiKey,
+        });
+        const response = await fetch(
+            `${options.baseUrl}api/2024-09-26/session/sdk/auth/crypto_wallets/authenticate/start?${queryParams}`,
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": options.apiKey,
+                },
+                body: JSON.stringify({
+                    walletAddress: address,
+                }),
+                credentials: "same-origin",
+                cache: "no-cache",
+                mode: "cors",
+                method: "POST",
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error("Failed to sign in via smart wallet. Please try again or contact support.");
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error("Error fetching OAuth URL:", error);
+        throw new Error("Failed to get OAuth URL. Please try again or contact support.");
+    }
+}
+
+async function onSmartWalletAuthenticate(
+    address: string,
+    signature: string,
+    options: { baseUrl: string; apiKey: string }
+) {
+    try {
+        const queryParams = new URLSearchParams({
+            signinAuthenticationMethod: "evm",
+            apiKey: options.apiKey,
+            callbackUrl: `${options.baseUrl}sdk/2024-09-26/auth/callback?isnt-used-anymore-please-remove`,
+        });
+        const response = await fetch(
+            `${options.baseUrl}api/2024-09-26/session/sdk/auth/crypto_wallets/authenticate?${queryParams}`,
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": options.apiKey,
+                },
+                body: JSON.stringify({
+                    walletAddress: address,
+                    signature,
+                }),
+                credentials: "same-origin",
+                cache: "no-cache",
+                mode: "cors",
+                method: "POST",
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error("Failed to sign in via smart wallet. Please try again or contact support.");
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.log("Error fetching OAuth URL:", error);
+        throw new Error("Failed to get OAuth URL. Please try again or contact support.");
     }
 }

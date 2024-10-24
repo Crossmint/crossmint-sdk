@@ -23,7 +23,7 @@ export type CrossmintAuthWalletConfig = {
     showWalletModals?: boolean;
 };
 
-export type LoginMethod = "email" | "google" | "farcaster";
+export type LoginMethod = "email" | "google" | "farcaster" | "web3";
 
 export type CrossmintAuthProviderProps = {
     embeddedWallets?: CrossmintAuthWalletConfig;

@@ -3,7 +3,7 @@ import type { AuthMaterialWithUser, OAuthProvider } from "@crossmint/common-sdk-
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import type { LoginMethod } from "../CrossmintAuthProvider";
 
-type AuthStep = "initial" | "walletMethod" | "otp" | "qrCode";
+type AuthStep = "initial" | "web3Method" | "otp" | "qrCode";
 type OAuthUrlMap = Record<OAuthProvider, string>;
 const initialOAuthUrlMap: OAuthUrlMap = {
     google: "",
@@ -75,6 +75,14 @@ export const AuthFormProvider = ({
         preFetchAndSetOauthUrl();
     }, [loginMethods, apiKey, baseUrl]);
 
+    const handleToggleDialog = (open: boolean) => {
+        initialState.setDialogOpen?.(open);
+        if (!open) {
+            // Delay to allow the close transition to complete before resetting the step
+            setTimeout(() => setStep("initial"), 250);
+        }
+    };
+
     const value: AuthFormContextType = {
         step,
         apiKey,
@@ -84,7 +92,7 @@ export const AuthFormProvider = ({
         loginMethods,
         oauthUrlMap,
         isLoadingOauthUrlMap,
-        setDialogOpen: initialState.setDialogOpen ?? (() => {}),
+        setDialogOpen: handleToggleDialog,
         setStep,
     };
 

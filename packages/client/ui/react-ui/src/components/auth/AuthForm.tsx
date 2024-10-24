@@ -6,6 +6,7 @@ import { FarcasterSignIn } from "./methods/farcaster/FarcasterSignIn";
 import { PoweredByCrossmint } from "../common/PoweredByCrossmint";
 import { FarcasterProvider } from "../../providers/auth/FarcasterProvider";
 import { classNames } from "@/utils/classNames";
+import { Web3AuthFlow } from "./methods/web3/Web3AuthFlow";
 
 export function AuthForm({ className }: { className?: string }) {
     const { step, appearance, baseUrl, loginMethods } = useAuthForm();
@@ -35,6 +36,7 @@ export function AuthForm({ className }: { className?: string }) {
                 </>
             ) : null}
 
+            {loginMethods.includes("web3") ? <Web3AuthFlow /> : null}
             {loginMethods.includes("google") ? <GoogleSignIn /> : null}
             {loginMethods.includes("farcaster") ? (
                 <FarcasterProvider baseUrl={baseUrl}>
