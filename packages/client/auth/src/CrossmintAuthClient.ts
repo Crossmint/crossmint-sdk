@@ -1,7 +1,9 @@
+import type { UseSignInData } from "@farcaster/auth-kit";
 import {
     type AuthMaterialWithUser,
     CROSSMINT_API_VERSION,
     CrossmintAuth,
+    type OAuthProvider,
     REFRESH_TOKEN_PREFIX,
     SESSION_PREFIX,
 } from "@crossmint/common-sdk-auth";
@@ -22,6 +24,11 @@ export class CrossmintAuthClient extends CrossmintAuth {
 
     public static from(crossmint: Crossmint, callbacks?: CrossmintAuthClientCallbacks): CrossmintAuthClient {
         return new CrossmintAuthClient(crossmint, callbacks);
+    }
+
+    public getSession() {
+        this.handleRefreshToken();
+        return getCookie(SESSION_PREFIX);
     }
 
     public async getUser() {
@@ -48,11 +55,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
 
     public async handleRefreshToken(refreshTokenSecret?: string): Promise<void> {
         const refreshToken = refreshTokenSecret ?? getCookie(REFRESH_TOKEN_PREFIX);
-        if (!refreshToken) {
-            return;
-        }
-
-        if (this.isRefreshing) {
+        if (refreshToken == null || this.isRefreshing) {
             return;
         }
 
@@ -69,6 +72,84 @@ export class CrossmintAuthClient extends CrossmintAuth {
         } finally {
             this.isRefreshing = false;
         }
+    }
+
+    public async getOAuthUrl(provider: OAuthProvider) {
+        const result = await this.apiClient.get(
+            `api/${CROSSMINT_API_VERSION}/session/sdk/auth/social/${provider}/start`,
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+
+        const data = (await result.json()) as { oauthUrl: string };
+        return data.oauthUrl;
+    }
+
+    public async sendEmailOtp(email: string) {
+        const result = await this.apiClient.post(`api/${CROSSMINT_API_VERSION}/session/sdk/auth/otps/send`, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email }),
+        });
+
+        return await result.json();
+    }
+
+    public async confirmEmailOtp(email: string, emailId: string, token: string) {
+        const queryParams = new URLSearchParams({
+            email,
+            signinAuthenticationMethod: "email",
+            token,
+            locale: "en",
+            state: emailId,
+            callbackUrl: `${this.apiClient.baseUrl}/api/${CROSSMINT_API_VERSION}/session/sdk/auth/we-dont-actually-use-this-anymore`,
+        });
+        const result = await this.apiClient.post(
+            `api/${CROSSMINT_API_VERSION}/session/sdk/auth/authenticate?${queryParams}`,
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+
+        const resData = await result.json();
+        const callbackUrl = new URL(resData.callbackUrl);
+
+        // parse the oneTimeSecret from the callbackUrl response
+        return callbackUrl.searchParams.get("oneTimeSecret");
+    }
+
+    public async signInWithFarcaster(data: UseSignInData) {
+        const queryParams = new URLSearchParams({
+            signinAuthenticationMethod: "farcaster",
+            callbackUrl: `${this.apiClient.baseUrl}/api/${CROSSMINT_API_VERSION}/session/sdk/auth/callback?isPopup=false`,
+        });
+
+        const result = await this.apiClient.post(
+            `api/${CROSSMINT_API_VERSION}/session/sdk/auth/authenticate?${queryParams}`,
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    ...data,
+                    domain: data.signatureParams.domain,
+                    redirect: true,
+                    callbackUrl: `${this.apiClient.baseUrl}/api/${CROSSMINT_API_VERSION}/session/sdk/auth/callback?isPopup=false`,
+                }),
+            }
+        );
+
+        const resData = await result.json();
+        const callbackUrl = new URL(resData.callbackUrl);
+
+        // parse the oneTimeSecret from the callbackUrl response
+        return callbackUrl.searchParams.get("oneTimeSecret");
     }
 
     private scheduleNextRefresh(jwt: string): void {

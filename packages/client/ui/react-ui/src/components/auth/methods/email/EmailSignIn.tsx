@@ -3,14 +3,14 @@ import { type FormEvent, useState } from "react";
 import { Spinner } from "@/components/common/Spinner";
 import { classNames } from "@/utils/classNames";
 import { AlertIcon } from "../../../../icons/alert";
-import { useAuthSignIn } from "@/hooks/useAuthSignIn";
 import { isEmailValid } from "@crossmint/common-sdk-auth";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import type { OtpEmailPayload } from "@/types/auth";
+import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
 
 export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEmailPayload) => void }) {
-    const { baseUrl, apiKey, appearance, setStep } = useAuthForm();
-    const { onEmailSignIn } = useAuthSignIn();
+    const { crossmintAuth } = useCrossmintAuth();
+    const { appearance, setStep } = useAuthForm();
 
     const [emailInput, setEmailInput] = useState("");
     const [emailError, setEmailError] = useState("");
@@ -28,7 +28,7 @@ export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEm
 
         try {
             const trimmedEmailInput = emailInput.trim().toLowerCase();
-            const emailSignInRes = (await onEmailSignIn(trimmedEmailInput, { baseUrl, apiKey })) as { emailId: string };
+            const emailSignInRes = (await crossmintAuth?.sendEmailOtp(trimmedEmailInput)) as { emailId: string };
 
             setOtpEmailData({ email: trimmedEmailInput, emailId: emailSignInRes.emailId });
             setStep("otp");

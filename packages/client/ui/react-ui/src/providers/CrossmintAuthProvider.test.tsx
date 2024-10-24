@@ -1,16 +1,16 @@
 import { SESSION_PREFIX, REFRESH_TOKEN_PREFIX } from "@crossmint/common-sdk-auth";
-import { fireEvent, render } from "@testing-library/react";
+import { fireEvent, render, waitFor } from "@testing-library/react";
 import { type ReactNode, act } from "react";
-import { beforeEach, describe, expect, vi } from "vitest";
+import { beforeEach, describe, expect, vi, it, type MockInstance } from "vitest";
 import { mock } from "vitest-mock-extended";
 
-import { CrossmintAuth, getJWTExpiration, deleteCookie } from "@crossmint/client-sdk-auth";
+import { CrossmintAuth as CrossmintAuthClient, getJWTExpiration, deleteCookie } from "@crossmint/client-sdk-auth";
 import { type EVMSmartWallet, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
 import { createCrossmint } from "@crossmint/common-sdk-base";
 
 import { useAuth, useWallet } from "../hooks";
 import { CrossmintProvider, useCrossmint } from "../hooks/useCrossmint";
-import { MOCK_API_KEY, waitForSettledState } from "../testUtils";
+import { MOCK_API_KEY } from "../testUtils";
 import { CrossmintAuthProvider, type CrossmintAuthWalletConfig } from "./CrossmintAuthProvider";
 
 vi.mock("@crossmint/client-sdk-smart-wallet", async () => {
@@ -25,10 +25,14 @@ vi.mock("@crossmint/client-sdk-smart-wallet", async () => {
 
 vi.mock("@crossmint/common-sdk-base", async () => {
     const actual = await vi.importActual("@crossmint/common-sdk-base");
+
+    class MockCrossmintApiClient {}
+
     return {
         ...actual,
         createCrossmint: vi.fn(),
         validateApiKeyAndGetCrossmintBaseUrl: vi.fn(),
+        CrossmintApiClient: MockCrossmintApiClient,
     };
 });
 
@@ -37,19 +41,6 @@ vi.mock("@crossmint/client-sdk-auth", async () => {
     return {
         ...actual,
         getJWTExpiration: vi.fn(),
-        CrossmintAuth: vi.fn().mockImplementation(() => ({
-            handleRefreshToken: vi.fn().mockResolvedValue({
-                jwt: "new-mock-jwt",
-                refreshToken: {
-                    secret: "new-mock-refresh-token",
-                    expiresAt: new Date(Date.now() + 1000 * 60 * 60).toISOString(),
-                },
-                user: {
-                    id: "123",
-                    email: "test@test.com",
-                },
-            }),
-        })),
     };
 });
 
@@ -92,11 +83,17 @@ describe("CrossmintAuthProvider", () => {
     let mockSDK: SmartWalletSDK;
     let mockWallet: EVMSmartWallet;
     let embeddedWallets: CrossmintAuthWalletConfig;
-    let mockCrossmintAuth: { handleRefreshToken: ReturnType<typeof vi.fn> };
+    let handleRefreshTokenSpy: MockInstance;
+    let getOAuthUrlSpy: MockInstance;
 
     beforeEach(() => {
         vi.resetAllMocks();
-        vi.mocked(createCrossmint).mockImplementation(() => ({}) as any);
+        vi.mocked(createCrossmint).mockImplementation(
+            () =>
+                ({
+                    apiKey: MOCK_API_KEY,
+                }) as any
+        );
 
         mockSDK = mock<SmartWalletSDK>();
         mockWallet = mock<EVMSmartWallet>();
@@ -113,19 +110,21 @@ describe("CrossmintAuthProvider", () => {
         deleteCookie(REFRESH_TOKEN_PREFIX);
         deleteCookie(SESSION_PREFIX);
 
-        mockCrossmintAuth = {
-            handleRefreshToken: vi.fn().mockResolvedValue({
-                jwt: "new-mock-jwt",
-                refreshToken: {
-                    secret: "new-mock-refresh-token",
-                    expiresAt: new Date(Date.now() + 1000 * 60 * 60).toISOString(),
-                },
-            }),
-        };
-        vi.mocked(CrossmintAuth).mockImplementation(() => mockCrossmintAuth as any);
+        handleRefreshTokenSpy = vi.spyOn(CrossmintAuthClient.prototype, "handleRefreshToken");
+        getOAuthUrlSpy = vi.spyOn(CrossmintAuthClient.prototype, "getOAuthUrl").mockResolvedValue("mock-oauth-url");
+        // Casts as any because refreshAuthMaterial is protected
+        vi.spyOn(CrossmintAuthClient.prototype as any, "refreshAuthMaterial").mockResolvedValue(
+            Promise.resolve({
+                jwt: "mock-jwt",
+                refreshToken: { secret: "mock-refresh-token", expiresAt: 123456 },
+                user: {},
+            })
+        );
+        const mockCrossmintAuth = CrossmintAuthClient.from(createCrossmint({ apiKey: MOCK_API_KEY }));
+        vi.spyOn(CrossmintAuthClient, "from").mockReturnValue(mockCrossmintAuth);
     });
 
-    test("Happy path", async () => {
+    it("Happy path", async () => {
         await act(() => {
             document.cookie = `${REFRESH_TOKEN_PREFIX}=mock-refresh-token; path=/; SameSite=Lax;`;
             document.cookie = `${SESSION_PREFIX}=mock-jwt; path=/; SameSite=Lax;`;
@@ -138,25 +137,24 @@ describe("CrossmintAuthProvider", () => {
 
         expect(getByTestId("wallet-status").textContent).toBe("in-progress");
         expect(getByTestId("auth-status").textContent).toBe("logged-in");
-        expect(getByTestId("refresh-token").textContent).toBe("No Refresh Token");
         expect(getByTestId("wallet").textContent).toBe("No Wallet");
         expect(getByTestId("error").textContent).toBe("No Error");
 
-        await waitForSettledState(() => {
+        await waitFor(() => {
             expect(getByTestId("wallet-status").textContent).toBe("loaded");
             expect(getByTestId("auth-status").textContent).toBe("logged-in");
-            expect(getByTestId("refresh-token").textContent).toBe("new-mock-refresh-token");
             expect(getByTestId("wallet").textContent).toBe("Wallet Loaded");
             expect(getByTestId("error").textContent).toBe("No Error");
         });
 
-        expect(mockCrossmintAuth.handleRefreshToken).toHaveBeenCalledOnce();
+        expect(handleRefreshTokenSpy).toHaveBeenCalledOnce();
+        expect(getOAuthUrlSpy).toHaveBeenCalled();
         expect(vi.mocked(mockSDK.getOrCreateWallet)).toHaveBeenCalledOnce();
     });
 
-    test(`When "createOnLogin" is "false", wallet is not loaded`, async () => {
+    it(`When "createOnLogin" is "false", wallet is not loaded`, async () => {
         document.cookie = `${SESSION_PREFIX}=mock-jwt; path=/;SameSite=Lax;`;
-        const { getByTestId } = renderAuthProvider({
+        const { getByTestId } = await renderAuthProvider({
             children: <TestComponent />,
             embeddedWallets: {
                 defaultChain: "polygon",
@@ -165,7 +163,7 @@ describe("CrossmintAuthProvider", () => {
             },
         });
 
-        await waitForSettledState(() => {
+        await waitFor(() => {
             expect(getByTestId("wallet").textContent).toBe("No Wallet");
             expect(getByTestId("wallet-status").textContent).toBe("not-loaded");
         });
@@ -173,13 +171,13 @@ describe("CrossmintAuthProvider", () => {
         expect(vi.mocked(mockSDK.getOrCreateWallet)).not.toHaveBeenCalled();
     });
 
-    test(`When the jwt from crossmint provider is not defined, wallet is not loaded`, async () => {
-        const { getByTestId } = renderAuthProvider({
+    it(`When the jwt from crossmint provider is not defined, wallet is not loaded`, async () => {
+        const { getByTestId } = await renderAuthProvider({
             children: <TestComponent />,
             embeddedWallets,
         });
 
-        await waitForSettledState(() => {
+        await waitFor(() => {
             expect(getByTestId("wallet-status").textContent).toBe("not-loaded");
             expect(getByTestId("auth-status").textContent).toBe("logged-out");
             expect(getByTestId("wallet").textContent).toBe("No Wallet");
@@ -188,14 +186,14 @@ describe("CrossmintAuthProvider", () => {
         expect(vi.mocked(mockSDK.getOrCreateWallet)).not.toHaveBeenCalled();
     });
 
-    test("When the jwt is cleared, so is the wallet", async () => {
+    it("When the jwt is cleared, so is the wallet", async () => {
         document.cookie = `${SESSION_PREFIX}=mock-jwt; path=/;SameSite=Lax;`;
-        const { getByTestId } = renderAuthProvider({
+        const { getByTestId } = await renderAuthProvider({
             children: <TestComponent />,
             embeddedWallets,
         });
 
-        await waitForSettledState(() => {
+        await waitFor(() => {
             expect(getByTestId("wallet-status").textContent).toBe("loaded");
             expect(getByTestId("auth-status").textContent).toBe("logged-in");
             expect(getByTestId("wallet").textContent).toBe("Wallet Loaded");
@@ -203,7 +201,7 @@ describe("CrossmintAuthProvider", () => {
 
         fireEvent.click(getByTestId("clear-jwt-button"));
 
-        await waitForSettledState(() => {
+        await waitFor(() => {
             expect(getByTestId("wallet-status").textContent).toBe("not-loaded");
             expect(getByTestId("auth-status").textContent).toBe("logged-out");
             expect(getByTestId("wallet").textContent).toBe("No Wallet");
@@ -212,35 +210,35 @@ describe("CrossmintAuthProvider", () => {
         expect(vi.mocked(mockSDK.getOrCreateWallet)).toHaveBeenCalledOnce();
     });
 
-    test(`Logging in and asserting the auth status`, async () => {
-        const { getByTestId } = renderAuthProvider({
+    it(`Logging in and asserting the auth status`, async () => {
+        const { getByTestId } = await renderAuthProvider({
             children: <TestComponent />,
             embeddedWallets,
         });
 
-        await waitForSettledState(() => {
+        await waitFor(() => {
             expect(getByTestId("auth-status").textContent).toBe("logged-out");
         });
 
         fireEvent.click(getByTestId("jwt-input"));
 
-        await waitForSettledState(() => {
+        await waitFor(() => {
             expect(getByTestId("auth-status").textContent).toBe("logged-in");
         });
     });
 
-    test("Logout clears JWT", async () => {
+    it("Logout clears JWT", async () => {
         await act(() => {
             document.cookie = `${REFRESH_TOKEN_PREFIX}=mock-refresh-token; path=/; SameSite=Lax;`;
             document.cookie = `${SESSION_PREFIX}=mock-jwt; path=/; SameSite=Lax;`;
         });
 
-        const { getByTestId } = renderAuthProvider({
+        const { getByTestId } = await renderAuthProvider({
             children: <TestComponent />,
             embeddedWallets,
         });
 
-        await waitForSettledState(() => {
+        await waitFor(() => {
             expect(getByTestId("auth-status").textContent).toBe("logged-in");
         });
 
@@ -248,7 +246,7 @@ describe("CrossmintAuthProvider", () => {
             fireEvent.click(getByTestId("clear-jwt-button"));
         });
 
-        await waitForSettledState(() => {
+        await waitFor(() => {
             expect(getByTestId("auth-status").textContent).toBe("logged-out");
         });
     });

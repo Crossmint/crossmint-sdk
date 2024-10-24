@@ -8,7 +8,7 @@ import { FarcasterProvider } from "../../providers/auth/FarcasterProvider";
 import { classNames } from "@/utils/classNames";
 
 export function AuthForm({ className }: { className?: string }) {
-    const { step, appearance, baseUrl, loginMethods } = useAuthForm();
+    const { step, appearance, loginMethods, baseUrl } = useAuthForm();
     return (
         <div className={classNames("flex flex-col gap-4", className)}>
             {step === "initial" ? (
