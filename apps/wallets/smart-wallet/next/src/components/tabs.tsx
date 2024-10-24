@@ -10,7 +10,6 @@ const TabsList = React.forwardRef<
     React.ElementRef<typeof TabsPrimitive.List>,
     React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
 >(({ className, ...props }, ref) => {
-    console.log({ props });
     return <TabsPrimitive.List ref={ref} className={cn("h-14", className)} {...props} />;
 });
 TabsList.displayName = TabsPrimitive.List.displayName;

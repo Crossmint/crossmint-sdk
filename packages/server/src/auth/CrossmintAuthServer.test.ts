@@ -36,12 +36,6 @@ describe("CrossmintAuthServer", () => {
         });
     });
 
-    describe("getJwksUri", () => {
-        it("should return the correct JWKS URI", () => {
-            expect(crossmintAuthServer.getJwksUri()).toBe("https://api.crossmint.com/.well-known/jwks.json");
-        });
-    });
-
     describe("verifyCrossmintJwt", () => {
         it("should call verifyCrossmintJwt with correct parameters", async () => {
             const mockToken = "mock.jwt.token";

@@ -30,11 +30,10 @@ describe("CrossmintProvider", () => {
         vi.mocked(createCrossmint).mockImplementation(() => ({
             apiKey: MOCK_API_KEY,
             jwt: "",
-            refreshToken: "",
         }));
     });
 
-    it("provides initial JWT and refreshToken values", () => {
+    it("provides initial JWT value", () => {
         const TestComponent = () => {
             const { crossmint } = useCrossmint();
             return (
@@ -45,7 +44,6 @@ describe("CrossmintProvider", () => {
         };
         const { getByTestId } = renderCrossmintProvider({ children: <TestComponent /> });
         expect(getByTestId("jwt").textContent).toBe("");
-        expect(getByTestId("refreshToken").textContent).toBe("");
     });
 
     it("updates JWT using setJwt", () => {
@@ -63,7 +61,7 @@ describe("CrossmintProvider", () => {
         expect(getByTestId("jwt").textContent).toBe("new_jwt");
     });
 
-    it("updates JWT and refreshToken using WalletSDK", () => {
+    it("updates JWT using WalletSDK", () => {
         const TestComponent = () => {
             const { crossmint } = useCrossmint();
             useEffect(() => {
@@ -78,7 +76,6 @@ describe("CrossmintProvider", () => {
         };
         const { getByTestId } = renderCrossmintProvider({ children: <TestComponent /> });
         expect(getByTestId("jwt").textContent).toBe("sdk_jwt");
-        expect(getByTestId("refreshToken").textContent).toBe("sdk_refresh_token");
     });
 
     it("triggers re-render on JWT change", () => {
