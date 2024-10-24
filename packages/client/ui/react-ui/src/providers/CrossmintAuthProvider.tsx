@@ -20,7 +20,7 @@ export type CrossmintAuthWalletConfig = {
     defaultChain: EVMSmartWalletChain;
     createOnLogin: "all-users" | "off";
     type: "evm-smart-wallet";
-    showWalletModals?: boolean;
+    showPasskeyHelpers?: boolean;
 };
 
 export type LoginMethod = "email" | "google" | "farcaster";
@@ -153,7 +153,7 @@ export function CrossmintAuthProvider({
         >
             <CrossmintWalletProvider
                 defaultChain={embeddedWallets.defaultChain}
-                showWalletModals={embeddedWallets.showWalletModals}
+                showPasskeyHelpers={embeddedWallets.showPasskeyHelpers}
                 appearance={appearance}
             >
                 <AuthFormProvider
