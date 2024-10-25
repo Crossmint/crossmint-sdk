@@ -1,13 +1,11 @@
 import { useCrossmint } from "@/hooks";
 import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
 import { crossmintHostedCheckoutV3Service, type CrossmintHostedCheckoutV3Props } from "@crossmint/client-sdk-base";
-import { type MouseEvent, useState, type JSX } from "react";
+import type { MouseEvent, JSX } from "react";
 
 export type CrossmintHostedCheckoutV3ReactProps = CrossmintHostedCheckoutV3Props & JSX.IntrinsicElements["button"];
 
 export function CrossmintHostedCheckout_Alpha(props: CrossmintHostedCheckoutV3ReactProps) {
-    const [showOverlay, setShowOverlay] = useState(false);
-
     const { crossmint } = useCrossmint();
     const apiClient = createCrossmintApiClient(crossmint);
 
