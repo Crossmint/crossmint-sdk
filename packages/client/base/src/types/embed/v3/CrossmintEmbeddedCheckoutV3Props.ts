@@ -139,6 +139,7 @@ export type EmbeddedCheckoutV3AppearanceRules = {
 };
 
 export type EmbeddedCheckoutV3Payment = {
+    receiptEmail?: string;
     fiat: EmbeddedCheckoutV3FiatPayment;
     crypto: EmbeddedCheckoutV3CryptoPayment;
     defaultMethod?: "fiat" | "crypto";

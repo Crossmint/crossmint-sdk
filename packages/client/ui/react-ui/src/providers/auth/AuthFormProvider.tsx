@@ -109,7 +109,12 @@ async function getOAuthUrl(provider: OAuthProvider, options: { baseUrl: string; 
     try {
         const queryParams = new URLSearchParams({ apiKey: options.apiKey });
         const response = await fetch(
-            `${options.baseUrl}api/2024-09-26/session/sdk/auth/social/${provider}/start?${queryParams}`
+            `${options.baseUrl}api/2024-09-26/session/sdk/auth/social/${provider}/start?${queryParams}`,
+            {
+                headers: {
+                    "x-api-key": options.apiKey,
+                },
+            }
         );
 
         if (!response.ok) {
