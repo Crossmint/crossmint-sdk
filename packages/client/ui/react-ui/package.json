@@ -15,7 +15,7 @@
     "types": "./dist/index.d.ts",
     "files": ["dist", "src", "LICENSE"],
     "scripts": {
-        "build": "tsup",
+        "build": "NODE_OPTIONS='--max-old-space-size=8192' tsup",
         "dev": "tsup --watch",
         "test": "vitest run"
     },

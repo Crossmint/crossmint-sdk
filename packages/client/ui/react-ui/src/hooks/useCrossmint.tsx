@@ -1,6 +1,7 @@
 import { type ReactNode, createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 
 import { type Crossmint, createCrossmint } from "@crossmint/common-sdk-base";
+import { TwindProvider } from "@/providers/TwindProvider";
 
 export interface CrossmintContext {
     crossmint: Crossmint;
@@ -56,7 +57,11 @@ export function CrossmintProvider({
         [setJwt, setRefreshToken, version]
     );
 
-    return <CrossmintContext.Provider value={value}>{children}</CrossmintContext.Provider>;
+    return (
+        <CrossmintContext.Provider value={value}>
+            <TwindProvider>{children}</TwindProvider>
+        </CrossmintContext.Provider>
+    );
 }
 
 export function useCrossmint(missingContextMessage?: string) {
