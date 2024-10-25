@@ -24,7 +24,7 @@ export function Web3SignIn() {
                 // @ts-expect-error --tw-ring-color is not recognized by typescript but gets picked up by tailwind
                 "--tw-ring-color": appearance?.colors?.accent ?? "#1A73E8",
             }}
-            onClick={() => setStep("web3Method")}
+            onClick={() => setStep("web3")}
         >
             <WalletIcon
                 className="h-[21px] w-[21px] absolute left-[20px]"

@@ -2,8 +2,10 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import type { AuthMaterialWithUser, OAuthProvider } from "@crossmint/common-sdk-auth";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import type { LoginMethod } from "../CrossmintAuthProvider";
+import { WagmiAuthProvider } from "./web3/WagmiAuthProvider";
 
-type AuthStep = "initial" | "web3Method" | "otp" | "qrCode";
+type AuthStep = "initial" | "otp" | "qrCode" | "web3";
+
 type OAuthUrlMap = Record<OAuthProvider, string>;
 const initialOAuthUrlMap: OAuthUrlMap = {
     google: "",
@@ -44,7 +46,8 @@ export const useAuthForm = () => {
 export const AuthFormProvider = ({
     children,
     initialState,
-}: { children: ReactNode; initialState: ContextInitialStateProps }) => {
+    walletConnectProjectId,
+}: { children: ReactNode; initialState: ContextInitialStateProps; walletConnectProjectId?: string }) => {
     const [step, setStep] = useState<AuthStep>("initial");
     const [oauthUrlMap, setOauthUrlMap] = useState<OAuthUrlMap>(initialOAuthUrlMap);
     const [isLoadingOauthUrlMap, setIsLoadingOauthUrlMap] = useState(true);
@@ -96,7 +99,11 @@ export const AuthFormProvider = ({
         setStep,
     };
 
-    return <AuthFormContext.Provider value={value}>{children}</AuthFormContext.Provider>;
+    return (
+        <AuthFormContext.Provider value={value}>
+            <WagmiAuthProvider walletConnectProjectId={walletConnectProjectId}>{children}</WagmiAuthProvider>
+        </AuthFormContext.Provider>
+    );
 };
 
 async function getOAuthUrl(provider: OAuthProvider, options: { baseUrl: string; apiKey: string }) {
