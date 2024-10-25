@@ -1,5 +1,14 @@
 # @crossmint/client-sdk-nextjs-starter
 
+## 1.3.3
+
+### Patch Changes
+
+- 2c7561c: embed: add payment.receiptEmail
+- Updated dependencies [2c7561c]
+  - @crossmint/client-sdk-base@1.3.1
+  - @crossmint/client-sdk-react-ui@1.9.2
+
 ## 1.3.2
 
 ### Patch Changes
