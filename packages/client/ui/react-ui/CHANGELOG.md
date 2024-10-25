@@ -1,5 +1,12 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.9.1
+
+### Patch Changes
+
+- 92475fc: Send api key in header in oauth fetch
+- 10daae9: embed v3: dynamic.xyz tweak
+
 ## 1.9.0
 
 ### Minor Changes
