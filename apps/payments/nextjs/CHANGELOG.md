@@ -1,5 +1,14 @@
 # @crossmint/client-sdk-nextjs-starter
 
+## 1.3.2
+
+### Patch Changes
+
+- 10daae9: embed v3: dynamic.xyz tweak
+- Updated dependencies [92475fc]
+- Updated dependencies [10daae9]
+  - @crossmint/client-sdk-react-ui@1.9.1
+
 ## 1.3.1
 
 ### Patch Changes
