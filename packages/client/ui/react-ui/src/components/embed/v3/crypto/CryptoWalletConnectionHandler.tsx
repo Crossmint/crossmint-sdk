@@ -1,17 +1,25 @@
 import DynamicContextProviderWrapper from "@/components/dynamic-xyz/DynamicContextProviderWrapper";
 import type { EmbeddedCheckoutV3IFrameEmitter } from "@crossmint/client-sdk-base";
-import { type BlockchainIncludingTestnet, chainIdToBlockchain } from "@crossmint/common-sdk-base";
+import {
+    type APIKeyEnvironmentPrefix,
+    type BlockchainIncludingTestnet,
+    chainIdToBlockchain,
+} from "@crossmint/common-sdk-base";
 import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
 import { type HandleConnectedWallet, useDynamicContext } from "@dynamic-labs/sdk-react-core";
 import { SolanaWalletConnectors } from "@dynamic-labs/solana";
 import { useEffect } from "react";
 import { handleSendTransaction } from "./utils/handleSendTransaction";
 
-export function CryptoWalletConnectionHandler(props: { iframeClient: EmbeddedCheckoutV3IFrameEmitter | null }) {
-    const { iframeClient } = props;
+export function CryptoWalletConnectionHandler(props: {
+    iframeClient: EmbeddedCheckoutV3IFrameEmitter | null;
+    apiKeyEnvironment: APIKeyEnvironmentPrefix;
+}) {
+    const { iframeClient, apiKeyEnvironment } = props;
 
     return (
         <DynamicContextProviderWrapper
+            apiKeyEnvironment={apiKeyEnvironment}
             settings={{
                 walletConnectors: [EthereumWalletConnectors, SolanaWalletConnectors],
                 events: {

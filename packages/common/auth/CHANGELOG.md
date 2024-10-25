@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-auth
 
+## 0.2.2
+
+### Patch Changes
+
+- 2bb838a: added isEmailValid and OAuthProvider type
+
 ## 0.2.1
 
 ### Patch Changes
