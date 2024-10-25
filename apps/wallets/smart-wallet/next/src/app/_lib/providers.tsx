@@ -32,7 +32,6 @@ export function Providers({ children }: { children: ReactNode }) {
                         },
                     }}
                     loginMethods={["google", "email", "farcaster", "web3"]}
-                    walletConnectProjectId={process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ?? ""}
                 >
                     {children}
                 </CrossmintAuthProvider>

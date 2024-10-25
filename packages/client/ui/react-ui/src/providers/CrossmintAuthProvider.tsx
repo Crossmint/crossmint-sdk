@@ -30,7 +30,6 @@ export type CrossmintAuthProviderProps = {
     appearance?: UIConfig;
     children: ReactNode;
     loginMethods?: LoginMethod[];
-    walletConnectProjectId?: string;
 };
 
 type AuthStatus = "logged-in" | "logged-out" | "in-progress";
@@ -63,7 +62,6 @@ export function CrossmintAuthProvider({
     children,
     appearance,
     loginMethods = ["email", "google"],
-    walletConnectProjectId,
 }: CrossmintAuthProviderProps) {
     const [user, setUser] = useState<SDKExternalUser | undefined>(undefined);
     const { crossmint, setJwt, setRefreshToken } = useCrossmint(
@@ -167,7 +165,6 @@ export function CrossmintAuthProvider({
                         setDialogOpen,
                         loginMethods,
                     }}
-                    walletConnectProjectId={walletConnectProjectId}
                 >
                     <WalletManager embeddedWallets={embeddedWallets} accessToken={crossmint.jwt}>
                         {children}

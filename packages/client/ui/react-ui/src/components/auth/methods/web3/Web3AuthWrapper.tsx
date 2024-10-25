@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useAuthSignIn } from "@/hooks/useAuthSignIn";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import { Web3ConnectButton } from "./Web3ConnectButton";
-import { type Connector, useAccount, useChainId, useConnect, useDisconnect, useSignMessage } from "wagmi";
+import { useAccount, useChainId, useConnect, useSignMessage } from "wagmi";
 
 interface Web3AuthWrapperProps {
     providerType: "metaMaskSDK" | "coinbaseWalletSDK" | "walletConnect";
@@ -16,45 +16,11 @@ export function Web3AuthWrapper({ providerType, icon }: Web3AuthWrapperProps) {
     const [error, setError] = useState<string | null>(null);
 
     const chainId = useChainId();
-    const { address, status } = useAccount();
-    const { signMessageAsync } = useSignMessage();
+    const { address, status: accountStatus } = useAccount(); // hook is causing a hydration error when navigating back
+    const { signMessageAsync, status: signMessageStatus } = useSignMessage();
     const { connect, connectors } = useConnect();
-    const { disconnect } = useDisconnect();
 
     const connector = connectors.find((c) => c.id === providerType);
-
-    const [retryCount, setRetryCount] = useState(0);
-    const MAX_RETRIES = 2;
-
-    const resetConnection = useCallback(() => {
-        disconnect();
-        connect({ connector: connector as Connector, chainId });
-    }, [disconnect, connect, connector, chainId]);
-
-    // self-healing mechanism
-    useEffect(() => {
-        if (error != null && retryCount < MAX_RETRIES) {
-            const timer = setTimeout(
-                () => {
-                    setRetryCount((prev) => prev + 1);
-                    resetConnection();
-                },
-                1000 * (retryCount + 1)
-            ); // Exponential backoff
-
-            return () => clearTimeout(timer);
-        } else if (retryCount >= MAX_RETRIES) {
-            console.error(`Error connecting to ${providerType}:`, error);
-        }
-    }, [error, retryCount, resetConnection]);
-
-    // Reset retry count when successfully connected
-    useEffect(() => {
-        if (status === "connected") {
-            setRetryCount(0);
-            setError(null);
-        }
-    }, [status]);
 
     useEffect(() => {
         if (address != null) {
@@ -73,7 +39,6 @@ export function Web3AuthWrapper({ providerType, icon }: Web3AuthWrapperProps) {
                 baseUrl: baseUrl,
                 apiKey: apiKey,
             });
-
             const signature = await signMessageAsync({ message: res.challenge });
             const authResponse = (await onSmartWalletAuthenticate(address, signature, {
                 baseUrl,
@@ -90,24 +55,26 @@ export function Web3AuthWrapper({ providerType, icon }: Web3AuthWrapperProps) {
         }
     };
 
+    const isLoadingOrPending =
+        isLoading ||
+        accountStatus === "connecting" ||
+        accountStatus === "reconnecting" ||
+        signMessageStatus === "pending";
+
     return (
         <Web3ConnectButton
             icon={icon}
             appearance={appearance}
-            headingText={
-                status === "reconnecting" || status === "connecting" ? "Sign to verify" : "Connect your wallet"
-            }
-            buttonText={
-                error != null
-                    ? "Retry"
-                    : status === "connecting" || status === "reconnecting" || isLoading
-                      ? "Connecting"
-                      : "Connect"
-            }
-            isLoading={isLoading || status === "connecting" || status === "reconnecting"}
-            onConnectClick={() =>
-                address != null ? handleSignIn() : connect({ connector: connector as Connector, chainId })
-            }
+            headingText={signMessageStatus === "pending" ? "Sign to verify" : "Connect your wallet"}
+            buttonText={error != null && !isLoadingOrPending ? "Retry" : isLoadingOrPending ? "Connecting" : "Connect"}
+            isLoading={isLoadingOrPending}
+            onConnectClick={() => {
+                if (address != null) {
+                    handleSignIn();
+                } else if (connector) {
+                    connect({ connector, chainId });
+                }
+            }}
         />
     );
 }
