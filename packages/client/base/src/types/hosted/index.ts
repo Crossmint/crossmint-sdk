@@ -1,3 +1,5 @@
+export * from "./v3";
+
 import type { Currency, Locale, PaymentMethod } from "..";
 import type { CaseInsensitive } from "../system";
 

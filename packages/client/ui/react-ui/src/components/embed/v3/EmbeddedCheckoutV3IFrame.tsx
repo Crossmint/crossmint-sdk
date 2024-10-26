@@ -18,7 +18,7 @@ export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props
     const apiClient = createCrossmintApiClient(crossmint, {
         usageOrigin: "client",
     });
-    const embedV3Service = crossmintEmbeddedCheckoutV3Service({ apiClient });
+    const embeddedCheckoutService = crossmintEmbeddedCheckoutV3Service({ apiClient });
 
     const ref = useRef<HTMLIFrameElement>(null);
 
@@ -27,7 +27,7 @@ export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props
         if (!iframe || iframeClient) {
             return;
         }
-        setIframeClient(embedV3Service.iframe.createClient(iframe));
+        setIframeClient(embeddedCheckoutService.iframe.createClient(iframe));
     }, [ref.current, iframeClient]);
 
     useEffect(() => {
@@ -45,7 +45,7 @@ export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props
         <>
             <iframe
                 ref={ref}
-                src={embedV3Service.iframe.getUrl(props)}
+                src={embeddedCheckoutService.iframe.getUrl(props)}
                 id="crossmint-embedded-checkout.iframe"
                 role="crossmint-embedded-checkout.iframe"
                 allow="payment *"
