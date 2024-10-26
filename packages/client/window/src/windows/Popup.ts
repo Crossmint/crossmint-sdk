@@ -35,9 +35,21 @@ export class PopupWindow<IncomingEvents extends EventMap, OutgoingEvents extends
             options
         );
     }
+
+    static initSync<IncomingEvents extends EventMap, OutgoingEvents extends EventMap>(
+        url: string,
+        options: PopupWindowOptions & EventEmitterWithHandshakeOptions<IncomingEvents, OutgoingEvents>
+    ) {
+        const popup = createPopupSync(url, options);
+        return new PopupWindow<IncomingEvents, OutgoingEvents>(
+            popup,
+            options.targetOrigin || urlToOrigin(url),
+            options
+        );
+    }
 }
 
-function createPopup(url: string, options: PopupWindowOptions) {
+function createPopupSync(url: string, options: PopupWindowOptions) {
     const _window = window.open(
         url,
         "popupWindow",
@@ -46,11 +58,14 @@ function createPopup(url: string, options: PopupWindowOptions) {
     if (!_window) {
         throw new Error("Failed to open popup window");
     }
+    return _window;
+}
 
+function createPopup(url: string, options: PopupWindowOptions) {
+    const _window = createPopupSync(url, options);
     if (options.awaitToLoad === false) {
         return _window;
     }
-
     return new Promise<Window>((resolve, reject) => {
         _window.onload = () => resolve(_window);
         _window.onerror = () => reject("Failed to load popup window");
