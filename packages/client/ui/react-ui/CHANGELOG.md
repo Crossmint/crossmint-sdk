@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.9.3
+
+### Patch Changes
+
+- aecf9b0: Added support for tree shaking
+
 ## 1.9.2
 
 ### Patch Changes
