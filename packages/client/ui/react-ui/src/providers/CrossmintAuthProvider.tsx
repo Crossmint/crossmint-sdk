@@ -9,6 +9,7 @@ import AuthFormDialog from "../components/auth/AuthFormDialog";
 import { useCrossmint, useWallet } from "../hooks";
 import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
 import { AuthFormProvider } from "./auth/AuthFormProvider";
+import { TwindProvider } from "./TwindProvider";
 
 export type CrossmintAuthWalletConfig = {
     defaultChain: EVMSmartWalletChain;
@@ -131,38 +132,40 @@ export function CrossmintAuthProvider({
     };
 
     return (
-        <AuthContext.Provider
-            value={{
-                crossmintAuth,
-                login,
-                logout,
-                jwt: crossmint.jwt,
-                user,
-                status: getAuthStatus(),
-                getUser,
-            }}
-        >
-            <CrossmintWalletProvider
-                defaultChain={embeddedWallets.defaultChain}
-                showPasskeyHelpers={embeddedWallets.showPasskeyHelpers}
-                appearance={appearance}
+        <TwindProvider>
+            <AuthContext.Provider
+                value={{
+                    crossmintAuth,
+                    login,
+                    logout,
+                    jwt: crossmint.jwt,
+                    user,
+                    status: getAuthStatus(),
+                    getUser,
+                }}
             >
-                <AuthFormProvider
-                    initialState={{
-                        appearance,
-                        setDialogOpen,
-                        loginMethods,
-                        baseUrl: crossmintBaseUrl,
-                    }}
+                <CrossmintWalletProvider
+                    defaultChain={embeddedWallets.defaultChain}
+                    showPasskeyHelpers={embeddedWallets.showPasskeyHelpers}
+                    appearance={appearance}
                 >
-                    <WalletManager embeddedWallets={embeddedWallets} accessToken={crossmint.jwt}>
-                        {children}
-                    </WalletManager>
+                    <AuthFormProvider
+                        initialState={{
+                            appearance,
+                            setDialogOpen,
+                            loginMethods,
+                            baseUrl: crossmintBaseUrl,
+                        }}
+                    >
+                        <WalletManager embeddedWallets={embeddedWallets} accessToken={crossmint.jwt}>
+                            {children}
+                        </WalletManager>
 
-                    <AuthFormDialog open={dialogOpen} />
-                </AuthFormProvider>
-            </CrossmintWalletProvider>
-        </AuthContext.Provider>
+                        <AuthFormDialog open={dialogOpen} />
+                    </AuthFormProvider>
+                </CrossmintWalletProvider>
+            </AuthContext.Provider>
+        </TwindProvider>
     );
 }
 

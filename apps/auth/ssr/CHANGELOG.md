@@ -1,5 +1,17 @@
 # @crossmint/server-sdk-next-starter
 
+## 0.2.2
+
+### Patch Changes
+
+- @crossmint/server-sdk@1.0.2
+
+## 0.2.1
+
+### Patch Changes
+
+- @crossmint/server-sdk@1.0.1
+
 ## 0.2.0
 
 ### Minor Changes

@@ -1,5 +1,41 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.9.3
+
+### Patch Changes
+
+- aecf9b0: Added support for tree shaking
+
+## 1.9.2
+
+### Patch Changes
+
+- Updated dependencies [2c7561c]
+  - @crossmint/client-sdk-base@1.3.1
+  - @crossmint/client-sdk-smart-wallet@0.1.21
+  - @crossmint/common-sdk-auth@0.2.3
+  - @crossmint/client-sdk-auth@0.2.3
+
+## 1.9.1
+
+### Patch Changes
+
+- 92475fc: Send api key in header in oauth fetch
+- 10daae9: embed v3: dynamic.xyz tweak
+
+## 1.9.0
+
+### Minor Changes
+
+- 2bb838a: Added AmbeddedAuthForm and removed iframe auth dialog
+- e9f1b9c: Breaking Change: Renamed showWalletModals to showPasskeyHelpers
+
+### Patch Changes
+
+- Updated dependencies [2bb838a]
+  - @crossmint/common-sdk-auth@0.2.2
+  - @crossmint/client-sdk-auth@0.2.2
+
 ## 1.8.0
 
 ### Minor Changes
