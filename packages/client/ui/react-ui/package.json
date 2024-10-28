@@ -16,7 +16,7 @@
     "files": ["dist", "src", "LICENSE"],
     "scripts": {
         "build": "NODE_OPTIONS='--max-old-space-size=8192' tsup",
-        "dev": "tsup --watch",
+        "dev": "NODE_OPTIONS='--max-old-space-size=8192' tsup --watch",
         "test": "vitest run"
     },
     "dependencies": {
