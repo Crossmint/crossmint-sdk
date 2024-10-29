@@ -33,7 +33,8 @@ interface DialogContentProps extends React.ComponentPropsWithoutRef<typeof Dialo
 const DialogContent = React.forwardRef<React.ElementRef<typeof DialogPrimitive.Content>, DialogContentProps>(
     ({ className, children, showCloseButton = true, closeButtonColor, closeButtonRingColor, ...props }, ref) => (
         <DialogPortal>
-            <DialogOverlay />
+            {/* Because we're using modal={false}, the regular overlay is not shown. We need to add our own overlay */}
+            <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm overflow-x-hidden" />
             <DialogPrimitive.Content
                 ref={ref}
                 className={classNames(

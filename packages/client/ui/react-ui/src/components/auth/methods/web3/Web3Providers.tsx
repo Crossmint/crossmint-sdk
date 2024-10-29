@@ -24,7 +24,7 @@ export function Web3Providers() {
                             Connect wallet
                         </h3>
                     </div>
-                    <div className="flex flex-col gap-4 w-full">
+                    <div className="flex flex-col gap-[10px] w-full">
                         <Web3ProviderButton
                             title="Metamask"
                             appearance={appearance}
@@ -51,7 +51,6 @@ export function Web3Providers() {
                     iconColor={appearance?.colors?.textPrimary}
                     ringColor={appearance?.colors?.accent}
                 />
-                {/* metamask stuff */}
                 <Web3AuthWrapper providerType="metaMaskSDK" icon={metamaskIcon} />
             </>
         );

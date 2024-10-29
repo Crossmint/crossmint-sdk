@@ -36,17 +36,17 @@ export function AuthForm({ className }: { className?: string }) {
                 </>
             ) : null}
 
-            {loginMethods.includes("web3") ? <Web3AuthFlow /> : null}
             {loginMethods.includes("google") ? <GoogleSignIn /> : null}
             {loginMethods.includes("farcaster") ? (
                 <FarcasterProvider baseUrl={baseUrl}>
                     <FarcasterSignIn />
                 </FarcasterProvider>
             ) : null}
+            {loginMethods.includes("web3") ? <Web3AuthFlow /> : null}
 
             {step === "initial" || step === "otp" ? (
                 <PoweredByCrossmint
-                    className="mt-5 justify-center"
+                    className="mt-4 justify-center"
                     color={appearance?.colors?.textSecondary ?? "#A4AFB2"}
                 />
             ) : null}

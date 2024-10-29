@@ -2,12 +2,18 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import { AuthForm } from "./AuthForm";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "../common/Dialog";
+import { useEffect } from "react";
 
 export default function AuthFormDialog({ open }: { open: boolean }) {
     const { appearance, setDialogOpen } = useAuthForm();
 
+    // todo come up with a better solution for this!
+    useEffect(() => {
+        document.body.style.overflow = open ? "hidden" : "";
+    }, [open]);
+
     return (
-        <Dialog open={open} onOpenChange={setDialogOpen}>
+        <Dialog modal={false} open={open} onOpenChange={setDialogOpen}>
             <DialogContent
                 onInteractOutside={(e) => e.preventDefault()}
                 onOpenAutoFocus={(e) => e.preventDefault()}

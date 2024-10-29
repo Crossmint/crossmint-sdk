@@ -15,16 +15,14 @@ export function Web3ProviderButton({
     return (
         <button
             className={classNames(
-                "relative flex text-base p-4 bg-cm-muted-primary text-cm-text-primary border border-cm-border items-center w-full rounded-xl justify-center",
-                "transition-all duration-200 ease-in-out", // Add smooth transition
-                "focus:outline-none focus:ring-1 focus:ring-opacity-50" // Add focus ring
+                "relative flex text-base p-4 bg-cm-muted-primary text-cm-text-primary items-center w-full rounded-xl justify-center",
+                "transition-colors duration-200 ease-in-out",
+                "hover:bg-cm-hover focus:bg-cm-hover outline-none"
             )}
             style={{
                 borderRadius: appearance?.borderRadius,
                 borderColor: appearance?.colors?.border,
                 backgroundColor: appearance?.colors?.buttonBackground,
-                // @ts-expect-error --tw-ring-color is not recognized by typescript but gets picked up by tailwind
-                "--tw-ring-color": appearance?.colors?.accent ?? "#1A73E8",
             }}
             {...props}
         >
@@ -34,8 +32,6 @@ export function Web3ProviderButton({
                     {title}
                 </span>
             </>
-
-            {/* For accessibility sake   */}
             <span className="sr-only">Sign in with {title}</span>
         </button>
     );
