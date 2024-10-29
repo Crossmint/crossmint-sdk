@@ -25,21 +25,38 @@ export default function HostedCheckoutV3Page() {
             >
                 <HostedCheckoutV3ClientProviders>
                     <CrossmintHostedCheckout_Alpha
-                        lineItems={{
-                            collectionLocator: "crossmint:91e3ae09-2d59-4d21-a811-058732351847",
-                            // callData: {
-                            //     totalPrice: "0.001",
-                            //     quantity: 1,
-                            // },
-                        }}
+                        lineItems={[
+                            {
+                                collectionLocator: "crossmint:be2258c4-dde2-4551-ba0e-5e231784bfd2",
+                                callData: {
+                                    totalPrice: "0.001",
+                                    quantity: 1,
+                                },
+                            },
+                            {
+                                collectionLocator: "crossmint:be2258c4-dde2-4551-ba0e-5e231784bfd2",
+                                callData: {
+                                    totalPrice: "0.001",
+                                    quantity: 1,
+                                },
+                            },
+                        ]}
                         payment={{
                             crypto: {
-                                enabled: false,
+                                enabled: true,
                             },
                             fiat: {
                                 enabled: true,
                             },
                             defaultMethod: "fiat",
+                        }}
+                        appearance={{
+                            variables: {
+                                colors: {
+                                    accent: "red",
+                                },
+                            },
+                            // theme: "dark",
                         }}
                     />
                 </HostedCheckoutV3ClientProviders>
