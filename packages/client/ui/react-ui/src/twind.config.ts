@@ -14,8 +14,10 @@ export default defineConfig({
                 "cm-text-secondary": "#67797F",
                 "cm-background-primary": "#FFFFFF",
                 "cm-muted-primary": "#F0F2F4",
+                "cm-hover": "#E9ECF0",
                 "cm-border": "#D9D9D9",
-                "cm-ring": "#1A73E8",
+                "cm-link": "#1A73E8",
+                "cm-accent": "#04AA6D",
             },
             keyframes: {
                 "caret-blink": {
@@ -91,6 +93,12 @@ export default defineConfig({
                 "500": "500ms",
             },
         },
+        fontFamily: {
+            sans: ["Inter", "sans-serif"],
+        },
+    },
+    preflight: {
+        "@import": `url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap')`,
     },
     rules: [
         [
@@ -99,6 +107,14 @@ export default defineConfig({
                 "@media (max-width: 479px)": {
                     "border-bottom-left-radius": "0 !important",
                     "border-bottom-right-radius": "0 !important",
+                },
+            },
+        ],
+        [
+            "focus-ring-custom",
+            {
+                "&:focus": {
+                    "box-shadow": "0 0 0 3px var(--focus-ring-color)",
                 },
             },
         ],

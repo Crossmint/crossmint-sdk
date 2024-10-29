@@ -15,16 +15,13 @@ export function FarcasterSignIn() {
             <div>
                 <button
                     className={classNames(
-                        "relative flex text-base p-4 bg-cm-muted-primary text-cm-text-primary border border-cm-border items-center w-full rounded-xl justify-center",
-                        "transition-all duration-200 ease-in-out",
-                        "focus:outline-none focus:ring-1 focus:ring-opacity-50"
+                        "relative flex text-base p-4 bg-cm-muted-primary text-cm-text-primary items-center w-full rounded-xl justify-center",
+                        "transition-colors duration-200 ease-in-out",
+                        "hover:bg-cm-hover focus:bg-cm-hover outline-none"
                     )}
                     style={{
                         borderRadius: appearance?.borderRadius,
-                        borderColor: appearance?.colors?.border,
                         backgroundColor: appearance?.colors?.buttonBackground,
-                        // @ts-expect-error --tw-ring-color is not recognized by typescript but gets picked up by tailwind
-                        "--tw-ring-color": appearance?.colors?.accent ?? "#1A73E8",
                     }}
                     onClick={() => {
                         setStep("qrCode");
@@ -35,7 +32,7 @@ export function FarcasterSignIn() {
                         className="font-medium"
                         style={{ margin: "0px 32px", color: appearance?.colors?.textPrimary }}
                     >
-                        Farcaster
+                        Sing in with Farcaster
                     </span>
                     <span className="sr-only">Sign in with Farcaster</span>
                 </button>
@@ -157,7 +154,7 @@ function FarcasterQRCode() {
                             href={qrCodeUrl}
                             rel="noopener noreferrer"
                             target="_blank"
-                            className="text-base font-normal text-cm-ring"
+                            className="text-base font-normal text-cm-link"
                             style={{ color: appearance?.colors?.textLink }}
                         >
                             Open Warpcast

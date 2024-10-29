@@ -4,14 +4,13 @@ import { classNames } from "@/utils/classNames";
 export function PoweredByCrossmint({ color, className }: { color?: string; className?: string }) {
     return (
         <p
-            className={classNames("flex text-xs font-normal tracking-tight p-2 items-center", className)}
-            style={{ color: color || "#67797F" }}
+            className={classNames("flex text-[13px] mt-4 font-semibold items-center", className)}
+            style={{ color: color || "#A4AFB2" }}
         >
-            Powered by
-            <span className="flex self-center pl-1 gap-1 items-center font-semibold">
-                <PoweredByLeaf color={color ?? "#67797F"} size={"12"} />
-                <span>crossmint</span>
+            <span className="flex self-center pr-1.5 gap-1 items-center font-semibold">
+                <PoweredByLeaf color={color ?? "#A4AFB2"} />
             </span>
+            Powered by Crossmint
         </p>
     );
 }
