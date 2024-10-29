@@ -4,9 +4,6 @@ import presetTailwind from "@twind/preset-tailwind";
 export default defineConfig({
     presets: [presetTailwind()],
     theme: {
-        screens: {
-            xs: "480px",
-        },
         extend: {
             colors: {
                 // Crossmint colors (cm- prefix)
@@ -94,7 +91,7 @@ export default defineConfig({
     },
     rules: [
         [
-            "responsive-border-radius-auth-dialog",
+            "cm-responsive-border-radius-auth-dialog",
             {
                 "@media (max-width: 479px)": {
                     "border-bottom-left-radius": "0 !important",
