@@ -1,19 +1,19 @@
 import { createContext, type ReactNode, useContext, useEffect, useState } from "react";
-import type { embeddedCheckoutV3IncomingEvents } from "@crossmint/client-sdk-base";
+import type { embeddedCheckoutV3IncomingEvents, Order } from "@crossmint/client-sdk-base";
 import type { z } from "zod";
 import { useCrossmint } from "./useCrossmint";
 import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
 
 export interface CrossmintCheckoutContext {
-    order?: any;
+    order?: Order;
     orderClientSecret?: string;
 }
 
 const CrossmintCheckoutContext = createContext<CrossmintCheckoutContext | undefined>(undefined);
 
 export function CrossmintCheckoutProvider({ children }: { children: ReactNode }) {
-    const [order, setOrder] = useState<any>();
-    const [orderClientSecret, setOrderClientSecret] = useState<string>();
+    const [order, setOrder] = useState<Order | undefined>(undefined);
+    const [orderClientSecret, setOrderClientSecret] = useState<string | undefined>(undefined);
 
     const { crossmint } = useCrossmint();
     const apiClient = createCrossmintApiClient(crossmint);

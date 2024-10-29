@@ -37,15 +37,15 @@ const DialogContent = React.forwardRef<React.ElementRef<typeof DialogPrimitive.C
             <DialogPrimitive.Content
                 ref={ref}
                 className={classNames(
-                    "fixed z-50 p-6 pb-2 bg-cm-background-primary border border-cm-border shadow-xl transition-none",
+                    "fixed z-50 p-6 pb-4 bg-cm-background-primary border border-cm-border shadow-xl transition-none",
                     // Small viewport styles (bottom sheet)
                     "inset-x-0 bottom-0 w-full border-t rounded-t-xl",
                     "data-[state=closed]:animate-slide-out-to-bottom data-[state=open]:animate-slide-in-from-bottom",
                     // Regular viewport styles (centered modal)
-                    "xs:inset-auto !xs:p-10 xs:left-[50%] xs:top-[50%] xs:translate-x-[-50%] xs:translate-y-[-50%]",
-                    "xs:max-w-[448px] xs:rounded-xl",
-                    "xs:data-[state=closed]:animate-fade-out xs:data-[state=closed]:animate-zoom-out-95",
-                    "xs:data-[state=open]:animate-fade-in xs:data-[state=open]:animate-zoom-in-95",
+                    "min-[480px]:inset-auto !min-[480px]:p-10 !min-[480px]:pb-8 min-[480px]:left-[50%] min-[480px]:top-[50%] min-[480px]:translate-x-[-50%] min-[480px]:translate-y-[-52%]",
+                    "min-[480px]:max-w-[448px] min-[480px]:rounded-xl",
+                    "min-[480px]:data-[state=closed]:animate-fade-out min-[480px]:data-[state=closed]:animate-zoom-out-95",
+                    "min-[480px]:data-[state=open]:animate-fade-in min-[480px]:data-[state=open]:animate-zoom-in-95",
                     // Duration for animations
                     "data-[state=closed]:duration-300 data-[state=open]:duration-500",
                     className
@@ -57,14 +57,10 @@ const DialogContent = React.forwardRef<React.ElementRef<typeof DialogPrimitive.C
                     <DialogPrimitive.Close
                         className={classNames(
                             "absolute rounded-full opacity-70 ring-offset-background transition-opacity hover:opacity-100",
-                            "focus:outline-none focus:ring-2 focus:ring-cm-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-text-primary",
-                            "right-4 top-4 !xs:right-6 !xs:top-6"
+                            "focus:outline-none focus:ring-2 focus:ring-cm-accent focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-text-primary",
+                            "right-4 top-4 !min-[480px]:right-6 !min-[480px]:top-6"
                         )}
-                        style={{
-                            color: closeButtonColor,
-                            // @ts-expect-error --tw-ring-color is not recognized by typescript but gets picked up by tailwind
-                            "--tw-ring-color": closeButtonRingColor ?? "#1A73E8",
-                        }}
+                        style={{ color: closeButtonColor ?? "#00150D" }}
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"

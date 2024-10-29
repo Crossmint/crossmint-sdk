@@ -65,12 +65,15 @@ export function EmailOTPInput({
                     />
                 </div>
                 <p
-                    className="text-base font-normal mt-4 mb-1 text-center text-[#67797F]"
+                    className="text-base font-normal mt-4 mb-1 text-center text-cm-text-primary"
                     style={{ color: appearance?.colors?.textPrimary }}
                 >
                     {"Check your email"}
                 </p>
-                <p className="text-center px-4" style={{ color: appearance?.colors?.textSecondary }}>
+                <p
+                    className="text-center text-cm-text-secondary px-4"
+                    style={{ color: appearance?.colors?.textSecondary }}
+                >
                     {"A temporary login code has been sent to your email"}
                 </p>
                 <div className="py-8">
@@ -104,13 +107,13 @@ export function EmailOTPInput({
                     </InputOTP>
                 </div>
 
-                <p className="text-sm leading-tight text-center">
+                <p className="text-sm leading-tight text-cm-text-secondary text-center">
                     <span style={{ color: appearance?.colors?.textSecondary }}>
                         Can't find the email? Check spam folder or contact
                     </span>{" "}
                     <a
                         key="resend-email-link"
-                        className="transition-opacity duration-150 text-link hover:opacity-70"
+                        className="transition-opacity duration-150 text-cm-link hover:opacity-70"
                         style={{ color: appearance?.colors?.textLink }}
                         href="mailto:support@crossmint.io"
                     >

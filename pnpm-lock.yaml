@@ -537,6 +537,9 @@ importers:
       clsx:
         specifier: 2.1.1
         version: 2.1.1
+      color:
+        specifier: 4.2.3
+        version: 4.2.3
       input-otp:
         specifier: 1.2.4
         version: 1.2.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -562,6 +565,9 @@ importers:
         specifier: 3.22.4
         version: 3.22.4
     devDependencies:
+      '@types/color':
+        specifier: 4.2.0
+        version: 4.2.0
       '@types/lodash.isequal':
         specifier: 4.5.6
         version: 4.5.6
@@ -6060,6 +6066,15 @@ packages:
 
   '@types/chai@4.3.6':
     resolution: {integrity: sha512-VOVRLM1mBxIRxydiViqPcKn6MIxZytrbMpd6RJLIWKxUNr3zux8no0Oc7kJx0WAPIitgZ0gkrDS+btlqQpubpw==}
+
+  '@types/color-convert@2.0.4':
+    resolution: {integrity: sha512-Ub1MmDdyZ7mX//g25uBAoH/mWGd9swVbt8BseymnaE18SU4po/PjmCrHxqIIRjBo3hV/vh1KGr0eMxUhp+t+dQ==}
+
+  '@types/color-name@1.1.5':
+    resolution: {integrity: sha512-j2K5UJqGTxeesj6oQuGpMgifpT5k9HprgQd8D1Y0lOFqKHl3PJu5GMeS4Y5EgjS55AE6OQxf8mPED9uaGbf4Cg==}
+
+  '@types/color@4.2.0':
+    resolution: {integrity: sha512-6+xrIRImMtGAL2X3qYkd02Mgs+gFGs+WsK0b7VVMaO4mYRISwyTjcqNrO0mNSmYEoq++rSLDB2F5HDNmqfOe+A==}
 
   '@types/connect-history-api-fallback@1.5.1':
     resolution: {integrity: sha512-iaQslNbARe8fctL5Lk+DsmgWOM83lM+7FzP0eQUJs1jd3kBE8NWqBTIT2S8SqQOJjxvt2eyIjpOuYeRXq2AdMw==}
@@ -25349,6 +25364,16 @@ snapshots:
 
   '@types/chai@4.3.6': {}
 
+  '@types/color-convert@2.0.4':
+    dependencies:
+      '@types/color-name': 1.1.5
+
+  '@types/color-name@1.1.5': {}
+
+  '@types/color@4.2.0':
+    dependencies:
+      '@types/color-convert': 2.0.4
+
   '@types/connect-history-api-fallback@1.5.1':
     dependencies:
       '@types/express-serve-static-core': 4.17.36
@@ -29305,7 +29330,7 @@ snapshots:
   cosmjs-types@0.7.2:
     dependencies:
       long: 4.0.0
-      protobufjs: 6.11.4
+      protobufjs: 7.2.5
 
   country-list@2.3.0: {}
 

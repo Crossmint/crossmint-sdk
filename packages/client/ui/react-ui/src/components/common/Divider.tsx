@@ -9,7 +9,7 @@ export function Divider({ appearance, text }: { appearance?: UIConfig; text?: st
     }
 
     return (
-        <div className="flex items-center justify-center w-full pt-1 pb-2">
+        <div className="flex items-center justify-center w-full pt-2 pb-3">
             <span className="w-full h-[1px] bg-cm-border" style={{ backgroundColor: appearance?.colors?.border }} />
             {text != null ? (
                 <p

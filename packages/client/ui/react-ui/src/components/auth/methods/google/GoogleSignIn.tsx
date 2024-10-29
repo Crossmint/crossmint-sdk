@@ -21,17 +21,14 @@ export function GoogleSignIn({ ...props }: ButtonHTMLAttributes<HTMLButtonElemen
     return (
         <button
             className={classNames(
-                "relative flex text-base p-4 bg-cm-muted-primary text-cm-text-primary border border-cm-border items-center w-full rounded-xl justify-center",
-                "transition-all duration-200 ease-in-out", // Add smooth transition
-                "focus:outline-none focus:ring-1 focus:ring-opacity-50", // Add focus ring
-                isLoading ? "cursor-not-allowed" : ""
+                "relative flex text-base p-4 bg-cm-muted-primary text-cm-text-primary items-center w-full rounded-xl justify-center",
+                "transition-colors duration-200 ease-in-out",
+                "hover:bg-cm-hover focus:bg-cm-hover outline-none",
+                isLoading ? "cursor-not-allowed hover:bg-cm-muted-primary" : ""
             )}
             style={{
                 borderRadius: appearance?.borderRadius,
-                borderColor: appearance?.colors?.border,
                 backgroundColor: appearance?.colors?.buttonBackground,
-                // @ts-expect-error --tw-ring-color is not recognized by typescript but gets picked up by tailwind
-                "--tw-ring-color": appearance?.colors?.accent ?? "#1A73E8",
             }}
             onClick={isLoading ? undefined : createPopupAndSetupListeners}
             {...props}
@@ -50,12 +47,10 @@ export function GoogleSignIn({ ...props }: ButtonHTMLAttributes<HTMLButtonElemen
                         className="font-medium"
                         style={{ margin: "0px 32px", color: appearance?.colors?.textPrimary }}
                     >
-                        Google
+                        Sign in with Google
                     </span>
                 )}
             </>
-
-            {/* For accessibility sake   */}
             <span className="sr-only">Sign in with Google</span>
         </button>
     );
