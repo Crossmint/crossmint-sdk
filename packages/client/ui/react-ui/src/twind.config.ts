@@ -90,12 +90,6 @@ export default defineConfig({
                 "500": "500ms",
             },
         },
-        fontFamily: {
-            sans: ["Inter", "sans-serif"],
-        },
-    },
-    preflight: {
-        "@import": `url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap')`,
     },
     rules: [
         [

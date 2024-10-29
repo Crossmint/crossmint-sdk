@@ -43,7 +43,10 @@ export function AuthForm({ className }: { className?: string }) {
             ) : null}
 
             {step === "initial" || step === "otp" ? (
-                <PoweredByCrossmint className="justify-center" color={appearance?.colors?.textSecondary ?? "#A4AFB2"} />
+                <PoweredByCrossmint
+                    className="mt-5 justify-center"
+                    color={appearance?.colors?.textSecondary ?? "#A4AFB2"}
+                />
             ) : null}
         </div>
     );

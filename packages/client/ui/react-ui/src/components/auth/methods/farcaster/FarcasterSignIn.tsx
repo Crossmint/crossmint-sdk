@@ -32,7 +32,7 @@ export function FarcasterSignIn() {
                         className="font-medium"
                         style={{ margin: "0px 32px", color: appearance?.colors?.textPrimary }}
                     >
-                        Sing in with Farcaster
+                        Sign in with Farcaster
                     </span>
                     <span className="sr-only">Sign in with Farcaster</span>
                 </button>
