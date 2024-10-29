@@ -27,9 +27,10 @@ export function EmbeddedCheckoutV3Content() {
 function CrossmintEmbeddedCheckoutWrapper() {
     return (
         <CrossmintEmbeddedCheckout_Alpha
-            // recipient={{
-            //     email: "maxwell@paella.dev",
-            // }}
+            recipient={{
+                // email: "maxwell@paella.dev",
+                walletAddress: "0x8b821dd648599B0D093F55B5BaAA48c709ec455A",
+            }}
             lineItems={{
                 collectionLocator: "crossmint:206b3146-f526-444e-bd9d-0607d581b0e9",
                 callData: {
@@ -38,6 +39,7 @@ function CrossmintEmbeddedCheckoutWrapper() {
                 },
             }}
             payment={{
+                receiptEmail: "maxwell@paella.dev",
                 crypto: {
                     enabled: true,
                 },
