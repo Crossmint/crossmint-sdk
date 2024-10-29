@@ -10,17 +10,17 @@ import { classNames } from "@/utils/classNames";
 export function AuthForm({ className }: { className?: string }) {
     const { step, appearance, baseUrl, loginMethods } = useAuthForm();
     return (
-        <div className={classNames("flex flex-col gap-4", className)}>
+        <div className={classNames("flex flex-col gap-[10px] antialiased animate-none", className)}>
             {step === "initial" ? (
                 <div>
                     <h1
-                        className="text-2xl font-semibold text-cm-text-primary"
+                        className="text-2xl font-bold text-cm-text-primary"
                         style={{ color: appearance?.colors?.textPrimary }}
                     >
                         Sign In
                     </h1>
                     <p
-                        className="text-base font-normal mb-5 text-cm-text-secondary"
+                        className="text-base font-normal mb-3 text-cm-text-secondary"
                         style={{ color: appearance?.colors?.textSecondary }}
                     >
                         Sign in using one of the options below
@@ -43,7 +43,10 @@ export function AuthForm({ className }: { className?: string }) {
             ) : null}
 
             {step === "initial" || step === "otp" ? (
-                <PoweredByCrossmint className="justify-center" color={appearance?.colors?.textSecondary ?? "#A4AFB2"} />
+                <PoweredByCrossmint
+                    className="mt-5 justify-center"
+                    color={appearance?.colors?.textSecondary ?? "#A4AFB2"}
+                />
             ) : null}
         </div>
     );

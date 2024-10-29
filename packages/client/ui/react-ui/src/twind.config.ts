@@ -4,9 +4,6 @@ import presetTailwind from "@twind/preset-tailwind";
 export default defineConfig({
     presets: [presetTailwind()],
     theme: {
-        screens: {
-            xs: "480px",
-        },
         extend: {
             colors: {
                 // Crossmint colors (cm- prefix)
@@ -14,8 +11,10 @@ export default defineConfig({
                 "cm-text-secondary": "#67797F",
                 "cm-background-primary": "#FFFFFF",
                 "cm-muted-primary": "#F0F2F4",
+                "cm-hover": "#E9ECF0",
                 "cm-border": "#D9D9D9",
-                "cm-ring": "#1A73E8",
+                "cm-link": "#1A73E8",
+                "cm-accent": "#04AA6D",
             },
             keyframes: {
                 "caret-blink": {
@@ -94,11 +93,19 @@ export default defineConfig({
     },
     rules: [
         [
-            "responsive-border-radius-auth-dialog",
+            "cm-responsive-border-radius-auth-dialog",
             {
                 "@media (max-width: 479px)": {
                     "border-bottom-left-radius": "0 !important",
                     "border-bottom-right-radius": "0 !important",
+                },
+            },
+        ],
+        [
+            "focus-ring-custom",
+            {
+                "&:focus": {
+                    "box-shadow": "0 0 0 3px var(--focus-ring-color)",
                 },
             },
         ],
