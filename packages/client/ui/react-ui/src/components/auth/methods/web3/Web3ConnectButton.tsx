@@ -45,6 +45,7 @@ export function Web3ConnectButton({
                 style={{
                     borderRadius: appearance?.borderRadius,
                     borderColor: appearance?.colors?.border,
+                    backgroundColor: appearance?.colors?.buttonBackground,
                 }}
                 onClick={isLoading ? undefined : onConnectClick}
             >
