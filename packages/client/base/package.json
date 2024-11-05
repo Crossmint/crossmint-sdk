@@ -17,7 +17,7 @@
     "scripts": {
         "build": "tsup",
         "dev": "tsup --watch",
-        "test": "vitest run"
+        "test:vitest": "vitest run"
     },
     "dependencies": {
         "@crossmint/client-sdk-window": "workspace:*",
