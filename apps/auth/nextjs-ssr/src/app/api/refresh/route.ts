@@ -6,7 +6,11 @@ export async function POST(request: NextRequest) {
         const crossmint = createCrossmint({
             apiKey: process.env.SERVER_CROSSMINT_API_KEY || "",
         });
-        const crossmintAuth = CrossmintAuth.from(crossmint);
+        const crossmintAuth = CrossmintAuth.from(crossmint, {
+            cookieOptions: {
+                httpOnly: true,
+            },
+        });
         const response = await crossmintAuth.handleCustomRefresh(request);
 
         return response;

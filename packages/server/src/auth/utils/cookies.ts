@@ -4,6 +4,7 @@ import {
     CrossmintAuthenticationError,
     type AuthMaterialBasic,
     type AuthMaterial,
+    type CookieData,
     type CookieOptions,
 } from "@crossmint/common-sdk-auth";
 import {
@@ -21,13 +22,16 @@ export function getAuthCookies(request: GenericRequest): AuthMaterialBasic {
     return { jwt, refreshToken };
 }
 
-export function setAuthCookies(response: GenericResponse, authMaterial: AuthMaterial) {
+export function setAuthCookies(response: GenericResponse, authMaterial: AuthMaterial, options?: CookieOptions) {
     const cookies = [
-        createCookieString({ name: SESSION_PREFIX, value: authMaterial.jwt }),
+        createCookieString({ name: SESSION_PREFIX, value: authMaterial.jwt, options }),
         createCookieString({
             name: REFRESH_TOKEN_PREFIX,
             value: authMaterial.refreshToken.secret,
-            expiresAt: authMaterial.refreshToken.expiresAt,
+            options: {
+                ...options,
+                expiresAt: authMaterial.refreshToken.expiresAt,
+            },
         }),
     ];
 
@@ -68,15 +72,19 @@ function parseCookieHeader(cookieHeader: string): Record<string, string> {
     );
 }
 
-function createCookieString(cookieOptions: CookieOptions): string {
-    const expiresInUtc = cookieOptions.expiresAt
-        ? new Date(cookieOptions.expiresAt).toUTCString()
-        : cookieOptions.value === ""
-          ? "Thu, 01 Jan 1970 00:00:00 UTC"
-          : undefined;
-    let cookieString = `${cookieOptions.name}=${cookieOptions.value}; path=/; SameSite=Lax;`;
-    if (expiresInUtc) {
-        cookieString += ` expires=${expiresInUtc};`;
-    }
-    return cookieString;
+function createCookieString({ name, value, options = {} }: CookieData): string {
+    const { expiresAt, httpOnly = false, secure = false, sameSite = "lax", domain } = options;
+
+    const cookieParts = [
+        `${name}=${value}`,
+        "path=/",
+        `SameSite=${sameSite}`,
+        httpOnly && "HttpOnly",
+        secure && "Secure",
+        domain && `Domain=${domain}`,
+        expiresAt && `expires=${new Date(expiresAt).toUTCString()}`,
+        value === "" && "expires=Thu, 01 Jan 1970 00:00:00 UTC",
+    ].filter(Boolean);
+
+    return `${cookieParts.join("; ")};`;
 }

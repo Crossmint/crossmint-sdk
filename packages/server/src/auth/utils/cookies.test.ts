@@ -90,6 +90,12 @@ describe("setAuthCookies", () => {
         },
     };
 
+    const defaultOptions = {
+        sameSite: "Lax" as const,
+        secure: false,
+        httpOnly: false,
+    };
+
     beforeEach(() => {
         vi.resetAllMocks();
     });
@@ -103,7 +109,7 @@ describe("setAuthCookies", () => {
             setHeader: vi.fn(),
         } as unknown as ServerResponse;
 
-        setAuthCookies(mockResponse, mockAuthMaterial);
+        setAuthCookies(mockResponse, mockAuthMaterial, defaultOptions);
 
         expect(mockResponse.setHeader).toHaveBeenCalledWith("Set-Cookie", [
             `${SESSION_PREFIX}=mock-jwt-token; path=/; SameSite=Lax;`,
@@ -119,7 +125,7 @@ describe("setAuthCookies", () => {
             headers: mockHeaders,
         } as unknown as Response;
 
-        setAuthCookies(mockResponse, mockAuthMaterial);
+        setAuthCookies(mockResponse, mockAuthMaterial, defaultOptions);
 
         expect(appendSpy).toHaveBeenCalledTimes(2);
         expect(appendSpy).toHaveBeenCalledWith("Set-Cookie", `${SESSION_PREFIX}=mock-jwt-token; path=/; SameSite=Lax;`);
@@ -146,15 +152,38 @@ describe("setAuthCookies", () => {
             },
         };
 
-        setAuthCookies(response, emptyAuthMaterial);
+        setAuthCookies(response, emptyAuthMaterial, defaultOptions);
 
         const cookies = Array.from(response.headers.entries())
             .filter(([key]) => key.startsWith("set-cookie"))
             .map(([_, value]) => value);
         expect(cookies).toHaveLength(2);
-        expect(cookies[0]).toBe("crossmint-jwt=; path=/; SameSite=Lax; expires=Thu, 01 Jan 1970 00:00:00 UTC;");
+        expect(cookies[0]).toBe(`${SESSION_PREFIX}=; path=/; SameSite=Lax; expires=Thu, 01 Jan 1970 00:00:00 UTC;`);
         expect(cookies[1]).toBe(
-            "crossmint-refresh-token=; path=/; SameSite=Lax; expires=Thu, 01 Jan 1970 00:00:00 UTC;"
+            `${REFRESH_TOKEN_PREFIX}=; path=/; SameSite=Lax; expires=Thu, 01 Jan 1970 00:00:00 UTC;`
+        );
+    });
+
+    it("should set cookies with custom options", () => {
+        const response = new Response();
+        const customOptions = {
+            sameSite: "Strict" as const,
+            secure: true,
+            httpOnly: true,
+            domain: "example.com",
+        };
+
+        setAuthCookies(response, mockAuthMaterial, customOptions);
+
+        const cookies = Array.from(response.headers.entries())
+            .filter(([key]) => key.startsWith("set-cookie"))
+            .map(([_, value]) => value);
+        expect(cookies).toHaveLength(2);
+        expect(cookies[0]).toBe(
+            `${SESSION_PREFIX}=mock-jwt-token; path=/; SameSite=Strict; HttpOnly; Secure; Domain=example.com;`
+        );
+        expect(cookies[1]).toBe(
+            `${REFRESH_TOKEN_PREFIX}=mock-refresh-token; path=/; SameSite=Strict; HttpOnly; Secure; Domain=example.com; expires=Sat, 01 Apr 2023 00:00:00 GMT;`
         );
     });
 });

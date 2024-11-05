@@ -6,6 +6,7 @@ import {
     type AuthSession,
     type AuthMaterial,
     CROSSMINT_API_VERSION,
+    type CookieOptions,
 } from "@crossmint/common-sdk-auth";
 import type { Crossmint } from "@crossmint/common-sdk-base";
 import {
@@ -20,13 +21,6 @@ import {
 import { getAuthCookies, setAuthCookies } from "./utils/cookies";
 import { verifyCrossmintJwt } from "./utils/jwt";
 import type { ServerResponse } from "http";
-
-type CookieOptions = {
-    httpOnly?: boolean;
-    secure?: boolean;
-    sameSite?: "lax" | "strict" | "none";
-    cookieDomain?: string;
-};
 
 export type CrossmintAuthServerOptions = CrossmintAuthOptions & {
     cookieOptions?: CookieOptions;
@@ -131,7 +125,7 @@ export class CrossmintAuthServer extends CrossmintAuth {
     }
 
     public storeAuthMaterial(response: GenericResponse, authMaterial: AuthMaterial) {
-        setAuthCookies(response, authMaterial);
+        setAuthCookies(response, authMaterial, this.cookieOptions);
     }
 
     public logout(response: GenericResponse) {

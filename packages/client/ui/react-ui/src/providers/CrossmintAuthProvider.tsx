@@ -32,8 +32,8 @@ type AuthStatus = "logged-in" | "logged-out" | "in-progress";
 
 export interface AuthContextType {
     crossmintAuth?: CrossmintAuth;
-    login: () => Promise<void>;
-    logout: () => Promise<void>;
+    login: () => void;
+    logout: () => void;
     jwt?: string;
     user?: SDKExternalUser;
     status: AuthStatus;
@@ -42,8 +42,8 @@ export interface AuthContextType {
 
 const defaultContextValue: AuthContextType = {
     crossmintAuth: undefined,
-    login: async () => {},
-    logout: async () => {},
+    login: () => {},
+    logout: () => {},
     jwt: undefined,
     user: undefined,
     status: "logged-out",
