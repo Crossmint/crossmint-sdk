@@ -1,5 +1,6 @@
 import {
     CrossmintAuth,
+    type CrossmintAuthOptions,
     CrossmintAuthenticationError,
     type AuthMaterialBasic,
     type AuthSession,
@@ -7,17 +8,40 @@ import {
     CROSSMINT_API_VERSION,
 } from "@crossmint/common-sdk-auth";
 import type { Crossmint } from "@crossmint/common-sdk-base";
-import type { GenericRequest, GenericResponse } from "./types/request";
+import {
+    getNodeRequestBody,
+    isFetchRequest,
+    isNodeResponse,
+    setFetchResponseError,
+    setNodeResponseError,
+    type GenericRequest,
+    type GenericResponse,
+} from "./types/request";
 import { getAuthCookies, setAuthCookies } from "./utils/cookies";
 import { verifyCrossmintJwt } from "./utils/jwt";
+import type { ServerResponse } from "http";
+
+type CookieOptions = {
+    httpOnly?: boolean;
+    secure?: boolean;
+    sameSite?: "lax" | "strict" | "none";
+    cookieDomain?: string;
+};
+
+export type CrossmintAuthServerOptions = CrossmintAuthOptions & {
+    cookieOptions?: CookieOptions;
+};
 
 export class CrossmintAuthServer extends CrossmintAuth {
-    private constructor(crossmint: Crossmint) {
-        super(crossmint);
+    private cookieOptions: CookieOptions;
+
+    private constructor(crossmint: Crossmint, options: CrossmintAuthServerOptions) {
+        super(crossmint, options);
+        this.cookieOptions = options.cookieOptions ?? {};
     }
 
-    public static from(crossmint: Crossmint): CrossmintAuthServer {
-        return new CrossmintAuthServer(crossmint);
+    public static from(crossmint: Crossmint, options: CrossmintAuthServerOptions = {}): CrossmintAuthServer {
+        return new CrossmintAuthServer(crossmint, options);
     }
 
     public async getSession(
@@ -34,20 +58,14 @@ export class CrossmintAuthServer extends CrossmintAuth {
             return await this.validateOrRefreshSession(jwt, refreshToken, response);
         } catch (error) {
             if (error instanceof CrossmintAuthenticationError && response != null) {
-                this.storeAuthMaterial(response, {
-                    jwt: "",
-                    refreshToken: {
-                        secret: "",
-                        expiresAt: "",
-                    },
-                });
+                this.logout(response);
             }
             console.error("Failed to get session", error);
             throw new CrossmintAuthenticationError("Failed to get session");
         }
     }
 
-    async getUser(externalUserId: string) {
+    public async getUser(externalUserId: string) {
         const result = await this.apiClient.get(`api/${CROSSMINT_API_VERSION}/sdk/auth/user/${externalUserId}`, {
             headers: {
                 "Content-Type": "application/json",
@@ -58,12 +76,72 @@ export class CrossmintAuthServer extends CrossmintAuth {
         return user;
     }
 
+    public async handleCustomRefresh(request: GenericRequest, response?: ServerResponse): Promise<GenericResponse> {
+        const { refresh: refreshToken } = isFetchRequest(request)
+            ? await request.json()
+            : await getNodeRequestBody(request);
+
+        if (refreshToken == null) {
+            throw new CrossmintAuthenticationError("Refresh token missing from request body");
+        }
+
+        try {
+            const refreshedAuthMaterial = await this.refresh(refreshToken);
+
+            // For Node.js based servers, we need to accept a response parameter and add to it
+            if (response != null && isNodeResponse(response)) {
+                response.setHeader("Content-Type", "application/json");
+                response.write(JSON.stringify(refreshedAuthMaterial));
+            }
+
+            // For Fetch based servers, we create a new response with necessary parameters
+            const responseWithBody = isFetchRequest(request)
+                ? new Response(JSON.stringify(refreshedAuthMaterial), {
+                      headers: {
+                          "Content-Type": "application/json",
+                      },
+                  })
+                : response;
+
+            if (responseWithBody == null) {
+                throw new CrossmintAuthenticationError("Response not found");
+            }
+
+            this.storeAuthMaterial(responseWithBody, refreshedAuthMaterial);
+
+            return responseWithBody;
+        } catch (error) {
+            const errorResponseBody = { error: "Unauthorized", message: (error as Error).message };
+            const errorResponse =
+                response != null && isNodeResponse(response) ? response : setFetchResponseError(401, errorResponseBody);
+
+            this.logout(errorResponse);
+
+            // We need to set the rest of the Node response AFTER setting headers like we do in logout
+            if (isNodeResponse(errorResponse)) {
+                return setNodeResponseError(errorResponse, 401, errorResponseBody);
+            }
+
+            return errorResponse;
+        }
+    }
+
     public verifyCrossmintJwt(token: string) {
         return verifyCrossmintJwt(token, this.getJwksUri());
     }
 
     public storeAuthMaterial(response: GenericResponse, authMaterial: AuthMaterial) {
         setAuthCookies(response, authMaterial);
+    }
+
+    public logout(response: GenericResponse) {
+        this.storeAuthMaterial(response, {
+            jwt: "",
+            refreshToken: {
+                secret: "",
+                expiresAt: "",
+            },
+        });
     }
 
     private async validateOrRefreshSession(

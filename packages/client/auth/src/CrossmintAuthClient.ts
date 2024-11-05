@@ -3,6 +3,7 @@ import {
     type AuthMaterialWithUser,
     CROSSMINT_API_VERSION,
     CrossmintAuth,
+    type CrossmintAuthOptions,
     type OAuthProvider,
     REFRESH_TOKEN_PREFIX,
     SESSION_PREFIX,
@@ -11,19 +12,27 @@ import type { Crossmint } from "@crossmint/common-sdk-base";
 import { type CancellableTask, queueTask } from "@crossmint/client-sdk-base";
 import { deleteCookie, getCookie, getJWTExpiration, setCookie, TIME_BEFORE_EXPIRING_JWT_IN_SECONDS } from "./utils";
 
+type CrossmintAuthClientConfig = CrossmintAuthOptions & {
+    callbacks?: CrossmintAuthClientCallbacks;
+};
+
 export class CrossmintAuthClient extends CrossmintAuth {
     private callbacks: CrossmintAuthClientCallbacks;
     private refreshTask: CancellableTask | null = null;
     private isRefreshing = false;
 
-    private constructor(crossmint: Crossmint, callbacks: CrossmintAuthClientCallbacks = {}) {
-        super(crossmint);
-        this.callbacks = callbacks;
-        this.handleRefreshToken();
+    private constructor(crossmint: Crossmint, config: CrossmintAuthClientConfig = {}) {
+        super(crossmint, config);
+        this.callbacks = config.callbacks ?? {};
+
+        // In case an instance is created on the server, we can't refresh as this stores cookies
+        if (typeof window !== "undefined") {
+            this.handleRefreshToken();
+        }
     }
 
-    public static from(crossmint: Crossmint, callbacks?: CrossmintAuthClientCallbacks): CrossmintAuthClient {
-        return new CrossmintAuthClient(crossmint, callbacks);
+    public static from(crossmint: Crossmint, config: CrossmintAuthClientConfig = {}): CrossmintAuthClient {
+        return new CrossmintAuthClient(crossmint, config);
     }
 
     public getSession() {
@@ -62,7 +71,10 @@ export class CrossmintAuthClient extends CrossmintAuth {
         try {
             this.isRefreshing = true;
             const authMaterial = await this.refreshAuthMaterial(refreshToken);
-            this.storeAuthMaterial(authMaterial);
+            // If a custom refresh route is set, storing in cookies is handled in the server
+            if (this.refreshRoute == null) {
+                this.storeAuthMaterial(authMaterial);
+            }
             this.callbacks.onTokenRefresh?.(authMaterial);
 
             this.scheduleNextRefresh(authMaterial.jwt);

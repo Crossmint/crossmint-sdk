@@ -1,12 +1,17 @@
 import { type Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
 import { CROSSMINT_API_VERSION, SDK_NAME, SDK_VERSION } from "./utils/constants";
-import { type AuthMaterialWithUser, CrossmintAuthenticationError, type AuthMaterialResponse } from "./types";
+import { type AuthMaterialWithUser, CrossmintAuthenticationError } from "./types";
+
+export type CrossmintAuthOptions = {
+    refreshRoute?: string;
+};
 
 export class CrossmintAuth {
     protected crossmint: Crossmint;
     protected apiClient: CrossmintApiClient;
+    protected refreshRoute: string | null;
 
-    constructor(crossmint: Crossmint) {
+    constructor(crossmint: Crossmint, options: CrossmintAuthOptions = {}) {
         this.crossmint = crossmint;
         this.apiClient = new CrossmintApiClient(this.crossmint, {
             internalConfig: {
@@ -16,10 +21,11 @@ export class CrossmintAuth {
                 },
             },
         });
+        this.refreshRoute = options.refreshRoute ?? null;
     }
 
-    public static from(crossmint: Crossmint): CrossmintAuth {
-        return new CrossmintAuth(crossmint);
+    public static from(crossmint: Crossmint, options: CrossmintAuthOptions = {}): CrossmintAuth {
+        return new CrossmintAuth(crossmint, options);
     }
 
     public getJwksUri() {
@@ -27,6 +33,10 @@ export class CrossmintAuth {
     }
 
     protected async refreshAuthMaterial(refreshToken: string): Promise<AuthMaterialWithUser> {
+        return this.refreshRoute ? await this.refreshFromCustomRoute(refreshToken) : await this.refresh(refreshToken);
+    }
+
+    protected async refresh(refreshToken: string): Promise<AuthMaterialWithUser> {
         const result = await this.apiClient.post(`api/${CROSSMINT_API_VERSION}/session/sdk/auth/refresh`, {
             body: JSON.stringify({ refresh: refreshToken }),
             headers: {
@@ -34,16 +44,37 @@ export class CrossmintAuth {
             },
         });
 
-        if (!result.ok) {
-            throw new CrossmintAuthenticationError(result.statusText);
-        }
+        const resultJson = await result.json();
 
-        const resultJson = (await result.json()) as AuthMaterialResponse;
+        if (!result.ok) {
+            throw new CrossmintAuthenticationError(resultJson.message);
+        }
 
         return {
             jwt: resultJson.jwt,
             refreshToken: resultJson.refresh,
             user: resultJson.user,
         };
+    }
+
+    private async refreshFromCustomRoute(refreshToken: string): Promise<AuthMaterialWithUser> {
+        if (!this.refreshRoute) {
+            throw new Error("Custom refresh route is not set");
+        }
+
+        const result = await fetch(this.refreshRoute, {
+            method: "POST",
+            body: JSON.stringify({ refresh: refreshToken }),
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+
+        const resultJson = await result.json();
+        if (!result.ok) {
+            throw new CrossmintAuthenticationError(resultJson.message);
+        }
+
+        return resultJson;
     }
 }

@@ -5,6 +5,7 @@ import { type AuthMaterialBasic, CrossmintAuthenticationError } from "@crossmint
 import * as cookiesUtils from "./utils/cookies";
 import * as jwtUtils from "./utils/jwt";
 import type { GenericRequest, GenericResponse } from "./types/request";
+import type { ServerResponse } from "http";
 
 vi.mock("@crossmint/common-sdk-base");
 vi.mock("./utils/cookies");
@@ -53,11 +54,20 @@ describe("CrossmintAuthServer", () => {
     });
 
     describe("getSession", () => {
+        const originalConsoleError = console.error;
         const mockRequest = { headers: { cookie: "mock-cookie" } };
         const mockAuthMaterial = {
             jwt: "mock.jwt.token",
             refreshToken: "mock-refresh-token",
         };
+
+        beforeEach(() => {
+            console.error = vi.fn();
+        });
+
+        afterEach(() => {
+            console.error = originalConsoleError;
+        });
 
         it("should return a valid session when JWT is valid", async () => {
             vi.mocked(cookiesUtils.getAuthCookies).mockReturnValue(mockAuthMaterial);
@@ -105,6 +115,47 @@ describe("CrossmintAuthServer", () => {
                 "api/2024-09-26/session/sdk/auth/refresh",
                 expect.any(Object)
             );
+        });
+
+        it("should accept AuthMaterialBasic as input", async () => {
+            const mockAuthMaterial = {
+                jwt: "mock.jwt.token",
+                refreshToken: "mock-refresh-token",
+            };
+            vi.mocked(jwtUtils.verifyCrossmintJwt).mockResolvedValue({ sub: "user123" });
+
+            const result = await crossmintAuthServer.getSession(mockAuthMaterial);
+
+            expect(result).toEqual({
+                jwt: "mock.jwt.token",
+                refreshToken: {
+                    secret: "mock-refresh-token",
+                    expiresAt: "",
+                },
+                userId: "user123",
+            });
+        });
+
+        it("should call logout when error occurs and response is provided", async () => {
+            const mockRequest = { headers: { cookie: "mock-cookie" } } as GenericRequest;
+            const mockResponse = {} as GenericResponse;
+
+            vi.spyOn(CrossmintAuthServer.prototype, "logout");
+            crossmintAuthServer = CrossmintAuthServer.from(mockCrossmint as unknown as Crossmint);
+
+            vi.mocked(cookiesUtils.getAuthCookies).mockReturnValue({
+                jwt: "mock.jwt.token",
+                refreshToken: "mock-refresh-token",
+            } as AuthMaterialBasic);
+
+            vi.mocked(jwtUtils.verifyCrossmintJwt).mockRejectedValue(new Error("Invalid token"));
+            mockApiClient.post.mockRejectedValueOnce(new CrossmintAuthenticationError("API error"));
+
+            await expect(crossmintAuthServer.getSession(mockRequest, mockResponse)).rejects.toThrow(
+                CrossmintAuthenticationError
+            );
+
+            expect(CrossmintAuthServer.prototype.logout).toHaveBeenCalledWith(mockResponse);
         });
 
         it("should throw CrossmintAuthenticationError when refresh token is not found", async () => {
@@ -166,4 +217,180 @@ describe("CrossmintAuthServer", () => {
             expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(mockResponse, mockAuthMaterial);
         });
     });
+
+    describe("handleCustomRefresh", () => {
+        it("should handle Fetch-based refresh requests", async () => {
+            const mockRequest = new Request("http://test.com", {
+                method: "POST",
+                body: JSON.stringify({ refresh: "mock-refresh-token" }),
+            });
+
+            const mockRefreshedAuthRes = {
+                jwt: "new.jwt.token",
+                refresh: {
+                    secret: "new-refresh-token",
+                    expiresAt: "2023-12-31T23:59:59Z",
+                },
+                user: { id: "user123" },
+            };
+
+            mockApiClient.post.mockResolvedValue({
+                json: () => Promise.resolve(mockRefreshedAuthRes),
+                ok: true,
+            });
+
+            const result = await crossmintAuthServer.handleCustomRefresh(mockRequest);
+
+            expect(result).toBeInstanceOf(Response);
+            expect(mockApiClient.post).toHaveBeenCalledWith(
+                "api/2024-09-26/session/sdk/auth/refresh",
+                expect.any(Object)
+            );
+
+            expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(expect.any(Response), {
+                jwt: mockRefreshedAuthRes.jwt,
+                refreshToken: mockRefreshedAuthRes.refresh,
+                user: mockRefreshedAuthRes.user,
+            });
+        });
+
+        it("should handle Fetch-based refresh errors and clear cookies", async () => {
+            const mockRequest = new Request("http://test.com", {
+                method: "POST",
+                body: JSON.stringify({ refresh: "mock-refresh-token" }),
+            });
+
+            mockApiClient.post.mockRejectedValue(new Error("API error"));
+
+            const result = (await crossmintAuthServer.handleCustomRefresh(mockRequest)) as Response;
+            expect(result.statusText).toBe("Unauthorized");
+            expect(result.status).toBe(401);
+
+            // Verify auth cookies were cleared with the correct structure
+            expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(expect.any(Response), {
+                jwt: "",
+                refreshToken: {
+                    secret: "",
+                    expiresAt: "",
+                },
+            });
+        });
+
+        it("should throw error when refresh token is missing", async () => {
+            const mockRequest = new Request("http://test.com", {
+                method: "POST",
+                body: JSON.stringify({}),
+            });
+
+            await expect(crossmintAuthServer.handleCustomRefresh(mockRequest)).rejects.toThrow(
+                "Refresh token missing from request body"
+            );
+        });
+
+        it("should handle Node-based refresh requests", async () => {
+            const { mockNodeRequest, mockNodeResponse } = getNodeReqResMock();
+
+            const mockRefreshedAuthRes = {
+                jwt: "new.jwt.token",
+                refresh: {
+                    secret: "new-refresh-token",
+                    expiresAt: "2023-12-31T23:59:59Z",
+                },
+                user: { id: "user123" },
+            };
+
+            mockApiClient.post.mockResolvedValue({
+                json: () => Promise.resolve(mockRefreshedAuthRes),
+                ok: true,
+            });
+
+            const mockRefreshedAuth = {
+                jwt: mockRefreshedAuthRes.jwt,
+                refreshToken: mockRefreshedAuthRes.refresh,
+                user: mockRefreshedAuthRes.user,
+            };
+
+            const result = await crossmintAuthServer.handleCustomRefresh(mockNodeRequest, mockNodeResponse);
+
+            expect(mockNodeResponse.setHeader).toHaveBeenCalledWith("Content-Type", "application/json");
+            expect(mockNodeResponse.write).toHaveBeenCalledWith(JSON.stringify(mockRefreshedAuth));
+
+            expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(
+                mockNodeResponse,
+                expect.objectContaining({
+                    jwt: "new.jwt.token",
+                    refreshToken: {
+                        secret: "new-refresh-token",
+                        expiresAt: "2023-12-31T23:59:59Z",
+                    },
+                })
+            );
+
+            expect(result).toBe(mockNodeResponse);
+        });
+
+        it("should handle Node-based refresh errors", async () => {
+            const { mockNodeRequest, mockNodeResponse } = getNodeReqResMock();
+
+            mockApiClient.post.mockRejectedValue(new Error("API error"));
+
+            await crossmintAuthServer.handleCustomRefresh(mockNodeRequest, mockNodeResponse);
+
+            expect(mockNodeResponse.statusCode).toBe(401);
+            expect(mockNodeResponse.write).toHaveBeenCalledWith(
+                JSON.stringify({ error: "Unauthorized", message: "API error" })
+            );
+
+            expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(
+                mockNodeResponse,
+                expect.objectContaining({
+                    jwt: "",
+                    refreshToken: {
+                        secret: "",
+                        expiresAt: "",
+                    },
+                })
+            );
+        });
+    });
+
+    describe("logout", () => {
+        it("should clear auth material from response", () => {
+            const mockResponse = {} as GenericResponse;
+
+            crossmintAuthServer.logout(mockResponse);
+
+            expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(mockResponse, {
+                jwt: "",
+                refreshToken: {
+                    secret: "",
+                    expiresAt: "",
+                },
+            });
+        });
+    });
 });
+
+function getNodeReqResMock() {
+    const mockNodeRequest = {
+        method: "POST",
+        on: (event: string, callback: (chunk: Buffer) => void) => {
+            if (event === "data") {
+                callback(Buffer.from(JSON.stringify({ refresh: "mock-refresh-token" })));
+            } else if (event === "end") {
+                callback(Buffer.from(""));
+            }
+            return mockNodeRequest;
+        },
+    } as unknown as GenericRequest;
+
+    const mockNodeResponse = {
+        setHeader: vi.fn(),
+        write: vi.fn(),
+        end: vi.fn(),
+        statusCode: 200,
+        getHeader: vi.fn(),
+    } as unknown as ServerResponse;
+
+    return { mockNodeRequest, mockNodeResponse };
+}

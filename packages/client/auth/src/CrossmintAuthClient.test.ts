@@ -20,11 +20,19 @@ describe("CrossmintAuthClient", () => {
         get: vi.fn(),
         post: vi.fn(),
     };
+    const mockCallbacks = {
+        onLogout: vi.fn(),
+        onTokenRefresh: vi.fn(),
+    };
+    const mockConfig = {
+        callbacks: mockCallbacks,
+        refreshRoute: "/custom/refresh",
+    };
 
     beforeEach(() => {
         vi.resetAllMocks();
         vi.mocked(CrossmintApiClient).mockReturnValue(mockApiClient as unknown as CrossmintApiClient);
-        crossmintAuthClient = CrossmintAuthClient.from(mockCrossmint as unknown as Crossmint);
+        crossmintAuthClient = CrossmintAuthClient.from(mockCrossmint as unknown as Crossmint, mockConfig);
     });
 
     afterEach(() => {
@@ -32,9 +40,11 @@ describe("CrossmintAuthClient", () => {
     });
 
     describe("from", () => {
-        it("should create a new CrossmintAuthClient instance", () => {
+        it("should create a new CrossmintAuthClient instance with config", () => {
             expect(crossmintAuthClient).toBeInstanceOf(CrossmintAuthClient);
             expect(CrossmintApiClient).toHaveBeenCalledWith(mockCrossmint, expect.any(Object));
+            expect((crossmintAuthClient as any).callbacks).toEqual(mockConfig.callbacks);
+            expect((crossmintAuthClient as any).refreshRoute).toBe(mockConfig.refreshRoute);
         });
     });
 
@@ -73,14 +83,11 @@ describe("CrossmintAuthClient", () => {
 
     describe("logout", () => {
         it("should clear auth cookies and call onLogout callback", () => {
-            const mockCallbacks = { onLogout: vi.fn() };
-            crossmintAuthClient = CrossmintAuthClient.from(mockCrossmint as unknown as Crossmint, mockCallbacks);
-
             crossmintAuthClient.logout();
 
             expect(cookiesUtils.deleteCookie).toHaveBeenCalledWith("crossmint-refresh-token");
             expect(cookiesUtils.deleteCookie).toHaveBeenCalledWith("crossmint-jwt");
-            expect(mockCallbacks.onLogout).toHaveBeenCalled();
+            expect(mockConfig.callbacks.onLogout).toHaveBeenCalled();
         });
     });
 
@@ -100,6 +107,12 @@ describe("CrossmintAuthClient", () => {
         });
 
         it("should refresh auth material and schedule next refresh", async () => {
+            crossmintAuthClient = CrossmintAuthClient.from(mockCrossmint as unknown as Crossmint, {
+                callbacks: mockCallbacks,
+            });
+            vi.spyOn(crossmintAuthClient as any, "refreshAuthMaterial").mockResolvedValue(mockAuthMaterial);
+            vi.spyOn(crossmintAuthClient as any, "storeAuthMaterial").mockImplementation(() => {});
+
             await crossmintAuthClient.handleRefreshToken(mockRefreshToken);
 
             expect(crossmintAuthClient["refreshAuthMaterial"]).toHaveBeenCalledWith(mockRefreshToken);
@@ -175,6 +188,15 @@ describe("CrossmintAuthClient", () => {
             await crossmintAuthClient.handleRefreshToken(mockRefreshToken);
 
             expect(queueTask).not.toHaveBeenCalled();
+        });
+
+        it("should not store auth material if custom refresh route is set", async () => {
+            const spyStoreAuthMaterial = vi.spyOn(crossmintAuthClient, "storeAuthMaterial");
+
+            await crossmintAuthClient.handleRefreshToken(mockRefreshToken);
+
+            expect(crossmintAuthClient["refreshAuthMaterial"]).toHaveBeenCalledWith(mockRefreshToken);
+            expect(spyStoreAuthMaterial).not.toHaveBeenCalled();
         });
     });
 

@@ -25,26 +25,32 @@ export type CrossmintAuthProviderProps = {
     appearance?: UIConfig;
     children: ReactNode;
     loginMethods?: LoginMethod[];
+    refreshRoute?: string;
 };
 
 type AuthStatus = "logged-in" | "logged-out" | "in-progress";
 
-type AuthContextType = {
+export interface AuthContextType {
     crossmintAuth?: CrossmintAuth;
-    login: () => void;
-    logout: () => void;
+    login: () => Promise<void>;
+    logout: () => Promise<void>;
     jwt?: string;
     user?: SDKExternalUser;
     status: AuthStatus;
-    getUser: () => void;
+    getUser: () => Promise<void>;
+}
+
+const defaultContextValue: AuthContextType = {
+    crossmintAuth: undefined,
+    login: async () => {},
+    logout: async () => {},
+    jwt: undefined,
+    user: undefined,
+    status: "logged-out",
+    getUser: async () => {},
 };
 
-export const AuthContext = createContext<AuthContextType>({
-    login: () => {},
-    logout: () => {},
-    status: "logged-out",
-    getUser: () => {},
-});
+export const AuthContext = createContext<AuthContextType>(defaultContextValue as AuthContextType);
 
 const defaultEmbeddedWallets: CrossmintAuthWalletConfig = {
     defaultChain: "base-sepolia",
@@ -57,24 +63,29 @@ export function CrossmintAuthProvider({
     children,
     appearance,
     loginMethods = ["email", "google"],
+    refreshRoute,
 }: CrossmintAuthProviderProps) {
     const [user, setUser] = useState<SDKExternalUser | undefined>(undefined);
     const { crossmint, setJwt } = useCrossmint("CrossmintAuthProvider must be used within CrossmintProvider");
     // Only create the CrossmintAuth instance once, even in StrictMode, as the constructor calls /refresh
     // It can only be called once to avoid race conditions
     const crossmintAuthRef = useRef<CrossmintAuth | null>(null);
+
     // biome-ignore lint/correctness/useExhaustiveDependencies: crossmint can't be a dependency because it updates with each jwt change
     const crossmintAuth = useMemo(() => {
         if (!crossmintAuthRef.current) {
             crossmintAuthRef.current = CrossmintAuth.from(crossmint, {
-                onLogout: () => {
-                    setJwt(undefined);
-                    setUser(undefined);
+                callbacks: {
+                    onLogout: () => {
+                        setJwt(undefined);
+                        setUser(undefined);
+                    },
+                    onTokenRefresh: (authMaterial) => {
+                        setJwt(authMaterial.jwt);
+                        setUser(authMaterial.user);
+                    },
                 },
-                onTokenRefresh: (authMaterial) => {
-                    setJwt(authMaterial.jwt);
-                    setUser(authMaterial.user);
-                },
+                refreshRoute,
             });
         }
         return crossmintAuthRef.current;

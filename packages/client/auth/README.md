@@ -45,14 +45,26 @@ You can provide callbacks for token refresh and logout events when creating the 
 
 ```typescript
 const crossmintAuth = CrossmintAuthClient.from(crossmint, {
-    onTokenRefresh: (authMaterial) => {
-        // Handle new authentication material
-    },
-    onLogout: () => {
-        // Handle logout
+    callbacks: {
+        onTokenRefresh: (authMaterial) => {
+            // Handle new authentication material
+        },
+        onLogout: () => {
+            // Handle logout
+        },
     },
 });
 ```
+
+You can also provide a custom refresh route:
+
+```typescript
+const crossmintAuth = CrossmintAuthClient.from(crossmint, {
+    refreshRoute: "/api/refresh",
+});
+```
+
+This way, the SDK will use the provided route to refresh the token instead of the default one and the authentication material can be stored in HttpOnly cookies that are tied to the domain of the provided route.
 
 ### Authentication Material
 

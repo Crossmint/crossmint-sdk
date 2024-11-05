@@ -49,3 +49,40 @@ const { jwt, userId } = await crossmintAuth.getSession({
 });
 ```
 
+3. Store the authentication material in cookies
+
+If you are using a framework with access to the response object, you can store the authentication material in cookies by passing the response object to the `getSession` method:
+
+```ts
+const { jwt, userId } = await crossmintAuth.getSession(request, response);
+```
+
+## Set up custom refresh route
+
+To set up a custom refresh route, you can use the `handleCustomRefresh` method. This method will refresh the token and return the new authentication material. This way, the authentication material can be stored in cookies that are tied to the domain of the provided route.
+
+In environments that use the Fetch API for `Request` and `Response` objects, `handleCustomRefresh` will return the response object:
+
+```ts
+const response = await crossmintAuth.handleCustomRefresh(request);
+return response;
+```
+
+In environments that use Node.js API, you also need to provide the response object:
+
+```ts
+await crossmintAuth.handleCustomRefresh(req, res);
+res.end();
+```
+
+## Advanced Usaged
+
+You can also provide a custom refresh route:
+
+```typescript
+const crossmintAuth = CrossmintAuthClient.from(crossmint, {
+    refreshRoute: "/api/refresh",
+});
+```
+
+This way, the SDK will use the provided route to refresh the token instead of the default one and the authentication material can be stored in HttpOnly cookies that are tied to the domain of the provided route.

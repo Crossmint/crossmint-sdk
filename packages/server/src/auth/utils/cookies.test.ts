@@ -63,14 +63,14 @@ describe("getAuthCookies", () => {
         } as IncomingMessage;
 
         expect(() => getAuthCookies(mockRequest)).toThrow(CrossmintAuthenticationError);
-        expect(() => getAuthCookies(mockRequest)).toThrow("Cookie header not found");
+        expect(() => getAuthCookies(mockRequest)).toThrow("No cookies found in request");
     });
 
     it("should throw CrossmintAuthenticationError if cookie header is missing in Fetch Request", () => {
         const mockRequest = new Request("https://example.com");
 
         expect(() => getAuthCookies(mockRequest)).toThrow(CrossmintAuthenticationError);
-        expect(() => getAuthCookies(mockRequest)).toThrow("Cookie header not found");
+        expect(() => getAuthCookies(mockRequest)).toThrow("No cookies found in request");
     });
 
     it("should throw CrossmintAuthenticationError for unsupported request type", () => {
@@ -134,5 +134,27 @@ describe("setAuthCookies", () => {
 
         expect(() => setAuthCookies(mockResponse, mockAuthMaterial)).toThrow(CrossmintAuthenticationError);
         expect(() => setAuthCookies(mockResponse, mockAuthMaterial)).toThrow("Unsupported response type");
+    });
+
+    it("should set expired cookies when setting empty auth material", () => {
+        const response = new Response();
+        const emptyAuthMaterial = {
+            jwt: "",
+            refreshToken: {
+                secret: "",
+                expiresAt: "",
+            },
+        };
+
+        setAuthCookies(response, emptyAuthMaterial);
+
+        const cookies = Array.from(response.headers.entries())
+            .filter(([key]) => key.startsWith("set-cookie"))
+            .map(([_, value]) => value);
+        expect(cookies).toHaveLength(2);
+        expect(cookies[0]).toBe("crossmint-jwt=; path=/; SameSite=Lax; expires=Thu, 01 Jan 1970 00:00:00 UTC;");
+        expect(cookies[1]).toBe(
+            "crossmint-refresh-token=; path=/; SameSite=Lax; expires=Thu, 01 Jan 1970 00:00:00 UTC;"
+        );
     });
 });

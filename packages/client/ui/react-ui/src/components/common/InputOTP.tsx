@@ -19,9 +19,14 @@ type CustomStyles = {
 // Create a context for customStyles
 const CustomStylesContext = createContext<CustomStyles | undefined>(undefined);
 
-const InputOTP = React.forwardRef<
-    React.ElementRef<typeof OTPInput>,
-    React.ComponentPropsWithoutRef<typeof OTPInput> & { customStyles?: CustomStyles }
+type InputOTPProps = React.ComponentPropsWithoutRef<typeof OTPInput> & {
+    customStyles?: CustomStyles;
+};
+type InputOTPRef = React.ElementRef<typeof OTPInput>;
+
+const InputOTP: React.ForwardRefExoticComponent<InputOTPProps & React.RefAttributes<InputOTPRef>> = React.forwardRef<
+    InputOTPRef,
+    InputOTPProps
 >(({ className, containerClassName, customStyles, ...props }, ref) => (
     <CustomStylesContext.Provider value={customStyles}>
         <OTPInput

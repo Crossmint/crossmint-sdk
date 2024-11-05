@@ -52,7 +52,7 @@ function getCookieHeader(request: GenericRequest): string {
     }
 
     if (cookieHeader == null) {
-        throw new CrossmintAuthenticationError("Cookie header not found");
+        throw new CrossmintAuthenticationError("No cookies found in request");
     }
     return cookieHeader;
 }
@@ -69,7 +69,11 @@ function parseCookieHeader(cookieHeader: string): Record<string, string> {
 }
 
 function createCookieString(cookieOptions: CookieOptions): string {
-    const expiresInUtc = cookieOptions.expiresAt ? new Date(cookieOptions.expiresAt).toUTCString() : "";
+    const expiresInUtc = cookieOptions.expiresAt
+        ? new Date(cookieOptions.expiresAt).toUTCString()
+        : cookieOptions.value === ""
+          ? "Thu, 01 Jan 1970 00:00:00 UTC"
+          : undefined;
     let cookieString = `${cookieOptions.name}=${cookieOptions.value}; path=/; SameSite=Lax;`;
     if (expiresInUtc) {
         cookieString += ` expires=${expiresInUtc};`;
