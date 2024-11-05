@@ -25,22 +25,13 @@ export default function HostedCheckoutV3Page() {
             >
                 <HostedCheckoutV3ClientProviders>
                     <CrossmintHostedCheckout_Alpha
-                        lineItems={[
-                            {
-                                collectionLocator: "crossmint:be2258c4-dde2-4551-ba0e-5e231784bfd2",
-                                callData: {
-                                    totalPrice: "0.001",
-                                    quantity: 1,
-                                },
+                        lineItems={{
+                            collectionLocator: "crossmint:206b3146-f526-444e-bd9d-0607d581b0e9",
+                            callData: {
+                                totalPrice: "0.001",
+                                quantity: 1,
                             },
-                            {
-                                collectionLocator: "crossmint:be2258c4-dde2-4551-ba0e-5e231784bfd2",
-                                callData: {
-                                    totalPrice: "0.001",
-                                    quantity: 1,
-                                },
-                            },
-                        ]}
+                        }}
                         payment={{
                             crypto: {
                                 enabled: true,
