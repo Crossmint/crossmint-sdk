@@ -41,8 +41,11 @@ export interface AuthContextType {
 }
 
 const defaultContextValue: AuthContextType = {
+    crossmintAuth: undefined,
     login: () => {},
     logout: () => {},
+    jwt: undefined,
+    user: undefined,
     status: "logged-out",
     getUser: () => {},
 };

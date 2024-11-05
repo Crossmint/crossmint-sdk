@@ -71,7 +71,7 @@ function FarcasterQRCode() {
         try {
             const oneTimeSecret = await crossmintAuth?.signInWithFarcaster(data);
             // Step 5. fetch the auth material, close the dialog, and unrender any farcaster client stuff
-            await crossmintAuth?.handleRefreshToken(oneTimeSecret as string);
+            await crossmintAuth?.handleRefreshAuthMaterial(oneTimeSecret as string);
             setDialogOpen(false);
             setStep("initial");
         } catch (error) {

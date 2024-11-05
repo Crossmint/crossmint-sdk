@@ -91,7 +91,7 @@ describe("CrossmintAuthClient", () => {
         });
     });
 
-    describe("handleRefreshToken", () => {
+    describe("handleRefreshAuthMaterial", () => {
         const mockRefreshToken = "mock-refresh-token";
         const mockAuthMaterial = {
             jwt: "new.jwt.token",
@@ -113,7 +113,7 @@ describe("CrossmintAuthClient", () => {
             vi.spyOn(crossmintAuthClient as any, "refreshAuthMaterial").mockResolvedValue(mockAuthMaterial);
             vi.spyOn(crossmintAuthClient as any, "storeAuthMaterial").mockImplementation(() => {});
 
-            await crossmintAuthClient.handleRefreshToken(mockRefreshToken);
+            await crossmintAuthClient.handleRefreshAuthMaterial(mockRefreshToken);
 
             expect(crossmintAuthClient["refreshAuthMaterial"]).toHaveBeenCalledWith(mockRefreshToken);
             expect(crossmintAuthClient["storeAuthMaterial"]).toHaveBeenCalledWith(mockAuthMaterial);
@@ -122,7 +122,7 @@ describe("CrossmintAuthClient", () => {
 
         it("should not refresh if already refreshing", async () => {
             (crossmintAuthClient as any).isRefreshing = true;
-            await crossmintAuthClient.handleRefreshToken(mockRefreshToken);
+            await crossmintAuthClient.handleRefreshAuthMaterial(mockRefreshToken);
 
             expect(crossmintAuthClient["refreshAuthMaterial"]).not.toHaveBeenCalled();
         });
@@ -131,7 +131,7 @@ describe("CrossmintAuthClient", () => {
             const mockCallback = vi.fn();
             (crossmintAuthClient as any).callbacks.onTokenRefresh = mockCallback;
 
-            await crossmintAuthClient.handleRefreshToken(mockRefreshToken);
+            await crossmintAuthClient.handleRefreshAuthMaterial(mockRefreshToken);
 
             expect(mockCallback).toHaveBeenCalledWith(mockAuthMaterial);
         });
@@ -142,7 +142,7 @@ describe("CrossmintAuthClient", () => {
             vi.spyOn(crossmintAuthClient, "logout").mockImplementation(() => {});
             const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-            await crossmintAuthClient.handleRefreshToken(mockRefreshToken);
+            await crossmintAuthClient.handleRefreshAuthMaterial(mockRefreshToken);
 
             expect(consoleErrorSpy).toHaveBeenCalledWith(mockError);
             expect(crossmintAuthClient.logout).toHaveBeenCalled();
@@ -151,7 +151,7 @@ describe("CrossmintAuthClient", () => {
         it("should use cookie if no refresh token is provided", async () => {
             vi.mocked(cookiesUtils.getCookie).mockReturnValue(mockRefreshToken);
 
-            await crossmintAuthClient.handleRefreshToken();
+            await crossmintAuthClient.handleRefreshAuthMaterial();
 
             expect(crossmintAuthClient["refreshAuthMaterial"]).toHaveBeenCalledWith(mockRefreshToken);
         });
@@ -159,7 +159,7 @@ describe("CrossmintAuthClient", () => {
         it("should not refresh if no refresh token is available", async () => {
             vi.mocked(cookiesUtils.getCookie).mockReturnValue(null as any);
 
-            await crossmintAuthClient.handleRefreshToken();
+            await crossmintAuthClient.handleRefreshAuthMaterial();
 
             expect(crossmintAuthClient["refreshAuthMaterial"]).not.toHaveBeenCalled();
         });
@@ -168,7 +168,7 @@ describe("CrossmintAuthClient", () => {
             const mockCancelTask = vi.fn();
             (crossmintAuthClient as any).refreshTask = { cancel: mockCancelTask };
 
-            await crossmintAuthClient.handleRefreshToken(mockRefreshToken);
+            await crossmintAuthClient.handleRefreshAuthMaterial(mockRefreshToken);
 
             expect(mockCancelTask).toHaveBeenCalled();
             expect(queueTask).toHaveBeenCalled();
@@ -177,7 +177,7 @@ describe("CrossmintAuthClient", () => {
         it("should not schedule refresh if JWT is invalid", async () => {
             vi.mocked(getJWTExpiration).mockReturnValue(null as any);
 
-            await crossmintAuthClient.handleRefreshToken(mockRefreshToken);
+            await crossmintAuthClient.handleRefreshAuthMaterial(mockRefreshToken);
 
             expect(queueTask).not.toHaveBeenCalled();
         });
@@ -185,7 +185,7 @@ describe("CrossmintAuthClient", () => {
         it("should not schedule refresh if time to expire is negative", async () => {
             vi.mocked(getJWTExpiration).mockReturnValue(Date.now() / 1000 - 3600); // 1 hour ago
 
-            await crossmintAuthClient.handleRefreshToken(mockRefreshToken);
+            await crossmintAuthClient.handleRefreshAuthMaterial(mockRefreshToken);
 
             expect(queueTask).not.toHaveBeenCalled();
         });
@@ -193,7 +193,7 @@ describe("CrossmintAuthClient", () => {
         it("should not store auth material if custom refresh route is set", async () => {
             const spyStoreAuthMaterial = vi.spyOn(crossmintAuthClient, "storeAuthMaterial");
 
-            await crossmintAuthClient.handleRefreshToken(mockRefreshToken);
+            await crossmintAuthClient.handleRefreshAuthMaterial(mockRefreshToken);
 
             expect(crossmintAuthClient["refreshAuthMaterial"]).toHaveBeenCalledWith(mockRefreshToken);
             expect(spyStoreAuthMaterial).not.toHaveBeenCalled();

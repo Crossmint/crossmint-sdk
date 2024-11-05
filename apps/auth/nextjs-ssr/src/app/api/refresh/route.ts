@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
         });
         const response = await crossmintAuth.handleCustomRefresh(request);
 
-        return response;
+        return response as Response;
     } catch (error) {
         console.error(error);
     }

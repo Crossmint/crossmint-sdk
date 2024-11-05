@@ -28,7 +28,7 @@ export function EmailOTPInput({
                 token
             );
 
-            await crossmintAuth?.handleRefreshToken(oneTimeSecret as string);
+            await crossmintAuth?.handleRefreshAuthMaterial(oneTimeSecret as string);
             setDialogOpen(false);
             setStep("initial");
         } catch (e) {

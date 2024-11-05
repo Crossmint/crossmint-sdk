@@ -71,15 +71,20 @@ export class CrossmintAuthServer extends CrossmintAuth {
     }
 
     public async handleCustomRefresh(request: GenericRequest, response?: ServerResponse): Promise<GenericResponse> {
-        const { refresh: refreshToken } = isFetchRequest(request)
-            ? await request.json()
-            : await getNodeRequestBody(request);
-
-        if (refreshToken == null) {
-            throw new CrossmintAuthenticationError("Refresh token missing from request body");
-        }
+        // If the request from the client includes a refresh token (like the OneTimeSecret after authenticating), use that
+        // Otherwise, try to get the refresh token from the cookies
+        const body = isFetchRequest(request) ? await request.json() : await getNodeRequestBody(request);
+        const { refresh: tokenFromBody } = body ?? {};
+        const { refreshToken: tokenFromCookies } = getAuthCookies(request);
+        const refreshToken = tokenFromBody ?? tokenFromCookies;
 
         try {
+            if (refreshToken == null) {
+                throw new CrossmintAuthenticationError(
+                    "Please provide a refresh token either in the request body or cookies"
+                );
+            }
+
             const refreshedAuthMaterial = await this.refresh(refreshToken);
 
             // For Node.js based servers, we need to accept a response parameter and add to it

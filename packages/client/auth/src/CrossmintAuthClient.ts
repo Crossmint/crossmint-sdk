@@ -27,7 +27,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
 
         // In case an instance is created on the server, we can't refresh as this stores cookies
         if (typeof window !== "undefined") {
-            this.handleRefreshToken();
+            this.handleRefreshAuthMaterial();
         }
     }
 
@@ -36,7 +36,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
     }
 
     public getSession() {
-        this.handleRefreshToken();
+        this.handleRefreshAuthMaterial();
         return getCookie(SESSION_PREFIX);
     }
 
@@ -62,19 +62,22 @@ export class CrossmintAuthClient extends CrossmintAuth {
         this.callbacks.onLogout?.();
     }
 
-    public async handleRefreshToken(refreshTokenSecret?: string): Promise<void> {
+    public async handleRefreshAuthMaterial(refreshTokenSecret?: string): Promise<void> {
         const refreshToken = refreshTokenSecret ?? getCookie(REFRESH_TOKEN_PREFIX);
-        if (refreshToken == null || this.isRefreshing) {
+        // If there is a custom refresh route, that endpoint will fetch the cookies itself
+        if ((refreshToken == null && this.refreshRoute == null) || this.isRefreshing) {
             return;
         }
 
         try {
             this.isRefreshing = true;
             const authMaterial = await this.refreshAuthMaterial(refreshToken);
+
             // If a custom refresh route is set, storing in cookies is handled in the server
             if (this.refreshRoute == null) {
                 this.storeAuthMaterial(authMaterial);
             }
+
             this.callbacks.onTokenRefresh?.(authMaterial);
 
             this.scheduleNextRefresh(authMaterial.jwt);
@@ -176,7 +179,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
         if (timeToExpire > 0) {
             const endTime = Date.now() + timeToExpire * 1000;
             this.cancelScheduledRefresh();
-            this.refreshTask = queueTask(() => this.handleRefreshToken(), endTime);
+            this.refreshTask = queueTask(() => this.handleRefreshAuthMaterial(), endTime);
         }
     }
 

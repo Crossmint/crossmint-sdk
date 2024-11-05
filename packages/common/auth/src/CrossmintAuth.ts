@@ -32,8 +32,16 @@ export class CrossmintAuth {
         return `${this.apiClient.baseUrl}/.well-known/jwks.json`;
     }
 
-    protected async refreshAuthMaterial(refreshToken: string): Promise<AuthMaterialWithUser> {
-        return this.refreshRoute ? await this.refreshFromCustomRoute(refreshToken) : await this.refresh(refreshToken);
+    protected async refreshAuthMaterial(refreshToken?: string): Promise<AuthMaterialWithUser> {
+        if (this.refreshRoute != null) {
+            return await this.refreshFromCustomRoute(refreshToken);
+        }
+
+        if (refreshToken != null) {
+            return await this.refresh(refreshToken);
+        }
+
+        throw new CrossmintAuthenticationError("Refresh token missing from parameters");
     }
 
     protected async refresh(refreshToken: string): Promise<AuthMaterialWithUser> {
@@ -57,7 +65,7 @@ export class CrossmintAuth {
         };
     }
 
-    private async refreshFromCustomRoute(refreshToken: string): Promise<AuthMaterialWithUser> {
+    private async refreshFromCustomRoute(refreshToken?: string): Promise<AuthMaterialWithUser> {
         if (!this.refreshRoute) {
             throw new Error("Custom refresh route is not set");
         }

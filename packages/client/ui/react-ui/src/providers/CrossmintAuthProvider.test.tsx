@@ -83,7 +83,7 @@ describe("CrossmintAuthProvider", () => {
     let mockSDK: SmartWalletSDK;
     let mockWallet: EVMSmartWallet;
     let embeddedWallets: CrossmintAuthWalletConfig;
-    let handleRefreshTokenSpy: MockInstance;
+    let handleRefreshAuthMaterialSpy: MockInstance;
     let getOAuthUrlSpy: MockInstance;
 
     beforeEach(() => {
@@ -110,7 +110,7 @@ describe("CrossmintAuthProvider", () => {
         deleteCookie(REFRESH_TOKEN_PREFIX);
         deleteCookie(SESSION_PREFIX);
 
-        handleRefreshTokenSpy = vi.spyOn(CrossmintAuthClient.prototype, "handleRefreshToken");
+        handleRefreshAuthMaterialSpy = vi.spyOn(CrossmintAuthClient.prototype, "handleRefreshAuthMaterial");
         getOAuthUrlSpy = vi.spyOn(CrossmintAuthClient.prototype, "getOAuthUrl").mockResolvedValue("mock-oauth-url");
         // Casts as any because refreshAuthMaterial is protected
         vi.spyOn(CrossmintAuthClient.prototype as any, "refreshAuthMaterial").mockResolvedValue(
@@ -147,7 +147,7 @@ describe("CrossmintAuthProvider", () => {
             expect(getByTestId("error").textContent).toBe("No Error");
         });
 
-        expect(handleRefreshTokenSpy).toHaveBeenCalledOnce();
+        expect(handleRefreshAuthMaterialSpy).toHaveBeenCalledOnce();
         expect(getOAuthUrlSpy).toHaveBeenCalled();
         expect(vi.mocked(mockSDK.getOrCreateWallet)).toHaveBeenCalledOnce();
     });
