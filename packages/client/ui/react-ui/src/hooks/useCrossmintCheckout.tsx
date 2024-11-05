@@ -16,7 +16,9 @@ export function CrossmintCheckoutProvider({ children }: { children: ReactNode })
     const [orderClientSecret, setOrderClientSecret] = useState<string | undefined>(undefined);
 
     const { crossmint } = useCrossmint();
-    const apiClient = createCrossmintApiClient(crossmint);
+    const apiClient = createCrossmintApiClient(crossmint, {
+        usageOrigin: "client",
+    });
 
     useEffect(() => {
         const listener = (event: MessageEvent) => {
