@@ -5,7 +5,6 @@
             "outputLogs": "new-only",
             "dependsOn": ["^build"]
         },
-        "test:circular": {},
         "test:vitest": {
             "outputLogs": "new-only"
         }
