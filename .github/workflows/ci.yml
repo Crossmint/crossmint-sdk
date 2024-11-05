@@ -23,7 +23,7 @@ jobs:
               run: pnpm build
 
             - name: Test all
-              run: pnpm test
+              run: pnpm test:vitest
 
     lint:
         name: lint
