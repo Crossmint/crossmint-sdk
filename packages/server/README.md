@@ -75,6 +75,23 @@ await crossmintAuth.handleCustomRefresh(req, res);
 res.end();
 ```
 
+## Security
+
+The SDK allows you to set the `httpOnly`, `secure`, `domain` and `sameSite` options for the cookies. This way, you can control how the cookies are stored and transmitted. Putting this together with a custom refresh route, you can store the authentication material in HttpOnly cookies that are tied to the domain of the provided route.
+
+Configure CrossmintAuth to do so when creating the custom refresh route:
+
+```ts
+const crossmintAuth = CrossmintAuth.from(crossmint, {
+    cookieOptions: {
+        httpOnly: true,
+        sameSite: "Strict",
+        secure: true,
+        domain: ".example.com",
+    },
+});
+```
+
 ## Advanced Usaged
 
 You can also provide a custom refresh route:

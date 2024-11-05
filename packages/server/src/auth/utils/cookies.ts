@@ -24,7 +24,15 @@ export function getAuthCookies(request: GenericRequest): AuthMaterialBasic {
 
 export function setAuthCookies(response: GenericResponse, authMaterial: AuthMaterial, options?: CookieOptions) {
     const cookies = [
-        createCookieString({ name: SESSION_PREFIX, value: authMaterial.jwt, options }),
+        createCookieString({
+            name: SESSION_PREFIX,
+            value: authMaterial.jwt,
+            options: {
+                ...options,
+                // The JWT needs to be accessible to the browser for the client SDK to work
+                httpOnly: false,
+            },
+        }),
         createCookieString({
             name: REFRESH_TOKEN_PREFIX,
             value: authMaterial.refreshToken.secret,

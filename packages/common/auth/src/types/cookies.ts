@@ -8,6 +8,6 @@ export type CookieOptions = {
     expiresAt?: string;
     httpOnly?: boolean;
     secure?: boolean;
-    sameSite?: "lax" | "strict" | "none";
+    sameSite?: "Lax" | "Strict" | "None";
     domain?: string;
 };

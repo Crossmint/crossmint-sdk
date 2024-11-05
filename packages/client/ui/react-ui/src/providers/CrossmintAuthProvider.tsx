@@ -37,17 +37,14 @@ export interface AuthContextType {
     jwt?: string;
     user?: SDKExternalUser;
     status: AuthStatus;
-    getUser: () => Promise<void>;
+    getUser: () => void;
 }
 
 const defaultContextValue: AuthContextType = {
-    crossmintAuth: undefined,
     login: () => {},
     logout: () => {},
-    jwt: undefined,
-    user: undefined,
     status: "logged-out",
-    getUser: async () => {},
+    getUser: () => {},
 };
 
 export const AuthContext = createContext<AuthContextType>(defaultContextValue as AuthContextType);
