@@ -4,7 +4,7 @@ import { Web3ProviderButton } from "./Web3ProviderButton";
 import { metamaskIcon, walletConnectIcon } from "@/icons/base64Icons";
 import { Web3AuthWrapper } from "./Web3AuthWrapper";
 
-export function Web3Providers() {
+export function Web3Connectors() {
     const { appearance, step, setStep } = useAuthForm();
 
     if (step === "web3") {

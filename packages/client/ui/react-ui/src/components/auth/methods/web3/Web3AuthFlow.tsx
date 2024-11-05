@@ -1,12 +1,12 @@
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import { Web3SignIn } from "./Web3SignIn";
-import { Web3Providers } from "./Web3Providers";
+import { Web3Connectors } from "./Web3Connectors";
 
 export function Web3AuthFlow() {
     const { step } = useAuthForm();
 
     if (step.startsWith("web3")) {
-        return <Web3Providers />;
+        return <Web3Connectors />;
     }
 
     if (step === "initial") {

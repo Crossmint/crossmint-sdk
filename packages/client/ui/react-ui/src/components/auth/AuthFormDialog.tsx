@@ -7,7 +7,6 @@ import { useEffect } from "react";
 export default function AuthFormDialog({ open }: { open: boolean }) {
     const { appearance, setDialogOpen } = useAuthForm();
 
-    // todo come up with a better solution for this!
     useEffect(() => {
         document.body.style.overflow = open ? "hidden" : "";
     }, [open]);
