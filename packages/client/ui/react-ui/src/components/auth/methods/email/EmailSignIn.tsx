@@ -1,4 +1,5 @@
 import { type FormEvent, useState } from "react";
+import Color from "color";
 
 import { Spinner } from "@/components/common/Spinner";
 import { classNames } from "@/utils/classNames";
@@ -42,12 +43,6 @@ export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEm
         <>
             <div className="flex flex-col items-start justify-start w-full rounded-lg">
                 <div className="w-full">
-                    <p
-                        className="text-sm font-inter font-medium text-cm-text-primary pb-2"
-                        style={{ color: appearance?.colors?.textPrimary }}
-                    >
-                        Email
-                    </p>
                     <form
                         role="form"
                         className="relative"
@@ -59,9 +54,9 @@ export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEm
                         </label>
                         <input
                             className={classNames(
-                                "flex-grow text-left pl-[16px] pr-[80px] h-[58px] w-full border border-cm-border rounded-xl bg-cm-background-primary placeholder:text-sm placeholder:text-opacity-60",
-                                "transition-all duration-200 ease-in-out", // Add smooth transition
-                                "focus:outline-none focus:ring-1 focus:ring-opacity-50", // Add focus ring
+                                "flex-grow text-cm-text-secondary text-left pl-[16px] pr-[80px] h-[58px] w-full border border-cm-border rounded-xl bg-cm-background-primary placeholder:text-sm placeholder:text-opacity-60",
+                                "transition-none duration-200 ease-in-out",
+                                "focus:outline-none focus-ring-custom", // Add focus ring
                                 emailError ? "border-red-500" : ""
                             )}
                             style={{
@@ -69,18 +64,19 @@ export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEm
                                 borderRadius: appearance?.borderRadius,
                                 borderColor: emailError ? appearance?.colors?.danger : appearance?.colors?.border,
                                 backgroundColor: appearance?.colors?.inputBackground,
-                                // @ts-expect-error --tw-ring-color is not recognized by typescript but gets picked up by tailwind
-                                "--tw-ring-color": appearance?.colors?.accent ?? "#1A73E8",
+                                // @ts-expect-error Add custom ring color to tailwind
+                                "--focus-ring-color": new Color(appearance?.colors?.accent ?? "#04AA6D")
+                                    .alpha(0.18)
+                                    .toString(),
                             }}
                             type="email"
-                            placeholder={"Enter email"}
+                            placeholder="Enter email"
                             value={emailInput}
                             onChange={(e) => {
                                 setEmailInput(e.target.value);
                                 setEmailError("");
                             }}
                             readOnly={isLoading}
-                            // aria-invalid={emailError != null}
                             aria-describedby="emailError"
                         />
                         <div className="absolute inset-y-0 right-0 flex items-center pr-4">
@@ -96,8 +92,8 @@ export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEm
                             {!emailError && !isLoading && (
                                 <button
                                     type="submit"
-                                    className={classNames("cursor-pointer text-nowrap")}
-                                    style={{ color: appearance?.colors?.accent ?? "#1A73E8" }}
+                                    className={classNames("cursor-pointer font-medium text-cm-accent text-nowrap")}
+                                    style={{ color: appearance?.colors?.accent }}
                                     disabled={!emailInput}
                                 >
                                     Sign in

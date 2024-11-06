@@ -1,6 +1,6 @@
 import { type Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
 import { CROSSMINT_API_VERSION, SDK_NAME, SDK_VERSION } from "./utils/constants";
-import { type AuthMaterialWithUser, CrossmintAuthenticationError } from "./types";
+import { type AuthMaterialWithUser, CrossmintAuthenticationError, type AuthMaterialResponse } from "./types";
 
 export type CrossmintAuthOptions = {
     refreshRoute?: string;
@@ -11,21 +11,14 @@ export class CrossmintAuth {
     protected apiClient: CrossmintApiClient;
     protected refreshRoute: string | null;
 
-    constructor(crossmint: Crossmint, options: CrossmintAuthOptions = {}) {
+    constructor(crossmint: Crossmint, apiClient: CrossmintApiClient, options: CrossmintAuthOptions = {}) {
         this.crossmint = crossmint;
-        this.apiClient = new CrossmintApiClient(this.crossmint, {
-            internalConfig: {
-                sdkMetadata: {
-                    name: SDK_NAME,
-                    version: SDK_VERSION,
-                },
-            },
-        });
+        this.apiClient = apiClient;
         this.refreshRoute = options.refreshRoute ?? null;
     }
 
     public static from(crossmint: Crossmint, options: CrossmintAuthOptions = {}): CrossmintAuth {
-        return new CrossmintAuth(crossmint, options);
+        return new CrossmintAuth(crossmint, CrossmintAuth.defaultApiClient(crossmint), options);
     }
 
     public getJwksUri() {
@@ -52,11 +45,11 @@ export class CrossmintAuth {
             },
         });
 
-        const resultJson = await result.json();
-
         if (!result.ok) {
-            throw new CrossmintAuthenticationError(resultJson.message);
+            throw new CrossmintAuthenticationError(result.statusText);
         }
+
+        const resultJson = (await result.json()) as AuthMaterialResponse;
 
         return {
             jwt: resultJson.jwt,
@@ -84,5 +77,16 @@ export class CrossmintAuth {
         }
 
         return resultJson;
+    }
+
+    static defaultApiClient(crossmint: Crossmint): CrossmintApiClient {
+        return new CrossmintApiClient(crossmint, {
+            internalConfig: {
+                sdkMetadata: {
+                    name: SDK_NAME,
+                    version: SDK_VERSION,
+                },
+            },
+        });
     }
 }

@@ -17,8 +17,7 @@
     "scripts": {
         "build": "tsup",
         "dev": "tsup --watch",
-        "test": "cross-env NODE_ENV=test jest --silent",
-        "test-coverage": "cross-env NODE_ENV=test jest --coverage --silent"
+        "test:vitest": "cross-env NODE_ENV=test jest --silent"
     },
     "dependencies": {
         "@crossmint/client-sdk-base": "workspace:*",

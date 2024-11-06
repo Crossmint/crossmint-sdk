@@ -29,9 +29,6 @@ const crossmintAuth = CrossmintAuth.from(crossmint);
 2. Use the SDK to authenticate users and manage sessions:
 
 ```typescript
-// Retrieves the current jwt and triggers a token refresh. Will also queue a token refresh before the jwt expires.
-const session = crossmintAuth.getSession();
-
 // Get the current user
 const user = await crossmintAuth.getUser();
 
@@ -41,7 +38,7 @@ crossmintAuth.logout();
 
 ## Secure setup using HttpOnly cookies
 
-To secure the authentication material, you can set up a custom endpoint in your backend that will handle refreshing the authenticatino material and storing it in HttpOnly cookies. This way, the authentication material is not accessible to JavaScript running in the browser.
+To secure the authentication material, you can set up a custom endpoint in your backend that will handle refreshing the authentication material and storing it in HttpOnly cookies. This way, the authentication material is not accessible to JavaScript running in the browser.
 
 ### Configure custom refresh route
 

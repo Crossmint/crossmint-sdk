@@ -8,7 +8,7 @@ import {
     CROSSMINT_API_VERSION,
     type CookieOptions,
 } from "@crossmint/common-sdk-auth";
-import type { Crossmint } from "@crossmint/common-sdk-base";
+import type { Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
 import {
     getNodeRequestBody,
     isFetchRequest,
@@ -29,13 +29,13 @@ export type CrossmintAuthServerOptions = CrossmintAuthOptions & {
 export class CrossmintAuthServer extends CrossmintAuth {
     private cookieOptions: CookieOptions;
 
-    private constructor(crossmint: Crossmint, options: CrossmintAuthServerOptions) {
-        super(crossmint, options);
+    private constructor(crossmint: Crossmint, apiClient: CrossmintApiClient, options: CrossmintAuthServerOptions) {
+        super(crossmint, apiClient, options);
         this.cookieOptions = options.cookieOptions ?? {};
     }
 
     public static from(crossmint: Crossmint, options: CrossmintAuthServerOptions = {}): CrossmintAuthServer {
-        return new CrossmintAuthServer(crossmint, options);
+        return new CrossmintAuthServer(crossmint, CrossmintAuth.defaultApiClient(crossmint), options);
     }
 
     public async getSession(

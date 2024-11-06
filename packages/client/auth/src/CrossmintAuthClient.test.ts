@@ -82,16 +82,32 @@ describe("CrossmintAuthClient", () => {
     });
 
     describe("logout", () => {
-        it("should clear auth cookies and call onLogout callback", () => {
-            crossmintAuthClient.logout();
+        it("should call logout endpoint, clear auth cookies and call onLogout callback", async () => {
+            const mockCallbacks = { onLogout: vi.fn() };
+            const mockRefreshToken = "mock-refresh-token";
+            vi.mocked(cookiesUtils.getCookie).mockReturnValue(mockRefreshToken);
+            crossmintAuthClient = CrossmintAuthClient.from(mockCrossmint as unknown as Crossmint, mockCallbacks);
 
+            await crossmintAuthClient.logout();
+
+            expect(mockApiClient.post).toHaveBeenCalledWith(
+                "api/2024-09-26/session/sdk/auth/logout",
+                expect.objectContaining({
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        refresh: mockRefreshToken,
+                    }),
+                })
+            );
             expect(cookiesUtils.deleteCookie).toHaveBeenCalledWith("crossmint-refresh-token");
             expect(cookiesUtils.deleteCookie).toHaveBeenCalledWith("crossmint-jwt");
-            expect(mockConfig.callbacks.onLogout).toHaveBeenCalled();
+            expect(mockCallbacks.onLogout).toHaveBeenCalled();
         });
     });
 
-    describe("handleRefreshAuthMaterial", () => {
+    describe("handleRefreshToken", () => {
         const mockRefreshToken = "mock-refresh-token";
         const mockAuthMaterial = {
             jwt: "new.jwt.token",

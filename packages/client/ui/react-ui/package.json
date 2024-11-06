@@ -15,9 +15,9 @@
     "types": "./dist/index.d.ts",
     "files": ["dist", "src", "LICENSE"],
     "scripts": {
-        "build": "NODE_OPTIONS='--max-old-space-size=8192' tsup",
-        "dev": "NODE_OPTIONS='--max-old-space-size=8192' tsup --watch",
-        "test": "vitest run"
+        "build": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsup",
+        "dev": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsup --watch",
+        "test:vitest": "vitest run"
     },
     "dependencies": {
         "@crossmint/client-sdk-auth": "workspace:*",
@@ -41,6 +41,7 @@
         "@twind/preset-tailwind": "1.1.4",
         "bs58": "5.0.0",
         "clsx": "2.1.1",
+        "color": "4.2.3",
         "input-otp": "1.2.4",
         "lodash.isequal": "4.5.0",
         "react-jss": "10.10.0",
@@ -51,6 +52,7 @@
     },
     "devDependencies": {
         "@testing-library/react": "^16.0.1",
+        "@types/color": "4.2.0",
         "@types/lodash.isequal": "4.5.6",
         "@types/react": "^18.3.0",
         "@types/react-dom": "^18.3.0",

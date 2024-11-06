@@ -72,7 +72,6 @@ export function CrossmintAuthProvider({
     // Only create the CrossmintAuth instance once, even in StrictMode, as the constructor calls /refresh
     // It can only be called once to avoid race conditions
     const crossmintAuthRef = useRef<CrossmintAuth | null>(null);
-
     // biome-ignore lint/correctness/useExhaustiveDependencies: crossmint can't be a dependency because it updates with each jwt change
     const crossmintAuth = useMemo(() => {
         if (!crossmintAuthRef.current) {
