@@ -15,7 +15,9 @@ export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props
     const [height, setHeight] = useState(0);
 
     const { crossmint } = useCrossmint();
-    const apiClient = createCrossmintApiClient(crossmint);
+    const apiClient = createCrossmintApiClient(crossmint, {
+        usageOrigin: "client",
+    });
     const embedV3Service = crossmintEmbeddedCheckoutV3Service({ apiClient });
 
     const ref = useRef<HTMLIFrameElement>(null);

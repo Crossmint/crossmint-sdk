@@ -1,0 +1,12 @@
+{
+    "$schema": "https://turbo.build/schema.json",
+    "tasks": {
+        "build": {
+            "outputLogs": "new-only",
+            "dependsOn": ["^build"]
+        },
+        "test:vitest": {
+            "outputLogs": "new-only"
+        }
+    }
+}

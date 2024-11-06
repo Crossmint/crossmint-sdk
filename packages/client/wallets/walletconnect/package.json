@@ -20,14 +20,10 @@
     "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "style": "./dist/index.css",
-    "files": ["dist", "src", "LICENSE", ".yalc"],
+    "files": ["dist", "src", "LICENSE"],
     "scripts": {
         "build": "tsup src/index.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
-        "dev": "tsup src/index.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
-        "link:client-sdk-aa": "yalc add @crossmint/client-sdk-aa && yalc link @crossmint/client-sdk-aa && pnpm i",
-        "link:common-sdk-base": "yalc add @crossmint/common-sdk-base && yalc link @crossmint/common-sdk-base && pnpm i",
-        "unlink:client-sdk-aa": "yalc remove @crossmint/client-sdk-aa && pnpm i",
-        "unlink:common-sdk-base": "yalc remove @crossmint/common-sdk-base && yalc link @crossmint/common-sdk-base && pnpm i"
+        "dev": "tsup src/index.ts --clean --external react,react-dom --format esm,cjs --outDir ./dist --dts --sourcemap --watch"
     },
     "dependencies": {
         "@crossmint/common-sdk-base": "0.0.12",
