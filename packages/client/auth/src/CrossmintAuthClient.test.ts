@@ -285,4 +285,70 @@ describe("CrossmintAuthClient", () => {
             );
         });
     });
+
+    describe("signInWithSmartWallet", () => {
+        it("should initiate smart wallet sign in", async () => {
+            const mockAddress = "0x1234567890abcdef";
+            const mockResponse = {
+                message: "Please sign this message",
+                nonce: "123456",
+            };
+            mockApiClient.post.mockResolvedValue({
+                json: () => Promise.resolve(mockResponse),
+            });
+
+            const result = await crossmintAuthClient.signInWithSmartWallet(mockAddress);
+
+            expect(result).toEqual(mockResponse);
+            const queryParams = new URLSearchParams({
+                signinAuthenticationMethod: "evm",
+            });
+            expect(mockApiClient.post).toHaveBeenCalledWith(
+                `https://api.crossmint.com/api/2024-09-26/session/sdk/auth/crypto_wallets/authenticate/start?${queryParams}`,
+                expect.objectContaining({
+                    body: JSON.stringify({ walletAddress: mockAddress }),
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                })
+            );
+        });
+    });
+
+    describe("authenticateSmartWallet", () => {
+        it("should complete smart wallet authentication", async () => {
+            const mockAddress = "0x1234567890abcdef";
+            const mockSignature = "0xsignature123";
+            const mockResponse = {
+                success: true,
+                authMaterial: {
+                    jwt: "mock.jwt.token",
+                    refreshToken: { secret: "refresh-token" },
+                },
+            };
+            mockApiClient.post.mockResolvedValue({
+                json: () => Promise.resolve(mockResponse),
+            });
+
+            const result = await crossmintAuthClient.authenticateSmartWallet(mockAddress, mockSignature);
+
+            expect(result).toEqual(mockResponse);
+            const queryParams = new URLSearchParams({
+                signinAuthenticationMethod: "evm",
+                callbackUrl: `https://api.crossmint.com/api/2024-09-26/session/sdk/auth/we-dont-actually-use-this-anymore`,
+            });
+            expect(mockApiClient.post).toHaveBeenCalledWith(
+                `api/2024-09-26/session/sdk/auth/crypto_wallets/authenticate?${queryParams}`,
+                expect.objectContaining({
+                    body: JSON.stringify({
+                        walletAddress: mockAddress,
+                        signature: mockSignature,
+                    }),
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                })
+            );
+        });
+    });
 });

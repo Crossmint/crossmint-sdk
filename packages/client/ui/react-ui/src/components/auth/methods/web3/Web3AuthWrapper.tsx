@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { useAuthSignIn } from "@/hooks/useAuthSignIn";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import { Web3ConnectButton } from "./Web3ConnectButton";
 import { useAccount, useChainId, useConnect, useSignMessage } from "wagmi";
+import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
 
 interface Web3AuthWrapperProps {
     providerType: "metaMaskSDK" | "coinbaseWalletSDK" | "walletConnect";
@@ -11,8 +11,8 @@ interface Web3AuthWrapperProps {
 }
 
 export function Web3AuthWrapper({ providerType, flag, icon }: Web3AuthWrapperProps) {
-    const { appearance, baseUrl, apiKey, fetchAuthMaterial } = useAuthForm();
-    const { onSmartWalletSignIn, onSmartWalletAuthenticate } = useAuthSignIn();
+    const { crossmintAuth } = useCrossmintAuth();
+    const { appearance } = useAuthForm();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -46,18 +46,14 @@ export function Web3AuthWrapper({ providerType, flag, icon }: Web3AuthWrapperPro
         setIsLoading(true);
 
         try {
-            const res = await onSmartWalletSignIn(address, {
-                baseUrl: baseUrl,
-                apiKey: apiKey,
-            });
+            const res = await crossmintAuth?.signInWithSmartWallet(address);
             const signature = await signMessageAsync({ message: res.challenge });
-            const authResponse = (await onSmartWalletAuthenticate(address, signature, {
-                baseUrl,
-                apiKey,
-            })) as { oneTimeSecret: string };
+            const authResponse = (await crossmintAuth?.authenticateSmartWallet(address, signature)) as {
+                oneTimeSecret: string;
+            };
 
             const oneTimeSecret = authResponse.oneTimeSecret;
-            await fetchAuthMaterial(oneTimeSecret);
+            await crossmintAuth?.handleRefreshToken(oneTimeSecret);
         } catch (error) {
             console.error(`Error connecting to ${providerType}:`, error);
             setError(`Error connecting to ${providerType}. Please try again or contact support.`);
