@@ -8,7 +8,7 @@ import { createCrossmint } from "@crossmint/common-sdk-base";
 
 import { CrossmintProvider, useCrossmint } from "../hooks/useCrossmint";
 import { useWallet } from "../hooks/useWallet";
-import { MOCK_API_KEY, waitForSettledState } from "../testUtils";
+import { MOCK_API_KEY } from "../testUtils";
 import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
 
 vi.mock("@crossmint/client-sdk-smart-wallet", async () => {
@@ -85,7 +85,7 @@ describe("CrossmintWalletProvider", () => {
     });
 
     describe("getOrCreateWallet", () => {
-        test("happy path ", async () => {
+        it("happy path ", async () => {
             const { getByTestId } = renderWalletProvider({
                 children: <TestComponent />,
             });
@@ -100,7 +100,7 @@ describe("CrossmintWalletProvider", () => {
                 expect(getByTestId("error").textContent).toBe("No Error");
             });
 
-            await waitForSettledState(() => {
+            await waitFor(() => {
                 expect(getByTestId("status").textContent).toBe("loaded");
                 expect(getByTestId("wallet").textContent).toBe("Wallet Loaded");
                 expect(getByTestId("error").textContent).toBe("No Error");
@@ -127,7 +127,7 @@ describe("CrossmintWalletProvider", () => {
 
                 fireEvent.click(getByTestId("create-wallet-button"));
 
-                await waitForSettledState(() => {
+                await waitFor(() => {
                     expect(getByTestId("status").textContent).toBe("not-loaded");
                     expect(getByTestId("wallet").textContent).toBe("No Wallet");
                     expect(getByTestId("error").textContent).toBe("No Error");
@@ -155,7 +155,7 @@ describe("CrossmintWalletProvider", () => {
                     expect(getByTestId("error").textContent).toBe("No Error");
                 });
 
-                await waitForSettledState(() => {
+                await waitFor(() => {
                     expect(getByTestId("status").textContent).toBe("loading-error");
                     expect(getByTestId("wallet").textContent).toBe("No Wallet");
                     expect(getByTestId("error").textContent).toBe("Wallet creation failed");
@@ -183,7 +183,7 @@ describe("CrossmintWalletProvider", () => {
                     expect(getByTestId("error").textContent).toBe("No Error");
                 });
 
-                await waitForSettledState(() => {
+                await waitFor(() => {
                     expect(getByTestId("status").textContent).toBe("loading-error");
                     expect(getByTestId("wallet").textContent).toBe("No Wallet");
                     expect(getByTestId("error").textContent).toBe("Unknown Wallet Error: Wallet creation failed");
@@ -194,14 +194,14 @@ describe("CrossmintWalletProvider", () => {
         });
     });
 
-    test("clearWallet happy path", async () => {
+    it("clearWallet happy path", async () => {
         const { getByTestId } = renderWalletProvider({
             children: <TestComponent />,
         });
 
         fireEvent.click(getByTestId("create-wallet-button"));
 
-        await waitForSettledState(() => {
+        await waitFor(() => {
             expect(getByTestId("status").textContent).toBe("loaded");
             expect(getByTestId("wallet").textContent).toBe("Wallet Loaded");
             expect(getByTestId("error").textContent).toBe("No Error");
@@ -209,7 +209,7 @@ describe("CrossmintWalletProvider", () => {
 
         fireEvent.click(getByTestId("clear-wallet-button"));
 
-        await waitForSettledState(() => {
+        await waitFor(() => {
             expect(getByTestId("status").textContent).toBe("not-loaded");
             expect(getByTestId("wallet").textContent).toBe("No Wallet");
             expect(getByTestId("error").textContent).toBe("No Error");

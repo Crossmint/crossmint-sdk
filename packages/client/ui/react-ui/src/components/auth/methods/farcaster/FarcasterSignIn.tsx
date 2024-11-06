@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSignIn, QRCode, type UseSignInData } from "@farcaster/auth-kit";
-import { useAuthSignIn } from "@/hooks/useAuthSignIn";
 import { FarcasterIcon } from "@/icons/farcaster";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import { Spinner } from "@/components/common/Spinner";
 import { classNames } from "@/utils/classNames";
 import { AuthFormBackButton } from "../../AuthFormBackButton";
-
+import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
 export function FarcasterSignIn() {
     const { step, appearance, setStep } = useAuthForm();
 
@@ -49,8 +48,8 @@ export function FarcasterSignIn() {
 
 // We want this to be a separate component so it can completely un-render when the user goes back to the initial screen
 function FarcasterQRCode() {
-    const { appearance, baseUrl, apiKey, setStep, fetchAuthMaterial, setDialogOpen } = useAuthForm();
-    const { onFarcasterSignIn } = useAuthSignIn();
+    const { crossmintAuth } = useCrossmintAuth();
+    const { appearance, setStep, setDialogOpen } = useAuthForm();
     const [farcasterData, setFarcasterData] = useState<UseSignInData | null>(null);
 
     const farcasterProps = useMemo(
@@ -67,9 +66,9 @@ function FarcasterQRCode() {
 
     const handleFarcasterSignIn = async (data: UseSignInData) => {
         try {
-            const oneTimeSecret = await onFarcasterSignIn(data, { baseUrl, apiKey });
+            const oneTimeSecret = await crossmintAuth?.signInWithFarcaster(data);
             // Step 5. fetch the auth material, close the dialog, and unrender any farcaster client stuff
-            await fetchAuthMaterial(oneTimeSecret as string);
+            await crossmintAuth?.handleRefreshToken(oneTimeSecret as string);
             setDialogOpen(false);
             setStep("initial");
         } catch (error) {

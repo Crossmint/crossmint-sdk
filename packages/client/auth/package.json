@@ -15,11 +15,15 @@
     "types": "./dist/index.d.ts",
     "files": ["dist", "src", "LICENSE"],
     "scripts": {
-        "build": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
-        "dev": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --dts --sourcemap --watch"
+        "build": "tsup",
+        "dev": "tsup --watch",
+        "test": "vitest run"
     },
     "dependencies": {
+        "@crossmint/client-sdk-base": "workspace:*",
         "@crossmint/common-sdk-auth": "workspace:*",
-        "jwt-decode": "4.0.0"
+        "@crossmint/common-sdk-base": "workspace:*",
+        "jwt-decode": "4.0.0",
+        "@farcaster/auth-kit": "0.6.0"
     }
 }
