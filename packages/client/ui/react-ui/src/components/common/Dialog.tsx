@@ -9,21 +9,6 @@ const DialogTrigger = DialogPrimitive.Trigger;
 const DialogClose = DialogPrimitive.Close;
 const DialogPortal = DialogPrimitive.Portal;
 
-const DialogOverlay = React.forwardRef<
-    React.ElementRef<typeof DialogPrimitive.Overlay>,
-    React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
->(({ className, ...props }, ref) => (
-    <DialogPrimitive.Overlay
-        ref={ref}
-        className={classNames(
-            "fixed inset-0 z-50 bg-black/80 backdrop-blur-[2px] data-[state=closed]:animate-out data-[state=closed]:animate-fade-out data-[state=open]:animate-in data-[state=open]:animate-fade-in",
-            className
-        )}
-        {...props}
-    />
-));
-DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
-
 interface DialogContentProps extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> {
     showCloseButton?: boolean;
     closeButtonColor?: string;
@@ -33,7 +18,8 @@ interface DialogContentProps extends React.ComponentPropsWithoutRef<typeof Dialo
 const DialogContent = React.forwardRef<React.ElementRef<typeof DialogPrimitive.Content>, DialogContentProps>(
     ({ className, children, showCloseButton = true, closeButtonColor, closeButtonRingColor, ...props }, ref) => (
         <DialogPortal>
-            <DialogOverlay />
+            {/* Because we're using modal={false}, the regular overlay is not shown. We need to add our own overlay */}
+            <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm overflow-x-hidden" />
             <DialogPrimitive.Content
                 ref={ref}
                 className={classNames(
@@ -126,7 +112,6 @@ DialogDescription.displayName = DialogPrimitive.Description.displayName;
 export {
     Dialog,
     DialogPortal,
-    DialogOverlay,
     DialogClose,
     DialogTrigger,
     DialogContent,
