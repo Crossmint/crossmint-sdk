@@ -6,20 +6,13 @@ export class CrossmintAuth {
     protected crossmint: Crossmint;
     protected apiClient: CrossmintApiClient;
 
-    constructor(crossmint: Crossmint) {
+    constructor(crossmint: Crossmint, apiClient: CrossmintApiClient) {
         this.crossmint = crossmint;
-        this.apiClient = new CrossmintApiClient(this.crossmint, {
-            internalConfig: {
-                sdkMetadata: {
-                    name: SDK_NAME,
-                    version: SDK_VERSION,
-                },
-            },
-        });
+        this.apiClient = apiClient;
     }
 
     public static from(crossmint: Crossmint): CrossmintAuth {
-        return new CrossmintAuth(crossmint);
+        return new CrossmintAuth(crossmint, CrossmintAuth.defaultApiClient(crossmint));
     }
 
     public getJwksUri() {
@@ -45,5 +38,16 @@ export class CrossmintAuth {
             refreshToken: resultJson.refresh,
             user: resultJson.user,
         };
+    }
+
+    static defaultApiClient(crossmint: Crossmint): CrossmintApiClient {
+        return new CrossmintApiClient(crossmint, {
+            internalConfig: {
+                sdkMetadata: {
+                    name: SDK_NAME,
+                    version: SDK_VERSION,
+                },
+            },
+        });
     }
 }

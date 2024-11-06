@@ -7,23 +7,36 @@ import {
     REFRESH_TOKEN_PREFIX,
     SESSION_PREFIX,
 } from "@crossmint/common-sdk-auth";
-import type { Crossmint } from "@crossmint/common-sdk-base";
+import type { Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
 import { type CancellableTask, queueTask } from "@crossmint/client-sdk-base";
-import { deleteCookie, getCookie, getJWTExpiration, setCookie, TIME_BEFORE_EXPIRING_JWT_IN_SECONDS } from "./utils";
+import {
+    AUTH_SDK_ROOT_ENDPOINT,
+    deleteCookie,
+    getCookie,
+    getJWTExpiration,
+    setCookie,
+    TIME_BEFORE_EXPIRING_JWT_IN_SECONDS,
+} from "./utils";
 
 export class CrossmintAuthClient extends CrossmintAuth {
     private callbacks: CrossmintAuthClientCallbacks;
     private refreshTask: CancellableTask | null = null;
     private isRefreshing = false;
 
-    private constructor(crossmint: Crossmint, callbacks: CrossmintAuthClientCallbacks = {}) {
-        super(crossmint);
+    private constructor(
+        crossmint: Crossmint,
+        apiClient: CrossmintApiClient,
+        callbacks: CrossmintAuthClientCallbacks = {}
+    ) {
+        super(crossmint, apiClient);
         this.callbacks = callbacks;
-        this.handleRefreshToken();
     }
 
     public static from(crossmint: Crossmint, callbacks?: CrossmintAuthClientCallbacks): CrossmintAuthClient {
-        return new CrossmintAuthClient(crossmint, callbacks);
+        const authClient = new CrossmintAuthClient(crossmint, CrossmintAuth.defaultApiClient(crossmint), callbacks);
+        // Fire-off refresh tokens task on init
+        authClient.handleRefreshToken();
+        return authClient;
     }
 
     public getSession() {
@@ -47,10 +60,24 @@ export class CrossmintAuthClient extends CrossmintAuth {
         setCookie(REFRESH_TOKEN_PREFIX, authMaterial.refreshToken.secret, authMaterial.refreshToken.expiresAt);
     }
 
-    public logout() {
-        deleteCookie(REFRESH_TOKEN_PREFIX);
-        deleteCookie(SESSION_PREFIX);
-        this.callbacks.onLogout?.();
+    public async logout() {
+        // Even if there's a server error, we want to clear the cookies
+        try {
+            await this.apiClient.post(`${AUTH_SDK_ROOT_ENDPOINT}/logout`, {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    refresh: getCookie(REFRESH_TOKEN_PREFIX),
+                }),
+            });
+
+            deleteCookie(REFRESH_TOKEN_PREFIX);
+            deleteCookie(SESSION_PREFIX);
+            this.callbacks.onLogout?.();
+        } catch (error) {
+            console.error(error);
+        }
     }
 
     public async handleRefreshToken(refreshTokenSecret?: string): Promise<void> {
@@ -75,21 +102,18 @@ export class CrossmintAuthClient extends CrossmintAuth {
     }
 
     public async getOAuthUrl(provider: OAuthProvider) {
-        const result = await this.apiClient.get(
-            `api/${CROSSMINT_API_VERSION}/session/sdk/auth/social/${provider}/start`,
-            {
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            }
-        );
+        const result = await this.apiClient.get(`${AUTH_SDK_ROOT_ENDPOINT}/social/${provider}/start`, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
 
         const data = (await result.json()) as { oauthUrl: string };
         return data.oauthUrl;
     }
 
     public async sendEmailOtp(email: string) {
-        const result = await this.apiClient.post(`api/${CROSSMINT_API_VERSION}/session/sdk/auth/otps/send`, {
+        const result = await this.apiClient.post(`${AUTH_SDK_ROOT_ENDPOINT}/otps/send`, {
             headers: {
                 "Content-Type": "application/json",
             },
@@ -106,16 +130,13 @@ export class CrossmintAuthClient extends CrossmintAuth {
             token,
             locale: "en",
             state: emailId,
-            callbackUrl: `${this.apiClient.baseUrl}/api/${CROSSMINT_API_VERSION}/session/sdk/auth/we-dont-actually-use-this-anymore`,
+            callbackUrl: `${this.apiClient.baseUrl}/${AUTH_SDK_ROOT_ENDPOINT}/we-dont-actually-use-this-anymore`,
         });
-        const result = await this.apiClient.post(
-            `api/${CROSSMINT_API_VERSION}/session/sdk/auth/authenticate?${queryParams}`,
-            {
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            }
-        );
+        const result = await this.apiClient.post(`${AUTH_SDK_ROOT_ENDPOINT}/authenticate?${queryParams}`, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
 
         const resData = await result.json();
         const callbackUrl = new URL(resData.callbackUrl);
@@ -127,23 +148,20 @@ export class CrossmintAuthClient extends CrossmintAuth {
     public async signInWithFarcaster(data: UseSignInData) {
         const queryParams = new URLSearchParams({
             signinAuthenticationMethod: "farcaster",
-            callbackUrl: `${this.apiClient.baseUrl}/api/${CROSSMINT_API_VERSION}/session/sdk/auth/callback?isPopup=false`,
+            callbackUrl: `${this.apiClient.baseUrl}/${AUTH_SDK_ROOT_ENDPOINT}/callback?isPopup=false`,
         });
 
-        const result = await this.apiClient.post(
-            `api/${CROSSMINT_API_VERSION}/session/sdk/auth/authenticate?${queryParams}`,
-            {
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    ...data,
-                    domain: data.signatureParams.domain,
-                    redirect: true,
-                    callbackUrl: `${this.apiClient.baseUrl}/api/${CROSSMINT_API_VERSION}/session/sdk/auth/callback?isPopup=false`,
-                }),
-            }
-        );
+        const result = await this.apiClient.post(`${AUTH_SDK_ROOT_ENDPOINT}/authenticate?${queryParams}`, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                ...data,
+                domain: data.signatureParams.domain,
+                redirect: true,
+                callbackUrl: `${this.apiClient.baseUrl}/${AUTH_SDK_ROOT_ENDPOINT}/callback?isPopup=false`,
+            }),
+        });
 
         const resData = await result.json();
         const callbackUrl = new URL(resData.callbackUrl);

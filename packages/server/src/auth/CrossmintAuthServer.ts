@@ -6,18 +6,18 @@ import {
     type AuthMaterial,
     CROSSMINT_API_VERSION,
 } from "@crossmint/common-sdk-auth";
-import type { Crossmint } from "@crossmint/common-sdk-base";
+import type { Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
 import type { GenericRequest, GenericResponse } from "./types/request";
 import { getAuthCookies, setAuthCookies } from "./utils/cookies";
 import { verifyCrossmintJwt } from "./utils/jwt";
 
 export class CrossmintAuthServer extends CrossmintAuth {
-    private constructor(crossmint: Crossmint) {
-        super(crossmint);
+    private constructor(crossmint: Crossmint, apiClient: CrossmintApiClient) {
+        super(crossmint, apiClient);
     }
 
     public static from(crossmint: Crossmint): CrossmintAuthServer {
-        return new CrossmintAuthServer(crossmint);
+        return new CrossmintAuthServer(crossmint, CrossmintAuth.defaultApiClient(crossmint));
     }
 
     public async getSession(
