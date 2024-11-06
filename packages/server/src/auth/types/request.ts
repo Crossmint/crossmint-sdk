@@ -36,6 +36,7 @@ export function getNodeRequestBody(req: IncomingMessage) {
             try {
                 resolve(JSON.parse(body));
             } catch (_) {
+                // If it fails to parse the body as JSON, just return the body as a string
                 resolve(body);
             }
         });

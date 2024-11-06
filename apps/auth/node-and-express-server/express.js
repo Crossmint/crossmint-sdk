@@ -22,6 +22,15 @@ app.post("/refresh", async (req, res) => {
     res.end();
 });
 
+app.post("/logout", async (req, res) => {
+    try {
+        await crossmintAuth.logout(req, res);
+    } catch (error) {
+        console.error("Error logging out", error);
+    }
+    res.end();
+});
+
 const authMiddleware = async (req, res, next) => {
     if (req.method !== "GET") {
         next();

@@ -57,24 +57,6 @@ If you are using a framework with access to the response object, you can store t
 const { jwt, userId } = await crossmintAuth.getSession(request, response);
 ```
 
-## Set up custom refresh route
-
-To set up a custom refresh route, you can use the `handleCustomRefresh` method. This method will refresh the token and return the new authentication material. This way, the authentication material can be stored in cookies that are tied to the domain of the provided route.
-
-In environments that use the Fetch API for `Request` and `Response` objects, `handleCustomRefresh` will return the response object:
-
-```ts
-const response = await crossmintAuth.handleCustomRefresh(request);
-return response;
-```
-
-In environments that use Node.js API, you also need to provide the response object:
-
-```ts
-await crossmintAuth.handleCustomRefresh(req, res);
-res.end();
-```
-
 ## Security
 
 The SDK allows you to set the `httpOnly`, `secure`, `domain` and `sameSite` options for the cookies. This way, you can control how the cookies are stored and transmitted. Putting this together with a custom refresh route, you can store the authentication material in HttpOnly cookies that are tied to the domain of the provided route.
@@ -92,7 +74,26 @@ const crossmintAuth = CrossmintAuth.from(crossmint, {
 });
 ```
 
-## Advanced Usaged
+`httpOnly` only applies to the refresh token. The session token will not be HttpOnly as it is used in the client for API calls.
+
+## Set up a custom refresh route
+
+To set up a custom refresh route, you can use the `handleCustomRefresh` method. This method will refresh the token and return the new authentication material. This way, the authentication material can be stored in cookies that are tied to the domain of the provided route.
+
+In environments that use the Fetch API for `Request` and `Response` objects, `handleCustomRefresh` will return the response object:
+
+```ts
+return await crossmintAuth.handleCustomRefresh(request);
+```
+
+In environments that use Node.js API, you also need to provide the response object and end the response:
+
+```ts
+await crossmintAuth.handleCustomRefresh(req, res);
+res.end();
+```
+
+### Using a custom refresh route
 
 You can also provide a custom refresh route:
 
@@ -103,3 +104,20 @@ const crossmintAuth = CrossmintAuthClient.from(crossmint, {
 ```
 
 This way, the SDK will use the provided route to refresh the token instead of the default one and the authentication material can be stored in HttpOnly cookies that are tied to the domain of the provided route.
+
+## Set up a custom logout route
+
+When using `HttpOnly` cookies, logout can't happen client-side as it doesn't have access to the cookies. You can set up a custom logout route to handle the logout process.
+
+In environments that use the Fetch API, `logout` will return the response object:
+
+```ts
+return await crossmintAuth.logout();
+```
+
+In environments that use Node.js API, you also need to provide the response object and end the response:
+
+```ts
+await crossmintAuth.logout(res);
+res.end();
+```

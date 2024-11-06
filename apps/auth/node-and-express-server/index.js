@@ -19,6 +19,16 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
+    if (req.method === "POST" && req.url === "/logout") {
+        try {
+            await crossmintAuth.logout(req, res);
+        } catch (error) {
+            console.error("Error logging out", error);
+        }
+        res.end();
+        return;
+    }
+
     try {
         const { jwt, refreshToken, userId } = await crossmintAuth.getSession(req, res);
         res.writeHead(200, { "Content-Type": "application/json" });

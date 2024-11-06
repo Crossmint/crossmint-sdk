@@ -370,10 +370,10 @@ describe("CrossmintAuthServer", () => {
     });
 
     describe("logout", () => {
-        it("should clear auth material from response", () => {
+        it("should clear auth material from response and return it", () => {
             const mockResponse = {} as GenericResponse;
 
-            crossmintAuthServer.logout(mockResponse);
+            const result = crossmintAuthServer.logout(mockResponse);
 
             expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(
                 mockResponse,
@@ -386,6 +386,24 @@ describe("CrossmintAuthServer", () => {
                 },
                 {}
             );
+            expect(result).toBe(mockResponse);
+        });
+
+        it("should create and return new Response when no response provided", () => {
+            const result = crossmintAuthServer.logout();
+
+            expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(
+                expect.any(Response),
+                {
+                    jwt: "",
+                    refreshToken: {
+                        secret: "",
+                        expiresAt: "",
+                    },
+                },
+                {}
+            );
+            expect(result).toBeInstanceOf(Response);
         });
     });
 });

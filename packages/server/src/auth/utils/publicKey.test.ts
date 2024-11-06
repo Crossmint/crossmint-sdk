@@ -16,13 +16,16 @@ describe("getPublicKey", () => {
     const mockJwksUri = "https://example.com/.well-known/jwks.json";
     const mockKid = "mockKid123";
     const mockPublicKey = "-----BEGIN PUBLIC KEY-----\nMockPublicKey\n-----END PUBLIC KEY-----";
+    const originalConsoleError = console.error;
 
     beforeEach(() => {
         vi.resetAllMocks();
+        console.error = vi.fn();
     });
 
     afterEach(() => {
         vi.restoreAllMocks();
+        console.error = originalConsoleError;
     });
 
     it("should return a public key for a valid token", async () => {

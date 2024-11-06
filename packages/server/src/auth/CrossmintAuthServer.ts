@@ -134,14 +134,17 @@ export class CrossmintAuthServer extends CrossmintAuth {
         setAuthCookies(response, authMaterial, this.cookieOptions);
     }
 
-    public logout(response: GenericResponse) {
-        this.storeAuthMaterial(response, {
+    public logout(response?: GenericResponse) {
+        // If we're working with Node API, the response param is needed
+        const responseToUse = response ?? new Response();
+        this.storeAuthMaterial(responseToUse, {
             jwt: "",
             refreshToken: {
                 secret: "",
                 expiresAt: "",
             },
         });
+        return responseToUse;
     }
 
     private async validateOrRefreshSession(

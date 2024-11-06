@@ -9,6 +9,7 @@ export default function CrossmintProviders({ children }: { children: ReactNode }
             <CrossmintAuthProvider
                 loginMethods={["email", "google"]} // Only show email and Google login methods
                 refreshRoute="/api/refresh"
+                logoutRoute="/api/logout"
             >
                 {children}
             </CrossmintAuthProvider>

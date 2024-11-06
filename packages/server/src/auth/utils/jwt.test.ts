@@ -12,12 +12,15 @@ describe("verifyCrossmintJwt", () => {
     const mockJwksUri = "https://example.com/.well-known/jwks.json";
     const mockPublicKey = "-----BEGIN PUBLIC KEY-----\nMockPublicKey\n-----END PUBLIC KEY-----";
     const mockVerifiedToken = { sub: "user123", exp: 1234567890 };
+    const originalConsoleError = console.error;
 
     beforeEach(() => {
         vi.resetAllMocks();
+        console.error = vi.fn();
     });
 
     afterEach(() => {
+        console.error = originalConsoleError;
         vi.restoreAllMocks();
     });
 
@@ -36,6 +39,7 @@ describe("verifyCrossmintJwt", () => {
         vi.mocked(getPublicKey).mockRejectedValue(new Error("Invalid token"));
 
         await expect(verifyCrossmintJwt(mockToken, mockJwksUri)).rejects.toThrow("Invalid token");
+        expect(console.error).toHaveBeenCalled();
     });
 
     it("should throw an error for an expired token", async () => {
@@ -46,6 +50,7 @@ describe("verifyCrossmintJwt", () => {
         });
 
         await expect(verifyCrossmintJwt(mockToken, mockJwksUri)).rejects.toThrow("Invalid token");
+        expect(console.error).toHaveBeenCalled();
     });
 
     it("should throw an error for an invalid signature", async () => {
@@ -56,6 +61,7 @@ describe("verifyCrossmintJwt", () => {
         });
 
         await expect(verifyCrossmintJwt(mockToken, mockJwksUri)).rejects.toThrow("Invalid token");
+        expect(console.error).toHaveBeenCalled();
     });
 
     it("should throw an error for an invalid algorithm", async () => {
@@ -66,6 +72,7 @@ describe("verifyCrossmintJwt", () => {
         });
 
         await expect(verifyCrossmintJwt(mockToken, mockJwksUri)).rejects.toThrow("Invalid token");
+        expect(console.error).toHaveBeenCalled();
     });
 
     it("should throw a generic error for other verification failures", async () => {
@@ -75,6 +82,7 @@ describe("verifyCrossmintJwt", () => {
         });
 
         await expect(verifyCrossmintJwt(mockToken, mockJwksUri)).rejects.toThrow("Invalid token");
+        expect(console.error).toHaveBeenCalled();
     });
 
     it("should throw an error if verify returns null", async () => {
@@ -82,6 +90,7 @@ describe("verifyCrossmintJwt", () => {
         vi.mocked(jwt.verify).mockReturnValue(null as any);
 
         await expect(verifyCrossmintJwt(mockToken, mockJwksUri)).rejects.toThrow("Invalid token");
+        expect(console.error).toHaveBeenCalled();
     });
 
     it("should throw an error if verify returns a string", async () => {
@@ -89,5 +98,6 @@ describe("verifyCrossmintJwt", () => {
         vi.mocked(jwt.verify).mockReturnValue("some string" as any);
 
         await expect(verifyCrossmintJwt(mockToken, mockJwksUri)).rejects.toThrow("Invalid token");
+        expect(console.error).toHaveBeenCalled();
     });
 });

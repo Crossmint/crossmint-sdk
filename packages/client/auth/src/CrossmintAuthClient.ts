@@ -14,16 +14,19 @@ import { deleteCookie, getCookie, getJWTExpiration, setCookie, TIME_BEFORE_EXPIR
 
 type CrossmintAuthClientConfig = CrossmintAuthOptions & {
     callbacks?: CrossmintAuthClientCallbacks;
+    logoutRoute?: string;
 };
 
 export class CrossmintAuthClient extends CrossmintAuth {
     private callbacks: CrossmintAuthClientCallbacks;
     private refreshTask: CancellableTask | null = null;
     private isRefreshing = false;
+    private logoutRoute: string | null;
 
     private constructor(crossmint: Crossmint, config: CrossmintAuthClientConfig = {}) {
         super(crossmint, config);
         this.callbacks = config.callbacks ?? {};
+        this.logoutRoute = config.logoutRoute ?? null;
 
         // In case an instance is created on the server, we can't refresh as this stores cookies
         if (typeof window !== "undefined") {

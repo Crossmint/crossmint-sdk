@@ -3,7 +3,7 @@ import { type ReactNode, createContext, useEffect, useMemo, useRef, useState } f
 import { CrossmintAuth, getCookie } from "@crossmint/client-sdk-auth";
 import type { EVMSmartWalletChain } from "@crossmint/client-sdk-smart-wallet";
 import { type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
-import { SESSION_PREFIX, type SDKExternalUser } from "@crossmint/common-sdk-auth";
+import { type AuthMaterialWithUser, SESSION_PREFIX, type SDKExternalUser } from "@crossmint/common-sdk-auth";
 
 import AuthFormDialog from "../components/auth/AuthFormDialog";
 import { useCrossmint, useWallet } from "../hooks";
@@ -26,6 +26,7 @@ export type CrossmintAuthProviderProps = {
     children: ReactNode;
     loginMethods?: LoginMethod[];
     refreshRoute?: string;
+    logoutRoute?: string;
 };
 
 type AuthStatus = "logged-in" | "logged-out" | "in-progress";
@@ -50,7 +51,7 @@ const defaultContextValue: AuthContextType = {
     getUser: () => {},
 };
 
-export const AuthContext = createContext<AuthContextType>(defaultContextValue as AuthContextType);
+export const AuthContext = createContext<AuthContextType>(defaultContextValue);
 
 const defaultEmbeddedWallets: CrossmintAuthWalletConfig = {
     defaultChain: "base-sepolia",
@@ -64,6 +65,7 @@ export function CrossmintAuthProvider({
     appearance,
     loginMethods = ["email", "google"],
     refreshRoute,
+    logoutRoute,
 }: CrossmintAuthProviderProps) {
     const [user, setUser] = useState<SDKExternalUser | undefined>(undefined);
     const { crossmint, setJwt } = useCrossmint("CrossmintAuthProvider must be used within CrossmintProvider");
@@ -80,12 +82,13 @@ export function CrossmintAuthProvider({
                         setJwt(undefined);
                         setUser(undefined);
                     },
-                    onTokenRefresh: (authMaterial) => {
+                    onTokenRefresh: (authMaterial: AuthMaterialWithUser) => {
                         setJwt(authMaterial.jwt);
                         setUser(authMaterial.user);
                     },
                 },
                 refreshRoute,
+                logoutRoute,
             });
         }
         return crossmintAuthRef.current;
