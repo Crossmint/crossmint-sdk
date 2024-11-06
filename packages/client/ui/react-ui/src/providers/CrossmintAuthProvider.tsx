@@ -166,6 +166,7 @@ export function CrossmintAuthProvider({
                             appearance,
                             setDialogOpen,
                             loginMethods,
+                            embeddedWallets,
                         }}
                     >
                         <WalletManager embeddedWallets={embeddedWallets} accessToken={crossmint.jwt}>

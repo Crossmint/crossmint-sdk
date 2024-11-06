@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { AuthMaterialWithUser, OAuthProvider } from "@crossmint/common-sdk-auth";
 import type { UIConfig } from "@crossmint/common-sdk-base";
-import type { LoginMethod } from "../CrossmintAuthProvider";
+import type { CrossmintAuthWalletConfig, LoginMethod } from "../CrossmintAuthProvider";
 import { WagmiAuthProvider } from "./web3/WagmiAuthProvider";
 
 type AuthStep = "initial" | "otp" | "qrCode" | "web3" | "web3/metamask" | "web3/walletconnect";
@@ -31,6 +31,7 @@ type ContextInitialStateProps = {
     appearance?: UIConfig;
     loginMethods: LoginMethod[];
     setDialogOpen?: (open: boolean) => void;
+    embeddedWallets: CrossmintAuthWalletConfig;
 };
 
 const AuthFormContext = createContext<AuthFormContextType | undefined>(undefined);
@@ -51,7 +52,12 @@ export const AuthFormProvider = ({
     const [oauthUrlMap, setOauthUrlMap] = useState<OAuthUrlMap>(initialOAuthUrlMap);
     const [isLoadingOauthUrlMap, setIsLoadingOauthUrlMap] = useState(true);
 
-    const { loginMethods, apiKey, baseUrl } = initialState;
+    const { loginMethods, apiKey, baseUrl, setDialogOpen, fetchAuthMaterial, appearance, embeddedWallets } =
+        initialState;
+
+    if (loginMethods.includes("web3") && embeddedWallets?.createOnLogin === "all-users") {
+        throw new Error("Creating wallets on login is not yet supported for web3 login method");
+    }
 
     useEffect(() => {
         const preFetchAndSetOauthUrl = async () => {
@@ -78,7 +84,7 @@ export const AuthFormProvider = ({
     }, [loginMethods, apiKey, baseUrl]);
 
     const handleToggleDialog = (open: boolean) => {
-        initialState.setDialogOpen?.(open);
+        setDialogOpen?.(open);
         if (!open) {
             // Delay to allow the close transition to complete before resetting the step
             setTimeout(() => setStep("initial"), 250);
@@ -89,8 +95,8 @@ export const AuthFormProvider = ({
         step,
         apiKey,
         baseUrl,
-        fetchAuthMaterial: initialState.fetchAuthMaterial,
-        appearance: initialState.appearance,
+        fetchAuthMaterial,
+        appearance,
         loginMethods,
         oauthUrlMap,
         isLoadingOauthUrlMap,

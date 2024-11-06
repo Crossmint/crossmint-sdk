@@ -19,10 +19,10 @@ type CustomStyles = {
 // Create a context for customStyles
 const CustomStylesContext = createContext<CustomStyles | undefined>(undefined);
 
-const InputOTP: React.ForwardRefRenderFunction<
+const InputOTP = React.forwardRef<
     React.ElementRef<typeof OTPInput>,
     React.ComponentPropsWithoutRef<typeof OTPInput> & { customStyles?: CustomStyles }
-> = ({ className, containerClassName, customStyles, ...props }, ref) => (
+>(({ className, containerClassName, customStyles, ...props }, ref) => (
     <CustomStylesContext.Provider value={customStyles}>
         <OTPInput
             autoFocus
@@ -32,7 +32,7 @@ const InputOTP: React.ForwardRefRenderFunction<
             {...props}
         />
     </CustomStylesContext.Provider>
-);
+));
 InputOTP.displayName = "InputOTP";
 
 const InputOTPGroup = React.forwardRef<React.ElementRef<"div">, React.ComponentPropsWithoutRef<"div">>(

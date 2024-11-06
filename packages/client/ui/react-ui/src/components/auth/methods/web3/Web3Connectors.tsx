@@ -3,9 +3,12 @@ import { AuthFormBackButton } from "../../AuthFormBackButton";
 import { Web3ProviderButton } from "./Web3ProviderButton";
 import { metamaskIcon, walletConnectIcon } from "@/icons/base64Icons";
 import { Web3AuthWrapper } from "./Web3AuthWrapper";
+import { useAccount, useDisconnect } from "wagmi";
 
 export function Web3Connectors() {
     const { appearance, step, setStep } = useAuthForm();
+    const { isConnected } = useAccount();
+    const { disconnect } = useDisconnect();
 
     if (step === "web3") {
         return (
@@ -29,13 +32,28 @@ export function Web3Connectors() {
                             title="Metamask"
                             appearance={appearance}
                             img={metamaskIcon}
-                            onClick={() => setStep("web3/metamask")}
+                            onClick={() => {
+                                if (isConnected) {
+                                    disconnect();
+                                }
+                                // wait for all disconnect state to be cleared before proceeding to the next step
+                                setTimeout(() => {
+                                    setStep("web3/metamask");
+                                }, 200);
+                            }}
                         />
                         <Web3ProviderButton
                             title="WalletConnect"
                             appearance={appearance}
                             img={walletConnectIcon}
-                            onClick={() => setStep("web3/walletconnect")}
+                            onClick={() => {
+                                if (isConnected) {
+                                    disconnect();
+                                }
+                                setTimeout(() => {
+                                    setStep("web3/walletconnect");
+                                }, 200);
+                            }}
                         />
                     </div>
                 </div>
@@ -51,7 +69,7 @@ export function Web3Connectors() {
                     iconColor={appearance?.colors?.textPrimary}
                     ringColor={appearance?.colors?.accent}
                 />
-                <Web3AuthWrapper providerType="metaMaskSDK" icon={metamaskIcon} />
+                <Web3AuthWrapper providerType="metaMaskSDK" flag="isMetaMask" icon={metamaskIcon} />
             </>
         );
     }

@@ -6,10 +6,11 @@ import { useAccount, useChainId, useConnect, useSignMessage } from "wagmi";
 
 interface Web3AuthWrapperProps {
     providerType: "metaMaskSDK" | "coinbaseWalletSDK" | "walletConnect";
+    flag?: "isMetaMask";
     icon: string;
 }
 
-export function Web3AuthWrapper({ providerType, icon }: Web3AuthWrapperProps) {
+export function Web3AuthWrapper({ providerType, flag, icon }: Web3AuthWrapperProps) {
     const { appearance, baseUrl, apiKey, fetchAuthMaterial } = useAuthForm();
     const { onSmartWalletSignIn, onSmartWalletAuthenticate } = useAuthSignIn();
     const [isLoading, setIsLoading] = useState(false);
@@ -18,7 +19,17 @@ export function Web3AuthWrapper({ providerType, icon }: Web3AuthWrapperProps) {
     const chainId = useChainId();
     const { address, status: accountStatus } = useAccount(); // hook is causing a hydration error when navigating back
     const { signMessageAsync, status: signMessageStatus } = useSignMessage();
-    const { connect, connectors } = useConnect();
+    const { connect, connectors } = useConnect({
+        mutation: {
+            onError: () => setIsLoading(false),
+        },
+    });
+
+    // fallback to walletConnect if the extension is not installed
+    const isExtensionInstalled = window.ethereum?.[flag as keyof typeof window.ethereum] ?? false;
+    if (!isExtensionInstalled) {
+        providerType = "walletConnect";
+    }
 
     const connector = connectors.find((c) => c.id === providerType);
 

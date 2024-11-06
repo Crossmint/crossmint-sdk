@@ -122,7 +122,6 @@ async function onSmartWalletSignIn(address: string, options: { baseUrl: string; 
     try {
         const queryParams = new URLSearchParams({
             signinAuthenticationMethod: "evm",
-            apiKey: options.apiKey,
         });
         const response = await fetch(
             `${options.baseUrl}api/2024-09-26/session/sdk/auth/crypto_wallets/authenticate/start?${queryParams}`,
@@ -160,7 +159,6 @@ async function onSmartWalletAuthenticate(
     try {
         const queryParams = new URLSearchParams({
             signinAuthenticationMethod: "evm",
-            apiKey: options.apiKey,
             callbackUrl: `${options.baseUrl}sdk/2024-09-26/auth/callback?isnt-used-anymore-please-remove`,
         });
         const response = await fetch(

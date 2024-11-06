@@ -11,6 +11,10 @@ import { useWallet } from "../hooks/useWallet";
 import { MOCK_API_KEY, waitForSettledState } from "../testUtils";
 import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
 
+vi.mock("./auth/web3/WagmiAuthProvider", () => ({
+    WagmiAuthProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
+}));
+
 vi.mock("@crossmint/client-sdk-smart-wallet", async () => {
     const actual = await vi.importActual("@crossmint/client-sdk-smart-wallet");
     return {
@@ -76,6 +80,7 @@ describe("CrossmintWalletProvider", () => {
                 jwt: "mock-jwt",
             },
             setJwt: () => {},
+            setRefreshToken: () => {},
         });
 
         mockSDK = mock<SmartWalletSDK>();
@@ -117,6 +122,7 @@ describe("CrossmintWalletProvider", () => {
                         jwt: undefined,
                     },
                     setJwt: () => {},
+                    setRefreshToken: () => {},
                 });
             });
 
