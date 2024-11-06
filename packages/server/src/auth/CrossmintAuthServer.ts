@@ -1,35 +1,23 @@
-import { type Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
 import {
+    CrossmintAuth,
     CrossmintAuthenticationError,
     type AuthMaterialBasic,
-    type AuthMaterialWithUser,
-    type AuthMaterialResponse,
     type AuthSession,
     type AuthMaterial,
+    CROSSMINT_API_VERSION,
 } from "@crossmint/common-sdk-auth";
+import type { Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
 import type { GenericRequest, GenericResponse } from "./types/request";
 import { getAuthCookies, setAuthCookies } from "./utils/cookies";
 import { verifyCrossmintJwt } from "./utils/jwt";
-import { CROSSMINT_API_VERSION, SDK_NAME, SDK_VERSION } from "./utils/constants";
 
-export class CrossmintAuth {
-    private crossmint: Crossmint;
-    private apiClient: CrossmintApiClient;
-
-    private constructor(crossmint: Crossmint) {
-        this.crossmint = crossmint;
-        this.apiClient = new CrossmintApiClient(this.crossmint, {
-            internalConfig: {
-                sdkMetadata: {
-                    name: SDK_NAME,
-                    version: SDK_VERSION,
-                },
-            },
-        });
+export class CrossmintAuthServer extends CrossmintAuth {
+    private constructor(crossmint: Crossmint, apiClient: CrossmintApiClient) {
+        super(crossmint, apiClient);
     }
 
-    public static from(crossmint: Crossmint): CrossmintAuth {
-        return new CrossmintAuth(crossmint);
+    public static from(crossmint: Crossmint): CrossmintAuthServer {
+        return new CrossmintAuthServer(crossmint, CrossmintAuth.defaultApiClient(crossmint));
     }
 
     public async getSession(
@@ -74,33 +62,8 @@ export class CrossmintAuth {
         return verifyCrossmintJwt(token, this.getJwksUri());
     }
 
-    public getJwksUri() {
-        return `${this.apiClient.baseUrl}/.well-known/jwks.json`;
-    }
-
     public storeAuthMaterial(response: GenericResponse, authMaterial: AuthMaterial) {
         setAuthCookies(response, authMaterial);
-    }
-
-    private async refreshAuthMaterial(refreshToken: string): Promise<AuthMaterialWithUser> {
-        const result = await this.apiClient.post(`api/${CROSSMINT_API_VERSION}/session/sdk/auth/refresh`, {
-            body: JSON.stringify({ refresh: refreshToken }),
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
-
-        if (!result.ok) {
-            throw new CrossmintAuthenticationError(result.statusText);
-        }
-
-        const resultJson = (await result.json()) as AuthMaterialResponse;
-
-        return {
-            jwt: resultJson.jwt,
-            refreshToken: resultJson.refresh,
-            user: resultJson.user,
-        };
     }
 
     private async validateOrRefreshSession(

@@ -3,7 +3,7 @@ export abstract class ApiClient {
     abstract get baseUrl(): string;
 
     private async makeRequest(path: string, init: RequestInit) {
-        return fetch(this.buildUrl(path), {
+        return await fetch(this.buildUrl(path), {
             ...init,
             headers: { ...this.authHeaders, ...init.headers }, // authHeaders intentionally first, in case sub class wants to override
         });
@@ -14,23 +14,23 @@ export abstract class ApiClient {
     }
 
     async get(path: string, params: Omit<RequestInit, "method">) {
-        return this.makeRequest(path, { ...params, method: "GET" });
+        return await this.makeRequest(path, { ...params, method: "GET" });
     }
 
     async post(path: string, params: Omit<RequestInit, "method">) {
-        return this.makeRequest(path, { ...params, method: "POST" });
+        return await this.makeRequest(path, { ...params, method: "POST" });
     }
 
     async put(path: string, params: Omit<RequestInit, "method">) {
-        return this.makeRequest(path, { ...params, method: "PUT" });
+        return await this.makeRequest(path, { ...params, method: "PUT" });
     }
 
     async delete(path: string, params: Omit<RequestInit, "method">) {
-        return this.makeRequest(path, { ...params, method: "DELETE" });
+        return await this.makeRequest(path, { ...params, method: "DELETE" });
     }
 
     async patch(path: string, params: Omit<RequestInit, "method">) {
-        return this.makeRequest(path, { ...params, method: "PATCH" });
+        return await this.makeRequest(path, { ...params, method: "PATCH" });
     }
 
     static normalizePath(path: string) {

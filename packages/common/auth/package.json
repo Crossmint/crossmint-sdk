@@ -15,10 +15,12 @@
     },
     "files": ["dist", "src", "LICENSE"],
     "scripts": {
-        "build": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
-        "dev": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --dts --sourcemap --watch"
+        "build": "tsup",
+        "dev": "tsup --watch",
+        "test": "vitest run"
     },
     "dependencies": {
-        "@crossmint/client-sdk-base": "workspace:*"
+        "@crossmint/client-sdk-base": "workspace:*",
+        "@crossmint/common-sdk-base": "workspace:*"
     }
 }

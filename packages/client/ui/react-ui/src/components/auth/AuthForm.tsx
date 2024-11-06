@@ -9,7 +9,7 @@ import { classNames } from "@/utils/classNames";
 import { Web3AuthFlow } from "./methods/web3/Web3AuthFlow";
 
 export function AuthForm({ className }: { className?: string }) {
-    const { step, appearance, baseUrl, loginMethods } = useAuthForm();
+    const { step, appearance, loginMethods, baseUrl } = useAuthForm();
     return (
         <div className={classNames("flex flex-col gap-[10px] antialiased animate-none", className)}>
             {step === "initial" ? (

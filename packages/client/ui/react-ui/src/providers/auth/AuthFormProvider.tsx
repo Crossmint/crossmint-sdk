@@ -1,7 +1,8 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import type { AuthMaterialWithUser, OAuthProvider } from "@crossmint/common-sdk-auth";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import type { OAuthProvider } from "@crossmint/common-sdk-auth";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import type { CrossmintAuthWalletConfig, LoginMethod } from "../CrossmintAuthProvider";
+import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
 import { WagmiAuthProvider } from "./web3/WagmiAuthProvider";
 
 type AuthStep = "initial" | "otp" | "qrCode" | "web3" | "web3/metamask" | "web3/walletconnect";
@@ -13,23 +14,19 @@ const initialOAuthUrlMap: OAuthUrlMap = {
 };
 interface AuthFormContextType {
     step: AuthStep;
-    apiKey: string;
-    baseUrl: string;
-    fetchAuthMaterial: (refreshToken: string) => Promise<AuthMaterialWithUser>;
     appearance?: UIConfig;
     loginMethods: LoginMethod[];
     oauthUrlMap: OAuthUrlMap;
     isLoadingOauthUrlMap: boolean;
+    baseUrl: string;
     setStep: (step: AuthStep) => void;
     setDialogOpen: (open: boolean) => void;
 }
 
 type ContextInitialStateProps = {
-    apiKey: string;
-    baseUrl: string;
-    fetchAuthMaterial: (refreshToken: string) => Promise<AuthMaterialWithUser>;
     appearance?: UIConfig;
     loginMethods: LoginMethod[];
+    baseUrl: string;
     setDialogOpen?: (open: boolean) => void;
     embeddedWallets: CrossmintAuthWalletConfig;
 };
@@ -48,40 +45,41 @@ export const AuthFormProvider = ({
     children,
     initialState,
 }: { children: ReactNode; initialState: ContextInitialStateProps }) => {
+    const { crossmintAuth } = useCrossmintAuth();
     const [step, setStep] = useState<AuthStep>("initial");
     const [oauthUrlMap, setOauthUrlMap] = useState<OAuthUrlMap>(initialOAuthUrlMap);
     const [isLoadingOauthUrlMap, setIsLoadingOauthUrlMap] = useState(true);
 
-    const { loginMethods, apiKey, baseUrl, setDialogOpen, fetchAuthMaterial, appearance, embeddedWallets } =
-        initialState;
+    const { loginMethods, baseUrl, setDialogOpen, appearance, embeddedWallets } = initialState;
 
     if (loginMethods.includes("web3") && embeddedWallets?.createOnLogin === "all-users") {
         throw new Error("Creating wallets on login is not yet supported for web3 login method");
     }
 
+    const preFetchAndSetOauthUrl = useCallback(async () => {
+        setIsLoadingOauthUrlMap(true);
+        try {
+            const oauthProviders = loginMethods.filter(
+                (method): method is OAuthProvider => method in initialOAuthUrlMap
+            );
+
+            const oauthPromiseList = oauthProviders.map(async (provider) => {
+                const url = await crossmintAuth?.getOAuthUrl(provider);
+                return { [provider]: url };
+            });
+
+            const oauthUrlMap = Object.assign({}, ...(await Promise.all(oauthPromiseList)));
+            setOauthUrlMap(oauthUrlMap);
+        } catch (error) {
+            console.error("Error fetching OAuth URLs:", error);
+        } finally {
+            setIsLoadingOauthUrlMap(false);
+        }
+    }, [loginMethods, crossmintAuth]);
+
     useEffect(() => {
-        const preFetchAndSetOauthUrl = async () => {
-            setIsLoadingOauthUrlMap(true);
-            try {
-                const oauthProviders = loginMethods.filter(
-                    (method): method is OAuthProvider => method in initialOAuthUrlMap
-                );
-
-                const oauthPromiseList = oauthProviders.map(async (provider) => {
-                    const url = await getOAuthUrl(provider, { apiKey, baseUrl });
-                    return { [provider]: url };
-                });
-
-                const oauthUrlMap = Object.assign({}, ...(await Promise.all(oauthPromiseList)));
-                setOauthUrlMap(oauthUrlMap);
-            } catch (error) {
-                console.error("Error fetching OAuth URLs:", error);
-            } finally {
-                setIsLoadingOauthUrlMap(false);
-            }
-        };
         preFetchAndSetOauthUrl();
-    }, [loginMethods, apiKey, baseUrl]);
+    }, [preFetchAndSetOauthUrl]);
 
     const handleToggleDialog = (open: boolean) => {
         setDialogOpen?.(open);
@@ -93,9 +91,7 @@ export const AuthFormProvider = ({
 
     const value: AuthFormContextType = {
         step,
-        apiKey,
         baseUrl,
-        fetchAuthMaterial,
         appearance,
         loginMethods,
         oauthUrlMap,
@@ -110,27 +106,3 @@ export const AuthFormProvider = ({
         </AuthFormContext.Provider>
     );
 };
-
-async function getOAuthUrl(provider: OAuthProvider, options: { baseUrl: string; apiKey: string }) {
-    try {
-        const queryParams = new URLSearchParams({ apiKey: options.apiKey });
-        const response = await fetch(
-            `${options.baseUrl}api/2024-09-26/session/sdk/auth/social/${provider}/start?${queryParams}`,
-            {
-                headers: {
-                    "x-api-key": options.apiKey,
-                },
-            }
-        );
-
-        if (!response.ok) {
-            throw new Error("Failed to get OAuth URL. Please try again or contact support.");
-        }
-
-        const data = (await response.json()) as { oauthUrl: string };
-        return data.oauthUrl;
-    } catch (error) {
-        console.error(`Error fetching OAuth URL for ${provider}:`, error);
-        throw new Error(`Failed to get OAuth URL for ${provider}. Please try again or contact support.`);
-    }
-}
