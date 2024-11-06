@@ -180,7 +180,7 @@ describe("setAuthCookies", () => {
             .map(([_, value]) => value);
         expect(cookies).toHaveLength(2);
         expect(cookies[0]).toBe(
-            `${SESSION_PREFIX}=mock-jwt-token; path=/; SameSite=Strict; HttpOnly; Secure; Domain=example.com;`
+            `${SESSION_PREFIX}=mock-jwt-token; path=/; SameSite=Strict; Secure; Domain=example.com;`
         );
         expect(cookies[1]).toBe(
             `${REFRESH_TOKEN_PREFIX}=mock-refresh-token; path=/; SameSite=Strict; HttpOnly; Secure; Domain=example.com; expires=Sat, 01 Apr 2023 00:00:00 GMT;`

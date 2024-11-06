@@ -156,7 +156,9 @@ describe("CrossmintAuthClient", () => {
             expect(crossmintAuthClient["refreshAuthMaterial"]).toHaveBeenCalledWith(mockRefreshToken);
         });
 
-        it("should not refresh if no refresh token is available", async () => {
+        it("should not refresh if no refresh token is available and no custom refresh route is set", async () => {
+            crossmintAuthClient = CrossmintAuthClient.from(mockCrossmint as unknown as Crossmint, {});
+            vi.spyOn(crossmintAuthClient as any, "refreshAuthMaterial").mockResolvedValue(mockAuthMaterial);
             vi.mocked(cookiesUtils.getCookie).mockReturnValue(null as any);
 
             await crossmintAuthClient.handleRefreshAuthMaterial();

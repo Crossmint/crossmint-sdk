@@ -214,7 +214,7 @@ describe("CrossmintAuthServer", () => {
 
             crossmintAuthServer.storeAuthMaterial(mockResponse, mockAuthMaterial);
 
-            expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(mockResponse, mockAuthMaterial);
+            expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(mockResponse, mockAuthMaterial, {});
         });
     });
 
@@ -247,11 +247,15 @@ describe("CrossmintAuthServer", () => {
                 expect.any(Object)
             );
 
-            expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(expect.any(Response), {
-                jwt: mockRefreshedAuthRes.jwt,
-                refreshToken: mockRefreshedAuthRes.refresh,
-                user: mockRefreshedAuthRes.user,
-            });
+            expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(
+                expect.any(Response),
+                {
+                    jwt: mockRefreshedAuthRes.jwt,
+                    refreshToken: mockRefreshedAuthRes.refresh,
+                    user: mockRefreshedAuthRes.user,
+                },
+                {}
+            );
         });
 
         it("should handle Fetch-based refresh errors and clear cookies", async () => {
@@ -267,13 +271,17 @@ describe("CrossmintAuthServer", () => {
             expect(result.status).toBe(401);
 
             // Verify auth cookies were cleared with the correct structure
-            expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(expect.any(Response), {
-                jwt: "",
-                refreshToken: {
-                    secret: "",
-                    expiresAt: "",
+            expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(
+                expect.any(Response),
+                {
+                    jwt: "",
+                    refreshToken: {
+                        secret: "",
+                        expiresAt: "",
+                    },
                 },
-            });
+                {}
+            );
         });
 
         it("should throw error when refresh token is missing", async () => {
@@ -282,9 +290,14 @@ describe("CrossmintAuthServer", () => {
                 body: JSON.stringify({}),
             });
 
-            await expect(crossmintAuthServer.handleCustomRefresh(mockRequest)).rejects.toThrow(
-                "Refresh token missing from request body"
-            );
+            const response = (await crossmintAuthServer.handleCustomRefresh(mockRequest)) as Response;
+
+            expect(response.status).toBe(401);
+            const body = await response.json();
+            expect(body).toEqual({
+                error: "Unauthorized",
+                message: "Please provide a refresh token either in the request body or cookies",
+            });
         });
 
         it("should handle Node-based refresh requests", async () => {
@@ -323,7 +336,8 @@ describe("CrossmintAuthServer", () => {
                         secret: "new-refresh-token",
                         expiresAt: "2023-12-31T23:59:59Z",
                     },
-                })
+                }),
+                {}
             );
 
             expect(result).toBe(mockNodeResponse);
@@ -349,7 +363,8 @@ describe("CrossmintAuthServer", () => {
                         secret: "",
                         expiresAt: "",
                     },
-                })
+                }),
+                {}
             );
         });
     });
@@ -360,13 +375,17 @@ describe("CrossmintAuthServer", () => {
 
             crossmintAuthServer.logout(mockResponse);
 
-            expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(mockResponse, {
-                jwt: "",
-                refreshToken: {
-                    secret: "",
-                    expiresAt: "",
+            expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(
+                mockResponse,
+                {
+                    jwt: "",
+                    refreshToken: {
+                        secret: "",
+                        expiresAt: "",
+                    },
                 },
-            });
+                {}
+            );
         });
     });
 });
