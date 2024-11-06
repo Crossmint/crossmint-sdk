@@ -39,11 +39,6 @@ export class CrossmintAuthClient extends CrossmintAuth {
         return authClient;
     }
 
-    public getSession() {
-        this.handleRefreshToken();
-        return getCookie(SESSION_PREFIX);
-    }
-
     public async getUser() {
         const result = await this.apiClient.get(`api/${CROSSMINT_API_VERSION}/sdk/auth/user`, {
             headers: {

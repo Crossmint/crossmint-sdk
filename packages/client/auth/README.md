@@ -29,9 +29,6 @@ const crossmintAuth = CrossmintAuth.from(crossmint);
 2. Use the SDK to authenticate users and manage sessions:
 
 ```typescript
-// Retrieves the current jwt and triggers a token refresh. Will also queue a token refresh before the jwt expires.
-const session = crossmintAuth.getSession();
-
 // Get the current user
 const user = await crossmintAuth.getUser();
 
