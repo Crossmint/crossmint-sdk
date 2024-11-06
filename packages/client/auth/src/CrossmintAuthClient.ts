@@ -34,11 +34,6 @@ export class CrossmintAuthClient extends CrossmintAuth {
         super(crossmint, apiClient, config);
         this.callbacks = config.callbacks ?? {};
         this.logoutRoute = config.logoutRoute ?? null;
-
-        // In case an instance is created on the server, we can't refresh as this stores cookies
-        if (typeof window !== "undefined") {
-            this.handleRefreshAuthMaterial();
-        }
     }
 
     public static from(crossmint: Crossmint, config: CrossmintAuthClientConfig = {}): CrossmintAuthClient {
@@ -69,14 +64,11 @@ export class CrossmintAuthClient extends CrossmintAuth {
     public async logout() {
         // Even if there's a server error, we want to clear the cookies
         try {
-            await this.apiClient.post(`${AUTH_SDK_ROOT_ENDPOINT}/logout`, {
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    refresh: getCookie(REFRESH_TOKEN_PREFIX),
-                }),
-            });
+            if (this.logoutRoute != null) {
+                await this.logoutFromCustomRoute();
+            } else {
+                await this.logoutFromDefaultRoute();
+            }
         } catch (error) {
             console.error(error);
         } finally {
@@ -180,6 +172,25 @@ export class CrossmintAuthClient extends CrossmintAuth {
 
         // parse the oneTimeSecret from the callbackUrl response
         return callbackUrl.searchParams.get("oneTimeSecret");
+    }
+
+    private async logoutFromDefaultRoute() {
+        return await this.apiClient.post(`${AUTH_SDK_ROOT_ENDPOINT}/logout`, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                refresh: getCookie(REFRESH_TOKEN_PREFIX),
+            }),
+        });
+    }
+
+    private async logoutFromCustomRoute(): Promise<Response> {
+        if (!this.logoutRoute) {
+            throw new Error("Custom logout route is not set");
+        }
+
+        return await fetch(this.logoutRoute, { method: "POST" });
     }
 
     private scheduleNextRefresh(jwt: string): void {

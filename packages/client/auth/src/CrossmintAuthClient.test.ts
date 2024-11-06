@@ -26,7 +26,7 @@ describe("CrossmintAuthClient", () => {
     };
     const mockConfig = {
         callbacks: mockCallbacks,
-        refreshRoute: "/custom/refresh",
+        refreshRoute: "http://example.com/custom/refresh",
     };
 
     beforeEach(() => {
@@ -82,11 +82,17 @@ describe("CrossmintAuthClient", () => {
     });
 
     describe("logout", () => {
+        beforeEach(() => {
+            mockApiClient.post.mockReset();
+        });
+
         it("should call logout endpoint, clear auth cookies and call onLogout callback", async () => {
             const mockCallbacks = { onLogout: vi.fn() };
             const mockRefreshToken = "mock-refresh-token";
             vi.mocked(cookiesUtils.getCookie).mockReturnValue(mockRefreshToken);
-            crossmintAuthClient = CrossmintAuthClient.from(mockCrossmint as unknown as Crossmint, mockCallbacks);
+            crossmintAuthClient = CrossmintAuthClient.from(mockCrossmint as unknown as Crossmint, {
+                callbacks: mockCallbacks,
+            });
 
             await crossmintAuthClient.logout();
 
@@ -101,6 +107,25 @@ describe("CrossmintAuthClient", () => {
                     }),
                 })
             );
+            expect(cookiesUtils.deleteCookie).toHaveBeenCalledWith("crossmint-refresh-token");
+            expect(cookiesUtils.deleteCookie).toHaveBeenCalledWith("crossmint-jwt");
+            expect(mockCallbacks.onLogout).toHaveBeenCalled();
+        });
+
+        it("should call custom logout route when configured", async () => {
+            const mockCallbacks = { onLogout: vi.fn() };
+            const customLogoutRoute = "/custom/logout";
+            const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue(new Response());
+
+            crossmintAuthClient = CrossmintAuthClient.from(mockCrossmint as unknown as Crossmint, {
+                callbacks: mockCallbacks,
+                logoutRoute: customLogoutRoute,
+            });
+
+            await crossmintAuthClient.logout();
+
+            expect(fetchSpy).toHaveBeenCalledWith(customLogoutRoute, { method: "POST" });
+            expect(mockApiClient.post).not.toHaveBeenCalled();
             expect(cookiesUtils.deleteCookie).toHaveBeenCalledWith("crossmint-refresh-token");
             expect(cookiesUtils.deleteCookie).toHaveBeenCalledWith("crossmint-jwt");
             expect(mockCallbacks.onLogout).toHaveBeenCalled();
@@ -155,7 +180,7 @@ describe("CrossmintAuthClient", () => {
         it("should handle errors and call logout", async () => {
             const mockError = new Error("Refresh failed");
             vi.spyOn(crossmintAuthClient as any, "refreshAuthMaterial").mockRejectedValue(mockError);
-            vi.spyOn(crossmintAuthClient, "logout").mockImplementation(() => {});
+            vi.spyOn(crossmintAuthClient, "logout").mockImplementation(() => Promise.resolve());
             const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
             await crossmintAuthClient.handleRefreshAuthMaterial(mockRefreshToken);
