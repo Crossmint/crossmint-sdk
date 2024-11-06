@@ -2,6 +2,8 @@ name: CI
 
 env:
     NEXT_PUBLIC_CROSSMINT_AUTH_SMART_WALLET_API_KEY: ${{ secrets.NEXT_PUBLIC_CROSSMINT_AUTH_SMART_WALLET_API_KEY }}
+    TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+    TURBO_TEAM: ${{ vars.TURBO_TEAM }}
 
 on:
     push:
@@ -24,7 +26,7 @@ jobs:
               run: pnpm build
 
             - name: Test all
-              run: pnpm test
+              run: pnpm test:vitest
 
     release:
         name: Release
