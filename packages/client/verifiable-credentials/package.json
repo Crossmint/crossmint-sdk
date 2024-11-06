@@ -36,6 +36,7 @@
     "devDependencies": {
         "typedoc": "0.26.5",
         "typedoc-plugin-frontmatter": "1.0.0",
-        "typedoc-plugin-markdown": "4.2.3"
+        "typedoc-plugin-markdown": "4.2.3",
+        "ts-node": "10.9.2"
     }
 }
