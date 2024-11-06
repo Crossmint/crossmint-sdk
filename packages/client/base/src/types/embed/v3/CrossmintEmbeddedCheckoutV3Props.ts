@@ -12,7 +12,16 @@ export interface CrossmintEmbeddedCheckoutV3Props {
     payment: EmbeddedCheckoutV3Payment;
 }
 
-export type EmbeddedCheckoutV3Recipient = { email: string } | { walletAddress: string };
+export type EmbeddedCheckoutV3Recipient = EmbeddedCheckoutV3EmailRecipient | EmbeddedCheckoutV3WalletAddressRecipient;
+
+export type EmbeddedCheckoutV3EmailRecipient = {
+    email: string;
+    walletAddress?: never;
+};
+export type EmbeddedCheckoutV3WalletAddressRecipient = {
+    walletAddress: string;
+    email?: never;
+};
 
 export type EmbeddedCheckoutV3LineItem = {
     collectionLocator: string;
