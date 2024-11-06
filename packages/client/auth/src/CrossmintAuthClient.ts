@@ -66,12 +66,12 @@ export class CrossmintAuthClient extends CrossmintAuth {
                     refresh: getCookie(REFRESH_TOKEN_PREFIX),
                 }),
             });
-
+        } catch (error) {
+            console.error(error);
+        } finally {
             deleteCookie(REFRESH_TOKEN_PREFIX);
             deleteCookie(SESSION_PREFIX);
             this.callbacks.onLogout?.();
-        } catch (error) {
-            console.error(error);
         }
     }
 
