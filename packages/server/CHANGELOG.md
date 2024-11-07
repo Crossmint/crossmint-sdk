@@ -1,5 +1,20 @@
 # @crossmint/server-sdk
 
+## 1.1.0
+
+### Minor Changes
+
+- 8f738d0: Abstracts common elements to commond-sdk-auth
+- b924ded: Adds support for custom refresh route for secure auth with httponly cookies
+
+### Patch Changes
+
+- Updated dependencies [b924ded]
+- Updated dependencies [8f738d0]
+- Updated dependencies [8f738d0]
+  - @crossmint/common-sdk-auth@1.0.0
+  - @crossmint/common-sdk-base@0.3.0
+
 ## 1.0.2
 
 ### Patch Changes

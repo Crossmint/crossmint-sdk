@@ -1,5 +1,14 @@
 # @crossmint/client-sdk-base
 
+## 1.3.2
+
+### Patch Changes
+
+- e30569f: embed: fix ts recipient discrimnator
+- ea8ce4d: embed: add Order type
+- Updated dependencies [8f738d0]
+  - @crossmint/common-sdk-base@0.3.0
+
 ## 1.3.1
 
 ### Patch Changes
