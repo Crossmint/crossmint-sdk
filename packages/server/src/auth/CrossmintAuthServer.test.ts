@@ -463,6 +463,7 @@ function getNodeReqResMock() {
             }
             return mockNodeRequest;
         },
+        httpVersion: "1.1",
     } as unknown as GenericRequest;
 
     const mockNodeResponse = {

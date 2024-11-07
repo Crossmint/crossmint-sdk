@@ -72,13 +72,6 @@ describe("getAuthCookies", () => {
         expect(() => getAuthCookies(mockRequest)).toThrow(CrossmintAuthenticationError);
         expect(() => getAuthCookies(mockRequest)).toThrow("No cookies found in request");
     });
-
-    it("should throw CrossmintAuthenticationError for unsupported request type", () => {
-        const mockRequest = {} as any;
-
-        expect(() => getAuthCookies(mockRequest)).toThrow(CrossmintAuthenticationError);
-        expect(() => getAuthCookies(mockRequest)).toThrow("Unsupported request type");
-    });
 });
 
 describe("setAuthCookies", () => {
@@ -133,13 +126,6 @@ describe("setAuthCookies", () => {
             "Set-Cookie",
             `${REFRESH_TOKEN_PREFIX}=mock-refresh-token; path=/; SameSite=Lax; expires=Sat, 01 Apr 2023 00:00:00 GMT;`
         );
-    });
-
-    it("should throw CrossmintAuthenticationError for unsupported response type", () => {
-        const mockResponse = {} as any;
-
-        expect(() => setAuthCookies(mockResponse, mockAuthMaterial)).toThrow(CrossmintAuthenticationError);
-        expect(() => setAuthCookies(mockResponse, mockAuthMaterial)).toThrow("Unsupported response type");
     });
 
     it("should set expired cookies when setting empty auth material", () => {

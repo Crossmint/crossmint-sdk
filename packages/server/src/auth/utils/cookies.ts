@@ -10,10 +10,12 @@ import {
 import {
     type GenericRequest,
     isNodeRequest,
-    isFetchRequest,
     type GenericResponse,
     isNodeResponse,
-    isFetchResponse,
+    NodeRequestAdapter,
+    FetchRequestAdapter,
+    NodeResponseAdapter,
+    FetchResponseAdapter,
 } from "../types/request";
 
 export function getAuthCookies(request: GenericRequest): AuthMaterialBasic {
@@ -43,29 +45,21 @@ export function setAuthCookies(response: GenericResponse, authMaterial: AuthMate
         }),
     ];
 
-    if (isNodeResponse(response)) {
-        response.setHeader("Set-Cookie", cookies);
-    } else if (isFetchResponse(response)) {
-        cookies.forEach((cookie) => response.headers.append("Set-Cookie", cookie));
-    } else {
-        throw new CrossmintAuthenticationError("Unsupported response type");
-    }
+    const responseAdapter = isNodeResponse(response)
+        ? new NodeResponseAdapter(response)
+        : new FetchResponseAdapter(response);
+
+    responseAdapter.setCookies(cookies);
 }
 
 function getCookieHeader(request: GenericRequest): string {
-    let cookieHeader;
+    const requestAdapter = isNodeRequest(request) ? new NodeRequestAdapter(request) : new FetchRequestAdapter(request);
 
-    if (isNodeRequest(request)) {
-        cookieHeader = request.headers.cookie;
-    } else if (isFetchRequest(request)) {
-        cookieHeader = request.headers.get("Cookie");
-    } else {
-        throw new CrossmintAuthenticationError("Unsupported request type");
-    }
-
+    const cookieHeader = requestAdapter.getCookieHeader();
     if (cookieHeader == null) {
         throw new CrossmintAuthenticationError("No cookies found in request");
     }
+
     return cookieHeader;
 }
 

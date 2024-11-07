@@ -10,17 +10,17 @@ import {
 } from "@crossmint/common-sdk-auth";
 import type { Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
 import {
-    getNodeRequestBody,
-    isFetchRequest,
+    FetchRequestAdapter,
+    FetchResponseAdapter,
+    isNodeRequest,
     isNodeResponse,
-    setFetchResponseError,
-    setNodeResponseError,
+    NodeRequestAdapter,
+    NodeResponseAdapter,
     type GenericRequest,
     type GenericResponse,
 } from "./types/request";
 import { getAuthCookies, setAuthCookies } from "./utils/cookies";
 import { verifyCrossmintJwt } from "./utils/jwt";
-import type { ServerResponse } from "http";
 
 export type CrossmintAuthServerOptions = CrossmintAuthOptions & {
     cookieOptions?: CookieOptions;
@@ -72,10 +72,17 @@ export class CrossmintAuthServer extends CrossmintAuth {
         return user;
     }
 
-    public async handleCustomRefresh(request: GenericRequest, response?: ServerResponse): Promise<GenericResponse> {
+    public async handleCustomRefresh(request: GenericRequest, response?: GenericResponse): Promise<GenericResponse> {
+        const requestAdapter = isNodeRequest(request)
+            ? new NodeRequestAdapter(request)
+            : new FetchRequestAdapter(request);
+        const responseAdapter = isNodeResponse(response)
+            ? new NodeResponseAdapter(response)
+            : new FetchResponseAdapter(response);
+
         // If the request from the client includes a refresh token (like the OneTimeSecret after authenticating), use that
         // Otherwise, try to get the refresh token from the cookies
-        const body = isFetchRequest(request) ? await request.json() : await getNodeRequestBody(request);
+        const body = await requestAdapter.getBody();
         const { refresh: tokenFromBody } = body ?? {};
         const authCookies = getAuthCookies(request);
         const tokenFromCookies = authCookies?.refreshToken;
@@ -90,20 +97,7 @@ export class CrossmintAuthServer extends CrossmintAuth {
 
             const refreshedAuthMaterial = await this.refresh(refreshToken);
 
-            // For Node.js based servers, we need to accept a response parameter and add to it
-            if (response != null && isNodeResponse(response)) {
-                response.setHeader("Content-Type", "application/json");
-                response.write(JSON.stringify(refreshedAuthMaterial));
-            }
-
-            // For Fetch based servers, we create a new response with necessary parameters
-            const responseWithBody = isFetchRequest(request)
-                ? new Response(JSON.stringify(refreshedAuthMaterial), {
-                      headers: {
-                          "Content-Type": "application/json",
-                      },
-                  })
-                : response;
+            const responseWithBody = responseAdapter.setAuthMaterial(refreshedAuthMaterial);
 
             if (responseWithBody == null) {
                 throw new CrossmintAuthenticationError("Response not found");
@@ -114,14 +108,15 @@ export class CrossmintAuthServer extends CrossmintAuth {
             return responseWithBody;
         } catch (error) {
             const errorResponseBody = { error: "Unauthorized", message: (error as Error).message };
-            const errorResponse =
-                response != null && isNodeResponse(response) ? response : setFetchResponseError(401, errorResponseBody);
+            const errorResponse = isNodeResponse(response)
+                ? response
+                : responseAdapter.setError(401, errorResponseBody);
 
             this.logout(request, errorResponse);
 
             // We need to set the rest of the Node response AFTER setting headers like we do in logout
             if (isNodeResponse(errorResponse)) {
-                return setNodeResponseError(errorResponse, 401, errorResponseBody);
+                return responseAdapter.setError(401, errorResponseBody);
             }
 
             return errorResponse;
