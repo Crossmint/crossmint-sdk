@@ -1,10 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import type { OAuthProvider } from "@crossmint/common-sdk-auth";
 import type { UIConfig } from "@crossmint/common-sdk-base";
-import type { LoginMethod } from "../CrossmintAuthProvider";
+import type { CrossmintAuthWalletConfig, LoginMethod } from "../CrossmintAuthProvider";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
+import { WagmiAuthProvider } from "./web3/WagmiAuthProvider";
 
-type AuthStep = "initial" | "walletMethod" | "otp" | "qrCode";
+type AuthStep = "initial" | "otp" | "qrCode" | "web3" | "web3/metamask" | "web3/walletconnect";
+
 type OAuthUrlMap = Record<OAuthProvider, string>;
 const initialOAuthUrlMap: OAuthUrlMap = {
     google: "",
@@ -26,6 +28,7 @@ type ContextInitialStateProps = {
     loginMethods: LoginMethod[];
     baseUrl: string;
     setDialogOpen?: (open: boolean) => void;
+    embeddedWallets: CrossmintAuthWalletConfig;
 };
 
 const AuthFormContext = createContext<AuthFormContextType | undefined>(undefined);
@@ -47,7 +50,11 @@ export const AuthFormProvider = ({
     const [oauthUrlMap, setOauthUrlMap] = useState<OAuthUrlMap>(initialOAuthUrlMap);
     const [isLoadingOauthUrlMap, setIsLoadingOauthUrlMap] = useState(true);
 
-    const { loginMethods } = initialState;
+    const { loginMethods, baseUrl, setDialogOpen, appearance, embeddedWallets } = initialState;
+
+    if (loginMethods.includes("web3") && embeddedWallets?.createOnLogin === "all-users") {
+        throw new Error("Creating wallets on login is not yet supported for web3 login method");
+    }
 
     const preFetchAndSetOauthUrl = useCallback(async () => {
         setIsLoadingOauthUrlMap(true);
@@ -74,16 +81,28 @@ export const AuthFormProvider = ({
         preFetchAndSetOauthUrl();
     }, [preFetchAndSetOauthUrl]);
 
+    const handleToggleDialog = (open: boolean) => {
+        setDialogOpen?.(open);
+        if (!open) {
+            // Delay to allow the close transition to complete before resetting the step
+            setTimeout(() => setStep("initial"), 250);
+        }
+    };
+
     const value: AuthFormContextType = {
         step,
-        appearance: initialState.appearance,
+        baseUrl,
+        appearance,
         loginMethods,
-        baseUrl: initialState.baseUrl,
         oauthUrlMap,
         isLoadingOauthUrlMap,
-        setDialogOpen: initialState.setDialogOpen ?? (() => {}),
+        setDialogOpen: handleToggleDialog,
         setStep,
     };
 
-    return <AuthFormContext.Provider value={value}>{children}</AuthFormContext.Provider>;
+    return (
+        <AuthFormContext.Provider value={value}>
+            <WagmiAuthProvider>{children}</WagmiAuthProvider>
+        </AuthFormContext.Provider>
+    );
 };

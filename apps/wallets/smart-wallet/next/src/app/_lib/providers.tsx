@@ -18,14 +18,13 @@ export function Providers({ children }: { children: ReactNode }) {
                         defaultChain: "polygon-amoy",
                     }}
                     appearance={{
-                        spacingUnit: "8px",
                         borderRadius: "16px",
                         colors: {
-                            inputBackground: "#fffdf9",
-                            buttonBackground: "#fffaf2",
+                            inputBackground: "#FAF5EC",
+                            buttonBackground: "#E9E3D8",
                             border: "#835911",
                             background: "#FAF5EC",
-                            textPrimary: "#5f2c1b",
+                            textPrimary: "#704130",
                             textSecondary: "#835911",
                             danger: "#ff3333",
                             accent: "#602C1B",

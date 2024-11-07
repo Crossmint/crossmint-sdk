@@ -168,6 +168,41 @@ export class CrossmintAuthClient extends CrossmintAuth {
         return callbackUrl.searchParams.get("oneTimeSecret");
     }
 
+    public async signInWithSmartWallet(address: string) {
+        const queryParams = new URLSearchParams({
+            signinAuthenticationMethod: "evm",
+        });
+
+        const result = await this.apiClient.post(
+            `${AUTH_SDK_ROOT_ENDPOINT}/crypto_wallets/authenticate/start?${queryParams}`,
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ walletAddress: address }),
+            }
+        );
+        return await result.json();
+    }
+
+    public async authenticateSmartWallet(address: string, signature: string) {
+        const queryParams = new URLSearchParams({
+            signinAuthenticationMethod: "evm",
+            callbackUrl: `${this.apiClient.baseUrl}/${AUTH_SDK_ROOT_ENDPOINT}/we-dont-actually-use-this-anymore`,
+        });
+
+        const result = await this.apiClient.post(
+            `${AUTH_SDK_ROOT_ENDPOINT}/crypto_wallets/authenticate?${queryParams}`,
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ walletAddress: address, signature }),
+            }
+        );
+        return await result.json();
+    }
+
     private async logoutFromCustomRoute(): Promise<Response> {
         if (!this.logoutRoute) {
             throw new Error("Custom logout route is not set");

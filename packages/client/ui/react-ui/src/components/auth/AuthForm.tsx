@@ -6,6 +6,7 @@ import { FarcasterSignIn } from "./methods/farcaster/FarcasterSignIn";
 import { PoweredByCrossmint } from "../common/PoweredByCrossmint";
 import { FarcasterProvider } from "../../providers/auth/FarcasterProvider";
 import { classNames } from "@/utils/classNames";
+import { Web3AuthFlow } from "./methods/web3/Web3AuthFlow";
 
 export function AuthForm({ className }: { className?: string }) {
     const { step, appearance, loginMethods, baseUrl } = useAuthForm();
@@ -41,10 +42,11 @@ export function AuthForm({ className }: { className?: string }) {
                     <FarcasterSignIn />
                 </FarcasterProvider>
             ) : null}
+            {loginMethods.includes("web3") ? <Web3AuthFlow /> : null}
 
             {step === "initial" || step === "otp" ? (
                 <PoweredByCrossmint
-                    className="mt-5 justify-center"
+                    className="mt-4 justify-center"
                     color={appearance?.colors?.textSecondary ?? "#A4AFB2"}
                 />
             ) : null}
