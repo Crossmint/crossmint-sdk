@@ -132,7 +132,7 @@ describe("CrossmintAuthClient", () => {
         });
     });
 
-    describe("handleRefreshToken", () => {
+    describe("handleRefreshAuthMaterial", () => {
         const mockRefreshToken = "mock-refresh-token";
         const mockAuthMaterial = {
             jwt: "new.jwt.token",
