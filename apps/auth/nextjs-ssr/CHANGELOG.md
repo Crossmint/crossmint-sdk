@@ -1,5 +1,24 @@
 # @crossmint/server-sdk-next-starter
 
+## 0.3.0
+
+### Minor Changes
+
+- b924ded: Adds example of custom refresh route with httponly cookies and using server and client auth sdks together
+
+### Patch Changes
+
+- Updated dependencies [8f738d0]
+- Updated dependencies [b924ded]
+- Updated dependencies [8951068]
+- Updated dependencies [8f738d0]
+- Updated dependencies [ea8ce4d]
+- Updated dependencies [b924ded]
+- Updated dependencies [eda52dc]
+- Updated dependencies [8a496be]
+  - @crossmint/server-sdk@1.1.0
+  - @crossmint/client-sdk-react-ui@1.10.0
+
 ## 0.2.2
 
 ### Patch Changes

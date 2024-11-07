@@ -1,5 +1,32 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.10.0
+
+### Minor Changes
+
+- b924ded: Adds support for custom refresh route for secure auth with httponly cookies
+- 8f738d0: Abstracts away all auth elements to auth sdks
+
+### Patch Changes
+
+- 8951068: Added web3 eoa authentication
+- ea8ce4d: embed: add Order type
+- eda52dc: Fixed styles
+- 8a496be: embed: force client key
+- Updated dependencies [8f738d0]
+- Updated dependencies [b924ded]
+- Updated dependencies [e30569f]
+- Updated dependencies [8951068]
+- Updated dependencies [ea8ce4d]
+- Updated dependencies [b924ded]
+- Updated dependencies [8f738d0]
+- Updated dependencies [8f738d0]
+  - @crossmint/client-sdk-auth@1.0.0
+  - @crossmint/common-sdk-auth@1.0.0
+  - @crossmint/client-sdk-base@1.3.2
+  - @crossmint/common-sdk-base@0.3.0
+  - @crossmint/client-sdk-smart-wallet@0.1.22
+
 ## 1.9.3
 
 ### Patch Changes

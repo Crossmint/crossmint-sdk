@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.3.0
+
+### Minor Changes
+
+- 8f738d0: Removes refreshToken from Crossmint
+
 ## 0.2.0
 
 ### Minor Changes
