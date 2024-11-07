@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { useAuth } from "@crossmint/client-sdk-react-ui";
+import { useRouter } from "next/navigation";
 
 export default function Login() {
+    const router = useRouter();
     const { login, logout, user, status } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
 
@@ -11,6 +13,7 @@ export default function Login() {
         setIsLoading(true);
         try {
             await login();
+            router.refresh();
         } catch (error) {
             console.error("Login failed:", error);
         } finally {
@@ -22,6 +25,7 @@ export default function Login() {
         setIsLoading(true);
         try {
             await logout();
+            router.refresh();
         } catch (error) {
             console.error("Logout failed:", error);
         } finally {

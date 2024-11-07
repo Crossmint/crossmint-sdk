@@ -1,5 +1,5 @@
 import { type Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
-import { CROSSMINT_API_VERSION, SDK_NAME, SDK_VERSION } from "./utils/constants";
+import { AUTH_SDK_ROOT_ENDPOINT, SDK_NAME, SDK_VERSION } from "./utils/constants";
 import { type AuthMaterialWithUser, CrossmintAuthenticationError, type AuthMaterialResponse } from "./types";
 
 export type CrossmintAuthOptions = {
@@ -38,7 +38,7 @@ export class CrossmintAuth {
     }
 
     protected async refresh(refreshToken: string): Promise<AuthMaterialWithUser> {
-        const result = await this.apiClient.post(`api/${CROSSMINT_API_VERSION}/session/sdk/auth/refresh`, {
+        const result = await this.apiClient.post(`${AUTH_SDK_ROOT_ENDPOINT}/refresh`, {
             body: JSON.stringify({ refresh: refreshToken }),
             headers: {
                 "Content-Type": "application/json",
@@ -77,6 +77,17 @@ export class CrossmintAuth {
         }
 
         return resultJson;
+    }
+
+    protected async logoutFromDefaultRoute(refreshToken?: string) {
+        return await this.apiClient.post(`${AUTH_SDK_ROOT_ENDPOINT}/logout`, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                refresh: refreshToken,
+            }),
+        });
     }
 
     static defaultApiClient(crossmint: Crossmint): CrossmintApiClient {

@@ -57,6 +57,12 @@ If you are using a framework with access to the response object, you can store t
 const { jwt, userId } = await crossmintAuth.getSession(request, response);
 ```
 
+4. Logout
+
+```ts
+await crossmintAuth.logout(request);
+```
+
 ## Security
 
 The SDK allows you to set the `httpOnly`, `secure`, `domain` and `sameSite` options for the cookies. This way, you can control how the cookies are stored and transmitted. Putting this together with a custom refresh route, you can store the authentication material in HttpOnly cookies that are tied to the domain of the provided route.
@@ -112,12 +118,12 @@ When using `HttpOnly` cookies, logout can't happen client-side as it doesn't hav
 In environments that use the Fetch API, `logout` will return the response object:
 
 ```ts
-return await crossmintAuth.logout();
+return await crossmintAuth.logout(request);
 ```
 
 In environments that use Node.js API, you also need to provide the response object and end the response:
 
 ```ts
-await crossmintAuth.logout(res);
+await crossmintAuth.logout(req, res);
 res.end();
 ```

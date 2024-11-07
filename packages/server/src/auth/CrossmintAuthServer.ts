@@ -42,7 +42,9 @@ export class CrossmintAuthServer extends CrossmintAuth {
         options: GenericRequest | AuthMaterialBasic,
         response?: GenericResponse
     ): Promise<AuthSession> {
-        const { jwt, refreshToken } = "refreshToken" in options ? options : getAuthCookies(options);
+        const request = "refreshToken" in options ? undefined : options;
+        const authMaterial = request ? getAuthCookies(request) : (options as AuthMaterialBasic);
+        const { jwt, refreshToken } = authMaterial;
 
         if (!refreshToken) {
             throw new CrossmintAuthenticationError("Refresh token not found");
@@ -52,7 +54,7 @@ export class CrossmintAuthServer extends CrossmintAuth {
             return await this.validateOrRefreshSession(jwt, refreshToken, response);
         } catch (error) {
             if (error instanceof CrossmintAuthenticationError && response != null) {
-                this.logout(response);
+                this.logout(request, response);
             }
             console.error("Failed to get session", error);
             throw new CrossmintAuthenticationError("Failed to get session");
@@ -115,7 +117,7 @@ export class CrossmintAuthServer extends CrossmintAuth {
             const errorResponse =
                 response != null && isNodeResponse(response) ? response : setFetchResponseError(401, errorResponseBody);
 
-            this.logout(errorResponse);
+            this.logout(request, errorResponse);
 
             // We need to set the rest of the Node response AFTER setting headers like we do in logout
             if (isNodeResponse(errorResponse)) {
@@ -134,17 +136,27 @@ export class CrossmintAuthServer extends CrossmintAuth {
         setAuthCookies(response, authMaterial, this.cookieOptions);
     }
 
-    public logout(response?: GenericResponse) {
-        // If we're working with Node API, the response param is needed
-        const responseToUse = response ?? new Response();
-        this.storeAuthMaterial(responseToUse, {
-            jwt: "",
-            refreshToken: {
-                secret: "",
-                expiresAt: "",
-            },
-        });
-        return responseToUse;
+    public async logout(request?: GenericRequest, response?: GenericResponse) {
+        try {
+            // It's not necessary to call the logout endpoint, but desirable
+            if (request != null) {
+                const { refreshToken } = getAuthCookies(request);
+                await this.logoutFromDefaultRoute(refreshToken);
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            // If we're working with Node API, the response param is needed
+            const responseToUse = response ?? new Response();
+            this.storeAuthMaterial(responseToUse, {
+                jwt: "",
+                refreshToken: {
+                    secret: "",
+                    expiresAt: "",
+                },
+            });
+            return responseToUse;
+        }
     }
 
     private async validateOrRefreshSession(

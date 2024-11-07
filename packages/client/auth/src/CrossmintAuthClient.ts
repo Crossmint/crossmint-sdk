@@ -1,5 +1,6 @@
 import type { UseSignInData } from "@farcaster/auth-kit";
 import {
+    AUTH_SDK_ROOT_ENDPOINT,
     type AuthMaterialWithUser,
     CROSSMINT_API_VERSION,
     CrossmintAuth,
@@ -10,14 +11,7 @@ import {
 } from "@crossmint/common-sdk-auth";
 import type { Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
 import { type CancellableTask, queueTask } from "@crossmint/client-sdk-base";
-import {
-    AUTH_SDK_ROOT_ENDPOINT,
-    deleteCookie,
-    getCookie,
-    getJWTExpiration,
-    setCookie,
-    TIME_BEFORE_EXPIRING_JWT_IN_SECONDS,
-} from "./utils";
+import { deleteCookie, getCookie, getJWTExpiration, setCookie, TIME_BEFORE_EXPIRING_JWT_IN_SECONDS } from "./utils";
 
 type CrossmintAuthClientConfig = CrossmintAuthOptions & {
     callbacks?: CrossmintAuthClientCallbacks;
@@ -67,7 +61,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
             if (this.logoutRoute != null) {
                 await this.logoutFromCustomRoute();
             } else {
-                await this.logoutFromDefaultRoute();
+                await this.logoutFromDefaultRoute(getCookie(REFRESH_TOKEN_PREFIX));
             }
         } catch (error) {
             console.error(error);
@@ -172,17 +166,6 @@ export class CrossmintAuthClient extends CrossmintAuth {
 
         // parse the oneTimeSecret from the callbackUrl response
         return callbackUrl.searchParams.get("oneTimeSecret");
-    }
-
-    private async logoutFromDefaultRoute() {
-        return await this.apiClient.post(`${AUTH_SDK_ROOT_ENDPOINT}/logout`, {
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                refresh: getCookie(REFRESH_TOKEN_PREFIX),
-            }),
-        });
     }
 
     private async logoutFromCustomRoute(): Promise<Response> {
