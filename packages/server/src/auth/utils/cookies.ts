@@ -4,15 +4,18 @@ import {
     CrossmintAuthenticationError,
     type AuthMaterialBasic,
     type AuthMaterial,
+    type CookieData,
     type CookieOptions,
 } from "@crossmint/common-sdk-auth";
 import {
     type GenericRequest,
     isNodeRequest,
-    isFetchRequest,
     type GenericResponse,
     isNodeResponse,
-    isFetchResponse,
+    NodeRequestAdapter,
+    FetchRequestAdapter,
+    NodeResponseAdapter,
+    FetchResponseAdapter,
 } from "../types/request";
 
 export function getAuthCookies(request: GenericRequest): AuthMaterialBasic {
@@ -21,39 +24,42 @@ export function getAuthCookies(request: GenericRequest): AuthMaterialBasic {
     return { jwt, refreshToken };
 }
 
-export function setAuthCookies(response: GenericResponse, authMaterial: AuthMaterial) {
+export function setAuthCookies(response: GenericResponse, authMaterial: AuthMaterial, options?: CookieOptions) {
     const cookies = [
-        createCookieString({ name: SESSION_PREFIX, value: authMaterial.jwt }),
+        createCookieString({
+            name: SESSION_PREFIX,
+            value: authMaterial.jwt,
+            options: {
+                ...options,
+                // The JWT needs to be accessible to the browser for the client SDK to work
+                httpOnly: false,
+            },
+        }),
         createCookieString({
             name: REFRESH_TOKEN_PREFIX,
             value: authMaterial.refreshToken.secret,
-            expiresAt: authMaterial.refreshToken.expiresAt,
+            options: {
+                ...options,
+                expiresAt: authMaterial.refreshToken.expiresAt,
+            },
         }),
     ];
 
-    if (isNodeResponse(response)) {
-        response.setHeader("Set-Cookie", cookies);
-    } else if (isFetchResponse(response)) {
-        cookies.forEach((cookie) => response.headers.append("Set-Cookie", cookie));
-    } else {
-        throw new CrossmintAuthenticationError("Unsupported response type");
-    }
+    const responseAdapter = isNodeResponse(response)
+        ? new NodeResponseAdapter(response)
+        : new FetchResponseAdapter(response);
+
+    responseAdapter.setCookies(cookies);
 }
 
 function getCookieHeader(request: GenericRequest): string {
-    let cookieHeader;
+    const requestAdapter = isNodeRequest(request) ? new NodeRequestAdapter(request) : new FetchRequestAdapter(request);
 
-    if (isNodeRequest(request)) {
-        cookieHeader = request.headers.cookie;
-    } else if (isFetchRequest(request)) {
-        cookieHeader = request.headers.get("Cookie");
-    } else {
-        throw new CrossmintAuthenticationError("Unsupported request type");
-    }
-
+    const cookieHeader = requestAdapter.getCookieHeader();
     if (cookieHeader == null) {
-        throw new CrossmintAuthenticationError("Cookie header not found");
+        throw new CrossmintAuthenticationError("No cookies found in request");
     }
+
     return cookieHeader;
 }
 
@@ -68,11 +74,19 @@ function parseCookieHeader(cookieHeader: string): Record<string, string> {
     );
 }
 
-function createCookieString(cookieOptions: CookieOptions): string {
-    const expiresInUtc = cookieOptions.expiresAt ? new Date(cookieOptions.expiresAt).toUTCString() : "";
-    let cookieString = `${cookieOptions.name}=${cookieOptions.value}; path=/; SameSite=Lax;`;
-    if (expiresInUtc) {
-        cookieString += ` expires=${expiresInUtc};`;
-    }
-    return cookieString;
+function createCookieString({ name, value, options = {} }: CookieData): string {
+    const { expiresAt, httpOnly = false, secure = false, sameSite = "lax", domain } = options;
+
+    const cookieParts = [
+        `${name}=${value}`,
+        "path=/",
+        `SameSite=${sameSite}`,
+        httpOnly && "HttpOnly",
+        secure && "Secure",
+        domain && `Domain=${domain}`,
+        expiresAt && `expires=${new Date(expiresAt).toUTCString()}`,
+        value === "" && "expires=Thu, 01 Jan 1970 00:00:00 UTC",
+    ].filter(Boolean);
+
+    return `${cookieParts.join("; ")};`;
 }

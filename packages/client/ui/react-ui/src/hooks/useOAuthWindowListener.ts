@@ -39,7 +39,7 @@ export const useOAuthWindowListener = (provider: OAuthProvider) => {
         });
 
         const handleAuthMaterial = async (data: { oneTimeSecret: string }) => {
-            await crossmintAuth?.handleRefreshToken(data.oneTimeSecret);
+            await crossmintAuth?.handleRefreshAuthMaterial(data.oneTimeSecret);
             childRef.current?.off("authMaterialFromPopupCallback");
             popup.window.close();
             setIsLoading(false);

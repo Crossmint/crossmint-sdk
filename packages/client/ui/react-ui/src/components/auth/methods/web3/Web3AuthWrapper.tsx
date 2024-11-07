@@ -53,7 +53,7 @@ export function Web3AuthWrapper({ providerType, flag, icon }: Web3AuthWrapperPro
             };
 
             const oneTimeSecret = authResponse.oneTimeSecret;
-            await crossmintAuth?.handleRefreshToken(oneTimeSecret);
+            await crossmintAuth?.handleRefreshAuthMaterial(oneTimeSecret);
         } catch (error) {
             console.error(`Error connecting to ${providerType}:`, error);
             setError(`Error connecting to ${providerType}. Please try again or contact support.`);

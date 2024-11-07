@@ -36,17 +36,49 @@ const user = await crossmintAuth.getUser();
 crossmintAuth.logout();
 ```
 
+## Secure setup using HttpOnly cookies
+
+To secure the authentication material, you can set up a custom endpoint in your backend that will handle refreshing the authentication material and storing it in HttpOnly cookies. This way, the authentication material is not accessible to JavaScript running in the browser.
+
+### Configure custom refresh route
+
+In the client, provide the custom refresh route when creating the CrossmintAuth instance:
+
+```typescript
+const crossmintAuth = CrossmintAuth.from(crossmint, {
+    refreshRoute: "/api/refresh",
+});
+```
+
+This way, the SDK will use the provided route to refresh the token instead of the default one and the authentication material can be stored in HttpOnly cookies that are tied to the domain of the provided route.
+
+### Configure custom logout route
+
+As you're now using HttpOnly cookies, logout can't happen client-side as it doesn't have access to the cookies. You can set up a custom logout route to handle the logout process.
+
+In the client, provide the custom logout route when creating the CrossmintAuth instance:
+
+```typescript
+const crossmintAuth = CrossmintAuth.from(crossmint, {
+    logoutRoute: "/api/logout",
+});
+```
+
+NOTE: Depending on the framework you're using, you might need to set the whole URL in the `refreshRoute` and `logoutRoute` options.
+
 ## Advanced Usage
 
 You can provide callbacks for token refresh and logout events when creating the CrossmintAuthClient:
 
 ```typescript
-const crossmintAuth = CrossmintAuthClient.from(crossmint, {
-    onTokenRefresh: (authMaterial) => {
-        // Handle new authentication material
-    },
-    onLogout: () => {
-        // Handle logout
+const crossmintAuth = CrossmintAuth.from(crossmint, {
+    callbacks: {
+        onTokenRefresh: (authMaterial) => {
+            // Handle new authentication material
+        },
+        onLogout: () => {
+            // Handle logout
+        },
     },
 });
 ```

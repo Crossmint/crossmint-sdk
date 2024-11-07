@@ -7,7 +7,7 @@ export async function verifyCrossmintJwt(token: string, jwksUri: string) {
         const publicKey = await getPublicKey(token, jwksUri);
         return verifyJWT(publicKey, token);
     } catch (error) {
-        console.log("Error verifying JWT", error);
+        console.error("Error verifying JWT", error);
         throw new Error("Invalid token");
     }
 }

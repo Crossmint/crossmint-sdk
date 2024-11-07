@@ -3,7 +3,7 @@ import { type ReactNode, createContext, useEffect, useMemo, useRef, useState } f
 import { CrossmintAuth, getCookie } from "@crossmint/client-sdk-auth";
 import type { EVMSmartWalletChain } from "@crossmint/client-sdk-smart-wallet";
 import { type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
-import { SESSION_PREFIX, type SDKExternalUser } from "@crossmint/common-sdk-auth";
+import { type AuthMaterialWithUser, SESSION_PREFIX, type SDKExternalUser } from "@crossmint/common-sdk-auth";
 
 import AuthFormDialog from "../components/auth/AuthFormDialog";
 import { useCrossmint, useWallet } from "../hooks";
@@ -25,11 +25,13 @@ export type CrossmintAuthProviderProps = {
     appearance?: UIConfig;
     children: ReactNode;
     loginMethods?: LoginMethod[];
+    refreshRoute?: string;
+    logoutRoute?: string;
 };
 
 type AuthStatus = "logged-in" | "logged-out" | "in-progress";
 
-type AuthContextType = {
+export interface AuthContextType {
     crossmintAuth?: CrossmintAuth;
     login: () => void;
     logout: () => void;
@@ -37,14 +39,19 @@ type AuthContextType = {
     user?: SDKExternalUser;
     status: AuthStatus;
     getUser: () => void;
-};
+}
 
-export const AuthContext = createContext<AuthContextType>({
+const defaultContextValue: AuthContextType = {
+    crossmintAuth: undefined,
     login: () => {},
     logout: () => {},
+    jwt: undefined,
+    user: undefined,
     status: "logged-out",
     getUser: () => {},
-});
+};
+
+export const AuthContext = createContext<AuthContextType>(defaultContextValue);
 
 const defaultEmbeddedWallets: CrossmintAuthWalletConfig = {
     defaultChain: "base-sepolia",
@@ -57,6 +64,8 @@ export function CrossmintAuthProvider({
     children,
     appearance,
     loginMethods = ["email", "google"],
+    refreshRoute,
+    logoutRoute,
 }: CrossmintAuthProviderProps) {
     const [user, setUser] = useState<SDKExternalUser | undefined>(undefined);
     const { crossmint, setJwt } = useCrossmint("CrossmintAuthProvider must be used within CrossmintProvider");
@@ -67,14 +76,18 @@ export function CrossmintAuthProvider({
     const crossmintAuth = useMemo(() => {
         if (!crossmintAuthRef.current) {
             crossmintAuthRef.current = CrossmintAuth.from(crossmint, {
-                onLogout: () => {
-                    setJwt(undefined);
-                    setUser(undefined);
+                callbacks: {
+                    onLogout: () => {
+                        setJwt(undefined);
+                        setUser(undefined);
+                    },
+                    onTokenRefresh: (authMaterial: AuthMaterialWithUser) => {
+                        setJwt(authMaterial.jwt);
+                        setUser(authMaterial.user);
+                    },
                 },
-                onTokenRefresh: (authMaterial) => {
-                    setJwt(authMaterial.jwt);
-                    setUser(authMaterial.user);
-                },
+                refreshRoute,
+                logoutRoute,
             });
         }
         return crossmintAuthRef.current;

@@ -1,5 +1,5 @@
 {
-    "name": "@crossmint/server-sdk-next-starter",
+    "name": "@crossmint/auth-ssr-nextjs-demo",
     "version": "0.2.2",
     "private": true,
     "scripts": {
@@ -9,6 +9,7 @@
         "lint": "next lint"
     },
     "dependencies": {
+        "@crossmint/client-sdk-react-ui": "workspace:*",
         "@crossmint/server-sdk": "workspace:*",
         "react": "^18",
         "react-dom": "^18",
