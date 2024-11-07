@@ -155,7 +155,7 @@ describe("CrossmintAuthServer", () => {
                 CrossmintAuthenticationError
             );
 
-            expect(CrossmintAuthServer.prototype.logout).toHaveBeenCalledWith(mockResponse);
+            expect(CrossmintAuthServer.prototype.logout).toHaveBeenCalledWith(mockRequest, mockResponse);
         });
 
         it("should throw CrossmintAuthenticationError when refresh token is not found", async () => {
@@ -370,10 +370,19 @@ describe("CrossmintAuthServer", () => {
     });
 
     describe("logout", () => {
-        it("should clear auth material from response and return it", () => {
+        const mockRequest = { headers: { cookie: "mock-cookie" } } as GenericRequest;
+
+        beforeEach(() => {
+            vi.mocked(cookiesUtils.getAuthCookies).mockReturnValue({
+                jwt: "mock.jwt.token",
+                refreshToken: "mock-refresh-token",
+            });
+        });
+
+        it("should clear auth material from response and return it", async () => {
             const mockResponse = {} as GenericResponse;
 
-            const result = crossmintAuthServer.logout(mockResponse);
+            const result = await crossmintAuthServer.logout(undefined, mockResponse);
 
             expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(
                 mockResponse,
@@ -389,8 +398,8 @@ describe("CrossmintAuthServer", () => {
             expect(result).toBe(mockResponse);
         });
 
-        it("should create and return new Response when no response provided", () => {
-            const result = crossmintAuthServer.logout();
+        it("should create and return new Response when no response provided", async () => {
+            const result = await crossmintAuthServer.logout();
 
             expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(
                 expect.any(Response),
@@ -404,6 +413,41 @@ describe("CrossmintAuthServer", () => {
                 {}
             );
             expect(result).toBeInstanceOf(Response);
+        });
+
+        it("should attempt to call logout endpoint when request is provided", async () => {
+            mockApiClient.post.mockResolvedValue({ ok: true });
+
+            await crossmintAuthServer.logout(mockRequest);
+
+            expect(mockApiClient.post).toHaveBeenCalledWith(
+                "api/2024-09-26/session/sdk/auth/logout",
+                expect.objectContaining({
+                    body: JSON.stringify({ refresh: "mock-refresh-token" }),
+                })
+            );
+        });
+
+        it("should still clear cookies even if logout endpoint call fails", async () => {
+            const mockResponse = {} as GenericResponse;
+            mockApiClient.post.mockRejectedValue(new Error("API Error"));
+            const consoleSpy = vi.spyOn(console, "error");
+
+            const result = await crossmintAuthServer.logout(mockRequest, mockResponse);
+
+            expect(consoleSpy).toHaveBeenCalled();
+            expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(
+                mockResponse,
+                {
+                    jwt: "",
+                    refreshToken: {
+                        secret: "",
+                        expiresAt: "",
+                    },
+                },
+                {}
+            );
+            expect(result).toBe(mockResponse);
         });
     });
 });
