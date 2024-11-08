@@ -36,7 +36,16 @@ const localeMap = {
     Klingon: Klingon,
 };
 
-export function t<K extends NestedPaths<typeof enUS>>(wordingKey: K, locale: Locale): TypeFromPath<typeof enUS, K> {
+export function t<K extends NestedPaths<typeof enUS>>(
+    wordingKey: K,
+    locale: Locale,
+    args?: string[]
+): TypeFromPath<typeof enUS, K> {
     const localeWording = localeMap[locale] ?? enUS;
-    return wordingKey.split(".").reduce((obj: any, i) => obj[i], localeWording);
+    const dictText = wordingKey.split(".").reduce((obj: any, i) => obj[i], localeWording);
+    return args ? replaceArgs(dictText, args) : dictText;
 }
+
+const replaceArgs = (value: string, args: string[]): string => {
+    return value.replace(/{(\d+)}/g, (match: string, index: number) => args[index] || match);
+};

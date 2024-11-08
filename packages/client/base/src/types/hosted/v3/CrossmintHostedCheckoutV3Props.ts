@@ -11,11 +11,17 @@ export interface CrossmintHostedCheckoutV3Props {
 }
 
 export interface CrossmintHostedCheckoutV3Appearance {
-    theme?: "light" | "dark";
+    theme?: {
+        checkout?: CrossmintHostedCheckoutV3Theme;
+        button?: CrossmintHostedCheckoutV3ButtonTheme;
+    };
     variables?: CrossmintHostedCheckoutV3AppearanceVariables;
     overlay?: CrossmintHostedCheckoutV3OverlayOptions;
     display?: "popup" | "same-tab" | "new-tab";
 }
+
+export type CrossmintHostedCheckoutV3Theme = "light" | "dark";
+export type CrossmintHostedCheckoutV3ButtonTheme = "light" | "dark" | "crossmint";
 
 export interface CrossmintHostedCheckoutV3AppearanceVariables {
     colors?: {
