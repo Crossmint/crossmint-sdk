@@ -9,7 +9,7 @@ import { classNames } from "@/utils/classNames";
 import { Web3AuthFlow } from "./methods/web3/Web3AuthFlow";
 
 export function AuthForm({ className }: { className?: string }) {
-    const { step, appearance, loginMethods, baseUrl } = useAuthForm();
+    const { step, appearance, loginMethods, baseUrl, error } = useAuthForm();
     return (
         <div className={classNames("flex flex-col gap-[10px] antialiased animate-none", className)}>
             {step === "initial" ? (
@@ -43,6 +43,8 @@ export function AuthForm({ className }: { className?: string }) {
                 </FarcasterProvider>
             ) : null}
             {loginMethods.includes("web3") ? <Web3AuthFlow /> : null}
+
+            {error ? <p className="text-xs text-red-500 mb-2 pt-2">{error}</p> : null}
 
             {step === "initial" || step === "otp" ? (
                 <PoweredByCrossmint

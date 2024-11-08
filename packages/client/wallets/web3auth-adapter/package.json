@@ -21,7 +21,7 @@
         "test:vitest": "cross-env NODE_ENV=test jest"
     },
     "dependencies": {
-        "@crossmint/common-sdk-base": "0.3.0",
+        "@crossmint/common-sdk-base": "workspace:*",
         "@web3auth/base": "7.3.2",
         "@web3auth/ethereum-provider": "7.3.2",
         "@web3auth/single-factor-auth": "7.3.0",

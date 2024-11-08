@@ -919,8 +919,8 @@ importers:
   packages/client/wallets/web3auth-adapter:
     dependencies:
       '@crossmint/common-sdk-base':
-        specifier: 0.0.13
-        version: 0.0.13
+        specifier: workspace:*
+        version: link:../../../common/base
       '@web3auth/base':
         specifier: 7.3.2
         version: 7.3.2(@babel/runtime@7.26.0)(bufferutil@4.0.8)(utf-8-validate@5.0.10)
@@ -1983,9 +1983,6 @@ packages:
 
   '@crossmint/common-sdk-base@0.0.12':
     resolution: {integrity: sha512-KFbUX/HwdtLjh2UHN06Rzu1kla7AExulZinIv43k2U/5JkwI3WB4b0BGV7YZ5DGGPsXTkZs1XVLmsQT7fE3KkA==}
-
-  '@crossmint/common-sdk-base@0.0.13':
-    resolution: {integrity: sha512-FeMVHpgHDoEIpq2UW+5RsU5/VikkBtCjWy/lKBrItqsou58rlEk0eSW/g9n+edi1v8xtzVHX36K+Se9jGD4Y9A==}
 
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -17531,11 +17528,6 @@ snapshots:
       bs58: 5.0.0
       tweetnacl: 1.0.3
 
-  '@crossmint/common-sdk-base@0.0.13':
-    dependencies:
-      bs58: 5.0.0
-      tweetnacl: 1.0.3
-
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
@@ -32198,7 +32190,7 @@ snapshots:
   json-rpc-engine@6.1.0:
     dependencies:
       '@metamask/safe-event-emitter': 2.0.0
-      eth-rpc-errors: 4.0.2
+      eth-rpc-errors: 4.0.3
 
   json-rpc-random-id@1.0.1: {}
 

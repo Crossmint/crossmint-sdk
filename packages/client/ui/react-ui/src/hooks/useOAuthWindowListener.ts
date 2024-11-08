@@ -7,7 +7,7 @@ import { useCrossmintAuth } from "./useCrossmintAuth";
 
 export const useOAuthWindowListener = (provider: OAuthProvider) => {
     const { crossmintAuth } = useCrossmintAuth();
-    const { oauthUrlMap } = useAuthForm();
+    const { oauthUrlMap, setError } = useAuthForm();
     const [isLoading, setIsLoading] = useState(false);
     const childRef = useRef<ChildWindow<IncomingEvents, OutgoingEvents> | null>(null);
 
@@ -15,7 +15,6 @@ export const useOAuthWindowListener = (provider: OAuthProvider) => {
         if (childRef.current == null) {
             childRef.current = new ChildWindow<IncomingEvents, OutgoingEvents>(window.opener || window.parent, "*", {
                 incomingEvents,
-                outgoingEvents,
             });
         }
 
@@ -31,6 +30,7 @@ export const useOAuthWindowListener = (provider: OAuthProvider) => {
             throw new Error("Child window not initialized");
         }
         setIsLoading(true);
+        setError(null);
         const popup = await PopupWindow.init(oauthUrlMap[provider], {
             awaitToLoad: false,
             crossOrigin: true,
@@ -45,8 +45,15 @@ export const useOAuthWindowListener = (provider: OAuthProvider) => {
             setIsLoading(false);
         };
 
-        childRef.current.on("authMaterialFromPopupCallback", handleAuthMaterial);
+        const handleError = (data: { error: string }) => {
+            setError(data.error);
+            childRef.current?.off("errorFromPopupCallback");
+            popup.window.close();
+            setIsLoading(false);
+        };
 
+        childRef.current.on("authMaterialFromPopupCallback", handleAuthMaterial);
+        childRef.current.on("errorFromPopupCallback", handleError);
         // Add a check for manual window closure
         // Ideally we should find a more explicit way of doing this, but I think this is fine for now.
         const checkWindowClosure = setInterval(() => {
@@ -66,16 +73,12 @@ export const useOAuthWindowListener = (provider: OAuthProvider) => {
 
 const incomingEvents = {
     authMaterialFromPopupCallback: z.object({ oneTimeSecret: z.string() }),
-};
-
-const outgoingEvents = {
-    authMaterialFromAuthFrame: z.object({ oneTimeSecret: z.string() }),
+    errorFromPopupCallback: z.object({ error: z.string() }),
 };
 
 type IncomingEvents = {
     authMaterialFromPopupCallback: typeof incomingEvents.authMaterialFromPopupCallback;
+    errorFromPopupCallback: typeof incomingEvents.errorFromPopupCallback;
 };
 
-type OutgoingEvents = {
-    authMaterialFromAuthFrame: typeof outgoingEvents.authMaterialFromAuthFrame;
-};
+type OutgoingEvents = Record<string, never>;

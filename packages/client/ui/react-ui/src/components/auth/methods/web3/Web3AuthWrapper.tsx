@@ -12,7 +12,7 @@ interface Web3AuthWrapperProps {
 
 export function Web3AuthWrapper({ providerType, flag, icon }: Web3AuthWrapperProps) {
     const { crossmintAuth } = useCrossmintAuth();
-    const { appearance } = useAuthForm();
+    const { appearance, setError: setAuthError } = useAuthForm();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -44,6 +44,7 @@ export function Web3AuthWrapper({ providerType, flag, icon }: Web3AuthWrapperPro
             return;
         }
         setIsLoading(true);
+        setAuthError(null);
 
         try {
             const res = await crossmintAuth?.signInWithSmartWallet(address);
@@ -57,6 +58,7 @@ export function Web3AuthWrapper({ providerType, flag, icon }: Web3AuthWrapperPro
         } catch (error) {
             console.error(`Error connecting to ${providerType}:`, error);
             setError(`Error connecting to ${providerType}. Please try again or contact support.`);
+            setAuthError(`Error connecting to ${providerType}. Please try again or contact support.`);
         } finally {
             setIsLoading(false);
         }
