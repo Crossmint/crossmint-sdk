@@ -1,4 +1,6 @@
-import type { Currency, Locale, PaymentMethod } from "..";
+import type { Currency } from "../Currency";
+import type { Locale } from "../Locale";
+import type { PaymentMethod } from "../PaymentMethod";
 import type { CaseInsensitive } from "../system";
 
 export type MintConfig = Record<string, any> | Record<string, any>[];

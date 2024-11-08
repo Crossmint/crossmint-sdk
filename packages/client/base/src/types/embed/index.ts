@@ -1,15 +1,10 @@
 import type { UIConfig } from "@crossmint/common-sdk-base";
 
-import type {
-    CaseInsensitive,
-    CollectionOrClientId,
-    CrossmintEvent,
-    Currency,
-    Locale,
-    MintConfigs,
-    PaymentMethod,
-    Recipient,
-} from "..";
+import type { CaseInsensitive, CollectionOrClientId, CrossmintEvent, MintConfigs } from "..";
+import type { Recipient } from "../Recipient";
+import type { Currency } from "../Currency";
+import type { Locale } from "../Locale";
+import type { PaymentMethod } from "../PaymentMethod";
 import type { CryptoEmbeddedCheckoutProps } from "./crypto";
 import type { FiatEmbeddedCheckoutProps } from "./fiat";
 

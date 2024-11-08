@@ -1,4 +1,4 @@
-import type { FiatPrice } from "@/types";
+import type { FiatPrice } from "@/types/FiatPrice";
 
 import type { EmptyObject } from "../../system";
 import { CrossmintEvents } from "./events";

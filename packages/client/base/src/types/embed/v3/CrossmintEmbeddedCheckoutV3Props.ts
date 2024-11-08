@@ -1,4 +1,5 @@
-import type { Currency as FiatCurrency, Locale } from "@/types";
+import type { Currency as FiatCurrency } from "@/types/Currency";
+import type { Locale } from "@/types/Locale";
 import type { CryptoCurrency } from "@/types/CryptoCurrency";
 
 import type { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";

@@ -1,6 +1,6 @@
 import type { NFTCollectionViewProps, NFTDetailProps, NFTOrNFTLocator } from "@crossmint/common-sdk-base";
 
-import { BaseUrls } from "../types";
+import { BaseUrls } from "@/types/BaseUrls";
 
 export const getEnvironmentBaseUrl = (environment = ""): string => {
     const productionValues = ["prod", "production"];

@@ -1,4 +1,5 @@
-import { isClient, isLocalhost } from "../../utils";
+import { isLocalhost } from "@/utils/isLocalhost";
+import { isClient } from "@/utils/isClient";
 import { ConsoleProvider } from "./ConsoleProvider";
 import { DatadogProvider } from "./DatadogProvider";
 

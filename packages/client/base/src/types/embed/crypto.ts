@@ -4,7 +4,7 @@ import type { Transaction as _SolanaTransaction } from "@solana/web3.js";
 import type { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 import type { CommonEmbeddedCheckoutProps } from ".";
-import { CryptoPaymentMethod } from "..";
+import { CryptoPaymentMethod } from "../PaymentMethod";
 
 type CryptoEmbeddedCheckoutPropsBase<
     PM extends keyof CryptoPaymentMethodSignerMap = keyof CryptoPaymentMethodSignerMap,

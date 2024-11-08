@@ -1,4 +1,8 @@
-import type { Currency, Locale, PaymentMethod, SigninMethods, clientNames } from "../../types";
+import type { SigninMethods } from "../../types";
+import type { clientNames } from "@/types/clientNames";
+import type { Currency } from "@/types/Currency";
+import type { Locale } from "@/types/Locale";
+import type { PaymentMethod } from "@/types/PaymentMethod";
 import type { CheckoutProps, MintConfigs } from "../../types/hosted";
 import type { CaseInsensitive } from "../../types/system";
 import { getEnvironmentBaseUrl } from "../../utils/ui";
