@@ -1,16 +1,15 @@
-import { embeddedCheckoutIFrameId } from "@/consts";
-import {
-    type CrossmintEmbeddedCheckoutProps,
-    type CrossmintEvent,
-    CrossmintEvents,
-    type CrossmintInternalEvent,
-    type CrossmintInternalEvents,
-    type IncomingInternalEvent,
-    IncomingInternalEvents,
-    type OutgoingInternalEvent,
-} from "@/types";
+import { embeddedCheckoutIFrameId } from "@/consts/embed";
 
 import { getEnvironmentBaseUrl } from "../../utils";
+import type { CrossmintEmbeddedCheckoutProps } from "@/types/embed";
+import { CrossmintEvents, IncomingInternalEvents } from "@/types/events";
+import type { CrossmintEvent } from "@/types/events/public";
+import type {
+    CrossmintInternalEvent,
+    CrossmintInternalEvents,
+    IncomingInternalEvent,
+    OutgoingInternalEvent,
+} from "@/types/events/internal";
 
 export function crossmintIFrameService(props: CrossmintEmbeddedCheckoutProps) {
     const targetOrigin = getEnvironmentBaseUrl(props.environment);

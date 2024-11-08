@@ -1,4 +1,4 @@
-import { type ObjectValues, objectValues } from "@/types";
+import { type ObjectValues, objectValues } from "@/types/utils";
 
 export const BlockchainBaseLayer = {
     EVM: "evm",

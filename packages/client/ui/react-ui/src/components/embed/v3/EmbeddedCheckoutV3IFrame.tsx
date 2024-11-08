@@ -1,4 +1,4 @@
-import { useCrossmint } from "@/hooks";
+import { useCrossmint } from "@/hooks/useCrossmint";
 import { useEffect, useRef, useState } from "react";
 
 import {

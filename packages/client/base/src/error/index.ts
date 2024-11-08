@@ -1,4 +1,4 @@
-import { CrossmintErrors } from "@/types";
+import { CrossmintErrors } from "@/types/errors";
 
 export class CrossmintSDKError extends Error {
     constructor(
