@@ -1,11 +1,19 @@
-import { useCrossmint } from "@/hooks";
+import { CrossmintLogoV2 } from "@/components/common/CrossmintLogoV2/CrossmintLogoV2";
+import { useCrossmint } from "@/hooks/useCrossmint";
 import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
-import { crossmintHostedCheckoutV3Service, type CrossmintHostedCheckoutV3Props } from "@crossmint/client-sdk-base";
-import type { MouseEvent, JSX } from "react";
+import {
+    crossmintHostedCheckoutV3Service,
+    crossmintHostedCheckoutV3StylesService,
+    type CrossmintHostedCheckoutV3Props,
+} from "@crossmint/client-sdk-base";
+import clsx from "clsx";
+import { type MouseEvent, type JSX, useEffect, useState } from "react";
 
 export type CrossmintHostedCheckoutV3ReactProps = CrossmintHostedCheckoutV3Props & JSX.IntrinsicElements["button"];
 
 export function CrossmintHostedCheckout_Alpha(props: CrossmintHostedCheckoutV3ReactProps) {
+    const [didInjectCss, setDidInjectCss] = useState(false);
+
     const { crossmint } = useCrossmint();
     const apiClient = createCrossmintApiClient(crossmint);
 
@@ -21,8 +29,9 @@ export function CrossmintHostedCheckout_Alpha(props: CrossmintHostedCheckoutV3Re
     };
 
     const hostedCheckoutService = crossmintHostedCheckoutV3Service({ apiClient, hostedCheckoutProps: customProps });
+    const stylesService = crossmintHostedCheckoutV3StylesService(customProps);
 
-    const { onClick, ...restButtonProps } = buttonProps;
+    const { onClick, className, children, ...restButtonProps } = buttonProps;
 
     function _onClick(e: MouseEvent<HTMLButtonElement>) {
         e.preventDefault();
@@ -34,9 +43,32 @@ export function CrossmintHostedCheckout_Alpha(props: CrossmintHostedCheckoutV3Re
         }
     }
 
+    const css = stylesService.generateCss();
+
+    useEffect(() => {
+        const { cleanup } = stylesService.injectCss(css);
+        setDidInjectCss(true);
+        return cleanup;
+    }, [css]);
+
+    if (!didInjectCss) {
+        return null;
+    }
+
     return (
-        <button onClick={_onClick} {...restButtonProps}>
-            Pay with Crossmint
+        <button
+            onClick={_onClick}
+            className={clsx(stylesService.identifiers.buttonClassNames, className)}
+            {...restButtonProps}
+        >
+            <CrossmintLogoV2
+                style={{ marginRight: "12px", flex: "none" }}
+                displayType="icon-only"
+                id={stylesService.identifiers.logoId}
+                height={16}
+                width={16}
+            />
+            {children ?? <p style={{ margin: 0 }}>{stylesService.getButtonText()}</p>}
         </button>
     );
 }

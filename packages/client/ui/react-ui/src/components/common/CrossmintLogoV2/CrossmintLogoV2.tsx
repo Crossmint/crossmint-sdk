@@ -48,14 +48,15 @@ function getSvgGradientDefinition(props: CrossmintLogoColorsAndDisplayType, grad
         <defs>
             <linearGradient
                 id={`logoGradient-${gradientId}`}
+                className={`logoGradient`}
                 x1=".1"
                 y1=".1"
                 x2="85.8"
                 y2="85.8"
                 gradientUnits="userSpaceOnUse"
             >
-                <stop offset="0" stopColor={iconColor.from} />
-                <stop offset="1" stopColor={iconColor.to} />
+                <stop className="stop-0" offset="0" stopColor={iconColor.from} />
+                <stop className="stop-1" offset="1" stopColor={iconColor.to} />
             </linearGradient>
         </defs>
     );
