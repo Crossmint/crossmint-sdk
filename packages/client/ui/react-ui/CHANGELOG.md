@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.10.1
+
+### Patch Changes
+
+- cfcc814: embed v3: lazy import
+
 ## 1.10.0
 
 ### Minor Changes
