@@ -35,7 +35,7 @@ export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEm
             setStep("otp");
         } catch (_e: unknown) {
             setIsLoading(false);
-            setEmailError("Failed to send email. Please try again or contact support.");
+            setError("Failed to send email. Please try again or contact support.");
         }
     }
 

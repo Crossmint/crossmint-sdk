@@ -196,14 +196,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
             }
 
             const resData = await response.json();
-            const callbackUrl = new URL(resData.callbackUrl);
-            const oneTimeSecret = callbackUrl.searchParams.get("oneTimeSecret");
-
-            if (!oneTimeSecret) {
-                throw new CrossmintAuthenticationError("One-time secret not found in callback URL");
-            }
-
-            return oneTimeSecret;
+            return resData.oneTimeSecret;
         } catch (error) {
             throw new CrossmintAuthenticationError(
                 `Failed to sign in with Farcaster: ${error instanceof Error ? error.message : "Unknown error"}`
