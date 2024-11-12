@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.10.3
+
+### Patch Changes
+
+- 1d39a08: embed: improve dynamic.xyz behavior
+
 ## 1.10.2
 
 ### Patch Changes
