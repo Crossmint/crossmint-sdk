@@ -7,7 +7,7 @@ import { classNames } from "@/utils/classNames";
 import { AuthFormBackButton } from "../../AuthFormBackButton";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
 export function FarcasterSignIn() {
-    const { step, appearance, setStep } = useAuthForm();
+    const { step, appearance, setStep, setError } = useAuthForm();
 
     if (step === "initial") {
         return (
@@ -24,6 +24,7 @@ export function FarcasterSignIn() {
                     }}
                     onClick={() => {
                         setStep("qrCode");
+                        setError(null);
                     }}
                 >
                     <FarcasterIcon className="h-[25px] w-[25px] absolute left-[18px]" />

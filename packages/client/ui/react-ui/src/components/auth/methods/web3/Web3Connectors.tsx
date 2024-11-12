@@ -6,7 +6,7 @@ import { Web3ConnectorContainer } from "./Web3ConnectorContainer";
 import { useAccount, useDisconnect } from "wagmi";
 
 export function Web3Connectors() {
-    const { appearance, step, setStep, setError } = useAuthForm();
+    const { appearance, step, setStep } = useAuthForm();
     const { isConnected } = useAccount();
     const { disconnect } = useDisconnect();
 
@@ -67,7 +67,6 @@ export function Web3Connectors() {
                 <AuthFormBackButton
                     onClick={() => {
                         setStep("web3");
-                        setError(null);
                     }}
                     iconColor={appearance?.colors?.textPrimary}
                     ringColor={appearance?.colors?.accent}
@@ -83,7 +82,6 @@ export function Web3Connectors() {
                 <AuthFormBackButton
                     onClick={() => {
                         setStep("web3");
-                        setError(null);
                     }}
                     iconColor={appearance?.colors?.textPrimary}
                     ringColor={appearance?.colors?.accent}

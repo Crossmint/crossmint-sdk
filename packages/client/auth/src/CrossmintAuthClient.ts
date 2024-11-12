@@ -47,7 +47,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
             });
 
             if (!response.ok) {
-                throw new CrossmintAuthenticationError((await response.text()) ?? "Unknown error");
+                throw await response.text();
             }
 
             return await response.json();
@@ -116,7 +116,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
             });
 
             if (!response.ok) {
-                throw new CrossmintAuthenticationError((await response.text()) ?? "Unknown error");
+                throw await response.text();
             }
 
             const data = await response.json();
@@ -136,7 +136,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
             });
 
             if (!response.ok) {
-                throw new CrossmintAuthenticationError((await response.text()) ?? "Unknown error");
+                throw await response.text();
             }
 
             return await response.json();
@@ -162,7 +162,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
             });
 
             if (!response.ok) {
-                throw new CrossmintAuthenticationError((await response.text()) ?? "Unknown error");
+                throw await response.text();
             }
 
             const resData = await response.json();
@@ -192,7 +192,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
             });
 
             if (!response.ok) {
-                throw new CrossmintAuthenticationError((await response.text()) ?? "Unknown error");
+                throw await response.text();
             }
 
             const resData = await response.json();
@@ -216,7 +216,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
             );
 
             if (!response.ok) {
-                throw new CrossmintAuthenticationError((await response.text()) ?? "Unknown error");
+                throw await response.text();
             }
 
             return await response.json();
@@ -239,7 +239,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
             );
 
             if (!response.ok) {
-                throw new CrossmintAuthenticationError((await response.text()) ?? "Unknown error");
+                throw await response.text();
             }
 
             return await response.json();
