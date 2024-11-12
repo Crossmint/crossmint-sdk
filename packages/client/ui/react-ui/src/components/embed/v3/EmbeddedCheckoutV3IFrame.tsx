@@ -77,6 +77,7 @@ export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props
                     apiKeyEnvironment={apiClient["parsedAPIKey"].environment}
                 />
             ) : null}
+            <span id="crossmint-focus-target" tabIndex={-1} />
         </>
     );
 }
