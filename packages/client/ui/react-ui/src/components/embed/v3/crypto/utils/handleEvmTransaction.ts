@@ -4,8 +4,15 @@ import {
     blockchainToChainId,
     type EVMBlockchainIncludingTestnet,
 } from "@crossmint/common-sdk-base";
-import { type Wallet } from "@dynamic-labs/sdk-react-core";
-import { Chain, Account, WalletClient, type TransactionSerializableEIP1559, Transport, parseTransaction } from "viem";
+import type { Wallet } from "@dynamic-labs/sdk-react-core";
+import {
+    type Chain,
+    type Account,
+    type WalletClient,
+    type TransactionSerializableEIP1559,
+    type Transport,
+    parseTransaction,
+} from "viem";
 
 export async function handleEvmTransaction({
     primaryWallet,

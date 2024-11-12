@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.10.2
+
+### Patch Changes
+
+- 5034e43: embed v3: downgrade dynamic to v2
+
 ## 1.10.1
 
 ### Patch Changes
