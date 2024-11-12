@@ -6,9 +6,9 @@ import {
     chainIdToBlockchain,
 } from "@crossmint/common-sdk-base";
 import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
-import { type HandleConnectedWallet, useDynamicContext } from "@dynamic-labs/sdk-react-core";
+import { DynamicContext, useDynamicContext, type HandleConnectedWallet } from "@dynamic-labs/sdk-react-core";
 import { SolanaWalletConnectors } from "@dynamic-labs/solana";
-import { useEffect } from "react";
+import { type Dispatch, type SetStateAction, useContext, useEffect, useState } from "react";
 import { handleSendTransaction } from "./utils/handleSendTransaction";
 
 export function CryptoWalletConnectionHandler(props: {
@@ -71,21 +71,21 @@ export function CryptoWalletConnectionHandler(props: {
 }
 
 function _CryptoWalletConnectionHandler({ iframeClient }: Parameters<typeof CryptoWalletConnectionHandler>[0]) {
-    const { setShowAuthFlow, primaryWallet, handleLogOut } = useDynamicContext();
+    const [showDynamicModal, setShowDynamicModal] = useState(false);
+    const { primaryWallet } = useDynamicContext();
 
     useEffect(() => {
         if (iframeClient == null) {
             return;
         }
-        const showAuthFlowListener = iframeClient.on("crypto:connect-wallet.show", async ({ show }) => {
-            await handleLogOut();
-            setShowAuthFlow(show);
+        const showAuthFlowListener = iframeClient.on("crypto:connect-wallet.show", ({ show }) => {
+            setShowDynamicModal(show);
         });
 
         return () => {
             iframeClient.off(showAuthFlowListener);
         };
-    }, [iframeClient, handleLogOut, setShowAuthFlow]);
+    }, [iframeClient]);
 
     useEffect(() => {
         if (iframeClient == null) {
@@ -116,7 +116,7 @@ function _CryptoWalletConnectionHandler({ iframeClient }: Parameters<typeof Cryp
         };
     }, [iframeClient, primaryWallet]);
 
-    return null;
+    return showDynamicModal ? <ShowDynamicModal setShowDynamicModal={setShowDynamicModal} /> : null;
 }
 
 async function dynamicChainToCrossmintChain(
@@ -135,4 +135,31 @@ async function dynamicChainToCrossmintChain(
         throw new Error(`ChainId ${chainId} is not supported`);
     }
     return chainFromChainId as BlockchainIncludingTestnet;
+}
+
+export function ShowDynamicModal({ setShowDynamicModal }: { setShowDynamicModal: Dispatch<SetStateAction<boolean>> }) {
+    const context = useContext(DynamicContext);
+    if (context == null) {
+        throw new Error("DynamicContext is missing");
+    }
+    const { setShowAuthFlow, handleLogOut } = context;
+
+    useEffect(() => {
+        // Move focus from the iframe to the main page, otherwise the modal will require a double click to interact with it
+        document.getElementById("crossmint-focus-target")?.focus();
+
+        (async () => {
+            await handleLogOut();
+            setShowAuthFlow(true, {
+                clearErrors: true,
+                emitCancelAuth: true,
+                ignoreIfIsEmbeddedWidget: true,
+                initializeWalletConnect: true,
+                performMultiWalletChecks: false, // Important to be false in order to not require double clicking connect button
+            });
+            setShowDynamicModal(false);
+        })();
+    }, []);
+
+    return null;
 }
