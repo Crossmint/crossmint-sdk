@@ -2,7 +2,7 @@ import type { UIConfig } from "@crossmint/common-sdk-base";
 import { PoweredByCrossmint } from "@/components/common/PoweredByCrossmint";
 import { classNames } from "@/utils/classNames";
 
-export function Web3ConnectButton({
+export function Web3Connector({
     icon,
     appearance,
     isLoading,

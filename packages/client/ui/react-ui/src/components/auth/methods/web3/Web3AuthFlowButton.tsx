@@ -3,7 +3,7 @@ import { WalletIcon } from "@/icons/wallet";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import { classNames } from "@/utils/classNames";
 
-export function Web3SignIn() {
+export function Web3AuthFlowButton() {
     const { step, appearance, setStep } = useAuthForm();
 
     if (step !== "initial") {

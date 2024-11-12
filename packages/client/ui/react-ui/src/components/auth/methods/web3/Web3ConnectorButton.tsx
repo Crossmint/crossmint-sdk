@@ -2,7 +2,7 @@ import type { UIConfig } from "@crossmint/common-sdk-base";
 import type React from "react";
 import { classNames } from "../../../../utils/classNames";
 
-export function Web3ProviderButton({
+export function Web3ConnectorButton({
     title,
     appearance,
     img,
