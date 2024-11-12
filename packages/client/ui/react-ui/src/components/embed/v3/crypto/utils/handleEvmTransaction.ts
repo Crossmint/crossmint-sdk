@@ -34,7 +34,6 @@ export async function handleEvmTransaction({
     let walletClient: WalletClient<Transport, Chain, Account> | undefined;
     try {
         walletClient = connector.getWalletClient<WalletClient<Transport, Chain, Account> | undefined>(String(chainId));
-        console.log("walletClient", walletClient);
         if (!walletClient) {
             throw new Error(`connector.getWalletClient(${chainId}) returned undefined`);
         }

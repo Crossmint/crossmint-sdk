@@ -20,7 +20,6 @@ export async function handleSolanaTransaction({
     let signer: ISolana;
     try {
         signer = await connector.getSigner<ISolana>();
-        console.log("signer", signer);
     } catch (error) {
         console.error("[CryptoWalletConnectionHandler] failed to get signer", error);
         iframeClient.send("crypto:send-transaction:failed", {
