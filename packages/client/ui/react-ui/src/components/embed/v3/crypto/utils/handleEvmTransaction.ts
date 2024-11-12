@@ -4,8 +4,8 @@ import {
     blockchainToChainId,
     type EVMBlockchainIncludingTestnet,
 } from "@crossmint/common-sdk-base";
-import type { EthereumWallet } from "@dynamic-labs/ethereum-core";
-import { parseTransaction, type TransactionSerializableEIP1559 } from "viem";
+import { type Wallet } from "@dynamic-labs/sdk-react-core";
+import { Chain, Account, WalletClient, type TransactionSerializableEIP1559, Transport, parseTransaction } from "viem";
 
 export async function handleEvmTransaction({
     primaryWallet,
@@ -13,24 +13,31 @@ export async function handleEvmTransaction({
     serializedTransaction,
     iframeClient,
 }: {
-    primaryWallet: EthereumWallet;
+    primaryWallet: Wallet;
     chain: BlockchainIncludingTestnet;
     serializedTransaction: string;
     iframeClient: EmbeddedCheckoutV3IFrameEmitter;
 }) {
+    const { connector } = primaryWallet;
+    const chainId = blockchainToChainId(chain as EVMBlockchainIncludingTestnet);
+
     try {
-        await primaryWallet.switchNetwork(blockchainToChainId(chain as EVMBlockchainIncludingTestnet));
+        await connector.switchNetwork({ networkChainId: chainId });
     } catch (error) {
-        console.error("[CryptoWalletConnectionHandler] failed to switch network", error);
+        console.error(`[CryptoWalletConnectionHandler] failed to switch network to ${chainId}`, error);
         iframeClient.send("crypto:send-transaction:failed", {
             error: (error as Error).message,
         });
         return;
     }
 
-    let walletClient: Awaited<ReturnType<typeof primaryWallet.getWalletClient>>;
+    let walletClient: WalletClient<Transport, Chain, Account> | undefined;
     try {
-        walletClient = await primaryWallet.getWalletClient();
+        walletClient = connector.getWalletClient<WalletClient<Transport, Chain, Account> | undefined>(String(chainId));
+        console.log("walletClient", walletClient);
+        if (!walletClient) {
+            throw new Error(`connector.getWalletClient(${chainId}) returned undefined`);
+        }
     } catch (error) {
         console.error("[CryptoWalletConnectionHandler] failed to get wallet client", error);
         iframeClient.send("crypto:send-transaction:failed", {
