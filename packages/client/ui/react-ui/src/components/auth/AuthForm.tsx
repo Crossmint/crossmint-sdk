@@ -14,7 +14,12 @@ export function AuthForm({ className }: { className?: string }) {
     const { step, appearance, loginMethods, baseUrl, error } = useAuthForm();
 
     return (
-        <div className={classNames("flex flex-col gap-[10px] antialiased animate-none", className)}>
+        <div
+            className={classNames(
+                "relative p-6 pb-4 !min-[480px]:p-10 !min-[480px]:pb-8 flex flex-col gap-[10px] antialiased animate-none",
+                className
+            )}
+        >
             {error ? (
                 <div
                     className="flex items-start justify-start w-full rounded-lg p-2 mt-4 bg-cm-danger-muted"
