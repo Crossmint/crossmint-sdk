@@ -68,5 +68,5 @@ const INNER_HTML = `
             </g>
         </g>
     </svg>
-    <p style="color: white; font-size: 16px; text-align: center; max-width: 400px;">Continue your purchase in the secure Crossmint window</p>
+    <p style="color: white; font-size: 15px; text-align: center; max-width: 400px; font-family: Inter; letter-spacing: -0.015em;">Complete your purchase in the Crossmint window</p>
     `;
