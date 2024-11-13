@@ -1,5 +1,15 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.10.4
+
+### Patch Changes
+
+- 92b5abc: Catch auth errors and show useful info to users
+- Updated dependencies [92b5abc]
+- Updated dependencies [92b5abc]
+  - @crossmint/common-sdk-auth@1.0.1
+  - @crossmint/client-sdk-auth@1.1.0
+
 ## 1.10.3
 
 ### Patch Changes

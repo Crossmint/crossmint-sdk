@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-auth
 
+## 1.0.1
+
+### Patch Changes
+
+- 92b5abc: Makes refreshtoken param mandatory
+
 ## 1.0.0
 
 ### Major Changes
