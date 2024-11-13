@@ -7,7 +7,7 @@ import { classNames } from "@/utils/classNames";
 import { AuthFormBackButton } from "../../AuthFormBackButton";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
 export function FarcasterSignIn() {
-    const { step, appearance, setStep } = useAuthForm();
+    const { step, appearance, setStep, setError } = useAuthForm();
 
     if (step === "initial") {
         return (
@@ -24,6 +24,7 @@ export function FarcasterSignIn() {
                     }}
                     onClick={() => {
                         setStep("qrCode");
+                        setError(null);
                     }}
                 >
                     <FarcasterIcon className="h-[25px] w-[25px] absolute left-[18px]" />
@@ -49,7 +50,7 @@ export function FarcasterSignIn() {
 // We want this to be a separate component so it can completely un-render when the user goes back to the initial screen
 function FarcasterQRCode() {
     const { crossmintAuth } = useCrossmintAuth();
-    const { appearance, setStep, setDialogOpen } = useAuthForm();
+    const { appearance, setStep, setDialogOpen, setError } = useAuthForm();
     const [farcasterData, setFarcasterData] = useState<UseSignInData | null>(null);
 
     const farcasterProps = useMemo(
@@ -65,6 +66,7 @@ function FarcasterQRCode() {
     const { signIn, url: qrCodeUrl, connect, signOut, isConnected } = useSignIn(farcasterProps);
 
     const handleFarcasterSignIn = async (data: UseSignInData) => {
+        setError(null);
         try {
             const oneTimeSecret = await crossmintAuth?.signInWithFarcaster(data);
             // Step 5. fetch the auth material, close the dialog, and unrender any farcaster client stuff
@@ -73,6 +75,7 @@ function FarcasterQRCode() {
             setStep("initial");
         } catch (error) {
             console.error("Error during Farcaster sign-in:", error);
+            setError("Failed to sign in with Farcaster");
         }
     };
 

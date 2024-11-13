@@ -79,7 +79,7 @@ export class CrossmintAuth {
         return resultJson;
     }
 
-    protected async logoutFromDefaultRoute(refreshToken?: string) {
+    protected async logoutFromDefaultRoute(refreshToken: string) {
         return await this.apiClient.post(`${AUTH_SDK_ROOT_ENDPOINT}/logout`, {
             headers: {
                 "Content-Type": "application/json",

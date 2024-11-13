@@ -7,11 +7,33 @@ import { PoweredByCrossmint } from "../common/PoweredByCrossmint";
 import { FarcasterProvider } from "../../providers/auth/FarcasterProvider";
 import { classNames } from "@/utils/classNames";
 import { Web3AuthFlow } from "./methods/web3/Web3AuthFlow";
+import Color from "color";
+import { AlertIcon } from "@/icons/alert";
 
 export function AuthForm({ className }: { className?: string }) {
-    const { step, appearance, loginMethods, baseUrl } = useAuthForm();
+    const { step, appearance, loginMethods, baseUrl, error } = useAuthForm();
+
     return (
-        <div className={classNames("flex flex-col gap-[10px] antialiased animate-none", className)}>
+        <div
+            className={classNames(
+                "relative p-6 pb-4 !min-[480px]:p-10 !min-[480px]:pb-8 flex flex-col gap-[10px] antialiased animate-none",
+                className
+            )}
+        >
+            {error ? (
+                <div
+                    className="flex items-start justify-start w-full rounded-lg p-2 mt-4 bg-cm-danger-muted"
+                    style={{
+                        backgroundColor: new Color(appearance?.colors?.danger ?? "#f44336").alpha(0.12).toString(),
+                    }}
+                >
+                    <AlertIcon customColor={appearance?.colors?.danger ?? "#f44336"} />
+                    <p className="ml-2 text-sm" style={{ color: appearance?.colors?.danger ?? "#f44336" }}>
+                        {error}
+                    </p>
+                </div>
+            ) : null}
+
             {step === "initial" ? (
                 <div>
                     <h1

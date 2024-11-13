@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
-import { Web3ConnectButton } from "./Web3ConnectButton";
+import { Web3Connector } from "./Web3Connector";
 import { useAccount, useChainId, useConnect, useSignMessage } from "wagmi";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
 
@@ -10,11 +10,10 @@ interface Web3AuthWrapperProps {
     icon: string;
 }
 
-export function Web3AuthWrapper({ providerType, flag, icon }: Web3AuthWrapperProps) {
+export function Web3ConnectorContainer({ providerType, flag, icon }: Web3AuthWrapperProps) {
     const { crossmintAuth } = useCrossmintAuth();
-    const { appearance } = useAuthForm();
+    const { appearance, error, setError } = useAuthForm();
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
 
     const chainId = useChainId();
     const { address, status: accountStatus } = useAccount(); // hook is causing a hydration error when navigating back
@@ -44,6 +43,7 @@ export function Web3AuthWrapper({ providerType, flag, icon }: Web3AuthWrapperPro
             return;
         }
         setIsLoading(true);
+        setError(null);
 
         try {
             const res = await crossmintAuth?.signInWithSmartWallet(address);
@@ -69,7 +69,7 @@ export function Web3AuthWrapper({ providerType, flag, icon }: Web3AuthWrapperPro
         signMessageStatus === "pending";
 
     return (
-        <Web3ConnectButton
+        <Web3Connector
             icon={icon}
             appearance={appearance}
             headingText={signMessageStatus === "pending" ? "Sign to verify" : "Connect your wallet"}

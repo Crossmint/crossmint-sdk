@@ -4,6 +4,7 @@ import {
     type AuthMaterialWithUser,
     CROSSMINT_API_VERSION,
     CrossmintAuth,
+    CrossmintAuthenticationError,
     type CrossmintAuthOptions,
     type OAuthProvider,
     REFRESH_TOKEN_PREFIX,
@@ -40,14 +41,21 @@ export class CrossmintAuthClient extends CrossmintAuth {
     }
 
     public async getUser() {
-        const result = await this.apiClient.get(`api/${CROSSMINT_API_VERSION}/sdk/auth/user`, {
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
+        try {
+            const response = await this.apiClient.get(`api/${CROSSMINT_API_VERSION}/sdk/auth/user`, {
+                headers: { "Content-Type": "application/json" },
+            });
 
-        const user = await result.json();
-        return user;
+            if (!response.ok) {
+                throw await response.text();
+            }
+
+            return await response.json();
+        } catch (error) {
+            throw new CrossmintAuthenticationError(
+                `Failed to fetch user: ${error instanceof Error ? error.message : "Unknown error"}`
+            );
+        }
     }
 
     public storeAuthMaterial(authMaterial: AuthMaterialWithUser) {
@@ -56,19 +64,21 @@ export class CrossmintAuthClient extends CrossmintAuth {
     }
 
     public async logout() {
-        // Even if there's a server error, we want to clear the cookies
+        // Store the old refresh token to pass it to the logout route before deleting the cookies
+        const oldRefreshToken = getCookie(REFRESH_TOKEN_PREFIX);
+
+        // Even if there's a server error, we want to clear the cookies and we do it first to load faster
+        deleteCookie(REFRESH_TOKEN_PREFIX);
+        deleteCookie(SESSION_PREFIX);
+        this.callbacks.onLogout?.();
         try {
             if (this.logoutRoute != null) {
                 await this.logoutFromCustomRoute();
-            } else {
-                await this.logoutFromDefaultRoute(getCookie(REFRESH_TOKEN_PREFIX));
+            } else if (oldRefreshToken != null) {
+                await this.logoutFromDefaultRoute(oldRefreshToken);
             }
         } catch (error) {
             console.error(error);
-        } finally {
-            deleteCookie(REFRESH_TOKEN_PREFIX);
-            deleteCookie(SESSION_PREFIX);
-            this.callbacks.onLogout?.();
         }
     }
 
@@ -100,107 +110,144 @@ export class CrossmintAuthClient extends CrossmintAuth {
     }
 
     public async getOAuthUrl(provider: OAuthProvider) {
-        const result = await this.apiClient.get(`${AUTH_SDK_ROOT_ENDPOINT}/social/${provider}/start`, {
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
+        try {
+            const response = await this.apiClient.get(`${AUTH_SDK_ROOT_ENDPOINT}/social/${provider}/start`, {
+                headers: { "Content-Type": "application/json" },
+            });
 
-        const data = (await result.json()) as { oauthUrl: string };
-        return data.oauthUrl;
+            if (!response.ok) {
+                throw await response.text();
+            }
+
+            const data = await response.json();
+            return data.oauthUrl;
+        } catch (error) {
+            throw new CrossmintAuthenticationError(
+                `Failed to get OAuth URL for provider ${provider}: ${error instanceof Error ? error.message : "Unknown error"}`
+            );
+        }
     }
 
     public async sendEmailOtp(email: string) {
-        const result = await this.apiClient.post(`${AUTH_SDK_ROOT_ENDPOINT}/otps/send`, {
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ email }),
-        });
+        try {
+            const response = await this.apiClient.post(`${AUTH_SDK_ROOT_ENDPOINT}/otps/send`, {
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email }),
+            });
 
-        return await result.json();
+            if (!response.ok) {
+                throw await response.text();
+            }
+
+            return await response.json();
+        } catch (error) {
+            throw new CrossmintAuthenticationError(
+                `Failed to send email OTP: ${error instanceof Error ? error.message : "Unknown error"}`
+            );
+        }
     }
 
     public async confirmEmailOtp(email: string, emailId: string, token: string) {
-        const queryParams = new URLSearchParams({
-            email,
-            signinAuthenticationMethod: "email",
-            token,
-            locale: "en",
-            state: emailId,
-            callbackUrl: `${this.apiClient.baseUrl}/${AUTH_SDK_ROOT_ENDPOINT}/we-dont-actually-use-this-anymore`,
-        });
-        const result = await this.apiClient.post(`${AUTH_SDK_ROOT_ENDPOINT}/authenticate?${queryParams}`, {
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
+        try {
+            const queryParams = new URLSearchParams({
+                email,
+                signinAuthenticationMethod: "email",
+                token,
+                locale: "en",
+                state: emailId,
+            });
 
-        const resData = await result.json();
-        const callbackUrl = new URL(resData.callbackUrl);
+            const response = await this.apiClient.post(`${AUTH_SDK_ROOT_ENDPOINT}/authenticate?${queryParams}`, {
+                headers: { "Content-Type": "application/json" },
+            });
 
-        // parse the oneTimeSecret from the callbackUrl response
-        return callbackUrl.searchParams.get("oneTimeSecret");
+            if (!response.ok) {
+                throw await response.text();
+            }
+
+            const resData = await response.json();
+            return resData.oneTimeSecret;
+        } catch (error) {
+            throw new CrossmintAuthenticationError(
+                `Failed to confirm email OTP: ${error instanceof Error ? error.message : "Unknown error"}`
+            );
+        }
     }
 
     public async signInWithFarcaster(data: UseSignInData) {
-        const queryParams = new URLSearchParams({
-            signinAuthenticationMethod: "farcaster",
-            callbackUrl: `${this.apiClient.baseUrl}/${AUTH_SDK_ROOT_ENDPOINT}/callback?isPopup=false`,
-        });
-
-        const result = await this.apiClient.post(`${AUTH_SDK_ROOT_ENDPOINT}/authenticate?${queryParams}`, {
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                ...data,
-                domain: data.signatureParams.domain,
-                redirect: true,
+        try {
+            const queryParams = new URLSearchParams({
+                signinAuthenticationMethod: "farcaster",
                 callbackUrl: `${this.apiClient.baseUrl}/${AUTH_SDK_ROOT_ENDPOINT}/callback?isPopup=false`,
-            }),
-        });
+            });
 
-        const resData = await result.json();
-        const callbackUrl = new URL(resData.callbackUrl);
+            const response = await this.apiClient.post(`${AUTH_SDK_ROOT_ENDPOINT}/authenticate?${queryParams}`, {
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    ...data,
+                    domain: data.signatureParams.domain,
+                    redirect: true,
+                    callbackUrl: `${this.apiClient.baseUrl}/${AUTH_SDK_ROOT_ENDPOINT}/callback?isPopup=false`,
+                }),
+            });
 
-        // parse the oneTimeSecret from the callbackUrl response
-        return callbackUrl.searchParams.get("oneTimeSecret");
+            if (!response.ok) {
+                throw await response.text();
+            }
+
+            const resData = await response.json();
+            return resData.oneTimeSecret;
+        } catch (error) {
+            throw new CrossmintAuthenticationError(
+                `Failed to sign in with Farcaster: ${error instanceof Error ? error.message : "Unknown error"}`
+            );
+        }
     }
 
     public async signInWithSmartWallet(address: string) {
-        const queryParams = new URLSearchParams({
-            signinAuthenticationMethod: "evm",
-        });
+        try {
+            const queryParams = new URLSearchParams({ signinAuthenticationMethod: "evm" });
+            const response = await this.apiClient.post(
+                `${AUTH_SDK_ROOT_ENDPOINT}/crypto_wallets/authenticate/start?${queryParams}`,
+                {
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ walletAddress: address }),
+                }
+            );
 
-        const result = await this.apiClient.post(
-            `${AUTH_SDK_ROOT_ENDPOINT}/crypto_wallets/authenticate/start?${queryParams}`,
-            {
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ walletAddress: address }),
+            if (!response.ok) {
+                throw await response.text();
             }
-        );
-        return await result.json();
+
+            return await response.json();
+        } catch (error) {
+            throw new CrossmintAuthenticationError(
+                `Failed to initiate smart wallet sign in: ${error instanceof Error ? error.message : "Unknown error"}`
+            );
+        }
     }
 
     public async authenticateSmartWallet(address: string, signature: string) {
-        const queryParams = new URLSearchParams({
-            signinAuthenticationMethod: "evm",
-            callbackUrl: `${this.apiClient.baseUrl}/${AUTH_SDK_ROOT_ENDPOINT}/we-dont-actually-use-this-anymore`,
-        });
+        try {
+            const queryParams = new URLSearchParams({ signinAuthenticationMethod: "evm" });
+            const response = await this.apiClient.post(
+                `${AUTH_SDK_ROOT_ENDPOINT}/crypto_wallets/authenticate?${queryParams}`,
+                {
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ walletAddress: address, signature }),
+                }
+            );
 
-        const result = await this.apiClient.post(
-            `${AUTH_SDK_ROOT_ENDPOINT}/crypto_wallets/authenticate?${queryParams}`,
-            {
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ walletAddress: address, signature }),
+            if (!response.ok) {
+                throw await response.text();
             }
-        );
-        return await result.json();
+
+            return await response.json();
+        } catch (error) {
+            throw new CrossmintAuthenticationError(
+                `Failed to authenticate smart wallet: ${error instanceof Error ? error.message : "Unknown error"}`
+            );
+        }
     }
 
     private async logoutFromCustomRoute(): Promise<Response> {

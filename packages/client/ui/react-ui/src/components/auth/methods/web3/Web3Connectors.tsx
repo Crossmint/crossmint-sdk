@@ -1,8 +1,8 @@
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import { AuthFormBackButton } from "../../AuthFormBackButton";
-import { Web3ProviderButton } from "./Web3ProviderButton";
+import { Web3ConnectorButton } from "./Web3ConnectorButton";
 import { metamaskIcon, walletConnectIcon } from "@/icons/base64Icons";
-import { Web3AuthWrapper } from "./Web3AuthWrapper";
+import { Web3ConnectorContainer } from "./Web3ConnectorContainer";
 import { useAccount, useDisconnect } from "wagmi";
 
 export function Web3Connectors() {
@@ -28,7 +28,7 @@ export function Web3Connectors() {
                         </h3>
                     </div>
                     <div className="flex flex-col gap-[10px] w-full">
-                        <Web3ProviderButton
+                        <Web3ConnectorButton
                             title="Metamask"
                             appearance={appearance}
                             img={metamaskIcon}
@@ -42,7 +42,7 @@ export function Web3Connectors() {
                                 }, 200);
                             }}
                         />
-                        <Web3ProviderButton
+                        <Web3ConnectorButton
                             title="WalletConnect"
                             appearance={appearance}
                             img={walletConnectIcon}
@@ -65,11 +65,13 @@ export function Web3Connectors() {
         return (
             <>
                 <AuthFormBackButton
-                    onClick={() => setStep("web3")}
+                    onClick={() => {
+                        setStep("web3");
+                    }}
                     iconColor={appearance?.colors?.textPrimary}
                     ringColor={appearance?.colors?.accent}
                 />
-                <Web3AuthWrapper providerType="metaMaskSDK" flag="isMetaMask" icon={metamaskIcon} />
+                <Web3ConnectorContainer providerType="metaMaskSDK" flag="isMetaMask" icon={metamaskIcon} />
             </>
         );
     }
@@ -78,11 +80,13 @@ export function Web3Connectors() {
         return (
             <>
                 <AuthFormBackButton
-                    onClick={() => setStep("web3")}
+                    onClick={() => {
+                        setStep("web3");
+                    }}
                     iconColor={appearance?.colors?.textPrimary}
                     ringColor={appearance?.colors?.accent}
                 />
-                <Web3AuthWrapper providerType="walletConnect" icon={walletConnectIcon} />
+                <Web3ConnectorContainer providerType="walletConnect" icon={walletConnectIcon} />
             </>
         );
     }

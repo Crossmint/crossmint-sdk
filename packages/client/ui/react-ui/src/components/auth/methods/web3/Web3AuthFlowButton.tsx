@@ -3,8 +3,8 @@ import { WalletIcon } from "@/icons/wallet";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import { classNames } from "@/utils/classNames";
 
-export function Web3SignIn() {
-    const { step, appearance, setStep } = useAuthForm();
+export function Web3AuthFlowButton() {
+    const { step, appearance, setStep, setError } = useAuthForm();
 
     if (step !== "initial") {
         return null;
@@ -22,7 +22,10 @@ export function Web3SignIn() {
                 borderColor: appearance?.colors?.border,
                 backgroundColor: appearance?.colors?.buttonBackground,
             }}
-            onClick={() => setStep("web3")}
+            onClick={() => {
+                setStep("web3");
+                setError(null);
+            }}
         >
             <WalletIcon
                 className="h-[21px] w-[21px] absolute left-[20px]"

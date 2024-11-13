@@ -14,12 +14,14 @@ const initialOAuthUrlMap: OAuthUrlMap = {
 };
 interface AuthFormContextType {
     step: AuthStep;
+    error: string | null;
     appearance?: UIConfig;
     loginMethods: LoginMethod[];
     oauthUrlMap: OAuthUrlMap;
     isLoadingOauthUrlMap: boolean;
     baseUrl: string;
     setStep: (step: AuthStep) => void;
+    setError: (error: string | null) => void;
     setDialogOpen: (open: boolean) => void;
 }
 
@@ -47,6 +49,7 @@ export const AuthFormProvider = ({
 }: { children: ReactNode; initialState: ContextInitialStateProps }) => {
     const { crossmintAuth } = useCrossmintAuth();
     const [step, setStep] = useState<AuthStep>("initial");
+    const [error, setError] = useState<string | null>(null);
     const [oauthUrlMap, setOauthUrlMap] = useState<OAuthUrlMap>(initialOAuthUrlMap);
     const [isLoadingOauthUrlMap, setIsLoadingOauthUrlMap] = useState(true);
 
@@ -72,6 +75,7 @@ export const AuthFormProvider = ({
             setOauthUrlMap(oauthUrlMap);
         } catch (error) {
             console.error("Error fetching OAuth URLs:", error);
+            setError("Unable to load oauth providers. Please try again later.");
         } finally {
             setIsLoadingOauthUrlMap(false);
         }
@@ -91,12 +95,14 @@ export const AuthFormProvider = ({
 
     const value: AuthFormContextType = {
         step,
+        error,
         baseUrl,
         appearance,
         loginMethods,
         oauthUrlMap,
         isLoadingOauthUrlMap,
         setDialogOpen: handleToggleDialog,
+        setError,
         setStep,
     };
 

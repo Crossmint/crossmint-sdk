@@ -1,5 +1,5 @@
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
-import { Web3SignIn } from "./Web3SignIn";
+import { Web3AuthFlowButton } from "./Web3AuthFlowButton";
 import { Web3Connectors } from "./Web3Connectors";
 
 export function Web3AuthFlow() {
@@ -10,7 +10,7 @@ export function Web3AuthFlow() {
     }
 
     if (step === "initial") {
-        return <Web3SignIn />;
+        return <Web3AuthFlowButton />;
     }
 
     return null;

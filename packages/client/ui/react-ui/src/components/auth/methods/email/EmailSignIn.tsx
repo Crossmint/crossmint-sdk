@@ -11,7 +11,7 @@ import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
 
 export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEmailPayload) => void }) {
     const { crossmintAuth } = useCrossmintAuth();
-    const { appearance, setStep } = useAuthForm();
+    const { appearance, setStep, setError } = useAuthForm();
 
     const [emailInput, setEmailInput] = useState("");
     const [emailError, setEmailError] = useState("");
@@ -35,7 +35,7 @@ export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEm
             setStep("otp");
         } catch (_e: unknown) {
             setIsLoading(false);
-            setEmailError("Failed to send email. Please try again or contact support.");
+            setError("Failed to send email. Please try again or contact support.");
         }
     }
 
@@ -75,6 +75,7 @@ export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEm
                             onChange={(e) => {
                                 setEmailInput(e.target.value);
                                 setEmailError("");
+                                setError(null);
                             }}
                             readOnly={isLoading}
                             aria-describedby="emailError"

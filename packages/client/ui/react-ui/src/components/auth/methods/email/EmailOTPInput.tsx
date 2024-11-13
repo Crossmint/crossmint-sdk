@@ -13,7 +13,7 @@ export function EmailOTPInput({
     setOtpEmailData,
 }: { otpEmailData: OtpEmailPayload | null; setOtpEmailData: (data: OtpEmailPayload | null) => void }) {
     const { crossmintAuth } = useCrossmintAuth();
-    const { appearance, setDialogOpen, setStep } = useAuthForm();
+    const { appearance, setDialogOpen, setStep, setError } = useAuthForm();
 
     const [token, setToken] = useState("");
     const [hasError, setHasError] = useState(false);
@@ -31,8 +31,9 @@ export function EmailOTPInput({
             await crossmintAuth?.handleRefreshAuthMaterial(oneTimeSecret as string);
             setDialogOpen(false);
             setStep("initial");
-        } catch (e) {
-            console.error("Error signing in via email ", e);
+        } catch (error) {
+            console.error("Error confirming email OTP", error);
+            setError("Invalid code. Please try again.");
             setHasError(true);
         } finally {
             setLoading(false);
@@ -79,6 +80,7 @@ export function EmailOTPInput({
                         onChange={(val) => {
                             setToken(val);
                             setHasError(false);
+                            setError(null);
                         }}
                         onComplete={handleOnSubmit}
                         disabled={loading}
