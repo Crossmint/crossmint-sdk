@@ -1,5 +1,16 @@
 # @crossmint/client-sdk-auth
 
+## 1.1.0
+
+### Minor Changes
+
+- 92b5abc: improve error handling for all endpoints
+
+### Patch Changes
+
+- Updated dependencies [92b5abc]
+  - @crossmint/common-sdk-auth@1.0.1
+
 ## 1.0.0
 
 ### Major Changes
