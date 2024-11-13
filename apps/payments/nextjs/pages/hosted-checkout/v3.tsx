@@ -2,7 +2,7 @@ import { CrossmintHostedCheckout_Alpha } from "@crossmint/client-sdk-react-ui";
 import { HostedCheckoutV3ClientProviders } from "../../components/hosted-v3/HostedCheckoutV3ClientProviders";
 import type { CrossmintHostedCheckoutV3ButtonTheme, Locale } from "@crossmint/client-sdk-base";
 
-const LOCALE = "es-ES";
+const LOCALE: Locale = "en-US";
 
 export default function HostedCheckoutV3Page() {
     return (
