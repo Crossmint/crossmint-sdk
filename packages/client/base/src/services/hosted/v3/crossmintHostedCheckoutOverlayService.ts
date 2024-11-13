@@ -1,9 +1,11 @@
-import type { PopupWindow } from "@crossmint/client-sdk-window";
+import type { NewTabWindow, PopupWindow } from "@crossmint/client-sdk-window";
 
 const OVERLAY_ID = "crossmint-hosted-checkout-v3-overlay";
 
 export function crossmintHostedCheckoutOverlayService() {
-    function createOverlay(windowClient: ReturnType<typeof PopupWindow.initSync>) {
+    function createOverlay(
+        windowClient: ReturnType<typeof PopupWindow.initSync> | ReturnType<typeof NewTabWindow.initSync>
+    ) {
         const overlay = document.createElement("div");
         overlay.setAttribute("id", OVERLAY_ID);
         Object.assign(overlay.style, {
