@@ -1,6 +1,6 @@
 import type { CrossmintHostedCheckoutV3Props } from "@/types/hosted/v3/CrossmintHostedCheckoutV3Props";
 import { appendObjectToQueryParams } from "@/utils/appendObjectToQueryParams";
-import { PopupWindow } from "@crossmint/client-sdk-window";
+import { NewTabWindow, PopupWindow } from "@crossmint/client-sdk-window";
 import type { CrossmintApiClient } from "@crossmint/common-sdk-base";
 import { crossmintHostedCheckoutOverlayService } from "./crossmintHostedCheckoutOverlayService";
 
@@ -27,8 +27,7 @@ export function crossmintHostedCheckoutV3Service({
         return `${urlWithPath}?${queryParams.toString()}`;
     }
 
-    function createPopupClient() {
-        const url = getUrl(hostedCheckoutProps);
+    function createPopupClient(url: string) {
         return PopupWindow.initSync(url, {
             width: 450,
             height: 750,
@@ -36,28 +35,29 @@ export function crossmintHostedCheckoutV3Service({
         });
     }
 
-    // TODO: Implement new tab client
-    function createNewTabClient(): ReturnType<typeof PopupWindow.initSync> {
-        throw new Error("Not implemented");
+    function createNewTabClient(url: string): ReturnType<typeof NewTabWindow.initSync> {
+        return NewTabWindow.initSync(url, {});
     }
 
     // TODO: Implement same tab client
-    function createSameTabClient(): ReturnType<typeof PopupWindow.initSync> {
+    function createSameTabClient(url: string): ReturnType<typeof PopupWindow.initSync> {
         throw new Error("Not implemented");
     }
 
     function createWindow() {
         const displayType = hostedCheckoutProps.appearance?.display || "popup";
-        let windowClient: ReturnType<typeof PopupWindow.initSync>;
+        const url = getUrl(hostedCheckoutProps);
+
+        let windowClient: ReturnType<typeof PopupWindow.initSync> | ReturnType<typeof NewTabWindow.initSync>;
         switch (displayType) {
             case "popup":
-                windowClient = createPopupClient();
+                windowClient = createPopupClient(url);
                 break;
             case "same-tab":
-                windowClient = createSameTabClient();
+                windowClient = createSameTabClient(url);
                 break;
             case "new-tab":
-                windowClient = createNewTabClient();
+                windowClient = createNewTabClient(url);
                 break;
             default:
                 throw new Error(`Invalid display type: ${displayType}`);
