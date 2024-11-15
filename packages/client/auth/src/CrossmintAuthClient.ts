@@ -22,7 +22,6 @@ type CrossmintAuthClientConfig = CrossmintAuthOptions & {
 export class CrossmintAuthClient extends CrossmintAuth {
     private callbacks: CrossmintAuthClientCallbacks;
     private refreshTask: CancellableTask | null = null;
-    private isRefreshing = false;
     private refreshPromise: Promise<AuthMaterialWithUser> | null = null;
     private logoutRoute: string | null;
 
@@ -46,6 +45,8 @@ export class CrossmintAuthClient extends CrossmintAuth {
             const response = await this.apiClient.get(`api/${CROSSMINT_API_VERSION}/sdk/auth/user`, {
                 headers: { "Content-Type": "application/json" },
             });
+
+            console.error("getUser", response);
 
             if (!response.ok) {
                 throw await response.text();
@@ -86,14 +87,16 @@ export class CrossmintAuthClient extends CrossmintAuth {
     public async handleRefreshAuthMaterial(refreshTokenSecret?: string): Promise<void> {
         const refreshToken = refreshTokenSecret ?? getCookie(REFRESH_TOKEN_PREFIX);
         // If there is a custom refresh route, that endpoint will fetch the cookies itself
-        if ((refreshToken == null && this.refreshRoute == null) || this.isRefreshing) {
+        if (refreshToken == null && this.refreshRoute == null) {
             return;
         }
 
-        try {
-            this.isRefreshing = true;
-            // If we already have a refresh promise, we don't need to create a new one, avoiding 2 calls
-            const authMaterial = await (this.refreshPromise ??= this.refreshAuthMaterial(refreshToken));
+        try {            
+            // Create new refresh promise if none exists
+            if (this.refreshPromise == null) {
+                this.refreshPromise = this.refreshAuthMaterial(refreshToken);
+            }
+            const authMaterial = await this.refreshPromise;
 
             // If a custom refresh route is set, storing in cookies is handled in the server
             if (this.refreshRoute == null) {
@@ -107,7 +110,6 @@ export class CrossmintAuthClient extends CrossmintAuth {
             console.error(error);
             this.logout();
         } finally {
-            this.isRefreshing = false;
             this.refreshPromise = null;
         }
     }
@@ -181,7 +183,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
         try {
             const queryParams = new URLSearchParams({
                 signinAuthenticationMethod: "farcaster",
-                callbackUrl: `${this.apiClient.baseUrl}/${AUTH_SDK_ROOT_ENDPOINT}/callback?isPopup=false`,
+                callbackUrl: `${this.apiClient.baseUrl}/${AUTH_SDK_ROOT_ENDPOINT}/callback`,
             });
 
             const response = await this.apiClient.post(`${AUTH_SDK_ROOT_ENDPOINT}/authenticate?${queryParams}`, {
@@ -190,7 +192,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
                     ...data,
                     domain: data.signatureParams.domain,
                     redirect: true,
-                    callbackUrl: `${this.apiClient.baseUrl}/${AUTH_SDK_ROOT_ENDPOINT}/callback?isPopup=false`,
+                    callbackUrl: `${this.apiClient.baseUrl}/${AUTH_SDK_ROOT_ENDPOINT}/callback`,
                 }),
             });
 
