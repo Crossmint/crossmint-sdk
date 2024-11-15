@@ -53,6 +53,7 @@ describe("CrossmintAuthClient", () => {
             const mockUserData = { id: "user123", email: "user@example.com" };
             mockApiClient.get.mockResolvedValue({
                 json: () => Promise.resolve(mockUserData),
+                ok: true,
             });
 
             const result = await crossmintAuthClient.getUser();
@@ -145,6 +146,7 @@ describe("CrossmintAuthClient", () => {
             vi.spyOn(crossmintAuthClient as any, "storeAuthMaterial").mockImplementation(() => {});
             vi.mocked(getJWTExpiration).mockReturnValue(Date.now() / 1000 + 3600); // 1 hour from now
             vi.mocked(queueTask).mockReturnValue({ cancel: vi.fn() } as any);
+            (crossmintAuthClient as any).refreshPromise = null;
         });
 
         it("should refresh auth material and schedule next refresh", async () => {
@@ -161,11 +163,13 @@ describe("CrossmintAuthClient", () => {
             expect(queueTask).toHaveBeenCalledWith(expect.any(Function), expect.any(Number));
         });
 
-        it("should not refresh if already refreshing", async () => {
-            (crossmintAuthClient as any).isRefreshing = true;
-            await crossmintAuthClient.handleRefreshAuthMaterial(mockRefreshToken);
+        it("should not refresh when called twice in a row", async () => {
+            const promise1 = crossmintAuthClient.handleRefreshAuthMaterial(mockRefreshToken);
+            const promise2 = crossmintAuthClient.handleRefreshAuthMaterial(mockRefreshToken);
 
-            expect(crossmintAuthClient["refreshAuthMaterial"]).not.toHaveBeenCalled();
+            await Promise.all([promise1, promise2]);
+
+            expect(crossmintAuthClient["refreshAuthMaterial"]).toHaveBeenCalledTimes(1);
         });
 
         it("should call onTokenRefresh callback if provided", async () => {
@@ -249,6 +253,7 @@ describe("CrossmintAuthClient", () => {
             const mockOAuthUrl = "https://oauth.example.com/auth";
             mockApiClient.get.mockResolvedValue({
                 json: () => Promise.resolve({ oauthUrl: mockOAuthUrl }),
+                ok: true,
             });
 
             const result = await crossmintAuthClient.getOAuthUrl(mockProvider);
@@ -267,6 +272,7 @@ describe("CrossmintAuthClient", () => {
             const mockResponse = { success: true };
             mockApiClient.post.mockResolvedValue({
                 json: () => Promise.resolve(mockResponse),
+                ok: true,
             });
 
             const result = await crossmintAuthClient.sendEmailOtp(mockEmail);
@@ -288,7 +294,8 @@ describe("CrossmintAuthClient", () => {
             const mockToken = "otp-token-456";
             const mockOneTimeSecret = "one-time-secret-789";
             mockApiClient.post.mockResolvedValue({
-                json: () => Promise.resolve({ callbackUrl: `https://example.com?oneTimeSecret=${mockOneTimeSecret}` }),
+                json: () => Promise.resolve({ oneTimeSecret: mockOneTimeSecret }),
+                ok: true,
             });
 
             const result = await crossmintAuthClient.confirmEmailOtp(mockEmail, mockEmailId, mockToken);
@@ -310,13 +317,14 @@ describe("CrossmintAuthClient", () => {
             };
             const mockOneTimeSecret = "farcaster-one-time-secret-123";
             mockApiClient.post.mockResolvedValue({
-                json: () => Promise.resolve({ callbackUrl: `https://example.com?oneTimeSecret=${mockOneTimeSecret}` }),
+                json: () => Promise.resolve({ oneTimeSecret: mockOneTimeSecret }),
+                ok: true,
             });
 
             const result = await crossmintAuthClient.signInWithFarcaster(mockFarcasterData as StatusAPIResponse);
 
             expect(result).toBe(mockOneTimeSecret);
-            const expectedCallbackUrl = `https://api.crossmint.com/api/2024-09-26/session/sdk/auth/callback?isPopup=false`;
+            const expectedCallbackUrl = `https://api.crossmint.com/api/2024-09-26/session/sdk/auth/callback`;
             const queryParams = new URLSearchParams({
                 signinAuthenticationMethod: "farcaster",
                 callbackUrl: expectedCallbackUrl,
@@ -347,6 +355,7 @@ describe("CrossmintAuthClient", () => {
             };
             mockApiClient.post.mockResolvedValue({
                 json: () => Promise.resolve(mockResponse),
+                ok: true,
             });
 
             const result = await crossmintAuthClient.signInWithSmartWallet(mockAddress);
@@ -356,7 +365,7 @@ describe("CrossmintAuthClient", () => {
                 signinAuthenticationMethod: "evm",
             });
             expect(mockApiClient.post).toHaveBeenCalledWith(
-                `https://api.crossmint.com/api/2024-09-26/session/sdk/auth/crypto_wallets/authenticate/start?${queryParams}`,
+                `api/2024-09-26/session/sdk/auth/crypto_wallets/authenticate/start?${queryParams}`,
                 expect.objectContaining({
                     body: JSON.stringify({ walletAddress: mockAddress }),
                     headers: {
@@ -380,6 +389,7 @@ describe("CrossmintAuthClient", () => {
             };
             mockApiClient.post.mockResolvedValue({
                 json: () => Promise.resolve(mockResponse),
+                ok: true,
             });
 
             const result = await crossmintAuthClient.authenticateSmartWallet(mockAddress, mockSignature);
@@ -387,7 +397,6 @@ describe("CrossmintAuthClient", () => {
             expect(result).toEqual(mockResponse);
             const queryParams = new URLSearchParams({
                 signinAuthenticationMethod: "evm",
-                callbackUrl: `https://api.crossmint.com/api/2024-09-26/session/sdk/auth/we-dont-actually-use-this-anymore`,
             });
             expect(mockApiClient.post).toHaveBeenCalledWith(
                 `api/2024-09-26/session/sdk/auth/crypto_wallets/authenticate?${queryParams}`,
