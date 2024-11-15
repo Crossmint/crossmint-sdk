@@ -46,8 +46,6 @@ export class CrossmintAuthClient extends CrossmintAuth {
                 headers: { "Content-Type": "application/json" },
             });
 
-            console.error("getUser", response);
-
             if (!response.ok) {
                 throw await response.text();
             }
@@ -91,7 +89,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
             return;
         }
 
-        try {            
+        try {
             // Create new refresh promise if none exists
             if (this.refreshPromise == null) {
                 this.refreshPromise = this.refreshAuthMaterial(refreshToken);

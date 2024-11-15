@@ -166,9 +166,9 @@ describe("CrossmintAuthClient", () => {
         it("should not refresh when called twice in a row", async () => {
             const promise1 = crossmintAuthClient.handleRefreshAuthMaterial(mockRefreshToken);
             const promise2 = crossmintAuthClient.handleRefreshAuthMaterial(mockRefreshToken);
-            
+
             await Promise.all([promise1, promise2]);
-        
+
             expect(crossmintAuthClient["refreshAuthMaterial"]).toHaveBeenCalledTimes(1);
         });
 
