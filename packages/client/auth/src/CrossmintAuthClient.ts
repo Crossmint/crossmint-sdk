@@ -23,6 +23,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
     private callbacks: CrossmintAuthClientCallbacks;
     private refreshTask: CancellableTask | null = null;
     private isRefreshing = false;
+    private refreshPromise: Promise<AuthMaterialWithUser> | null = null;
     private logoutRoute: string | null;
 
     private constructor(crossmint: Crossmint, apiClient: CrossmintApiClient, config: CrossmintAuthClientConfig = {}) {
@@ -91,7 +92,8 @@ export class CrossmintAuthClient extends CrossmintAuth {
 
         try {
             this.isRefreshing = true;
-            const authMaterial = await this.refreshAuthMaterial(refreshToken);
+            // If we already have a refresh promise, we don't need to create a new one, avoiding 2 calls
+            const authMaterial = await (this.refreshPromise ??= this.refreshAuthMaterial(refreshToken));
 
             // If a custom refresh route is set, storing in cookies is handled in the server
             if (this.refreshRoute == null) {
@@ -106,6 +108,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
             this.logout();
         } finally {
             this.isRefreshing = false;
+            this.refreshPromise = null;
         }
     }
 

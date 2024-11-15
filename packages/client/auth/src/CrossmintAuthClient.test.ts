@@ -145,6 +145,7 @@ describe("CrossmintAuthClient", () => {
             vi.spyOn(crossmintAuthClient as any, "storeAuthMaterial").mockImplementation(() => {});
             vi.mocked(getJWTExpiration).mockReturnValue(Date.now() / 1000 + 3600); // 1 hour from now
             vi.mocked(queueTask).mockReturnValue({ cancel: vi.fn() } as any);
+            (crossmintAuthClient as any).isRefreshing = false;
         });
 
         it("should refresh auth material and schedule next refresh", async () => {
@@ -166,6 +167,13 @@ describe("CrossmintAuthClient", () => {
             await crossmintAuthClient.handleRefreshAuthMaterial(mockRefreshToken);
 
             expect(crossmintAuthClient["refreshAuthMaterial"]).not.toHaveBeenCalled();
+        });
+
+        it("should not refresh when called twice in a row", async () => {
+            await crossmintAuthClient.handleRefreshAuthMaterial(mockRefreshToken);
+            await crossmintAuthClient.handleRefreshAuthMaterial(mockRefreshToken);
+
+            expect(crossmintAuthClient["refreshAuthMaterial"]).toHaveBeenCalledTimes(1);
         });
 
         it("should call onTokenRefresh callback if provided", async () => {
