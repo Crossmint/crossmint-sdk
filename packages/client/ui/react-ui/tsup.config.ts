@@ -4,7 +4,7 @@ import { treeShakableConfig } from "../../../../tsup.config.base";
 
 const config: Options = {
     ...treeShakableConfig,
-    external: ["react", "react-dom", "@tanstack/react-query"],
+    external: ["react", "react-dom"],
 };
 
 export default config;

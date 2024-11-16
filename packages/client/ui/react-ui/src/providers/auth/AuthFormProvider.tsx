@@ -3,7 +3,7 @@ import type { OAuthProvider } from "@crossmint/common-sdk-auth";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import type { CrossmintAuthWalletConfig, LoginMethod } from "../CrossmintAuthProvider";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
-import { WagmiAuthProvider } from "./web3/WagmiAuthProvider";
+import { DynamicWeb3WalletConnect } from "./web3/DynamicWeb3WalletConnect";
 
 type AuthStep = "initial" | "otp" | "qrCode" | "web3" | "web3/metamask" | "web3/walletconnect";
 
@@ -108,7 +108,7 @@ export const AuthFormProvider = ({
 
     return (
         <AuthFormContext.Provider value={value}>
-            <WagmiAuthProvider>{children}</WagmiAuthProvider>
+            <DynamicWeb3WalletConnect>{children}</DynamicWeb3WalletConnect>
         </AuthFormContext.Provider>
     );
 };
