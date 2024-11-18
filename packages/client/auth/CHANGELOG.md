@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-auth
 
+## 1.1.1
+
+### Patch Changes
+
+- 67c82a1: Makes it impossible to call refresh twice
+
 ## 1.1.0
 
 ### Minor Changes
