@@ -6,13 +6,18 @@ import type { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 import { chainIdToBlockchain } from "@crossmint/common-sdk-base";
 import DynamicContextProviderWrapper from "@/components/dynamic-xyz/DynamicContextProviderWrapper";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
+import { useAuthForm } from "../AuthFormProvider";
 
 export function DynamicWeb3WalletConnect({ children }: { children: React.ReactNode }) {
     const { crossmintAuth } = useCrossmintAuth();
+    const { appearance } = useAuthForm();
+
+    const cssOverrides = `.powered-by-dynamic { display: none !important; } .wallet-list__scroll-container { padding: 0px !important; } .wallet-list__search-container { padding-left: 0px !important; padding-right: 0px !important; } .dynamic-footer { display: none !important; } h1 { color: ${appearance?.colors?.textPrimary} !important; } * { color: ${appearance?.colors?.textSecondary} !important; }`;
 
     return (
         <DynamicContextProviderWrapper
             settings={{
+                cssOverrides,
                 walletConnectors: [EthereumWalletConnectors, SolanaWalletConnectors],
                 events: {
                     onAuthFlowCancel() {

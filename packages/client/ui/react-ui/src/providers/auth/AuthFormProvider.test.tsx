@@ -1,14 +1,9 @@
-import type { ReactNode } from "react";
 import { render, fireEvent, waitFor } from "@testing-library/react";
 import { beforeEach } from "vitest";
 import { AuthFormProvider, useAuthForm } from "./AuthFormProvider";
 import { describe, expect, it, vi } from "vitest";
 import type { CrossmintAuthWalletConfig, LoginMethod } from "..";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
-
-vi.mock("./web3/WagmiAuthProvider", () => ({
-    WagmiAuthProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
-}));
 
 vi.mock("@/hooks/useCrossmintAuth");
 
