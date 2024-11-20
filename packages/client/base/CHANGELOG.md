@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-base
 
+## 1.3.4
+
+### Patch Changes
+
+- d072a64: embed: allow existing order init
+
 ## 1.3.3
 
 ### Patch Changes
