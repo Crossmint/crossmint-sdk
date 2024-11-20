@@ -1,5 +1,17 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.10.6
+
+### Patch Changes
+
+- cb9a149: replaced wagmi package with dynamics DynamicEmbeddedWidget
+- Updated dependencies [6ab0ac1]
+- Updated dependencies [cb9a149]
+  - @crossmint/client-sdk-base@1.3.3
+  - @crossmint/client-sdk-auth@1.1.2
+  - @crossmint/client-sdk-smart-wallet@0.1.23
+  - @crossmint/common-sdk-auth@1.0.2
+
 ## 1.10.5
 
 ### Patch Changes

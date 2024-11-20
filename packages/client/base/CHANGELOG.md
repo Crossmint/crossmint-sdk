@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-base
 
+## 1.3.3
+
+### Patch Changes
+
+- 6ab0ac1: embed v3: prop for hiding destination and receipt email
+
 ## 1.3.2
 
 ### Patch Changes
