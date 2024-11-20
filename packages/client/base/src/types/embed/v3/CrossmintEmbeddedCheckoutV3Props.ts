@@ -51,6 +51,12 @@ export type EmbeddedCheckoutV3AppearanceVariables = {
 };
 
 export type EmbeddedCheckoutV3AppearanceRules = {
+    DestinationInput?: {
+        display?: "hidden";
+    };
+    ReceiptEmailInput?: {
+        display?: "hidden";
+    };
     Label?: {
         font?: {
             family?: string;
