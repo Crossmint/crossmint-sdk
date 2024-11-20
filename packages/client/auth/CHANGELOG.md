@@ -1,5 +1,14 @@
 # @crossmint/client-sdk-auth
 
+## 1.1.2
+
+### Patch Changes
+
+- cb9a149: added callback url to smart wallet call to fix error"
+- Updated dependencies [6ab0ac1]
+  - @crossmint/client-sdk-base@1.3.3
+  - @crossmint/common-sdk-auth@1.0.2
+
 ## 1.1.1
 
 ### Patch Changes
