@@ -3,14 +3,30 @@ import type { CryptoCurrency } from "@/types/CryptoCurrency";
 
 import type { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
-export interface CrossmintEmbeddedCheckoutV3Props {
-    recipient?: EmbeddedCheckoutV3Recipient;
-    locale?: Locale;
-    webhookPassthroughData?: any;
+interface CrossmintEmbeddedCheckoutV3CommonProps {
     appearance?: EmbeddedCheckoutV3Appearance;
-    lineItems: EmbeddedCheckoutV3LineItem | EmbeddedCheckoutV3LineItem[];
     payment: EmbeddedCheckoutV3Payment;
 }
+
+export interface CrossmintEmbeddedCheckoutV3ExistingOrderProps extends CrossmintEmbeddedCheckoutV3CommonProps {
+    orderId: string;
+    lineItems?: never;
+    webhookPassthroughData?: never;
+    recipient?: never;
+    locale?: never;
+}
+
+export interface CrossmintEmbeddedCheckoutV3NewOrderProps extends CrossmintEmbeddedCheckoutV3CommonProps {
+    orderId?: never;
+    lineItems: EmbeddedCheckoutV3LineItem | EmbeddedCheckoutV3LineItem[];
+    webhookPassthroughData?: any;
+    recipient?: EmbeddedCheckoutV3Recipient;
+    locale?: Locale;
+}
+
+export type CrossmintEmbeddedCheckoutV3Props =
+    | CrossmintEmbeddedCheckoutV3ExistingOrderProps
+    | CrossmintEmbeddedCheckoutV3NewOrderProps;
 
 export type EmbeddedCheckoutV3Recipient = EmbeddedCheckoutV3EmailRecipient | EmbeddedCheckoutV3WalletAddressRecipient;
 
