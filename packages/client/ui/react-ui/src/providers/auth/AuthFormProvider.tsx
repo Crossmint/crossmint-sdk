@@ -1,17 +1,8 @@
-import { createContext, lazy, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import type { OAuthProvider } from "@crossmint/common-sdk-auth";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import type { CrossmintAuthWalletConfig, LoginMethod } from "../CrossmintAuthProvider";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
-import { useCrossmint } from "@/hooks";
-import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
-
-const DynamicWeb3WalletConnectHandler = lazy(() =>
-    // @ts-expect-error - Error because we dont use 'module' field in tsconfig, which is expected because we use tsup to compile
-    import("./web3/DynamicWeb3WalletConnect").then((mod) => ({
-        default: mod.DynamicWeb3WalletConnect,
-    }))
-);
 
 type AuthStep = "initial" | "otp" | "qrCode" | "web3" | "web3/metamask" | "web3/walletconnect";
 
@@ -56,11 +47,6 @@ export const AuthFormProvider = ({
     initialState,
 }: { children: ReactNode; initialState: ContextInitialStateProps }) => {
     const { crossmintAuth } = useCrossmintAuth();
-    const { crossmint } = useCrossmint();
-    const apiClient = createCrossmintApiClient(crossmint, {
-        usageOrigin: "client",
-    });
-
     const [step, setStep] = useState<AuthStep>("initial");
     const [error, setError] = useState<string | null>(null);
     const [oauthUrlMap, setOauthUrlMap] = useState<OAuthUrlMap>(initialOAuthUrlMap);
@@ -119,11 +105,5 @@ export const AuthFormProvider = ({
         setStep,
     };
 
-    return (
-        <AuthFormContext.Provider value={value}>
-            <DynamicWeb3WalletConnectHandler apiKeyEnvironment={apiClient["parsedAPIKey"].environment}>
-                {children}
-            </DynamicWeb3WalletConnectHandler>
-        </AuthFormContext.Provider>
-    );
+    return <AuthFormContext.Provider value={value}>{children}</AuthFormContext.Provider>;
 };

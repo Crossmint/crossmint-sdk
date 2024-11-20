@@ -1,3 +1,5 @@
+import { lazy } from "react";
+import Color from "color";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import { EmailAuthFlow } from "./methods/email/EmailAuthFlow";
 import { Divider } from "../common/Divider";
@@ -6,9 +8,14 @@ import { FarcasterSignIn } from "./methods/farcaster/FarcasterSignIn";
 import { PoweredByCrossmint } from "../common/PoweredByCrossmint";
 import { FarcasterProvider } from "../../providers/auth/FarcasterProvider";
 import { classNames } from "@/utils/classNames";
-import { Web3AuthFlow } from "./methods/web3/Web3AuthFlow";
-import Color from "color";
 import { AlertIcon } from "@/icons/alert";
+
+const Web3AuthFlow = lazy(() =>
+    // @ts-expect-error - Error because we dont use 'module' field in tsconfig, which is expected because we use tsup to compile
+    import("./methods/web3/Web3AuthFlow").then((mod) => ({
+        default: mod.Web3AuthFlow,
+    }))
+);
 
 export function AuthForm({ className }: { className?: string }) {
     const { step, appearance, loginMethods, baseUrl, error } = useAuthForm();
