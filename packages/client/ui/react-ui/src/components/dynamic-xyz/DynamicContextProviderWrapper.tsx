@@ -10,12 +10,9 @@ export interface DynamicContextProviderWrapperProps {
 
 export default function DynamicContextProviderWrapper({
     children,
-    settings = {},
+    settings,
     apiKeyEnvironment,
 }: DynamicContextProviderWrapperProps) {
-    const defaultSettings = {
-        cssOverrides: `.powered-by-dynamic { display: none !important; }`,
-    };
     return (
         <DynamicContextProvider
             settings={{
@@ -24,7 +21,7 @@ export default function DynamicContextProviderWrapper({
                     apiKeyEnvironment === "production"
                         ? "3fc6c24e-6a8e-45f8-aae1-a87d7a027e12"
                         : "cd53135a-b32b-4704-bfca-324b665e9329",
-                ...defaultSettings,
+                cssOverrides: `.powered-by-dynamic { display: none !important; }`,
                 ...settings,
             }}
         >

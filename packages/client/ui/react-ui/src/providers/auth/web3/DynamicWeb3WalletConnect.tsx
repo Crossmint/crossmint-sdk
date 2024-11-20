@@ -1,14 +1,16 @@
 import type React from "react";
 import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
 import { SolanaWalletConnectors } from "@dynamic-labs/solana";
-import type { HandleConnectedWallet } from "@dynamic-labs/sdk-react-core";
-import type { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
-import { chainIdToBlockchain } from "@crossmint/common-sdk-base";
+import type { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
 import DynamicContextProviderWrapper from "@/components/dynamic-xyz/DynamicContextProviderWrapper";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
 import { useAuthForm } from "../AuthFormProvider";
+import { dynamicChainToCrossmintChain } from "@/utils/dynamic/dynamicChainToCrossmintChain";
 
-export function DynamicWeb3WalletConnect({ children }: { children: React.ReactNode }) {
+export function DynamicWeb3WalletConnect({
+    children,
+    apiKeyEnvironment,
+}: { children: React.ReactNode; apiKeyEnvironment: APIKeyEnvironmentPrefix }) {
     const { crossmintAuth } = useCrossmintAuth();
     const { appearance } = useAuthForm();
 
@@ -16,6 +18,7 @@ export function DynamicWeb3WalletConnect({ children }: { children: React.ReactNo
 
     return (
         <DynamicContextProviderWrapper
+            apiKeyEnvironment={apiKeyEnvironment}
             settings={{
                 cssOverrides,
                 walletConnectors: [EthereumWalletConnectors, SolanaWalletConnectors],
@@ -63,27 +66,8 @@ export function DynamicWeb3WalletConnect({ children }: { children: React.ReactNo
                     },
                 },
             }}
-            apiKeyEnvironment="development"
         >
             {children}
         </DynamicContextProviderWrapper>
     );
-}
-
-async function dynamicChainToCrossmintChain(
-    wallet: Parameters<HandleConnectedWallet>[0]
-): Promise<BlockchainIncludingTestnet> {
-    const chain = wallet.chain;
-    if (chain === "SOL") {
-        return "solana";
-    }
-    const chainId = await wallet.connector?.getNetwork();
-    if (typeof chainId !== "number") {
-        throw new Error("chainId is not a number");
-    }
-    const chainFromChainId = chainIdToBlockchain(chainId);
-    if (!chainFromChainId) {
-        throw new Error(`ChainId ${chainId} is not supported`);
-    }
-    return chainFromChainId as BlockchainIncludingTestnet;
 }
