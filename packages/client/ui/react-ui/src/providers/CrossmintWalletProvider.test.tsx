@@ -76,7 +76,6 @@ describe("CrossmintWalletProvider", () => {
                 jwt: "mock-jwt",
             },
             setJwt: () => {},
-            setRefreshToken: () => {},
         });
 
         mockSDK = mock<SmartWalletSDK>();
@@ -118,7 +117,6 @@ describe("CrossmintWalletProvider", () => {
                         jwt: undefined,
                     },
                     setJwt: () => {},
-                    setRefreshToken: () => {},
                 });
             });
 
