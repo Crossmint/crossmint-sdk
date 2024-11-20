@@ -1,15 +1,12 @@
 import DynamicContextProviderWrapper from "@/components/dynamic-xyz/DynamicContextProviderWrapper";
 import type { EmbeddedCheckoutV3IFrameEmitter } from "@crossmint/client-sdk-base";
-import {
-    type APIKeyEnvironmentPrefix,
-    type BlockchainIncludingTestnet,
-    chainIdToBlockchain,
-} from "@crossmint/common-sdk-base";
+import type { APIKeyEnvironmentPrefix, BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
-import { DynamicContext, useDynamicContext, type HandleConnectedWallet } from "@dynamic-labs/sdk-react-core";
+import { DynamicContext, useDynamicContext } from "@dynamic-labs/sdk-react-core";
 import { SolanaWalletConnectors } from "@dynamic-labs/solana";
 import { type Dispatch, type SetStateAction, useContext, useEffect, useState } from "react";
 import { handleSendTransaction } from "./utils/handleSendTransaction";
+import { dynamicChainToCrossmintChain } from "@/utils/dynamic/dynamicChainToCrossmintChain";
 
 export function CryptoWalletConnectionHandler(props: {
     iframeClient: EmbeddedCheckoutV3IFrameEmitter | null;
@@ -117,24 +114,6 @@ function _CryptoWalletConnectionHandler({ iframeClient }: Parameters<typeof Cryp
     }, [iframeClient, primaryWallet]);
 
     return showDynamicModal ? <ShowDynamicModal setShowDynamicModal={setShowDynamicModal} /> : null;
-}
-
-async function dynamicChainToCrossmintChain(
-    wallet: Parameters<HandleConnectedWallet>[0]
-): Promise<BlockchainIncludingTestnet> {
-    const chain = wallet.chain;
-    if (chain === "SOL") {
-        return "solana";
-    }
-    const chainId = await wallet.connector?.getNetwork();
-    if (typeof chainId !== "number") {
-        throw new Error("chainId is not a number");
-    }
-    const chainFromChainId = chainIdToBlockchain(chainId);
-    if (!chainFromChainId) {
-        throw new Error(`ChainId ${chainId} is not supported`);
-    }
-    return chainFromChainId as BlockchainIncludingTestnet;
 }
 
 export function ShowDynamicModal({ setShowDynamicModal }: { setShowDynamicModal: Dispatch<SetStateAction<boolean>> }) {

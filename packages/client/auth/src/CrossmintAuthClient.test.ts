@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { StatusAPIResponse } from "@farcaster/auth-kit";
 import { type Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
-import type { AuthMaterialWithUser } from "@crossmint/common-sdk-auth";
+import { AUTH_SDK_ROOT_ENDPOINT, type AuthMaterialWithUser } from "@crossmint/common-sdk-auth";
 import { CrossmintAuthClient } from "./CrossmintAuthClient";
 import * as cookiesUtils from "./utils/cookies";
 import { getJWTExpiration } from "./utils";
@@ -397,6 +397,7 @@ describe("CrossmintAuthClient", () => {
             expect(result).toEqual(mockResponse);
             const queryParams = new URLSearchParams({
                 signinAuthenticationMethod: "evm",
+                callbackUrl: `${mockApiClient.baseUrl}/${AUTH_SDK_ROOT_ENDPOINT}/callback`,
             });
             expect(mockApiClient.post).toHaveBeenCalledWith(
                 `api/2024-09-26/session/sdk/auth/crypto_wallets/authenticate?${queryParams}`,

@@ -13,10 +13,6 @@ import { CrossmintProvider, useCrossmint } from "../hooks/useCrossmint";
 import { MOCK_API_KEY } from "../testUtils";
 import { CrossmintAuthProvider, type CrossmintAuthWalletConfig } from "./CrossmintAuthProvider";
 
-vi.mock("./auth/web3/WagmiAuthProvider", () => ({
-    WagmiAuthProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
-}));
-
 vi.mock("@crossmint/client-sdk-smart-wallet", async () => {
     const actual = await vi.importActual("@crossmint/client-sdk-smart-wallet");
     return {

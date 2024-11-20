@@ -232,7 +232,10 @@ export class CrossmintAuthClient extends CrossmintAuth {
 
     public async authenticateSmartWallet(address: string, signature: string) {
         try {
-            const queryParams = new URLSearchParams({ signinAuthenticationMethod: "evm" });
+            const queryParams = new URLSearchParams({
+                signinAuthenticationMethod: "evm",
+                callbackUrl: `${this.apiClient.baseUrl}/${AUTH_SDK_ROOT_ENDPOINT}/callback`,
+            });
             const response = await this.apiClient.post(
                 `${AUTH_SDK_ROOT_ENDPOINT}/crypto_wallets/authenticate?${queryParams}`,
                 {
