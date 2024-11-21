@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-window
 
+## 0.2.0
+
+### Minor Changes
+
+- 548c4d9: feat: hosted v3 alpha
+
 ## 0.1.0
 
 ### Minor Changes

@@ -1,5 +1,16 @@
 # @crossmint/client-sdk-base
 
+## 1.4.0
+
+### Minor Changes
+
+- 548c4d9: feat: hosted v3 alpha
+
+### Patch Changes
+
+- Updated dependencies [548c4d9]
+  - @crossmint/client-sdk-window@0.2.0
+
 ## 1.3.4
 
 ### Patch Changes

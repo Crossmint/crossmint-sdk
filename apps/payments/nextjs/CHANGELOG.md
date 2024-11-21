@@ -1,5 +1,18 @@
 # @crossmint/client-sdk-nextjs-starter
 
+## 1.4.0
+
+### Minor Changes
+
+- 548c4d9: feat: hosted v3 alpha
+
+### Patch Changes
+
+- Updated dependencies [019ddc2]
+- Updated dependencies [548c4d9]
+  - @crossmint/client-sdk-react-ui@1.11.0
+  - @crossmint/client-sdk-base@1.4.0
+
 ## 1.3.12
 
 ### Patch Changes
