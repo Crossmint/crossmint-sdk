@@ -1,5 +1,21 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.11.0
+
+### Minor Changes
+
+- 548c4d9: feat: hosted v3 alpha
+
+### Patch Changes
+
+- 019ddc2: chore: fix pino-pretty warning
+- Updated dependencies [548c4d9]
+  - @crossmint/client-sdk-window@0.2.0
+  - @crossmint/client-sdk-base@1.4.0
+  - @crossmint/client-sdk-auth@1.1.4
+  - @crossmint/client-sdk-smart-wallet@0.1.25
+  - @crossmint/common-sdk-auth@1.0.4
+
 ## 1.10.7
 
 ### Patch Changes
