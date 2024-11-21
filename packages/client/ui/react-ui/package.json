@@ -49,6 +49,7 @@
         "zod": "3.22.4"
     },
     "devDependencies": {
+        "pino-pretty": "^7.6.0",
         "@testing-library/react": "^16.0.1",
         "@types/color": "4.2.0",
         "@types/lodash.isequal": "4.5.6",
