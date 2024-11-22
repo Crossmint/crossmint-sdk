@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-auth
 
+## 1.1.6
+
+### Patch Changes
+
+- 92dc9ea: fixed issue with code being deprecated too soon
+
 ## 1.1.5
 
 ### Patch Changes
