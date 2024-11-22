@@ -1,5 +1,14 @@
 # @crossmint/client-sdk-base
 
+## 1.4.1
+
+### Patch Changes
+
+- e267c9f: chore: remove source maps
+- Updated dependencies [e267c9f]
+  - @crossmint/client-sdk-window@0.2.1
+  - @crossmint/common-sdk-base@0.3.1
+
 ## 1.4.0
 
 ### Minor Changes

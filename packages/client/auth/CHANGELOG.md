@@ -1,5 +1,15 @@
 # @crossmint/client-sdk-auth
 
+## 1.1.5
+
+### Patch Changes
+
+- e267c9f: chore: remove source maps
+- Updated dependencies [e267c9f]
+  - @crossmint/client-sdk-base@1.4.1
+  - @crossmint/common-sdk-auth@1.0.5
+  - @crossmint/common-sdk-base@0.3.1
+
 ## 1.1.4
 
 ### Patch Changes

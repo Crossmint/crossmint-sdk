@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-window
 
+## 0.2.1
+
+### Patch Changes
+
+- e267c9f: chore: remove source maps
+
 ## 0.2.0
 
 ### Minor Changes

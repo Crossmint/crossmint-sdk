@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-smart-wallet-web3auth-adapter
 
+## 0.2.4
+
+### Patch Changes
+
+- e267c9f: chore: remove source maps
+- Updated dependencies [e267c9f]
+  - @crossmint/common-sdk-base@0.3.1
+
 ## 0.2.3
 
 ### Patch Changes
