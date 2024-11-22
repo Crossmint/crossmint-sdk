@@ -840,17 +840,17 @@ importers:
   packages/client/wallets/walletconnect:
     dependencies:
       '@crossmint/common-sdk-base':
-        specifier: 0.0.12
-        version: 0.0.12
+        specifier: workspace:*
+        version: link:../../../common/base
       '@ethersproject/bytes':
         specifier: 5.7.0
         version: 5.7.0
       '@headlessui/react':
         specifier: 1.7.18
-        version: 1.7.18(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+        version: 1.7.18(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@heroicons/react':
         specifier: 2.1.1
-        version: 2.1.1(react@18.2.0)
+        version: 2.1.1(react@18.3.1)
       '@walletconnect/core':
         specifier: 2.11.1
         version: 2.11.1(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
@@ -871,11 +871,11 @@ importers:
         version: 1.10.1(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
       react-hot-toast:
         specifier: 2.4.1
-        version: 2.4.1(csstype@3.1.3)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+        version: 2.4.1(csstype@3.1.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     devDependencies:
       '@crossmint/client-sdk-aa':
         specifier: 1.0.0-alpha.1
-        version: 1.0.0-alpha.1(@babel/runtime@7.26.0)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.2.0)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
+        version: 1.0.0-alpha.1(@babel/runtime@7.26.0)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.3.1)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
       '@ethersproject/abstract-provider':
         specifier: 5.7.0
         version: 5.7.0
@@ -886,11 +886,11 @@ importers:
         specifier: 1.95.1
         version: 1.95.1(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
       '@types/react':
-        specifier: 18.2.21
-        version: 18.2.21
+        specifier: ^18.3.0
+        version: 18.3.1
       '@types/react-dom':
-        specifier: 18.2.7
-        version: 18.2.7
+        specifier: ^18.3.0
+        version: 18.3.0
       autoprefixer:
         specifier: 10.4.17
         version: 10.4.17(postcss@8.4.35)
@@ -898,11 +898,11 @@ importers:
         specifier: 8.4.35
         version: 8.4.35
       react:
-        specifier: 18.2.0
-        version: 18.2.0
+        specifier: ^18.3.0
+        version: 18.3.1
       react-dom:
-        specifier: 18.2.0
-        version: 18.2.0(react@18.2.0)
+        specifier: ^18.3.0
+        version: 18.3.1(react@18.3.1)
       tailwindcss:
         specifier: 3.4.1
         version: 3.4.1(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.5.3))
@@ -5697,9 +5697,6 @@ packages:
 
   '@types/react-transition-group@4.4.11':
     resolution: {integrity: sha512-RM05tAniPZ5DZPzzNFP+DmrcOdD0efDUxMy3145oljWSl3x9ZV5vhme98gTxFrj2lhXvmGNnUiuDyJgY9IKkNA==}
-
-  '@types/react@18.2.21':
-    resolution: {integrity: sha512-neFKG/sBAwGxHgXiIxnbm3/AAVQ/cMRS93hvBpg8xYRbeQSPVABp9U2bRnPf0iI4+Ucdv3plSxKK+3CW2ENJxA==}
 
   '@types/react@18.2.24':
     resolution: {integrity: sha512-Ee0Jt4sbJxMu1iDcetZEIKQr99J1Zfb6D4F3qfUWoR1JpInkY1Wdg4WwCyBjL257D0+jGqSl1twBjV8iCaC0Aw==}
@@ -16465,7 +16462,7 @@ snapshots:
 
   '@cosmjs/utils@0.30.1': {}
 
-  '@crossmint/client-sdk-aa@1.0.0-alpha.1(@babel/runtime@7.26.0)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.2.0)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)':
+  '@crossmint/client-sdk-aa@1.0.0-alpha.1(@babel/runtime@7.26.0)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.3.1)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)':
     dependencies:
       '@ambire/signature-validator': 1.3.1(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@crossmint/common-sdk-base': 0.0.12
@@ -16473,9 +16470,9 @@ snapshots:
       '@lit-protocol/auth-helpers': 3.1.2(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))
       '@lit-protocol/constants': 3.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@lit-protocol/contracts-sdk': 3.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
-      '@lit-protocol/lit-auth-client': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.2.0)(utf-8-validate@5.0.10)
-      '@lit-protocol/lit-node-client': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.2.0)(utf-8-validate@5.0.10)
-      '@lit-protocol/pkp-ethers': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.2.0)(utf-8-validate@5.0.10)
+      '@lit-protocol/lit-auth-client': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10)
+      '@lit-protocol/lit-node-client': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10)
+      '@lit-protocol/pkp-ethers': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10)
       '@lit-protocol/types': 3.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@reservoir0x/reservoir-sdk': 2.0.11(viem@2.8.16(bufferutil@4.0.8)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
       '@types/node-forge': 1.3.1
@@ -18302,13 +18299,6 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  '@headlessui/react@1.7.18(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
-    dependencies:
-      '@tanstack/react-virtual': 3.10.8(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      client-only: 0.0.1
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-
   '@headlessui/react@1.7.18(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@tanstack/react-virtual': 3.10.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -18329,9 +18319,9 @@ snapshots:
     dependencies:
       react: 18.3.1
 
-  '@heroicons/react@2.1.1(react@18.2.0)':
+  '@heroicons/react@2.1.1(react@18.3.1)':
     dependencies:
-      react: 18.2.0
+      react: 18.3.1
 
   '@humanwhocodes/config-array@0.13.0':
     dependencies:
@@ -18957,7 +18947,7 @@ snapshots:
     dependencies:
       ajv: 8.17.1
 
-  '@lit-protocol/auth-browser@3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.2.0)(utf-8-validate@5.0.10)':
+  '@lit-protocol/auth-browser@3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10)':
     dependencies:
       '@lit-protocol/auth-helpers': 3.1.2(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))
       '@lit-protocol/constants': 3.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
@@ -18966,8 +18956,8 @@ snapshots:
       '@lit-protocol/misc-browser': 3.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@lit-protocol/types': 3.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@lit-protocol/uint8arrays': 3.1.2
-      '@walletconnect/ethereum-provider': 2.9.2(@walletconnect/modal@2.6.1(react@18.2.0))(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
-      '@walletconnect/modal': 2.6.1(react@18.2.0)
+      '@walletconnect/ethereum-provider': 2.9.2(@walletconnect/modal@2.6.1(react@18.3.1))(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
+      '@walletconnect/modal': 2.6.1(react@18.3.1)
       ethers: 5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       jszip: 3.10.1
       lit-siwe: 1.1.8(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)
@@ -19339,12 +19329,12 @@ snapshots:
       - encoding
       - utf-8-validate
 
-  '@lit-protocol/lit-auth-client@3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.2.0)(utf-8-validate@5.0.10)':
+  '@lit-protocol/lit-auth-client@3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10)':
     dependencies:
       '@cosmjs/proto-signing': 0.30.1
       '@cosmjs/stargate': 0.30.1(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@lit-protocol/access-control-conditions': 3.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
-      '@lit-protocol/auth-browser': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.2.0)(utf-8-validate@5.0.10)
+      '@lit-protocol/auth-browser': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10)
       '@lit-protocol/auth-helpers': 3.1.2(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))
       '@lit-protocol/bls-sdk': 3.1.2
       '@lit-protocol/constants': 3.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
@@ -19353,7 +19343,7 @@ snapshots:
       '@lit-protocol/crypto': 3.1.2(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
       '@lit-protocol/ecdsa-sdk': 3.1.2
       '@lit-protocol/encryption': 3.1.2(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
-      '@lit-protocol/lit-node-client': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.2.0)(utf-8-validate@5.0.10)
+      '@lit-protocol/lit-node-client': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10)
       '@lit-protocol/lit-node-client-nodejs': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
       '@lit-protocol/lit-third-party-libs': 3.1.2(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
       '@lit-protocol/logger': 3.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
@@ -19365,8 +19355,8 @@ snapshots:
       '@lit-protocol/uint8arrays': 3.1.2
       '@simplewebauthn/browser': 7.4.0
       '@simplewebauthn/typescript-types': 7.4.0
-      '@walletconnect/ethereum-provider': 2.9.2(@walletconnect/modal@2.6.1(react@18.2.0))(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
-      '@walletconnect/modal': 2.6.1(react@18.2.0)
+      '@walletconnect/ethereum-provider': 2.9.2(@walletconnect/modal@2.6.1(react@18.3.1))(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
+      '@walletconnect/modal': 2.6.1(react@18.3.1)
       base64url: 3.0.1
       bitcoinjs-lib: 6.1.6
       blockstore-core: 3.0.0
@@ -19510,12 +19500,12 @@ snapshots:
       - encoding
       - utf-8-validate
 
-  '@lit-protocol/lit-node-client@3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.2.0)(utf-8-validate@5.0.10)':
+  '@lit-protocol/lit-node-client@3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10)':
     dependencies:
       '@cosmjs/proto-signing': 0.30.1
       '@cosmjs/stargate': 0.30.1(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@lit-protocol/access-control-conditions': 3.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
-      '@lit-protocol/auth-browser': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.2.0)(utf-8-validate@5.0.10)
+      '@lit-protocol/auth-browser': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10)
       '@lit-protocol/auth-helpers': 3.1.2(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))
       '@lit-protocol/bls-sdk': 3.1.2
       '@lit-protocol/constants': 3.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
@@ -19533,8 +19523,8 @@ snapshots:
       '@lit-protocol/sev-snp-utils-sdk': 3.1.2(encoding@0.1.13)
       '@lit-protocol/types': 3.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@lit-protocol/uint8arrays': 3.1.2
-      '@walletconnect/ethereum-provider': 2.9.2(@walletconnect/modal@2.6.1(react@18.2.0))(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
-      '@walletconnect/modal': 2.6.1(react@18.2.0)
+      '@walletconnect/ethereum-provider': 2.9.2(@walletconnect/modal@2.6.1(react@18.3.1))(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
+      '@walletconnect/modal': 2.6.1(react@18.3.1)
       bitcoinjs-lib: 6.1.6
       blockstore-core: 3.0.0
       bs58: 5.0.0
@@ -19777,12 +19767,12 @@ snapshots:
     dependencies:
       tslib: 1.14.1
 
-  '@lit-protocol/pkp-base@3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.2.0)(utf-8-validate@5.0.10)':
+  '@lit-protocol/pkp-base@3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10)':
     dependencies:
       '@cosmjs/proto-signing': 0.30.1
       '@cosmjs/stargate': 0.30.1(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@lit-protocol/access-control-conditions': 3.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
-      '@lit-protocol/auth-browser': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.2.0)(utf-8-validate@5.0.10)
+      '@lit-protocol/auth-browser': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10)
       '@lit-protocol/auth-helpers': 3.1.2(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))
       '@lit-protocol/bls-sdk': 3.1.2
       '@lit-protocol/constants': 3.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
@@ -19791,7 +19781,7 @@ snapshots:
       '@lit-protocol/crypto': 3.1.2(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
       '@lit-protocol/ecdsa-sdk': 3.1.2
       '@lit-protocol/encryption': 3.1.2(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
-      '@lit-protocol/lit-node-client': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.2.0)(utf-8-validate@5.0.10)
+      '@lit-protocol/lit-node-client': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10)
       '@lit-protocol/lit-node-client-nodejs': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
       '@lit-protocol/lit-third-party-libs': 3.1.2(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
       '@lit-protocol/logger': 3.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
@@ -19801,8 +19791,8 @@ snapshots:
       '@lit-protocol/sev-snp-utils-sdk': 3.1.2(encoding@0.1.13)
       '@lit-protocol/types': 3.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@lit-protocol/uint8arrays': 3.1.2
-      '@walletconnect/ethereum-provider': 2.9.2(@walletconnect/modal@2.6.1(react@18.2.0))(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
-      '@walletconnect/modal': 2.6.1(react@18.2.0)
+      '@walletconnect/ethereum-provider': 2.9.2(@walletconnect/modal@2.6.1(react@18.3.1))(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
+      '@walletconnect/modal': 2.6.1(react@18.3.1)
       bitcoinjs-lib: 6.1.6
       blockstore-core: 3.0.0
       bs58: 5.0.0
@@ -19847,12 +19837,12 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@lit-protocol/pkp-ethers@3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.2.0)(utf-8-validate@5.0.10)':
+  '@lit-protocol/pkp-ethers@3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10)':
     dependencies:
       '@cosmjs/proto-signing': 0.30.1
       '@cosmjs/stargate': 0.30.1(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@lit-protocol/access-control-conditions': 3.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
-      '@lit-protocol/auth-browser': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.2.0)(utf-8-validate@5.0.10)
+      '@lit-protocol/auth-browser': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10)
       '@lit-protocol/auth-helpers': 3.1.2(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))
       '@lit-protocol/bls-sdk': 3.1.2
       '@lit-protocol/constants': 3.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
@@ -19861,20 +19851,20 @@ snapshots:
       '@lit-protocol/crypto': 3.1.2(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
       '@lit-protocol/ecdsa-sdk': 3.1.2
       '@lit-protocol/encryption': 3.1.2(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
-      '@lit-protocol/lit-node-client': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.2.0)(utf-8-validate@5.0.10)
+      '@lit-protocol/lit-node-client': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10)
       '@lit-protocol/lit-node-client-nodejs': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
       '@lit-protocol/lit-third-party-libs': 3.1.2(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
       '@lit-protocol/logger': 3.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@lit-protocol/misc': 3.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@lit-protocol/misc-browser': 3.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@lit-protocol/nacl': 3.1.2
-      '@lit-protocol/pkp-base': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.2.0)(utf-8-validate@5.0.10)
+      '@lit-protocol/pkp-base': 3.1.2(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.7.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10)
       '@lit-protocol/sev-snp-utils-sdk': 3.1.2(encoding@0.1.13)
       '@lit-protocol/types': 3.1.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@lit-protocol/uint8arrays': 3.1.2
       '@metamask/eth-sig-util': 5.0.2
-      '@walletconnect/ethereum-provider': 2.9.2(@walletconnect/modal@2.6.1(react@18.2.0))(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
-      '@walletconnect/modal': 2.6.1(react@18.2.0)
+      '@walletconnect/ethereum-provider': 2.9.2(@walletconnect/modal@2.6.1(react@18.3.1))(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
+      '@walletconnect/modal': 2.6.1(react@18.3.1)
       bitcoinjs-lib: 6.1.6
       blockstore-core: 3.0.0
       bs58: 5.0.0
@@ -21962,12 +21952,6 @@ snapshots:
       '@tanstack/query-core': 5.51.17
       react: 18.3.1
 
-  '@tanstack/react-virtual@3.10.8(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
-    dependencies:
-      '@tanstack/virtual-core': 3.10.8
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-
   '@tanstack/react-virtual@3.10.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@tanstack/virtual-core': 3.10.8
@@ -22552,12 +22536,6 @@ snapshots:
   '@types/react-transition-group@4.4.11':
     dependencies:
       '@types/react': 18.3.1
-
-  '@types/react@18.2.21':
-    dependencies:
-      '@types/prop-types': 15.7.13
-      '@types/scheduler': 0.23.0
-      csstype: 3.1.3
 
   '@types/react@18.2.24':
     dependencies:
@@ -23565,37 +23543,6 @@ snapshots:
       - react
       - utf-8-validate
 
-  '@walletconnect/ethereum-provider@2.9.2(@walletconnect/modal@2.6.1(react@18.2.0))(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)':
-    dependencies:
-      '@walletconnect/jsonrpc-http-connection': 1.0.8(encoding@0.1.13)
-      '@walletconnect/jsonrpc-provider': 1.0.14
-      '@walletconnect/jsonrpc-types': 1.0.4
-      '@walletconnect/jsonrpc-utils': 1.0.8
-      '@walletconnect/sign-client': 2.9.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
-      '@walletconnect/types': 2.9.2
-      '@walletconnect/universal-provider': 2.9.2(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
-      '@walletconnect/utils': 2.9.2
-      events: 3.3.0
-    optionalDependencies:
-      '@walletconnect/modal': 2.6.1(react@18.2.0)
-    transitivePeerDependencies:
-      - '@azure/app-configuration'
-      - '@azure/cosmos'
-      - '@azure/data-tables'
-      - '@azure/identity'
-      - '@azure/keyvault-secrets'
-      - '@azure/storage-blob'
-      - '@capacitor/preferences'
-      - '@netlify/blobs'
-      - '@planetscale/database'
-      - '@react-native-async-storage/async-storage'
-      - '@upstash/redis'
-      - '@vercel/kv'
-      - bufferutil
-      - encoding
-      - ioredis
-      - utf-8-validate
-
   '@walletconnect/ethereum-provider@2.9.2(@walletconnect/modal@2.6.1(react@18.3.1))(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)':
     dependencies:
       '@walletconnect/jsonrpc-http-connection': 1.0.8(encoding@0.1.13)
@@ -23739,12 +23686,6 @@ snapshots:
 
   '@walletconnect/mobile-registry@1.4.0': {}
 
-  '@walletconnect/modal-core@2.6.1(react@18.2.0)':
-    dependencies:
-      valtio: 1.11.0(react@18.2.0)
-    transitivePeerDependencies:
-      - react
-
   '@walletconnect/modal-core@2.6.1(react@18.3.1)':
     dependencies:
       valtio: 1.11.0(react@18.3.1)
@@ -23756,15 +23697,6 @@ snapshots:
       valtio: 1.11.2(@types/react@18.3.1)(react@18.3.1)
     transitivePeerDependencies:
       - '@types/react'
-      - react
-
-  '@walletconnect/modal-ui@2.6.1(react@18.2.0)':
-    dependencies:
-      '@walletconnect/modal-core': 2.6.1(react@18.2.0)
-      lit: 2.7.6
-      motion: 10.16.2
-      qrcode: 1.5.3
-    transitivePeerDependencies:
       - react
 
   '@walletconnect/modal-ui@2.6.1(react@18.3.1)':
@@ -23784,13 +23716,6 @@ snapshots:
       qrcode: 1.5.3
     transitivePeerDependencies:
       - '@types/react'
-      - react
-
-  '@walletconnect/modal@2.6.1(react@18.2.0)':
-    dependencies:
-      '@walletconnect/modal-core': 2.6.1(react@18.2.0)
-      '@walletconnect/modal-ui': 2.6.1(react@18.2.0)
-    transitivePeerDependencies:
       - react
 
   '@walletconnect/modal@2.6.1(react@18.3.1)':
@@ -32641,14 +32566,6 @@ snapshots:
     optionalDependencies:
       '@types/react': 18.3.1
 
-  react-hot-toast@2.4.1(csstype@3.1.3)(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
-    dependencies:
-      goober: 2.1.16(csstype@3.1.3)
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-    transitivePeerDependencies:
-      - csstype
-
   react-hot-toast@2.4.1(csstype@3.1.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       goober: 2.1.16(csstype@3.1.3)
@@ -35013,10 +34930,6 @@ snapshots:
     optionalDependencies:
       '@types/react': 18.3.1
 
-  use-sync-external-store@1.2.0(react@18.2.0):
-    dependencies:
-      react: 18.2.0
-
   use-sync-external-store@1.2.0(react@18.3.1):
     dependencies:
       react: 18.3.1
@@ -35081,13 +34994,6 @@ snapshots:
       spdx-expression-parse: 3.0.1
 
   validate-npm-package-name@5.0.1: {}
-
-  valtio@1.11.0(react@18.2.0):
-    dependencies:
-      proxy-compare: 2.5.1
-      use-sync-external-store: 1.2.0(react@18.2.0)
-    optionalDependencies:
-      react: 18.2.0
 
   valtio@1.11.0(react@18.3.1):
     dependencies:

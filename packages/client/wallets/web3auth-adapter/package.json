@@ -13,11 +13,10 @@
     "main": "./dist/index.cjs",
     "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
-    "files": ["dist", "src", "LICENSE"],
+    "files": ["dist", "LICENSE"],
     "scripts": {
-        "build": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --minify --dts --sourcemap",
-        "build-no-minify": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --dts --sourcemap",
-        "dev": "tsup src/index.ts --clean --format esm,cjs --outDir ./dist --dts --sourcemap --watch",
+        "build": "tsup",
+        "dev": "tsup --watch",
         "test:vitest": "cross-env NODE_ENV=test jest"
     },
     "dependencies": {
