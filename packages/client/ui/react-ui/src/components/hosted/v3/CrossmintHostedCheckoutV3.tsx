@@ -18,9 +18,9 @@ export function CrossmintHostedCheckout_Alpha(props: CrossmintHostedCheckoutV3Re
     const apiClient = createCrossmintApiClient(crossmint);
 
     // separate custom props from jsx button props
-    const { receipient, locale, webhookPassthroughData, lineItems, payment, appearance, ...buttonProps } = props;
+    const { recipient, locale, webhookPassthroughData, lineItems, payment, appearance, ...buttonProps } = props;
     const customProps: CrossmintHostedCheckoutV3Props = {
-        receipient,
+        recipient,
         locale,
         webhookPassthroughData,
         lineItems,

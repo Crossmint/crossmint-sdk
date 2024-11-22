@@ -3,7 +3,7 @@ import type { EmbeddedCheckoutV3LineItem, EmbeddedCheckoutV3Recipient } from "@/
 import type { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 
 export interface CrossmintHostedCheckoutV3Props {
-    receipient?: EmbeddedCheckoutV3Recipient;
+    recipient?: EmbeddedCheckoutV3Recipient;
     locale?: Locale;
     webhookPassthroughData?: any;
     lineItems: EmbeddedCheckoutV3LineItem | EmbeddedCheckoutV3LineItem[];
