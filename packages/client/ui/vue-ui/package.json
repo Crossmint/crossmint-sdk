@@ -13,7 +13,7 @@
     "main": "./dist/index.cjs",
     "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
-    "files": ["dist", "src", "LICENSE"],
+    "files": ["dist", "LICENSE"],
     "scripts": {
         "dev": "vite",
         "type-check-and-build": "run-p type-check build-only",
