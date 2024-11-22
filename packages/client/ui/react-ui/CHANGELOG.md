@@ -1,5 +1,18 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.11.1
+
+### Patch Changes
+
+- e267c9f: chore: remove source maps
+- Updated dependencies [e267c9f]
+  - @crossmint/client-sdk-smart-wallet@0.1.26
+  - @crossmint/client-sdk-window@0.2.1
+  - @crossmint/client-sdk-auth@1.1.5
+  - @crossmint/client-sdk-base@1.4.1
+  - @crossmint/common-sdk-auth@1.0.5
+  - @crossmint/common-sdk-base@0.3.1
+
 ## 1.11.0
 
 ### Minor Changes

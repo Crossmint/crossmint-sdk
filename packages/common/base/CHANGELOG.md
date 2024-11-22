@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.3.1
+
+### Patch Changes
+
+- e267c9f: chore: remove source maps
+
 ## 0.3.0
 
 ### Minor Changes

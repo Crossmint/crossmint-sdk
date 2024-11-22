@@ -1,5 +1,14 @@
 # @crossmint/client-sdk-verifiable-credentials
 
+## 3.4.16
+
+### Patch Changes
+
+- e267c9f: chore: remove source maps
+- Updated dependencies [e267c9f]
+  - @crossmint/client-sdk-base@1.4.1
+  - @crossmint/common-sdk-base@0.3.1
+
 ## 3.4.15
 
 ### Patch Changes

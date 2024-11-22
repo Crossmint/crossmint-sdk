@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-vue-ui
 
+## 1.1.25
+
+### Patch Changes
+
+- e267c9f: chore: remove source maps
+- Updated dependencies [e267c9f]
+  - @crossmint/client-sdk-base@1.4.1
+
 ## 1.1.24
 
 ### Patch Changes
