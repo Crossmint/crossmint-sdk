@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-base
 
+## 1.4.2
+
+### Patch Changes
+
+- 32e9c60: hosted: fix typo
+
 ## 1.4.1
 
 ### Patch Changes

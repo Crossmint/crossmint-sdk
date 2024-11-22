@@ -1,5 +1,16 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.11.3
+
+### Patch Changes
+
+- 32e9c60: hosted: fix typo
+- Updated dependencies [32e9c60]
+  - @crossmint/client-sdk-base@1.4.2
+  - @crossmint/client-sdk-auth@1.1.7
+  - @crossmint/client-sdk-smart-wallet@0.1.27
+  - @crossmint/common-sdk-auth@1.0.6
+
 ## 1.11.2
 
 ### Patch Changes
