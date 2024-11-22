@@ -158,6 +158,8 @@ export class CrossmintAuthClient extends CrossmintAuth {
                 token,
                 locale: "en",
                 state: emailId,
+                // TODO: Remove this when we deprecate frames
+                callbackUrl: `${this.apiClient.baseUrl}/${AUTH_SDK_ROOT_ENDPOINT}/callback`,
             });
 
             const response = await this.apiClient.post(`${AUTH_SDK_ROOT_ENDPOINT}/authenticate?${queryParams}`, {
@@ -234,6 +236,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
         try {
             const queryParams = new URLSearchParams({
                 signinAuthenticationMethod: "evm",
+                // TODO: Remove this when we deprecate frames
                 callbackUrl: `${this.apiClient.baseUrl}/${AUTH_SDK_ROOT_ENDPOINT}/callback`,
             });
             const response = await this.apiClient.post(
