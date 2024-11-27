@@ -1,4 +1,7 @@
-import { CrossmintEmbeddedCheckout_Alpha, useCrossmintCheckout } from "@crossmint/client-sdk-react-ui";
+import {
+    CrossmintEmbeddedCheckout,
+    useCrossmintCheckout,
+} from "@crossmint/client-sdk-react-ui";
 import { useEffect } from "react";
 
 const USE_CUSTOM_RENDERING = false;
@@ -26,13 +29,14 @@ export function EmbeddedCheckoutV3Content() {
 
 function CrossmintEmbeddedCheckoutWrapper() {
     return (
-        <CrossmintEmbeddedCheckout_Alpha
+        <CrossmintEmbeddedCheckout
             recipient={{
                 // email: "maxwell@paella.dev",
                 walletAddress: "0x8b821dd648599B0D093F55B5BaAA48c709ec455A",
             }}
             lineItems={{
-                collectionLocator: "crossmint:206b3146-f526-444e-bd9d-0607d581b0e9",
+                collectionLocator:
+                    "crossmint:206b3146-f526-444e-bd9d-0607d581b0e9",
                 callData: {
                     totalPrice: "0.001",
                     quantity: 1,
