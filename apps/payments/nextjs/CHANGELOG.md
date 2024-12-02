@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-nextjs-starter
 
+## 1.4.4
+
+### Patch Changes
+
+- 01b8575: Embedded checkout v3 component is no longer alpha
+- Updated dependencies [01b8575]
+  - @crossmint/client-sdk-react-ui@1.11.4
+
 ## 1.4.3
 
 ### Patch Changes

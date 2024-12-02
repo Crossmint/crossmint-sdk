@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.11.4
+
+### Patch Changes
+
+- 01b8575: Embedded checkout v3 component is no longer alpha
+
 ## 1.11.3
 
 ### Patch Changes
