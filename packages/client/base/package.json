@@ -25,11 +25,11 @@
         "@datadog/browser-logs": "4.42.2",
         "exponential-backoff": "3.1.1",
         "uuid": "9.0.1",
-        "zod": "3.22.4"
+        "zod": "catalog:"
     },
     "devDependencies": {
-        "@ethersproject/transactions": "5.7.0",
-        "@solana/web3.js": "1.95.1",
+        "@ethersproject/transactions": "catalog:",
+        "@solana/web3.js": "catalog:",
         "@types/uuid": "9.0.4"
     }
 }
