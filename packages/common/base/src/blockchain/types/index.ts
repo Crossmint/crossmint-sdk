@@ -8,6 +8,7 @@ export const Blockchain = {
     APTOS: "aptos",
     ...EVMBlockchain,
 } as const;
+
 export type Blockchain = ObjectValues<typeof Blockchain>;
 export const BLOCKCHAINS = objectValues(Blockchain);
 
@@ -23,6 +24,13 @@ export const BlockchainIncludingTestnet = {
 } as const;
 export type BlockchainIncludingTestnet = ObjectValues<typeof BlockchainIncludingTestnet>;
 export const BLOCKCHAINS_INCLUDING_TESTNETS = objectValues(BlockchainIncludingTestnet);
+export const SignerSupportedBlockchains = {
+    SOLANA: "solana",
+    ...EVMBlockchain,
+    ...EVMBlockchainTestnet,
+} as const;
+export type SignerSupportedBlockchains = ObjectValues<typeof SignerSupportedBlockchains>;
+export const SIGNER_SUPPORTED_BLOCKCHAINS = objectValues(SignerSupportedBlockchains);
 
 export * from "./baseLayers";
 export * from "./evm";

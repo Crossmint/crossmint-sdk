@@ -1,4 +1,4 @@
-import type { Currency as FiatCurrency, Locale } from "@/types";
+import type { EmbeddedCheckoutSigner, Currency as FiatCurrency, Locale } from "@/types";
 import type { CryptoCurrency } from "@/types/CryptoCurrency";
 
 import type { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
@@ -190,6 +190,7 @@ export type EmbeddedCheckoutV3CryptoPayment = {
     enabled: boolean;
     defaultChain?: BlockchainIncludingTestnet;
     defaultCurrency?: CryptoCurrency;
+    signer?: EmbeddedCheckoutSigner;
     // allowedCurrencies?: Partial<Record<BlockchainIncludingTestnet, false | CryptoCurrency[]>>; // TODO: Add this back when supported on crossmint-main
     // payer?: any; // TODO: Add this back when supported on crossmint-main
 };
