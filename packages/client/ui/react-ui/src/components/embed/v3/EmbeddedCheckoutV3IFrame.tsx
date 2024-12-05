@@ -8,7 +8,7 @@ import {
 } from "@crossmint/client-sdk-base";
 
 import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
-import { SignerConnectionHandler } from "./crypto/SignerConnectionHandler";
+import { PayerConnectionHandler } from "./crypto/PayerConnectionHandler";
 
 const CryptoWalletConnectionHandler = lazy(() =>
     // @ts-expect-error - Error because we dont use 'module' field in tsconfig, which is expected because we use tsup to compile
@@ -73,8 +73,8 @@ export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props
                 }}
             />
             {props.payment.crypto.enabled ? (
-                props.payment.crypto.signer != null ? (
-                    <SignerConnectionHandler props={props} iframeClient={iframeClient} />
+                props.payment.crypto.payer != null ? (
+                    <PayerConnectionHandler payer={props.payment.crypto.payer} iframeClient={iframeClient} />
                 ) : (
                     <CryptoWalletConnectionHandler
                         iframeClient={iframeClient}

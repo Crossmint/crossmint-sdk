@@ -24,12 +24,12 @@ export const BlockchainIncludingTestnet = {
 } as const;
 export type BlockchainIncludingTestnet = ObjectValues<typeof BlockchainIncludingTestnet>;
 export const BLOCKCHAINS_INCLUDING_TESTNETS = objectValues(BlockchainIncludingTestnet);
-export const SignerSupportedBlockchains = {
+export const PayerSupportedBlockchains = {
     SOLANA: "solana",
     ...EVMBlockchain,
     ...EVMBlockchainTestnet,
 } as const;
-export type SignerSupportedBlockchains = ObjectValues<typeof SignerSupportedBlockchains>;
+export type PayerSupportedBlockchains = ObjectValues<typeof PayerSupportedBlockchains>;
 
 export * from "./baseLayers";
 export * from "./evm";

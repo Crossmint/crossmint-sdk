@@ -1,10 +1,10 @@
 import { useEffect } from "react";
-import type { CrossmintEmbeddedCheckoutV3Props, EmbeddedCheckoutV3IFrameEmitter } from "@crossmint/client-sdk-base";
+import type { EmbeddedCheckoutPayer, EmbeddedCheckoutV3IFrameEmitter } from "@crossmint/client-sdk-base";
 
-export function SignerConnectionHandler({
-    props,
+export function PayerConnectionHandler({
+    payer,
     iframeClient,
-}: { props: CrossmintEmbeddedCheckoutV3Props; iframeClient: EmbeddedCheckoutV3IFrameEmitter | null }) {
+}: { payer: EmbeddedCheckoutPayer; iframeClient: EmbeddedCheckoutV3IFrameEmitter | null }) {
     useEffect(() => {
         if (iframeClient == null) {
             return;
@@ -14,10 +14,14 @@ export function SignerConnectionHandler({
             "crypto:send-transaction",
             async ({ serializedTransaction }) => {
                 try {
-                    const tx = await props.payment.crypto.signer!.handleSignAndSendTransaction(serializedTransaction);
+                    const tx = await payer.handleSignAndSendTransaction(serializedTransaction);
                     const txId = tx.success ? tx.txId : "";
 
-                    iframeClient.send("crypto:send-transaction:success", { txId });
+                    if (tx.success) {
+                        iframeClient.send("crypto:send-transaction:success", { txId });
+                    } else {
+                        iframeClient.send("crypto:send-transaction:failed", { error: tx.errorMessage });
+                    }
                 } catch (error) {
                     console.error("[SignerConnectionHandler] Failed to send transaction", error);
                     iframeClient.send("crypto:send-transaction:failed", {
