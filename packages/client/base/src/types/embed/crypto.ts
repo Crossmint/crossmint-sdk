@@ -70,5 +70,4 @@ export type EmbeddedCheckoutSigner = {
     address: string;
     chain: SignerSupportedBlockchains;
     handleSignAndSendTransaction(serializedTransaction: string): Promise<TransactionResponse>;
-    handleSwitchChain?(chainId: number): Promise<void>;
 };

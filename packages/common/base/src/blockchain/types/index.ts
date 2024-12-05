@@ -30,7 +30,6 @@ export const SignerSupportedBlockchains = {
     ...EVMBlockchainTestnet,
 } as const;
 export type SignerSupportedBlockchains = ObjectValues<typeof SignerSupportedBlockchains>;
-export const SIGNER_SUPPORTED_BLOCKCHAINS = objectValues(SignerSupportedBlockchains);
 
 export * from "./baseLayers";
 export * from "./evm";
