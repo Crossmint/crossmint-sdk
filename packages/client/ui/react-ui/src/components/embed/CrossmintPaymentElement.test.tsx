@@ -4,15 +4,15 @@ import { describe, expect, it, vi } from "vitest";
 
 import { CrossmintEvents } from "@crossmint/client-sdk-base";
 
-import { CrossmintPaymentElement } from ".";
+import { CrossmintPaymentElement_DEPRECATED } from ".";
 
 const embeddedCheckoutProps = {
     clientId: "db218e78-d042-4761-83af-3c4e5e6659dd",
 };
 
-describe("CrossmintPaymentElement", () => {
+describe("CrossmintPaymentElement_DEPRECATED", () => {
     it("renders an iframe with the correct props", () => {
-        render(<CrossmintPaymentElement {...embeddedCheckoutProps} />);
+        render(<CrossmintPaymentElement_DEPRECATED {...embeddedCheckoutProps} />);
         const iframe = screen.getByRole("crossmint-embedded-checkout.iframe");
 
         expect(iframe).toHaveAttribute("src");
@@ -32,7 +32,7 @@ describe("CrossmintPaymentElement", () => {
 
     it("calls the onEvent prop when a CrossmintEvents is received", () => {
         const onEvent = vi.fn();
-        render(<CrossmintPaymentElement {...embeddedCheckoutProps} onEvent={onEvent} environment="" />);
+        render(<CrossmintPaymentElement_DEPRECATED {...embeddedCheckoutProps} onEvent={onEvent} environment="" />);
         screen.getByRole("crossmint-embedded-checkout.iframe");
 
         // Simulate receiving a CrossmintEvents message
@@ -45,7 +45,7 @@ describe("CrossmintPaymentElement", () => {
 
     it("does not call the onEvent prop when a different origin than the environment is received in the event", () => {
         const onEvent = vi.fn();
-        render(<CrossmintPaymentElement {...embeddedCheckoutProps} onEvent={onEvent} environment="" />);
+        render(<CrossmintPaymentElement_DEPRECATED {...embeddedCheckoutProps} onEvent={onEvent} environment="" />);
         screen.getByRole("crossmint-embedded-checkout.iframe");
 
         // Simulate receiving a CrossmintEvents message
@@ -57,21 +57,21 @@ describe("CrossmintPaymentElement", () => {
     });
 
     it("should add the `whPassThroughArgs` prop when passed", async () => {
-        render(<CrossmintPaymentElement {...embeddedCheckoutProps} whPassThroughArgs={{ hello: "hi" }} />);
+        render(<CrossmintPaymentElement_DEPRECATED {...embeddedCheckoutProps} whPassThroughArgs={{ hello: "hi" }} />);
         const iframe = screen.getByRole("crossmint-embedded-checkout.iframe");
 
         expect(iframe.getAttribute("src")).toContain("whPassThroughArgs=%7B%22hello%22%3A%22hi%22%7D");
     });
 
     it("should add the clientId when passing the collectionId prop", () => {
-        render(<CrossmintPaymentElement collectionId={embeddedCheckoutProps.clientId} />);
+        render(<CrossmintPaymentElement_DEPRECATED collectionId={embeddedCheckoutProps.clientId} />);
         const iframe = screen.getByRole("crossmint-embedded-checkout.iframe");
 
         expect(iframe.getAttribute("src")).toContain(`clientId=${embeddedCheckoutProps.clientId}`);
     });
 
     it("should add projectId when added", () => {
-        render(<CrossmintPaymentElement collectionId={embeddedCheckoutProps.clientId} projectId="123" />);
+        render(<CrossmintPaymentElement_DEPRECATED collectionId={embeddedCheckoutProps.clientId} projectId="123" />);
         const iframe = screen.getByRole("crossmint-embedded-checkout.iframe");
 
         expect(iframe.getAttribute("src")).toContain("projectId=123");
