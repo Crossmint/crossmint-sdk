@@ -1,7 +1,7 @@
 import type { Currency as FiatCurrency, Locale } from "@/types";
 import type { CryptoCurrency } from "@/types/CryptoCurrency";
 
-import type { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
+import type { BlockchainIncludingTestnet, PayerSupportedBlockchains } from "@crossmint/common-sdk-base";
 
 interface CrossmintEmbeddedCheckoutV3CommonProps {
     appearance?: EmbeddedCheckoutV3Appearance;
@@ -190,6 +190,22 @@ export type EmbeddedCheckoutV3CryptoPayment = {
     enabled: boolean;
     defaultChain?: BlockchainIncludingTestnet;
     defaultCurrency?: CryptoCurrency;
+    payer?: EmbeddedCheckoutPayer;
     // allowedCurrencies?: Partial<Record<BlockchainIncludingTestnet, false | CryptoCurrency[]>>; // TODO: Add this back when supported on crossmint-main
-    // payer?: any; // TODO: Add this back when supported on crossmint-main
+};
+
+export type TransactionResponse =
+    | {
+          success: true;
+          txId: string;
+      }
+    | {
+          success: false;
+          errorMessage: string;
+      };
+
+export type EmbeddedCheckoutPayer = {
+    address: string;
+    initialChain: PayerSupportedBlockchains;
+    handleSignAndSendTransaction(serializedTransaction: string): Promise<TransactionResponse>;
 };
