@@ -207,5 +207,7 @@ export type TransactionResponse =
 export type EmbeddedCheckoutPayer = {
     address: string;
     initialChain: PayerSupportedBlockchains;
+    supportedChains?: PayerSupportedBlockchains[];
     handleSignAndSendTransaction(serializedTransaction: string): Promise<TransactionResponse>;
+    handleChainSwitch(chain: string): Promise<void>;
 };
