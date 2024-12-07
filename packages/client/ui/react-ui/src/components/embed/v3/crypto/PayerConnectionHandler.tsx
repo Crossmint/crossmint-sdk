@@ -12,8 +12,9 @@ export function PayerConnectionHandler({
 
         const signTransactionListener = iframeClient.on(
             "crypto:send-transaction",
-            async ({ serializedTransaction }) => {
+            async ({ chain, serializedTransaction }) => {
                 try {
+                    await payer.handleChainSwitch(chain);
                     const tx = await payer.handleSignAndSendTransaction(serializedTransaction);
                     const txId = tx.success ? tx.txId : "";
 

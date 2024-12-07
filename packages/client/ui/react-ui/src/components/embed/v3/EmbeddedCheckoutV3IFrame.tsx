@@ -21,6 +21,20 @@ export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props
     const [iframeClient, setIframeClient] = useState<EmbeddedCheckoutV3IFrameEmitter | null>(null);
     const [height, setHeight] = useState(0);
 
+    const initialChainRef = useRef(props.payment.crypto.payer?.initialChain);
+
+    const memoizedProps = useRef(props);
+    if (props !== memoizedProps.current) {
+        const newProps = { ...props };
+        if (props.payment.crypto.payer && initialChainRef.current !== undefined) {
+            newProps.payment.crypto.payer = {
+                ...props.payment.crypto.payer,
+                initialChain: initialChainRef.current,
+            };
+        }
+        memoizedProps.current = newProps;
+    }
+
     const { crossmint } = useCrossmint();
     const apiClient = createCrossmintApiClient(crossmint, {
         usageOrigin: "client",
@@ -52,7 +66,7 @@ export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props
         <>
             <iframe
                 ref={ref}
-                src={embeddedCheckoutService.iframe.getUrl(props)}
+                src={embeddedCheckoutService.iframe.getUrl(memoizedProps.current)}
                 id="crossmint-embedded-checkout.iframe"
                 role="crossmint-embedded-checkout.iframe"
                 allow="payment *"
@@ -72,9 +86,12 @@ export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props
                     backgroundColor: "transparent",
                 }}
             />
-            {props.payment.crypto.enabled ? (
-                props.payment.crypto.payer != null ? (
-                    <PayerConnectionHandler payer={props.payment.crypto.payer} iframeClient={iframeClient} />
+            {memoizedProps.current.payment.crypto.enabled ? (
+                memoizedProps.current.payment.crypto.payer != null ? (
+                    <PayerConnectionHandler
+                        payer={memoizedProps.current.payment.crypto.payer}
+                        iframeClient={iframeClient}
+                    />
                 ) : (
                     <CryptoWalletConnectionHandler
                         iframeClient={iframeClient}
