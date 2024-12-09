@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import type { EmbeddedCheckoutPayer, EmbeddedCheckoutV3IFrameEmitter } from "@crossmint/client-sdk-base";
+import type { PayerSupportedBlockchains } from "@crossmint/common-sdk-base";
 
 export function PayerConnectionHandler({
     payer,
@@ -14,7 +15,7 @@ export function PayerConnectionHandler({
             "crypto:send-transaction",
             async ({ chain, serializedTransaction }) => {
                 try {
-                    await payer.handleChainSwitch(chain);
+                    await payer.handleChainSwitch(chain as PayerSupportedBlockchains);
                     const tx = await payer.handleSignAndSendTransaction(serializedTransaction);
                     const txId = tx.success ? tx.txId : "";
 

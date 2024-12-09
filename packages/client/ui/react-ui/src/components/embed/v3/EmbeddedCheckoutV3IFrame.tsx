@@ -9,6 +9,7 @@ import {
 
 import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
 import { PayerConnectionHandler } from "./crypto/PayerConnectionHandler";
+import { havePropsChanged, shouldPreserveInitialChain } from "./crypto/utils/helpers";
 
 const CryptoWalletConnectionHandler = lazy(() =>
     // @ts-expect-error - Error because we dont use 'module' field in tsconfig, which is expected because we use tsup to compile
@@ -24,13 +25,11 @@ export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props
     const initialChainRef = useRef(props.payment.crypto.payer?.initialChain);
 
     const memoizedProps = useRef(props);
-    if (props !== memoizedProps.current) {
+    if (havePropsChanged(props, memoizedProps.current)) {
         const newProps = { ...props };
-        if (props.payment.crypto.payer && initialChainRef.current !== undefined) {
-            newProps.payment.crypto.payer = {
-                ...props.payment.crypto.payer,
-                initialChain: initialChainRef.current,
-            };
+        const { shouldPreserve, updatedPayer } = shouldPreserveInitialChain(props, initialChainRef.current);
+        if (shouldPreserve) {
+            newProps.payment.crypto.payer = updatedPayer;
         }
         memoizedProps.current = newProps;
     }
