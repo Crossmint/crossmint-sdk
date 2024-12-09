@@ -1,5 +1,16 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.11.5
+
+### Patch Changes
+
+- b9041e2: Added support for passing in a payer in Embedded V3 when using pay with crypto.
+- Updated dependencies [b9041e2]
+  - @crossmint/client-sdk-base@1.4.3
+  - @crossmint/client-sdk-auth@1.1.8
+  - @crossmint/client-sdk-smart-wallet@0.1.28
+  - @crossmint/common-sdk-auth@1.0.7
+
 ## 1.11.4
 
 ### Patch Changes

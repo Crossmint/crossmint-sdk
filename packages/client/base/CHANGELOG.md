@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-base
 
+## 1.4.3
+
+### Patch Changes
+
+- b9041e2: Added support for passing in a payer in Embedded V3 when using pay with crypto.
+
 ## 1.4.2
 
 ### Patch Changes
