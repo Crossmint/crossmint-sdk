@@ -9,6 +9,7 @@ import {
 
 import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
 import { PayerConnectionHandler } from "./crypto/PayerConnectionHandler";
+import type { PayerSupportedBlockchains } from "@crossmint/common-sdk-base";
 
 const CryptoWalletConnectionHandler = lazy(() =>
     // @ts-expect-error - Error because we dont use 'module' field in tsconfig, which is expected because we use tsup to compile
@@ -20,6 +21,18 @@ const CryptoWalletConnectionHandler = lazy(() =>
 export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props) {
     const [iframeClient, setIframeClient] = useState<EmbeddedCheckoutV3IFrameEmitter | null>(null);
     const [height, setHeight] = useState(0);
+
+    const initialChainRef = useRef(props.payment.crypto.payer?.initialChain);
+
+    const memoizedProps = useRef(props);
+    if (havePropsChanged(props, memoizedProps.current)) {
+        const newProps = { ...props };
+        const initialChainPreservation = shouldPreserveInitialChain(props, initialChainRef.current);
+        if (initialChainPreservation.shouldPreserve) {
+            newProps.payment.crypto.payer = initialChainPreservation.updatedPayer;
+        }
+        memoizedProps.current = newProps;
+    }
 
     const { crossmint } = useCrossmint();
     const apiClient = createCrossmintApiClient(crossmint, {
@@ -52,7 +65,7 @@ export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props
         <>
             <iframe
                 ref={ref}
-                src={embeddedCheckoutService.iframe.getUrl(props)}
+                src={embeddedCheckoutService.iframe.getUrl(memoizedProps.current)}
                 id="crossmint-embedded-checkout.iframe"
                 role="crossmint-embedded-checkout.iframe"
                 allow="payment *"
@@ -72,9 +85,12 @@ export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props
                     backgroundColor: "transparent",
                 }}
             />
-            {props.payment.crypto.enabled ? (
-                props.payment.crypto.payer != null ? (
-                    <PayerConnectionHandler payer={props.payment.crypto.payer} iframeClient={iframeClient} />
+            {memoizedProps.current.payment.crypto.enabled ? (
+                memoizedProps.current.payment.crypto.payer != null ? (
+                    <PayerConnectionHandler
+                        payer={memoizedProps.current.payment.crypto.payer}
+                        iframeClient={iframeClient}
+                    />
                 ) : (
                     <CryptoWalletConnectionHandler
                         iframeClient={iframeClient}
@@ -85,4 +101,27 @@ export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props
             <span id="crossmint-focus-target" tabIndex={-1} />
         </>
     );
+}
+
+function havePropsChanged(
+    parentProps: CrossmintEmbeddedCheckoutV3Props,
+    currentRefProps: CrossmintEmbeddedCheckoutV3Props
+): boolean {
+    return JSON.stringify(parentProps) !== JSON.stringify(currentRefProps);
+}
+
+function shouldPreserveInitialChain(
+    props: CrossmintEmbeddedCheckoutV3Props,
+    storedInitialChain: PayerSupportedBlockchains | undefined
+): { shouldPreserve: true; updatedPayer: typeof props.payment.crypto.payer } | { shouldPreserve: false } {
+    if (props.payment.crypto.payer && storedInitialChain != null) {
+        return {
+            shouldPreserve: true,
+            updatedPayer: {
+                ...props.payment.crypto.payer,
+                initialChain: storedInitialChain,
+            },
+        };
+    }
+    return { shouldPreserve: false };
 }
