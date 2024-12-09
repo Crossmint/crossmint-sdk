@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import type { InitialQuotePayload } from "@crossmint/client-sdk-base";
-import { CrossmintPaymentElement } from "@crossmint/client-sdk-react-ui";
+import { CrossmintPaymentElement_DEPRECATED } from "@crossmint/client-sdk-react-ui";
 
 import QuoteSummary from "../../components/quote-summary";
 
@@ -41,7 +41,7 @@ function Content({ count }: { count: number }) {
         <>
             {quoteMessage != null ? <QuoteSummary initialQuotePayload={quoteMessage} /> : "Loading..."}
 
-            <CrossmintPaymentElement
+            <CrossmintPaymentElement_DEPRECATED
                 environment="staging"
                 clientId="02dbf2b7-bbaa-4fb3-a962-05b65518fd4d"
                 recipient={{ wallet: "0xdC9bb9929b79b62d630A7C3568c979a2843eFd8b" }}
