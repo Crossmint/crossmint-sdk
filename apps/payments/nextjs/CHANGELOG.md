@@ -1,5 +1,14 @@
 # @crossmint/client-sdk-nextjs-starter
 
+## 1.4.5
+
+### Patch Changes
+
+- b9041e2: Added support for passing in a payer in Embedded V3 when using pay with crypto.
+- Updated dependencies [b9041e2]
+  - @crossmint/client-sdk-react-ui@1.11.5
+  - @crossmint/client-sdk-base@1.4.3
+
 ## 1.4.4
 
 ### Patch Changes
