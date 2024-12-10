@@ -48,7 +48,7 @@ export function crossmintHostedCheckoutV3Service({
         const displayType = hostedCheckoutProps.appearance?.display || "popup";
         const url = getUrl(hostedCheckoutProps);
 
-        if (displayType === "same-tab") {
+        if (displayType === "same-tab") {
             navigateInSameTab(url);
             return;
         }
