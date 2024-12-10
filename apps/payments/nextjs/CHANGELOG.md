@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-nextjs-starter
 
+## 1.4.6
+
+### Patch Changes
+
+- 1f33c36: Flagging Embedded v2 component as deprecated
+- Updated dependencies [1f33c36]
+  - @crossmint/client-sdk-react-ui@1.12.0
+
 ## 1.4.5
 
 ### Patch Changes

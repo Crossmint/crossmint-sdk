@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.12.0
+
+### Minor Changes
+
+- 1f33c36: Flagging Embedded v2 component as deprecated
+
 ## 1.11.5
 
 ### Patch Changes
