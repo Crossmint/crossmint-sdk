@@ -39,22 +39,24 @@ export function crossmintHostedCheckoutV3Service({
         return NewTabWindow.initSync(url, {});
     }
 
-    // TODO: Implement same tab client
-    function createSameTabClient(url: string): ReturnType<typeof PopupWindow.initSync> {
-        throw new Error("Not implemented");
+    // TODO: Implement same tab client appropriately
+    function navigateInSameTab(url: string): undefined {
+        window.location.href = url;
     }
 
     function createWindow() {
         const displayType = hostedCheckoutProps.appearance?.display || "popup";
         const url = getUrl(hostedCheckoutProps);
 
+        if (displayType === "same-tab") {
+            navigateInSameTab(url);
+            return;
+        }
+
         let windowClient: ReturnType<typeof PopupWindow.initSync> | ReturnType<typeof NewTabWindow.initSync>;
         switch (displayType) {
             case "popup":
                 windowClient = createPopupClient(url);
-                break;
-            case "same-tab":
-                windowClient = createSameTabClient(url);
                 break;
             case "new-tab":
                 windowClient = createNewTabClient(url);
@@ -63,7 +65,7 @@ export function crossmintHostedCheckoutV3Service({
                 throw new Error(`Invalid display type: ${displayType}`);
         }
 
-        if (hostedCheckoutProps.appearance?.overlay?.enabled !== false && displayType !== "same-tab") {
+        if (hostedCheckoutProps.appearance?.overlay?.enabled !== false) {
             overlayService.create(windowClient);
         }
     }
