@@ -3,7 +3,7 @@ import { DynamicConnectButton, DynamicContextProvider, useDynamicContext } from 
 import { useEffect, useState } from "react";
 
 import type { InitialQuotePayload } from "@crossmint/client-sdk-base";
-import { CrossmintPaymentElement } from "@crossmint/client-sdk-react-ui";
+import { CrossmintPaymentElement_DEPRECATED } from "@crossmint/client-sdk-react-ui";
 
 import QuoteSummary from "../../components/quote-summary";
 
@@ -87,7 +87,7 @@ function Content({ count }: { count: number }) {
         <>
             {quoteMessage != null ? <QuoteSummary initialQuotePayload={quoteMessage} /> : "Loading..."}
 
-            <CrossmintPaymentElement
+            <CrossmintPaymentElement_DEPRECATED
                 environment="staging"
                 clientId="1bd7b6b4-a390-4716-82f3-f78f9f2aa335"
                 recipient={{ wallet: address }}
