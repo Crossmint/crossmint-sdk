@@ -53,7 +53,7 @@ export class CrossmintAuth {
 
         return {
             jwt: resultJson.jwt,
-            refreshToken: resultJson.refresh,
+            refreshToken: resultJson.refreshToken,
             user: resultJson.user,
         };
     }

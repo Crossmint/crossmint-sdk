@@ -155,14 +155,14 @@ export class CrossmintAuthClient extends CrossmintAuth {
             const queryParams = new URLSearchParams({
                 email,
                 signinAuthenticationMethod: "email",
-                token,
+                code: token,
                 locale: "en",
-                state: emailId,
+                emailId,
                 // TODO: Remove this when we deprecate frames
                 callbackUrl: `${this.apiClient.baseUrl}/${AUTH_SDK_ROOT_ENDPOINT}/callback`,
             });
 
-            const response = await this.apiClient.post(`${AUTH_SDK_ROOT_ENDPOINT}/authenticate?${queryParams}`, {
+            const response = await this.apiClient.post(`${AUTH_SDK_ROOT_ENDPOINT}/otps/verify?${queryParams}`, {
                 headers: { "Content-Type": "application/json" },
             });
 

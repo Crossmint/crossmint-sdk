@@ -16,7 +16,7 @@ export type AuthMaterialWithUser = AuthMaterial & {
 
 export type AuthMaterialResponse = {
     jwt: string;
-    refresh: RefreshToken;
+    refreshToken: RefreshToken;
     user: SDKExternalUser;
 };
 
@@ -27,7 +27,7 @@ export type AuthSession = {
 };
 
 interface RefreshToken {
-    secret: string;
+    token: string;
     expiresAt: string;
 }
 
