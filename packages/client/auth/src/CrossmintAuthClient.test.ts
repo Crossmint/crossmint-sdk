@@ -302,7 +302,7 @@ describe("CrossmintAuthClient", () => {
 
             expect(result).toBe(mockOneTimeSecret);
             expect(mockApiClient.post).toHaveBeenCalledWith(
-                expect.stringContaining("api/2024-09-26/session/sdk/auth/authenticate"),
+                expect.stringContaining("api/2024-09-26/session/sdk/auth/otps/verify"),
                 expect.any(Object)
             );
         });
