@@ -1,5 +1,17 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.12.1
+
+### Patch Changes
+
+- 75f80cf: revert: pnpm catalog
+- Updated dependencies [75f80cf]
+  - @crossmint/client-sdk-smart-wallet@0.1.29
+  - @crossmint/client-sdk-window@0.2.2
+  - @crossmint/client-sdk-base@1.4.4
+  - @crossmint/client-sdk-auth@1.1.9
+  - @crossmint/common-sdk-auth@1.0.8
+
 ## 1.12.0
 
 ### Minor Changes
