@@ -20,6 +20,6 @@
     },
     "dependencies": {
         "nanoid": "5.0.4",
-        "zod": "catalog:"
+        "zod": "3.22.4"
     }
 }
