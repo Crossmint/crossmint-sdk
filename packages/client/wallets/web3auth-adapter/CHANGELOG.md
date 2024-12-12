@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-smart-wallet-web3auth-adapter
 
+## 0.2.5
+
+### Patch Changes
+
+- 75f80cf: revert: pnpm catalog
+
 ## 0.2.4
 
 ### Patch Changes

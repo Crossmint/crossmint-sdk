@@ -1,5 +1,14 @@
 # @crossmint/client-sdk-smart-wallet-react-starter
 
+## 1.5.28
+
+### Patch Changes
+
+- 75f80cf: revert: pnpm catalog
+- Updated dependencies [75f80cf]
+  - @crossmint/client-sdk-smart-wallet-web3auth-adapter@0.2.5
+  - @crossmint/client-sdk-smart-wallet@0.1.29
+
 ## 1.5.27
 
 ### Patch Changes

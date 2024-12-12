@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-smart-wallet-next-starter
 
+## 0.1.48
+
+### Patch Changes
+
+- 75f80cf: revert: pnpm catalog
+- Updated dependencies [75f80cf]
+  - @crossmint/client-sdk-react-ui@1.12.1
+
 ## 0.1.47
 
 ### Patch Changes

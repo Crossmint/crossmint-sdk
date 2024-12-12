@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-base
 
+## 1.4.4
+
+### Patch Changes
+
+- 75f80cf: revert: pnpm catalog
+- Updated dependencies [75f80cf]
+  - @crossmint/client-sdk-window@0.2.2
+
 ## 1.4.3
 
 ### Patch Changes

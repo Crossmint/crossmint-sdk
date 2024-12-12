@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-verifiable-credentials
 
+## 3.4.19
+
+### Patch Changes
+
+- 75f80cf: revert: pnpm catalog
+- Updated dependencies [75f80cf]
+  - @crossmint/client-sdk-base@1.4.4
+
 ## 3.4.18
 
 ### Patch Changes
