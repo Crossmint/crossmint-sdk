@@ -10,6 +10,8 @@
     },
     "dependencies": {
         "@crossmint/client-sdk-react-ui": "workspace:*",
+        "@crossmint/wallet-sdk": "workspace:*",
+        "@crossmint/server-sdk": "1.1.7",
         "@radix-ui/react-avatar": "1.1.0",
         "@radix-ui/react-dropdown-menu": "2.1.1",
         "@radix-ui/react-slot": "1.1.0",

@@ -13,6 +13,7 @@ import {
 import { useCrossmint } from "../hooks";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
+import { CrossmintWalletClientSDK } from "@crossmint/wallet-sdk";
 
 type WalletStatus = "not-loaded" | "in-progress" | "loaded" | "loading-error";
 
@@ -66,6 +67,8 @@ export function CrossmintWalletProvider({
     appearance?: UIConfig;
 }) {
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
+    const newSmartWalletSDK = useMemo(() => CrossmintWalletClientSDK.from(crossmint), [crossmint]);
+    const [newWalletSDKWallet, setNewWalletSDKWallet] = useState(null);
     const smartWalletSDK = useMemo(() => SmartWalletSDK.init({ clientApiKey: crossmint.apiKey }), [crossmint.apiKey]);
 
     const [walletState, setWalletState] = useState<ValidWalletState>({ status: "not-loaded" });
@@ -85,6 +88,22 @@ export function CrossmintWalletProvider({
 
         try {
             setWalletState({ status: "in-progress" });
+
+            // const newWallet = await newSmartWalletSDK.getWallet();
+            // console.log({ newWalletSDKWallet: newWallet });
+            // // @ts-ignore
+            // setNewWalletSDKWallet(newWallet);
+
+            // const newWalletSDKWallet = await newSmartWalletSDK.getOrCreateWallet({
+            //     type: "evm-smart-wallet",
+            //     config: {
+            //         adminSigner: {
+            //             type: "evm-keypair",
+            //             address: "0xB98921B548D357a969b85e08c02c3b31754bE808",
+            //         },
+            //     },
+            // });
+            // console.log({ newWalletSDKWallet });
             const wallet = await smartWalletSDK.getOrCreateWallet(
                 { jwt: crossmint.jwt as string },
                 defaultChain,
@@ -136,6 +155,9 @@ export function CrossmintWalletProvider({
 
     return (
         <WalletContext.Provider value={{ ...walletState, getOrCreateWallet, clearWallet }}>
+            {/* <div>
+                Wallet from a <strong>client</strong> component: {newWalletSDKWallet?.address ?? "loading..."}
+            </div> */}
             {children}
             {passkeyPromptState.open
                 ? createPortal(<PasskeyPrompt state={passkeyPromptState} appearance={appearance} />, document.body)

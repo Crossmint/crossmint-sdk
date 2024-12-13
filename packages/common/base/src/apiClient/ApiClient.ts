@@ -13,7 +13,7 @@ export abstract class ApiClient {
         return `${ApiClient.normalizePath(this.baseUrl)}/${ApiClient.normalizePath(path)}`;
     }
 
-    async get(path: string, params: Omit<RequestInit, "method">) {
+    async get(path: string, params?: Omit<RequestInit, "method">) {
         return await this.makeRequest(path, { ...params, method: "GET" });
     }
 
