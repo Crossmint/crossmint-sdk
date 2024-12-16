@@ -111,10 +111,7 @@ describe("CrossmintAuthServer", () => {
                 },
                 userId: "user456",
             });
-            expect(mockApiClient.post).toHaveBeenCalledWith(
-                "api/2024-09-26/session/sdk/auth/refresh",
-                expect.any(Object)
-            );
+            expect(mockApiClient.post).toHaveBeenCalledWith("api/2024-09-26/auth/refresh", expect.any(Object));
         });
 
         it("should accept AuthMaterialBasic as input", async () => {
@@ -242,10 +239,7 @@ describe("CrossmintAuthServer", () => {
             const result = await crossmintAuthServer.handleCustomRefresh(mockRequest);
 
             expect(result).toBeInstanceOf(Response);
-            expect(mockApiClient.post).toHaveBeenCalledWith(
-                "api/2024-09-26/session/sdk/auth/refresh",
-                expect.any(Object)
-            );
+            expect(mockApiClient.post).toHaveBeenCalledWith("api/2024-09-26/auth/refresh", expect.any(Object));
 
             expect(cookiesUtils.setAuthCookies).toHaveBeenCalledWith(
                 expect.any(Response),
