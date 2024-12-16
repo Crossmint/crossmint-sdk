@@ -9,6 +9,7 @@ type AuthStep = "initial" | "otp" | "qrCode" | "web3" | "web3/metamask" | "web3/
 type OAuthUrlMap = Record<OAuthProvider, string>;
 const initialOAuthUrlMap: OAuthUrlMap = {
     google: "",
+    twitter: "",
     // Farcaster is not included here as it uses a different authentication method
 };
 interface AuthFormContextType {
