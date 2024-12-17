@@ -112,7 +112,7 @@ describe("AuthFormProvider", () => {
         );
 
         await waitFor(() => {
-            expect(getByTestId("oauth-url").textContent).toBe('{"google":""}');
+            expect(getByTestId("oauth-url").textContent).toBe('{"google":"","twitter":""}');
             expect(getByTestId("is-loading-oauth-url").textContent).toBe("false");
         });
 
