@@ -5,7 +5,7 @@ import { Spinner } from "@/components/common/Spinner";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import { classNames } from "@/utils/classNames";
 
-export function XSignIn({ ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
+export function TwitterSignIn({ ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
     const { step, appearance, isLoadingOauthUrlMap } = useAuthForm();
     const { createPopupAndSetupListeners, isLoading: isLoadingOAuthWindow } = useOAuthWindowListener("twitter");
     const isLoading = isLoadingOauthUrlMap || isLoadingOAuthWindow;
