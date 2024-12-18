@@ -30,7 +30,7 @@ export function Providers({ children }: { children: ReactNode }) {
                             accent: "#602C1B",
                         },
                     }}
-                    loginMethods={["google", "email", "farcaster"]}
+                    loginMethods={["google", "email", "farcaster", "twitter"]}
                 >
                     {children}
                 </CrossmintAuthProvider>

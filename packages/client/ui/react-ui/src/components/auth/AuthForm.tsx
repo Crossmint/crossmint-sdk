@@ -9,6 +9,7 @@ import { PoweredByCrossmint } from "../common/PoweredByCrossmint";
 import { FarcasterProvider } from "../../providers/auth/FarcasterProvider";
 import { classNames } from "@/utils/classNames";
 import { AlertIcon } from "@/icons/alert";
+import { TwitterSignIn } from "./methods/twitter/TwitterSignIn";
 
 const Web3AuthFlow = lazy(() =>
     // @ts-expect-error - Error because we dont use 'module' field in tsconfig, which is expected because we use tsup to compile
@@ -71,6 +72,7 @@ export function AuthForm({ className }: { className?: string }) {
                     <FarcasterSignIn />
                 </FarcasterProvider>
             ) : null}
+            {loginMethods.includes("twitter") ? <TwitterSignIn /> : null}
             {loginMethods.includes("web3") ? <Web3AuthFlow /> : null}
 
             {step === "initial" || step === "otp" ? (
