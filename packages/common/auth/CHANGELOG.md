@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-auth
 
+## 1.0.9
+
+### Patch Changes
+
+- cc64066: added twitter to auth type
+
 ## 1.0.8
 
 ### Patch Changes

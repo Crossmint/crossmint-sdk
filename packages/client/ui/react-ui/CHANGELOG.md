@@ -1,5 +1,14 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.12.2
+
+### Patch Changes
+
+- cc64066: added twitter auth
+- Updated dependencies [cc64066]
+  - @crossmint/common-sdk-auth@1.0.9
+  - @crossmint/client-sdk-auth@1.1.10
+
 ## 1.12.1
 
 ### Patch Changes
