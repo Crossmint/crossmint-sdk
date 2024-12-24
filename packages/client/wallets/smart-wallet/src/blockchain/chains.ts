@@ -4,6 +4,8 @@ import {
     arbitrumSepolia,
     base,
     baseSepolia,
+    mode,
+    modeTestnet,
     optimism,
     optimismSepolia,
     polygon,
@@ -17,6 +19,7 @@ export const SmartWalletTestnet = {
     POLYGON_AMOY: Blockchain.POLYGON_AMOY,
     OPTIMISM_SEPOLIA: Blockchain.OPTIMISM_SEPOLIA,
     ARBITRUM_SEPOLIA: Blockchain.ARBITRUM_SEPOLIA,
+    MODE_SEPOLIA: Blockchain.MODE_SEPOLIA,
 } as const;
 export type SmartWalletTestnet = ObjectValues<typeof SmartWalletTestnet>;
 export const SMART_WALLET_TESTNETS = objectValues(SmartWalletTestnet);
@@ -26,6 +29,7 @@ export const SmartWalletMainnet = {
     POLYGON: Blockchain.POLYGON,
     OPTIMISM: Blockchain.OPTIMISM,
     ARBITRUM: Blockchain.ARBITRUM,
+    MODE: Blockchain.MODE,
 } as const;
 export type SmartWalletMainnet = ObjectValues<typeof SmartWalletMainnet>;
 export const SMART_WALLET_MAINNETS = objectValues(SmartWalletMainnet);
@@ -54,4 +58,6 @@ export const viemNetworks: Record<SmartWalletChain, Chain> = {
     "optimism-sepolia": optimismSepolia,
     arbitrum: arbitrum,
     "arbitrum-sepolia": arbitrumSepolia,
+    mode: mode,
+    "mode-sepolia": modeTestnet,
 };
