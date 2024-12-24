@@ -10,12 +10,17 @@ export function Providers({ children }: { children: ReactNode }) {
 
     return (
         <QueryClientProvider client={queryClient}>
-            <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_AUTH_SMART_WALLET_API_KEY ?? ""}>
+            <CrossmintProvider
+                apiKey={
+                    process.env.NEXT_PUBLIC_CROSSMINT_AUTH_SMART_WALLET_API_KEY ??
+                    "ck_development_5qH4F4zicD62wbw4tALa2qXR1yoSpX8Wip6sav8zpZaPkvatVCwqgnVZsc4hVBHvwdyizZ8SaX4kRdv2Yfi2RUtPEXz88KzCdojjaG5NgmQwWyJ6NtvsBnZPMm1vRHhDHbkZ1WqLUvKhBhVD2XcdT9D3zVvwZ6KsiJBZk2KdqYSHpW63sKjqro1aVUgP6X8KrZMXhJrGFza3LK7KctyWzby7"
+                }
+            >
                 <CrossmintAuthProvider
                     embeddedWallets={{
                         createOnLogin: "all-users",
                         type: "evm-smart-wallet",
-                        defaultChain: "polygon-amoy",
+                        defaultChain: "mode-sepolia",
                     }}
                     appearance={{
                         borderRadius: "16px",

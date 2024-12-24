@@ -5,7 +5,10 @@ import type { SmartWalletChain } from "./chains";
 const ALCHEMY_API_KEY = "-7M6vRDBDknwvMxnqah_jbcieWg0qad9";
 const PIMLICO_API_KEY = "pim_9dKmQPxiTCvtbUNF7XFBbA";
 
-export const ALCHEMY_RPC_SUBDOMAIN: Record<SmartWalletChain, string> = {
+const MODE_RPC = "https://mainnet.mode.network/";
+const MODE_SEPOLIA_RPC = "https://sepolia.mode.network/";
+
+export const ALCHEMY_RPC_SUBDOMAIN: Partial<Record<SmartWalletChain, string>> = {
     polygon: "polygon-mainnet",
     "polygon-amoy": "polygon-amoy",
     base: "base-mainnet",
@@ -17,6 +20,12 @@ export const ALCHEMY_RPC_SUBDOMAIN: Record<SmartWalletChain, string> = {
 };
 
 export function getAlchemyRPC(chain: SmartWalletChain): string {
+    if (chain === "mode") {
+        return MODE_RPC;
+    }
+    if (chain === "mode-sepolia") {
+        return MODE_SEPOLIA_RPC;
+    }
     return `https://${ALCHEMY_RPC_SUBDOMAIN[chain]}.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
 }
 
