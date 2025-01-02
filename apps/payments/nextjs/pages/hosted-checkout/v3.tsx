@@ -1,4 +1,4 @@
-import { CrossmintHostedCheckout_Alpha } from "@crossmint/client-sdk-react-ui";
+import { CrossmintHostedCheckout } from "@crossmint/client-sdk-react-ui";
 import { HostedCheckoutV3ClientProviders } from "../../components/hosted-v3/HostedCheckoutV3ClientProviders";
 import type { CrossmintHostedCheckoutV3ButtonTheme, Locale } from "@crossmint/client-sdk-base";
 
@@ -80,7 +80,7 @@ function createCrossmintButtonSection(
                 padding: "20px",
             }}
         >
-            <CrossmintHostedCheckout_Alpha
+            <CrossmintHostedCheckout
                 locale={locale}
                 lineItems={{
                     collectionLocator: "crossmint:206b3146-f526-444e-bd9d-0607d581b0e9",

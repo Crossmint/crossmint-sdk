@@ -11,7 +11,7 @@ import { type MouseEvent, type JSX, useEffect, useState } from "react";
 
 export type CrossmintHostedCheckoutV3ReactProps = CrossmintHostedCheckoutV3Props & JSX.IntrinsicElements["button"];
 
-export function CrossmintHostedCheckout_Alpha(props: CrossmintHostedCheckoutV3ReactProps) {
+export function CrossmintHostedCheckout(props: CrossmintHostedCheckoutV3ReactProps) {
     const [didInjectCss, setDidInjectCss] = useState(false);
 
     const { crossmint } = useCrossmint();
