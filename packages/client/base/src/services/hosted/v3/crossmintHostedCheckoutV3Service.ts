@@ -53,9 +53,10 @@ export function crossmintHostedCheckoutV3Service({
             case "popup":
                 windowClient = createPopupClient(url);
                 break;
-            case "same-tab":
+            // TODO(PAY-4326): Take back as soon as checkout url redirects work on hosted v3
+            /* case "same-tab":
                 windowClient = createSameTabClient(url);
-                break;
+                break; */
             case "new-tab":
                 windowClient = createNewTabClient(url);
                 break;
@@ -63,7 +64,8 @@ export function crossmintHostedCheckoutV3Service({
                 throw new Error(`Invalid display type: ${displayType}`);
         }
 
-        if (hostedCheckoutProps.appearance?.overlay?.enabled !== false && displayType !== "same-tab") {
+        // TODO(PAY-4326): Take back as soon as checkout url redirects work on hosted v3
+        if (hostedCheckoutProps.appearance?.overlay?.enabled !== false /*  && displayType !== "same-tab" */) {
             overlayService.create(windowClient);
         }
     }
