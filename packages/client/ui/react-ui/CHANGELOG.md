@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.13.0
+
+### Minor Changes
+
+- da9f6d4: Removing the alpha flag from Hosted V3 SDK
+
 ## 1.12.2
 
 ### Patch Changes
