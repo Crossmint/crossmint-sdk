@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-nextjs-starter
 
+## 1.4.9
+
+### Patch Changes
+
+- da9f6d4: Removing the alpha flag from Hosted V3 SDK
+- Updated dependencies [da9f6d4]
+  - @crossmint/client-sdk-react-ui@1.13.0
+
 ## 1.4.8
 
 ### Patch Changes
