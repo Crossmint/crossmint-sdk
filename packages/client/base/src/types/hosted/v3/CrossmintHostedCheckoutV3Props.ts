@@ -5,7 +5,6 @@ import type { BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 export interface CrossmintHostedCheckoutV3Props {
     recipient?: EmbeddedCheckoutV3Recipient;
     locale?: Locale;
-    webhookPassthroughData?: any;
     lineItems: EmbeddedCheckoutV3LineItem | EmbeddedCheckoutV3LineItem[];
     payment: HostedCheckoutV3Payment;
     appearance?: CrossmintHostedCheckoutV3Appearance;

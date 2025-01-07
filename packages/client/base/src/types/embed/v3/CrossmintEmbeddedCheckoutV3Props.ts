@@ -11,7 +11,6 @@ interface CrossmintEmbeddedCheckoutV3CommonProps {
 export interface CrossmintEmbeddedCheckoutV3ExistingOrderProps extends CrossmintEmbeddedCheckoutV3CommonProps {
     orderId: string;
     lineItems?: never;
-    webhookPassthroughData?: never;
     recipient?: never;
     locale?: never;
 }
@@ -19,7 +18,6 @@ export interface CrossmintEmbeddedCheckoutV3ExistingOrderProps extends Crossmint
 export interface CrossmintEmbeddedCheckoutV3NewOrderProps extends CrossmintEmbeddedCheckoutV3CommonProps {
     orderId?: never;
     lineItems: EmbeddedCheckoutV3LineItem | EmbeddedCheckoutV3LineItem[];
-    webhookPassthroughData?: any;
     recipient?: EmbeddedCheckoutV3Recipient;
     locale?: Locale;
 }
