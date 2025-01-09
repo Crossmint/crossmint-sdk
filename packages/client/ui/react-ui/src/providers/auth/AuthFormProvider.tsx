@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
-import type { OAuthProvider } from "@crossmint/common-sdk-auth";
+import { CrossmintAuthenticationError, type OAuthProvider } from "@crossmint/common-sdk-auth";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import type { CrossmintAuthWalletConfig, LoginMethod } from "../CrossmintAuthProvider";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
@@ -75,6 +75,14 @@ export const AuthFormProvider = ({
             setOauthUrlMap(oauthUrlMap);
         } catch (error) {
             console.error("Error fetching OAuth URLs:", error);
+            if (error instanceof CrossmintAuthenticationError) {
+                if (error.message.includes("Request from origin")) {
+                    setError(
+                        "This domain is not authorized. Please add it to the authorized origins in your API key settings in the Crossmint Console."
+                    );
+                    return;
+                }
+            }
             setError("Unable to load oauth providers. Please try again later.");
         } finally {
             setIsLoadingOauthUrlMap(false);

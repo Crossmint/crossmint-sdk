@@ -47,7 +47,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
             });
 
             if (!response.ok) {
-                throw await response.text();
+                throw new Error(JSON.parse(await response.text())?.message);
             }
 
             return await response.json();
@@ -119,7 +119,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
             });
 
             if (!response.ok) {
-                throw await response.text();
+                throw new Error(JSON.parse(await response.text())?.message);
             }
 
             const data = await response.json();
@@ -139,7 +139,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
             });
 
             if (!response.ok) {
-                throw await response.text();
+                throw new Error(JSON.parse(await response.text())?.message);
             }
 
             return await response.json();
@@ -167,7 +167,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
             });
 
             if (!response.ok) {
-                throw await response.text();
+                throw new Error(JSON.parse(await response.text())?.message);
             }
 
             const resData = await response.json();
@@ -197,7 +197,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
             });
 
             if (!response.ok) {
-                throw await response.text();
+                throw new Error(JSON.parse(await response.text())?.message);
             }
 
             const resData = await response.json();
@@ -221,7 +221,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
             );
 
             if (!response.ok) {
-                throw await response.text();
+                throw new Error(JSON.parse(await response.text())?.message);
             }
 
             return await response.json();
@@ -248,7 +248,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
             );
 
             if (!response.ok) {
-                throw await response.text();
+                throw new Error(JSON.parse(await response.text())?.message);
             }
 
             return await response.json();
