@@ -74,16 +74,11 @@ export const AuthFormProvider = ({
             const oauthUrlMap = Object.assign({}, ...(await Promise.all(oauthPromiseList)));
             setOauthUrlMap(oauthUrlMap);
         } catch (error) {
-            console.error("Error fetching OAuth URLs:", error);
-            if (error instanceof CrossmintAuthenticationError) {
-                if (error.message.includes("Request from origin")) {
-                    setError(
-                        "This domain is not authorized. Please add it to the authorized origins in your API key settings in the Crossmint Console."
-                    );
-                    return;
-                }
-            }
-            setError("Unable to load oauth providers. Please try again later.");
+            setError(
+                error instanceof CrossmintAuthenticationError
+                    ? error.message
+                    : "Unable to load oauth providers. Please try again later."
+            );
         } finally {
             setIsLoadingOauthUrlMap(false);
         }
