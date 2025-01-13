@@ -1,4 +1,4 @@
-import { CrossmintPayButton } from "@crossmint/client-sdk-react-ui";
+import { CrossmintPayButton_DEPRECATED } from "@crossmint/client-sdk-react-ui";
 
 export default function Index() {
     return (
@@ -11,7 +11,7 @@ export default function Index() {
                 alignItems: "center",
             }}
         >
-            <CrossmintPayButton collectionId="<COLLECTION_ID>" projectId="<PROJECT_ID>" />
+            <CrossmintPayButton_DEPRECATED collectionId="<COLLECTION_ID>" projectId="<PROJECT_ID>" />
         </div>
     );
 }
