@@ -1,4 +1,4 @@
-import { CrossmintPayButton } from "@crossmint/client-sdk-react-ui";
+import { CrossmintPayButton_DEPRECATED as CrossmintPayButton } from "@crossmint/client-sdk-react-ui";
 
 function App() {
     return (
