@@ -1,5 +1,14 @@
 # @crossmint/client-sdk-nextjs-starter
 
+## 1.4.10
+
+### Patch Changes
+
+- c4135ab: Flagging React Hosted V2 component as deprecated
+- Updated dependencies [574f85e]
+- Updated dependencies [c4135ab]
+  - @crossmint/client-sdk-react-ui@1.13.1
+
 ## 1.4.9
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-auth
 
+## 1.1.11
+
+### Patch Changes
+
+- 574f85e: Improved error throwing
+
 ## 1.1.10
 
 ### Patch Changes

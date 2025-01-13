@@ -1,5 +1,14 @@
 # @crossmint/client-sdk-react-ui-starter
 
+## 1.3.23
+
+### Patch Changes
+
+- c4135ab: Flagging React Hosted V2 component as deprecated
+- Updated dependencies [574f85e]
+- Updated dependencies [c4135ab]
+  - @crossmint/client-sdk-react-ui@1.13.1
+
 ## 1.3.22
 
 ### Patch Changes
