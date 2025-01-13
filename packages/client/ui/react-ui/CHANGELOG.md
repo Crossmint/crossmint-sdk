@@ -1,5 +1,14 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.13.1
+
+### Patch Changes
+
+- 574f85e: Improved error verbiage around whitelisting api key in auth
+- c4135ab: Flagging React Hosted V2 component as deprecated
+- Updated dependencies [574f85e]
+  - @crossmint/client-sdk-auth@1.1.11
+
 ## 1.13.0
 
 ### Minor Changes
