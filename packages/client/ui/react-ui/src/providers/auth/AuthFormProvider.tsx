@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
-import type { OAuthProvider } from "@crossmint/common-sdk-auth";
+import { CrossmintAuthenticationError, type OAuthProvider } from "@crossmint/common-sdk-auth";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import type { CrossmintAuthWalletConfig, LoginMethod } from "../CrossmintAuthProvider";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
@@ -74,8 +74,11 @@ export const AuthFormProvider = ({
             const oauthUrlMap = Object.assign({}, ...(await Promise.all(oauthPromiseList)));
             setOauthUrlMap(oauthUrlMap);
         } catch (error) {
-            console.error("Error fetching OAuth URLs:", error);
-            setError("Unable to load oauth providers. Please try again later.");
+            setError(
+                error instanceof CrossmintAuthenticationError
+                    ? error.message
+                    : "Unable to load oauth providers. Please try again later."
+            );
         } finally {
             setIsLoadingOauthUrlMap(false);
         }

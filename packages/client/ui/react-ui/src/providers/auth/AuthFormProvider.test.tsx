@@ -103,7 +103,6 @@ describe("AuthFormProvider", () => {
 
     it("handles OAuth URL fetch error", async () => {
         vi.mocked(mockedGetOAuthUrl).mockRejectedValue(new Error("Fetch failed"));
-        const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
         const { getByTestId } = render(
             <AuthFormProvider initialState={mockInitialState}>
@@ -115,9 +114,6 @@ describe("AuthFormProvider", () => {
             expect(getByTestId("oauth-url").textContent).toBe('{"google":"","twitter":""}');
             expect(getByTestId("is-loading-oauth-url").textContent).toBe("false");
         });
-
-        expect(consoleSpy).toHaveBeenCalled();
-        consoleSpy.mockRestore();
     });
 
     test("throws error when web3 login method is used with createOnLogin=all-users", () => {
