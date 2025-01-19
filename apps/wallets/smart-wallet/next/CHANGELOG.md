@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-smart-wallet-next-starter
 
+## 0.1.52
+
+### Patch Changes
+
+- 9183b02: Renames crossmint leaf
+- Updated dependencies [9183b02]
+  - @crossmint/client-sdk-react-ui@1.13.2
+
 ## 0.1.51
 
 ### Patch Changes
