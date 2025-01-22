@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.13.2
+
+### Patch Changes
+
+- 9183b02: Renames logo files and powered by => secured by
+
 ## 1.13.1
 
 ### Patch Changes
