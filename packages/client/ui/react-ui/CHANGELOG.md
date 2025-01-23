@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.13.3
+
+### Patch Changes
+
+- 67f6a2d: fixed css rule warning
+
 ## 1.13.2
 
 ### Patch Changes
