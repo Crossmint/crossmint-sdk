@@ -89,16 +89,32 @@ We offer two components to help you quickly get up and running with your project
 
 Visit [our documentation](https://docs.crossmint.com/wallets/advanced/wallet-ui-components) for integration instructions.
 
-## Migration guide to 0.1.X versions
+## Development
 
-Version 0.1.0 introduces breaking changes. To learn how to migrate from a version lower than 0.1.0, [check out the migration guide](https://docs.google.com/document/d/14IKpjrij7kU7Dr0I7rZkf0PyDNbXiklx2v4GuzUrFbw/edit?usp=sharing).
+### Environment Setup
 
-## [Changelog](https://docs.google.com/document/d/e/2PACX-1vR5NzVS2msrCMZxlcfBgAT-Y8kAypeKqH_WBeNiwVTmyEzLZvJBWrKrz_966-d3jumwIBi94IXGT6Wp/pub)
+1. Create a `.env` file in the demo app directory:
+```shell
+cd apps/wallets/smart-wallet/next
+```
 
-## Migration guide to 0.2.X versions
+2. Add the following environment variable:
+```shell
+NEXT_PUBLIC_CROSSMINT_AUTH_SMART_WALLET_API_KEY=your_api_key_here
+```
 
-Version 0.2.0 introduces breaking changes. To learn how to migrate from a version lower than 0.2.0, [check out the migration guide](https://docs.google.com/document/d/1mA0W-iAs0nHHW0ANX0TfZ5qrzxPGxNchPj13W6cHc-Y/edit?usp=sharing).
+You can obtain a staging client-side API key from the [Crossmint Console](https://staging.crossmint.com/console/projects/apiKeys). For detailed instructions on getting an API key, see our [documentation](https://docs.crossmint.com/wallets/quickstarts/EVM/non-custodial-wallets/evm-non-custodial-client-side#2-get-an-api-key).
 
-## Upgrading to version 3 (Embedded Checkout)
+### Running the Demo
 
-Upgrade guide [here](https://docs.crossmint.com/nft-checkout/embedded/upgrade/v3#which-version-am-i-using).
+1. Build and start the demo application:
+```shell
+cd apps/wallets/smart-wallet/next
+pnpm i
+pnpm build
+pnpm start
+```
+
+For more information on how to run the demo application, see the [Smart Wallets Demo (Next.js Starter Kit) README](../../../../apps/wallets/smart-wallet/next/README.md).
+
+

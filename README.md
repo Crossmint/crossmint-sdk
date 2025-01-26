@@ -21,6 +21,7 @@
     <li><a href="#about-the-project">About The Project</a></li>
     <li><a href="#package-overview">Package Overview</a></li>
     <li><a href="#getting-started">Getting Started</a></li>
+    <li><a href="#building-sdk-locally">Building SDK Locally</a></li>
     <li><a href="#development">Development</a></li>
     <li><a href="#running-the-demo">Running the Demo</a></li>
     <li><a href="#making-package-changes">Making Package Changes</a></li>
@@ -83,6 +84,20 @@ The Crossmint SDK is a powerful collection of packages designed to simplify bloc
 
 ## Getting Started
 
+To get started with the SDK, install the packages you need into your project.
+
+ie. 
+`pnpm add @crossmint/client-sdk-smart-wallet`
+
+Then, import the package you need.
+
+ie.
+`import { SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";`
+
+For more information on how to use the SDK, see the [Crossmint SDK Documentation](https://docs.crossmint.com/sdk-reference/introduction).
+
+## Building SDK locally
+
 ### Prerequisites
 
 ```shell
@@ -110,28 +125,7 @@ pnpm build
 
 ## Development
 
-### Environment Setup
-
-1. Create a `.env` file in the demo app directory:
-```shell
-cd apps/wallets/smart-wallet/next
-```
-
-2. Add the following environment variable:
-```shell
-NEXT_PUBLIC_CROSSMINT_AUTH_SMART_WALLET_API_KEY=your_api_key_here
-```
-
-You can obtain a staging client-side API key from the [Crossmint Console](https://staging.crossmint.com/console/projects/apiKeys). For detailed instructions on getting an API key, see our [documentation](https://docs.crossmint.com/wallets/quickstarts/EVM/non-custodial-wallets/evm-non-custodial-client-side#2-get-an-api-key).
-
-### Running the Demo
-
-1. Build and start the demo application:
-```shell
-cd apps/wallets/smart-wallet/next
-pnpm build
-pnpm start
-```
+Read the [Smart Wallets Demo (Next.js Starter Kit) README](./apps/wallets/smart-wallet/next/README.md) for more information on how to run the demo application.
 
 ### Making Package Changes
 
