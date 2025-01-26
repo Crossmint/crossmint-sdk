@@ -57,29 +57,29 @@ The Crossmint SDK is a powerful collection of packages designed to simplify bloc
 
 ### Client-Side Packages
 
-- **@crossmint/client-sdk-react-ui**: React components and hooks for integrating blockchain, authentication, and NFT-related functionalities into your application.
+- `@crossmint/client-sdk-react-ui`: React components and hooks for integrating blockchain, authentication, and NFT-related functionalities into your application.
 
-- **@crossmint/client-sdk-base**: Core client-side functionality and essential building blocks for Crossmint integration.
+- `@crossmint/client-sdk-base`: Core client-side functionality and essential building blocks for Crossmint integration.
 
-- **@crossmint/client-sdk-auth**: Client-side authentication tools for managing user sessions and integrating various authentication methods.
+- `@crossmint/client-sdk-auth`: Client-side authentication tools for managing user sessions and integrating various authentication methods.
 
-- **@crossmint/client-sdk-verifiable-credentials**: Comprehensive tools for managing verifiable credentials, including verification, presentation, and decryption capabilities.
+- `@crossmint/client-sdk-verifiable-credentials`: Comprehensive tools for managing verifiable credentials, including verification, presentation, and decryption capabilities.
 
-- **@crossmint/client-sdk-smart-wallet**: Smart wallet functionality featuring passkey support, auth providers (Privy, Dynamic), and blockchain providers (Viem account, EIP1193 compatible).
+- `@crossmint/client-sdk-smart-wallet`: Smart wallet functionality featuring passkey support, auth providers (Privy, Dynamic), and blockchain providers (Viem account, EIP1193 compatible).
 
 ### Server-Side Packages
 
-- **@crossmint/server-sdk**: Server-side authentication and session management tools, specifically designed for SSR applications like Next.js.
+- `@crossmint/server-sdk`: Server-side authentication and session management tools, specifically designed for SSR applications like Next.js.
 
 ### Common Packages
 
-- **@crossmint/common-sdk-base**: Shared utilities, enums, and common functionality across the SDK ecosystem.
+- `@crossmint/common-sdk-base`: Shared utilities, enums, and common functionality across the SDK ecosystem.
 
-- **@crossmint/common-sdk-auth**: Shared authentication utilities and tools used across different SDK packages.
+- `@crossmint/common-sdk-auth`: Shared authentication utilities and tools used across different SDK packages.
 
 ### Demo Applications
 
-- **Smart Wallet + Auth Demo**: A NextJS application showcasing the full capabilities of the SDK, including authentication and smart wallet integration.
+- `@crossmint/client-sdk-react-ui`: A NextJS application showcasing the full capabilities of the SDK, including authentication and smart wallet integration.
 
 ## Getting Started
 
