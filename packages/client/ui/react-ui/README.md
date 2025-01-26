@@ -40,7 +40,7 @@ We provide two essential React context providers:
 - **Embedded Login**: In-page authentication component
 - **Customization**: Flexible UI styling and email template options
 
-[Screenshot placeholder for Auth UI]
+<img width="749" alt="Screenshot 2025-01-26 at 11 57 31 AM" src="https://github.com/user-attachments/assets/bd18ce58-ea57-43a0-bda7-9237d77f3b40" />
 
 Visit our [customization guide](https://docs.crossmint.com/authentication/customization) to learn more about styling options and email templates.
 
