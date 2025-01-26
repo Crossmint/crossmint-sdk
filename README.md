@@ -33,7 +33,7 @@
 
 ## About The Project
 
-// image goes here
+![Crossmint SDK](https://github.com/user-attachments/assets/28d4ac5c-9373-45a3-969d-4dbf1d8200a8)
 
 The Crossmint SDK is a powerful collection of packages designed to simplify blockchain integration for developers. Our goal is to make Web3 development accessible without requiring extensive blockchain experience or cryptocurrency knowledge.
 
