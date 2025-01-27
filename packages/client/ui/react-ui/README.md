@@ -46,7 +46,7 @@ Visit our [customization guide](https://docs.crossmint.com/authentication/custom
 
 ---
 
-### EVM Non-Custodial Wallets
+### User Wallets
 
 Check out our quickstart [in the docs](https://docs.crossmint.com/wallets/quickstarts/EVM/non-custodial-wallets/evm-non-custodial-client-side).
 
@@ -89,7 +89,9 @@ We offer two components to help you quickly get up and running with your project
 
 Visit [our documentation](https://docs.crossmint.com/wallets/advanced/wallet-ui-components) for integration instructions.
 
-## Development
+## Examples
+
+- [Smart Wallets Demo (Next.js Starter Kit)](../../../../apps/wallets/smart-wallet/next/README.md)
 
 ### Environment Setup
 

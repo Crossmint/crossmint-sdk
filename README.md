@@ -7,7 +7,7 @@
     <a href="https://docs.crossmint.com/sdk-reference/introduction"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://www.smarterwallet.dev/">View Demo</a>
+    <a href="https://playground.crossmint.com/">View Demo</a>
     ·
     <a href="https://github.com/Crossmint/crossmint-sdk/issues">Report Bug</a>
     ·
@@ -18,15 +18,29 @@
 <details>
   <summary>Table of Contents</summary>
   <ol>
-    <li><a href="#about-the-project">About The Project</a></li>
-    <li><a href="#package-overview">Package Overview</a></li>
+    <li><a href="#about-the-project">About The Project</a>
+      <ul>
+        <li><a href="#why-crossmint">Why Crossmint?</a></li>
+        <li><a href="#core-features">Core Features</a></li>
+      </ul>
+    </li>
+    <li><a href="#package-overview">Package Overview</a>
+      <ul>
+        <li><a href="#client-side-packages">Client-Side Packages</a></li>
+        <li><a href="#server-side-packages">Server-Side Packages</a></li>
+        <li><a href="#demo-applications">Demo Applications</a></li>
+      </ul>
+    </li>
     <li><a href="#getting-started">Getting Started</a></li>
-    <li><a href="#building-sdk-locally">Building SDK Locally</a></li>
-    <li><a href="#development">Development</a></li>
-    <li><a href="#running-the-demo">Running the Demo</a></li>
-    <li><a href="#making-package-changes">Making Package Changes</a></li>
+    <li>
+      <a href="#building-sdk-locally">Building SDK Locally</a>
+      <ul>
+        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#installation">Installation</a></li>
+        <li><a href="#making-package-changes">Making Package Changes</a></li>
+      </ul>
+    </li>
     <li><a href="#publishing">Publishing</a></li>
-    <li><a href="#migration-guides">Migration Guides</a></li>
     <li><a href="#documentation">Documentation</a></li>
     <li><a href="#contact">Contact</a></li>
   </ol>
@@ -40,47 +54,44 @@ The Crossmint SDK is a powerful collection of packages designed to simplify bloc
 
 ### Why Crossmint?
 
-- 🚀 **Quick Integration**: Set up in just 5 minutes
+- 🚀 **Quick Integration**: All our tools have 5-min quickstarts
 - 💻 **Developer-First**: Build end-to-end blockchain solutions without deep Web3 expertise
 - 🔒 **Secure**: Enterprise-grade security for all blockchain interactions
 - 💳 **Fiat-First**: Enable users to participate in Web3 without cryptocurrency
-- 🆓 **Free for Sellers**: No costs to integrate
+- 🆓 **Free to Start**: Start developing at no cost
 
 ### Core Features
 
-- 💳 Wallet-less credit card purchases for NFTs
+- 💳 NFT checkout: with credit card and cross-chain
 - 🔐 Authentication and session management
-- 👛 Smart wallet integration
-- 📜 Verifiable credentials management
-- 🌐 Cross-platform compatibility
+- 👛 Embedded wallets
+- 📜 Verifiable credentials
 
 ## Package Overview
 
 ### Client-Side Packages
 
-- `@crossmint/client-sdk-react-ui`: React components and hooks for integrating blockchain, authentication, and NFT-related functionalities into your application.
-
-- `@crossmint/client-sdk-base`: Core client-side functionality and essential building blocks for Crossmint integration.
-
-- `@crossmint/client-sdk-auth`: Client-side authentication tools for managing user sessions and integrating various authentication methods.
-
-- `@crossmint/client-sdk-verifiable-credentials`: Comprehensive tools for managing verifiable credentials, including verification, presentation, and decryption capabilities.
-
-- `@crossmint/client-sdk-smart-wallet`: Smart wallet functionality featuring passkey support, auth providers (Privy, Dynamic), and blockchain providers (Viem account, EIP1193 compatible).
+- `@crossmint/client-sdk-react-ui`: React SDK, with UI components.
+	
+- `@crossmint/client-sdk-auth`: Headless typescript SDK for managing auth and user profiles.
+	
+- `@crossmint/client-sdk-verifiable-credentials`: Headless typescript SDK for Verifiable Credentials.
+	
+- `@crossmint/client-sdk-smart-wallet`: Headless typescript SDK for smart wallets.
+	
+Other:
+	
+- `@crossmint/client-sdk-base`: Core client-side functionality and essential building blocks for Crossmint integration. Typically you don't need to integrate against this directly.
 
 ### Server-Side Packages
 
-- `@crossmint/server-sdk`: Server-side authentication and session management tools, specifically designed for SSR applications like Next.js.
-
-### Common Packages
-
-- `@crossmint/common-sdk-base`: Shared utilities, enums, and common functionality across the SDK ecosystem.
-
-- `@crossmint/common-sdk-auth`: Shared authentication utilities and tools used across different SDK packages.
+- `@crossmint/server-sdk`: Server-side SDK.
 
 ### Demo Applications
 
-- `@crossmint/client-sdk-react-ui`: A NextJS application showcasing the full capabilities of the SDK, including authentication and smart wallet integration.
+- `🔒 Smart Wallet + Auth Demo`: A NextJS application showcasing the full capabilities of the SDK, including authentication and smart wallet integration.
+
+Link to [Smart Wallets Demo (Next.js Starter Kit)](./apps/wallets/smart-wallet/next/README.md)
 
 ## Getting Started
 
@@ -123,10 +134,6 @@ pnpm install
 pnpm build
 ```
 
-## Development
-
-Read the [Smart Wallets Demo (Next.js Starter Kit) README](./apps/wallets/smart-wallet/next/README.md) for more information on how to run the demo application.
-
 ### Making Package Changes
 
 When modifying packages locally:
@@ -153,11 +160,6 @@ pnpm install
 3. Merge your PR to `main`
 4. A "Release packages" PR will be created automatically
 5. Merge the release PR to publish to NPM
-
-## Migration Guides
-
-- [Migrating to 0.1.X](https://docs.google.com/document/d/14IKpjrij7kU7Dr0I7rZkf0PyDNbXiklx2v4GuzUrFbw/edit?usp=sharing)
-- [Migrating to 0.2.X](https://docs.google.com/document/d/1mA0W-iAs0nHHW0ANX0TfZ5qrzxPGxNchPj13W6cHc-Y/edit?usp=sharing)
 
 ## Documentation
 
