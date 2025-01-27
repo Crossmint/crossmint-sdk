@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-base
 
+## 1.4.5
+
+### Patch Changes
+
+- 345cdc3: Supporting same tab display in hosted checkout
+
 ## 1.4.4
 
 ### Patch Changes

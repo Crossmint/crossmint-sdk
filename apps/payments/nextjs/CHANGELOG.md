@@ -1,5 +1,15 @@
 # @crossmint/client-sdk-nextjs-starter
 
+## 1.4.13
+
+### Patch Changes
+
+- 345cdc3: Supporting same tab display in hosted checkout
+- Updated dependencies [ad37d5e]
+- Updated dependencies [345cdc3]
+  - @crossmint/client-sdk-react-ui@1.13.4
+  - @crossmint/client-sdk-base@1.4.5
+
 ## 1.4.12
 
 ### Patch Changes
