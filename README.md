@@ -89,9 +89,8 @@ Other:
 
 ### Demo Applications
 
-- `🔒 Smart Wallet + Auth Demo`: A NextJS application showcasing the full capabilities of the SDK, including authentication and smart wallet integration.
+- [🔒 Smart Wallet + Auth Demo)](./apps/wallets/smart-wallet/next/README.md): A NextJS application showcasing the full capabilities of the SDK, including authentication and smart wallet integration.
 
-Link to [Smart Wallets Demo (Next.js Starter Kit)](./apps/wallets/smart-wallet/next/README.md)
 
 ## Getting Started
 
