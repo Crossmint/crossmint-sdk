@@ -2,7 +2,7 @@ import "@testing-library/jest-dom/vitest";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { CrossmintPayButton } from ".";
+import { CrossmintPayButton_DEPRECATED } from ".";
 import { LIB_VERSION } from "../../consts/version";
 
 // TODO(#60): create a global service for this to work everywhere and to be able to customize resolved/rejected responses
@@ -24,13 +24,13 @@ const defaultProps = {
     clientId: "a4e1bfcc-9884-11ec-b909-0242ac120002",
 };
 
-describe("CrossmintPayButton", () => {
+describe("CrossmintPayButton_DEPRECATED", () => {
     afterEach(() => {
         vi.clearAllMocks();
     });
 
     it("should open window with correct url", async () => {
-        render(<CrossmintPayButton {...defaultProps} />);
+        render(<CrossmintPayButton_DEPRECATED {...defaultProps} />);
 
         await act(async () => {
             fireEvent.click(screen.getByText("Buy with credit card"));
@@ -64,7 +64,7 @@ describe("CrossmintPayButton", () => {
 
     it("should add the `whPassThroughArgs` prop on the window url", async () => {
         const whPassThroughArgs = { hello: "hi" };
-        render(<CrossmintPayButton {...defaultProps} whPassThroughArgs={whPassThroughArgs} />);
+        render(<CrossmintPayButton_DEPRECATED {...defaultProps} whPassThroughArgs={whPassThroughArgs} />);
 
         await act(async () => {
             fireEvent.click(screen.getByText("Buy with credit card"));
@@ -78,7 +78,7 @@ describe("CrossmintPayButton", () => {
 
     describe("when passing the prepay prop", () => {
         it("should pass the prepay query param", async () => {
-            render(<CrossmintPayButton {...defaultProps} prepay />);
+            render(<CrossmintPayButton_DEPRECATED {...defaultProps} prepay />);
 
             await act(async () => {
                 fireEvent.click(screen.getByText("Buy with credit card"));
@@ -93,7 +93,7 @@ describe("CrossmintPayButton", () => {
 
     describe("when passing the prepay prop as false", () => {
         it("should not pass the prepay query param", async () => {
-            render(<CrossmintPayButton {...defaultProps} prepay={false} />);
+            render(<CrossmintPayButton_DEPRECATED {...defaultProps} prepay={false} />);
 
             await act(async () => {
                 fireEvent.click(screen.getByText("Buy with credit card"));
@@ -108,7 +108,7 @@ describe("CrossmintPayButton", () => {
 
     describe("when passing the loginEmail prop", () => {
         it("should pass an email in the email query param", async () => {
-            render(<CrossmintPayButton {...defaultProps} loginEmail="user@gmail.com" />);
+            render(<CrossmintPayButton_DEPRECATED {...defaultProps} loginEmail="user@gmail.com" />);
 
             await act(async () => {
                 fireEvent.click(screen.getByText("Buy with credit card"));
@@ -121,7 +121,7 @@ describe("CrossmintPayButton", () => {
         });
 
         it("should pass the email query param empty if loginEmail is empty", async () => {
-            render(<CrossmintPayButton {...defaultProps} loginEmail="" />);
+            render(<CrossmintPayButton_DEPRECATED {...defaultProps} loginEmail="" />);
 
             await act(async () => {
                 fireEvent.click(screen.getByText("Buy with credit card"));
@@ -134,7 +134,7 @@ describe("CrossmintPayButton", () => {
         });
 
         it("should pass the email query param empty if loginEmail is not present as a param", async () => {
-            render(<CrossmintPayButton {...defaultProps} />);
+            render(<CrossmintPayButton_DEPRECATED {...defaultProps} />);
 
             await act(async () => {
                 fireEvent.click(screen.getByText("Buy with credit card"));
@@ -149,7 +149,7 @@ describe("CrossmintPayButton", () => {
 
     describe("when passing collectionId instead of clientId", () => {
         it("should open window with correct url", async () => {
-            render(<CrossmintPayButton collectionId={defaultProps.clientId} />);
+            render(<CrossmintPayButton_DEPRECATED collectionId={defaultProps.clientId} />);
 
             await act(async () => {
                 fireEvent.click(screen.getByText("Buy with credit card"));
@@ -165,7 +165,7 @@ describe("CrossmintPayButton", () => {
 
     describe("when passing projectId", () => {
         it("should open window with projectId included in query params", async () => {
-            render(<CrossmintPayButton {...defaultProps} projectId="123" />);
+            render(<CrossmintPayButton_DEPRECATED {...defaultProps} projectId="123" />);
 
             await act(async () => {
                 fireEvent.click(screen.getByText("Buy with credit card"));
@@ -181,7 +181,7 @@ describe("CrossmintPayButton", () => {
 
     describe("when passing getButtonText prop", () => {
         it("should show custom text", async () => {
-            render(<CrossmintPayButton {...defaultProps} getButtonText={() => "Custom text"} />);
+            render(<CrossmintPayButton_DEPRECATED {...defaultProps} getButtonText={() => "Custom text"} />);
             expect(screen.getByText("Custom text")).toBeInTheDocument();
         });
     });

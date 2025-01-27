@@ -1,5 +1,59 @@
 # @crossmint/client-sdk-nextjs-starter
 
+## 1.4.12
+
+### Patch Changes
+
+- Updated dependencies [67f6a2d]
+  - @crossmint/client-sdk-react-ui@1.13.3
+
+## 1.4.11
+
+### Patch Changes
+
+- Updated dependencies [9183b02]
+  - @crossmint/client-sdk-react-ui@1.13.2
+
+## 1.4.10
+
+### Patch Changes
+
+- c4135ab: Flagging React Hosted V2 component as deprecated
+- Updated dependencies [574f85e]
+- Updated dependencies [c4135ab]
+  - @crossmint/client-sdk-react-ui@1.13.1
+
+## 1.4.9
+
+### Patch Changes
+
+- da9f6d4: Removing the alpha flag from Hosted V3 SDK
+- Updated dependencies [da9f6d4]
+  - @crossmint/client-sdk-react-ui@1.13.0
+
+## 1.4.8
+
+### Patch Changes
+
+- Updated dependencies [cc64066]
+  - @crossmint/client-sdk-react-ui@1.12.2
+
+## 1.4.7
+
+### Patch Changes
+
+- Updated dependencies [75f80cf]
+  - @crossmint/client-sdk-react-ui@1.12.1
+  - @crossmint/client-sdk-base@1.4.4
+
+## 1.4.6
+
+### Patch Changes
+
+- 1f33c36: Flagging Embedded v2 component as deprecated
+- Updated dependencies [1f33c36]
+  - @crossmint/client-sdk-react-ui@1.12.0
+
 ## 1.4.5
 
 ### Patch Changes

@@ -3,7 +3,7 @@ import { SolanaWalletConnectors } from "@dynamic-labs/solana-all";
 import { useEffect, useState } from "react";
 
 import type { InitialQuotePayload } from "@crossmint/client-sdk-base";
-import { CrossmintPaymentElement } from "@crossmint/client-sdk-react-ui";
+import { CrossmintPaymentElement_DEPRECATED } from "@crossmint/client-sdk-react-ui";
 
 import QuoteSummary from "../../components/quote-summary";
 
@@ -83,7 +83,7 @@ function Content({ count }: { count: number }) {
         <>
             {quoteMessage != null ? <QuoteSummary initialQuotePayload={quoteMessage} /> : "Loading..."}
 
-            <CrossmintPaymentElement
+            <CrossmintPaymentElement_DEPRECATED
                 environment="staging"
                 clientId="94273c86-b888-4734-a851-6464c7cce707"
                 recipient={{ wallet: signer.publicKey.toString() }}

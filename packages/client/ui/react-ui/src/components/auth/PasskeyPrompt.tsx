@@ -5,7 +5,7 @@ import type { UIConfig } from "@crossmint/common-sdk-base";
 import FingerprintIcon from "../../icons/fingerprint";
 import PasskeyIcon from "../../icons/passkey";
 import PasskeyPromptLogo from "../../icons/passkeyPromptLogo";
-import { PoweredByCrossmint } from "../common/PoweredByCrossmint";
+import { SecuredByCrossmint } from "../common/SecuredByCrossmint";
 import { classNames } from "@/utils/classNames";
 
 type PasskeyPromptCoreProps = {
@@ -85,7 +85,7 @@ function PasskeyPromptCore({ title, content, primaryButton, secondaryAction, app
                         {secondaryAction}
                     </div>
                     <div className="flex justify-center pt-4">
-                        <PoweredByCrossmint color={appearance?.colors?.textSecondary} />
+                        <SecuredByCrossmint color={appearance?.colors?.textSecondary} />
                     </div>
                 </div>
             </div>

@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-walletconnect
 
+## 1.2.2
+
+### Patch Changes
+
+- 75f80cf: revert: pnpm catalog
+
 ## 1.2.1
 
 ### Patch Changes

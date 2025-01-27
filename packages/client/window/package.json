@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-window",
-    "version": "0.2.1",
+    "version": "0.2.2",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
@@ -20,6 +20,6 @@
     },
     "dependencies": {
         "nanoid": "5.0.4",
-        "zod": "catalog:"
+        "zod": "3.22.4"
     }
 }

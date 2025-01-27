@@ -18,7 +18,7 @@ export type CrossmintPayButtonReactProps = CrossmintPayButtonProps & {
     style?: CSSProperties;
 };
 
-export function CrossmintPayButton(buttonProps: CrossmintPayButtonReactProps) {
+export function CrossmintPayButton_DEPRECATED(buttonProps: CrossmintPayButtonReactProps) {
     const {
         className,
         disabled,

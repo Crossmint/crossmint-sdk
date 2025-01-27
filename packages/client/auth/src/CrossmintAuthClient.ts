@@ -47,7 +47,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
             });
 
             if (!response.ok) {
-                throw await response.text();
+                throw new Error(JSON.parse(await response.text())?.message);
             }
 
             return await response.json();
@@ -119,15 +119,27 @@ export class CrossmintAuthClient extends CrossmintAuth {
             });
 
             if (!response.ok) {
-                throw await response.text();
+                throw new Error(JSON.parse(await response.text())?.message);
             }
 
             const data = await response.json();
             return data.oauthUrl;
         } catch (error) {
-            throw new CrossmintAuthenticationError(
+            console.error(
                 `Failed to get OAuth URL for provider ${provider}: ${error instanceof Error ? error.message : "Unknown error"}`
             );
+
+            // Extract origin from error message if it matches the pattern
+            if (error instanceof Error && error.message.includes("Request from origin")) {
+                const originMatch = error.message.match(/origin "([^"]+)"/);
+                const origin = originMatch?.[1];
+                if (origin) {
+                    throw new CrossmintAuthenticationError(
+                        `Unauthorized origin: ${origin}. Please add this origin to your API key's authorized origins in the Crossmint Console.`
+                    );
+                }
+            }
+            throw new CrossmintAuthenticationError("Unable to load oauth providers. Please try again later.");
         }
     }
 
@@ -139,7 +151,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
             });
 
             if (!response.ok) {
-                throw await response.text();
+                throw new Error(JSON.parse(await response.text())?.message);
             }
 
             return await response.json();
@@ -167,7 +179,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
             });
 
             if (!response.ok) {
-                throw await response.text();
+                throw new Error(JSON.parse(await response.text())?.message);
             }
 
             const resData = await response.json();
@@ -197,7 +209,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
             });
 
             if (!response.ok) {
-                throw await response.text();
+                throw new Error(JSON.parse(await response.text())?.message);
             }
 
             const resData = await response.json();
@@ -221,7 +233,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
             );
 
             if (!response.ok) {
-                throw await response.text();
+                throw new Error(JSON.parse(await response.text())?.message);
             }
 
             return await response.json();
@@ -248,7 +260,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
             );
 
             if (!response.ok) {
-                throw await response.text();
+                throw new Error(JSON.parse(await response.text())?.message);
             }
 
             return await response.json();

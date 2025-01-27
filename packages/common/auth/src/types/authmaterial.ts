@@ -31,4 +31,4 @@ interface RefreshToken {
     expiresAt: string;
 }
 
-export type OAuthProvider = "google";
+export type OAuthProvider = "google" | "twitter";

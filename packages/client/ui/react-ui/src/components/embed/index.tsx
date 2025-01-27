@@ -7,8 +7,11 @@ import {
 import { CrossmintCryptoEmbeddedCheckout } from "./crypto/CryptoEmbeddedCheckout";
 import { CrossmintFiatEmbeddedCheckout } from "./fiat/FiatEmbeddedCheckout";
 
-// TODO: Rename to CrossmintEmbeddedCheckout on v2 major publish, prior announcement since its a breaking change
-export function CrossmintPaymentElement(props: CrossmintEmbeddedCheckoutProps) {
+export function CrossmintPaymentElement_DEPRECATED(props: CrossmintEmbeddedCheckoutProps) {
+    console.error(
+        "[CrossmintPaymentElement_DEPRECATED] ⚠️ This SDK version is deprecated. Please upgrade to Embedded Checkout V3 for improved performance, simplified integration, and enhanced functionality. Learn more: https://docs.crossmint.com/nft-checkout/embedded/overview"
+    );
+
     if (isFiatEmbeddedCheckoutProps(props)) {
         return <CrossmintFiatEmbeddedCheckout {...props} />;
     }

@@ -1,5 +1,59 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.13.3
+
+### Patch Changes
+
+- 67f6a2d: fixed css rule warning
+
+## 1.13.2
+
+### Patch Changes
+
+- 9183b02: Renames logo files and powered by => secured by
+
+## 1.13.1
+
+### Patch Changes
+
+- 574f85e: Improved error verbiage around whitelisting api key in auth
+- c4135ab: Flagging React Hosted V2 component as deprecated
+- Updated dependencies [574f85e]
+  - @crossmint/client-sdk-auth@1.1.11
+
+## 1.13.0
+
+### Minor Changes
+
+- da9f6d4: Removing the alpha flag from Hosted V3 SDK
+
+## 1.12.2
+
+### Patch Changes
+
+- cc64066: added twitter auth
+- Updated dependencies [cc64066]
+  - @crossmint/common-sdk-auth@1.0.9
+  - @crossmint/client-sdk-auth@1.1.10
+
+## 1.12.1
+
+### Patch Changes
+
+- 75f80cf: revert: pnpm catalog
+- Updated dependencies [75f80cf]
+  - @crossmint/client-sdk-smart-wallet@0.1.29
+  - @crossmint/client-sdk-window@0.2.2
+  - @crossmint/client-sdk-base@1.4.4
+  - @crossmint/client-sdk-auth@1.1.9
+  - @crossmint/common-sdk-auth@1.0.8
+
+## 1.12.0
+
+### Minor Changes
+
+- 1f33c36: Flagging Embedded v2 component as deprecated
+
 ## 1.11.5
 
 ### Patch Changes

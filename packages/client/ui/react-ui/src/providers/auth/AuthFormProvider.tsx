@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
-import type { OAuthProvider } from "@crossmint/common-sdk-auth";
+import { CrossmintAuthenticationError, type OAuthProvider } from "@crossmint/common-sdk-auth";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import type { CrossmintAuthWalletConfig, LoginMethod } from "../CrossmintAuthProvider";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
@@ -9,6 +9,7 @@ type AuthStep = "initial" | "otp" | "qrCode" | "web3" | "web3/metamask" | "web3/
 type OAuthUrlMap = Record<OAuthProvider, string>;
 const initialOAuthUrlMap: OAuthUrlMap = {
     google: "",
+    twitter: "",
     // Farcaster is not included here as it uses a different authentication method
 };
 interface AuthFormContextType {
@@ -73,8 +74,11 @@ export const AuthFormProvider = ({
             const oauthUrlMap = Object.assign({}, ...(await Promise.all(oauthPromiseList)));
             setOauthUrlMap(oauthUrlMap);
         } catch (error) {
-            console.error("Error fetching OAuth URLs:", error);
-            setError("Unable to load oauth providers. Please try again later.");
+            setError(
+                error instanceof CrossmintAuthenticationError
+                    ? error.message
+                    : "Unable to load oauth providers. Please try again later."
+            );
         } finally {
             setIsLoadingOauthUrlMap(false);
         }

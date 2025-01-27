@@ -5,10 +5,11 @@ import { EmailAuthFlow } from "./methods/email/EmailAuthFlow";
 import { Divider } from "../common/Divider";
 import { GoogleSignIn } from "./methods/google/GoogleSignIn";
 import { FarcasterSignIn } from "./methods/farcaster/FarcasterSignIn";
-import { PoweredByCrossmint } from "../common/PoweredByCrossmint";
+import { SecuredByCrossmint } from "../common/SecuredByCrossmint";
 import { FarcasterProvider } from "../../providers/auth/FarcasterProvider";
 import { classNames } from "@/utils/classNames";
 import { AlertIcon } from "@/icons/alert";
+import { TwitterSignIn } from "./methods/twitter/TwitterSignIn";
 
 const Web3AuthFlow = lazy(() =>
     // @ts-expect-error - Error because we dont use 'module' field in tsconfig, which is expected because we use tsup to compile
@@ -27,14 +28,16 @@ export function AuthForm({ className }: { className?: string }) {
                 className
             )}
         >
-            {error ? (
+            {error != null ? (
                 <div
                     className="flex items-start justify-start w-full rounded-lg p-2 mt-4 bg-cm-danger-muted"
                     style={{
                         backgroundColor: new Color(appearance?.colors?.danger ?? "#f44336").alpha(0.12).toString(),
                     }}
                 >
-                    <AlertIcon customColor={appearance?.colors?.danger ?? "#f44336"} />
+                    <div className="min-w-[20px]">
+                        <AlertIcon customColor={appearance?.colors?.danger ?? "#f44336"} />
+                    </div>
                     <p className="ml-2 text-sm" style={{ color: appearance?.colors?.danger ?? "#f44336" }}>
                         {error}
                     </p>
@@ -71,10 +74,11 @@ export function AuthForm({ className }: { className?: string }) {
                     <FarcasterSignIn />
                 </FarcasterProvider>
             ) : null}
+            {loginMethods.includes("twitter") ? <TwitterSignIn /> : null}
             {loginMethods.includes("web3") ? <Web3AuthFlow /> : null}
 
             {step === "initial" || step === "otp" ? (
-                <PoweredByCrossmint
+                <SecuredByCrossmint
                     className="mt-4 justify-center"
                     color={appearance?.colors?.textSecondary ?? "#A4AFB2"}
                 />

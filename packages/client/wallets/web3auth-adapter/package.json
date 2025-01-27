@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-smart-wallet-web3auth-adapter",
-    "version": "0.2.4",
+    "version": "0.2.5",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
@@ -24,7 +24,7 @@
         "@web3auth/base": "7.3.2",
         "@web3auth/ethereum-provider": "7.3.2",
         "@web3auth/single-factor-auth": "7.3.0",
-        "viem": "catalog:"
+        "viem": "2.17.5"
     },
     "devDependencies": {
         "@types/node": "20.12.7",
