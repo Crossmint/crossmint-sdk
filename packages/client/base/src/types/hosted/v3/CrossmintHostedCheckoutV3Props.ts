@@ -35,8 +35,7 @@ export interface CrossmintHostedCheckoutV3Appearance {
     };
     variables?: CrossmintHostedCheckoutV3AppearanceVariables;
     overlay?: CrossmintHostedCheckoutV3OverlayOptions;
-    // TODO(PAY-4326): Take back as soon as checkout url redirects work on hosted v3
-    display?: "popup" | "new-tab" /* | "same-tab" */;
+    display?: "popup" | "new-tab" | "same-tab";
 }
 
 export type CrossmintHostedCheckoutV3Theme = "light" | "dark";
