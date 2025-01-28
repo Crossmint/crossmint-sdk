@@ -132,10 +132,12 @@ describe("SendTransactionService", () => {
         const mockReceipt = mock<TransactionReceipt>();
         mockPublicClient.waitForTransactionReceipt.mockResolvedValueOnce(mockReceipt);
         const callOrder: string[] = [];
+        // biome-ignore lint/suspicious/useAwait: nothing to await
         mockPublicClient.simulateContract.mockImplementation(async () => {
             callOrder.push("simulateContract");
             return mock<SimulateContractReturnType>();
         });
+        // biome-ignore lint/suspicious/useAwait: nothing to await
         mockAccountClient.writeContract.mockImplementation(async () => {
             callOrder.push("sendTransaction");
             return "0xmockTxHash";

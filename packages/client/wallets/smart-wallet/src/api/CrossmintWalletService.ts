@@ -71,7 +71,7 @@ export class CrossmintWalletService extends BaseCrossmintService {
     }
 
     async fetchNFTs(address: string, chain: SmartWalletChain) {
-        return this.fetchCrossmintAPI(
+        return await this.fetchCrossmintAPI(
             `v1-alpha1/wallets/${chain}:${address}/nfts`,
             { method: "GET" },
             `Error fetching NFTs for wallet: ${address}`

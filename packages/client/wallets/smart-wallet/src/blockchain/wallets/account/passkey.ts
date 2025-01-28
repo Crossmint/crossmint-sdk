@@ -92,7 +92,7 @@ export class PasskeyCreationStrategy implements AccountCreationStrategy {
             };
         }
 
-        return toWebAuthnKey({
+        return await toWebAuthnKey({
             passkeyName,
             passkeyServerUrl: this.passkeyServerUrl,
             mode: WebAuthnMode.Register,
