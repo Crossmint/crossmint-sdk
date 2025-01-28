@@ -72,7 +72,7 @@ export class EVMSmartWallet {
             );
         }
 
-        return this.executeContract(
+        return await this.executeContract(
             transferParams({
                 contract: config.token.contractAddress,
                 to: toAddress,
@@ -86,7 +86,7 @@ export class EVMSmartWallet {
      * @returns A list of NFTs owned by the wallet.
      */
     public async nfts() {
-        return this.crossmintService.fetchNFTs(this.address, this.chain);
+        return await this.crossmintService.fetchNFTs(this.address, this.chain);
     }
 
     /**
@@ -143,7 +143,7 @@ export class EVMSmartWallet {
     }: Omit<WriteContractParameters<TAbi, TFunctionName, TArgs>, "chain" | "account"> & {
         config?: Partial<SendTransactionOptions>;
     }): Promise<Hex> {
-        return this.sendTransactionService.sendTransaction(
+        return await this.sendTransactionService.sendTransaction(
             {
                 address,
                 abi: abi as Abi,
