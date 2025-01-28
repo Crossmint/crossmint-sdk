@@ -13,4 +13,5 @@ export type SDKExternalUser = {
     email?: string;
     phoneNumber?: string;
     farcaster?: FarcasterMetadata;
+    twitter?: string;
 };
