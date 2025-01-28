@@ -11,8 +11,12 @@ export function load(app) {
             navigation[classesIndex].children.sort((a, b) => {
                 const isErrorA = a.title.endsWith("Error");
                 const isErrorB = b.title.endsWith("Error");
-                if (isErrorA && !isErrorB) return 1;
-                if (!isErrorA && isErrorB) return -1;
+                if (isErrorA && !isErrorB) {
+                    return 1;
+                }
+                if (!isErrorA && isErrorB) {
+                    return -1;
+                }
                 return a.title.localeCompare(b.title);
             });
         }
