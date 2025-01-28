@@ -4,12 +4,7 @@ import type { PimlicoBundlerClient } from "permissionless/clients/pimlico";
 import type { EntryPoint } from "permissionless/types/entrypoint";
 
 import type { UserParams } from "../../types/params";
-import { usesGelatoBundler } from "../../utils/blockchain";
 import type { SmartWalletChain } from "../chains";
-
-export function usePaymaster(chain: SmartWalletChain) {
-    return !usesGelatoBundler(chain);
-}
 
 export function paymasterMiddleware({
     bundlerClient,

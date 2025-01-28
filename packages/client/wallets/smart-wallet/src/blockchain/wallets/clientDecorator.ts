@@ -5,7 +5,6 @@ import { stringify } from "viem";
 import { SmartWalletError } from "../../error";
 import type { ErrorProcessor } from "../../error/processor";
 import { scwLogger } from "../../services";
-import { usesGelatoBundler } from "../../utils/blockchain";
 import type { SmartWalletChain } from "../chains";
 
 const transactionMethods = [
@@ -98,7 +97,7 @@ export class ClientDecorator {
                 {
                     middleware,
                     account,
-                    userOperation: this.addGelatoBundlerProperties(crossmintChain, userOperation),
+                    userOperation,
                 },
                 ...args.slice(1),
             ];
@@ -108,21 +107,6 @@ export class ClientDecorator {
             | Parameters<SmartAccountClient<EntryPoint>["sendTransaction"]>
             | Parameters<SmartAccountClient<EntryPoint>["writeContract"]>;
 
-        return [this.addGelatoBundlerProperties(crossmintChain, txn), ...args.slice(1)];
-    }
-
-    /*
-     * Chain that ZD uses Gelato as for bundler require special parameters:
-     * https://docs.zerodev.app/sdk/faqs/use-with-gelato#transaction-configuration
-     */
-    private addGelatoBundlerProperties(
-        crossmintChain: SmartWalletChain,
-        txnParams: { maxFeePerGas?: bigint; maxPriorityFeePerGas?: bigint }
-    ) {
-        if (usesGelatoBundler(crossmintChain)) {
-            return { ...txnParams, maxFeePerGas: "0x0" as any, maxPriorityFeePerGas: "0x0" as any };
-        }
-
-        return txnParams;
+        return [txn, ...args.slice(1)];
     }
 }

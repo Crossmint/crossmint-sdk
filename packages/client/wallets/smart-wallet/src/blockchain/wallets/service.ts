@@ -16,7 +16,7 @@ import { EVMSmartWallet } from "./EVMSmartWallet";
 import type { AccountConfigService } from "./account/config";
 import type { AccountCreator } from "./account/creator";
 import type { ClientDecorator } from "./clientDecorator";
-import { paymasterMiddleware, usePaymaster } from "./paymaster";
+import { paymasterMiddleware } from "./paymaster";
 
 export class SmartWalletService {
     constructor(
@@ -89,14 +89,13 @@ export class SmartWalletService {
             account,
             bundlerTransport: transport,
             ...bundlerConfig,
-            ...(usePaymaster(chain) &&
-                paymasterMiddleware({
-                    bundlerClient,
-                    entryPoint: account.entryPoint,
-                    chain,
-                    walletService: this.crossmintService,
-                    user,
-                })),
+            ...paymasterMiddleware({
+                bundlerClient,
+                entryPoint: account.entryPoint,
+                chain,
+                walletService: this.crossmintService,
+                user,
+            }),
         });
 
         return this.clientDecorator.decorate({
