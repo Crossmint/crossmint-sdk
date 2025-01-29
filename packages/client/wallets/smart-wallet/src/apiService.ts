@@ -1,3 +1,4 @@
+import type { BlockchainIncludingTestnet as Blockchain } from "@crossmint/common-sdk-base";
 import { APIErrorService, BaseCrossmintService, SDKLogger } from "@crossmint/client-sdk-base";
 import type { Address, Hex, TypedData, TypedDataDomain } from "viem";
 
@@ -130,15 +131,15 @@ type CreateSignatureParams =
               signer: Signer;
               isSmartWalletSignature: boolean;
               typedData: {
-                domain: TypedDataDomain;
-                message: Record<string, unknown>;
-                primaryType: string;
-                types: TypedData;
-              }
+                  domain: TypedDataDomain;
+                  message: Record<string, unknown>;
+                  primaryType: string;
+                  types: TypedData;
+              };
           };
       };
 
-interface SignatureReponseBase {
+interface SignatureResponseBase {
     id: string;
     walletType: "evm-smart-wallet";
     status: "awaiting-approval" | "pending" | "failed" | "success";
@@ -157,10 +158,10 @@ interface SignatureReponseBase {
 }
 
 interface ApproveSignatureParams {
-  approvals: Approval[];
+    approvals: Approval[];
 }
 
-interface SignatureReponseMessage extends SignatureReponseBase {
+interface SignatureResponseMessage extends SignatureResponseBase {
     type: "evm-message";
     params: {
         message: string;
@@ -169,22 +170,45 @@ interface SignatureReponseMessage extends SignatureReponseBase {
     };
 }
 
-interface SignatureReponseTypedData extends SignatureReponseBase {
+interface SignatureResponseTypedData extends SignatureResponseBase {
     type: "evm-typed-data";
     params: {
         chain: SmartWalletChain;
         signer: Signer;
         isSmartWalletSignature: boolean;
         typedData: {
-          domain: TypedDataDomain;
-          message: Record<string, unknown>;
-          primaryType: string;
-          types: Record<string, unknown>;
-        }
+            domain: TypedDataDomain;
+            message: Record<string, unknown>;
+            primaryType: string;
+            types: Record<string, unknown>;
+        };
     };
 }
 
-export type SignatureReponse = SignatureReponseMessage | SignatureReponseTypedData;
+export type SignatureResponse = SignatureResponseMessage | SignatureResponseTypedData;
+
+type NftResponse = {
+    chain: Blockchain;
+    contractAddress: Address;
+    tokenId: string;
+    metadata: {
+        attributes: {
+          display_type: string | null;
+          trait_type: string;
+          value: string;
+        }[];
+        collection: unknown;
+        description: string;
+        image: string;
+        animation_url: string | null;
+        name: string;
+    };
+    subscription?: {
+      expiresAt: string;
+    }
+    locator: string;
+    tokenStandard: string;
+}[];
 
 type WalletsAPIErrorCodes = never;
 
@@ -235,7 +259,7 @@ export class CrossmintApiService extends BaseCrossmintService {
         return response;
     }
 
-    async createSignature(walletAddress: Address, params: CreateSignatureParams): Promise<SignatureReponse> {
+    async createSignature(walletAddress: Address, params: CreateSignatureParams): Promise<SignatureResponse> {
         const response = await this.fetchCrossmintAPI(
             `${API_VERSION}/wallets/${walletAddress}/signatures`,
             { method: "POST", body: JSON.stringify(params) },
@@ -244,7 +268,11 @@ export class CrossmintApiService extends BaseCrossmintService {
         return response;
     }
 
-    async approveSignature(walletAddress: Address, signatureId: string, params: ApproveSignatureParams): Promise<SignatureReponse> {
+    async approveSignature(
+        walletAddress: Address,
+        signatureId: string,
+        params: ApproveSignatureParams
+    ): Promise<SignatureResponse> {
         const response = await this.fetchCrossmintAPI(
             `${API_VERSION}/wallets/${walletAddress}/signatures/${signatureId}/approvals`,
             { method: "POST", body: JSON.stringify(params) },
@@ -253,11 +281,20 @@ export class CrossmintApiService extends BaseCrossmintService {
         return response;
     }
 
-    async getSignature(walletAddress: Address, signatureId: string): Promise<SignatureReponse> {
+    async getSignature(walletAddress: Address, signatureId: string): Promise<SignatureResponse> {
         const response = await this.fetchCrossmintAPI(
             `${API_VERSION}/wallets/${walletAddress}/signatures/${signatureId}`,
             { method: "GET" },
             "Error getting a signature. Please contact support"
+        );
+        return response;
+    }
+
+    async getNfts(walletAddress: Address): Promise<NftResponse> {
+        const response = await this.fetchCrossmintAPI(
+            `${API_VERSION}/wallets/${walletAddress}/nfts`,
+            { method: "GET" },
+            "Error getting NFTs. Please contact support"
         );
         return response;
     }
