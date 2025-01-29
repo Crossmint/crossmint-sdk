@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-auth
 
+## 1.0.11
+
+### Patch Changes
+
+- cef1981: auth user type: twitter
+
 ## 1.0.10
 
 ### Patch Changes
