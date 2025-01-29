@@ -1,5 +1,5 @@
 import { APIErrorService, BaseCrossmintService, SDKLogger } from "@crossmint/client-sdk-base";
-import type { Address, Hex } from "viem";
+import type { Address, Hex, TypedData, TypedDataDomain } from "viem";
 
 import type { SmartWalletChain } from "@/evm/chains";
 
@@ -7,7 +7,7 @@ import { SCW_SERVICE, API_VERSION } from "./utils/constants";
 
 export const scwLogger = new SDKLogger(SCW_SERVICE);
 
-export type SignerType = `evm-keypair:${Address}` | `evm-passkey:${string}`;
+export type Signer = `evm-keypair:${Address}` | `evm-passkey:${string}`;
 
 interface CreateWalletParams {
     type: "evm-smart-wallet";
@@ -63,7 +63,7 @@ interface TransactionCall {
 
 interface CreateTransactionParams {
     params: {
-        signer: SignerType;
+        signer: Signer;
         chain: SmartWalletChain;
         calls: TransactionCall[];
     };
@@ -76,12 +76,12 @@ export interface TransactionResponse {
     approvals: {
         pending: {
             message: Hex;
-            signer: SignerType;
+            signer: Signer;
         }[];
         submitted: {
             message: Hex;
             signature: Hex;
-            signer: SignerType;
+            signer: Signer;
         }[];
     };
     onChain: {
@@ -98,9 +98,9 @@ type Approval =
     | {
           signer: `evm-passkey:${string}`;
           signature: {
-            r: Hex;
-            s: Hex;
-          }
+              r: Hex;
+              s: Hex;
+          };
           metadata: {
               authenticatorData: Hex;
               challengeIndex: number;
@@ -113,6 +113,78 @@ type Approval =
 interface ApproveTransactionParams {
     approvals: Approval[];
 }
+
+type CreateSignatureParams =
+    | {
+          type: "evm-message";
+          params: {
+              message: string;
+              signer: Signer;
+              chain: SmartWalletChain;
+          };
+      }
+    | {
+          type: "evm-typed-data";
+          params: {
+              chain: SmartWalletChain;
+              signer: Signer;
+              isSmartWalletSignature: boolean;
+              typedData: {
+                domain: TypedDataDomain;
+                message: Record<string, unknown>;
+                primaryType: string;
+                types: TypedData;
+              }
+          };
+      };
+
+interface SignatureReponseBase {
+    id: string;
+    walletType: "evm-smart-wallet";
+    status: "awaiting-approval" | "pending" | "failed" | "success";
+    approvals: {
+        pending: {
+            signer: Signer;
+            message: Hex;
+        }[];
+        submitted: {
+            signer: Signer;
+            signature: Hex;
+            message: Hex;
+        }[];
+    };
+    createdAt: string;
+}
+
+interface ApproveSignatureParams {
+  approvals: Approval[];
+}
+
+interface SignatureReponseMessage extends SignatureReponseBase {
+    type: "evm-message";
+    params: {
+        message: string;
+        signer: Signer;
+        chain: SmartWalletChain;
+    };
+}
+
+interface SignatureReponseTypedData extends SignatureReponseBase {
+    type: "evm-typed-data";
+    params: {
+        chain: SmartWalletChain;
+        signer: Signer;
+        isSmartWalletSignature: boolean;
+        typedData: {
+          domain: TypedDataDomain;
+          message: Record<string, unknown>;
+          primaryType: string;
+          types: Record<string, unknown>;
+        }
+    };
+}
+
+export type SignatureReponse = SignatureReponseMessage | SignatureReponseTypedData;
 
 type WalletsAPIErrorCodes = never;
 
@@ -159,6 +231,33 @@ export class CrossmintApiService extends BaseCrossmintService {
             `${API_VERSION}/wallets/${walletAddress}/transactions/${transactionId}`,
             { method: "GET" },
             "Error getting a transaction. Please contact support"
+        );
+        return response;
+    }
+
+    async createSignature(walletAddress: Address, params: CreateSignatureParams): Promise<SignatureReponse> {
+        const response = await this.fetchCrossmintAPI(
+            `${API_VERSION}/wallets/${walletAddress}/signatures`,
+            { method: "POST", body: JSON.stringify(params) },
+            "Error creating a signature. Please contact support"
+        );
+        return response;
+    }
+
+    async approveSignature(walletAddress: Address, signatureId: string, params: ApproveSignatureParams): Promise<SignatureReponse> {
+        const response = await this.fetchCrossmintAPI(
+            `${API_VERSION}/wallets/${walletAddress}/signatures/${signatureId}/approvals`,
+            { method: "POST", body: JSON.stringify(params) },
+            "Error approving a signature. Please contact support"
+        );
+        return response;
+    }
+
+    async getSignature(walletAddress: Address, signatureId: string): Promise<SignatureReponse> {
+        const response = await this.fetchCrossmintAPI(
+            `${API_VERSION}/wallets/${walletAddress}/signatures/${signatureId}`,
+            { method: "GET" },
+            "Error getting a signature. Please contact support"
         );
         return response;
     }
