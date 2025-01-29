@@ -974,10 +974,6 @@ importers:
       jose:
         specifier: 5.9.6
         version: 5.9.6
-    devDependencies:
-      '@types/jsonwebtoken':
-        specifier: 9.0.6
-        version: 9.0.6
 
 packages:
 
@@ -5607,9 +5603,6 @@ packages:
 
   '@types/json5@0.0.29':
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
-
-  '@types/jsonwebtoken@9.0.6':
-    resolution: {integrity: sha512-/5hndP5dCjloafCXns6SZyESp3Ldq7YjH3zwzwczYnjxIT0Fqzk5ROSYVGfFyczIue7IUEj8hkvLbPoLQ18vQw==}
 
   '@types/lodash.isequal@4.5.6':
     resolution: {integrity: sha512-Ww4UGSe3DmtvLLJm2F16hDwEQSv7U0Rr8SujLUA2wHI2D2dm8kPu6Et+/y303LfjTIwSBKXB/YTUcAKpem/XEg==}
@@ -22402,10 +22395,6 @@ snapshots:
   '@types/json-schema@7.0.15': {}
 
   '@types/json5@0.0.29': {}
-
-  '@types/jsonwebtoken@9.0.6':
-    dependencies:
-      '@types/node': 20.14.11
 
   '@types/lodash.isequal@4.5.6':
     dependencies:
