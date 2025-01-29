@@ -193,9 +193,9 @@ type NftResponse = {
     tokenId: string;
     metadata: {
         attributes: {
-          display_type: string | null;
-          trait_type: string;
-          value: string;
+            display_type: string | null;
+            trait_type: string;
+            value: string;
         }[];
         collection: unknown;
         description: string;
@@ -204,8 +204,8 @@ type NftResponse = {
         name: string;
     };
     subscription?: {
-      expiresAt: string;
-    }
+        expiresAt: string;
+    };
     locator: string;
     tokenStandard: string;
 }[];
