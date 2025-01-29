@@ -12,6 +12,8 @@ import {
 } from "viem";
 import { WebAuthnP256 } from "ox";
 
+import entryPointAbi from "@/abi/entryPoint";
+
 import type {
     CrossmintApiService,
     CreateWalletResponse,
@@ -23,6 +25,7 @@ import type { SmartWalletChain } from "./evm/chains";
 import type { SmartWalletClient } from "./evm/smartWalletClient";
 import { EVMSmartWallet } from "./evm/wallet";
 import { getAlchemyRPC } from "./evm/rpc";
+import { ENTRY_POINT_ADDRESS } from "./utils/constants";
 
 type ViemAccount = {
     type: "VIEM_ACCOUNT";
@@ -71,8 +74,15 @@ export class SmartWalletService {
                 return address;
             },
 
-            getNonce: async () => {
-                throw new Error("Not implemented");
+            getNonce: async (params?: { key?: bigint }) => {
+              const publicClient = createPublicClient({ transport: http(getAlchemyRPC(chain)) });
+              const nonce = await publicClient.readContract({
+                abi: entryPointAbi,
+                address: ENTRY_POINT_ADDRESS,
+                functionName: "getNonce",
+                args: [address, params?.key ?? 0n],
+              })
+              return nonce;
             },
 
             signMessage: async (parameters: { message: SignableMessage }) => {
