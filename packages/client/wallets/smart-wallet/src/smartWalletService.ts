@@ -76,14 +76,14 @@ export class SmartWalletService {
             },
 
             getNonce: async (params?: { key?: bigint }) => {
-              const publicClient = createPublicClient({ transport: http(getAlchemyRPC(chain)) });
-              const nonce = await publicClient.readContract({
-                abi: entryPointAbi,
-                address: ENTRY_POINT_ADDRESS,
-                functionName: "getNonce",
-                args: [address, params?.key ?? 0n],
-              })
-              return nonce;
+                const publicClient = createPublicClient({ transport: http(getAlchemyRPC(chain)) });
+                const nonce = await publicClient.readContract({
+                    abi: entryPointAbi,
+                    address: ENTRY_POINT_ADDRESS,
+                    functionName: "getNonce",
+                    args: [address, params?.key ?? 0n],
+                });
+                return nonce;
             },
 
             signMessage: async (parameters: { message: SignableMessage }) => {
@@ -132,7 +132,9 @@ export class SmartWalletService {
             signTypedData: async <
                 const typedData extends TypedData | Record<string, unknown>,
                 primaryType extends keyof typedData | "EIP712Domain" = keyof typedData,
-            >(parameters: TypedDataDefinition<typedData, primaryType>) => {
+            >(
+                parameters: TypedDataDefinition<typedData, primaryType>
+            ) => {
                 const signerLocator = await this.getSignerLocator(adminSigner);
 
                 const { domain, message, primaryType, types } = parameters;
@@ -145,10 +147,10 @@ export class SmartWalletService {
                     type: "evm-typed-data",
                     params: {
                         typedData: {
-                          domain,
-                          message,
-                          primaryType,
-                          types: types as TypedData,
+                            domain,
+                            message,
+                            primaryType,
+                            types: types as TypedData,
                         },
                         signer: signerLocator,
                         chain,
