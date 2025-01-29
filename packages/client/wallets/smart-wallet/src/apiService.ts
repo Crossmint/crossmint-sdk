@@ -290,9 +290,9 @@ export class CrossmintApiService extends BaseCrossmintService {
         return response;
     }
 
-    async getNfts(walletAddress: Address): Promise<NftResponse> {
+    async getNfts(walletLocator: `${Blockchain}:${Address}`): Promise<NftResponse> {
         const response = await this.fetchCrossmintAPI(
-            `${API_VERSION}/wallets/${walletAddress}/nfts`,
+            `${API_VERSION}/wallets/${walletLocator}/nfts`,
             { method: "GET" },
             "Error getting NFTs. Please contact support"
         );
