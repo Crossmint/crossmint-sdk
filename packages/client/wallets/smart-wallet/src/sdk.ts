@@ -40,7 +40,7 @@ export class SmartWalletSDK {
     async getOrCreateWallet(
         user: UserParams,
         chain: SmartWalletChain,
-        walletParams: WalletParams = { signer: { type: "PASSKEY" } }
+        walletParams: WalletParams,
     ): Promise<EVMSmartWallet> {
         if (!isClient()) {
             throw new SmartWalletError("Smart Wallet SDK should only be used client side.");

@@ -1,6 +1,7 @@
 import { createPublicClient, http, type Address, type Hex, type EIP1193Provider, type LocalAccount } from "viem";
+import { WebAuthnP256 } from "ox";
 
-import type { CrossmintApiService, TransactionResponse } from "./apiService";
+import type { CrossmintApiService, CreateWalletResponse, TransactionResponse, SignerType } from "./apiService";
 import type { SmartWalletChain } from "./evm/chains";
 import type { SmartWalletClient } from "./evm/smartWalletClient";
 import { EVMSmartWallet } from "./evm/wallet";
@@ -13,17 +14,7 @@ type ViemAccount = {
 
 type PasskeySigner = {
     type: "PASSKEY";
-
-    /**
-     * Displayed to the user during passkey registration or signing prompts.
-     * If not provided, a default name identifier within the JWT
-     * that is specified in the project settings (typically `sub`) will be used.
-     */
-    passkeyName?: string;
-    onPrePasskeyRegistration?: () => Promise<void> | void;
-    onPasskeyRegistrationError?: (error: unknown) => Promise<void>;
-    onFirstTimePasskeySigning?: () => Promise<void> | void;
-    onFirstTimePasskeySigningError?: (error: unknown) => Promise<void>;
+    credential: WebAuthnP256.P256Credential;
 };
 
 type ExternalSigner = EIP1193Provider | ViemAccount;
@@ -44,29 +35,9 @@ export class SmartWalletService {
         walletParams: WalletParams
     ): Promise<EVMSmartWallet> {
         const publicClient = createPublicClient({ transport: http(getAlchemyRPC(chain)) });
-
         const { signer } = walletParams;
-        // TODO implement passkey support
-        if ("type" in signer && signer.type === "PASSKEY") {
-            throw new Error("Passkey signers are not yet supported");
-        }
-        const adminSigner =
-            "type" in signer ? signer.account.address : (await signer.request({ method: "eth_requestAccounts" }))[0];
-
-        // TODO handle "wallet already exists" error
-        const walletResponse = await this.crossmintApiService.createWallet({
-            type: "evm-smart-wallet",
-            config: {
-                adminSigner: {
-                    type: "evm-keypair",
-                    address: adminSigner,
-                },
-                creationSeed: "0",
-            },
-        });
-
+        const walletResponse = await this.createWallet(signer);
         const address = walletResponse.address;
-
         return new EVMSmartWallet(
             { wallet: this.smartAccountClient(signer, chain, address), public: publicClient },
             chain
@@ -74,7 +45,7 @@ export class SmartWalletService {
     }
 
     private smartAccountClient(
-        adminSigner: ExternalSigner,
+        adminSigner: ExternalSigner | PasskeySigner,
         chain: SmartWalletChain,
         address: Address
     ): SmartWalletClient {
@@ -100,15 +71,11 @@ export class SmartWalletService {
                 data?: Hex;
                 value?: bigint;
             }) => {
-                const adminSignerAddress =
-                    "type" in adminSigner
-                        ? adminSigner.account.address
-                        : (await adminSigner.request({ method: "eth_requestAccounts" }))[0];
-
+                const signerLocator = await this.getSignerLocator(adminSigner);
                 // Create transaction
                 const transactionCreationResponse = await this.crossmintApiService.createTransaction(address, {
                     params: {
-                        signer: `evm-keypair:${adminSignerAddress}`,
+                        signer: signerLocator,
                         chain,
                         calls: [
                             {
@@ -126,27 +93,8 @@ export class SmartWalletService {
                 if (pendingApprovals.length !== 1) {
                     throw new Error(`Expected 1 pending approval, got ${pendingApprovals.length}`);
                 }
-
                 const pendingApproval = pendingApprovals[0];
-                const signature =
-                    "type" in adminSigner
-                        ? await adminSigner.account.signMessage({
-                              message: {
-                                  raw: pendingApproval.message,
-                              },
-                          })
-                        : await adminSigner.request({
-                              method: "personal_sign",
-                              params: [pendingApproval.message, adminSignerAddress],
-                          });
-                await this.crossmintApiService.approveTransaction(address, transactionId, {
-                    approvals: [
-                        {
-                            signature,
-                            signer: `evm-keypair:${adminSignerAddress}`,
-                        },
-                    ],
-                });
+                await this.approveTransaction(address, adminSigner, transactionId, pendingApproval.message);
 
                 // Get transaction status until success
                 let transactionResponse: TransactionResponse | null = null;
@@ -166,5 +114,100 @@ export class SmartWalletService {
                 return transactionHash;
             },
         };
+    }
+
+    private async createWallet(signer: ExternalSigner | PasskeySigner): Promise<CreateWalletResponse> {
+        // TODO handle "wallet already exists" error
+        if ("type" in signer && signer.type === "PASSKEY") {
+            return await this.crossmintApiService.createWallet({
+                type: "evm-smart-wallet",
+                config: {
+                    adminSigner: {
+                        type: "evm-passkey",
+                        id: signer.credential.id,
+                        name: "Default",
+                        publicKey: {
+                            x: `0x${signer.credential.publicKey.x.toString(16)}`,
+                            y: `0x${signer.credential.publicKey.y.toString(16)}`,
+                        },
+                    },
+                    creationSeed: "0",
+                },
+            });
+        } else {
+            const adminSigner = await this.getSignerAddress(signer);
+            return await this.crossmintApiService.createWallet({
+                type: "evm-smart-wallet",
+                config: {
+                    adminSigner: {
+                        type: "evm-keypair",
+                        address: adminSigner,
+                    },
+                    creationSeed: "0",
+                },
+            });
+        }
+    }
+
+    private async getSignerLocator(signer: ExternalSigner | PasskeySigner): Promise<SignerType> {
+        if ("type" in signer && signer.type === "PASSKEY") {
+            return `evm-passkey:${signer.credential.id}`;
+        } else {
+            const signerAddress = await this.getSignerAddress(signer);
+            return `evm-keypair:${signerAddress}`;
+        }
+    }
+
+    private async getSignerAddress(signer: ExternalSigner): Promise<Address> {
+        return "type" in signer ? signer.account.address : (await signer.request({ method: "eth_requestAccounts" }))[0];
+    }
+
+    private async approveTransaction(
+        walletAddress: Address,
+        signer: ExternalSigner | PasskeySigner,
+        transactionId: string,
+        message: Hex
+    ) {
+        if ("type" in signer && signer.type === "PASSKEY") {
+            const { metadata, signature } = await WebAuthnP256.sign({
+                credentialId: signer.credential.id,
+                challenge: message,
+            });
+
+            await this.crossmintApiService.approveTransaction(walletAddress, transactionId, {
+                approvals: [
+                    {
+                        metadata,
+                        signature: {
+                            r: `0x${signature.r.toString(16)}`,
+                            s: `0x${signature.s.toString(16)}`,
+                        },
+                        signer: `evm-passkey:${signer.credential.id}`,
+                    },
+                ],
+            });
+        } else {
+            const signerAddress = await this.getSignerAddress(signer);
+            const signature =
+                "type" in signer
+                    ? await signer.account.signMessage({
+                          message: {
+                              raw: message,
+                          },
+                      })
+                    : await signer.request({
+                          method: "personal_sign",
+                          params: [message, signerAddress],
+                      });
+
+            await this.crossmintApiService.approveTransaction(walletAddress, transactionId, {
+                approvals: [
+                    {
+                        signature,
+                        signer: `evm-keypair:${signerAddress}`,
+                    },
+                ],
+            });
+        }
     }
 }
