@@ -19,7 +19,7 @@ import type {
     CreateWalletResponse,
     TransactionResponse,
     Signer,
-    SignatureReponse,
+    SignatureResponse,
 } from "./apiService";
 import type { SmartWalletChain } from "./evm/chains";
 import type { SmartWalletClient } from "./evm/smartWalletClient";
@@ -60,7 +60,8 @@ export class SmartWalletService {
         const address = walletResponse.address;
         return new EVMSmartWallet(
             { wallet: this.smartAccountClient(signer, chain, address), public: publicClient },
-            chain
+            chain,
+            this.crossmintApiService
         );
     }
 
@@ -116,7 +117,7 @@ export class SmartWalletService {
                 );
 
                 // Get signature status until success
-                let signatureResponse: SignatureReponse | null = null;
+                let signatureResponse: SignatureResponse | null = null;
                 while (signatureResponse === null || signatureResponse.status === "pending") {
                     signatureResponse = await this.crossmintApiService.getSignature(address, signatureId);
                 }
@@ -170,7 +171,7 @@ export class SmartWalletService {
                 );
 
                 // Get signature status until success
-                let signatureResponse: SignatureReponse | null = null;
+                let signatureResponse: SignatureResponse | null = null;
                 while (signatureResponse === null || signatureResponse.status === "pending") {
                     signatureResponse = await this.crossmintApiService.getSignature(address, signatureId);
                 }
