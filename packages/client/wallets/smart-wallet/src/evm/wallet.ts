@@ -20,7 +20,7 @@ export class EVMSmartWallet {
     constructor(
         public readonly client: { public: PublicClient<HttpTransport>; wallet: SmartWalletClient },
         public readonly chain: SmartWalletChain,
-        public readonly apiService: CrossmintApiService
+        private readonly apiService: CrossmintApiService
     ) {}
 
     /**
@@ -60,7 +60,7 @@ export class EVMSmartWallet {
      * @returns A list of NFTs owned by the wallet.
      */
     public async nfts() {
-        return await this.apiService.getNfts(this.address);
+        return await this.apiService.getNfts(`${this.chain}:${this.address}`);
     }
 
     /**
