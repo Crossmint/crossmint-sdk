@@ -1,3 +1,4 @@
+import { EVMSmartWallet } from './evm/wallet';
 import { SmartWalletSDK } from "./sdk";
 
-export { SmartWalletSDK };
+export { EVMSmartWallet, SmartWalletSDK };
