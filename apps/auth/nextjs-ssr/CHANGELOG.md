@@ -1,5 +1,17 @@
 # @crossmint/server-sdk-next-starter
 
+## 0.4.0
+
+### Minor Changes
+
+- 77deb0b: Adds example with middleware for refreshing directly with Crossmint servers
+
+### Patch Changes
+
+- Updated dependencies [77deb0b]
+  - @crossmint/server-sdk@1.2.0
+  - @crossmint/client-sdk-react-ui@1.13.5
+
 ## 0.3.21
 
 ### Patch Changes
