@@ -18,7 +18,19 @@ import { type TransferType, transferParams } from "./transfer";
 
 export class EVMSmartWallet {
     constructor(
-        public readonly client: { public: PublicClient<HttpTransport>; wallet: SmartWalletClient },
+        /**
+         * [viem](https://viem.sh/) clients that provide an interface for core wallet functionality.
+         */
+        public readonly client: {
+            /**
+             * An interface to interact with the smart wallet, execute transactions, sign messages, etc.
+             */
+            public: PublicClient<HttpTransport>;
+            /**
+             * An interface to read onchain data, fetch transactions, retrieve account balances, etc. Corresponds to public [JSON-RPC API](https://ethereum.org/en/developers/docs/apis/json-rpc/) methods.
+             */
+            wallet: SmartWalletClient;
+        },
         public readonly chain: SmartWalletChain,
         private readonly apiService: CrossmintApiService
     ) {}

@@ -11,7 +11,7 @@ import { isClient } from "@crossmint/client-sdk-base";
 import { SmartWalletService, type UserParams, type WalletParams } from "./smartWalletService";
 import { CrossmintApiService } from "./apiService";
 
-type SmartWalletSDKInitParams = {
+export interface SmartWalletSDKInitParams {
     clientApiKey: string;
 };
 
@@ -23,6 +23,10 @@ export class SmartWalletSDK {
         private readonly logger = scwLogger
     ) {}
 
+    /**
+     * Initializes the SDK with the **client side** API key obtained from the Crossmint console.
+     * @throws error if the api key is not formatted correctly.
+     */
     static init(params: SmartWalletSDKInitParams): SmartWalletSDK {
         const { clientApiKey } = params;
         const validationResult = validateAPIKey(clientApiKey);
@@ -37,6 +41,15 @@ export class SmartWalletSDK {
         return new SmartWalletSDK(validationResult.environment, smartWalletService, errorProcessor);
     }
 
+    /**
+     * Retrieves or creates a wallet for the specified user.
+     * The default configuration is a `PasskeySigner` with the name, which is displayed to the user during creation or signing prompts, derived from the provided jwt.
+     *
+     * Example using the default passkey signer:
+     * ```ts
+     * const wallet = await smartWalletSDK.getOrCreateWallet({ jwt: "xxx" }, "base");
+     * ```
+     */
     async getOrCreateWallet(
         user: UserParams,
         chain: SmartWalletChain,

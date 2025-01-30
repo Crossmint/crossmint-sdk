@@ -23,15 +23,15 @@ interface ERC2OEVMToken extends EVMToken {
     type: "ft";
 }
 
-interface ERC20TransferType {
+export interface ERC20TransferType {
     token: ERC2OEVMToken;
     amount: bigint;
 }
-interface SFTTransferType {
+export interface SFTTransferType {
     token: SFTEVMToken;
     quantity: number;
 }
-interface NFTTransferType {
+export interface NFTTransferType {
     token: NFTEVMToken;
 }
 export type TransferType = ERC20TransferType | SFTTransferType | NFTTransferType;
