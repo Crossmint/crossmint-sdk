@@ -56,16 +56,17 @@ export class SmartWalletService {
     ): Promise<EVMSmartWallet> {
         const publicClient = createPublicClient({ transport: http(getAlchemyRPC(chain)) });
         const { signer } = walletParams;
-        const walletResponse = await this.createWallet(signer);
+        const walletResponse = await this.createWallet(user, signer);
         const address = walletResponse.address;
         return new EVMSmartWallet(
-            { wallet: this.smartAccountClient(signer, chain, address), public: publicClient },
+            { wallet: this.smartAccountClient(user, signer, chain, address), public: publicClient },
             chain,
             this.crossmintApiService
         );
     }
 
     private smartAccountClient(
+        user: UserParams,
         adminSigner: ExternalSigner | PasskeySigner,
         chain: SmartWalletChain,
         address: Address
@@ -93,7 +94,7 @@ export class SmartWalletService {
                 const signerLocator = await this.getSignerLocator(adminSigner);
 
                 // Create signature
-                const signatureCreationResponse = await this.crossmintApiService.createSignature(address, {
+                const signatureCreationResponse = await this.crossmintApiService.createSignature(user, {
                     type: "evm-message",
                     params: {
                         message: parameters.message,
@@ -110,7 +111,7 @@ export class SmartWalletService {
                 }
                 const pendingApproval = pendingApprovals[0];
                 const signature = await this.approveSignature(
-                    address,
+                    user,
                     adminSigner,
                     signatureId,
                     pendingApproval.message
@@ -119,7 +120,7 @@ export class SmartWalletService {
                 // Get signature status until success
                 let signatureResponse: SignatureResponse | null = null;
                 while (signatureResponse === null || signatureResponse.status === "pending") {
-                    signatureResponse = await this.crossmintApiService.getSignature(address, signatureId);
+                    signatureResponse = await this.crossmintApiService.getSignature(user, signatureId);
                 }
 
                 if (signatureResponse?.status === "failed") {
@@ -143,7 +144,7 @@ export class SmartWalletService {
                 }
 
                 // Create signature
-                const signatureCreationResponse = await this.crossmintApiService.createSignature(address, {
+                const signatureCreationResponse = await this.crossmintApiService.createSignature(user, {
                     type: "evm-typed-data",
                     params: {
                         typedData: {
@@ -166,7 +167,7 @@ export class SmartWalletService {
                 }
                 const pendingApproval = pendingApprovals[0];
                 const signature = await this.approveSignature(
-                    address,
+                    user,
                     adminSigner,
                     signatureId,
                     pendingApproval.message
@@ -175,7 +176,7 @@ export class SmartWalletService {
                 // Get signature status until success
                 let signatureResponse: SignatureResponse | null = null;
                 while (signatureResponse === null || signatureResponse.status === "pending") {
-                    signatureResponse = await this.crossmintApiService.getSignature(address, signatureId);
+                    signatureResponse = await this.crossmintApiService.getSignature(user, signatureId);
                 }
 
                 if (signatureResponse?.status === "failed") {
@@ -192,7 +193,7 @@ export class SmartWalletService {
             }) => {
                 const signerLocator = await this.getSignerLocator(adminSigner);
                 // Create transaction
-                const transactionCreationResponse = await this.crossmintApiService.createTransaction(address, {
+                const transactionCreationResponse = await this.crossmintApiService.createTransaction(user, {
                     params: {
                         signer: signerLocator,
                         chain,
@@ -213,12 +214,12 @@ export class SmartWalletService {
                     throw new Error(`Expected 1 pending approval, got ${pendingApprovals.length}`);
                 }
                 const pendingApproval = pendingApprovals[0];
-                await this.approveTransaction(address, adminSigner, transactionId, pendingApproval.message);
+                await this.approveTransaction(user, adminSigner, transactionId, pendingApproval.message);
 
                 // Get transaction status until success
                 let transactionResponse: TransactionResponse | null = null;
                 while (transactionResponse === null || transactionResponse.status === "pending") {
-                    transactionResponse = await this.crossmintApiService.getTransaction(address, transactionId);
+                    transactionResponse = await this.crossmintApiService.getTransaction(user, transactionId);
                 }
 
                 if (transactionResponse?.status === "failed") {
@@ -235,10 +236,9 @@ export class SmartWalletService {
         };
     }
 
-    private async createWallet(signer: ExternalSigner | PasskeySigner): Promise<CreateWalletResponse> {
-        // TODO handle "wallet already exists" error
+    private async createWallet(user: UserParams, signer: ExternalSigner | PasskeySigner): Promise<CreateWalletResponse> {
         if ("type" in signer && signer.type === "PASSKEY") {
-            return await this.crossmintApiService.createWallet({
+            return await this.crossmintApiService.createWallet(user, {
                 type: "evm-smart-wallet",
                 config: {
                     adminSigner: {
@@ -255,7 +255,7 @@ export class SmartWalletService {
             });
         } else {
             const adminSigner = await this.getSignerAddress(signer);
-            return await this.crossmintApiService.createWallet({
+            return await this.crossmintApiService.createWallet(user, {
                 type: "evm-smart-wallet",
                 config: {
                     adminSigner: {
@@ -282,7 +282,7 @@ export class SmartWalletService {
     }
 
     private async approveTransaction(
-        walletAddress: Address,
+        user: UserParams,
         signer: ExternalSigner | PasskeySigner,
         transactionId: string,
         message: Hex
@@ -293,7 +293,7 @@ export class SmartWalletService {
                 challenge: message,
             });
 
-            await this.crossmintApiService.approveTransaction(walletAddress, transactionId, {
+            await this.crossmintApiService.approveTransaction(user, transactionId, {
                 approvals: [
                     {
                         metadata,
@@ -319,7 +319,7 @@ export class SmartWalletService {
                           params: [message, signerAddress],
                       });
 
-            await this.crossmintApiService.approveTransaction(walletAddress, transactionId, {
+            await this.crossmintApiService.approveTransaction(user, transactionId, {
                 approvals: [
                     {
                         signature,
@@ -331,7 +331,7 @@ export class SmartWalletService {
     }
 
     private async approveSignature(
-        walletAddress: Address,
+        user: UserParams,
         signer: ExternalSigner | PasskeySigner,
         signatureId: string,
         message: Hex
@@ -342,7 +342,7 @@ export class SmartWalletService {
                 challenge: message,
             });
 
-            await this.crossmintApiService.approveSignature(walletAddress, signatureId, {
+            await this.crossmintApiService.approveSignature(user, signatureId, {
                 approvals: [
                     {
                         metadata,
@@ -371,7 +371,7 @@ export class SmartWalletService {
                           params: [message, signerAddress],
                       });
 
-            await this.crossmintApiService.approveSignature(walletAddress, signatureId, {
+            await this.crossmintApiService.approveSignature(user, signatureId, {
                 approvals: [
                     {
                         signature,
