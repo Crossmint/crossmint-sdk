@@ -25,7 +25,8 @@ import type { SmartWalletChain } from "./evm/chains";
 import type { SmartWalletClient } from "./evm/smartWalletClient";
 import { EVMSmartWallet } from "./evm/wallet";
 import { getAlchemyRPC } from "./evm/rpc";
-import { ENTRY_POINT_ADDRESS } from "./utils/constants";
+import { sleep } from "./utils";
+import { ENTRY_POINT_ADDRESS, STATUS_POLLING_INTERVAL_MS } from "./utils/constants";
 
 type ViemAccount = {
     type: "VIEM_ACCOUNT";
@@ -120,6 +121,7 @@ export class SmartWalletService {
                 // Get signature status until success
                 let signatureResponse: SignatureResponse | null = null;
                 while (signatureResponse === null || signatureResponse.status === "pending") {
+                    await sleep(STATUS_POLLING_INTERVAL_MS);
                     signatureResponse = await this.crossmintApiService.getSignature(user, signatureId);
                 }
 
@@ -176,6 +178,7 @@ export class SmartWalletService {
                 // Get signature status until success
                 let signatureResponse: SignatureResponse | null = null;
                 while (signatureResponse === null || signatureResponse.status === "pending") {
+                    await sleep(STATUS_POLLING_INTERVAL_MS);
                     signatureResponse = await this.crossmintApiService.getSignature(user, signatureId);
                 }
 
@@ -219,6 +222,7 @@ export class SmartWalletService {
                 // Get transaction status until success
                 let transactionResponse: TransactionResponse | null = null;
                 while (transactionResponse === null || transactionResponse.status === "pending") {
+                    await sleep(STATUS_POLLING_INTERVAL_MS);
                     transactionResponse = await this.crossmintApiService.getTransaction(user, transactionId);
                 }
 
