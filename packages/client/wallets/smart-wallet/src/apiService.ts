@@ -5,6 +5,7 @@ import type { Address, Hex, TypedData, TypedDataDomain } from "viem";
 import type { SmartWalletChain } from "@/evm/chains";
 
 import { SCW_SERVICE, API_VERSION } from "./utils/constants";
+import type { UserParams } from "./smartWalletService";
 
 export const scwLogger = new SDKLogger(SCW_SERVICE);
 
@@ -214,78 +215,84 @@ type WalletsAPIErrorCodes = never;
 
 // Light wrapper over SDK APIs
 // Only a subset of params related to EVM smart wallets are supported
-// TODO: use JWT and /me endpoints
 export class CrossmintApiService extends BaseCrossmintService {
     logger = scwLogger;
     protected apiErrorService = new APIErrorService<WalletsAPIErrorCodes>({});
 
-    async createWallet(params: CreateWalletParams): Promise<CreateWalletResponse> {
+    async createWallet(user: UserParams, params: CreateWalletParams): Promise<CreateWalletResponse> {
         const response = await this.fetchCrossmintAPI(
-            `${API_VERSION}/wallets`,
+            `${API_VERSION}/wallets/me`,
             { method: "POST", body: JSON.stringify(params) },
-            "Error creating a wallet. Please contact support"
+            "Error creating a wallet. Please contact support",
+            user.jwt,
         );
         return response;
     }
 
-    async createTransaction(walletAddress: Address, params: CreateTransactionParams): Promise<TransactionResponse> {
+    async createTransaction(user: UserParams, params: CreateTransactionParams): Promise<TransactionResponse> {
         const response = await this.fetchCrossmintAPI(
-            `${API_VERSION}/wallets/${walletAddress}/transactions`,
+            `${API_VERSION}/wallets/me:evm-smart-wallet/transactions`,
             { method: "POST", body: JSON.stringify(params) },
-            "Error creating a transaction. Please contact support"
+            "Error creating a transaction. Please contact support",
+            user.jwt
         );
         return response;
     }
 
     async approveTransaction(
-        walletAddress: Address,
+        user: UserParams,
         transactionId: string,
         params: ApproveTransactionParams
     ): Promise<TransactionResponse> {
         const response = await this.fetchCrossmintAPI(
-            `${API_VERSION}/wallets/${walletAddress}/transactions/${transactionId}/approvals`,
+            `${API_VERSION}/wallets/me:evm-smart-wallet/transactions/${transactionId}/approvals`,
             { method: "POST", body: JSON.stringify(params) },
-            "Error approving a transaction. Please contact support"
+            "Error approving a transaction. Please contact support",
+            user.jwt
         );
         return response;
     }
 
-    async getTransaction(walletAddress: Address, transactionId: string): Promise<TransactionResponse> {
+    async getTransaction(user: UserParams, transactionId: string): Promise<TransactionResponse> {
         const response = await this.fetchCrossmintAPI(
-            `${API_VERSION}/wallets/${walletAddress}/transactions/${transactionId}`,
+            `${API_VERSION}/wallets/me:evm-smart-wallet/transactions/${transactionId}`,
             { method: "GET" },
-            "Error getting a transaction. Please contact support"
+            "Error getting a transaction. Please contact support",
+            user.jwt
         );
         return response;
     }
 
-    async createSignature(walletAddress: Address, params: CreateSignatureParams): Promise<SignatureResponse> {
+    async createSignature(user: UserParams, params: CreateSignatureParams): Promise<SignatureResponse> {
         const response = await this.fetchCrossmintAPI(
-            `${API_VERSION}/wallets/${walletAddress}/signatures`,
+            `${API_VERSION}/wallets/me:evm-smart-wallet/signatures`,
             { method: "POST", body: JSON.stringify(params) },
-            "Error creating a signature. Please contact support"
+            "Error creating a signature. Please contact support",
+            user.jwt
         );
         return response;
     }
 
     async approveSignature(
-        walletAddress: Address,
+        user: UserParams,
         signatureId: string,
         params: ApproveSignatureParams
     ): Promise<SignatureResponse> {
         const response = await this.fetchCrossmintAPI(
-            `${API_VERSION}/wallets/${walletAddress}/signatures/${signatureId}/approvals`,
+            `${API_VERSION}/wallets/me:evm-smart-wallet/signatures/${signatureId}/approvals`,
             { method: "POST", body: JSON.stringify(params) },
-            "Error approving a signature. Please contact support"
+            "Error approving a signature. Please contact support",
+            user.jwt
         );
         return response;
     }
 
-    async getSignature(walletAddress: Address, signatureId: string): Promise<SignatureResponse> {
+    async getSignature(user: UserParams, signatureId: string): Promise<SignatureResponse> {
         const response = await this.fetchCrossmintAPI(
-            `${API_VERSION}/wallets/${walletAddress}/signatures/${signatureId}`,
+            `${API_VERSION}/wallets/me:evm-smart-wallet/signatures/${signatureId}`,
             { method: "GET" },
-            "Error getting a signature. Please contact support"
+            "Error getting a signature. Please contact support",
+            user.jwt
         );
         return response;
     }
