@@ -28,17 +28,17 @@ import { getAlchemyRPC } from "./evm/rpc";
 import { sleep } from "./utils";
 import { ENTRY_POINT_ADDRESS, STATUS_POLLING_INTERVAL_MS } from "./utils/constants";
 
-type ViemAccount = {
+export type ViemAccount = {
     type: "VIEM_ACCOUNT";
     account: LocalAccount & { source: "custom" };
 };
 
-type PasskeySigner = {
+export type PasskeySigner = {
     type: "PASSKEY";
     credential: WebAuthnP256.P256Credential;
 };
 
-type ExternalSigner = EIP1193Provider | ViemAccount;
+export type ExternalSigner = EIP1193Provider | ViemAccount;
 export interface WalletParams {
     signer: ExternalSigner | PasskeySigner;
 }
