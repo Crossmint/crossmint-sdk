@@ -16,6 +16,7 @@ export default function MemecoinCheckoutContent({ setShowCheckout, showCheckout 
     const [displaySlippage, setDisplaySlippage] = useState("5");
     const [showCompletedMessage, setShowCompletedMessage] = useState(false);
 
+
     // Get the estimated token quantity from the order
     const estimatedTokens = order?.lineItems?.[0]?.quantity ?? 0;
 
