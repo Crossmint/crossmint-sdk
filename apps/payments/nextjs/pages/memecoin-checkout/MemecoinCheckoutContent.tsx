@@ -319,7 +319,7 @@ export function MemecoinCheckoutContent({ setShowCheckout, showCheckout }: Memec
                                         marginTop: "0.25rem",
                                         lineHeight: "1.4",
                                     }}>
-                                        Slippage tolerance is the maximum price difference you're willing to accept between the estimated and final price due to market fluctuations
+                                        Slippage tolerance is the maximum price difference you&apos;re willing to accept between the estimated and final price due to market fluctuations
                                     </div>
                                 </div>
                             </div>
@@ -338,7 +338,7 @@ export function MemecoinCheckoutContent({ setShowCheckout, showCheckout }: Memec
                                     fontWeight: "500",
                                     marginBottom: "0.25rem",
                                 }}>
-                                    You'll Receive (Estimated)
+                                    You&apos;ll Receive (Estimated)
                                 </div>
                                 <div style={{
                                     fontSize: "1rem",

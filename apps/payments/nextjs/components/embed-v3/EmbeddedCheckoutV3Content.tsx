@@ -77,7 +77,7 @@ export function MemecoinCheckoutWrapper({ price, slippage }: MemecoinCheckoutWra
                     totalPrice: price,
                     slippageBps: slippage
                 }
-            }}
+            } as any}
             payment={{
 
                 receiptEmail: "test@email.com",
