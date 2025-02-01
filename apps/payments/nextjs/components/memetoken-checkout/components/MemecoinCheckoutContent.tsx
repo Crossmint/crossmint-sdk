@@ -11,7 +11,7 @@ interface MemecoinCheckoutContentProps {
 
 export default function MemecoinCheckoutContent({ setShowCheckout, showCheckout }: MemecoinCheckoutContentProps) {
     const { order } = useCrossmintCheckout();
-    const [price, setPrice] = useState("5");
+    const [price, setPrice] = useState("3");
     const [slippage, setSlippage] = useState("5");
     const [displaySlippage, setDisplaySlippage] = useState("5");
     const [showCompletedMessage, setShowCompletedMessage] = useState(false);
@@ -33,7 +33,12 @@ export default function MemecoinCheckoutContent({ setShowCheckout, showCheckout 
     const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         if (/^\d*\.?\d*$/.test(value) && parseFloat(value || "0") >= 0) {
-            setPrice(value);
+            const numericValue = parseFloat(value || "0");
+            if (numericValue <= 3) {
+                setPrice(value);
+            } else {
+                setPrice("3");
+            }
         }
     };
 
@@ -193,7 +198,7 @@ export default function MemecoinCheckoutContent({ setShowCheckout, showCheckout 
                                         color: "rgba(255, 255, 255, 0.4)",
                                         marginTop: "0.25rem",
                                     }}>
-                                        Enter the amount in USD you want to spend
+                                        Enter the amount in USD you want to spend (max $3)
                                     </div>
                                 </div>
 
