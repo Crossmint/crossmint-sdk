@@ -1,15 +1,15 @@
 import { useCrossmintCheckout } from "@crossmint/client-sdk-react-ui";
 import { useEffect, useState, useCallback } from "react";
-import { MemecoinCheckoutWrapper } from "../../components/embed-v3/EmbeddedCheckoutV3Content";
-import { StatusMessage } from './StatusMessage';
-import { LandingPage } from "./LandingPage";
+import { MemecoinCheckoutWrapper } from "../../embed-v3/EmbeddedCheckoutV3Content";
+import StatusMessage from "./StatusMessage";
+import LandingPage from "./LandingPage";
 
 interface MemecoinCheckoutContentProps {
     setShowCheckout: (show: boolean) => void;
     showCheckout: boolean;
 }
 
-export function MemecoinCheckoutContent({ setShowCheckout, showCheckout }: MemecoinCheckoutContentProps) {
+export default function MemecoinCheckoutContent({ setShowCheckout, showCheckout }: MemecoinCheckoutContentProps) {
     const { order } = useCrossmintCheckout();
     const [price, setPrice] = useState("5");
     const [slippage, setSlippage] = useState("5");

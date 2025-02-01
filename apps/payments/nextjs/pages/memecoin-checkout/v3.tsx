@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { EmbeddedCheckoutV3ClientProviders } from "../../components/embed-v3/EmbeddedCheckoutV3ClientProviders";
-import { MemecoinCheckoutContent } from "./MemecoinCheckoutContent";
+import MemecoinCheckoutContent from "../../components/memetoken-checkout/components/MemecoinCheckoutContent";
 
 export default function MemecoinCheckoutV3Page() {
     const [showCheckout, setShowCheckout] = useState(false);
