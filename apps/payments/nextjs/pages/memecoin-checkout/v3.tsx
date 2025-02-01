@@ -1,9 +1,27 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { EmbeddedCheckoutV3ClientProviders } from "../../components/embed-v3/EmbeddedCheckoutV3ClientProviders";
 import MemecoinCheckoutContent from "../../components/memetoken-checkout/components/MemecoinCheckoutContent";
 
+function useWindowSize() {
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    return isMobile;
+}
+
 export default function MemecoinCheckoutV3Page() {
     const [showCheckout, setShowCheckout] = useState(false);
+    const isMobile = useWindowSize();
 
     return (
         <>
@@ -37,12 +55,13 @@ export default function MemecoinCheckoutV3Page() {
                 }
             `}</style>
             <div style={{
+                minHeight: "100vh",
                 height: "100vh",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 background: "linear-gradient(135deg, #042f2e 0%, #022c22 100%)",
-                padding: "1.5rem",
+                padding: isMobile ? "0.5rem" : "1.5rem",
                 position: "relative",
                 overflow: "hidden",
             }}>
@@ -69,17 +88,18 @@ export default function MemecoinCheckoutV3Page() {
                 <div style={{
                     width: "100%",
                     maxWidth: showCheckout ? "900px" : "520px",
-                    height: showCheckout ? "820px" : "600px",
+                    height: showCheckout ? (isMobile ? "calc(100vh - 1rem)" : "820px") : "auto",
                     background: "rgba(255, 255, 255, 0.08)",
                     backdropFilter: "blur(20px)",
                     borderRadius: "24px",
                     boxShadow: "0 20px 40px rgba(0, 0, 0, 0.2), inset 0 0 0 1px rgba(255, 255, 255, 0.12)",
-                    overflow: "hidden",
+                    overflow: showCheckout && isMobile ? "auto" : "hidden",
                     border: "1px solid rgba(255, 255, 255, 0.15)",
                     display: "flex",
                     flexDirection: "column",
                     position: "relative",
                     transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                    margin: 0,
                 }}>
                     <div style={{
                         position: "absolute",

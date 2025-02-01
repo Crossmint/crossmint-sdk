@@ -15,7 +15,7 @@ export default function MemecoinCheckoutContent({ setShowCheckout, showCheckout 
     const [slippage, setSlippage] = useState("5");
     const [displaySlippage, setDisplaySlippage] = useState("5");
     const [showCompletedMessage, setShowCompletedMessage] = useState(false);
-
+    const [isMobile, setIsMobile] = useState(false);
 
     // Get the estimated token quantity from the order
     const estimatedTokens = order?.lineItems?.[0]?.quantity ?? 0;
@@ -30,6 +30,17 @@ export default function MemecoinCheckoutContent({ setShowCheckout, showCheckout 
             return () => clearTimeout(timer);
         }
     }, [order]);
+
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -89,41 +100,42 @@ export default function MemecoinCheckoutContent({ setShowCheckout, showCheckout 
             <div style={{
                 position: "relative",
                 width: "100%",
-                height: "100%",
+                minHeight: "100%",
                 display: "flex",
                 flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
             }}>
                 <div style={{
                     display: "flex",
                     width: "100%",
-                    height: "100%",
+                    minHeight: "100%",
+                    flexDirection: isMobile ? "column" : "row",
                 }}>
                     {/* Left Container */}
                     {shouldShowLeftColumn && (
                         <div style={{
-                            flex: "1",
-                            padding: "2rem",
+                            width: "100%",
+                            padding: "1.5rem",
                             display: "flex",
                             flexDirection: "column",
-                            gap: "2rem",
+                            gap: "1.5rem",
                             background: "linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%)",
-                            borderRight: "1px solid rgba(255, 255, 255, 0.1)",
+                            borderBottom: isMobile ? "1px solid rgba(255, 255, 255, 0.1)" : "none",
+                            borderRight: isMobile ? "none" : "1px solid rgba(255, 255, 255, 0.1)",
                         }}>
                             {/* Memecoin Image */}
                             <div style={{
                                 display: "flex",
                                 justifyContent: "center",
                                 alignItems: "center",
+                                marginBottom: isMobile ? "0.5rem" : "0",
                             }}>
                                 <img
                                     src="https://dd.dexscreener.com/ds-data/tokens/solana/6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN.png?size=xl&key=f02e9e"
                                     alt="Memecoin"
                                     style={{
-                                        width: "100px",
-                                        height: "100px",
-                                        borderRadius: "20px",
+                                        width: "64px",
+                                        height: "64px",
+                                        borderRadius: "12px",
                                         display: "block",
                                         transition: "all 0.2s ease-in-out",
                                         filter: "drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2))",
@@ -134,7 +146,7 @@ export default function MemecoinCheckoutContent({ setShowCheckout, showCheckout 
                             <div style={{
                                 display: "flex",
                                 flexDirection: "column",
-                                gap: "1.5rem",
+                                gap: "1.25rem",
                             }}>
                                 {/* Price Input */}
                                 <div style={{
@@ -146,6 +158,7 @@ export default function MemecoinCheckoutContent({ setShowCheckout, showCheckout 
                                         display: "flex",
                                         justifyContent: "space-between",
                                         alignItems: "center",
+                                        marginBottom: "0.25rem",
                                     }}>
                                         <label style={{
                                             fontSize: "0.875rem",
@@ -173,10 +186,10 @@ export default function MemecoinCheckoutContent({ setShowCheckout, showCheckout 
                                                 background: "rgba(255, 255, 255, 0.06)",
                                                 border: "1px solid rgba(255, 255, 255, 0.12)",
                                                 borderRadius: "4px",
-                                                padding: "0.75rem",
-                                                paddingLeft: "2.5rem",
+                                                padding: isMobile ? "0.6rem" : "0.75rem",
+                                                paddingLeft: isMobile ? "2rem" : "2.5rem",
                                                 color: "#ffffff",
-                                                fontSize: "1rem",
+                                                fontSize: isMobile ? "0.9rem" : "1rem",
                                                 width: "100%",
                                                 outline: "none",
                                             }}
@@ -208,6 +221,7 @@ export default function MemecoinCheckoutContent({ setShowCheckout, showCheckout 
                                     display: "flex",
                                     flexDirection: "column",
                                     gap: "0.5rem",
+                                    marginTop: "0.5rem",
                                 }}>
                                     <div style={{
                                         display: "flex",
@@ -393,72 +407,17 @@ export default function MemecoinCheckoutContent({ setShowCheckout, showCheckout 
 
                     {/* Right Container - Checkout */}
                     <div style={{
-                        width: shouldShowLeftColumn ? "480px" : "100%",
-                        height: "100%",
+                        width: "100%",
+                        flex: isMobile ? "1" : "0 0 480px",
                         display: "flex",
                         flexDirection: "column",
+                        height: isMobile ? "auto" : "100%",
                     }}>
-                        <style jsx>{`
-                            input[type="range"] {
-                                -webkit-appearance: none;
-                                appearance: none;
-                            }
-                            input[type="range"]::-webkit-slider-thumb {
-                                -webkit-appearance: none;
-                                appearance: none;
-                                width: 24px;
-                                height: 24px;
-                                border-radius: 50%;
-                                background: #059669;
-                                border: 2px solid rgba(255, 255, 255, 0.2);
-                                cursor: pointer;
-                                position: relative;
-                                z-index: 2;
-                                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-                                margin-top: -6px;
-                            }
-                            input[type="range"]::-moz-range-thumb {
-                                width: 24px;
-                                height: 24px;
-                                border-radius: 50%;
-                                background: #059669;
-                                border: 2px solid rgba(255, 255, 255, 0.2);
-                                cursor: pointer;
-                                position: relative;
-                                z-index: 2;
-                                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-                            }
-                            input[type="range"]:focus {
-                                outline: none;
-                            }
-                            input[type="text"]:hover {
-                                border-color: rgba(255, 255, 255, 0.2) !important;
-                            }
-                            input[type="text"]:focus {
-                                border-color: rgba(255, 255, 255, 0.25) !important;
-                            }
-                            .custom-scrollbar::-webkit-scrollbar {
-                                width: 8px;
-                            }
-                            .custom-scrollbar::-webkit-scrollbar-track {
-                                background: rgba(255, 255, 255, 0.06);
-                                border-radius: 4px;
-                            }
-                            .custom-scrollbar::-webkit-scrollbar-thumb {
-                                background: rgba(255, 255, 255, 0.2);
-                                border-radius: 4px;
-                                transition: background 0.2s ease;
-                            }
-                            .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                                background: rgba(255, 255, 255, 0.3);
-                            }
-                        `}</style>
                         <div style={{
-                            flex: 1,
                             padding: "1.5rem",
-                            height: "100%",
-                            overflowY: "auto",
-                        }} className="custom-scrollbar">
+                            height: "auto",
+                            minHeight: isMobile ? "600px" : "auto",
+                        }}>
                             <MemecoinCheckoutWrapper
                                 price={price}
                                 slippage={(parseFloat(slippage) * 10).toString()}
