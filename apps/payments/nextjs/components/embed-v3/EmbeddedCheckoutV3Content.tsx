@@ -41,20 +41,166 @@ function CrossmintEmbeddedCheckoutWrapper() {
             payment={{
                 receiptEmail: "maxwell@paella.dev",
                 crypto: {
-                    enabled: true,
+                    enabled: false,
                 },
                 fiat: {
                     enabled: true,
                 },
                 defaultMethod: "fiat",
             }}
-            // appearance={{
-            //     variables: {
-            //         colors: {
-            //             backgroundPrimary: "black",
-            //         },
-            //     },
-            // }}
+        // appearance={{
+        //     variables: {
+        //         colors: {
+        //             backgroundPrimary: "black",
+        //         },
+        //     },
+        // }}
         />
     );
 }
+
+interface MemecoinCheckoutWrapperProps {
+    price: string;
+    slippage: string;
+}
+
+export function MemecoinCheckoutWrapper({ price, slippage }: MemecoinCheckoutWrapperProps) {
+    return (
+        <CrossmintEmbeddedCheckout
+            recipient={{
+                walletAddress: "4y3HNUyoSdzTjFwpAYTdFPXqGYiMneJjnefWYiSgd52Z",
+            }}
+            lineItems={{
+                "tokenLocator": "solana:6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN",
+
+                callData: {
+                    totalPrice: price,
+                    slippageBps: slippage
+                }
+            }}
+            payment={{
+
+                receiptEmail: "test@email.com",
+                crypto: {
+                    enabled: false,
+                },
+                fiat: {
+                    allowedMethods: {
+                        card: true, // Enable/disable credit cards
+                        applePay: true, // Enable/disable Apple Pay
+                        googlePay: true, // Enable/disable Google Pay
+                    },
+                    enabled: true,
+                },
+                defaultMethod: "fiat",
+            }}
+            appearance={{
+                fonts: [
+                    { cssSrc: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" }
+                ],
+                variables: {
+                    fontFamily: "Inter, system-ui, sans-serif",
+                    fontSizeUnit: "4px",
+                    spacingUnit: "0.3rem",
+                    borderRadius: "4px",
+                    colors: {
+                        borderPrimary: "rgba(255, 255, 255, 0.12)",
+                        backgroundPrimary: "rgba(255, 255, 255, 0.04)",
+                        textPrimary: "rgba(255, 255, 255, 0.9)",
+                        textSecondary: "rgba(255, 255, 255, 0.4)",
+                        accent: "#059669",
+                    },
+                },
+                rules: {
+                    Input: {
+                        borderRadius: "4px",
+                        font: {
+                            family: "Inter",
+                            size: "14px",
+                            weight: "400",
+                        },
+                        colors: {
+                            text: "rgba(255, 255, 255, 0.9)",
+                            background: "rgba(255, 255, 255, 0.06)",
+                            border: "rgba(255, 255, 255, 0.12)",
+                            boxShadow: "none",
+                            placeholder: "rgba(255, 255, 255, 0.4)",
+                        },
+                        hover: {
+                            colors: {
+                                border: "rgba(255, 255, 255, 0.2)",
+                            },
+                        },
+                        focus: {
+                            colors: {
+                                border: "rgba(255, 255, 255, 0.25)",
+                                boxShadow: "none",
+                            },
+                        },
+                    },
+                    Label: {
+                        font: {
+                            family: "Inter",
+                            size: "13px",
+                            weight: "500",
+                        },
+                        colors: {
+                            text: "rgba(255, 255, 255, 0.5)",
+                        },
+                    },
+                    Tab: {
+                        borderRadius: "4px",
+                        font: {
+                            family: "Inter",
+                            size: "13px",
+                            weight: "500",
+                        },
+                        colors: {
+                            text: "rgba(255, 255, 255, 0.5)",
+                            background: "transparent",
+                        },
+                        selected: {
+                            colors: {
+                                text: "rgba(255, 255, 255, 0.9)",
+                                background: "rgba(255, 255, 255, 0.08)",
+                            },
+                        },
+                        hover: {
+                            colors: {
+                                background: "rgba(255, 255, 255, 0.04)",
+                            },
+                        },
+                    },
+                    PrimaryButton: {
+                        borderRadius: "4px",
+                        font: {
+                            family: "Inter",
+                            size: "15px",
+                            weight: "600",
+                        },
+                        colors: {
+                            text: "#FFFFFF",
+                            background: "#059669",
+                        },
+                        hover: {
+                            colors: {
+                                text: "#FFFFFF",
+                                background: "#10b981",
+                            },
+                        },
+                        disabled: {
+                            colors: {
+                                text: "rgba(255, 255, 255, 0.4)",
+                                background: "rgba(255, 255, 255, 0.04)",
+                            },
+                        },
+                    },
+                    // DestinationInput: {
+                    //     display: "hidden"
+                    // },
+                },
+            }}
+        />
+    );
+}
+
