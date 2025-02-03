@@ -48,7 +48,7 @@ const address = wallet.address;
 #### Passkey Wallets
 
 ```typescript
-const signer = sdk.createPasskeySigner({ name: "My Wallet" })
+const signer = await sdk.createPasskeySigner({ name: "My Wallet" })
 const wallet = await sdk.getOrCreateWallet(
   {
     jwt: USER_TOKEN,
@@ -122,6 +122,41 @@ const walletClient = wallet.client.wallet;
 const signature = await walletClient.signMessage({
   message: "Hello, Crossmint!"
 })
+```
+
+## Migrating from `0.1.x`
+
+`0.2.x` SDK strives to be backwards-compatible with `0.1.x` as much as possible.
+
+However, since the wallets are now powered by Crossmint API, some functionality is not available anymore.
+
+Specifically, some functions from the `SmartWalletClient` object are not available anymore:
+
+- `request`
+- `writeContract`
+- `deployContract`
+- `account`
+- `sendUserOperation`
+- `prepareUserOperationRequest`
+
+Additionally, the passkey creation flow is changed. To create a passkey-powered wallet, you first create a passkey signer:
+
+```typescript
+const signer = await sdk.createPasskeySigner({ name: "My Wallet" })
+```
+
+Then use that signer during wallet creation:
+
+```typescript
+const wallet = await sdk.getOrCreateWallet(
+  {
+    jwt: USER_TOKEN,
+  },
+  NETWORK,
+  {
+    signer,
+  }
+);
 ```
 
 ## API Reference
@@ -256,6 +291,3 @@ interface SmartWalletClient {
 ``` 
 
 Full reference is available in the [docs](https://docs.crossmint.com/sdk-reference/smart-wallets/introduction).
-
-<!-- ## Migrating from `0.1.x` -->
-<!-- TODO -->
