@@ -90,6 +90,17 @@ export interface TransactionResponse {
         userOperationHash: Hex;
         txId?: Hex;
     };
+    error?: {
+        message: string;
+        reason: 'execution_reverted';
+        revert: {
+            type: 'contract_call' | 'wallet_authorization' | 'wallet_deployment';
+            reason: string;
+            reasonData?: string;
+            explorerLink?: string;   
+            simulationLink?: string;
+        }
+    };
 }
 
 type Approval =
