@@ -1,5 +1,6 @@
 import { type APIKeyEnvironmentPrefix, validateAPIKey } from "@crossmint/common-sdk-base";
 import { stringify } from "viem";
+import { WebAuthnP256 } from "ox";
 
 import type { SmartWalletChain } from "./evm/chains";
 import { isMainnetChain, isTestnetChain } from "./evm/chains";
@@ -8,7 +9,7 @@ import { scwDatadogLogger, scwLogger } from "./services";
 import type { EVMSmartWallet } from "./evm/wallet";
 import { ErrorProcessor } from "./error/processor";
 import { isClient } from "@crossmint/client-sdk-base";
-import { SmartWalletService, type UserParams, type WalletParams } from "./smartWalletService";
+import { SmartWalletService, type UserParams, type WalletParams, type PasskeySigner } from "./smartWalletService";
 import { CrossmintApiService } from "./apiService";
 
 export interface SmartWalletSDKInitParams {
@@ -73,6 +74,16 @@ export class SmartWalletSDK {
                 );
             }
         });
+    }
+
+    async createPasskeySigner(name: string): Promise<PasskeySigner> {
+        const credential = await WebAuthnP256.createCredential({
+            name,
+        });
+        return {
+            type: "PASSKEY",
+            credential,
+        };
     }
 
     private assertValidChain(chain: SmartWalletChain) {
