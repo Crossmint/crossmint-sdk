@@ -47,9 +47,6 @@ export class EVMSmartWallet {
      * @param toAddress The recipient's address.
      * @param config The transfer configuration, including token details and amount.
      * @returns The transaction hash.
-     * @throws {SmartWalletError} If there's a chain mismatch between this wallet and the input configuration.
-     * @throws {SendTransactionError} If the transaction fails to send. Contains the error thrown by the viem client.
-     * @throws {SendTransactionExecutionRevertedError} A subclass of SendTransactionError if the transaction fails due to a contract execution error.
      */
     public async transferToken(toAddress: Address, config: TransferType): Promise<string> {
         if (this.chain !== config.token.chain) {
@@ -82,8 +79,6 @@ export class EVMSmartWallet {
      * @param functionName the name of the smart contract function to be called
      * @param args the arguments to be passed to the function
      * @returns The transaction hash.
-     * @throws `SendTransactionError` if the transaction fails to send. Contains the error thrown by the viem client.
-     * @throws `SendTransactionExecutionRevertedError`, a subclass of `SendTransactionError` if the transaction fails due to a contract execution error.
      *
      * **Passing a typed ABI:**
      * @example
