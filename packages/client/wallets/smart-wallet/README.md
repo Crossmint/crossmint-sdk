@@ -22,12 +22,12 @@ For detailed instructions on how to obtain a JWT token, please refer to [User Au
 import { SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
 import { privateKeyToAccount } from "viem";
 
-const sdk = SmartWalletSDK.init({ clientApiKey: "YOUR_API_KEY" });
+const sdk = SmartWalletSDK.init({ clientApiKey: YOUR_API_KEY });
 const account = privateKeyToAccount(privateKey);
 
 const wallet = await sdk.getOrCreateWallet(
   {
-    jwt: "USER_TOKEN",
+    jwt: USER_TOKEN,
   },
   "base-sepolia",
   {
@@ -38,8 +38,7 @@ const wallet = await sdk.getOrCreateWallet(
   }
 );
 
-const walletClient = wallet.client.wallet;
-const address = walletClient.getAddress();
+const address = wallet.address;
 ```
 
 ## Examples
@@ -52,7 +51,7 @@ const address = walletClient.getAddress();
 const signer = sdk.createPasskeySigner({ name: "My Wallet" })
 const wallet = await sdk.getOrCreateWallet(
   {
-    jwt: "USER_TOKEN",
+    jwt: USER_TOKEN,
   },
   "base-sepolia",
   {
@@ -70,7 +69,7 @@ import { privateKeyToAccount } from "viem";
 const account = privateKeyToAccount(privateKey);
 const wallet = await sdk.getOrCreateWallet(
   {
-    jwt: "USER_TOKEN",
+    jwt: USER_TOKEN,
   },
   "base-sepolia",
   {
@@ -91,7 +90,7 @@ import type { EIP1193Provider } from "viem";
 const providerSigner = window.ethereum as EIP1193Provider;
 const wallet = await sdk.getOrCreateWallet(
   {
-    jwt: "USER_TOKEN",
+    jwt: USER_TOKEN,
   },
   "base-sepolia",
   {
@@ -107,11 +106,11 @@ import { encodeFunctionData, erc20Abi } from "viem";
 
 const walletClient = wallet.client.wallet;
 const txHash = await walletClient.sendTransaction({
-  to: "TOKEN_ADDRESS",
+  to: TOKEN_ADDRESS,
   data: encodeFunctionData({
     abi: erc20Abi,
     functionName: "transfer",
-    args: ["RECEIVER_ADDRESS", "TRANSFER_AMOUNT"],
+    args: [RECEIVER_ADDRESS, TRANSFER_AMOUNT],
   })
 })
 ```
@@ -138,7 +137,7 @@ The main entry point for interacting with smart wallets.
 Initializes the SDK with your client-side API key.
 
 ```typescript
-const sdk = SmartWalletSDK.init({ clientApiKey: "YOUR_API_KEY" });
+const sdk = SmartWalletSDK.init({ clientApiKey: YOUR_API_KEY });
 ```
 
 #### Instance Methods
@@ -150,7 +149,7 @@ Creates or retrieves a smart wallet for the specified user.
 ```typescript
 const wallet = await sdk.getOrCreateWallet(
   {
-    jwt: "USER_TOKEN" 
+    jwt: USER_TOKEN 
   },
   "base-sepolia",
   {
