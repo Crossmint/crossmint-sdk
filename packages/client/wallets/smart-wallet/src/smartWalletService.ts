@@ -9,6 +9,7 @@ import {
     type SignableMessage,
     type TypedData,
     type TypedDataDefinition,
+    stringify,
 } from "viem";
 import { WebAuthnP256 } from "ox";
 
@@ -27,6 +28,7 @@ import { EVMSmartWallet } from "./evm/wallet";
 import { getAlchemyRPC } from "./evm/rpc";
 import { sleep } from "./utils";
 import { ENTRY_POINT_ADDRESS, STATUS_POLLING_INTERVAL_MS } from "./utils/constants";
+import { InvalidMessageFormatError, MessageSigningError, TransactionApprovalError, TypedDataSigningError, TransactionFailedError, TransactionNotFoundError, InvalidTypedDataError } from "./error";
 
 export type ViemAccount = {
     type: "VIEM_ACCOUNT";
@@ -50,6 +52,13 @@ export interface UserParams {
 export class SmartWalletService {
     constructor(private readonly crossmintApiService: CrossmintApiService) {}
 
+    /*
+    * Retrieves or creates a wallet for the specified user.
+    * @param user - The user parameters.
+    * @param chain - The chain to create the wallet on.
+    * @param walletParams - The wallet parameters.
+    * @returns The smart wallet.
+    */
     public async getOrCreate(
         user: UserParams,
         chain: SmartWalletChain,
@@ -90,7 +99,7 @@ export class SmartWalletService {
 
             signMessage: async (parameters: { message: SignableMessage }) => {
                 if (typeof parameters.message !== "string") {
-                    throw new Error("Message must be a string");
+                    throw new InvalidMessageFormatError("Message must be a string");
                 }
                 const signerLocator = await this.getSignerLocator(adminSigner);
 
@@ -108,7 +117,7 @@ export class SmartWalletService {
                 // Approve signature
                 const pendingApprovals = signatureCreationResponse.approvals.pending;
                 if (pendingApprovals.length !== 1) {
-                    throw new Error(`Expected 1 pending approval, got ${pendingApprovals.length}`);
+                    throw new MessageSigningError(`Expected 1 pending approval, got ${pendingApprovals.length}`);
                 }
                 const pendingApproval = pendingApprovals[0];
                 const signature = await this.approveSignature(
@@ -126,7 +135,7 @@ export class SmartWalletService {
                 }
 
                 if (signatureResponse?.status === "failed") {
-                    throw new Error("Message signing failed");
+                    throw new MessageSigningError("Message signing failed");
                 }
 
                 return signature;
@@ -142,7 +151,7 @@ export class SmartWalletService {
 
                 const { domain, message, primaryType, types } = parameters;
                 if (!domain || !message || !types) {
-                    throw new Error("Invalid typed data");
+                    throw new InvalidTypedDataError("Invalid typed data");
                 }
 
                 // Create signature
@@ -165,7 +174,7 @@ export class SmartWalletService {
                 // Approve signature
                 const pendingApprovals = signatureCreationResponse.approvals.pending;
                 if (pendingApprovals.length !== 1) {
-                    throw new Error(`Expected 1 pending approval, got ${pendingApprovals.length}`);
+                    throw new TypedDataSigningError(`Expected 1 pending approval, got ${pendingApprovals.length}`);
                 }
                 const pendingApproval = pendingApprovals[0];
                 const signature = await this.approveSignature(
@@ -183,7 +192,7 @@ export class SmartWalletService {
                 }
 
                 if (signatureResponse?.status === "failed") {
-                    throw new Error("Typed data signing failed");
+                    throw new TypedDataSigningError("Typed data signing failed");
                 }
 
                 return signature;
@@ -214,7 +223,7 @@ export class SmartWalletService {
                 // Approve transaction
                 const pendingApprovals = transactionCreationResponse.approvals.pending;
                 if (pendingApprovals.length !== 1) {
-                    throw new Error(`Expected 1 pending approval, got ${pendingApprovals.length}`);
+                    throw new TransactionApprovalError(`Expected 1 pending approval, got ${pendingApprovals.length}`);
                 }
                 const pendingApproval = pendingApprovals[0];
                 await this.approveTransaction(user, adminSigner, transactionId, pendingApproval.message);
@@ -227,13 +236,13 @@ export class SmartWalletService {
                 }
 
                 if (transactionResponse?.status === "failed") {
-                    throw new Error("Transaction sending failed");
+                    throw new TransactionFailedError("Transaction sending failed", stringify(transactionResponse.error));
                 }
 
                 // Get transaction hash
                 const transactionHash = transactionResponse?.onChain.txId;
                 if (!transactionHash) {
-                    throw new Error("Transaction hash not found");
+                    throw new TransactionNotFoundError("Transaction hash not found");
                 }
                 return transactionHash;
             },

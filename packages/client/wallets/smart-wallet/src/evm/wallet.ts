@@ -11,6 +11,7 @@ import {
 } from "viem";
 
 import type { CrossmintApiService } from "@/apiService";
+import { InvalidTransferChainError } from "@/error";
 
 import type { SmartWalletChain } from "./chains";
 import type { SmartWalletClient } from "./smartWalletClient";
@@ -46,11 +47,12 @@ export class EVMSmartWallet {
      * Transfers tokens from the smart wallet to a specified address.
      * @param toAddress The recipient's address.
      * @param config The transfer configuration, including token details and amount.
+     * @throws {InvalidTransferChainError} If the chain of the token does not match the chain of the wallet.
      * @returns The transaction hash.
      */
     public async transferToken(toAddress: Address, config: TransferType): Promise<string> {
         if (this.chain !== config.token.chain) {
-            throw new Error(
+            throw new InvalidTransferChainError(
                 `Chain mismatch: Expected ${config.token.chain}, but got ${this.chain}. Ensure you are interacting with the correct blockchain.`
             );
         }

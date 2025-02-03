@@ -4,7 +4,7 @@ import { WebAuthnP256 } from "ox";
 
 import type { SmartWalletChain } from "./evm/chains";
 import { isMainnetChain, isTestnetChain } from "./evm/chains";
-import { SmartWalletError } from "./error";
+import { InvalidApiKeyError, InvalidChainError, SmartWalletError, WalletCreationError } from "./error";
 import { scwDatadogLogger, scwLogger } from "./services";
 import type { EVMSmartWallet } from "./evm/wallet";
 import { ErrorProcessor } from "./error/processor";
@@ -26,13 +26,13 @@ export class SmartWalletSDK {
 
     /**
      * Initializes the SDK with the **client side** API key obtained from the Crossmint console.
-     * @throws error if the api key is not formatted correctly.
+     * @throws {InvalidApiKeyError} if the api key is not formatted correctly.
      */
     static init(params: SmartWalletSDKInitParams): SmartWalletSDK {
         const { clientApiKey } = params;
         const validationResult = validateAPIKey(clientApiKey);
         if (!validationResult.isValid) {
-            throw new Error("API key invalid");
+            throw new InvalidApiKeyError("API key invalid");
         }
 
         const crossmintService = new CrossmintApiService(clientApiKey);
@@ -50,6 +50,10 @@ export class SmartWalletSDK {
      * ```ts
      * const wallet = await smartWalletSDK.getOrCreateWallet({ jwt: "xxx" }, "base");
      * ```
+     * 
+     * @throws {SmartWalletError} if the SDK is used server side.
+     * @throws {InvalidChainError} if the chain is not valid.
+     * @throws {WalletCreationError} if the wallet creation fails.
      */
     async getOrCreateWallet(
         user: UserParams,
@@ -67,7 +71,7 @@ export class SmartWalletSDK {
             } catch (error: unknown) {
                 throw this.errorProcessor.map(
                     error,
-                    new SmartWalletError(
+                    new WalletCreationError(
                         `Wallet creation failed: ${(error as { message: string }).message}.`,
                         stringify(error)
                     )
@@ -88,7 +92,7 @@ export class SmartWalletSDK {
 
     private assertValidChain(chain: SmartWalletChain) {
         if (!this.validChain(chain)) {
-            throw new SmartWalletError(
+            throw new InvalidChainError(
                 `The selected chain "${chain}" is not available in "${this.crossmintEnv}". Either set a valid chain or check you're using an API key for the environment you're trying to target.`
             );
         }
