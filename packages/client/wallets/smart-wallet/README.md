@@ -91,7 +91,7 @@ import type { EIP1193Provider } from "viem";
 const providerSigner = window.ethereum as EIP1193Provider;
 const wallet = await sdk.getOrCreateWallet(
   {
-    jwt,
+    jwt: "USER_TOKEN",
   },
   "base-sepolia",
   {
@@ -185,6 +185,12 @@ interface WalletParams {
 // Use existing Web3 wallet or private key
 type ExternalSigner = EIP1193Provider | ViemAccount;
 
+// Use private key authentication
+interface ViemAccount {
+  type: "VIEM_ACCOUNT";
+  account: LocalAccount & { source: "custom" };
+};
+
 // Use passkey authentication
 interface PasskeySigner {
   type: "PASSKEY";
@@ -198,6 +204,15 @@ The wallet instance returned by `getOrCreateWallet()`. Provides methods for inte
 
 ```typescript
 interface EVMSmartWallet {
+  // viem clients that provide an interface for core wallet functionality.
+  client: {
+      public: PublicClient<HttpTransport>;
+      wallet: SmartWalletClient;
+  };
+
+  // The EVM chain of the smart wallet.
+  chain: SmartWalletChain;
+
   // The address of the smart wallet.
   address(): Address;
 
@@ -218,6 +233,8 @@ interface EVMSmartWallet {
 ``` 
 
 ### SmartWalletClient
+
+The client instance available via `wallet.client.wallet`. Provides methods for interacting with the wallet:
 
 ```typescript
 interface SmartWalletClient {
