@@ -139,7 +139,7 @@ export class SmartWalletService {
                     signatureResponse = await this.crossmintApiService.getSignature(user, signatureId);
                 }
 
-                if (signatureResponse?.status === "failed") {
+                if (signatureResponse.status === "failed") {
                     throw new MessageSigningError("Message signing failed");
                 }
 
@@ -196,7 +196,7 @@ export class SmartWalletService {
                     signatureResponse = await this.crossmintApiService.getSignature(user, signatureId);
                 }
 
-                if (signatureResponse?.status === "failed") {
+                if (signatureResponse.status === "failed") {
                     throw new TypedDataSigningError("Typed data signing failed");
                 }
 
@@ -281,13 +281,13 @@ export class SmartWalletService {
             transactionResponse = await this.crossmintApiService.getTransaction(user, transactionId);
         }
 
-        if (transactionResponse?.status === "failed") {
+        if (transactionResponse.status === "failed") {
             throw new TransactionFailedError("Transaction sending failed", stringify(transactionResponse.error));
         }
 
         // Get transaction hash
-        const transactionHash = transactionResponse?.onChain.txId;
-        if (!transactionHash) {
+        const transactionHash = transactionResponse.onChain.txId;
+        if (transactionHash === undefined) {
             throw new TransactionNotFoundError("Transaction hash not found");
         }
         return transactionHash;
