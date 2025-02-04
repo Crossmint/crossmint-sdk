@@ -1,4 +1,4 @@
-import type { Address, Hex, SignableMessage, TypedData, TypedDataDefinition } from "viem";
+import type { Abi, Address, ContractFunctionArgs, ContractFunctionName, Hex, SignableMessage, TypedData, TypedDataDefinition, WriteContractParameters } from "viem";
 
 import type {
     // biome-ignore lint/correctness/noUnusedImports: used in JSDoc
@@ -67,4 +67,31 @@ export interface SmartWalletClient {
         data?: Hex;
         value?: bigint;
     }) => Promise<Hex>;
+
+    /**
+     * Writes to a contract.
+     * @param parameters - The parameters.
+     * @returns The transaction hash
+     * @throws {TransactionApprovalError} if the transaction is not approved.
+     * @throws {TransactionFailedError} if the transaction fails.
+     * @throws {TransactionNotFoundError} if the transaction is not found.
+     */
+    writeContract<
+        const TAbi extends Abi | readonly unknown[],
+        TFunctionName extends ContractFunctionName<TAbi, "nonpayable" | "payable"> = ContractFunctionName<
+            TAbi,
+            "nonpayable" | "payable"
+        >,
+        TArgs extends ContractFunctionArgs<TAbi, "nonpayable" | "payable", TFunctionName> = ContractFunctionArgs<
+            TAbi,
+            "nonpayable" | "payable",
+            TFunctionName
+        >,
+    >({
+        address,
+        abi,
+        functionName,
+        args,
+        value,
+    }: Omit<WriteContractParameters<TAbi, TFunctionName, TArgs>, "chain" | "account">): Promise<Hex>;
 }
