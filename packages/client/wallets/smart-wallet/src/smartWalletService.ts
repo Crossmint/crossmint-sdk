@@ -10,6 +10,11 @@ import {
     type TypedData,
     type TypedDataDefinition,
     stringify,
+    type Abi,
+    type ContractFunctionArgs,
+    type ContractFunctionName,
+    type WriteContractParameters,
+    encodeFunctionData,
 } from "viem";
 import { WebAuthnP256 } from "ox";
 
@@ -203,50 +208,89 @@ export class SmartWalletService {
                 data?: Hex;
                 value?: bigint;
             }) => {
-                const signerLocator = await this.getSignerLocator(adminSigner);
-                // Create transaction
-                const transactionCreationResponse = await this.crossmintApiService.createTransaction(user, {
-                    params: {
-                        signer: signerLocator,
-                        chain,
-                        calls: [
-                            {
-                                to: parameters.to,
-                                value: parameters.value ? parameters.value.toString() : "0",
-                                data: parameters.data ?? "0x",
-                            },
-                        ],
-                    },
-                });
-                const transactionId = transactionCreationResponse.id;
-
-                // Approve transaction
-                const pendingApprovals = transactionCreationResponse.approvals.pending;
-                if (pendingApprovals.length !== 1) {
-                    throw new TransactionApprovalError(`Expected 1 pending approval, got ${pendingApprovals.length}`);
-                }
-                const pendingApproval = pendingApprovals[0];
-                await this.approveTransaction(user, adminSigner, transactionId, pendingApproval.message);
-
-                // Get transaction status until success
-                let transactionResponse: TransactionResponse | null = null;
-                while (transactionResponse === null || transactionResponse.status === "pending") {
-                    await sleep(STATUS_POLLING_INTERVAL_MS);
-                    transactionResponse = await this.crossmintApiService.getTransaction(user, transactionId);
-                }
-
-                if (transactionResponse?.status === "failed") {
-                    throw new TransactionFailedError("Transaction sending failed", stringify(transactionResponse.error));
-                }
-
-                // Get transaction hash
-                const transactionHash = transactionResponse?.onChain.txId;
-                if (!transactionHash) {
-                    throw new TransactionNotFoundError("Transaction hash not found");
-                }
-                return transactionHash;
+                return await this.sendTransactionInternal(parameters, adminSigner, user, chain);
             },
+
+            writeContract: async<
+                const TAbi extends Abi | readonly unknown[],
+                TFunctionName extends ContractFunctionName<TAbi, "nonpayable" | "payable"> = ContractFunctionName<
+                    TAbi,
+                    "nonpayable" | "payable"
+                >,
+                TArgs extends ContractFunctionArgs<TAbi, "nonpayable" | "payable", TFunctionName> = ContractFunctionArgs<
+                    TAbi,
+                    "nonpayable" | "payable",
+                    TFunctionName
+                >,
+            >({
+                address,
+                abi,
+                functionName,
+                args,
+                value,
+            }: Omit<WriteContractParameters<TAbi, TFunctionName, TArgs>, "chain" | "account">): Promise<Hex> => {
+                // @ts-ignore
+                const data = encodeFunctionData({
+                    abi,
+                    functionName,
+                    args,
+                });
+                return await this.sendTransactionInternal({
+                    to: address,
+                    data,
+                    value,
+                }, adminSigner, user, chain);
+            }
         };
+    }
+
+    private async sendTransactionInternal(parameters: {
+        to: Address;
+        data?: Hex;
+        value?: bigint;
+    }, adminSigner: ExternalSigner | PasskeySigner, user: UserParams, chain: SmartWalletChain): Promise<Hex> {
+        const signerLocator = await this.getSignerLocator(adminSigner);
+        // Create transaction
+        const transactionCreationResponse = await this.crossmintApiService.createTransaction(user, {
+            params: {
+                signer: signerLocator,
+                chain,
+                calls: [
+                    {
+                        to: parameters.to,
+                        value: parameters.value ? parameters.value.toString() : "0",
+                        data: parameters.data ?? "0x",
+                    },
+                ],
+            },
+        });
+        const transactionId = transactionCreationResponse.id;
+
+        // Approve transaction
+        const pendingApprovals = transactionCreationResponse.approvals.pending;
+        if (pendingApprovals.length !== 1) {
+            throw new TransactionApprovalError(`Expected 1 pending approval, got ${pendingApprovals.length}`);
+        }
+        const pendingApproval = pendingApprovals[0];
+        await this.approveTransaction(user, adminSigner, transactionId, pendingApproval.message);
+
+        // Get transaction status until success
+        let transactionResponse: TransactionResponse | null = null;
+        while (transactionResponse === null || transactionResponse.status === "pending") {
+            await sleep(STATUS_POLLING_INTERVAL_MS);
+            transactionResponse = await this.crossmintApiService.getTransaction(user, transactionId);
+        }
+
+        if (transactionResponse?.status === "failed") {
+            throw new TransactionFailedError("Transaction sending failed", stringify(transactionResponse.error));
+        }
+
+        // Get transaction hash
+        const transactionHash = transactionResponse?.onChain.txId;
+        if (!transactionHash) {
+            throw new TransactionNotFoundError("Transaction hash not found");
+        }
+        return transactionHash;
     }
 
     private async createWallet(user: UserParams, signer: ExternalSigner | PasskeySigner): Promise<CreateWalletResponse> {
