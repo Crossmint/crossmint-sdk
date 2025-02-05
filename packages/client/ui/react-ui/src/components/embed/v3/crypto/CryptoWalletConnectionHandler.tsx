@@ -6,7 +6,7 @@ import { DynamicContext, useDynamicContext } from "@dynamic-labs/sdk-react-core"
 import { SolanaWalletConnectors } from "@dynamic-labs/solana";
 import { type Dispatch, type SetStateAction, useContext, useEffect, useState } from "react";
 import { handleSendTransaction } from "./utils/handleSendTransaction";
-import { dynamicChainToCrossmintChain } from "@/utils/dynamic/dynamicChainToCrossmintChain";
+import { ChainNotSupportedError, dynamicChainToCrossmintChain } from "@/utils/dynamic/dynamicChainToCrossmintChain";
 
 export function CryptoWalletConnectionHandler(props: {
     iframeClient: EmbeddedCheckoutV3IFrameEmitter | null;
@@ -49,7 +49,18 @@ export function CryptoWalletConnectionHandler(props: {
                             return false;
                         }
 
-                        const chain = await dynamicChainToCrossmintChain(wallet);
+                        let chain;
+                        try {
+                            chain = await dynamicChainToCrossmintChain(wallet);
+                        } catch(e) {
+                            if (e instanceof ChainNotSupportedError) {
+                                iframeClient?.send("crypto:connect-wallet.failed", {
+                                    error: `Chain with id ${e.chainId} is not supported for paying with Crypto. Please change the network in your wallet and try again.`,
+                                });
+                                return false;
+                            }
+                            throw e;
+                        }
 
                         iframeClient?.send("crypto:connect-wallet.success", {
                             address,

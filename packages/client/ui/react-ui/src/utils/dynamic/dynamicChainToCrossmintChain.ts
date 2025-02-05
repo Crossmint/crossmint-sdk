@@ -1,6 +1,15 @@
 import { chainIdToBlockchain, type BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 import type { HandleConnectedWallet } from "@dynamic-labs/sdk-react-core";
 
+export class ChainNotSupportedError extends Error {
+    chainId: number;
+
+    constructor(chainId: number) {
+        super(`ChainId ${chainId} is not supported`);
+        this.chainId = chainId;
+    }
+};
+
 export async function dynamicChainToCrossmintChain(
     wallet: Parameters<HandleConnectedWallet>[0]
 ): Promise<BlockchainIncludingTestnet> {
@@ -14,7 +23,7 @@ export async function dynamicChainToCrossmintChain(
     }
     const chainFromChainId = chainIdToBlockchain(chainId);
     if (!chainFromChainId) {
-        throw new Error(`ChainId ${chainId} is not supported`);
+        throw new ChainNotSupportedError(chainId);
     }
     return chainFromChainId as BlockchainIncludingTestnet;
 }
