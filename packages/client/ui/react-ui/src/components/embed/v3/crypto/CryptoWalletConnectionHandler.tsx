@@ -52,7 +52,7 @@ export function CryptoWalletConnectionHandler(props: {
                         let chain;
                         try {
                             chain = await dynamicChainToCrossmintChain(wallet);
-                        } catch(e) {
+                        } catch (e) {
                             if (e instanceof ChainNotSupportedError) {
                                 iframeClient?.send("crypto:connect-wallet.failed", {
                                     error: `Chain with id ${e.chainId} is not supported. Please change the network in your wallet and try again.`,

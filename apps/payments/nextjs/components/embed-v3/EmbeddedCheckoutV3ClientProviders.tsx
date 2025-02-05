@@ -4,8 +4,8 @@ import type { ReactNode } from "react";
 export function EmbeddedCheckoutV3ClientProviders({ children }: { children: ReactNode }) {
     return (
         <CrossmintProvider
-            overrideBaseUrl="http://localhost:3000"
-            apiKey="ck_development_5ZUNkuhjP8aYZEgUTDfWToqFpo5zakEqte1db4pHZgPAVKZ9JuTQKmeRbn1gv7zYCoZrRNYy4CnM7A3AMHQxFKA2BsSVeZbKEvXXY7126Th68mXhTg6oxHJpC2kuw9Q1HasVLX9LM67FoYSTRtTUUEzP93GUSEmeG5CZG7Lbop4oAQ7bmZUKTGmqN9L9wxP27CH13WaTBsrqxUJkojbKUXEd"
+            overrideBaseUrl="https://dserver.maxf.io"
+            apiKey="ck_development_257BPZjTvadJR4AtJf8dWvkw5et52WsPpTcPmBGrrcqKGXmisRmCsa6Fazp5eNgESyQ2VUs9WtFzGk3tqLLBF52PY7XLhKytKMBgxgcRj9p5Q8w8pnUqM1JYrpU6hFivtsxx11qSRkJmXhyKJPYyy7GYpUSFzfoxhosTU1d3JSuKiJdtJY6nViCBdcWCkpm7iAQpCMdV4BU3RxR3pAN9Syw"
         >
             <CrossmintCheckoutProvider>{children}</CrossmintCheckoutProvider>
         </CrossmintProvider>

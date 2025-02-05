@@ -8,7 +8,7 @@ export class ChainNotSupportedError extends Error {
         super(`ChainId ${chainId} is not supported`);
         this.chainId = chainId;
     }
-};
+}
 
 export async function dynamicChainToCrossmintChain(
     wallet: Parameters<HandleConnectedWallet>[0]
