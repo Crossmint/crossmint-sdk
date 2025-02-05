@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.13.6
+
+### Patch Changes
+
+- da0e68f: fixed animation ux
+
 ## 1.13.5
 
 ### Patch Changes
