@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.13.7
+
+### Patch Changes
+
+- b4dbe5c: Better error handling for not supported Pay with Crypto chains
+
 ## 1.13.6
 
 ### Patch Changes
