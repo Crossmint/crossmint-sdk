@@ -55,7 +55,7 @@ export function CryptoWalletConnectionHandler(props: {
                         } catch(e) {
                             if (e instanceof ChainNotSupportedError) {
                                 iframeClient?.send("crypto:connect-wallet.failed", {
-                                    error: `Chain with id ${e.chainId} is not supported for paying with Crypto. Please change the network in your wallet and try again.`,
+                                    error: `Chain with id ${e.chainId} is not supported. Please change the network in your wallet and try again.`,
                                 });
                                 return false;
                             }
