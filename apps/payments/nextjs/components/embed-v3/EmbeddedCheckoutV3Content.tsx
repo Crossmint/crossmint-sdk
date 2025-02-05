@@ -28,8 +28,7 @@ function CrossmintEmbeddedCheckoutWrapper() {
     return (
         <CrossmintEmbeddedCheckout
             recipient={{
-                // email: "maxwell@paella.dev",
-                walletAddress: "0x8b821dd648599B0D093F55B5BaAA48c709ec455A",
+                email: "maxwell+123123@paella.dev",
             }}
             lineItems={{
                 collectionLocator: "crossmint:206b3146-f526-444e-bd9d-0607d581b0e9",
@@ -39,7 +38,7 @@ function CrossmintEmbeddedCheckoutWrapper() {
                 },
             }}
             payment={{
-                receiptEmail: "maxwell@paella.dev",
+                receiptEmail: "peg+1234@paella.dev",
                 crypto: {
                     enabled: true,
                 },
