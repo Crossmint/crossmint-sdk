@@ -79,8 +79,8 @@ export function AuthForm({ className }: { className?: string }) {
 
             {step === "initial" || step === "otp" ? (
                 <SecuredByCrossmint
-                    className="mt-4 justify-center"
-                    color={appearance?.colors?.textSecondary ?? "#A4AFB2"}
+                    className="mt-1.5 md:mt-4 justify-center"
+                    color={appearance?.colors?.textSecondary ?? "#67797F"}
                 />
             ) : null}
         </div>
