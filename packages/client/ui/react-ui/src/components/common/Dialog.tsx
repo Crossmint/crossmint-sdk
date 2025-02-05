@@ -24,16 +24,13 @@ const DialogContent = React.forwardRef<React.ElementRef<typeof DialogPrimitive.C
                 ref={ref}
                 className={classNames(
                     "fixed z-50 p-6 pb-4 bg-cm-background-primary border border-cm-border shadow-xl transition-none",
-                    // Small viewport styles (bottom sheet)
+                    // Mobile viewport styles (bottom sheet)
                     "inset-x-0 bottom-0 w-full border-t rounded-t-xl",
-                    "data-[state=closed]:animate-slide-out-to-bottom data-[state=open]:animate-slide-in-from-bottom",
-                    // Regular viewport styles (centered modal)
+                    "max-[479px]:data-[state=closed]:animate-slide-out-to-bottom max-[479px]:data-[state=open]:animate-slide-in-from-bottom",
+                    // Desktop viewport styles (centered modal)
                     "min-[480px]:inset-auto !min-[480px]:p-10 !min-[480px]:pb-8 min-[480px]:left-[50%] min-[480px]:top-[50%] min-[480px]:translate-x-[-50%] min-[480px]:translate-y-[-52%]",
                     "min-[480px]:max-w-[448px] min-[480px]:rounded-xl",
-                    "min-[480px]:data-[state=closed]:animate-fade-out min-[480px]:data-[state=closed]:animate-zoom-out-95",
-                    "min-[480px]:data-[state=open]:animate-fade-in min-[480px]:data-[state=open]:animate-zoom-in-95",
-                    // Duration for animations
-                    "data-[state=closed]:duration-300 data-[state=open]:duration-500",
+                    "min-[480px]:data-[state=closed]:animate-fade-out min-[480px]:data-[state=open]:animate-fade-in",
                     className
                 )}
                 {...props}
