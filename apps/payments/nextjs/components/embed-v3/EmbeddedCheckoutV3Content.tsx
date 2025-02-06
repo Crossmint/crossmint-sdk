@@ -73,9 +73,10 @@ export function MemecoinCheckoutWrapper({ price, slippage }: MemecoinCheckoutWra
             lineItems={{
                 "tokenLocator": "solana:6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN",
 
-                callData: {
-                    totalPrice: price,
-                    slippageBps: slippage
+                executionParameters: {
+                    "mode": "exact-in",
+                    amount: price,
+                    maxSlippageBps: slippage
                 }
             } as any}
             payment={{
