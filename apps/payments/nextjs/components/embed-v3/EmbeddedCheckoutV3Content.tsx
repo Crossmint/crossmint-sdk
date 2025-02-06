@@ -11,13 +11,15 @@ export function EmbeddedCheckoutV3Content() {
     }, [order]);
 
     if (USE_CUSTOM_RENDERING) {
-        switch (order?.phase) {
-            case "completed":
-                return <div>Custom completed screen</div>;
-            case "delivery":
-                return <div>Custom delivery screen</div>;
-            default:
-                return <CrossmintEmbeddedCheckoutWrapper />;
+        if (order != null) {
+            switch (order.phase) {
+                case "completed":
+                    return <div>Custom completed screen</div>;
+                case "delivery":
+                    return <div>Custom delivery screen</div>;
+                default:
+                    return <CrossmintEmbeddedCheckoutWrapper />;
+            }
         }
     }
 
@@ -29,19 +31,20 @@ function CrossmintEmbeddedCheckoutWrapper() {
         <CrossmintEmbeddedCheckout
             recipient={{
                 // email: "maxwell@paella.dev",
-                walletAddress: "0x8b821dd648599B0D093F55B5BaAA48c709ec455A",
+                walletAddress: "ExkJp9CVPK6rkLD3BVuE2K4PomSnVdWyChdku9hsXMiC",
             }}
             lineItems={{
-                collectionLocator: "crossmint:206b3146-f526-444e-bd9d-0607d581b0e9",
-                callData: {
-                    totalPrice: "0.001",
-                    quantity: 1,
-                },
+                tokenLocator: "solana:6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN",
+                executionParameters: {
+                    mode: "exact-in",
+                    amount: "1",
+                    slippageBps: "500",
+                }
             }}
             payment={{
-                receiptEmail: "maxwell@paella.dev",
+                receiptEmail: "peg+1234@paella.dev",
                 crypto: {
-                    enabled: true,
+                    enabled: false,
                 },
                 fiat: {
                     enabled: true,
