@@ -40,6 +40,7 @@ export type EmbeddedCheckoutV3WalletAddressRecipient = {
 export type EmbeddedCheckoutV3LineItem = {
     collectionLocator: string;
     callData?: Record<string, any>;
+    executionParameters?: Record<string, any>;
 };
 
 export type EmbeddedCheckoutV3Appearance = {
