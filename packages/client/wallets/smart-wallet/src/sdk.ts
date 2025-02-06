@@ -14,7 +14,7 @@ import { CrossmintApiService } from "./apiService";
 
 export interface SmartWalletSDKInitParams {
     clientApiKey: string;
-};
+}
 
 export class SmartWalletSDK {
     private constructor(
@@ -52,7 +52,7 @@ export class SmartWalletSDK {
      * ```ts
      * const wallet = await smartWalletSDK.getOrCreateWallet({ jwt: "xxx" }, "base");
      * ```
-     * 
+     *
      * @throws {SmartWalletError} if the SDK is used server side.
      * @throws {InvalidChainError} if the chain is not valid.
      * @throws {WalletCreationError} if the wallet creation fails.

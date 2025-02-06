@@ -81,9 +81,7 @@ export function CrossmintWalletProvider({
         return signer;
     };
 
-    const getOrCreateWallet = async (
-        config: WalletConfig
-    ) => {
+    const getOrCreateWallet = async (config: WalletConfig) => {
         if (walletState.status == "in-progress") {
             console.log("Wallet already loading");
             return { startedCreation: false, reason: "Wallet is already loading." };
@@ -145,7 +143,9 @@ export function CrossmintWalletProvider({
     };
 
     return (
-        <WalletContext.Provider value={{ ...walletState, getOrCreateWallet, createPasskeySigner, passkeySigner, clearWallet }}>
+        <WalletContext.Provider
+            value={{ ...walletState, getOrCreateWallet, createPasskeySigner, passkeySigner, clearWallet }}
+        >
             {children}
             {passkeyPromptState.open
                 ? createPortal(<PasskeyPrompt state={passkeyPromptState} appearance={appearance} />, document.body)

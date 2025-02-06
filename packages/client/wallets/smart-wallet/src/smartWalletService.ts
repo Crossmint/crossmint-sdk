@@ -20,22 +20,23 @@ import { WebAuthnP256 } from "ox";
 
 import entryPointAbi from "@/abi/entryPoint";
 
-import type {
-    CrossmintApiService,
-} from "./apiService";
-import type {
-    CreateWalletResponse,
-    TransactionResponse,
-    Signer,
-    SignatureResponse,
-} from "./types/api";
+import type { CrossmintApiService } from "./apiService";
+import type { CreateWalletResponse, TransactionResponse, Signer, SignatureResponse } from "./types/api";
 import type { SmartWalletChain } from "./evm/chains";
 import type { SmartWalletClient } from "./evm/smartWalletClient";
 import { EVMSmartWallet } from "./evm/wallet";
 import { getAlchemyRPC } from "./evm/rpc";
 import { sleep } from "./utils";
 import { ENTRY_POINT_ADDRESS, STATUS_POLLING_INTERVAL_MS } from "./utils/constants";
-import { InvalidMessageFormatError, MessageSigningError, TransactionApprovalError, TypedDataSigningError, TransactionFailedError, TransactionNotFoundError, InvalidTypedDataError } from "./error";
+import {
+    InvalidMessageFormatError,
+    MessageSigningError,
+    TransactionApprovalError,
+    TypedDataSigningError,
+    TransactionFailedError,
+    TransactionNotFoundError,
+    InvalidTypedDataError,
+} from "./error";
 
 export type ViemAccount = {
     type: "VIEM_ACCOUNT";
@@ -60,12 +61,12 @@ export class SmartWalletService {
     constructor(private readonly crossmintApiService: CrossmintApiService) {}
 
     /*
-    * Retrieves or creates a wallet for the specified user.
-    * @param user - The user parameters.
-    * @param chain - The chain to create the wallet on.
-    * @param walletParams - The wallet parameters.
-    * @returns The smart wallet.
-    */
+     * Retrieves or creates a wallet for the specified user.
+     * @param user - The user parameters.
+     * @param chain - The chain to create the wallet on.
+     * @param walletParams - The wallet parameters.
+     * @returns The smart wallet.
+     */
     public async getOrCreate(
         user: UserParams,
         chain: SmartWalletChain,
@@ -127,12 +128,7 @@ export class SmartWalletService {
                     throw new MessageSigningError(`Expected 1 pending approval, got ${pendingApprovals.length}`);
                 }
                 const pendingApproval = pendingApprovals[0];
-                const signature = await this.approveSignature(
-                    user,
-                    adminSigner,
-                    signatureId,
-                    pendingApproval.message
-                );
+                const signature = await this.approveSignature(user, adminSigner, signatureId, pendingApproval.message);
 
                 // Get signature status until success
                 let signatureResponse: SignatureResponse | null = null;
@@ -184,12 +180,7 @@ export class SmartWalletService {
                     throw new TypedDataSigningError(`Expected 1 pending approval, got ${pendingApprovals.length}`);
                 }
                 const pendingApproval = pendingApprovals[0];
-                const signature = await this.approveSignature(
-                    user,
-                    adminSigner,
-                    signatureId,
-                    pendingApproval.message
-                );
+                const signature = await this.approveSignature(user, adminSigner, signatureId, pendingApproval.message);
 
                 // Get signature status until success
                 let signatureResponse: SignatureResponse | null = null;
@@ -213,17 +204,17 @@ export class SmartWalletService {
                 return await this.sendTransactionInternal(parameters, adminSigner, user, chain);
             },
 
-            writeContract: async<
+            writeContract: async <
                 const TAbi extends Abi | readonly unknown[],
                 TFunctionName extends ContractFunctionName<TAbi, "nonpayable" | "payable"> = ContractFunctionName<
                     TAbi,
                     "nonpayable" | "payable"
                 >,
-                TArgs extends ContractFunctionArgs<TAbi, "nonpayable" | "payable", TFunctionName> = ContractFunctionArgs<
+                TArgs extends ContractFunctionArgs<
                     TAbi,
                     "nonpayable" | "payable",
                     TFunctionName
-                >,
+                > = ContractFunctionArgs<TAbi, "nonpayable" | "payable", TFunctionName>,
             >({
                 address,
                 abi,
@@ -237,20 +228,30 @@ export class SmartWalletService {
                     functionName,
                     args,
                 });
-                return await this.sendTransactionInternal({
-                    to: address,
-                    data,
-                    value,
-                }, adminSigner, user, chain);
-            }
+                return await this.sendTransactionInternal(
+                    {
+                        to: address,
+                        data,
+                        value,
+                    },
+                    adminSigner,
+                    user,
+                    chain
+                );
+            },
         };
     }
 
-    private async sendTransactionInternal(parameters: {
-        to: Address;
-        data?: Hex;
-        value?: bigint;
-    }, adminSigner: ExternalSigner | PasskeySigner, user: UserParams, chain: SmartWalletChain): Promise<Hex> {
+    private async sendTransactionInternal(
+        parameters: {
+            to: Address;
+            data?: Hex;
+            value?: bigint;
+        },
+        adminSigner: ExternalSigner | PasskeySigner,
+        user: UserParams,
+        chain: SmartWalletChain
+    ): Promise<Hex> {
         const signerLocator = await this.getSignerLocator(adminSigner);
         // Create transaction
         const transactionCreationResponse = await this.crossmintApiService.createTransaction(user, {
@@ -295,7 +296,10 @@ export class SmartWalletService {
         return transactionHash;
     }
 
-    private async createWallet(user: UserParams, signer: ExternalSigner | PasskeySigner): Promise<CreateWalletResponse> {
+    private async createWallet(
+        user: UserParams,
+        signer: ExternalSigner | PasskeySigner
+    ): Promise<CreateWalletResponse> {
         if ("type" in signer && signer.type === "PASSKEY") {
             return await this.crossmintApiService.createWallet(user, {
                 type: "evm-smart-wallet",

@@ -1,4 +1,14 @@
-import type { Abi, Address, ContractFunctionArgs, ContractFunctionName, Hex, SignableMessage, TypedData, TypedDataDefinition, WriteContractParameters } from "viem";
+import type {
+    Abi,
+    Address,
+    ContractFunctionArgs,
+    ContractFunctionName,
+    Hex,
+    SignableMessage,
+    TypedData,
+    TypedDataDefinition,
+    WriteContractParameters,
+} from "viem";
 
 import type {
     // biome-ignore lint/correctness/noUnusedImports: used in JSDoc
@@ -15,7 +25,7 @@ import type {
     TransactionFailedError,
     // biome-ignore lint/correctness/noUnusedImports: used in JSDoc
     TransactionNotFoundError,
-} from '@/error';
+} from "@/error";
 
 export interface SmartWalletClient {
     /**

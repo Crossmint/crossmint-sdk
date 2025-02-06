@@ -8,18 +8,18 @@ export type { SmartWalletSDKInitParams } from "./sdk";
 
 // Errors
 export {
-  SmartWalletError,
-  InvalidApiKeyError,
-  WalletCreationError,
-  InvalidChainError,
-  InvalidTransferChainError,
-  InvalidMessageFormatError,
-  MessageSigningError,
-  InvalidTypedDataError,
-  TypedDataSigningError,
-  TransactionApprovalError,
-  TransactionFailedError,
-  TransactionNotFoundError,
+    SmartWalletError,
+    InvalidApiKeyError,
+    WalletCreationError,
+    InvalidChainError,
+    InvalidTransferChainError,
+    InvalidMessageFormatError,
+    MessageSigningError,
+    InvalidTypedDataError,
+    TypedDataSigningError,
+    TransactionApprovalError,
+    TransactionFailedError,
+    TransactionNotFoundError,
 } from "./error";
 
 // Entry point

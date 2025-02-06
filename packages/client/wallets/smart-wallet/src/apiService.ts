@@ -5,7 +5,17 @@ import type { Address } from "viem";
 
 import { SDK_NAME, SDK_VERSION, SCW_SERVICE, API_VERSION } from "./utils/constants";
 import type { UserParams } from "./smartWalletService";
-import type { CreateWalletParams, CreateWalletResponse, CreateTransactionParams, TransactionResponse, ApproveTransactionParams, CreateSignatureParams, SignatureResponse, ApproveSignatureParams, NftResponse } from "./types/api";
+import type {
+    CreateWalletParams,
+    CreateWalletResponse,
+    CreateTransactionParams,
+    TransactionResponse,
+    ApproveTransactionParams,
+    CreateSignatureParams,
+    SignatureResponse,
+    ApproveSignatureParams,
+    NftResponse,
+} from "./types/api";
 
 export const scwLogger = new SDKLogger(SCW_SERVICE);
 
@@ -20,13 +30,13 @@ export class CrossmintApiService {
 
     constructor(crossmint: Crossmint) {
         this.apiClient = new CrossmintApiClient(crossmint, {
-                internalConfig: {
-                    sdkMetadata: {
-                        name: SDK_NAME,
-                        version: SDK_VERSION,
-                    },
+            internalConfig: {
+                sdkMetadata: {
+                    name: SDK_NAME,
+                    version: SDK_VERSION,
                 },
-            });
+            },
+        });
     }
 
     async createWallet(user: UserParams, params: CreateWalletParams): Promise<CreateWalletResponse> {
@@ -56,22 +66,28 @@ export class CrossmintApiService {
         transactionId: string,
         params: ApproveTransactionParams
     ): Promise<TransactionResponse> {
-        const response = await this.apiClient.post(`api/${API_VERSION}/wallets/me:evm-smart-wallet/transactions/${transactionId}/approvals`, {
-            body: JSON.stringify(params),
-            headers: {
-                Authorization: `Bearer ${user.jwt}`,
-                "Content-Type": "application/json",
-            },
-        });
+        const response = await this.apiClient.post(
+            `api/${API_VERSION}/wallets/me:evm-smart-wallet/transactions/${transactionId}/approvals`,
+            {
+                body: JSON.stringify(params),
+                headers: {
+                    Authorization: `Bearer ${user.jwt}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
         return response.json();
     }
 
     async getTransaction(user: UserParams, transactionId: string): Promise<TransactionResponse> {
-        const response = await this.apiClient.get(`api/${API_VERSION}/wallets/me:evm-smart-wallet/transactions/${transactionId}`, {
-            headers: {
-                Authorization: `Bearer ${user.jwt}`,
-            },
-        });
+        const response = await this.apiClient.get(
+            `api/${API_VERSION}/wallets/me:evm-smart-wallet/transactions/${transactionId}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${user.jwt}`,
+                },
+            }
+        );
         return response.json();
     }
 
@@ -91,22 +107,28 @@ export class CrossmintApiService {
         signatureId: string,
         params: ApproveSignatureParams
     ): Promise<SignatureResponse> {
-        const response = await this.apiClient.post(`api/${API_VERSION}/wallets/me:evm-smart-wallet/signatures/${signatureId}/approvals`, {
-            body: JSON.stringify(params),
-            headers: {
-                Authorization: `Bearer ${user.jwt}`,
-                "Content-Type": "application/json",
-            },
-        });
+        const response = await this.apiClient.post(
+            `api/${API_VERSION}/wallets/me:evm-smart-wallet/signatures/${signatureId}/approvals`,
+            {
+                body: JSON.stringify(params),
+                headers: {
+                    Authorization: `Bearer ${user.jwt}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
         return response.json();
     }
 
     async getSignature(user: UserParams, signatureId: string): Promise<SignatureResponse> {
-        const response = await this.apiClient.get(`api/${API_VERSION}/wallets/me:evm-smart-wallet/signatures/${signatureId}`, {
-            headers: {
-                Authorization: `Bearer ${user.jwt}`,
-            },
-        });
+        const response = await this.apiClient.get(
+            `api/${API_VERSION}/wallets/me:evm-smart-wallet/signatures/${signatureId}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${user.jwt}`,
+                },
+            }
+        );
         return response.json();
     }
 
