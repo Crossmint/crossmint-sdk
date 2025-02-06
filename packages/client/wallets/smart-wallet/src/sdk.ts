@@ -35,7 +35,9 @@ export class SmartWalletSDK {
             throw new InvalidApiKeyError("API key invalid");
         }
 
-        const crossmintService = new CrossmintApiService(clientApiKey);
+        const crossmintService = new CrossmintApiService({
+            apiKey: clientApiKey,
+        });
         const smartWalletService = new SmartWalletService(crossmintService);
         const errorProcessor = new ErrorProcessor(scwDatadogLogger);
 
