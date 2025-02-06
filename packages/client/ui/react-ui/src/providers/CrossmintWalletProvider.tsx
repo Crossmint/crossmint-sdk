@@ -39,16 +39,19 @@ type ValidWalletState =
 type WalletContext = {
     status: WalletStatus;
     wallet?: EVMSmartWallet;
+    passkeySigner?: PasskeySigner;
     error?: SmartWalletError;
     getOrCreateWallet: (
-        config?: Pick<WalletConfig, "signer" | "type">
+        config: Pick<WalletConfig, "signer" | "type">
     ) => Promise<{ startedCreation: boolean; reason?: string }>;
+    createPasskeySigner: () => Promise<PasskeySigner | null>;
     clearWallet: () => void;
 };
 
 export const WalletContext = createContext<WalletContext>({
     status: "not-loaded",
     getOrCreateWallet: () => Promise.resolve({ startedCreation: false }),
+    createPasskeySigner: () => Promise.resolve(null),
     clearWallet: () => {},
 });
 
@@ -69,10 +72,17 @@ export function CrossmintWalletProvider({
     const smartWalletSDK = useMemo(() => SmartWalletSDK.init({ clientApiKey: crossmint.apiKey }), [crossmint.apiKey]);
 
     const [walletState, setWalletState] = useState<ValidWalletState>({ status: "not-loaded" });
+    const [passkeySigner, setPasskeySigner] = useState<PasskeySigner | undefined>(undefined);
     const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
 
+    const createPasskeySigner = async () => {
+        const signer = await smartWalletSDK.createPasskeySigner("Crossmint Wallet");
+        setPasskeySigner(signer);
+        return signer;
+    };
+
     const getOrCreateWallet = async (
-        config: WalletConfig = { type: "evm-smart-wallet", signer: { type: "PASSKEY" } }
+        config: WalletConfig
     ) => {
         if (walletState.status == "in-progress") {
             console.log("Wallet already loading");
@@ -135,7 +145,7 @@ export function CrossmintWalletProvider({
     };
 
     return (
-        <WalletContext.Provider value={{ ...walletState, getOrCreateWallet, clearWallet }}>
+        <WalletContext.Provider value={{ ...walletState, getOrCreateWallet, createPasskeySigner, passkeySigner, clearWallet }}>
             {children}
             {passkeyPromptState.open
                 ? createPortal(<PasskeyPrompt state={passkeyPromptState} appearance={appearance} />, document.body)
