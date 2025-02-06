@@ -192,20 +192,29 @@ function WalletManager({
     children: ReactNode;
     accessToken: string | undefined;
 }) {
-    const { getOrCreateWallet, clearWallet, status } = useWallet();
+    const { getOrCreateWallet, createPasskeySigner, clearWallet, status } = useWallet();
 
     useEffect(() => {
+        createWallet();
+    }, [accessToken, status]);
+
+    async function createWallet() {
         if (embeddedWallets.createOnLogin === "all-users" && status === "not-loaded" && accessToken != null) {
+            const signer = await createPasskeySigner();
+            if (signer == null) {
+                return;
+            }
+
             getOrCreateWallet({
                 type: embeddedWallets.type,
-                signer: { type: "PASSKEY" },
+                signer,
             });
         }
 
         if (status === "loaded" && accessToken == null) {
             clearWallet();
         }
-    }, [accessToken, status]);
+    }
 
     return <>{children}</>;
 }
