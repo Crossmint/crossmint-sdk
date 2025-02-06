@@ -2,7 +2,12 @@ import { type Abi, erc20Abi, erc721Abi } from "viem";
 
 import erc1155Abi from "@/abi/erc1155";
 
-import type { ERC20TransferType, SFTTransferType, TransferInputParams, TransferSimulationParams } from "@/types/transfer";
+import type {
+    ERC20TransferType,
+    SFTTransferType,
+    TransferInputParams,
+    TransferSimulationParams,
+} from "@/types/transfer";
 
 export function transferParams({ contract, config, from, to }: TransferInputParams): TransferSimulationParams {
     switch (config.token.type) {

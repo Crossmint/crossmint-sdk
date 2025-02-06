@@ -71,5 +71,3 @@ export class TransactionNotFoundError extends CrossmintSDKError {
         super(message, code, details);
     }
 }
-
-
