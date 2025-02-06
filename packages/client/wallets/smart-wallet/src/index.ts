@@ -3,7 +3,7 @@ export { blockchainToChainId, EVMBlockchainIncludingTestnet as Chain } from "@cr
 // Types
 export type { ViemAccount, PasskeySigner, ExternalSigner, WalletParams, UserParams } from "./smartWalletService";
 export type { SmartWalletChain as EVMSmartWalletChain } from "./evm/chains";
-export type { TransferType, ERC20TransferType, NFTTransferType, SFTTransferType } from "./evm/transfer";
+export type { TransferType, ERC20TransferType, NFTTransferType, SFTTransferType } from "./types/transfer";
 export type { SmartWalletSDKInitParams } from "./sdk";
 
 // Errors

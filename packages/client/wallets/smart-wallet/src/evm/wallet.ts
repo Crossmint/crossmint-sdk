@@ -12,10 +12,11 @@ import {
 
 import type { CrossmintApiService } from "@/apiService";
 import { InvalidTransferChainError } from "@/error";
+import type { TransferType } from "@/types/transfer";
 
 import type { SmartWalletChain } from "./chains";
 import type { SmartWalletClient } from "./smartWalletClient";
-import { type TransferType, transferParams } from "./transfer";
+import { transferParams } from "./transfer";
 
 export class EVMSmartWallet {
     constructor(
