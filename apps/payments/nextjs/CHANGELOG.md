@@ -1,5 +1,14 @@
 # @crossmint/client-sdk-nextjs-starter
 
+## 1.4.18
+
+### Patch Changes
+
+- 5b05a67: Adding new param executionParameters in embedded v3
+- Updated dependencies [5b05a67]
+  - @crossmint/client-sdk-base@1.4.7
+  - @crossmint/client-sdk-react-ui@1.13.9
+
 ## 1.4.17
 
 ### Patch Changes
