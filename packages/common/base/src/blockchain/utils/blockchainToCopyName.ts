@@ -31,6 +31,7 @@ export const BLOCKCHAIN_TO_COPY_NAME: Record<BlockchainIncludingTestnet, string>
     apex: "Apex",
     "hypersonic-testnet": "Hypersonic Testnet",
     "story-testnet": "Story Testnet",
+    chiliz: "Chiliz"
 };
 
 export function blockchainToDisplayName(blockchain: BlockchainIncludingTestnet) {
