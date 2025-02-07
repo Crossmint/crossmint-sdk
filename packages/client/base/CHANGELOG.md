@@ -1,5 +1,30 @@
 # @crossmint/client-sdk-base
 
+## 1.4.8
+
+### Patch Changes
+
+- Updated dependencies [940add8]
+  - @crossmint/common-sdk-base@0.3.2
+
+## 1.4.7
+
+### Patch Changes
+
+- 5b05a67: Adding new param executionParameters in embedded v3
+
+## 1.4.6
+
+### Patch Changes
+
+- 9c244a3: order: update type
+
+## 1.4.5
+
+### Patch Changes
+
+- 345cdc3: Supporting same tab display in hosted checkout
+
 ## 1.4.4
 
 ### Patch Changes

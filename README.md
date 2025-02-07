@@ -1,81 +1,172 @@
-# `crossmint-sdk`
+<div align="center">
+  <h1 align="center">Crossmint SDK</h1>
 
-## You can check the full documentation at [docs.crossmint.com](https://docs.crossmint.com/)
+  <p align="center">
+    A comprehensive suite of tools for blockchain integration, authentication, and NFT functionality
+    <br />
+    <a href="https://docs.crossmint.com/sdk-reference/introduction"><strong>Explore the docs »</strong></a>
+    <br />
+    <br />
+    <a href="https://playground.crossmint.com/">View Demo</a>
+    ·
+    <a href="https://github.com/Crossmint/crossmint-sdk/issues">Report Bug</a>
+    ·
+    <a href="https://github.com/Crossmint/crossmint-sdk/issues">Request Feature</a>
+  </p>
+</div>
 
-The Crossmint SDK allows you to offer wallet-less credit card purchases on your NFT drop. It takes 5 lines of code and 5 minutes to integrate. It's free to use for the seller. You’ll get the sales proceeds in SOL/ETH as if the user was paying with their own wallet.
+<details>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li><a href="#about-the-project">About The Project</a>
+      <ul>
+        <li><a href="#why-crossmint">Why Crossmint?</a></li>
+        <li><a href="#core-features">Core Features</a></li>
+      </ul>
+    </li>
+    <li><a href="#package-overview">Package Overview</a>
+      <ul>
+        <li><a href="#client-side-packages">Client-Side Packages</a></li>
+        <li><a href="#server-side-packages">Server-Side Packages</a></li>
+        <li><a href="#demo-applications">Demo Applications</a></li>
+      </ul>
+    </li>
+    <li><a href="#getting-started">Getting Started</a></li>
+    <li>
+      <a href="#building-sdk-locally">Building SDK Locally</a>
+      <ul>
+        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#installation">Installation</a></li>
+        <li><a href="#making-package-changes">Making Package Changes</a></li>
+      </ul>
+    </li>
+    <li><a href="#publishing">Publishing</a></li>
+    <li><a href="#documentation">Documentation</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ol>
+</details>
 
-## Get Started
+## About The Project
 
-To get started and for full integration instructions visit [our documentation](https://docs.crossmint.com/).
+![Crossmint SDK](https://github.com/user-attachments/assets/28d4ac5c-9373-45a3-969d-4dbf1d8200a8)
 
-## Migration guide to 0.1.X versions
+The Crossmint SDK is a powerful collection of packages designed to simplify blockchain integration for developers. Our goal is to make Web3 development accessible without requiring extensive blockchain experience or cryptocurrency knowledge.
 
-Version 0.1.0 introduces breaking changes. To learn how to migrate from a version lower than 0.1.0, [check out the migration guide](https://docs.google.com/document/d/14IKpjrij7kU7Dr0I7rZkf0PyDNbXiklx2v4GuzUrFbw/edit?usp=sharing).
+### Why Crossmint?
 
-## Migration guide to 0.2.X versions
+- 🚀 **Quick Integration**: All our tools have 5-min quickstarts
+- 💻 **Developer-First**: Build end-to-end blockchain solutions without deep Web3 expertise
+- 🔒 **Secure**: Enterprise-grade security for all blockchain interactions
+- 💳 **Fiat-First**: Enable users to participate in Web3 without cryptocurrency
+- 🆓 **Free to Start**: Start developing at no cost
 
-Version 0.2.0 introduces breaking changes. To learn how to migrate from a version lower than 0.2.0, [check out the migration guide](https://docs.google.com/document/d/1mA0W-iAs0nHHW0ANX0TfZ5qrzxPGxNchPj13W6cHc-Y/edit?usp=sharing).
+### Core Features
 
-## [Changelog](https://docs.google.com/document/d/e/2PACX-1vR5NzVS2msrCMZxlcfBgAT-Y8kAypeKqH_WBeNiwVTmyEzLZvJBWrKrz_966-d3jumwIBi94IXGT6Wp/pub)
+- 💳 NFT checkout: with credit card and cross-chain
+- 🔐 Authentication and session management
+- 👛 Embedded wallets
+- 📜 Verifiable credentials
 
----
+## Package Overview
 
-## Build from Source
+### Client-Side Packages
 
-1. Clone the project:
+- `@crossmint/client-sdk-react-ui`: React SDK, with UI components.
+	
+- `@crossmint/client-sdk-auth`: Headless typescript SDK for managing auth and user profiles.
+	
+- `@crossmint/client-sdk-verifiable-credentials`: Headless typescript SDK for Verifiable Credentials.
+	
+- `@crossmint/client-sdk-smart-wallet`: Headless typescript SDK for smart wallets.
+	
+Other:
+	
+- `@crossmint/client-sdk-base`: Core client-side functionality and essential building blocks for Crossmint integration. Typically you don't need to integrate against this directly.
 
+### Server-Side Packages
+
+- `@crossmint/server-sdk`: Server-side SDK.
+
+### Demo Applications
+
+- [🔒 Smart Wallet + Auth Demo)](./apps/wallets/smart-wallet/next/README.md): A NextJS application showcasing the full capabilities of the SDK, including authentication and smart wallet integration.
+
+
+## Getting Started
+
+To get started with the SDK, install the packages you need into your project.
+
+ie. 
+`pnpm add @crossmint/client-sdk-smart-wallet`
+
+Then, import the package you need.
+
+ie.
+`import { SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";`
+
+For more information on how to use the SDK, see the [Crossmint SDK Documentation](https://docs.crossmint.com/sdk-reference/introduction).
+
+## Building SDK locally
+
+### Prerequisites
+
+```shell
+node >= 20
+pnpm
+```
+
+### Installation
+
+1. Clone the repository:
 ```shell
 git clone https://github.com/Crossmint/crossmint-sdk.git
 ```
 
 2. Install dependencies:
-
 ```shell
 cd crossmint-sdk
 pnpm install
 ```
 
 3. Build all packages:
-
 ```shell
 pnpm build
 ```
 
-4. Run locally:
+### Making Package Changes
 
+When modifying packages locally:
+
+1. Make your changes in the relevant package
+2. Rebuild the modified package:
 ```shell
-cd apps/payments/create-react-app
-pnpm start
-```
-
-Remember that if doing changes on the `@crossmint/client-sdk-react-ui` package, they wont be reflected into your project until you rebuild the package and install it back again:
-
-```
-# Inside `packages/client/ui/react-ui`. Rebuild package
+# Inside the package directory
 pnpm build
 ```
 
-```
-# Inside the starter. Eg. `packages/client/startes/nextjs-starter`. Install rebuilt package
+3. Reinstall dependencies in your project:
+```shell
+# From the root directory
 pnpm install
 ```
 
-## Publish
+4. Restart the demo application to see your changes
 
-1. Locally, run `pnpm change:add` - the CLI will guide you through selecting which packages you want to update + adding a short message for the changelog
-2. Commit the generated `changeset` file to your PR
-3. The `changeset-bot` will comment on your PR when it detects a new `changeset` has been added
-4. Merge your PR, with the `changeset`, to `main`
-5. A "Release packages" PR will be created/updated by the `changeset-bot`, detailing the pending updates
-6. Merge the "Release packages" PR to main - the new packages will automatically be published on the NPM registry
-7. Done!
+## Publishing
 
-## (OLD) Publish (for the crossmint team)
+1. Run `pnpm change:add` to select packages for update
+2. Commit the generated changeset file
+3. Merge your PR to `main`
+4. A "Release packages" PR will be created automatically
+5. Merge the release PR to publish to NPM
 
-```shell
-pnpm build
-pnpm test
-pnpm run lerna version
-pnpm build
-pnpm run publish
-```
+## Documentation
+
+For detailed documentation and guides, visit our [official documentation](https://docs.crossmint.com/).
+
+## Contact
+
+To get in touch with the Crossmint team, please visit our [contact page](https://www.crossmint.com/contact).
+or on [X](https://x.com/crossmint)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>

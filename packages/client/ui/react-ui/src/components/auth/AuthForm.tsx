@@ -5,7 +5,7 @@ import { EmailAuthFlow } from "./methods/email/EmailAuthFlow";
 import { Divider } from "../common/Divider";
 import { GoogleSignIn } from "./methods/google/GoogleSignIn";
 import { FarcasterSignIn } from "./methods/farcaster/FarcasterSignIn";
-import { PoweredByCrossmint } from "../common/PoweredByCrossmint";
+import { SecuredByCrossmint } from "../common/SecuredByCrossmint";
 import { FarcasterProvider } from "../../providers/auth/FarcasterProvider";
 import { classNames } from "@/utils/classNames";
 import { AlertIcon } from "@/icons/alert";
@@ -78,9 +78,9 @@ export function AuthForm({ className }: { className?: string }) {
             {loginMethods.includes("web3") ? <Web3AuthFlow /> : null}
 
             {step === "initial" || step === "otp" ? (
-                <PoweredByCrossmint
-                    className="mt-4 justify-center"
-                    color={appearance?.colors?.textSecondary ?? "#A4AFB2"}
+                <SecuredByCrossmint
+                    className="mt-1.5 md:mt-4 justify-center"
+                    color={appearance?.colors?.textSecondary ?? "#67797F"}
                 />
             ) : null}
         </div>

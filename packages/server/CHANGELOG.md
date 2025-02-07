@@ -1,5 +1,42 @@
 # @crossmint/server-sdk
 
+## 1.2.3
+
+### Patch Changes
+
+- Updated dependencies [940add8]
+  - @crossmint/common-sdk-base@0.3.2
+  - @crossmint/common-sdk-auth@1.0.14
+
+## 1.2.2
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.0.13
+
+## 1.2.1
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.0.12
+
+## 1.2.0
+
+### Minor Changes
+
+- 77deb0b: Changes jwt verification dependencies to work on all JS environments
+
+### Patch Changes
+
+- Updated dependencies [cef1981]
+  - @crossmint/common-sdk-auth@1.0.11
+
+## 1.1.10
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.0.10
+
 ## 1.1.9
 
 ### Patch Changes

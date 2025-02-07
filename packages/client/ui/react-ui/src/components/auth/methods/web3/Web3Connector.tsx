@@ -1,5 +1,5 @@
 import type { UIConfig } from "@crossmint/common-sdk-base";
-import { PoweredByCrossmint } from "@/components/common/PoweredByCrossmint";
+import { SecuredByCrossmint } from "@/components/common/SecuredByCrossmint";
 import { classNames } from "@/utils/classNames";
 
 export function Web3Connector({
@@ -55,7 +55,7 @@ export function Web3Connector({
             </button>
 
             <div className="flex justify-center pt-4">
-                <PoweredByCrossmint color={appearance?.colors?.textSecondary} />
+                <SecuredByCrossmint color={appearance?.colors?.textSecondary} />
             </div>
         </>
     );
