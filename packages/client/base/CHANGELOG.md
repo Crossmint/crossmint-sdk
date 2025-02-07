@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-base
 
+## 1.4.7
+
+### Patch Changes
+
+- 5b05a67: Adding new param executionParameters in embedded v3
+
 ## 1.4.6
 
 ### Patch Changes

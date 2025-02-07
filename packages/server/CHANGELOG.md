@@ -1,5 +1,11 @@
 # @crossmint/server-sdk
 
+## 1.2.2
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.0.13
+
 ## 1.2.1
 
 ### Patch Changes
