@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.3.2
+
+### Patch Changes
+
+- 940add8: Adding chiliz
+
 ## 0.3.1
 
 ### Patch Changes
