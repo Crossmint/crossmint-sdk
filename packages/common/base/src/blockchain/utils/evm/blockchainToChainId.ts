@@ -27,6 +27,7 @@ export const BLOCKCHAIN_TO_CHAIN_ID: Record<EVMBlockchainIncludingTestnet, numbe
     apex: 70700,
     "hypersonic-testnet": 675852,
     "story-testnet": 1516,
+    chiliz: 88888,
 };
 
 export function blockchainToChainId(blockchain: EVMBlockchainIncludingTestnet) {
