@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-nextjs-starter
 
+## 1.4.19
+
+### Patch Changes
+
+- 940add8: Adding chiliz
+  - @crossmint/client-sdk-base@1.4.8
+  - @crossmint/client-sdk-react-ui@1.13.10
+
 ## 1.4.18
 
 ### Patch Changes
