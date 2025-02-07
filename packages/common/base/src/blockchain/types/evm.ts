@@ -13,6 +13,7 @@ export const EVMBlockchain = {
     ZKYOTO: "zkyoto",
     ASTAR_ZKEVM: "astar-zkevm",
     APEX: "apex",
+    CHILIZ: "chiliz",
 } as const;
 export type EVMBlockchain = ObjectValues<typeof EVMBlockchain>;
 export const EVM_CHAINS = objectValues(EVMBlockchain);
