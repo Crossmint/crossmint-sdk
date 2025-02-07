@@ -37,10 +37,21 @@ export type EmbeddedCheckoutV3WalletAddressRecipient = {
     email?: never;
 };
 
-export type EmbeddedCheckoutV3LineItem = {
-    collectionLocator: string;
-    callData?: Record<string, any>;
-};
+export type EmbeddedCheckoutV3LineItem =
+    | {
+          collectionLocator: string;
+          callData?: Record<string, any>;
+      }
+    | {
+          tokenLocator: string;
+          callData?: Record<string, any>;
+          executionParameters: never;
+      }
+    | {
+          tokenLocator: string;
+          callData: never;
+          executionParameters?: Record<string, any>;
+      };
 
 export type EmbeddedCheckoutV3Appearance = {
     fonts?: Array<{ cssSrc: string }>;
