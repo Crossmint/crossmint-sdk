@@ -18,8 +18,11 @@ import {
     FetchResponseAdapter,
 } from "../types/request";
 
-export function getAuthCookies(request: GenericRequest): AuthMaterialBasic {
-    const cookieHeader = getCookieHeader(request);
+export function getAuthCookies(request: GenericRequest, throwError = true): AuthMaterialBasic | null {
+    const cookieHeader = getCookieHeader(request, throwError);
+    if (cookieHeader == null) {
+        return null;
+    }
     const { [SESSION_PREFIX]: jwt, [REFRESH_TOKEN_PREFIX]: refreshToken } = parseCookieHeader(cookieHeader);
     return { jwt, refreshToken };
 }
@@ -52,11 +55,11 @@ export function setAuthCookies(response: GenericResponse, authMaterial: AuthMate
     responseAdapter.setCookies(cookies);
 }
 
-function getCookieHeader(request: GenericRequest): string {
+function getCookieHeader(request: GenericRequest, throwError = true): string | null | undefined {
     const requestAdapter = isNodeRequest(request) ? new NodeRequestAdapter(request) : new FetchRequestAdapter(request);
 
     const cookieHeader = requestAdapter.getCookieHeader();
-    if (cookieHeader == null) {
+    if (cookieHeader == null && throwError) {
         throw new CrossmintAuthenticationError("No cookies found in request");
     }
 
