@@ -2,7 +2,7 @@
 
 import { Fireworks } from "@/components/fireworks";
 import { MintNFTButton } from "@/components/mint-nft-button";
-import { PoweredByCrossmint } from "@/components/powered-by-crossmint";
+import { SecuredByCrossmint } from "@/components/secured-by-crossmint";
 import { SignInAuthButton } from "@/components/signin-auth-button";
 import { Typography } from "@/components/typography";
 import Link from "next/link";
@@ -50,11 +50,11 @@ export default function Home() {
                         }}
                         variant={"h1"}
                     >
-                        Smart Wallet Demo
+                        Wallet Demo
                     </Typography>
                     <Typography className="text-primary-foreground text-center">
-                        Create a wallet on the fly and mint an NFT, just using face or touch ID. No passphrase,
-                        transaction prompts or gas fees required.
+                        Create a wallet and mint a token, just using Face ID. No passphrase, transaction prompts, or gas
+                        fees required
                     </Typography>
                 </div>
 
@@ -63,16 +63,16 @@ export default function Home() {
                         <img className="rounded-xl rounded-bl-none rounded-br-none" src={"/emoji-nft.png"} alt="nft" />
                         <div className="py-4">
                             <Typography className="text-secondary-foreground" variant="h3">
-                                Smart Wallets Pioneer
+                                Wallet Pioneer
                             </Typography>
                             <Typography className="text-muted-foreground" variant="h5">
-                                by Logoipsum
+                                by Crossmint
                             </Typography>
                         </div>
                     </div>
                     <HomePrimaryAction />
 
-                    <PoweredByCrossmint />
+                    <SecuredByCrossmint />
                 </div>
             </div>
         </div>

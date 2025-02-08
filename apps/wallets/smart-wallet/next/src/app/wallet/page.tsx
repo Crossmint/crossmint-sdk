@@ -1,6 +1,6 @@
 "use client";
 
-import { PoweredByCrossmint } from "@/components/powered-by-crossmint";
+import { SecuredByCrossmint } from "@/components/secured-by-crossmint";
 import { Skeleton } from "@/components/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/tabs";
 import { Typography } from "@/components/typography";
@@ -55,7 +55,7 @@ const SkeletonLoader = () => {
                     </div>
                 </div>
             </div>
-            <PoweredByCrossmint className="pt-6" />
+            <SecuredByCrossmint className="pt-6" />
         </div>
     );
 };
@@ -81,7 +81,7 @@ export default function Index() {
             <div className="w-full flex-col sm:max-w-[418px] bg-card rounded-2xl shadow-dropdown min-h-[664px] p-6">
                 <div className="h-24 rounded-lg border border-border flex flex-col gap-1 items-center justify-center">
                     <Typography className="text-secondary-foreground" variant="h3">
-                        Smart Wallet
+                        Wallet Pioneer
                     </Typography>
                     <Typography className="text-muted" variant="h3">
                         $0.00
@@ -93,35 +93,40 @@ export default function Index() {
                         <TabsTrigger value="tokens">Tokens</TabsTrigger>
                     </TabsList>
                     <TabsContent value="collectibles" className="h-[420px] overflow-y-auto">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 justify-items-center gap-x-4 gap-y-8 py-6">
-                            {(data || []).map((nft) => (
-                                <div className="flex flex-col gap-4" key={nft.tokenId + nft.contractAddress}>
-                                    <img
-                                        className="rounded-[10px] max-w-full sm:max-w-[164px]"
-                                        src={nft.metadata.image}
-                                        alt={nft.metadata.description}
-                                    />
-                                    <div className="flex flex-col">
-                                        <Typography className="text-base text-color-secondary-foreground leading-none">
-                                            {nft.metadata.name}
-                                        </Typography>
-                                        <Typography className="text-sm text-muted">
-                                            {nft.metadata.description}
-                                        </Typography>
+                        {data?.length === 0 ? (
+                            <Typography className="text-base text-primary-foreground p-4">
+                                {"You have no collectibles."}
+                            </Typography>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 justify-items-center gap-x-4 gap-y-8 py-6">
+                                {(data || []).map((nft) => (
+                                    <div className="flex flex-col gap-4" key={nft.tokenId + nft.contractAddress}>
+                                        <img
+                                            className="rounded-[10px] max-w-full sm:max-w-[164px]"
+                                            src={nft.metadata.image}
+                                            alt={nft.metadata.description}
+                                        />
+                                        <div className="flex flex-col">
+                                            <Typography className="text-base text-color-secondary-foreground leading-none">
+                                                {nft.metadata.name}
+                                            </Typography>
+                                            <Typography className="text-sm text-muted">
+                                                {nft.metadata.description}
+                                            </Typography>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        )}
                     </TabsContent>
                     <TabsContent value="tokens" className="h-[420px] overflow-y-auto">
                         <Typography className="text-base text-primary-foreground p-4">
-                            {/* todo talk to Pablo about UX here */}
-                            {"You have no tokens :-("}
+                            {"You have no tokens."}
                         </Typography>
                     </TabsContent>
                 </Tabs>
             </div>
-            <PoweredByCrossmint className="pt-6" />
+            <SecuredByCrossmint className="pt-6" />
         </div>
     );
 }
