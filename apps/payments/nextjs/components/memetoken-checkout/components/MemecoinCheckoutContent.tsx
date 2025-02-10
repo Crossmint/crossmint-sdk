@@ -17,8 +17,9 @@ export default function MemecoinCheckoutContent({ setShowCheckout, showCheckout 
     const [showCompletedMessage, setShowCompletedMessage] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
 
-    // Get the estimated token quantity from the order
-    const estimatedTokens = order?.lineItems?.[0]?.quantity ?? 0;
+    // Get the estimated token quantity range from the order
+    const estimatedTokenRange = (order as any)?.lineItems?.[0]?.quote?.quantityRange;
+    const hasEstimatedRange = estimatedTokenRange?.lowerBound && estimatedTokenRange?.upperBound;
 
     useEffect(() => {
         console.log("memecoin order status:", order);
@@ -369,8 +370,8 @@ export default function MemecoinCheckoutContent({ setShowCheckout, showCheckout 
                                     alignItems: "center",
                                     gap: "0.5rem",
                                 }}>
-                                    {estimatedTokens > 0 ? (
-                                        `${estimatedTokens} $TRUMP`
+                                    {hasEstimatedRange ? (
+                                        `${Number(estimatedTokenRange.lowerBound)} - ${Number(estimatedTokenRange.upperBound)} $TRUMP`
                                     ) : (
                                         <>
                                             <div
