@@ -10,6 +10,9 @@ import {
     polygonAmoy,
 } from "viem/chains";
 
+import { BlockchainIncludingTestnet as Blockchain, type ObjectValues, objectValues } from "@crossmint/common-sdk-base";
+import { defineChain } from "viem";
+
 const storyOdyssey = defineChain({
     id: 1516,
     name: "Story Odyssey",
@@ -29,9 +32,6 @@ const storyOdyssey = defineChain({
     },
     testnet: true,
 });
-
-import { BlockchainIncludingTestnet as Blockchain, type ObjectValues, objectValues } from "@crossmint/common-sdk-base";
-import { defineChain } from "viem";
 
 export const SmartWalletTestnet = {
     BASE_SEPOLIA: Blockchain.BASE_SEPOLIA,
