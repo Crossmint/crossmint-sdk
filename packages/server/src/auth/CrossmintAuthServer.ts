@@ -87,7 +87,7 @@ export class CrossmintAuthServer extends CrossmintAuth {
         // Otherwise, try to get the refresh token from the cookies
         const body = await requestAdapter.getBody();
         const { refresh: tokenFromBody } = body ?? {};
-        const authCookies = getAuthCookies(request, false);
+        const authCookies = getAuthCookies(request, { throwError: false });
         const tokenFromCookies = authCookies?.refreshToken;
         const refreshToken = tokenFromBody ?? tokenFromCookies;
 
