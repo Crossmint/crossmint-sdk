@@ -18,8 +18,10 @@ import {
     FetchResponseAdapter,
 } from "../types/request";
 
-export function getAuthCookies(request: GenericRequest, throwError = true): AuthMaterialBasic | null {
-    const cookieHeader = getCookieHeader(request, throwError);
+type GetCookiesOptions = { throwError?: boolean };
+
+export function getAuthCookies(request: GenericRequest, options?: GetCookiesOptions): AuthMaterialBasic | null {
+    const cookieHeader = getCookieHeader(request, options);
     if (cookieHeader == null) {
         return null;
     }
@@ -55,7 +57,8 @@ export function setAuthCookies(response: GenericResponse, authMaterial: AuthMate
     responseAdapter.setCookies(cookies);
 }
 
-function getCookieHeader(request: GenericRequest, throwError = true): string | null | undefined {
+function getCookieHeader(request: GenericRequest, options?: GetCookiesOptions): string | null {
+    const { throwError = true } = options ?? {};
     const requestAdapter = isNodeRequest(request) ? new NodeRequestAdapter(request) : new FetchRequestAdapter(request);
 
     const cookieHeader = requestAdapter.getCookieHeader();

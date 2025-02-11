@@ -140,8 +140,7 @@ export class CrossmintAuthServer extends CrossmintAuth {
             if (request != null) {
                 const authCookies = getAuthCookies(request);
                 if (authCookies != null) {
-                    const { refreshToken } = authCookies;
-                    await this.logoutFromDefaultRoute(refreshToken);
+                    await this.logoutFromDefaultRoute(authCookies.refreshToken);
                 }
             }
         } catch (error) {
