@@ -12,3 +12,5 @@ docs
 
 .parcel-cache
 .turbo
+
+.env
