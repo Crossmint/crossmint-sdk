@@ -28,7 +28,7 @@ const storyOdyssey = defineChain({
         },
     },
     testnet: true,
-})
+});
 
 import { BlockchainIncludingTestnet as Blockchain, type ObjectValues, objectValues } from "@crossmint/common-sdk-base";
 import { defineChain } from "viem";

@@ -24,7 +24,7 @@ export class SmartWalletService {
         private readonly accountConfigService: AccountConfigService,
         private readonly accountCreator: AccountCreator,
         private readonly clientDecorator: ClientDecorator
-    ) { }
+    ) {}
 
     public async getOrCreate(
         user: UserParams,
