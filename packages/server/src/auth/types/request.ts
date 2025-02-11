@@ -21,7 +21,12 @@ export class NodeRequestAdapter implements RequestAdapter {
     constructor(private request: IncomingMessage) {}
 
     getCookieHeader() {
-        return this.request.headers.cookie;
+        const cookieHeader = this.request.headers.cookie;
+        // It can return undefined, and we want to unify it to null in both RequestAdapters
+        if (cookieHeader == null) {
+            return null;
+        }
+        return cookieHeader;
     }
 
     getBody() {

@@ -44,6 +44,9 @@ export class CrossmintAuthServer extends CrossmintAuth {
     ): Promise<AuthSession> {
         const request = "refreshToken" in options ? undefined : options;
         const authMaterial = request ? getAuthCookies(request) : (options as AuthMaterialBasic);
+        if (authMaterial == null) {
+            throw new CrossmintAuthenticationError("No auth material found");
+        }
         const { jwt, refreshToken } = authMaterial;
 
         if (!refreshToken) {
@@ -84,7 +87,7 @@ export class CrossmintAuthServer extends CrossmintAuth {
         // Otherwise, try to get the refresh token from the cookies
         const body = await requestAdapter.getBody();
         const { refresh: tokenFromBody } = body ?? {};
-        const authCookies = getAuthCookies(request);
+        const authCookies = getAuthCookies(request, { throwError: false });
         const tokenFromCookies = authCookies?.refreshToken;
         const refreshToken = tokenFromBody ?? tokenFromCookies;
 
@@ -135,8 +138,10 @@ export class CrossmintAuthServer extends CrossmintAuth {
         try {
             // It's not necessary to call the logout endpoint, but desirable
             if (request != null) {
-                const { refreshToken } = getAuthCookies(request);
-                await this.logoutFromDefaultRoute(refreshToken);
+                const authCookies = getAuthCookies(request);
+                if (authCookies != null) {
+                    await this.logoutFromDefaultRoute(authCookies.refreshToken);
+                }
             }
         } catch (error) {
             console.error(error);
