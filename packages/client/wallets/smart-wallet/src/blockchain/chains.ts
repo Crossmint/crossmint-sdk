@@ -12,19 +12,19 @@ import {
 
 const storyOdyssey = defineChain({
     id: 1516,
-    name: 'Story Odyssey',
+    name: "Story Odyssey",
     nativeCurrency: {
         decimals: 18,
-        name: 'IP',
-        symbol: 'IP',
+        name: "IP",
+        symbol: "IP",
     },
     rpcUrls: {
-        default: { http: ['https://rpc.odyssey.storyrpc.io'] },
+        default: { http: ["https://rpc.odyssey.storyrpc.io"] },
     },
     blockExplorers: {
         default: {
-            name: 'Story Odyssey Explorer',
-            url: 'https://odyssey.storyscan.xyz',
+            name: "Story Odyssey Explorer",
+            url: "https://odyssey.storyscan.xyz",
         },
     },
     testnet: true,
