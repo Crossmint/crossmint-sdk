@@ -11,7 +11,7 @@ import type { SmartWalletClient } from "../../types/internal";
 import type { UserParams, WalletParams } from "../../types/params";
 import { CURRENT_VERSION, ZERO_DEV_TYPE } from "../../utils/constants";
 import { type SmartWalletChain, viemNetworks } from "../chains";
-import { getAlchemyRPC, getPimlicoBundlerRPC } from "../rpc";
+import { getRPC, getPimlicoBundlerRPC } from "../rpc";
 import { EVMSmartWallet } from "./EVMSmartWallet";
 import type { AccountConfigService } from "./account/config";
 import type { AccountCreator } from "./account/creator";
@@ -24,7 +24,7 @@ export class SmartWalletService {
         private readonly accountConfigService: AccountConfigService,
         private readonly accountCreator: AccountCreator,
         private readonly clientDecorator: ClientDecorator
-    ) {}
+    ) { }
 
     public async getOrCreate(
         user: UserParams,
@@ -36,7 +36,7 @@ export class SmartWalletService {
             cached,
         } = await this.accountConfigService.get(user, chain);
 
-        const publicClient = createPublicClient({ transport: http(getAlchemyRPC(chain)) });
+        const publicClient = createPublicClient({ transport: http(getRPC(chain)) });
 
         const { account, signerConfig } = await this.accountCreator.get({
             chain,

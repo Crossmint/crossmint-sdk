@@ -1,11 +1,11 @@
 import { blockchainToChainId } from "@crossmint/common-sdk-base";
 
-import type { SmartWalletChain } from "./chains";
+import { viemNetworks, type SmartWalletChain } from "./chains";
 
 const ALCHEMY_API_KEY = "-7M6vRDBDknwvMxnqah_jbcieWg0qad9";
 const PIMLICO_API_KEY = "pim_9dKmQPxiTCvtbUNF7XFBbA";
 
-export const ALCHEMY_RPC_SUBDOMAIN: Record<SmartWalletChain, string> = {
+export const ALCHEMY_RPC_SUBDOMAIN: Partial<Record<SmartWalletChain, string>> = {
     polygon: "polygon-mainnet",
     "polygon-amoy": "polygon-amoy",
     base: "base-mainnet",
@@ -14,10 +14,18 @@ export const ALCHEMY_RPC_SUBDOMAIN: Record<SmartWalletChain, string> = {
     "optimism-sepolia": "opt-sepolia",
     arbitrum: "arb-mainnet",
     "arbitrum-sepolia": "arb-sepolia",
+
 };
 
-export function getAlchemyRPC(chain: SmartWalletChain): string {
+function getAlchemyRPC(chain: SmartWalletChain): string {
     return `https://${ALCHEMY_RPC_SUBDOMAIN[chain]}.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
+}
+
+export function getRPC(chain: SmartWalletChain): string {
+    if (chain === "story-testnet") {
+        return viemNetworks[chain].rpcUrls.default.http[0];
+    }
+    return getAlchemyRPC(chain);
 }
 
 export function getPimlicoBundlerRPC(chain: SmartWalletChain): string {
