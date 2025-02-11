@@ -1,5 +1,48 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.13.10
+
+### Patch Changes
+
+- Updated dependencies [940add8]
+  - @crossmint/common-sdk-base@0.3.2
+  - @crossmint/client-sdk-auth@1.1.16
+  - @crossmint/client-sdk-base@1.4.8
+  - @crossmint/client-sdk-smart-wallet@0.1.33
+  - @crossmint/common-sdk-auth@1.0.14
+
+## 1.13.9
+
+### Patch Changes
+
+- Updated dependencies [5b05a67]
+  - @crossmint/client-sdk-base@1.4.7
+  - @crossmint/client-sdk-auth@1.1.15
+  - @crossmint/client-sdk-smart-wallet@0.1.32
+  - @crossmint/common-sdk-auth@1.0.13
+
+## 1.13.8
+
+### Patch Changes
+
+- Updated dependencies [9c244a3]
+  - @crossmint/client-sdk-base@1.4.6
+  - @crossmint/client-sdk-auth@1.1.14
+  - @crossmint/client-sdk-smart-wallet@0.1.31
+  - @crossmint/common-sdk-auth@1.0.12
+
+## 1.13.7
+
+### Patch Changes
+
+- b4dbe5c: Better error handling for not supported Pay with Crypto chains
+
+## 1.13.6
+
+### Patch Changes
+
+- da0e68f: fixed animation ux
+
 ## 1.13.5
 
 ### Patch Changes

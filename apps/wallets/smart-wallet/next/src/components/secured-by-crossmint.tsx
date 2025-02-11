@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 import { Typography } from "./typography";
 
-export const PoweredByCrossmint = ({ className }: { className?: string }) => {
+export const SecuredByCrossmint = ({ className }: { className?: string }) => {
     return (
         <Typography
             variant={"h4"}
@@ -12,11 +12,10 @@ export const PoweredByCrossmint = ({ className }: { className?: string }) => {
                 className
             )}
         >
-            Powered by
             <span className="self-center pr-1 pl-1.5">
                 <CrossmintLeaf />
             </span>
-            crossmint
+            Secured by Crossmint
         </Typography>
     );
 };

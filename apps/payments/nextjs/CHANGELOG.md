@@ -1,5 +1,46 @@
 # @crossmint/client-sdk-nextjs-starter
 
+## 1.4.19
+
+### Patch Changes
+
+- 940add8: Adding chiliz
+  - @crossmint/client-sdk-base@1.4.8
+  - @crossmint/client-sdk-react-ui@1.13.10
+
+## 1.4.18
+
+### Patch Changes
+
+- 5b05a67: Adding new param executionParameters in embedded v3
+- Updated dependencies [5b05a67]
+  - @crossmint/client-sdk-base@1.4.7
+  - @crossmint/client-sdk-react-ui@1.13.9
+
+## 1.4.17
+
+### Patch Changes
+
+- 9c244a3: order: update type
+- Updated dependencies [9c244a3]
+  - @crossmint/client-sdk-base@1.4.6
+  - @crossmint/client-sdk-react-ui@1.13.8
+
+## 1.4.16
+
+### Patch Changes
+
+- b4dbe5c: Better error handling for not supported Pay with Crypto chains
+- Updated dependencies [b4dbe5c]
+  - @crossmint/client-sdk-react-ui@1.13.7
+
+## 1.4.15
+
+### Patch Changes
+
+- Updated dependencies [da0e68f]
+  - @crossmint/client-sdk-react-ui@1.13.6
+
 ## 1.4.14
 
 ### Patch Changes
