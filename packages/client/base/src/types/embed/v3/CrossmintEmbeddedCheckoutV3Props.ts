@@ -45,11 +45,11 @@ export type EmbeddedCheckoutV3LineItem =
     | {
           tokenLocator: string;
           callData?: Record<string, any>;
-          executionParameters: never;
+          executionParameters?: never;
       }
     | {
           tokenLocator: string;
-          callData: never;
+          callData?: never;
           executionParameters?: Record<string, any>;
       };
 
