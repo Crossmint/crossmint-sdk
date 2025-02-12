@@ -29,7 +29,7 @@ export type CrossmintAuthProviderProps = {
     logoutRoute?: string;
 };
 
-type AuthStatus = "logged-in" | "logged-out" | "in-progress";
+type AuthStatus = "logged-in" | "logged-out" | "in-progress" | "initializing";
 
 export interface AuthContextType {
     crossmintAuth?: CrossmintAuth;
@@ -47,7 +47,7 @@ const defaultContextValue: AuthContextType = {
     logout: () => {},
     jwt: undefined,
     user: undefined,
-    status: "logged-out",
+    status: "initializing",
     getUser: () => {},
 };
 
@@ -95,12 +95,14 @@ export function CrossmintAuthProvider({
 
     const crossmintBaseUrl = validateApiKeyAndGetCrossmintBaseUrl(crossmint.apiKey);
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [initialized, setInitialized] = useState(false);
 
     useEffect(() => {
         if (crossmint.jwt == null) {
             const jwt = getCookie(SESSION_PREFIX);
             setJwt(jwt);
         }
+        setInitialized(true);
     }, []);
 
     useEffect(() => {
@@ -125,6 +127,9 @@ export function CrossmintAuthProvider({
     };
 
     const getAuthStatus = (): AuthStatus => {
+        if (!initialized) {
+            return "initializing";
+        }
         if (crossmint.jwt != null) {
             return "logged-in";
         }
