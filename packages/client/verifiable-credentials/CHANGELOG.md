@@ -1,5 +1,12 @@
 # @crossmint/client-sdk-verifiable-credentials
 
+## 3.4.24
+
+### Patch Changes
+
+- Updated dependencies [5cf34dd]
+  - @crossmint/client-sdk-base@1.4.9
+
 ## 3.4.23
 
 ### Patch Changes

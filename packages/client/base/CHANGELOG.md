@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-base
 
+## 1.4.9
+
+### Patch Changes
+
+- 5cf34dd: Fixing Embedded Line items interface
+
 ## 1.4.8
 
 ### Patch Changes
