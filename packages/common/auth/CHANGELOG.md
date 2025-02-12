@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-auth
 
+## 1.0.15
+
+### Patch Changes
+
+- 87b10d1: Custom error handling for fetching cookies
+
 ## 1.0.14
 
 ### Patch Changes

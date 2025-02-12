@@ -1,5 +1,14 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.13.11
+
+### Patch Changes
+
+- 449737b: auth: initializing status
+- Updated dependencies [87b10d1]
+  - @crossmint/common-sdk-auth@1.0.15
+  - @crossmint/client-sdk-auth@1.1.17
+
 ## 1.13.10
 
 ### Patch Changes
