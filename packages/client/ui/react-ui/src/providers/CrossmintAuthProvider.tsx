@@ -163,6 +163,7 @@ export function CrossmintAuthProvider({
                 }}
             >
                 <CrossmintWalletProvider
+                    key={crossmint.jwt}
                     defaultChain={embeddedWallets.defaultChain}
                     showPasskeyHelpers={embeddedWallets.showPasskeyHelpers}
                     appearance={appearance}
