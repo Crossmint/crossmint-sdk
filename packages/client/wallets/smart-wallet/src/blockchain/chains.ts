@@ -11,27 +11,8 @@ import {
 } from "viem/chains";
 
 import { BlockchainIncludingTestnet as Blockchain, type ObjectValues, objectValues } from "@crossmint/common-sdk-base";
-import { defineChain } from "viem";
-
-const storyOdyssey = defineChain({
-    id: 1516,
-    name: "Story Odyssey",
-    nativeCurrency: {
-        decimals: 18,
-        name: "IP",
-        symbol: "IP",
-    },
-    rpcUrls: {
-        default: { http: ["https://rpc.odyssey.storyrpc.io"] },
-    },
-    blockExplorers: {
-        default: {
-            name: "Story Odyssey Explorer",
-            url: "https://odyssey.storyscan.xyz",
-        },
-    },
-    testnet: true,
-});
+import { story } from "./wallets/definitions/story";
+import { storyTestnet } from "./wallets/definitions/story-testnet";
 
 export const SmartWalletTestnet = {
     BASE_SEPOLIA: Blockchain.BASE_SEPOLIA,
@@ -48,6 +29,7 @@ export const SmartWalletMainnet = {
     POLYGON: Blockchain.POLYGON,
     OPTIMISM: Blockchain.OPTIMISM,
     ARBITRUM: Blockchain.ARBITRUM,
+    STORY: Blockchain.STORY,
 } as const;
 export type SmartWalletMainnet = ObjectValues<typeof SmartWalletMainnet>;
 export const SMART_WALLET_MAINNETS = objectValues(SmartWalletMainnet);
@@ -76,5 +58,6 @@ export const viemNetworks: Record<SmartWalletChain, Chain> = {
     "optimism-sepolia": optimismSepolia,
     arbitrum: arbitrum,
     "arbitrum-sepolia": arbitrumSepolia,
-    "story-testnet": storyOdyssey,
+    "story-testnet": storyTestnet,
+    story: story,
 };
