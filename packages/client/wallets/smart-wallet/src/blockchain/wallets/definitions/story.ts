@@ -12,4 +12,4 @@ export const story = defineChain({
         default: { http: ["https://mainnet.storyrpc.io"] },
     },
     testnet: false,
-})
+});

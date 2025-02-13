@@ -11,28 +11,7 @@ import {
 } from "viem/chains";
 
 import { BlockchainIncludingTestnet as Blockchain, type ObjectValues, objectValues } from "@crossmint/common-sdk-base";
-import { defineChain } from "viem";
 import { story } from "./wallets/definitions/story";
-
-const storyTestnet = defineChain({
-    id: 1513,
-    name: 'Story Testnet',
-    nativeCurrency: {
-        decimals: 18,
-        name: 'IP',
-        symbol: 'IP',
-    },
-    rpcUrls: {
-        default: { http: ['https://testnet.storyrpc.io'] },
-    },
-    blockExplorers: {
-        default: {
-            name: 'Story Testnet Explorer',
-            url: 'https://testnet.storyscan.xyz',
-        },
-    },
-    testnet: true,
-});
 
 export const SmartWalletTestnet = {
     BASE_SEPOLIA: Blockchain.BASE_SEPOLIA,
