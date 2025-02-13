@@ -12,6 +12,7 @@ import {
 
 import { BlockchainIncludingTestnet as Blockchain, type ObjectValues, objectValues } from "@crossmint/common-sdk-base";
 import { story } from "./wallets/definitions/story";
+import { storyTestnet } from "./wallets/definitions/story-testnet";
 
 export const SmartWalletTestnet = {
     BASE_SEPOLIA: Blockchain.BASE_SEPOLIA,
