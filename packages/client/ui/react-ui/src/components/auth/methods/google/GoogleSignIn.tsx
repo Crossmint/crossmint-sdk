@@ -30,7 +30,7 @@ export function GoogleSignIn({ ...props }: ButtonHTMLAttributes<HTMLButtonElemen
             {...props}
         >
             <>
-                <GoogleIcon className="h-[25px] w-[25px] absolute left-[18px]" />
+                <GoogleIcon className="max-h-[25px] max-w-[25px] h-[25px] w-[25px] absolute left-[18px]" />
                 {isLoading ? (
                     <Spinner
                         style={{

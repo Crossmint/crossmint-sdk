@@ -20,11 +20,6 @@ export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEm
     async function handleOnSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
-        if (!isEmailValid(emailInput)) {
-            setEmailError("Please enter a valid email address");
-            return;
-        }
-
         setIsLoading(true);
 
         try {
@@ -43,10 +38,16 @@ export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEm
         <>
             <div className="flex flex-col items-start justify-start w-full rounded-lg">
                 <div className="w-full">
+                    <label
+                        className="text-cm-text-primary block mb-[5px]"
+                        style={{ color: appearance?.colors?.textPrimary }}
+                    >
+                        Email
+                    </label>
                     <form
                         role="form"
                         className="relative"
-                        onSubmit={handleOnSubmit}
+                        onSubmit={isEmailValid(emailInput) ? handleOnSubmit : undefined}
                         noValidate // we want to handle validation ourselves
                     >
                         <label htmlFor="emailInput" className="sr-only">
@@ -54,9 +55,10 @@ export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEm
                         </label>
                         <input
                             className={classNames(
-                                "flex-grow text-cm-text-secondary text-left pl-[16px] pr-[80px] h-[58px] w-full border border-cm-border rounded-xl bg-cm-background-primary placeholder:text-sm placeholder:text-opacity-60",
+                                "flex-grow text-cm-text-primary text-left pl-[16px] pr-[80px] h-[58px] w-full border border-cm-border rounded-xl bg-cm-background-primary placeholder:text-md",
                                 "transition-none duration-200 ease-in-out",
                                 "focus:outline-none focus-ring-custom", // Add focus ring
+                                "placeholder:[color:var(--placeholder-color)]",
                                 emailError ? "border-red-500" : ""
                             )}
                             style={{
@@ -64,13 +66,14 @@ export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEm
                                 borderRadius: appearance?.borderRadius,
                                 borderColor: emailError ? appearance?.colors?.danger : appearance?.colors?.border,
                                 backgroundColor: appearance?.colors?.inputBackground,
-                                // @ts-expect-error Add custom ring color to tailwind
+                                // @ts-expect-error Add custom placeholder & ring color to tailwind
+                                "--placeholder-color": appearance?.colors?.textSecondary ?? "#67797F",
                                 "--focus-ring-color": new Color(appearance?.colors?.accent ?? "#04AA6D")
                                     .alpha(0.18)
                                     .toString(),
                             }}
                             type="email"
-                            placeholder="Enter email"
+                            placeholder="your@email.com"
                             value={emailInput}
                             onChange={(e) => {
                                 setEmailInput(e.target.value);
@@ -93,11 +96,14 @@ export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEm
                             {!emailError && !isLoading && (
                                 <button
                                     type="submit"
-                                    className={classNames("cursor-pointer font-medium text-cm-accent text-nowrap")}
+                                    className={classNames(
+                                        "font-medium text-cm-accent text-nowrap",
+                                        !isEmailValid(emailInput) ? "!cursor-not-allowed opacity-60" : "cursor-pointer"
+                                    )}
                                     style={{ color: appearance?.colors?.accent }}
-                                    disabled={!emailInput}
+                                    disabled={!isEmailValid(emailInput) || isLoading}
                                 >
-                                    Sign in
+                                    Submit
                                 </button>
                             )}
                         </div>

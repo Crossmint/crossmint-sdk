@@ -19,12 +19,12 @@ const Web3AuthFlow = lazy(() =>
 );
 
 export function AuthForm({ className }: { className?: string }) {
-    const { step, appearance, loginMethods, baseUrl, error } = useAuthForm();
+    const { step, appearance, loginMethods, baseUrl, error, termsOfServiceText } = useAuthForm();
 
     return (
         <div
             className={classNames(
-                "relative p-6 pb-4 !min-[480px]:p-10 !min-[480px]:pb-8 flex flex-col gap-[10px] antialiased animate-none",
+                "relative pt-10 pb-[30px] px-6 !min-[480px]:px-10 flex flex-col gap-[10px] antialiased animate-none",
                 className
             )}
         >
@@ -50,22 +50,15 @@ export function AuthForm({ className }: { className?: string }) {
                         className="text-2xl font-bold text-cm-text-primary"
                         style={{ color: appearance?.colors?.textPrimary }}
                     >
-                        Sign In
+                        Sign in to Crossmint
                     </h1>
                     <p
                         className="text-base font-normal mb-3 text-cm-text-secondary"
                         style={{ color: appearance?.colors?.textSecondary }}
                     >
-                        Sign in using one of the options below
+                        Access using one of the options below.
                     </p>
                 </div>
-            ) : null}
-
-            {loginMethods.includes("email") ? (
-                <>
-                    <EmailAuthFlow />
-                    {loginMethods.length > 1 ? <Divider appearance={appearance} text="OR" /> : null}
-                </>
             ) : null}
 
             {loginMethods.includes("google") ? <GoogleSignIn /> : null}
@@ -76,6 +69,27 @@ export function AuthForm({ className }: { className?: string }) {
             ) : null}
             {loginMethods.includes("twitter") ? <TwitterSignIn /> : null}
             {loginMethods.includes("web3") ? <Web3AuthFlow /> : null}
+
+            {loginMethods.includes("email") ? (
+                <div>
+                    {loginMethods.length > 1 ? <Divider appearance={appearance} text="OR" /> : null}
+                    <EmailAuthFlow />
+                </div>
+            ) : null}
+
+            {termsOfServiceText != null ? (
+                <p
+                    className="text-sm text-center text-cm-text-secondary mt-2"
+                    style={{ color: appearance?.colors?.textSecondary }}
+                >
+                    <style>{`
+                        p a {
+                            color: ${appearance?.colors?.accent ?? "#04AA6D"};
+                        }
+                    `}</style>
+                    {termsOfServiceText}
+                </p>
+            ) : null}
 
             {step === "initial" || step === "otp" ? (
                 <SecuredByCrossmint

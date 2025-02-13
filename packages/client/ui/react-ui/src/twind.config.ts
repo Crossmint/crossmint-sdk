@@ -93,15 +93,6 @@ export default defineConfig({
     },
     rules: [
         [
-            "cm-responsive-border-radius-auth-dialog",
-            {
-                "@media (max-width: 479px)": {
-                    "border-bottom-left-radius": "0 !important",
-                    "border-bottom-right-radius": "0 !important",
-                },
-            },
-        ],
-        [
             "focus-ring-custom",
             {
                 "&:focus": {

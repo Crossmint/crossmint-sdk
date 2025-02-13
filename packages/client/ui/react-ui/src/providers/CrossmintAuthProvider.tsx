@@ -23,6 +23,7 @@ export type LoginMethod = "email" | "google" | "farcaster" | "web3" | "twitter";
 export type CrossmintAuthProviderProps = {
     embeddedWallets?: CrossmintAuthWalletConfig;
     appearance?: UIConfig;
+    termsOfServiceText?: string | ReactNode;
     children: ReactNode;
     loginMethods?: LoginMethod[];
     refreshRoute?: string;
@@ -63,6 +64,7 @@ export function CrossmintAuthProvider({
     embeddedWallets = defaultEmbeddedWallets,
     children,
     appearance,
+    termsOfServiceText,
     loginMethods = ["email", "google"],
     refreshRoute,
     logoutRoute,
@@ -173,6 +175,7 @@ export function CrossmintAuthProvider({
                             appearance,
                             setDialogOpen,
                             loginMethods,
+                            termsOfServiceText,
                             embeddedWallets,
                             baseUrl: crossmintBaseUrl,
                         }}

@@ -18,7 +18,7 @@ export default function AuthFormDialog({ open }: { open: boolean }) {
                 onOpenAutoFocus={(e) => e.preventDefault()}
                 closeButtonColor={appearance?.colors?.textPrimary}
                 closeButtonRingColor={appearance?.colors?.accent}
-                className="cm-responsive-border-radius-auth-dialog !p-0 !min-[480px]:p-0"
+                className="!p-0 !min-[480px]:p-0"
                 style={{
                     borderRadius: appearance?.borderRadius,
                     backgroundColor: appearance?.colors?.background,

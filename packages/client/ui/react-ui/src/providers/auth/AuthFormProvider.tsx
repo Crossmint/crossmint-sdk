@@ -16,6 +16,7 @@ interface AuthFormContextType {
     step: AuthStep;
     error: string | null;
     appearance?: UIConfig;
+    termsOfServiceText?: string | ReactNode;
     loginMethods: LoginMethod[];
     oauthUrlMap: OAuthUrlMap;
     isLoadingOauthUrlMap: boolean;
@@ -27,6 +28,7 @@ interface AuthFormContextType {
 
 type ContextInitialStateProps = {
     appearance?: UIConfig;
+    termsOfServiceText?: string | ReactNode;
     loginMethods: LoginMethod[];
     baseUrl: string;
     setDialogOpen?: (open: boolean) => void;
@@ -53,7 +55,7 @@ export const AuthFormProvider = ({
     const [oauthUrlMap, setOauthUrlMap] = useState<OAuthUrlMap>(initialOAuthUrlMap);
     const [isLoadingOauthUrlMap, setIsLoadingOauthUrlMap] = useState(true);
 
-    const { loginMethods, baseUrl, setDialogOpen, appearance, embeddedWallets } = initialState;
+    const { loginMethods, baseUrl, setDialogOpen, appearance, embeddedWallets, termsOfServiceText } = initialState;
 
     if (loginMethods.includes("web3") && embeddedWallets?.createOnLogin === "all-users") {
         throw new Error("Creating wallets on login is not yet supported for web3 login method");
@@ -101,6 +103,7 @@ export const AuthFormProvider = ({
         error,
         baseUrl,
         appearance,
+        termsOfServiceText,
         loginMethods,
         oauthUrlMap,
         isLoadingOauthUrlMap,
