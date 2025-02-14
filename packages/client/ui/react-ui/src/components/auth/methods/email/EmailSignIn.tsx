@@ -8,6 +8,7 @@ import { isEmailValid } from "@crossmint/common-sdk-auth";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import type { OtpEmailPayload } from "@/types/auth";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
+import { ContinueWithGoogle } from "../google/ContinueWithGoogle";
 
 export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEmailPayload) => void }) {
     const { crossmintAuth } = useCrossmintAuth();
@@ -17,13 +18,11 @@ export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEm
     const [emailError, setEmailError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
+    const showGoogleContinueButton =
+        emailInput.toLowerCase().includes("@gmail.com") && isEmailValid(emailInput) && !isLoading;
+
     async function handleOnSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
-
-        if (!isEmailValid(emailInput)) {
-            setEmailError("Please enter a valid email address");
-            return;
-        }
 
         setIsLoading(true);
 
@@ -43,10 +42,28 @@ export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEm
         <>
             <div className="flex flex-col items-start justify-start w-full rounded-lg">
                 <div className="w-full">
+                    <label
+                        className="text-cm-text-primary block mb-[5px]"
+                        style={{ color: appearance?.colors?.textPrimary }}
+                    >
+                        Email
+                    </label>
                     <form
                         role="form"
                         className="relative"
-                        onSubmit={handleOnSubmit}
+                        onSubmit={(e) => {
+                            // Prevent form submission if Google button should be shown
+                            if (showGoogleContinueButton) {
+                                e.preventDefault();
+                                return;
+                            }
+                            // Otherwise proceed with normal submission if email is valid
+                            if (isEmailValid(emailInput)) {
+                                handleOnSubmit(e);
+                            } else {
+                                e.preventDefault();
+                            }
+                        }}
                         noValidate // we want to handle validation ourselves
                     >
                         <label htmlFor="emailInput" className="sr-only">
@@ -54,23 +71,26 @@ export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEm
                         </label>
                         <input
                             className={classNames(
-                                "flex-grow text-cm-text-secondary text-left pl-[16px] pr-[80px] h-[58px] w-full border border-cm-border rounded-xl bg-cm-background-primary placeholder:text-sm placeholder:text-opacity-60",
+                                "flex-grow text-cm-text-primary text-left pl-[16px] h-[58px] w-full border border-cm-border rounded-xl bg-cm-background-primary placeholder:text-md",
                                 "transition-none duration-200 ease-in-out",
                                 "focus:outline-none focus-ring-custom", // Add focus ring
-                                emailError ? "border-red-500" : ""
+                                "placeholder:[color:var(--placeholder-color)]",
+                                emailError ? "border-red-500" : "",
+                                showGoogleContinueButton ? "pr-[132px]" : "pr-[80px]"
                             )}
                             style={{
                                 color: appearance?.colors?.textPrimary,
                                 borderRadius: appearance?.borderRadius,
                                 borderColor: emailError ? appearance?.colors?.danger : appearance?.colors?.border,
                                 backgroundColor: appearance?.colors?.inputBackground,
-                                // @ts-expect-error Add custom ring color to tailwind
+                                // @ts-expect-error Add custom placeholder & ring color to tailwind
+                                "--placeholder-color": appearance?.colors?.textSecondary ?? "#67797F",
                                 "--focus-ring-color": new Color(appearance?.colors?.accent ?? "#04AA6D")
                                     .alpha(0.18)
                                     .toString(),
                             }}
                             type="email"
-                            placeholder="Enter email"
+                            placeholder="your@email.com"
                             value={emailInput}
                             onChange={(e) => {
                                 setEmailInput(e.target.value);
@@ -90,16 +110,24 @@ export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEm
                                     }}
                                 />
                             )}
-                            {!emailError && !isLoading && (
+                            {showGoogleContinueButton ? (
+                                <ContinueWithGoogle emailInput={emailInput} appearance={appearance} />
+                            ) : !emailError && !isLoading ? (
                                 <button
                                     type="submit"
-                                    className={classNames("cursor-pointer font-medium text-cm-accent text-nowrap")}
-                                    style={{ color: appearance?.colors?.accent }}
-                                    disabled={!emailInput}
+                                    className={classNames(
+                                        "font-medium text-cm-accent text-nowrap bg-cm-background-primary",
+                                        !isEmailValid(emailInput) ? "!cursor-not-allowed opacity-60" : "cursor-pointer"
+                                    )}
+                                    style={{
+                                        color: appearance?.colors?.accent,
+                                        backgroundColor: appearance?.colors?.inputBackground,
+                                    }}
+                                    disabled={!isEmailValid(emailInput) || isLoading}
                                 >
-                                    Sign in
+                                    Submit
                                 </button>
-                            )}
+                            ) : null}
                         </div>
                     </form>
                     {emailError && <p className="text-xs text-red-500 mb-2 pt-2">{emailError}</p>}

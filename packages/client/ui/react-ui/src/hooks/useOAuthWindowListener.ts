@@ -25,13 +25,34 @@ export const useOAuthWindowListener = (provider: OAuthProvider) => {
         };
     }, []);
 
-    const createPopupAndSetupListeners = async () => {
+    const createPopupAndSetupListeners = async (providerLoginHint?: string) => {
         if (childRef.current == null) {
             throw new Error("Child window not initialized");
         }
         setIsLoading(true);
         setError(null);
-        const popup = await PopupWindow.init(oauthUrlMap[provider], {
+
+        const baseUrl = new URL(oauthUrlMap[provider]);
+
+        // The provider_login_hint is a parameter that can be used to pre-fill the email field of the OAuth provider to allow auto-login if session exists.
+        // Stytch Docs: https://stytch.com/docs/api/oauth-google-start#additional-provider-parameters
+        if (providerLoginHint != null) {
+            // Clear existing params but save them
+            const existingParams = Array.from(baseUrl.searchParams.entries());
+            baseUrl.search = "";
+
+            // Add provider_login_hint first
+            if (providerLoginHint) {
+                baseUrl.searchParams.append("provider_login_hint", providerLoginHint);
+            }
+
+            // Add all other params after
+            existingParams.forEach(([key, value]) => {
+                baseUrl.searchParams.append(key, value);
+            });
+        }
+
+        const popup = await PopupWindow.init(baseUrl.toString(), {
             awaitToLoad: false,
             crossOrigin: true,
             width: 400,
