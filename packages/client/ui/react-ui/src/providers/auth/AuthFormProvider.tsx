@@ -37,6 +37,12 @@ type ContextInitialStateProps = {
     embeddedWallets: CrossmintAuthWalletConfig;
 };
 
+type AuthFormProviderProps = {
+    preFetchOAuthUrls: boolean;
+    initialState: ContextInitialStateProps;
+    children: ReactNode;
+};
+
 const AuthFormContext = createContext<AuthFormContextType | undefined>(undefined);
 
 export const useAuthForm = () => {
@@ -47,10 +53,7 @@ export const useAuthForm = () => {
     return context;
 };
 
-export const AuthFormProvider = ({
-    children,
-    initialState,
-}: { children: ReactNode; initialState: ContextInitialStateProps }) => {
+export const AuthFormProvider = ({ preFetchOAuthUrls, initialState, children }: AuthFormProviderProps) => {
     const { crossmintAuth } = useCrossmintAuth();
     const [step, setStep] = useState<AuthStep>("initial");
     const [error, setError] = useState<string | null>(null);
@@ -90,8 +93,11 @@ export const AuthFormProvider = ({
     }, [loginMethods, crossmintAuth]);
 
     useEffect(() => {
-        preFetchAndSetOauthUrl();
-    }, [preFetchAndSetOauthUrl]);
+        // Only pre-fetch oauth urls if the user is not logged in
+        if (preFetchOAuthUrls) {
+            preFetchAndSetOauthUrl();
+        }
+    }, [preFetchAndSetOauthUrl, preFetchOAuthUrls]);
 
     const handleToggleDialog = (open: boolean) => {
         setDialogOpen?.(open);
