@@ -21,7 +21,8 @@ function getAlchemyRPC(chain: SmartWalletChain): string {
 }
 
 export function getRPC(chain: SmartWalletChain): string {
-    if (chain === "story-testnet") {
+    if (chain === "story-testnet" || chain === "story") {
+        // Story is not supported by Alchemy yet
         return viemNetworks[chain].rpcUrls.default.http[0];
     }
     return getAlchemyRPC(chain);

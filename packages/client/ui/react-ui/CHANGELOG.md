@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.13.13
+
+### Patch Changes
+
+- d18adfe: Fixed bug with stale jwt re-render
+
 ## 1.13.12
 
 ### Patch Changes
