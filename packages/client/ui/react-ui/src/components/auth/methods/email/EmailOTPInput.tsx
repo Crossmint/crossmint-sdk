@@ -5,6 +5,7 @@ import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import type { OtpEmailPayload } from "@/types/auth";
 import { AuthFormBackButton } from "../../AuthFormBackButton";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
+import { CountdownButton } from "@/components/common/CountdownButton";
 
 export const EMAIL_VERIFICATION_TOKEN_LENGTH = 6;
 
@@ -19,7 +20,7 @@ export function EmailOTPInput({
     const [hasError, setHasError] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    const handleOnSubmit = async () => {
+    const handleOnSubmitOTP = async () => {
         setLoading(true);
         try {
             const oneTimeSecret = await crossmintAuth?.confirmEmailOtp(
@@ -37,6 +38,14 @@ export function EmailOTPInput({
             setHasError(true);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleOnResendCode = async () => {
+        try {
+            await crossmintAuth?.sendEmailOtp(otpEmailData?.email ?? "");
+        } catch (_e: unknown) {
+            setError("Failed to resend code. Please try again.");
         }
     };
 
@@ -71,7 +80,8 @@ export function EmailOTPInput({
                     className="text-center text-cm-text-secondary px-4"
                     style={{ color: appearance?.colors?.textSecondary }}
                 >
-                    {"A temporary login code has been sent to your email"}
+                    A temporary login code has been sent to{" "}
+                    {otpEmailData?.email ? otpEmailData.email : "your email address"}
                 </p>
                 <div className="py-8">
                     <InputOTP
@@ -82,7 +92,7 @@ export function EmailOTPInput({
                             setHasError(false);
                             setError(null);
                         }}
-                        onComplete={handleOnSubmit}
+                        onComplete={handleOnSubmitOTP}
                         disabled={loading}
                         customStyles={{
                             accent: appearance?.colors?.accent ?? "#04AA6D",
@@ -105,19 +115,21 @@ export function EmailOTPInput({
                     </InputOTP>
                 </div>
 
-                <p className="text-sm leading-tight text-cm-text-secondary text-center">
+                <div className="text-xs leading-tight text-cm-text-secondary text-center">
                     <span style={{ color: appearance?.colors?.textSecondary }}>
-                        Can't find the email? Check spam folder or contact
-                    </span>{" "}
-                    <a
-                        key="resend-email-link"
-                        className="transition-opacity duration-150 text-cm-link hover:opacity-70"
-                        style={{ color: appearance?.colors?.textLink }}
-                        href="mailto:support@crossmint.io"
-                    >
-                        support@crossmint.io
-                    </a>
-                </p>
+                        Can't find the email? Check spam folder.
+                        {"\n"}
+                        Some emails may take several minutes to arrive.
+                    </span>
+                </div>
+
+                <CountdownButton
+                    seconds={30}
+                    appearance={appearance}
+                    countdownText={(seconds) => `Re-send code in ${seconds}s`}
+                    countdownCompleteText="Re-send code"
+                    handleOnClick={handleOnResendCode}
+                />
             </div>
         </div>
     );

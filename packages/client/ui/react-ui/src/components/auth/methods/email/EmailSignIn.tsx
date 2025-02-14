@@ -8,14 +8,20 @@ import { isEmailValid } from "@crossmint/common-sdk-auth";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import type { OtpEmailPayload } from "@/types/auth";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
+import { GoogleIcon } from "@/icons/google";
+import { useOAuthWindowListener } from "@/hooks/useOAuthWindowListener";
 
 export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEmailPayload) => void }) {
     const { crossmintAuth } = useCrossmintAuth();
     const { appearance, setStep, setError } = useAuthForm();
+    const { createPopupAndSetupListeners, isLoading: isLoadingOAuthWindow } = useOAuthWindowListener("google");
 
     const [emailInput, setEmailInput] = useState("");
     const [emailError, setEmailError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+
+    const showGoogleContinueButton =
+        emailInput.toLowerCase().includes("@gmail.com") && isEmailValid(emailInput) && !isLoading;
 
     async function handleOnSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -47,7 +53,19 @@ export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEm
                     <form
                         role="form"
                         className="relative"
-                        onSubmit={isEmailValid(emailInput) ? handleOnSubmit : undefined}
+                        onSubmit={(e) => {
+                            // Prevent form submission if Google button should be shown
+                            if (showGoogleContinueButton) {
+                                e.preventDefault();
+                                return;
+                            }
+                            // Otherwise proceed with normal submission if email is valid
+                            if (isEmailValid(emailInput)) {
+                                handleOnSubmit(e);
+                            } else {
+                                e.preventDefault();
+                            }
+                        }}
                         noValidate // we want to handle validation ourselves
                     >
                         <label htmlFor="emailInput" className="sr-only">
@@ -55,11 +73,12 @@ export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEm
                         </label>
                         <input
                             className={classNames(
-                                "flex-grow text-cm-text-primary text-left pl-[16px] pr-[80px] h-[58px] w-full border border-cm-border rounded-xl bg-cm-background-primary placeholder:text-md",
+                                "flex-grow text-cm-text-primary text-left pl-[16px] h-[58px] w-full border border-cm-border rounded-xl bg-cm-background-primary placeholder:text-md",
                                 "transition-none duration-200 ease-in-out",
                                 "focus:outline-none focus-ring-custom", // Add focus ring
                                 "placeholder:[color:var(--placeholder-color)]",
-                                emailError ? "border-red-500" : ""
+                                emailError ? "border-red-500" : "",
+                                showGoogleContinueButton ? "pr-[132px]" : "pr-[80px]"
                             )}
                             style={{
                                 color: appearance?.colors?.textPrimary,
@@ -93,19 +112,56 @@ export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEm
                                     }}
                                 />
                             )}
-                            {!emailError && !isLoading && (
+                            {showGoogleContinueButton ? (
+                                <button
+                                    type="button"
+                                    className={classNames(
+                                        "flex items-center gap-2 justify-center h-[32px] px-2.5 border border-cm-border rounded-xl bg-cm-background-primary",
+                                        "hover:bg-cm-hover focus:bg-cm-hover outline-none",
+                                        isLoadingOAuthWindow ? "cursor-not-allowed hover:bg-cm-muted-primary" : ""
+                                    )}
+                                    onClick={
+                                        isLoadingOAuthWindow
+                                            ? undefined
+                                            : () => createPopupAndSetupListeners(emailInput.trim().toLowerCase())
+                                    }
+                                    style={{
+                                        backgroundColor: appearance?.colors?.buttonBackground,
+                                        borderRadius: appearance?.borderRadius,
+                                    }}
+                                >
+                                    <GoogleIcon className="max-h-[18px] max-w-[18px] h-[18px] w-[18px]" />
+                                    {isLoadingOAuthWindow ? (
+                                        <Spinner
+                                            style={{
+                                                color: appearance?.colors?.textSecondary,
+                                                fill: appearance?.colors?.textPrimary,
+                                                width: "18px",
+                                                height: "18px",
+                                            }}
+                                        />
+                                    ) : (
+                                        <span className="text-cm-accent" style={{ color: appearance?.colors?.accent }}>
+                                            Continue
+                                        </span>
+                                    )}
+                                </button>
+                            ) : !emailError && !isLoading ? (
                                 <button
                                     type="submit"
                                     className={classNames(
-                                        "font-medium text-cm-accent text-nowrap",
+                                        "font-medium text-cm-accent text-nowrap bg-cm-background-primary",
                                         !isEmailValid(emailInput) ? "!cursor-not-allowed opacity-60" : "cursor-pointer"
                                     )}
-                                    style={{ color: appearance?.colors?.accent }}
+                                    style={{
+                                        color: appearance?.colors?.accent,
+                                        backgroundColor: appearance?.colors?.inputBackground,
+                                    }}
                                     disabled={!isEmailValid(emailInput) || isLoading}
                                 >
                                     Submit
                                 </button>
-                            )}
+                            ) : null}
                         </div>
                     </form>
                     {emailError && <p className="text-xs text-red-500 mb-2 pt-2">{emailError}</p>}

@@ -13,7 +13,7 @@ export default defineConfig({
                 "cm-muted-primary": "#F0F2F4",
                 "cm-hover": "#E9ECF0",
                 "cm-border": "#D9D9D9",
-                "cm-link": "#1A73E8",
+                "cm-link": "#1A74E9",
                 "cm-accent": "#04AA6D",
             },
             keyframes: {

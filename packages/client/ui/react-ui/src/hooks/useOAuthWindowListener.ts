@@ -25,13 +25,33 @@ export const useOAuthWindowListener = (provider: OAuthProvider) => {
         };
     }, []);
 
-    const createPopupAndSetupListeners = async () => {
+    const createPopupAndSetupListeners = async (providerLoginHint?: string) => {
         if (childRef.current == null) {
             throw new Error("Child window not initialized");
         }
         setIsLoading(true);
         setError(null);
-        const popup = await PopupWindow.init(oauthUrlMap[provider], {
+
+        const baseUrl = new URL(oauthUrlMap[provider]);
+
+        // If we have a providerLoginHint, we need to add it to the beginning of the url
+        if (providerLoginHint != null) {
+            // Clear existing params but save them
+            const existingParams = Array.from(baseUrl.searchParams.entries());
+            baseUrl.search = "";
+
+            // Add provider_login_hint first
+            if (providerLoginHint) {
+                baseUrl.searchParams.append("provider_login_hint", providerLoginHint);
+            }
+
+            // Add all other params after
+            existingParams.forEach(([key, value]) => {
+                baseUrl.searchParams.append(key, value);
+            });
+        }
+
+        const popup = await PopupWindow.init(baseUrl.toString(), {
             awaitToLoad: false,
             crossOrigin: true,
             width: 400,

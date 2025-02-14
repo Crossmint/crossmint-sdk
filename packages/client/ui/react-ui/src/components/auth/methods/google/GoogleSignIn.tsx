@@ -26,7 +26,7 @@ export function GoogleSignIn({ ...props }: ButtonHTMLAttributes<HTMLButtonElemen
                 borderRadius: appearance?.borderRadius,
                 backgroundColor: appearance?.colors?.buttonBackground,
             }}
-            onClick={isLoading ? undefined : createPopupAndSetupListeners}
+            onClick={isLoading ? undefined : () => createPopupAndSetupListeners()}
             {...props}
         >
             <>

@@ -19,7 +19,7 @@ const Web3AuthFlow = lazy(() =>
 );
 
 export function AuthForm({ className }: { className?: string }) {
-    const { step, appearance, loginMethods, baseUrl, error, termsOfServiceText } = useAuthForm();
+    const { step, appearance, loginMethods, baseUrl, error, termsOfServiceText, authModalTitle } = useAuthForm();
 
     return (
         <div
@@ -50,7 +50,7 @@ export function AuthForm({ className }: { className?: string }) {
                         className="text-2xl font-bold text-cm-text-primary"
                         style={{ color: appearance?.colors?.textPrimary }}
                     >
-                        Sign in to Crossmint
+                        {authModalTitle ?? "Sign in to Crossmint"}
                     </h1>
                     <p
                         className="text-base font-normal mb-3 text-cm-text-secondary"
@@ -77,18 +77,18 @@ export function AuthForm({ className }: { className?: string }) {
                 </div>
             ) : null}
 
-            {termsOfServiceText != null ? (
-                <p
+            {step === "initial" && termsOfServiceText != null ? (
+                <div
                     className="text-sm text-center text-cm-text-secondary mt-2"
                     style={{ color: appearance?.colors?.textSecondary }}
                 >
                     <style>{`
                         p a {
-                            color: ${appearance?.colors?.accent ?? "#04AA6D"};
+                            color: ${appearance?.colors?.textLink ?? "#1A74E9"};
                         }
                     `}</style>
                     {termsOfServiceText}
-                </p>
+                </div>
             ) : null}
 
             {step === "initial" || step === "otp" ? (
