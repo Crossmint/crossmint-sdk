@@ -8,13 +8,11 @@ import { isEmailValid } from "@crossmint/common-sdk-auth";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import type { OtpEmailPayload } from "@/types/auth";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
-import { GoogleIcon } from "@/icons/google";
-import { useOAuthWindowListener } from "@/hooks/useOAuthWindowListener";
+import { ContinueWithGoogle } from "../google/ContinueWithGoogle";
 
 export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEmailPayload) => void }) {
     const { crossmintAuth } = useCrossmintAuth();
     const { appearance, setStep, setError } = useAuthForm();
-    const { createPopupAndSetupListeners, isLoading: isLoadingOAuthWindow } = useOAuthWindowListener("google");
 
     const [emailInput, setEmailInput] = useState("");
     const [emailError, setEmailError] = useState("");
@@ -113,39 +111,7 @@ export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEm
                                 />
                             )}
                             {showGoogleContinueButton ? (
-                                <button
-                                    type="button"
-                                    className={classNames(
-                                        "flex items-center gap-2 justify-center h-[32px] px-2.5 border border-cm-border rounded-xl bg-cm-background-primary",
-                                        "hover:bg-cm-hover focus:bg-cm-hover outline-none",
-                                        isLoadingOAuthWindow ? "cursor-not-allowed hover:bg-cm-muted-primary" : ""
-                                    )}
-                                    onClick={
-                                        isLoadingOAuthWindow
-                                            ? undefined
-                                            : () => createPopupAndSetupListeners(emailInput.trim().toLowerCase())
-                                    }
-                                    style={{
-                                        backgroundColor: appearance?.colors?.buttonBackground,
-                                        borderRadius: appearance?.borderRadius,
-                                    }}
-                                >
-                                    <GoogleIcon className="max-h-[18px] max-w-[18px] h-[18px] w-[18px]" />
-                                    {isLoadingOAuthWindow ? (
-                                        <Spinner
-                                            style={{
-                                                color: appearance?.colors?.textSecondary,
-                                                fill: appearance?.colors?.textPrimary,
-                                                width: "18px",
-                                                height: "18px",
-                                            }}
-                                        />
-                                    ) : (
-                                        <span className="text-cm-accent" style={{ color: appearance?.colors?.accent }}>
-                                            Continue
-                                        </span>
-                                    )}
-                                </button>
+                                <ContinueWithGoogle emailInput={emailInput} appearance={appearance} />
                             ) : !emailError && !isLoading ? (
                                 <button
                                     type="submit"

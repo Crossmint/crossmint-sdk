@@ -22,7 +22,7 @@ export function CountdownButton({
     const [retryCount, setRetryCount] = useState(0);
 
     useEffect(() => {
-        let timer: NodeJS.Timeout;
+        let timer: ReturnType<typeof setInterval>;
 
         if (seconds > 0) {
             setCanResend(false);
@@ -38,7 +38,7 @@ export function CountdownButton({
         }
 
         return () => {
-            if (timer) {
+            if (timer != null) {
                 clearInterval(timer);
             }
         };
