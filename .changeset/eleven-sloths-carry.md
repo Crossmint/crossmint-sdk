@@ -2,4 +2,4 @@
 "@crossmint/client-sdk-react-ui": patch
 ---
 
-Prevent unecessary calls to API when user logged in
+Prevent unnecessary calls to API when user is logged in
