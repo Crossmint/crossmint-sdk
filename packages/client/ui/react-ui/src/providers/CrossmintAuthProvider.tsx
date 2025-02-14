@@ -173,6 +173,7 @@ export function CrossmintAuthProvider({
                     appearance={appearance}
                 >
                     <AuthFormProvider
+                        preFetchOAuthUrls={getAuthStatus() === "logged-out"}
                         initialState={{
                             appearance,
                             setDialogOpen,
