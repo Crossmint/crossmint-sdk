@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.14.1
+
+### Patch Changes
+
+- 540aa2c: Prevent unnecessary calls to API when user is logged in
+
 ## 1.14.0
 
 ### Minor Changes
