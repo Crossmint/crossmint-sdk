@@ -193,6 +193,7 @@ export type EmbeddedCheckoutV3FiatPayment = {
         applePay?: boolean;
         googlePay?: boolean;
     };
+    method?: "checkoutcom-flow" | "stripe-payment-element";
 };
 
 export type EmbeddedCheckoutV3CryptoPayment = {
