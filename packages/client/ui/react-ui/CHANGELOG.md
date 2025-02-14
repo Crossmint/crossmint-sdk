@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.14.0
+
+### Minor Changes
+
+- e8022e8: New UI look and feel
+
 ## 1.13.13
 
 ### Patch Changes
