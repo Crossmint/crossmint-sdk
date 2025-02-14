@@ -34,7 +34,8 @@ export const useOAuthWindowListener = (provider: OAuthProvider) => {
 
         const baseUrl = new URL(oauthUrlMap[provider]);
 
-        // If we have a providerLoginHint, we need to add it to the beginning of the url
+        // The provider_login_hint is a parameter that can be used to pre-fill the email field of the OAuth provider to allow auto-login if session exists.
+        // Stytch Docs: https://stytch.com/docs/api/oauth-google-start#additional-provider-parameters
         if (providerLoginHint != null) {
             // Clear existing params but save them
             const existingParams = Array.from(baseUrl.searchParams.entries());
