@@ -1,5 +1,12 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.14.2
+
+### Patch Changes
+
+- debc562: Added callback for successful logins onLoginSuccess
+- 4441c35: Added default email value prop
+
 ## 1.14.1
 
 ### Patch Changes
