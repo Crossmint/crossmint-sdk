@@ -1,4 +1,4 @@
-import { type ReactNode, createContext, useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, type MouseEvent, createContext, useEffect, useMemo, useRef, useState } from "react";
 
 import { CrossmintAuth, getCookie } from "@crossmint/client-sdk-auth";
 import type { EVMSmartWalletChain } from "@crossmint/client-sdk-smart-wallet";
@@ -35,7 +35,7 @@ type AuthStatus = "logged-in" | "logged-out" | "in-progress" | "initializing";
 
 export interface AuthContextType {
     crossmintAuth?: CrossmintAuth;
-    login: () => void;
+    login: (defaultEmail?: string | MouseEvent) => void;
     logout: () => void;
     jwt?: string;
     user?: SDKExternalUser;
@@ -100,6 +100,7 @@ export function CrossmintAuthProvider({
     const crossmintBaseUrl = validateApiKeyAndGetCrossmintBaseUrl(crossmint.apiKey);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [initialized, setInitialized] = useState(false);
+    const [defaultEmail, setdefaultEmail] = useState<string | undefined>(undefined);
 
     useEffect(() => {
         if (crossmint.jwt == null) {
@@ -117,12 +118,17 @@ export function CrossmintAuthProvider({
         setDialogOpen(false);
     }, [crossmint.jwt]);
 
-    const login = () => {
+    const login = (defaultEmail?: string | MouseEvent) => {
         if (crossmint.jwt != null) {
             console.log("User already logged in");
             return;
         }
 
+        // Only set defaultEmail when explicitly passed as a string, ignoring MouseEvent from onClick handlers
+        // PREVENTS BREAKING CHANGE!
+        if (defaultEmail != null && typeof defaultEmail === "string") {
+            setdefaultEmail(defaultEmail);
+        }
         setDialogOpen(true);
     };
 
@@ -182,6 +188,7 @@ export function CrossmintAuthProvider({
                             authModalTitle,
                             embeddedWallets,
                             baseUrl: crossmintBaseUrl,
+                            defaultEmail,
                         }}
                     >
                         <WalletManager embeddedWallets={embeddedWallets} accessToken={crossmint.jwt}>
