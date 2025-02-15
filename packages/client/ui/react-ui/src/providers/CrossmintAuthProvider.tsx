@@ -24,6 +24,7 @@ export type CrossmintAuthProviderProps = {
     embeddedWallets?: CrossmintAuthWalletConfig;
     appearance?: UIConfig;
     termsOfServiceText?: string | ReactNode;
+    onLoginSuccess?: () => void;
     authModalTitle?: string;
     children: ReactNode;
     loginMethods?: LoginMethod[];
@@ -67,6 +68,7 @@ export function CrossmintAuthProvider({
     appearance,
     termsOfServiceText,
     authModalTitle,
+    onLoginSuccess,
     loginMethods = ["email", "google"],
     refreshRoute,
     logoutRoute,
@@ -115,7 +117,13 @@ export function CrossmintAuthProvider({
         }
 
         setDialogOpen(false);
-    }, [crossmint.jwt]);
+
+        // FOR STANDALONE AUTH ONLY! EXCLUDING PASSKEY HELPERS.
+        // Skip if passkey helpers are enabled because they have to still create a wallet.
+        if (onLoginSuccess != null && !(embeddedWallets.showPasskeyHelpers ?? true)) {
+            onLoginSuccess();
+        }
+    }, [crossmint.jwt, onLoginSuccess, embeddedWallets.showPasskeyHelpers]);
 
     const login = () => {
         if (crossmint.jwt != null) {
@@ -171,6 +179,7 @@ export function CrossmintAuthProvider({
                     defaultChain={embeddedWallets.defaultChain}
                     showPasskeyHelpers={embeddedWallets.showPasskeyHelpers}
                     appearance={appearance}
+                    onLoginSuccess={onLoginSuccess}
                 >
                     <AuthFormProvider
                         preFetchOAuthUrls={getAuthStatus() === "logged-out"}
