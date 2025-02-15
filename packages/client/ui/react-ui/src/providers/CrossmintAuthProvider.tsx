@@ -119,11 +119,12 @@ export function CrossmintAuthProvider({
         setDialogOpen(false);
 
         // FOR STANDALONE AUTH ONLY! EXCLUDING PASSKEY HELPERS.
-        // Skip if passkey helpers are enabled because they have to still create a wallet.
-        if (onLoginSuccess != null && !(embeddedWallets.showPasskeyHelpers ?? true)) {
+        // not for existing sessions or page refreshes.
+        // Skip for passkey-enabled flows as they handle success separately.
+        if (dialogOpen && onLoginSuccess != null && !(embeddedWallets.showPasskeyHelpers ?? true)) {
             onLoginSuccess();
         }
-    }, [crossmint.jwt, onLoginSuccess, embeddedWallets.showPasskeyHelpers]);
+    }, [crossmint.jwt, dialogOpen, onLoginSuccess, embeddedWallets.showPasskeyHelpers]);
 
     const login = () => {
         if (crossmint.jwt != null) {
@@ -180,6 +181,7 @@ export function CrossmintAuthProvider({
                     showPasskeyHelpers={embeddedWallets.showPasskeyHelpers}
                     appearance={appearance}
                     onLoginSuccess={onLoginSuccess}
+                    dialogOpen={dialogOpen}
                 >
                     <AuthFormProvider
                         preFetchOAuthUrls={getAuthStatus() === "logged-out"}
