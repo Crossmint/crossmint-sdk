@@ -12,9 +12,9 @@ import { ContinueWithGoogle } from "../google/ContinueWithGoogle";
 
 export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEmailPayload) => void }) {
     const { crossmintAuth } = useCrossmintAuth();
-    const { appearance, setStep, setError } = useAuthForm();
+    const { appearance, defaultEmail, setStep, setError } = useAuthForm();
 
-    const [emailInput, setEmailInput] = useState("");
+    const [emailInput, setEmailInput] = useState(defaultEmail ?? "");
     const [emailError, setEmailError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 

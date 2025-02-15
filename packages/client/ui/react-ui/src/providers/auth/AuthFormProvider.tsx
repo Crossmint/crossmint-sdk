@@ -19,6 +19,7 @@ interface AuthFormContextType {
     termsOfServiceText?: string | ReactNode;
     authModalTitle?: string;
     loginMethods: LoginMethod[];
+    defaultEmail?: string;
     oauthUrlMap: OAuthUrlMap;
     isLoadingOauthUrlMap: boolean;
     baseUrl: string;
@@ -32,6 +33,7 @@ type ContextInitialStateProps = {
     termsOfServiceText?: string | ReactNode;
     authModalTitle?: string;
     loginMethods: LoginMethod[];
+    defaultEmail?: string;
     baseUrl: string;
     setDialogOpen?: (open: boolean) => void;
     embeddedWallets: CrossmintAuthWalletConfig;
@@ -60,8 +62,16 @@ export const AuthFormProvider = ({ preFetchOAuthUrls, initialState, children }: 
     const [oauthUrlMap, setOauthUrlMap] = useState<OAuthUrlMap>(initialOAuthUrlMap);
     const [isLoadingOauthUrlMap, setIsLoadingOauthUrlMap] = useState(true);
 
-    const { loginMethods, baseUrl, setDialogOpen, appearance, embeddedWallets, termsOfServiceText, authModalTitle } =
-        initialState;
+    const {
+        loginMethods,
+        baseUrl,
+        setDialogOpen,
+        appearance,
+        embeddedWallets,
+        termsOfServiceText,
+        authModalTitle,
+        defaultEmail,
+    } = initialState;
 
     if (loginMethods.includes("web3") && embeddedWallets?.createOnLogin === "all-users") {
         throw new Error("Creating wallets on login is not yet supported for web3 login method");
@@ -115,6 +125,7 @@ export const AuthFormProvider = ({ preFetchOAuthUrls, initialState, children }: 
         termsOfServiceText,
         authModalTitle,
         loginMethods,
+        defaultEmail,
         oauthUrlMap,
         isLoadingOauthUrlMap,
         setDialogOpen: handleToggleDialog,
