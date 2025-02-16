@@ -1,5 +1,11 @@
 # @crossmint/server-sdk
 
+## 1.2.6
+
+### Patch Changes
+
+- a759020: auth: allow local jwks
+
 ## 1.2.5
 
 ### Patch Changes
