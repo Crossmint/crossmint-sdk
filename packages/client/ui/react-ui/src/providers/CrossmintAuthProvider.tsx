@@ -33,7 +33,7 @@ export type CrossmintAuthProviderProps = {
     embeddedWallets?: CrossmintAuthWalletConfig;
     appearance?: UIConfig;
     termsOfServiceText?: string | ReactNode;
-    EXPERIMENTAL_onLoginSuccess?: () => void;
+    onLoginSuccess?: () => void;
     authModalTitle?: string;
     children: ReactNode;
     loginMethods?: LoginMethod[];
@@ -77,7 +77,7 @@ export function CrossmintAuthProvider({
     appearance,
     termsOfServiceText,
     authModalTitle,
-    EXPERIMENTAL_onLoginSuccess,
+    onLoginSuccess,
     loginMethods = ["email", "google"],
     refreshRoute,
     logoutRoute,
@@ -114,8 +114,8 @@ export function CrossmintAuthProvider({
     const [defaultEmail, setdefaultEmail] = useState<string | undefined>(undefined);
 
     const triggerHasJustLoggedIn = useCallback(() => {
-        EXPERIMENTAL_onLoginSuccess?.();
-    }, [EXPERIMENTAL_onLoginSuccess]);
+        onLoginSuccess?.();
+    }, [onLoginSuccess]);
 
     useEffect(() => {
         if (crossmint.jwt == null) {
@@ -130,7 +130,7 @@ export function CrossmintAuthProvider({
             setDialogOpen(false);
             triggerHasJustLoggedIn();
         }
-    }, [crossmint.jwt, dialogOpen, EXPERIMENTAL_onLoginSuccess]);
+    }, [crossmint.jwt, dialogOpen, onLoginSuccess]);
 
     const login = (defaultEmail?: string | MouseEvent) => {
         if (crossmint.jwt != null) {
