@@ -102,7 +102,7 @@ describe("AuthFormProvider", () => {
         );
 
         fireEvent.click(getByTestId("set-dialog-open"));
-        expect(mockInitialState.setDialogOpen).toHaveBeenCalledWith(true);
+        expect(mockInitialState.setDialogOpen).toHaveBeenCalledWith(true, undefined);
     });
 
     it("handles OAuth URL fetch error", async () => {
