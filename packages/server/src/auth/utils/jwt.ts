@@ -1,17 +1,22 @@
-import { jwtVerify, errors, type createRemoteJWKSet } from "jose";
+import { jwtVerify, errors, type createRemoteJWKSet, createLocalJWKSet, type JSONWebKeySet } from "jose";
 
 import { createJWKSClient } from "./jwksClient";
 
-export async function verifyCrossmintJwt(token: string, jwksUri: string) {
+export type JWKSInput = string | JSONWebKeySet;
+
+export async function verifyCrossmintJwt(token: string, jwks: JWKSInput) {
     try {
-        const jwks = createJWKSClient(jwksUri);
-        return await verifyJWT(jwks, token);
+        const signingKey = typeof jwks === "string" ? createJWKSClient(jwks) : createLocalJWKSet(jwks);
+        return await verifyJWT(signingKey, token);
     } catch (error) {
         throw error;
     }
 }
 
-async function verifyJWT(signingKey: ReturnType<typeof createRemoteJWKSet>, token: string) {
+async function verifyJWT(
+    signingKey: ReturnType<typeof createRemoteJWKSet> | ReturnType<typeof createLocalJWKSet>,
+    token: string
+) {
     try {
         const { payload } = await jwtVerify(token, signingKey);
         return payload;
