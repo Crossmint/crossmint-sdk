@@ -30,7 +30,7 @@ export function EmailOTPInput({
             );
 
             await crossmintAuth?.handleRefreshAuthMaterial(oneTimeSecret as string);
-            setDialogOpen(false);
+            setDialogOpen(false, true);
             setStep("initial");
         } catch (error) {
             console.error("Error confirming email OTP", error);
