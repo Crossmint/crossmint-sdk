@@ -306,4 +306,5 @@ export class CrossmintAuthClient extends CrossmintAuth {
 type CrossmintAuthClientCallbacks = {
     onTokenRefresh?: (authMaterial: AuthMaterialWithUser) => void;
     onLogout?: () => void;
+    onLoginSuccess?: () => void;
 };

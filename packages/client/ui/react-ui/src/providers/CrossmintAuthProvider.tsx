@@ -1,4 +1,13 @@
-import { type ReactNode, type MouseEvent, createContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+    type ReactNode,
+    type MouseEvent,
+    createContext,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+    useCallback,
+} from "react";
 
 import { CrossmintAuth, getCookie } from "@crossmint/client-sdk-auth";
 import type { EVMSmartWalletChain } from "@crossmint/client-sdk-smart-wallet";
@@ -24,7 +33,7 @@ export type CrossmintAuthProviderProps = {
     embeddedWallets?: CrossmintAuthWalletConfig;
     appearance?: UIConfig;
     termsOfServiceText?: string | ReactNode;
-    onLoginSuccess?: () => void;
+    EXPERIMENTAL_onLoginSuccess?: () => void;
     authModalTitle?: string;
     children: ReactNode;
     loginMethods?: LoginMethod[];
@@ -68,7 +77,7 @@ export function CrossmintAuthProvider({
     appearance,
     termsOfServiceText,
     authModalTitle,
-    onLoginSuccess,
+    EXPERIMENTAL_onLoginSuccess,
     loginMethods = ["email", "google"],
     refreshRoute,
     logoutRoute,
@@ -104,6 +113,10 @@ export function CrossmintAuthProvider({
     const [initialized, setInitialized] = useState(false);
     const [defaultEmail, setdefaultEmail] = useState<string | undefined>(undefined);
 
+    const triggerHasJustLoggedIn = useCallback(() => {
+        EXPERIMENTAL_onLoginSuccess?.();
+    }, [EXPERIMENTAL_onLoginSuccess]);
+
     useEffect(() => {
         if (crossmint.jwt == null) {
             const jwt = getCookie(SESSION_PREFIX);
@@ -113,19 +126,11 @@ export function CrossmintAuthProvider({
     }, []);
 
     useEffect(() => {
-        if (crossmint.jwt == null) {
-            return;
+        if (crossmint.jwt != null && dialogOpen) {
+            setDialogOpen(false);
+            triggerHasJustLoggedIn();
         }
-
-        setDialogOpen(false);
-
-        // FOR STANDALONE AUTH ONLY! EXCLUDING PASSKEY HELPERS.
-        // not for existing sessions or page refreshes.
-        // Skip for passkey-enabled flows as they handle success separately.
-        if (dialogOpen && onLoginSuccess != null && !(embeddedWallets.showPasskeyHelpers ?? true)) {
-            onLoginSuccess();
-        }
-    }, [crossmint.jwt, dialogOpen, onLoginSuccess, embeddedWallets.showPasskeyHelpers]);
+    }, [crossmint.jwt, dialogOpen, EXPERIMENTAL_onLoginSuccess]);
 
     const login = (defaultEmail?: string | MouseEvent) => {
         if (crossmint.jwt != null) {
@@ -186,14 +191,16 @@ export function CrossmintAuthProvider({
                     defaultChain={embeddedWallets.defaultChain}
                     showPasskeyHelpers={embeddedWallets.showPasskeyHelpers}
                     appearance={appearance}
-                    onLoginSuccess={onLoginSuccess}
-                    dialogOpen={dialogOpen}
                 >
                     <AuthFormProvider
+                        setDialogOpen={() => {
+                            setDialogOpen(false);
+                            // This will be triggered from most likely the OTP form
+                            triggerHasJustLoggedIn();
+                        }}
                         preFetchOAuthUrls={getAuthStatus() === "logged-out"}
                         initialState={{
                             appearance,
-                            setDialogOpen,
                             loginMethods,
                             termsOfServiceText,
                             authModalTitle,
