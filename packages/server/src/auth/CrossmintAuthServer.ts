@@ -21,6 +21,7 @@ import {
 } from "./types/request";
 import { getAuthCookies, setAuthCookies } from "./utils/cookies";
 import { verifyCrossmintJwt } from "./utils/jwt";
+import type { JSONWebKeySet } from "jose";
 
 export type CrossmintAuthServerOptions = CrossmintAuthOptions & {
     cookieOptions?: CookieOptions;
@@ -126,7 +127,10 @@ export class CrossmintAuthServer extends CrossmintAuth {
         }
     }
 
-    public verifyCrossmintJwt(token: string) {
+    public verifyCrossmintJwt(token: string, jwks?: JSONWebKeySet) {
+        if (jwks != null) {
+            return verifyCrossmintJwt(token, jwks);
+        }
         return verifyCrossmintJwt(token, this.getJwksUri());
     }
 
