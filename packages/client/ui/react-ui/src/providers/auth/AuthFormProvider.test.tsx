@@ -92,7 +92,11 @@ describe("AuthFormProvider", () => {
 
     it("calls setDialogOpen", () => {
         const { getByTestId } = render(
-            <AuthFormProvider initialState={mockInitialState} preFetchOAuthUrls={true}>
+            <AuthFormProvider
+                setDialogOpen={mockInitialState.setDialogOpen}
+                initialState={mockInitialState}
+                preFetchOAuthUrls={true}
+            >
                 <TestComponent />
             </AuthFormProvider>
         );
