@@ -33,6 +33,7 @@ export type CrossmintAuthProviderProps = {
     embeddedWallets?: CrossmintAuthWalletConfig;
     appearance?: UIConfig;
     termsOfServiceText?: string | ReactNode;
+    prefetchOAuthUrls?: boolean;
     onLoginSuccess?: () => void;
     authModalTitle?: string;
     children: ReactNode;
@@ -76,6 +77,7 @@ export function CrossmintAuthProvider({
     children,
     appearance,
     termsOfServiceText,
+    prefetchOAuthUrls = true,
     authModalTitle,
     onLoginSuccess,
     loginMethods = ["email", "google"],
@@ -193,12 +195,14 @@ export function CrossmintAuthProvider({
                     appearance={appearance}
                 >
                     <AuthFormProvider
-                        setDialogOpen={() => {
-                            setDialogOpen(false);
-                            // This will be triggered from most likely the OTP form
-                            triggerHasJustLoggedIn();
+                        setDialogOpen={(open, successfulLogin) => {
+                            setDialogOpen(open);
+                            if (successfulLogin) {
+                                // This will be triggered from the OTP form
+                                triggerHasJustLoggedIn();
+                            }
                         }}
-                        preFetchOAuthUrls={getAuthStatus() === "logged-out"}
+                        preFetchOAuthUrls={getAuthStatus() === "logged-out" && prefetchOAuthUrls}
                         initialState={{
                             appearance,
                             loginMethods,

@@ -25,7 +25,7 @@ interface AuthFormContextType {
     baseUrl: string;
     setStep: (step: AuthStep) => void;
     setError: (error: string | null) => void;
-    setDialogOpen: (open: boolean) => void;
+    setDialogOpen: (open: boolean, successfulLogin?: boolean) => void;
 }
 
 type ContextInitialStateProps = {
@@ -35,12 +35,12 @@ type ContextInitialStateProps = {
     loginMethods: LoginMethod[];
     defaultEmail?: string;
     baseUrl: string;
-    setDialogOpen?: (open: boolean) => void;
+    setDialogOpen?: (open: boolean, successfulLogin?: boolean) => void;
     embeddedWallets: CrossmintAuthWalletConfig;
 };
 
 type AuthFormProviderProps = {
-    setDialogOpen?: (open: boolean) => void;
+    setDialogOpen?: (open: boolean, successfulLogin?: boolean) => void;
     preFetchOAuthUrls: boolean;
     initialState: ContextInitialStateProps;
     children: ReactNode;
@@ -107,8 +107,8 @@ export const AuthFormProvider = ({
         }
     }, [preFetchAndSetOauthUrl, preFetchOAuthUrls]);
 
-    const handleToggleDialog = (open: boolean) => {
-        setDialogOpen?.(open);
+    const handleToggleDialog = (open: boolean, successfulLogin?: boolean) => {
+        setDialogOpen?.(open, successfulLogin);
         if (!open) {
             // Delay to allow the close transition to complete before resetting the step
             setTimeout(() => setStep("initial"), 250);
