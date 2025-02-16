@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.14.4
+
+### Patch Changes
+
+- 457dde3: Fixed onLoginSuccess callback bug, exposed prefetchOAuthUrls prop
+
 ## 1.14.3
 
 ### Patch Changes
