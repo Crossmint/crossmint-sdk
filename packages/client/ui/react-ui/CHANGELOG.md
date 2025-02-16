@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.14.3
+
+### Patch Changes
+
+- c3750a1: Fixed bug with onSuccessLogin callback
+
 ## 1.14.2
 
 ### Patch Changes
