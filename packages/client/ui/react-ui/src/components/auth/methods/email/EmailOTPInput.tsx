@@ -124,7 +124,7 @@ export function EmailOTPInput({
                 </div>
 
                 <CountdownButton
-                    seconds={30}
+                    initialSeconds={60}
                     appearance={appearance}
                     countdownText={(seconds) => `Re-send code in ${seconds}s`}
                     countdownCompleteText="Re-send code"

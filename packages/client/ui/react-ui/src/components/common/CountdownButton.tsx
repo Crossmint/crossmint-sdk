@@ -3,7 +3,7 @@ import type { UIConfig } from "@crossmint/common-sdk-base";
 import { classNames } from "@/utils/classNames";
 
 type CountdownButtonProps = {
-    seconds: number;
+    initialSeconds: number;
     appearance?: UIConfig;
     countdownText: (seconds: number) => string;
     countdownCompleteText: string;
@@ -11,15 +11,16 @@ type CountdownButtonProps = {
 };
 
 export function CountdownButton({
-    seconds: initialSeconds,
+    initialSeconds,
     appearance,
     countdownText,
     countdownCompleteText,
     handleOnClick,
 }: CountdownButtonProps) {
-    const [seconds, setSeconds] = useState(0);
+    const [seconds, setSeconds] = useState(initialSeconds);
     const [canResend, setCanResend] = useState(true);
     const [retryCount, setRetryCount] = useState(0);
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         let timer: ReturnType<typeof setInterval>;
@@ -55,19 +56,21 @@ export function CountdownButton({
     };
 
     const handleClick = async () => {
-        if (canResend) {
+        if (canResend && seconds === 0 && !isLoading) {
+            setIsLoading(true);
             await handleOnClick();
             startCountdown();
+            setIsLoading(false);
         }
     };
 
     return (
         <button
             onClick={handleClick}
-            disabled={!canResend}
+            disabled={!canResend || isLoading}
             className={classNames(
                 "text-sm leading-tight text-center mt-2 transition-opacity",
-                canResend ? "cursor-pointer opacity-100" : "cursor-default opacity-50"
+                canResend && !isLoading ? "cursor-pointer opacity-100" : "cursor-default opacity-50"
             )}
             style={{
                 color: canResend
