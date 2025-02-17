@@ -18,8 +18,16 @@ export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEm
     const [emailError, setEmailError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
+    /** Continue with google button will only show under the following conditions:
+     * 1. Email is a gmail address
+     * 2. Email DOES NOT contain a "+" character
+     * 3. Email is valid
+     */
     const showGoogleContinueButton =
-        emailInput.toLowerCase().includes("@gmail.com") && isEmailValid(emailInput) && !isLoading;
+        emailInput.toLowerCase().includes("@gmail.com") &&
+        !emailInput.toLowerCase().includes("+") &&
+        isEmailValid(emailInput) &&
+        !isLoading;
 
     async function handleOnSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
