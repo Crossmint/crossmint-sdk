@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.14.5
+
+### Patch Changes
+
+- 1da0e1e: Fix auth otp resend btn timeout and bug
+
 ## 1.14.4
 
 ### Patch Changes
