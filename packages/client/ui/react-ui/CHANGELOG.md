@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.14.6
+
+### Patch Changes
+
+- 9101604: Fix dont show continue with google btn if contains plus
+
 ## 1.14.5
 
 ### Patch Changes
