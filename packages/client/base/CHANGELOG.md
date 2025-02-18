@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-base
 
+## 1.4.10
+
+### Patch Changes
+
+- c83894c: checkout: product locator types
+
 ## 1.4.9
 
 ### Patch Changes
