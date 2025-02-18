@@ -1,20 +1,11 @@
-import type {
-    Connection,
-    PublicKey,
-    Transaction,
-    VersionedTransaction,
-} from "@solana/web3.js";
+import type { Connection, PublicKey, Transaction, VersionedTransaction } from "@solana/web3.js";
 
 export interface SolanaWallet {
     // Get the wallet's public key (equivalent to EVM address)
     getPublicKey: () => PublicKey;
 
     // Optional nonce (similar concept but implementation differs)
-    getNonce?:
-        | ((
-              parameters?: { seed?: string | undefined } | undefined
-          ) => Promise<bigint>)
-        | undefined;
+    getNonce?: ((parameters?: { seed?: string | undefined } | undefined) => Promise<bigint>) | undefined;
 
     // Sign a plain message (common across chains)
     signMessage: (parameters: { message: Uint8Array }) => Promise<Uint8Array>;
@@ -53,9 +44,7 @@ export class SolanaSmartWallet implements SolanaWallet {
         throw new Error("Not implemented");
     }
     // biome-ignore lint/suspicious/useAwait: stub
-    public async signTransaction(): Promise<
-        Transaction | VersionedTransaction
-    > {
+    public async signTransaction(): Promise<Transaction | VersionedTransaction> {
         throw new Error("Not implemented");
     }
     // biome-ignore lint/suspicious/useAwait: stub

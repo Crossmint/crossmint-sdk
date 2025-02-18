@@ -1,29 +1,17 @@
-import type {
-    Address,
-    Hex,
-    SignableMessage,
-    PublicClient,
-    HttpTransport,
-    TypedData,
-    TypedDataDefinition,
-} from "viem";
+import type { Address, Hex, SignableMessage, PublicClient, HttpTransport, TypedData, TypedDataDefinition } from "viem";
 
 import type { SmartWalletChain } from "./chains";
 
 export interface ViemWallet {
     getAddress: () => Address;
 
-    getNonce?:
-        | ((
-              parameters?: { key?: bigint | undefined } | undefined
-          ) => Promise<bigint>)
-        | undefined;
+    getNonce?: ((parameters?: { key?: bigint | undefined } | undefined) => Promise<bigint>) | undefined;
 
     signMessage: (parameters: { message: SignableMessage }) => Promise<Hex>;
 
     signTypedData: <
         const typedData extends TypedData | Record<string, unknown>,
-        primaryType extends keyof typedData | "EIP712Domain" = keyof typedData
+        primaryType extends keyof typedData | "EIP712Domain" = keyof typedData,
     >(
         parameters: TypedDataDefinition<typedData, primaryType>
     ) => Promise<Hex>;
@@ -51,9 +39,7 @@ export class EVMSmartWallet implements ViemWallet {
     }
 
     // biome-ignore lint/suspicious/useAwait: <explanation>
-    public async getNonce(
-        parameters?: { key?: bigint | undefined } | undefined
-    ): Promise<bigint> {
+    public async getNonce(parameters?: { key?: bigint | undefined } | undefined): Promise<bigint> {
         throw new Error("Not implemented");
     }
 
@@ -67,7 +53,7 @@ export class EVMSmartWallet implements ViemWallet {
     // biome-ignore lint/suspicious/useAwait: <explanation>
     public async signTypedData<
         const typedData extends TypedData | Record<string, unknown>,
-        primaryType extends keyof typedData | "EIP712Domain" = keyof typedData
+        primaryType extends keyof typedData | "EIP712Domain" = keyof typedData,
     >(parameters: TypedDataDefinition<typedData, primaryType>): Promise<Hex> {
         throw new Error("Not implemented");
     }
