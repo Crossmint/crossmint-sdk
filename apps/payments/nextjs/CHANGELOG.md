@@ -1,5 +1,14 @@
 # @crossmint/client-sdk-nextjs-starter
 
+## 1.4.30
+
+### Patch Changes
+
+- c83894c: checkout: product locator types
+- Updated dependencies [c83894c]
+  - @crossmint/client-sdk-base@1.4.10
+  - @crossmint/client-sdk-react-ui@1.14.7
+
 ## 1.4.29
 
 ### Patch Changes
