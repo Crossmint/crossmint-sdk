@@ -4,12 +4,7 @@
     "tasks": {
         "build": {
             "dependsOn": ["^build"],
-            "inputs": [
-                "src/**",
-                "tsup.config.ts",
-                "!./**/*.test.{ts,tsx}",
-                "tsconfig.json"
-            ],
+            "inputs": ["src/**", "tsup.config.ts", "!./**/*.test.{ts,tsx}", "tsconfig.json"],
             "outputs": ["dist/**"]
         },
         "test:vitest": {
