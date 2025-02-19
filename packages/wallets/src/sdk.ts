@@ -29,10 +29,13 @@ type SolanaAdminSigner =
       };
 
 type WalletTypeToArgs = {
-    "evm-smart-wallet": [adminSigner: EVMAdminSigner, linkedUser: string];
-    "evm-mpc-wallet": [linkedUser: string];
-    "solana-smart-wallet": [adminSigner: SolanaAdminSigner, linkedUser: string];
-    "solana-mpc-wallet": [linkedUser: string];
+    "evm-smart-wallet": [adminSigner: EVMAdminSigner, linkedUser?: string];
+    "evm-mpc-wallet": [linkedUser?: string];
+    "solana-smart-wallet": [
+        adminSigner: SolanaAdminSigner,
+        linkedUser?: string
+    ];
+    "solana-mpc-wallet": [linkedUser?: string];
 };
 
 type WalletTypeToWallet = {
