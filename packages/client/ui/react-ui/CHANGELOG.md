@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.14.8
+
+### Patch Changes
+
+- b1d7f0c: EmbeddedAuthForm: Fix google icon size initial render
+
 ## 1.14.7
 
 ### Patch Changes
