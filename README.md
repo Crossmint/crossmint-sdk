@@ -69,6 +69,10 @@ The Crossmint SDK is a powerful collection of packages designed to simplify bloc
 
 ## Package Overview
 
+### Wallet SDK
+
+- `@crossmint/wallets-sdk`: Universal Wallet SDK.
+
 ### Client-Side Packages
 
 - `@crossmint/client-sdk-react-ui`: React SDK, with UI components.
