@@ -35,34 +35,24 @@ type WalletTypeToArgs = {
     "solana-mpc-wallet": [linkedUser: string];
 };
 
+type WalletTypeToWallet = {
+    "evm-smart-wallet": EVMSmartWallet;
+    "evm-mpc-wallet": EVMMPCWallet;
+    "solana-smart-wallet": SolanaSmartWallet;
+    "solana-mpc-wallet": SolanaMPCWallet;
+};
+
 class WalletSDK {
     constructor(
         private readonly apiKey: string,
         private readonly jwt?: string
     ) {}
 
-    public async getOrCreateWallet(
-        type: "evm-smart-wallet",
-        ...args: WalletTypeToArgs["evm-smart-wallet"]
-    ): Promise<EVMSmartWallet>;
-    public async getOrCreateWallet(
-        type: "evm-mpc-wallet",
-        ...args: WalletTypeToArgs["evm-mpc-wallet"]
-    ): Promise<EVMMPCWallet>;
-    public async getOrCreateWallet(
-        type: "solana-smart-wallet",
-        ...args: WalletTypeToArgs["solana-smart-wallet"]
-    ): Promise<SolanaSmartWallet>;
-    public async getOrCreateWallet(
-        type: "solana-mpc-wallet",
-        ...args: WalletTypeToArgs["solana-mpc-wallet"]
-    ): Promise<SolanaMPCWallet>;
-
     // biome-ignore lint/suspicious/useAwait: <explanation>
     public async getOrCreateWallet<WalletType extends keyof WalletTypeToArgs>(
         _type: WalletType,
         ..._args: WalletTypeToArgs[WalletType]
-    ): Promise<EVMSmartWallet | EVMMPCWallet> {
+    ): Promise<WalletTypeToWallet[WalletType]> {
         // if (type === "evm-smart-wallet") {
         //     const [adminSigner, linkedUser] =
         //         args as WalletTypeToArgs["evm-smart-wallet"];
