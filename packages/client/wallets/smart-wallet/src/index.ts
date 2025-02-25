@@ -1,47 +1,41 @@
-export { blockchainToChainId, EVMBlockchainIncludingTestnet as Chain } from "@crossmint/common-sdk-base";
+export {
+    blockchainToChainId,
+    EVMBlockchainIncludingTestnet as Chain,
+} from "@crossmint/common-sdk-base";
 
-export { EVMSmartWallet } from "./blockchain/wallets/EVMSmartWallet";
-
+// Types
 export type {
-    SmartWalletSDKInitParams,
-    UserParams,
     ViemAccount,
     PasskeySigner,
     ExternalSigner,
     WalletParams,
-} from "./types/params";
+    UserParams,
+} from "./smartWalletService";
+export type { SmartWalletChain as EVMSmartWalletChain } from "./evm/chains";
+export type {
+    TransferType,
+    ERC20TransferType,
+    NFTTransferType,
+    SFTTransferType,
+} from "./types/transfer";
+export type { SmartWalletSDKInitParams } from "./sdk";
 
-export type { SmartWalletChain as EVMSmartWalletChain } from "./blockchain/chains";
-
-export type { TransferType, ERC20TransferType, NFTTransferType, SFTTransferType } from "./types/token";
-
+// Errors
 export {
     SmartWalletError,
-    UserWalletAlreadyCreatedError,
-    AdminAlreadyUsedError,
-    AdminMismatchError,
-    PasskeyMismatchError,
-    PasskeyPromptError,
-    PasskeyRegistrationError,
-    PasskeyIncompatibleAuthenticatorError,
-    ConfigError,
-    SmartWalletsNotEnabledError,
+    InvalidApiKeyError,
+    WalletCreationError,
+    InvalidChainError,
+    InvalidTransferChainError,
+    InvalidMessageFormatError,
+    MessageSigningError,
+    InvalidTypedDataError,
+    TypedDataSigningError,
+    TransactionApprovalError,
+    TransactionFailedError,
+    TransactionNotFoundError,
 } from "./error";
 
-export {
-    EVMSendTransactionError,
-    EVMSendTransactionExecutionRevertedError,
-} from "./blockchain/wallets/SendTransactionService";
-
-export {
-    SmartWalletErrorCode,
-    CrossmintSDKError,
-    CrossmintServiceError,
-    JWTDecryptionError,
-    JWTExpiredError,
-    JWTIdentifierError,
-    JWTInvalidError,
-    NotAuthorizedError,
-} from "@crossmint/client-sdk-base";
-
-export { SmartWalletSDK } from "./SmartWalletSDK";
+// Entry point
+export { EVMSmartWallet } from "./evm/wallet";
+export { SmartWalletSDK } from "./sdk";
