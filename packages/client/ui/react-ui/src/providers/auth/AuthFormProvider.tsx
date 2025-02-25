@@ -16,21 +16,34 @@ interface AuthFormContextType {
     step: AuthStep;
     error: string | null;
     appearance?: UIConfig;
+    termsOfServiceText?: string | ReactNode;
+    authModalTitle?: string;
     loginMethods: LoginMethod[];
+    defaultEmail?: string;
     oauthUrlMap: OAuthUrlMap;
     isLoadingOauthUrlMap: boolean;
     baseUrl: string;
     setStep: (step: AuthStep) => void;
     setError: (error: string | null) => void;
-    setDialogOpen: (open: boolean) => void;
+    setDialogOpen: (open: boolean, successfulLogin?: boolean) => void;
 }
 
 type ContextInitialStateProps = {
     appearance?: UIConfig;
+    termsOfServiceText?: string | ReactNode;
+    authModalTitle?: string;
     loginMethods: LoginMethod[];
+    defaultEmail?: string;
     baseUrl: string;
-    setDialogOpen?: (open: boolean) => void;
+    setDialogOpen?: (open: boolean, successfulLogin?: boolean) => void;
     embeddedWallets: CrossmintAuthWalletConfig;
+};
+
+type AuthFormProviderProps = {
+    setDialogOpen?: (open: boolean, successfulLogin?: boolean) => void;
+    preFetchOAuthUrls: boolean;
+    initialState: ContextInitialStateProps;
+    children: ReactNode;
 };
 
 const AuthFormContext = createContext<AuthFormContextType | undefined>(undefined);
@@ -44,16 +57,19 @@ export const useAuthForm = () => {
 };
 
 export const AuthFormProvider = ({
-    children,
+    setDialogOpen,
+    preFetchOAuthUrls,
     initialState,
-}: { children: ReactNode; initialState: ContextInitialStateProps }) => {
+    children,
+}: AuthFormProviderProps) => {
     const { crossmintAuth } = useCrossmintAuth();
     const [step, setStep] = useState<AuthStep>("initial");
     const [error, setError] = useState<string | null>(null);
     const [oauthUrlMap, setOauthUrlMap] = useState<OAuthUrlMap>(initialOAuthUrlMap);
     const [isLoadingOauthUrlMap, setIsLoadingOauthUrlMap] = useState(true);
 
-    const { loginMethods, baseUrl, setDialogOpen, appearance, embeddedWallets } = initialState;
+    const { loginMethods, baseUrl, appearance, embeddedWallets, termsOfServiceText, authModalTitle, defaultEmail } =
+        initialState;
 
     if (loginMethods.includes("web3") && embeddedWallets?.createOnLogin === "all-users") {
         throw new Error("Creating wallets on login is not yet supported for web3 login method");
@@ -85,11 +101,14 @@ export const AuthFormProvider = ({
     }, [loginMethods, crossmintAuth]);
 
     useEffect(() => {
-        preFetchAndSetOauthUrl();
-    }, [preFetchAndSetOauthUrl]);
+        // Only pre-fetch oauth urls if the user is not logged in
+        if (preFetchOAuthUrls) {
+            preFetchAndSetOauthUrl();
+        }
+    }, [preFetchAndSetOauthUrl, preFetchOAuthUrls]);
 
-    const handleToggleDialog = (open: boolean) => {
-        setDialogOpen?.(open);
+    const handleToggleDialog = (open: boolean, successfulLogin?: boolean) => {
+        setDialogOpen?.(open, successfulLogin);
         if (!open) {
             // Delay to allow the close transition to complete before resetting the step
             setTimeout(() => setStep("initial"), 250);
@@ -101,7 +120,10 @@ export const AuthFormProvider = ({
         error,
         baseUrl,
         appearance,
+        termsOfServiceText,
+        authModalTitle,
         loginMethods,
+        defaultEmail,
         oauthUrlMap,
         isLoadingOauthUrlMap,
         setDialogOpen: handleToggleDialog,
