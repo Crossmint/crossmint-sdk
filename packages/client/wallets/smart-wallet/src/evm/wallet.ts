@@ -10,9 +10,9 @@ import {
     encodeFunctionData,
 } from "viem";
 
-import type { CrossmintApiService } from "@/apiService";
-import { InvalidTransferChainError } from "@/error";
-import type { TransferType } from "@/types/transfer";
+import type { CrossmintApiService } from "../apiService";
+import { InvalidTransferChainError } from "../error";
+import type { TransferType } from "../types/transfer";
 
 import type { SmartWalletChain } from "./chains";
 import type { SmartWalletClient } from "./smartWalletClient";
