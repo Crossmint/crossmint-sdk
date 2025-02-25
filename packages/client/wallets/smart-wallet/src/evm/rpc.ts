@@ -16,7 +16,7 @@ export const ALCHEMY_RPC_SUBDOMAIN: Partial<Record<SmartWalletChain, string>> = 
     "arbitrum-sepolia": "arb-sepolia",
 };
 
-export function getAlchemyRPC(chain: SmartWalletChain): string {
+function getAlchemyRPC(chain: SmartWalletChain): string {
     return `https://${ALCHEMY_RPC_SUBDOMAIN[chain]}.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
 }
 

@@ -1,17 +1,37 @@
-import { SESSION_PREFIX, REFRESH_TOKEN_PREFIX } from "@crossmint/common-sdk-auth";
+import {
+    SESSION_PREFIX,
+    REFRESH_TOKEN_PREFIX,
+} from "@crossmint/common-sdk-auth";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { type ReactNode, act } from "react";
-import { beforeEach, describe, expect, vi, it, type MockInstance } from "vitest";
+import {
+    beforeEach,
+    describe,
+    expect,
+    vi,
+    it,
+    type MockInstance,
+} from "vitest";
 import { mock } from "vitest-mock-extended";
 
-import { CrossmintAuth as CrossmintAuthClient, getJWTExpiration, deleteCookie } from "@crossmint/client-sdk-auth";
-import { type EVMSmartWallet, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
+import {
+    CrossmintAuth as CrossmintAuthClient,
+    getJWTExpiration,
+    deleteCookie,
+} from "@crossmint/client-sdk-auth";
+import {
+    type EVMSmartWallet,
+    SmartWalletSDK,
+} from "@crossmint/client-sdk-smart-wallet";
 import { createCrossmint } from "@crossmint/common-sdk-base";
 
 import { useAuth, useWallet } from "../hooks";
 import { CrossmintProvider, useCrossmint } from "../hooks/useCrossmint";
 import { MOCK_API_KEY } from "../testUtils";
-import { CrossmintAuthProvider, type CrossmintAuthWalletConfig } from "./CrossmintAuthProvider";
+import {
+    CrossmintAuthProvider,
+    type CrossmintAuthWalletConfig,
+} from "./CrossmintAuthProvider";
 
 vi.mock("@crossmint/client-sdk-smart-wallet", async () => {
     const actual = await vi.importActual("@crossmint/client-sdk-smart-wallet");
@@ -53,7 +73,9 @@ function renderAuthProvider({
 }) {
     return render(
         <CrossmintProvider apiKey={MOCK_API_KEY}>
-            <CrossmintAuthProvider embeddedWallets={embeddedWallets}>{children}</CrossmintAuthProvider>
+            <CrossmintAuthProvider embeddedWallets={embeddedWallets}>
+                {children}
+            </CrossmintAuthProvider>
         </CrossmintProvider>
     );
 }
@@ -67,12 +89,20 @@ function TestComponent() {
             <div data-testid="error">{error?.message ?? "No Error"}</div>
             <div data-testid="wallet-status">{walletStatus}</div>
             <div data-testid="auth-status">{authStatus}</div>
-            <div data-testid="wallet">{wallet ? "Wallet Loaded" : "No Wallet"}</div>
+            <div data-testid="wallet">
+                {wallet ? "Wallet Loaded" : "No Wallet"}
+            </div>
             <div data-testid="auth-jwt">{jwt}</div>
-            <button data-testid="auth-jwt-input" onClick={() => setJwt("mock-jwt")}>
+            <button
+                data-testid="auth-jwt-input"
+                onClick={() => setJwt("mock-jwt")}
+            >
                 Set JWT
             </button>
-            <button data-testid="clear-jwt-button" onClick={() => setJwt(undefined)}>
+            <button
+                data-testid="clear-jwt-button"
+                onClick={() => setJwt(undefined)}
+            >
                 Clear JWT
             </button>
         </div>
@@ -92,7 +122,7 @@ describe("CrossmintAuthProvider", () => {
             () =>
                 ({
                     apiKey: MOCK_API_KEY,
-                }) as any
+                } as any)
         );
 
         global.fetch = vi.fn().mockImplementation((url: string) => {
@@ -126,18 +156,33 @@ describe("CrossmintAuthProvider", () => {
         deleteCookie(REFRESH_TOKEN_PREFIX);
         deleteCookie(SESSION_PREFIX);
 
-        handleRefreshAuthMaterialSpy = vi.spyOn(CrossmintAuthClient.prototype, "handleRefreshAuthMaterial");
-        getOAuthUrlSpy = vi.spyOn(CrossmintAuthClient.prototype, "getOAuthUrl").mockResolvedValue("mock-oauth-url");
+        handleRefreshAuthMaterialSpy = vi.spyOn(
+            CrossmintAuthClient.prototype,
+            "handleRefreshAuthMaterial"
+        );
+        getOAuthUrlSpy = vi
+            .spyOn(CrossmintAuthClient.prototype, "getOAuthUrl")
+            .mockResolvedValue("mock-oauth-url");
         // Casts as any because refreshAuthMaterial is protected
-        vi.spyOn(CrossmintAuthClient.prototype as any, "refreshAuthMaterial").mockResolvedValue(
+        vi.spyOn(
+            CrossmintAuthClient.prototype as any,
+            "refreshAuthMaterial"
+        ).mockResolvedValue(
             Promise.resolve({
                 jwt: "mock-jwt",
-                refreshToken: { secret: "mock-refresh-token", expiresAt: 123456 },
+                refreshToken: {
+                    secret: "mock-refresh-token",
+                    expiresAt: 123456,
+                },
                 user: {},
             })
         );
-        const mockCrossmintAuth = CrossmintAuthClient.from(createCrossmint({ apiKey: MOCK_API_KEY }));
-        vi.spyOn(CrossmintAuthClient, "from").mockReturnValue(mockCrossmintAuth);
+        const mockCrossmintAuth = CrossmintAuthClient.from(
+            createCrossmint({ apiKey: MOCK_API_KEY })
+        );
+        vi.spyOn(CrossmintAuthClient, "from").mockReturnValue(
+            mockCrossmintAuth
+        );
     });
 
     it("When user is logged out", async () => {

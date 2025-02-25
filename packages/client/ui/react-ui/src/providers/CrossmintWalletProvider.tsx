@@ -67,15 +67,27 @@ export function CrossmintWalletProvider({
     showPasskeyHelpers?: boolean;
     appearance?: UIConfig;
 }) {
-    const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
-    const smartWalletSDK = useMemo(() => SmartWalletSDK.init({ clientApiKey: crossmint.apiKey }), [crossmint.apiKey]);
+    const { crossmint } = useCrossmint(
+        "CrossmintWalletProvider must be used within CrossmintProvider"
+    );
+    const smartWalletSDK = useMemo(
+        () => SmartWalletSDK.init({ clientApiKey: crossmint.apiKey }),
+        [crossmint.apiKey]
+    );
 
-    const [walletState, setWalletState] = useState<ValidWalletState>({ status: "not-loaded" });
-    const [passkeySigner, setPasskeySigner] = useState<PasskeySigner | undefined>(undefined);
-    const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
+    const [walletState, setWalletState] = useState<ValidWalletState>({
+        status: "not-loaded",
+    });
+    const [passkeySigner, setPasskeySigner] = useState<
+        PasskeySigner | undefined
+    >(undefined);
+    const [passkeyPromptState, setPasskeyPromptState] =
+        useState<PasskeyPromptState>({ open: false });
 
     const createPasskeySigner = async () => {
-        const signer = await smartWalletSDK.createPasskeySigner("Crossmint Wallet");
+        const signer = await smartWalletSDK.createPasskeySigner(
+            "Crossmint Wallet"
+        );
         setPasskeySigner(signer);
         return signer;
     };
@@ -83,11 +95,17 @@ export function CrossmintWalletProvider({
     const getOrCreateWallet = async (config?: WalletConfig) => {
         if (walletState.status == "in-progress") {
             console.log("Wallet already loading");
-            return { startedCreation: false, reason: "Wallet is already loading." };
+            return {
+                startedCreation: false,
+                reason: "Wallet is already loading.",
+            };
         }
 
         if (crossmint.jwt == null) {
-            return { startedCreation: false, reason: `Jwt not set in "CrossmintProvider".` };
+            return {
+                startedCreation: false,
+                reason: `Jwt not set in "CrossmintProvider".`,
+            };
         }
 
         try {
@@ -114,22 +132,40 @@ export function CrossmintWalletProvider({
 
     return (
         <WalletContext.Provider
-            value={{ ...walletState, getOrCreateWallet, createPasskeySigner, passkeySigner, clearWallet }}
+            value={{
+                ...walletState,
+                getOrCreateWallet,
+                createPasskeySigner,
+                passkeySigner,
+                clearWallet,
+            }}
         >
             {children}
             {passkeyPromptState.open
-                ? createPortal(<PasskeyPrompt state={passkeyPromptState} appearance={appearance} />, document.body)
+                ? createPortal(
+                      <PasskeyPrompt
+                          state={passkeyPromptState}
+                          appearance={appearance}
+                      />,
+                      document.body
+                  )
                 : null}
         </WalletContext.Provider>
     );
 }
 
-function deriveErrorState(error: unknown): { status: "loading-error"; error: SmartWalletError } {
+function deriveErrorState(error: unknown): {
+    status: "loading-error";
+    error: SmartWalletError;
+} {
     if (error instanceof SmartWalletError) {
         return { status: "loading-error", error };
     }
 
     const message = error instanceof Error ? error.message : String(error);
     const stack = error instanceof Error ? error.stack : undefined;
-    return { status: "loading-error", error: new SmartWalletError(`Unknown Wallet Error: ${message}`, stack) };
+    return {
+        status: "loading-error",
+        error: new SmartWalletError(`Unknown Wallet Error: ${message}`, stack),
+    };
 }
