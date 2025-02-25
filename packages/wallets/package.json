@@ -17,12 +17,17 @@
     "scripts": {
         "build": "tsup",
         "dev": "tsup --watch",
-        "test:vitest": "vitest run"
+        "test:vitest": "vitest run",
+        "generate": "pnpm dlx @hey-api/openapi-ts"
     },
     "dependencies": {
         "@crossmint/common-sdk-auth": "workspace:*",
         "@crossmint/common-sdk-base": "workspace:*",
         "@solana/web3.js": "1.95.1",
         "viem": "2.17.5"
+    },
+    "devDependencies": {
+        "@hey-api/client-fetch": "0.8.1",
+        "@hey-api/openapi-ts": "0.64.5"
     }
 }
