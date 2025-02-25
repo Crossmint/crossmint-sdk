@@ -28,19 +28,45 @@ export type CrossmintEmbeddedCheckoutV3Props =
 
 export type EmbeddedCheckoutV3Recipient = EmbeddedCheckoutV3EmailRecipient | EmbeddedCheckoutV3WalletAddressRecipient;
 
+export type EmbeddedCheckoutV3PhysicalAddress = {
+    name: string;
+    line1: string;
+    line2?: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: "US";
+};
+
 export type EmbeddedCheckoutV3EmailRecipient = {
     email: string;
     walletAddress?: never;
+    physicalAddress?: EmbeddedCheckoutV3PhysicalAddress;
 };
 export type EmbeddedCheckoutV3WalletAddressRecipient = {
     walletAddress: string;
     email?: never;
+    physicalAddress?: EmbeddedCheckoutV3PhysicalAddress;
 };
 
-export type EmbeddedCheckoutV3LineItem = {
-    collectionLocator: string;
-    callData?: Record<string, any>;
-};
+export type EmbeddedCheckoutV3LineItem =
+    | {
+          collectionLocator: string;
+          callData?: Record<string, any>;
+      }
+    | {
+          tokenLocator: string;
+          callData?: Record<string, any>;
+          executionParameters?: never;
+      }
+    | {
+          tokenLocator: string;
+          callData?: never;
+          executionParameters?: Record<string, any>;
+      }
+    | {
+          productLocator: string;
+      };
 
 export type EmbeddedCheckoutV3Appearance = {
     fonts?: Array<{ cssSrc: string }>;

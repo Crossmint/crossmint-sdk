@@ -1,5 +1,147 @@
 # @crossmint/client-sdk-nextjs-starter
 
+## 1.4.32
+
+### Patch Changes
+
+- @crossmint/client-sdk-base@1.4.11
+- @crossmint/client-sdk-react-ui@1.14.9
+
+## 1.4.31
+
+### Patch Changes
+
+- Updated dependencies [b1d7f0c]
+  - @crossmint/client-sdk-react-ui@1.14.8
+
+## 1.4.30
+
+### Patch Changes
+
+- c83894c: checkout: product locator types
+- Updated dependencies [c83894c]
+  - @crossmint/client-sdk-base@1.4.10
+  - @crossmint/client-sdk-react-ui@1.14.7
+
+## 1.4.29
+
+### Patch Changes
+
+- Updated dependencies [9101604]
+  - @crossmint/client-sdk-react-ui@1.14.6
+
+## 1.4.28
+
+### Patch Changes
+
+- Updated dependencies [1da0e1e]
+  - @crossmint/client-sdk-react-ui@1.14.5
+
+## 1.4.27
+
+### Patch Changes
+
+- Updated dependencies [457dde3]
+  - @crossmint/client-sdk-react-ui@1.14.4
+
+## 1.4.26
+
+### Patch Changes
+
+- Updated dependencies [c3750a1]
+  - @crossmint/client-sdk-react-ui@1.14.3
+
+## 1.4.25
+
+### Patch Changes
+
+- Updated dependencies [debc562]
+- Updated dependencies [4441c35]
+  - @crossmint/client-sdk-react-ui@1.14.2
+
+## 1.4.24
+
+### Patch Changes
+
+- Updated dependencies [540aa2c]
+  - @crossmint/client-sdk-react-ui@1.14.1
+
+## 1.4.23
+
+### Patch Changes
+
+- Updated dependencies [e8022e8]
+  - @crossmint/client-sdk-react-ui@1.14.0
+
+## 1.4.22
+
+### Patch Changes
+
+- Updated dependencies [d18adfe]
+  - @crossmint/client-sdk-react-ui@1.13.13
+
+## 1.4.21
+
+### Patch Changes
+
+- Updated dependencies [5cf34dd]
+  - @crossmint/client-sdk-base@1.4.9
+  - @crossmint/client-sdk-react-ui@1.13.12
+
+## 1.4.20
+
+### Patch Changes
+
+- Updated dependencies [449737b]
+  - @crossmint/client-sdk-react-ui@1.13.11
+
+## 1.4.19
+
+### Patch Changes
+
+- 940add8: Adding chiliz
+  - @crossmint/client-sdk-base@1.4.8
+  - @crossmint/client-sdk-react-ui@1.13.10
+
+## 1.4.18
+
+### Patch Changes
+
+- 5b05a67: Adding new param executionParameters in embedded v3
+- Updated dependencies [5b05a67]
+  - @crossmint/client-sdk-base@1.4.7
+  - @crossmint/client-sdk-react-ui@1.13.9
+
+## 1.4.17
+
+### Patch Changes
+
+- 9c244a3: order: update type
+- Updated dependencies [9c244a3]
+  - @crossmint/client-sdk-base@1.4.6
+  - @crossmint/client-sdk-react-ui@1.13.8
+
+## 1.4.16
+
+### Patch Changes
+
+- b4dbe5c: Better error handling for not supported Pay with Crypto chains
+- Updated dependencies [b4dbe5c]
+  - @crossmint/client-sdk-react-ui@1.13.7
+
+## 1.4.15
+
+### Patch Changes
+
+- Updated dependencies [da0e68f]
+  - @crossmint/client-sdk-react-ui@1.13.6
+
+## 1.4.14
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@1.13.5
+
 ## 1.4.13
 
 ### Patch Changes

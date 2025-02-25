@@ -59,7 +59,7 @@ export class CrossmintAuth {
     }
 
     private async refreshFromCustomRoute(refreshToken?: string): Promise<AuthMaterialWithUser> {
-        if (!this.refreshRoute) {
+        if (this.refreshRoute == null) {
             throw new Error("Custom refresh route is not set");
         }
 

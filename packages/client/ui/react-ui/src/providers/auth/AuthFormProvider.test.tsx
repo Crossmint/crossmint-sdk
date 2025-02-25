@@ -61,7 +61,7 @@ describe("AuthFormProvider", () => {
 
     it("provides initial context values and fetches OAuth URLs", async () => {
         const { getByTestId } = render(
-            <AuthFormProvider initialState={mockInitialState}>
+            <AuthFormProvider initialState={mockInitialState} preFetchOAuthUrls={true}>
                 <TestComponent />
             </AuthFormProvider>
         );
@@ -81,7 +81,7 @@ describe("AuthFormProvider", () => {
 
     it("updates step", () => {
         const { getByTestId } = render(
-            <AuthFormProvider initialState={mockInitialState}>
+            <AuthFormProvider initialState={mockInitialState} preFetchOAuthUrls={true}>
                 <TestComponent />
             </AuthFormProvider>
         );
@@ -92,20 +92,24 @@ describe("AuthFormProvider", () => {
 
     it("calls setDialogOpen", () => {
         const { getByTestId } = render(
-            <AuthFormProvider initialState={mockInitialState}>
+            <AuthFormProvider
+                setDialogOpen={mockInitialState.setDialogOpen}
+                initialState={mockInitialState}
+                preFetchOAuthUrls={true}
+            >
                 <TestComponent />
             </AuthFormProvider>
         );
 
         fireEvent.click(getByTestId("set-dialog-open"));
-        expect(mockInitialState.setDialogOpen).toHaveBeenCalledWith(true);
+        expect(mockInitialState.setDialogOpen).toHaveBeenCalledWith(true, undefined);
     });
 
     it("handles OAuth URL fetch error", async () => {
         vi.mocked(mockedGetOAuthUrl).mockRejectedValue(new Error("Fetch failed"));
 
         const { getByTestId } = render(
-            <AuthFormProvider initialState={mockInitialState}>
+            <AuthFormProvider initialState={mockInitialState} preFetchOAuthUrls={true}>
                 <TestComponent />
             </AuthFormProvider>
         );
@@ -129,7 +133,7 @@ describe("AuthFormProvider", () => {
 
         expect(() =>
             render(
-                <AuthFormProvider initialState={invalidState}>
+                <AuthFormProvider initialState={invalidState} preFetchOAuthUrls={true}>
                     <TestComponent />
                 </AuthFormProvider>
             )

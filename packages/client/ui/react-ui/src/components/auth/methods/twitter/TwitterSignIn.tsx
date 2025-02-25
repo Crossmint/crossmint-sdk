@@ -26,11 +26,11 @@ export function TwitterSignIn({ ...props }: ButtonHTMLAttributes<HTMLButtonEleme
                 borderRadius: appearance?.borderRadius,
                 backgroundColor: appearance?.colors?.buttonBackground,
             }}
-            onClick={isLoading ? undefined : createPopupAndSetupListeners}
+            onClick={isLoading ? undefined : () => createPopupAndSetupListeners()}
             {...props}
         >
             <>
-                <TwitterIcon className="h-[25px] w-[25px] absolute left-[18px]" />
+                <TwitterIcon className="max-h-[25px] max-w-[25px] h-[25px] w-[25px] absolute left-[18px]" />
 
                 {isLoading ? (
                     <Spinner

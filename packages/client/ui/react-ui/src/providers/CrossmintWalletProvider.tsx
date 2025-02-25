@@ -39,16 +39,19 @@ type ValidWalletState =
 type WalletContext = {
     status: WalletStatus;
     wallet?: EVMSmartWallet;
+    passkeySigner?: PasskeySigner;
     error?: SmartWalletError;
     getOrCreateWallet: (
         config?: Pick<WalletConfig, "signer" | "type">
     ) => Promise<{ startedCreation: boolean; reason?: string }>;
+    createPasskeySigner: () => Promise<PasskeySigner | null>;
     clearWallet: () => void;
 };
 
 export const WalletContext = createContext<WalletContext>({
     status: "not-loaded",
     getOrCreateWallet: () => Promise.resolve({ startedCreation: false }),
+    createPasskeySigner: () => Promise.resolve(null),
     clearWallet: () => {},
 });
 
@@ -57,7 +60,6 @@ export type WalletConfig = WalletParams & { type: "evm-smart-wallet" };
 export function CrossmintWalletProvider({
     children,
     defaultChain,
-    showPasskeyHelpers = true, // enabled by default
     appearance,
 }: {
     children: ReactNode;
@@ -69,11 +71,16 @@ export function CrossmintWalletProvider({
     const smartWalletSDK = useMemo(() => SmartWalletSDK.init({ clientApiKey: crossmint.apiKey }), [crossmint.apiKey]);
 
     const [walletState, setWalletState] = useState<ValidWalletState>({ status: "not-loaded" });
+    const [passkeySigner, setPasskeySigner] = useState<PasskeySigner | undefined>(undefined);
     const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
 
-    const getOrCreateWallet = async (
-        config: WalletConfig = { type: "evm-smart-wallet", signer: { type: "PASSKEY" } }
-    ) => {
+    const createPasskeySigner = async () => {
+        const signer = await smartWalletSDK.createPasskeySigner("Crossmint Wallet");
+        setPasskeySigner(signer);
+        return signer;
+    };
+
+    const getOrCreateWallet = async (config?: WalletConfig) => {
         if (walletState.status == "in-progress") {
             console.log("Wallet already loading");
             return { startedCreation: false, reason: "Wallet is already loading." };
@@ -85,10 +92,13 @@ export function CrossmintWalletProvider({
 
         try {
             setWalletState({ status: "in-progress" });
+            const signer = config?.signer ?? (await createPasskeySigner());
             const wallet = await smartWalletSDK.getOrCreateWallet(
                 { jwt: crossmint.jwt as string },
                 defaultChain,
-                enhanceConfigWithPasskeyPrompts(config)
+                config ?? {
+                    signer,
+                }
             );
             setWalletState({ status: "loaded", wallet });
         } catch (error: unknown) {
@@ -98,44 +108,14 @@ export function CrossmintWalletProvider({
         return { startedCreation: true };
     };
 
-    const enhanceConfigWithPasskeyPrompts = (config: WalletConfig) => {
-        if (showPasskeyHelpers && (config.signer as PasskeySigner).type === "PASSKEY") {
-            return {
-                ...config,
-                signer: {
-                    ...config.signer,
-                    onPrePasskeyRegistration: createPasskeyPrompt("create-wallet"),
-                    onPasskeyRegistrationError: createPasskeyPrompt("create-wallet-error"),
-                    onFirstTimePasskeySigning: createPasskeyPrompt("transaction"),
-                    onFirstTimePasskeySigningError: createPasskeyPrompt("transaction-error"),
-                },
-            };
-        }
-        return config;
-    };
-
-    const createPasskeyPrompt = (type: ValidPasskeyPromptType) => () =>
-        new Promise<void>((resolve) => {
-            setPasskeyPromptState({
-                type,
-                open: true,
-                primaryActionOnClick: () => {
-                    setPasskeyPromptState({ open: false });
-                    resolve();
-                },
-                secondaryActionOnClick: () => {
-                    setPasskeyPromptState({ open: false });
-                    resolve();
-                },
-            });
-        });
-
     const clearWallet = () => {
         setWalletState({ status: "not-loaded" });
     };
 
     return (
-        <WalletContext.Provider value={{ ...walletState, getOrCreateWallet, clearWallet }}>
+        <WalletContext.Provider
+            value={{ ...walletState, getOrCreateWallet, createPasskeySigner, passkeySigner, clearWallet }}
+        >
             {children}
             {passkeyPromptState.open
                 ? createPortal(<PasskeyPrompt state={passkeyPromptState} appearance={appearance} />, document.body)

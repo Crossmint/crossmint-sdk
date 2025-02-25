@@ -1,5 +1,43 @@
 # @crossmint/client-sdk-base
 
+## 1.4.11
+
+### Patch Changes
+
+- Updated dependencies [3712dd5]
+  - @crossmint/client-sdk-window@0.2.3
+
+## 1.4.10
+
+### Patch Changes
+
+- c83894c: checkout: product locator types
+
+## 1.4.9
+
+### Patch Changes
+
+- 5cf34dd: Fixing Embedded Line items interface
+
+## 1.4.8
+
+### Patch Changes
+
+- Updated dependencies [940add8]
+  - @crossmint/common-sdk-base@0.3.2
+
+## 1.4.7
+
+### Patch Changes
+
+- 5b05a67: Adding new param executionParameters in embedded v3
+
+## 1.4.6
+
+### Patch Changes
+
+- 9c244a3: order: update type
+
 ## 1.4.5
 
 ### Patch Changes

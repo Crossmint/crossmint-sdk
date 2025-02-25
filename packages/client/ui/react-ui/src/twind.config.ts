@@ -13,7 +13,7 @@ export default defineConfig({
                 "cm-muted-primary": "#F0F2F4",
                 "cm-hover": "#E9ECF0",
                 "cm-border": "#D9D9D9",
-                "cm-link": "#1A73E8",
+                "cm-link": "#1A74E9",
                 "cm-accent": "#04AA6D",
             },
             keyframes: {
@@ -72,12 +72,12 @@ export default defineConfig({
             },
             animation: {
                 "caret-blink": "caret-blink 1.25s ease-out infinite",
-                "fade-in": "fade-in 150ms cubic-bezier(0.16, 1, 0.3, 1)",
-                "fade-out": "fade-out 150ms cubic-bezier(0.16, 1, 0.3, 1)",
+                "fade-in": "fade-in 300ms cubic-bezier(0.16, 1, 0.3, 1)",
+                "fade-out": "fade-out 300ms cubic-bezier(0.16, 1, 0.3, 1)",
                 "slide-in-from-top": "slide-in-from-top 150ms cubic-bezier(0.16, 1, 0.3, 1)",
                 "slide-out-to-top": "slide-out-to-top 150ms cubic-bezier(0.16, 1, 0.3, 1)",
-                "slide-in-from-bottom": "slide-in-from-bottom 150ms cubic-bezier(0.16, 1, 0.3, 1)",
-                "slide-out-to-bottom": "slide-out-to-bottom 150ms cubic-bezier(0.16, 1, 0.3, 1)",
+                "slide-in-from-bottom": "slide-in-from-bottom 450ms cubic-bezier(0.16, 1, 0.3, 1)",
+                "slide-out-to-bottom": "slide-out-to-bottom 300ms cubic-bezier(0.16, 1, 0.3, 1)",
                 "slide-in-from-left": "slide-in-from-left 150ms cubic-bezier(0.16, 1, 0.3, 1)",
                 "slide-out-to-left": "slide-out-to-left 150ms cubic-bezier(0.16, 1, 0.3, 1)",
                 "slide-in-from-right": "slide-in-from-right 150ms cubic-bezier(0.16, 1, 0.3, 1)",
@@ -92,15 +92,6 @@ export default defineConfig({
         },
     },
     rules: [
-        [
-            "cm-responsive-border-radius-auth-dialog",
-            {
-                "@media (max-width: 479px)": {
-                    "border-bottom-left-radius": "0 !important",
-                    "border-bottom-right-radius": "0 !important",
-                },
-            },
-        ],
         [
             "focus-ring-custom",
             {

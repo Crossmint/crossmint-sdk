@@ -1,4 +1,13 @@
-import { type ReactNode, createContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+    type ReactNode,
+    type MouseEvent,
+    createContext,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+    useCallback,
+} from "react";
 
 import { CrossmintAuth, getCookie } from "@crossmint/client-sdk-auth";
 import type { EVMSmartWalletChain } from "@crossmint/client-sdk-smart-wallet";
@@ -23,17 +32,21 @@ export type LoginMethod = "email" | "google" | "farcaster" | "web3" | "twitter";
 export type CrossmintAuthProviderProps = {
     embeddedWallets?: CrossmintAuthWalletConfig;
     appearance?: UIConfig;
+    termsOfServiceText?: string | ReactNode;
+    prefetchOAuthUrls?: boolean;
+    onLoginSuccess?: () => void;
+    authModalTitle?: string;
     children: ReactNode;
     loginMethods?: LoginMethod[];
     refreshRoute?: string;
     logoutRoute?: string;
 };
 
-type AuthStatus = "logged-in" | "logged-out" | "in-progress";
+type AuthStatus = "logged-in" | "logged-out" | "in-progress" | "initializing";
 
 export interface AuthContextType {
     crossmintAuth?: CrossmintAuth;
-    login: () => void;
+    login: (defaultEmail?: string | MouseEvent) => void;
     logout: () => void;
     jwt?: string;
     user?: SDKExternalUser;
@@ -47,7 +60,7 @@ const defaultContextValue: AuthContextType = {
     logout: () => {},
     jwt: undefined,
     user: undefined,
-    status: "logged-out",
+    status: "initializing",
     getUser: () => {},
 };
 
@@ -63,6 +76,10 @@ export function CrossmintAuthProvider({
     embeddedWallets = defaultEmbeddedWallets,
     children,
     appearance,
+    termsOfServiceText,
+    prefetchOAuthUrls = true,
+    authModalTitle,
+    onLoginSuccess,
     loginMethods = ["email", "google"],
     refreshRoute,
     logoutRoute,
@@ -95,28 +112,39 @@ export function CrossmintAuthProvider({
 
     const crossmintBaseUrl = validateApiKeyAndGetCrossmintBaseUrl(crossmint.apiKey);
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [initialized, setInitialized] = useState(false);
+    const [defaultEmail, setdefaultEmail] = useState<string | undefined>(undefined);
+
+    const triggerHasJustLoggedIn = useCallback(() => {
+        onLoginSuccess?.();
+    }, [onLoginSuccess]);
 
     useEffect(() => {
         if (crossmint.jwt == null) {
             const jwt = getCookie(SESSION_PREFIX);
             setJwt(jwt);
         }
+        setInitialized(true);
     }, []);
 
     useEffect(() => {
-        if (crossmint.jwt == null) {
-            return;
+        if (crossmint.jwt != null && dialogOpen) {
+            setDialogOpen(false);
+            triggerHasJustLoggedIn();
         }
+    }, [crossmint.jwt, dialogOpen, onLoginSuccess]);
 
-        setDialogOpen(false);
-    }, [crossmint.jwt]);
-
-    const login = () => {
+    const login = (defaultEmail?: string | MouseEvent) => {
         if (crossmint.jwt != null) {
             console.log("User already logged in");
             return;
         }
 
+        // Only set defaultEmail when explicitly passed as a string, ignoring MouseEvent from onClick handlers
+        // PREVENTS BREAKING CHANGE!
+        if (defaultEmail != null && typeof defaultEmail === "string") {
+            setdefaultEmail(defaultEmail);
+        }
         setDialogOpen(true);
     };
 
@@ -125,6 +153,9 @@ export function CrossmintAuthProvider({
     };
 
     const getAuthStatus = (): AuthStatus => {
+        if (!initialized) {
+            return "initializing";
+        }
         if (crossmint.jwt != null) {
             return "logged-in";
         }
@@ -158,17 +189,28 @@ export function CrossmintAuthProvider({
                 }}
             >
                 <CrossmintWalletProvider
+                    key={crossmint.jwt}
                     defaultChain={embeddedWallets.defaultChain}
                     showPasskeyHelpers={embeddedWallets.showPasskeyHelpers}
                     appearance={appearance}
                 >
                     <AuthFormProvider
+                        setDialogOpen={(open, successfulLogin) => {
+                            setDialogOpen(open);
+                            if (successfulLogin) {
+                                // This will be triggered from the OTP form
+                                triggerHasJustLoggedIn();
+                            }
+                        }}
+                        preFetchOAuthUrls={getAuthStatus() === "logged-out" && prefetchOAuthUrls}
                         initialState={{
                             appearance,
-                            setDialogOpen,
                             loginMethods,
+                            termsOfServiceText,
+                            authModalTitle,
                             embeddedWallets,
                             baseUrl: crossmintBaseUrl,
+                            defaultEmail,
                         }}
                     >
                         <WalletManager embeddedWallets={embeddedWallets} accessToken={crossmint.jwt}>
@@ -196,10 +238,7 @@ function WalletManager({
 
     useEffect(() => {
         if (embeddedWallets.createOnLogin === "all-users" && status === "not-loaded" && accessToken != null) {
-            getOrCreateWallet({
-                type: embeddedWallets.type,
-                signer: { type: "PASSKEY" },
-            });
+            getOrCreateWallet();
         }
 
         if (status === "loaded" && accessToken == null) {

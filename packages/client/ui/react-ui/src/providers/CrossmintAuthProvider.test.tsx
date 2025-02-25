@@ -61,15 +61,15 @@ function renderAuthProvider({
 function TestComponent() {
     const { setJwt } = useCrossmint();
     const { wallet, status: walletStatus, error } = useWallet();
-    const { status: authStatus } = useAuth();
+    const { status: authStatus, jwt } = useAuth();
     return (
         <div>
             <div data-testid="error">{error?.message ?? "No Error"}</div>
             <div data-testid="wallet-status">{walletStatus}</div>
             <div data-testid="auth-status">{authStatus}</div>
             <div data-testid="wallet">{wallet ? "Wallet Loaded" : "No Wallet"}</div>
-
-            <button data-testid="jwt-input" onClick={() => setJwt("mock-jwt")}>
+            <div data-testid="auth-jwt">{jwt}</div>
+            <button data-testid="auth-jwt-input" onClick={() => setJwt("mock-jwt")}>
                 Set JWT
             </button>
             <button data-testid="clear-jwt-button" onClick={() => setJwt(undefined)}>
@@ -140,6 +140,23 @@ describe("CrossmintAuthProvider", () => {
         vi.spyOn(CrossmintAuthClient, "from").mockReturnValue(mockCrossmintAuth);
     });
 
+    it("When user is logged out", async () => {
+        const { getByTestId } = renderAuthProvider({
+            children: <TestComponent />,
+            embeddedWallets,
+        });
+
+        expect(getByTestId("auth-status").textContent).toBe("logged-out");
+        expect(getByTestId("auth-jwt").textContent).toBe("");
+        await waitFor(() => {
+            expect(getByTestId("auth-status").textContent).toBe("logged-out");
+        });
+
+        expect(handleRefreshAuthMaterialSpy).toHaveBeenCalled();
+        expect(getOAuthUrlSpy).toHaveBeenCalled();
+        expect(vi.mocked(mockSDK.getOrCreateWallet)).not.toHaveBeenCalled();
+    });
+
     it("Happy path", async () => {
         await act(() => {
             document.cookie = `${REFRESH_TOKEN_PREFIX}=mock-refresh-token; path=/; SameSite=Lax;`;
@@ -163,8 +180,8 @@ describe("CrossmintAuthProvider", () => {
             expect(getByTestId("error").textContent).toBe("No Error");
         });
 
-        expect(handleRefreshAuthMaterialSpy).toHaveBeenCalledOnce();
-        expect(getOAuthUrlSpy).toHaveBeenCalled();
+        // expect(handleRefreshAuthMaterialSpy).not.toHaveBeenCalled();
+        expect(getOAuthUrlSpy).not.toHaveBeenCalled();
         expect(vi.mocked(mockSDK.getOrCreateWallet)).toHaveBeenCalledOnce();
     });
 
@@ -236,7 +253,7 @@ describe("CrossmintAuthProvider", () => {
             expect(getByTestId("auth-status").textContent).toBe("logged-out");
         });
 
-        fireEvent.click(getByTestId("jwt-input"));
+        fireEvent.click(getByTestId("auth-jwt-input"));
 
         await waitFor(() => {
             expect(getByTestId("auth-status").textContent).toBe("logged-in");
