@@ -42,7 +42,7 @@ type WalletContext = {
     passkeySigner?: PasskeySigner;
     error?: SmartWalletError;
     getOrCreateWallet: (
-        config: Pick<WalletConfig, "signer" | "type">
+        config?: Pick<WalletConfig, "signer" | "type">
     ) => Promise<{ startedCreation: boolean; reason?: string }>;
     createPasskeySigner: () => Promise<PasskeySigner | null>;
     clearWallet: () => void;
@@ -80,7 +80,7 @@ export function CrossmintWalletProvider({
         return signer;
     };
 
-    const getOrCreateWallet = async (config: WalletConfig) => {
+    const getOrCreateWallet = async (config?: WalletConfig) => {
         if (walletState.status == "in-progress") {
             console.log("Wallet already loading");
             return { startedCreation: false, reason: "Wallet is already loading." };
@@ -92,10 +92,13 @@ export function CrossmintWalletProvider({
 
         try {
             setWalletState({ status: "in-progress" });
+            const signer = config?.signer ?? (await createPasskeySigner());
             const wallet = await smartWalletSDK.getOrCreateWallet(
                 { jwt: crossmint.jwt as string },
                 defaultChain,
-                config
+                config ?? {
+                    signer,
+                }
             );
             setWalletState({ status: "loaded", wallet });
         } catch (error: unknown) {
