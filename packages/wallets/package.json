@@ -18,7 +18,8 @@
         "build": "tsup",
         "dev": "tsup --watch",
         "test:vitest": "vitest run",
-        "generate": "pnpm dlx @hey-api/openapi-ts"
+        "generate": "pnpm dlx @hey-api/openapi-ts",
+        "postinstall": "pnpm generate"
     },
     "dependencies": {
         "@crossmint/common-sdk-auth": "workspace:*",
