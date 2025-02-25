@@ -18,8 +18,7 @@ import {
 } from "viem";
 import { WebAuthnP256 } from "ox";
 
-import entryPointAbi from "@/abi/entryPoint";
-
+import entryPointAbi from "./abi/entryPoint";
 import type { CrossmintApiService } from "./apiService";
 import type { CreateWalletResponse, TransactionResponse, Signer, SignatureResponse } from "./types/api";
 import type { SmartWalletChain } from "./evm/chains";
