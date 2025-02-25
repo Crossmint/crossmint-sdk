@@ -24,16 +24,13 @@ const DialogContent = React.forwardRef<React.ElementRef<typeof DialogPrimitive.C
                 ref={ref}
                 className={classNames(
                     "fixed z-50 p-6 pb-4 bg-cm-background-primary border border-cm-border shadow-xl transition-none",
-                    // Small viewport styles (bottom sheet)
-                    "inset-x-0 bottom-0 w-full border-t rounded-t-xl",
-                    "data-[state=closed]:animate-slide-out-to-bottom data-[state=open]:animate-slide-in-from-bottom",
-                    // Regular viewport styles (centered modal)
+                    // Mobile viewport styles (bottom sheet) - updated with margins
+                    "inset-x-[9px] bottom-2 w-[calc(100%-18px)] border-t rounded-t-[36px] rounded-b-[50px]",
+                    "max-[479px]:data-[state=closed]:animate-slide-out-to-bottom max-[479px]:data-[state=open]:animate-slide-in-from-bottom",
+                    // Desktop viewport styles (centered modal)
                     "min-[480px]:inset-auto !min-[480px]:p-10 !min-[480px]:pb-8 min-[480px]:left-[50%] min-[480px]:top-[50%] min-[480px]:translate-x-[-50%] min-[480px]:translate-y-[-52%]",
-                    "min-[480px]:max-w-[448px] min-[480px]:rounded-xl",
-                    "min-[480px]:data-[state=closed]:animate-fade-out min-[480px]:data-[state=closed]:animate-zoom-out-95",
-                    "min-[480px]:data-[state=open]:animate-fade-in min-[480px]:data-[state=open]:animate-zoom-in-95",
-                    // Duration for animations
-                    "data-[state=closed]:duration-300 data-[state=open]:duration-500",
+                    "min-[480px]:max-w-[448px] min-[480px]:rounded-3xl",
+                    "min-[480px]:data-[state=closed]:animate-fade-out min-[480px]:data-[state=open]:animate-fade-in",
                     className
                 )}
                 {...props}
@@ -44,9 +41,9 @@ const DialogContent = React.forwardRef<React.ElementRef<typeof DialogPrimitive.C
                         className={classNames(
                             "absolute rounded-full opacity-70 ring-offset-background transition-opacity hover:opacity-100",
                             "focus:outline-none focus:ring-2 focus:ring-cm-accent focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-text-primary",
-                            "right-4 top-4 !min-[480px]:right-6 !min-[480px]:top-6"
+                            "right-5 top-5 !min-[480px]:right-7 !min-[480px]:top-7"
                         )}
-                        style={{ color: closeButtonColor ?? "#00150D" }}
+                        style={{ color: closeButtonColor ?? "#67797F" }}
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -58,7 +55,7 @@ const DialogContent = React.forwardRef<React.ElementRef<typeof DialogPrimitive.C
                             strokeWidth="2"
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            className="h-6 w-6"
+                            className="h-7 w-7"
                         >
                             <path d="M18 6 6 18" />
                             <path d="m6 6 12 12" />

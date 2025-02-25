@@ -1,5 +1,151 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.14.9
+
+### Patch Changes
+
+- Updated dependencies [3712dd5]
+  - @crossmint/client-sdk-window@0.2.3
+  - @crossmint/client-sdk-base@1.4.11
+  - @crossmint/client-sdk-auth@1.1.20
+  - @crossmint/client-sdk-smart-wallet@0.1.36
+  - @crossmint/common-sdk-auth@1.0.18
+
+## 1.14.8
+
+### Patch Changes
+
+- b1d7f0c: EmbeddedAuthForm: Fix google icon size initial render
+
+## 1.14.7
+
+### Patch Changes
+
+- Updated dependencies [c83894c]
+  - @crossmint/client-sdk-base@1.4.10
+  - @crossmint/client-sdk-auth@1.1.19
+  - @crossmint/client-sdk-smart-wallet@0.1.35
+  - @crossmint/common-sdk-auth@1.0.17
+
+## 1.14.6
+
+### Patch Changes
+
+- 9101604: Fix dont show continue with google btn if contains plus
+
+## 1.14.5
+
+### Patch Changes
+
+- 1da0e1e: Fix auth otp resend btn timeout and bug
+
+## 1.14.4
+
+### Patch Changes
+
+- 457dde3: Fixed onLoginSuccess callback bug, exposed prefetchOAuthUrls prop
+
+## 1.14.3
+
+### Patch Changes
+
+- c3750a1: Fixed bug with onSuccessLogin callback
+
+## 1.14.2
+
+### Patch Changes
+
+- debc562: Added callback for successful logins onLoginSuccess
+- 4441c35: Added default email value prop
+
+## 1.14.1
+
+### Patch Changes
+
+- 540aa2c: Prevent unnecessary calls to API when user is logged in
+
+## 1.14.0
+
+### Minor Changes
+
+- e8022e8: New UI look and feel
+
+## 1.13.13
+
+### Patch Changes
+
+- d18adfe: Fixed bug with stale jwt re-render
+
+## 1.13.12
+
+### Patch Changes
+
+- Updated dependencies [5cf34dd]
+  - @crossmint/client-sdk-base@1.4.9
+  - @crossmint/client-sdk-auth@1.1.18
+  - @crossmint/client-sdk-smart-wallet@0.1.34
+  - @crossmint/common-sdk-auth@1.0.16
+
+## 1.13.11
+
+### Patch Changes
+
+- 449737b: auth: initializing status
+- Updated dependencies [87b10d1]
+  - @crossmint/common-sdk-auth@1.0.15
+  - @crossmint/client-sdk-auth@1.1.17
+
+## 1.13.10
+
+### Patch Changes
+
+- Updated dependencies [940add8]
+  - @crossmint/common-sdk-base@0.3.2
+  - @crossmint/client-sdk-auth@1.1.16
+  - @crossmint/client-sdk-base@1.4.8
+  - @crossmint/client-sdk-smart-wallet@0.1.33
+  - @crossmint/common-sdk-auth@1.0.14
+
+## 1.13.9
+
+### Patch Changes
+
+- Updated dependencies [5b05a67]
+  - @crossmint/client-sdk-base@1.4.7
+  - @crossmint/client-sdk-auth@1.1.15
+  - @crossmint/client-sdk-smart-wallet@0.1.32
+  - @crossmint/common-sdk-auth@1.0.13
+
+## 1.13.8
+
+### Patch Changes
+
+- Updated dependencies [9c244a3]
+  - @crossmint/client-sdk-base@1.4.6
+  - @crossmint/client-sdk-auth@1.1.14
+  - @crossmint/client-sdk-smart-wallet@0.1.31
+  - @crossmint/common-sdk-auth@1.0.12
+
+## 1.13.7
+
+### Patch Changes
+
+- b4dbe5c: Better error handling for not supported Pay with Crypto chains
+
+## 1.13.6
+
+### Patch Changes
+
+- da0e68f: fixed animation ux
+
+## 1.13.5
+
+### Patch Changes
+
+- Updated dependencies [cef1981]
+  - @crossmint/common-sdk-auth@1.0.11
+  - @crossmint/client-sdk-auth@1.1.13
+
 ## 1.13.4
 
 ### Patch Changes

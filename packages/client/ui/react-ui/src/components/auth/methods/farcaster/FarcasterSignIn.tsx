@@ -27,7 +27,7 @@ export function FarcasterSignIn() {
                         setError(null);
                     }}
                 >
-                    <FarcasterIcon className="h-[25px] w-[25px] absolute left-[18px]" />
+                    <FarcasterIcon className="max-h-[25px] max-w-[25px] h-[25px] w-[25px] absolute left-[18px]" />
                     <span
                         className="font-medium"
                         style={{ margin: "0px 32px", color: appearance?.colors?.textPrimary }}

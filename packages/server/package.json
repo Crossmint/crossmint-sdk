@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/server-sdk",
-    "version": "1.1.10",
+    "version": "1.2.8",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
@@ -22,10 +22,6 @@
     "dependencies": {
         "@crossmint/common-sdk-auth": "workspace:*",
         "@crossmint/common-sdk-base": "workspace:*",
-        "jsonwebtoken": "9.0.2",
-        "jwks-rsa": "3.1.0"
-    },
-    "devDependencies": {
-        "@types/jsonwebtoken": "9.0.6"
+        "jose": "5.9.6"
     }
 }
