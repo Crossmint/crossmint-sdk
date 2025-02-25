@@ -60,7 +60,6 @@ export type WalletConfig = WalletParams & { type: "evm-smart-wallet" };
 export function CrossmintWalletProvider({
     children,
     defaultChain,
-    showPasskeyHelpers = true,
     appearance,
 }: {
     children: ReactNode;
@@ -96,7 +95,7 @@ export function CrossmintWalletProvider({
             const wallet = await smartWalletSDK.getOrCreateWallet(
                 { jwt: crossmint.jwt as string },
                 defaultChain,
-                enhanceConfigWithPasskeyPrompts(config)
+                config
             );
             setWalletState({ status: "loaded", wallet });
         } catch (error: unknown) {
@@ -105,38 +104,6 @@ export function CrossmintWalletProvider({
         }
         return { startedCreation: true };
     };
-
-    const enhanceConfigWithPasskeyPrompts = (config: WalletConfig) => {
-        if (showPasskeyHelpers && (config.signer as PasskeySigner).type === "PASSKEY") {
-            return {
-                ...config,
-                signer: {
-                    ...config.signer,
-                    onPrePasskeyRegistration: createPasskeyPrompt("create-wallet"),
-                    onPasskeyRegistrationError: createPasskeyPrompt("create-wallet-error"),
-                    onFirstTimePasskeySigning: createPasskeyPrompt("transaction"),
-                    onFirstTimePasskeySigningError: createPasskeyPrompt("transaction-error"),
-                },
-            };
-        }
-        return config;
-    };
-
-    const createPasskeyPrompt = (type: ValidPasskeyPromptType) => () =>
-        new Promise<void>((resolve) => {
-            setPasskeyPromptState({
-                type,
-                open: true,
-                primaryActionOnClick: () => {
-                    setPasskeyPromptState({ open: false });
-                    resolve();
-                },
-                secondaryActionOnClick: () => {
-                    setPasskeyPromptState({ open: false });
-                    resolve();
-                },
-            });
-        });
 
     const clearWallet = () => {
         setWalletState({ status: "not-loaded" });
