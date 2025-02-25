@@ -22,7 +22,6 @@ export interface CreateWalletParams {
                       y: Hex;
                   };
               };
-        creationSeed: "0";
     };
 }
 

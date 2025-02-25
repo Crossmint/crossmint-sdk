@@ -72,12 +72,17 @@ export class SmartWalletService {
         chain: SmartWalletChain,
         walletParams: WalletParams
     ): Promise<EVMSmartWallet> {
-        const publicClient = createPublicClient({ transport: http(getAlchemyRPC(chain)) });
+        const publicClient = createPublicClient({
+            transport: http(getAlchemyRPC(chain)),
+        });
         const { signer } = walletParams;
         const walletResponse = await this.createWallet(user, signer);
         const address = walletResponse.address;
         return new EVMSmartWallet(
-            { wallet: this.smartAccountClient(user, signer, chain, address), public: publicClient },
+            {
+                wallet: this.smartAccountClient(user, signer, chain, address),
+                public: publicClient,
+            },
             chain,
             this.crossmintApiService
         );
@@ -95,7 +100,9 @@ export class SmartWalletService {
             },
 
             getNonce: async (params?: { key?: bigint }) => {
-                const publicClient = createPublicClient({ transport: http(getAlchemyRPC(chain)) });
+                const publicClient = createPublicClient({
+                    transport: http(getAlchemyRPC(chain)),
+                });
                 const nonce = await publicClient.readContract({
                     abi: entryPointAbi,
                     address: ENTRY_POINT_ADDRESS,
@@ -313,7 +320,6 @@ export class SmartWalletService {
                             y: `0x${signer.credential.publicKey.y.toString(16)}`,
                         },
                     },
-                    creationSeed: "0",
                 },
             });
         } else {
@@ -325,7 +331,6 @@ export class SmartWalletService {
                         type: "evm-keypair",
                         address: adminSigner,
                     },
-                    creationSeed: "0",
                 },
             });
         }
