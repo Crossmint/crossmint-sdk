@@ -48,7 +48,7 @@ const address = wallet.address;
 #### Passkey Wallets
 
 ```typescript
-const signer = await sdk.createPasskeySigner({ name: "My Wallet" })
+const signer = await sdk.createPasskeySigner("My Wallet")
 const wallet = await sdk.getOrCreateWallet(
   {
     jwt: "<USER_TOKEN>",
@@ -142,7 +142,7 @@ Specifically, some functions from the `SmartWalletClient` object are not availab
 Additionally, the passkey creation flow is changed. To create a passkey-powered wallet, you first create a passkey signer:
 
 ```typescript
-const signer = await sdk.createPasskeySigner({ name: "My Wallet" })
+const signer = await sdk.createPasskeySigner("My Wallet")
 ```
 
 Then use that signer during wallet creation:
