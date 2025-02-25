@@ -50,14 +50,14 @@ export function isMainnetChain(chain: SmartWalletChain): chain is SmartWalletMai
 export type SmartWalletChain = ObjectValues<typeof SmartWalletChain>;
 
 export const viemNetworks: Record<SmartWalletChain, Chain> = {
-    polygon: polygon,
-    "polygon-amoy": polygonAmoy,
-    base: base,
-    "base-sepolia": baseSepolia,
-    optimism: optimism,
-    "optimism-sepolia": optimismSepolia,
-    arbitrum: arbitrum,
-    "arbitrum-sepolia": arbitrumSepolia,
-    "story-testnet": storyTestnet,
-    story: story,
+    [Blockchain.POLYGON]: polygon,
+    [Blockchain.POLYGON_AMOY]: polygonAmoy,
+    [Blockchain.BASE]: base,
+    [Blockchain.BASE_SEPOLIA]: baseSepolia,
+    [Blockchain.OPTIMISM]: optimism,
+    [Blockchain.OPTIMISM_SEPOLIA]: optimismSepolia,
+    [Blockchain.ARBITRUM]: arbitrum,
+    [Blockchain.ARBITRUM_SEPOLIA]: arbitrumSepolia,
+    [Blockchain.STORY_TESTNET]: storyTestnet,
+    [Blockchain.STORY]: story,
 };
