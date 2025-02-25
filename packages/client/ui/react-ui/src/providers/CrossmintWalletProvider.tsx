@@ -67,27 +67,17 @@ export function CrossmintWalletProvider({
     showPasskeyHelpers?: boolean;
     appearance?: UIConfig;
 }) {
-    const { crossmint } = useCrossmint(
-        "CrossmintWalletProvider must be used within CrossmintProvider"
-    );
-    const smartWalletSDK = useMemo(
-        () => SmartWalletSDK.init({ clientApiKey: crossmint.apiKey }),
-        [crossmint.apiKey]
-    );
+    const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
+    const smartWalletSDK = useMemo(() => SmartWalletSDK.init({ clientApiKey: crossmint.apiKey }), [crossmint.apiKey]);
 
     const [walletState, setWalletState] = useState<ValidWalletState>({
         status: "not-loaded",
     });
-    const [passkeySigner, setPasskeySigner] = useState<
-        PasskeySigner | undefined
-    >(undefined);
-    const [passkeyPromptState, setPasskeyPromptState] =
-        useState<PasskeyPromptState>({ open: false });
+    const [passkeySigner, setPasskeySigner] = useState<PasskeySigner | undefined>(undefined);
+    const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
 
     const createPasskeySigner = async () => {
-        const signer = await smartWalletSDK.createPasskeySigner(
-            "Crossmint Wallet"
-        );
+        const signer = await smartWalletSDK.createPasskeySigner("Crossmint Wallet");
         setPasskeySigner(signer);
         return signer;
     };
@@ -142,13 +132,7 @@ export function CrossmintWalletProvider({
         >
             {children}
             {passkeyPromptState.open
-                ? createPortal(
-                      <PasskeyPrompt
-                          state={passkeyPromptState}
-                          appearance={appearance}
-                      />,
-                      document.body
-                  )
+                ? createPortal(<PasskeyPrompt state={passkeyPromptState} appearance={appearance} />, document.body)
                 : null}
         </WalletContext.Provider>
     );
