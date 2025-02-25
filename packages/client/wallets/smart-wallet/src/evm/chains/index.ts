@@ -1,10 +1,25 @@
 import { BlockchainIncludingTestnet as Blockchain, objectValues, type ObjectValues } from "@crossmint/common-sdk-base";
+import {
+    polygon,
+    polygonAmoy,
+    base,
+    baseSepolia,
+    optimism,
+    optimismSepolia,
+    arbitrum,
+    arbitrumSepolia,
+} from "viem/chains";
+import type { Chain } from "viem";
+
+import { story } from "./definitions/story";
+import { storyTestnet } from "./definitions/story-testnet";
 
 const SmartWalletTestnet = {
     BASE_SEPOLIA: Blockchain.BASE_SEPOLIA,
     POLYGON_AMOY: Blockchain.POLYGON_AMOY,
     OPTIMISM_SEPOLIA: Blockchain.OPTIMISM_SEPOLIA,
     ARBITRUM_SEPOLIA: Blockchain.ARBITRUM_SEPOLIA,
+    STORY_TESTNET: Blockchain.STORY_TESTNET,
 } as const;
 type SmartWalletTestnet = ObjectValues<typeof SmartWalletTestnet>;
 const SMART_WALLET_TESTNETS: readonly SmartWalletChain[] = objectValues(SmartWalletTestnet);
@@ -14,6 +29,7 @@ const SmartWalletMainnet = {
     POLYGON: Blockchain.POLYGON,
     OPTIMISM: Blockchain.OPTIMISM,
     ARBITRUM: Blockchain.ARBITRUM,
+    STORY: Blockchain.STORY,
 } as const;
 type SmartWalletMainnet = ObjectValues<typeof SmartWalletMainnet>;
 const SMART_WALLET_MAINNETS: readonly SmartWalletChain[] = objectValues(SmartWalletMainnet);
@@ -32,3 +48,16 @@ export function isMainnetChain(chain: SmartWalletChain): chain is SmartWalletMai
 }
 
 export type SmartWalletChain = ObjectValues<typeof SmartWalletChain>;
+
+export const viemNetworks: Record<SmartWalletChain, Chain> = {
+    polygon: polygon,
+    "polygon-amoy": polygonAmoy,
+    base: base,
+    "base-sepolia": baseSepolia,
+    optimism: optimism,
+    "optimism-sepolia": optimismSepolia,
+    arbitrum: arbitrum,
+    "arbitrum-sepolia": arbitrumSepolia,
+    "story-testnet": storyTestnet,
+    story: story,
+};
