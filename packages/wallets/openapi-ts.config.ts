@@ -5,7 +5,6 @@ export default defineConfig({
     output: "src/api/gen",
     plugins: [
         "@hey-api/client-fetch",
-        "zod",
         {
             name: "@hey-api/sdk",
             validator: false,
