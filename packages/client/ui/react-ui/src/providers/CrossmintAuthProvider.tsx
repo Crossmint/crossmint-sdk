@@ -234,29 +234,17 @@ function WalletManager({
     children: ReactNode;
     accessToken: string | undefined;
 }) {
-    const { getOrCreateWallet, createPasskeySigner, clearWallet, status } = useWallet();
+    const { getOrCreateWallet, clearWallet, status } = useWallet();
 
     useEffect(() => {
-        createWallet();
-    }, [accessToken, status]);
-
-    async function createWallet() {
         if (embeddedWallets.createOnLogin === "all-users" && status === "not-loaded" && accessToken != null) {
-            const signer = await createPasskeySigner();
-            if (signer == null) {
-                return;
-            }
-
-            getOrCreateWallet({
-                type: embeddedWallets.type,
-                signer,
-            });
+            getOrCreateWallet();
         }
 
         if (status === "loaded" && accessToken == null) {
             clearWallet();
         }
-    }
+    }, [accessToken, status]);
 
     return <>{children}</>;
 }
