@@ -3,161 +3,305 @@
 /**
  * Input schema for creating a new signature. The parameters vary based on the signature type.
  */
-export type CreateSignatureRequestDto = {
-    type: 'evm-message';
-    /**
-     * Parameters for an EVM signature
-     */
-    params: {
-        /**
-         * The message in plain text to sign
-         */
-        message: string;
-        /**
-         * The locator for the signer who will submit this signature. Defaults to the wallet's admin signer.
-         */
-        signer?: string;
-        /**
-         * The chain on which the signature will be submitted
-         */
-        chain: 'arbitrum-sepolia' | 'avalanche-fuji' | 'curtis' | 'barret-testnet' | 'base-goerli' | 'base-sepolia' | 'bsc-testnet' | 'chiliz-spicy-testnet' | 'ethereum-goerli' | 'ethereum-sepolia' | 'hypersonic-testnet' | 'lightlink-pegasus' | 'optimism-goerli' | 'optimism-sepolia' | 'polygon-amoy' | 'polygon-mumbai' | 'crossmint-private-testnet-ethereum' | 'crossmint-private-testnet-polygon' | 'rari-testnet' | 'scroll-sepolia' | 'sei-atlantic-2-testnet' | 'shape-sepolia' | 'skale-nebula-testnet' | 'soneium-minato-testnet' | 'space-testnet' | 'story-testnet' | 'verify-testnet' | 'viction-testnet' | 'xai-sepolia-testnet' | 'zkatana' | 'zkyoto' | 'zora-goerli' | 'zora-sepolia' | 'mode-sepolia' | 'zenchain-testnet' | 'ethereum' | 'polygon' | 'bsc' | 'optimism' | 'arbitrum' | 'base' | 'zora' | 'arbitrumnova' | 'astar-zkevm' | 'apechain' | 'apex' | 'boss' | 'lightlink' | 'skale-nebula' | 'sei-pacific-1' | 'chiliz' | 'avalanche' | 'xai' | 'shape' | 'rari' | 'scroll' | 'viction' | 'mode' | 'space' | 'soneium';
-    };
-} | {
-    type: 'solana-message';
-    /**
-     * Parameters for a Solana signature
-     */
-    params: {
-        /**
-         * The message in plain text to sign
-         */
-        message: string;
-    };
-} | {
-    type: 'evm-typed-data';
-    /**
-     * Parameters for an EVM typed data signature
-     */
-    params: {
-        typedData: {
-            domain: {
-                name: string;
-                version: string;
-                chainId: number;
-                /**
-                 * An EVM address string
-                 */
-                verifyingContract: string;
-                salt?: string;
-            };
-            types: {
-                [key: string]: Array<{
-                    name: string;
-                    type: string;
-                }>;
-            };
-            primaryType: string;
-            message: {};
-        };
-        /**
-         * The chain on which the signature will be submitted
-         */
-        chain: 'arbitrum-sepolia' | 'avalanche-fuji' | 'curtis' | 'barret-testnet' | 'base-goerli' | 'base-sepolia' | 'bsc-testnet' | 'chiliz-spicy-testnet' | 'ethereum-goerli' | 'ethereum-sepolia' | 'hypersonic-testnet' | 'lightlink-pegasus' | 'optimism-goerli' | 'optimism-sepolia' | 'polygon-amoy' | 'polygon-mumbai' | 'crossmint-private-testnet-ethereum' | 'crossmint-private-testnet-polygon' | 'rari-testnet' | 'scroll-sepolia' | 'sei-atlantic-2-testnet' | 'shape-sepolia' | 'skale-nebula-testnet' | 'soneium-minato-testnet' | 'space-testnet' | 'story-testnet' | 'verify-testnet' | 'viction-testnet' | 'xai-sepolia-testnet' | 'zkatana' | 'zkyoto' | 'zora-goerli' | 'zora-sepolia' | 'mode-sepolia' | 'zenchain-testnet' | 'ethereum' | 'polygon' | 'bsc' | 'optimism' | 'arbitrum' | 'base' | 'zora' | 'arbitrumnova' | 'astar-zkevm' | 'apechain' | 'apex' | 'boss' | 'lightlink' | 'skale-nebula' | 'sei-pacific-1' | 'chiliz' | 'avalanche' | 'xai' | 'shape' | 'rari' | 'scroll' | 'viction' | 'mode' | 'space' | 'soneium';
-        /**
-         * The locator for the signer who will approve this signature
-         */
-        signer?: string;
-        /**
-         * Whether the signature corresponds to the smart wallet or to the signer. If true, the signature will be wrapped with ERC6492.
-         */
-        isSmartWalletSignature?: boolean;
-    };
-};
+export type CreateSignatureRequestDto =
+    | {
+          type: "evm-message";
+          /**
+           * Parameters for an EVM signature
+           */
+          params: {
+              /**
+               * The message in plain text to sign
+               */
+              message: string;
+              /**
+               * The locator for the signer who will submit this signature. Defaults to the wallet's admin signer.
+               */
+              signer?: string;
+              /**
+               * The chain on which the signature will be submitted
+               */
+              chain:
+                  | "arbitrum-sepolia"
+                  | "avalanche-fuji"
+                  | "curtis"
+                  | "barret-testnet"
+                  | "base-goerli"
+                  | "base-sepolia"
+                  | "bsc-testnet"
+                  | "chiliz-spicy-testnet"
+                  | "ethereum-goerli"
+                  | "ethereum-sepolia"
+                  | "hypersonic-testnet"
+                  | "lightlink-pegasus"
+                  | "optimism-goerli"
+                  | "optimism-sepolia"
+                  | "polygon-amoy"
+                  | "polygon-mumbai"
+                  | "crossmint-private-testnet-ethereum"
+                  | "crossmint-private-testnet-polygon"
+                  | "rari-testnet"
+                  | "scroll-sepolia"
+                  | "sei-atlantic-2-testnet"
+                  | "shape-sepolia"
+                  | "skale-nebula-testnet"
+                  | "soneium-minato-testnet"
+                  | "space-testnet"
+                  | "story-testnet"
+                  | "verify-testnet"
+                  | "viction-testnet"
+                  | "xai-sepolia-testnet"
+                  | "zkatana"
+                  | "zkyoto"
+                  | "zora-goerli"
+                  | "zora-sepolia"
+                  | "mode-sepolia"
+                  | "zenchain-testnet"
+                  | "ethereum"
+                  | "polygon"
+                  | "bsc"
+                  | "optimism"
+                  | "arbitrum"
+                  | "base"
+                  | "zora"
+                  | "arbitrumnova"
+                  | "astar-zkevm"
+                  | "apechain"
+                  | "apex"
+                  | "boss"
+                  | "lightlink"
+                  | "skale-nebula"
+                  | "sei-pacific-1"
+                  | "chiliz"
+                  | "avalanche"
+                  | "xai"
+                  | "shape"
+                  | "rari"
+                  | "scroll"
+                  | "viction"
+                  | "mode"
+                  | "space"
+                  | "soneium";
+          };
+      }
+    | {
+          type: "solana-message";
+          /**
+           * Parameters for a Solana signature
+           */
+          params: {
+              /**
+               * The message in plain text to sign
+               */
+              message: string;
+          };
+      }
+    | {
+          type: "evm-typed-data";
+          /**
+           * Parameters for an EVM typed data signature
+           */
+          params: {
+              typedData: {
+                  domain: {
+                      name: string;
+                      version: string;
+                      chainId: number;
+                      /**
+                       * An EVM address string
+                       */
+                      verifyingContract: string;
+                      salt?: string;
+                  };
+                  types: {
+                      [key: string]: Array<{
+                          name: string;
+                          type: string;
+                      }>;
+                  };
+                  primaryType: string;
+                  message: {};
+              };
+              /**
+               * The chain on which the signature will be submitted
+               */
+              chain:
+                  | "arbitrum-sepolia"
+                  | "avalanche-fuji"
+                  | "curtis"
+                  | "barret-testnet"
+                  | "base-goerli"
+                  | "base-sepolia"
+                  | "bsc-testnet"
+                  | "chiliz-spicy-testnet"
+                  | "ethereum-goerli"
+                  | "ethereum-sepolia"
+                  | "hypersonic-testnet"
+                  | "lightlink-pegasus"
+                  | "optimism-goerli"
+                  | "optimism-sepolia"
+                  | "polygon-amoy"
+                  | "polygon-mumbai"
+                  | "crossmint-private-testnet-ethereum"
+                  | "crossmint-private-testnet-polygon"
+                  | "rari-testnet"
+                  | "scroll-sepolia"
+                  | "sei-atlantic-2-testnet"
+                  | "shape-sepolia"
+                  | "skale-nebula-testnet"
+                  | "soneium-minato-testnet"
+                  | "space-testnet"
+                  | "story-testnet"
+                  | "verify-testnet"
+                  | "viction-testnet"
+                  | "xai-sepolia-testnet"
+                  | "zkatana"
+                  | "zkyoto"
+                  | "zora-goerli"
+                  | "zora-sepolia"
+                  | "mode-sepolia"
+                  | "zenchain-testnet"
+                  | "ethereum"
+                  | "polygon"
+                  | "bsc"
+                  | "optimism"
+                  | "arbitrum"
+                  | "base"
+                  | "zora"
+                  | "arbitrumnova"
+                  | "astar-zkevm"
+                  | "apechain"
+                  | "apex"
+                  | "boss"
+                  | "lightlink"
+                  | "skale-nebula"
+                  | "sei-pacific-1"
+                  | "chiliz"
+                  | "avalanche"
+                  | "xai"
+                  | "shape"
+                  | "rari"
+                  | "scroll"
+                  | "viction"
+                  | "mode"
+                  | "space"
+                  | "soneium";
+              /**
+               * The locator for the signer who will approve this signature
+               */
+              signer?: string;
+              /**
+               * Whether the signature corresponds to the smart wallet or to the signer. If true, the signature will be wrapped with ERC6492.
+               */
+              isSmartWalletSignature?: boolean;
+          };
+      };
 
-export type CreateSignerInputDto = {
-    /**
-     * The locator of the delegated signer
-     */
-    signer: string;
-    /**
-     * The chain where the signer will be registered
-     */
-    chain: 'base' | 'polygon' | 'optimism' | 'arbitrum' | 'mode' | 'base-sepolia' | 'polygon-amoy' | 'optimism-sepolia' | 'arbitrum-sepolia' | 'mode-sepolia' | 'story-testnet';
-    /**
-     * The expiry date of the signer in milliseconds since UNIX epoch
-     */
-    expiresAt?: number;
-    /**
-     * The permissions of the signer following ERC-7715
-     */
-    permissions?: Array<{
-        type: 'native-token-transfer';
-        data: {
-            allowance: string;
-        };
-    } | {
-        type: 'erc20-token-transfer';
-        data: {
-            /**
-             * The address of the smart contract that can be interacted with
-             */
-            address: string;
-            allowance: string;
-        };
-    } | {
-        type: 'erc721-token-transfer';
-        data: {
-            /**
-             * The address of the smart contract that can be interacted with
-             */
-            address: string;
-            /**
-             * The token IDs that can be transferred
-             */
-            tokenIds: Array<string>;
-        };
-    } | {
-        type: 'erc1155-token-transfer';
-        data: {
-            /**
-             * The address of the smart contract that can be interacted with
-             */
-            address: string;
-            /**
-             * The token IDs and allowances that can be transferred
-             */
-            allowances: {
-                [key: string]: string;
-            };
-        };
-    } | {
-        type: 'gas-limit';
-        data: {
-            limit: string;
-            enforcePaymaster?: boolean;
-            allowedPaymaster?: string;
-        };
-    } | {
-        type: 'call-limit';
-        data: {
-            count: number;
-        };
-    } | {
-        type: 'rate-limit';
-        data: {
-            count: number;
-            /**
-             * Time window in seconds
-             */
-            interval: number;
-        };
-    }>;
-} | {
-    /**
-     * The locator of the delegated signer
-     */
-    signer: string;
-};
+export type CreateSignerInputDto =
+    | {
+          /**
+           * The locator of the delegated signer
+           */
+          signer: string;
+          /**
+           * The chain where the signer will be registered
+           */
+          chain:
+              | "base"
+              | "polygon"
+              | "optimism"
+              | "arbitrum"
+              | "mode"
+              | "base-sepolia"
+              | "polygon-amoy"
+              | "optimism-sepolia"
+              | "arbitrum-sepolia"
+              | "mode-sepolia"
+              | "story-testnet";
+          /**
+           * The expiry date of the signer in milliseconds since UNIX epoch
+           */
+          expiresAt?: number;
+          /**
+           * The permissions of the signer following ERC-7715
+           */
+          permissions?: Array<
+              | {
+                    type: "native-token-transfer";
+                    data: {
+                        allowance: string;
+                    };
+                }
+              | {
+                    type: "erc20-token-transfer";
+                    data: {
+                        /**
+                         * The address of the smart contract that can be interacted with
+                         */
+                        address: string;
+                        allowance: string;
+                    };
+                }
+              | {
+                    type: "erc721-token-transfer";
+                    data: {
+                        /**
+                         * The address of the smart contract that can be interacted with
+                         */
+                        address: string;
+                        /**
+                         * The token IDs that can be transferred
+                         */
+                        tokenIds: Array<string>;
+                    };
+                }
+              | {
+                    type: "erc1155-token-transfer";
+                    data: {
+                        /**
+                         * The address of the smart contract that can be interacted with
+                         */
+                        address: string;
+                        /**
+                         * The token IDs and allowances that can be transferred
+                         */
+                        allowances: {
+                            [key: string]: string;
+                        };
+                    };
+                }
+              | {
+                    type: "gas-limit";
+                    data: {
+                        limit: string;
+                        enforcePaymaster?: boolean;
+                        allowedPaymaster?: string;
+                    };
+                }
+              | {
+                    type: "call-limit";
+                    data: {
+                        count: number;
+                    };
+                }
+              | {
+                    type: "rate-limit";
+                    data: {
+                        count: number;
+                        /**
+                         * Time window in seconds
+                         */
+                        interval: number;
+                    };
+                }
+          >;
+      }
+    | {
+          /**
+           * The locator of the delegated signer
+           */
+          signer: string;
+      };
 
 /**
  * Input schema for creating a new transaction. The parameters vary based on the wallet type (EVM vs Solana).
@@ -166,596 +310,725 @@ export type CreateTransactionDto = {
     /**
      * Wallet type specific transaction parameters
      */
-    params: {
-        /**
-         * Transaction data to execute
-         */
-        calls: Array<{
-            /**
-             * The recipient address for this transaction call
-             */
-            address: string;
-            /**
-             * The name of the function to call
-             */
-            functionName: string;
-            /**
-             * The ABI for the function to call
-             */
-            abi: Array<{
-                type: 'error';
-                inputs: Array<unknown>;
-                name: string;
-            } | {
-                type: 'event';
-                anonymous?: boolean;
-                inputs: Array<unknown & {
-                    indexed?: boolean;
-                }>;
-                name: string;
-            } | ({
-                constant?: boolean;
-                gas?: number;
-                payable?: boolean;
-            } & ({
-                type: 'function';
-                inputs: Array<unknown>;
-                name: string;
-                outputs: Array<unknown>;
-                stateMutability: 'pure' | 'view' | 'nonpayable' | 'payable';
-            } | {
-                type: 'constructor';
-                inputs: Array<unknown>;
-                stateMutability: 'payable' | 'nonpayable';
-            } | {
-                type: 'fallback';
-                inputs?: unknown;
-                stateMutability: 'payable' | 'nonpayable';
-            } | {
-                type: 'receive';
-                stateMutability: 'payable';
-            }))>;
-            /**
-             * The arguments to pass to the function
-             */
-            args: Array<unknown>;
-            /**
-             * The amount of native token to send in wei
-             */
-            value?: string;
-        } | {
-            /**
-             * The recipient address for this transaction call
-             */
-            to: string;
-            /**
-             * The amount of native token to send in wei
-             */
-            value: string;
-            /**
-             * The encoded calldata for this transaction
-             */
-            data: unknown;
-        }>;
-        /**
-         * The chain on which the transaction will be executed
-         */
-        chain: 'base' | 'polygon' | 'optimism' | 'arbitrum' | 'mode' | 'base-sepolia' | 'polygon-amoy' | 'optimism-sepolia' | 'arbitrum-sepolia' | 'mode-sepolia' | 'story-testnet';
-        /**
-         * The locator for the signer who will submit this transaction
-         */
-        signer?: string;
-    } | {
-        /**
-         * Base58 encoded serialized Solana transaction
-         */
-        transaction: string;
-        /**
-         * Optional array of additional signers required for the transaction
-         */
-        requiredSigners?: Array<string>;
-    } | {
-        /**
-         * The transaction call to execute
-         */
-        call: {
-            /**
-             * The recipient address for this transaction call
-             */
-            to: string;
-            /**
-             * The encoded calldata for this transaction
-             */
-            data: unknown;
-        } | {
-            /**
-             * The recipient address for this transaction call
-             */
-            address: string;
-            /**
-             * The name of the function to call
-             */
-            functionName: string;
-            /**
-             * The ABI for the function to call
-             */
-            abi: Array<{
-                type: 'error';
-                inputs: Array<unknown>;
-                name: string;
-            } | {
-                type: 'event';
-                anonymous?: boolean;
-                inputs: Array<unknown & {
-                    indexed?: boolean;
-                }>;
-                name: string;
-            } | ({
-                constant?: boolean;
-                gas?: number;
-                payable?: boolean;
-            } & ({
-                type: 'function';
-                inputs: Array<unknown>;
-                name: string;
-                outputs: Array<unknown>;
-                stateMutability: 'pure' | 'view' | 'nonpayable' | 'payable';
-            } | {
-                type: 'constructor';
-                inputs: Array<unknown>;
-                stateMutability: 'payable' | 'nonpayable';
-            } | {
-                type: 'fallback';
-                inputs?: unknown;
-                stateMutability: 'payable' | 'nonpayable';
-            } | {
-                type: 'receive';
-                stateMutability: 'payable';
-            }))>;
-            /**
-             * The arguments to pass to the function
-             */
-            args: Array<unknown>;
-        };
-        /**
-         * The chain on which the transaction will be executed
-         */
-        chain: 'arbitrum-sepolia' | 'avalanche-fuji' | 'curtis' | 'barret-testnet' | 'base-goerli' | 'base-sepolia' | 'bsc-testnet' | 'chiliz-spicy-testnet' | 'ethereum-goerli' | 'ethereum-sepolia' | 'hypersonic-testnet' | 'lightlink-pegasus' | 'optimism-goerli' | 'optimism-sepolia' | 'polygon-amoy' | 'polygon-mumbai' | 'crossmint-private-testnet-ethereum' | 'crossmint-private-testnet-polygon' | 'rari-testnet' | 'scroll-sepolia' | 'sei-atlantic-2-testnet' | 'shape-sepolia' | 'skale-nebula-testnet' | 'soneium-minato-testnet' | 'space-testnet' | 'story-testnet' | 'verify-testnet' | 'viction-testnet' | 'xai-sepolia-testnet' | 'zkatana' | 'zkyoto' | 'zora-goerli' | 'zora-sepolia' | 'mode-sepolia' | 'zenchain-testnet' | 'ethereum' | 'polygon' | 'bsc' | 'optimism' | 'arbitrum' | 'base' | 'zora' | 'arbitrumnova' | 'astar-zkevm' | 'apechain' | 'apex' | 'boss' | 'lightlink' | 'skale-nebula' | 'sei-pacific-1' | 'chiliz' | 'avalanche' | 'xai' | 'shape' | 'rari' | 'scroll' | 'viction' | 'mode' | 'space' | 'soneium';
-    } | {
-        /**
-         * Base58 encoded serialized Solana transaction
-         */
-        transaction: string;
-        /**
-         * Optional array of additional signers required for the transaction
-         */
-        requiredSigners?: Array<string>;
-        /**
-         * The locator for the signer who will submit this transaction. Defaults to the admin signer.
-         */
-        signer?: string;
-    };
-};
-
-export type CreateWalletDto = {
-    type: 'evm-smart-wallet';
-    config?: {
-        adminSigner: {
-            /**
-             * Identifier for EVM keypair signer type
-             */
-            type: 'evm-keypair';
-            /**
-             * The Ethereum address of the external signer
-             */
-            address: string;
-        } | {
-            /**
-             * Identifier for EVM Fireblocks custodial signer type
-             */
-            type: 'evm-fireblocks-custodial';
-        } | {
-            /**
-             * Identifier for the Passkey signer type
-             */
-            type: 'evm-passkey';
-            /**
-             * Credential ID from the WebAuthn registration response
-             */
-            id: string;
-            /**
-             * Human-readable name for the passkey
-             */
-            name: string;
-            /**
-             * The public key coordinates from the WebAuthn credential
-             */
-            publicKey: {
-                /**
-                 * X coordinate of the public key as a decimal string
-                 */
-                x: string;
-                /**
-                 * Y coordinate of the public key as a decimal string
-                 */
-                y: string;
-            };
-        };
-        /**
-         * The unique wallet seed. By default, the seed is randomly generated.
-         */
-        creationSeed?: string;
-    };
-    /**
-     * A user locator can be of the format:
-     * - `email:<email>`
-     * - `userId:<userId>`
-     * - `phoneNumber:<phoneNumber>`
-     * - `twitter:<handle>`
-     * - `x:<handle>`
-     */
-    linkedUser?: string;
-} | {
-    type: 'solana-mpc-wallet';
-    config?: unknown;
-    /**
-     * A user locator can be of the format:
-     * - `email:<email>`
-     * - `userId:<userId>`
-     * - `phoneNumber:<phoneNumber>`
-     * - `twitter:<handle>`
-     * - `x:<handle>`
-     */
-    linkedUser?: string;
-} | {
-    type: 'solana-smart-wallet';
-    config?: {
-        adminSigner?: {
-            /**
-             * Identifier for Solana keypair signer type
-             */
-            type: 'solana-keypair';
-            /**
-             * The Solana public key (base58 encoded) of the external signer
-             */
-            address: string;
-        } | {
-            /**
-             * Identifier for Solana Fireblocks MPC signer type
-             */
-            type: 'solana-fireblocks-custodial';
-        };
-    };
-    /**
-     * A user locator can be of the format:
-     * - `email:<email>`
-     * - `userId:<userId>`
-     * - `phoneNumber:<phoneNumber>`
-     * - `twitter:<handle>`
-     * - `x:<handle>`
-     */
-    linkedUser?: string;
-} | {
-    type: 'aptos-mpc-wallet';
-    config?: unknown;
-    /**
-     * A user locator can be of the format:
-     * - `email:<email>`
-     * - `userId:<userId>`
-     * - `phoneNumber:<phoneNumber>`
-     * - `twitter:<handle>`
-     * - `x:<handle>`
-     */
-    linkedUser?: string;
-} | {
-    type: 'cardano-mpc-wallet';
-    config?: unknown;
-    /**
-     * A user locator can be of the format:
-     * - `email:<email>`
-     * - `userId:<userId>`
-     * - `phoneNumber:<phoneNumber>`
-     * - `twitter:<handle>`
-     * - `x:<handle>`
-     */
-    linkedUser?: string;
-} | {
-    type: 'sui-mpc-wallet';
-    config?: unknown;
-    /**
-     * A user locator can be of the format:
-     * - `email:<email>`
-     * - `userId:<userId>`
-     * - `phoneNumber:<phoneNumber>`
-     * - `twitter:<handle>`
-     * - `x:<handle>`
-     */
-    linkedUser?: string;
-} | {
-    type: 'solana-custodial-wallet';
-    config?: unknown;
-    /**
-     * A user locator can be of the format:
-     * - `email:<email>`
-     * - `userId:<userId>`
-     * - `phoneNumber:<phoneNumber>`
-     * - `twitter:<handle>`
-     * - `x:<handle>`
-     */
-    linkedUser?: string;
-} | {
-    type: 'evm-mpc-wallet';
-    config?: unknown;
-    /**
-     * A user locator can be of the format:
-     * - `email:<email>`
-     * - `userId:<userId>`
-     * - `phoneNumber:<phoneNumber>`
-     * - `twitter:<handle>`
-     * - `x:<handle>`
-     */
-    linkedUser?: string;
-};
-
-export type DelegatedSignerDto = {
-    /**
-     * Specifies the type of EVM signer being used, describing the method of key management and transaction signing. `evm-keypair` indicates a signer using a locally managed keypair, suitable for non-custodial wallets. `evm-fireblocks-custodial` refers to a signer managed by Fireblocks, a custodial service provider.
-     */
-    type: 'evm-keypair' | 'evm-fireblocks-custodial';
-    /**
-     * The Ethereum address of the signer
-     */
-    address: string;
-    /**
-     * The locator of the signer
-     */
-    locator: string;
-    /**
-     * The expiry date of the signer in ISO 8601 format
-     */
-    expiresAt?: number;
-    /**
-     * The permissions of the signer following ERC-7715
-     */
-    permissions?: Array<{
-        type: 'native-token-transfer';
-        data: {
-            allowance: string;
-        };
-    } | {
-        type: 'erc20-token-transfer';
-        data: {
-            /**
-             * The address of the smart contract that can be interacted with
-             */
-            address: string;
-            allowance: string;
-        };
-    } | {
-        type: 'erc721-token-transfer';
-        data: {
-            /**
-             * The address of the smart contract that can be interacted with
-             */
-            address: string;
-            /**
-             * The token IDs that can be transferred
-             */
-            tokenIds: Array<string>;
-        };
-    } | {
-        type: 'erc1155-token-transfer';
-        data: {
-            /**
-             * The address of the smart contract that can be interacted with
-             */
-            address: string;
-            /**
-             * The token IDs and allowances that can be transferred
-             */
-            allowances: {
-                [key: string]: string;
-            };
-        };
-    } | {
-        type: 'gas-limit';
-        data: {
-            limit: string;
-            enforcePaymaster?: boolean;
-            allowedPaymaster?: string;
-        };
-    } | {
-        type: 'call-limit';
-        data: {
-            count: number;
-        };
-    } | {
-        type: 'rate-limit';
-        data: {
-            count: number;
-            /**
-             * Time window in seconds
-             */
-            interval: number;
-        };
-    }>;
-    /**
-     * Authorization status for each chain where the chain name is the key and the signature request is the value
-     */
-    chains?: {
-        [key: string]: {
-            status: 'success';
-        } | {
-            status: 'pending' | 'awaiting-approval' | 'failed';
-            /**
-             * Unique identifier for the signature
-             */
-            id: string;
-            /**
-             * Complete approval data including requirements, pending and submitted signatures
-             */
-            approvals?: {
-                /**
-                 * List of pending signatures
-                 */
-                pending: Array<{
-                    /**
-                     * The locator of the signer that's pending approval
-                     */
-                    signer: string;
-                    /**
-                     * The message that needs to be signed
-                     */
-                    message: string;
-                }>;
-                /**
-                 * Record of all submitted signatures
-                 */
-                submitted: Array<{
-                    /**
-                     * The cryptographic signature
-                     */
-                    signature: string;
-                    /**
-                     * When the signature was submitted
-                     */
-                    submittedAt: number;
-                    /**
-                     * The locator of the signer who submitted this signature
-                     */
-                    signer: string;
-                    /**
-                     * The message that was signed
-                     */
-                    message: string;
-                    /**
-                     * Additional metadata about the signature submission
-                     */
-                    metadata?: {
-                        deviceInfo?: string;
-                        ipAddress?: string;
-                        userAgent?: string;
+    params:
+        | {
+              /**
+               * Transaction data to execute
+               */
+              calls: Array<
+                  | {
+                        /**
+                         * The recipient address for this transaction call
+                         */
+                        address: string;
+                        /**
+                         * The name of the function to call
+                         */
+                        functionName: string;
+                        /**
+                         * The ABI for the function to call
+                         */
+                        abi: Array<
+                            | {
+                                  type: "error";
+                                  inputs: Array<unknown>;
+                                  name: string;
+                              }
+                            | {
+                                  type: "event";
+                                  anonymous?: boolean;
+                                  inputs: Array<
+                                      unknown & {
+                                          indexed?: boolean;
+                                      }
+                                  >;
+                                  name: string;
+                              }
+                            | ({
+                                  constant?: boolean;
+                                  gas?: number;
+                                  payable?: boolean;
+                              } & (
+                                  | {
+                                        type: "function";
+                                        inputs: Array<unknown>;
+                                        name: string;
+                                        outputs: Array<unknown>;
+                                        stateMutability: "pure" | "view" | "nonpayable" | "payable";
+                                    }
+                                  | {
+                                        type: "constructor";
+                                        inputs: Array<unknown>;
+                                        stateMutability: "payable" | "nonpayable";
+                                    }
+                                  | {
+                                        type: "fallback";
+                                        inputs?: unknown;
+                                        stateMutability: "payable" | "nonpayable";
+                                    }
+                                  | {
+                                        type: "receive";
+                                        stateMutability: "payable";
+                                    }
+                              ))
+                        >;
+                        /**
+                         * The arguments to pass to the function
+                         */
+                        args: Array<unknown>;
+                        /**
+                         * The amount of native token to send in wei
+                         */
+                        value?: string;
+                    }
+                  | {
+                        /**
+                         * The recipient address for this transaction call
+                         */
+                        to: string;
+                        /**
+                         * The amount of native token to send in wei
+                         */
+                        value: string;
+                        /**
+                         * The encoded calldata for this transaction
+                         */
+                        data: unknown;
+                    }
+              >;
+              /**
+               * The chain on which the transaction will be executed
+               */
+              chain:
+                  | "base"
+                  | "polygon"
+                  | "optimism"
+                  | "arbitrum"
+                  | "mode"
+                  | "base-sepolia"
+                  | "polygon-amoy"
+                  | "optimism-sepolia"
+                  | "arbitrum-sepolia"
+                  | "mode-sepolia"
+                  | "story-testnet";
+              /**
+               * The locator for the signer who will submit this transaction
+               */
+              signer?: string;
+          }
+        | {
+              /**
+               * Base58 encoded serialized Solana transaction
+               */
+              transaction: string;
+              /**
+               * Optional array of additional signers required for the transaction
+               */
+              requiredSigners?: Array<string>;
+          }
+        | {
+              /**
+               * The transaction call to execute
+               */
+              call:
+                  | {
+                        /**
+                         * The recipient address for this transaction call
+                         */
+                        to: string;
+                        /**
+                         * The encoded calldata for this transaction
+                         */
+                        data: unknown;
+                    }
+                  | {
+                        /**
+                         * The recipient address for this transaction call
+                         */
+                        address: string;
+                        /**
+                         * The name of the function to call
+                         */
+                        functionName: string;
+                        /**
+                         * The ABI for the function to call
+                         */
+                        abi: Array<
+                            | {
+                                  type: "error";
+                                  inputs: Array<unknown>;
+                                  name: string;
+                              }
+                            | {
+                                  type: "event";
+                                  anonymous?: boolean;
+                                  inputs: Array<
+                                      unknown & {
+                                          indexed?: boolean;
+                                      }
+                                  >;
+                                  name: string;
+                              }
+                            | ({
+                                  constant?: boolean;
+                                  gas?: number;
+                                  payable?: boolean;
+                              } & (
+                                  | {
+                                        type: "function";
+                                        inputs: Array<unknown>;
+                                        name: string;
+                                        outputs: Array<unknown>;
+                                        stateMutability: "pure" | "view" | "nonpayable" | "payable";
+                                    }
+                                  | {
+                                        type: "constructor";
+                                        inputs: Array<unknown>;
+                                        stateMutability: "payable" | "nonpayable";
+                                    }
+                                  | {
+                                        type: "fallback";
+                                        inputs?: unknown;
+                                        stateMutability: "payable" | "nonpayable";
+                                    }
+                                  | {
+                                        type: "receive";
+                                        stateMutability: "payable";
+                                    }
+                              ))
+                        >;
+                        /**
+                         * The arguments to pass to the function
+                         */
+                        args: Array<unknown>;
                     };
-                }>;
-                /**
-                 * Number of required approvals for the transaction
-                 */
-                required?: number;
-            };
-        };
-    };
-} | {
-    /**
-     * Specifies the type of Solana signer being used, describing the method of key management and transaction signing.
-     */
-    type: 'solana-keypair' | 'solana-fireblocks-custodial';
-    /**
-     * The Solana address of the signer
-     */
-    address: string;
-    /**
-     * The locator of the signer
-     */
-    locator: string;
-    /**
-     * The transaction for the signer
-     */
-    transaction: {
-        /**
-         * Solana smart wallet transaction data including input parameters and chain specific details
-         */
-        onChain: {
-            transaction: string;
-            lastValidBlockHeight?: number;
-            txId?: string;
-        };
-        /**
-         * Unique identifier for the transaction
-         */
-        id: string;
-        /**
-         * Current status of the transaction
-         */
-        status: 'awaiting-approval' | 'pending' | 'failed' | 'success';
-        /**
-         * Complete approval data including requirements, pending and submitted signatures
-         */
-        approvals?: {
-            /**
-             * List of pending signatures
-             */
-            pending: Array<{
-                /**
-                 * The locator of the signer that's pending approval
-                 */
-                signer: string;
-                /**
-                 * The message that needs to be signed
-                 */
-                message: string;
-            }>;
-            /**
-             * Record of all submitted signatures
-             */
-            submitted: Array<{
-                /**
-                 * The cryptographic signature
-                 */
-                signature: string;
-                /**
-                 * When the signature was submitted
-                 */
-                submittedAt: number;
-                /**
-                 * The locator of the signer who submitted this signature
-                 */
-                signer: string;
-                /**
-                 * The message that was signed
-                 */
-                message: string;
-                /**
-                 * Additional metadata about the signature submission
-                 */
-                metadata?: {
-                    deviceInfo?: string;
-                    ipAddress?: string;
-                    userAgent?: string;
-                };
-            }>;
-            /**
-             * Number of required approvals for the transaction
-             */
-            required?: number;
-        };
-        /**
-         * ISO timestamp when the transaction was created
-         */
-        createdAt: number;
-        /**
-         * ISO timestamp when the transaction reached finality
-         */
-        completedAt?: number;
-        /**
-         * Error message if the transaction fails after submission
-         */
-        error?: {
-            reason: 'program_error';
-            message: string;
-            logs?: unknown;
-        } | {
-            reason: 'execution_reverted';
-            message: string;
-            revert?: {
-                type: 'contract_call' | 'wallet_authorization' | 'wallet_deployment';
-                reason: string;
-                reasonData?: string;
-                explorerLink?: string;
-                simulationLink?: string;
-            };
-        };
-    };
+              /**
+               * The chain on which the transaction will be executed
+               */
+              chain:
+                  | "arbitrum-sepolia"
+                  | "avalanche-fuji"
+                  | "curtis"
+                  | "barret-testnet"
+                  | "base-goerli"
+                  | "base-sepolia"
+                  | "bsc-testnet"
+                  | "chiliz-spicy-testnet"
+                  | "ethereum-goerli"
+                  | "ethereum-sepolia"
+                  | "hypersonic-testnet"
+                  | "lightlink-pegasus"
+                  | "optimism-goerli"
+                  | "optimism-sepolia"
+                  | "polygon-amoy"
+                  | "polygon-mumbai"
+                  | "crossmint-private-testnet-ethereum"
+                  | "crossmint-private-testnet-polygon"
+                  | "rari-testnet"
+                  | "scroll-sepolia"
+                  | "sei-atlantic-2-testnet"
+                  | "shape-sepolia"
+                  | "skale-nebula-testnet"
+                  | "soneium-minato-testnet"
+                  | "space-testnet"
+                  | "story-testnet"
+                  | "verify-testnet"
+                  | "viction-testnet"
+                  | "xai-sepolia-testnet"
+                  | "zkatana"
+                  | "zkyoto"
+                  | "zora-goerli"
+                  | "zora-sepolia"
+                  | "mode-sepolia"
+                  | "zenchain-testnet"
+                  | "ethereum"
+                  | "polygon"
+                  | "bsc"
+                  | "optimism"
+                  | "arbitrum"
+                  | "base"
+                  | "zora"
+                  | "arbitrumnova"
+                  | "astar-zkevm"
+                  | "apechain"
+                  | "apex"
+                  | "boss"
+                  | "lightlink"
+                  | "skale-nebula"
+                  | "sei-pacific-1"
+                  | "chiliz"
+                  | "avalanche"
+                  | "xai"
+                  | "shape"
+                  | "rari"
+                  | "scroll"
+                  | "viction"
+                  | "mode"
+                  | "space"
+                  | "soneium";
+          }
+        | {
+              /**
+               * Base58 encoded serialized Solana transaction
+               */
+              transaction: string;
+              /**
+               * Optional array of additional signers required for the transaction
+               */
+              requiredSigners?: Array<string>;
+              /**
+               * The locator for the signer who will submit this transaction. Defaults to the admin signer.
+               */
+              signer?: string;
+          };
 };
+
+export type CreateWalletDto =
+    | {
+          type: "evm-smart-wallet";
+          config?: {
+              adminSigner:
+                  | {
+                        /**
+                         * Identifier for EVM keypair signer type
+                         */
+                        type: "evm-keypair";
+                        /**
+                         * The Ethereum address of the external signer
+                         */
+                        address: string;
+                    }
+                  | {
+                        /**
+                         * Identifier for EVM Fireblocks custodial signer type
+                         */
+                        type: "evm-fireblocks-custodial";
+                    }
+                  | {
+                        /**
+                         * Identifier for the Passkey signer type
+                         */
+                        type: "evm-passkey";
+                        /**
+                         * Credential ID from the WebAuthn registration response
+                         */
+                        id: string;
+                        /**
+                         * Human-readable name for the passkey
+                         */
+                        name: string;
+                        /**
+                         * The public key coordinates from the WebAuthn credential
+                         */
+                        publicKey: {
+                            /**
+                             * X coordinate of the public key as a decimal string
+                             */
+                            x: string;
+                            /**
+                             * Y coordinate of the public key as a decimal string
+                             */
+                            y: string;
+                        };
+                    };
+              /**
+               * The unique wallet seed. By default, the seed is randomly generated.
+               */
+              creationSeed?: string;
+          };
+          /**
+           * A user locator can be of the format:
+           * - `email:<email>`
+           * - `userId:<userId>`
+           * - `phoneNumber:<phoneNumber>`
+           * - `twitter:<handle>`
+           * - `x:<handle>`
+           */
+          linkedUser?: string;
+      }
+    | {
+          type: "solana-mpc-wallet";
+          config?: unknown;
+          /**
+           * A user locator can be of the format:
+           * - `email:<email>`
+           * - `userId:<userId>`
+           * - `phoneNumber:<phoneNumber>`
+           * - `twitter:<handle>`
+           * - `x:<handle>`
+           */
+          linkedUser?: string;
+      }
+    | {
+          type: "solana-smart-wallet";
+          config?: {
+              adminSigner?:
+                  | {
+                        /**
+                         * Identifier for Solana keypair signer type
+                         */
+                        type: "solana-keypair";
+                        /**
+                         * The Solana public key (base58 encoded) of the external signer
+                         */
+                        address: string;
+                    }
+                  | {
+                        /**
+                         * Identifier for Solana Fireblocks MPC signer type
+                         */
+                        type: "solana-fireblocks-custodial";
+                    };
+          };
+          /**
+           * A user locator can be of the format:
+           * - `email:<email>`
+           * - `userId:<userId>`
+           * - `phoneNumber:<phoneNumber>`
+           * - `twitter:<handle>`
+           * - `x:<handle>`
+           */
+          linkedUser?: string;
+      }
+    | {
+          type: "aptos-mpc-wallet";
+          config?: unknown;
+          /**
+           * A user locator can be of the format:
+           * - `email:<email>`
+           * - `userId:<userId>`
+           * - `phoneNumber:<phoneNumber>`
+           * - `twitter:<handle>`
+           * - `x:<handle>`
+           */
+          linkedUser?: string;
+      }
+    | {
+          type: "cardano-mpc-wallet";
+          config?: unknown;
+          /**
+           * A user locator can be of the format:
+           * - `email:<email>`
+           * - `userId:<userId>`
+           * - `phoneNumber:<phoneNumber>`
+           * - `twitter:<handle>`
+           * - `x:<handle>`
+           */
+          linkedUser?: string;
+      }
+    | {
+          type: "sui-mpc-wallet";
+          config?: unknown;
+          /**
+           * A user locator can be of the format:
+           * - `email:<email>`
+           * - `userId:<userId>`
+           * - `phoneNumber:<phoneNumber>`
+           * - `twitter:<handle>`
+           * - `x:<handle>`
+           */
+          linkedUser?: string;
+      }
+    | {
+          type: "solana-custodial-wallet";
+          config?: unknown;
+          /**
+           * A user locator can be of the format:
+           * - `email:<email>`
+           * - `userId:<userId>`
+           * - `phoneNumber:<phoneNumber>`
+           * - `twitter:<handle>`
+           * - `x:<handle>`
+           */
+          linkedUser?: string;
+      }
+    | {
+          type: "evm-mpc-wallet";
+          config?: unknown;
+          /**
+           * A user locator can be of the format:
+           * - `email:<email>`
+           * - `userId:<userId>`
+           * - `phoneNumber:<phoneNumber>`
+           * - `twitter:<handle>`
+           * - `x:<handle>`
+           */
+          linkedUser?: string;
+      };
+
+export type DelegatedSignerDto =
+    | {
+          /**
+           * Specifies the type of EVM signer being used, describing the method of key management and transaction signing. `evm-keypair` indicates a signer using a locally managed keypair, suitable for non-custodial wallets. `evm-fireblocks-custodial` refers to a signer managed by Fireblocks, a custodial service provider.
+           */
+          type: "evm-keypair" | "evm-fireblocks-custodial";
+          /**
+           * The Ethereum address of the signer
+           */
+          address: string;
+          /**
+           * The locator of the signer
+           */
+          locator: string;
+          /**
+           * The expiry date of the signer in ISO 8601 format
+           */
+          expiresAt?: number;
+          /**
+           * The permissions of the signer following ERC-7715
+           */
+          permissions?: Array<
+              | {
+                    type: "native-token-transfer";
+                    data: {
+                        allowance: string;
+                    };
+                }
+              | {
+                    type: "erc20-token-transfer";
+                    data: {
+                        /**
+                         * The address of the smart contract that can be interacted with
+                         */
+                        address: string;
+                        allowance: string;
+                    };
+                }
+              | {
+                    type: "erc721-token-transfer";
+                    data: {
+                        /**
+                         * The address of the smart contract that can be interacted with
+                         */
+                        address: string;
+                        /**
+                         * The token IDs that can be transferred
+                         */
+                        tokenIds: Array<string>;
+                    };
+                }
+              | {
+                    type: "erc1155-token-transfer";
+                    data: {
+                        /**
+                         * The address of the smart contract that can be interacted with
+                         */
+                        address: string;
+                        /**
+                         * The token IDs and allowances that can be transferred
+                         */
+                        allowances: {
+                            [key: string]: string;
+                        };
+                    };
+                }
+              | {
+                    type: "gas-limit";
+                    data: {
+                        limit: string;
+                        enforcePaymaster?: boolean;
+                        allowedPaymaster?: string;
+                    };
+                }
+              | {
+                    type: "call-limit";
+                    data: {
+                        count: number;
+                    };
+                }
+              | {
+                    type: "rate-limit";
+                    data: {
+                        count: number;
+                        /**
+                         * Time window in seconds
+                         */
+                        interval: number;
+                    };
+                }
+          >;
+          /**
+           * Authorization status for each chain where the chain name is the key and the signature request is the value
+           */
+          chains?: {
+              [key: string]:
+                  | {
+                        status: "success";
+                    }
+                  | {
+                        status: "pending" | "awaiting-approval" | "failed";
+                        /**
+                         * Unique identifier for the signature
+                         */
+                        id: string;
+                        /**
+                         * Complete approval data including requirements, pending and submitted signatures
+                         */
+                        approvals?: {
+                            /**
+                             * List of pending signatures
+                             */
+                            pending: Array<{
+                                /**
+                                 * The locator of the signer that's pending approval
+                                 */
+                                signer: string;
+                                /**
+                                 * The message that needs to be signed
+                                 */
+                                message: string;
+                            }>;
+                            /**
+                             * Record of all submitted signatures
+                             */
+                            submitted: Array<{
+                                /**
+                                 * The cryptographic signature
+                                 */
+                                signature: string;
+                                /**
+                                 * When the signature was submitted
+                                 */
+                                submittedAt: number;
+                                /**
+                                 * The locator of the signer who submitted this signature
+                                 */
+                                signer: string;
+                                /**
+                                 * The message that was signed
+                                 */
+                                message: string;
+                                /**
+                                 * Additional metadata about the signature submission
+                                 */
+                                metadata?: {
+                                    deviceInfo?: string;
+                                    ipAddress?: string;
+                                    userAgent?: string;
+                                };
+                            }>;
+                            /**
+                             * Number of required approvals for the transaction
+                             */
+                            required?: number;
+                        };
+                    };
+          };
+      }
+    | {
+          /**
+           * Specifies the type of Solana signer being used, describing the method of key management and transaction signing.
+           */
+          type: "solana-keypair" | "solana-fireblocks-custodial";
+          /**
+           * The Solana address of the signer
+           */
+          address: string;
+          /**
+           * The locator of the signer
+           */
+          locator: string;
+          /**
+           * The transaction for the signer
+           */
+          transaction: {
+              /**
+               * Solana smart wallet transaction data including input parameters and chain specific details
+               */
+              onChain: {
+                  transaction: string;
+                  lastValidBlockHeight?: number;
+                  txId?: string;
+              };
+              /**
+               * Unique identifier for the transaction
+               */
+              id: string;
+              /**
+               * Current status of the transaction
+               */
+              status: "awaiting-approval" | "pending" | "failed" | "success";
+              /**
+               * Complete approval data including requirements, pending and submitted signatures
+               */
+              approvals?: {
+                  /**
+                   * List of pending signatures
+                   */
+                  pending: Array<{
+                      /**
+                       * The locator of the signer that's pending approval
+                       */
+                      signer: string;
+                      /**
+                       * The message that needs to be signed
+                       */
+                      message: string;
+                  }>;
+                  /**
+                   * Record of all submitted signatures
+                   */
+                  submitted: Array<{
+                      /**
+                       * The cryptographic signature
+                       */
+                      signature: string;
+                      /**
+                       * When the signature was submitted
+                       */
+                      submittedAt: number;
+                      /**
+                       * The locator of the signer who submitted this signature
+                       */
+                      signer: string;
+                      /**
+                       * The message that was signed
+                       */
+                      message: string;
+                      /**
+                       * Additional metadata about the signature submission
+                       */
+                      metadata?: {
+                          deviceInfo?: string;
+                          ipAddress?: string;
+                          userAgent?: string;
+                      };
+                  }>;
+                  /**
+                   * Number of required approvals for the transaction
+                   */
+                  required?: number;
+              };
+              /**
+               * ISO timestamp when the transaction was created
+               */
+              createdAt: number;
+              /**
+               * ISO timestamp when the transaction reached finality
+               */
+              completedAt?: number;
+              /**
+               * Error message if the transaction fails after submission
+               */
+              error?:
+                  | {
+                        reason: "program_error";
+                        message: string;
+                        logs?: unknown;
+                    }
+                  | {
+                        reason: "execution_reverted";
+                        message: string;
+                        revert?: {
+                            type: "contract_call" | "wallet_authorization" | "wallet_deployment";
+                            reason: string;
+                            reasonData?: string;
+                            explorerLink?: string;
+                            simulationLink?: string;
+                        };
+                    };
+          };
+      };
 
 /**
  * Parameters required to fund a wallet
@@ -768,11 +1041,56 @@ export type FundWalletAmountDto = {
     /**
      * The currency to fund the wallet with
      */
-    token: 'ape' | 'eth' | 'matic' | 'pol' | 'sei' | 'chz' | 'avax' | 'xai' | 'fuel' | 'vic' | 'ip' | 'zcx' | 'usdc' | 'usdce' | 'busd' | 'usdxm' | 'weth' | 'degen' | 'brett' | 'toshi' | 'eurc' | 'superverse' | 'bonk' | 'wif' | 'mother' | 'trump' | 'melania' | 'sol' | 'ada' | 'bnb' | 'sui' | 'apt' | 'sfuel';
+    token:
+        | "ape"
+        | "eth"
+        | "matic"
+        | "pol"
+        | "sei"
+        | "chz"
+        | "avax"
+        | "xai"
+        | "fuel"
+        | "vic"
+        | "ip"
+        | "zcx"
+        | "usdc"
+        | "usdce"
+        | "busd"
+        | "usdxm"
+        | "weth"
+        | "degen"
+        | "brett"
+        | "toshi"
+        | "eurc"
+        | "superverse"
+        | "bonk"
+        | "wif"
+        | "mother"
+        | "trump"
+        | "melania"
+        | "sol"
+        | "ada"
+        | "bnb"
+        | "sui"
+        | "apt"
+        | "sfuel";
     /**
      * The chain to fund the wallet with
      */
-    chain?: 'arbitrum-sepolia' | 'avalanche-fuji' | 'base-sepolia' | 'barret-testnet' | 'ethereum-sepolia' | 'optimism-sepolia' | 'polygon-amoy' | 'sei-atlantic-2-testnet' | 'skale-nebula-testnet' | 'soneium-minato-testnet' | 'viction-testnet' | 'solana';
+    chain?:
+        | "arbitrum-sepolia"
+        | "avalanche-fuji"
+        | "base-sepolia"
+        | "barret-testnet"
+        | "ethereum-sepolia"
+        | "optimism-sepolia"
+        | "polygon-amoy"
+        | "sei-atlantic-2-testnet"
+        | "skale-nebula-testnet"
+        | "soneium-minato-testnet"
+        | "viction-testnet"
+        | "solana";
 };
 
 /**
@@ -807,68 +1125,71 @@ export type SubmitApprovalDto = {
     /**
      * Array of approvals to submit for this transaction
      */
-    approvals: {
-        /**
-         * The locator for the EVM signer
-         */
-        signer: string;
-        /**
-         * The EVM cryptographic signature
-         */
-        signature: string;
-    } | {
-        /**
-         * The locator for the EVM signer
-         */
-        signer: string;
-        /**
-         * The signature components
-         */
-        signature: {
-            /**
-             * R component of the signature as a stringified bigint
-             */
-            r: string;
-            /**
-             * S component of the signature as a stringified bigint
-             */
-            s: string;
-        };
-        /**
-         * WebAuthn signature metadata
-         */
-        metadata: {
-            /**
-             * WebAuthn authenticator data as hex string
-             */
-            authenticatorData: string;
-            /**
-             * Index of the challenge used
-             */
-            challengeIndex: number;
-            /**
-             * WebAuthn client data JSON string
-             */
-            clientDataJSON: string;
-            /**
-             * Index of the signature type
-             */
-            typeIndex: number;
-            /**
-             * Whether user verification was required
-             */
-            userVerificationRequired: boolean;
-        };
-    } | Array<{
-        /**
-         * The locator for the Solana signer
-         */
-        signer: string;
-        /**
-         * The Solana cryptographic signature
-         */
-        signature: string;
-    }>;
+    approvals:
+        | {
+              /**
+               * The locator for the EVM signer
+               */
+              signer: string;
+              /**
+               * The EVM cryptographic signature
+               */
+              signature: string;
+          }
+        | {
+              /**
+               * The locator for the EVM signer
+               */
+              signer: string;
+              /**
+               * The signature components
+               */
+              signature: {
+                  /**
+                   * R component of the signature as a stringified bigint
+                   */
+                  r: string;
+                  /**
+                   * S component of the signature as a stringified bigint
+                   */
+                  s: string;
+              };
+              /**
+               * WebAuthn signature metadata
+               */
+              metadata: {
+                  /**
+                   * WebAuthn authenticator data as hex string
+                   */
+                  authenticatorData: string;
+                  /**
+                   * Index of the challenge used
+                   */
+                  challengeIndex: number;
+                  /**
+                   * WebAuthn client data JSON string
+                   */
+                  clientDataJSON: string;
+                  /**
+                   * Index of the signature type
+                   */
+                  typeIndex: number;
+                  /**
+                   * Whether user verification was required
+                   */
+                  userVerificationRequired: boolean;
+              };
+          }
+        | Array<{
+              /**
+               * The locator for the Solana signer
+               */
+              signer: string;
+              /**
+               * The Solana cryptographic signature
+               */
+              signature: string;
+          }>;
 };
 
 /**
@@ -878,7 +1199,40 @@ export type WalletBalanceResponseDto = Array<{
     /**
      * The token
      */
-    token: 'ape' | 'eth' | 'matic' | 'pol' | 'sei' | 'chz' | 'avax' | 'xai' | 'fuel' | 'vic' | 'ip' | 'zcx' | 'usdc' | 'usdce' | 'busd' | 'usdxm' | 'weth' | 'degen' | 'brett' | 'toshi' | 'eurc' | 'superverse' | 'bonk' | 'wif' | 'mother' | 'trump' | 'melania' | 'sol' | 'ada' | 'bnb' | 'sui' | 'apt' | 'sfuel';
+    token:
+        | "ape"
+        | "eth"
+        | "matic"
+        | "pol"
+        | "sei"
+        | "chz"
+        | "avax"
+        | "xai"
+        | "fuel"
+        | "vic"
+        | "ip"
+        | "zcx"
+        | "usdc"
+        | "usdce"
+        | "busd"
+        | "usdxm"
+        | "weth"
+        | "degen"
+        | "brett"
+        | "toshi"
+        | "eurc"
+        | "superverse"
+        | "bonk"
+        | "wif"
+        | "mother"
+        | "trump"
+        | "melania"
+        | "sol"
+        | "ada"
+        | "bnb"
+        | "sui"
+        | "apt"
+        | "sfuel";
     /**
      * The number of decimals of the token
      */
@@ -903,66 +1257,189 @@ export type WalletsV1Alpha2MultipleSignatureResponseDto = {
         /**
          * The type of signature
          */
-        type: 'evm-message' | 'solana-message' | 'evm-typed-data' | 'aptos-message' | 'cardano-message' | 'sui-message';
+        type: "evm-message" | "solana-message" | "evm-typed-data" | "aptos-message" | "cardano-message" | "sui-message";
         /**
          * Current status of the signature
          */
-        status: 'awaiting-approval' | 'pending' | 'failed' | 'success';
+        status: "awaiting-approval" | "pending" | "failed" | "success";
         /**
          * Type-specific signature parameters
          */
-        params: {
-            /**
-             * The message in plain text to sign
-             */
-            message: string;
-            /**
-             * The locator for the signer who will submit this signature. Defaults to the wallet's admin signer.
-             */
-            signer?: string;
-            /**
-             * The chain on which the signature will be submitted
-             */
-            chain: 'arbitrum-sepolia' | 'avalanche-fuji' | 'curtis' | 'barret-testnet' | 'base-goerli' | 'base-sepolia' | 'bsc-testnet' | 'chiliz-spicy-testnet' | 'ethereum-goerli' | 'ethereum-sepolia' | 'hypersonic-testnet' | 'lightlink-pegasus' | 'optimism-goerli' | 'optimism-sepolia' | 'polygon-amoy' | 'polygon-mumbai' | 'crossmint-private-testnet-ethereum' | 'crossmint-private-testnet-polygon' | 'rari-testnet' | 'scroll-sepolia' | 'sei-atlantic-2-testnet' | 'shape-sepolia' | 'skale-nebula-testnet' | 'soneium-minato-testnet' | 'space-testnet' | 'story-testnet' | 'verify-testnet' | 'viction-testnet' | 'xai-sepolia-testnet' | 'zkatana' | 'zkyoto' | 'zora-goerli' | 'zora-sepolia' | 'mode-sepolia' | 'zenchain-testnet' | 'ethereum' | 'polygon' | 'bsc' | 'optimism' | 'arbitrum' | 'base' | 'zora' | 'arbitrumnova' | 'astar-zkevm' | 'apechain' | 'apex' | 'boss' | 'lightlink' | 'skale-nebula' | 'sei-pacific-1' | 'chiliz' | 'avalanche' | 'xai' | 'shape' | 'rari' | 'scroll' | 'viction' | 'mode' | 'space' | 'soneium';
-        } | {
-            /**
-             * The message in plain text to sign
-             */
-            message: string;
-        } | {
-            typedData: {
-                domain: {
-                    name: string;
-                    version: string;
-                    chainId: number;
-                    /**
-                     * An EVM address string
-                     */
-                    verifyingContract: string;
-                    salt?: string;
-                };
-                types: {
-                    [key: string]: Array<{
-                        name: string;
-                        type: string;
-                    }>;
-                };
-                primaryType: string;
-                message: {};
-            };
-            /**
-             * The chain on which the signature will be submitted
-             */
-            chain: 'arbitrum-sepolia' | 'avalanche-fuji' | 'curtis' | 'barret-testnet' | 'base-goerli' | 'base-sepolia' | 'bsc-testnet' | 'chiliz-spicy-testnet' | 'ethereum-goerli' | 'ethereum-sepolia' | 'hypersonic-testnet' | 'lightlink-pegasus' | 'optimism-goerli' | 'optimism-sepolia' | 'polygon-amoy' | 'polygon-mumbai' | 'crossmint-private-testnet-ethereum' | 'crossmint-private-testnet-polygon' | 'rari-testnet' | 'scroll-sepolia' | 'sei-atlantic-2-testnet' | 'shape-sepolia' | 'skale-nebula-testnet' | 'soneium-minato-testnet' | 'space-testnet' | 'story-testnet' | 'verify-testnet' | 'viction-testnet' | 'xai-sepolia-testnet' | 'zkatana' | 'zkyoto' | 'zora-goerli' | 'zora-sepolia' | 'mode-sepolia' | 'zenchain-testnet' | 'ethereum' | 'polygon' | 'bsc' | 'optimism' | 'arbitrum' | 'base' | 'zora' | 'arbitrumnova' | 'astar-zkevm' | 'apechain' | 'apex' | 'boss' | 'lightlink' | 'skale-nebula' | 'sei-pacific-1' | 'chiliz' | 'avalanche' | 'xai' | 'shape' | 'rari' | 'scroll' | 'viction' | 'mode' | 'space' | 'soneium';
-            /**
-             * The locator for the signer who will approve this signature
-             */
-            signer?: string;
-            /**
-             * Whether the signature corresponds to the smart wallet or to the signer. If true, the signature will be wrapped with ERC6492.
-             */
-            isSmartWalletSignature?: boolean;
-        };
+        params:
+            | {
+                  /**
+                   * The message in plain text to sign
+                   */
+                  message: string;
+                  /**
+                   * The locator for the signer who will submit this signature. Defaults to the wallet's admin signer.
+                   */
+                  signer?: string;
+                  /**
+                   * The chain on which the signature will be submitted
+                   */
+                  chain:
+                      | "arbitrum-sepolia"
+                      | "avalanche-fuji"
+                      | "curtis"
+                      | "barret-testnet"
+                      | "base-goerli"
+                      | "base-sepolia"
+                      | "bsc-testnet"
+                      | "chiliz-spicy-testnet"
+                      | "ethereum-goerli"
+                      | "ethereum-sepolia"
+                      | "hypersonic-testnet"
+                      | "lightlink-pegasus"
+                      | "optimism-goerli"
+                      | "optimism-sepolia"
+                      | "polygon-amoy"
+                      | "polygon-mumbai"
+                      | "crossmint-private-testnet-ethereum"
+                      | "crossmint-private-testnet-polygon"
+                      | "rari-testnet"
+                      | "scroll-sepolia"
+                      | "sei-atlantic-2-testnet"
+                      | "shape-sepolia"
+                      | "skale-nebula-testnet"
+                      | "soneium-minato-testnet"
+                      | "space-testnet"
+                      | "story-testnet"
+                      | "verify-testnet"
+                      | "viction-testnet"
+                      | "xai-sepolia-testnet"
+                      | "zkatana"
+                      | "zkyoto"
+                      | "zora-goerli"
+                      | "zora-sepolia"
+                      | "mode-sepolia"
+                      | "zenchain-testnet"
+                      | "ethereum"
+                      | "polygon"
+                      | "bsc"
+                      | "optimism"
+                      | "arbitrum"
+                      | "base"
+                      | "zora"
+                      | "arbitrumnova"
+                      | "astar-zkevm"
+                      | "apechain"
+                      | "apex"
+                      | "boss"
+                      | "lightlink"
+                      | "skale-nebula"
+                      | "sei-pacific-1"
+                      | "chiliz"
+                      | "avalanche"
+                      | "xai"
+                      | "shape"
+                      | "rari"
+                      | "scroll"
+                      | "viction"
+                      | "mode"
+                      | "space"
+                      | "soneium";
+              }
+            | {
+                  /**
+                   * The message in plain text to sign
+                   */
+                  message: string;
+              }
+            | {
+                  typedData: {
+                      domain: {
+                          name: string;
+                          version: string;
+                          chainId: number;
+                          /**
+                           * An EVM address string
+                           */
+                          verifyingContract: string;
+                          salt?: string;
+                      };
+                      types: {
+                          [key: string]: Array<{
+                              name: string;
+                              type: string;
+                          }>;
+                      };
+                      primaryType: string;
+                      message: {};
+                  };
+                  /**
+                   * The chain on which the signature will be submitted
+                   */
+                  chain:
+                      | "arbitrum-sepolia"
+                      | "avalanche-fuji"
+                      | "curtis"
+                      | "barret-testnet"
+                      | "base-goerli"
+                      | "base-sepolia"
+                      | "bsc-testnet"
+                      | "chiliz-spicy-testnet"
+                      | "ethereum-goerli"
+                      | "ethereum-sepolia"
+                      | "hypersonic-testnet"
+                      | "lightlink-pegasus"
+                      | "optimism-goerli"
+                      | "optimism-sepolia"
+                      | "polygon-amoy"
+                      | "polygon-mumbai"
+                      | "crossmint-private-testnet-ethereum"
+                      | "crossmint-private-testnet-polygon"
+                      | "rari-testnet"
+                      | "scroll-sepolia"
+                      | "sei-atlantic-2-testnet"
+                      | "shape-sepolia"
+                      | "skale-nebula-testnet"
+                      | "soneium-minato-testnet"
+                      | "space-testnet"
+                      | "story-testnet"
+                      | "verify-testnet"
+                      | "viction-testnet"
+                      | "xai-sepolia-testnet"
+                      | "zkatana"
+                      | "zkyoto"
+                      | "zora-goerli"
+                      | "zora-sepolia"
+                      | "mode-sepolia"
+                      | "zenchain-testnet"
+                      | "ethereum"
+                      | "polygon"
+                      | "bsc"
+                      | "optimism"
+                      | "arbitrum"
+                      | "base"
+                      | "zora"
+                      | "arbitrumnova"
+                      | "astar-zkevm"
+                      | "apechain"
+                      | "apex"
+                      | "boss"
+                      | "lightlink"
+                      | "skale-nebula"
+                      | "sei-pacific-1"
+                      | "chiliz"
+                      | "avalanche"
+                      | "xai"
+                      | "shape"
+                      | "rari"
+                      | "scroll"
+                      | "viction"
+                      | "mode"
+                      | "space"
+                      | "soneium";
+                  /**
+                   * The locator for the signer who will approve this signature
+                   */
+                  signer?: string;
+                  /**
+                   * Whether the signature corresponds to the smart wallet or to the signer. If true, the signature will be wrapped with ERC6492.
+                   */
+                  isSmartWalletSignature?: boolean;
+              };
         /**
          * Complete approval data including requirements, pending and submitted signatures
          */
@@ -1044,66 +1521,189 @@ export type WalletsV1Alpha2SignatureResponseDto = {
     /**
      * The type of signature
      */
-    type: 'evm-message' | 'solana-message' | 'evm-typed-data' | 'aptos-message' | 'cardano-message' | 'sui-message';
+    type: "evm-message" | "solana-message" | "evm-typed-data" | "aptos-message" | "cardano-message" | "sui-message";
     /**
      * Current status of the signature
      */
-    status: 'awaiting-approval' | 'pending' | 'failed' | 'success';
+    status: "awaiting-approval" | "pending" | "failed" | "success";
     /**
      * Type-specific signature parameters
      */
-    params: {
-        /**
-         * The message in plain text to sign
-         */
-        message: string;
-        /**
-         * The locator for the signer who will submit this signature. Defaults to the wallet's admin signer.
-         */
-        signer?: string;
-        /**
-         * The chain on which the signature will be submitted
-         */
-        chain: 'arbitrum-sepolia' | 'avalanche-fuji' | 'curtis' | 'barret-testnet' | 'base-goerli' | 'base-sepolia' | 'bsc-testnet' | 'chiliz-spicy-testnet' | 'ethereum-goerli' | 'ethereum-sepolia' | 'hypersonic-testnet' | 'lightlink-pegasus' | 'optimism-goerli' | 'optimism-sepolia' | 'polygon-amoy' | 'polygon-mumbai' | 'crossmint-private-testnet-ethereum' | 'crossmint-private-testnet-polygon' | 'rari-testnet' | 'scroll-sepolia' | 'sei-atlantic-2-testnet' | 'shape-sepolia' | 'skale-nebula-testnet' | 'soneium-minato-testnet' | 'space-testnet' | 'story-testnet' | 'verify-testnet' | 'viction-testnet' | 'xai-sepolia-testnet' | 'zkatana' | 'zkyoto' | 'zora-goerli' | 'zora-sepolia' | 'mode-sepolia' | 'zenchain-testnet' | 'ethereum' | 'polygon' | 'bsc' | 'optimism' | 'arbitrum' | 'base' | 'zora' | 'arbitrumnova' | 'astar-zkevm' | 'apechain' | 'apex' | 'boss' | 'lightlink' | 'skale-nebula' | 'sei-pacific-1' | 'chiliz' | 'avalanche' | 'xai' | 'shape' | 'rari' | 'scroll' | 'viction' | 'mode' | 'space' | 'soneium';
-    } | {
-        /**
-         * The message in plain text to sign
-         */
-        message: string;
-    } | {
-        typedData: {
-            domain: {
-                name: string;
-                version: string;
-                chainId: number;
-                /**
-                 * An EVM address string
-                 */
-                verifyingContract: string;
-                salt?: string;
-            };
-            types: {
-                [key: string]: Array<{
-                    name: string;
-                    type: string;
-                }>;
-            };
-            primaryType: string;
-            message: {};
-        };
-        /**
-         * The chain on which the signature will be submitted
-         */
-        chain: 'arbitrum-sepolia' | 'avalanche-fuji' | 'curtis' | 'barret-testnet' | 'base-goerli' | 'base-sepolia' | 'bsc-testnet' | 'chiliz-spicy-testnet' | 'ethereum-goerli' | 'ethereum-sepolia' | 'hypersonic-testnet' | 'lightlink-pegasus' | 'optimism-goerli' | 'optimism-sepolia' | 'polygon-amoy' | 'polygon-mumbai' | 'crossmint-private-testnet-ethereum' | 'crossmint-private-testnet-polygon' | 'rari-testnet' | 'scroll-sepolia' | 'sei-atlantic-2-testnet' | 'shape-sepolia' | 'skale-nebula-testnet' | 'soneium-minato-testnet' | 'space-testnet' | 'story-testnet' | 'verify-testnet' | 'viction-testnet' | 'xai-sepolia-testnet' | 'zkatana' | 'zkyoto' | 'zora-goerli' | 'zora-sepolia' | 'mode-sepolia' | 'zenchain-testnet' | 'ethereum' | 'polygon' | 'bsc' | 'optimism' | 'arbitrum' | 'base' | 'zora' | 'arbitrumnova' | 'astar-zkevm' | 'apechain' | 'apex' | 'boss' | 'lightlink' | 'skale-nebula' | 'sei-pacific-1' | 'chiliz' | 'avalanche' | 'xai' | 'shape' | 'rari' | 'scroll' | 'viction' | 'mode' | 'space' | 'soneium';
-        /**
-         * The locator for the signer who will approve this signature
-         */
-        signer?: string;
-        /**
-         * Whether the signature corresponds to the smart wallet or to the signer. If true, the signature will be wrapped with ERC6492.
-         */
-        isSmartWalletSignature?: boolean;
-    };
+    params:
+        | {
+              /**
+               * The message in plain text to sign
+               */
+              message: string;
+              /**
+               * The locator for the signer who will submit this signature. Defaults to the wallet's admin signer.
+               */
+              signer?: string;
+              /**
+               * The chain on which the signature will be submitted
+               */
+              chain:
+                  | "arbitrum-sepolia"
+                  | "avalanche-fuji"
+                  | "curtis"
+                  | "barret-testnet"
+                  | "base-goerli"
+                  | "base-sepolia"
+                  | "bsc-testnet"
+                  | "chiliz-spicy-testnet"
+                  | "ethereum-goerli"
+                  | "ethereum-sepolia"
+                  | "hypersonic-testnet"
+                  | "lightlink-pegasus"
+                  | "optimism-goerli"
+                  | "optimism-sepolia"
+                  | "polygon-amoy"
+                  | "polygon-mumbai"
+                  | "crossmint-private-testnet-ethereum"
+                  | "crossmint-private-testnet-polygon"
+                  | "rari-testnet"
+                  | "scroll-sepolia"
+                  | "sei-atlantic-2-testnet"
+                  | "shape-sepolia"
+                  | "skale-nebula-testnet"
+                  | "soneium-minato-testnet"
+                  | "space-testnet"
+                  | "story-testnet"
+                  | "verify-testnet"
+                  | "viction-testnet"
+                  | "xai-sepolia-testnet"
+                  | "zkatana"
+                  | "zkyoto"
+                  | "zora-goerli"
+                  | "zora-sepolia"
+                  | "mode-sepolia"
+                  | "zenchain-testnet"
+                  | "ethereum"
+                  | "polygon"
+                  | "bsc"
+                  | "optimism"
+                  | "arbitrum"
+                  | "base"
+                  | "zora"
+                  | "arbitrumnova"
+                  | "astar-zkevm"
+                  | "apechain"
+                  | "apex"
+                  | "boss"
+                  | "lightlink"
+                  | "skale-nebula"
+                  | "sei-pacific-1"
+                  | "chiliz"
+                  | "avalanche"
+                  | "xai"
+                  | "shape"
+                  | "rari"
+                  | "scroll"
+                  | "viction"
+                  | "mode"
+                  | "space"
+                  | "soneium";
+          }
+        | {
+              /**
+               * The message in plain text to sign
+               */
+              message: string;
+          }
+        | {
+              typedData: {
+                  domain: {
+                      name: string;
+                      version: string;
+                      chainId: number;
+                      /**
+                       * An EVM address string
+                       */
+                      verifyingContract: string;
+                      salt?: string;
+                  };
+                  types: {
+                      [key: string]: Array<{
+                          name: string;
+                          type: string;
+                      }>;
+                  };
+                  primaryType: string;
+                  message: {};
+              };
+              /**
+               * The chain on which the signature will be submitted
+               */
+              chain:
+                  | "arbitrum-sepolia"
+                  | "avalanche-fuji"
+                  | "curtis"
+                  | "barret-testnet"
+                  | "base-goerli"
+                  | "base-sepolia"
+                  | "bsc-testnet"
+                  | "chiliz-spicy-testnet"
+                  | "ethereum-goerli"
+                  | "ethereum-sepolia"
+                  | "hypersonic-testnet"
+                  | "lightlink-pegasus"
+                  | "optimism-goerli"
+                  | "optimism-sepolia"
+                  | "polygon-amoy"
+                  | "polygon-mumbai"
+                  | "crossmint-private-testnet-ethereum"
+                  | "crossmint-private-testnet-polygon"
+                  | "rari-testnet"
+                  | "scroll-sepolia"
+                  | "sei-atlantic-2-testnet"
+                  | "shape-sepolia"
+                  | "skale-nebula-testnet"
+                  | "soneium-minato-testnet"
+                  | "space-testnet"
+                  | "story-testnet"
+                  | "verify-testnet"
+                  | "viction-testnet"
+                  | "xai-sepolia-testnet"
+                  | "zkatana"
+                  | "zkyoto"
+                  | "zora-goerli"
+                  | "zora-sepolia"
+                  | "mode-sepolia"
+                  | "zenchain-testnet"
+                  | "ethereum"
+                  | "polygon"
+                  | "bsc"
+                  | "optimism"
+                  | "arbitrum"
+                  | "base"
+                  | "zora"
+                  | "arbitrumnova"
+                  | "astar-zkevm"
+                  | "apechain"
+                  | "apex"
+                  | "boss"
+                  | "lightlink"
+                  | "skale-nebula"
+                  | "sei-pacific-1"
+                  | "chiliz"
+                  | "avalanche"
+                  | "xai"
+                  | "shape"
+                  | "rari"
+                  | "scroll"
+                  | "viction"
+                  | "mode"
+                  | "space"
+                  | "soneium";
+              /**
+               * The locator for the signer who will approve this signature
+               */
+              signer?: string;
+              /**
+               * Whether the signature corresponds to the smart wallet or to the signer. If true, the signature will be wrapped with ERC6492.
+               */
+              isSmartWalletSignature?: boolean;
+          };
     /**
      * Complete approval data including requirements, pending and submitted signatures
      */
@@ -1176,609 +1776,719 @@ export type WalletsV1Alpha2SignatureResponseDto = {
 /**
  * Complete transaction response including status, signing requirements, and wallet type specific data
  */
-export type WalletsV1Alpha2TransactionResponseDto = {
-    /**
-     * The type of wallet that created this transaction
-     */
-    walletType: 'evm-smart-wallet';
-    /**
-     * EVM smart wallet transaction parameters
-     */
-    params: {
-        /**
-         * Transaction data to execute
-         */
-        calls: Array<{
-            /**
-             * The recipient address for this transaction call
-             */
-            address: string;
-            /**
-             * The name of the function to call
-             */
-            functionName: string;
-            /**
-             * The ABI for the function to call
-             */
-            abi: Array<{
-                type: 'error';
-                inputs: Array<unknown>;
-                name: string;
-            } | {
-                type: 'event';
-                anonymous?: boolean;
-                inputs: Array<unknown & {
-                    indexed?: boolean;
-                }>;
-                name: string;
-            } | ({
-                constant?: boolean;
-                gas?: number;
-                payable?: boolean;
-            } & ({
-                type: 'function';
-                inputs: Array<unknown>;
-                name: string;
-                outputs: Array<unknown>;
-                stateMutability: 'pure' | 'view' | 'nonpayable' | 'payable';
-            } | {
-                type: 'constructor';
-                inputs: Array<unknown>;
-                stateMutability: 'payable' | 'nonpayable';
-            } | {
-                type: 'fallback';
-                inputs?: unknown;
-                stateMutability: 'payable' | 'nonpayable';
-            } | {
-                type: 'receive';
-                stateMutability: 'payable';
-            }))>;
-            /**
-             * The arguments to pass to the function
-             */
-            args: Array<unknown>;
-            /**
-             * The amount of native token to send in wei
-             */
-            value?: string;
-        } | {
-            /**
-             * The recipient address for this transaction call
-             */
-            to: string;
-            /**
-             * The amount of native token to send in wei
-             */
-            value: string;
-            /**
-             * The encoded calldata for this transaction
-             */
-            data: unknown;
-        }>;
-        /**
-         * The chain on which the transaction will be executed
-         */
-        chain: 'base' | 'polygon' | 'optimism' | 'arbitrum' | 'mode' | 'base-sepolia' | 'polygon-amoy' | 'optimism-sepolia' | 'arbitrum-sepolia' | 'mode-sepolia' | 'story-testnet';
-        /**
-         * The locator for the signer who will submit this transaction
-         */
-        signer?: string;
-    };
-    /**
-     * EVM smart wallet transaction data including input parameters and chain specific details
-     */
-    onChain: {
-        userOperation: {
-            sender: string;
-            nonce: string;
-            callData: string;
-            callGasLimit: string;
-            verificationGasLimit: string;
-            preVerificationGas: string;
-            maxFeePerGas: string;
-            maxPriorityFeePerGas: string;
-            paymaster?: string;
-            paymasterVerificationGasLimit?: string;
-            paymasterData?: string;
-            paymasterPostOpGasLimit?: string;
-            signature: string;
-            factory?: string;
-            factoryData?: string;
-        };
-        userOperationHash: string;
-        txId?: string;
-        explorerLink?: string;
-    };
-    /**
-     * Unique identifier for the transaction
-     */
-    id: string;
-    /**
-     * Current status of the transaction
-     */
-    status: 'awaiting-approval' | 'pending' | 'failed' | 'success';
-    /**
-     * Complete approval data including requirements, pending and submitted signatures
-     */
-    approvals?: {
-        /**
-         * List of pending signatures
-         */
-        pending: Array<{
-            /**
-             * The locator of the signer that's pending approval
-             */
-            signer: string;
-            /**
-             * The message that needs to be signed
-             */
-            message: string;
-        }>;
-        /**
-         * Record of all submitted signatures
-         */
-        submitted: Array<{
-            /**
-             * The cryptographic signature
-             */
-            signature: string;
-            /**
-             * When the signature was submitted
-             */
-            submittedAt: number;
-            /**
-             * The locator of the signer who submitted this signature
-             */
-            signer: string;
-            /**
-             * The message that was signed
-             */
-            message: string;
-            /**
-             * Additional metadata about the signature submission
-             */
-            metadata?: {
-                deviceInfo?: string;
-                ipAddress?: string;
-                userAgent?: string;
-            };
-        }>;
-        /**
-         * Number of required approvals for the transaction
-         */
-        required?: number;
-    };
-    /**
-     * ISO timestamp when the transaction was created
-     */
-    createdAt: number;
-    /**
-     * ISO timestamp when the transaction reached finality
-     */
-    completedAt?: number;
-    /**
-     * Error message if the transaction fails after submission
-     */
-    error?: {
-        reason: 'program_error';
-        message: string;
-        logs?: unknown;
-    } | {
-        reason: 'execution_reverted';
-        message: string;
-        revert?: {
-            type: 'contract_call' | 'wallet_authorization' | 'wallet_deployment';
-            reason: string;
-            reasonData?: string;
-            explorerLink?: string;
-            simulationLink?: string;
-        };
-    };
-} | {
-    /**
-     * The type of wallet that created this transaction
-     */
-    walletType: 'solana-mpc-wallet';
-    /**
-     * Solana custodial wallet transaction parameters
-     */
-    params: {
-        /**
-         * Base58 encoded serialized Solana transaction
-         */
-        transaction: string;
-        /**
-         * Optional array of additional signers required for the transaction
-         */
-        requiredSigners?: Array<string>;
-    };
-    /**
-     * Solana custodial wallet transaction data including input parameters and chain specific details
-     */
-    onChain: {
-        transaction: string;
-        lastValidBlockHeight?: number;
-        txId?: string;
-    };
-    /**
-     * Unique identifier for the transaction
-     */
-    id: string;
-    /**
-     * Current status of the transaction
-     */
-    status: 'awaiting-approval' | 'pending' | 'failed' | 'success';
-    /**
-     * Complete approval data including requirements, pending and submitted signatures
-     */
-    approvals?: {
-        /**
-         * List of pending signatures
-         */
-        pending: Array<{
-            /**
-             * The locator of the signer that's pending approval
-             */
-            signer: string;
-            /**
-             * The message that needs to be signed
-             */
-            message: string;
-        }>;
-        /**
-         * Record of all submitted signatures
-         */
-        submitted: Array<{
-            /**
-             * The cryptographic signature
-             */
-            signature: string;
-            /**
-             * When the signature was submitted
-             */
-            submittedAt: number;
-            /**
-             * The locator of the signer who submitted this signature
-             */
-            signer: string;
-            /**
-             * The message that was signed
-             */
-            message: string;
-            /**
-             * Additional metadata about the signature submission
-             */
-            metadata?: {
-                deviceInfo?: string;
-                ipAddress?: string;
-                userAgent?: string;
-            };
-        }>;
-        /**
-         * Number of required approvals for the transaction
-         */
-        required?: number;
-    };
-    /**
-     * ISO timestamp when the transaction was created
-     */
-    createdAt: number;
-    /**
-     * ISO timestamp when the transaction reached finality
-     */
-    completedAt?: number;
-    /**
-     * Error message if the transaction fails after submission
-     */
-    error?: {
-        reason: 'program_error';
-        message: string;
-        logs?: unknown;
-    } | {
-        reason: 'execution_reverted';
-        message: string;
-        revert?: {
-            type: 'contract_call' | 'wallet_authorization' | 'wallet_deployment';
-            reason: string;
-            reasonData?: string;
-            explorerLink?: string;
-            simulationLink?: string;
-        };
-    };
-} | {
-    /**
-     * The type of wallet that created this transaction
-     */
-    walletType: 'evm-mpc-wallet';
-    /**
-     * EVM MPC wallet transaction parameters
-     */
-    params: {
-        /**
-         * The transaction call to execute
-         */
-        call: {
-            /**
-             * The recipient address for this transaction call
-             */
-            to: string;
-            /**
-             * The encoded calldata for this transaction
-             */
-            data: unknown;
-        } | {
-            /**
-             * The recipient address for this transaction call
-             */
-            address: string;
-            /**
-             * The name of the function to call
-             */
-            functionName: string;
-            /**
-             * The ABI for the function to call
-             */
-            abi: Array<{
-                type: 'error';
-                inputs: Array<unknown>;
-                name: string;
-            } | {
-                type: 'event';
-                anonymous?: boolean;
-                inputs: Array<unknown & {
-                    indexed?: boolean;
-                }>;
-                name: string;
-            } | ({
-                constant?: boolean;
-                gas?: number;
-                payable?: boolean;
-            } & ({
-                type: 'function';
-                inputs: Array<unknown>;
-                name: string;
-                outputs: Array<unknown>;
-                stateMutability: 'pure' | 'view' | 'nonpayable' | 'payable';
-            } | {
-                type: 'constructor';
-                inputs: Array<unknown>;
-                stateMutability: 'payable' | 'nonpayable';
-            } | {
-                type: 'fallback';
-                inputs?: unknown;
-                stateMutability: 'payable' | 'nonpayable';
-            } | {
-                type: 'receive';
-                stateMutability: 'payable';
-            }))>;
-            /**
-             * The arguments to pass to the function
-             */
-            args: Array<unknown>;
-        };
-        /**
-         * The chain on which the transaction will be executed
-         */
-        chain: 'arbitrum-sepolia' | 'avalanche-fuji' | 'curtis' | 'barret-testnet' | 'base-goerli' | 'base-sepolia' | 'bsc-testnet' | 'chiliz-spicy-testnet' | 'ethereum-goerli' | 'ethereum-sepolia' | 'hypersonic-testnet' | 'lightlink-pegasus' | 'optimism-goerli' | 'optimism-sepolia' | 'polygon-amoy' | 'polygon-mumbai' | 'crossmint-private-testnet-ethereum' | 'crossmint-private-testnet-polygon' | 'rari-testnet' | 'scroll-sepolia' | 'sei-atlantic-2-testnet' | 'shape-sepolia' | 'skale-nebula-testnet' | 'soneium-minato-testnet' | 'space-testnet' | 'story-testnet' | 'verify-testnet' | 'viction-testnet' | 'xai-sepolia-testnet' | 'zkatana' | 'zkyoto' | 'zora-goerli' | 'zora-sepolia' | 'mode-sepolia' | 'zenchain-testnet' | 'ethereum' | 'polygon' | 'bsc' | 'optimism' | 'arbitrum' | 'base' | 'zora' | 'arbitrumnova' | 'astar-zkevm' | 'apechain' | 'apex' | 'boss' | 'lightlink' | 'skale-nebula' | 'sei-pacific-1' | 'chiliz' | 'avalanche' | 'xai' | 'shape' | 'rari' | 'scroll' | 'viction' | 'mode' | 'space' | 'soneium';
-    };
-    /**
-     * EVM MPC wallet transaction data including input parameters and chain specific details
-     */
-    onChain: {
-        call: {
-            /**
-             * The recipient address for this transaction call
-             */
-            to: string;
-            /**
-             * The encoded calldata for this transaction
-             */
-            data: unknown;
-        };
-        txId?: string;
-        explorerLink?: string;
-    };
-    /**
-     * Unique identifier for the transaction
-     */
-    id: string;
-    /**
-     * Current status of the transaction
-     */
-    status: 'awaiting-approval' | 'pending' | 'failed' | 'success';
-    /**
-     * Complete approval data including requirements, pending and submitted signatures
-     */
-    approvals?: {
-        /**
-         * List of pending signatures
-         */
-        pending: Array<{
-            /**
-             * The locator of the signer that's pending approval
-             */
-            signer: string;
-            /**
-             * The message that needs to be signed
-             */
-            message: string;
-        }>;
-        /**
-         * Record of all submitted signatures
-         */
-        submitted: Array<{
-            /**
-             * The cryptographic signature
-             */
-            signature: string;
-            /**
-             * When the signature was submitted
-             */
-            submittedAt: number;
-            /**
-             * The locator of the signer who submitted this signature
-             */
-            signer: string;
-            /**
-             * The message that was signed
-             */
-            message: string;
-            /**
-             * Additional metadata about the signature submission
-             */
-            metadata?: {
-                deviceInfo?: string;
-                ipAddress?: string;
-                userAgent?: string;
-            };
-        }>;
-        /**
-         * Number of required approvals for the transaction
-         */
-        required?: number;
-    };
-    /**
-     * ISO timestamp when the transaction was created
-     */
-    createdAt: number;
-    /**
-     * ISO timestamp when the transaction reached finality
-     */
-    completedAt?: number;
-    /**
-     * Error message if the transaction fails after submission
-     */
-    error?: {
-        reason: 'program_error';
-        message: string;
-        logs?: unknown;
-    } | {
-        reason: 'execution_reverted';
-        message: string;
-        revert?: {
-            type: 'contract_call' | 'wallet_authorization' | 'wallet_deployment';
-            reason: string;
-            reasonData?: string;
-            explorerLink?: string;
-            simulationLink?: string;
-        };
-    };
-} | {
-    /**
-     * The type of wallet that created this transaction
-     */
-    walletType: 'solana-smart-wallet';
-    /**
-     * Solana smart wallet transaction parameters
-     */
-    params: {
-        /**
-         * Base58 encoded serialized Solana transaction
-         */
-        transaction: string;
-        /**
-         * Optional array of additional signers required for the transaction
-         */
-        requiredSigners?: Array<string>;
-        /**
-         * The locator for the signer who will submit this transaction. Defaults to the admin signer.
-         */
-        signer?: string;
-    };
-    /**
-     * Solana smart wallet transaction data including input parameters and chain specific details
-     */
-    onChain: {
-        transaction: string;
-        lastValidBlockHeight?: number;
-        txId?: string;
-    };
-    /**
-     * Unique identifier for the transaction
-     */
-    id: string;
-    /**
-     * Current status of the transaction
-     */
-    status: 'awaiting-approval' | 'pending' | 'failed' | 'success';
-    /**
-     * Complete approval data including requirements, pending and submitted signatures
-     */
-    approvals?: {
-        /**
-         * List of pending signatures
-         */
-        pending: Array<{
-            /**
-             * The locator of the signer that's pending approval
-             */
-            signer: string;
-            /**
-             * The message that needs to be signed
-             */
-            message: string;
-        }>;
-        /**
-         * Record of all submitted signatures
-         */
-        submitted: Array<{
-            /**
-             * The cryptographic signature
-             */
-            signature: string;
-            /**
-             * When the signature was submitted
-             */
-            submittedAt: number;
-            /**
-             * The locator of the signer who submitted this signature
-             */
-            signer: string;
-            /**
-             * The message that was signed
-             */
-            message: string;
-            /**
-             * Additional metadata about the signature submission
-             */
-            metadata?: {
-                deviceInfo?: string;
-                ipAddress?: string;
-                userAgent?: string;
-            };
-        }>;
-        /**
-         * Number of required approvals for the transaction
-         */
-        required?: number;
-    };
-    /**
-     * ISO timestamp when the transaction was created
-     */
-    createdAt: number;
-    /**
-     * ISO timestamp when the transaction reached finality
-     */
-    completedAt?: number;
-    /**
-     * Error message if the transaction fails after submission
-     */
-    error?: {
-        reason: 'program_error';
-        message: string;
-        logs?: unknown;
-    } | {
-        reason: 'execution_reverted';
-        message: string;
-        revert?: {
-            type: 'contract_call' | 'wallet_authorization' | 'wallet_deployment';
-            reason: string;
-            reasonData?: string;
-            explorerLink?: string;
-            simulationLink?: string;
-        };
-    };
-};
+export type WalletsV1Alpha2TransactionResponseDto =
+    | {
+          /**
+           * The type of wallet that created this transaction
+           */
+          walletType: "evm-smart-wallet";
+          /**
+           * EVM smart wallet transaction parameters
+           */
+          params: {
+              /**
+               * Transaction data to execute
+               */
+              calls: Array<
+                  | {
+                        /**
+                         * The recipient address for this transaction call
+                         */
+                        address: string;
+                        /**
+                         * The name of the function to call
+                         */
+                        functionName: string;
+                        /**
+                         * The ABI for the function to call
+                         */
+                        abi: Array<
+                            | {
+                                  type: "error";
+                                  inputs: Array<unknown>;
+                                  name: string;
+                              }
+                            | {
+                                  type: "event";
+                                  anonymous?: boolean;
+                                  inputs: Array<
+                                      unknown & {
+                                          indexed?: boolean;
+                                      }
+                                  >;
+                                  name: string;
+                              }
+                            | ({
+                                  constant?: boolean;
+                                  gas?: number;
+                                  payable?: boolean;
+                              } & (
+                                  | {
+                                        type: "function";
+                                        inputs: Array<unknown>;
+                                        name: string;
+                                        outputs: Array<unknown>;
+                                        stateMutability: "pure" | "view" | "nonpayable" | "payable";
+                                    }
+                                  | {
+                                        type: "constructor";
+                                        inputs: Array<unknown>;
+                                        stateMutability: "payable" | "nonpayable";
+                                    }
+                                  | {
+                                        type: "fallback";
+                                        inputs?: unknown;
+                                        stateMutability: "payable" | "nonpayable";
+                                    }
+                                  | {
+                                        type: "receive";
+                                        stateMutability: "payable";
+                                    }
+                              ))
+                        >;
+                        /**
+                         * The arguments to pass to the function
+                         */
+                        args: Array<unknown>;
+                        /**
+                         * The amount of native token to send in wei
+                         */
+                        value?: string;
+                    }
+                  | {
+                        /**
+                         * The recipient address for this transaction call
+                         */
+                        to: string;
+                        /**
+                         * The amount of native token to send in wei
+                         */
+                        value: string;
+                        /**
+                         * The encoded calldata for this transaction
+                         */
+                        data: unknown;
+                    }
+              >;
+              /**
+               * The chain on which the transaction will be executed
+               */
+              chain:
+                  | "base"
+                  | "polygon"
+                  | "optimism"
+                  | "arbitrum"
+                  | "mode"
+                  | "base-sepolia"
+                  | "polygon-amoy"
+                  | "optimism-sepolia"
+                  | "arbitrum-sepolia"
+                  | "mode-sepolia"
+                  | "story-testnet";
+              /**
+               * The locator for the signer who will submit this transaction
+               */
+              signer?: string;
+          };
+          /**
+           * EVM smart wallet transaction data including input parameters and chain specific details
+           */
+          onChain: {
+              userOperation: {
+                  sender: string;
+                  nonce: string;
+                  callData: string;
+                  callGasLimit: string;
+                  verificationGasLimit: string;
+                  preVerificationGas: string;
+                  maxFeePerGas: string;
+                  maxPriorityFeePerGas: string;
+                  paymaster?: string;
+                  paymasterVerificationGasLimit?: string;
+                  paymasterData?: string;
+                  paymasterPostOpGasLimit?: string;
+                  signature: string;
+                  factory?: string;
+                  factoryData?: string;
+              };
+              userOperationHash: string;
+              txId?: string;
+              explorerLink?: string;
+          };
+          /**
+           * Unique identifier for the transaction
+           */
+          id: string;
+          /**
+           * Current status of the transaction
+           */
+          status: "awaiting-approval" | "pending" | "failed" | "success";
+          /**
+           * Complete approval data including requirements, pending and submitted signatures
+           */
+          approvals?: {
+              /**
+               * List of pending signatures
+               */
+              pending: Array<{
+                  /**
+                   * The locator of the signer that's pending approval
+                   */
+                  signer: string;
+                  /**
+                   * The message that needs to be signed
+                   */
+                  message: string;
+              }>;
+              /**
+               * Record of all submitted signatures
+               */
+              submitted: Array<{
+                  /**
+                   * The cryptographic signature
+                   */
+                  signature: string;
+                  /**
+                   * When the signature was submitted
+                   */
+                  submittedAt: number;
+                  /**
+                   * The locator of the signer who submitted this signature
+                   */
+                  signer: string;
+                  /**
+                   * The message that was signed
+                   */
+                  message: string;
+                  /**
+                   * Additional metadata about the signature submission
+                   */
+                  metadata?: {
+                      deviceInfo?: string;
+                      ipAddress?: string;
+                      userAgent?: string;
+                  };
+              }>;
+              /**
+               * Number of required approvals for the transaction
+               */
+              required?: number;
+          };
+          /**
+           * ISO timestamp when the transaction was created
+           */
+          createdAt: number;
+          /**
+           * ISO timestamp when the transaction reached finality
+           */
+          completedAt?: number;
+          /**
+           * Error message if the transaction fails after submission
+           */
+          error?:
+              | {
+                    reason: "program_error";
+                    message: string;
+                    logs?: unknown;
+                }
+              | {
+                    reason: "execution_reverted";
+                    message: string;
+                    revert?: {
+                        type: "contract_call" | "wallet_authorization" | "wallet_deployment";
+                        reason: string;
+                        reasonData?: string;
+                        explorerLink?: string;
+                        simulationLink?: string;
+                    };
+                };
+      }
+    | {
+          /**
+           * The type of wallet that created this transaction
+           */
+          walletType: "solana-mpc-wallet";
+          /**
+           * Solana custodial wallet transaction parameters
+           */
+          params: {
+              /**
+               * Base58 encoded serialized Solana transaction
+               */
+              transaction: string;
+              /**
+               * Optional array of additional signers required for the transaction
+               */
+              requiredSigners?: Array<string>;
+          };
+          /**
+           * Solana custodial wallet transaction data including input parameters and chain specific details
+           */
+          onChain: {
+              transaction: string;
+              lastValidBlockHeight?: number;
+              txId?: string;
+          };
+          /**
+           * Unique identifier for the transaction
+           */
+          id: string;
+          /**
+           * Current status of the transaction
+           */
+          status: "awaiting-approval" | "pending" | "failed" | "success";
+          /**
+           * Complete approval data including requirements, pending and submitted signatures
+           */
+          approvals?: {
+              /**
+               * List of pending signatures
+               */
+              pending: Array<{
+                  /**
+                   * The locator of the signer that's pending approval
+                   */
+                  signer: string;
+                  /**
+                   * The message that needs to be signed
+                   */
+                  message: string;
+              }>;
+              /**
+               * Record of all submitted signatures
+               */
+              submitted: Array<{
+                  /**
+                   * The cryptographic signature
+                   */
+                  signature: string;
+                  /**
+                   * When the signature was submitted
+                   */
+                  submittedAt: number;
+                  /**
+                   * The locator of the signer who submitted this signature
+                   */
+                  signer: string;
+                  /**
+                   * The message that was signed
+                   */
+                  message: string;
+                  /**
+                   * Additional metadata about the signature submission
+                   */
+                  metadata?: {
+                      deviceInfo?: string;
+                      ipAddress?: string;
+                      userAgent?: string;
+                  };
+              }>;
+              /**
+               * Number of required approvals for the transaction
+               */
+              required?: number;
+          };
+          /**
+           * ISO timestamp when the transaction was created
+           */
+          createdAt: number;
+          /**
+           * ISO timestamp when the transaction reached finality
+           */
+          completedAt?: number;
+          /**
+           * Error message if the transaction fails after submission
+           */
+          error?:
+              | {
+                    reason: "program_error";
+                    message: string;
+                    logs?: unknown;
+                }
+              | {
+                    reason: "execution_reverted";
+                    message: string;
+                    revert?: {
+                        type: "contract_call" | "wallet_authorization" | "wallet_deployment";
+                        reason: string;
+                        reasonData?: string;
+                        explorerLink?: string;
+                        simulationLink?: string;
+                    };
+                };
+      }
+    | {
+          /**
+           * The type of wallet that created this transaction
+           */
+          walletType: "evm-mpc-wallet";
+          /**
+           * EVM MPC wallet transaction parameters
+           */
+          params: {
+              /**
+               * The transaction call to execute
+               */
+              call:
+                  | {
+                        /**
+                         * The recipient address for this transaction call
+                         */
+                        to: string;
+                        /**
+                         * The encoded calldata for this transaction
+                         */
+                        data: unknown;
+                    }
+                  | {
+                        /**
+                         * The recipient address for this transaction call
+                         */
+                        address: string;
+                        /**
+                         * The name of the function to call
+                         */
+                        functionName: string;
+                        /**
+                         * The ABI for the function to call
+                         */
+                        abi: Array<
+                            | {
+                                  type: "error";
+                                  inputs: Array<unknown>;
+                                  name: string;
+                              }
+                            | {
+                                  type: "event";
+                                  anonymous?: boolean;
+                                  inputs: Array<
+                                      unknown & {
+                                          indexed?: boolean;
+                                      }
+                                  >;
+                                  name: string;
+                              }
+                            | ({
+                                  constant?: boolean;
+                                  gas?: number;
+                                  payable?: boolean;
+                              } & (
+                                  | {
+                                        type: "function";
+                                        inputs: Array<unknown>;
+                                        name: string;
+                                        outputs: Array<unknown>;
+                                        stateMutability: "pure" | "view" | "nonpayable" | "payable";
+                                    }
+                                  | {
+                                        type: "constructor";
+                                        inputs: Array<unknown>;
+                                        stateMutability: "payable" | "nonpayable";
+                                    }
+                                  | {
+                                        type: "fallback";
+                                        inputs?: unknown;
+                                        stateMutability: "payable" | "nonpayable";
+                                    }
+                                  | {
+                                        type: "receive";
+                                        stateMutability: "payable";
+                                    }
+                              ))
+                        >;
+                        /**
+                         * The arguments to pass to the function
+                         */
+                        args: Array<unknown>;
+                    };
+              /**
+               * The chain on which the transaction will be executed
+               */
+              chain:
+                  | "arbitrum-sepolia"
+                  | "avalanche-fuji"
+                  | "curtis"
+                  | "barret-testnet"
+                  | "base-goerli"
+                  | "base-sepolia"
+                  | "bsc-testnet"
+                  | "chiliz-spicy-testnet"
+                  | "ethereum-goerli"
+                  | "ethereum-sepolia"
+                  | "hypersonic-testnet"
+                  | "lightlink-pegasus"
+                  | "optimism-goerli"
+                  | "optimism-sepolia"
+                  | "polygon-amoy"
+                  | "polygon-mumbai"
+                  | "crossmint-private-testnet-ethereum"
+                  | "crossmint-private-testnet-polygon"
+                  | "rari-testnet"
+                  | "scroll-sepolia"
+                  | "sei-atlantic-2-testnet"
+                  | "shape-sepolia"
+                  | "skale-nebula-testnet"
+                  | "soneium-minato-testnet"
+                  | "space-testnet"
+                  | "story-testnet"
+                  | "verify-testnet"
+                  | "viction-testnet"
+                  | "xai-sepolia-testnet"
+                  | "zkatana"
+                  | "zkyoto"
+                  | "zora-goerli"
+                  | "zora-sepolia"
+                  | "mode-sepolia"
+                  | "zenchain-testnet"
+                  | "ethereum"
+                  | "polygon"
+                  | "bsc"
+                  | "optimism"
+                  | "arbitrum"
+                  | "base"
+                  | "zora"
+                  | "arbitrumnova"
+                  | "astar-zkevm"
+                  | "apechain"
+                  | "apex"
+                  | "boss"
+                  | "lightlink"
+                  | "skale-nebula"
+                  | "sei-pacific-1"
+                  | "chiliz"
+                  | "avalanche"
+                  | "xai"
+                  | "shape"
+                  | "rari"
+                  | "scroll"
+                  | "viction"
+                  | "mode"
+                  | "space"
+                  | "soneium";
+          };
+          /**
+           * EVM MPC wallet transaction data including input parameters and chain specific details
+           */
+          onChain: {
+              call: {
+                  /**
+                   * The recipient address for this transaction call
+                   */
+                  to: string;
+                  /**
+                   * The encoded calldata for this transaction
+                   */
+                  data: unknown;
+              };
+              txId?: string;
+              explorerLink?: string;
+          };
+          /**
+           * Unique identifier for the transaction
+           */
+          id: string;
+          /**
+           * Current status of the transaction
+           */
+          status: "awaiting-approval" | "pending" | "failed" | "success";
+          /**
+           * Complete approval data including requirements, pending and submitted signatures
+           */
+          approvals?: {
+              /**
+               * List of pending signatures
+               */
+              pending: Array<{
+                  /**
+                   * The locator of the signer that's pending approval
+                   */
+                  signer: string;
+                  /**
+                   * The message that needs to be signed
+                   */
+                  message: string;
+              }>;
+              /**
+               * Record of all submitted signatures
+               */
+              submitted: Array<{
+                  /**
+                   * The cryptographic signature
+                   */
+                  signature: string;
+                  /**
+                   * When the signature was submitted
+                   */
+                  submittedAt: number;
+                  /**
+                   * The locator of the signer who submitted this signature
+                   */
+                  signer: string;
+                  /**
+                   * The message that was signed
+                   */
+                  message: string;
+                  /**
+                   * Additional metadata about the signature submission
+                   */
+                  metadata?: {
+                      deviceInfo?: string;
+                      ipAddress?: string;
+                      userAgent?: string;
+                  };
+              }>;
+              /**
+               * Number of required approvals for the transaction
+               */
+              required?: number;
+          };
+          /**
+           * ISO timestamp when the transaction was created
+           */
+          createdAt: number;
+          /**
+           * ISO timestamp when the transaction reached finality
+           */
+          completedAt?: number;
+          /**
+           * Error message if the transaction fails after submission
+           */
+          error?:
+              | {
+                    reason: "program_error";
+                    message: string;
+                    logs?: unknown;
+                }
+              | {
+                    reason: "execution_reverted";
+                    message: string;
+                    revert?: {
+                        type: "contract_call" | "wallet_authorization" | "wallet_deployment";
+                        reason: string;
+                        reasonData?: string;
+                        explorerLink?: string;
+                        simulationLink?: string;
+                    };
+                };
+      }
+    | {
+          /**
+           * The type of wallet that created this transaction
+           */
+          walletType: "solana-smart-wallet";
+          /**
+           * Solana smart wallet transaction parameters
+           */
+          params: {
+              /**
+               * Base58 encoded serialized Solana transaction
+               */
+              transaction: string;
+              /**
+               * Optional array of additional signers required for the transaction
+               */
+              requiredSigners?: Array<string>;
+              /**
+               * The locator for the signer who will submit this transaction. Defaults to the admin signer.
+               */
+              signer?: string;
+          };
+          /**
+           * Solana smart wallet transaction data including input parameters and chain specific details
+           */
+          onChain: {
+              transaction: string;
+              lastValidBlockHeight?: number;
+              txId?: string;
+          };
+          /**
+           * Unique identifier for the transaction
+           */
+          id: string;
+          /**
+           * Current status of the transaction
+           */
+          status: "awaiting-approval" | "pending" | "failed" | "success";
+          /**
+           * Complete approval data including requirements, pending and submitted signatures
+           */
+          approvals?: {
+              /**
+               * List of pending signatures
+               */
+              pending: Array<{
+                  /**
+                   * The locator of the signer that's pending approval
+                   */
+                  signer: string;
+                  /**
+                   * The message that needs to be signed
+                   */
+                  message: string;
+              }>;
+              /**
+               * Record of all submitted signatures
+               */
+              submitted: Array<{
+                  /**
+                   * The cryptographic signature
+                   */
+                  signature: string;
+                  /**
+                   * When the signature was submitted
+                   */
+                  submittedAt: number;
+                  /**
+                   * The locator of the signer who submitted this signature
+                   */
+                  signer: string;
+                  /**
+                   * The message that was signed
+                   */
+                  message: string;
+                  /**
+                   * Additional metadata about the signature submission
+                   */
+                  metadata?: {
+                      deviceInfo?: string;
+                      ipAddress?: string;
+                      userAgent?: string;
+                  };
+              }>;
+              /**
+               * Number of required approvals for the transaction
+               */
+              required?: number;
+          };
+          /**
+           * ISO timestamp when the transaction was created
+           */
+          createdAt: number;
+          /**
+           * ISO timestamp when the transaction reached finality
+           */
+          completedAt?: number;
+          /**
+           * Error message if the transaction fails after submission
+           */
+          error?:
+              | {
+                    reason: "program_error";
+                    message: string;
+                    logs?: unknown;
+                }
+              | {
+                    reason: "execution_reverted";
+                    message: string;
+                    revert?: {
+                        type: "contract_call" | "wallet_authorization" | "wallet_deployment";
+                        reason: string;
+                        reasonData?: string;
+                        explorerLink?: string;
+                        simulationLink?: string;
+                    };
+                };
+      };
 
 /**
  * List of transactions with their status, signing requirements, and wallet type specific data
@@ -1787,609 +2497,720 @@ export type WalletsV1Alpha2TransactionsResponseDto = {
     /**
      * Complete transaction response including status, signing requirements, and wallet type specific data
      */
-    transactions: Array<{
-        /**
-         * The type of wallet that created this transaction
-         */
-        walletType: 'evm-smart-wallet';
-        /**
-         * EVM smart wallet transaction parameters
-         */
-        params: {
-            /**
-             * Transaction data to execute
-             */
-            calls: Array<{
-                /**
-                 * The recipient address for this transaction call
-                 */
-                address: string;
-                /**
-                 * The name of the function to call
-                 */
-                functionName: string;
-                /**
-                 * The ABI for the function to call
-                 */
-                abi: Array<{
-                    type: 'error';
-                    inputs: Array<unknown>;
-                    name: string;
-                } | {
-                    type: 'event';
-                    anonymous?: boolean;
-                    inputs: Array<unknown & {
-                        indexed?: boolean;
-                    }>;
-                    name: string;
-                } | ({
-                    constant?: boolean;
-                    gas?: number;
-                    payable?: boolean;
-                } & ({
-                    type: 'function';
-                    inputs: Array<unknown>;
-                    name: string;
-                    outputs: Array<unknown>;
-                    stateMutability: 'pure' | 'view' | 'nonpayable' | 'payable';
-                } | {
-                    type: 'constructor';
-                    inputs: Array<unknown>;
-                    stateMutability: 'payable' | 'nonpayable';
-                } | {
-                    type: 'fallback';
-                    inputs?: unknown;
-                    stateMutability: 'payable' | 'nonpayable';
-                } | {
-                    type: 'receive';
-                    stateMutability: 'payable';
-                }))>;
-                /**
-                 * The arguments to pass to the function
-                 */
-                args: Array<unknown>;
-                /**
-                 * The amount of native token to send in wei
-                 */
-                value?: string;
-            } | {
-                /**
-                 * The recipient address for this transaction call
-                 */
-                to: string;
-                /**
-                 * The amount of native token to send in wei
-                 */
-                value: string;
-                /**
-                 * The encoded calldata for this transaction
-                 */
-                data: unknown;
-            }>;
-            /**
-             * The chain on which the transaction will be executed
-             */
-            chain: 'base' | 'polygon' | 'optimism' | 'arbitrum' | 'mode' | 'base-sepolia' | 'polygon-amoy' | 'optimism-sepolia' | 'arbitrum-sepolia' | 'mode-sepolia' | 'story-testnet';
-            /**
-             * The locator for the signer who will submit this transaction
-             */
-            signer?: string;
-        };
-        /**
-         * EVM smart wallet transaction data including input parameters and chain specific details
-         */
-        onChain: {
-            userOperation: {
-                sender: string;
-                nonce: string;
-                callData: string;
-                callGasLimit: string;
-                verificationGasLimit: string;
-                preVerificationGas: string;
-                maxFeePerGas: string;
-                maxPriorityFeePerGas: string;
-                paymaster?: string;
-                paymasterVerificationGasLimit?: string;
-                paymasterData?: string;
-                paymasterPostOpGasLimit?: string;
-                signature: string;
-                factory?: string;
-                factoryData?: string;
-            };
-            userOperationHash: string;
-            txId?: string;
-            explorerLink?: string;
-        };
-        /**
-         * Unique identifier for the transaction
-         */
-        id: string;
-        /**
-         * Current status of the transaction
-         */
-        status: 'awaiting-approval' | 'pending' | 'failed' | 'success';
-        /**
-         * Complete approval data including requirements, pending and submitted signatures
-         */
-        approvals?: {
-            /**
-             * List of pending signatures
-             */
-            pending: Array<{
-                /**
-                 * The locator of the signer that's pending approval
-                 */
-                signer: string;
-                /**
-                 * The message that needs to be signed
-                 */
-                message: string;
-            }>;
-            /**
-             * Record of all submitted signatures
-             */
-            submitted: Array<{
-                /**
-                 * The cryptographic signature
-                 */
-                signature: string;
-                /**
-                 * When the signature was submitted
-                 */
-                submittedAt: number;
-                /**
-                 * The locator of the signer who submitted this signature
-                 */
-                signer: string;
-                /**
-                 * The message that was signed
-                 */
-                message: string;
-                /**
-                 * Additional metadata about the signature submission
-                 */
-                metadata?: {
-                    deviceInfo?: string;
-                    ipAddress?: string;
-                    userAgent?: string;
-                };
-            }>;
-            /**
-             * Number of required approvals for the transaction
-             */
-            required?: number;
-        };
-        /**
-         * ISO timestamp when the transaction was created
-         */
-        createdAt: number;
-        /**
-         * ISO timestamp when the transaction reached finality
-         */
-        completedAt?: number;
-        /**
-         * Error message if the transaction fails after submission
-         */
-        error?: {
-            reason: 'program_error';
-            message: string;
-            logs?: unknown;
-        } | {
-            reason: 'execution_reverted';
-            message: string;
-            revert?: {
-                type: 'contract_call' | 'wallet_authorization' | 'wallet_deployment';
-                reason: string;
-                reasonData?: string;
-                explorerLink?: string;
-                simulationLink?: string;
-            };
-        };
-    } | {
-        /**
-         * The type of wallet that created this transaction
-         */
-        walletType: 'solana-mpc-wallet';
-        /**
-         * Solana custodial wallet transaction parameters
-         */
-        params: {
-            /**
-             * Base58 encoded serialized Solana transaction
-             */
-            transaction: string;
-            /**
-             * Optional array of additional signers required for the transaction
-             */
-            requiredSigners?: Array<string>;
-        };
-        /**
-         * Solana custodial wallet transaction data including input parameters and chain specific details
-         */
-        onChain: {
-            transaction: string;
-            lastValidBlockHeight?: number;
-            txId?: string;
-        };
-        /**
-         * Unique identifier for the transaction
-         */
-        id: string;
-        /**
-         * Current status of the transaction
-         */
-        status: 'awaiting-approval' | 'pending' | 'failed' | 'success';
-        /**
-         * Complete approval data including requirements, pending and submitted signatures
-         */
-        approvals?: {
-            /**
-             * List of pending signatures
-             */
-            pending: Array<{
-                /**
-                 * The locator of the signer that's pending approval
-                 */
-                signer: string;
-                /**
-                 * The message that needs to be signed
-                 */
-                message: string;
-            }>;
-            /**
-             * Record of all submitted signatures
-             */
-            submitted: Array<{
-                /**
-                 * The cryptographic signature
-                 */
-                signature: string;
-                /**
-                 * When the signature was submitted
-                 */
-                submittedAt: number;
-                /**
-                 * The locator of the signer who submitted this signature
-                 */
-                signer: string;
-                /**
-                 * The message that was signed
-                 */
-                message: string;
-                /**
-                 * Additional metadata about the signature submission
-                 */
-                metadata?: {
-                    deviceInfo?: string;
-                    ipAddress?: string;
-                    userAgent?: string;
-                };
-            }>;
-            /**
-             * Number of required approvals for the transaction
-             */
-            required?: number;
-        };
-        /**
-         * ISO timestamp when the transaction was created
-         */
-        createdAt: number;
-        /**
-         * ISO timestamp when the transaction reached finality
-         */
-        completedAt?: number;
-        /**
-         * Error message if the transaction fails after submission
-         */
-        error?: {
-            reason: 'program_error';
-            message: string;
-            logs?: unknown;
-        } | {
-            reason: 'execution_reverted';
-            message: string;
-            revert?: {
-                type: 'contract_call' | 'wallet_authorization' | 'wallet_deployment';
-                reason: string;
-                reasonData?: string;
-                explorerLink?: string;
-                simulationLink?: string;
-            };
-        };
-    } | {
-        /**
-         * The type of wallet that created this transaction
-         */
-        walletType: 'evm-mpc-wallet';
-        /**
-         * EVM MPC wallet transaction parameters
-         */
-        params: {
-            /**
-             * The transaction call to execute
-             */
-            call: {
-                /**
-                 * The recipient address for this transaction call
-                 */
-                to: string;
-                /**
-                 * The encoded calldata for this transaction
-                 */
-                data: unknown;
-            } | {
-                /**
-                 * The recipient address for this transaction call
-                 */
-                address: string;
-                /**
-                 * The name of the function to call
-                 */
-                functionName: string;
-                /**
-                 * The ABI for the function to call
-                 */
-                abi: Array<{
-                    type: 'error';
-                    inputs: Array<unknown>;
-                    name: string;
-                } | {
-                    type: 'event';
-                    anonymous?: boolean;
-                    inputs: Array<unknown & {
-                        indexed?: boolean;
-                    }>;
-                    name: string;
-                } | ({
-                    constant?: boolean;
-                    gas?: number;
-                    payable?: boolean;
-                } & ({
-                    type: 'function';
-                    inputs: Array<unknown>;
-                    name: string;
-                    outputs: Array<unknown>;
-                    stateMutability: 'pure' | 'view' | 'nonpayable' | 'payable';
-                } | {
-                    type: 'constructor';
-                    inputs: Array<unknown>;
-                    stateMutability: 'payable' | 'nonpayable';
-                } | {
-                    type: 'fallback';
-                    inputs?: unknown;
-                    stateMutability: 'payable' | 'nonpayable';
-                } | {
-                    type: 'receive';
-                    stateMutability: 'payable';
-                }))>;
-                /**
-                 * The arguments to pass to the function
-                 */
-                args: Array<unknown>;
-            };
-            /**
-             * The chain on which the transaction will be executed
-             */
-            chain: 'arbitrum-sepolia' | 'avalanche-fuji' | 'curtis' | 'barret-testnet' | 'base-goerli' | 'base-sepolia' | 'bsc-testnet' | 'chiliz-spicy-testnet' | 'ethereum-goerli' | 'ethereum-sepolia' | 'hypersonic-testnet' | 'lightlink-pegasus' | 'optimism-goerli' | 'optimism-sepolia' | 'polygon-amoy' | 'polygon-mumbai' | 'crossmint-private-testnet-ethereum' | 'crossmint-private-testnet-polygon' | 'rari-testnet' | 'scroll-sepolia' | 'sei-atlantic-2-testnet' | 'shape-sepolia' | 'skale-nebula-testnet' | 'soneium-minato-testnet' | 'space-testnet' | 'story-testnet' | 'verify-testnet' | 'viction-testnet' | 'xai-sepolia-testnet' | 'zkatana' | 'zkyoto' | 'zora-goerli' | 'zora-sepolia' | 'mode-sepolia' | 'zenchain-testnet' | 'ethereum' | 'polygon' | 'bsc' | 'optimism' | 'arbitrum' | 'base' | 'zora' | 'arbitrumnova' | 'astar-zkevm' | 'apechain' | 'apex' | 'boss' | 'lightlink' | 'skale-nebula' | 'sei-pacific-1' | 'chiliz' | 'avalanche' | 'xai' | 'shape' | 'rari' | 'scroll' | 'viction' | 'mode' | 'space' | 'soneium';
-        };
-        /**
-         * EVM MPC wallet transaction data including input parameters and chain specific details
-         */
-        onChain: {
-            call: {
-                /**
-                 * The recipient address for this transaction call
-                 */
-                to: string;
-                /**
-                 * The encoded calldata for this transaction
-                 */
-                data: unknown;
-            };
-            txId?: string;
-            explorerLink?: string;
-        };
-        /**
-         * Unique identifier for the transaction
-         */
-        id: string;
-        /**
-         * Current status of the transaction
-         */
-        status: 'awaiting-approval' | 'pending' | 'failed' | 'success';
-        /**
-         * Complete approval data including requirements, pending and submitted signatures
-         */
-        approvals?: {
-            /**
-             * List of pending signatures
-             */
-            pending: Array<{
-                /**
-                 * The locator of the signer that's pending approval
-                 */
-                signer: string;
-                /**
-                 * The message that needs to be signed
-                 */
-                message: string;
-            }>;
-            /**
-             * Record of all submitted signatures
-             */
-            submitted: Array<{
-                /**
-                 * The cryptographic signature
-                 */
-                signature: string;
-                /**
-                 * When the signature was submitted
-                 */
-                submittedAt: number;
-                /**
-                 * The locator of the signer who submitted this signature
-                 */
-                signer: string;
-                /**
-                 * The message that was signed
-                 */
-                message: string;
-                /**
-                 * Additional metadata about the signature submission
-                 */
-                metadata?: {
-                    deviceInfo?: string;
-                    ipAddress?: string;
-                    userAgent?: string;
-                };
-            }>;
-            /**
-             * Number of required approvals for the transaction
-             */
-            required?: number;
-        };
-        /**
-         * ISO timestamp when the transaction was created
-         */
-        createdAt: number;
-        /**
-         * ISO timestamp when the transaction reached finality
-         */
-        completedAt?: number;
-        /**
-         * Error message if the transaction fails after submission
-         */
-        error?: {
-            reason: 'program_error';
-            message: string;
-            logs?: unknown;
-        } | {
-            reason: 'execution_reverted';
-            message: string;
-            revert?: {
-                type: 'contract_call' | 'wallet_authorization' | 'wallet_deployment';
-                reason: string;
-                reasonData?: string;
-                explorerLink?: string;
-                simulationLink?: string;
-            };
-        };
-    } | {
-        /**
-         * The type of wallet that created this transaction
-         */
-        walletType: 'solana-smart-wallet';
-        /**
-         * Solana smart wallet transaction parameters
-         */
-        params: {
-            /**
-             * Base58 encoded serialized Solana transaction
-             */
-            transaction: string;
-            /**
-             * Optional array of additional signers required for the transaction
-             */
-            requiredSigners?: Array<string>;
-            /**
-             * The locator for the signer who will submit this transaction. Defaults to the admin signer.
-             */
-            signer?: string;
-        };
-        /**
-         * Solana smart wallet transaction data including input parameters and chain specific details
-         */
-        onChain: {
-            transaction: string;
-            lastValidBlockHeight?: number;
-            txId?: string;
-        };
-        /**
-         * Unique identifier for the transaction
-         */
-        id: string;
-        /**
-         * Current status of the transaction
-         */
-        status: 'awaiting-approval' | 'pending' | 'failed' | 'success';
-        /**
-         * Complete approval data including requirements, pending and submitted signatures
-         */
-        approvals?: {
-            /**
-             * List of pending signatures
-             */
-            pending: Array<{
-                /**
-                 * The locator of the signer that's pending approval
-                 */
-                signer: string;
-                /**
-                 * The message that needs to be signed
-                 */
-                message: string;
-            }>;
-            /**
-             * Record of all submitted signatures
-             */
-            submitted: Array<{
-                /**
-                 * The cryptographic signature
-                 */
-                signature: string;
-                /**
-                 * When the signature was submitted
-                 */
-                submittedAt: number;
-                /**
-                 * The locator of the signer who submitted this signature
-                 */
-                signer: string;
-                /**
-                 * The message that was signed
-                 */
-                message: string;
-                /**
-                 * Additional metadata about the signature submission
-                 */
-                metadata?: {
-                    deviceInfo?: string;
-                    ipAddress?: string;
-                    userAgent?: string;
-                };
-            }>;
-            /**
-             * Number of required approvals for the transaction
-             */
-            required?: number;
-        };
-        /**
-         * ISO timestamp when the transaction was created
-         */
-        createdAt: number;
-        /**
-         * ISO timestamp when the transaction reached finality
-         */
-        completedAt?: number;
-        /**
-         * Error message if the transaction fails after submission
-         */
-        error?: {
-            reason: 'program_error';
-            message: string;
-            logs?: unknown;
-        } | {
-            reason: 'execution_reverted';
-            message: string;
-            revert?: {
-                type: 'contract_call' | 'wallet_authorization' | 'wallet_deployment';
-                reason: string;
-                reasonData?: string;
-                explorerLink?: string;
-                simulationLink?: string;
-            };
-        };
-    }>;
+    transactions: Array<
+        | {
+              /**
+               * The type of wallet that created this transaction
+               */
+              walletType: "evm-smart-wallet";
+              /**
+               * EVM smart wallet transaction parameters
+               */
+              params: {
+                  /**
+                   * Transaction data to execute
+                   */
+                  calls: Array<
+                      | {
+                            /**
+                             * The recipient address for this transaction call
+                             */
+                            address: string;
+                            /**
+                             * The name of the function to call
+                             */
+                            functionName: string;
+                            /**
+                             * The ABI for the function to call
+                             */
+                            abi: Array<
+                                | {
+                                      type: "error";
+                                      inputs: Array<unknown>;
+                                      name: string;
+                                  }
+                                | {
+                                      type: "event";
+                                      anonymous?: boolean;
+                                      inputs: Array<
+                                          unknown & {
+                                              indexed?: boolean;
+                                          }
+                                      >;
+                                      name: string;
+                                  }
+                                | ({
+                                      constant?: boolean;
+                                      gas?: number;
+                                      payable?: boolean;
+                                  } & (
+                                      | {
+                                            type: "function";
+                                            inputs: Array<unknown>;
+                                            name: string;
+                                            outputs: Array<unknown>;
+                                            stateMutability: "pure" | "view" | "nonpayable" | "payable";
+                                        }
+                                      | {
+                                            type: "constructor";
+                                            inputs: Array<unknown>;
+                                            stateMutability: "payable" | "nonpayable";
+                                        }
+                                      | {
+                                            type: "fallback";
+                                            inputs?: unknown;
+                                            stateMutability: "payable" | "nonpayable";
+                                        }
+                                      | {
+                                            type: "receive";
+                                            stateMutability: "payable";
+                                        }
+                                  ))
+                            >;
+                            /**
+                             * The arguments to pass to the function
+                             */
+                            args: Array<unknown>;
+                            /**
+                             * The amount of native token to send in wei
+                             */
+                            value?: string;
+                        }
+                      | {
+                            /**
+                             * The recipient address for this transaction call
+                             */
+                            to: string;
+                            /**
+                             * The amount of native token to send in wei
+                             */
+                            value: string;
+                            /**
+                             * The encoded calldata for this transaction
+                             */
+                            data: unknown;
+                        }
+                  >;
+                  /**
+                   * The chain on which the transaction will be executed
+                   */
+                  chain:
+                      | "base"
+                      | "polygon"
+                      | "optimism"
+                      | "arbitrum"
+                      | "mode"
+                      | "base-sepolia"
+                      | "polygon-amoy"
+                      | "optimism-sepolia"
+                      | "arbitrum-sepolia"
+                      | "mode-sepolia"
+                      | "story-testnet";
+                  /**
+                   * The locator for the signer who will submit this transaction
+                   */
+                  signer?: string;
+              };
+              /**
+               * EVM smart wallet transaction data including input parameters and chain specific details
+               */
+              onChain: {
+                  userOperation: {
+                      sender: string;
+                      nonce: string;
+                      callData: string;
+                      callGasLimit: string;
+                      verificationGasLimit: string;
+                      preVerificationGas: string;
+                      maxFeePerGas: string;
+                      maxPriorityFeePerGas: string;
+                      paymaster?: string;
+                      paymasterVerificationGasLimit?: string;
+                      paymasterData?: string;
+                      paymasterPostOpGasLimit?: string;
+                      signature: string;
+                      factory?: string;
+                      factoryData?: string;
+                  };
+                  userOperationHash: string;
+                  txId?: string;
+                  explorerLink?: string;
+              };
+              /**
+               * Unique identifier for the transaction
+               */
+              id: string;
+              /**
+               * Current status of the transaction
+               */
+              status: "awaiting-approval" | "pending" | "failed" | "success";
+              /**
+               * Complete approval data including requirements, pending and submitted signatures
+               */
+              approvals?: {
+                  /**
+                   * List of pending signatures
+                   */
+                  pending: Array<{
+                      /**
+                       * The locator of the signer that's pending approval
+                       */
+                      signer: string;
+                      /**
+                       * The message that needs to be signed
+                       */
+                      message: string;
+                  }>;
+                  /**
+                   * Record of all submitted signatures
+                   */
+                  submitted: Array<{
+                      /**
+                       * The cryptographic signature
+                       */
+                      signature: string;
+                      /**
+                       * When the signature was submitted
+                       */
+                      submittedAt: number;
+                      /**
+                       * The locator of the signer who submitted this signature
+                       */
+                      signer: string;
+                      /**
+                       * The message that was signed
+                       */
+                      message: string;
+                      /**
+                       * Additional metadata about the signature submission
+                       */
+                      metadata?: {
+                          deviceInfo?: string;
+                          ipAddress?: string;
+                          userAgent?: string;
+                      };
+                  }>;
+                  /**
+                   * Number of required approvals for the transaction
+                   */
+                  required?: number;
+              };
+              /**
+               * ISO timestamp when the transaction was created
+               */
+              createdAt: number;
+              /**
+               * ISO timestamp when the transaction reached finality
+               */
+              completedAt?: number;
+              /**
+               * Error message if the transaction fails after submission
+               */
+              error?:
+                  | {
+                        reason: "program_error";
+                        message: string;
+                        logs?: unknown;
+                    }
+                  | {
+                        reason: "execution_reverted";
+                        message: string;
+                        revert?: {
+                            type: "contract_call" | "wallet_authorization" | "wallet_deployment";
+                            reason: string;
+                            reasonData?: string;
+                            explorerLink?: string;
+                            simulationLink?: string;
+                        };
+                    };
+          }
+        | {
+              /**
+               * The type of wallet that created this transaction
+               */
+              walletType: "solana-mpc-wallet";
+              /**
+               * Solana custodial wallet transaction parameters
+               */
+              params: {
+                  /**
+                   * Base58 encoded serialized Solana transaction
+                   */
+                  transaction: string;
+                  /**
+                   * Optional array of additional signers required for the transaction
+                   */
+                  requiredSigners?: Array<string>;
+              };
+              /**
+               * Solana custodial wallet transaction data including input parameters and chain specific details
+               */
+              onChain: {
+                  transaction: string;
+                  lastValidBlockHeight?: number;
+                  txId?: string;
+              };
+              /**
+               * Unique identifier for the transaction
+               */
+              id: string;
+              /**
+               * Current status of the transaction
+               */
+              status: "awaiting-approval" | "pending" | "failed" | "success";
+              /**
+               * Complete approval data including requirements, pending and submitted signatures
+               */
+              approvals?: {
+                  /**
+                   * List of pending signatures
+                   */
+                  pending: Array<{
+                      /**
+                       * The locator of the signer that's pending approval
+                       */
+                      signer: string;
+                      /**
+                       * The message that needs to be signed
+                       */
+                      message: string;
+                  }>;
+                  /**
+                   * Record of all submitted signatures
+                   */
+                  submitted: Array<{
+                      /**
+                       * The cryptographic signature
+                       */
+                      signature: string;
+                      /**
+                       * When the signature was submitted
+                       */
+                      submittedAt: number;
+                      /**
+                       * The locator of the signer who submitted this signature
+                       */
+                      signer: string;
+                      /**
+                       * The message that was signed
+                       */
+                      message: string;
+                      /**
+                       * Additional metadata about the signature submission
+                       */
+                      metadata?: {
+                          deviceInfo?: string;
+                          ipAddress?: string;
+                          userAgent?: string;
+                      };
+                  }>;
+                  /**
+                   * Number of required approvals for the transaction
+                   */
+                  required?: number;
+              };
+              /**
+               * ISO timestamp when the transaction was created
+               */
+              createdAt: number;
+              /**
+               * ISO timestamp when the transaction reached finality
+               */
+              completedAt?: number;
+              /**
+               * Error message if the transaction fails after submission
+               */
+              error?:
+                  | {
+                        reason: "program_error";
+                        message: string;
+                        logs?: unknown;
+                    }
+                  | {
+                        reason: "execution_reverted";
+                        message: string;
+                        revert?: {
+                            type: "contract_call" | "wallet_authorization" | "wallet_deployment";
+                            reason: string;
+                            reasonData?: string;
+                            explorerLink?: string;
+                            simulationLink?: string;
+                        };
+                    };
+          }
+        | {
+              /**
+               * The type of wallet that created this transaction
+               */
+              walletType: "evm-mpc-wallet";
+              /**
+               * EVM MPC wallet transaction parameters
+               */
+              params: {
+                  /**
+                   * The transaction call to execute
+                   */
+                  call:
+                      | {
+                            /**
+                             * The recipient address for this transaction call
+                             */
+                            to: string;
+                            /**
+                             * The encoded calldata for this transaction
+                             */
+                            data: unknown;
+                        }
+                      | {
+                            /**
+                             * The recipient address for this transaction call
+                             */
+                            address: string;
+                            /**
+                             * The name of the function to call
+                             */
+                            functionName: string;
+                            /**
+                             * The ABI for the function to call
+                             */
+                            abi: Array<
+                                | {
+                                      type: "error";
+                                      inputs: Array<unknown>;
+                                      name: string;
+                                  }
+                                | {
+                                      type: "event";
+                                      anonymous?: boolean;
+                                      inputs: Array<
+                                          unknown & {
+                                              indexed?: boolean;
+                                          }
+                                      >;
+                                      name: string;
+                                  }
+                                | ({
+                                      constant?: boolean;
+                                      gas?: number;
+                                      payable?: boolean;
+                                  } & (
+                                      | {
+                                            type: "function";
+                                            inputs: Array<unknown>;
+                                            name: string;
+                                            outputs: Array<unknown>;
+                                            stateMutability: "pure" | "view" | "nonpayable" | "payable";
+                                        }
+                                      | {
+                                            type: "constructor";
+                                            inputs: Array<unknown>;
+                                            stateMutability: "payable" | "nonpayable";
+                                        }
+                                      | {
+                                            type: "fallback";
+                                            inputs?: unknown;
+                                            stateMutability: "payable" | "nonpayable";
+                                        }
+                                      | {
+                                            type: "receive";
+                                            stateMutability: "payable";
+                                        }
+                                  ))
+                            >;
+                            /**
+                             * The arguments to pass to the function
+                             */
+                            args: Array<unknown>;
+                        };
+                  /**
+                   * The chain on which the transaction will be executed
+                   */
+                  chain:
+                      | "arbitrum-sepolia"
+                      | "avalanche-fuji"
+                      | "curtis"
+                      | "barret-testnet"
+                      | "base-goerli"
+                      | "base-sepolia"
+                      | "bsc-testnet"
+                      | "chiliz-spicy-testnet"
+                      | "ethereum-goerli"
+                      | "ethereum-sepolia"
+                      | "hypersonic-testnet"
+                      | "lightlink-pegasus"
+                      | "optimism-goerli"
+                      | "optimism-sepolia"
+                      | "polygon-amoy"
+                      | "polygon-mumbai"
+                      | "crossmint-private-testnet-ethereum"
+                      | "crossmint-private-testnet-polygon"
+                      | "rari-testnet"
+                      | "scroll-sepolia"
+                      | "sei-atlantic-2-testnet"
+                      | "shape-sepolia"
+                      | "skale-nebula-testnet"
+                      | "soneium-minato-testnet"
+                      | "space-testnet"
+                      | "story-testnet"
+                      | "verify-testnet"
+                      | "viction-testnet"
+                      | "xai-sepolia-testnet"
+                      | "zkatana"
+                      | "zkyoto"
+                      | "zora-goerli"
+                      | "zora-sepolia"
+                      | "mode-sepolia"
+                      | "zenchain-testnet"
+                      | "ethereum"
+                      | "polygon"
+                      | "bsc"
+                      | "optimism"
+                      | "arbitrum"
+                      | "base"
+                      | "zora"
+                      | "arbitrumnova"
+                      | "astar-zkevm"
+                      | "apechain"
+                      | "apex"
+                      | "boss"
+                      | "lightlink"
+                      | "skale-nebula"
+                      | "sei-pacific-1"
+                      | "chiliz"
+                      | "avalanche"
+                      | "xai"
+                      | "shape"
+                      | "rari"
+                      | "scroll"
+                      | "viction"
+                      | "mode"
+                      | "space"
+                      | "soneium";
+              };
+              /**
+               * EVM MPC wallet transaction data including input parameters and chain specific details
+               */
+              onChain: {
+                  call: {
+                      /**
+                       * The recipient address for this transaction call
+                       */
+                      to: string;
+                      /**
+                       * The encoded calldata for this transaction
+                       */
+                      data: unknown;
+                  };
+                  txId?: string;
+                  explorerLink?: string;
+              };
+              /**
+               * Unique identifier for the transaction
+               */
+              id: string;
+              /**
+               * Current status of the transaction
+               */
+              status: "awaiting-approval" | "pending" | "failed" | "success";
+              /**
+               * Complete approval data including requirements, pending and submitted signatures
+               */
+              approvals?: {
+                  /**
+                   * List of pending signatures
+                   */
+                  pending: Array<{
+                      /**
+                       * The locator of the signer that's pending approval
+                       */
+                      signer: string;
+                      /**
+                       * The message that needs to be signed
+                       */
+                      message: string;
+                  }>;
+                  /**
+                   * Record of all submitted signatures
+                   */
+                  submitted: Array<{
+                      /**
+                       * The cryptographic signature
+                       */
+                      signature: string;
+                      /**
+                       * When the signature was submitted
+                       */
+                      submittedAt: number;
+                      /**
+                       * The locator of the signer who submitted this signature
+                       */
+                      signer: string;
+                      /**
+                       * The message that was signed
+                       */
+                      message: string;
+                      /**
+                       * Additional metadata about the signature submission
+                       */
+                      metadata?: {
+                          deviceInfo?: string;
+                          ipAddress?: string;
+                          userAgent?: string;
+                      };
+                  }>;
+                  /**
+                   * Number of required approvals for the transaction
+                   */
+                  required?: number;
+              };
+              /**
+               * ISO timestamp when the transaction was created
+               */
+              createdAt: number;
+              /**
+               * ISO timestamp when the transaction reached finality
+               */
+              completedAt?: number;
+              /**
+               * Error message if the transaction fails after submission
+               */
+              error?:
+                  | {
+                        reason: "program_error";
+                        message: string;
+                        logs?: unknown;
+                    }
+                  | {
+                        reason: "execution_reverted";
+                        message: string;
+                        revert?: {
+                            type: "contract_call" | "wallet_authorization" | "wallet_deployment";
+                            reason: string;
+                            reasonData?: string;
+                            explorerLink?: string;
+                            simulationLink?: string;
+                        };
+                    };
+          }
+        | {
+              /**
+               * The type of wallet that created this transaction
+               */
+              walletType: "solana-smart-wallet";
+              /**
+               * Solana smart wallet transaction parameters
+               */
+              params: {
+                  /**
+                   * Base58 encoded serialized Solana transaction
+                   */
+                  transaction: string;
+                  /**
+                   * Optional array of additional signers required for the transaction
+                   */
+                  requiredSigners?: Array<string>;
+                  /**
+                   * The locator for the signer who will submit this transaction. Defaults to the admin signer.
+                   */
+                  signer?: string;
+              };
+              /**
+               * Solana smart wallet transaction data including input parameters and chain specific details
+               */
+              onChain: {
+                  transaction: string;
+                  lastValidBlockHeight?: number;
+                  txId?: string;
+              };
+              /**
+               * Unique identifier for the transaction
+               */
+              id: string;
+              /**
+               * Current status of the transaction
+               */
+              status: "awaiting-approval" | "pending" | "failed" | "success";
+              /**
+               * Complete approval data including requirements, pending and submitted signatures
+               */
+              approvals?: {
+                  /**
+                   * List of pending signatures
+                   */
+                  pending: Array<{
+                      /**
+                       * The locator of the signer that's pending approval
+                       */
+                      signer: string;
+                      /**
+                       * The message that needs to be signed
+                       */
+                      message: string;
+                  }>;
+                  /**
+                   * Record of all submitted signatures
+                   */
+                  submitted: Array<{
+                      /**
+                       * The cryptographic signature
+                       */
+                      signature: string;
+                      /**
+                       * When the signature was submitted
+                       */
+                      submittedAt: number;
+                      /**
+                       * The locator of the signer who submitted this signature
+                       */
+                      signer: string;
+                      /**
+                       * The message that was signed
+                       */
+                      message: string;
+                      /**
+                       * Additional metadata about the signature submission
+                       */
+                      metadata?: {
+                          deviceInfo?: string;
+                          ipAddress?: string;
+                          userAgent?: string;
+                      };
+                  }>;
+                  /**
+                   * Number of required approvals for the transaction
+                   */
+                  required?: number;
+              };
+              /**
+               * ISO timestamp when the transaction was created
+               */
+              createdAt: number;
+              /**
+               * ISO timestamp when the transaction reached finality
+               */
+              completedAt?: number;
+              /**
+               * Error message if the transaction fails after submission
+               */
+              error?:
+                  | {
+                        reason: "program_error";
+                        message: string;
+                        logs?: unknown;
+                    }
+                  | {
+                        reason: "execution_reverted";
+                        message: string;
+                        revert?: {
+                            type: "contract_call" | "wallet_authorization" | "wallet_deployment";
+                            reason: string;
+                            reasonData?: string;
+                            explorerLink?: string;
+                            simulationLink?: string;
+                        };
+                    };
+          }
+    >;
 };
 
 /**
@@ -2406,386 +3227,411 @@ export type WalletV1Alpha2ErrorDto = {
 /**
  * Complete wallet configuration including type-specific settings
  */
-export type WalletV1Alpha2ResponseDto = {
-    /**
-     * The type of wallet configuration
-     */
-    type: 'evm-smart-wallet';
-    /**
-     * EVM smart wallet type specific configuration settings
-     */
-    config: {
-        adminSigner: {
-            /**
-             * Identifier for EVM keypair signer type
-             */
-            type: 'evm-keypair';
-            /**
-             * The Ethereum address of the external signer
-             */
-            address: string;
-            /**
-             * The locator of the signer
-             */
-            locator: string;
-        } | {
-            /**
-             * Identifier for EVM Fireblocks custodial signer type
-             */
-            type: 'evm-fireblocks-custodial';
-            /**
-             * The Ethereum address of the custodial signer
-             */
-            address: string;
-            /**
-             * The locator of the signer
-             */
-            locator: string;
-        } | {
-            /**
-             * Identifier for the Passkey signer type
-             */
-            type: 'evm-passkey';
-            /**
-             * Credential ID from the WebAuthn registration response
-             */
-            id: string;
-            /**
-             * Human-readable name for the passkey
-             */
-            name: string;
-            /**
-             * The public key coordinates from the WebAuthn credential
-             */
-            publicKey: {
-                /**
-                 * X coordinate of the public key as a decimal string
-                 */
-                x: string;
-                /**
-                 * Y coordinate of the public key as a decimal string
-                 */
-                y: string;
-            };
-            /**
-             * ERC-7579 webAuthn validator contract version
-             */
-            validatorContractVersion: string;
-            /**
-             * Unique identifier for locating this passkey signer
-             */
-            locator: string;
-        };
-        /**
-         * Optional array of additional signers for the wallet
-         */
-        delegatedSigners?: Array<{
-            /**
-             * Identifier for EVM keypair signer type
-             */
-            type: 'evm-keypair';
-            /**
-             * The Ethereum address of the external signer
-             */
-            address: string;
-            /**
-             * The locator of the signer
-             */
-            locator: string;
-        } | {
-            /**
-             * Identifier for EVM Fireblocks custodial signer type
-             */
-            type: 'evm-fireblocks-custodial';
-            /**
-             * The Ethereum address of the custodial signer
-             */
-            address: string;
-            /**
-             * The locator of the signer
-             */
-            locator: string;
-        } | {
-            /**
-             * Identifier for the Passkey signer type
-             */
-            type: 'evm-passkey';
-            /**
-             * Credential ID from the WebAuthn registration response
-             */
-            id: string;
-            /**
-             * Human-readable name for the passkey
-             */
-            name: string;
-            /**
-             * The public key coordinates from the WebAuthn credential
-             */
-            publicKey: {
-                /**
-                 * X coordinate of the public key as a decimal string
-                 */
-                x: string;
-                /**
-                 * Y coordinate of the public key as a decimal string
-                 */
-                y: string;
-            };
-            /**
-             * ERC-7579 webAuthn validator contract version
-             */
-            validatorContractVersion: string;
-            /**
-             * Unique identifier for locating this passkey signer
-             */
-            locator: string;
-        } | {
-            /**
-             * Specifies the type of EVM signer being used, describing the method of key management and transaction signing. `evm-keypair` indicates a signer using a locally managed keypair, suitable for non-custodial wallets. `evm-fireblocks-custodial` refers to a signer managed by Fireblocks, a custodial service provider.
-             */
-            type: 'evm-keypair' | 'evm-fireblocks-custodial';
-            /**
-             * The Ethereum address of the signer
-             */
-            address: string;
-            /**
-             * The locator of the signer
-             */
-            locator: string;
-            /**
-             * The expiry date of the signer in ISO 8601 format
-             */
-            expiresAt?: number;
-            /**
-             * The permissions of the signer following ERC-7715
-             */
-            permissions?: Array<{
-                type: 'native-token-transfer';
-                data: {
-                    allowance: string;
-                };
-            } | {
-                type: 'erc20-token-transfer';
-                data: {
-                    /**
-                     * The address of the smart contract that can be interacted with
-                     */
-                    address: string;
-                    allowance: string;
-                };
-            } | {
-                type: 'erc721-token-transfer';
-                data: {
-                    /**
-                     * The address of the smart contract that can be interacted with
-                     */
-                    address: string;
-                    /**
-                     * The token IDs that can be transferred
-                     */
-                    tokenIds: Array<string>;
-                };
-            } | {
-                type: 'erc1155-token-transfer';
-                data: {
-                    /**
-                     * The address of the smart contract that can be interacted with
-                     */
-                    address: string;
-                    /**
-                     * The token IDs and allowances that can be transferred
-                     */
-                    allowances: {
-                        [key: string]: string;
+export type WalletV1Alpha2ResponseDto =
+    | {
+          /**
+           * The type of wallet configuration
+           */
+          type: "evm-smart-wallet";
+          /**
+           * EVM smart wallet type specific configuration settings
+           */
+          config: {
+              adminSigner:
+                  | {
+                        /**
+                         * Identifier for EVM keypair signer type
+                         */
+                        type: "evm-keypair";
+                        /**
+                         * The Ethereum address of the external signer
+                         */
+                        address: string;
+                        /**
+                         * The locator of the signer
+                         */
+                        locator: string;
+                    }
+                  | {
+                        /**
+                         * Identifier for EVM Fireblocks custodial signer type
+                         */
+                        type: "evm-fireblocks-custodial";
+                        /**
+                         * The Ethereum address of the custodial signer
+                         */
+                        address: string;
+                        /**
+                         * The locator of the signer
+                         */
+                        locator: string;
+                    }
+                  | {
+                        /**
+                         * Identifier for the Passkey signer type
+                         */
+                        type: "evm-passkey";
+                        /**
+                         * Credential ID from the WebAuthn registration response
+                         */
+                        id: string;
+                        /**
+                         * Human-readable name for the passkey
+                         */
+                        name: string;
+                        /**
+                         * The public key coordinates from the WebAuthn credential
+                         */
+                        publicKey: {
+                            /**
+                             * X coordinate of the public key as a decimal string
+                             */
+                            x: string;
+                            /**
+                             * Y coordinate of the public key as a decimal string
+                             */
+                            y: string;
+                        };
+                        /**
+                         * ERC-7579 webAuthn validator contract version
+                         */
+                        validatorContractVersion: string;
+                        /**
+                         * Unique identifier for locating this passkey signer
+                         */
+                        locator: string;
                     };
-                };
-            } | {
-                type: 'gas-limit';
-                data: {
-                    limit: string;
-                    enforcePaymaster?: boolean;
-                    allowedPaymaster?: string;
-                };
-            } | {
-                type: 'call-limit';
-                data: {
-                    count: number;
-                };
-            } | {
-                type: 'rate-limit';
-                data: {
-                    count: number;
-                    /**
-                     * Time window in seconds
-                     */
-                    interval: number;
-                };
-            }>;
-        }>;
-    };
-    /**
-     * The onchain address of the wallet
-     */
-    address: string;
-    /**
-     * The user that is linked to this wallet in format <locatorType>:<value>
-     */
-    linkedUser?: string;
-    /**
-     * ISO timestamp of when the wallet was created
-     */
-    createdAt?: number;
-} | {
-    /**
-     * The type of wallet configuration
-     */
-    type: 'solana-smart-wallet';
-    /**
-     * Solana Smart wallet type specific configuration settings
-     */
-    config: {
-        adminSigner: {
-            /**
-             * Type identifier for Solana keypair signers
-             */
-            type: 'solana-keypair';
-            /**
-             * The Solana address of the signer
-             */
-            address: string;
-            /**
-             * The locator of the signer
-             */
-            locator: string;
-        } | {
-            /**
-             * Type identifier for Solana custodial signers
-             */
-            type: 'solana-fireblocks-custodial';
-            /**
-             * The Solana address of the custodial signer
-             */
-            address: string;
-            /**
-             * The locator of the signer
-             */
-            locator: string;
-        };
-    };
-    /**
-     * The onchain address of the wallet
-     */
-    address: string;
-    /**
-     * The user that is linked to this wallet in format <locatorType>:<value>
-     */
-    linkedUser?: string;
-    /**
-     * ISO timestamp of when the wallet was created
-     */
-    createdAt?: number;
-} | {
-    /**
-     * The type of wallet configuration
-     */
-    type: 'solana-mpc-wallet';
-    /**
-     * Solana MPC wallet type specific configuration settings
-     */
-    config?: unknown;
-    /**
-     * The onchain address of the wallet
-     */
-    address: string;
-    /**
-     * The user that is linked to this wallet in format <locatorType>:<value>
-     */
-    linkedUser?: string;
-    /**
-     * ISO timestamp of when the wallet was created
-     */
-    createdAt?: number;
-} | {
-    /**
-     * The type of wallet configuration
-     */
-    type: 'aptos-mpc-wallet';
-    /**
-     * Aptos MPC wallet type specific configuration settings
-     */
-    config?: unknown;
-    /**
-     * The onchain address of the wallet
-     */
-    address: string;
-    /**
-     * The user that is linked to this wallet in format <locatorType>:<value>
-     */
-    linkedUser?: string;
-    /**
-     * ISO timestamp of when the wallet was created
-     */
-    createdAt?: number;
-} | {
-    /**
-     * The type of wallet configuration
-     */
-    type: 'cardano-mpc-wallet';
-    /**
-     * Cardano MPC wallet type specific configuration settings
-     */
-    config?: unknown;
-    /**
-     * The onchain address of the wallet
-     */
-    address: string;
-    /**
-     * The user that is linked to this wallet in format <locatorType>:<value>
-     */
-    linkedUser?: string;
-    /**
-     * ISO timestamp of when the wallet was created
-     */
-    createdAt?: number;
-} | {
-    /**
-     * The type of wallet configuration
-     */
-    type: 'sui-mpc-wallet';
-    /**
-     * Sui MPC wallet type specific configuration settings
-     */
-    config?: unknown;
-    /**
-     * The onchain address of the wallet
-     */
-    address: string;
-    /**
-     * The user that is linked to this wallet in format <locatorType>:<value>
-     */
-    linkedUser?: string;
-    /**
-     * ISO timestamp of when the wallet was created
-     */
-    createdAt?: number;
-} | {
-    /**
-     * The type of wallet configuration
-     */
-    type: 'evm-mpc-wallet';
-    /**
-     * The onchain address of the wallet
-     */
-    address: string;
-    /**
-     * The user that is linked to this wallet in format <locatorType>:<value>
-     */
-    linkedUser?: string;
-    /**
-     * ISO timestamp of when the wallet was created
-     */
-    createdAt?: number;
-};
+              /**
+               * Optional array of additional signers for the wallet
+               */
+              delegatedSigners?: Array<
+                  | {
+                        /**
+                         * Identifier for EVM keypair signer type
+                         */
+                        type: "evm-keypair";
+                        /**
+                         * The Ethereum address of the external signer
+                         */
+                        address: string;
+                        /**
+                         * The locator of the signer
+                         */
+                        locator: string;
+                    }
+                  | {
+                        /**
+                         * Identifier for EVM Fireblocks custodial signer type
+                         */
+                        type: "evm-fireblocks-custodial";
+                        /**
+                         * The Ethereum address of the custodial signer
+                         */
+                        address: string;
+                        /**
+                         * The locator of the signer
+                         */
+                        locator: string;
+                    }
+                  | {
+                        /**
+                         * Identifier for the Passkey signer type
+                         */
+                        type: "evm-passkey";
+                        /**
+                         * Credential ID from the WebAuthn registration response
+                         */
+                        id: string;
+                        /**
+                         * Human-readable name for the passkey
+                         */
+                        name: string;
+                        /**
+                         * The public key coordinates from the WebAuthn credential
+                         */
+                        publicKey: {
+                            /**
+                             * X coordinate of the public key as a decimal string
+                             */
+                            x: string;
+                            /**
+                             * Y coordinate of the public key as a decimal string
+                             */
+                            y: string;
+                        };
+                        /**
+                         * ERC-7579 webAuthn validator contract version
+                         */
+                        validatorContractVersion: string;
+                        /**
+                         * Unique identifier for locating this passkey signer
+                         */
+                        locator: string;
+                    }
+                  | {
+                        /**
+                         * Specifies the type of EVM signer being used, describing the method of key management and transaction signing. `evm-keypair` indicates a signer using a locally managed keypair, suitable for non-custodial wallets. `evm-fireblocks-custodial` refers to a signer managed by Fireblocks, a custodial service provider.
+                         */
+                        type: "evm-keypair" | "evm-fireblocks-custodial";
+                        /**
+                         * The Ethereum address of the signer
+                         */
+                        address: string;
+                        /**
+                         * The locator of the signer
+                         */
+                        locator: string;
+                        /**
+                         * The expiry date of the signer in ISO 8601 format
+                         */
+                        expiresAt?: number;
+                        /**
+                         * The permissions of the signer following ERC-7715
+                         */
+                        permissions?: Array<
+                            | {
+                                  type: "native-token-transfer";
+                                  data: {
+                                      allowance: string;
+                                  };
+                              }
+                            | {
+                                  type: "erc20-token-transfer";
+                                  data: {
+                                      /**
+                                       * The address of the smart contract that can be interacted with
+                                       */
+                                      address: string;
+                                      allowance: string;
+                                  };
+                              }
+                            | {
+                                  type: "erc721-token-transfer";
+                                  data: {
+                                      /**
+                                       * The address of the smart contract that can be interacted with
+                                       */
+                                      address: string;
+                                      /**
+                                       * The token IDs that can be transferred
+                                       */
+                                      tokenIds: Array<string>;
+                                  };
+                              }
+                            | {
+                                  type: "erc1155-token-transfer";
+                                  data: {
+                                      /**
+                                       * The address of the smart contract that can be interacted with
+                                       */
+                                      address: string;
+                                      /**
+                                       * The token IDs and allowances that can be transferred
+                                       */
+                                      allowances: {
+                                          [key: string]: string;
+                                      };
+                                  };
+                              }
+                            | {
+                                  type: "gas-limit";
+                                  data: {
+                                      limit: string;
+                                      enforcePaymaster?: boolean;
+                                      allowedPaymaster?: string;
+                                  };
+                              }
+                            | {
+                                  type: "call-limit";
+                                  data: {
+                                      count: number;
+                                  };
+                              }
+                            | {
+                                  type: "rate-limit";
+                                  data: {
+                                      count: number;
+                                      /**
+                                       * Time window in seconds
+                                       */
+                                      interval: number;
+                                  };
+                              }
+                        >;
+                    }
+              >;
+          };
+          /**
+           * The onchain address of the wallet
+           */
+          address: string;
+          /**
+           * The user that is linked to this wallet in format <locatorType>:<value>
+           */
+          linkedUser?: string;
+          /**
+           * ISO timestamp of when the wallet was created
+           */
+          createdAt?: number;
+      }
+    | {
+          /**
+           * The type of wallet configuration
+           */
+          type: "solana-smart-wallet";
+          /**
+           * Solana Smart wallet type specific configuration settings
+           */
+          config: {
+              adminSigner:
+                  | {
+                        /**
+                         * Type identifier for Solana keypair signers
+                         */
+                        type: "solana-keypair";
+                        /**
+                         * The Solana address of the signer
+                         */
+                        address: string;
+                        /**
+                         * The locator of the signer
+                         */
+                        locator: string;
+                    }
+                  | {
+                        /**
+                         * Type identifier for Solana custodial signers
+                         */
+                        type: "solana-fireblocks-custodial";
+                        /**
+                         * The Solana address of the custodial signer
+                         */
+                        address: string;
+                        /**
+                         * The locator of the signer
+                         */
+                        locator: string;
+                    };
+          };
+          /**
+           * The onchain address of the wallet
+           */
+          address: string;
+          /**
+           * The user that is linked to this wallet in format <locatorType>:<value>
+           */
+          linkedUser?: string;
+          /**
+           * ISO timestamp of when the wallet was created
+           */
+          createdAt?: number;
+      }
+    | {
+          /**
+           * The type of wallet configuration
+           */
+          type: "solana-mpc-wallet";
+          /**
+           * Solana MPC wallet type specific configuration settings
+           */
+          config?: unknown;
+          /**
+           * The onchain address of the wallet
+           */
+          address: string;
+          /**
+           * The user that is linked to this wallet in format <locatorType>:<value>
+           */
+          linkedUser?: string;
+          /**
+           * ISO timestamp of when the wallet was created
+           */
+          createdAt?: number;
+      }
+    | {
+          /**
+           * The type of wallet configuration
+           */
+          type: "aptos-mpc-wallet";
+          /**
+           * Aptos MPC wallet type specific configuration settings
+           */
+          config?: unknown;
+          /**
+           * The onchain address of the wallet
+           */
+          address: string;
+          /**
+           * The user that is linked to this wallet in format <locatorType>:<value>
+           */
+          linkedUser?: string;
+          /**
+           * ISO timestamp of when the wallet was created
+           */
+          createdAt?: number;
+      }
+    | {
+          /**
+           * The type of wallet configuration
+           */
+          type: "cardano-mpc-wallet";
+          /**
+           * Cardano MPC wallet type specific configuration settings
+           */
+          config?: unknown;
+          /**
+           * The onchain address of the wallet
+           */
+          address: string;
+          /**
+           * The user that is linked to this wallet in format <locatorType>:<value>
+           */
+          linkedUser?: string;
+          /**
+           * ISO timestamp of when the wallet was created
+           */
+          createdAt?: number;
+      }
+    | {
+          /**
+           * The type of wallet configuration
+           */
+          type: "sui-mpc-wallet";
+          /**
+           * Sui MPC wallet type specific configuration settings
+           */
+          config?: unknown;
+          /**
+           * The onchain address of the wallet
+           */
+          address: string;
+          /**
+           * The user that is linked to this wallet in format <locatorType>:<value>
+           */
+          linkedUser?: string;
+          /**
+           * ISO timestamp of when the wallet was created
+           */
+          createdAt?: number;
+      }
+    | {
+          /**
+           * The type of wallet configuration
+           */
+          type: "evm-mpc-wallet";
+          /**
+           * The onchain address of the wallet
+           */
+          address: string;
+          /**
+           * The user that is linked to this wallet in format <locatorType>:<value>
+           */
+          linkedUser?: string;
+          /**
+           * ISO timestamp of when the wallet was created
+           */
+          createdAt?: number;
+      };
 
 /**
  * Wallet transaction error
@@ -2794,21 +3640,23 @@ export type WalletV1Alpha2TransactionErrorDto = {
     /**
      * Error
      */
-    error: {
-        reason: 'program_error';
-        message: string;
-        logs?: unknown;
-    } | {
-        reason: 'execution_reverted';
-        message: string;
-        revert?: {
-            type: 'contract_call' | 'wallet_authorization' | 'wallet_deployment';
-            reason: string;
-            reasonData?: string;
-            explorerLink?: string;
-            simulationLink?: string;
-        };
-    };
+    error:
+        | {
+              reason: "program_error";
+              message: string;
+              logs?: unknown;
+          }
+        | {
+              reason: "execution_reverted";
+              message: string;
+              revert?: {
+                  type: "contract_call" | "wallet_authorization" | "wallet_deployment";
+                  reason: string;
+                  reasonData?: string;
+                  explorerLink?: string;
+                  simulationLink?: string;
+              };
+          };
     /**
      * Error message
      */
@@ -2887,9 +3735,13 @@ export type Nftsol = Array<{
          */
         image?: string;
         attributes?: Array<{
-            value?: string | number | boolean | {
-                [key: string]: unknown;
-            };
+            value?:
+                | string
+                | number
+                | boolean
+                | {
+                      [key: string]: unknown;
+                  };
             trait_type?: string;
         }>;
     };
@@ -2909,14 +3761,14 @@ export type WalletsV1ControllerSubmitMeApprovals4Data = {
         /**
          * API key required for authentication
          */
-        'X-API-KEY': string;
+        "X-API-KEY": string;
     };
     path: {
         walletType: string;
         transactionId: string;
     };
     query?: never;
-    url: '/2022-06-09/wallets/me{walletType}/transactions/{transactionId}/approvals';
+    url: "/2022-06-09/wallets/me{walletType}/transactions/{transactionId}/approvals";
 };
 
 export type WalletsV1ControllerSubmitMeApprovals4Errors = {
@@ -2938,7 +3790,8 @@ export type WalletsV1ControllerSubmitMeApprovals4Errors = {
     422: WalletV1Alpha2ErrorDto;
 };
 
-export type WalletsV1ControllerSubmitMeApprovals4Error = WalletsV1ControllerSubmitMeApprovals4Errors[keyof WalletsV1ControllerSubmitMeApprovals4Errors];
+export type WalletsV1ControllerSubmitMeApprovals4Error =
+    WalletsV1ControllerSubmitMeApprovals4Errors[keyof WalletsV1ControllerSubmitMeApprovals4Errors];
 
 export type WalletsV1ControllerSubmitMeApprovals4Responses = {
     /**
@@ -2947,7 +3800,8 @@ export type WalletsV1ControllerSubmitMeApprovals4Responses = {
     201: WalletsV1Alpha2TransactionResponseDto;
 };
 
-export type WalletsV1ControllerSubmitMeApprovals4Response = WalletsV1ControllerSubmitMeApprovals4Responses[keyof WalletsV1ControllerSubmitMeApprovals4Responses];
+export type WalletsV1ControllerSubmitMeApprovals4Response =
+    WalletsV1ControllerSubmitMeApprovals4Responses[keyof WalletsV1ControllerSubmitMeApprovals4Responses];
 
 export type WalletsV1ControllerGetMeTransaction4Data = {
     body?: never;
@@ -2955,14 +3809,14 @@ export type WalletsV1ControllerGetMeTransaction4Data = {
         /**
          * API key required for authentication
          */
-        'X-API-KEY': string;
+        "X-API-KEY": string;
     };
     path: {
         walletType: string;
         transactionId: string;
     };
     query?: never;
-    url: '/2022-06-09/wallets/me{walletType}/transactions/{transactionId}';
+    url: "/2022-06-09/wallets/me{walletType}/transactions/{transactionId}";
 };
 
 export type WalletsV1ControllerGetMeTransaction4Errors = {
@@ -2972,7 +3826,8 @@ export type WalletsV1ControllerGetMeTransaction4Errors = {
     404: WalletV1Alpha2ErrorDto;
 };
 
-export type WalletsV1ControllerGetMeTransaction4Error = WalletsV1ControllerGetMeTransaction4Errors[keyof WalletsV1ControllerGetMeTransaction4Errors];
+export type WalletsV1ControllerGetMeTransaction4Error =
+    WalletsV1ControllerGetMeTransaction4Errors[keyof WalletsV1ControllerGetMeTransaction4Errors];
 
 export type WalletsV1ControllerGetMeTransaction4Responses = {
     /**
@@ -2981,7 +3836,8 @@ export type WalletsV1ControllerGetMeTransaction4Responses = {
     200: WalletsV1Alpha2TransactionResponseDto;
 };
 
-export type WalletsV1ControllerGetMeTransaction4Response = WalletsV1ControllerGetMeTransaction4Responses[keyof WalletsV1ControllerGetMeTransaction4Responses];
+export type WalletsV1ControllerGetMeTransaction4Response =
+    WalletsV1ControllerGetMeTransaction4Responses[keyof WalletsV1ControllerGetMeTransaction4Responses];
 
 export type WalletsV1ControllerCreateMeTransaction4Data = {
     body: CreateTransactionDto;
@@ -2989,14 +3845,14 @@ export type WalletsV1ControllerCreateMeTransaction4Data = {
         /**
          * API key required for authentication
          */
-        'X-API-KEY': string;
-        'x-idempotency-key': string;
+        "X-API-KEY": string;
+        "x-idempotency-key": string;
     };
     path: {
         walletType: string;
     };
     query?: never;
-    url: '/2022-06-09/wallets/me{walletType}/transactions';
+    url: "/2022-06-09/wallets/me{walletType}/transactions";
 };
 
 export type WalletsV1ControllerCreateMeTransaction4Errors = {
@@ -3014,7 +3870,8 @@ export type WalletsV1ControllerCreateMeTransaction4Errors = {
     422: WalletV1Alpha2TransactionErrorDto;
 };
 
-export type WalletsV1ControllerCreateMeTransaction4Error = WalletsV1ControllerCreateMeTransaction4Errors[keyof WalletsV1ControllerCreateMeTransaction4Errors];
+export type WalletsV1ControllerCreateMeTransaction4Error =
+    WalletsV1ControllerCreateMeTransaction4Errors[keyof WalletsV1ControllerCreateMeTransaction4Errors];
 
 export type WalletsV1ControllerCreateMeTransaction4Responses = {
     /**
@@ -3023,7 +3880,8 @@ export type WalletsV1ControllerCreateMeTransaction4Responses = {
     201: WalletsV1Alpha2TransactionResponseDto;
 };
 
-export type WalletsV1ControllerCreateMeTransaction4Response = WalletsV1ControllerCreateMeTransaction4Responses[keyof WalletsV1ControllerCreateMeTransaction4Responses];
+export type WalletsV1ControllerCreateMeTransaction4Response =
+    WalletsV1ControllerCreateMeTransaction4Responses[keyof WalletsV1ControllerCreateMeTransaction4Responses];
 
 export type WalletsV1ControllerSubmitMeSignatureApprovals4Data = {
     body: SubmitApprovalDto;
@@ -3031,14 +3889,14 @@ export type WalletsV1ControllerSubmitMeSignatureApprovals4Data = {
         /**
          * API key required for authentication
          */
-        'X-API-KEY': string;
+        "X-API-KEY": string;
     };
     path: {
         walletType: string;
         signatureId: string;
     };
     query?: never;
-    url: '/2022-06-09/wallets/me{walletType}/signatures/{signatureId}/approvals';
+    url: "/2022-06-09/wallets/me{walletType}/signatures/{signatureId}/approvals";
 };
 
 export type WalletsV1ControllerSubmitMeSignatureApprovals4Errors = {
@@ -3052,7 +3910,8 @@ export type WalletsV1ControllerSubmitMeSignatureApprovals4Errors = {
     404: WalletV1Alpha2ErrorDto;
 };
 
-export type WalletsV1ControllerSubmitMeSignatureApprovals4Error = WalletsV1ControllerSubmitMeSignatureApprovals4Errors[keyof WalletsV1ControllerSubmitMeSignatureApprovals4Errors];
+export type WalletsV1ControllerSubmitMeSignatureApprovals4Error =
+    WalletsV1ControllerSubmitMeSignatureApprovals4Errors[keyof WalletsV1ControllerSubmitMeSignatureApprovals4Errors];
 
 export type WalletsV1ControllerSubmitMeSignatureApprovals4Responses = {
     /**
@@ -3061,7 +3920,8 @@ export type WalletsV1ControllerSubmitMeSignatureApprovals4Responses = {
     201: WalletsV1Alpha2SignatureResponseDto;
 };
 
-export type WalletsV1ControllerSubmitMeSignatureApprovals4Response = WalletsV1ControllerSubmitMeSignatureApprovals4Responses[keyof WalletsV1ControllerSubmitMeSignatureApprovals4Responses];
+export type WalletsV1ControllerSubmitMeSignatureApprovals4Response =
+    WalletsV1ControllerSubmitMeSignatureApprovals4Responses[keyof WalletsV1ControllerSubmitMeSignatureApprovals4Responses];
 
 export type WalletsV1ControllerGetMeSignature4Data = {
     body?: never;
@@ -3069,14 +3929,14 @@ export type WalletsV1ControllerGetMeSignature4Data = {
         /**
          * API key required for authentication
          */
-        'X-API-KEY': string;
+        "X-API-KEY": string;
     };
     path: {
         walletType: string;
         signatureId: string;
     };
     query?: never;
-    url: '/2022-06-09/wallets/me{walletType}/signatures/{signatureId}';
+    url: "/2022-06-09/wallets/me{walletType}/signatures/{signatureId}";
 };
 
 export type WalletsV1ControllerGetMeSignature4Errors = {
@@ -3086,7 +3946,8 @@ export type WalletsV1ControllerGetMeSignature4Errors = {
     404: WalletV1Alpha2ErrorDto;
 };
 
-export type WalletsV1ControllerGetMeSignature4Error = WalletsV1ControllerGetMeSignature4Errors[keyof WalletsV1ControllerGetMeSignature4Errors];
+export type WalletsV1ControllerGetMeSignature4Error =
+    WalletsV1ControllerGetMeSignature4Errors[keyof WalletsV1ControllerGetMeSignature4Errors];
 
 export type WalletsV1ControllerGetMeSignature4Responses = {
     /**
@@ -3095,7 +3956,8 @@ export type WalletsV1ControllerGetMeSignature4Responses = {
     200: WalletsV1Alpha2SignatureResponseDto;
 };
 
-export type WalletsV1ControllerGetMeSignature4Response = WalletsV1ControllerGetMeSignature4Responses[keyof WalletsV1ControllerGetMeSignature4Responses];
+export type WalletsV1ControllerGetMeSignature4Response =
+    WalletsV1ControllerGetMeSignature4Responses[keyof WalletsV1ControllerGetMeSignature4Responses];
 
 export type WalletsV1ControllerCreateMeSignatureRequest4Data = {
     body: CreateSignatureRequestDto;
@@ -3103,17 +3965,17 @@ export type WalletsV1ControllerCreateMeSignatureRequest4Data = {
         /**
          * API key required for authentication
          */
-        'X-API-KEY': string;
+        "X-API-KEY": string;
         /**
          * Unique key to prevent duplicate signature creation
          */
-        'x-idempotency-key'?: string;
+        "x-idempotency-key"?: string;
     };
     path: {
         walletType: string;
     };
     query?: never;
-    url: '/2022-06-09/wallets/me{walletType}/signatures';
+    url: "/2022-06-09/wallets/me{walletType}/signatures";
 };
 
 export type WalletsV1ControllerCreateMeSignatureRequest4Errors = {
@@ -3127,7 +3989,8 @@ export type WalletsV1ControllerCreateMeSignatureRequest4Errors = {
     404: WalletV1Alpha2ErrorDto;
 };
 
-export type WalletsV1ControllerCreateMeSignatureRequest4Error = WalletsV1ControllerCreateMeSignatureRequest4Errors[keyof WalletsV1ControllerCreateMeSignatureRequest4Errors];
+export type WalletsV1ControllerCreateMeSignatureRequest4Error =
+    WalletsV1ControllerCreateMeSignatureRequest4Errors[keyof WalletsV1ControllerCreateMeSignatureRequest4Errors];
 
 export type WalletsV1ControllerCreateMeSignatureRequest4Responses = {
     /**
@@ -3136,7 +3999,8 @@ export type WalletsV1ControllerCreateMeSignatureRequest4Responses = {
     201: WalletsV1Alpha2SignatureResponseDto;
 };
 
-export type WalletsV1ControllerCreateMeSignatureRequest4Response = WalletsV1ControllerCreateMeSignatureRequest4Responses[keyof WalletsV1ControllerCreateMeSignatureRequest4Responses];
+export type WalletsV1ControllerCreateMeSignatureRequest4Response =
+    WalletsV1ControllerCreateMeSignatureRequest4Responses[keyof WalletsV1ControllerCreateMeSignatureRequest4Responses];
 
 export type WalletsV1ControllerGetMeWallet4Data = {
     body?: never;
@@ -3144,13 +4008,13 @@ export type WalletsV1ControllerGetMeWallet4Data = {
         /**
          * API key required for authentication
          */
-        'X-API-KEY': string;
+        "X-API-KEY": string;
     };
     path: {
         walletType: string;
     };
     query?: never;
-    url: '/2022-06-09/wallets/me{walletType}';
+    url: "/2022-06-09/wallets/me{walletType}";
 };
 
 export type WalletsV1ControllerGetMeWallet4Responses = {
@@ -3160,7 +4024,8 @@ export type WalletsV1ControllerGetMeWallet4Responses = {
     200: WalletV1Alpha2ResponseDto;
 };
 
-export type WalletsV1ControllerGetMeWallet4Response = WalletsV1ControllerGetMeWallet4Responses[keyof WalletsV1ControllerGetMeWallet4Responses];
+export type WalletsV1ControllerGetMeWallet4Response =
+    WalletsV1ControllerGetMeWallet4Responses[keyof WalletsV1ControllerGetMeWallet4Responses];
 
 export type WalletsV1ControllerCreateMeWallet4Data = {
     body: CreateWalletDto;
@@ -3168,11 +4033,11 @@ export type WalletsV1ControllerCreateMeWallet4Data = {
         /**
          * API key required for authentication
          */
-        'X-API-KEY': string;
+        "X-API-KEY": string;
     };
     path?: never;
     query?: never;
-    url: '/2022-06-09/wallets/me';
+    url: "/2022-06-09/wallets/me";
 };
 
 export type WalletsV1ControllerCreateMeWallet4Responses = {
@@ -3182,7 +4047,8 @@ export type WalletsV1ControllerCreateMeWallet4Responses = {
     201: WalletV1Alpha2ResponseDto;
 };
 
-export type WalletsV1ControllerCreateMeWallet4Response = WalletsV1ControllerCreateMeWallet4Responses[keyof WalletsV1ControllerCreateMeWallet4Responses];
+export type WalletsV1ControllerCreateMeWallet4Response =
+    WalletsV1ControllerCreateMeWallet4Responses[keyof WalletsV1ControllerCreateMeWallet4Responses];
 
 export type WalletsV1ControllerSubmitApprovals4Data = {
     body: SubmitApprovalDto;
@@ -3190,7 +4056,7 @@ export type WalletsV1ControllerSubmitApprovals4Data = {
         /**
          * API key required for authentication
          */
-        'X-API-KEY': string;
+        "X-API-KEY": string;
     };
     path: {
         /**
@@ -3207,7 +4073,7 @@ export type WalletsV1ControllerSubmitApprovals4Data = {
         transactionId: string;
     };
     query?: never;
-    url: '/2022-06-09/wallets/{walletLocator}/transactions/{transactionId}/approvals';
+    url: "/2022-06-09/wallets/{walletLocator}/transactions/{transactionId}/approvals";
 };
 
 export type WalletsV1ControllerSubmitApprovals4Errors = {
@@ -3229,7 +4095,8 @@ export type WalletsV1ControllerSubmitApprovals4Errors = {
     422: WalletV1Alpha2ErrorDto;
 };
 
-export type WalletsV1ControllerSubmitApprovals4Error = WalletsV1ControllerSubmitApprovals4Errors[keyof WalletsV1ControllerSubmitApprovals4Errors];
+export type WalletsV1ControllerSubmitApprovals4Error =
+    WalletsV1ControllerSubmitApprovals4Errors[keyof WalletsV1ControllerSubmitApprovals4Errors];
 
 export type WalletsV1ControllerSubmitApprovals4Responses = {
     /**
@@ -3238,7 +4105,8 @@ export type WalletsV1ControllerSubmitApprovals4Responses = {
     201: WalletsV1Alpha2TransactionResponseDto;
 };
 
-export type WalletsV1ControllerSubmitApprovals4Response = WalletsV1ControllerSubmitApprovals4Responses[keyof WalletsV1ControllerSubmitApprovals4Responses];
+export type WalletsV1ControllerSubmitApprovals4Response =
+    WalletsV1ControllerSubmitApprovals4Responses[keyof WalletsV1ControllerSubmitApprovals4Responses];
 
 export type WalletsV1ControllerGetTransaction4Data = {
     body?: never;
@@ -3246,7 +4114,7 @@ export type WalletsV1ControllerGetTransaction4Data = {
         /**
          * API key required for authentication
          */
-        'X-API-KEY': string;
+        "X-API-KEY": string;
     };
     path: {
         /**
@@ -3263,7 +4131,7 @@ export type WalletsV1ControllerGetTransaction4Data = {
         transactionId: string;
     };
     query?: never;
-    url: '/2022-06-09/wallets/{walletLocator}/transactions/{transactionId}';
+    url: "/2022-06-09/wallets/{walletLocator}/transactions/{transactionId}";
 };
 
 export type WalletsV1ControllerGetTransaction4Errors = {
@@ -3273,7 +4141,8 @@ export type WalletsV1ControllerGetTransaction4Errors = {
     404: WalletV1Alpha2ErrorDto;
 };
 
-export type WalletsV1ControllerGetTransaction4Error = WalletsV1ControllerGetTransaction4Errors[keyof WalletsV1ControllerGetTransaction4Errors];
+export type WalletsV1ControllerGetTransaction4Error =
+    WalletsV1ControllerGetTransaction4Errors[keyof WalletsV1ControllerGetTransaction4Errors];
 
 export type WalletsV1ControllerGetTransaction4Responses = {
     /**
@@ -3282,7 +4151,8 @@ export type WalletsV1ControllerGetTransaction4Responses = {
     200: WalletsV1Alpha2TransactionResponseDto;
 };
 
-export type WalletsV1ControllerGetTransaction4Response = WalletsV1ControllerGetTransaction4Responses[keyof WalletsV1ControllerGetTransaction4Responses];
+export type WalletsV1ControllerGetTransaction4Response =
+    WalletsV1ControllerGetTransaction4Responses[keyof WalletsV1ControllerGetTransaction4Responses];
 
 export type WalletsV1ControllerGetTransactionsWithoutChain4Data = {
     body?: never;
@@ -3290,7 +4160,7 @@ export type WalletsV1ControllerGetTransactionsWithoutChain4Data = {
         /**
          * API key required for authentication
          */
-        'X-API-KEY': string;
+        "X-API-KEY": string;
     };
     path: {
         /**
@@ -3309,7 +4179,7 @@ export type WalletsV1ControllerGetTransactionsWithoutChain4Data = {
         page?: string;
         perPage?: string;
     };
-    url: '/2022-06-09/wallets/{walletLocator}/transactions';
+    url: "/2022-06-09/wallets/{walletLocator}/transactions";
 };
 
 export type WalletsV1ControllerGetTransactionsWithoutChain4Errors = {
@@ -3319,7 +4189,8 @@ export type WalletsV1ControllerGetTransactionsWithoutChain4Errors = {
     404: WalletV1Alpha2ErrorDto;
 };
 
-export type WalletsV1ControllerGetTransactionsWithoutChain4Error = WalletsV1ControllerGetTransactionsWithoutChain4Errors[keyof WalletsV1ControllerGetTransactionsWithoutChain4Errors];
+export type WalletsV1ControllerGetTransactionsWithoutChain4Error =
+    WalletsV1ControllerGetTransactionsWithoutChain4Errors[keyof WalletsV1ControllerGetTransactionsWithoutChain4Errors];
 
 export type WalletsV1ControllerGetTransactionsWithoutChain4Responses = {
     /**
@@ -3328,7 +4199,8 @@ export type WalletsV1ControllerGetTransactionsWithoutChain4Responses = {
     200: WalletsV1Alpha2TransactionsResponseDto;
 };
 
-export type WalletsV1ControllerGetTransactionsWithoutChain4Response = WalletsV1ControllerGetTransactionsWithoutChain4Responses[keyof WalletsV1ControllerGetTransactionsWithoutChain4Responses];
+export type WalletsV1ControllerGetTransactionsWithoutChain4Response =
+    WalletsV1ControllerGetTransactionsWithoutChain4Responses[keyof WalletsV1ControllerGetTransactionsWithoutChain4Responses];
 
 export type WalletsV1ControllerCreateTransaction4Data = {
     body: CreateTransactionDto;
@@ -3336,11 +4208,11 @@ export type WalletsV1ControllerCreateTransaction4Data = {
         /**
          * API key required for authentication
          */
-        'X-API-KEY': string;
+        "X-API-KEY": string;
         /**
          * Unique key to prevent duplicate transaction creation
          */
-        'x-idempotency-key'?: string;
+        "x-idempotency-key"?: string;
     };
     path: {
         /**
@@ -3356,7 +4228,7 @@ export type WalletsV1ControllerCreateTransaction4Data = {
         walletLocator: string;
     };
     query?: never;
-    url: '/2022-06-09/wallets/{walletLocator}/transactions';
+    url: "/2022-06-09/wallets/{walletLocator}/transactions";
 };
 
 export type WalletsV1ControllerCreateTransaction4Errors = {
@@ -3374,7 +4246,8 @@ export type WalletsV1ControllerCreateTransaction4Errors = {
     422: WalletV1Alpha2TransactionErrorDto;
 };
 
-export type WalletsV1ControllerCreateTransaction4Error = WalletsV1ControllerCreateTransaction4Errors[keyof WalletsV1ControllerCreateTransaction4Errors];
+export type WalletsV1ControllerCreateTransaction4Error =
+    WalletsV1ControllerCreateTransaction4Errors[keyof WalletsV1ControllerCreateTransaction4Errors];
 
 export type WalletsV1ControllerCreateTransaction4Responses = {
     /**
@@ -3383,7 +4256,8 @@ export type WalletsV1ControllerCreateTransaction4Responses = {
     201: WalletsV1Alpha2TransactionResponseDto;
 };
 
-export type WalletsV1ControllerCreateTransaction4Response = WalletsV1ControllerCreateTransaction4Responses[keyof WalletsV1ControllerCreateTransaction4Responses];
+export type WalletsV1ControllerCreateTransaction4Response =
+    WalletsV1ControllerCreateTransaction4Responses[keyof WalletsV1ControllerCreateTransaction4Responses];
 
 export type WalletsV1ControllerGetDelegatedSigner4Data = {
     body?: never;
@@ -3391,7 +4265,7 @@ export type WalletsV1ControllerGetDelegatedSigner4Data = {
         /**
          * API key required for authentication
          */
-        'X-API-KEY': string;
+        "X-API-KEY": string;
     };
     path: {
         /**
@@ -3411,7 +4285,7 @@ export type WalletsV1ControllerGetDelegatedSigner4Data = {
         signer: string;
     };
     query?: never;
-    url: '/2022-06-09/wallets/{walletLocator}/signers/{signer}';
+    url: "/2022-06-09/wallets/{walletLocator}/signers/{signer}";
 };
 
 export type WalletsV1ControllerGetDelegatedSigner4Errors = {
@@ -3421,7 +4295,8 @@ export type WalletsV1ControllerGetDelegatedSigner4Errors = {
     404: WalletV1Alpha2ErrorDto;
 };
 
-export type WalletsV1ControllerGetDelegatedSigner4Error = WalletsV1ControllerGetDelegatedSigner4Errors[keyof WalletsV1ControllerGetDelegatedSigner4Errors];
+export type WalletsV1ControllerGetDelegatedSigner4Error =
+    WalletsV1ControllerGetDelegatedSigner4Errors[keyof WalletsV1ControllerGetDelegatedSigner4Errors];
 
 export type WalletsV1ControllerGetDelegatedSigner4Responses = {
     /**
@@ -3430,7 +4305,8 @@ export type WalletsV1ControllerGetDelegatedSigner4Responses = {
     200: DelegatedSignerDto;
 };
 
-export type WalletsV1ControllerGetDelegatedSigner4Response = WalletsV1ControllerGetDelegatedSigner4Responses[keyof WalletsV1ControllerGetDelegatedSigner4Responses];
+export type WalletsV1ControllerGetDelegatedSigner4Response =
+    WalletsV1ControllerGetDelegatedSigner4Responses[keyof WalletsV1ControllerGetDelegatedSigner4Responses];
 
 export type WalletsV1ControllerCreateDelegatedSigner4Data = {
     body: CreateSignerInputDto;
@@ -3438,7 +4314,7 @@ export type WalletsV1ControllerCreateDelegatedSigner4Data = {
         /**
          * API key required for authentication
          */
-        'X-API-KEY': string;
+        "X-API-KEY": string;
     };
     path: {
         /**
@@ -3454,7 +4330,7 @@ export type WalletsV1ControllerCreateDelegatedSigner4Data = {
         walletLocator: string;
     };
     query?: never;
-    url: '/2022-06-09/wallets/{walletLocator}/signers';
+    url: "/2022-06-09/wallets/{walletLocator}/signers";
 };
 
 export type WalletsV1ControllerCreateDelegatedSigner4Errors = {
@@ -3468,7 +4344,8 @@ export type WalletsV1ControllerCreateDelegatedSigner4Errors = {
     404: WalletV1Alpha2ErrorDto;
 };
 
-export type WalletsV1ControllerCreateDelegatedSigner4Error = WalletsV1ControllerCreateDelegatedSigner4Errors[keyof WalletsV1ControllerCreateDelegatedSigner4Errors];
+export type WalletsV1ControllerCreateDelegatedSigner4Error =
+    WalletsV1ControllerCreateDelegatedSigner4Errors[keyof WalletsV1ControllerCreateDelegatedSigner4Errors];
 
 export type WalletsV1ControllerCreateDelegatedSigner4Responses = {
     /**
@@ -3477,7 +4354,8 @@ export type WalletsV1ControllerCreateDelegatedSigner4Responses = {
     201: DelegatedSignerDto;
 };
 
-export type WalletsV1ControllerCreateDelegatedSigner4Response = WalletsV1ControllerCreateDelegatedSigner4Responses[keyof WalletsV1ControllerCreateDelegatedSigner4Responses];
+export type WalletsV1ControllerCreateDelegatedSigner4Response =
+    WalletsV1ControllerCreateDelegatedSigner4Responses[keyof WalletsV1ControllerCreateDelegatedSigner4Responses];
 
 export type WalletsV1ControllerSubmitSignatureApprovals4Data = {
     body: SubmitApprovalDto;
@@ -3485,7 +4363,7 @@ export type WalletsV1ControllerSubmitSignatureApprovals4Data = {
         /**
          * API key required for authentication
          */
-        'X-API-KEY': string;
+        "X-API-KEY": string;
     };
     path: {
         /**
@@ -3502,7 +4380,7 @@ export type WalletsV1ControllerSubmitSignatureApprovals4Data = {
         signatureId: string;
     };
     query?: never;
-    url: '/2022-06-09/wallets/{walletLocator}/signatures/{signatureId}/approvals';
+    url: "/2022-06-09/wallets/{walletLocator}/signatures/{signatureId}/approvals";
 };
 
 export type WalletsV1ControllerSubmitSignatureApprovals4Errors = {
@@ -3516,7 +4394,8 @@ export type WalletsV1ControllerSubmitSignatureApprovals4Errors = {
     404: WalletV1Alpha2ErrorDto;
 };
 
-export type WalletsV1ControllerSubmitSignatureApprovals4Error = WalletsV1ControllerSubmitSignatureApprovals4Errors[keyof WalletsV1ControllerSubmitSignatureApprovals4Errors];
+export type WalletsV1ControllerSubmitSignatureApprovals4Error =
+    WalletsV1ControllerSubmitSignatureApprovals4Errors[keyof WalletsV1ControllerSubmitSignatureApprovals4Errors];
 
 export type WalletsV1ControllerSubmitSignatureApprovals4Responses = {
     /**
@@ -3525,7 +4404,8 @@ export type WalletsV1ControllerSubmitSignatureApprovals4Responses = {
     201: WalletsV1Alpha2SignatureResponseDto;
 };
 
-export type WalletsV1ControllerSubmitSignatureApprovals4Response = WalletsV1ControllerSubmitSignatureApprovals4Responses[keyof WalletsV1ControllerSubmitSignatureApprovals4Responses];
+export type WalletsV1ControllerSubmitSignatureApprovals4Response =
+    WalletsV1ControllerSubmitSignatureApprovals4Responses[keyof WalletsV1ControllerSubmitSignatureApprovals4Responses];
 
 export type WalletsV1ControllerGetSignature4Data = {
     body?: never;
@@ -3533,7 +4413,7 @@ export type WalletsV1ControllerGetSignature4Data = {
         /**
          * API key required for authentication
          */
-        'X-API-KEY': string;
+        "X-API-KEY": string;
     };
     path: {
         /**
@@ -3550,7 +4430,7 @@ export type WalletsV1ControllerGetSignature4Data = {
         signatureId: string;
     };
     query?: never;
-    url: '/2022-06-09/wallets/{walletLocator}/signatures/{signatureId}';
+    url: "/2022-06-09/wallets/{walletLocator}/signatures/{signatureId}";
 };
 
 export type WalletsV1ControllerGetSignature4Errors = {
@@ -3560,7 +4440,8 @@ export type WalletsV1ControllerGetSignature4Errors = {
     404: WalletV1Alpha2ErrorDto;
 };
 
-export type WalletsV1ControllerGetSignature4Error = WalletsV1ControllerGetSignature4Errors[keyof WalletsV1ControllerGetSignature4Errors];
+export type WalletsV1ControllerGetSignature4Error =
+    WalletsV1ControllerGetSignature4Errors[keyof WalletsV1ControllerGetSignature4Errors];
 
 export type WalletsV1ControllerGetSignature4Responses = {
     /**
@@ -3569,7 +4450,8 @@ export type WalletsV1ControllerGetSignature4Responses = {
     200: WalletsV1Alpha2SignatureResponseDto;
 };
 
-export type WalletsV1ControllerGetSignature4Response = WalletsV1ControllerGetSignature4Responses[keyof WalletsV1ControllerGetSignature4Responses];
+export type WalletsV1ControllerGetSignature4Response =
+    WalletsV1ControllerGetSignature4Responses[keyof WalletsV1ControllerGetSignature4Responses];
 
 export type WalletsV1ControllerGetAllSignatures4Data = {
     body?: never;
@@ -3577,7 +4459,7 @@ export type WalletsV1ControllerGetAllSignatures4Data = {
         /**
          * API key required for authentication
          */
-        'X-API-KEY': string;
+        "X-API-KEY": string;
     };
     path: {
         /**
@@ -3596,7 +4478,7 @@ export type WalletsV1ControllerGetAllSignatures4Data = {
         page?: string;
         perPage?: string;
     };
-    url: '/2022-06-09/wallets/{walletLocator}/signatures';
+    url: "/2022-06-09/wallets/{walletLocator}/signatures";
 };
 
 export type WalletsV1ControllerGetAllSignatures4Errors = {
@@ -3606,7 +4488,8 @@ export type WalletsV1ControllerGetAllSignatures4Errors = {
     404: WalletV1Alpha2ErrorDto;
 };
 
-export type WalletsV1ControllerGetAllSignatures4Error = WalletsV1ControllerGetAllSignatures4Errors[keyof WalletsV1ControllerGetAllSignatures4Errors];
+export type WalletsV1ControllerGetAllSignatures4Error =
+    WalletsV1ControllerGetAllSignatures4Errors[keyof WalletsV1ControllerGetAllSignatures4Errors];
 
 export type WalletsV1ControllerGetAllSignatures4Responses = {
     /**
@@ -3615,7 +4498,8 @@ export type WalletsV1ControllerGetAllSignatures4Responses = {
     200: WalletsV1Alpha2MultipleSignatureResponseDto;
 };
 
-export type WalletsV1ControllerGetAllSignatures4Response = WalletsV1ControllerGetAllSignatures4Responses[keyof WalletsV1ControllerGetAllSignatures4Responses];
+export type WalletsV1ControllerGetAllSignatures4Response =
+    WalletsV1ControllerGetAllSignatures4Responses[keyof WalletsV1ControllerGetAllSignatures4Responses];
 
 export type WalletsV1ControllerCreateSignatureRequest4Data = {
     body: CreateSignatureRequestDto;
@@ -3623,11 +4507,11 @@ export type WalletsV1ControllerCreateSignatureRequest4Data = {
         /**
          * API key required for authentication
          */
-        'X-API-KEY': string;
+        "X-API-KEY": string;
         /**
          * Unique key to prevent duplicate signature creation
          */
-        'x-idempotency-key'?: string;
+        "x-idempotency-key"?: string;
     };
     path: {
         /**
@@ -3643,7 +4527,7 @@ export type WalletsV1ControllerCreateSignatureRequest4Data = {
         walletLocator: string;
     };
     query?: never;
-    url: '/2022-06-09/wallets/{walletLocator}/signatures';
+    url: "/2022-06-09/wallets/{walletLocator}/signatures";
 };
 
 export type WalletsV1ControllerCreateSignatureRequest4Errors = {
@@ -3657,7 +4541,8 @@ export type WalletsV1ControllerCreateSignatureRequest4Errors = {
     404: WalletV1Alpha2ErrorDto;
 };
 
-export type WalletsV1ControllerCreateSignatureRequest4Error = WalletsV1ControllerCreateSignatureRequest4Errors[keyof WalletsV1ControllerCreateSignatureRequest4Errors];
+export type WalletsV1ControllerCreateSignatureRequest4Error =
+    WalletsV1ControllerCreateSignatureRequest4Errors[keyof WalletsV1ControllerCreateSignatureRequest4Errors];
 
 export type WalletsV1ControllerCreateSignatureRequest4Responses = {
     /**
@@ -3666,7 +4551,8 @@ export type WalletsV1ControllerCreateSignatureRequest4Responses = {
     201: WalletsV1Alpha2SignatureResponseDto;
 };
 
-export type WalletsV1ControllerCreateSignatureRequest4Response = WalletsV1ControllerCreateSignatureRequest4Responses[keyof WalletsV1ControllerCreateSignatureRequest4Responses];
+export type WalletsV1ControllerCreateSignatureRequest4Response =
+    WalletsV1ControllerCreateSignatureRequest4Responses[keyof WalletsV1ControllerCreateSignatureRequest4Responses];
 
 export type WalletsV1ControllerGetWalletByLocator4Data = {
     body?: never;
@@ -3674,7 +4560,7 @@ export type WalletsV1ControllerGetWalletByLocator4Data = {
         /**
          * API key required for authentication
          */
-        'X-API-KEY': string;
+        "X-API-KEY": string;
     };
     path: {
         /**
@@ -3690,7 +4576,7 @@ export type WalletsV1ControllerGetWalletByLocator4Data = {
         walletLocator: string;
     };
     query?: never;
-    url: '/2022-06-09/wallets/{walletLocator}';
+    url: "/2022-06-09/wallets/{walletLocator}";
 };
 
 export type WalletsV1ControllerGetWalletByLocator4Errors = {
@@ -3700,7 +4586,8 @@ export type WalletsV1ControllerGetWalletByLocator4Errors = {
     404: WalletV1Alpha2ErrorDto;
 };
 
-export type WalletsV1ControllerGetWalletByLocator4Error = WalletsV1ControllerGetWalletByLocator4Errors[keyof WalletsV1ControllerGetWalletByLocator4Errors];
+export type WalletsV1ControllerGetWalletByLocator4Error =
+    WalletsV1ControllerGetWalletByLocator4Errors[keyof WalletsV1ControllerGetWalletByLocator4Errors];
 
 export type WalletsV1ControllerGetWalletByLocator4Responses = {
     /**
@@ -3709,7 +4596,8 @@ export type WalletsV1ControllerGetWalletByLocator4Responses = {
     200: WalletV1Alpha2ResponseDto;
 };
 
-export type WalletsV1ControllerGetWalletByLocator4Response = WalletsV1ControllerGetWalletByLocator4Responses[keyof WalletsV1ControllerGetWalletByLocator4Responses];
+export type WalletsV1ControllerGetWalletByLocator4Response =
+    WalletsV1ControllerGetWalletByLocator4Responses[keyof WalletsV1ControllerGetWalletByLocator4Responses];
 
 export type WalletsV1ControllerCreateWallet4Data = {
     body: CreateWalletDto;
@@ -3717,15 +4605,15 @@ export type WalletsV1ControllerCreateWallet4Data = {
         /**
          * API key required for authentication
          */
-        'X-API-KEY': string;
+        "X-API-KEY": string;
         /**
          * Unique key to prevent duplicate wallet creation
          */
-        'x-idempotency-key'?: string;
+        "x-idempotency-key"?: string;
     };
     path?: never;
     query?: never;
-    url: '/2022-06-09/wallets';
+    url: "/2022-06-09/wallets";
 };
 
 export type WalletsV1ControllerCreateWallet4Errors = {
@@ -3735,7 +4623,8 @@ export type WalletsV1ControllerCreateWallet4Errors = {
     400: WalletV1Alpha2ErrorDto;
 };
 
-export type WalletsV1ControllerCreateWallet4Error = WalletsV1ControllerCreateWallet4Errors[keyof WalletsV1ControllerCreateWallet4Errors];
+export type WalletsV1ControllerCreateWallet4Error =
+    WalletsV1ControllerCreateWallet4Errors[keyof WalletsV1ControllerCreateWallet4Errors];
 
 export type WalletsV1ControllerCreateWallet4Responses = {
     /**
@@ -3744,7 +4633,8 @@ export type WalletsV1ControllerCreateWallet4Responses = {
     201: WalletV1Alpha2ResponseDto;
 };
 
-export type WalletsV1ControllerCreateWallet4Response = WalletsV1ControllerCreateWallet4Responses[keyof WalletsV1ControllerCreateWallet4Responses];
+export type WalletsV1ControllerCreateWallet4Response =
+    WalletsV1ControllerCreateWallet4Responses[keyof WalletsV1ControllerCreateWallet4Responses];
 
 export type FetchContentFromWalletData = {
     body?: never;
@@ -3764,7 +4654,7 @@ export type FetchContentFromWalletData = {
          */
         perPage: string;
     };
-    url: '/2022-06-09/wallets/{identifier}/nfts';
+    url: "/2022-06-09/wallets/{identifier}/nfts";
 };
 
 export type FetchContentFromWalletErrors = {
@@ -3791,7 +4681,7 @@ export type BalanceControllerGetBalanceForLocator2Data = {
         /**
          * API key required for authentication
          */
-        'X-API-KEY': string;
+        "X-API-KEY": string;
     };
     path: {
         /**
@@ -3816,7 +4706,7 @@ export type BalanceControllerGetBalanceForLocator2Data = {
          */
         tokens: string;
     };
-    url: '/v1-alpha2/wallets/{walletLocator}/balances';
+    url: "/v1-alpha2/wallets/{walletLocator}/balances";
 };
 
 export type BalanceControllerGetBalanceForLocator2Errors = {
@@ -3826,7 +4716,8 @@ export type BalanceControllerGetBalanceForLocator2Errors = {
     400: WalletV1Alpha2ErrorDto;
 };
 
-export type BalanceControllerGetBalanceForLocator2Error = BalanceControllerGetBalanceForLocator2Errors[keyof BalanceControllerGetBalanceForLocator2Errors];
+export type BalanceControllerGetBalanceForLocator2Error =
+    BalanceControllerGetBalanceForLocator2Errors[keyof BalanceControllerGetBalanceForLocator2Errors];
 
 export type BalanceControllerGetBalanceForLocator2Responses = {
     /**
@@ -3835,7 +4726,8 @@ export type BalanceControllerGetBalanceForLocator2Responses = {
     200: WalletBalanceResponseDto;
 };
 
-export type BalanceControllerGetBalanceForLocator2Response = BalanceControllerGetBalanceForLocator2Responses[keyof BalanceControllerGetBalanceForLocator2Responses];
+export type BalanceControllerGetBalanceForLocator2Response =
+    BalanceControllerGetBalanceForLocator2Responses[keyof BalanceControllerGetBalanceForLocator2Responses];
 
 export type BalanceControllerFundWallet2Data = {
     body: FundWalletAmountDto;
@@ -3843,7 +4735,7 @@ export type BalanceControllerFundWallet2Data = {
         /**
          * API key required for authentication
          */
-        'X-API-KEY': string;
+        "X-API-KEY": string;
     };
     path: {
         /**
@@ -3859,7 +4751,7 @@ export type BalanceControllerFundWallet2Data = {
         walletLocator: string;
     };
     query?: never;
-    url: '/v1-alpha2/wallets/{walletLocator}/balances';
+    url: "/v1-alpha2/wallets/{walletLocator}/balances";
 };
 
 export type BalanceControllerFundWallet2Errors = {
@@ -3869,7 +4761,8 @@ export type BalanceControllerFundWallet2Errors = {
     404: WalletV1Alpha2ErrorDto;
 };
 
-export type BalanceControllerFundWallet2Error = BalanceControllerFundWallet2Errors[keyof BalanceControllerFundWallet2Errors];
+export type BalanceControllerFundWallet2Error =
+    BalanceControllerFundWallet2Errors[keyof BalanceControllerFundWallet2Errors];
 
 export type BalanceControllerFundWallet2Responses = {
     /**
@@ -3878,8 +4771,9 @@ export type BalanceControllerFundWallet2Responses = {
     201: WalletBalanceResponseDto;
 };
 
-export type BalanceControllerFundWallet2Response = BalanceControllerFundWallet2Responses[keyof BalanceControllerFundWallet2Responses];
+export type BalanceControllerFundWallet2Response =
+    BalanceControllerFundWallet2Responses[keyof BalanceControllerFundWallet2Responses];
 
 export type ClientOptions = {
-    baseUrl: 'https://staging.crossmint.com/api' | 'https://www.crossmint.com/api' | (string & {});
+    baseUrl: "https://staging.crossmint.com/api" | "https://www.crossmint.com/api" | (string & {});
 };
