@@ -1,5 +1,45 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.15.0
+
+### Minor Changes
+
+- 98d8197: - use Wallet API internally
+  - passkey credential generation
+  - custom errors
+
+### Patch Changes
+
+- Updated dependencies [98d8197]
+  - @crossmint/client-sdk-smart-wallet@0.2.0
+
+## 1.14.9
+
+### Patch Changes
+
+- Updated dependencies [3712dd5]
+  - @crossmint/client-sdk-window@0.2.3
+  - @crossmint/client-sdk-base@1.4.11
+  - @crossmint/client-sdk-auth@1.1.20
+  - @crossmint/client-sdk-smart-wallet@0.1.36
+  - @crossmint/common-sdk-auth@1.0.18
+
+## 1.14.8
+
+### Patch Changes
+
+- b1d7f0c: EmbeddedAuthForm: Fix google icon size initial render
+
+## 1.14.7
+
+### Patch Changes
+
+- Updated dependencies [c83894c]
+  - @crossmint/client-sdk-base@1.4.10
+  - @crossmint/client-sdk-auth@1.1.19
+  - @crossmint/client-sdk-smart-wallet@0.1.35
+  - @crossmint/common-sdk-auth@1.0.17
+
 ## 1.14.6
 
 ### Patch Changes

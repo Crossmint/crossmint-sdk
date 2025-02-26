@@ -238,10 +238,7 @@ function WalletManager({
 
     useEffect(() => {
         if (embeddedWallets.createOnLogin === "all-users" && status === "not-loaded" && accessToken != null) {
-            getOrCreateWallet({
-                type: embeddedWallets.type,
-                signer: { type: "PASSKEY" },
-            });
+            getOrCreateWallet();
         }
 
         if (status === "loaded" && accessToken == null) {

@@ -1,5 +1,26 @@
 # @crossmint/client-sdk-smart-wallet
 
+## 0.2.0
+
+### Minor Changes
+
+- 98d8197: - use Wallet API internally
+  - passkey credential generation
+  - custom errors
+
+## 0.1.36
+
+### Patch Changes
+
+- @crossmint/client-sdk-base@1.4.11
+
+## 0.1.35
+
+### Patch Changes
+
+- Updated dependencies [c83894c]
+  - @crossmint/client-sdk-base@1.4.10
+
 ## 0.1.34
 
 ### Patch Changes

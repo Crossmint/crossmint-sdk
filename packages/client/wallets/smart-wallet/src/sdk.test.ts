@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { SmartWalletSDK } from "./SmartWalletSDK";
+import { SmartWalletSDK } from "./sdk";
 
 vi.mock("./services/logging");
 
