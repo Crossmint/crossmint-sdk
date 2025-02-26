@@ -1,5 +1,18 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.15.0
+
+### Minor Changes
+
+- 98d8197: - use Wallet API internally
+  - passkey credential generation
+  - custom errors
+
+### Patch Changes
+
+- Updated dependencies [98d8197]
+  - @crossmint/client-sdk-smart-wallet@0.2.0
+
 ## 1.14.9
 
 ### Patch Changes
