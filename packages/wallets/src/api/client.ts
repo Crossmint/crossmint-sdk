@@ -77,9 +77,7 @@ class ApiClient {
         const response = await walletsV1ControllerCreateWallet4({
             client: this.client,
             body: params,
-            headers: {
-                "X-API-KEY": this.apiKey,
-            },
+            headers: this.getHeaders(),
         });
         if (response.error) {
             throw response.error;
@@ -93,9 +91,7 @@ class ApiClient {
             path: {
                 walletLocator: locator,
             },
-            headers: {
-                "X-API-KEY": this.apiKey,
-            },
+            headers: this.getHeaders(),
         });
         if (response.error) {
             throw response.error;
@@ -113,9 +109,7 @@ class ApiClient {
                 walletLocator,
             },
             body: params,
-            headers: {
-                "X-API-KEY": this.apiKey,
-            },
+            headers: this.getHeaders(),
         });
         if (response.error) {
             throw response.error;
@@ -135,9 +129,7 @@ class ApiClient {
                 transactionId,
             },
             body: params,
-            headers: {
-                "X-API-KEY": this.apiKey,
-            },
+            headers: this.getHeaders(),
         });
         if (response.error) {
             throw response.error;
@@ -152,9 +144,7 @@ class ApiClient {
                 walletLocator,
                 transactionId,
             },
-            headers: {
-                "X-API-KEY": this.apiKey,
-            },
+            headers: this.getHeaders(),
         });
         if (response.error) {
             throw response.error;
@@ -169,9 +159,7 @@ class ApiClient {
                 walletLocator,
             },
             body: params,
-            headers: {
-                "X-API-KEY": this.apiKey,
-            },
+            headers: this.getHeaders(),
         });
         if (response.error) {
             throw response.error;
@@ -191,9 +179,7 @@ class ApiClient {
                 signatureId,
             },
             body: params,
-            headers: {
-                "X-API-KEY": this.apiKey,
-            },
+            headers: this.getHeaders(),
         });
         if (response.error) {
             throw response.error;
@@ -208,9 +194,7 @@ class ApiClient {
                 walletLocator,
                 signatureId,
             },
-            headers: {
-                "X-API-KEY": this.apiKey,
-            },
+            headers: this.getHeaders(),
         });
         if (response.error) {
             throw response.error;
@@ -224,9 +208,7 @@ class ApiClient {
             path: {
                 walletLocator,
             },
-            headers: {
-                "X-API-KEY": this.apiKey,
-            },
+            headers: this.getHeaders(),
         });
         if (response.error) {
             throw response.error;
@@ -244,9 +226,7 @@ class ApiClient {
                 page: page.toString(),
                 perPage: perPage.toString(),
             },
-            headers: {
-                "X-API-KEY": this.apiKey,
-            },
+            headers: this.getHeaders(),
         });
         if (response.error) {
             throw response.error;
@@ -270,14 +250,18 @@ class ApiClient {
                 chains: params.chains?.join(","),
                 tokens: params.tokens.join(","),
             },
-            headers: {
-                "X-API-KEY": this.apiKey,
-            },
+            headers: this.getHeaders(),
         });
         if (response.error) {
             throw response.error;
         }
         return response.data;
+    }
+
+    private getHeaders() {
+        return {
+            "X-API-KEY": this.apiKey,
+        };
     }
 }
 
