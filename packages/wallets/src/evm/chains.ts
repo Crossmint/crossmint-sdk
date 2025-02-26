@@ -5,9 +5,16 @@ const SMART_WALLET_TESTNET_CHAINS = [
     Blockchain.POLYGON_AMOY,
     Blockchain.OPTIMISM_SEPOLIA,
     Blockchain.ARBITRUM_SEPOLIA,
+    Blockchain.STORY_TESTNET,
 ];
 
-const SMART_WALLET_MAINNET_CHAINS = [Blockchain.BASE, Blockchain.POLYGON, Blockchain.OPTIMISM, Blockchain.ARBITRUM];
+const SMART_WALLET_MAINNET_CHAINS = [
+    Blockchain.BASE,
+    Blockchain.POLYGON,
+    Blockchain.OPTIMISM,
+    Blockchain.ARBITRUM,
+    Blockchain.STORY,
+];
 
 type SmartWalletTestnet = (typeof SMART_WALLET_TESTNET_CHAINS)[number];
 type SmartWalletMainnet = (typeof SMART_WALLET_MAINNET_CHAINS)[number];
