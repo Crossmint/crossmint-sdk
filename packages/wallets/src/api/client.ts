@@ -1,8 +1,8 @@
-import { validateAPIKey, environmentToCrossmintBaseURL, APIKeyUsageOrigin } from "@crossmint/common-sdk-base";
-import { type Client, createClient, createConfig } from "@hey-api/client-fetch";
+import { CrossmintApiClient } from "@crossmint/common-sdk-base";
+
+import { SDK_NAME, SDK_VERSION } from "../utils/constants";
 
 import type {
-    ClientOptions,
     CreateWalletDto,
     WalletV1Alpha2ResponseDto,
     CreateTransactionDto,
@@ -16,19 +16,6 @@ import type {
     Nftsol,
     WalletBalanceResponseDto,
 } from "./gen/types.gen";
-import {
-    walletsV1ControllerCreateWallet4,
-    walletsV1ControllerGetWalletByLocator4,
-    walletsV1ControllerCreateTransaction4,
-    walletsV1ControllerSubmitApprovals4,
-    walletsV1ControllerGetTransaction4,
-    walletsV1ControllerCreateSignatureRequest4,
-    walletsV1ControllerSubmitSignatureApprovals4,
-    walletsV1ControllerGetSignature4,
-    walletsV1ControllerGetTransactionsWithoutChain4,
-    fetchContentFromWallet,
-    balanceControllerGetBalanceForLocator2,
-} from "./gen/sdk.gen";
 
 type CreateWalletParams = CreateWalletDto;
 type CreateWalletResponse = WalletV1Alpha2ResponseDto;
@@ -51,70 +38,55 @@ type GetNftsResponse = Nftevm | Nftsol;
 type GetBalanceResponse = WalletBalanceResponseDto;
 
 class ApiClient {
-    private readonly client: Client;
+    protected apiClient: CrossmintApiClient;
 
-    constructor(
-        private readonly apiKey: string,
-        private readonly jwt?: string
-    ) {
-        const validationResult = validateAPIKey(this.apiKey);
-        if (!validationResult.isValid) {
-            throw new Error("Invalid API key");
-        }
-        if (validationResult.usageOrigin === APIKeyUsageOrigin.CLIENT && !jwt) {
-            throw new Error("JWT is required for client API key");
-        }
-
-        const baseUrl = environmentToCrossmintBaseURL(validationResult.environment);
-        this.client = createClient(
-            createConfig<ClientOptions>({
-                baseUrl,
-            })
+    constructor(apiKey: string, jwt?: string) {
+        this.apiClient = new CrossmintApiClient(
+            {
+                apiKey,
+                jwt,
+            },
+            {
+                internalConfig: {
+                    sdkMetadata: {
+                        name: SDK_NAME,
+                        version: SDK_VERSION,
+                    },
+                },
+            }
         );
     }
 
     async createWallet(params: CreateWalletParams): Promise<CreateWalletResponse> {
-        const response = await walletsV1ControllerCreateWallet4({
-            client: this.client,
-            body: params,
-            headers: this.getHeaders(),
+        const response = await this.apiClient.post("api/2022-06-09/wallets", {
+            body: JSON.stringify(params),
+            headers: {
+                "Content-Type": "application/json",
+            },
         });
-        if (response.error) {
-            throw response.error;
-        }
-        return response.data;
+        return response.json();
     }
 
     async getWallet(locator: string): Promise<GetWalletResponse> {
-        const response = await walletsV1ControllerGetWalletByLocator4({
-            client: this.client,
-            path: {
-                walletLocator: locator,
+        const response = await this.apiClient.get(`api/2022-06-09/wallets/${locator}`, {
+            headers: {
+                "Content-Type": "application/json",
             },
-            headers: this.getHeaders(),
         });
-        if (response.error) {
-            throw response.error;
-        }
-        return response.data;
+        return response.json();
     }
 
     async createTransaction(
         walletLocator: string,
         params: CreateTransactionParams
     ): Promise<CreateTransactionResponse> {
-        const response = await walletsV1ControllerCreateTransaction4({
-            client: this.client,
-            path: {
-                walletLocator,
+        const response = await this.apiClient.post(`api/2022-06-09/wallets/${walletLocator}/transactions`, {
+            body: JSON.stringify(params),
+            headers: {
+                "Content-Type": "application/json",
             },
-            body: params,
-            headers: this.getHeaders(),
         });
-        if (response.error) {
-            throw response.error;
-        }
-        return response.data;
+        return response.json();
     }
 
     async approveTransaction(
@@ -122,49 +94,38 @@ class ApiClient {
         transactionId: string,
         params: ApproveTransactionParams
     ): Promise<ApproveTransactionResponse> {
-        const response = await walletsV1ControllerSubmitApprovals4({
-            client: this.client,
-            path: {
-                walletLocator,
-                transactionId,
-            },
-            body: params,
-            headers: this.getHeaders(),
-        });
-        if (response.error) {
-            throw response.error;
-        }
-        return response.data;
+        const response = await this.apiClient.post(
+            `api/2022-06-09/wallets/${walletLocator}/transactions/${transactionId}/approvals`,
+            {
+                body: JSON.stringify(params),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return response.json();
     }
 
     async getTransaction(walletLocator: string, transactionId: string): Promise<GetTransactionResponse> {
-        const response = await walletsV1ControllerGetTransaction4({
-            client: this.client,
-            path: {
-                walletLocator,
-                transactionId,
-            },
-            headers: this.getHeaders(),
-        });
-        if (response.error) {
-            throw response.error;
-        }
-        return response.data;
+        const response = await this.apiClient.get(
+            `api/2022-06-09/wallets/${walletLocator}/transactions/${transactionId}`,
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return response.json();
     }
 
     async createSignature(walletLocator: string, params: CreateSignatureParams): Promise<CreateSignatureResponse> {
-        const response = await walletsV1ControllerCreateSignatureRequest4({
-            client: this.client,
-            path: {
-                walletLocator,
+        const response = await this.apiClient.post(`api/2022-06-09/wallets/${walletLocator}/signatures`, {
+            body: JSON.stringify(params),
+            headers: {
+                "Content-Type": "application/json",
             },
-            body: params,
-            headers: this.getHeaders(),
         });
-        if (response.error) {
-            throw response.error;
-        }
-        return response.data;
+        return response.json();
     }
 
     async approveSignature(
@@ -172,66 +133,49 @@ class ApiClient {
         signatureId: string,
         params: ApproveSignatureParams
     ): Promise<ApproveSignatureResponse> {
-        const response = await walletsV1ControllerSubmitSignatureApprovals4({
-            client: this.client,
-            path: {
-                walletLocator,
-                signatureId,
-            },
-            body: params,
-            headers: this.getHeaders(),
-        });
-        if (response.error) {
-            throw response.error;
-        }
-        return response.data;
+        const response = await this.apiClient.post(
+            `api/2022-06-09/wallets/${walletLocator}/signatures/${signatureId}/approvals`,
+            {
+                body: JSON.stringify(params),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return response.json();
     }
 
     async getSignature(walletLocator: string, signatureId: string): Promise<GetSignatureResponse> {
-        const response = await walletsV1ControllerGetSignature4({
-            client: this.client,
-            path: {
-                walletLocator,
-                signatureId,
+        const response = await this.apiClient.get(`api/2022-06-09/wallets/${walletLocator}/signatures/${signatureId}`, {
+            headers: {
+                "Content-Type": "application/json",
             },
-            headers: this.getHeaders(),
         });
-        if (response.error) {
-            throw response.error;
-        }
-        return response.data;
+        return response.json();
     }
 
     async getTransactions(walletLocator: string): Promise<GetTransactionsResponse> {
-        const response = await walletsV1ControllerGetTransactionsWithoutChain4({
-            client: this.client,
-            path: {
-                walletLocator,
+        const response = await this.apiClient.get(`api/2022-06-09/wallets/${walletLocator}/transactions`, {
+            headers: {
+                "Content-Type": "application/json",
             },
-            headers: this.getHeaders(),
         });
-        if (response.error) {
-            throw response.error;
-        }
-        return response.data;
+        return response.json();
     }
 
     async getNfts(walletLocator: string, page: number, perPage: number): Promise<GetNftsResponse> {
-        const response = await fetchContentFromWallet({
-            client: this.client,
-            path: {
-                identifier: walletLocator,
-            },
-            query: {
-                page: page.toString(),
-                perPage: perPage.toString(),
-            },
-            headers: this.getHeaders(),
-        });
-        if (response.error) {
-            throw response.error;
-        }
-        return response.data;
+        const queryParams = new URLSearchParams();
+        queryParams.append("page", page.toString());
+        queryParams.append("perPage", perPage.toString());
+        const response = await this.apiClient.get(
+            `api/2022-06-09/wallets/${walletLocator}/nfts?${queryParams.toString()}`,
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return response.json();
     }
 
     async getBalance(
@@ -241,27 +185,20 @@ class ApiClient {
             tokens: string[];
         }
     ): Promise<GetBalanceResponse> {
-        const response = await balanceControllerGetBalanceForLocator2({
-            client: this.client,
-            path: {
-                walletLocator,
-            },
-            query: {
-                chains: params.chains?.join(","),
-                tokens: params.tokens.join(","),
-            },
-            headers: this.getHeaders(),
-        });
-        if (response.error) {
-            throw response.error;
+        const queryParams = new URLSearchParams();
+        if (params.chains) {
+            params.chains.forEach((chain) => queryParams.append("chains", chain));
         }
-        return response.data;
-    }
-
-    private getHeaders() {
-        return {
-            "X-API-KEY": this.apiKey,
-        };
+        params.tokens.forEach((token) => queryParams.append("tokens", token));
+        const response = await this.apiClient.get(
+            `api/v1-alpha2/wallets/${walletLocator}/balances?${queryParams.toString()}`,
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return response.json();
     }
 }
 
