@@ -1,32 +1,12 @@
 import type { EVMSmartWallet, EVMMPCWallet } from "@/evm";
 import type { SolanaSmartWallet, SolanaMPCWallet } from "@/solana";
 
-type EVMAdminSigner =
-    | {
-          type: "evm-keypair";
-          address: string;
-      }
-    | {
-          type: "evm-fireblocks-custodial";
-      }
-    | {
-          type: "evm-passkey";
-          id: string;
-          name: string;
-          publicKey: {
-              x: string;
-              y: string;
-          };
-      };
+import type { CreateWalletDto } from "@/api/gen/types.gen";
 
-type SolanaAdminSigner =
-    | {
-          type: "solana-keypair";
-          address: string;
-      }
-    | {
-          type: "solana-fireblocks-custodial";
-      };
+type EVMAdminSigner = NonNullable<Extract<CreateWalletDto, { type: "evm-smart-wallet" }>["config"]>["adminSigner"];
+type SolanaAdminSigner = NonNullable<
+    Extract<CreateWalletDto, { type: "solana-smart-wallet" }>["config"]
+>["adminSigner"];
 
 type WalletTypeToArgs = {
     "evm-smart-wallet": [adminSigner: EVMAdminSigner, linkedUser?: string];
