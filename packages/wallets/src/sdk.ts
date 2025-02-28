@@ -42,7 +42,7 @@ type WalletTypeToWallet = {
     "solana-mpc-wallet": SolanaMPCWallet;
 };
 
-class WalletSDK {
+class CrossmintWallet {
     constructor(
         private readonly apiKey: string,
         private readonly jwt?: string
@@ -62,4 +62,4 @@ class WalletSDK {
     }
 }
 
-export default WalletSDK;
+export default CrossmintWallet;
