@@ -1,6 +1,6 @@
 import { BlockchainIncludingTestnet as Blockchain } from "@crossmint/common-sdk-base";
 
-const SMART_WALLET_TESTNET_CHAINS = [
+const EVM_SMART_WALLET_TESTNET_CHAINS = [
     Blockchain.BASE_SEPOLIA,
     Blockchain.POLYGON_AMOY,
     Blockchain.OPTIMISM_SEPOLIA,
@@ -8,7 +8,7 @@ const SMART_WALLET_TESTNET_CHAINS = [
     Blockchain.STORY_TESTNET,
 ];
 
-const SMART_WALLET_MAINNET_CHAINS = [
+const EVM_SMART_WALLET_MAINNET_CHAINS = [
     Blockchain.BASE,
     Blockchain.POLYGON,
     Blockchain.OPTIMISM,
@@ -16,14 +16,14 @@ const SMART_WALLET_MAINNET_CHAINS = [
     Blockchain.STORY,
 ];
 
-type SmartWalletTestnet = (typeof SMART_WALLET_TESTNET_CHAINS)[number];
-type SmartWalletMainnet = (typeof SMART_WALLET_MAINNET_CHAINS)[number];
-export type SmartWalletChain = SmartWalletTestnet | SmartWalletMainnet;
+type EVMSmartWalletTestnet = (typeof EVM_SMART_WALLET_TESTNET_CHAINS)[number];
+type EVMSmartWalletMainnet = (typeof EVM_SMART_WALLET_MAINNET_CHAINS)[number];
+export type EVMSmartWalletChain = EVMSmartWalletTestnet | EVMSmartWalletMainnet;
 
-export function isTestnetChain(chain: SmartWalletChain): chain is SmartWalletTestnet {
-    return (SMART_WALLET_TESTNET_CHAINS as SmartWalletChain[]).includes(chain);
+export function isTestnetChain(chain: EVMSmartWalletChain): chain is EVMSmartWalletTestnet {
+    return (EVM_SMART_WALLET_TESTNET_CHAINS as EVMSmartWalletChain[]).includes(chain);
 }
 
-export function isMainnetChain(chain: SmartWalletChain): chain is SmartWalletMainnet {
-    return (SMART_WALLET_MAINNET_CHAINS as SmartWalletChain[]).includes(chain);
+export function isMainnetChain(chain: EVMSmartWalletChain): chain is EVMSmartWalletMainnet {
+    return (EVM_SMART_WALLET_MAINNET_CHAINS as EVMSmartWalletChain[]).includes(chain);
 }

@@ -1,6 +1,6 @@
 import type { Address, Hex, SignableMessage, PublicClient, HttpTransport, TypedData, TypedDataDefinition } from "viem";
 
-import type { SmartWalletChain } from "./chains";
+import type { EVMSmartWalletChain } from "./chains";
 
 export interface ViemWallet {
     getAddress: () => Address;
@@ -26,7 +26,7 @@ export interface ViemWallet {
 export class EVMSmartWallet implements ViemWallet {
     constructor(
         public readonly publicClient: PublicClient<HttpTransport>,
-        public readonly chain: SmartWalletChain,
+        public readonly chain: EVMSmartWalletChain,
         private readonly address: Address
     ) {}
 
