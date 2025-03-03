@@ -1,5 +1,3 @@
-// @ts-ignore - React is required for JSX
-import React from "react";
 import { TouchableOpacity, Text, StyleSheet } from "react-native";
 
 export type CrossmintHostedCheckoutV3ReactNativeProps = {

@@ -5,10 +5,7 @@
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "source": "src/index.ts",
-    "files": [
-        "dist/**/*",
-        "src/**/*"
-    ],
+    "files": ["dist/**/*", "src/**/*"],
     "scripts": {
         "build": "tsup",
         "dev": "tsup --watch",
@@ -41,26 +38,14 @@
     },
     "jest": {
         "preset": "react-native",
-        "modulePathIgnorePatterns": [
-            "<rootDir>/example/node_modules",
-            "<rootDir>/dist/"
-        ],
-        "setupFilesAfterEnv": [
-            "@testing-library/jest-native/extend-expect"
-        ]
+        "modulePathIgnorePatterns": ["<rootDir>/example/node_modules", "<rootDir>/dist/"],
+        "setupFilesAfterEnv": ["@testing-library/jest-native/extend-expect"]
     },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/Crossmint/crossmint-sdk.git"
     },
-    "keywords": [
-        "crossmint",
-        "react-native",
-        "ui",
-        "sdk",
-        "crypto",
-        "wallet"
-    ],
+    "keywords": ["crossmint", "react-native", "ui", "sdk", "crypto", "wallet"],
     "author": "Paella Labs Inc",
     "license": "Apache-2.0",
     "publishConfig": {
