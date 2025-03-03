@@ -1,5 +1,7 @@
 import type { Connection, PublicKey, Transaction, VersionedTransaction } from "@solana/web3.js";
 
+import type { ApiClient } from "@/api";
+
 export interface SolanaWallet {
     // Get the wallet's public key (equivalent to EVM address)
     getPublicKey: () => PublicKey;
@@ -15,7 +17,10 @@ export interface SolanaWallet {
 }
 
 export class SolanaSmartWallet implements SolanaWallet {
-    constructor(public readonly client: { public: Connection }) {}
+    constructor(
+        public readonly client: { public: Connection },
+        private readonly apiClient: ApiClient
+    ) {}
 
     public async balances() {}
     public async transactions() {}

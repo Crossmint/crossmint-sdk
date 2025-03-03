@@ -1,5 +1,7 @@
 import type { Address, Hex, SignableMessage, PublicClient, HttpTransport, TypedData, TypedDataDefinition } from "viem";
 
+import type { ApiClient } from "@/api";
+
 import type { EVMSmartWalletChain } from "./chains";
 
 export interface ViemWallet {
@@ -27,6 +29,7 @@ export class EVMSmartWallet implements ViemWallet {
     constructor(
         public readonly publicClient: PublicClient<HttpTransport>,
         public readonly chain: EVMSmartWalletChain,
+        private readonly apiClient: ApiClient,
         private readonly address: Address
     ) {}
 

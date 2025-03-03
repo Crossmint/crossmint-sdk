@@ -1,4 +1,4 @@
-import { CrossmintApiClient } from "@crossmint/common-sdk-base";
+import { type Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
 
 import { SDK_NAME, SDK_VERSION } from "../utils/constants";
 
@@ -42,21 +42,15 @@ type WalletType = CreateWalletDto["type"];
 class ApiClient extends CrossmintApiClient {
     private apiPrefix = "api/2022-06-09/wallets";
 
-    constructor(apiKey: string, jwt?: string) {
-        super(
-            {
-                apiKey,
-                jwt,
-            },
-            {
-                internalConfig: {
-                    sdkMetadata: {
-                        name: SDK_NAME,
-                        version: SDK_VERSION,
-                    },
+    constructor(crossmint: Crossmint) {
+        super(crossmint, {
+            internalConfig: {
+                sdkMetadata: {
+                    name: SDK_NAME,
+                    version: SDK_VERSION,
                 },
-            }
-        );
+            },
+        });
     }
 
     async createWallet(params: CreateWalletParams): Promise<CreateWalletResponse> {

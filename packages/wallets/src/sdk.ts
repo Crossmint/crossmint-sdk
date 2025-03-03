@@ -3,6 +3,7 @@ import type { Crossmint } from "@crossmint/common-sdk-base";
 import type { EVMSmartWallet, EVMMPCWallet } from "@/evm";
 import type { SolanaSmartWallet, SolanaMPCWallet } from "@/solana";
 
+import { ApiClient } from "@/api";
 import type { CreateWalletDto } from "@/api/gen/types.gen";
 
 type EVMAdminSigner = NonNullable<Extract<CreateWalletDto, { type: "evm-smart-wallet" }>["config"]>["adminSigner"];
@@ -25,7 +26,11 @@ type WalletTypeToWallet = {
 };
 
 class CrossmintWallet {
-    private constructor(private readonly crossmint: Crossmint) {}
+    private apiClient: ApiClient;
+
+    private constructor(crossmint: Crossmint) {
+        this.apiClient = new ApiClient(crossmint);
+    }
 
     public static from(crossmint: Crossmint): CrossmintWallet {
         return new CrossmintWallet(crossmint);
