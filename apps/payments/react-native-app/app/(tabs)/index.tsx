@@ -15,7 +15,6 @@ export default function HomeScreen() {
             <ThemedView style={styles.titleContainer}>
                 <ThemedText type="title">Welcome to the Crossmint React Native App!</ThemedText>
                 <HelloWave />
-                <CrossmintHostedCheckout onPress={() => console.log("Pressed")} style={{ marginTop: 100 }} />
             </ThemedView>
             <ThemedView style={styles.stepContainer}>
                 <ThemedText type="subtitle">Step 1: Try it</ThemedText>
@@ -30,6 +29,7 @@ export default function HomeScreen() {
                     </ThemedText>{" "}
                     to open developer tools.
                 </ThemedText>
+                <CrossmintHostedCheckout onPress={() => console.log("Pressed")} />
             </ThemedView>
             <ThemedView style={styles.stepContainer}>
                 <ThemedText type="subtitle">Step 2: Explore</ThemedText>
