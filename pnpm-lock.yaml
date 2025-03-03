@@ -264,6 +264,9 @@ importers:
 
   apps/payments/react-native-app:
     dependencies:
+      '@crossmint/client-sdk-react-native-ui':
+        specifier: workspace:*
+        version: link:../../../packages/client/ui/react-native-ui
       '@expo/vector-icons':
         specifier: ^14.0.2
         version: 14.0.4
@@ -3037,7 +3040,7 @@ packages:
 
   '@expo/bunyan@4.0.1':
     resolution: {integrity: sha512-+Lla7nYSiHZirgK+U/uYzsLv/X+HaJienbD5AKX1UQZHYfWaP+9uuQluRB4GrEVWF0GZ7vEVp/jzaOT9k/SQlg==}
-    engines: {node: '>=0.10.0'}
+    engines: {'0': node >=0.10.0}
 
   '@expo/cli@0.22.18':
     resolution: {integrity: sha512-TWGKHWTYU9xE7YETPk2zQzLPl+bldpzZCa0Cqg0QeENpu03ZEnMxUqrgHwrbWGTf7ONTYC1tODBkFCFw/qgPGA==}
