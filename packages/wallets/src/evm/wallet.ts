@@ -1,6 +1,6 @@
 import type { Address, Hex, SignableMessage, PublicClient, HttpTransport, TypedData, TypedDataDefinition } from "viem";
 
-import type { ApiClient } from "@/api";
+import type { ApiClient } from "../api";
 
 import type { EVMSmartWalletChain } from "./chains";
 

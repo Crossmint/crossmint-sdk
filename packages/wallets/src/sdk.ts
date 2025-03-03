@@ -3,7 +3,7 @@ import type { Crossmint } from "@crossmint/common-sdk-base";
 import type { EVMSmartWallet, EVMMPCWallet } from "@/evm";
 import type { SolanaSmartWallet, SolanaMPCWallet } from "@/solana";
 
-import { ApiClient } from "@/api";
+import { ApiClient } from "@/api/index";
 import type { CreateWalletDto } from "@/api/gen/types.gen";
 
 type EVMAdminSigner = NonNullable<Extract<CreateWalletDto, { type: "evm-smart-wallet" }>["config"]>["adminSigner"];

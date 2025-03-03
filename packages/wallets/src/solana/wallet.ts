@@ -1,6 +1,6 @@
 import type { Connection, PublicKey, Transaction, VersionedTransaction } from "@solana/web3.js";
 
-import type { ApiClient } from "@/api";
+import type { ApiClient } from "../api";
 
 export interface SolanaWallet {
     // Get the wallet's public key (equivalent to EVM address)
