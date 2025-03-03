@@ -14,9 +14,9 @@
         "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
     },
     "dependencies": {
+        "@babel/runtime": "^7.24.7",
         "@crossmint/client-sdk-smart-wallet": "workspace:*",
         "@crossmint/client-sdk-smart-wallet-web3auth-adapter": "workspace:*",
-        "@babel/runtime": "^7.26.0",
         "@emotion/react": "^11.11.1",
         "@emotion/styled": "^11.11.0",
         "@headlessui/react": "^1.7.16",
