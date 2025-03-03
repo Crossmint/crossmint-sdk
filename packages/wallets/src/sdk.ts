@@ -1,3 +1,5 @@
+import type { Crossmint } from "@crossmint/common-sdk-base";
+
 import type { EVMSmartWallet, EVMMPCWallet } from "@/evm";
 import type { SolanaSmartWallet, SolanaMPCWallet } from "@/solana";
 
@@ -23,12 +25,13 @@ type WalletTypeToWallet = {
 };
 
 class CrossmintWallet {
-    constructor(
-        private readonly apiKey: string,
-        private readonly jwt?: string
-    ) {}
+    private constructor(private readonly crossmint: Crossmint) {}
 
-    // biome-ignore lint/suspicious/useAwait: <explanation>
+    public static from(crossmint: Crossmint): CrossmintWallet {
+        return new CrossmintWallet(crossmint);
+    }
+
+    // biome-ignore lint/suspicious/useAwait: stub
     public async getOrCreateWallet<WalletType extends keyof WalletTypeToArgs>(
         _type: WalletType,
         ..._args: WalletTypeToArgs[WalletType]

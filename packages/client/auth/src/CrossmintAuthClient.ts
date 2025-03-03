@@ -14,7 +14,7 @@ import type { Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
 import { type CancellableTask, queueTask } from "@crossmint/client-sdk-base";
 import { deleteCookie, getCookie, getJWTExpiration, setCookie, TIME_BEFORE_EXPIRING_JWT_IN_SECONDS } from "./utils";
 
-type CrossmintAuthClientConfig = CrossmintAuthOptions & {
+export type CrossmintAuthClientConfig = CrossmintAuthOptions & {
     callbacks?: CrossmintAuthClientCallbacks;
     logoutRoute?: string;
 };
@@ -25,7 +25,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
     private refreshPromise: Promise<AuthMaterialWithUser> | null = null;
     private logoutRoute: string | null;
 
-    private constructor(crossmint: Crossmint, apiClient: CrossmintApiClient, config: CrossmintAuthClientConfig = {}) {
+    protected constructor(crossmint: Crossmint, apiClient: CrossmintApiClient, config: CrossmintAuthClientConfig = {}) {
         super(crossmint, apiClient, config);
         this.callbacks = config.callbacks ?? {};
         this.logoutRoute = config.logoutRoute ?? null;
