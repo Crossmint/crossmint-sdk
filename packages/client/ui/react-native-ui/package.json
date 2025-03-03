@@ -1,0 +1,69 @@
+{
+    "name": "@crossmint/client-sdk-react-native-ui",
+    "version": "0.1.0",
+    "description": "Crossmint React Native UI SDK",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "source": "src/index.ts",
+    "files": [
+        "dist/**/*",
+        "src/**/*"
+    ],
+    "scripts": {
+        "build": "tsup",
+        "dev": "tsup --watch",
+        "clean": "rimraf dist",
+        "lint": "biome check .",
+        "lint:fix": "biome check --apply .",
+        "test": "jest",
+        "example": "cd example && pnpm install && npx expo start"
+    },
+    "peerDependencies": {
+        "react": ">=18.0.0",
+        "react-native": ">=0.78.0"
+    },
+    "dependencies": {
+        "@crossmint/client-sdk-base": "workspace:*"
+    },
+    "devDependencies": {
+        "@react-native-community/eslint-config": "^3.2.0",
+        "@testing-library/jest-native": "^5.4.3",
+        "@testing-library/react-native": "^12.4.1",
+        "@types/jest": "^29.5.4",
+        "jest": "^29.6.4",
+        "metro-react-native-babel-preset": "^0.77.0",
+        "react": "^18.3.0",
+        "@types/react": "^18.3.0",
+        "react-native": "^0.76.0",
+        "react-test-renderer": "^18.3.0",
+        "tsup": "^8.1.0",
+        "typescript": "^5.5.3"
+    },
+    "jest": {
+        "preset": "react-native",
+        "modulePathIgnorePatterns": [
+            "<rootDir>/example/node_modules",
+            "<rootDir>/dist/"
+        ],
+        "setupFilesAfterEnv": [
+            "@testing-library/jest-native/extend-expect"
+        ]
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Crossmint/crossmint-sdk.git"
+    },
+    "keywords": [
+        "crossmint",
+        "react-native",
+        "ui",
+        "sdk",
+        "crypto",
+        "wallet"
+    ],
+    "author": "Paella Labs Inc",
+    "license": "Apache-2.0",
+    "publishConfig": {
+        "access": "public"
+    }
+}
