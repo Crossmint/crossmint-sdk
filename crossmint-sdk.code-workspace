@@ -61,6 +61,10 @@
             "path": "packages/client/wallets/smart-wallet"
         },
         {
+            "name": "🪪 @crossmint/wallets-sdk",
+            "path": "packages/wallets"
+        },
+        {
             "name": "🏁 Apps",
             "path": "apps"
         }

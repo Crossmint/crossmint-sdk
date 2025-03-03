@@ -1,0 +1,34 @@
+{
+    "name": "@crossmint/wallets-sdk",
+    "version": "1.0.0",
+    "repository": "https://github.com/Crossmint/crossmint-sdk",
+    "license": "Apache-2.0",
+    "author": "Paella Labs Inc",
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        "import": "./dist/index.js",
+        "require": "./dist/index.cjs"
+    },
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "files": ["dist", "LICENSE"],
+    "scripts": {
+        "build": "tsup",
+        "dev": "tsup --watch",
+        "test:vitest": "vitest run",
+        "generate": "pnpm dlx @hey-api/openapi-ts",
+        "postinstall": "pnpm generate"
+    },
+    "dependencies": {
+        "@crossmint/common-sdk-auth": "workspace:*",
+        "@crossmint/common-sdk-base": "workspace:*",
+        "@hey-api/client-fetch": "0.8.1",
+        "@solana/web3.js": "1.95.1",
+        "viem": "2.17.5"
+    },
+    "devDependencies": {
+        "@hey-api/openapi-ts": "0.64.5"
+    }
+}
