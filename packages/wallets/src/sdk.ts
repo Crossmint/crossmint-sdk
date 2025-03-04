@@ -1,20 +1,15 @@
 import type { Crossmint } from "@crossmint/common-sdk-base";
+import type { Address } from "viem";
 
-import type { EVMSmartWallet, EVMMPCWallet } from "@/evm";
-import type { SolanaSmartWallet, SolanaMPCWallet } from "@/solana";
-import type { CreateWalletDto } from "@/api/gen/types.gen";
+import { EVMSmartWallet, type EVMMPCWallet, type EVMSmartWalletChain, type EVMSigner } from "@/evm";
+import type { SolanaSmartWallet, SolanaMPCWallet, SolanaSigner } from "@/solana";
 
 import { ApiClient } from "./api/index.js";
 
-type EVMAdminSigner = NonNullable<Extract<CreateWalletDto, { type: "evm-smart-wallet" }>["config"]>["adminSigner"];
-type SolanaAdminSigner = NonNullable<
-    Extract<CreateWalletDto, { type: "solana-smart-wallet" }>["config"]
->["adminSigner"];
-
 type WalletTypeToArgs = {
-    "evm-smart-wallet": [adminSigner: EVMAdminSigner, linkedUser?: string];
-    "evm-mpc-wallet": [linkedUser: string];
-    "solana-smart-wallet": [adminSigner: SolanaAdminSigner, linkedUser?: string];
+    "evm-smart-wallet": [chain: EVMSmartWalletChain, adminSigner: EVMSigner, linkedUser?: string];
+    "evm-mpc-wallet": [chain: EVMSmartWalletChain, linkedUser: string];
+    "solana-smart-wallet": [adminSigner: SolanaSigner, linkedUser?: string];
     "solana-mpc-wallet": [linkedUser: string];
 };
 
@@ -25,7 +20,7 @@ type WalletTypeToWallet = {
     "solana-mpc-wallet": SolanaMPCWallet;
 };
 
-class CrossmintWallet {
+export class CrossmintWallet {
     private apiClient: ApiClient;
 
     private constructor(crossmint: Crossmint) {
@@ -36,18 +31,26 @@ class CrossmintWallet {
         return new CrossmintWallet(crossmint);
     }
 
-    // biome-ignore lint/suspicious/useAwait: stub
     public async getOrCreateWallet<WalletType extends keyof WalletTypeToArgs>(
-        _type: WalletType,
-        ..._args: WalletTypeToArgs[WalletType]
+        type: WalletType,
+        ...args: WalletTypeToArgs[WalletType]
     ): Promise<WalletTypeToWallet[WalletType]> {
-        // if (type === "evm-smart-wallet") {
-        //     const [adminSigner, linkedUser] =
-        //         args as WalletTypeToArgs["evm-smart-wallet"];
-        //     return new EVMSmartWallet();
-        // }
+        if (type === "evm-smart-wallet") {
+            const [chain, adminSigner, linkedUser] = args as WalletTypeToArgs["evm-smart-wallet"];
+            const walletResponse = await this.apiClient.createWallet({
+                type: "evm-smart-wallet",
+                config: {
+                    adminSigner,
+                },
+                linkedUser,
+            });
+            return new EVMSmartWallet(
+                chain,
+                this.apiClient,
+                walletResponse.address as Address,
+                adminSigner
+            ) as WalletTypeToWallet[WalletType];
+        }
         throw new Error("Not implemented");
     }
 }
-
-export default CrossmintWallet;

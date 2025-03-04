@@ -1,4 +1,4 @@
-import { type Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
+import { type Crossmint, APIKeyUsageOrigin, CrossmintApiClient, validateAPIKey } from "@crossmint/common-sdk-base";
 
 import { SDK_NAME, SDK_VERSION } from "../utils/constants";
 
@@ -51,6 +51,15 @@ class ApiClient extends CrossmintApiClient {
                 },
             },
         });
+    }
+
+    isServerSide() {
+        const apiKey = this.crossmint.apiKey;
+        const apiKeyValidation = validateAPIKey(apiKey);
+        if (!apiKeyValidation.isValid) {
+            throw new Error("Invalid API key");
+        }
+        return apiKeyValidation.usageOrigin === APIKeyUsageOrigin.SERVER;
     }
 
     async createWallet(params: CreateWalletParams): Promise<CreateWalletResponse> {

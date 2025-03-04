@@ -1,8 +1,50 @@
-import type { Address, Hex, SignableMessage, PublicClient, HttpTransport, TypedData, TypedDataDefinition } from "viem";
+import { WebAuthnP256 } from "ox";
+import {
+    type Account,
+    type Address,
+    type Hex,
+    type SignableMessage,
+    type PublicClient,
+    type HttpTransport,
+    type TypedData,
+    type TypedDataDefinition,
+    type TypedDataDomain,
+    type EIP1193Provider,
+    http,
+    createPublicClient,
+    concat,
+} from "viem";
 
-import type { ApiClient } from "../api";
+import { sleep } from "../utils";
 
-import type { EVMSmartWalletChain } from "./chains";
+import type { ApiClient, GetSignatureResponse, GetTransactionResponse } from "../api";
+import entryPointAbi from "./abi/entryPoint";
+import { toViemChain, type EVMSmartWalletChain } from "./chains";
+import { ENTRY_POINT_ADDRESS, STATUS_POLLING_INTERVAL_MS } from "@/utils/constants";
+
+export type EVMSigner =
+    | {
+          type: "evm-keypair";
+          address: string;
+          signer:
+              | {
+                    type: "provider";
+                    provider: EIP1193Provider;
+                }
+              | {
+                    type: "viem";
+                    account: Account;
+                };
+      }
+    | {
+          type: "evm-passkey";
+          id: string;
+          name: string;
+          publicKey: {
+              x: string;
+              y: string;
+          };
+      };
 
 export interface ViemWallet {
     getAddress: () => Address;
@@ -26,48 +68,315 @@ export interface ViemWallet {
 }
 
 export class EVMSmartWallet implements ViemWallet {
+    public readonly publicClient: PublicClient<HttpTransport>;
+
     constructor(
-        public readonly publicClient: PublicClient<HttpTransport>,
         public readonly chain: EVMSmartWalletChain,
         private readonly apiClient: ApiClient,
-        private readonly address: Address
-    ) {}
+        private readonly address: Address,
+        private readonly adminSigner: EVMSigner
+    ) {
+        this.publicClient = createPublicClient({
+            chain: toViemChain(chain),
+            transport: http(),
+        });
+    }
 
-    public async balances() {}
-    public async transactions() {}
-    public async nfts() {}
+    public async balances(tokens: Address[]) {
+        return await this.apiClient.getBalance(this.address, {
+            chains: [this.chain],
+            tokens,
+        });
+    }
+    public async transactions() {
+        const transactions = this.apiClient.isServerSide()
+            ? await this.apiClient.getTransactions(this.address)
+            : await this.apiClient.getMeTransactions("evm-smart-wallet");
+        return transactions.transactions.filter((transaction) => transaction.walletType === "evm-smart-wallet");
+    }
+    public async nfts(perPage: number, page: number) {
+        return await this.apiClient.getNfts(this.address, perPage, page);
+    }
 
     public getAddress() {
         return this.address;
     }
 
-    // biome-ignore lint/suspicious/useAwait: <explanation>
     public async getNonce(parameters?: { key?: bigint | undefined } | undefined): Promise<bigint> {
-        throw new Error("Not implemented");
+        const nonce = await this.publicClient.readContract({
+            abi: entryPointAbi,
+            address: ENTRY_POINT_ADDRESS,
+            functionName: "getNonce",
+            args: [this.address, parameters?.key ?? BigInt(0)],
+        });
+        return nonce;
     }
 
-    // biome-ignore lint/suspicious/useAwait: <explanation>
     public async signMessage(parameters: {
         message: SignableMessage;
     }): Promise<Hex> {
-        throw new Error("Not implemented");
+        if (typeof parameters.message !== "string") {
+            throw new Error("Message must be a string");
+        }
+        const signerLocator = this.getSignerLocator(this.adminSigner);
+
+        // Create signature
+        const signatureCreationResponse = await this.apiClient.createSignature(this.address, {
+            type: "evm-message",
+            params: {
+                message: parameters.message,
+                signer: signerLocator,
+                chain: this.chain,
+            },
+        });
+        const signatureId = signatureCreationResponse.id;
+
+        // Approve signature
+        const pendingApprovals = signatureCreationResponse.approvals?.pending || [];
+        if (pendingApprovals.length !== 1) {
+            throw new Error(`Expected 1 pending approval, got ${pendingApprovals.length}`);
+        }
+        const pendingApproval = pendingApprovals[0];
+        const signature = await this.approveSignature(signatureId, pendingApproval.message as Hex);
+
+        if (signature === undefined) {
+            throw new Error("Signature not available");
+        }
+
+        // Get signature status until success
+        let signatureResponse: GetSignatureResponse | null = null;
+        while (signatureResponse === null || signatureResponse.status === "pending") {
+            await sleep(STATUS_POLLING_INTERVAL_MS);
+            signatureResponse = await this.apiClient.getSignature(this.address, signatureId);
+        }
+
+        if (signatureResponse.status === "failed") {
+            throw new Error("Message signing failed");
+        }
+
+        return signature;
     }
 
-    // biome-ignore lint/suspicious/useAwait: <explanation>
     public async signTypedData<
         const typedData extends TypedData | Record<string, unknown>,
         primaryType extends keyof typedData | "EIP712Domain" = keyof typedData,
     >(parameters: TypedDataDefinition<typedData, primaryType>): Promise<Hex> {
-        throw new Error("Not implemented");
+        const signerLocator = this.getSignerLocator(this.adminSigner);
+
+        const { domain, message, primaryType, types } = parameters;
+        if (!domain || !message || !types) {
+            throw new Error("Invalid typed data");
+        }
+
+        const { name, version, chainId, verifyingContract, salt } = domain as TypedDataDomain;
+        if (!name || !version || !chainId || !verifyingContract) {
+            throw new Error("Invalid typed data domain");
+        }
+
+        // Create signature
+        const signatureCreationResponse = await this.apiClient.createSignature(this.address, {
+            type: "evm-typed-data",
+            params: {
+                typedData: {
+                    domain: {
+                        name,
+                        version,
+                        chainId,
+                        verifyingContract,
+                        salt,
+                    },
+                    message,
+                    primaryType,
+                    types: types as Record<string, Array<{ name: string; type: string }>>,
+                },
+                signer: signerLocator,
+                chain: this.chain,
+                isSmartWalletSignature: false,
+            },
+        });
+        const signatureId = signatureCreationResponse.id;
+
+        // Approve signature
+        const pendingApprovals = signatureCreationResponse.approvals?.pending || [];
+        if (pendingApprovals.length !== 1) {
+            throw new Error(`Expected 1 pending approval, got ${pendingApprovals.length}`);
+        }
+        const pendingApproval = pendingApprovals[0];
+        const signature = await this.approveSignature(signatureId, pendingApproval.message as Hex);
+        if (signature === undefined) {
+            throw new Error("Signature not available");
+        }
+
+        // Get signature status until success
+        let signatureResponse: GetSignatureResponse | null = null;
+        while (signatureResponse === null || signatureResponse.status === "pending") {
+            await sleep(STATUS_POLLING_INTERVAL_MS);
+            signatureResponse = await this.apiClient.getSignature(this.address, signatureId);
+        }
+
+        if (signatureResponse.status === "failed") {
+            throw new Error("Typed data signing failed");
+        }
+
+        return signature;
     }
 
-    // biome-ignore lint/suspicious/useAwait: <explanation>
     public async sendTransaction(parameters: {
         to: Address;
         data?: Hex;
         value?: bigint;
     }): Promise<Hex> {
-        throw new Error("Not implemented");
+        const signerLocator = this.getSignerLocator(this.adminSigner);
+        // Create transaction
+        const transactionCreationResponse = await this.apiClient.createTransaction(this.address, {
+            params: {
+                signer: signerLocator,
+                chain: this.chain,
+                calls: [
+                    {
+                        to: parameters.to,
+                        value: parameters.value ? parameters.value.toString() : "0",
+                        data: parameters.data ?? "0x",
+                    },
+                ],
+            },
+        });
+        const transactionId = transactionCreationResponse.id;
+
+        // Approve transaction
+        const pendingApprovals = transactionCreationResponse.approvals?.pending || [];
+        if (pendingApprovals.length !== 1) {
+            throw new Error(`Expected 1 pending approval, got ${pendingApprovals.length}`);
+        }
+        const pendingApproval = pendingApprovals[0];
+        await this.approveTransaction(transactionId, pendingApproval.message as Hex);
+
+        // Get transaction status until success
+        let transactionResponse: GetTransactionResponse | null = null;
+        while (transactionResponse === null || transactionResponse.status === "pending") {
+            await sleep(STATUS_POLLING_INTERVAL_MS);
+            transactionResponse = await this.apiClient.getTransaction(this.address, transactionId);
+        }
+
+        if (transactionResponse.status === "failed") {
+            throw new Error("Transaction sending failed");
+        }
+
+        // Get transaction hash
+        const transactionHash = transactionResponse.onChain.txId;
+        if (transactionHash === undefined) {
+            throw new Error("Transaction hash not found");
+        }
+        return transactionHash as Hex;
+    }
+
+    private getSignerLocator(signer: EVMSigner): string {
+        switch (signer.type) {
+            case "evm-passkey":
+                return `evm-passkey:${signer.id}`;
+            case "evm-keypair":
+                return `evm-keypair:${signer.address}`;
+        }
+    }
+
+    private async approveTransaction(transactionId: string, message: Hex) {
+        switch (this.adminSigner.type) {
+            case "evm-passkey": {
+                const { metadata, signature } = await WebAuthnP256.sign({
+                    credentialId: this.adminSigner.id,
+                    challenge: message,
+                });
+
+                await this.apiClient.approveTransaction(this.address, transactionId, {
+                    approvals: [
+                        {
+                            signer: `evm-passkey:${this.adminSigner.id}`,
+                            // @ts-ignore the generated types are wrong
+                            signature: {
+                                r: `0x${signature.r.toString(16)}`,
+                                s: `0x${signature.s.toString(16)}`,
+                            },
+                            metadata,
+                        },
+                    ],
+                });
+                return;
+            }
+            case "evm-keypair": {
+                const signerAddress = this.adminSigner.address as Address;
+                const signature =
+                    this.adminSigner.signer.type === "viem"
+                        ? await this.adminSigner.signer.account.signMessage!({
+                              message: {
+                                  raw: message,
+                              },
+                          })
+                        : await this.adminSigner.signer.provider.request({
+                              method: "personal_sign",
+                              params: [message, signerAddress],
+                          });
+                await this.apiClient.approveTransaction(this.address, transactionId, {
+                    approvals: [
+                        {
+                            signature,
+                            signer: `evm-keypair:${signerAddress}`,
+                        },
+                    ],
+                });
+            }
+        }
+    }
+
+    private async approveSignature(signatureId: string, message: Hex) {
+        switch (this.adminSigner.type) {
+            case "evm-passkey": {
+                const { metadata, signature } = await WebAuthnP256.sign({
+                    credentialId: this.adminSigner.id,
+                    challenge: message,
+                });
+
+                await this.apiClient.approveSignature(this.address, signatureId, {
+                    approvals: [
+                        {
+                            signer: `evm-passkey:${this.adminSigner.id}`,
+                            // @ts-ignore the generated types are wrong
+                            signature: {
+                                r: `0x${signature.r.toString(16)}`,
+                                s: `0x${signature.s.toString(16)}`,
+                            },
+                            metadata,
+                        },
+                    ],
+                });
+
+                // Convert signature to hex
+                return concat([`0x${signature.r.toString(16)}`, `0x${signature.s.toString(16)}`]);
+            }
+            case "evm-keypair": {
+                const signerAddress = this.adminSigner.address as Address;
+                const signature =
+                    this.adminSigner.signer.type === "viem"
+                        ? await this.adminSigner.signer.account.signMessage!({
+                              message: {
+                                  raw: message,
+                              },
+                          })
+                        : await this.adminSigner.signer.provider.request({
+                              method: "personal_sign",
+                              params: [message, signerAddress],
+                          });
+                await this.apiClient.approveSignature(this.address, signatureId, {
+                    approvals: [
+                        {
+                            signature,
+                            signer: `evm-keypair:${signerAddress}`,
+                        },
+                    ],
+                });
+
+                return signature;
+            }
+        }
     }
 }
 
