@@ -1,8 +1,8 @@
 import type { Crossmint } from "@crossmint/common-sdk-base";
 import type { Address } from "viem";
 
-import { EVMSmartWallet, type EVMMPCWallet, type EVMSmartWalletChain, type EVMSigner } from "@/evm";
-import type { SolanaSmartWallet, SolanaMPCWallet, SolanaSigner } from "@/solana";
+import { EVMSmartWallet, type EVMMPCWallet, type EVMSmartWalletChain, type EVMSigner } from "./evm";
+import type { SolanaSmartWallet, SolanaMPCWallet, SolanaSigner } from "./solana";
 
 import { ApiClient } from "./api/index.js";
 

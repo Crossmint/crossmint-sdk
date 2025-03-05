@@ -15,12 +15,12 @@ import {
     concat,
 } from "viem";
 
-import { sleep } from "../utils";
-
 import type { ApiClient, GetSignatureResponse, GetTransactionResponse } from "../api";
+import { sleep } from "../utils";
+import { ENTRY_POINT_ADDRESS, STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
+
 import entryPointAbi from "./abi/entryPoint";
 import { toViemChain, type EVMSmartWalletChain } from "./chains";
-import { ENTRY_POINT_ADDRESS, STATUS_POLLING_INTERVAL_MS } from "@/utils/constants";
 
 export type EVMSigner =
     | {
