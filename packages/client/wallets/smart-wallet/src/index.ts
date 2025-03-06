@@ -5,6 +5,7 @@ export {
 
 // Types
 export type {
+    Callbacks,
     ViemAccount,
     PasskeySigner,
     ExternalSigner,
