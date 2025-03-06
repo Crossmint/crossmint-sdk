@@ -3,7 +3,12 @@ import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 
-import { type EVMSmartWallet, SmartWalletError, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
+import {
+    type EVMSmartWallet,
+    type PasskeySigner,
+    SmartWalletError,
+    SmartWalletSDK,
+} from "@crossmint/client-sdk-smart-wallet";
 import { createCrossmint } from "@crossmint/common-sdk-base";
 
 import { CrossmintProvider, useCrossmint } from "../hooks/useCrossmint";
@@ -40,7 +45,9 @@ vi.mock("../hooks/useCrossmint", async () => {
 function renderWalletProvider({ children }: { children: ReactNode }) {
     return render(
         <CrossmintProvider apiKey={MOCK_API_KEY}>
-            <CrossmintWalletProvider defaultChain="polygon-amoy">{children}</CrossmintWalletProvider>
+            <CrossmintWalletProvider defaultChain="polygon-amoy" showPasskeyHelpers={false}>
+                {children}
+            </CrossmintWalletProvider>
         </CrossmintProvider>
     );
 }
@@ -66,7 +73,7 @@ function TestComponent() {
 describe("CrossmintWalletProvider", () => {
     let mockSDK: SmartWalletSDK;
     let mockWallet: EVMSmartWallet;
-
+    let mockPasskeySigner: PasskeySigner;
     beforeEach(() => {
         vi.resetAllMocks();
         vi.mocked(createCrossmint).mockImplementation(() => ({}) as any);
@@ -80,8 +87,20 @@ describe("CrossmintWalletProvider", () => {
 
         mockSDK = mock<SmartWalletSDK>();
         mockWallet = mock<EVMSmartWallet>();
+        mockPasskeySigner = mock<PasskeySigner>({
+            type: "PASSKEY",
+            credential: {
+                id: "mock-credential-id",
+                publicKey: {
+                    prefix: 1,
+                    x: BigInt(1),
+                    y: BigInt(2),
+                },
+            },
+        });
         vi.mocked(SmartWalletSDK.init).mockReturnValue(mockSDK);
         vi.mocked(mockSDK.getOrCreateWallet).mockResolvedValue(mockWallet);
+        vi.mocked(mockSDK.createPasskeySigner).mockResolvedValue(mockPasskeySigner);
     });
 
     describe("getOrCreateWallet", () => {
