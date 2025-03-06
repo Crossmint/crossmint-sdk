@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-nextjs-starter
 
+## 1.4.34
+
+### Patch Changes
+
+- e44e488: embed crypto: tweak error messages
+- Updated dependencies [e44e488]
+  - @crossmint/client-sdk-react-ui@1.15.1
+
 ## 1.4.33
 
 ### Patch Changes
