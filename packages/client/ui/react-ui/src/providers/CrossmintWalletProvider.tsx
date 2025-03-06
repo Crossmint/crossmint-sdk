@@ -77,6 +77,7 @@ export type WalletConfig = WalletParams & { type: "evm-smart-wallet" };
 export function CrossmintWalletProvider({
     children,
     defaultChain,
+    showPasskeyHelpers = true,
     appearance,
 }: {
     children: ReactNode;
@@ -102,6 +103,7 @@ export function CrossmintWalletProvider({
     };
 
     const getOrCreateWallet = async (config?: WalletConfig) => {
+        console.log("getOrCreateWallet 1", config);
         if (walletState.status == "in-progress") {
             console.log("Wallet already loading");
             return {
@@ -156,6 +158,10 @@ export function CrossmintWalletProvider({
 
     const createPasskeyPrompt = (type: ValidPasskeyPromptType) => () =>
         new Promise<void>((resolve) => {
+            if (!showPasskeyHelpers) {
+                resolve();
+                return;
+            }
             setPasskeyPromptState({
                 type,
                 open: true,
