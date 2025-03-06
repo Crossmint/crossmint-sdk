@@ -1,5 +1,7 @@
 import { type ReactNode, createContext, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
+import type { Address } from "viem";
+import type { WebAuthnP256 } from "ox";
 
 import {
     type EVMSmartWallet,
@@ -10,7 +12,7 @@ import {
     type PasskeySigner,
 } from "@crossmint/client-sdk-smart-wallet";
 
-import { useCrossmint } from "../hooks";
+import { useAuth, useCrossmint } from "../hooks";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
 
@@ -44,8 +46,23 @@ type WalletContext = {
     getOrCreateWallet: (
         config?: Pick<WalletConfig, "signer" | "type">
     ) => Promise<{ startedCreation: boolean; reason?: string }>;
-    createPasskeySigner: () => Promise<PasskeySigner | null>;
+    createPasskeySigner: (name: string) => Promise<PasskeySigner | null>;
     clearWallet: () => void;
+};
+
+type WalletCache = {
+    wallet?: {
+        address: Address;
+        initialized?: boolean;
+    };
+    passkey?: {
+        authenticatorId: string;
+        domain: string;
+        passkeyName: string;
+        pubKeyPrefix: number;
+        pubKeyX: string;
+        pubKeyY: string;
+    };
 };
 
 export const WalletContext = createContext<WalletContext>({
@@ -67,6 +84,7 @@ export function CrossmintWalletProvider({
     showPasskeyHelpers?: boolean;
     appearance?: UIConfig;
 }) {
+    const { user } = useAuth();
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
     const smartWalletSDK = useMemo(() => SmartWalletSDK.init({ clientApiKey: crossmint.apiKey }), [crossmint.apiKey]);
 
@@ -76,8 +94,9 @@ export function CrossmintWalletProvider({
     const [passkeySigner, setPasskeySigner] = useState<PasskeySigner | undefined>(undefined);
     const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
 
-    const createPasskeySigner = async () => {
-        const signer = await smartWalletSDK.createPasskeySigner("Crossmint Wallet");
+    const createPasskeySigner = async (name: string) => {
+        await createPasskeyPrompt("create-wallet")();
+        const signer = await smartWalletSDK.createPasskeySigner(name);
         setPasskeySigner(signer);
         return signer;
     };
@@ -100,14 +119,33 @@ export function CrossmintWalletProvider({
 
         try {
             setWalletState({ status: "in-progress" });
-            const signer = config?.signer ?? (await createPasskeySigner());
+            const signer = config?.signer ?? (await getPasskeySigner());
             const wallet = await smartWalletSDK.getOrCreateWallet(
                 { jwt: crossmint.jwt as string },
                 defaultChain,
                 config ?? {
                     signer,
+                },
+                {
+                    onWalletCreationFailed: createPasskeyPrompt("create-wallet-error"),
+                    onTransactionSigningStarted: () => {
+                        if (isWalletInitialized()) {
+                            return Promise.resolve();
+                        }
+                        return createPasskeyPrompt("transaction")();
+                    },
+                    onTransactionSigningFailed: createPasskeyPrompt("transaction-error"),
+                    onTransactionCompleted: () => {
+                        setWalletInitialized();
+                        return Promise.resolve();
+                    },
                 }
             );
+            updateCache({
+                wallet: {
+                    address: wallet.address,
+                },
+            });
             setWalletState({ status: "loaded", wallet });
         } catch (error: unknown) {
             console.error("There was an error creating a wallet ", error);
@@ -116,8 +154,110 @@ export function CrossmintWalletProvider({
         return { startedCreation: true };
     };
 
+    const createPasskeyPrompt = (type: ValidPasskeyPromptType) => () =>
+        new Promise<void>((resolve) => {
+            setPasskeyPromptState({
+                type,
+                open: true,
+                primaryActionOnClick: () => {
+                    setPasskeyPromptState({ open: false });
+                    resolve();
+                },
+                secondaryActionOnClick: () => {
+                    setPasskeyPromptState({ open: false });
+                    resolve();
+                },
+            });
+        });
+
     const clearWallet = () => {
         setWalletState({ status: "not-loaded" });
+    };
+
+    const getPasskeySigner = async () => {
+        const cache = getCache();
+        if (cache === null || cache.passkey === undefined) {
+            // Create a new passkey
+            const passkeyName = "Crossmint Wallet";
+            const passkeySigner = await createPasskeySigner(passkeyName);
+            updateCache({
+                passkey: {
+                    authenticatorId: passkeySigner.credential.id,
+                    domain: "localhost",
+                    passkeyName: passkeyName,
+                    pubKeyPrefix: passkeySigner.credential.publicKey.prefix,
+                    pubKeyX: passkeySigner.credential.publicKey.x.toString(),
+                    pubKeyY: passkeySigner.credential.publicKey.y.toString(),
+                },
+            });
+            return passkeySigner;
+        }
+        return {
+            type: "PASSKEY",
+            credential: {
+                id: cache.passkey.authenticatorId,
+                publicKey: {
+                    prefix: cache.passkey.pubKeyPrefix,
+                    x: BigInt(cache.passkey.pubKeyX),
+                    y: BigInt(cache.passkey.pubKeyY),
+                },
+            } as WebAuthnP256.P256Credential,
+        } as PasskeySigner;
+    };
+
+    const isWalletInitialized = () => {
+        const cache = getCache();
+        if (cache == null) {
+            return false;
+        }
+        return cache.wallet?.initialized ?? false;
+    };
+
+    const setWalletInitialized = () => {
+        const cache = getCache();
+        if (cache === null || cache.wallet === undefined) {
+            return;
+        }
+        updateCache({
+            wallet: {
+                address: cache.wallet.address,
+                initialized: true,
+            },
+        });
+    };
+
+    const getCache = () => {
+        const userId = user?.id;
+        if (userId == undefined) {
+            return null;
+        }
+        const key = `smart-wallet-${userId}`;
+        const cache = localStorage.getItem(key);
+        if (cache == null) {
+            return null;
+        }
+        return JSON.parse(cache) as WalletCache;
+    };
+
+    const updateCache = (cacheUpdate: WalletCache) => {
+        const userId = user?.id;
+        if (userId == undefined) {
+            return;
+        }
+        const key = `smart-wallet-${userId}`;
+        const currentCache = getCache() || {};
+        // Recursively merge the new cache with the current cache
+        const walleAddress = cacheUpdate.wallet?.address ?? currentCache.wallet?.address;
+        const newCache: WalletCache = {
+            passkey: cacheUpdate.passkey ?? currentCache.passkey,
+            wallet: walleAddress
+                ? {
+                      address: walleAddress,
+                      initialized: cacheUpdate.wallet?.initialized ?? currentCache.wallet?.initialized,
+                  }
+                : undefined,
+        };
+        localStorage.setItem(key, JSON.stringify(newCache));
     };
 
     return (
