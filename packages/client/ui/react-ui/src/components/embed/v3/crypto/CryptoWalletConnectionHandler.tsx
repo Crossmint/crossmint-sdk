@@ -23,7 +23,7 @@ export function CryptoWalletConnectionHandler(props: {
                     onAuthFlowCancel() {
                         console.log("[CryptoWalletConnectionHandler] onAuthFlowCancel");
                         iframeClient?.send("crypto:connect-wallet.failed", {
-                            error: "cancelled",
+                            error: "Wallet connection was cancelled",
                         });
                     },
                     onAuthFlowClose() {
@@ -42,9 +42,11 @@ export function CryptoWalletConnectionHandler(props: {
 
                         const address = wallet.address;
                         if (!address) {
-                            console.error("[CryptoWalletConnectionHandler] handleConnectedWallet: address is missing");
+                            console.error(
+                                "[CryptoWalletConnectionHandler] Failed to connect wallet: Could not retrieve wallet address"
+                            );
                             iframeClient?.send("crypto:connect-wallet.failed", {
-                                error: "address is missing",
+                                error: "Could not retrieve wallet address. Please ensure your wallet is properly connected and try again.",
                             });
                             return false;
                         }
