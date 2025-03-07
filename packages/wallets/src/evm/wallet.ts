@@ -279,7 +279,7 @@ export class EVMSmartWallet implements ViemWallet {
         return this.adminSigner.locator;
     }
 
-    private async approveTransaction(transactionId: string, message: Hex) {
+    private async generateSignature(message: Hex): Promise<{ signature: Hex; metadata?: WebAuthnP256.SignMetadata }> {
         switch (this.adminSigner.type) {
             case "evm-passkey": {
                 const { metadata, signature } = await WebAuthnP256.sign({
@@ -287,20 +287,10 @@ export class EVMSmartWallet implements ViemWallet {
                     challenge: message,
                 });
 
-                await this.apiClient.approveTransaction(this.walletLocator, transactionId, {
-                    approvals: [
-                        {
-                            signer: this.signerLocator,
-                            // @ts-ignore the generated types are wrong
-                            signature: {
-                                r: `0x${signature.r.toString(16)}`,
-                                s: `0x${signature.s.toString(16)}`,
-                            },
-                            metadata,
-                        },
-                    ],
-                });
-                return;
+                return {
+                    signature: concat([`0x${signature.r.toString(16)}`, `0x${signature.s.toString(16)}`]),
+                    metadata,
+                };
             }
             case "evm-keypair": {
                 const signerAddress = this.adminSigner.address as Address;
@@ -315,68 +305,48 @@ export class EVMSmartWallet implements ViemWallet {
                               method: "personal_sign",
                               params: [message, signerAddress],
                           });
-                await this.apiClient.approveTransaction(this.walletLocator, transactionId, {
-                    approvals: [
-                        {
-                            signature,
-                            signer: this.signerLocator,
-                        },
-                    ],
-                });
+
+                return { signature };
             }
         }
     }
 
+    private async approveTransaction(transactionId: string, message: Hex) {
+        const { signature, metadata } = await this.generateSignature(message);
+
+        await this.apiClient.approveTransaction(this.walletLocator, transactionId, {
+            approvals: [
+                {
+                    signer: this.signerLocator,
+                    // @ts-ignore the generated types are wrong
+                    signature:
+                        this.adminSigner.type === "evm-passkey"
+                            ? { r: signature.slice(0, 66), s: `0x${signature.slice(66)}` }
+                            : signature,
+                    ...(metadata && { metadata }),
+                },
+            ],
+        });
+    }
+
     private async approveSignature(signatureId: string, message: Hex) {
-        switch (this.adminSigner.type) {
-            case "evm-passkey": {
-                const { metadata, signature } = await WebAuthnP256.sign({
-                    credentialId: this.adminSigner.id,
-                    challenge: message,
-                });
+        const { signature, metadata } = await this.generateSignature(message);
 
-                await this.apiClient.approveSignature(this.walletLocator, signatureId, {
-                    approvals: [
-                        {
-                            signer: this.signerLocator,
-                            // @ts-ignore the generated types are wrong
-                            signature: {
-                                r: `0x${signature.r.toString(16)}`,
-                                s: `0x${signature.s.toString(16)}`,
-                            },
-                            metadata,
-                        },
-                    ],
-                });
+        await this.apiClient.approveSignature(this.walletLocator, signatureId, {
+            approvals: [
+                {
+                    signer: this.signerLocator,
+                    // @ts-ignore the generated types are wrong
+                    signature:
+                        this.adminSigner.type === "evm-passkey"
+                            ? { r: signature.slice(0, 66), s: `0x${signature.slice(66)}` }
+                            : signature,
+                    metadata,
+                },
+            ],
+        });
 
-                // Convert signature to hex
-                return concat([`0x${signature.r.toString(16)}`, `0x${signature.s.toString(16)}`]);
-            }
-            case "evm-keypair": {
-                const signerAddress = this.adminSigner.address as Address;
-                const signature =
-                    this.adminSigner.signer.type === "viem"
-                        ? await this.adminSigner.signer.account.signMessage!({
-                              message: {
-                                  raw: message,
-                              },
-                          })
-                        : await this.adminSigner.signer.provider.request({
-                              method: "personal_sign",
-                              params: [message, signerAddress],
-                          });
-                await this.apiClient.approveSignature(this.walletLocator, signatureId, {
-                    approvals: [
-                        {
-                            signature,
-                            signer: this.signerLocator,
-                        },
-                    ],
-                });
-
-                return signature;
-            }
-        }
+        return signature;
     }
 }
 
