@@ -82,44 +82,47 @@ export function CrossmintWalletProvider({
         return signer;
     }, [smartWalletSDK]);
 
-    const getOrCreateWallet = useCallback(async (config?: WalletConfig) => {
-        if (walletState.status === "in-progress") {
-            console.log("Wallet already loading");
-            return {
-                status: "not-loaded" as const,
-                startedCreation: false,
-                reason: "Wallet is already loading.",
-            };
-        }
+    const getOrCreateWallet = useCallback(
+        async (config?: WalletConfig) => {
+            if (walletState.status === "in-progress") {
+                console.log("Wallet already loading");
+                return {
+                    status: "not-loaded" as const,
+                    startedCreation: false,
+                    reason: "Wallet is already loading.",
+                };
+            }
 
-        if (!crossmint.jwt) {
-            return {
-                status: "not-loaded" as const,
-                startedCreation: false,
-                reason: `Jwt not set in "CrossmintProvider".`,
-            };
-        }
+            if (!crossmint.jwt) {
+                return {
+                    status: "not-loaded" as const,
+                    startedCreation: false,
+                    reason: `Jwt not set in "CrossmintProvider".`,
+                };
+            }
 
-        try {
-            setWalletState({ status: "in-progress" });
-            const signer = config?.signer ?? (await createPasskeySigner());
-            const wallet = await smartWalletSDK.getOrCreateWallet(
-                { jwt: crossmint.jwt as string },
-                defaultChain,
-                config ?? {
-                    signer,
-                }
-            );
-            const newState = { status: "loaded" as const, wallet };
-            setWalletState(newState);
-            return { ...newState, startedCreation: true };
-        } catch (error: unknown) {
-            console.error("There was an error creating a wallet ", error);
-            const errorState = deriveErrorState(error);
-            setWalletState(errorState);
-            return { ...errorState, startedCreation: true };
-        }
-    }, [walletState.status, crossmint.jwt, smartWalletSDK, createPasskeySigner, defaultChain]);
+            try {
+                setWalletState({ status: "in-progress" });
+                const signer = config?.signer ?? (await createPasskeySigner());
+                const wallet = await smartWalletSDK.getOrCreateWallet(
+                    { jwt: crossmint.jwt as string },
+                    defaultChain,
+                    config ?? {
+                        signer,
+                    }
+                );
+                const newState = { status: "loaded" as const, wallet };
+                setWalletState(newState);
+                return { ...newState, startedCreation: true };
+            } catch (error: unknown) {
+                console.error("There was an error creating a wallet ", error);
+                const errorState = deriveErrorState(error);
+                setWalletState(errorState);
+                return { ...errorState, startedCreation: true };
+            }
+        },
+        [walletState.status, crossmint.jwt, smartWalletSDK, createPasskeySigner, defaultChain]
+    );
 
     const clearWallet = () => {
         setWalletState({ status: "not-loaded" });
