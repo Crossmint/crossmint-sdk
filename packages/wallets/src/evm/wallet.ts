@@ -15,7 +15,7 @@ import {
     concat,
 } from "viem";
 
-import type { ApiClient, GetSignatureResponse, GetTransactionResponse } from "../api";
+import type { ApiClient, GetSignatureResponse, GetTransactionResponse, WalletLocator } from "../api";
 import { sleep } from "../utils";
 import { ENTRY_POINT_ADDRESS, STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
 
@@ -264,11 +264,11 @@ export class EVMSmartWallet implements ViemWallet {
         return transactionHash as Hex;
     }
 
-    private get walletLocator(): string {
+    private get walletLocator(): WalletLocator {
         if (this.apiClient.isServerSide) {
             return this.address;
         } else {
-            return "evm-smart-wallet";
+            return `me:evm-smart-wallet`;
         }
     }
 
