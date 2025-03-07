@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.15.1
+
+### Patch Changes
+
+- e44e488: embed crypto: tweak error messages
+
 ## 1.15.0
 
 ### Minor Changes
