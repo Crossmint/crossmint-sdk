@@ -1,6 +1,12 @@
 import type { Connection, PublicKey, Transaction, VersionedTransaction } from "@solana/web3.js";
 
+import type { CreateWalletDto } from "@/api/gen/types.gen";
+
 import type { ApiClient } from "../api";
+
+export type SolanaSigner = NonNullable<
+    Extract<CreateWalletDto, { type: "solana-smart-wallet" }>["config"]
+>["adminSigner"];
 
 export interface SolanaWallet {
     // Get the wallet's public key (equivalent to EVM address)

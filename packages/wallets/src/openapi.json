@@ -1785,7 +1785,8 @@
                                             "viction",
                                             "mode",
                                             "space",
-                                            "soneium"
+                                            "soneium",
+                                            "story"
                                         ],
                                         "description": "The chain on which the signature will be submitted"
                                     }
@@ -1946,7 +1947,8 @@
                                             "viction",
                                             "mode",
                                             "space",
-                                            "soneium"
+                                            "soneium",
+                                            "story"
                                         ],
                                         "description": "The chain on which the signature will be submitted"
                                     },
@@ -2010,6 +2012,7 @@
                                     "optimism",
                                     "arbitrum",
                                     "mode",
+                                    "story",
                                     "base-sepolia",
                                     "polygon-amoy",
                                     "optimism-sepolia",
@@ -2579,6 +2582,7 @@
                                             "optimism",
                                             "arbitrum",
                                             "mode",
+                                            "story",
                                             "base-sepolia",
                                             "polygon-amoy",
                                             "optimism-sepolia",
@@ -2935,7 +2939,8 @@
                                             "viction",
                                             "mode",
                                             "space",
-                                            "soneium"
+                                            "soneium",
+                                            "story"
                                         ],
                                         "description": "The chain on which the transaction will be executed"
                                     }
@@ -4556,7 +4561,8 @@
                                                         "viction",
                                                         "mode",
                                                         "space",
-                                                        "soneium"
+                                                        "soneium",
+                                                        "story"
                                                     ],
                                                     "description": "The chain on which the signature will be submitted"
                                                 }
@@ -4700,7 +4706,8 @@
                                                         "viction",
                                                         "mode",
                                                         "space",
-                                                        "soneium"
+                                                        "soneium",
+                                                        "story"
                                                     ],
                                                     "description": "The chain on which the signature will be submitted"
                                                 },
@@ -4986,7 +4993,8 @@
                                             "viction",
                                             "mode",
                                             "space",
-                                            "soneium"
+                                            "soneium",
+                                            "story"
                                         ],
                                         "description": "The chain on which the signature will be submitted"
                                     }
@@ -5125,7 +5133,8 @@
                                             "viction",
                                             "mode",
                                             "space",
-                                            "soneium"
+                                            "soneium",
+                                            "story"
                                         ],
                                         "description": "The chain on which the signature will be submitted"
                                     },
@@ -5534,6 +5543,7 @@
                                             "optimism",
                                             "arbitrum",
                                             "mode",
+                                            "story",
                                             "base-sepolia",
                                             "polygon-amoy",
                                             "optimism-sepolia",
@@ -6304,7 +6314,8 @@
                                             "viction",
                                             "mode",
                                             "space",
-                                            "soneium"
+                                            "soneium",
+                                            "story"
                                         ],
                                         "description": "The chain on which the transaction will be executed"
                                     }
@@ -7039,6 +7050,7 @@
                                                         "optimism",
                                                         "arbitrum",
                                                         "mode",
+                                                        "story",
                                                         "base-sepolia",
                                                         "polygon-amoy",
                                                         "optimism-sepolia",
@@ -7819,7 +7831,8 @@
                                                         "viction",
                                                         "mode",
                                                         "space",
-                                                        "soneium"
+                                                        "soneium",
+                                                        "story"
                                                     ],
                                                     "description": "The chain on which the transaction will be executed"
                                                 }
