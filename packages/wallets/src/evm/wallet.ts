@@ -130,10 +130,10 @@ export class EVMSmartWallet implements ViemWallet {
 
         // Approve signature
         const pendingApprovals = signatureCreationResponse.approvals?.pending || [];
-        if (pendingApprovals.length !== 1) {
-            throw new Error(`Expected 1 pending approval, got ${pendingApprovals.length}`);
+        const pendingApproval = pendingApprovals.find((approval) => approval.signer === this.signerLocator);
+        if (!pendingApproval) {
+            throw new Error(`Signer ${this.signerLocator} not found in pending approvals`);
         }
-        const pendingApproval = pendingApprovals[0];
         const signature = await this.approveSignature(signatureId, pendingApproval.message as Hex);
 
         if (signature === undefined) {
@@ -193,10 +193,10 @@ export class EVMSmartWallet implements ViemWallet {
 
         // Approve signature
         const pendingApprovals = signatureCreationResponse.approvals?.pending || [];
-        if (pendingApprovals.length !== 1) {
-            throw new Error(`Expected 1 pending approval, got ${pendingApprovals.length}`);
+        const pendingApproval = pendingApprovals.find((approval) => approval.signer === this.signerLocator);
+        if (!pendingApproval) {
+            throw new Error(`Signer ${this.signerLocator} not found in pending approvals`);
         }
-        const pendingApproval = pendingApprovals[0];
         const signature = await this.approveSignature(signatureId, pendingApproval.message as Hex);
         if (signature === undefined) {
             throw new Error("Signature not available");
@@ -239,10 +239,10 @@ export class EVMSmartWallet implements ViemWallet {
 
         // Approve transaction
         const pendingApprovals = transactionCreationResponse.approvals?.pending || [];
-        if (pendingApprovals.length !== 1) {
-            throw new Error(`Expected 1 pending approval, got ${pendingApprovals.length}`);
+        const pendingApproval = pendingApprovals.find((approval) => approval.signer === this.signerLocator);
+        if (!pendingApproval) {
+            throw new Error(`Signer ${this.signerLocator} not found in pending approvals`);
         }
-        const pendingApproval = pendingApprovals[0];
         await this.approveTransaction(transactionId, pendingApproval.message as Hex);
 
         // Get transaction status until success
