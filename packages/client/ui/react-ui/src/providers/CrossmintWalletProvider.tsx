@@ -121,9 +121,9 @@ export function CrossmintWalletProvider({
         }
     }, [walletState.status, crossmint.jwt, smartWalletSDK, createPasskeySigner, defaultChain]);
 
-    const clearWallet = useCallback(() => {
+    const clearWallet = () => {
         setWalletState({ status: "not-loaded" });
-    }, []);
+    };
 
     return (
         <WalletContext.Provider
