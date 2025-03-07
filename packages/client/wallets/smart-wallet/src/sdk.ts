@@ -9,7 +9,13 @@ import { scwDatadogLogger, scwLogger } from "./services";
 import type { EVMSmartWallet } from "./evm/wallet";
 import { ErrorProcessor } from "./error/processor";
 import { isClient } from "@crossmint/client-sdk-base";
-import { SmartWalletService, type UserParams, type WalletParams, type PasskeySigner } from "./smartWalletService";
+import {
+    SmartWalletService,
+    type UserParams,
+    type WalletParams,
+    type PasskeySigner,
+    type Callbacks,
+} from "./smartWalletService";
 import { CrossmintApiService } from "./apiService";
 
 export interface SmartWalletSDKInitParams {
@@ -60,7 +66,8 @@ export class SmartWalletSDK {
     async getOrCreateWallet(
         user: UserParams,
         chain: SmartWalletChain,
-        walletParams: WalletParams
+        walletParams: WalletParams,
+        callbacks?: Callbacks
     ): Promise<EVMSmartWallet> {
         if (!isClient()) {
             throw new SmartWalletError("Smart Wallet SDK should only be used client side.");
@@ -69,8 +76,14 @@ export class SmartWalletSDK {
 
         return await this.logger.logPerformance("GET_OR_CREATE_WALLET", async () => {
             try {
-                return await this.smartWalletService.getOrCreate(user, chain, walletParams);
+                if (callbacks?.onWalletCreationStarted) {
+                    await callbacks.onWalletCreationStarted();
+                }
+                return await this.smartWalletService.getOrCreate(user, chain, walletParams, callbacks);
             } catch (error: unknown) {
+                if (callbacks?.onWalletCreationFailed) {
+                    await callbacks.onWalletCreationFailed(error as SmartWalletError);
+                }
                 throw this.errorProcessor.map(
                     error,
                     new WalletCreationError(

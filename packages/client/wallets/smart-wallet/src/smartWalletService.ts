@@ -28,6 +28,7 @@ import { getAlchemyRPC } from "./evm/rpc";
 import { sleep } from "./utils";
 import { ENTRY_POINT_ADDRESS, STATUS_POLLING_INTERVAL_MS } from "./utils/constants";
 import {
+    type SmartWalletError,
     InvalidMessageFormatError,
     MessageSigningError,
     TransactionApprovalError,
@@ -36,6 +37,7 @@ import {
     TransactionNotFoundError,
     InvalidTypedDataError,
 } from "./error";
+import type { Transaction } from "./evm/smartWalletClient";
 
 export type ViemAccount = {
     type: "VIEM_ACCOUNT";
@@ -56,7 +58,17 @@ export interface UserParams {
     jwt: string;
 }
 
+export interface Callbacks {
+    onWalletCreationStarted?: () => Promise<void>;
+    onWalletCreationFailed?: (error: SmartWalletError) => Promise<void>;
+    onTransactionSigningStarted?: (transaction: Transaction) => Promise<void>;
+    onTransactionSigningFailed?: (error: SmartWalletError) => Promise<void>;
+    onTransactionCompleted?: (transaction: Transaction) => Promise<void>;
+}
+
 export class SmartWalletService {
+    private callbacks?: Callbacks;
+
     constructor(private readonly crossmintApiService: CrossmintApiService) {}
 
     /*
@@ -69,8 +81,10 @@ export class SmartWalletService {
     public async getOrCreate(
         user: UserParams,
         chain: SmartWalletChain,
-        walletParams: WalletParams
+        walletParams: WalletParams,
+        callbacks?: Callbacks
     ): Promise<EVMSmartWallet> {
+        this.callbacks = callbacks;
         const publicClient = createPublicClient({
             transport: http(getAlchemyRPC(chain)),
         });
@@ -258,6 +272,9 @@ export class SmartWalletService {
         user: UserParams,
         chain: SmartWalletChain
     ): Promise<Hex> {
+        if (this.callbacks?.onTransactionSigningStarted) {
+            await this.callbacks.onTransactionSigningStarted(parameters);
+        }
         const signerLocator = await this.getSignerLocator(adminSigner);
         // Create transaction
         const transactionCreationResponse = await this.crossmintApiService.createTransaction(user, {
@@ -278,7 +295,11 @@ export class SmartWalletService {
         // Approve transaction
         const pendingApprovals = transactionCreationResponse.approvals.pending;
         if (pendingApprovals.length !== 1) {
-            throw new TransactionApprovalError(`Expected 1 pending approval, got ${pendingApprovals.length}`);
+            const error = new TransactionApprovalError(`Expected 1 pending approval, got ${pendingApprovals.length}`);
+            if (this.callbacks?.onTransactionSigningFailed) {
+                await this.callbacks.onTransactionSigningFailed(error);
+            }
+            throw error;
         }
         const pendingApproval = pendingApprovals[0];
         await this.approveTransaction(user, adminSigner, transactionId, pendingApproval.message);
@@ -291,13 +312,27 @@ export class SmartWalletService {
         }
 
         if (transactionResponse.status === "failed") {
-            throw new TransactionFailedError("Transaction sending failed", stringify(transactionResponse.error));
+            const error = new TransactionFailedError(
+                "Transaction sending failed",
+                stringify(transactionResponse.error)
+            );
+            if (this.callbacks?.onTransactionSigningFailed) {
+                await this.callbacks.onTransactionSigningFailed(error);
+            }
+            throw error;
         }
 
         // Get transaction hash
         const transactionHash = transactionResponse.onChain.txId;
         if (transactionHash === undefined) {
-            throw new TransactionNotFoundError("Transaction hash not found");
+            const error = new TransactionNotFoundError("Transaction hash not found");
+            if (this.callbacks?.onTransactionSigningFailed) {
+                await this.callbacks.onTransactionSigningFailed(error);
+            }
+            throw error;
+        }
+        if (this.callbacks?.onTransactionCompleted) {
+            await this.callbacks.onTransactionCompleted(parameters);
         }
         return transactionHash;
     }

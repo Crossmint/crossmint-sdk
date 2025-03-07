@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, vi, it, type MockInstance } from "vitest"
 import { mock } from "vitest-mock-extended";
 
 import { CrossmintAuth as CrossmintAuthClient, getJWTExpiration, deleteCookie } from "@crossmint/client-sdk-auth";
-import { type EVMSmartWallet, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
+import { type EVMSmartWallet, type PasskeySigner, SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";
 import { createCrossmint } from "@crossmint/common-sdk-base";
 
 import { useAuth, useWallet } from "../hooks";
@@ -82,6 +82,7 @@ function TestComponent() {
 describe("CrossmintAuthProvider", () => {
     let mockSDK: SmartWalletSDK;
     let mockWallet: EVMSmartWallet;
+    let mockPasskeySigner: PasskeySigner;
     let embeddedWallets: CrossmintAuthWalletConfig;
     let handleRefreshAuthMaterialSpy: MockInstance;
     let getOAuthUrlSpy: MockInstance;
@@ -113,14 +114,27 @@ describe("CrossmintAuthProvider", () => {
 
         mockSDK = mock<SmartWalletSDK>();
         mockWallet = mock<EVMSmartWallet>();
+        mockPasskeySigner = mock<PasskeySigner>({
+            type: "PASSKEY",
+            credential: {
+                id: "mock-credential-id",
+                publicKey: {
+                    prefix: 1,
+                    x: BigInt(1),
+                    y: BigInt(2),
+                },
+            },
+        });
         vi.mocked(SmartWalletSDK.init).mockReturnValue(mockSDK);
         vi.mocked(mockSDK.getOrCreateWallet).mockResolvedValue(mockWallet);
+        vi.mocked(mockSDK.createPasskeySigner).mockResolvedValue(mockPasskeySigner);
         vi.mocked(getJWTExpiration).mockReturnValue(1000);
 
         embeddedWallets = {
             defaultChain: "polygon",
             createOnLogin: "all-users",
             type: "evm-smart-wallet",
+            showPasskeyHelpers: false,
         };
 
         deleteCookie(REFRESH_TOKEN_PREFIX);
@@ -183,7 +197,7 @@ describe("CrossmintAuthProvider", () => {
             expect(getByTestId("error").textContent).toBe("No Error");
         });
 
-        // expect(handleRefreshAuthMaterialSpy).not.toHaveBeenCalled();
+        expect(handleRefreshAuthMaterialSpy).not.toHaveBeenCalled();
         expect(getOAuthUrlSpy).not.toHaveBeenCalled();
         expect(vi.mocked(mockSDK.getOrCreateWallet)).toHaveBeenCalledOnce();
     });
