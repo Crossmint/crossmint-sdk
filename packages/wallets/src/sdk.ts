@@ -1,13 +1,13 @@
 import type { Crossmint } from "@crossmint/common-sdk-base";
 import type { Address } from "viem";
 
-import { EVMSmartWallet, type EVMMPCWallet, type EVMSmartWalletChain, type EVMSigner } from "./evm";
+import { EVMSmartWallet, type EVMMPCWallet, type EVMSmartWalletChain, type EVMSignerInput } from "./evm";
 import type { SolanaSmartWallet, SolanaMPCWallet, SolanaSigner } from "./solana";
 
 import { ApiClient } from "./api/index.js";
 
 type WalletTypeToArgs = {
-    "evm-smart-wallet": [chain: EVMSmartWalletChain, adminSigner: EVMSigner, linkedUser?: string];
+    "evm-smart-wallet": [chain: EVMSmartWalletChain, adminSigner: EVMSignerInput, linkedUser?: string];
     "evm-mpc-wallet": [chain: EVMSmartWalletChain, linkedUser: string];
     "solana-smart-wallet": [adminSigner: SolanaSigner, linkedUser?: string];
     "solana-mpc-wallet": [linkedUser: string];
@@ -44,12 +44,14 @@ export class CrossmintWallet {
                 },
                 linkedUser,
             });
-            return new EVMSmartWallet(
-                chain,
-                this.apiClient,
-                walletResponse.address as Address,
-                adminSigner
-            ) as WalletTypeToWallet[WalletType];
+            if (walletResponse.type !== "evm-smart-wallet") {
+                throw new Error("Invalid wallet type");
+            }
+            const adminSignerLocator = walletResponse.config.adminSigner.locator;
+            return new EVMSmartWallet(chain, this.apiClient, walletResponse.address as Address, {
+                ...adminSigner,
+                locator: adminSignerLocator,
+            }) as WalletTypeToWallet[WalletType];
         }
         throw new Error("Not implemented");
     }

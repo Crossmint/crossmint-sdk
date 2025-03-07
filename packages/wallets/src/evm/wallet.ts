@@ -22,7 +22,7 @@ import { ENTRY_POINT_ADDRESS, STATUS_POLLING_INTERVAL_MS } from "../utils/consta
 import entryPointAbi from "./abi/entryPoint";
 import { toViemChain, type EVMSmartWalletChain } from "./chains";
 
-export type EVMSigner =
+export type EVMSignerInput =
     | {
           type: "evm-keypair";
           address: string;
@@ -45,6 +45,9 @@ export type EVMSigner =
               y: string;
           };
       };
+export type EVMSigner = EVMSignerInput & {
+    locator: string;
+};
 
 export interface ViemWallet {
     getAddress: () => Address;
@@ -273,13 +276,7 @@ export class EVMSmartWallet implements ViemWallet {
     }
 
     private get signerLocator(): string {
-        switch (this.adminSigner.type) {
-            case "evm-passkey":
-                return `evm-passkey:${this.adminSigner.id}`;
-            case "evm-keypair":
-                return `evm-keypair:${this.adminSigner.address}`;
-        }
-        throw new Error("Invalid signer type");
+        return this.adminSigner.locator;
     }
 
     private async approveTransaction(transactionId: string, message: Hex) {
@@ -293,7 +290,7 @@ export class EVMSmartWallet implements ViemWallet {
                 await this.apiClient.approveTransaction(this.walletLocator, transactionId, {
                     approvals: [
                         {
-                            signer: `evm-passkey:${this.adminSigner.id}`,
+                            signer: this.signerLocator,
                             // @ts-ignore the generated types are wrong
                             signature: {
                                 r: `0x${signature.r.toString(16)}`,
@@ -322,7 +319,7 @@ export class EVMSmartWallet implements ViemWallet {
                     approvals: [
                         {
                             signature,
-                            signer: `evm-keypair:${signerAddress}`,
+                            signer: this.signerLocator,
                         },
                     ],
                 });
@@ -341,7 +338,7 @@ export class EVMSmartWallet implements ViemWallet {
                 await this.apiClient.approveSignature(this.walletLocator, signatureId, {
                     approvals: [
                         {
-                            signer: `evm-passkey:${this.adminSigner.id}`,
+                            signer: this.signerLocator,
                             // @ts-ignore the generated types are wrong
                             signature: {
                                 r: `0x${signature.r.toString(16)}`,
@@ -372,7 +369,7 @@ export class EVMSmartWallet implements ViemWallet {
                     approvals: [
                         {
                             signature,
-                            signer: `evm-keypair:${signerAddress}`,
+                            signer: this.signerLocator,
                         },
                     ],
                 });
