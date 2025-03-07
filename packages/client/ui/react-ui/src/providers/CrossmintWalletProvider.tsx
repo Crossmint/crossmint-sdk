@@ -1,7 +1,5 @@
 import { type ReactNode, createContext, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import type { Address } from "viem";
-import type { WebAuthnP256 } from "ox";
 
 import {
     type EVMSmartWallet,
@@ -12,7 +10,7 @@ import {
     type PasskeySigner,
 } from "@crossmint/client-sdk-smart-wallet";
 
-import { useAuth, useCrossmint } from "../hooks";
+import { useAuth, useCrossmint, useWalletCache } from "../hooks";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
 
@@ -50,21 +48,6 @@ type WalletContext = {
     clearWallet: () => void;
 };
 
-type WalletCache = {
-    wallet?: {
-        address: Address;
-        initialized?: boolean;
-    };
-    passkey?: {
-        authenticatorId: string;
-        domain: string;
-        passkeyName: string;
-        pubKeyPrefix: number;
-        pubKeyX: string;
-        pubKeyY: string;
-    };
-};
-
 export const WalletContext = createContext<WalletContext>({
     status: "not-loaded",
     getOrCreateWallet: () => Promise.resolve({ startedCreation: false }),
@@ -88,6 +71,7 @@ export function CrossmintWalletProvider({
     const { user } = useAuth();
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
     const smartWalletSDK = useMemo(() => SmartWalletSDK.init({ clientApiKey: crossmint.apiKey }), [crossmint.apiKey]);
+    const walletCache = useWalletCache(user?.id);
 
     const [walletState, setWalletState] = useState<ValidWalletState>({
         status: "not-loaded",
@@ -99,6 +83,7 @@ export function CrossmintWalletProvider({
         await createPasskeyPrompt("create-wallet")();
         const signer = await smartWalletSDK.createPasskeySigner(name);
         setPasskeySigner(signer);
+        walletCache.setPasskey(signer);
         return signer;
     };
 
@@ -130,23 +115,19 @@ export function CrossmintWalletProvider({
                 {
                     onWalletCreationFailed: createPasskeyPrompt("create-wallet-error"),
                     onTransactionSigningStarted: () => {
-                        if (isWalletInitialized()) {
+                        if (walletCache.isWalletInitialized()) {
                             return Promise.resolve();
                         }
                         return createPasskeyPrompt("transaction")();
                     },
                     onTransactionSigningFailed: createPasskeyPrompt("transaction-error"),
                     onTransactionCompleted: () => {
-                        setWalletInitialized();
+                        walletCache.setWalletInitialized(true);
                         return Promise.resolve();
                     },
                 }
             );
-            updateCache({
-                wallet: {
-                    address: wallet.address,
-                },
-            });
+            walletCache.setWalletAddress(wallet.address);
             setWalletState({ status: "loaded", wallet });
         } catch (error: unknown) {
             console.error("There was an error creating a wallet ", error);
@@ -180,89 +161,14 @@ export function CrossmintWalletProvider({
     };
 
     const getPasskeySigner = async () => {
-        const cache = getCache();
-        if (cache === null || cache.passkey === undefined) {
+        const cachedPasskey = walletCache.getPasskey();
+        if (cachedPasskey === undefined) {
             // Create a new passkey
             const passkeyName = "Crossmint Wallet";
             const passkeySigner = await createPasskeySigner(passkeyName);
-            updateCache({
-                passkey: {
-                    authenticatorId: passkeySigner.credential.id,
-                    domain: "localhost",
-                    passkeyName: passkeyName,
-                    pubKeyPrefix: passkeySigner.credential.publicKey.prefix,
-                    pubKeyX: passkeySigner.credential.publicKey.x.toString(),
-                    pubKeyY: passkeySigner.credential.publicKey.y.toString(),
-                },
-            });
             return passkeySigner;
         }
-        return {
-            type: "PASSKEY",
-            credential: {
-                id: cache.passkey.authenticatorId,
-                publicKey: {
-                    prefix: cache.passkey.pubKeyPrefix,
-                    x: BigInt(cache.passkey.pubKeyX),
-                    y: BigInt(cache.passkey.pubKeyY),
-                },
-            } as WebAuthnP256.P256Credential,
-        } as PasskeySigner;
-    };
-
-    const isWalletInitialized = () => {
-        const cache = getCache();
-        if (cache == null) {
-            return false;
-        }
-        return cache.wallet?.initialized ?? false;
-    };
-
-    const setWalletInitialized = () => {
-        const cache = getCache();
-        if (cache === null || cache.wallet === undefined) {
-            return;
-        }
-        updateCache({
-            wallet: {
-                address: cache.wallet.address,
-                initialized: true,
-            },
-        });
-    };
-
-    const getCache = () => {
-        const userId = user?.id;
-        if (userId == undefined) {
-            return null;
-        }
-        const key = `smart-wallet-${userId}`;
-        const cache = localStorage.getItem(key);
-        if (cache == null) {
-            return null;
-        }
-        return JSON.parse(cache) as WalletCache;
-    };
-
-    const updateCache = (cacheUpdate: WalletCache) => {
-        const userId = user?.id;
-        if (userId == undefined) {
-            return;
-        }
-        const key = `smart-wallet-${userId}`;
-        const currentCache = getCache() || {};
-        // Recursively merge the new cache with the current cache
-        const walleAddress = cacheUpdate.wallet?.address ?? currentCache.wallet?.address;
-        const newCache: WalletCache = {
-            passkey: cacheUpdate.passkey ?? currentCache.passkey,
-            wallet: walleAddress
-                ? {
-                      address: walleAddress,
-                      initialized: cacheUpdate.wallet?.initialized ?? currentCache.wallet?.initialized,
-                  }
-                : undefined,
-        };
-        localStorage.setItem(key, JSON.stringify(newCache));
+        return cachedPasskey;
     };
 
     return (
