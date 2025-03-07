@@ -103,7 +103,6 @@ export function CrossmintWalletProvider({
     };
 
     const getOrCreateWallet = async (config?: WalletConfig) => {
-        console.log("getOrCreateWallet 1", config);
         if (walletState.status == "in-progress") {
             console.log("Wallet already loading");
             return {
