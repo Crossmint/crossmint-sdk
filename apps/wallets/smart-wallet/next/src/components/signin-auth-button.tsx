@@ -4,10 +4,13 @@ import { useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
 
 import { Button } from "./button";
 import { Typography } from "./typography";
+import WalletTypeSelector from "./wallet-type-selector";
+import { useWalletConfig } from "@/app/context/wallet-config";
 
 export const SignInAuthButton = () => {
     const { login } = useAuth();
     const { status: walletStatus } = useWallet();
+    const { walletType, setWalletType } = useWalletConfig();
 
     if (walletStatus === "in-progress") {
         return (
@@ -35,8 +38,17 @@ export const SignInAuthButton = () => {
         );
     }
     return (
-        <Button className="bg-card gap-[10px] shadow-light rounded-xl py-3" onClick={login}>
-            <Typography className="text-[#00150D] font-semibold text-[17px]">Sign in</Typography>
-        </Button>
+        <div className="flex flex-col gap-4">
+            <WalletTypeSelector value={walletType} onChange={setWalletType} />
+            <div className="flex justify-center">
+                <Button
+                    className="w-full max-w-[256px] bg-card gap-[10px] shadow-light rounded-xl py-3"
+                    onClick={login}
+                    disabled={walletType === ""}
+                >
+                    <Typography className="text-[#00150D] font-semibold text-[17px]">Sign in</Typography>
+                </Button>
+            </div>
+        </div>
     );
 };
