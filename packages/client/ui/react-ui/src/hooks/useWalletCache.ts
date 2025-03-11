@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import type { Address } from "viem";
 import type { WebAuthnP256 } from "ox";
 import type { PasskeySigner } from "@crossmint/client-sdk-smart-wallet";
@@ -42,10 +42,6 @@ export function useWalletCache(userId: string | undefined) {
         [userId]
     );
 
-    const getWalletAddress = useCallback((): Address | undefined => {
-        return getCache()?.wallet?.address;
-    }, [getCache]);
-
     const setWalletAddress = useCallback(
         (address: Address) => {
             const currentCache = getCache() || {};
@@ -60,7 +56,7 @@ export function useWalletCache(userId: string | undefined) {
         [getCache, setCache]
     );
 
-    const isWalletInitialized = useCallback((): boolean => {
+    const isWalletInitialized = useMemo((): boolean => {
         const cache = getCache();
         if (cache == null) {
             return false;
@@ -85,7 +81,7 @@ export function useWalletCache(userId: string | undefined) {
         [getCache, setCache]
     );
 
-    const getPasskey = useCallback((): PasskeySigner | undefined => {
+    const passkey = useMemo(() => {
         const cache = getCache();
         if (cache === null || cache.passkey === undefined) {
             return undefined;
@@ -122,11 +118,10 @@ export function useWalletCache(userId: string | undefined) {
     );
 
     return {
-        getWalletAddress,
         setWalletAddress,
         isWalletInitialized,
         setWalletInitialized,
-        getPasskey,
+        passkey,
         setPasskey,
     };
 }

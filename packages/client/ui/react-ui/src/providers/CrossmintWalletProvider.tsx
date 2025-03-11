@@ -113,7 +113,7 @@ export function CrossmintWalletProvider({
                 {
                     onWalletCreationFailed: createPasskeyPrompt("create-wallet-error"),
                     onTransactionSigningStarted: () => {
-                        if (walletCache.isWalletInitialized()) {
+                        if (walletCache.isWalletInitialized) {
                             return Promise.resolve();
                         }
                         return createPasskeyPrompt("transaction")();
@@ -159,7 +159,7 @@ export function CrossmintWalletProvider({
     };
 
     const getPasskeySigner = async () => {
-        const cachedPasskey = walletCache.getPasskey();
+        const cachedPasskey = walletCache.passkey;
         if (cachedPasskey === undefined) {
             // Create a new passkey
             const passkeyName = "Crossmint Wallet";
