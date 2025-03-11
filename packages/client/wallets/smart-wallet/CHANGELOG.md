@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-smart-wallet
 
+## 0.3.0
+
+### Minor Changes
+
+- 27f230f: fixed passkey prompts and wallet persistence
+
 ## 0.2.0
 
 ### Minor Changes
