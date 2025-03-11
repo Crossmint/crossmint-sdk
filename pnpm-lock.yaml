@@ -968,15 +968,24 @@ importers:
       '@crossmint/common-sdk-base':
         specifier: workspace:*
         version: link:../common/base
+      '@crossmint/wallets-sdk':
+        specifier: 'link:'
+        version: 'link:'
       '@hey-api/client-fetch':
         specifier: 0.8.1
         version: 0.8.1
       '@solana/web3.js':
         specifier: 1.95.1
         version: 1.95.1(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
+      bs58:
+        specifier: 5.0.0
+        version: 5.0.0
       ox:
         specifier: 0.6.9
         version: 0.6.9(typescript@5.5.3)(zod@3.22.4)
+      tweetnacl:
+        specifier: 1.0.3
+        version: 1.0.3
       viem:
         specifier: 2.17.5
         version: 2.17.5(bufferutil@4.0.8)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
