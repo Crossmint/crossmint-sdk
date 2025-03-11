@@ -4,7 +4,9 @@ export {
 } from "@crossmint/common-sdk-base";
 
 // Types
+export type { Transaction } from "./evm/smartWalletClient";
 export type {
+    Callbacks,
     ViemAccount,
     PasskeySigner,
     ExternalSigner,
