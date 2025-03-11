@@ -1,44 +1,123 @@
-import type { Connection, PublicKey, Transaction, VersionedTransaction } from "@solana/web3.js";
+import type {
+    Connection,
+    PublicKey,
+    VersionedTransaction,
+} from "@solana/web3.js";
 
-import type { CreateWalletDto } from "@/api/gen/types.gen";
+import type {
+    ApiClient,
+    GetBalanceResponse,
+    GetNftsResponse,
+    GetTransactionsResponse,
+    SolanaWalletLocator,
+} from "../api";
+import type { SolanaSupportedToken } from "./tokens";
+import {
+    type SolanaSigner,
+    type SolanaNonCustodialSignerInput,
+    type SolanaSignerInput,
+    parseSolanaSignerInput,
+    parseSolanaNonCustodialSignerInput,
+} from "./types/signers";
+import { SolanaTransactionsService } from "./services/transactions/transactions-service";
 
-import type { ApiClient } from "../api";
-
-export type SolanaSigner = NonNullable<
-    Extract<CreateWalletDto, { type: "solana-smart-wallet" }>["config"]
->["adminSigner"];
-
-export interface SolanaWallet {
-    // Get the wallet's public key (equivalent to EVM address)
-    getPublicKey: () => PublicKey;
-
-    // Send a signed transaction
-    sendTransaction: (parameters: {
-        transaction: Transaction | VersionedTransaction;
-        options?: {
-            skipPreflight?: boolean;
-            maxRetries?: number;
-        };
-    }) => Promise<string>; // Returns transaction signature
+interface MPCTransactionParams {
+    transaction: VersionedTransaction;
+    additionalSigners?: SolanaNonCustodialSignerInput[];
 }
 
-export class SolanaSmartWallet implements SolanaWallet {
+interface SmartWalletTransactionParams {
+    transaction: VersionedTransaction;
+    additionalSigners?: SolanaNonCustodialSignerInput[];
+    delegatedSigner?: SolanaNonCustodialSignerInput;
+}
+
+abstract class SolanaWallet {
+    protected readonly transactionsService: SolanaTransactionsService;
     constructor(
         public readonly client: { public: Connection },
-        private readonly apiClient: ApiClient
-    ) {}
-
-    public async balances() {}
-    public async transactions() {}
-    public async nfts() {}
+        protected readonly apiClient: ApiClient,
+        protected readonly publicKey: PublicKey
+    ) {
+        this.transactionsService = new SolanaTransactionsService(
+            this.walletLocator,
+            this.apiClient
+        );
+    }
 
     public getPublicKey(): PublicKey {
-        throw new Error("Not implemented");
+        return this.publicKey;
     }
-    // biome-ignore lint/suspicious/useAwait: stub
-    public async sendTransaction(): Promise<string> {
-        throw new Error("Not implemented");
+
+    public getAddress(): string {
+        return this.publicKey.toBase58();
+    }
+
+    public async balances(
+        tokens: SolanaSupportedToken[]
+    ): Promise<GetBalanceResponse> {
+        return await this.apiClient.getBalance(this.walletLocator, {
+            tokens,
+        });
+    }
+    public async transactions(): Promise<GetTransactionsResponse> {
+        return await this.transactionsService.getTransactions();
+    }
+    public async nfts(perPage: number, page: number): Promise<GetNftsResponse> {
+        return await this.apiClient.getNfts(this.walletLocator, perPage, page);
+    }
+
+    protected get walletLocator(): SolanaWalletLocator {
+        if (this.apiClient.isServerSide) {
+            return this.getAddress();
+        } else {
+            return `me:solana-smart-wallet`;
+        }
     }
 }
 
-export class SolanaMPCWallet {}
+export class SolanaSmartWallet extends SolanaWallet {
+    private readonly adminSigner: SolanaSigner;
+    constructor(
+        client: { public: Connection },
+        apiClient: ApiClient,
+        publicKey: PublicKey,
+        adminSignerInput: SolanaSignerInput
+    ) {
+        super(client, apiClient, publicKey);
+        this.adminSigner = parseSolanaSignerInput(adminSignerInput);
+    }
+
+    public async sendTransaction(
+        parameters: SmartWalletTransactionParams
+    ): Promise<string> {
+        const delegatedSigner = parameters.delegatedSigner
+            ? parseSolanaNonCustodialSignerInput(parameters.delegatedSigner)
+            : undefined;
+        const additionalSigners = parameters.additionalSigners?.map(
+            parseSolanaNonCustodialSignerInput
+        );
+        return await this.transactionsService.createSignAndConfirm({
+            transaction: parameters.transaction,
+            signer: delegatedSigner,
+            additionalSigners,
+        });
+    }
+
+    public getAdminSigner(): SolanaSigner {
+        return this.adminSigner;
+    }
+}
+
+export class SolanaMPCWallet extends SolanaWallet {
+    public async sendTransaction(
+        parameters: MPCTransactionParams
+    ): Promise<string> {
+        return await this.transactionsService.createSignAndConfirm({
+            transaction: parameters.transaction,
+            additionalSigners: parameters.additionalSigners?.map(
+                parseSolanaNonCustodialSignerInput
+            ),
+        });
+    }
+}

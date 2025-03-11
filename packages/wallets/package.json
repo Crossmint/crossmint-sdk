@@ -13,7 +13,10 @@
     "main": "./dist/index.cjs",
     "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
-    "files": ["dist", "LICENSE"],
+    "files": [
+        "dist",
+        "LICENSE"
+    ],
     "scripts": {
         "build": "tsup",
         "dev": "tsup --watch",
@@ -24,9 +27,12 @@
     "dependencies": {
         "@crossmint/common-sdk-auth": "workspace:*",
         "@crossmint/common-sdk-base": "workspace:*",
+        "@crossmint/wallets-sdk": "link:",
         "@hey-api/client-fetch": "0.8.1",
         "@solana/web3.js": "1.95.1",
+        "bs58": "5.0.0",
         "ox": "0.6.9",
+        "tweetnacl": "1.0.3",
         "viem": "2.17.5"
     },
     "devDependencies": {
