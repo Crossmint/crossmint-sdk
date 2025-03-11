@@ -5,7 +5,7 @@ export abstract class ApiClient {
     private async makeRequest(path: string, init: RequestInit) {
         return await fetch(this.buildUrl(path), {
             ...init,
-            headers: { ...this.commonHeaders, ...init.headers }, // authHeaders intentionally first, in case sub class wants to override
+            headers: { ...this.commonHeaders, ...init.headers }, // commonHeaders intentionally first, in case sub class wants to override
         });
     }
 
