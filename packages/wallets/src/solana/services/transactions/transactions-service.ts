@@ -26,7 +26,7 @@ export class SolanaTransactionsService {
             transaction.id,
             transaction.approvals?.pending || [],
             [
-                ...(params.signer ? [params.signer] : []),
+                ...(params.signer != null ? [params.signer] : []),
                 ...(params.additionalSigners || []),
             ]
         );
