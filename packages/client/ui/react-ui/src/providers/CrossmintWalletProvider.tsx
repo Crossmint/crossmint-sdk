@@ -76,13 +76,11 @@ export function CrossmintWalletProvider({
     const [walletState, setWalletState] = useState<ValidWalletState>({
         status: "not-loaded",
     });
-    const [passkeySigner, setPasskeySigner] = useState<PasskeySigner | undefined>(undefined);
     const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
 
     const createPasskeySigner = async (name: string) => {
         await createPasskeyPrompt("create-wallet")();
         const signer = await smartWalletSDK.createPasskeySigner(name);
-        setPasskeySigner(signer);
         walletCache.setPasskey(signer);
         return signer;
     };
@@ -177,7 +175,6 @@ export function CrossmintWalletProvider({
                 ...walletState,
                 getOrCreateWallet,
                 createPasskeySigner,
-                passkeySigner,
                 clearWallet,
             }}
         >
