@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.15.2
+
+### Patch Changes
+
+- 27f230f: fixed passkey prompts and wallet persistence
+- Updated dependencies [27f230f]
+  - @crossmint/client-sdk-smart-wallet@0.3.0
+
 ## 1.15.1
 
 ### Patch Changes

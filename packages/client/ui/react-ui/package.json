@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-react-ui",
-    "version": "1.15.1",
+    "version": "1.15.2",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
@@ -42,6 +42,7 @@
         "color": "4.2.3",
         "input-otp": "1.2.4",
         "lodash.isequal": "4.5.0",
+        "ox": "0.6.9",
         "react-jss": "10.10.0",
         "tailwind-merge": "2.4.0",
         "tailwindcss": "3.4.10",
@@ -49,12 +50,12 @@
         "zod": "3.22.4"
     },
     "devDependencies": {
-        "pino-pretty": "^7.6.0",
         "@testing-library/react": "^16.0.1",
         "@types/color": "4.2.0",
         "@types/lodash.isequal": "4.5.6",
         "@types/react": "^18.3.0",
         "@types/react-dom": "^18.3.0",
+        "pino-pretty": "^7.6.0",
         "react": "^18.3.0",
         "react-dom": "^18.3.0"
     },

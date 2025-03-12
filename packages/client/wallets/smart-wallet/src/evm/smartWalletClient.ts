@@ -27,6 +27,12 @@ import type {
     TransactionNotFoundError,
 } from "@/error";
 
+export interface Transaction {
+    to: Address;
+    data?: Hex;
+    value?: bigint;
+}
+
 export interface SmartWalletClient {
     /**
      * Retrieves the address of the smart wallet.
