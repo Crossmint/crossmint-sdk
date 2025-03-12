@@ -10,10 +10,7 @@ export class SolanaTransactionsService {
     constructor(
         private readonly walletLocator: SolanaWalletLocator,
         private readonly apiClient: ApiClient,
-        private readonly approvalsService: SolanaApprovalsService = new SolanaApprovalsService(
-            walletLocator,
-            apiClient
-        )
+        private readonly approvalsService: SolanaApprovalsService = new SolanaApprovalsService(walletLocator, apiClient)
     ) {}
 
     public async createSignAndConfirm(params: {
@@ -22,18 +19,11 @@ export class SolanaTransactionsService {
         additionalSigners?: SolanaNonCustodialSigner[];
     }) {
         const transaction = await this.create(params);
-        if (
-            transaction.approvals?.pending != null &&
-            transaction.approvals?.pending.length > 0
-        ) {
-            await this.approvalsService.approve(
-                transaction.id,
-                transaction.approvals?.pending || [],
-                [
-                    ...(params.signer != null ? [params.signer] : []),
-                    ...(params.additionalSigners || []),
-                ]
-            );
+        if (transaction.approvals?.pending != null && transaction.approvals?.pending.length > 0) {
+            await this.approvalsService.approve(transaction.id, transaction.approvals?.pending || [], [
+                ...(params.signer != null ? [params.signer] : []),
+                ...(params.additionalSigners || []),
+            ]);
         }
         return this.waitForTransaction(transaction.id);
     }
@@ -53,24 +43,18 @@ export class SolanaTransactionsService {
             ...(signer ? { signer: signer.address } : {}),
             ...(additionalSigners
                 ? {
-                      additionalSigners: additionalSigners.map(
-                          (s) => s.address
-                      ),
+                      additionalSigners: additionalSigners.map((s) => s.address),
                   }
                 : {}),
         };
 
-        const transactionCreationResponse =
-            await this.apiClient.createTransaction(this.walletLocator, {
-                params: transactionParams,
-            });
+        const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
+            params: transactionParams,
+        });
         return transactionCreationResponse;
     }
 
-    private async waitForTransaction(
-        transactionId: string,
-        timeoutMs = 60000
-    ): Promise<string> {
+    private async waitForTransaction(transactionId: string, timeoutMs = 60000): Promise<string> {
         const startTime = Date.now();
         let transactionResponse;
 
@@ -79,26 +63,17 @@ export class SolanaTransactionsService {
                 throw new Error("Transaction confirmation timeout");
             }
 
-            transactionResponse = await this.apiClient.getTransaction(
-                this.walletLocator,
-                transactionId
-            );
+            transactionResponse = await this.apiClient.getTransaction(this.walletLocator, transactionId);
             await sleep(STATUS_POLLING_INTERVAL_MS);
         } while (transactionResponse.status === "pending");
 
         if (transactionResponse.status === "failed") {
-            throw new Error(
-                `Transaction sending failed: ${JSON.stringify(
-                    transactionResponse.error
-                )}`
-            );
+            throw new Error(`Transaction sending failed: ${JSON.stringify(transactionResponse.error)}`);
         }
 
         const transactionHash = transactionResponse.onChain.txId;
         if (transactionHash == null) {
-            throw new Error(
-                "Transaction hash not found on transaction response"
-            );
+            throw new Error("Transaction hash not found on transaction response");
         }
         return transactionHash;
     }

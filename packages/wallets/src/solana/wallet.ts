@@ -1,8 +1,4 @@
-import type {
-    Connection,
-    PublicKey,
-    VersionedTransaction,
-} from "@solana/web3.js";
+import type { Connection, PublicKey, VersionedTransaction } from "@solana/web3.js";
 
 import type {
     ApiClient,
@@ -39,10 +35,7 @@ abstract class SolanaWallet {
         protected readonly apiClient: ApiClient,
         protected readonly publicKey: PublicKey
     ) {
-        this.transactionsService = new SolanaTransactionsService(
-            this.walletLocator,
-            this.apiClient
-        );
+        this.transactionsService = new SolanaTransactionsService(this.walletLocator, this.apiClient);
     }
 
     public getPublicKey(): PublicKey {
@@ -53,9 +46,7 @@ abstract class SolanaWallet {
         return this.publicKey.toBase58();
     }
 
-    public async balances(
-        tokens: SolanaSupportedToken[]
-    ): Promise<GetBalanceResponse> {
+    public async balances(tokens: SolanaSupportedToken[]): Promise<GetBalanceResponse> {
         return await this.apiClient.getBalance(this.walletLocator, {
             tokens,
         });
@@ -88,15 +79,11 @@ export class SolanaSmartWallet extends SolanaWallet {
         this.adminSigner = parseSolanaSignerInput(adminSignerInput);
     }
 
-    public async sendTransaction(
-        parameters: SmartWalletTransactionParams
-    ): Promise<string> {
+    public async sendTransaction(parameters: SmartWalletTransactionParams): Promise<string> {
         const delegatedSigner = parameters.delegatedSigner
             ? parseSolanaNonCustodialSignerInput(parameters.delegatedSigner)
             : undefined;
-        const additionalSigners = parameters.additionalSigners?.map(
-            parseSolanaNonCustodialSignerInput
-        );
+        const additionalSigners = parameters.additionalSigners?.map(parseSolanaNonCustodialSignerInput);
         return await this.transactionsService.createSignAndConfirm({
             transaction: parameters.transaction,
             signer: delegatedSigner,
@@ -110,14 +97,10 @@ export class SolanaSmartWallet extends SolanaWallet {
 }
 
 export class SolanaMPCWallet extends SolanaWallet {
-    public async sendTransaction(
-        parameters: MPCTransactionParams
-    ): Promise<string> {
+    public async sendTransaction(parameters: MPCTransactionParams): Promise<string> {
         return await this.transactionsService.createSignAndConfirm({
             transaction: parameters.transaction,
-            additionalSigners: parameters.additionalSigners?.map(
-                parseSolanaNonCustodialSignerInput
-            ),
+            additionalSigners: parameters.additionalSigners?.map(parseSolanaNonCustodialSignerInput),
         });
     }
 }

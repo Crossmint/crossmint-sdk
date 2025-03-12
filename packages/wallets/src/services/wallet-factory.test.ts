@@ -127,9 +127,7 @@ describe("WalletSDK", () => {
         // Wallet Checks
         expect(wallet).toBeInstanceOf(SolanaSmartWallet);
         expect(wallet.getPublicKey().toBase58()).toBe(walletAddress);
-        expect(wallet.getAdminSigner().type).toBe(
-            "solana-fireblocks-custodial"
-        );
+        expect(wallet.getAdminSigner().type).toBe("solana-fireblocks-custodial");
         expect(wallet.getAddress()).toBe(walletAddress);
         expect(wallet.getPublicKey().toBase58()).toBe(walletAddress);
 

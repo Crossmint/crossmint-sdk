@@ -18,11 +18,7 @@ describe("SolanaTransactionsService", () => {
     let transactionsService: SolanaTransactionsService;
     beforeEach(() => {
         vi.resetAllMocks();
-        transactionsService = new SolanaTransactionsService(
-            walletLocator,
-            apiClient,
-            approvalsService
-        );
+        transactionsService = new SolanaTransactionsService(walletLocator, apiClient, approvalsService);
     });
     it("transaction creation complete flow -- happy path", async () => {
         const signer = mock<SolanaNonCustodialSigner>({
@@ -36,8 +32,7 @@ describe("SolanaTransactionsService", () => {
             },
         ];
 
-        const serializedTransactionString =
-            "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN";
+        const serializedTransactionString = "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN";
         const serializedTransaction = bs58.decode(serializedTransactionString);
         transaction.serialize.mockReturnValueOnce(serializedTransaction);
         apiClient.createTransaction.mockResolvedValueOnce({
@@ -74,26 +69,16 @@ describe("SolanaTransactionsService", () => {
 
         expect(transaction.serialize).toHaveBeenCalledTimes(1);
         expect(apiClient.createTransaction).toHaveBeenCalledTimes(1);
-        expect(apiClient.createTransaction).toHaveBeenCalledWith(
-            walletLocator,
-            {
-                params: {
-                    signer: "mock-address",
-                    transaction: serializedTransactionString,
-                    additionalSigners: [],
-                },
-            }
-        );
+        expect(apiClient.createTransaction).toHaveBeenCalledWith(walletLocator, {
+            params: {
+                signer: "mock-address",
+                transaction: serializedTransactionString,
+                additionalSigners: [],
+            },
+        });
         expect(approvalsService.approve).toHaveBeenCalledTimes(1);
-        expect(approvalsService.approve).toHaveBeenCalledWith(
-            "mock-tx-id",
-            pendingApprovals,
-            [signer]
-        );
+        expect(approvalsService.approve).toHaveBeenCalledWith("mock-tx-id", pendingApprovals, [signer]);
         expect(apiClient.getTransaction).toHaveBeenCalledTimes(3);
-        expect(apiClient.getTransaction).toHaveBeenCalledWith(
-            walletLocator,
-            "mock-tx-id"
-        );
+        expect(apiClient.getTransaction).toHaveBeenCalledWith(walletLocator, "mock-tx-id");
     });
 });
