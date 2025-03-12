@@ -61,7 +61,8 @@ class ApiClient extends CrossmintApiClient {
     }
 
     async createWallet(
-        params: CreateWalletParams
+        params: CreateWalletParams,
+        { idempotencyKey }: { idempotencyKey?: string } = {}
     ): Promise<CreateWalletResponse> {
         const path = this.isServerSide
             ? `${this.apiPrefix}`
@@ -70,6 +71,9 @@ class ApiClient extends CrossmintApiClient {
             body: JSON.stringify(params),
             headers: {
                 "Content-Type": "application/json",
+                ...(idempotencyKey
+                    ? { "x-idempotency-key": idempotencyKey }
+                    : {}),
             },
         });
         return response.json();

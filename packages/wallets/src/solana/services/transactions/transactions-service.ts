@@ -11,8 +11,8 @@ export class SolanaTransactionsService {
         private readonly walletLocator: SolanaWalletLocator,
         private readonly apiClient: ApiClient,
         private readonly approvalsService: SolanaApprovalsService = new SolanaApprovalsService(
-            this.walletLocator,
-            this.apiClient
+            walletLocator,
+            apiClient
         )
     ) {}
 
@@ -22,14 +22,19 @@ export class SolanaTransactionsService {
         additionalSigners?: SolanaNonCustodialSigner[];
     }) {
         const transaction = await this.create(params);
-        await this.approvalsService.approve(
-            transaction.id,
-            transaction.approvals?.pending || [],
-            [
-                ...(params.signer != null ? [params.signer] : []),
-                ...(params.additionalSigners || []),
-            ]
-        );
+        if (
+            transaction.approvals?.pending != null &&
+            transaction.approvals?.pending.length > 0
+        ) {
+            await this.approvalsService.approve(
+                transaction.id,
+                transaction.approvals?.pending || [],
+                [
+                    ...(params.signer != null ? [params.signer] : []),
+                    ...(params.additionalSigners || []),
+                ]
+            );
+        }
         return this.waitForTransaction(transaction.id);
     }
 
