@@ -1,4 +1,9 @@
-import { type Crossmint, APIKeyUsageOrigin, CrossmintApiClient, validateAPIKey } from "@crossmint/common-sdk-base";
+import {
+    type Crossmint,
+    APIKeyUsageOrigin,
+    CrossmintApiClient,
+    validateAPIKey,
+} from "@crossmint/common-sdk-base";
 import type { Address } from "viem";
 
 import { SDK_NAME, SDK_VERSION } from "../utils/constants";
@@ -16,6 +21,8 @@ import type {
     Nftevm,
     Nftsol,
     WalletBalanceResponseDto,
+    CreateSignerInputDto,
+    DelegatedSignerDto,
 } from "./gen/types.gen";
 
 type CreateWalletParams = CreateWalletDto;
@@ -38,6 +45,9 @@ type GetTransactionsResponse = WalletsV1Alpha2TransactionsResponseDto;
 type GetNftsResponse = Nftevm | Nftsol;
 type GetBalanceResponse = WalletBalanceResponseDto;
 
+type RegisterSignerParams = CreateSignerInputDto;
+type RegisterSignerResponse = DelegatedSignerDto;
+type GetSignerResponse = DelegatedSignerDto;
 type WalletType = CreateWalletDto["type"];
 type EvmWalletLocator = `me:${WalletType}` | Address;
 type SolanaAddress = string;
@@ -59,12 +69,16 @@ class ApiClient extends CrossmintApiClient {
         params: CreateWalletParams,
         { idempotencyKey }: { idempotencyKey?: string } = {}
     ): Promise<CreateWalletResponse> {
-        const path = this.isServerSide ? `${this.apiPrefix}` : `${this.apiPrefix}/me`;
+        const path = this.isServerSide
+            ? `${this.apiPrefix}`
+            : `${this.apiPrefix}/me`;
         const response = await this.post(path, {
             body: JSON.stringify(params),
             headers: {
                 "Content-Type": "application/json",
-                ...(idempotencyKey ? { "x-idempotency-key": idempotencyKey } : {}),
+                ...(idempotencyKey
+                    ? { "x-idempotency-key": idempotencyKey }
+                    : {}),
             },
         });
         return response.json();
@@ -83,12 +97,15 @@ class ApiClient extends CrossmintApiClient {
         walletLocator: WalletLocator,
         params: CreateTransactionParams
     ): Promise<CreateTransactionResponse> {
-        const response = await this.post(`${this.apiPrefix}/${walletLocator}/transactions`, {
-            body: JSON.stringify(params),
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
+        const response = await this.post(
+            `${this.apiPrefix}/${walletLocator}/transactions`,
+            {
+                body: JSON.stringify(params),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
         return response.json();
     }
 
@@ -97,21 +114,30 @@ class ApiClient extends CrossmintApiClient {
         transactionId: string,
         params: ApproveTransactionParams
     ): Promise<ApproveTransactionResponse> {
-        const response = await this.post(`${this.apiPrefix}/${walletLocator}/transactions/${transactionId}/approvals`, {
-            body: JSON.stringify(params),
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
+        const response = await this.post(
+            `${this.apiPrefix}/${walletLocator}/transactions/${transactionId}/approvals`,
+            {
+                body: JSON.stringify(params),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
         return response.json();
     }
 
-    async getTransaction(walletLocator: WalletLocator, transactionId: string): Promise<GetTransactionResponse> {
-        const response = await this.get(`${this.apiPrefix}/${walletLocator}/transactions/${transactionId}`, {
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
+    async getTransaction(
+        walletLocator: WalletLocator,
+        transactionId: string
+    ): Promise<GetTransactionResponse> {
+        const response = await this.get(
+            `${this.apiPrefix}/${walletLocator}/transactions/${transactionId}`,
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
         return response.json();
     }
 
@@ -119,12 +145,15 @@ class ApiClient extends CrossmintApiClient {
         walletLocator: WalletLocator,
         params: CreateSignatureParams
     ): Promise<CreateSignatureResponse> {
-        const response = await this.post(`${this.apiPrefix}/${walletLocator}/signatures`, {
-            body: JSON.stringify(params),
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
+        const response = await this.post(
+            `${this.apiPrefix}/${walletLocator}/signatures`,
+            {
+                body: JSON.stringify(params),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
         return response.json();
     }
 
@@ -133,42 +162,63 @@ class ApiClient extends CrossmintApiClient {
         signatureId: string,
         params: ApproveSignatureParams
     ): Promise<ApproveSignatureResponse> {
-        const response = await this.post(`${this.apiPrefix}/${walletLocator}/signatures/${signatureId}/approvals`, {
-            body: JSON.stringify(params),
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
+        const response = await this.post(
+            `${this.apiPrefix}/${walletLocator}/signatures/${signatureId}/approvals`,
+            {
+                body: JSON.stringify(params),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
         return response.json();
     }
 
-    async getSignature(walletLocator: EvmWalletLocator, signatureId: string): Promise<GetSignatureResponse> {
-        const response = await this.get(`${this.apiPrefix}/${walletLocator}/signatures/${signatureId}`, {
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
+    async getSignature(
+        walletLocator: EvmWalletLocator,
+        signatureId: string
+    ): Promise<GetSignatureResponse> {
+        const response = await this.get(
+            `${this.apiPrefix}/${walletLocator}/signatures/${signatureId}`,
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
         return response.json();
     }
 
-    async getTransactions(walletLocator: WalletLocator): Promise<GetTransactionsResponse> {
-        const response = await this.get(`${this.apiPrefix}/${walletLocator}/transactions`, {
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
+    async getTransactions(
+        walletLocator: WalletLocator
+    ): Promise<GetTransactionsResponse> {
+        const response = await this.get(
+            `${this.apiPrefix}/${walletLocator}/transactions`,
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
         return response.json();
     }
 
-    async getNfts(walletLocator: WalletLocator, page: number, perPage: number): Promise<GetNftsResponse> {
+    async getNfts(
+        walletLocator: WalletLocator,
+        page: number,
+        perPage: number
+    ): Promise<GetNftsResponse> {
         const queryParams = new URLSearchParams();
         queryParams.append("page", page.toString());
         queryParams.append("perPage", perPage.toString());
-        const response = await this.get(`${this.apiPrefix}/${walletLocator}/nfts?${queryParams.toString()}`, {
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
+        const response = await this.get(
+            `${this.apiPrefix}/${walletLocator}/nfts?${queryParams.toString()}`,
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
         return response.json();
     }
 
@@ -181,17 +231,41 @@ class ApiClient extends CrossmintApiClient {
     ): Promise<GetBalanceResponse> {
         const queryParams = new URLSearchParams();
         if (params.chains) {
-            params.chains.forEach((chain) => queryParams.append("chains", chain));
+            params.chains.forEach((chain) =>
+                queryParams.append("chains", chain)
+            );
         }
         params.tokens.forEach((token) => queryParams.append("tokens", token));
-        const response = await this.get(`api/v1-alpha2/wallets/${walletLocator}/balances?${queryParams.toString()}`, {
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
+        const response = await this.get(
+            `api/v1-alpha2/wallets/${walletLocator}/balances?${queryParams.toString()}`,
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
         return response.json();
     }
 
+    async registerSigner(
+        walletLocator: WalletLocator,
+        params: RegisterSignerParams,
+        { idempotencyKey }: { idempotencyKey?: string } = {}
+    ): Promise<RegisterSignerResponse> {
+        const response = await this.post(
+            `${this.apiPrefix}/${walletLocator}/signers`,
+            {
+                body: JSON.stringify(params),
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(idempotencyKey
+                        ? { "x-idempotency-key": idempotencyKey }
+                        : {}),
+                },
+            }
+        );
+        return response.json();
+    }
     public get isServerSide() {
         const apiKey = this.crossmint.apiKey;
         const apiKeyValidation = validateAPIKey(apiKey);
@@ -199,6 +273,21 @@ class ApiClient extends CrossmintApiClient {
             throw new Error("Invalid API key");
         }
         return apiKeyValidation.usageOrigin === APIKeyUsageOrigin.SERVER;
+    }
+
+    async getSigner(
+        walletLocator: WalletLocator,
+        signer: string
+    ): Promise<GetSignerResponse> {
+        const response = await this.get(
+            `${this.apiPrefix}/${walletLocator}/signers/${signer}`,
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return response.json();
     }
 }
 
