@@ -20,29 +20,29 @@ export default function WalletCard({ title, subtitle, type }: WalletCardProps) {
     const [wallet, setWallet] = useState<
         SolanaSmartWallet | SolanaMPCWallet | null
     >(null);
-    const [delegatedSigner, setDelegatedSigner] = useState<
-        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-        any | null
-    >(null);
+    const [delegatedSigners, setDelegatedSigners] = useState<
+        Array<{
+            signer: any;
+            address: string;
+        }>
+    >([]);
     const [walletAddress, setWalletAddress] = useState<string | null>(null);
     const [adminSignerAddress, setAdminSignerAddress] = useState<string | null>(
         null
     );
-    const [delegatedSignerAddress, setDelegatedSignerAddress] = useState<
-        string | null
-    >(null);
-    const [txId, setTxId] = useState<string | null>(null);
-    const [delegatedSignerTxId, setDelegatedSignerTxId] = useState<
-        string | null
-    >(null);
+    const [transactions, setTransactions] = useState<
+        Array<{
+            txId: string;
+            title: string;
+            signer?: "admin" | string | null;
+            timestamp: number;
+        }>
+    >([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingAddDelegatedSigner, setIsLoadingAddDelegatedSigner] =
         useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedSigner, setSelectedSigner] = useState<
-        "admin" | "delegated" | null
-    >(null);
 
     const handleCreateWallet = async () => {
         setIsLoading(true);
@@ -70,7 +70,7 @@ export default function WalletCard({ title, subtitle, type }: WalletCardProps) {
         }
     };
 
-    const handleSendTransaction = async () => {
+    const handleSendTransaction = async (signerType: "admin" | string) => {
         if (!wallet) {
             return;
         }
@@ -82,19 +82,39 @@ export default function WalletCard({ title, subtitle, type }: WalletCardProps) {
             const message = `Hello from Crossmint SDK ${
                 type === "smart" ? "Smart" : "MPC"
             } Wallet!`;
+
+            console.log("selectedSigner", signerType);
+
+            // Find the selected delegated signer if not admin
+            const selectedSigner =
+                signerType === "admin"
+                    ? null
+                    : delegatedSigners.find((ds) => ds.address === signerType)
+                          ?.signer;
+
+            console.log("delegatedSignerSelected", selectedSigner);
+
             const transactionId = await sendTransaction(
                 wallet,
                 message,
-                selectedSigner === "delegated" ? delegatedSigner : null
+                selectedSigner
             );
-            setTxId(transactionId);
+
+            setTransactions((prev) => [
+                ...prev,
+                {
+                    txId: transactionId,
+                    title: "Transaction Success!",
+                    signer: signerType,
+                    timestamp: Date.now(),
+                },
+            ]);
         } catch (err) {
             console.error(`Error sending ${type} wallet transaction:`, err);
             setError(err instanceof Error ? err.message : String(err));
         } finally {
             setIsLoading(false);
             setIsModalOpen(false);
-            setSelectedSigner(null);
         }
     };
 
@@ -110,9 +130,25 @@ export default function WalletCard({ title, subtitle, type }: WalletCardProps) {
             const { signer, response } = (await addDelegatedSigner(
                 wallet as SolanaSmartWallet
             )) as any;
-            setDelegatedSignerAddress(response.address);
-            setDelegatedSignerTxId(response.transaction.onChain.txId);
-            setDelegatedSigner(signer);
+            console.log("signer returned", signer);
+
+            // Add the new delegated signer to our array
+            setDelegatedSigners((prev) => [
+                ...prev,
+                {
+                    signer: signer,
+                    address: response.address,
+                },
+            ]);
+
+            setTransactions((prev) => [
+                ...prev,
+                {
+                    txId: response.transaction.onChain.txId,
+                    title: "Delegated Signer Added!",
+                    timestamp: Date.now(),
+                },
+            ]);
         } catch (err) {
             console.error(`Error adding delegated signer:`, err);
             setError(err instanceof Error ? err.message : String(err));
@@ -122,11 +158,15 @@ export default function WalletCard({ title, subtitle, type }: WalletCardProps) {
     };
 
     const openTransactionModal = () => {
-        if (delegatedSigner) {
+        if (delegatedSigners.length > 0) {
             setIsModalOpen(true);
         } else {
-            handleSendTransaction();
+            handleSendTransaction("admin");
         }
+    };
+
+    const handleSignerSelection = (signer: "admin" | string) => {
+        handleSendTransaction(signer);
     };
 
     return (
@@ -189,12 +229,12 @@ export default function WalletCard({ title, subtitle, type }: WalletCardProps) {
                     </div>
 
                     {(adminSignerAddress != null ||
-                        delegatedSignerAddress != null) && (
+                        delegatedSigners.length > 0) && (
                         <div className="w-full p-4 bg-white/5 border border-white/10 rounded-lg shadow-inner hover:bg-white/8 transition-colors">
                             {adminSignerAddress && (
                                 <div
                                     className={
-                                        delegatedSignerAddress
+                                        delegatedSigners.length > 0
                                             ? "mb-3 border-b border-white/10 pb-3"
                                             : ""
                                     }
@@ -207,14 +247,25 @@ export default function WalletCard({ title, subtitle, type }: WalletCardProps) {
                                     </p>
                                 </div>
                             )}
-                            {delegatedSignerAddress && (
+                            {delegatedSigners.length > 0 && (
                                 <div>
                                     <p className="text-xs text-gray-300 mb-1 font-medium">
-                                        Delegated Signer Address
+                                        Delegated Signer{" "}
+                                        {delegatedSigners.length > 1
+                                            ? "Addresses"
+                                            : "Address"}
                                     </p>
-                                    <p className="font-mono text-sm break-all text-purple-200 bg-black/20 p-2 rounded">
-                                        {delegatedSignerAddress}
-                                    </p>
+                                    {delegatedSigners.map((ds, index) => (
+                                        <p
+                                            key={index}
+                                            className="font-mono text-sm break-all text-purple-200 bg-black/20 p-2 rounded mb-2"
+                                        >
+                                            <span className="font-semibold text-emerald-300 mr-1">
+                                                #{index + 1}:
+                                            </span>{" "}
+                                            {ds.address}
+                                        </p>
+                                    ))}
                                 </div>
                             )}
                         </div>
@@ -250,43 +301,35 @@ export default function WalletCard({ title, subtitle, type }: WalletCardProps) {
                         </button>
                     )}
 
-                    {txId && delegatedSignerTxId && type !== "mpc" ? (
-                        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <TransactionSuccess
-                                txId={txId}
-                                title="Transaction Success!"
-                            />
-                            <TransactionSuccess
-                                txId={delegatedSignerTxId}
-                                title="Delegated Signer Added!"
-                            />
+                    {transactions.length > 0 && (
+                        <div className="w-full mt-4">
+                            <h3 className="text-lg font-semibold text-white mb-3">
+                                Transaction History
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {transactions.reverse().map((tx, index) => (
+                                    <TransactionSuccess
+                                        key={`${tx.txId}-${index}`}
+                                        txId={tx.txId}
+                                        title={tx.title}
+                                        signer={tx.signer}
+                                        walletType={type}
+                                        delegatedSigners={delegatedSigners}
+                                    />
+                                ))}
+                            </div>
                         </div>
-                    ) : (
-                        <>
-                            {txId && (
-                                <TransactionSuccess
-                                    txId={txId}
-                                    title="Transaction Success!"
-                                />
-                            )}
-                            {delegatedSignerTxId && type !== "mpc" && (
-                                <TransactionSuccess
-                                    txId={delegatedSignerTxId}
-                                    title="Delegated Signer Added!"
-                                />
-                            )}
-                        </>
                     )}
 
-                    {isModalOpen && delegatedSigner && (
+                    {isModalOpen && delegatedSigners.length > 0 && (
                         <SignerSelectionModal
                             onClose={() => setIsModalOpen(false)}
-                            onSelectSigner={(signer: "admin" | "delegated") => {
-                                setSelectedSigner(signer);
-                                handleSendTransaction();
+                            onSelectSigner={(signer: "admin" | string) => {
+                                console.log("signer selected", signer);
+                                handleSignerSelection(signer);
                             }}
                             adminSignerAddress={adminSignerAddress}
-                            delegatedSignerAddress={delegatedSignerAddress}
+                            delegatedSigners={delegatedSigners}
                         />
                     )}
                 </div>
@@ -323,7 +366,19 @@ function LoadingSpinner({ text }: { text: string }) {
     );
 }
 
-function TransactionSuccess({ txId, title }: { txId: string; title: string }) {
+function TransactionSuccess({
+    txId,
+    title,
+    signer,
+    walletType,
+    delegatedSigners,
+}: {
+    txId: string;
+    title: string;
+    signer?: "admin" | string | null;
+    walletType: WalletType;
+    delegatedSigners: Array<{ signer: any; address: string }>;
+}) {
     return (
         <div className="w-full mt-4 p-5 bg-green-500/10 border border-green-500/30 rounded-lg">
             <div className="flex items-center mb-3">
@@ -347,6 +402,33 @@ function TransactionSuccess({ txId, title }: { txId: string; title: string }) {
             <p className="font-mono text-xs break-all text-cyan-200 mb-3">
                 {txId}
             </p>
+            {signer &&
+                walletType !== "mpc" &&
+                title !== "Delegated Signer Added!" && (
+                    <div className="mb-3">
+                        <p className="text-xs text-gray-300 mb-1">Signed by</p>
+                        <p className="font-mono text-xs text-emerald-300 font-medium">
+                            {signer === "admin"
+                                ? "Admin Signer"
+                                : "Delegated Signer" +
+                                  (delegatedSigners.length > 1
+                                      ? ` #${
+                                            delegatedSigners.findIndex(
+                                                (ds) => ds.address === signer
+                                            ) + 1
+                                        }`
+                                      : "")}
+                        </p>
+                    </div>
+                )}
+            {title === "Delegated Signer Added!" && (
+                <div className="mb-3">
+                    <p className="text-xs text-gray-300 mb-1">Signed by</p>
+                    <p className="font-mono text-xs text-emerald-300 font-medium">
+                        Admin Signer
+                    </p>
+                </div>
+            )}
             <a
                 href={`https://explorer.solana.com/tx/${txId}?cluster=devnet`}
                 target="_blank"
@@ -377,16 +459,16 @@ function SignerSelectionModal({
     onClose,
     onSelectSigner,
     adminSignerAddress,
-    delegatedSignerAddress,
+    delegatedSigners,
 }: {
     onClose: () => void;
-    onSelectSigner: (signer: "admin" | "delegated") => void;
+    onSelectSigner: (signer: "admin" | string) => void;
     adminSignerAddress: string | null;
-    delegatedSignerAddress: string | null;
+    delegatedSigners: Array<{ signer: any; address: string }>;
 }) {
     return (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-            <div className="bg-gray-800 border border-white/20 rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
+            <div className="bg-gray-800 border border-white/20 rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl max-h-[80vh] overflow-y-auto">
                 <h3 className="text-xl font-bold text-white mb-4">
                     Choose Signer
                 </h3>
@@ -412,22 +494,28 @@ function SignerSelectionModal({
                         </div>
                     </button>
 
-                    <button
-                        onClick={() => {
-                            onSelectSigner("delegated");
-                            onClose();
-                        }}
-                        className="w-full p-4 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors flex items-start"
-                    >
-                        <div className="flex-1">
-                            <p className="font-medium text-white mb-1">
-                                Delegated Signer
-                            </p>
-                            <p className="font-mono text-xs break-all text-cyan-200">
-                                {delegatedSignerAddress}
-                            </p>
-                        </div>
-                    </button>
+                    {delegatedSigners.map((ds, index) => (
+                        <button
+                            key={index}
+                            onClick={() => {
+                                onSelectSigner(ds.address);
+                                onClose();
+                            }}
+                            className="w-full p-4 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors flex items-start"
+                        >
+                            <div className="flex-1">
+                                <p className="font-medium text-white mb-1">
+                                    Delegated Signer{" "}
+                                    {delegatedSigners.length > 1
+                                        ? `#${index + 1}`
+                                        : ""}
+                                </p>
+                                <p className="font-mono text-xs break-all text-cyan-200">
+                                    {ds.address}
+                                </p>
+                            </div>
+                        </button>
+                    ))}
                 </div>
 
                 <button

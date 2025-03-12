@@ -13,8 +13,10 @@ import {
 } from "@solana/web3.js";
 
 // API keys should ideally be in environment variables
-const SMART_WALLET_API_KEY = "sk_staging_...";
-const MPC_WALLET_API_KEY = "sk_staging_...";
+const SMART_WALLET_API_KEY =
+    "sk_staging_33C7mSGPtxnG6dgdTpLAZgkG2uJpVDSzDody11TjtEBTFDKQwKn5QjCn7UKNPeB1iWhhkdCjyReeCJLcFtDH8SVPmtLtRP43AHzmzWNtTDtKEnPyRTRMPFZ2jxKdDQeVtXn4p3HbbKto8zeh6mEUushUm9pFJgZvXveknrFcRmPWd53g11YFqhm7u6516nHkMgaEV3YMnyibHkpjYu7XPA3";
+const MPC_WALLET_API_KEY =
+    "sk_staging_2B44Zyt81cLJFTq5xcyUsZwNEq94J8j9Tq2k2MkdVjRsUobYPJBjoGHCNtJrUqCEi17DL9ncFqtQqd9BQ3dcJeqFdi1ZLqN1MWuqAkeJwidsJcXZEJYKmeVDzzci6xxejLfFXVzWGeuRbGR2Y1EV6xnVidPaDRhQfHvNAaocGZkPp1uPPYvxyjxBzqfCMpPxjFRDo7CP8oFt37zF1UnzKYW";
 
 export const connection = new Connection("https://api.devnet.solana.com");
 
@@ -81,6 +83,8 @@ export async function sendTransaction(
     delegatedSigner?: any
 ): Promise<string> {
     const walletAddress = await wallet.getAddress();
+    console.log("walletAddress", walletAddress);
+    console.log("delegatedSigner", delegatedSigner);
 
     const memoInstruction = new TransactionInstruction({
         keys: [
