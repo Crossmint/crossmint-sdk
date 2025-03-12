@@ -14,8 +14,10 @@ import {
     type SolanaSignerInput,
     parseSolanaSignerInput,
     parseSolanaNonCustodialSignerInput,
+    isNonCustodialSigner,
 } from "./types/signers";
-import { SolanaTransactionsService } from "./services/transactions/transactions-service";
+import { SolanaTransactionsService } from "./services/transactions-service";
+import { SolanaDelegatedSignerService } from "./services/delegated-signers-service";
 
 interface MPCTransactionParams {
     transaction: VersionedTransaction;
@@ -30,12 +32,18 @@ interface SmartWalletTransactionParams {
 
 abstract class SolanaWallet {
     protected readonly transactionsService: SolanaTransactionsService;
+    protected readonly delegatedSignerService: SolanaDelegatedSignerService;
     constructor(
         public readonly client: { public: Connection },
         protected readonly apiClient: ApiClient,
         protected readonly publicKey: PublicKey
     ) {
         this.transactionsService = new SolanaTransactionsService(this.walletLocator, this.apiClient);
+        this.delegatedSignerService = new SolanaDelegatedSignerService(
+            this.walletLocator,
+            this.transactionsService,
+            apiClient
+        );
     }
 
     public getPublicKey(): PublicKey {
@@ -80,15 +88,26 @@ export class SolanaSmartWallet extends SolanaWallet {
     }
 
     public async sendTransaction(parameters: SmartWalletTransactionParams): Promise<string> {
-        const delegatedSigner = parameters.delegatedSigner
+        const signer = parameters.delegatedSigner
             ? parseSolanaNonCustodialSignerInput(parameters.delegatedSigner)
-            : undefined;
+            : isNonCustodialSigner(this.adminSigner)
+              ? this.adminSigner
+              : undefined;
         const additionalSigners = parameters.additionalSigners?.map(parseSolanaNonCustodialSignerInput);
+        console.log("signer", signer);
+        console.log("additionalSigners", additionalSigners);
         return await this.transactionsService.createSignAndConfirm({
             transaction: parameters.transaction,
-            signer: delegatedSigner,
+            signer: signer,
             additionalSigners,
         });
+    }
+
+    public async addDelegatedSigner(signer: string) {
+        return await this.delegatedSignerService.registerDelegatedSigner(
+            signer,
+            isNonCustodialSigner(this.adminSigner) ? this.adminSigner : undefined
+        );
     }
 
     public getAdminSigner(): SolanaSigner {

@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { SolanaTransactionsService } from "./transactions-service";
-import type { ApiClient } from "../../../api";
+import type { ApiClient } from "../../api";
 import { mock } from "vitest-mock-extended";
-import type { SolanaApprovalsService } from "../approvals/approvals-service";
+import type { SolanaApprovalsService } from "./approvals-service";
 import type { VersionedTransaction } from "@solana/web3.js";
-import type { SolanaNonCustodialSigner } from "../../types/signers";
+import type { SolanaNonCustodialSigner } from "../types/signers";
 import bs58 from "bs58";
 
 vi.mock("../../../utils", () => ({
@@ -48,6 +48,13 @@ describe("SolanaTransactionsService", () => {
         apiClient.getTransaction
             .mockResolvedValueOnce({
                 id: "mock-tx-id",
+                status: "awaiting-approval",
+                approvals: {
+                    pending: pendingApprovals,
+                },
+            })
+            .mockResolvedValueOnce({
+                id: "mock-tx-id",
                 status: "pending",
             })
             .mockResolvedValueOnce({
@@ -78,7 +85,7 @@ describe("SolanaTransactionsService", () => {
         });
         expect(approvalsService.approve).toHaveBeenCalledTimes(1);
         expect(approvalsService.approve).toHaveBeenCalledWith("mock-tx-id", pendingApprovals, [signer]);
-        expect(apiClient.getTransaction).toHaveBeenCalledTimes(3);
+        expect(apiClient.getTransaction).toHaveBeenCalledTimes(4);
         expect(apiClient.getTransaction).toHaveBeenCalledWith(walletLocator, "mock-tx-id");
     });
 });

@@ -1,10 +1,10 @@
-import type { ApiClient, SolanaWalletLocator } from "../../../api";
-import type { SolanaNonCustodialSigner } from "../../types/signers";
+import type { ApiClient, SolanaWalletLocator } from "../../api";
+import type { SolanaNonCustodialSigner } from "../types/signers";
 import type { VersionedTransaction } from "@solana/web3.js";
-import { SolanaApprovalsService } from "../approvals/approvals-service";
+import { SolanaApprovalsService } from "./approvals-service";
 import bs58 from "bs58";
-import { STATUS_POLLING_INTERVAL_MS } from "../../../utils/constants";
-import { sleep } from "../../../utils";
+import { STATUS_POLLING_INTERVAL_MS } from "../../utils/constants";
+import { sleep } from "../../utils";
 
 export class SolanaTransactionsService {
     constructor(
@@ -13,23 +13,28 @@ export class SolanaTransactionsService {
         private readonly approvalsService: SolanaApprovalsService = new SolanaApprovalsService(walletLocator, apiClient)
     ) {}
 
-    public async createSignAndConfirm(params: {
+    async createSignAndConfirm(params: {
         transaction: VersionedTransaction;
         signer?: SolanaNonCustodialSigner;
         additionalSigners?: SolanaNonCustodialSigner[];
     }) {
         const transaction = await this.create(params);
-        if (transaction.approvals?.pending != null && transaction.approvals?.pending.length > 0) {
-            await this.approvalsService.approve(transaction.id, transaction.approvals?.pending || [], [
-                ...(params.signer != null ? [params.signer] : []),
-                ...(params.additionalSigners || []),
-            ]);
-        }
+        await this.approveTransaction(transaction.id, [
+            ...(params.signer != null ? [params.signer] : []),
+            ...(params.additionalSigners || []),
+        ]);
         return this.waitForTransaction(transaction.id);
     }
 
-    public async getTransactions() {
+    async getTransactions() {
         return await this.apiClient.getTransactions(this.walletLocator);
+    }
+
+    async approveTransaction(transactionId: string, signers: SolanaNonCustodialSigner[]) {
+        const transaction = await this.apiClient.getTransaction(this.walletLocator, transactionId);
+        if (transaction.status === "awaiting-approval") {
+            await this.approvalsService.approve(transaction.id, transaction.approvals?.pending || [], signers);
+        }
     }
 
     private async create(params: {
@@ -54,7 +59,7 @@ export class SolanaTransactionsService {
         return transactionCreationResponse;
     }
 
-    private async waitForTransaction(transactionId: string, timeoutMs = 60000): Promise<string> {
+    async waitForTransaction(transactionId: string, timeoutMs = 60000): Promise<string> {
         const startTime = Date.now();
         let transactionResponse;
 
@@ -69,6 +74,12 @@ export class SolanaTransactionsService {
 
         if (transactionResponse.status === "failed") {
             throw new Error(`Transaction sending failed: ${JSON.stringify(transactionResponse.error)}`);
+        }
+
+        if (transactionResponse.status === "awaiting-approval") {
+            throw new Error(
+                `Transaction is awaiting approval. Please submit required approvals before waiting for completion.`
+            );
         }
 
         const transactionHash = transactionResponse.onChain.txId;

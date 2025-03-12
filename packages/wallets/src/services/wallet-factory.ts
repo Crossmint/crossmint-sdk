@@ -14,6 +14,7 @@ export class WalletFactory {
         type: WalletType,
         args: WalletTypeToArgs[WalletType]
     ): Promise<WalletTypeToWallet[WalletType]> {
+        console.log("Creating wallet", type, args);
         if (type === "evm-smart-wallet") {
             const { chain, adminSigner, linkedUser } = args as WalletTypeToArgs["evm-smart-wallet"];
             const walletResponse = await this.apiClient.createWallet({

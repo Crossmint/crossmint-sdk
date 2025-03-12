@@ -16,6 +16,8 @@ import type {
     Nftevm,
     Nftsol,
     WalletBalanceResponseDto,
+    CreateSignerInputDto,
+    DelegatedSignerDto,
 } from "./gen/types.gen";
 
 type CreateWalletParams = CreateWalletDto;
@@ -38,6 +40,9 @@ type GetTransactionsResponse = WalletsV1Alpha2TransactionsResponseDto;
 type GetNftsResponse = Nftevm | Nftsol;
 type GetBalanceResponse = WalletBalanceResponseDto;
 
+type RegisterSignerParams = CreateSignerInputDto;
+type RegisterSignerResponse = DelegatedSignerDto;
+type GetSignerResponse = DelegatedSignerDto;
 type WalletType = CreateWalletDto["type"];
 type EvmWalletLocator = `me:${WalletType}` | Address;
 type SolanaAddress = string;
@@ -192,6 +197,20 @@ class ApiClient extends CrossmintApiClient {
         return response.json();
     }
 
+    async registerSigner(
+        walletLocator: WalletLocator,
+        params: RegisterSignerParams,
+        { idempotencyKey }: { idempotencyKey?: string } = {}
+    ): Promise<RegisterSignerResponse> {
+        const response = await this.post(`${this.apiPrefix}/${walletLocator}/signers`, {
+            body: JSON.stringify(params),
+            headers: {
+                "Content-Type": "application/json",
+                ...(idempotencyKey ? { "x-idempotency-key": idempotencyKey } : {}),
+            },
+        });
+        return response.json();
+    }
     public get isServerSide() {
         const apiKey = this.crossmint.apiKey;
         const apiKeyValidation = validateAPIKey(apiKey);
@@ -199,6 +218,15 @@ class ApiClient extends CrossmintApiClient {
             throw new Error("Invalid API key");
         }
         return apiKeyValidation.usageOrigin === APIKeyUsageOrigin.SERVER;
+    }
+
+    async getSigner(walletLocator: WalletLocator, signer: string): Promise<GetSignerResponse> {
+        const response = await this.get(`${this.apiPrefix}/${walletLocator}/signers/${signer}`, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+        return response.json();
     }
 }
 

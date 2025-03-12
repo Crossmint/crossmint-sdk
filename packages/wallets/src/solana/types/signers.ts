@@ -34,6 +34,7 @@ export type SolanaNonCustodialSigner = {
 };
 export type SolanaCustodialSigner = {
     type: "solana-fireblocks-custodial";
+    address?: SolanaAddress;
 };
 
 export type SolanaSigner = SolanaNonCustodialSigner | SolanaCustodialSigner;
@@ -64,6 +65,13 @@ export const parseSolanaNonCustodialSignerInput = (
         signTransaction: signer.signTransaction,
         signMessage: signer.signMessage,
     };
+};
+
+export const isCustodialSigner = (signer: SolanaSigner): signer is SolanaCustodialSigner => {
+    return signer.type === "solana-fireblocks-custodial";
+};
+export const isNonCustodialSigner = (signer: SolanaSigner): signer is SolanaNonCustodialSigner => {
+    return !isCustodialSigner(signer);
 };
 
 export const parseSolanaSignerInput = (signerInput: SolanaSignerInput): SolanaSigner => {

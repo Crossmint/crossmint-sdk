@@ -1,5 +1,5 @@
 import type { ApiClient, CreateTransactionResponse, SolanaWalletLocator } from "@/api";
-import type { SolanaNonCustodialSigner } from "../../types/signers";
+import type { SolanaNonCustodialSigner } from "../types/signers";
 import bs58 from "bs58";
 
 type PendingApproval = NonNullable<NonNullable<CreateTransactionResponse["approvals"]>["pending"]>[number];
@@ -17,8 +17,8 @@ export class SolanaApprovalsService {
     ) {
         const approvals = await Promise.all(
             pendingApprovals.map(async (approval) => {
-                const signer = signers.find((s) => s.address === approval.signer);
-                if (!signer) {
+                const signer = signers.find((s) => approval.signer.includes(s.address));
+                if (signer == null) {
                     throw new Error(
                         `Signer ${approval.signer} is required for the transaction but was not found in the signer list`
                     );

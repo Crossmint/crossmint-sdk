@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { SolanaApprovalsService } from "./approvals-service";
-import type { ApiClient } from "../../../api";
+import type { ApiClient } from "../../api";
 import { mock } from "vitest-mock-extended";
-import type { SolanaNonCustodialSigner } from "../../types/signers";
+import type { SolanaNonCustodialSigner } from "../types/signers";
 import base58 from "bs58";
 
 vi.mock("../../../utils", () => ({
