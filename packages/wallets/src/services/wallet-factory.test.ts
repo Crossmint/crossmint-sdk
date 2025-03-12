@@ -40,8 +40,8 @@ describe("WalletSDK", () => {
         // Wallet Checks
         expect(wallet).toBeInstanceOf(SolanaSmartWallet);
         expect(wallet.getPublicKey().toBase58()).toBe(walletAddress);
-        expect(wallet.getAdminSigner().type).toBe("solana-keypair");
-        expect(wallet.getAdminSigner().address).toBe(adminSigner.address);
+        expect(wallet.adminSigner.type).toBe("solana-keypair");
+        expect(wallet.adminSigner.address).toBe(adminSigner.address);
         expect(wallet.getAddress()).toBe(walletAddress);
         expect(wallet.getPublicKey().toBase58()).toBe(walletAddress);
 
@@ -86,8 +86,8 @@ describe("WalletSDK", () => {
         // Wallet Checks
         expect(wallet).toBeInstanceOf(SolanaSmartWallet);
         expect(wallet.getPublicKey().toBase58()).toBe(walletAddress);
-        expect(wallet.getAdminSigner().type).toBe("solana-keypair");
-        expect(wallet.getAdminSigner().address).toBe(adminSigner.address);
+        expect(wallet.adminSigner.type).toBe("solana-keypair");
+        expect(wallet.adminSigner.address).toBe(adminSigner.address);
         expect(wallet.getAddress()).toBe(walletAddress);
         expect(wallet.getPublicKey().toBase58()).toBe(walletAddress);
 
@@ -127,7 +127,7 @@ describe("WalletSDK", () => {
         // Wallet Checks
         expect(wallet).toBeInstanceOf(SolanaSmartWallet);
         expect(wallet.getPublicKey().toBase58()).toBe(walletAddress);
-        expect(wallet.getAdminSigner().type).toBe("solana-fireblocks-custodial");
+        expect(wallet.adminSigner.type).toBe("solana-fireblocks-custodial");
         expect(wallet.getAddress()).toBe(walletAddress);
         expect(wallet.getPublicKey().toBase58()).toBe(walletAddress);
 
