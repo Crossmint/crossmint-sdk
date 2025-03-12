@@ -14,30 +14,22 @@ export type SolanaExternalSignerInput = {
     address: SolanaAddress;
     signer: {
         signMessage: (message: Uint8Array) => Promise<Uint8Array>;
-        signTransaction: (
-            transaction: VersionedTransaction
-        ) => Promise<VersionedTransaction>;
+        signTransaction: (transaction: VersionedTransaction) => Promise<VersionedTransaction>;
     };
 };
 
-export type SolanaNonCustodialSignerInput =
-    | SolanaKeypairSignerInput
-    | SolanaExternalSignerInput;
+export type SolanaNonCustodialSignerInput = SolanaKeypairSignerInput | SolanaExternalSignerInput;
 
 export type SolanaCustodialSignerInput = {
     type: "solana-fireblocks-custodial";
 };
 
-export type SolanaSignerInput =
-    | SolanaNonCustodialSignerInput
-    | SolanaCustodialSignerInput;
+export type SolanaSignerInput = SolanaNonCustodialSignerInput | SolanaCustodialSignerInput;
 
 export type SolanaNonCustodialSigner = {
     type: "solana-keypair";
     address: SolanaAddress;
-    signTransaction: (
-        transaction: VersionedTransaction
-    ) => Promise<VersionedTransaction>;
+    signTransaction: (transaction: VersionedTransaction) => Promise<VersionedTransaction>;
     signMessage: (message: Uint8Array) => Promise<Uint8Array>;
 };
 export type SolanaCustodialSigner = {
@@ -75,20 +67,14 @@ export const parseSolanaNonCustodialSignerInput = (
     };
 };
 
-export const isCustodialSigner = (
-    signer: SolanaSigner
-): signer is SolanaCustodialSigner => {
+export const isCustodialSigner = (signer: SolanaSigner): signer is SolanaCustodialSigner => {
     return signer.type === "solana-fireblocks-custodial";
 };
-export const isNonCustodialSigner = (
-    signer: SolanaSigner
-): signer is SolanaNonCustodialSigner => {
+export const isNonCustodialSigner = (signer: SolanaSigner): signer is SolanaNonCustodialSigner => {
     return !isCustodialSigner(signer);
 };
 
-export const parseSolanaSignerInput = (
-    signerInput: SolanaSignerInput
-): SolanaSigner => {
+export const parseSolanaSignerInput = (signerInput: SolanaSignerInput): SolanaSigner => {
     if (signerInput.type === "solana-fireblocks-custodial") {
         return {
             type: "solana-fireblocks-custodial",

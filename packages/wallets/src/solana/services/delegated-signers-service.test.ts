@@ -17,11 +17,7 @@ describe("SolanaDelegatedSignerService", () => {
 
     beforeEach(() => {
         vi.resetAllMocks();
-        delegatedSignerService = new SolanaDelegatedSignerService(
-            walletLocator,
-            transactionsService,
-            apiClient
-        );
+        delegatedSignerService = new SolanaDelegatedSignerService(walletLocator, transactionsService, apiClient);
     });
 
     describe("registerDelegatedSigner", () => {
@@ -38,25 +34,12 @@ describe("SolanaDelegatedSignerService", () => {
                 status: "active",
             });
 
-            const result = await delegatedSignerService.registerDelegatedSigner(
-                signerAddress
-            );
+            const result = await delegatedSignerService.registerDelegatedSigner(signerAddress);
 
-            expect(apiClient.registerSigner).toHaveBeenCalledWith(
-                walletLocator,
-                { signer: signerAddress }
-            );
-            expect(transactionsService.approveTransaction).toHaveBeenCalledWith(
-                transactionId,
-                []
-            );
-            expect(transactionsService.waitForTransaction).toHaveBeenCalledWith(
-                transactionId
-            );
-            expect(apiClient.getSigner).toHaveBeenCalledWith(
-                walletLocator,
-                signerAddress
-            );
+            expect(apiClient.registerSigner).toHaveBeenCalledWith(walletLocator, { signer: signerAddress });
+            expect(transactionsService.approveTransaction).toHaveBeenCalledWith(transactionId, []);
+            expect(transactionsService.waitForTransaction).toHaveBeenCalledWith(transactionId);
+            expect(apiClient.getSigner).toHaveBeenCalledWith(walletLocator, signerAddress);
             expect(result).toEqual({
                 address: signerAddress,
                 status: "active",
@@ -79,26 +62,12 @@ describe("SolanaDelegatedSignerService", () => {
                 status: "active",
             });
 
-            const result = await delegatedSignerService.registerDelegatedSigner(
-                signerAddress,
-                adminSigner
-            );
+            const result = await delegatedSignerService.registerDelegatedSigner(signerAddress, adminSigner);
 
-            expect(apiClient.registerSigner).toHaveBeenCalledWith(
-                walletLocator,
-                { signer: signerAddress }
-            );
-            expect(transactionsService.approveTransaction).toHaveBeenCalledWith(
-                transactionId,
-                [adminSigner]
-            );
-            expect(transactionsService.waitForTransaction).toHaveBeenCalledWith(
-                transactionId
-            );
-            expect(apiClient.getSigner).toHaveBeenCalledWith(
-                walletLocator,
-                signerAddress
-            );
+            expect(apiClient.registerSigner).toHaveBeenCalledWith(walletLocator, { signer: signerAddress });
+            expect(transactionsService.approveTransaction).toHaveBeenCalledWith(transactionId, [adminSigner]);
+            expect(transactionsService.waitForTransaction).toHaveBeenCalledWith(transactionId);
+            expect(apiClient.getSigner).toHaveBeenCalledWith(walletLocator, signerAddress);
             expect(result).toEqual({
                 address: signerAddress,
                 status: "active",
@@ -115,14 +84,9 @@ describe("SolanaDelegatedSignerService", () => {
                 status: "active",
             });
 
-            const result = await delegatedSignerService.getDelegatedSigner(
-                signerAddress
-            );
+            const result = await delegatedSignerService.getDelegatedSigner(signerAddress);
 
-            expect(apiClient.getSigner).toHaveBeenCalledWith(
-                walletLocator,
-                signerAddress
-            );
+            expect(apiClient.getSigner).toHaveBeenCalledWith(walletLocator, signerAddress);
             expect(result).toEqual({
                 address: signerAddress,
                 status: "active",
@@ -134,9 +98,9 @@ describe("SolanaDelegatedSignerService", () => {
         it("should throw not implemented error", async () => {
             const signerAddress = "mock-signer-address";
 
-            await expect(
-                delegatedSignerService.removeDelegatedSigner(signerAddress)
-            ).rejects.toThrow("Not implemented");
+            await expect(delegatedSignerService.removeDelegatedSigner(signerAddress)).rejects.toThrow(
+                "Not implemented"
+            );
         });
     });
 });
