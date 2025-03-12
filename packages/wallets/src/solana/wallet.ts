@@ -20,8 +20,8 @@ import {
     parseSolanaNonCustodialSignerInput,
     isNonCustodialSigner,
 } from "./types/signers";
-import { SolanaTransactionsService } from "./services/transactions/transactions-service";
-import { SolanaDelegatedSignerService } from "./services/delegated-signers/delegated-signers-service";
+import { SolanaTransactionsService } from "./services/transactions-service";
+import { SolanaDelegatedSignerService } from "./services/delegated-signers-service";
 
 interface MPCTransactionParams {
     transaction: VersionedTransaction;
@@ -107,6 +107,8 @@ export class SolanaSmartWallet extends SolanaWallet {
         const additionalSigners = parameters.additionalSigners?.map(
             parseSolanaNonCustodialSignerInput
         );
+        console.log("signer", signer);
+        console.log("additionalSigners", additionalSigners);
         return await this.transactionsService.createSignAndConfirm({
             transaction: parameters.transaction,
             signer: signer,

@@ -3,7 +3,7 @@ import type {
     CreateTransactionResponse,
     SolanaWalletLocator,
 } from "@/api";
-import type { SolanaNonCustodialSigner } from "../../types/signers";
+import type { SolanaNonCustodialSigner } from "../types/signers";
 import bs58 from "bs58";
 
 type PendingApproval = NonNullable<

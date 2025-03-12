@@ -1,7 +1,7 @@
 import type { ApiClient, SolanaWalletLocator } from "@/api";
 
-import type { SolanaTransactionsService } from "../transactions/transactions-service";
-import type { SolanaNonCustodialSigner } from "../../types/signers";
+import type { SolanaTransactionsService } from "./transactions-service";
+import type { SolanaNonCustodialSigner } from "../types/signers";
 
 export class SolanaDelegatedSignerService {
     constructor(

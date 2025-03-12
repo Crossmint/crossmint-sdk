@@ -1,10 +1,10 @@
-import type { ApiClient, SolanaWalletLocator } from "../../../api";
-import type { SolanaNonCustodialSigner } from "../../types/signers";
+import type { ApiClient, SolanaWalletLocator } from "../../api";
+import type { SolanaNonCustodialSigner } from "../types/signers";
 import type { VersionedTransaction } from "@solana/web3.js";
-import { SolanaApprovalsService } from "../approvals/approvals-service";
+import { SolanaApprovalsService } from "./approvals-service";
 import bs58 from "bs58";
-import { STATUS_POLLING_INTERVAL_MS } from "../../../utils/constants";
-import { sleep } from "../../../utils";
+import { STATUS_POLLING_INTERVAL_MS } from "../../utils/constants";
+import { sleep } from "../../utils";
 
 export class SolanaTransactionsService {
     constructor(
