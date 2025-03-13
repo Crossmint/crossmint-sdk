@@ -15,7 +15,7 @@ import {
     concat,
 } from "viem";
 
-import type { ApiClient, GetSignatureResponse, GetTransactionResponse, WalletLocator } from "../api";
+import type { ApiClient, GetSignatureResponse, GetTransactionResponse, EvmWalletLocator } from "../api";
 import { sleep } from "../utils";
 import { ENTRY_POINT_ADDRESS, STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
 
@@ -267,7 +267,7 @@ export class EVMSmartWallet implements ViemWallet {
         return transactionHash as Hex;
     }
 
-    private get walletLocator(): WalletLocator {
+    private get walletLocator(): EvmWalletLocator {
         if (this.apiClient.isServerSide) {
             return this.address;
         } else {
@@ -321,7 +321,10 @@ export class EVMSmartWallet implements ViemWallet {
                     // @ts-ignore the generated types are wrong
                     signature:
                         this.adminSigner.type === "evm-passkey"
-                            ? { r: signature.slice(0, 66), s: `0x${signature.slice(66)}` }
+                            ? {
+                                  r: signature.slice(0, 66),
+                                  s: `0x${signature.slice(66)}`,
+                              }
                             : signature,
                     ...(metadata && { metadata }),
                 },
@@ -339,7 +342,10 @@ export class EVMSmartWallet implements ViemWallet {
                     // @ts-ignore the generated types are wrong
                     signature:
                         this.adminSigner.type === "evm-passkey"
-                            ? { r: signature.slice(0, 66), s: `0x${signature.slice(66)}` }
+                            ? {
+                                  r: signature.slice(0, 66),
+                                  s: `0x${signature.slice(66)}`,
+                              }
                             : signature,
                     metadata,
                 },
