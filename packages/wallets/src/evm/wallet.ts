@@ -279,7 +279,7 @@ export class EVMSmartWallet implements ViemWallet {
         return this.adminSigner.locator;
     }
 
-    private async generateSignature(message: Hex): Promise<{ signature: Hex; metadata?: WebAuthnP256.SignMetadata }> {
+    private async signWithAdminSigner(message: Hex): Promise<{ signature: Hex; metadata?: WebAuthnP256.SignMetadata }> {
         switch (this.adminSigner.type) {
             case "evm-passkey": {
                 const { metadata, signature } = await WebAuthnP256.sign({
@@ -312,7 +312,7 @@ export class EVMSmartWallet implements ViemWallet {
     }
 
     private async approveTransaction(transactionId: string, message: Hex) {
-        const { signature, metadata } = await this.generateSignature(message);
+        const { signature, metadata } = await this.signWithAdminSigner(message);
 
         await this.apiClient.approveTransaction(this.walletLocator, transactionId, {
             approvals: [
@@ -333,7 +333,7 @@ export class EVMSmartWallet implements ViemWallet {
     }
 
     private async approveSignature(signatureId: string, message: Hex) {
-        const { signature, metadata } = await this.generateSignature(message);
+        const { signature, metadata } = await this.signWithAdminSigner(message);
 
         await this.apiClient.approveSignature(this.walletLocator, signatureId, {
             approvals: [
