@@ -1,4 +1,4 @@
-import { Connection, PublicKey, VersionedTransaction } from "@solana/web3.js";
+import type { Connection, PublicKey, VersionedTransaction } from "@solana/web3.js";
 
 import type {
     ApiClient,
@@ -19,7 +19,7 @@ import {
 } from "./types/signers";
 import { SolanaTransactionsService } from "./services/transactions-service";
 import { SolanaDelegatedSignerService } from "./services/delegated-signers-service";
-import { getConnectionFromApiKey, getConnectionFromEnvironment } from "./utils";
+import { getConnectionFromEnvironment } from "./utils";
 
 interface MPCTransactionParams {
     transaction: VersionedTransaction;
@@ -42,10 +42,7 @@ abstract class SolanaWallet {
             public: getConnectionFromEnvironment(apiClient.environment),
         }
     ) {
-        this.transactionsService = new SolanaTransactionsService(
-            this.walletLocator,
-            this.apiClient
-        );
+        this.transactionsService = new SolanaTransactionsService(this.walletLocator, this.apiClient);
         this.delegatedSignerService = new SolanaDelegatedSignerService(
             this.walletLocator,
             this.transactionsService,
@@ -61,9 +58,7 @@ abstract class SolanaWallet {
         return this.publicKey.toBase58();
     }
 
-    public async balances(
-        tokens: SolanaSupportedToken[]
-    ): Promise<GetBalanceResponse> {
+    public async balances(tokens: SolanaSupportedToken[]): Promise<GetBalanceResponse> {
         return await this.apiClient.getBalance(this.walletLocator, {
             tokens,
         });
@@ -89,22 +84,18 @@ export class SolanaSmartWallet extends SolanaWallet {
     constructor(
         apiClient: ApiClient,
         publicKey: PublicKey,
-        client: { public: Connection },
-        adminSignerInput: SolanaSignerInput
+        adminSignerInput: SolanaSignerInput,
+        client: { public: Connection } = {
+            public: getConnectionFromEnvironment(apiClient.environment),
+        }
     ) {
         super(apiClient, publicKey, client);
         this.adminSigner = parseSolanaSignerInput(adminSignerInput);
     }
 
-    public async sendTransaction(
-        parameters: SmartWalletTransactionParams
-    ): Promise<string> {
-        const signer = this.getEffectiveTransactionSigner(
-            parameters.delegatedSigner
-        );
-        const additionalSigners = parameters.additionalSigners?.map(
-            parseSolanaNonCustodialSignerInput
-        );
+    public async sendTransaction(parameters: SmartWalletTransactionParams): Promise<string> {
+        const signer = this.getEffectiveTransactionSigner(parameters.delegatedSigner);
+        const additionalSigners = parameters.additionalSigners?.map(parseSolanaNonCustodialSignerInput);
         return await this.transactionsService.createSignAndConfirm({
             transaction: parameters.transaction,
             signer: signer,
@@ -115,9 +106,7 @@ export class SolanaSmartWallet extends SolanaWallet {
     public async addDelegatedSigner(signer: string) {
         return await this.delegatedSignerService.registerDelegatedSigner(
             signer,
-            isNonCustodialSigner(this.adminSigner)
-                ? this.adminSigner
-                : undefined
+            isNonCustodialSigner(this.adminSigner) ? this.adminSigner : undefined
         );
     }
 
@@ -135,14 +124,10 @@ export class SolanaSmartWallet extends SolanaWallet {
 }
 
 export class SolanaMPCWallet extends SolanaWallet {
-    public async sendTransaction(
-        parameters: MPCTransactionParams
-    ): Promise<string> {
+    public async sendTransaction(parameters: MPCTransactionParams): Promise<string> {
         return await this.transactionsService.createSignAndConfirm({
             transaction: parameters.transaction,
-            additionalSigners: parameters.additionalSigners?.map(
-                parseSolanaNonCustodialSignerInput
-            ),
+            additionalSigners: parameters.additionalSigners?.map(parseSolanaNonCustodialSignerInput),
         });
     }
 }

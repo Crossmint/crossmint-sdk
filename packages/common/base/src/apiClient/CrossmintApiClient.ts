@@ -1,8 +1,5 @@
 import { environmentToCrossmintBaseURL } from "@/apiKey/utils/environmentToCrossmintBaseURL";
-import {
-    type ValidateApiKeySuccessResult,
-    validateAPIKey,
-} from "@/apiKey/validateAPIKey";
+import { type ValidateApiKeySuccessResult, validateAPIKey } from "@/apiKey/validateAPIKey";
 import type { ValidateAPIKeyPrefixExpectations } from "@/apiKey/validateAPIKeyPrefix";
 import type { Crossmint } from "@/types/Crossmint";
 
@@ -28,10 +25,7 @@ export class CrossmintApiClient extends ApiClient {
             internalConfig: CrossmintApiClientInternalConfig;
         }
     ) {
-        const apiKeyValidationResult = validateAPIKey(
-            crossmint.apiKey,
-            internalConfig.apiKeyExpectations
-        );
+        const apiKeyValidationResult = validateAPIKey(crossmint.apiKey, internalConfig.apiKeyExpectations);
         if (!apiKeyValidationResult.isValid) {
             throw new Error(apiKeyValidationResult.message);
         }
@@ -44,18 +38,14 @@ export class CrossmintApiClient extends ApiClient {
         if (this.crossmint.overrideBaseUrl) {
             return ApiClient.normalizePath(this.crossmint.overrideBaseUrl);
         }
-        const baseUrl = environmentToCrossmintBaseURL(
-            this.parsedAPIKey.environment
-        );
+        const baseUrl = environmentToCrossmintBaseURL(this.parsedAPIKey.environment);
         return ApiClient.normalizePath(baseUrl);
     }
 
     get authHeaders() {
         return {
             "x-api-key": this.crossmint.apiKey,
-            ...(this.crossmint.jwt
-                ? { Authorization: `Bearer ${this.crossmint.jwt}` }
-                : {}),
+            ...(this.crossmint.jwt ? { Authorization: `Bearer ${this.crossmint.jwt}` } : {}),
         };
     }
 
