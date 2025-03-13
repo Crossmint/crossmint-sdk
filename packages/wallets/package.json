@@ -24,7 +24,6 @@
     "dependencies": {
         "@crossmint/common-sdk-auth": "workspace:*",
         "@crossmint/common-sdk-base": "workspace:*",
-        "@crossmint/wallets-sdk": "link:",
         "@hey-api/client-fetch": "0.8.1",
         "@solana/web3.js": "1.95.1",
         "bs58": "5.0.0",
