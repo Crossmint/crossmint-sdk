@@ -145,10 +145,10 @@ export class EVMSmartWallet implements ViemWallet {
 
         // Get signature status until success
         let signatureResponse: GetSignatureResponse | null = null;
-        while (signatureResponse === null || signatureResponse.status === "pending") {
+        do {
             await sleep(STATUS_POLLING_INTERVAL_MS);
             signatureResponse = await this.apiClient.getSignature(this.walletLocator, signatureId);
-        }
+        } while (signatureResponse === null || signatureResponse.status === "pending");
 
         if (signatureResponse.status === "failed") {
             throw new Error("Message signing failed");
