@@ -11,7 +11,9 @@ describe("WalletSDK", () => {
     beforeEach(() => {
         // Reset mocks before each test
         vi.clearAllMocks();
-        apiClient = mock<ApiClient>();
+        apiClient = mock<ApiClient>({
+            environment: "development",
+        });
         factory = new WalletFactory(apiClient);
     });
 
