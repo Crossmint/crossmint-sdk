@@ -21,3 +21,5 @@ export class CrossmintWallet {
         return this.walletFactory.getOrCreateWallet(type, args);
     }
 }
+
+export { Crossmint };
