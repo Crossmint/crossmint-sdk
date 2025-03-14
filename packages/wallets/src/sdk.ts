@@ -9,7 +9,7 @@ type WalletType = keyof WalletTypeToArgs;
 export class CrossmintWallet {
     private constructor(
         crossmint: Crossmint,
-        private readonly apiClient = new ApiClient(crossmint),
+        apiClient = new ApiClient(crossmint),
         private readonly walletFactory = new WalletFactory(apiClient)
     ) {}
 
