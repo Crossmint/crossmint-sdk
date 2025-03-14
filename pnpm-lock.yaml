@@ -977,6 +977,15 @@ importers:
       '@solana/web3.js':
         specifier: 1.95.1
         version: 1.95.1(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
+      bs58:
+        specifier: 5.0.0
+        version: 5.0.0
+      ox:
+        specifier: 0.6.9
+        version: 0.6.9(typescript@5.5.3)(zod@3.22.4)
+      tweetnacl:
+        specifier: 1.0.3
+        version: 1.0.3
       viem:
         specifier: 2.17.5
         version: 2.17.5(bufferutil@4.0.8)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
@@ -16441,7 +16450,7 @@ snapshots:
 
   '@confio/ics23@0.6.8':
     dependencies:
-      '@noble/hashes': 1.5.0
+      '@noble/hashes': 1.7.1
       protobufjs: 6.11.4
 
   '@cosmjs/amino@0.30.1':
@@ -20185,7 +20194,7 @@ snapshots:
     dependencies:
       '@ethereumjs/tx': 4.2.0
       '@metamask/superstruct': 3.1.0
-      '@noble/hashes': 1.5.0
+      '@noble/hashes': 1.7.1
       '@scure/base': 1.1.9
       '@types/debug': 4.1.12
       debug: 4.3.7(supports-color@8.1.1)
@@ -22323,13 +22332,13 @@ snapshots:
 
   '@turnkey/api-key-stamper@0.4.0':
     dependencies:
-      '@noble/curves': 1.6.0
+      '@noble/curves': 1.8.1
       '@turnkey/encoding': 0.1.0
       sha256-uint8array: 0.10.7
 
   '@turnkey/api-key-stamper@0.4.1':
     dependencies:
-      '@noble/curves': 1.6.0
+      '@noble/curves': 1.8.1
       '@turnkey/encoding': 0.2.1
       sha256-uint8array: 0.10.7
 
@@ -25378,7 +25387,7 @@ snapshots:
 
   bs58check@3.0.1:
     dependencies:
-      '@noble/hashes': 1.5.0
+      '@noble/hashes': 1.7.1
       bs58: 5.0.0
 
   bser@2.1.1:
@@ -31448,8 +31457,8 @@ snapshots:
   ox@0.6.9(typescript@5.5.3)(zod@3.22.4):
     dependencies:
       '@adraffy/ens-normalize': 1.11.0
-      '@noble/curves': 1.6.0
-      '@noble/hashes': 1.5.0
+      '@noble/curves': 1.8.1
+      '@noble/hashes': 1.7.1
       '@scure/bip32': 1.6.2
       '@scure/bip39': 1.5.4
       abitype: 1.0.8(typescript@5.5.3)(zod@3.22.4)

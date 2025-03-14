@@ -48,4 +48,8 @@ export class CrossmintApiClient extends ApiClient {
             ...(this.crossmint.jwt ? { Authorization: `Bearer ${this.crossmint.jwt}` } : {}),
         };
     }
+
+    get environment() {
+        return this.parsedAPIKey.environment;
+    }
 }
