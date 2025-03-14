@@ -294,19 +294,24 @@ export class EVMSmartWallet implements ViemWallet {
             }
             case "evm-keypair": {
                 const signerAddress = this.adminSigner.address as Address;
-                const signature =
-                    this.adminSigner.signer.type === "viem_v2"
-                        ? await this.adminSigner.signer.account.signMessage!({
-                              message: {
-                                  raw: message,
-                              },
-                          })
-                        : await this.adminSigner.signer.provider.request({
-                              method: "personal_sign",
-                              params: [message, signerAddress],
-                          });
-
-                return { signature };
+                if (this.adminSigner.signer.type === "viem_v2") {
+                    const account = this.adminSigner.signer.account;
+                    if (!account.signMessage) {
+                        throw new Error("Account does not support signMessage");
+                    }
+                    const signature = await account.signMessage({
+                        message: {
+                            raw: message,
+                        },
+                    });
+                    return { signature };
+                } else {
+                    const signature = await this.adminSigner.signer.provider.request({
+                        method: "personal_sign",
+                        params: [message, signerAddress],
+                    });
+                    return { signature };
+                }
             }
         }
     }
