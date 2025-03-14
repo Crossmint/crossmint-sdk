@@ -32,7 +32,7 @@ export type EVMSignerInput =
                     provider: EIP1193Provider;
                 }
               | {
-                    type: "viem";
+                    type: "viem_v2";
                     account: Account;
                 };
       }
@@ -295,7 +295,7 @@ export class EVMSmartWallet implements ViemWallet {
             case "evm-keypair": {
                 const signerAddress = this.adminSigner.address as Address;
                 const signature =
-                    this.adminSigner.signer.type === "viem"
+                    this.adminSigner.signer.type === "viem_v2"
                         ? await this.adminSigner.signer.account.signMessage!({
                               message: {
                                   raw: message,
