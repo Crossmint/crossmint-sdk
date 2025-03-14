@@ -1,4 +1,4 @@
-import { type Crossmint, APIKeyUsageOrigin, CrossmintApiClient, validateAPIKey } from "@crossmint/common-sdk-base";
+import { type Crossmint, APIKeyUsageOrigin, CrossmintApiClient } from "@crossmint/common-sdk-base";
 import type { Address } from "viem";
 
 import { SDK_NAME, SDK_VERSION } from "../utils/constants";
@@ -222,21 +222,14 @@ class ApiClient extends CrossmintApiClient {
     }
 
     public get isServerSide() {
-        const apiKey = this.crossmint.apiKey;
-        const apiKeyValidation = validateAPIKey(apiKey);
-        if (!apiKeyValidation.isValid) {
-            throw new Error("Invalid API key");
-        }
-        return apiKeyValidation.usageOrigin === APIKeyUsageOrigin.SERVER;
+        return this.parsedAPIKey.usageOrigin === APIKeyUsageOrigin.SERVER;
     }
 
     public get environment() {
-        const apiKey = this.crossmint.apiKey;
-        const apiKeyValidation = validateAPIKey(apiKey);
-        if (!apiKeyValidation.isValid) {
+        if (!this.parsedAPIKey.isValid) {
             throw new Error("Invalid API key");
         }
-        return apiKeyValidation.environment;
+        return this.parsedAPIKey.environment;
     }
 }
 
