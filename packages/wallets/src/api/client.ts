@@ -211,6 +211,16 @@ class ApiClient extends CrossmintApiClient {
         });
         return response.json();
     }
+
+    async getSigner(walletLocator: WalletLocator, signer: string): Promise<GetSignerResponse> {
+        const response = await this.get(`${this.apiPrefix}/${walletLocator}/signers/${signer}`, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+        return response.json();
+    }
+
     public get isServerSide() {
         const apiKey = this.crossmint.apiKey;
         const apiKeyValidation = validateAPIKey(apiKey);
@@ -220,13 +230,13 @@ class ApiClient extends CrossmintApiClient {
         return apiKeyValidation.usageOrigin === APIKeyUsageOrigin.SERVER;
     }
 
-    async getSigner(walletLocator: WalletLocator, signer: string): Promise<GetSignerResponse> {
-        const response = await this.get(`${this.apiPrefix}/${walletLocator}/signers/${signer}`, {
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
-        return response.json();
+    public get environment() {
+        const apiKey = this.crossmint.apiKey;
+        const apiKeyValidation = validateAPIKey(apiKey);
+        if (!apiKeyValidation.isValid) {
+            throw new Error("Invalid API key");
+        }
+        return apiKeyValidation.environment;
     }
 }
 
