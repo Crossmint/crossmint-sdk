@@ -1,14 +1,15 @@
 "use client";
 
+import { useState } from "react";
+import { useWallet } from "@crossmint/client-sdk-react-ui";
+import Image from "next/image";
+import Link from "next/link";
+
 import { Fireworks } from "@/components/fireworks";
 import { MintNFTButton } from "@/components/mint-nft-button";
 import { SecuredByCrossmint } from "@/components/secured-by-crossmint";
 import { SignInAuthButton } from "@/components/signin-auth-button";
 import { Typography } from "@/components/typography";
-import Link from "next/link";
-import { useState } from "react";
-
-import { useWallet } from "@crossmint/client-sdk-react-ui";
 
 function HomePrimaryAction() {
     const { status: walletStatus } = useWallet();
@@ -58,20 +59,19 @@ export default function Home() {
                     </Typography>
                 </div>
 
-                <div className="flex flex-col w-full md:max-w-[340px] gap-10">
-                    <div className="bg-card flex flex-col p-5 rounded-3xl shadow-dropdown">
-                        <img className="rounded-xl rounded-bl-none rounded-br-none" src={"/emoji-nft.png"} alt="nft" />
-                        <div className="py-4">
-                            <Typography className="text-secondary-foreground" variant="h3">
-                                Wallet Pioneer
-                            </Typography>
-                            <Typography className="text-muted-foreground" variant="h5">
-                                by Crossmint
-                            </Typography>
+                <div className="flex flex-col w-full gap-4">
+                    <div className="flex w-full gap-4 bg-card rounded-3xl p-6 shadow-dropdown">
+                        <div className="w-24 flex items-center justify-center">
+                            <Image src="/emoji-nft.png" alt="nft" width={96} height={96} className="rounded-lg" />
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="flex flex-col">
+                                <h2 className="text-gray-700 font-medium">Wallet Pioneer</h2>
+                                <h5 className="text-muted">by Crossmint</h5>
+                            </div>
                         </div>
                     </div>
                     <HomePrimaryAction />
-
                     <SecuredByCrossmint />
                 </div>
             </div>
