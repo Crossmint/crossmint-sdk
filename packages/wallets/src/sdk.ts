@@ -20,6 +20,14 @@ export class CrossmintWallet {
     public getOrCreateWallet<T extends WalletType>(type: T, args: WalletTypeToArgs[T]): Promise<WalletTypeToWallet[T]> {
         return this.walletFactory.getOrCreateWallet(type, args);
     }
+
+    public getWallet<T extends WalletType>(
+        address: string,
+        type: T,
+        args: WalletTypeToArgs[T]
+    ): Promise<WalletTypeToWallet[T]> {
+        return this.walletFactory.getWallet(address, type, args);
+    }
 }
 
 export { Crossmint };

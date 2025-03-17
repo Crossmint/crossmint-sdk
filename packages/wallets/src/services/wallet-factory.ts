@@ -77,6 +77,40 @@ export class WalletFactory {
         throw new Error("Not implemented");
     }
 
+    public async getWallet<WalletType extends keyof WalletTypeToArgs>(
+        address: string,
+        type: WalletType,
+        args: WalletTypeToArgs[WalletType]
+    ): Promise<WalletTypeToWallet[WalletType]> {
+        const walletResponse = await this.apiClient.getWallet(address);
+        if (type === "evm-smart-wallet") {
+            this.assertCorrectWalletType(walletResponse, "evm-smart-wallet");
+            const { chain, adminSigner } = args as WalletTypeToArgs["evm-smart-wallet"];
+            const adminSignerLocator = walletResponse.config.adminSigner.locator;
+            return new EVMSmartWallet(chain, this.apiClient, walletResponse.address as Address, {
+                ...adminSigner,
+                locator: adminSignerLocator,
+            }) as WalletTypeToWallet[WalletType];
+        } else if (type === "solana-smart-wallet") {
+            const { adminSigner: adminSignerInput } = args as WalletTypeToArgs["solana-smart-wallet"];
+            this.assertCorrectWalletType(walletResponse, "solana-smart-wallet");
+            return new SolanaSmartWallet(
+                this.apiClient,
+                new PublicKey(walletResponse.address),
+                adminSignerInput ?? {
+                    type: "solana-fireblocks-custodial",
+                }
+            ) as WalletTypeToWallet[WalletType];
+        } else if (type === "solana-mpc-wallet") {
+            this.assertCorrectWalletType(walletResponse, "solana-mpc-wallet");
+            return new SolanaMPCWallet(
+                this.apiClient,
+                new PublicKey(walletResponse.address)
+            ) as WalletTypeToWallet[WalletType];
+        }
+        throw new Error("Not implemented");
+    }
+
     private assertCorrectWalletType<WalletType extends keyof WalletTypeToArgs>(
         walletResponse: CreateWalletResponse,
         type: WalletType
