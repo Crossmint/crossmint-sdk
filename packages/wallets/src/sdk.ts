@@ -1,4 +1,4 @@
-import type { Crossmint } from "@crossmint/common-sdk-base";
+import { type Crossmint, createCrossmint } from "@crossmint/common-sdk-base";
 
 import { ApiClient } from "./api/index.js";
 import { WalletFactory } from "./services/wallet-factory";
@@ -23,3 +23,4 @@ export class CrossmintWallet {
 }
 
 export { Crossmint };
+export { createCrossmint };
