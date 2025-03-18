@@ -29,8 +29,8 @@ export const Header: React.FC = () => {
     };
 
     const handleCopyAddress = async () => {
-        if (wallet?.address) {
-            await navigator.clipboard.writeText(wallet.address);
+        if (wallet != null) {
+            await navigator.clipboard.writeText(wallet.getAddress());
             toast({ title: "Address copied to clipboard", duration: 5000 });
         }
     };
@@ -38,7 +38,7 @@ export const Header: React.FC = () => {
     return (
         <div className="flex justify-between p-4 items-center">
             <HeaderLogo />
-            {(walletStatus === "loaded" || walletStatus === "in-progress") && (
+            {(walletStatus === "loaded" || walletStatus === "in-progress") && wallet != null && (
                 <UserMenu
                     wallet={wallet}
                     walletStatus={walletStatus}
@@ -62,7 +62,7 @@ const HeaderLogo: React.FC = () => (
 );
 
 const UserMenu: React.FC<{
-    wallet: EVMSmartWallet | undefined;
+    wallet: EVMSmartWallet;
     walletStatus: string;
     onLogout: () => void;
     onCopyAddress: () => void;
@@ -70,7 +70,7 @@ const UserMenu: React.FC<{
     <DropdownMenu>
         <DropdownMenuTrigger asChild disabled={walletStatus !== "loaded"}>
             <div className="flex items-center gap-5 cursor-pointer">
-                <WalletDisplay address={wallet?.address} isLoading={walletStatus !== "loaded"} />
+                <WalletDisplay address={wallet.getAddress()} isLoading={walletStatus !== "loaded"} />
                 <Avatar className="h-9 w-9">
                     <AvatarImage alt="User Avatar" src="" />
                     <AvatarFallback className="bg-skeleton">
@@ -82,7 +82,7 @@ const UserMenu: React.FC<{
         <DropdownMenuContent align="end" className="w-56 overflow-y-auto max-h-[80vh]">
             <div className="flex flex-col gap-2">
                 <div className="flex gap-3 text-muted items-center cursor-pointer py-2" onClick={onCopyAddress}>
-                    <Typography>{wallet ? formatWalletAddress(wallet.address, 14, 6) : ""}</Typography>
+                    <Typography>{wallet ? formatWalletAddress(wallet.getAddress(), 14, 6) : ""}</Typography>
                     <Copy className="h-5 w-5" />
                 </div>
                 <Link href="/wallet" prefetch={false} className="text-secondary-foreground flex gap-3 py-2">

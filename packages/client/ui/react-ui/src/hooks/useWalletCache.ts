@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from "react";
 import type { Address } from "viem";
 import type { WebAuthnP256 } from "ox";
-import type { PasskeySigner } from "@crossmint/client-sdk-smart-wallet";
+import type { PasskeySigner } from "@/types/passkey";
 
 type WalletCache = {
     wallet?: {

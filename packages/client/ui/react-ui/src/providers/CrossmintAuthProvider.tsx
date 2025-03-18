@@ -10,9 +10,10 @@ import {
 } from "react";
 
 import { CrossmintAuth, getCookie } from "@crossmint/client-sdk-auth";
-import type { EVMSmartWalletChain } from "@crossmint/client-sdk-smart-wallet";
 import { type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
 import { type AuthMaterialWithUser, SESSION_PREFIX, type SDKExternalUser } from "@crossmint/common-sdk-auth";
+import type { EVMSmartWalletChain } from "@crossmint/wallets-sdk/dist/evm/chains";
+import type { EVMSignerInput } from "@crossmint/wallets-sdk/dist/evm/wallet";
 
 import AuthFormDialog from "../components/auth/AuthFormDialog";
 import { useCrossmint, useWallet } from "../hooks";
@@ -25,6 +26,8 @@ export type CrossmintAuthWalletConfig = {
     createOnLogin: "all-users" | "off";
     type: "evm-smart-wallet";
     showPasskeyHelpers?: boolean;
+    adminSigner?: EVMSignerInput;
+    linkedUser?: string;
 };
 
 export type LoginMethod = "email" | "google" | "farcaster" | "web3" | "twitter";
@@ -42,7 +45,7 @@ export type CrossmintAuthProviderProps = {
     logoutRoute?: string;
 };
 
-type AuthStatus = "logged-in" | "logged-out" | "in-progress" | "initializing";
+export type AuthStatus = "logged-in" | "logged-out" | "in-progress" | "initializing";
 
 export interface AuthContextType {
     crossmintAuth?: CrossmintAuth;
@@ -125,14 +128,14 @@ export function CrossmintAuthProvider({
             setJwt(jwt);
         }
         setInitialized(true);
-    }, []);
+    }, [crossmint.jwt, setJwt]);
 
     useEffect(() => {
         if (crossmint.jwt != null && dialogOpen) {
             setDialogOpen(false);
             triggerHasJustLoggedIn();
         }
-    }, [crossmint.jwt, dialogOpen, onLoginSuccess]);
+    }, [crossmint.jwt, dialogOpen, triggerHasJustLoggedIn]);
 
     const login = (defaultEmail?: string | MouseEvent) => {
         if (crossmint.jwt != null) {
@@ -190,7 +193,6 @@ export function CrossmintAuthProvider({
             >
                 <CrossmintWalletProvider
                     key={crossmint.jwt}
-                    defaultChain={embeddedWallets.defaultChain}
                     showPasskeyHelpers={embeddedWallets.showPasskeyHelpers}
                     appearance={appearance}
                 >
@@ -213,7 +215,12 @@ export function CrossmintAuthProvider({
                             defaultEmail,
                         }}
                     >
-                        <WalletManager embeddedWallets={embeddedWallets} accessToken={crossmint.jwt}>
+                        <WalletManager
+                            embeddedWallets={embeddedWallets}
+                            accessToken={crossmint.jwt}
+                            user={user}
+                            authStatus={getAuthStatus()}
+                        >
                             {children}
                         </WalletManager>
 
@@ -229,22 +236,44 @@ function WalletManager({
     embeddedWallets,
     children,
     accessToken,
+    user,
+    authStatus,
 }: {
     embeddedWallets: CrossmintAuthWalletConfig;
     children: ReactNode;
     accessToken: string | undefined;
+    user: SDKExternalUser | undefined;
+    authStatus: AuthStatus;
 }) {
-    const { getOrCreateWallet, clearWallet, status } = useWallet();
+    const { type, defaultChain, createOnLogin, adminSigner, linkedUser } = embeddedWallets;
+    const { getOrCreateWallet, clearWallet, status: walletStatus } = useWallet();
 
-    useEffect(() => {
-        if (embeddedWallets.createOnLogin === "all-users" && status === "not-loaded" && accessToken != null) {
-            getOrCreateWallet();
+    const isAuthenticated = user != null && authStatus === "logged-in";
+    const isAuthResolved = isAuthenticated || authStatus === "logged-out";
+    const canGetOrCreateWallet =
+        createOnLogin === "all-users" && walletStatus === "not-loaded" && accessToken != null && isAuthResolved;
+
+    const handleWalletCreation = useCallback(() => {
+        if (!canGetOrCreateWallet) {
+            return;
         }
 
-        if (status === "loaded" && accessToken == null) {
+        getOrCreateWallet({
+            type,
+            args: { chain: defaultChain, adminSigner, linkedUser },
+        });
+    }, [canGetOrCreateWallet, getOrCreateWallet, type, defaultChain, adminSigner, linkedUser]);
+
+    const handleWalletCleanup = useCallback(() => {
+        if (walletStatus === "loaded" && accessToken == null) {
             clearWallet();
         }
-    }, [accessToken, status]);
+    }, [walletStatus, accessToken, clearWallet]);
+
+    useEffect(() => {
+        handleWalletCreation();
+        handleWalletCleanup();
+    }, [handleWalletCreation, handleWalletCleanup]);
 
     return <>{children}</>;
 }
