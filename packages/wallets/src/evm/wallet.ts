@@ -51,6 +51,7 @@ export type EVMSignerInput =
               x: string;
               y: string;
           };
+          experimental_sign?: (message: string) => Promise<{ signature: Hex; metadata: WebAuthnP256.SignMetadata }>;
       };
 export type EVMSigner = EVMSignerInput & {
     locator: string;
@@ -290,6 +291,10 @@ export class EVMSmartWallet implements ViemWallet {
     private async signWithAdminSigner(message: Hex): Promise<{ signature: Hex; metadata?: WebAuthnP256.SignMetadata }> {
         switch (this.adminSigner.type) {
             case "evm-passkey": {
+                // Custom signing function
+                if (this.adminSigner.experimental_sign) {
+                    return this.adminSigner.experimental_sign(message);
+                }
                 const { metadata, signature } = await WebAuthnP256.sign({
                     credentialId: this.adminSigner.id,
                     challenge: message,
