@@ -89,12 +89,12 @@ export class SolanaSmartWallet extends SolanaWallet {
         apiClient: ApiClient,
         publicKey: PublicKey,
         adminSignerInput: SolanaSignerInput,
-        callback: Callbacks = {},
+        callbacks: Callbacks = {},
         client: { public: Connection } = {
             public: getConnectionFromEnvironment(apiClient.environment),
         }
     ) {
-        super(apiClient, publicKey, callback, client);
+        super(apiClient, publicKey, callbacks, client);
         this.adminSigner = parseSolanaSignerInput(adminSignerInput);
     }
 
