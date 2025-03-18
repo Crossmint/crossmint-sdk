@@ -17,10 +17,17 @@ import {
 
 import type { ApiClient, GetSignatureResponse, GetTransactionResponse, EvmWalletLocator } from "../api";
 import { sleep } from "../utils";
+import type { Callbacks } from "../utils/options";
 import { ENTRY_POINT_ADDRESS, STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
 
 import entryPointAbi from "./abi/entryPoint";
 import { toViemChain, type EVMSmartWalletChain } from "./chains";
+
+export interface TransactionInput {
+    to: Address;
+    data?: Hex;
+    value?: bigint;
+}
 
 export type EVMSignerInput =
     | {
@@ -63,11 +70,7 @@ export interface ViemWallet {
         parameters: TypedDataDefinition<typedData, primaryType>
     ) => Promise<Hex>;
 
-    sendTransaction: (parameters: {
-        to: Address;
-        data?: Hex;
-        value?: bigint;
-    }) => Promise<Hex>;
+    sendTransaction: (parameters: TransactionInput) => Promise<Hex>;
 }
 
 export class EVMSmartWallet implements ViemWallet {
@@ -77,7 +80,8 @@ export class EVMSmartWallet implements ViemWallet {
         public readonly chain: EVMSmartWalletChain,
         private readonly apiClient: ApiClient,
         private readonly address: Address,
-        private readonly adminSigner: EVMSigner
+        private readonly adminSigner: EVMSigner,
+        private readonly callbacks?: Callbacks
     ) {
         this.publicClient = createPublicClient({
             chain: toViemChain(chain),
@@ -219,11 +223,8 @@ export class EVMSmartWallet implements ViemWallet {
         return signature;
     }
 
-    public async sendTransaction(parameters: {
-        to: Address;
-        data?: Hex;
-        value?: bigint;
-    }): Promise<Hex> {
+    public async sendTransaction(parameters: TransactionInput): Promise<Hex> {
+        await this.callbacks?.onTransactionStart?.(parameters);
         // Create transaction
         const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
             params: {
@@ -244,7 +245,9 @@ export class EVMSmartWallet implements ViemWallet {
         const pendingApprovals = transactionCreationResponse.approvals?.pending || [];
         const pendingApproval = pendingApprovals.find((approval) => approval.signer === this.signerLocator);
         if (!pendingApproval) {
-            throw new Error(`Signer ${this.signerLocator} not found in pending approvals`);
+            const error = new Error(`Signer ${this.signerLocator} not found in pending approvals`);
+            await this.callbacks?.onTransactionFail?.(error);
+            throw error;
         }
         await this.approveTransaction(transactionId, pendingApproval.message as Hex);
 
@@ -256,14 +259,19 @@ export class EVMSmartWallet implements ViemWallet {
         }
 
         if (transactionResponse.status === "failed") {
-            throw new Error("Transaction sending failed");
+            const error = new Error("Transaction sending failed");
+            await this.callbacks?.onTransactionFail?.(error);
+            throw error;
         }
 
         // Get transaction hash
         const transactionHash = transactionResponse.onChain.txId;
         if (transactionHash === undefined) {
-            throw new Error("Transaction hash not found");
+            const error = new Error("Transaction hash not found");
+            await this.callbacks?.onTransactionFail?.(error);
+            throw error;
         }
+        await this.callbacks?.onTransactionComplete?.(parameters);
         return transactionHash as Hex;
     }
 

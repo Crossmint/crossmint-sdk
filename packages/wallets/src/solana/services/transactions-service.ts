@@ -5,12 +5,17 @@ import { SolanaApprovalsService } from "./approvals-service";
 import bs58 from "bs58";
 import { STATUS_POLLING_INTERVAL_MS } from "../../utils/constants";
 import { sleep } from "../../utils";
+import type { Callbacks } from "../../utils/options";
 
 export class SolanaTransactionsService {
     constructor(
         private readonly walletLocator: SolanaWalletLocator,
         private readonly apiClient: ApiClient,
-        private readonly approvalsService: SolanaApprovalsService = new SolanaApprovalsService(walletLocator, apiClient)
+        private readonly approvalsService: SolanaApprovalsService = new SolanaApprovalsService(
+            walletLocator,
+            apiClient
+        ),
+        private readonly callbacks: Callbacks = {}
     ) {}
 
     async createSignAndConfirm(params: {
@@ -18,12 +23,15 @@ export class SolanaTransactionsService {
         signer?: SolanaNonCustodialSigner;
         additionalSigners?: SolanaNonCustodialSigner[];
     }) {
+        this.callbacks.onTransactionStart?.(params.transaction);
         const transaction = await this.create(params);
         await this.approveTransaction(transaction.id, [
             ...(params.signer != null ? [params.signer] : []),
             ...(params.additionalSigners || []),
         ]);
-        return this.waitForTransaction(transaction.id);
+        const transactionHash = await this.waitForTransaction(transaction.id);
+        this.callbacks.onTransactionComplete?.(params.transaction);
+        return transactionHash;
     }
 
     async getTransactions() {
@@ -65,7 +73,9 @@ export class SolanaTransactionsService {
 
         do {
             if (Date.now() - startTime > timeoutMs) {
-                throw new Error("Transaction confirmation timeout");
+                const error = new Error("Transaction confirmation timeout");
+                this.callbacks.onTransactionFail?.(error);
+                throw error;
             }
 
             transactionResponse = await this.apiClient.getTransaction(this.walletLocator, transactionId);
@@ -73,18 +83,24 @@ export class SolanaTransactionsService {
         } while (transactionResponse.status === "pending");
 
         if (transactionResponse.status === "failed") {
-            throw new Error(`Transaction sending failed: ${JSON.stringify(transactionResponse.error)}`);
+            const error = new Error(`Transaction sending failed: ${JSON.stringify(transactionResponse.error)}`);
+            this.callbacks.onTransactionFail?.(error);
+            throw error;
         }
 
         if (transactionResponse.status === "awaiting-approval") {
-            throw new Error(
+            const error = new Error(
                 `Transaction is awaiting approval. Please submit required approvals before waiting for completion.`
             );
+            this.callbacks.onTransactionFail?.(error);
+            throw error;
         }
 
         const transactionHash = transactionResponse.onChain.txId;
         if (transactionHash == null) {
-            throw new Error("Transaction hash not found on transaction response");
+            const error = new Error("Transaction hash not found on transaction response");
+            this.callbacks.onTransactionFail?.(error);
+            throw error;
         }
         return transactionHash;
     }
