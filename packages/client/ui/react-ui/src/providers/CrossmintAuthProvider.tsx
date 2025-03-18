@@ -16,7 +16,7 @@ import type { EVMSmartWalletChain } from "@crossmint/wallets-sdk/dist/evm/chains
 import type { EVMSignerInput } from "@crossmint/wallets-sdk/dist/evm/wallet";
 
 import AuthFormDialog from "../components/auth/AuthFormDialog";
-import { useCrossmint, useWallet } from "../hooks";
+import { useAuth, useCrossmint, useWallet } from "../hooks";
 import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
 import { AuthFormProvider } from "./auth/AuthFormProvider";
 import { TwindProvider } from "./TwindProvider";
@@ -215,12 +215,7 @@ export function CrossmintAuthProvider({
                             defaultEmail,
                         }}
                     >
-                        <WalletManager
-                            embeddedWallets={embeddedWallets}
-                            accessToken={crossmint.jwt}
-                            user={user}
-                            authStatus={getAuthStatus()}
-                        >
+                        <WalletManager embeddedWallets={embeddedWallets} accessToken={crossmint.jwt}>
                             {children}
                         </WalletManager>
 
@@ -236,17 +231,14 @@ function WalletManager({
     embeddedWallets,
     children,
     accessToken,
-    user,
-    authStatus,
 }: {
     embeddedWallets: CrossmintAuthWalletConfig;
     children: ReactNode;
     accessToken: string | undefined;
-    user: SDKExternalUser | undefined;
-    authStatus: AuthStatus;
 }) {
     const { type, defaultChain, createOnLogin, adminSigner, linkedUser } = embeddedWallets;
     const { getOrCreateWallet, clearWallet, status: walletStatus } = useWallet();
+    const { user, status: authStatus } = useAuth();
 
     const isAuthenticated = user != null && authStatus === "logged-in";
     const isAuthResolved = isAuthenticated || authStatus === "logged-out";
