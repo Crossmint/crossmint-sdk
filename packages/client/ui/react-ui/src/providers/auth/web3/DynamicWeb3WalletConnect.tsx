@@ -1,6 +1,4 @@
 import type React from "react";
-import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
-import { SolanaWalletConnectors } from "@dynamic-labs/solana";
 import type { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
 import DynamicContextProviderWrapper from "@/components/dynamic-xyz/DynamicContextProviderWrapper";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
@@ -21,7 +19,6 @@ export function DynamicWeb3WalletConnect({
             apiKeyEnvironment={apiKeyEnvironment}
             settings={{
                 cssOverrides,
-                walletConnectors: [EthereumWalletConnectors, SolanaWalletConnectors],
                 events: {
                     onAuthFlowCancel() {
                         console.log("[CryptoWalletConnectionHandler] onAuthFlowCancel");
@@ -51,7 +48,7 @@ export function DynamicWeb3WalletConnect({
 
                         try {
                             const res = await crossmintAuth?.signInWithSmartWallet(address);
-                            const signature = (await wallet.connector?.signMessage(res.challenge)) as `0x${string}`;
+                            const signature = (await wallet.signMessage?.(res.challenge)) as `0x${string}`;
                             const authResponse = (await crossmintAuth?.authenticateSmartWallet(address, signature)) as {
                                 oneTimeSecret: string;
                             };
