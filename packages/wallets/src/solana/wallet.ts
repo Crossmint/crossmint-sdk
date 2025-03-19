@@ -7,6 +7,7 @@ import type {
     GetTransactionsResponse,
     SolanaWalletLocator,
 } from "../api";
+import type { Callbacks } from "../utils/options";
 import type { SolanaSupportedToken } from "./tokens";
 import {
     type SolanaSigner,
@@ -19,7 +20,8 @@ import {
 } from "./types/signers";
 import { SolanaTransactionsService } from "./services/transactions-service";
 import { SolanaDelegatedSignerService } from "./services/delegated-signers-service";
-import { getConnectionFromEnvironment } from "./utils";
+
+export type Transaction = VersionedTransaction;
 
 interface MPCTransactionParams {
     transaction: VersionedTransaction;
@@ -38,9 +40,8 @@ abstract class SolanaWallet {
     constructor(
         protected readonly apiClient: ApiClient,
         protected readonly publicKey: PublicKey,
-        public readonly client: { public: Connection } = {
-            public: getConnectionFromEnvironment(apiClient.environment),
-        }
+        protected readonly client: Connection,
+        protected readonly callbacks: Callbacks
     ) {
         this.transactionsService = new SolanaTransactionsService(this.walletLocator, this.apiClient);
         this.delegatedSignerService = new SolanaDelegatedSignerService(
@@ -85,11 +86,10 @@ export class SolanaSmartWallet extends SolanaWallet {
         apiClient: ApiClient,
         publicKey: PublicKey,
         adminSignerInput: SolanaSignerInput,
-        client: { public: Connection } = {
-            public: getConnectionFromEnvironment(apiClient.environment),
-        }
+        client: Connection,
+        callbacks: Callbacks
     ) {
-        super(apiClient, publicKey, client);
+        super(apiClient, publicKey, client, callbacks);
         this.adminSigner = parseSolanaSignerInput(adminSignerInput);
     }
 
@@ -98,7 +98,7 @@ export class SolanaSmartWallet extends SolanaWallet {
         const additionalSigners = parameters.additionalSigners?.map(parseSolanaNonCustodialSignerInput);
         return await this.transactionsService.createSignAndConfirm({
             transaction: parameters.transaction,
-            signer: signer,
+            signer,
             additionalSigners,
         });
     }
