@@ -75,12 +75,23 @@ class ApiClient extends CrossmintApiClient {
         return response.json();
     }
 
-    async getWallet(locator: WalletLocator): Promise<GetWalletResponse> {
-        const response = await this.get(`${this.apiPrefix}/${locator}`, {
+    async getWallet(locator?: WalletLocator, type?: WalletType): Promise<GetWalletResponse | null> {
+        if (this.isServerSide && locator == null) {
+            throw new Error("Cannot get wallet for server-side without locator parameter");
+        }
+        if (!this.isServerSide && type == null) {
+            throw new Error("Cannot get wallet for client-side without type parameter");
+        }
+        const path = this.isServerSide ? `${this.apiPrefix}:${locator}` : `${this.apiPrefix}/me:${type}`;
+        const response = await this.get(path, {
             headers: {
                 "Content-Type": "application/json",
             },
         });
+
+        if (!response.ok || response.status === 404) {
+            return null;
+        }
         return response.json();
     }
 
@@ -165,11 +176,17 @@ class ApiClient extends CrossmintApiClient {
         return response.json();
     }
 
-    async getNfts(walletLocator: WalletLocator, page: number, perPage: number): Promise<GetNftsResponse> {
+    async getNfts(
+        chain: string,
+        walletLocator: WalletLocator,
+        page: number,
+        perPage: number
+    ): Promise<GetNftsResponse> {
         const queryParams = new URLSearchParams();
         queryParams.append("page", page.toString());
         queryParams.append("perPage", perPage.toString());
-        const response = await this.get(`${this.apiPrefix}/${walletLocator}/nfts?${queryParams.toString()}`, {
+        const identifier = `${chain}:${walletLocator}`;
+        const response = await this.get(`${this.apiPrefix}/${identifier}/nfts?${queryParams.toString()}`, {
             headers: {
                 "Content-Type": "application/json",
             },
