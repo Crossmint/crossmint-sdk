@@ -42,5 +42,11 @@
         "npm": "please-use-pnpm",
         "pnpm": ">=9",
         "yarn": "please-use-pnpm"
+    },
+    "pnpm": {
+        "overrides": {
+            "@solana/web3.js": "1.98.0",
+            "viem": "2.17.5"
+        }
     }
 }
