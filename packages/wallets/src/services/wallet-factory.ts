@@ -56,7 +56,7 @@ export class WalletFactory {
             const adminSigner =
                 adminSignerInput.type === "evm-keypair"
                     ? adminSignerInput
-                    : await createPasskeySigner(adminSignerInput.creationCallback, adminSignerInput.name);
+                    : await createPasskeySigner(adminSignerInput.name, adminSignerInput.creationCallback);
             return await this.apiClient.createWallet({
                 type: "evm-smart-wallet",
                 config: {

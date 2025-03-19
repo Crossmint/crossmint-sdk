@@ -29,7 +29,7 @@ export function getEvmAdminSigner(
     }
 }
 
-export async function createPasskeySigner(creationCallback?: PasskeyCreationCallback, name?: string) {
+export async function createPasskeySigner(name?: string, creationCallback?: PasskeyCreationCallback) {
     const passkeyName = name ?? `Crossmint Wallet ${Date.now()}`;
     const passkeyCredential = creationCallback
         ? await creationCallback(passkeyName)
