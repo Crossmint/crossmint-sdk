@@ -1,11 +1,11 @@
 import { PublicKey } from "@solana/web3.js";
 import type { Address } from "viem";
-import { WebAuthnP256 } from "ox";
 
 import { SolanaMPCWallet } from "../solana";
 import type { EvmWalletType, SolanaWalletType, WalletTypeToArgs, WalletTypeToWallet } from "./types";
 import type { ApiClient, CreateWalletResponse } from "../api";
-import { type EVMSigner, type EVMSignerInput, EVMSmartWallet } from "../evm";
+import { EVMSmartWallet } from "../evm";
+import { createPasskeySigner, getEvmAdminSigner } from "../evm/utils";
 import { SolanaSmartWallet } from "../solana";
 import { parseSolanaSignerInput } from "../solana/types/signers";
 import { getConnectionFromEnvironment } from "../solana/utils";
@@ -56,7 +56,7 @@ export class WalletFactory {
             const adminSigner =
                 adminSignerInput.type === "evm-keypair"
                     ? adminSignerInput
-                    : await this.createPasskeySigner(adminSignerInput.creationCallback, adminSignerInput.name);
+                    : await createPasskeySigner(adminSignerInput.creationCallback, adminSignerInput.name);
             return await this.apiClient.createWallet({
                 type: "evm-smart-wallet",
                 config: {
@@ -98,27 +98,6 @@ export class WalletFactory {
         }
     }
 
-    private async createPasskeySigner(
-        creationCallback?: (name: string) => Promise<{ id: string; publicKey: { x: string; y: string } }>,
-        name?: string
-    ) {
-        const passkeyName = name ?? `Crossmint Wallet ${Date.now()}`;
-        const passkeyCredential = creationCallback
-            ? await creationCallback(passkeyName)
-            : await WebAuthnP256.createCredential({
-                  name: passkeyName,
-              });
-        return {
-            type: "evm-passkey",
-            id: passkeyCredential.id,
-            name: passkeyName,
-            publicKey: {
-                x: passkeyCredential.publicKey.x.toString(),
-                y: passkeyCredential.publicKey.y.toString(),
-            },
-        } as const;
-    }
-
     private createWalletInstance<WalletType extends keyof WalletTypeToArgs>(
         type: WalletType,
         walletResponse: CreateWalletResponse,
@@ -156,39 +135,12 @@ export class WalletFactory {
                     chain,
                     this.apiClient,
                     evmResponse.address as Address,
-                    this.getEvmAdminSigner(adminSignerInput, evmResponse),
+                    getEvmAdminSigner(adminSignerInput, evmResponse),
                     options?.experimental_callbacks ?? {}
                 ) as WalletTypeToWallet[WalletType];
             }
             case "evm-mpc-wallet":
                 throw new Error("Not implemented");
-        }
-    }
-
-    private getEvmAdminSigner(
-        input: EVMSignerInput,
-        response: Extract<CreateWalletResponse, { type: "evm-smart-wallet" }>
-    ): EVMSigner {
-        const responseSigner = response.config.adminSigner;
-        switch (input.type) {
-            case "evm-keypair":
-                if (responseSigner.type !== "evm-keypair") {
-                    throw new Error("Admin signer type mismatch");
-                }
-                return {
-                    ...input,
-                    locator: responseSigner.locator,
-                };
-            case "evm-passkey":
-                if (responseSigner.type !== "evm-passkey") {
-                    throw new Error("Admin signer type mismatch");
-                }
-                return {
-                    type: "evm-passkey",
-                    id: responseSigner.id,
-                    name: input.name,
-                    locator: responseSigner.locator,
-                };
         }
     }
 
