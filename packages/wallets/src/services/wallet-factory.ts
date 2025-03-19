@@ -2,7 +2,7 @@ import { PublicKey } from "@solana/web3.js";
 import type { Address } from "viem";
 
 import { SolanaMPCWallet } from "../solana";
-import type { WalletTypeToArgs, WalletTypeToWallet } from "./types";
+import type { EvmWalletType, SolanaWalletType, WalletTypeToArgs, WalletTypeToWallet } from "./types";
 import type { ApiClient, CreateWalletResponse } from "../api";
 import { EVMSmartWallet } from "../evm";
 import { SolanaSmartWallet } from "../solana";
@@ -94,43 +94,78 @@ export class WalletFactory {
         options?: WalletOptions
     ): WalletTypeToWallet[WalletType] {
         this.assertCorrectWalletType(walletResponse, type);
-
-        if (type === "evm-smart-wallet") {
-            const { chain, adminSigner } = args as WalletTypeToArgs["evm-smart-wallet"];
-            const evmResponse = walletResponse as Extract<CreateWalletResponse, { type: "evm-smart-wallet" }>;
-            const adminSignerLocator = evmResponse.config.adminSigner.locator;
-            return new EVMSmartWallet(
-                chain,
-                this.apiClient,
-                evmResponse.address as Address,
-                {
-                    ...adminSigner,
-                    locator: adminSignerLocator,
-                },
-                options?.experimental_callbacks ?? {}
-            ) as WalletTypeToWallet[WalletType];
-        } else if (type === "solana-smart-wallet") {
-            const { adminSigner: adminSignerInput } = args as WalletTypeToArgs["solana-smart-wallet"];
-            const solanaResponse = walletResponse as Extract<CreateWalletResponse, { type: "solana-smart-wallet" }>;
-            return new SolanaSmartWallet(
-                this.apiClient,
-                new PublicKey(solanaResponse.address),
-                adminSignerInput ?? {
-                    type: "solana-fireblocks-custodial",
-                },
-                getConnectionFromEnvironment(this.apiClient.environment),
-                options?.experimental_callbacks ?? {}
-            ) as WalletTypeToWallet[WalletType];
-        } else if (type === "solana-mpc-wallet") {
-            const mpcResponse = walletResponse as Extract<CreateWalletResponse, { type: "solana-mpc-wallet" }>;
-            return new SolanaMPCWallet(
-                this.apiClient,
-                new PublicKey(mpcResponse.address),
-                getConnectionFromEnvironment(this.apiClient.environment),
-                options?.experimental_callbacks ?? {}
-            ) as WalletTypeToWallet[WalletType];
+        switch (type) {
+            case "evm-smart-wallet":
+            case "evm-mpc-wallet":
+                const evmArgs = args as WalletTypeToArgs[EvmWalletType];
+                const evmWallet = this.createEvmWalletInstance(type, walletResponse, evmArgs, options);
+                return evmWallet as WalletTypeToWallet[WalletType];
+            case "solana-smart-wallet":
+            case "solana-mpc-wallet":
+                const solanaArgs = args as WalletTypeToArgs[SolanaWalletType];
+                const solanaWallet = this.createSolanaWalletInstance(type, walletResponse, solanaArgs, options);
+                return solanaWallet as WalletTypeToWallet[WalletType];
+            default:
+                throw new Error(`Unhandled wallet type: ${type}`);
         }
-        throw new Error("Not implemented");
+    }
+
+    private createEvmWalletInstance<WalletType extends EvmWalletType>(
+        type: WalletType,
+        walletResponse: CreateWalletResponse,
+        args: WalletTypeToArgs[WalletType],
+        options?: WalletOptions
+    ) {
+        switch (type) {
+            case "evm-smart-wallet": {
+                const { chain, adminSigner } = args as WalletTypeToArgs["evm-smart-wallet"];
+                const evmResponse = walletResponse as Extract<CreateWalletResponse, { type: "evm-smart-wallet" }>;
+                const adminSignerLocator = evmResponse.config.adminSigner.locator;
+                return new EVMSmartWallet(
+                    chain,
+                    this.apiClient,
+                    evmResponse.address as Address,
+                    {
+                        ...adminSigner,
+                        locator: adminSignerLocator,
+                    },
+                    options?.experimental_callbacks ?? {}
+                ) as WalletTypeToWallet[WalletType];
+            }
+            case "evm-mpc-wallet":
+                throw new Error("Not implemented");
+        }
+    }
+
+    private createSolanaWalletInstance<WalletType extends SolanaWalletType>(
+        type: SolanaWalletType,
+        walletResponse: CreateWalletResponse,
+        args: WalletTypeToArgs[WalletType],
+        options?: WalletOptions
+    ) {
+        const solanaResponse = walletResponse as Extract<CreateWalletResponse, { type: SolanaWalletType }>;
+        switch (type) {
+            case "solana-smart-wallet": {
+                const { adminSigner: adminSignerInput } = args as WalletTypeToArgs["solana-smart-wallet"];
+                return new SolanaSmartWallet(
+                    this.apiClient,
+                    new PublicKey(solanaResponse.address),
+                    adminSignerInput ?? {
+                        type: "solana-fireblocks-custodial",
+                    },
+                    getConnectionFromEnvironment(this.apiClient.environment),
+                    options?.experimental_callbacks ?? {}
+                ) as WalletTypeToWallet[WalletType];
+            }
+            case "solana-mpc-wallet": {
+                return new SolanaMPCWallet(
+                    this.apiClient,
+                    new PublicKey(solanaResponse.address),
+                    getConnectionFromEnvironment(this.apiClient.environment),
+                    options?.experimental_callbacks ?? {}
+                ) as WalletTypeToWallet[WalletType];
+            }
+        }
     }
 
     private assertCorrectWalletType<WalletType extends keyof WalletTypeToArgs>(
