@@ -15,7 +15,7 @@ export default function PaymentElementPage() {
             settings={{
                 initialAuthenticationMode: "connect-only",
                 environmentId: "377e1f17-8ef9-4a9a-b35c-6a13ffb1de5e",
-                walletConnectors: [SolanaWalletConnectors]
+                walletConnectors: [SolanaWalletConnectors],
             }}
         >
             <div
