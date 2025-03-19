@@ -45,17 +45,20 @@ export type EVMSignerInput =
       }
     | {
           type: "evm-passkey";
-          id: string;
-          name: string;
-          publicKey: {
-              x: string;
-              y: string;
-          };
-          experimental_sign?: (message: string) => Promise<{ signature: Hex; metadata: WebAuthnP256.SignMetadata }>;
+          name?: string;
+          signingCallback?: (message: string) => Promise<{ signature: Hex; metadata: WebAuthnP256.SignMetadata }>;
       };
 export type EVMSigner = EVMSignerInput & {
     locator: string;
-};
+} & (
+        | {
+              type: "evm-passkey";
+              id: string;
+          }
+        | {
+              type: "evm-keypair";
+          }
+    );
 
 export interface ViemWallet {
     getAddress: () => Address;
@@ -292,8 +295,8 @@ export class EVMSmartWallet implements ViemWallet {
         switch (this.adminSigner.type) {
             case "evm-passkey": {
                 // Custom signing function
-                if (this.adminSigner.experimental_sign) {
-                    return this.adminSigner.experimental_sign(message);
+                if (this.adminSigner.signingCallback) {
+                    return this.adminSigner.signingCallback(message);
                 }
                 const { metadata, signature } = await WebAuthnP256.sign({
                     credentialId: this.adminSigner.id,
