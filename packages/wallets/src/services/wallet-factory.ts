@@ -19,7 +19,8 @@ export class WalletFactory {
         options?: WalletOptions
     ): Promise<WalletTypeToWallet[WalletType]> {
         try {
-            const walletResponse = await this.createWallet(type, args, options);
+            await options?.experimental_callbacks?.onWalletCreationStart?.();
+            const walletResponse = await this.createWallet(type, args);
             const wallet = this.createWalletInstance(type, walletResponse, args, options);
             await options?.experimental_callbacks?.onWalletCreationComplete?.(wallet);
             return wallet;
@@ -41,10 +42,8 @@ export class WalletFactory {
 
     private async createWallet<WalletType extends keyof WalletTypeToArgs>(
         type: WalletType,
-        args: WalletTypeToArgs[WalletType],
-        options?: WalletOptions
+        args: WalletTypeToArgs[WalletType]
     ): Promise<CreateWalletResponse> {
-        await options?.experimental_callbacks?.onWalletCreationStart?.();
         if (type === "evm-smart-wallet") {
             const { adminSigner, linkedUser } = args as WalletTypeToArgs["evm-smart-wallet"];
             return await this.apiClient.createWallet({
