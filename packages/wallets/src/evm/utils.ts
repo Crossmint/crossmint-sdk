@@ -1,6 +1,6 @@
 import { WebAuthnP256 } from "ox";
 import type { CreateWalletResponse } from "../api";
-import type { EVMSigner, EVMSignerInput } from "./wallet";
+import type { EVMSigner, EVMSignerInput, PasskeyCreationCallback } from "./wallet";
 
 export function getEvmAdminSigner(
     input: EVMSignerInput,
@@ -29,10 +29,7 @@ export function getEvmAdminSigner(
     }
 }
 
-export async function createPasskeySigner(
-    creationCallback?: (name: string) => Promise<{ id: string; publicKey: { x: string; y: string } }>,
-    name?: string
-) {
+export async function createPasskeySigner(creationCallback?: PasskeyCreationCallback, name?: string) {
     const passkeyName = name ?? `Crossmint Wallet ${Date.now()}`;
     const passkeyCredential = creationCallback
         ? await creationCallback(passkeyName)

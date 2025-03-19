@@ -29,6 +29,11 @@ export interface TransactionInput {
     value?: bigint;
 }
 
+export type PasskeySigningCallback = (
+    message: string
+) => Promise<{ signature: Hex; metadata: WebAuthnP256.SignMetadata }>;
+export type PasskeyCreationCallback = (name: string) => Promise<{ id: string; publicKey: { x: string; y: string } }>;
+
 export type EVMSignerInput =
     | {
           type: "evm-keypair";
@@ -46,8 +51,8 @@ export type EVMSignerInput =
     | {
           type: "evm-passkey";
           name?: string;
-          signingCallback?: (message: string) => Promise<{ signature: Hex; metadata: WebAuthnP256.SignMetadata }>;
-          creationCallback?: (name: string) => Promise<{ id: string; publicKey: { x: string; y: string } }>;
+          signingCallback?: PasskeySigningCallback;
+          creationCallback?: PasskeyCreationCallback;
       };
 export type EVMSigner = EVMSignerInput & {
     locator: string;
