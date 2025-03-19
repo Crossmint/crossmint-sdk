@@ -179,7 +179,7 @@ export class EVMSmartWallet implements ViemWallet {
                     domain: {
                         name,
                         version,
-                        chainId: chainId as number,
+                        chainId: Number(chainId),
                         verifyingContract,
                         salt,
                     },
