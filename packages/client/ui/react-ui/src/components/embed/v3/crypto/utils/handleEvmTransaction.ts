@@ -6,10 +6,7 @@ import {
 } from "@crossmint/common-sdk-base";
 import { isEthereumWallet } from "@dynamic-labs/ethereum";
 import type { Wallet } from "@dynamic-labs/sdk-react-core";
-import {
-    type TransactionSerializableEIP1559,
-    parseTransaction,
-} from "viem";
+import { type TransactionSerializableEIP1559, parseTransaction } from "viem";
 
 export async function handleEvmTransaction({
     primaryWallet,
