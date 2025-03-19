@@ -95,8 +95,8 @@ export class EVMSmartWallet implements ViemWallet {
         const transactions = await this.apiClient.getTransactions(this.walletLocator);
         return transactions.transactions.filter((transaction) => transaction.walletType === "evm-smart-wallet");
     }
-    public async nfts(perPage: number, page: number) {
-        return await this.apiClient.getNfts(this.walletLocator, perPage, page);
+    public async nfts(perPage: number, page: number, chain: string, locator?: EvmWalletLocator) {
+        return await this.apiClient.getNfts(chain, locator ?? this.walletLocator, perPage, page);
     }
 
     public getAddress() {
