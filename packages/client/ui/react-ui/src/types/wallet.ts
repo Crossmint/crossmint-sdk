@@ -1,12 +1,9 @@
-import type { EVMSmartWalletChain } from "@crossmint/wallets-sdk/dist/evm/chains";
-import type { EVMSignerInput } from "@crossmint/wallets-sdk/dist/evm/wallet";
-import type { WalletTypeToArgs } from "@crossmint/wallets-sdk/dist/services/types";
-import type { SolanaSignerInput } from "@crossmint/wallets-sdk/dist/solana/types/signers";
+import type { EVMSmartWalletChain, EVMSignerInput, WalletTypeToArgs, SolanaSignerInput } from "@crossmint/wallets-sdk";
 
-type WalletType = keyof WalletTypeToArgs;
+type WalletType = Pick<WalletTypeToArgs, "evm-smart-wallet">;
 
 export type GetOrCreateWalletProps = {
-    type: WalletType;
+    type: keyof WalletType;
     args: {
         chain?: EVMSmartWalletChain;
         adminSigner?: EVMSignerInput | SolanaSignerInput;

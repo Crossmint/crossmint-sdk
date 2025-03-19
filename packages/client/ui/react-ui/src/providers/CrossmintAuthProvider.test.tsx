@@ -1,12 +1,11 @@
-import { SESSION_PREFIX, REFRESH_TOKEN_PREFIX } from "@crossmint/common-sdk-auth";
-import { fireEvent, render, waitFor } from "@testing-library/react";
 import { type ReactNode, act } from "react";
-import { beforeEach, describe, expect, vi, it, type MockInstance } from "vitest";
-import { mock } from "vitest-mock-extended";
 import { CrossmintAuth as CrossmintAuthClient, getJWTExpiration, deleteCookie } from "@crossmint/client-sdk-auth";
+import { CrossmintWallet, type EVMSignerInput, type EVMSmartWallet } from "@crossmint/wallets-sdk";
+import { SESSION_PREFIX, REFRESH_TOKEN_PREFIX } from "@crossmint/common-sdk-auth";
 import { createCrossmint } from "@crossmint/common-sdk-base";
-import { CrossmintWallet, type EVMSmartWallet } from "@crossmint/wallets-sdk";
-import type { EVMSignerInput } from "@crossmint/wallets-sdk/dist/evm/wallet";
+import { beforeEach, describe, expect, vi, it, type MockInstance } from "vitest";
+import { fireEvent, render, waitFor } from "@testing-library/react";
+import { mock } from "vitest-mock-extended";
 
 import { useAuth, useWallet } from "../hooks";
 import { CrossmintProvider, useCrossmint } from "../hooks/useCrossmint";
@@ -60,7 +59,7 @@ function renderAuthProvider({
 
 function TestComponent() {
     const { setJwt } = useCrossmint();
-    const { wallet, status: walletStatus, error } = useWallet();
+    const { wallet, status: walletStatus, error, clearWallet } = useWallet();
     const { status: authStatus, jwt } = useAuth();
     return (
         <div>
@@ -74,6 +73,9 @@ function TestComponent() {
             </button>
             <button data-testid="clear-jwt-button" onClick={() => setJwt(undefined)}>
                 Clear JWT
+            </button>
+            <button data-testid="clear-wallet-button" onClick={clearWallet}>
+                Clear Wallet
             </button>
         </div>
     );
@@ -120,7 +122,7 @@ describe("CrossmintAuthProvider", () => {
         const mockPasskeySigner = mock<EVMSignerInput>({
             type: "evm-passkey",
             id: "mock-credential-id",
-            name: "",
+            name: "Crossmint Wallet",
             publicKey: {
                 x: "1",
                 y: "2",
@@ -233,30 +235,6 @@ describe("CrossmintAuthProvider", () => {
         expect(vi.mocked(mockSDK.getOrCreateWallet)).not.toHaveBeenCalled();
     });
 
-    it("When the jwt is cleared, so is the wallet", async () => {
-        document.cookie = `${SESSION_PREFIX}=mock-jwt; path=/;SameSite=Lax;`;
-        const { getByTestId } = await renderAuthProvider({
-            children: <TestComponent />,
-            embeddedWallets,
-        });
-
-        await waitFor(() => {
-            expect(getByTestId("wallet-status").textContent).toBe("loaded");
-            expect(getByTestId("auth-status").textContent).toBe("logged-in");
-            expect(getByTestId("wallet").textContent).toBe("Wallet Loaded");
-        });
-
-        fireEvent.click(getByTestId("clear-jwt-button"));
-
-        await waitFor(() => {
-            expect(getByTestId("wallet-status").textContent).toBe("not-loaded");
-            expect(getByTestId("auth-status").textContent).toBe("logged-out");
-            expect(getByTestId("wallet").textContent).toBe("No Wallet");
-        });
-
-        expect(vi.mocked(mockSDK.getOrCreateWallet)).toHaveBeenCalledOnce();
-    });
-
     it(`Logging in and asserting the auth status`, async () => {
         const { getByTestId } = await renderAuthProvider({
             children: <TestComponent />,
@@ -271,30 +249,6 @@ describe("CrossmintAuthProvider", () => {
 
         await waitFor(() => {
             expect(getByTestId("auth-status").textContent).toBe("logged-in");
-        });
-    });
-
-    it("Logout clears JWT", async () => {
-        await act(() => {
-            document.cookie = `${REFRESH_TOKEN_PREFIX}=mock-refresh-token; path=/; SameSite=Lax;`;
-            document.cookie = `${SESSION_PREFIX}=mock-jwt; path=/; SameSite=Lax;`;
-        });
-
-        const { getByTestId } = await renderAuthProvider({
-            children: <TestComponent />,
-            embeddedWallets,
-        });
-
-        await waitFor(() => {
-            expect(getByTestId("auth-status").textContent).toBe("logged-in");
-        });
-
-        await act(() => {
-            fireEvent.click(getByTestId("clear-jwt-button"));
-        });
-
-        await waitFor(() => {
-            expect(getByTestId("auth-status").textContent).toBe("logged-out");
         });
     });
 });

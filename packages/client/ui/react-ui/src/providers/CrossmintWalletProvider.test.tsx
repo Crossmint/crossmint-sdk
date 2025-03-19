@@ -3,8 +3,7 @@ import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { createCrossmint } from "@crossmint/common-sdk-base";
-import { CrossmintWallet, type EVMSmartWallet } from "@crossmint/wallets-sdk";
-import type { EVMSignerInput } from "@crossmint/wallets-sdk/dist/evm/wallet";
+import { CrossmintWallet, type EVMSmartWallet, type EVMSignerInput } from "@crossmint/wallets-sdk";
 
 import { CrossmintProvider, useCrossmint } from "../hooks/useCrossmint";
 import { useWallet } from "../hooks/useWallet";
@@ -50,7 +49,7 @@ function TestComponent() {
     const mockPasskeySigner = mock<EVMSignerInput>({
         type: "evm-passkey",
         id: "mock-credential-id",
-        name: "",
+        name: "Crossmint Wallet",
         publicKey: {
             x: "1",
             y: "2",

@@ -12,11 +12,10 @@ import {
 import { CrossmintAuth, getCookie } from "@crossmint/client-sdk-auth";
 import { type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
 import { type AuthMaterialWithUser, SESSION_PREFIX, type SDKExternalUser } from "@crossmint/common-sdk-auth";
-import type { EVMSmartWalletChain } from "@crossmint/wallets-sdk/dist/evm/chains";
-import type { EVMSignerInput } from "@crossmint/wallets-sdk/dist/evm/wallet";
+import type { EVMSmartWalletChain, EVMSignerInput } from "@crossmint/wallets-sdk";
 
 import AuthFormDialog from "../components/auth/AuthFormDialog";
-import { useAuth, useCrossmint, useWallet } from "../hooks";
+import { useCrossmint, useWallet } from "../hooks";
 import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
 import { AuthFormProvider } from "./auth/AuthFormProvider";
 import { TwindProvider } from "./TwindProvider";
@@ -238,12 +237,7 @@ function WalletManager({
 }) {
     const { type, defaultChain, createOnLogin, adminSigner, linkedUser } = embeddedWallets;
     const { getOrCreateWallet, clearWallet, status: walletStatus } = useWallet();
-    const { user, status: authStatus } = useAuth();
-
-    const isAuthenticated = user != null && authStatus === "logged-in";
-    const isAuthResolved = isAuthenticated || authStatus === "logged-out";
-    const canGetOrCreateWallet =
-        createOnLogin === "all-users" && walletStatus === "not-loaded" && accessToken != null && isAuthResolved;
+    const canGetOrCreateWallet = createOnLogin === "all-users" && walletStatus === "not-loaded" && accessToken != null;
 
     const handleWalletCreation = useCallback(() => {
         if (!canGetOrCreateWallet) {

@@ -1,15 +1,17 @@
 import { type ReactNode, createContext, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { CrossmintWallet } from "@crossmint/wallets-sdk";
-import type { WalletTypeToArgs } from "@crossmint/wallets-sdk/dist/services/types";
-import type { EVMSignerInput } from "@crossmint/wallets-sdk/dist/evm/wallet";
-import type { EVMSmartWallet } from "@crossmint/wallets-sdk";
+import {
+    CrossmintWallet,
+    type WalletTypeToArgs,
+    type EVMSignerInput,
+    type EVMSmartWallet,
+} from "@crossmint/wallets-sdk";
 
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
 import { createWebAuthnPasskeySigner } from "@/utils/createPasskeySigner";
 import type { PasskeySigner } from "@/types/passkey";
-import { useAuth, useCrossmint, useWalletCache } from "../hooks";
+import { useCrossmint } from "../hooks";
 import type { GetOrCreateWalletProps } from "@/types/wallet";
 type WalletStatus = "not-loaded" | "in-progress" | "loaded" | "loading-error";
 
@@ -59,23 +61,21 @@ export function CrossmintWalletProvider({
     showPasskeyHelpers?: boolean;
     appearance?: UIConfig;
 }) {
-    const { user } = useAuth();
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
     const smartWalletSDK = useMemo(
         () => CrossmintWallet.from({ apiKey: crossmint.apiKey, jwt: crossmint?.jwt }),
         [crossmint.apiKey, crossmint.jwt]
     );
-    const walletCache = useWalletCache(user?.id);
 
     const [walletState, setWalletState] = useState<ValidWalletState>({
         status: "not-loaded",
     });
+
     const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
 
     const createPasskeySigner = async (name: string) => {
         await createPasskeyPrompt("create-wallet")();
         const signer = await createWebAuthnPasskeySigner(name);
-        walletCache.setPasskey(signer);
         return signer;
     };
 
@@ -97,38 +97,24 @@ export function CrossmintWalletProvider({
 
         try {
             setWalletState({ status: "in-progress" });
-            switch (props.type) {
-                case "evm-smart-wallet": {
-                    const evmArgs = props.args as WalletTypeToArgs["evm-smart-wallet"];
-                    const wallet = await smartWalletSDK.getOrCreateWallet("evm-smart-wallet", {
-                        chain: evmArgs.chain,
+
+            if (props.type === "evm-smart-wallet") {
+                const evmArgs = props.args as WalletTypeToArgs["evm-smart-wallet"];
+                let wallet: EVMSmartWallet | null = null;
+                const walletArgs: WalletTypeToArgs["evm-smart-wallet"] = {
+                    chain: evmArgs.chain,
+                    adminSigner: evmArgs.adminSigner,
+                    linkedUser: evmArgs.linkedUser,
+                };
+                wallet = await smartWalletSDK.getOrCreateWallet("evm-smart-wallet", walletArgs);
+                // If wallet doesn't exist, create it and pass adminSigner
+                if (wallet == null) {
+                    wallet = await smartWalletSDK.getOrCreateWallet("evm-smart-wallet", {
+                        ...walletArgs,
                         adminSigner: evmArgs.adminSigner ?? (await getEVMWalletPasskeySigner()),
-                        linkedUser: evmArgs.linkedUser,
                     });
-                    walletCache.setWalletAddress(wallet.getAddress());
-                    setWalletState({ status: "loaded", wallet });
-                    break;
                 }
-                case "evm-mpc-wallet": {
-                    return {
-                        startedCreation: false,
-                        reason: "EVM MPC wallets are not supported yet.",
-                    };
-                }
-                case "solana-smart-wallet": {
-                    return {
-                        startedCreation: false,
-                        reason: "Solana smart wallets are not supported yet.",
-                    };
-                }
-                case "solana-mpc-wallet": {
-                    return {
-                        startedCreation: false,
-                        reason: "Solana MPC wallets are not supported yet.",
-                    };
-                }
-                default:
-                    throw new Error(`Unsupported wallet type: ${props.type}`);
+                setWalletState({ status: "loaded", wallet: wallet as EVMSmartWallet });
             }
         } catch (error: unknown) {
             console.error("There was an error creating a wallet ", error);
@@ -162,14 +148,8 @@ export function CrossmintWalletProvider({
     };
 
     const getEVMWalletPasskeySigner = async (): Promise<EVMSignerInput> => {
-        const cachedPasskey = walletCache.passkey;
-        let passkeySigner: PasskeySigner | undefined;
         const passkeyName = "Crossmint Wallet";
-        if (cachedPasskey === undefined) {
-            passkeySigner = await createPasskeySigner(passkeyName);
-        } else {
-            passkeySigner = cachedPasskey;
-        }
+        const passkeySigner = await createPasskeySigner(passkeyName);
 
         return {
             type: "evm-passkey",
