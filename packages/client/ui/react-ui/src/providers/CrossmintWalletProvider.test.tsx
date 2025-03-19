@@ -48,12 +48,7 @@ function TestComponent() {
     const { status, wallet, error, getOrCreateWallet, clearWallet } = useWallet();
     const mockPasskeySigner = mock<EVMSignerInput>({
         type: "evm-passkey",
-        id: "mock-credential-id",
         name: "Crossmint Wallet",
-        publicKey: {
-            x: "1",
-            y: "2",
-        },
     });
 
     return (

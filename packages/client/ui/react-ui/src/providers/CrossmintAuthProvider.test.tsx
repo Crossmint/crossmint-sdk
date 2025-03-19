@@ -121,12 +121,7 @@ describe("CrossmintAuthProvider", () => {
         vi.mocked(getJWTExpiration).mockReturnValue(1000);
         const mockPasskeySigner = mock<EVMSignerInput>({
             type: "evm-passkey",
-            id: "mock-credential-id",
             name: "Crossmint Wallet",
-            publicKey: {
-                x: "1",
-                y: "2",
-            },
         });
         embeddedWallets = {
             defaultChain: "polygon",

@@ -1,18 +1,13 @@
 import { type ReactNode, createContext, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import {
-    CrossmintWallet,
-    type WalletTypeToArgs,
-    type EVMSignerInput,
-    type EVMSmartWallet,
-} from "@crossmint/wallets-sdk";
+import { CrossmintWallet, type WalletTypeToArgs, type EVMSmartWallet } from "@crossmint/wallets-sdk";
 
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
-import { createWebAuthnPasskeySigner } from "@/utils/createPasskeySigner";
 import type { PasskeySigner } from "@/types/passkey";
 import { useCrossmint } from "../hooks";
 import type { GetOrCreateWalletProps } from "@/types/wallet";
+import { createWebAuthnPasskeySigner } from "@/utils/createPasskeySigner";
 type WalletStatus = "not-loaded" | "in-progress" | "loaded" | "loading-error";
 
 type ValidPasskeyPromptType =
@@ -41,7 +36,7 @@ type WalletContext = {
     passkeySigner?: PasskeySigner;
     error?: string;
     getOrCreateWallet: (args: GetOrCreateWalletProps) => Promise<{ startedCreation: boolean; reason?: string }>;
-    createPasskeySigner: (name: string) => Promise<PasskeySigner | null>;
+    createPasskeySigner: (name: string, promptType?: ValidPasskeyPromptType) => Promise<PasskeySigner | null>;
     clearWallet: () => void;
 };
 
@@ -73,12 +68,6 @@ export function CrossmintWalletProvider({
 
     const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
 
-    const createPasskeySigner = async (name: string) => {
-        await createPasskeyPrompt("create-wallet")();
-        const signer = await createWebAuthnPasskeySigner(name);
-        return signer;
-    };
-
     const getOrCreateWallet = async (props: GetOrCreateWalletProps) => {
         if (walletState.status == "in-progress") {
             console.log("Wallet already loading");
@@ -100,21 +89,23 @@ export function CrossmintWalletProvider({
 
             if (props.type === "evm-smart-wallet") {
                 const evmArgs = props.args as WalletTypeToArgs["evm-smart-wallet"];
-                let wallet: EVMSmartWallet | null = null;
                 const walletArgs: WalletTypeToArgs["evm-smart-wallet"] = {
                     chain: evmArgs.chain,
-                    adminSigner: evmArgs.adminSigner,
+                    adminSigner: evmArgs.adminSigner ?? { type: "evm-passkey" },
                     linkedUser: evmArgs.linkedUser,
                 };
-                wallet = await smartWalletSDK.getOrCreateWallet("evm-smart-wallet", walletArgs);
-                // If wallet doesn't exist, create it and pass adminSigner
-                if (wallet == null) {
-                    wallet = await smartWalletSDK.getOrCreateWallet("evm-smart-wallet", {
-                        ...walletArgs,
-                        adminSigner: evmArgs.adminSigner ?? (await getEVMWalletPasskeySigner()),
-                    });
-                }
-                setWalletState({ status: "loaded", wallet: wallet as EVMSmartWallet });
+
+                console.log("walletArgs", walletArgs);
+
+                const wallet = await smartWalletSDK.getOrCreateWallet("evm-smart-wallet", walletArgs, {
+                    experimental_callbacks: {
+                        onWalletCreationStart: createPasskeyPrompt("create-wallet"),
+                        onWalletCreationFail: createPasskeyPrompt("create-wallet-error"),
+                        onTransactionStart: createPasskeyPrompt("transaction"),
+                        onTransactionFail: createPasskeyPrompt("transaction-error"),
+                    },
+                });
+                setWalletState({ status: "loaded", wallet });
             }
         } catch (error: unknown) {
             console.error("There was an error creating a wallet ", error);
@@ -147,19 +138,11 @@ export function CrossmintWalletProvider({
         setWalletState({ status: "not-loaded" });
     };
 
-    const getEVMWalletPasskeySigner = async (): Promise<EVMSignerInput> => {
-        const passkeyName = "Crossmint Wallet";
-        const passkeySigner = await createPasskeySigner(passkeyName);
-
-        return {
-            type: "evm-passkey",
-            id: passkeySigner.credential.id,
-            name: passkeyName,
-            publicKey: {
-                x: passkeySigner.credential.publicKey.x.toString(),
-                y: passkeySigner.credential.publicKey.y.toString(),
-            },
-        };
+    const createPasskeySigner = async (name: string, promptType?: ValidPasskeyPromptType) => {
+        if (promptType != null) {
+            await createPasskeyPrompt(promptType)();
+        }
+        return await createWebAuthnPasskeySigner(name);
     };
 
     return (
