@@ -36,7 +36,8 @@ export class WalletFactory {
         args: WalletTypeToArgs[WalletType],
         options?: WalletOptions
     ): Promise<WalletTypeToWallet[WalletType]> {
-        const walletResponse = await this.apiClient.getWallet(address);
+        const locator = this.apiClient.isServerSide ? address : `me:${type}`;
+        const walletResponse = await this.apiClient.getWallet(locator);
         return this.createWalletInstance(type, walletResponse, args, options);
     }
 
