@@ -23,7 +23,7 @@ export function getEvmAdminSigner(
             return {
                 type: "evm-passkey",
                 id: responseSigner.id,
-                name: input.name,
+                name: input?.name ?? responseSigner.name,
                 locator: responseSigner.locator,
             };
     }
