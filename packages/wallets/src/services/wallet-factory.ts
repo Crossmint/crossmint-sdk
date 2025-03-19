@@ -7,6 +7,7 @@ import type { ApiClient, CreateWalletResponse } from "../api";
 import { EVMSmartWallet } from "../evm";
 import { SolanaSmartWallet } from "../solana";
 import { parseSolanaSignerInput } from "../solana/types/signers";
+import { getConnectionFromEnvironment } from "../solana/utils";
 import type { WalletOptions } from "../utils/options";
 
 export class WalletFactory {
@@ -107,7 +108,7 @@ export class WalletFactory {
                     ...adminSigner,
                     locator: adminSignerLocator,
                 },
-                options?.experimental_callbacks
+                options?.experimental_callbacks ?? {}
             ) as WalletTypeToWallet[WalletType];
         } else if (type === "solana-smart-wallet") {
             const { adminSigner: adminSignerInput } = args as WalletTypeToArgs["solana-smart-wallet"];
@@ -118,14 +119,16 @@ export class WalletFactory {
                 adminSignerInput ?? {
                     type: "solana-fireblocks-custodial",
                 },
-                options?.experimental_callbacks
+                getConnectionFromEnvironment(this.apiClient.environment),
+                options?.experimental_callbacks ?? {}
             ) as WalletTypeToWallet[WalletType];
         } else if (type === "solana-mpc-wallet") {
             const mpcResponse = walletResponse as Extract<CreateWalletResponse, { type: "solana-mpc-wallet" }>;
             return new SolanaMPCWallet(
                 this.apiClient,
                 new PublicKey(mpcResponse.address),
-                options?.experimental_callbacks
+                getConnectionFromEnvironment(this.apiClient.environment),
+                options?.experimental_callbacks ?? {}
             ) as WalletTypeToWallet[WalletType];
         }
         throw new Error("Not implemented");

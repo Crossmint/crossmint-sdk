@@ -82,7 +82,7 @@ export class EVMSmartWallet implements ViemWallet {
         private readonly apiClient: ApiClient,
         private readonly address: Address,
         private readonly adminSigner: EVMSigner,
-        private readonly callbacks?: Callbacks
+        private readonly callbacks: Callbacks
     ) {
         this.publicClient = createPublicClient({
             chain: toViemChain(chain),
