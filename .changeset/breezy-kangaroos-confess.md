@@ -2,4 +2,4 @@
 "@crossmint/wallets-sdk": patch
 ---
 
-Updated getOrCreateWallet to support singular get
+Fix endpoint for getNfts method

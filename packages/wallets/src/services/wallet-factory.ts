@@ -2,7 +2,7 @@ import type { Address } from "viem";
 import { SolanaMPCWallet } from "../solana";
 import type { WalletTypeToArgs, WalletTypeToWallet } from "./types";
 import type { ApiClient, CreateWalletResponse } from "../api";
-import { type EVMSigner, EVMSmartWallet } from "../evm";
+import { EVMSmartWallet } from "../evm";
 import { SolanaSmartWallet } from "../solana";
 import { PublicKey } from "@solana/web3.js";
 import { parseSolanaSignerInput } from "../solana/types/signers";
@@ -13,24 +13,9 @@ export class WalletFactory {
     public async getOrCreateWallet<WalletType extends keyof WalletTypeToArgs>(
         type: WalletType,
         args: WalletTypeToArgs[WalletType]
-    ): Promise<WalletTypeToWallet[WalletType] | null> {
+    ): Promise<WalletTypeToWallet[WalletType]> {
         if (type === "evm-smart-wallet") {
             const { chain, adminSigner, linkedUser } = args as WalletTypeToArgs["evm-smart-wallet"];
-
-            // Check for existing wallet
-            if (adminSigner == null) {
-                const existingWalletResponse = await this.apiClient.getWallet(linkedUser, "evm-smart-wallet");
-                if (existingWalletResponse != null) {
-                    this.assertCorrectWalletType(existingWalletResponse, "evm-smart-wallet");
-                    return new EVMSmartWallet(chain, this.apiClient, existingWalletResponse.address as Address, {
-                        ...(existingWalletResponse.config.adminSigner as EVMSigner),
-                    }) as WalletTypeToWallet[WalletType];
-                } else {
-                    return null;
-                }
-            }
-
-            // Create new wallet
             const walletResponse = await this.apiClient.createWallet({
                 type: "evm-smart-wallet",
                 config: {

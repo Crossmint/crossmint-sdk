@@ -75,23 +75,12 @@ class ApiClient extends CrossmintApiClient {
         return response.json();
     }
 
-    async getWallet(locator?: WalletLocator, type?: WalletType): Promise<GetWalletResponse | null> {
-        if (this.isServerSide && locator == null) {
-            throw new Error("Cannot get wallet for server-side without locator parameter");
-        }
-        if (!this.isServerSide && type == null) {
-            throw new Error("Cannot get wallet for client-side without type parameter");
-        }
-        const path = this.isServerSide ? `${this.apiPrefix}:${locator}` : `${this.apiPrefix}/me:${type}`;
-        const response = await this.get(path, {
+    async getWallet(locator: WalletLocator): Promise<GetWalletResponse> {
+        const response = await this.get(`${this.apiPrefix}/${locator}`, {
             headers: {
                 "Content-Type": "application/json",
             },
         });
-
-        if (!response.ok || response.status === 404) {
-            return null;
-        }
         return response.json();
     }
 
