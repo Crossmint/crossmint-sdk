@@ -56,7 +56,7 @@ export class WalletFactory {
             const adminSigner =
                 adminSignerInput.type === "evm-keypair"
                     ? adminSignerInput
-                    : await this.createPasskeySigner(adminSignerInput.name);
+                    : await this.createPasskeySigner(adminSignerInput.creationCallback, adminSignerInput.name);
             return await this.apiClient.createWallet({
                 type: "evm-smart-wallet",
                 config: {
@@ -98,11 +98,16 @@ export class WalletFactory {
         }
     }
 
-    private async createPasskeySigner(name?: string) {
+    private async createPasskeySigner(
+        creationCallback?: (name: string) => Promise<{ id: string; publicKey: { x: string; y: string } }>,
+        name?: string
+    ) {
         const passkeyName = name ?? `Crossmint Wallet ${Date.now()}`;
-        const passkeyCredential = await WebAuthnP256.createCredential({
-            name: passkeyName,
-        });
+        const passkeyCredential = creationCallback
+            ? await creationCallback(passkeyName)
+            : await WebAuthnP256.createCredential({
+                  name: passkeyName,
+              });
         return {
             type: "evm-passkey",
             id: passkeyCredential.id,

@@ -47,6 +47,7 @@ export type EVMSignerInput =
           type: "evm-passkey";
           name?: string;
           signingCallback?: (message: string) => Promise<{ signature: Hex; metadata: WebAuthnP256.SignMetadata }>;
+          creationCallback?: (name: string) => Promise<{ id: string; publicKey: { x: string; y: string } }>;
       };
 export type EVMSigner = EVMSignerInput & {
     locator: string;
