@@ -1,7 +1,9 @@
 import DynamicContextProviderWrapper from "@/components/dynamic-xyz/DynamicContextProviderWrapper";
 import type { EmbeddedCheckoutV3IFrameEmitter } from "@crossmint/client-sdk-base";
 import type { APIKeyEnvironmentPrefix, BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
+import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
 import { DynamicContext, useDynamicContext } from "@dynamic-labs/sdk-react-core";
+import { SolanaWalletConnectors } from "@dynamic-labs/solana";
 import { type Dispatch, type SetStateAction, useContext, useEffect, useState } from "react";
 import { handleSendTransaction } from "./utils/handleSendTransaction";
 import { ChainNotSupportedError, dynamicChainToCrossmintChain } from "@/utils/dynamic/dynamicChainToCrossmintChain";
@@ -16,6 +18,7 @@ export function CryptoWalletConnectionHandler(props: {
         <DynamicContextProviderWrapper
             apiKeyEnvironment={apiKeyEnvironment}
             settings={{
+                walletConnectors: [EthereumWalletConnectors, SolanaWalletConnectors],
                 events: {
                     onAuthFlowCancel() {
                         console.log("[CryptoWalletConnectionHandler] onAuthFlowCancel");

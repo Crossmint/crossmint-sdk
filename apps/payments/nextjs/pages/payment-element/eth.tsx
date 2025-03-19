@@ -1,6 +1,6 @@
 import { DynamicConnectButton, DynamicContextProvider, useDynamicContext } from "@dynamic-labs/sdk-react-core";
 import { useEffect, useState } from "react";
-import { isEthereumWallet } from "@dynamic-labs/ethereum";
+import { EthereumWalletConnectors, isEthereumWallet } from "@dynamic-labs/ethereum";
 
 import type { InitialQuotePayload } from "@crossmint/client-sdk-base";
 import { CrossmintPaymentElement_DEPRECATED } from "@crossmint/client-sdk-react-ui";
@@ -15,6 +15,7 @@ export default function PaymentElementPage() {
             settings={{
                 initialAuthenticationMode: "connect-only",
                 environmentId: "377e1f17-8ef9-4a9a-b35c-6a13ffb1de5e",
+                walletConnectors: [EthereumWalletConnectors],
             }}
         >
             <div

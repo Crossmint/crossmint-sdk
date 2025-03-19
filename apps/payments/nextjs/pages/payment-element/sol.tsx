@@ -5,7 +5,7 @@ import type { InitialQuotePayload } from "@crossmint/client-sdk-base";
 import { CrossmintPaymentElement_DEPRECATED } from "@crossmint/client-sdk-react-ui";
 
 import QuoteSummary from "../../components/quote-summary";
-import { isSolanaWallet } from "@dynamic-labs/solana";
+import { isSolanaWallet, SolanaWalletConnectors } from "@dynamic-labs/solana";
 
 export default function PaymentElementPage() {
     const [count, setCount] = useState(1);
@@ -15,6 +15,7 @@ export default function PaymentElementPage() {
             settings={{
                 initialAuthenticationMode: "connect-only",
                 environmentId: "377e1f17-8ef9-4a9a-b35c-6a13ffb1de5e",
+                walletConnectors: [SolanaWalletConnectors]
             }}
         >
             <div
