@@ -94,9 +94,6 @@ export function CrossmintWalletProvider({
                     adminSigner: evmArgs.adminSigner ?? { type: "evm-passkey" },
                     linkedUser: evmArgs.linkedUser,
                 };
-
-                console.log("walletArgs", walletArgs);
-
                 const wallet = await smartWalletSDK.getOrCreateWallet("evm-smart-wallet", walletArgs, {
                     experimental_callbacks: {
                         onWalletCreationStart: createPasskeyPrompt("create-wallet"),
