@@ -19,6 +19,7 @@
         "dev": "tsup --watch",
         "test:vitest": "vitest run",
         "generate": "pnpm dlx @hey-api/openapi-ts",
+        "generate:docs": "typedoc",
         "postinstall": "pnpm generate"
     },
     "dependencies": {
@@ -32,6 +33,9 @@
         "viem": "2.23.6"
     },
     "devDependencies": {
-        "@hey-api/openapi-ts": "0.64.5"
+        "@hey-api/openapi-ts": "0.64.5",
+        "typedoc": "0.26.5",
+        "typedoc-plugin-frontmatter": "1.0.0",
+        "typedoc-plugin-markdown": "4.2.3"
     }
 }
