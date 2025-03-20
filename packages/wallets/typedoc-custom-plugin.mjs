@@ -27,10 +27,7 @@ export function load(app) {
             group: item.title,
             pages: item.children.map(
                 (child) =>
-                    `sdk-reference/smart-wallets/${child.path.replace(
-                        ".mdx",
-                        ""
-                    )}`
+                    `sdk-reference/wallets/${child.path.replace(".mdx", "")}`
             ),
         }));
 
