@@ -15,7 +15,7 @@
     "types": "./dist/index.d.ts",
     "files": ["dist", "LICENSE"],
     "scripts": {
-        "build": "tsup && pnpm generate",
+        "build": "pnpm generate && tsup",
         "dev": "tsup --watch",
         "test:vitest": "vitest run",
         "openapi-ts": "openapi-ts",
