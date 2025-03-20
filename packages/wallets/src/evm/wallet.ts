@@ -382,5 +382,3 @@ export class EVMSmartWallet implements ViemWallet {
         return signature;
     }
 }
-
-export class EVMMPCWallet {}
