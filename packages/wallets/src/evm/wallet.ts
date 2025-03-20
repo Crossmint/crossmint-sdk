@@ -67,12 +67,31 @@ export type EVMSigner = EVMSignerInput & {
     );
 
 export interface ViemWallet {
+    /**
+     * Get the wallet address
+     * @returns The wallet address
+     */
     getAddress: () => Address;
 
+    /**
+     * Get the wallet nonce
+     * @param parameters - The parameters
+     * @returns The nonce
+     */
     getNonce?: ((parameters?: { key?: bigint | undefined } | undefined) => Promise<bigint>) | undefined;
 
+    /**
+     * Sign a message
+     * @param parameters - The parameters
+     * @returns The signature
+     */
     signMessage: (parameters: { message: SignableMessage }) => Promise<Hex>;
 
+    /**
+     * Sign a typed data
+     * @param parameters - The parameters
+     * @returns The signature
+     */
     signTypedData: <
         const typedData extends TypedData | Record<string, unknown>,
         primaryType extends keyof typedData | "EIP712Domain" = keyof typedData,
@@ -80,6 +99,11 @@ export interface ViemWallet {
         parameters: TypedDataDefinition<typedData, primaryType>
     ) => Promise<Hex>;
 
+    /**
+     * Sign and submit a transaction
+     * @param parameters - The transaction parameters
+     * @returns The transaction hash
+     */
     sendTransaction: (parameters: TransactionInput) => Promise<Hex>;
 }
 
@@ -99,16 +123,35 @@ export class EVMSmartWallet implements ViemWallet {
         });
     }
 
+    /**
+     * Get the wallet balances
+     * @param tokens - The tokens
+     * @returns The balances
+     */
     public async balances(tokens: Address[]) {
         return await this.apiClient.getBalance(this.walletLocator, {
             chains: [this.chain],
             tokens,
         });
     }
+
+    /**
+     * Get the wallet transactions
+     * @returns The transactions
+     */
     public async transactions() {
         const transactions = await this.apiClient.getTransactions(this.walletLocator);
         return transactions.transactions.filter((transaction) => transaction.walletType === "evm-smart-wallet");
     }
+
+    /**
+     * Get the wallet NFTs
+     * @param perPage - The number of NFTs per page
+     * @param page - The page number
+     * @param chain - The chain
+     * @param locator - The locator
+     * @returns The NFTs
+     */
     public async nfts(perPage: number, page: number, chain: string, locator?: EvmWalletLocator) {
         return await this.apiClient.getNfts(chain, locator ?? this.walletLocator, perPage, page);
     }

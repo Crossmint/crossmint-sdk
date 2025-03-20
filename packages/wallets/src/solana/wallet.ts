@@ -51,22 +51,47 @@ abstract class SolanaWallet {
         );
     }
 
+    /**
+     * Get the wallet public key
+     * @returns The wallet public key
+     */
     public getPublicKey(): PublicKey {
         return this.publicKey;
     }
 
+    /**
+     * Get the wallet address
+     * @returns The wallet address
+     */
     public getAddress(): string {
         return this.publicKey.toBase58();
     }
 
+    /**
+     * Get the wallet balances
+     * @param tokens - The tokens
+     * @returns The balances
+     */
     public async balances(tokens: SolanaSupportedToken[]): Promise<GetBalanceResponse> {
         return await this.apiClient.getBalance(this.walletLocator, {
             tokens,
         });
     }
+
+    /**
+     * Get the wallet transactions
+     * @returns The transactions
+     */
     public async transactions(): Promise<GetTransactionsResponse> {
         return await this.transactionsService.getTransactions();
     }
+
+    /**
+     * Get the wallet NFTs
+     * @param perPage - The number of NFTs per page
+     * @param page - The page number
+     * @returns The NFTs
+     */
     public async nfts(perPage: number, page: number, chain: string): Promise<GetNftsResponse> {
         return await this.apiClient.getNfts(chain, this.walletLocator, perPage, page);
     }
@@ -93,6 +118,11 @@ export class SolanaSmartWallet extends SolanaWallet {
         this.adminSigner = parseSolanaSignerInput(adminSignerInput);
     }
 
+    /**
+     * Sign and submit a transaction
+     * @param parameters - The transaction parameters
+     * @returns The transaction hash
+     */
     public async sendTransaction(parameters: SmartWalletTransactionParams): Promise<string> {
         const signer = this.getEffectiveTransactionSigner(parameters.delegatedSigner);
         const additionalSigners = parameters.additionalSigners?.map(parseSolanaNonCustodialSignerInput);
@@ -103,6 +133,11 @@ export class SolanaSmartWallet extends SolanaWallet {
         });
     }
 
+    /**
+     * Add a delegated signer to the wallet
+     * @param signer - The signer
+     * @returns The delegated signer
+     */
     public async addDelegatedSigner(signer: string) {
         return await this.delegatedSignerService.registerDelegatedSigner(
             signer,
@@ -124,6 +159,11 @@ export class SolanaSmartWallet extends SolanaWallet {
 }
 
 export class SolanaMPCWallet extends SolanaWallet {
+    /**
+     * Sign and submit a transaction
+     * @param parameters - The transaction parameters
+     * @returns The transaction hash
+     */
     public async sendTransaction(parameters: MPCTransactionParams): Promise<string> {
         return await this.transactionsService.createSignAndConfirm({
             transaction: parameters.transaction,
