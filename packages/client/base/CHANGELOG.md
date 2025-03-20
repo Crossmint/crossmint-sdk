@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-base
 
+## 1.4.12
+
+### Patch Changes
+
+- 063ae65: Upgrade dynamic to v4
+
 ## 1.4.11
 
 ### Patch Changes

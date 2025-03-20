@@ -1,5 +1,27 @@
 # @crossmint/client-sdk-nextjs-starter
 
+## 1.4.38
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@1.16.1
+
+## 1.4.37
+
+### Patch Changes
+
+- Updated dependencies [025a5a2]
+  - @crossmint/client-sdk-react-ui@1.16.0
+
+## 1.4.36
+
+### Patch Changes
+
+- 063ae65: Upgrade dynamic to v4
+- Updated dependencies [063ae65]
+  - @crossmint/client-sdk-react-ui@1.15.3
+  - @crossmint/client-sdk-base@1.4.12
+
 ## 1.4.35
 
 ### Patch Changes

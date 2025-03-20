@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-smart-wallet-next-starter",
-    "version": "0.1.76",
+    "version": "0.1.79",
     "private": true,
     "scripts": {
         "build": "next build",
@@ -23,7 +23,7 @@
         "react": "^18",
         "react-dom": "^18",
         "tailwind-merge": "2.4.0",
-        "viem": "2.17.5"
+        "viem": "2.23.6"
     },
     "devDependencies": {
         "@types/node": "^20",

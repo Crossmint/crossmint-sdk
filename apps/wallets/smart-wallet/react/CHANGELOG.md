@@ -1,5 +1,14 @@
 # @crossmint/client-sdk-smart-wallet-react-starter
 
+## 1.5.38
+
+### Patch Changes
+
+- 063ae65: Upgrade dynamic to v4
+- Updated dependencies [063ae65]
+  - @crossmint/client-sdk-smart-wallet-web3auth-adapter@0.2.7
+  - @crossmint/client-sdk-smart-wallet@0.3.1
+
 ## 1.5.37
 
 ### Patch Changes

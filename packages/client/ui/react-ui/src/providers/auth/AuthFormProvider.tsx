@@ -1,8 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { CrossmintAuthenticationError, type OAuthProvider } from "@crossmint/common-sdk-auth";
 import type { UIConfig } from "@crossmint/common-sdk-base";
-import type { CrossmintAuthWalletConfig, LoginMethod } from "../CrossmintAuthProvider";
+import type { CrossmintAuthEmbeddedWallets } from "@/types/wallet";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
+import type { LoginMethod } from "@/types/auth";
 
 type AuthStep = "initial" | "otp" | "qrCode" | "web3" | "web3/metamask" | "web3/walletconnect";
 
@@ -36,7 +37,7 @@ type ContextInitialStateProps = {
     defaultEmail?: string;
     baseUrl: string;
     setDialogOpen?: (open: boolean, successfulLogin?: boolean) => void;
-    embeddedWallets: CrossmintAuthWalletConfig;
+    embeddedWallets: CrossmintAuthEmbeddedWallets;
 };
 
 type AuthFormProviderProps = {

@@ -4,15 +4,9 @@ import {
     blockchainToChainId,
     type EVMBlockchainIncludingTestnet,
 } from "@crossmint/common-sdk-base";
+import { isEthereumWallet } from "@dynamic-labs/ethereum";
 import type { Wallet } from "@dynamic-labs/sdk-react-core";
-import {
-    type Chain,
-    type Account,
-    type WalletClient,
-    type TransactionSerializableEIP1559,
-    type Transport,
-    parseTransaction,
-} from "viem";
+import { type TransactionSerializableEIP1559, parseTransaction } from "viem";
 
 export async function handleEvmTransaction({
     primaryWallet,
@@ -38,11 +32,15 @@ export async function handleEvmTransaction({
         return;
     }
 
-    let walletClient: WalletClient<Transport, Chain, Account> | undefined;
+    let walletClient;
     try {
-        walletClient = connector.getWalletClient<WalletClient<Transport, Chain, Account> | undefined>(String(chainId));
+        if (!isEthereumWallet(primaryWallet)) {
+            throw new Error("primaryWallet is not an ethereum wallet");
+        }
+
+        walletClient = await primaryWallet.getWalletClient(String(chainId));
         if (!walletClient) {
-            throw new Error(`connector.getWalletClient(${chainId}) returned undefined`);
+            throw new Error(`primaryWallet.getWalletClient(${chainId}) returned undefined`);
         }
     } catch (error) {
         console.error("[CryptoWalletConnectionHandler] failed to get wallet client", error);

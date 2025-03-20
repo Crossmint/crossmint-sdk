@@ -10,7 +10,6 @@ import {
 } from "react";
 
 import { CrossmintAuth, getCookie } from "@crossmint/client-sdk-auth";
-import type { EVMSmartWalletChain } from "@crossmint/client-sdk-smart-wallet";
 import { type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
 import { type AuthMaterialWithUser, SESSION_PREFIX, type SDKExternalUser } from "@crossmint/common-sdk-auth";
 
@@ -19,18 +18,11 @@ import { useCrossmint, useWallet } from "../hooks";
 import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
 import { AuthFormProvider } from "./auth/AuthFormProvider";
 import { TwindProvider } from "./TwindProvider";
+import type { AuthStatus, LoginMethod } from "@/types/auth";
+import type { CrossmintAuthEmbeddedWallets, GetOrCreateWalletProps } from "@/types/wallet";
 
-export type CrossmintAuthWalletConfig = {
-    defaultChain: EVMSmartWalletChain;
-    createOnLogin: "all-users" | "off";
-    type: "evm-smart-wallet";
-    showPasskeyHelpers?: boolean;
-};
-
-export type LoginMethod = "email" | "google" | "farcaster" | "web3" | "twitter";
-
-export type CrossmintAuthProviderProps = {
-    embeddedWallets?: CrossmintAuthWalletConfig;
+type CrossmintAuthProviderProps = {
+    embeddedWallets?: CrossmintAuthEmbeddedWallets;
     appearance?: UIConfig;
     termsOfServiceText?: string | ReactNode;
     prefetchOAuthUrls?: boolean;
@@ -42,9 +34,7 @@ export type CrossmintAuthProviderProps = {
     logoutRoute?: string;
 };
 
-type AuthStatus = "logged-in" | "logged-out" | "in-progress" | "initializing";
-
-export interface AuthContextType {
+type AuthContextType = {
     crossmintAuth?: CrossmintAuth;
     login: (defaultEmail?: string | MouseEvent) => void;
     logout: () => void;
@@ -52,7 +42,7 @@ export interface AuthContextType {
     user?: SDKExternalUser;
     status: AuthStatus;
     getUser: () => void;
-}
+};
 
 const defaultContextValue: AuthContextType = {
     crossmintAuth: undefined,
@@ -66,7 +56,7 @@ const defaultContextValue: AuthContextType = {
 
 export const AuthContext = createContext<AuthContextType>(defaultContextValue);
 
-const defaultEmbeddedWallets: CrossmintAuthWalletConfig = {
+const defaultEmbeddedWallets: CrossmintAuthEmbeddedWallets = {
     defaultChain: "base-sepolia",
     createOnLogin: "off",
     type: "evm-smart-wallet",
@@ -125,14 +115,14 @@ export function CrossmintAuthProvider({
             setJwt(jwt);
         }
         setInitialized(true);
-    }, []);
+    }, [crossmint.jwt, setJwt]);
 
     useEffect(() => {
         if (crossmint.jwt != null && dialogOpen) {
             setDialogOpen(false);
             triggerHasJustLoggedIn();
         }
-    }, [crossmint.jwt, dialogOpen, onLoginSuccess]);
+    }, [crossmint.jwt, dialogOpen, triggerHasJustLoggedIn]);
 
     const login = (defaultEmail?: string | MouseEvent) => {
         if (crossmint.jwt != null) {
@@ -190,7 +180,6 @@ export function CrossmintAuthProvider({
             >
                 <CrossmintWalletProvider
                     key={crossmint.jwt}
-                    defaultChain={embeddedWallets.defaultChain}
                     showPasskeyHelpers={embeddedWallets.showPasskeyHelpers}
                     appearance={appearance}
                 >
@@ -230,21 +219,38 @@ function WalletManager({
     children,
     accessToken,
 }: {
-    embeddedWallets: CrossmintAuthWalletConfig;
+    embeddedWallets: CrossmintAuthEmbeddedWallets;
     children: ReactNode;
     accessToken: string | undefined;
 }) {
-    const { getOrCreateWallet, clearWallet, status } = useWallet();
+    const { type, createOnLogin, adminSigner, linkedUser } = embeddedWallets;
+    const { getOrCreateWallet, clearWallet, status: walletStatus } = useWallet();
+    const canGetOrCreateWallet = createOnLogin === "all-users" && walletStatus === "not-loaded" && accessToken != null;
 
-    useEffect(() => {
-        if (embeddedWallets.createOnLogin === "all-users" && status === "not-loaded" && accessToken != null) {
-            getOrCreateWallet();
+    const handleWalletCreation = useCallback(() => {
+        if (!canGetOrCreateWallet) {
+            return;
         }
+        getOrCreateWallet({
+            type: embeddedWallets.type,
+            args: {
+                ...(embeddedWallets.type === "evm-smart-wallet" ? { chain: embeddedWallets.defaultChain } : {}),
+                adminSigner,
+                linkedUser,
+            },
+        } as GetOrCreateWalletProps);
+    }, [canGetOrCreateWallet, getOrCreateWallet, type, adminSigner, linkedUser]);
 
-        if (status === "loaded" && accessToken == null) {
+    const handleWalletCleanup = useCallback(() => {
+        if (walletStatus === "loaded" && accessToken == null) {
             clearWallet();
         }
-    }, [accessToken, status]);
+    }, [walletStatus, accessToken, clearWallet]);
+
+    useEffect(() => {
+        handleWalletCreation();
+        handleWalletCleanup();
+    }, [handleWalletCreation, handleWalletCleanup]);
 
     return <>{children}</>;
 }

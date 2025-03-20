@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-smart-wallet
 
+## 0.3.1
+
+### Patch Changes
+
+- 063ae65: Upgrade dynamic to v4
+- Updated dependencies [063ae65]
+  - @crossmint/client-sdk-base@1.4.12
+
 ## 0.3.0
 
 ### Minor Changes

@@ -1,11 +1,11 @@
-import { DynamicConnectButton, DynamicContextProvider, useDynamicContext } from "@dynamic-labs/sdk-react";
-import { SolanaWalletConnectors } from "@dynamic-labs/solana-all";
+import { DynamicConnectButton, DynamicContextProvider, useDynamicContext } from "@dynamic-labs/sdk-react-core";
 import { useEffect, useState } from "react";
 
 import type { InitialQuotePayload } from "@crossmint/client-sdk-base";
 import { CrossmintPaymentElement_DEPRECATED } from "@crossmint/client-sdk-react-ui";
 
 import QuoteSummary from "../../components/quote-summary";
+import { isSolanaWallet, SolanaWalletConnectors } from "@dynamic-labs/solana";
 
 export default function PaymentElementPage() {
     const [count, setCount] = useState(1);
@@ -62,20 +62,27 @@ function Content({ count }: { count: number }) {
 
     const [signer, setSigner] = useState<any>(null);
 
-    const { walletConnector } = useDynamicContext();
+    const { primaryWallet } = useDynamicContext();
 
     async function getSigner() {
-        const _signer = await walletConnector?.getSigner();
+        if (primaryWallet == null || !isSolanaWallet(primaryWallet)) {
+            throw new Error("Primary wallet is not solana");
+        }
+
+        const _signer = await primaryWallet.getSigner();
         console.log("_signer", _signer);
         setSigner(_signer);
     }
 
     useEffect(() => {
-        console.log("walletConnector", walletConnector);
+        console.log("primaryWallet", primaryWallet);
+        if (primaryWallet == null) {
+            return;
+        }
         getSigner();
-    }, [walletConnector]);
+    }, [primaryWallet]);
 
-    if (signer == null || walletConnector?.connectedChain != "SOL") {
+    if (signer == null || primaryWallet?.chain != "SOL") {
         return <p>Connect wallet</p>;
     }
 
