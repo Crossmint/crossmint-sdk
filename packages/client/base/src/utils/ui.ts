@@ -24,7 +24,6 @@ function getNFTLocator(nft: NFTOrNFTLocator) {
         case "hypersonic-testnet":
         case "polygon":
         case "ethereum":
-        case "astar-zkevm":
         case "polygon-mumbai":
         case "polygon-amoy":
         case "bsc":

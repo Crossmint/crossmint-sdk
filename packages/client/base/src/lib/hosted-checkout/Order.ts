@@ -35,7 +35,6 @@ declare const orderSchema: z.ZodObject<
                         readonly BASE: "base";
                         readonly ZORA: "zora";
                         readonly ARBITRUM_NOVA: "arbitrumnova";
-                        readonly ASTAR_ZKEVM: "astar-zkevm";
                         readonly APECHAIN: "apechain";
                         readonly APEX: "apex";
                         readonly BOSS: "boss";
@@ -1397,7 +1396,6 @@ declare const orderSchema: z.ZodObject<
                         | "base"
                         | "zora"
                         | "arbitrumnova"
-                        | "astar-zkevm"
                         | "apechain"
                         | "apex"
                         | "boss"
@@ -1661,7 +1659,6 @@ declare const orderSchema: z.ZodObject<
                         | "base"
                         | "zora"
                         | "arbitrumnova"
-                        | "astar-zkevm"
                         | "apechain"
                         | "apex"
                         | "boss"
@@ -2171,7 +2168,6 @@ declare const orderSchema: z.ZodObject<
                     readonly BASE: "base";
                     readonly ZORA: "zora";
                     readonly ARBITRUM_NOVA: "arbitrumnova";
-                    readonly ASTAR_ZKEVM: "astar-zkevm";
                     readonly APECHAIN: "apechain";
                     readonly APEX: "apex";
                     readonly BOSS: "boss";
@@ -2271,7 +2267,6 @@ declare const orderSchema: z.ZodObject<
                                             readonly BASE: "base";
                                             readonly ZORA: "zora";
                                             readonly ARBITRUM_NOVA: "arbitrumnova";
-                                            readonly ASTAR_ZKEVM: "astar-zkevm";
                                             readonly APECHAIN: "apechain";
                                             readonly APEX: "apex";
                                             readonly BOSS: "boss";
@@ -2343,7 +2338,6 @@ declare const orderSchema: z.ZodObject<
                                         | "base"
                                         | "zora"
                                         | "arbitrumnova"
-                                        | "astar-zkevm"
                                         | "apechain"
                                         | "apex"
                                         | "boss"
@@ -2412,7 +2406,6 @@ declare const orderSchema: z.ZodObject<
                                         | "base"
                                         | "zora"
                                         | "arbitrumnova"
-                                        | "astar-zkevm"
                                         | "apechain"
                                         | "apex"
                                         | "boss"
@@ -2544,7 +2537,6 @@ declare const orderSchema: z.ZodObject<
                                         readonly BASE: "base";
                                         readonly ZORA: "zora";
                                         readonly ARBITRUM_NOVA: "arbitrumnova";
-                                        readonly ASTAR_ZKEVM: "astar-zkevm";
                                         readonly APECHAIN: "apechain";
                                         readonly APEX: "apex";
                                         readonly BOSS: "boss";
@@ -2639,7 +2631,6 @@ declare const orderSchema: z.ZodObject<
                                         | "base"
                                         | "zora"
                                         | "arbitrumnova"
-                                        | "astar-zkevm"
                                         | "apechain"
                                         | "apex"
                                         | "boss"
@@ -2731,7 +2722,6 @@ declare const orderSchema: z.ZodObject<
                                         | "base"
                                         | "zora"
                                         | "arbitrumnova"
-                                        | "astar-zkevm"
                                         | "apechain"
                                         | "apex"
                                         | "boss"
@@ -2930,7 +2920,6 @@ declare const orderSchema: z.ZodObject<
                                         readonly BASE: "base";
                                         readonly ZORA: "zora";
                                         readonly ARBITRUM_NOVA: "arbitrumnova";
-                                        readonly ASTAR_ZKEVM: "astar-zkevm";
                                         readonly APECHAIN: "apechain";
                                         readonly APEX: "apex";
                                         readonly BOSS: "boss";
@@ -3025,7 +3014,6 @@ declare const orderSchema: z.ZodObject<
                                         | "base"
                                         | "zora"
                                         | "arbitrumnova"
-                                        | "astar-zkevm"
                                         | "apechain"
                                         | "apex"
                                         | "boss"
@@ -3117,7 +3105,6 @@ declare const orderSchema: z.ZodObject<
                                         | "base"
                                         | "zora"
                                         | "arbitrumnova"
-                                        | "astar-zkevm"
                                         | "apechain"
                                         | "apex"
                                         | "boss"
@@ -3291,7 +3278,6 @@ declare const orderSchema: z.ZodObject<
                     | "base"
                     | "zora"
                     | "arbitrumnova"
-                    | "astar-zkevm"
                     | "apechain"
                     | "apex"
                     | "boss"
@@ -3389,7 +3375,6 @@ declare const orderSchema: z.ZodObject<
                               | "base"
                               | "zora"
                               | "arbitrumnova"
-                              | "astar-zkevm"
                               | "apechain"
                               | "apex"
                               | "boss"
@@ -3519,7 +3504,6 @@ declare const orderSchema: z.ZodObject<
                               | "base"
                               | "zora"
                               | "arbitrumnova"
-                              | "astar-zkevm"
                               | "apechain"
                               | "apex"
                               | "boss"
@@ -3640,7 +3624,6 @@ declare const orderSchema: z.ZodObject<
                               | "base"
                               | "zora"
                               | "arbitrumnova"
-                              | "astar-zkevm"
                               | "apechain"
                               | "apex"
                               | "boss"
@@ -3717,7 +3700,6 @@ declare const orderSchema: z.ZodObject<
                     | "base"
                     | "zora"
                     | "arbitrumnova"
-                    | "astar-zkevm"
                     | "apechain"
                     | "apex"
                     | "boss"
@@ -3815,7 +3797,6 @@ declare const orderSchema: z.ZodObject<
                               | "base"
                               | "zora"
                               | "arbitrumnova"
-                              | "astar-zkevm"
                               | "apechain"
                               | "apex"
                               | "boss"
@@ -3945,7 +3926,6 @@ declare const orderSchema: z.ZodObject<
                               | "base"
                               | "zora"
                               | "arbitrumnova"
-                              | "astar-zkevm"
                               | "apechain"
                               | "apex"
                               | "boss"
@@ -4066,7 +4046,6 @@ declare const orderSchema: z.ZodObject<
                               | "base"
                               | "zora"
                               | "arbitrumnova"
-                              | "astar-zkevm"
                               | "apechain"
                               | "apex"
                               | "boss"
@@ -4187,7 +4166,6 @@ declare const orderSchema: z.ZodObject<
                 | "base"
                 | "zora"
                 | "arbitrumnova"
-                | "astar-zkevm"
                 | "apechain"
                 | "apex"
                 | "boss"
@@ -4285,7 +4263,6 @@ declare const orderSchema: z.ZodObject<
                           | "base"
                           | "zora"
                           | "arbitrumnova"
-                          | "astar-zkevm"
                           | "apechain"
                           | "apex"
                           | "boss"
@@ -4415,7 +4392,6 @@ declare const orderSchema: z.ZodObject<
                           | "base"
                           | "zora"
                           | "arbitrumnova"
-                          | "astar-zkevm"
                           | "apechain"
                           | "apex"
                           | "boss"
@@ -4536,7 +4512,6 @@ declare const orderSchema: z.ZodObject<
                           | "base"
                           | "zora"
                           | "arbitrumnova"
-                          | "astar-zkevm"
                           | "apechain"
                           | "apex"
                           | "boss"
@@ -4624,7 +4599,6 @@ declare const orderSchema: z.ZodObject<
                 | "base"
                 | "zora"
                 | "arbitrumnova"
-                | "astar-zkevm"
                 | "apechain"
                 | "apex"
                 | "boss"
@@ -4937,7 +4911,6 @@ declare const orderSchema: z.ZodObject<
                 | "base"
                 | "zora"
                 | "arbitrumnova"
-                | "astar-zkevm"
                 | "apechain"
                 | "apex"
                 | "boss"
@@ -5035,7 +5008,6 @@ declare const orderSchema: z.ZodObject<
                           | "base"
                           | "zora"
                           | "arbitrumnova"
-                          | "astar-zkevm"
                           | "apechain"
                           | "apex"
                           | "boss"
@@ -5165,7 +5137,6 @@ declare const orderSchema: z.ZodObject<
                           | "base"
                           | "zora"
                           | "arbitrumnova"
-                          | "astar-zkevm"
                           | "apechain"
                           | "apex"
                           | "boss"
@@ -5286,7 +5257,6 @@ declare const orderSchema: z.ZodObject<
                           | "base"
                           | "zora"
                           | "arbitrumnova"
-                          | "astar-zkevm"
                           | "apechain"
                           | "apex"
                           | "boss"
@@ -5374,7 +5344,6 @@ declare const orderSchema: z.ZodObject<
                 | "base"
                 | "zora"
                 | "arbitrumnova"
-                | "astar-zkevm"
                 | "apechain"
                 | "apex"
                 | "boss"

@@ -11,7 +11,6 @@ export const EVMBlockchain = {
     ARBITRUMNOVA: "arbitrumnova",
     ZKATANA: "zkatana",
     ZKYOTO: "zkyoto",
-    ASTAR_ZKEVM: "astar-zkevm",
     APEX: "apex",
     CHILIZ: "chiliz",
     STORY: "story",
