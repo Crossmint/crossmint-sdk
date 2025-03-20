@@ -165,11 +165,17 @@ class ApiClient extends CrossmintApiClient {
         return response.json();
     }
 
-    async getNfts(walletLocator: WalletLocator, page: number, perPage: number): Promise<GetNftsResponse> {
+    async getNfts(
+        chain: string,
+        walletLocator: WalletLocator,
+        perPage: number,
+        page: number
+    ): Promise<GetNftsResponse> {
         const queryParams = new URLSearchParams();
         queryParams.append("page", page.toString());
         queryParams.append("perPage", perPage.toString());
-        const response = await this.get(`${this.apiPrefix}/${walletLocator}/nfts?${queryParams.toString()}`, {
+        const identifier = `${chain}:${walletLocator}`;
+        const response = await this.get(`${this.apiPrefix}/${identifier}/nfts?${queryParams.toString()}`, {
             headers: {
                 "Content-Type": "application/json",
             },

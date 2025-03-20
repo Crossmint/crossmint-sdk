@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-smart-wallet-web3auth-adapter
 
+## 0.2.7
+
+### Patch Changes
+
+- 063ae65: Upgrade dynamic to v4
+
 ## 0.2.6
 
 ### Patch Changes

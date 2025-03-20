@@ -3,6 +3,10 @@ import type { SolanaSmartWallet, SolanaMPCWallet } from "@/solana/wallet";
 import type { EVMSmartWalletChain } from "@/evm/chains";
 import type { SolanaSignerInput } from "@/solana/types/signers";
 
+export type EvmWalletType = "evm-smart-wallet" | "evm-mpc-wallet";
+export type SolanaWalletType = "solana-smart-wallet" | "solana-mpc-wallet";
+export type WalletType = EvmWalletType | SolanaWalletType;
+
 export type WalletTypeToWallet = {
     "evm-smart-wallet": EVMSmartWallet;
     "evm-mpc-wallet": EVMMPCWallet;
