@@ -2,8 +2,9 @@ import { render, fireEvent, waitFor } from "@testing-library/react";
 import { beforeEach } from "vitest";
 import { AuthFormProvider, useAuthForm } from "./AuthFormProvider";
 import { describe, expect, it, vi } from "vitest";
-import type { CrossmintAuthWalletConfig, LoginMethod } from "..";
+import type { CrossmintAuthEmbeddedWallets } from "..";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
+import type { LoginMethod } from "@/types/auth";
 
 vi.mock("@/hooks/useCrossmintAuth");
 
@@ -39,7 +40,7 @@ describe("AuthFormProvider", () => {
             createOnLogin: "off",
             defaultChain: "base-sepolia",
             type: "evm-smart-wallet",
-        } as CrossmintAuthWalletConfig,
+        } as CrossmintAuthEmbeddedWallets,
         appearance: {
             colors: {
                 textPrimary: "#000000",
@@ -128,7 +129,7 @@ describe("AuthFormProvider", () => {
                 createOnLogin: "all-users",
                 defaultChain: "base-sepolia",
                 type: "evm-smart-wallet",
-            } as CrossmintAuthWalletConfig,
+            } as CrossmintAuthEmbeddedWallets,
         };
 
         expect(() =>

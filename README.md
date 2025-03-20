@@ -80,8 +80,10 @@ The Crossmint SDK is a powerful collection of packages designed to simplify bloc
 - `@crossmint/client-sdk-auth`: Headless typescript SDK for managing auth and user profiles.
 	
 - `@crossmint/client-sdk-verifiable-credentials`: Headless typescript SDK for Verifiable Credentials.
-	
-- `@crossmint/client-sdk-smart-wallet`: Headless typescript SDK for smart wallets.
+
+- `@crossmint/client-sdk-smart-wallet` [DEPRECATED]: Headless typescript SDK for smart wallets.
+
+- `@crossmint/wallets-sdk`: Headless typescript SDK for EVM + Solana MPC / Smart Wallets.
 	
 Other:
 	
@@ -101,12 +103,12 @@ Other:
 To get started with the SDK, install the packages you need into your project.
 
 ie. 
-`pnpm add @crossmint/client-sdk-smart-wallet`
+`pnpm add @crossmint/wallets-sdk`
 
 Then, import the package you need.
 
 ie.
-`import { SmartWalletSDK } from "@crossmint/client-sdk-smart-wallet";`
+`import { CrossmintWallet } from "@crossmint/wallets-sdk";`
 
 For more information on how to use the SDK, see the [Crossmint SDK Documentation](https://docs.crossmint.com/sdk-reference/introduction).
 

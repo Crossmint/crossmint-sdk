@@ -1,18 +1,20 @@
 "use client";
 
+import { useState } from "react";
+import { useWallet } from "@crossmint/client-sdk-react-ui";
+import { encodeFunctionData, type Address } from "viem";
+
 import { Passkey } from "@/icons/passkey";
 import { Spinner } from "@/icons/spinner";
-import { mintNFT } from "@/utils/mint-api";
-import { useState } from "react";
-
-import { useWallet } from "@crossmint/client-sdk-react-ui";
-
-import { Button } from "./button";
 import { Typography } from "./typography";
 import { useToast } from "./use-toast";
+import { Button } from "./button";
+import { CollectionABI } from "@/utils/collection-abi";
+
+const AMOY_CONTRACT: Address = "0x5c030a01e9d2c4bb78212d06f88b7724b494b755";
 
 export const MintNFTButton = ({ setNftSuccessfullyMinted }: { setNftSuccessfullyMinted: (a: boolean) => void }) => {
-    const { wallet } = useWallet();
+    const { wallet, type } = useWallet();
     const [isLoadingMint, setIsLoadingMint] = useState(false);
     const { toast } = useToast();
 
@@ -34,7 +36,24 @@ export const MintNFTButton = ({ setNftSuccessfullyMinted }: { setNftSuccessfully
                 toast({ title: "Error occurred during wallet creation" });
                 return;
             }
-            await mintNFT(wallet);
+
+            console.log("Minting NFT", wallet.getAddress());
+            switch (type) {
+                case "evm-smart-wallet":
+                    const evmTxnHash = await wallet.sendTransaction({
+                        to: AMOY_CONTRACT,
+                        data: encodeFunctionData({
+                            abi: CollectionABI,
+                            functionName: "mintTo",
+                            args: [wallet.getAddress()],
+                        }),
+                    });
+                    console.log("NFT mint. Tx hash:", evmTxnHash);
+                    break;
+                case "solana-smart-wallet":
+                    console.error("TODO: add solana token mint");
+                    throw new Error("Solana minting not implemented");
+            }
             setNftSuccessfullyMinted(true);
         } catch (error) {
             console.error("Error minting NFT:", error);

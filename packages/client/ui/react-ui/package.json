@@ -22,10 +22,10 @@
     "dependencies": {
         "@crossmint/client-sdk-auth": "workspace:*",
         "@crossmint/client-sdk-base": "workspace:*",
-        "@crossmint/client-sdk-smart-wallet": "workspace:*",
         "@crossmint/client-sdk-window": "workspace:*",
         "@crossmint/common-sdk-auth": "workspace:*",
         "@crossmint/common-sdk-base": "workspace:*",
+        "@crossmint/wallets-sdk": "workspace:*",
         "@dynamic-labs/ethereum": "4.8.3",
         "@dynamic-labs/sdk-react-core": "4.8.3",
         "@dynamic-labs/solana": "4.8.3",

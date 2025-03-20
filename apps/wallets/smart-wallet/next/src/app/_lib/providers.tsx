@@ -14,8 +14,7 @@ export function Providers({ children }: { children: ReactNode }) {
                 <CrossmintAuthProvider
                     embeddedWallets={{
                         createOnLogin: "all-users",
-                        type: "evm-smart-wallet",
-                        defaultChain: "polygon-amoy",
+                        type: "solana-smart-wallet",
                     }}
                     appearance={{
                         borderRadius: "16px",

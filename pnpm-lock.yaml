@@ -580,9 +580,6 @@ importers:
       '@crossmint/client-sdk-base':
         specifier: workspace:*
         version: link:../../base
-      '@crossmint/client-sdk-smart-wallet':
-        specifier: workspace:*
-        version: link:../../wallets/smart-wallet
       '@crossmint/client-sdk-window':
         specifier: workspace:*
         version: link:../../window
@@ -592,6 +589,9 @@ importers:
       '@crossmint/common-sdk-base':
         specifier: workspace:*
         version: link:../../../common/base
+      '@crossmint/wallets-sdk':
+        specifier: workspace:*
+        version: link:../../../wallets
       '@dynamic-labs/ethereum':
         specifier: 4.8.3
         version: 4.8.3(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@18.3.1)(bufferutil@4.0.8)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(utf-8-validate@5.0.10)(viem@2.23.6(bufferutil@4.0.8)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))
