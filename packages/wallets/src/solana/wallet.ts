@@ -90,10 +90,11 @@ abstract class SolanaWallet {
      * Get the wallet NFTs
      * @param perPage - The number of NFTs per page
      * @param page - The page number
+     * @param locator - The wallet locator
      * @returns The NFTs
      */
-    public async nfts(perPage: number, page: number, chain: string): Promise<GetNftsResponse> {
-        return await this.apiClient.getNfts(chain, this.walletLocator, perPage, page);
+    public async nfts(perPage: number, page: number, locator?: SolanaWalletLocator): Promise<GetNftsResponse> {
+        return await this.apiClient.getNfts("solana", locator ?? this.walletLocator, perPage, page);
     }
 
     protected get walletLocator(): SolanaWalletLocator {

@@ -20,8 +20,7 @@ export class WalletFactory {
         options?: WalletOptions
     ): Promise<WalletTypeToWallet[WalletType]> {
         try {
-            await options?.experimental_callbacks?.onWalletCreationStart?.();
-            const walletResponse = await this.createWallet(type, args);
+            const walletResponse = await this.getOrCreateWalletInternal(type, args, options);
             const wallet = this.createWalletInstance(type, walletResponse, args, options);
             await options?.experimental_callbacks?.onWalletCreationComplete?.(wallet);
             return wallet;
@@ -42,9 +41,10 @@ export class WalletFactory {
         return this.createWalletInstance(type, walletResponse, args, options);
     }
 
-    private async createWallet<WalletType extends keyof WalletTypeToArgs>(
+    private async getOrCreateWalletInternal<WalletType extends keyof WalletTypeToArgs>(
         type: WalletType,
-        args: WalletTypeToArgs[WalletType]
+        args: WalletTypeToArgs[WalletType],
+        options?: WalletOptions
     ): Promise<CreateWalletResponse> {
         if (type === "evm-smart-wallet") {
             const { adminSigner: adminSignerInput, linkedUser } = args as WalletTypeToArgs["evm-smart-wallet"];
@@ -53,6 +53,7 @@ export class WalletFactory {
             if (existingWallet && !existingWallet.error) {
                 return existingWallet;
             }
+            await options?.experimental_callbacks?.onWalletCreationStart?.();
             const adminSigner =
                 adminSignerInput.type === "evm-keypair"
                     ? adminSignerInput
