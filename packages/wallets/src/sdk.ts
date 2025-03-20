@@ -7,15 +7,15 @@ import type { WalletOptions } from "./utils/options.js";
 
 type WalletType = keyof WalletTypeToArgs;
 
-export class CrossmintWallet {
+export class CrossmintWallets {
     private constructor(
         crossmint: Crossmint,
         apiClient = new ApiClient(crossmint),
         private readonly walletFactory = new WalletFactory(apiClient)
     ) {}
 
-    public static from(crossmint: Crossmint): CrossmintWallet {
-        return new CrossmintWallet(crossmint);
+    public static from(crossmint: Crossmint): CrossmintWallets {
+        return new CrossmintWallets(crossmint);
     }
 
     public getOrCreateWallet<T extends WalletType>(
