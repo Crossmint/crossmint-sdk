@@ -2,8 +2,9 @@ import { render, fireEvent, waitFor } from "@testing-library/react";
 import { beforeEach } from "vitest";
 import { AuthFormProvider, useAuthForm } from "./AuthFormProvider";
 import { describe, expect, it, vi } from "vitest";
-import type { CrossmintAuthWalletConfig, LoginMethod } from "..";
+import type { CrossmintAuthWalletConfig } from "..";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
+import type { LoginMethod } from "@/types/auth";
 
 vi.mock("@/hooks/useCrossmintAuth");
 
@@ -35,7 +36,7 @@ describe("AuthFormProvider", () => {
         baseUrl: "https://api.example.com",
         loginMethods: ["email", "google", "farcaster", "web3"] as LoginMethod[],
         setDialogOpen: vi.fn(),
-        embeddedWallets: {
+        walletConfig: {
             createOnLogin: "off",
             defaultChain: "base-sepolia",
             type: "evm-smart-wallet",
@@ -124,7 +125,7 @@ describe("AuthFormProvider", () => {
         const invalidState = {
             ...mockInitialState,
             loginMethods: ["web3"] as LoginMethod[],
-            embeddedWallets: {
+            walletConfig: {
                 createOnLogin: "all-users",
                 defaultChain: "base-sepolia",
                 type: "evm-smart-wallet",

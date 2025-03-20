@@ -1,14 +1,13 @@
 import { type ReactNode, createContext, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { CrossmintWallet, type WalletTypeToArgs, type EVMSmartWallet } from "@crossmint/wallets-sdk";
-
+import { CrossmintWallet, type EVMSmartWallet, type SolanaSmartWallet } from "@crossmint/wallets-sdk";
 import type { UIConfig } from "@crossmint/common-sdk-base";
+
 import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
 import type { PasskeySigner } from "@/types/passkey";
 import { useCrossmint } from "../hooks";
 import type { GetOrCreateWalletProps } from "@/types/wallet";
 import { createWebAuthnPasskeySigner } from "@/utils/createPasskeySigner";
-type WalletStatus = "not-loaded" | "in-progress" | "loaded" | "loading-error";
 
 type ValidPasskeyPromptType =
     | "create-wallet"
@@ -27,18 +26,42 @@ type PasskeyPromptState =
 
 type ValidWalletState =
     | { status: "not-loaded" | "in-progress" }
-    | { status: "loaded"; wallet: EVMSmartWallet }
+    | { status: "loaded"; wallet: EVMSmartWallet; type: "evm-smart-wallet" }
+    | { status: "loaded"; wallet: SolanaSmartWallet; type: "solana-smart-wallet" }
     | { status: "loading-error"; error: string };
 
-type WalletContext = {
-    status: WalletStatus;
-    wallet?: EVMSmartWallet;
-    passkeySigner?: PasskeySigner;
-    error?: string;
+type WalletContextFunctions = {
     getOrCreateWallet: (args: GetOrCreateWalletProps) => Promise<{ startedCreation: boolean; reason?: string }>;
     createPasskeySigner: (name: string, promptType?: ValidPasskeyPromptType) => Promise<PasskeySigner | null>;
     clearWallet: () => void;
+    passkeySigner?: PasskeySigner;
 };
+
+type WalletContext =
+    | ({
+          status: "not-loaded" | "in-progress";
+          wallet?: undefined;
+          type?: undefined;
+          error?: undefined;
+      } & WalletContextFunctions)
+    | ({
+          status: "loaded";
+          wallet: EVMSmartWallet;
+          type: "evm-smart-wallet";
+          error?: undefined;
+      } & WalletContextFunctions)
+    | ({
+          status: "loaded";
+          wallet: SolanaSmartWallet;
+          type: "solana-smart-wallet";
+          error?: undefined;
+      } & WalletContextFunctions)
+    | ({
+          status: "loading-error";
+          wallet?: undefined;
+          type?: undefined;
+          error: string;
+      } & WalletContextFunctions);
 
 export const WalletContext = createContext<WalletContext>({
     status: "not-loaded",
@@ -86,23 +109,33 @@ export function CrossmintWalletProvider({
 
         try {
             setWalletState({ status: "in-progress" });
+            const experimental_callbacks = {
+                onWalletCreationStart: createPasskeyPrompt("create-wallet"),
+                onWalletCreationFail: createPasskeyPrompt("create-wallet-error"),
+                onTransactionStart: createPasskeyPrompt("transaction"),
+                onTransactionFail: createPasskeyPrompt("transaction-error"),
+            };
 
-            if (props.type === "evm-smart-wallet") {
-                const evmArgs = props.args as WalletTypeToArgs["evm-smart-wallet"];
-                const walletArgs: WalletTypeToArgs["evm-smart-wallet"] = {
-                    chain: evmArgs.chain,
-                    adminSigner: evmArgs.adminSigner ?? { type: "evm-passkey" },
-                    linkedUser: evmArgs.linkedUser,
-                };
-                const wallet = await smartWalletSDK.getOrCreateWallet("evm-smart-wallet", walletArgs, {
-                    experimental_callbacks: {
-                        onWalletCreationStart: createPasskeyPrompt("create-wallet"),
-                        onWalletCreationFail: createPasskeyPrompt("create-wallet-error"),
-                        onTransactionStart: createPasskeyPrompt("transaction"),
-                        onTransactionFail: createPasskeyPrompt("transaction-error"),
-                    },
-                });
-                setWalletState({ status: "loaded", wallet });
+            switch (props.type) {
+                case "evm-smart-wallet": {
+                    const walletArgs = {
+                        chain: props.args.chain,
+                        adminSigner: props.args.adminSigner ?? { type: "evm-passkey" },
+                        linkedUser: props.args.linkedUser,
+                    };
+                    const wallet = await smartWalletSDK.getOrCreateWallet("evm-smart-wallet", walletArgs, {
+                        experimental_callbacks,
+                    });
+                    setWalletState({ status: "loaded", wallet, type: "evm-smart-wallet" });
+                    break;
+                }
+                case "solana-smart-wallet": {
+                    const wallet = await smartWalletSDK.getOrCreateWallet("solana-smart-wallet", props.args, {
+                        experimental_callbacks,
+                    });
+                    setWalletState({ status: "loaded", wallet, type: "solana-smart-wallet" });
+                    break;
+                }
             }
         } catch (error: unknown) {
             console.error("There was an error creating a wallet ", error);

@@ -45,26 +45,27 @@ vi.mock("@crossmint/client-sdk-auth", async () => {
 
 function renderAuthProvider({
     children,
-    embeddedWallets,
+    walletConfig,
 }: {
     children: ReactNode;
-    embeddedWallets: CrossmintAuthWalletConfig;
+    walletConfig: CrossmintAuthWalletConfig;
 }) {
     return render(
         <CrossmintProvider apiKey={MOCK_API_KEY}>
-            <CrossmintAuthProvider embeddedWallets={embeddedWallets}>{children}</CrossmintAuthProvider>
+            <CrossmintAuthProvider walletConfig={walletConfig}>{children}</CrossmintAuthProvider>
         </CrossmintProvider>
     );
 }
 
 function TestComponent() {
     const { setJwt } = useCrossmint();
-    const { wallet, status: walletStatus, error, clearWallet } = useWallet();
+    const { wallet, type, status: walletStatus, error, clearWallet } = useWallet();
     const { status: authStatus, jwt } = useAuth();
     return (
         <div>
             <div data-testid="error">{error ?? "No Error"}</div>
             <div data-testid="wallet-status">{walletStatus}</div>
+            <div data-testid="wallet-type">{type}</div>
             <div data-testid="auth-status">{authStatus}</div>
             <div data-testid="wallet">{wallet ? "Wallet Loaded" : "No Wallet"}</div>
             <div data-testid="auth-jwt">{jwt}</div>
@@ -84,7 +85,7 @@ function TestComponent() {
 describe("CrossmintAuthProvider", () => {
     let mockSDK: CrossmintWallet;
     let mockWallet: EVMSmartWallet;
-    let embeddedWallets: CrossmintAuthWalletConfig;
+    let walletConfig: CrossmintAuthWalletConfig;
     let handleRefreshAuthMaterialSpy: MockInstance;
     let getOAuthUrlSpy: MockInstance;
 
@@ -123,7 +124,7 @@ describe("CrossmintAuthProvider", () => {
             type: "evm-passkey",
             name: "Crossmint Wallet",
         });
-        embeddedWallets = {
+        walletConfig = {
             defaultChain: "polygon",
             createOnLogin: "all-users",
             type: "evm-smart-wallet",
@@ -154,7 +155,7 @@ describe("CrossmintAuthProvider", () => {
     it("When user is logged out", async () => {
         const { getByTestId } = renderAuthProvider({
             children: <TestComponent />,
-            embeddedWallets,
+            walletConfig,
         });
 
         expect(getByTestId("auth-status").textContent).toBe("logged-out");
@@ -176,19 +177,21 @@ describe("CrossmintAuthProvider", () => {
 
         const { getByTestId } = renderAuthProvider({
             children: <TestComponent />,
-            embeddedWallets,
+            walletConfig,
         });
 
         expect(getByTestId("wallet-status").textContent).toBe("in-progress");
         expect(getByTestId("auth-status").textContent).toBe("logged-in");
         expect(getByTestId("wallet").textContent).toBe("No Wallet");
         expect(getByTestId("error").textContent).toBe("No Error");
+        expect(getByTestId("wallet-type").textContent).not.toBe("evm-smart-wallet");
 
         await waitFor(() => {
             expect(getByTestId("wallet-status").textContent).toBe("loaded");
             expect(getByTestId("auth-status").textContent).toBe("logged-in");
             expect(getByTestId("wallet").textContent).toBe("Wallet Loaded");
             expect(getByTestId("error").textContent).toBe("No Error");
+            expect(getByTestId("wallet-type").textContent).toBe("evm-smart-wallet");
         });
 
         expect(handleRefreshAuthMaterialSpy).not.toHaveBeenCalled();
@@ -200,7 +203,7 @@ describe("CrossmintAuthProvider", () => {
         document.cookie = `${SESSION_PREFIX}=mock-jwt; path=/;SameSite=Lax;`;
         const { getByTestId } = await renderAuthProvider({
             children: <TestComponent />,
-            embeddedWallets: {
+            walletConfig: {
                 defaultChain: "polygon",
                 createOnLogin: "off",
                 type: "evm-smart-wallet",
@@ -218,7 +221,7 @@ describe("CrossmintAuthProvider", () => {
     it(`When the jwt from crossmint provider is not defined, wallet is not loaded`, async () => {
         const { getByTestId } = await renderAuthProvider({
             children: <TestComponent />,
-            embeddedWallets,
+            walletConfig,
         });
 
         await waitFor(() => {
@@ -233,7 +236,7 @@ describe("CrossmintAuthProvider", () => {
     it(`Logging in and asserting the auth status`, async () => {
         const { getByTestId } = await renderAuthProvider({
             children: <TestComponent />,
-            embeddedWallets,
+            walletConfig,
         });
 
         await waitFor(() => {

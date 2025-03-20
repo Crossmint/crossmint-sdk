@@ -131,7 +131,7 @@ export default function App({ Component, pageProps }) {
     return (
         <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_AUTH_SMART_WALLET_API_KEY ?? ""}>
             <CrossmintAuthProvider
-                embeddedWallets={{
+                walletConfig={{
                     createOnLogin: "all-users",
                     defaultChain: "polygon-amoy",
                     type: "evm-smart-wallet",

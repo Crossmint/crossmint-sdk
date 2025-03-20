@@ -45,7 +45,7 @@ function renderWalletProvider({ children }: { children: ReactNode }) {
 }
 
 function TestComponent() {
-    const { status, wallet, error, getOrCreateWallet, clearWallet } = useWallet();
+    const { status, wallet, type, error, getOrCreateWallet, clearWallet } = useWallet();
     const mockPasskeySigner = mock<EVMSignerInput>({
         type: "evm-passkey",
         name: "Crossmint Wallet",
@@ -56,6 +56,7 @@ function TestComponent() {
             <div data-testid="error">{error ?? "No Error"}</div>
             <div data-testid="status">{status}</div>
             <div data-testid="wallet">{wallet ? "Wallet Loaded" : "No Wallet"}</div>
+            <div data-testid="wallet-type">{type}</div>
             <button
                 data-testid="create-wallet-button"
                 onClick={() =>
@@ -104,6 +105,7 @@ describe("CrossmintWalletProvider", () => {
             });
             expect(getByTestId("wallet").textContent).toBe("No Wallet");
             expect(getByTestId("error").textContent).toBe("No Error");
+            expect(getByTestId("wallet-type").textContent).not.toBe("evm-smart-wallet");
 
             fireEvent.click(getByTestId("create-wallet-button"));
 
@@ -117,6 +119,7 @@ describe("CrossmintWalletProvider", () => {
                 expect(getByTestId("status").textContent).toBe("loaded");
                 expect(getByTestId("wallet").textContent).toBe("Wallet Loaded");
                 expect(getByTestId("error").textContent).toBe("No Error");
+                expect(getByTestId("wallet-type").textContent).toBe("evm-smart-wallet");
             });
 
             expect(vi.mocked(mockSDK.getOrCreateWallet)).toHaveBeenCalledOnce();

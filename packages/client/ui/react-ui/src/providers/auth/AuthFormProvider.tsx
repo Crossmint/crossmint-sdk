@@ -1,8 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { CrossmintAuthenticationError, type OAuthProvider } from "@crossmint/common-sdk-auth";
 import type { UIConfig } from "@crossmint/common-sdk-base";
-import type { CrossmintAuthWalletConfig, LoginMethod } from "../CrossmintAuthProvider";
+import type { CrossmintAuthWalletConfig } from "../CrossmintAuthProvider";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
+import type { LoginMethod } from "@/types/auth";
 
 type AuthStep = "initial" | "otp" | "qrCode" | "web3" | "web3/metamask" | "web3/walletconnect";
 
@@ -36,7 +37,7 @@ type ContextInitialStateProps = {
     defaultEmail?: string;
     baseUrl: string;
     setDialogOpen?: (open: boolean, successfulLogin?: boolean) => void;
-    embeddedWallets: CrossmintAuthWalletConfig;
+    walletConfig: CrossmintAuthWalletConfig;
 };
 
 type AuthFormProviderProps = {
@@ -68,10 +69,10 @@ export const AuthFormProvider = ({
     const [oauthUrlMap, setOauthUrlMap] = useState<OAuthUrlMap>(initialOAuthUrlMap);
     const [isLoadingOauthUrlMap, setIsLoadingOauthUrlMap] = useState(true);
 
-    const { loginMethods, baseUrl, appearance, embeddedWallets, termsOfServiceText, authModalTitle, defaultEmail } =
+    const { loginMethods, baseUrl, appearance, walletConfig, termsOfServiceText, authModalTitle, defaultEmail } =
         initialState;
 
-    if (loginMethods.includes("web3") && embeddedWallets?.createOnLogin === "all-users") {
+    if (loginMethods.includes("web3") && walletConfig?.createOnLogin === "all-users") {
         throw new Error("Creating wallets on login is not yet supported for web3 login method");
     }
 
