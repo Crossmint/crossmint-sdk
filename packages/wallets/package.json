@@ -15,11 +15,11 @@
     "types": "./dist/index.d.ts",
     "files": ["dist", "LICENSE"],
     "scripts": {
-        "build": "tsup",
+        "build": "pnpm generate && tsup",
         "dev": "tsup --watch",
         "test:vitest": "vitest run",
-        "generate": "pnpm dlx @hey-api/openapi-ts",
-        "postinstall": "pnpm generate"
+        "openapi-ts": "openapi-ts",
+        "generate": "pnpm run openapi-ts"
     },
     "dependencies": {
         "@crossmint/common-sdk-auth": "workspace:*",
