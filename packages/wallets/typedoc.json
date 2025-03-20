@@ -1,11 +1,7 @@
 {
     "entryPoints": ["src/index.ts"],
     "out": "docs",
-    "plugin": [
-        "typedoc-plugin-markdown",
-        "typedoc-plugin-frontmatter",
-        "./typedoc-custom-plugin.mjs"
-    ],
+    "plugin": ["typedoc-plugin-markdown", "typedoc-plugin-frontmatter", "./typedoc-custom-plugin.mjs"],
     "tsconfig": "tsconfig.typedoc.json",
     "fileExtension": ".mdx",
     "skipErrorChecking": true,
