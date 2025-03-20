@@ -1,6 +1,4 @@
 import type { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
-import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
-import { SolanaWalletConnectors } from "@dynamic-labs/solana";
 import { type DynamicContextProps, DynamicContextProvider } from "@dynamic-labs/sdk-react-core";
 import type { ReactNode } from "react";
 
@@ -18,7 +16,6 @@ export default function DynamicContextProviderWrapper({
     return (
         <DynamicContextProvider
             settings={{
-                walletConnectors: [EthereumWalletConnectors, SolanaWalletConnectors],
                 initialAuthenticationMode: "connect-only",
                 environmentId:
                     apiKeyEnvironment === "production"

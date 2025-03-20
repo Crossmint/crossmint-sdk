@@ -1,5 +1,7 @@
 import type React from "react";
 import type { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
+import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
+import { SolanaWalletConnectors } from "@dynamic-labs/solana";
 import DynamicContextProviderWrapper from "@/components/dynamic-xyz/DynamicContextProviderWrapper";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
 import { useAuthForm } from "../AuthFormProvider";
@@ -18,6 +20,7 @@ export function DynamicWeb3WalletConnect({
         <DynamicContextProviderWrapper
             apiKeyEnvironment={apiKeyEnvironment}
             settings={{
+                walletConnectors: [EthereumWalletConnectors, SolanaWalletConnectors],
                 cssOverrides,
                 events: {
                     onAuthFlowCancel() {
