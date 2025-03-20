@@ -69,7 +69,7 @@ export default function Index() {
             if (type === "evm-smart-wallet") {
                 return (await wallet?.nfts(11, 1, wallet.chain, wallet.getAddress())) as NFT[];
             } else if (type === "solana-smart-wallet") {
-                return (await wallet?.nfts(11, 1, undefined, wallet?.getAddress())) as NFT[];
+                return (await wallet?.nfts(11, 1, wallet?.getAddress())) as NFT[];
             }
             return [];
         },

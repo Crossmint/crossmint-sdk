@@ -37,6 +37,18 @@ type WalletContextFunctions = {
     passkeySigner?: PasskeySigner;
 };
 
+type WalletType = {
+    "evm-smart-wallet": EVMSmartWallet;
+    "solana-smart-wallet": SolanaSmartWallet;
+};
+
+type LoadedWalletState<T extends keyof WalletType> = {
+    status: "loaded";
+    wallet: WalletType[T];
+    type: T;
+    error?: undefined;
+};
+
 type WalletContext =
     | ({
           status: "not-loaded" | "in-progress";
@@ -45,23 +57,13 @@ type WalletContext =
           error?: undefined;
       } & WalletContextFunctions)
     | ({
-          status: "loaded";
-          wallet: EVMSmartWallet;
-          type: "evm-smart-wallet";
-          error?: undefined;
-      } & WalletContextFunctions)
-    | ({
-          status: "loaded";
-          wallet: SolanaSmartWallet;
-          type: "solana-smart-wallet";
-          error?: undefined;
-      } & WalletContextFunctions)
-    | ({
           status: "loading-error";
           wallet?: undefined;
           type?: undefined;
           error: string;
-      } & WalletContextFunctions);
+      } & WalletContextFunctions)
+    | (LoadedWalletState<"evm-smart-wallet"> & WalletContextFunctions)
+    | (LoadedWalletState<"solana-smart-wallet"> & WalletContextFunctions);
 
 export const WalletContext = createContext<WalletContext>({
     status: "not-loaded",
