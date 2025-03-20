@@ -20,3 +20,20 @@ export type GetOrCreateWalletProps =
               adminSigner?: SolanaSignerInput;
           };
       } & GetOrCreateWalletBaseProps);
+
+type WalletBaseConfig = {
+    createOnLogin: "all-users" | "off";
+    showPasskeyHelpers?: boolean;
+    linkedUser?: string;
+};
+
+export type CrossmintAuthEmbeddedWallets =
+    | ({
+          type: "evm-smart-wallet";
+          defaultChain: EVMSmartWalletChain;
+          adminSigner?: EVMSignerInput;
+      } & WalletBaseConfig)
+    | ({
+          type: "solana-smart-wallet";
+          adminSigner?: SolanaSignerInput;
+      } & WalletBaseConfig);

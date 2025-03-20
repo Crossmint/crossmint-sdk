@@ -6,7 +6,7 @@ import { Copy, Image as ImageIcon, User, WalletMinimal } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { type EVMSmartWallet, useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
+import { type EVMSmartWallet, type SolanaSmartWallet, useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
 
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "./dropdown-menu";
@@ -62,7 +62,7 @@ const HeaderLogo: React.FC = () => (
 );
 
 const UserMenu: React.FC<{
-    wallet: EVMSmartWallet;
+    wallet: EVMSmartWallet | SolanaSmartWallet;
     walletStatus: string;
     onLogout: () => void;
     onCopyAddress: () => void;

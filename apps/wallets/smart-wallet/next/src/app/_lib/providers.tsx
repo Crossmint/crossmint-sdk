@@ -12,7 +12,7 @@ export function Providers({ children }: { children: ReactNode }) {
         <QueryClientProvider client={queryClient}>
             <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_AUTH_SMART_WALLET_API_KEY ?? ""}>
                 <CrossmintAuthProvider
-                    walletConfig={{
+                    embeddedWallets={{
                         createOnLogin: "all-users",
                         type: "solana-smart-wallet",
                     }}

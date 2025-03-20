@@ -12,7 +12,6 @@ import {
 import { CrossmintAuth, getCookie } from "@crossmint/client-sdk-auth";
 import { type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
 import { type AuthMaterialWithUser, SESSION_PREFIX, type SDKExternalUser } from "@crossmint/common-sdk-auth";
-import type { EVMSmartWalletChain, EVMSignerInput, SolanaSignerInput } from "@crossmint/wallets-sdk";
 
 import AuthFormDialog from "../components/auth/AuthFormDialog";
 import { useCrossmint, useWallet } from "../hooks";
@@ -20,27 +19,10 @@ import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
 import { AuthFormProvider } from "./auth/AuthFormProvider";
 import { TwindProvider } from "./TwindProvider";
 import type { AuthStatus, LoginMethod } from "@/types/auth";
-import type { GetOrCreateWalletProps } from "@/types/wallet";
+import type { CrossmintAuthEmbeddedWallets, GetOrCreateWalletProps } from "@/types/wallet";
 
-type WalletBaseConfig = {
-    createOnLogin: "all-users" | "off";
-    showPasskeyHelpers?: boolean;
-    linkedUser?: string;
-};
-
-export type CrossmintAuthWalletConfig =
-    | ({
-          type: "evm-smart-wallet";
-          defaultChain: EVMSmartWalletChain;
-          adminSigner?: EVMSignerInput;
-      } & WalletBaseConfig)
-    | ({
-          type: "solana-smart-wallet";
-          adminSigner?: SolanaSignerInput;
-      } & WalletBaseConfig);
-
-export type CrossmintAuthProviderProps = {
-    walletConfig?: CrossmintAuthWalletConfig;
+type CrossmintAuthProviderProps = {
+    embeddedWallets?: CrossmintAuthEmbeddedWallets;
     appearance?: UIConfig;
     termsOfServiceText?: string | ReactNode;
     prefetchOAuthUrls?: boolean;
@@ -52,7 +34,7 @@ export type CrossmintAuthProviderProps = {
     logoutRoute?: string;
 };
 
-export interface AuthContextType {
+type AuthContextType = {
     crossmintAuth?: CrossmintAuth;
     login: (defaultEmail?: string | MouseEvent) => void;
     logout: () => void;
@@ -60,7 +42,7 @@ export interface AuthContextType {
     user?: SDKExternalUser;
     status: AuthStatus;
     getUser: () => void;
-}
+};
 
 const defaultContextValue: AuthContextType = {
     crossmintAuth: undefined,
@@ -74,14 +56,14 @@ const defaultContextValue: AuthContextType = {
 
 export const AuthContext = createContext<AuthContextType>(defaultContextValue);
 
-const defaultWalletConfig: CrossmintAuthWalletConfig = {
+const defaultEmbeddedWallets: CrossmintAuthEmbeddedWallets = {
     defaultChain: "base-sepolia",
     createOnLogin: "off",
     type: "evm-smart-wallet",
 };
 
 export function CrossmintAuthProvider({
-    walletConfig = defaultWalletConfig,
+    embeddedWallets = defaultEmbeddedWallets,
     children,
     appearance,
     termsOfServiceText,
@@ -198,7 +180,7 @@ export function CrossmintAuthProvider({
             >
                 <CrossmintWalletProvider
                     key={crossmint.jwt}
-                    showPasskeyHelpers={walletConfig.showPasskeyHelpers}
+                    showPasskeyHelpers={embeddedWallets.showPasskeyHelpers}
                     appearance={appearance}
                 >
                     <AuthFormProvider
@@ -215,12 +197,12 @@ export function CrossmintAuthProvider({
                             loginMethods,
                             termsOfServiceText,
                             authModalTitle,
-                            walletConfig,
+                            embeddedWallets,
                             baseUrl: crossmintBaseUrl,
                             defaultEmail,
                         }}
                     >
-                        <WalletManager walletConfig={walletConfig} accessToken={crossmint.jwt}>
+                        <WalletManager embeddedWallets={embeddedWallets} accessToken={crossmint.jwt}>
                             {children}
                         </WalletManager>
 
@@ -233,15 +215,15 @@ export function CrossmintAuthProvider({
 }
 
 function WalletManager({
-    walletConfig,
+    embeddedWallets,
     children,
     accessToken,
 }: {
-    walletConfig: CrossmintAuthWalletConfig;
+    embeddedWallets: CrossmintAuthEmbeddedWallets;
     children: ReactNode;
     accessToken: string | undefined;
 }) {
-    const { type, createOnLogin, adminSigner, linkedUser } = walletConfig;
+    const { type, createOnLogin, adminSigner, linkedUser } = embeddedWallets;
     const { getOrCreateWallet, clearWallet, status: walletStatus } = useWallet();
     const canGetOrCreateWallet = createOnLogin === "all-users" && walletStatus === "not-loaded" && accessToken != null;
 
@@ -250,9 +232,9 @@ function WalletManager({
             return;
         }
         getOrCreateWallet({
-            type: walletConfig.type,
+            type: embeddedWallets.type,
             args: {
-                ...(walletConfig.type === "evm-smart-wallet" ? { chain: walletConfig.defaultChain } : {}),
+                ...(embeddedWallets.type === "evm-smart-wallet" ? { chain: embeddedWallets.defaultChain } : {}),
                 adminSigner,
                 linkedUser,
             },
