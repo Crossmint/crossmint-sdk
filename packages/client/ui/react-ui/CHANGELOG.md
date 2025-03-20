@@ -1,5 +1,16 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.15.3
+
+### Patch Changes
+
+- 063ae65: Upgrade dynamic to v4
+- Updated dependencies [063ae65]
+  - @crossmint/client-sdk-smart-wallet@0.3.1
+  - @crossmint/client-sdk-base@1.4.12
+  - @crossmint/client-sdk-auth@1.1.21
+  - @crossmint/common-sdk-auth@1.0.19
+
 ## 1.15.2
 
 ### Patch Changes

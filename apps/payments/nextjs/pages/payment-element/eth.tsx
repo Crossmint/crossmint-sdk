@@ -1,6 +1,6 @@
-import { EthereumWalletConnectors } from "@dynamic-labs/ethereum-all";
-import { DynamicConnectButton, DynamicContextProvider, useDynamicContext } from "@dynamic-labs/sdk-react";
+import { DynamicConnectButton, DynamicContextProvider, useDynamicContext } from "@dynamic-labs/sdk-react-core";
 import { useEffect, useState } from "react";
+import { EthereumWalletConnectors, isEthereumWallet } from "@dynamic-labs/ethereum";
 
 import type { InitialQuotePayload } from "@crossmint/client-sdk-base";
 import { CrossmintPaymentElement_DEPRECATED } from "@crossmint/client-sdk-react-ui";
@@ -63,11 +63,15 @@ function Content({ count }: { count: number }) {
     const [address, setAddress] = useState<string>("");
     const [signer, setSigner] = useState<any>(null);
 
-    const { walletConnector } = useDynamicContext();
+    const { primaryWallet } = useDynamicContext();
 
     async function getSigner() {
-        const _signer = await walletConnector?.getSigner();
-        const _address = await walletConnector?.fetchPublicAddress();
+        if (primaryWallet == null || !isEthereumWallet(primaryWallet)) {
+            throw new Error("Primary wallet is not an ethereum wallet");
+        }
+
+        const _signer = await primaryWallet.getWalletClient();
+        const _address = await primaryWallet.address;
         console.log("_signer", _signer);
         console.log("_address", _address);
         setSigner(_signer);
@@ -75,11 +79,14 @@ function Content({ count }: { count: number }) {
     }
 
     useEffect(() => {
-        console.log("walletConnector", walletConnector);
+        console.log("primaryWallet", primaryWallet);
+        if (primaryWallet == null) {
+            return;
+        }
         getSigner();
-    }, [walletConnector]);
+    }, [primaryWallet]);
 
-    if (signer == null || !address || !["EVM", "ETH"].includes(walletConnector?.connectedChain || "")) {
+    if (signer == null || !address || !["EVM", "ETH"].includes(primaryWallet?.chain || "")) {
         return <p>Connect wallet</p>;
     }
 

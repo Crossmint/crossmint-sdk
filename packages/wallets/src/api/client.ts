@@ -168,8 +168,8 @@ class ApiClient extends CrossmintApiClient {
     async getNfts(
         chain: string,
         walletLocator: WalletLocator,
-        page: number,
-        perPage: number
+        perPage: number,
+        page: number
     ): Promise<GetNftsResponse> {
         const queryParams = new URLSearchParams();
         queryParams.append("page", page.toString());

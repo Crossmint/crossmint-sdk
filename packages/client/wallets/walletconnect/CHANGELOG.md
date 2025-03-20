@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-walletconnect
 
+## 1.2.4
+
+### Patch Changes
+
+- 063ae65: Upgrade dynamic to v4
+
 ## 1.2.3
 
 ### Patch Changes

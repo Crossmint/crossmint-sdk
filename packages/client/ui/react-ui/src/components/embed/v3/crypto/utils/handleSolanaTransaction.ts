@@ -1,6 +1,6 @@
 import type { EmbeddedCheckoutV3IFrameEmitter } from "@crossmint/client-sdk-base";
 import type { Wallet } from "@dynamic-labs/sdk-react-core";
-import type { ISolana } from "@dynamic-labs/solana";
+import { isSolanaWallet } from "@dynamic-labs/solana";
 import { Transaction } from "@solana/web3.js";
 import base58 from "bs58";
 
@@ -15,11 +15,12 @@ export async function handleSolanaTransaction({
 }) {
     // TODO: Handle switch network
 
-    const { connector } = primaryWallet;
-
-    let signer: ISolana;
+    let signer;
     try {
-        signer = await connector.getSigner<ISolana>();
+        if (!isSolanaWallet(primaryWallet)) {
+            throw new Error("primaryWallet is not a Solana wallet");
+        }
+        signer = await primaryWallet.getSigner();
     } catch (error) {
         console.error("[CryptoWalletConnectionHandler] failed to get signer", error);
         iframeClient.send("crypto:send-transaction:failed", {
