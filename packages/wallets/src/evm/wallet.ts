@@ -127,9 +127,45 @@ export class EVMSmartWallet implements ViemWallet {
         return nonce;
     }
 
-    public async signMessage(parameters: {
-        message: SignableMessage;
-    }): Promise<Hex> {
+    public async addDelegatedSigner(signer: string, expiresAt?: number) {
+        const response = await this.apiClient.registerSigner(this.walletLocator, {
+            signer,
+            chain: this.chain,
+            expiresAt,
+        });
+        if (response.type !== "evm-keypair" && response.type !== "evm-fireblocks-custodial") {
+            throw new Error("Invalid signer type");
+        }
+        const chain = response.chains?.[this.chain];
+        if (!chain) {
+            throw new Error("Invalid chain");
+        }
+        if (chain.status === "success") {
+            throw new Error("Invalid signer approval state");
+        }
+        const chainApprovals = chain.approvals;
+        if (!chainApprovals) {
+            throw new Error("Invalid signer approval state");
+        }
+        const adminSignerApproval = chainApprovals.pending.find(
+            (approval) => approval.signer === this.adminSignerLocator
+        );
+        if (!adminSignerApproval) {
+            throw new Error("Approval for admin signer not found");
+        }
+
+        const message = adminSignerApproval.message as Hex;
+        const signatureId = chain.id;
+        const approvalHash = await this.approveSignature(signatureId, message);
+        return approvalHash;
+    }
+
+    public async signMessage(
+        parameters: {
+            message: SignableMessage;
+        },
+        signer?: string
+    ): Promise<Hex> {
         if (typeof parameters.message !== "string") {
             throw new Error("Message must be a string");
         }
@@ -139,7 +175,7 @@ export class EVMSmartWallet implements ViemWallet {
             type: "evm-message",
             params: {
                 message: parameters.message,
-                signer: this.signerLocator,
+                signer: this.adminSignerLocator,
                 chain: this.chain,
             },
         });
@@ -147,9 +183,9 @@ export class EVMSmartWallet implements ViemWallet {
 
         // Approve signature
         const pendingApprovals = signatureCreationResponse.approvals?.pending || [];
-        const pendingApproval = pendingApprovals.find((approval) => approval.signer === this.signerLocator);
+        const pendingApproval = pendingApprovals.find((approval) => approval.signer === this.adminSignerLocator);
         if (!pendingApproval) {
-            throw new Error(`Signer ${this.signerLocator} not found in pending approvals`);
+            throw new Error(`Signer ${this.adminSignerLocator} not found in pending approvals`);
         }
         const signature = await this.approveSignature(signatureId, pendingApproval.message as Hex);
 
@@ -174,7 +210,7 @@ export class EVMSmartWallet implements ViemWallet {
     public async signTypedData<
         const typedData extends TypedData | Record<string, unknown>,
         primaryType extends keyof typedData | "EIP712Domain" = keyof typedData,
-    >(parameters: TypedDataDefinition<typedData, primaryType>): Promise<Hex> {
+    >(parameters: TypedDataDefinition<typedData, primaryType>, signer?: string): Promise<Hex> {
         const { domain, message, primaryType, types } = parameters;
         if (!domain || !message || !types) {
             throw new Error("Invalid typed data");
@@ -201,7 +237,7 @@ export class EVMSmartWallet implements ViemWallet {
                     primaryType,
                     types: types as Record<string, Array<{ name: string; type: string }>>,
                 },
-                signer: this.signerLocator,
+                signer: this.adminSignerLocator,
                 chain: this.chain,
                 isSmartWalletSignature: false,
             },
@@ -210,9 +246,9 @@ export class EVMSmartWallet implements ViemWallet {
 
         // Approve signature
         const pendingApprovals = signatureCreationResponse.approvals?.pending || [];
-        const pendingApproval = pendingApprovals.find((approval) => approval.signer === this.signerLocator);
+        const pendingApproval = pendingApprovals.find((approval) => approval.signer === this.adminSignerLocator);
         if (!pendingApproval) {
-            throw new Error(`Signer ${this.signerLocator} not found in pending approvals`);
+            throw new Error(`Signer ${this.adminSignerLocator} not found in pending approvals`);
         }
         const signature = await this.approveSignature(signatureId, pendingApproval.message as Hex);
         if (signature === undefined) {
@@ -233,12 +269,12 @@ export class EVMSmartWallet implements ViemWallet {
         return signature;
     }
 
-    public async sendTransaction(parameters: TransactionInput): Promise<Hex> {
+    public async sendTransaction(parameters: TransactionInput, signer?: string): Promise<Hex> {
         await this.callbacks?.onTransactionStart?.(parameters);
         // Create transaction
         const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
             params: {
-                signer: this.signerLocator,
+                signer: this.adminSignerLocator,
                 chain: this.chain,
                 calls: [
                     {
@@ -253,9 +289,9 @@ export class EVMSmartWallet implements ViemWallet {
 
         // Approve transaction
         const pendingApprovals = transactionCreationResponse.approvals?.pending || [];
-        const pendingApproval = pendingApprovals.find((approval) => approval.signer === this.signerLocator);
+        const pendingApproval = pendingApprovals.find((approval) => approval.signer === this.adminSignerLocator);
         if (!pendingApproval) {
-            const error = new Error(`Signer ${this.signerLocator} not found in pending approvals`);
+            const error = new Error(`Signer ${this.adminSignerLocator} not found in pending approvals`);
             await this.callbacks?.onTransactionFail?.(error);
             throw error;
         }
@@ -293,7 +329,7 @@ export class EVMSmartWallet implements ViemWallet {
         }
     }
 
-    private get signerLocator(): string {
+    private get adminSignerLocator(): string {
         return this.adminSigner.locator;
     }
 
@@ -344,7 +380,7 @@ export class EVMSmartWallet implements ViemWallet {
         await this.apiClient.approveTransaction(this.walletLocator, transactionId, {
             approvals: [
                 {
-                    signer: this.signerLocator,
+                    signer: this.adminSignerLocator,
                     // @ts-ignore the generated types are wrong
                     signature:
                         this.adminSigner.type === "evm-passkey"
@@ -365,7 +401,7 @@ export class EVMSmartWallet implements ViemWallet {
         await this.apiClient.approveSignature(this.walletLocator, signatureId, {
             approvals: [
                 {
-                    signer: this.signerLocator,
+                    signer: this.adminSignerLocator,
                     // @ts-ignore the generated types are wrong
                     signature:
                         this.adminSigner.type === "evm-passkey"
