@@ -6,9 +6,7 @@ export function load(app) {
         const navigation = renderer.navigation;
 
         // sort the Error classes to the end of the list
-        const classesIndex = navigation.findIndex(
-            (item) => item.title === "Classes"
-        );
+        const classesIndex = navigation.findIndex((item) => item.title === "Classes");
         if (classesIndex !== -1) {
             navigation[classesIndex].children.sort((a, b) => {
                 const isErrorA = a.title.endsWith("Error");
@@ -25,10 +23,7 @@ export function load(app) {
 
         const resultArray = navigation.map((item) => ({
             group: item.title,
-            pages: item.children.map(
-                (child) =>
-                    `sdk-reference/wallets/${child.path.replace(".mdx", "")}`
-            ),
+            pages: item.children.map((child) => `sdk-reference/wallets/${child.path.replace(".mdx", "")}`),
         }));
 
         // simply output to console, we then manually copy/paste into mint.json in Mintlify
