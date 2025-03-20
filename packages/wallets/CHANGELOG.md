@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 0.2.2
+
+### Patch Changes
+
+- ca39114: fixed codegen script
+
 ## 0.2.1
 
 ### Patch Changes
