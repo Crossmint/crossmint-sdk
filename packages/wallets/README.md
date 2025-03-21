@@ -55,7 +55,7 @@ const wallet = await crossmintWallets.getOrCreateWallet("solana-smart-wallet", {
 });
 ```
 
-#### MCP Wallets
+#### MPC Wallets
 
 ```ts
 const wallet = await crossmintWallets.getOrCreateWallet("solana-mpc-wallet", {
