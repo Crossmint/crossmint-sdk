@@ -20,9 +20,6 @@ export function Providers({ children }: { children: ReactNode }) {
 
 function CrossmintProviders({ children }: { children: ReactNode }) {
     const { walletType } = useWalletConfig();
-
-    console.log({ walletType });
-
     return (
         <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_AUTH_SMART_WALLET_API_KEY ?? ""}>
             <CrossmintAuthProvider
