@@ -8,11 +8,11 @@ import WalletTypeSelector from "./wallet-type-selector";
 import { useWalletConfig } from "@/app/context/wallet-config";
 
 export const SignInAuthButton = () => {
-    const { login } = useAuth();
+    const { login, status: authStatus } = useAuth();
     const { status: walletStatus } = useWallet();
     const { walletType, setWalletType } = useWalletConfig();
 
-    if (walletStatus === "in-progress") {
+    if (walletStatus === "in-progress" || authStatus === "initializing") {
         return (
             <div className="flex gap-2 items-center self-center min-h-[52px]" role="status">
                 <svg
@@ -44,7 +44,6 @@ export const SignInAuthButton = () => {
                 <Button
                     className="w-full max-w-[256px] bg-card gap-[10px] shadow-light rounded-xl py-3"
                     onClick={login}
-                    disabled={walletType === ""}
                 >
                     <Typography className="text-[#00150D] font-semibold text-[17px]">Sign in</Typography>
                 </Button>

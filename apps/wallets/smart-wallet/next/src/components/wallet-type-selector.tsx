@@ -54,7 +54,7 @@ export default function WalletTypeSelector({ value, onChange }: WalletSelectorPr
                     disabled={disabled}
                 >
                     <div className="w-6 h-6 flex items-center justify-center ">
-                        <Image src="/icons/sol.png" alt="Solana logo" width={24} height={24} className="rounded-md" />
+                        <Image src="/icons/sol.svg" alt="Solana logo" width={24} height={24} className="rounded-md" />
                     </div>
                     <span className="text-gray-700 font-medium">Solana</span>
                 </button>

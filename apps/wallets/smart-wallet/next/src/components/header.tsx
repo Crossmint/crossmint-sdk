@@ -1,25 +1,26 @@
 "use client";
 
+import Image from "next/image";
 import { Logo, MobileLogo } from "@/icons/logo";
 import { LogoutIcon } from "@/icons/logout";
-import { Copy, Image as ImageIcon, User, WalletMinimal } from "lucide-react";
+import { Copy, Image as ImageIcon, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
 import { type EVMSmartWallet, type SolanaSmartWallet, useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
 
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "./dropdown-menu";
 import { Typography } from "./typography";
 import { useToast } from "./use-toast";
+import type { WalletType } from "@/app/context/wallet-config";
 
 function formatWalletAddress(address: string, startLength: number, endLength: number): string {
     return `${address.substring(0, startLength)}...${address.substring(address.length - endLength)}`;
 }
 
 export const Header: React.FC = () => {
-    const { logout } = useAuth();
-    const { wallet, status: walletStatus } = useWallet();
+    const { logout, status: authStatus } = useAuth();
+    const { wallet, status: walletStatus, type } = useWallet();
     const router = useRouter();
     const { toast } = useToast();
 
@@ -38,14 +39,16 @@ export const Header: React.FC = () => {
     return (
         <div className="flex justify-between p-4 items-center">
             <HeaderLogo />
-            {(walletStatus === "loaded" || walletStatus === "in-progress") && wallet != null && (
-                <UserMenu
-                    wallet={wallet}
-                    walletStatus={walletStatus}
-                    onLogout={handleLogout}
-                    onCopyAddress={handleCopyAddress}
-                />
-            )}
+            {(walletStatus === "loaded" || walletStatus === "in-progress" || authStatus === "initializing") &&
+                wallet != null && (
+                    <UserMenu
+                        walletType={type}
+                        wallet={wallet}
+                        walletStatus={walletStatus}
+                        onLogout={handleLogout}
+                        onCopyAddress={handleCopyAddress}
+                    />
+                )}
         </div>
     );
 };
@@ -62,15 +65,30 @@ const HeaderLogo: React.FC = () => (
 );
 
 const UserMenu: React.FC<{
+    walletType: WalletType;
     wallet: EVMSmartWallet | SolanaSmartWallet;
     walletStatus: string;
     onLogout: () => void;
     onCopyAddress: () => void;
-}> = ({ wallet, walletStatus, onLogout, onCopyAddress }) => (
+}> = ({ walletType, wallet, walletStatus, onLogout, onCopyAddress }) => (
     <DropdownMenu>
         <DropdownMenuTrigger asChild disabled={walletStatus !== "loaded"}>
             <div className="flex items-center gap-5 cursor-pointer">
-                <WalletDisplay address={wallet.getAddress()} isLoading={walletStatus !== "loaded"} />
+                <div className="flex items-center min-w-[150px] bg-skeleton rounded-full px-4 py-2 gap-2 text-secondary-foreground">
+                    {walletType === "evm-smart-wallet" ? (
+                        <Image src="/icons/eth.png" alt="Ethereum logo" width={24} height={24} className="rounded-md" />
+                    ) : null}
+                    {walletType === "solana-smart-wallet" ? (
+                        <Image src="/icons/sol.svg" alt="Solana logo" width={24} height={24} className="rounded-md" />
+                    ) : null}
+                    <Typography>
+                        {walletStatus !== "loaded"
+                            ? "Loading..."
+                            : wallet.getAddress()
+                              ? formatWalletAddress(wallet.getAddress(), 6, 3)
+                              : ""}
+                    </Typography>
+                </div>
                 <Avatar className="h-9 w-9">
                     <AvatarImage alt="User Avatar" src="" />
                     <AvatarFallback className="bg-skeleton">
@@ -96,14 +114,4 @@ const UserMenu: React.FC<{
             </div>
         </DropdownMenuContent>
     </DropdownMenu>
-);
-
-const WalletDisplay: React.FC<{
-    address: string | undefined;
-    isLoading: boolean;
-}> = ({ address, isLoading }) => (
-    <div className="flex items-center min-w-[150px] bg-skeleton rounded-full px-4 py-2 gap-2 text-secondary-foreground">
-        <WalletMinimal className="h-4 w-4" />
-        <Typography>{isLoading ? "Loading..." : address ? formatWalletAddress(address, 6, 3) : ""}</Typography>
-    </div>
 );

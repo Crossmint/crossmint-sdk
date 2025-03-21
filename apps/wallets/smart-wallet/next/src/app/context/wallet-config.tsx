@@ -7,18 +7,18 @@ export type WalletType = "evm-smart-wallet" | "solana-smart-wallet";
 
 // Define the context type
 interface WalletConfigContextType {
-    walletType: WalletType | "";
-    setWalletType: (type: WalletType | "") => void;
+    walletType: WalletType;
+    setWalletType: (type: WalletType) => void;
 }
 
 // Create the context with default values
 const WalletConfigContext = createContext<WalletConfigContextType>({
-    walletType: "",
+    walletType: "evm-smart-wallet",
     setWalletType: () => {},
 });
 
 export function WalletConfigProvider({ children }: { children: ReactNode }) {
-    const [walletType, setWalletType] = useState<WalletType | "">("");
+    const [walletType, setWalletType] = useState<WalletType>("evm-smart-wallet");
 
     return (
         <WalletConfigContext.Provider value={{ walletType, setWalletType }}>{children}</WalletConfigContext.Provider>

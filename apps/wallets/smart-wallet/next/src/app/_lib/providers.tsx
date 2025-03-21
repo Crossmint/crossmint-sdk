@@ -26,10 +26,11 @@ function CrossmintProviders({ children }: { children: ReactNode }) {
     return (
         <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_AUTH_SMART_WALLET_API_KEY ?? ""}>
             <CrossmintAuthProvider
+                // @ts-expect-error don't have types exposed for this yet
                 embeddedWallets={{
                     createOnLogin: "all-users",
-                    type: "evm-smart-wallet", // TODO change once SDK supports SSW
-                    defaultChain: "polygon-amoy", // TODO change once SDK supports SSW
+                    type: walletType,
+                    defaultChain: walletType === "evm-smart-wallet" ? "polygon-amoy" : undefined,
                 }}
                 appearance={{
                     borderRadius: "16px",
