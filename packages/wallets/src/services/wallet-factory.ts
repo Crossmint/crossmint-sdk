@@ -108,7 +108,6 @@ export class WalletFactory {
         this.assertCorrectWalletType(walletResponse, type);
         switch (type) {
             case "evm-smart-wallet":
-            case "evm-mpc-wallet":
                 const evmArgs = args as WalletTypeToArgs[EvmWalletType];
                 const evmWallet = this.createEvmWalletInstance(type, walletResponse, evmArgs, options);
                 return evmWallet as WalletTypeToWallet[WalletType];
@@ -140,8 +139,6 @@ export class WalletFactory {
                     options?.experimental_callbacks ?? {}
                 ) as WalletTypeToWallet[WalletType];
             }
-            case "evm-mpc-wallet":
-                throw new Error("Not implemented");
         }
     }
 

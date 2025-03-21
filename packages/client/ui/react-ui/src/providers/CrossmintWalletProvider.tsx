@@ -1,6 +1,6 @@
 import { type ReactNode, createContext, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { CrossmintWallet, type EVMSmartWallet, type SolanaSmartWallet } from "@crossmint/wallets-sdk";
+import { CrossmintWallets, type EVMSmartWallet, type SolanaSmartWallet } from "@crossmint/wallets-sdk";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 
 import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
@@ -83,7 +83,7 @@ export function CrossmintWalletProvider({
 }) {
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
     const smartWalletSDK = useMemo(
-        () => CrossmintWallet.from({ apiKey: crossmint.apiKey, jwt: crossmint?.jwt }),
+        () => CrossmintWallets.from({ apiKey: crossmint.apiKey, jwt: crossmint?.jwt }),
         [crossmint.apiKey, crossmint.jwt]
     );
 

@@ -1,7 +1,7 @@
-import type { EVMSmartWallet, EVMMPCWallet, TransactionInput as EVMTransaction } from "@/evm";
+import type { EVMSmartWallet, TransactionInput as EVMTransaction } from "@/evm";
 import type { SolanaMPCWallet, SolanaSmartWallet, Transaction as SolanaTransaction } from "@/solana";
 
-export type Wallet = EVMSmartWallet | EVMMPCWallet | SolanaSmartWallet | SolanaMPCWallet;
+export type Wallet = EVMSmartWallet | SolanaSmartWallet | SolanaMPCWallet;
 export type Transaction = EVMTransaction | SolanaTransaction;
 
 export interface Callbacks {
