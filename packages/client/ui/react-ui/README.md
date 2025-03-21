@@ -29,11 +29,13 @@ We provide two essential React context providers:
 
 - `CrossmintProvider` - Base provider for accessing Crossmint services
 - `CrossmintAuthProvider` - Authentication context provider for your components
+- `CrossmintWalletProvider` - Wallet context provider for your components, can be used to integrate with other auth providers. Visit [Crossmint Signers Demo](https://crossmint-signers-demo.vercel.app/examples/dynamic) for complete implementation details and advanced features.
 
 #### Supported Login Methods
 - **Email OTP**: Passwordless sign-in using a one-time code
-- **Social Accounts**: Sign in with Google, Apple, X, and more
+- **Social Accounts**: Sign in with Google, X, and more
 - **Farcaster**: Using the Sign In With Farcaster (SIWF) standard
+- **Web3**: Sign in with EOA wallet (limited support for now)
 
 #### UI Options
 - **Modal Login**: Popup interface for authentication
@@ -57,21 +59,25 @@ We provide two essential React hooks for integrating Crossmint wallets into your
 import { useAuth } from "@crossmint/client-sdk-react-ui";
 ```
 Manages authentication state and user sessions. Key features:
+- `status` - Current auth state ("logged-in" | "logged-out" | "in-progress" | "initializing")
+- `user` - Active user information
+- `jwt` - Current user's JWT token
+- `getUser()` - Retrieve current user information
 - `login()` - Initiate user authentication
 - `logout()` - End user session
-- `jwt` - Current user's JWT token
-- `user` - Active user information
-- `status` - Current auth state ("loading" | "authenticated" | "unauthenticated")
+- `crossmintAuth` - Access to the CrossmintAuth instance
 
 #### `useWallet`
 ```typescript
 import { useWallet } from "@crossmint/client-sdk-react-ui";
 ```
 Handles wallet creation and management. Key features:
+- `status` - Wallet state ("not-loaded" | "in-progress" | "loading-error" | "loaded")
 - `wallet` - Access to the EVMSmartWallet instance
-- `status` - Wallet state ("not-loaded" | "in-progress" | "loaded" | "loading-error")
+- `type` - Wallet type ("evm-smart-wallet" | "solana-smart-wallet")
 - `getOrCreateWallet()` - Initialize or retrieve user's wallet
 - `clearWallet()` - Reset wallet state
+- `createPasskeySigner()` - Create a passkey signer for the wallet (not supported for Solana)
 
 Visit [our documentation](https://docs.crossmint.com/wallets/quickstarts/overview) for complete implementation details and advanced features.
 
