@@ -21,10 +21,10 @@ export default function WalletTypeSelector({ value, onChange }: WalletSelectorPr
     return (
         <div className="w-full bg-card rounded-3xl p-6 shadow-light">
             <div className="flex items-center gap-2 mb-4">
-                <div className="flex items-center justify-center w-6 h-6 border border-muted rounded-full bg-card text-gray-700 font-medium text-sm">
+                <div className="flex items-center justify-center w-6 h-6 border border-primary/30 rounded-full text-primary font-medium text-sm">
                     1
                 </div>
-                <h2 className="text-gray-700 font-medium">Select network</h2>
+                <h2 className="text-primary font-medium">Select network</h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -40,7 +40,7 @@ export default function WalletTypeSelector({ value, onChange }: WalletSelectorPr
                     <div className="w-6 h-6 flex items-center justify-center">
                         <Image src="/icons/eth.png" alt="Ethereum logo" width={24} height={24} className="rounded-md" />
                     </div>
-                    <span className="text-gray-700 font-medium">Ethereum</span>
+                    <span className="text-primary font-medium">Ethereum</span>
                 </button>
 
                 <button
@@ -55,7 +55,7 @@ export default function WalletTypeSelector({ value, onChange }: WalletSelectorPr
                     <div className="w-6 h-6 flex items-center justify-center ">
                         <Image src="/icons/sol.svg" alt="Solana logo" width={24} height={24} className="rounded-md" />
                     </div>
-                    <span className="text-gray-700 font-medium">Solana</span>
+                    <span className="text-primary font-medium">Solana</span>
                 </button>
             </div>
 

@@ -33,7 +33,7 @@ export default function Home() {
                         </div>
                         <div className="flex items-center gap-2">
                             <div className="flex flex-col">
-                                <h2 className="text-gray-700 font-medium">Wallet Pioneer</h2>
+                                <h2 className="text-primary font-medium">Wallet Pioneer</h2>
                                 <h5 className="text-muted">by Crossmint</h5>
                             </div>
                         </div>

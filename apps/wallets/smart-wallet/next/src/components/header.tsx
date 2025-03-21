@@ -75,18 +75,9 @@ const UserMenu: React.FC<{
         <DropdownMenuTrigger asChild disabled={walletStatus !== "loaded"}>
             <div className="flex items-center gap-5 cursor-pointer">
                 <div className="flex items-center min-w-[150px] bg-skeleton rounded-full px-4 py-2 gap-2 text-secondary-foreground">
-                    {walletType === "evm-smart-wallet" ? (
-                        <Image src="/icons/eth.png" alt="Ethereum logo" width={24} height={24} className="rounded-md" />
-                    ) : null}
-                    {walletType === "solana-smart-wallet" ? (
-                        <Image src="/icons/sol.svg" alt="Solana logo" width={24} height={24} className="rounded-md" />
-                    ) : null}
+                    {getWalletIcon(walletType)}
                     <Typography>
-                        {walletStatus !== "loaded"
-                            ? "Loading..."
-                            : wallet.getAddress()
-                              ? formatWalletAddress(wallet.getAddress(), 6, 3)
-                              : ""}
+                        {walletStatus !== "loaded" ? "Loading..." : formatWalletAddress(wallet.getAddress(), 6, 3)}
                     </Typography>
                 </div>
                 <Avatar className="h-9 w-9">
@@ -115,3 +106,13 @@ const UserMenu: React.FC<{
         </DropdownMenuContent>
     </DropdownMenu>
 );
+
+const getWalletIcon = (walletType: WalletType) => {
+    if (walletType === "evm-smart-wallet") {
+        return <Image src="/icons/eth.png" alt="Ethereum logo" width={24} height={24} className="rounded-md" />;
+    }
+    if (walletType === "solana-smart-wallet") {
+        return <Image src="/icons/sol.svg" alt="Solana logo" width={24} height={24} className="rounded-md" />;
+    }
+    return null;
+};

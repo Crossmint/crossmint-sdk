@@ -40,20 +40,20 @@ const config: Config = {
             dropdown: "var(--shadow-dropdown)",
             primary: "0 1px 2px 0 #602C1B",
         },
-        keyframes: {
-            shimmer: {
-                "0%": { transform: "translateX(-100%)" },
-                "100%": { transform: "translateX(100%)" },
-            },
-        },
         extend: {
+            keyframes: {
+                shimmer: {
+                    "0%": { transform: "translateX(-100%)" },
+                    "100%": { transform: "translateX(100%)" },
+                },
+            },
+            animation: {
+                shimmer: "shimmer 2s infinite",
+            },
             backgroundImage: {
                 "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
                 "gradient-conic": "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
             },
-        },
-        animation: {
-            shimmer: "shimmer 2s infinite",
         },
     },
     plugins: [],

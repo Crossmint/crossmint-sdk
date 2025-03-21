@@ -1,11 +1,8 @@
-import { cn } from "@/lib/utils";
-
-export const Spinner = ({ className }: { className?: string }) => (
+export const Spinner = () => (
     <svg
         aria-hidden="true"
-        className={cn("w-6 h-6 fill-secondary-foreground animate-spin text-primary-foreground", className)}
+        className="w-6 h-6 !fill-primary-foreground animate-spin text-muted"
         viewBox="0 0 100 101"
-        fill="none"
         xmlns="http://www.w3.org/2000/svg"
     >
         <path

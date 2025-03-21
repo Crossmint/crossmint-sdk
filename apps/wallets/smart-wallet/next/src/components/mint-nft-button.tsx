@@ -58,6 +58,7 @@ export const MintNFTButton = ({ setNftSuccessfullyMinted }: { setNftSuccessfully
             setNftSuccessfullyMinted(true);
         } catch (error) {
             console.error("Error minting NFT:", error);
+            setIsHovered(false);
             toast({ title: "Error occurred during minting" });
         } finally {
             setIsLoadingMint(false);
@@ -84,6 +85,7 @@ export const MintNFTButton = ({ setNftSuccessfullyMinted }: { setNftSuccessfully
                 onClick={mint}
                 disabled={isLoadingMint}
             >
+                {/* Fingerprint icon + animation */}
                 <motion.div
                     animate={{
                         rotate: isHovered ? [0, -10, 10, -5, 5, 0] : 0,
@@ -105,6 +107,7 @@ export const MintNFTButton = ({ setNftSuccessfullyMinted }: { setNftSuccessfully
                 <span className={`transition-colors duration-300 ${isHovered ? "text-[#6D4427]" : "text-[#8B5D3B]"}`}>
                     Mint NFT
                 </span>
+                {/* Shimmer effect during hover */}
                 {isHovered && (
                     <motion.div
                         className="absolute inset-0 rounded-full"
