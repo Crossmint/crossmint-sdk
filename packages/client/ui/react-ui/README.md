@@ -35,7 +35,7 @@ We provide two essential React context providers:
 - **Email OTP**: Passwordless sign-in using a one-time code
 - **Social Accounts**: Sign in with Google, X, and more
 - **Farcaster**: Using the Sign In With Farcaster (SIWF) standard
-- **Web3**: Sign in with EOA wallet (limited support for now) but will be available soon
+- **Web3**: Sign in with EOA wallet (limited support for now)
 
 #### UI Options
 - **Modal Login**: Popup interface for authentication
