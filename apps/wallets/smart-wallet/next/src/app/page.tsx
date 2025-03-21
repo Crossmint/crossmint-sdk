@@ -1,42 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { useWallet } from "@crossmint/client-sdk-react-ui";
 import Image from "next/image";
-import Link from "next/link";
-
-import { Fireworks } from "@/components/fireworks";
-import { MintNFTButton } from "@/components/mint-nft-button";
-import { SecuredByCrossmint } from "@/components/secured-by-crossmint";
-import { SignInAuthButton } from "@/components/signin-auth-button";
 import { Typography } from "@/components/typography";
-
-function HomePrimaryAction() {
-    const { status: walletStatus } = useWallet();
-    const [nftSuccessfullyMinted, setNftSuccessfullyMinted] = useState(false);
-
-    if (walletStatus !== "loaded") {
-        return <SignInAuthButton />;
-    }
-
-    if (nftSuccessfullyMinted) {
-        return (
-            <>
-                <Fireworks />
-                <div className="flex gap-2 items-center self-center min-h-[52px]">
-                    <Link
-                        href="/wallet"
-                        className="underline text-secondary-foreground text-lg font-semibold underline-offset-4"
-                    >
-                        Open in my wallet
-                    </Link>
-                </div>
-            </>
-        );
-    } else {
-        return <MintNFTButton setNftSuccessfullyMinted={setNftSuccessfullyMinted} />;
-    }
-}
+import { SecuredByCrossmint } from "@/components/secured-by-crossmint";
+import { HomePrimaryAction } from "@/components/home-primary-action";
 
 export default function Home() {
     return (

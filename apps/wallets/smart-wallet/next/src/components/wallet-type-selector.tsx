@@ -14,18 +14,17 @@ export default function WalletTypeSelector({ value, onChange }: WalletSelectorPr
     const { wallet, status } = useWallet();
     const isLoading = status === "in-progress";
 
-    const hintText =
-        wallet != null ? `Wallet ${"wallet.type"} connected` : "Select your preferred wallet type to continue";
+    const hintText = wallet != null ? `Wallet ${"wallet.type"} connected` : "Select your preferred network to continue";
 
     const disabled = wallet != null || isLoading;
 
     return (
         <div className="w-full bg-card rounded-3xl p-6 shadow-light">
             <div className="flex items-center gap-2 mb-4">
-                <div className="flex items-center justify-center w-6 h-6 border border-gray-200 rounded-full bg-card text-gray-700 font-medium text-sm">
+                <div className="flex items-center justify-center w-6 h-6 border border-muted rounded-full bg-card text-gray-700 font-medium text-sm">
                     1
                 </div>
-                <h2 className="text-gray-700 font-medium">Select your preferred wallet type</h2>
+                <h2 className="text-gray-700 font-medium">Select network</h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
