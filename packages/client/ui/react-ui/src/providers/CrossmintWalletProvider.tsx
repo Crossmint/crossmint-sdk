@@ -1,20 +1,13 @@
 import { type ReactNode, createContext, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-
-import {
-    type EVMSmartWallet,
-    type EVMSmartWalletChain,
-    SmartWalletError,
-    SmartWalletSDK,
-    type WalletParams,
-    type PasskeySigner,
-} from "@crossmint/client-sdk-smart-wallet";
-
-import { useAuth, useCrossmint, useWalletCache } from "../hooks";
+import { CrossmintWallet, type EVMSmartWallet, type SolanaSmartWallet } from "@crossmint/wallets-sdk";
 import type { UIConfig } from "@crossmint/common-sdk-base";
-import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
 
-type WalletStatus = "not-loaded" | "in-progress" | "loaded" | "loading-error";
+import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
+import type { PasskeySigner } from "@/types/passkey";
+import { useCrossmint } from "../hooks";
+import type { GetOrCreateWalletProps } from "@/types/wallet";
+import { createWebAuthnPasskeySigner } from "@/utils/createPasskeySigner";
 
 type ValidPasskeyPromptType =
     | "create-wallet"
@@ -33,20 +26,44 @@ type PasskeyPromptState =
 
 type ValidWalletState =
     | { status: "not-loaded" | "in-progress" }
-    | { status: "loaded"; wallet: EVMSmartWallet }
-    | { status: "loading-error"; error: SmartWalletError };
+    | { status: "loaded"; wallet: EVMSmartWallet; type: "evm-smart-wallet" }
+    | { status: "loaded"; wallet: SolanaSmartWallet; type: "solana-smart-wallet" }
+    | { status: "loading-error"; error: string };
 
-type WalletContext = {
-    status: WalletStatus;
-    wallet?: EVMSmartWallet;
-    passkeySigner?: PasskeySigner;
-    error?: SmartWalletError;
-    getOrCreateWallet: (
-        config?: Pick<WalletConfig, "signer" | "type">
-    ) => Promise<{ startedCreation: boolean; reason?: string }>;
-    createPasskeySigner: (name: string) => Promise<PasskeySigner | null>;
+type WalletContextFunctions = {
+    getOrCreateWallet: (args: GetOrCreateWalletProps) => Promise<{ startedCreation: boolean; reason?: string }>;
+    createPasskeySigner: (name: string, promptType?: ValidPasskeyPromptType) => Promise<PasskeySigner | null>;
     clearWallet: () => void;
+    passkeySigner?: PasskeySigner;
 };
+
+type WalletType = {
+    "evm-smart-wallet": EVMSmartWallet;
+    "solana-smart-wallet": SolanaSmartWallet;
+};
+
+type LoadedWalletState<T extends keyof WalletType> = {
+    status: "loaded";
+    wallet: WalletType[T];
+    type: T;
+    error?: undefined;
+};
+
+type WalletContext =
+    | ({
+          status: "not-loaded" | "in-progress";
+          wallet?: undefined;
+          type?: undefined;
+          error?: undefined;
+      } & WalletContextFunctions)
+    | ({
+          status: "loading-error";
+          wallet?: undefined;
+          type?: undefined;
+          error: string;
+      } & WalletContextFunctions)
+    | (LoadedWalletState<"evm-smart-wallet"> & WalletContextFunctions)
+    | (LoadedWalletState<"solana-smart-wallet"> & WalletContextFunctions);
 
 export const WalletContext = createContext<WalletContext>({
     status: "not-loaded",
@@ -55,37 +72,28 @@ export const WalletContext = createContext<WalletContext>({
     clearWallet: () => {},
 });
 
-export type WalletConfig = WalletParams & { type: "evm-smart-wallet" };
-
 export function CrossmintWalletProvider({
     children,
-    defaultChain,
     showPasskeyHelpers = true,
     appearance,
 }: {
     children: ReactNode;
-    defaultChain: EVMSmartWalletChain;
     showPasskeyHelpers?: boolean;
     appearance?: UIConfig;
 }) {
-    const { user } = useAuth();
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
-    const smartWalletSDK = useMemo(() => SmartWalletSDK.init({ clientApiKey: crossmint.apiKey }), [crossmint.apiKey]);
-    const walletCache = useWalletCache(user?.id);
+    const smartWalletSDK = useMemo(
+        () => CrossmintWallet.from({ apiKey: crossmint.apiKey, jwt: crossmint?.jwt }),
+        [crossmint.apiKey, crossmint.jwt]
+    );
 
     const [walletState, setWalletState] = useState<ValidWalletState>({
         status: "not-loaded",
     });
+
     const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
 
-    const createPasskeySigner = async (name: string) => {
-        await createPasskeyPrompt("create-wallet")();
-        const signer = await smartWalletSDK.createPasskeySigner(name);
-        walletCache.setPasskey(signer);
-        return signer;
-    };
-
-    const getOrCreateWallet = async (config?: WalletConfig) => {
+    const getOrCreateWallet = async (props: GetOrCreateWalletProps) => {
         if (walletState.status == "in-progress") {
             console.log("Wallet already loading");
             return {
@@ -103,30 +111,34 @@ export function CrossmintWalletProvider({
 
         try {
             setWalletState({ status: "in-progress" });
-            const signer = config?.signer ?? (await getPasskeySigner());
-            const wallet = await smartWalletSDK.getOrCreateWallet(
-                { jwt: crossmint.jwt as string },
-                defaultChain,
-                config ?? {
-                    signer,
-                },
-                {
-                    onWalletCreationFailed: createPasskeyPrompt("create-wallet-error"),
-                    onTransactionSigningStarted: () => {
-                        if (walletCache.isWalletInitialized) {
-                            return Promise.resolve();
-                        }
-                        return createPasskeyPrompt("transaction")();
-                    },
-                    onTransactionSigningFailed: createPasskeyPrompt("transaction-error"),
-                    onTransactionCompleted: () => {
-                        walletCache.setWalletInitialized(true);
-                        return Promise.resolve();
-                    },
+            const experimental_callbacks = {
+                onWalletCreationStart: createPasskeyPrompt("create-wallet"),
+                onWalletCreationFail: createPasskeyPrompt("create-wallet-error"),
+                onTransactionStart: createPasskeyPrompt("transaction"),
+                onTransactionFail: createPasskeyPrompt("transaction-error"),
+            };
+
+            switch (props.type) {
+                case "evm-smart-wallet": {
+                    const walletArgs = {
+                        chain: props.args.chain,
+                        adminSigner: props.args.adminSigner ?? { type: "evm-passkey" },
+                        linkedUser: props.args.linkedUser,
+                    };
+                    const wallet = await smartWalletSDK.getOrCreateWallet("evm-smart-wallet", walletArgs, {
+                        experimental_callbacks,
+                    });
+                    setWalletState({ status: "loaded", wallet, type: "evm-smart-wallet" });
+                    break;
                 }
-            );
-            walletCache.setWalletAddress(wallet.address);
-            setWalletState({ status: "loaded", wallet });
+                case "solana-smart-wallet": {
+                    const wallet = await smartWalletSDK.getOrCreateWallet("solana-smart-wallet", props.args, {
+                        experimental_callbacks,
+                    });
+                    setWalletState({ status: "loaded", wallet, type: "solana-smart-wallet" });
+                    break;
+                }
+            }
         } catch (error: unknown) {
             console.error("There was an error creating a wallet ", error);
             setWalletState(deriveErrorState(error));
@@ -158,15 +170,11 @@ export function CrossmintWalletProvider({
         setWalletState({ status: "not-loaded" });
     };
 
-    const getPasskeySigner = async () => {
-        const cachedPasskey = walletCache.passkey;
-        if (cachedPasskey === undefined) {
-            // Create a new passkey
-            const passkeyName = "Crossmint Wallet";
-            const passkeySigner = await createPasskeySigner(passkeyName);
-            return passkeySigner;
+    const createPasskeySigner = async (name: string, promptType?: ValidPasskeyPromptType) => {
+        if (promptType != null) {
+            await createPasskeyPrompt(promptType)();
         }
-        return cachedPasskey;
+        return await createWebAuthnPasskeySigner(name);
     };
 
     return (
@@ -188,16 +196,11 @@ export function CrossmintWalletProvider({
 
 function deriveErrorState(error: unknown): {
     status: "loading-error";
-    error: SmartWalletError;
+    error: string;
 } {
-    if (error instanceof SmartWalletError) {
-        return { status: "loading-error", error };
-    }
-
     const message = error instanceof Error ? error.message : String(error);
-    const stack = error instanceof Error ? error.stack : undefined;
     return {
         status: "loading-error",
-        error: new SmartWalletError(`Unknown Wallet Error: ${message}`, stack),
+        error: message,
     };
 }

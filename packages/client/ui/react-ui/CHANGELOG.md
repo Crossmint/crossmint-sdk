@@ -1,5 +1,23 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.16.1
+
+### Patch Changes
+
+- Updated dependencies [ca39114]
+  - @crossmint/wallets-sdk@0.2.2
+
+## 1.16.0
+
+### Minor Changes
+
+- 025a5a2: Migrated to new wallets-sdk package for evm and solana smart wallets.
+
+### Patch Changes
+
+- Updated dependencies [9c71ce8]
+  - @crossmint/wallets-sdk@0.2.1
+
 ## 1.15.3
 
 ### Patch Changes
