@@ -1,6 +1,6 @@
 import { type ReactNode, act } from "react";
 import { CrossmintAuth as CrossmintAuthClient, getJWTExpiration, deleteCookie } from "@crossmint/client-sdk-auth";
-import { CrossmintWallet, type EVMSignerInput, type EVMSmartWallet } from "@crossmint/wallets-sdk";
+import { CrossmintWallets, type EVMSignerInput, type EVMSmartWallet } from "@crossmint/wallets-sdk";
 import { SESSION_PREFIX, REFRESH_TOKEN_PREFIX } from "@crossmint/common-sdk-auth";
 import { createCrossmint } from "@crossmint/common-sdk-base";
 import { beforeEach, describe, expect, vi, it, type MockInstance } from "vitest";
@@ -17,7 +17,7 @@ vi.mock("@crossmint/wallets-sdk", async () => {
     const actual = await vi.importActual("@crossmint/wallets-sdk");
     return {
         ...actual,
-        CrossmintWallet: {
+        CrossmintWallets: {
             from: vi.fn(),
         },
     };
@@ -84,7 +84,7 @@ function TestComponent() {
 }
 
 describe("CrossmintAuthProvider", () => {
-    let mockSDK: CrossmintWallet;
+    let mockSDK: CrossmintWallets;
     let mockWallet: EVMSmartWallet;
     let embeddedWallets: CrossmintAuthEmbeddedWallets;
     let handleRefreshAuthMaterialSpy: MockInstance;
@@ -115,10 +115,10 @@ describe("CrossmintAuthProvider", () => {
             });
         });
 
-        mockSDK = mock<CrossmintWallet>();
+        mockSDK = mock<CrossmintWallets>();
         mockWallet = mock<EVMSmartWallet>();
 
-        vi.mocked(CrossmintWallet.from).mockReturnValue(mockSDK);
+        vi.mocked(CrossmintWallets.from).mockReturnValue(mockSDK);
         vi.mocked(mockSDK.getOrCreateWallet).mockResolvedValue(mockWallet);
         vi.mocked(getJWTExpiration).mockReturnValue(1000);
         const mockPasskeySigner = mock<EVMSignerInput>({
