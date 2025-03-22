@@ -13,6 +13,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "./dropdo
 import { Typography } from "./typography";
 import { useToast } from "./use-toast";
 import type { WalletType } from "@/app/context/wallet-config";
+import { Button } from "./button";
 
 function formatWalletAddress(address: string, startLength: number, endLength: number): string {
     return `${address.substring(0, startLength)}...${address.substring(address.length - endLength)}`;
@@ -49,6 +50,16 @@ export const Header: React.FC = () => {
                         onCopyAddress={handleCopyAddress}
                     />
                 )}
+            {walletStatus === "loading-error" ? (
+                <Button
+                    onClick={() => {
+                        logout();
+                        router.push("/");
+                    }}
+                >
+                    Sign out and start over?
+                </Button>
+            ) : null}
         </div>
     );
 };
