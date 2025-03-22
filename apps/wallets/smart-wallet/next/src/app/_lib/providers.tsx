@@ -30,7 +30,7 @@ function CrossmintProviders({ children }: { children: ReactNode }) {
                     defaultChain: walletType === "evm-smart-wallet" ? "polygon-amoy" : undefined,
                 }}
                 appearance={{
-                    borderRadius: "16px",
+                    borderRadius: "24px",
                     colors: {
                         inputBackground: "#FAF5EC",
                         buttonBackground: "#E9E3D8",

@@ -31,7 +31,6 @@
         "@dynamic-labs/solana": "4.8.3",
         "@ethersproject/transactions": "5.7.0",
         "@farcaster/auth-kit": "0.6.0",
-        "@headlessui/react": "2.1.5",
         "@radix-ui/react-dialog": "1.1.2",
         "@radix-ui/react-visually-hidden": "1.1.0",
         "@solana/web3.js": "1.98.0",

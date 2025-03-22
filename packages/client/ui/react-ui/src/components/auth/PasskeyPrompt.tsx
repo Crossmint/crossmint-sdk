@@ -1,11 +1,12 @@
-import { Button, Dialog, Transition } from "@headlessui/react";
-import { type CSSProperties, Fragment, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import type { UIConfig } from "@crossmint/common-sdk-base";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 import FingerprintIcon from "../../icons/fingerprint";
 import PasskeyIcon from "../../icons/passkey";
 import PasskeyPromptLogo from "../../icons/passkeyPromptLogo";
 import { SecuredByCrossmint } from "../common/SecuredByCrossmint";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "../common/Dialog";
 import { classNames } from "@/utils/classNames";
 
 type PasskeyPromptCoreProps = {
@@ -17,44 +18,25 @@ type PasskeyPromptCoreProps = {
 };
 function PasskeyPromptCore({ title, content, primaryButton, secondaryAction, appearance }: PasskeyPromptCoreProps) {
     return (
-        <Dialog
-            open
-            onClose={() => {}}
-            className={classNames("fixed inset-0 z-20 flex items-center justify-center overflow-y-auto")}
-        >
-            {/* This is a hacky workaround to have the foreground transparent styles to work. */}
-            <Transition.Child
-                as={Fragment}
-                enter="ease-out duration-400"
-                enterFrom="opacity-0"
-                enterTo="opacity-100"
-                leave="ease-in duration-400"
-                leaveFrom="opacity-100"
-                leaveTo="opacity-0"
-            >
-                <div
-                    className={classNames(
-                        "fixed inset-0 bg-[rgba(139,151,151,0.2)] backdrop-blur-[2px] transition-opacity duration-300 ease-in-out -z-10"
-                    )}
-                />
-            </Transition.Child>
-            <div
+        <Dialog modal={false} open onOpenChange={() => {}}>
+            <DialogContent
+                showCloseButton={false}
+                onInteractOutside={(e) => e.preventDefault()}
+                onOpenAutoFocus={(e) => e.preventDefault()}
+                className="!p-0 !min-[480px]:p-0"
                 style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    width: "100%",
-                    maxWidth: "28rem",
-                    borderRadius: "1rem",
-                    boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
-                    zIndex: 30,
-                    border: "1px solid",
-                    backgroundColor: appearance?.colors?.background || "white",
-                    borderColor: appearance?.colors?.border || "#D0D5DD",
+                    borderRadius: appearance?.borderRadius,
+                    backgroundColor: appearance?.colors?.background,
                 }}
-                onClick={(e) => e.stopPropagation()}
             >
-                <div className="pt-12 pb-10 px-8">
+                <VisuallyHidden asChild>
+                    <DialogTitle>{title}</DialogTitle>
+                </VisuallyHidden>
+                <VisuallyHidden asChild>
+                    <DialogDescription>{content}</DialogDescription>
+                </VisuallyHidden>
+
+                <div className="relative pt-10 pb-[30px] px-6 !min-[480px]:px-10 flex flex-col gap-[10px] antialiased animate-none">
                     <div className="flex justify-center left-1.5 relative">
                         <PasskeyPromptLogo appearance={appearance} />
                     </div>
@@ -70,7 +52,7 @@ function PasskeyPromptCore({ title, content, primaryButton, secondaryAction, app
                             {title}
                         </p>
                     </div>
-                    <div className="mt-4 mb-9">
+                    <div className="mb-6">
                         <div
                             style={{
                                 fontWeight: "normal",
@@ -88,7 +70,7 @@ function PasskeyPromptCore({ title, content, primaryButton, secondaryAction, app
                         <SecuredByCrossmint color={appearance?.colors?.textSecondary} />
                     </div>
                 </div>
-            </div>
+            </DialogContent>
         </Dialog>
     );
 }
@@ -113,7 +95,7 @@ export function PasskeyPrompt({ state, appearance }: PasskeyPromptProps) {
                     appearance={appearance}
                     content={
                         <>
-                            <div className="mb-4">You're about to create a wallet.</div>
+                            <div className="mb-3">You're about to create a wallet.</div>
                             <div className="flex flex-col gap-2">
                                 <div className="flex gap-2">
                                     <div>
@@ -132,9 +114,9 @@ export function PasskeyPrompt({ state, appearance }: PasskeyPromptProps) {
                         </>
                     }
                     primaryButton={
-                        <Button style={primaryButtonStyles(appearance)} onClick={state.primaryActionOnClick}>
+                        <PrimaryButton appearance={appearance} onClick={state.primaryActionOnClick}>
                             Create Wallet
-                        </Button>
+                        </PrimaryButton>
                     }
                 />
             );
@@ -145,15 +127,15 @@ export function PasskeyPrompt({ state, appearance }: PasskeyPromptProps) {
                     title="Wallet Creation Failed"
                     appearance={appearance}
                     content={
-                        <div className="mb-6">
+                        <div>
                             We couldn't create your wallet. This could be due to rejecting the request, a timeout, or
                             not having access to your passkey on this device.
                         </div>
                     }
                     primaryButton={
-                        <Button style={primaryButtonStyles(appearance)} onClick={state.primaryActionOnClick}>
+                        <PrimaryButton appearance={appearance} onClick={state.primaryActionOnClick}>
                             Try again
-                        </Button>
+                        </PrimaryButton>
                     }
                 />
             );
@@ -177,9 +159,9 @@ export function PasskeyPrompt({ state, appearance }: PasskeyPromptProps) {
                         </div>
                     }
                     primaryButton={
-                        <Button style={primaryButtonStyles(appearance)} onClick={state.primaryActionOnClick}>
+                        <PrimaryButton appearance={appearance} onClick={state.primaryActionOnClick}>
                             Use Wallet
-                        </Button>
+                        </PrimaryButton>
                     }
                 />
             );
@@ -190,15 +172,15 @@ export function PasskeyPrompt({ state, appearance }: PasskeyPromptProps) {
                     title="Wallet Access Failed"
                     appearance={appearance}
                     content={
-                        <div className="mb-6">
+                        <div>
                             We couldn't access your wallet. This could be due to rejecting the request, a timeout, or
                             not having access to your passkey on this device.
                         </div>
                     }
                     primaryButton={
-                        <Button style={primaryButtonStyles(appearance)} onClick={state.primaryActionOnClick}>
+                        <PrimaryButton appearance={appearance} onClick={state.primaryActionOnClick}>
                             Try again
-                        </Button>
+                        </PrimaryButton>
                     }
                     secondaryAction={
                         <a
@@ -228,15 +210,15 @@ export function PasskeyPrompt({ state, appearance }: PasskeyPromptProps) {
                     title="Passkeys Not Supported on This Device"
                     appearance={appearance}
                     content={
-                        <div className="mb-6">
+                        <div>
                             To access your wallet with a passkey, switch to a device or browser that supports passkeys,
                             such as Chrome or Safari on a smartphone, tablet, or modern computer
                         </div>
                     }
                     primaryButton={
-                        <Button style={primaryButtonStyles(appearance)} onClick={state.primaryActionOnClick}>
+                        <PrimaryButton appearance={appearance} onClick={state.primaryActionOnClick}>
                             Understood
-                        </Button>
+                        </PrimaryButton>
                     }
                 />
             );
@@ -246,13 +228,29 @@ export function PasskeyPrompt({ state, appearance }: PasskeyPromptProps) {
     }
 }
 
-const primaryButtonStyles = (appearance?: UIConfig): CSSProperties => ({
-    padding: "0.875rem",
-    width: "100%",
-    backgroundColor: appearance?.colors?.buttonBackground ?? "#04AA6D",
-    color: appearance?.colors?.textPrimary ?? "white",
-    borderRadius: appearance?.borderRadius ?? "8px",
-    borderColor: appearance?.colors?.border ?? "#04AA6D",
-    borderWidth: "1px",
-    fontWeight: "bold",
-});
+const PrimaryButton = ({
+    appearance,
+    onClick,
+    children,
+}: { appearance?: UIConfig; onClick: () => void; children: ReactNode }) => {
+    return (
+        <button
+            className={classNames(
+                "relative flex text-base p-4 bg-cm-muted-primary text-cm-text-primary items-center w-full rounded-xl justify-center",
+                "transition-colors duration-200 ease-in-out",
+                "hover:bg-cm-hover focus:bg-cm-hover outline-none"
+            )}
+            style={{
+                borderRadius: appearance?.borderRadius,
+                backgroundColor: appearance?.colors?.buttonBackground,
+            }}
+            onClick={onClick}
+        >
+            <span className="font-medium" style={{ margin: "0px 32px", color: appearance?.colors?.textPrimary }}>
+                {children}
+            </span>
+
+            <span className="sr-only">Sign in with Google</span>
+        </button>
+    );
+};
