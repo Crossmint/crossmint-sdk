@@ -249,8 +249,7 @@ const PrimaryButton = ({
             <span className="font-medium" style={{ margin: "0px 32px", color: appearance?.colors?.textPrimary }}>
                 {children}
             </span>
-
-            <span className="sr-only">Sign in with Google</span>
+            <span className="sr-only">{children}</span>
         </button>
     );
 };
