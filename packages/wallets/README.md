@@ -67,16 +67,18 @@ const wallet = await crossmintWallets.getOrCreateWallet("solana-mpc-wallet", {
 
 ```ts
 import {
+    Connection,
     PublicKey,
     TransactionInstruction,
     TransactionMessage,
     VersionedTransaction,
 } from "@solana/web3.js";
 
+const connection = new Connection("https://api.devnet.solana.com");
 const memoInstruction = new TransactionInstruction({
     keys: [
         {
-            pubkey: new PublicKey(walletAddress),
+            pubkey: new PublicKey(wallet.getAddress()),
             isSigner: true,
             isWritable: true,
         },
@@ -85,9 +87,10 @@ const memoInstruction = new TransactionInstruction({
     programId: new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
 });
 
+const blockhash = (await connection.getLatestBlockhash()).blockhash;
 const newMessage = new TransactionMessage({
-    payerKey: new PublicKey(walletAddress),
-    recentBlockhash: (await connection.getLatestBlockhash()).blockhash,
+    payerKey: new PublicKey(wallet.getAddress()),
+    recentBlockhash: blockhash,
     instructions: [memoInstruction],
 });
 
