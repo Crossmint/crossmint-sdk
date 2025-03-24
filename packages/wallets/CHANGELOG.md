@@ -1,5 +1,12 @@
 # @crossmint/wallets-sdk
 
+## 0.3.0
+
+### Minor Changes
+
+- f062aee: - renames CrossmintWallet → CrossmintWallets
+  - removes EVMMPCWallet definition
+
 ## 0.2.2
 
 ### Patch Changes
