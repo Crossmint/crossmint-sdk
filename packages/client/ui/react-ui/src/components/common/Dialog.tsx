@@ -28,8 +28,9 @@ const DialogContent = React.forwardRef<React.ElementRef<typeof DialogPrimitive.C
                     "inset-x-[9px] bottom-2 w-[calc(100%-18px)] border-t rounded-t-[36px] rounded-b-[50px]",
                     "max-[479px]:data-[state=closed]:animate-slide-out-to-bottom max-[479px]:data-[state=open]:animate-slide-in-from-bottom",
                     // Desktop viewport styles (centered modal)
-                    "min-[480px]:inset-auto !min-[480px]:p-10 !min-[480px]:pb-8 min-[480px]:left-[50%] min-[480px]:top-[50%] min-[480px]:translate-x-[-50%] min-[480px]:translate-y-[-52%]",
-                    "min-[480px]:max-w-[448px] min-[480px]:rounded-3xl",
+                    "min-[480px]:inset-auto min-[480px]:left-[50%] min-[480px]:top-[50%]",
+                    "min-[480px]:[transform:translate(-50%,-50%)]",
+                    "min-[480px]:max-w-[448px] min-[480px]:rounded-3xl !min-[480px]:p-10 !min-[480px]:pb-8",
                     "min-[480px]:data-[state=closed]:animate-fade-out min-[480px]:data-[state=open]:animate-fade-in",
                     className
                 )}

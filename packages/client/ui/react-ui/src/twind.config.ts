@@ -2,7 +2,7 @@ import { defineConfig } from "@twind/core";
 import presetTailwind from "@twind/preset-tailwind";
 
 export default defineConfig({
-    presets: [presetTailwind()],
+    presets: [presetTailwind({ disablePreflight: true })],
     theme: {
         extend: {
             colors: {
