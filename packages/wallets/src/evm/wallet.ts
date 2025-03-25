@@ -15,7 +15,7 @@ import {
     concat,
 } from "viem";
 
-import type { ApiClient, GetSignatureResponse, GetTransactionResponse, EvmWalletLocator } from "../api";
+import type { ApiClient, GetSignatureResponse, EvmWalletLocator } from "../api";
 import { sleep } from "../utils";
 import type { Callbacks } from "../utils/options";
 import { ENTRY_POINT_ADDRESS, STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
@@ -27,6 +27,7 @@ import {
     SignatureNotFoundError,
     SigningFailedError,
     TransactionAwaitingApprovalError,
+    TransactionConfirmationTimeoutError,
     TransactionHashNotFoundError,
     TransactionSendingFailedError,
 } from "../utils/errors";
@@ -315,16 +316,29 @@ export class EVMSmartWallet implements ViemWallet {
         }
         await this.approveTransaction(transactionId, pendingApproval.message as Hex);
 
-        // Get transaction status until success
-        let transactionResponse: GetTransactionResponse | null = null;
-        while (transactionResponse === null || transactionResponse.status === "pending") {
-            await sleep(STATUS_POLLING_INTERVAL_MS);
+        return await this.waitForTransaction(transactionId);
+    }
+
+    private async waitForTransaction(transactionId: string, timeoutMs = 60000): Promise<Hex> {
+        const startTime = Date.now();
+        let transactionResponse;
+
+        do {
+            if (Date.now() - startTime > timeoutMs) {
+                const error = new TransactionConfirmationTimeoutError("Transaction confirmation timeout");
+                await this.callbacks.onTransactionFail?.(error);
+                throw error;
+            }
+
             transactionResponse = await this.apiClient.getTransaction(this.walletLocator, transactionId);
-        }
+            await sleep(STATUS_POLLING_INTERVAL_MS);
+        } while (transactionResponse.status === "pending");
 
         if (transactionResponse.status === "failed") {
-            const error = new TransactionSendingFailedError("Transaction sending failed");
-            await this.callbacks?.onTransactionFail?.(error);
+            const error = new TransactionSendingFailedError(
+                `Transaction sending failed: ${JSON.stringify(transactionResponse.error)}`
+            );
+            await this.callbacks.onTransactionFail?.(error);
             throw error;
         }
 
@@ -332,18 +346,16 @@ export class EVMSmartWallet implements ViemWallet {
             const error = new TransactionAwaitingApprovalError(
                 `Transaction is awaiting approval. Please submit required approvals before waiting for completion.`
             );
-            await this.callbacks?.onTransactionFail?.(error);
+            await this.callbacks.onTransactionFail?.(error);
             throw error;
         }
 
-        // Get transaction hash
         const transactionHash = transactionResponse.onChain.txId;
-        if (transactionHash === undefined) {
-            const error = new TransactionHashNotFoundError("Transaction hash not found");
-            await this.callbacks?.onTransactionFail?.(error);
+        if (transactionHash == null) {
+            const error = new TransactionHashNotFoundError("Transaction hash not found on transaction response");
+            await this.callbacks.onTransactionFail?.(error);
             throw error;
         }
-        await this.callbacks?.onTransactionComplete?.(parameters);
         return transactionHash as Hex;
     }
 
