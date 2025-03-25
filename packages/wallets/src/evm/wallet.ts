@@ -19,6 +19,17 @@ import type { ApiClient, GetSignatureResponse, GetTransactionResponse, EvmWallet
 import { sleep } from "../utils";
 import type { Callbacks } from "../utils/options";
 import { ENTRY_POINT_ADDRESS, STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
+import {
+    InvalidMessageFormatError,
+    InvalidSignerError,
+    InvalidTypedDataError,
+    MessageSigningNotSupportedError,
+    SignatureNotFoundError,
+    SigningFailedError,
+    TransactionAwaitingApprovalError,
+    TransactionHashNotFoundError,
+    TransactionSendingFailedError,
+} from "../utils/errors";
 
 import entryPointAbi from "./abi/entryPoint";
 import { toViemChain, type EVMSmartWalletChain } from "./chains";
@@ -174,7 +185,7 @@ export class EVMSmartWallet implements ViemWallet {
         message: SignableMessage;
     }): Promise<Hex> {
         if (typeof parameters.message !== "string") {
-            throw new Error("Message must be a string");
+            throw new InvalidMessageFormatError("Message must be a string");
         }
 
         // Create signature
@@ -192,12 +203,12 @@ export class EVMSmartWallet implements ViemWallet {
         const pendingApprovals = signatureCreationResponse.approvals?.pending || [];
         const pendingApproval = pendingApprovals.find((approval) => approval.signer === this.signerLocator);
         if (!pendingApproval) {
-            throw new Error(`Signer ${this.signerLocator} not found in pending approvals`);
+            throw new InvalidSignerError(`Signer ${this.signerLocator} not found in pending approvals`);
         }
         const signature = await this.approveSignature(signatureId, pendingApproval.message as Hex);
 
         if (signature === undefined) {
-            throw new Error("Signature not available");
+            throw new SignatureNotFoundError("Signature not available");
         }
 
         // Get signature status until success
@@ -208,7 +219,7 @@ export class EVMSmartWallet implements ViemWallet {
         } while (signatureResponse === null || signatureResponse.status === "pending");
 
         if (signatureResponse.status === "failed") {
-            throw new Error("Message signing failed");
+            throw new SigningFailedError("Message signing failed");
         }
 
         return signature;
@@ -220,12 +231,12 @@ export class EVMSmartWallet implements ViemWallet {
     >(parameters: TypedDataDefinition<typedData, primaryType>): Promise<Hex> {
         const { domain, message, primaryType, types } = parameters;
         if (!domain || !message || !types) {
-            throw new Error("Invalid typed data");
+            throw new InvalidTypedDataError("Invalid typed data");
         }
 
         const { name, version, chainId, verifyingContract, salt } = domain as TypedDataDomain;
         if (!name || !version || !chainId || !verifyingContract) {
-            throw new Error("Invalid typed data domain");
+            throw new InvalidTypedDataError("Invalid typed data domain");
         }
 
         // Create signature
@@ -255,11 +266,11 @@ export class EVMSmartWallet implements ViemWallet {
         const pendingApprovals = signatureCreationResponse.approvals?.pending || [];
         const pendingApproval = pendingApprovals.find((approval) => approval.signer === this.signerLocator);
         if (!pendingApproval) {
-            throw new Error(`Signer ${this.signerLocator} not found in pending approvals`);
+            throw new InvalidSignerError(`Signer ${this.signerLocator} not found in pending approvals`);
         }
         const signature = await this.approveSignature(signatureId, pendingApproval.message as Hex);
         if (signature === undefined) {
-            throw new Error("Signature not available");
+            throw new SignatureNotFoundError("Signature not available");
         }
 
         // Get signature status until success
@@ -270,7 +281,7 @@ export class EVMSmartWallet implements ViemWallet {
         }
 
         if (signatureResponse.status === "failed") {
-            throw new Error("Typed data signing failed");
+            throw new SigningFailedError("Typed data signing failed");
         }
 
         return signature;
@@ -298,7 +309,7 @@ export class EVMSmartWallet implements ViemWallet {
         const pendingApprovals = transactionCreationResponse.approvals?.pending || [];
         const pendingApproval = pendingApprovals.find((approval) => approval.signer === this.signerLocator);
         if (!pendingApproval) {
-            const error = new Error(`Signer ${this.signerLocator} not found in pending approvals`);
+            const error = new InvalidSignerError(`Signer ${this.signerLocator} not found in pending approvals`);
             await this.callbacks?.onTransactionFail?.(error);
             throw error;
         }
@@ -312,7 +323,15 @@ export class EVMSmartWallet implements ViemWallet {
         }
 
         if (transactionResponse.status === "failed") {
-            const error = new Error("Transaction sending failed");
+            const error = new TransactionSendingFailedError("Transaction sending failed");
+            await this.callbacks?.onTransactionFail?.(error);
+            throw error;
+        }
+
+        if (transactionResponse.status === "awaiting-approval") {
+            const error = new TransactionAwaitingApprovalError(
+                `Transaction is awaiting approval. Please submit required approvals before waiting for completion.`
+            );
             await this.callbacks?.onTransactionFail?.(error);
             throw error;
         }
@@ -320,7 +339,7 @@ export class EVMSmartWallet implements ViemWallet {
         // Get transaction hash
         const transactionHash = transactionResponse.onChain.txId;
         if (transactionHash === undefined) {
-            const error = new Error("Transaction hash not found");
+            const error = new TransactionHashNotFoundError("Transaction hash not found");
             await this.callbacks?.onTransactionFail?.(error);
             throw error;
         }
@@ -362,7 +381,7 @@ export class EVMSmartWallet implements ViemWallet {
                 if (this.adminSigner.signer.type === "viem_v2") {
                     const account = this.adminSigner.signer.account;
                     if (!account.signMessage) {
-                        throw new Error("Account does not support signMessage");
+                        throw new MessageSigningNotSupportedError("Account does not support signMessage");
                     }
                     const signature = await account.signMessage({
                         message: {

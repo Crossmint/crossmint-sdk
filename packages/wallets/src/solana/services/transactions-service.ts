@@ -6,6 +6,12 @@ import bs58 from "bs58";
 import { STATUS_POLLING_INTERVAL_MS } from "../../utils/constants";
 import { sleep } from "../../utils";
 import type { Callbacks } from "../../utils/options";
+import {
+    TransactionAwaitingApprovalError,
+    TransactionConfirmationTimeoutError,
+    TransactionHashNotFoundError,
+    TransactionSendingFailedError,
+} from "../../utils/errors";
 
 export class SolanaTransactionsService {
     constructor(
@@ -23,14 +29,14 @@ export class SolanaTransactionsService {
         signer?: SolanaNonCustodialSigner;
         additionalSigners?: SolanaNonCustodialSigner[];
     }) {
-        this.callbacks.onTransactionStart?.(params.transaction);
+        await this.callbacks.onTransactionStart?.(params.transaction);
         const transaction = await this.create(params);
         await this.approveTransaction(transaction.id, [
             ...(params.signer != null ? [params.signer] : []),
             ...(params.additionalSigners || []),
         ]);
         const transactionHash = await this.waitForTransaction(transaction.id);
-        this.callbacks.onTransactionComplete?.(params.transaction);
+        await this.callbacks.onTransactionComplete?.(params.transaction);
         return transactionHash;
     }
 
@@ -73,8 +79,8 @@ export class SolanaTransactionsService {
 
         do {
             if (Date.now() - startTime > timeoutMs) {
-                const error = new Error("Transaction confirmation timeout");
-                this.callbacks.onTransactionFail?.(error);
+                const error = new TransactionConfirmationTimeoutError("Transaction confirmation timeout");
+                await this.callbacks.onTransactionFail?.(error);
                 throw error;
             }
 
@@ -83,23 +89,25 @@ export class SolanaTransactionsService {
         } while (transactionResponse.status === "pending");
 
         if (transactionResponse.status === "failed") {
-            const error = new Error(`Transaction sending failed: ${JSON.stringify(transactionResponse.error)}`);
-            this.callbacks.onTransactionFail?.(error);
+            const error = new TransactionSendingFailedError(
+                `Transaction sending failed: ${JSON.stringify(transactionResponse.error)}`
+            );
+            await this.callbacks.onTransactionFail?.(error);
             throw error;
         }
 
         if (transactionResponse.status === "awaiting-approval") {
-            const error = new Error(
+            const error = new TransactionAwaitingApprovalError(
                 `Transaction is awaiting approval. Please submit required approvals before waiting for completion.`
             );
-            this.callbacks.onTransactionFail?.(error);
+            await this.callbacks.onTransactionFail?.(error);
             throw error;
         }
 
         const transactionHash = transactionResponse.onChain.txId;
         if (transactionHash == null) {
-            const error = new Error("Transaction hash not found on transaction response");
-            this.callbacks.onTransactionFail?.(error);
+            const error = new TransactionHashNotFoundError("Transaction hash not found on transaction response");
+            await this.callbacks.onTransactionFail?.(error);
             throw error;
         }
         return transactionHash;

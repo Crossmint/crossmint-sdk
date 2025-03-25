@@ -10,6 +10,7 @@ import { SolanaSmartWallet } from "../solana";
 import { parseSolanaSignerInput } from "../solana/types/signers";
 import { getConnectionFromEnvironment } from "../solana/utils";
 import type { WalletOptions } from "../utils/options";
+import { WalletTypeMismatchError, WalletTypeNotSupportedError } from "../utils/errors";
 
 export class WalletFactory {
     constructor(private readonly apiClient: ApiClient) {}
@@ -95,7 +96,7 @@ export class WalletFactory {
                 linkedUser,
             });
         } else {
-            throw new Error("Not implemented");
+            throw new WalletTypeNotSupportedError(`Wallet type ${type} not supported`);
         }
     }
 
@@ -117,7 +118,7 @@ export class WalletFactory {
                 const solanaWallet = this.createSolanaWalletInstance(type, walletResponse, solanaArgs, options);
                 return solanaWallet as WalletTypeToWallet[WalletType];
             default:
-                throw new Error(`Unhandled wallet type: ${type}`);
+                throw new WalletTypeNotSupportedError(`Wallet type ${type} not supported`);
         }
     }
 
@@ -178,7 +179,7 @@ export class WalletFactory {
         type: WalletType
     ): asserts walletResponse is Extract<CreateWalletResponse, { type: WalletType }> {
         if (walletResponse.type !== type) {
-            throw new Error("Invalid wallet type");
+            throw new WalletTypeMismatchError("Invalid wallet type");
         }
     }
 }

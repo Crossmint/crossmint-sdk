@@ -1,6 +1,7 @@
+import bs58 from "bs58";
 import type { ApiClient, CreateTransactionResponse, SolanaWalletLocator } from "@/api";
 import type { SolanaNonCustodialSigner } from "../types/signers";
-import bs58 from "bs58";
+import { PendingApprovalsError, InvalidSignerError } from "../../utils/errors";
 
 type PendingApproval = NonNullable<NonNullable<CreateTransactionResponse["approvals"]>["pending"]>[number];
 
@@ -19,7 +20,7 @@ export class SolanaApprovalsService {
             pendingApprovals.map(async (approval) => {
                 const signer = signers.find((s) => approval.signer.includes(s.address));
                 if (signer == null) {
-                    throw new Error(
+                    throw new InvalidSignerError(
                         `Signer ${approval.signer} is required for the transaction but was not found in the signer list`
                     );
                 }
@@ -33,7 +34,7 @@ export class SolanaApprovalsService {
             approvals,
         });
         if (transaction.status === "awaiting-approval") {
-            throw new Error("Still has pending approvals, please submit all approvals");
+            throw new PendingApprovalsError("Still has pending approvals, please submit all approvals");
         }
         return transaction;
     }

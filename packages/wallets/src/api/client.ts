@@ -19,6 +19,7 @@ import type {
     CreateSignerInputDto,
     DelegatedSignerDto,
 } from "./gen/types.gen";
+import { InvalidApiKeyError } from "../utils/errors";
 
 type CreateWalletParams = CreateWalletDto;
 type CreateWalletResponse = WalletV1Alpha2ResponseDto;
@@ -233,7 +234,7 @@ class ApiClient extends CrossmintApiClient {
 
     public get environment() {
         if (!this.parsedAPIKey.isValid) {
-            throw new Error("Invalid API key");
+            throw new InvalidApiKeyError("Invalid API key");
         }
         return this.parsedAPIKey.environment;
     }

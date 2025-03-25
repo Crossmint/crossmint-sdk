@@ -1,6 +1,7 @@
 import { WebAuthnP256 } from "ox";
 import type { CreateWalletResponse } from "../api";
 import type { EVMSigner, EVMSignerInput, PasskeyCreationCallback } from "./wallet";
+import { SignerTypeMismatchError } from "../utils/errors";
 
 export function getEvmAdminSigner(
     input: EVMSignerInput,
@@ -10,7 +11,7 @@ export function getEvmAdminSigner(
     switch (input.type) {
         case "evm-keypair":
             if (responseSigner.type !== "evm-keypair") {
-                throw new Error("Admin signer type mismatch");
+                throw new SignerTypeMismatchError("Admin signer type mismatch");
             }
             return {
                 ...input,
@@ -18,7 +19,7 @@ export function getEvmAdminSigner(
             };
         case "evm-passkey":
             if (responseSigner.type !== "evm-passkey") {
-                throw new Error("Admin signer type mismatch");
+                throw new SignerTypeMismatchError("Admin signer type mismatch");
             }
             return {
                 type: "evm-passkey",

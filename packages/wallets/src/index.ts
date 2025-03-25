@@ -1,4 +1,5 @@
 export * from "./sdk";
+export * from "./utils/errors";
 export { SolanaSmartWallet, SolanaMPCWallet } from "./solana/wallet";
 export { EVMSmartWallet } from "./evm/wallet";
 
