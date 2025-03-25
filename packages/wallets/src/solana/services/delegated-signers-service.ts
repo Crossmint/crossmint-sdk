@@ -26,9 +26,4 @@ export class SolanaDelegatedSignerService {
         const response = await this.apiClient.getSigner(this.walletLocator, signer);
         return response;
     }
-
-    // biome-ignore lint/suspicious/useAwait: <explanation>
-    public async removeDelegatedSigner(_address: string): Promise<void> {
-        throw new Error("Not implemented");
-    }
 }

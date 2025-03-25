@@ -93,14 +93,4 @@ describe("SolanaDelegatedSignerService", () => {
             });
         });
     });
-
-    describe("removeDelegatedSigner", () => {
-        it("should throw not implemented error", async () => {
-            const signerAddress = "mock-signer-address";
-
-            await expect(delegatedSignerService.removeDelegatedSigner(signerAddress)).rejects.toThrow(
-                "Not implemented"
-            );
-        });
-    });
 });
