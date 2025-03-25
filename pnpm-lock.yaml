@@ -965,6 +965,9 @@ importers:
 
   packages/wallets:
     dependencies:
+      '@crossmint/client-sdk-base':
+        specifier: workspace:*
+        version: link:../client/base
       '@crossmint/common-sdk-auth':
         specifier: workspace:*
         version: link:../common/auth

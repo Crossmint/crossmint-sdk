@@ -23,6 +23,7 @@
         "generate:docs": "typedoc"
     },
     "dependencies": {
+        "@crossmint/client-sdk-base": "workspace:*",
         "@crossmint/common-sdk-auth": "workspace:*",
         "@crossmint/common-sdk-base": "workspace:*",
         "@hey-api/client-fetch": "0.8.1",
