@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.16.3
+
+### Patch Changes
+
+- 68883cd: Tailwind styles: Disable preflight fix style override
+
 ## 1.16.2
 
 ### Patch Changes
