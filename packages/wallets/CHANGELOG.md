@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 0.3.1
+
+### Patch Changes
+
+- 1419305: fixes /balances request
+
 ## 0.3.0
 
 ### Minor Changes
