@@ -9,15 +9,26 @@ import type {
     CreateTransactionDto,
     SubmitApprovalDto,
     WalletsV1ControllerGetTransaction4Response,
+    WalletsV1ControllerSubmitApprovals4Error,
+    WalletsV1ControllerGetTransaction4Error,
     WalletsV1Alpha2TransactionResponseDto,
+    WalletsV1ControllerCreateTransaction4Error,
+    WalletsV1ControllerGetSignature4Error,
     CreateSignatureRequestDto,
     WalletsV1Alpha2SignatureResponseDto,
+    WalletsV1ControllerCreateSignatureRequest4Error,
+    WalletsV1ControllerSubmitSignatureApprovals4Error,
     WalletsV1Alpha2TransactionsResponseDto,
+    WalletsV1ControllerGetTransactionsWithoutChain4Error,
     Nftevm,
     Nftsol,
+    FetchContentFromWalletError,
     WalletBalanceResponseDto,
+    BalanceControllerGetBalanceForLocator2Error,
     CreateSignerInputDto,
     DelegatedSignerDto,
+    WalletsV1ControllerCreateDelegatedSigner4Error,
+    WalletsV1ControllerGetDelegatedSigner4Error,
 } from "./gen/types.gen";
 import { InvalidApiKeyError } from "../utils/errors";
 
@@ -26,24 +37,27 @@ type CreateWalletResponse = WalletV1Alpha2ResponseDto;
 type GetWalletResponse = WalletV1Alpha2ResponseDto;
 
 type CreateTransactionParams = CreateTransactionDto;
-type CreateTransactionResponse = WalletsV1Alpha2TransactionResponseDto;
+type CreateTransactionSuccessResponse = WalletsV1Alpha2TransactionResponseDto;
+type CreateTransactionResponse = CreateTransactionSuccessResponse | WalletsV1ControllerCreateTransaction4Error;
 type ApproveTransactionParams = SubmitApprovalDto;
-type ApproveTransactionResponse = WalletsV1ControllerGetTransaction4Response;
-type GetTransactionResponse = WalletsV1Alpha2TransactionResponseDto;
+type ApproveTransactionResponse = WalletsV1ControllerGetTransaction4Response | WalletsV1ControllerSubmitApprovals4Error;
+type GetTransactionResponse = WalletsV1Alpha2TransactionResponseDto | WalletsV1ControllerGetTransaction4Error;
 
 type CreateSignatureParams = CreateSignatureRequestDto;
-type CreateSignatureResponse = WalletsV1Alpha2SignatureResponseDto;
+type CreateSignatureResponse = WalletsV1Alpha2SignatureResponseDto | WalletsV1ControllerCreateSignatureRequest4Error;
 type ApproveSignatureParams = SubmitApprovalDto;
-type ApproveSignatureResponse = WalletsV1Alpha2SignatureResponseDto;
-type GetSignatureResponse = WalletsV1Alpha2SignatureResponseDto;
+type ApproveSignatureResponse = WalletsV1Alpha2SignatureResponseDto | WalletsV1ControllerSubmitSignatureApprovals4Error;
+type GetSignatureResponse = WalletsV1Alpha2SignatureResponseDto | WalletsV1ControllerGetSignature4Error;
 
-type GetTransactionsResponse = WalletsV1Alpha2TransactionsResponseDto;
-type GetNftsResponse = Nftevm | Nftsol;
-type GetBalanceResponse = WalletBalanceResponseDto;
+type GetTransactionsResponse =
+    | WalletsV1Alpha2TransactionsResponseDto
+    | WalletsV1ControllerGetTransactionsWithoutChain4Error;
+type GetNftsResponse = Nftevm | Nftsol | FetchContentFromWalletError;
+type GetBalanceResponse = WalletBalanceResponseDto | BalanceControllerGetBalanceForLocator2Error;
 
 type RegisterSignerParams = CreateSignerInputDto;
-type RegisterSignerResponse = DelegatedSignerDto;
-type GetSignerResponse = DelegatedSignerDto;
+type RegisterSignerResponse = DelegatedSignerDto | WalletsV1ControllerCreateDelegatedSigner4Error;
+type GetSignerResponse = DelegatedSignerDto | WalletsV1ControllerGetDelegatedSigner4Error;
 type WalletType = CreateWalletDto["type"];
 type EvmWalletLocator = `me:${WalletType}` | Address;
 type SolanaAddress = string;
@@ -246,6 +260,7 @@ export type {
     CreateWalletResponse,
     GetWalletResponse,
     CreateTransactionParams,
+    CreateTransactionSuccessResponse,
     CreateTransactionResponse,
     ApproveTransactionParams,
     ApproveTransactionResponse,

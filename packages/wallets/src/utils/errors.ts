@@ -66,6 +66,30 @@ export class MessageSigningNotSupportedError extends CrossmintSDKError {
     }
 }
 
+export class SignatureNotCreatedError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.NO_SIGNATURE, details);
+    }
+}
+
+export class SignatureNotAvailableError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.NO_SIGNATURE, details);
+    }
+}
+
+export class TransactionNotCreatedError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.NO_TRANSACTION, details);
+    }
+}
+
+export class TransactionNotAvailableError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.NO_TRANSACTION, details);
+    }
+}
+
 export class TransactionConfirmationTimeoutError extends CrossmintSDKError {
     constructor(message: string, details?: string) {
         super(message, WalletErrorCode.TRANSACTION_FAILED, details);
@@ -85,6 +109,12 @@ export class TransactionAwaitingApprovalError extends CrossmintSDKError {
 }
 
 export class TransactionHashNotFoundError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.TRANSACTION_FAILED, details);
+    }
+}
+
+export class TransactionFailedError extends CrossmintSDKError {
     constructor(message: string, details?: string) {
         super(message, WalletErrorCode.TRANSACTION_FAILED, details);
     }

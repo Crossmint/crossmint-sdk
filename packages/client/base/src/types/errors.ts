@@ -49,7 +49,9 @@ export const WalletErrorCode = {
     SIGNER_INVALID: "wallet:signer-invalid",
     WALLET_TYPE_INVALID: "wallet:wallet-type-invalid",
     MESSAGE_INVALID: "wallet:message-invalid",
+    NO_SIGNATURE: "wallet:no-signature",
     SIGNING_FAILED: "wallet:signing-failed",
+    NO_TRANSACTION: "wallet:no-transaction",
     TRANSACTION_FAILED: "wallet:transaction-failed",
     ENVIRONMENT_INVALID: "wallet:environment-invalid",
 };

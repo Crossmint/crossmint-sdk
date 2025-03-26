@@ -24,11 +24,16 @@ import {
     InvalidSignerError,
     InvalidTypedDataError,
     MessageSigningNotSupportedError,
+    SignatureNotAvailableError,
+    SignatureNotCreatedError,
     SignatureNotFoundError,
     SigningFailedError,
     TransactionAwaitingApprovalError,
     TransactionConfirmationTimeoutError,
+    TransactionFailedError,
     TransactionHashNotFoundError,
+    TransactionNotAvailableError,
+    TransactionNotCreatedError,
     TransactionSendingFailedError,
 } from "../utils/errors";
 
@@ -153,6 +158,9 @@ export class EVMSmartWallet implements ViemWallet {
      */
     public async transactions() {
         const transactions = await this.apiClient.getTransactions(this.walletLocator);
+        if ("error" in transactions) {
+            throw new TransactionNotAvailableError(JSON.stringify(transactions));
+        }
         return transactions.transactions.filter((transaction) => transaction.walletType === "evm-smart-wallet");
     }
 
@@ -198,6 +206,9 @@ export class EVMSmartWallet implements ViemWallet {
                 chain: this.chain,
             },
         });
+        if ("error" in signatureCreationResponse) {
+            throw new SignatureNotCreatedError(JSON.stringify(signatureCreationResponse));
+        }
         const signatureId = signatureCreationResponse.id;
 
         // Approve signature
@@ -217,6 +228,9 @@ export class EVMSmartWallet implements ViemWallet {
         do {
             await sleep(STATUS_POLLING_INTERVAL_MS);
             signatureResponse = await this.apiClient.getSignature(this.walletLocator, signatureId);
+            if ("error" in signatureResponse) {
+                throw new SignatureNotAvailableError(JSON.stringify(signatureResponse));
+            }
         } while (signatureResponse === null || signatureResponse.status === "pending");
 
         if (signatureResponse.status === "failed") {
@@ -261,6 +275,9 @@ export class EVMSmartWallet implements ViemWallet {
                 isSmartWalletSignature: false,
             },
         });
+        if ("error" in signatureCreationResponse) {
+            throw new SignatureNotCreatedError(JSON.stringify(signatureCreationResponse));
+        }
         const signatureId = signatureCreationResponse.id;
 
         // Approve signature
@@ -279,6 +296,9 @@ export class EVMSmartWallet implements ViemWallet {
         while (signatureResponse === null || signatureResponse.status === "pending") {
             await sleep(STATUS_POLLING_INTERVAL_MS);
             signatureResponse = await this.apiClient.getSignature(this.walletLocator, signatureId);
+            if ("error" in signatureResponse) {
+                throw new SignatureNotAvailableError(JSON.stringify(signatureResponse));
+            }
         }
 
         if (signatureResponse.status === "failed") {
@@ -304,6 +324,9 @@ export class EVMSmartWallet implements ViemWallet {
                 ],
             },
         });
+        if ("error" in transactionCreationResponse) {
+            throw new TransactionNotCreatedError(JSON.stringify(transactionCreationResponse));
+        }
         const transactionId = transactionCreationResponse.id;
 
         // Approve transaction
@@ -331,6 +354,9 @@ export class EVMSmartWallet implements ViemWallet {
             }
 
             transactionResponse = await this.apiClient.getTransaction(this.walletLocator, transactionId);
+            if ("error" in transactionResponse) {
+                throw new TransactionNotAvailableError(JSON.stringify(transactionResponse));
+            }
             await sleep(STATUS_POLLING_INTERVAL_MS);
         } while (transactionResponse.status === "pending");
 
@@ -415,7 +441,7 @@ export class EVMSmartWallet implements ViemWallet {
     private async approveTransaction(transactionId: string, message: Hex) {
         const { signature, metadata } = await this.signWithAdminSigner(message);
 
-        await this.apiClient.approveTransaction(this.walletLocator, transactionId, {
+        const approvalResponse = await this.apiClient.approveTransaction(this.walletLocator, transactionId, {
             approvals: [
                 {
                     signer: this.signerLocator,
@@ -431,6 +457,9 @@ export class EVMSmartWallet implements ViemWallet {
                 },
             ],
         });
+        if ("error" in approvalResponse) {
+            throw new TransactionFailedError(JSON.stringify(approvalResponse));
+        }
     }
 
     private async approveSignature(signatureId: string, message: Hex) {

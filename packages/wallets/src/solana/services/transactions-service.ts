@@ -10,6 +10,8 @@ import {
     TransactionAwaitingApprovalError,
     TransactionConfirmationTimeoutError,
     TransactionHashNotFoundError,
+    TransactionNotAvailableError,
+    TransactionNotCreatedError,
     TransactionSendingFailedError,
 } from "../../utils/errors";
 
@@ -46,6 +48,9 @@ export class SolanaTransactionsService {
 
     async approveTransaction(transactionId: string, signers: SolanaNonCustodialSigner[]) {
         const transaction = await this.apiClient.getTransaction(this.walletLocator, transactionId);
+        if (transaction.error) {
+            throw new TransactionNotAvailableError(JSON.stringify(transaction));
+        }
         if (transaction.status === "awaiting-approval") {
             await this.approvalsService.approve(transaction.id, transaction.approvals?.pending || [], signers);
         }
@@ -70,6 +75,9 @@ export class SolanaTransactionsService {
         const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
             params: transactionParams,
         });
+        if (transactionCreationResponse.error) {
+            throw new TransactionNotCreatedError(JSON.stringify(transactionCreationResponse));
+        }
         return transactionCreationResponse;
     }
 
@@ -85,6 +93,9 @@ export class SolanaTransactionsService {
             }
 
             transactionResponse = await this.apiClient.getTransaction(this.walletLocator, transactionId);
+            if (transactionResponse.error) {
+                throw new TransactionNotAvailableError(JSON.stringify(transactionResponse));
+            }
             await sleep(STATUS_POLLING_INTERVAL_MS);
         } while (transactionResponse.status === "pending");
 

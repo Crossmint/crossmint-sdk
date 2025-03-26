@@ -1,9 +1,9 @@
 import bs58 from "bs58";
-import type { ApiClient, CreateTransactionResponse, SolanaWalletLocator } from "@/api";
+import type { ApiClient, CreateTransactionSuccessResponse, SolanaWalletLocator } from "@/api";
 import type { SolanaNonCustodialSigner } from "../types/signers";
-import { PendingApprovalsError, InvalidSignerError } from "../../utils/errors";
+import { PendingApprovalsError, InvalidSignerError, TransactionFailedError } from "../../utils/errors";
 
-type PendingApproval = NonNullable<NonNullable<CreateTransactionResponse["approvals"]>["pending"]>[number];
+type PendingApproval = NonNullable<NonNullable<CreateTransactionSuccessResponse["approvals"]>["pending"]>[number];
 
 export class SolanaApprovalsService {
     constructor(
@@ -33,6 +33,9 @@ export class SolanaApprovalsService {
         const transaction = await this.apiClient.approveTransaction(this.walletLocator, transactionId, {
             approvals,
         });
+        if (transaction.error) {
+            throw new TransactionFailedError(JSON.stringify(transaction));
+        }
         if (transaction.status === "awaiting-approval") {
             throw new PendingApprovalsError("Still has pending approvals, please submit all approvals");
         }
