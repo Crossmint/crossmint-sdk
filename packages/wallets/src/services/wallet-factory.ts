@@ -10,7 +10,7 @@ import { SolanaSmartWallet } from "../solana";
 import { parseSolanaSignerInput } from "../solana/types/signers";
 import { getConnectionFromEnvironment } from "../solana/utils";
 import type { WalletOptions } from "../utils/options";
-import { WalletTypeMismatchError, WalletTypeNotSupportedError } from "../utils/errors";
+import { WalletCreationError, WalletTypeMismatchError, WalletTypeNotSupportedError } from "../utils/errors";
 
 export class WalletFactory {
     constructor(private readonly apiClient: ApiClient) {}
@@ -178,6 +178,9 @@ export class WalletFactory {
         walletResponse: CreateWalletResponse,
         type: WalletType
     ): asserts walletResponse is Extract<CreateWalletResponse, { type: WalletType }> {
+        if ("error" in walletResponse) {
+            throw new WalletCreationError(`Unable to init wallet: ${JSON.stringify(walletResponse)}`);
+        }
         if (walletResponse.type !== type) {
             throw new WalletTypeMismatchError("Invalid wallet type");
         }

@@ -5,6 +5,7 @@ import { SDK_NAME, SDK_VERSION } from "../utils/constants";
 
 import type {
     CreateWalletDto,
+    WalletV1Alpha2ErrorDto,
     WalletV1Alpha2ResponseDto,
     CreateTransactionDto,
     SubmitApprovalDto,
@@ -33,8 +34,8 @@ import type {
 import { InvalidApiKeyError } from "../utils/errors";
 
 type CreateWalletParams = CreateWalletDto;
-type CreateWalletResponse = WalletV1Alpha2ResponseDto;
-type GetWalletResponse = WalletV1Alpha2ResponseDto;
+type CreateWalletResponse = WalletV1Alpha2ResponseDto | WalletV1Alpha2ErrorDto;
+type GetWalletResponse = WalletV1Alpha2ResponseDto | WalletV1Alpha2ErrorDto;
 
 type CreateTransactionParams = CreateTransactionDto;
 type CreateTransactionSuccessResponse = WalletsV1Alpha2TransactionResponseDto;
