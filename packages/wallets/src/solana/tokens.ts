@@ -1,1 +1,1 @@
-export type SolanaSupportedToken = "usdc" | "usdt" | "sol";
+export type SolanaSupportedToken = "usdc" | "sol";

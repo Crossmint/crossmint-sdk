@@ -73,7 +73,7 @@ abstract class SolanaWallet {
      * @returns The balances
      */
     public async balances(tokens: SolanaSupportedToken[]): Promise<GetBalanceResponse> {
-        return await this.apiClient.getBalance(this.walletLocator, {
+        return await this.apiClient.getBalance(this.getAddress(), {
             tokens,
         });
     }

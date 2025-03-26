@@ -194,7 +194,7 @@ class ApiClient extends CrossmintApiClient {
         if (params.chains) {
             params.chains.forEach((chain) => queryParams.append("chains", chain));
         }
-        params.tokens.forEach((token) => queryParams.append("tokens", token));
+        queryParams.append("tokens", params.tokens.join(","));
         const response = await this.get(`api/v1-alpha2/wallets/${walletLocator}/balances?${queryParams.toString()}`, {
             headers: {
                 "Content-Type": "application/json",

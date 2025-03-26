@@ -129,7 +129,7 @@ export class EVMSmartWallet implements ViemWallet {
      * @returns The balances
      */
     public async balances(tokens: Address[]) {
-        return await this.apiClient.getBalance(this.walletLocator, {
+        return await this.apiClient.getBalance(this.getAddress(), {
             chains: [this.chain],
             tokens,
         });
