@@ -1,4 +1,4 @@
-import { CrossmintSDKError, WalletErrorCode } from "@crossmint/client-sdk-base";
+import { CrossmintSDKError, WalletErrorCode } from "@crossmint/common-sdk-base";
 
 export class InvalidApiKeyError extends CrossmintSDKError {
     constructor(message: string, details?: string) {

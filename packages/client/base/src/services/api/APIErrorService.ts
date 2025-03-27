@@ -1,5 +1,6 @@
+import { CrossmintSDKError } from "@crossmint/common-sdk-base";
+
 import {
-    CrossmintSDKError,
     CrossmintServiceError,
     JWTDecryptionError,
     JWTExpiredError,

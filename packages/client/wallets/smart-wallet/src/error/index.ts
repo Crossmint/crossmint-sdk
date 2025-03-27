@@ -1,4 +1,4 @@
-import { CrossmintSDKError, SmartWalletErrorCode } from "@crossmint/client-sdk-base";
+import { CrossmintSDKError, SmartWalletErrorCode } from "@crossmint/common-sdk-base";
 
 export class SmartWalletError extends CrossmintSDKError {
     constructor(message: string, details?: string, code: SmartWalletErrorCode = SmartWalletErrorCode.UNCATEGORIZED) {
