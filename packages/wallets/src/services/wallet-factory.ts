@@ -200,8 +200,14 @@ export class WalletFactory {
         args: WalletTypeToArgs[WalletType]
     ) {
         switch (existingWallet.type) {
-            case "evm-smart-wallet": {
-                const { adminSigner: adminSignerInput } = args as WalletTypeToArgs["evm-smart-wallet"];
+            case "evm-smart-wallet":
+            case "solana-smart-wallet": {
+                const { adminSigner: adminSignerInput } = args as WalletTypeToArgs[
+                    | "evm-smart-wallet"
+                    | "solana-smart-wallet"];
+                if (adminSignerInput === undefined) {
+                    return;
+                }
                 const walletAdminSigner = existingWallet.config.adminSigner;
                 if (walletAdminSigner.type !== adminSignerInput.type) {
                     throw new InvalidWalletConfigError(
@@ -209,30 +215,9 @@ export class WalletFactory {
                     );
                 }
                 switch (walletAdminSigner.type) {
-                    case "evm-keypair": {
-                        if (adminSignerInput.type !== "evm-keypair") {
-                            throw new InvalidWalletConfigError(
-                                `Invalid admin signer type: expected "${adminSignerInput.type}", got "${walletAdminSigner.type}"`
-                            );
-                        }
-                        if (walletAdminSigner.address !== adminSignerInput.address) {
-                            throw new InvalidWalletConfigError(
-                                `Invalid admin signer address: expected "${walletAdminSigner.address}", got "${adminSignerInput.address}"`
-                            );
-                        }
-                    }
-                }
-                break;
-            }
-            case "solana-smart-wallet": {
-                const { adminSigner: adminSignerInput } = args as WalletTypeToArgs["solana-smart-wallet"];
-                if (adminSignerInput == null) {
-                    return;
-                }
-                const walletAdminSigner = existingWallet.config.adminSigner;
-                switch (walletAdminSigner.type) {
+                    case "evm-keypair":
                     case "solana-keypair": {
-                        if (adminSignerInput.type !== "solana-keypair") {
+                        if (adminSignerInput.type !== "evm-keypair" && adminSignerInput.type !== "solana-keypair") {
                             throw new InvalidWalletConfigError(
                                 `Invalid admin signer type: expected "${adminSignerInput.type}", got "${walletAdminSigner.type}"`
                             );
@@ -244,7 +229,6 @@ export class WalletFactory {
                         }
                     }
                 }
-                break;
             }
         }
     }
