@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-base
 
+## 1.4.13
+
+### Patch Changes
+
+- 3f9d7bc: embed: crypto default switch + pirate currency
+
 ## 1.4.12
 
 ### Patch Changes

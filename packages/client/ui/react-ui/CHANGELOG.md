@@ -1,5 +1,16 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.16.5
+
+### Patch Changes
+
+- 3f9d7bc: embed: crypto default switch + pirate currency
+- Updated dependencies [3f9d7bc]
+  - @crossmint/client-sdk-base@1.4.13
+  - @crossmint/client-sdk-auth@1.1.22
+  - @crossmint/common-sdk-auth@1.0.20
+  - @crossmint/wallets-sdk@0.3.2
+
 ## 1.16.4
 
 ### Patch Changes

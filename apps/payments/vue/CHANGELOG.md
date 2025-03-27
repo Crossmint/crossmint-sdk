@@ -1,5 +1,14 @@
 # @crossmint/client-sdk-vue-ui-starter
 
+## 1.1.50
+
+### Patch Changes
+
+- Updated dependencies [3f9d7bc]
+  - @crossmint/client-sdk-base@1.4.13
+  - @crossmint/client-sdk-vue-ui@1.1.37
+  - @crossmint/client-sdk-smart-wallet@0.3.2
+
 ## 1.1.49
 
 ### Patch Changes
