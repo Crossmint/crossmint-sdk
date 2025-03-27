@@ -1,14 +1,4 @@
-import { CrossmintErrors } from "@/types";
-
-export class CrossmintSDKError extends Error {
-    constructor(
-        message: string,
-        public readonly code: CrossmintErrors,
-        public readonly details?: string
-    ) {
-        super(message);
-    }
-}
+import { CrossmintSDKError, CrossmintErrors } from "@crossmint/common-sdk-base";
 
 export class CrossmintServiceError extends CrossmintSDKError {
     public status?: number;

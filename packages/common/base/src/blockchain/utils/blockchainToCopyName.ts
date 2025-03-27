@@ -32,6 +32,8 @@ export const BLOCKCHAIN_TO_COPY_NAME: Record<BlockchainIncludingTestnet, string>
     "hypersonic-testnet": "Hypersonic Testnet",
     "story-testnet": "Story Testnet",
     story: "Story Mainnet",
+    "mode-sepolia": "Mode Sepolia",
+    mode: "Mode",
     chiliz: "Chiliz",
 };
 

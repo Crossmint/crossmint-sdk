@@ -1,53 +1,31 @@
 import { type Crossmint, APIKeyUsageOrigin, CrossmintApiClient } from "@crossmint/common-sdk-base";
-import type { Address } from "viem";
 
 import { SDK_NAME, SDK_VERSION } from "../utils/constants";
+import { InvalidApiKeyError } from "../utils/errors";
 
 import type {
-    CreateWalletDto,
-    WalletV1Alpha2ResponseDto,
-    CreateTransactionDto,
-    SubmitApprovalDto,
-    WalletsV1ControllerGetTransaction4Response,
-    WalletsV1Alpha2TransactionResponseDto,
-    CreateSignatureRequestDto,
-    WalletsV1Alpha2SignatureResponseDto,
-    WalletsV1Alpha2TransactionsResponseDto,
-    Nftevm,
-    Nftsol,
-    WalletBalanceResponseDto,
-    CreateSignerInputDto,
-    DelegatedSignerDto,
-} from "./gen/types.gen";
-
-type CreateWalletParams = CreateWalletDto;
-type CreateWalletResponse = WalletV1Alpha2ResponseDto;
-type GetWalletResponse = WalletV1Alpha2ResponseDto;
-
-type CreateTransactionParams = CreateTransactionDto;
-type CreateTransactionResponse = WalletsV1Alpha2TransactionResponseDto;
-type ApproveTransactionParams = SubmitApprovalDto;
-type ApproveTransactionResponse = WalletsV1ControllerGetTransaction4Response;
-type GetTransactionResponse = WalletsV1Alpha2TransactionResponseDto;
-
-type CreateSignatureParams = CreateSignatureRequestDto;
-type CreateSignatureResponse = WalletsV1Alpha2SignatureResponseDto;
-type ApproveSignatureParams = SubmitApprovalDto;
-type ApproveSignatureResponse = WalletsV1Alpha2SignatureResponseDto;
-type GetSignatureResponse = WalletsV1Alpha2SignatureResponseDto;
-
-type GetTransactionsResponse = WalletsV1Alpha2TransactionsResponseDto;
-type GetNftsResponse = Nftevm | Nftsol;
-type GetBalanceResponse = WalletBalanceResponseDto;
-
-type RegisterSignerParams = CreateSignerInputDto;
-type RegisterSignerResponse = DelegatedSignerDto;
-type GetSignerResponse = DelegatedSignerDto;
-type WalletType = CreateWalletDto["type"];
-type EvmWalletLocator = `me:${WalletType}` | Address;
-type SolanaAddress = string;
-type SolanaWalletLocator = `me:${WalletType}` | SolanaAddress;
-type WalletLocator = EvmWalletLocator | SolanaWalletLocator;
+    CreateWalletParams,
+    CreateWalletResponse,
+    GetWalletResponse,
+    CreateTransactionParams,
+    CreateTransactionResponse,
+    ApproveTransactionParams,
+    ApproveTransactionResponse,
+    GetTransactionResponse,
+    CreateSignatureParams,
+    CreateSignatureResponse,
+    ApproveSignatureParams,
+    ApproveSignatureResponse,
+    GetSignatureResponse,
+    GetTransactionsResponse,
+    GetNftsResponse,
+    GetBalanceResponse,
+    RegisterSignerParams,
+    RegisterSignerResponse,
+    GetSignerResponse,
+    WalletLocator,
+    EvmWalletLocator,
+} from "./types";
 
 class ApiClient extends CrossmintApiClient {
     private apiPrefix = "api/2022-06-09/wallets";
@@ -233,30 +211,10 @@ class ApiClient extends CrossmintApiClient {
 
     public get environment() {
         if (!this.parsedAPIKey.isValid) {
-            throw new Error("Invalid API key");
+            throw new InvalidApiKeyError("Invalid API key");
         }
         return this.parsedAPIKey.environment;
     }
 }
 
 export { ApiClient };
-export type {
-    CreateWalletParams,
-    CreateWalletResponse,
-    GetWalletResponse,
-    CreateTransactionParams,
-    CreateTransactionResponse,
-    ApproveTransactionParams,
-    ApproveTransactionResponse,
-    GetTransactionResponse,
-    CreateSignatureParams,
-    CreateSignatureResponse,
-    ApproveSignatureParams,
-    ApproveSignatureResponse,
-    GetSignatureResponse,
-    GetTransactionsResponse,
-    GetNftsResponse,
-    GetBalanceResponse,
-    EvmWalletLocator,
-    SolanaWalletLocator,
-};

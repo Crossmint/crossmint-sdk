@@ -9,6 +9,9 @@ import {
     optimism,
     arbitrumSepolia,
     arbitrum,
+    modeTestnet,
+    mode,
+    bsc,
 } from "viem/chains";
 
 import { story } from "./definitions/story";
@@ -20,6 +23,7 @@ const EVM_SMART_WALLET_TESTNET_CHAINS = [
     Blockchain.OPTIMISM_SEPOLIA,
     Blockchain.ARBITRUM_SEPOLIA,
     Blockchain.STORY_TESTNET,
+    Blockchain.MODE_SEPOLIA,
 ];
 
 const EVM_SMART_WALLET_MAINNET_CHAINS = [
@@ -28,6 +32,8 @@ const EVM_SMART_WALLET_MAINNET_CHAINS = [
     Blockchain.OPTIMISM,
     Blockchain.ARBITRUM,
     Blockchain.STORY,
+    Blockchain.MODE,
+    Blockchain.BSC,
 ];
 
 type EVMSmartWalletTestnet = (typeof EVM_SMART_WALLET_TESTNET_CHAINS)[number];
@@ -64,5 +70,11 @@ export function toViemChain(chain: EVMSmartWalletChain): Chain {
             return storyTestnet;
         case Blockchain.STORY:
             return story;
+        case Blockchain.MODE_SEPOLIA:
+            return modeTestnet;
+        case Blockchain.MODE:
+            return mode;
+        case Blockchain.BSC:
+            return bsc;
     }
 }

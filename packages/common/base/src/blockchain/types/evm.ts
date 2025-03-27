@@ -15,6 +15,7 @@ export const EVMBlockchain = {
     APEX: "apex",
     CHILIZ: "chiliz",
     STORY: "story",
+    MODE: "mode",
 } as const;
 export type EVMBlockchain = ObjectValues<typeof EVMBlockchain>;
 export const EVM_CHAINS = objectValues(EVMBlockchain);
@@ -34,6 +35,7 @@ export const EVMBlockchainTestnet = {
     ZORA_SEPOLIA: "zora-sepolia",
     HYPERSONIC_TESTNET: "hypersonic-testnet",
     STORY_TESTNET: "story-testnet",
+    MODE_SEPOLIA: "mode-sepolia",
 } as const;
 export type EVMBlockchainTestnet = ObjectValues<typeof EVMBlockchainTestnet>;
 export const EVM_BLOCKCHAIN_TESTNETS = objectValues(EVMBlockchainTestnet);

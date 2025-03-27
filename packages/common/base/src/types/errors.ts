@@ -45,10 +45,17 @@ export const SmartWalletErrorCode = {
 export type SmartWalletErrorCode = (typeof SmartWalletErrorCode)[keyof typeof SmartWalletErrorCode];
 
 export const WalletErrorCode = {
-    SEND_TRANSACTION_FAILED: "wallet:send-transaction-failed",
-    SEND_TRANSACTION_EXECUTION_REVERTED: "wallet:send-transaction-execution-reverted",
-    SEND_TRANSACTION_CONFIRMATION_FAILED: "wallet:send-transaction-confirmation-failed",
-    SEND_TRANSACTION_SIMULATION_FAILED: "wallet:send-transaction-simulation-failed",
+    API_KEY_INVALID: "wallet:api-key-invalid",
+    SIGNER_INVALID: "wallet:signer-invalid",
+    WALLET_NOT_AVAILABLE: "wallet:wallet-not-available",
+    WALLET_CREATION_FAILED: "wallet:wallet-creation-failed",
+    WALLET_TYPE_INVALID: "wallet:wallet-type-invalid",
+    MESSAGE_INVALID: "wallet:message-invalid",
+    NO_SIGNATURE: "wallet:no-signature",
+    SIGNING_FAILED: "wallet:signing-failed",
+    NO_TRANSACTION: "wallet:no-transaction",
+    TRANSACTION_FAILED: "wallet:transaction-failed",
+    ENVIRONMENT_INVALID: "wallet:environment-invalid",
 };
 export type WalletErrorCode = (typeof WalletErrorCode)[keyof typeof WalletErrorCode];
 
