@@ -3,7 +3,7 @@ import type { Address } from "viem";
 
 import { SolanaMPCWallet } from "../solana";
 import type { EvmWalletType, SolanaWalletType, WalletTypeToArgs, WalletTypeToWallet } from "./types";
-import type { ApiClient, CreateWalletResponse } from "../api";
+import type { ApiClient, CreateWalletResponse, GetWalletSuccessResponse } from "../api";
 import { EVMSmartWallet } from "../evm";
 import { createPasskeySigner, getEvmAdminSigner } from "../evm/utils";
 import { SolanaSmartWallet } from "../solana";
@@ -11,6 +11,7 @@ import { parseSolanaSignerInput } from "../solana/types/signers";
 import { getConnectionFromEnvironment } from "../solana/utils";
 import type { WalletOptions } from "../utils/options";
 import {
+    InvalidWalletConfigError,
     WalletCreationError,
     WalletNotAvailableError,
     WalletTypeMismatchError,
@@ -57,6 +58,7 @@ export class WalletFactory {
             throw new WalletNotAvailableError(JSON.stringify(existingWallet));
         }
         if (existingWallet) {
+            this.checkWalletConfig(existingWallet, args);
             return existingWallet;
         }
         await options?.experimental_callbacks?.onWalletCreationStart?.();
@@ -177,6 +179,56 @@ export class WalletFactory {
                     getConnectionFromEnvironment(this.apiClient.environment),
                     options?.experimental_callbacks ?? {}
                 ) as WalletTypeToWallet[WalletType];
+            }
+        }
+    }
+
+    /**
+     * Checks if the wallet config passed during wallet initialization matches the API response
+     * Throws on mismatch
+     * @param existingWallet Onchain wallet state
+     * @param args Wallet config passed during wallet initialization
+     */
+    private checkWalletConfig<WalletType extends keyof WalletTypeToArgs>(
+        existingWallet: GetWalletSuccessResponse,
+        args: WalletTypeToArgs[WalletType]
+    ) {
+        switch (existingWallet.type) {
+            case "evm-smart-wallet": {
+                const { adminSigner: adminSignerInput } = args as WalletTypeToArgs["evm-smart-wallet"];
+                const walletAdminSigner = existingWallet.config.adminSigner;
+                if (walletAdminSigner.type !== adminSignerInput.type) {
+                    throw new InvalidWalletConfigError("Invalid admin signer type");
+                }
+                switch (walletAdminSigner.type) {
+                    case "evm-keypair": {
+                        if (adminSignerInput.type !== "evm-keypair") {
+                            throw new InvalidWalletConfigError("Invalid admin signer type");
+                        }
+                        if (walletAdminSigner.address !== adminSignerInput.address) {
+                            throw new InvalidWalletConfigError("Invalid admin signer address");
+                        }
+                    }
+                }
+                break;
+            }
+            case "solana-smart-wallet": {
+                const { adminSigner: adminSignerInput } = args as WalletTypeToArgs["solana-smart-wallet"];
+                if (adminSignerInput == null) {
+                    return;
+                }
+                const walletAdminSigner = existingWallet.config.adminSigner;
+                switch (walletAdminSigner.type) {
+                    case "solana-keypair": {
+                        if (adminSignerInput.type !== "solana-keypair") {
+                            throw new InvalidWalletConfigError("Invalid admin signer type");
+                        }
+                        if (walletAdminSigner.address !== adminSignerInput.address) {
+                            throw new InvalidWalletConfigError("Invalid admin signer address");
+                        }
+                    }
+                }
+                break;
             }
         }
     }

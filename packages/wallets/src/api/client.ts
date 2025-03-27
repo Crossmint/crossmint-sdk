@@ -34,8 +34,9 @@ import type {
 import { InvalidApiKeyError } from "../utils/errors";
 
 type CreateWalletParams = CreateWalletDto;
-type CreateWalletResponse = WalletV1Alpha2ResponseDto | WalletV1Alpha2ErrorDto;
-type GetWalletResponse = WalletV1Alpha2ResponseDto | WalletV1Alpha2ErrorDto;
+type GetWalletSuccessResponse = WalletV1Alpha2ResponseDto;
+type CreateWalletResponse = GetWalletSuccessResponse | WalletV1Alpha2ErrorDto;
+type GetWalletResponse = GetWalletSuccessResponse | WalletV1Alpha2ErrorDto;
 
 type CreateTransactionParams = CreateTransactionDto;
 type CreateTransactionSuccessResponse = WalletsV1Alpha2TransactionResponseDto;
@@ -259,6 +260,7 @@ export { ApiClient };
 export type {
     CreateWalletParams,
     CreateWalletResponse,
+    GetWalletSuccessResponse,
     GetWalletResponse,
     CreateTransactionParams,
     CreateTransactionSuccessResponse,
