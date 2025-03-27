@@ -28,6 +28,9 @@ export class WalletFactory {
     ): Promise<WalletTypeToWallet[WalletType]> {
         try {
             const walletResponse = await this.getOrCreateWalletInternal(type, args, options);
+            if ("error" in walletResponse) {
+                throw new WalletCreationError(JSON.stringify(walletResponse));
+            }
             const wallet = this.createWalletInstance(type, walletResponse, args, options);
             await options?.experimental_callbacks?.onWalletCreationComplete?.(wallet);
             return wallet;
@@ -45,6 +48,9 @@ export class WalletFactory {
     ): Promise<WalletTypeToWallet[WalletType]> {
         const locator = this.apiClient.isServerSide ? address : `me:${type}`;
         const walletResponse = await this.apiClient.getWallet(locator);
+        if ("error" in walletResponse) {
+            throw new WalletNotAvailableError(JSON.stringify(walletResponse));
+        }
         return this.createWalletInstance(type, walletResponse, args, options);
     }
 
@@ -58,7 +64,6 @@ export class WalletFactory {
             throw new WalletNotAvailableError(JSON.stringify(existingWallet));
         }
         if (existingWallet) {
-            this.checkWalletConfig(existingWallet, args);
             return existingWallet;
         }
         await options?.experimental_callbacks?.onWalletCreationStart?.();
@@ -111,11 +116,12 @@ export class WalletFactory {
 
     private createWalletInstance<WalletType extends keyof WalletTypeToArgs>(
         type: WalletType,
-        walletResponse: CreateWalletResponse,
+        walletResponse: GetWalletSuccessResponse,
         args: WalletTypeToArgs[WalletType],
         options?: WalletOptions
     ): WalletTypeToWallet[WalletType] {
         this.assertCorrectWalletType(walletResponse, type);
+        this.checkWalletConfig(walletResponse, args);
         switch (type) {
             case "evm-smart-wallet":
                 const evmArgs = args as WalletTypeToArgs[EvmWalletType];
@@ -198,15 +204,21 @@ export class WalletFactory {
                 const { adminSigner: adminSignerInput } = args as WalletTypeToArgs["evm-smart-wallet"];
                 const walletAdminSigner = existingWallet.config.adminSigner;
                 if (walletAdminSigner.type !== adminSignerInput.type) {
-                    throw new InvalidWalletConfigError("Invalid admin signer type");
+                    throw new InvalidWalletConfigError(
+                        `Invalid admin signer type: expected "${adminSignerInput.type}", got "${walletAdminSigner.type}"`
+                    );
                 }
                 switch (walletAdminSigner.type) {
                     case "evm-keypair": {
                         if (adminSignerInput.type !== "evm-keypair") {
-                            throw new InvalidWalletConfigError("Invalid admin signer type");
+                            throw new InvalidWalletConfigError(
+                                `Invalid admin signer type: expected "${adminSignerInput.type}", got "${walletAdminSigner.type}"`
+                            );
                         }
                         if (walletAdminSigner.address !== adminSignerInput.address) {
-                            throw new InvalidWalletConfigError("Invalid admin signer address");
+                            throw new InvalidWalletConfigError(
+                                `Invalid admin signer address: expected "${walletAdminSigner.address}", got "${adminSignerInput.address}"`
+                            );
                         }
                     }
                 }
@@ -221,10 +233,14 @@ export class WalletFactory {
                 switch (walletAdminSigner.type) {
                     case "solana-keypair": {
                         if (adminSignerInput.type !== "solana-keypair") {
-                            throw new InvalidWalletConfigError("Invalid admin signer type");
+                            throw new InvalidWalletConfigError(
+                                `Invalid admin signer type: expected "${adminSignerInput.type}", got "${walletAdminSigner.type}"`
+                            );
                         }
                         if (walletAdminSigner.address !== adminSignerInput.address) {
-                            throw new InvalidWalletConfigError("Invalid admin signer address");
+                            throw new InvalidWalletConfigError(
+                                `Invalid admin signer address: expected "${walletAdminSigner.address}", got "${adminSignerInput.address}"`
+                            );
                         }
                     }
                 }
