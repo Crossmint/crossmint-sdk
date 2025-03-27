@@ -18,6 +18,12 @@ export class WalletTypeNotSupportedError extends CrossmintSDKError {
     }
 }
 
+export class WalletNotAvailableError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.WALLET_NOT_AVAILABLE, details);
+    }
+}
+
 export class WalletCreationError extends CrossmintSDKError {
     constructor(message: string, details?: string) {
         super(message, WalletErrorCode.WALLET_CREATION_FAILED, details);

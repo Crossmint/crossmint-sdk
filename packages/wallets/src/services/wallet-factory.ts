@@ -10,7 +10,12 @@ import { SolanaSmartWallet } from "../solana";
 import { parseSolanaSignerInput } from "../solana/types/signers";
 import { getConnectionFromEnvironment } from "../solana/utils";
 import type { WalletOptions } from "../utils/options";
-import { WalletCreationError, WalletTypeMismatchError, WalletTypeNotSupportedError } from "../utils/errors";
+import {
+    WalletCreationError,
+    WalletNotAvailableError,
+    WalletTypeMismatchError,
+    WalletTypeNotSupportedError,
+} from "../utils/errors";
 
 export class WalletFactory {
     constructor(private readonly apiClient: ApiClient) {}
@@ -47,14 +52,16 @@ export class WalletFactory {
         args: WalletTypeToArgs[WalletType],
         options?: WalletOptions
     ): Promise<CreateWalletResponse> {
+        const existingWallet = this.apiClient.isServerSide ? null : await this.apiClient.getWallet(`me:${type}`);
+        if (existingWallet && "error" in existingWallet) {
+            throw new WalletNotAvailableError(JSON.stringify(existingWallet));
+        }
+        if (existingWallet) {
+            return existingWallet;
+        }
+        await options?.experimental_callbacks?.onWalletCreationStart?.();
         if (type === "evm-smart-wallet") {
             const { adminSigner: adminSignerInput, linkedUser } = args as WalletTypeToArgs["evm-smart-wallet"];
-            const existingWallet = this.apiClient.isServerSide ? null : await this.apiClient.getWallet(`me:${type}`);
-            // @ts-ignore
-            if (existingWallet && !existingWallet.error) {
-                return existingWallet;
-            }
-            await options?.experimental_callbacks?.onWalletCreationStart?.();
             const adminSigner =
                 adminSignerInput.type === "evm-keypair"
                     ? adminSignerInput
