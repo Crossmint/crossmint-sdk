@@ -1,6 +1,7 @@
 import { type Crossmint, APIKeyUsageOrigin, CrossmintApiClient } from "@crossmint/common-sdk-base";
 
 import { SDK_NAME, SDK_VERSION } from "../utils/constants";
+import { InvalidApiKeyError } from "../utils/errors";
 
 import type {
     CreateWalletParams,
@@ -25,7 +26,6 @@ import type {
     WalletLocator,
     EvmWalletLocator,
 } from "./types";
-import { InvalidApiKeyError } from "@/utils/errors";
 
 class ApiClient extends CrossmintApiClient {
     private apiPrefix = "api/2022-06-09/wallets";
