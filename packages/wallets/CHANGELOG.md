@@ -1,5 +1,19 @@
 # @crossmint/wallets-sdk
 
+## 0.4.0
+
+### Minor Changes
+
+- 4702bda: - removes removeDelegatedSigner
+  - API response error handling
+  - type-safe errors
+
+### Patch Changes
+
+- Updated dependencies [4702bda]
+  - @crossmint/common-sdk-base@0.3.3
+  - @crossmint/common-sdk-auth@1.0.21
+
 ## 0.3.2
 
 ### Patch Changes

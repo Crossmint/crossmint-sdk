@@ -1,5 +1,12 @@
 # @crossmint/common-sdk-base
 
+## 0.3.3
+
+### Patch Changes
+
+- 4702bda: - Add Mode and Mode Sepolia chains
+  - Add Crossmint SDK errors
+
 ## 0.3.2
 
 ### Patch Changes
