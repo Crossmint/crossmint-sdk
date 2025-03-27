@@ -1,6 +1,10 @@
 import DynamicContextProviderWrapper from "@/components/dynamic-xyz/DynamicContextProviderWrapper";
 import type { EmbeddedCheckoutV3IFrameEmitter } from "@crossmint/client-sdk-base";
-import type { APIKeyEnvironmentPrefix, BlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
+import {
+    blockchainToChainId,
+    type APIKeyEnvironmentPrefix,
+    type BlockchainIncludingTestnet,
+} from "@crossmint/common-sdk-base";
 import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
 import { DynamicContext, useDynamicContext } from "@dynamic-labs/sdk-react-core";
 import { SolanaWalletConnectors } from "@dynamic-labs/solana";
@@ -55,13 +59,31 @@ export function CryptoWalletConnectionHandler(props: {
                         try {
                             chain = await dynamicChainToCrossmintChain(wallet);
                         } catch (e) {
+                            // If the user's wallet is on a chain we don't support (this should only happen for EVM):
+                            // - Switch to the default chain
+                            // - If that fails, return an error explaining user must switch to a supported chain
                             if (e instanceof ChainNotSupportedError) {
-                                iframeClient?.send("crypto:connect-wallet.failed", {
-                                    error: `Chain with id ${e.chainId} is not supported. Please change the network in your wallet and try again.`,
-                                });
-                                return false;
+                                const defaultCrossmintChain =
+                                    apiKeyEnvironment === "production" ? "ethereum" : "ethereum-sepolia";
+                                const defaultChainId = blockchainToChainId(defaultCrossmintChain);
+                                try {
+                                    await wallet?.connector?.switchNetwork({
+                                        networkChainId: defaultChainId,
+                                    });
+                                    chain = defaultCrossmintChain;
+                                } catch (switchNetworkError) {
+                                    console.error(
+                                        `[CryptoWalletConnectionHandler] Failed to switch to default chain ${defaultChainId}`,
+                                        switchNetworkError
+                                    );
+                                    iframeClient?.send("crypto:connect-wallet.failed", {
+                                        error: `Chain with id ${e.chainId} is not supported. Please change the network in your wallet and try again.`,
+                                    });
+                                    return false;
+                                }
+                            } else {
+                                throw e;
                             }
-                            throw e;
                         }
 
                         iframeClient?.send("crypto:connect-wallet.success", {
