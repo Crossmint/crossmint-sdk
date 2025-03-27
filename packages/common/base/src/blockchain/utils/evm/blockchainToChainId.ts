@@ -28,6 +28,8 @@ export const BLOCKCHAIN_TO_CHAIN_ID: Record<EVMBlockchainIncludingTestnet, numbe
     "hypersonic-testnet": 675852,
     "story-testnet": 1513,
     story: 1514,
+    "mode-sepolia": 919,
+    mode: 34443,
     chiliz: 88888,
 };
 
