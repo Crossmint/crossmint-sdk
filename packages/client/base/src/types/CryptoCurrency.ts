@@ -16,6 +16,7 @@ export const Erc20Currency = {
     BRETT: "brett",
     TOSHI: "toshi",
     EURC: "eurc",
+    PIRATE: "pirate",
 } as const;
 export type Erc20Currency = ObjectValues<typeof Erc20Currency>;
 
