@@ -22,10 +22,14 @@ export default function DynamicContextProviderWrapper({
                         ? "3fc6c24e-6a8e-45f8-aae1-a87d7a027e12"
                         : "cd53135a-b32b-4704-bfca-324b665e9329",
                 cssOverrides: `.powered-by-dynamic { display: none !important; }`,
-                ...(apiKeyEnvironment === "production" ?
-                    { overrides: {
-                        evmNetworks: (defaultNetworks) => mergeNetworks(additionalEvmMainnetNetworks, defaultNetworks)
-                    }} : {}),
+                ...(apiKeyEnvironment === "production" 
+                    ? { 
+                        overrides: {
+                            evmNetworks:
+                                (defaultNetworks) => mergeNetworks(additionalEvmMainnetNetworks, defaultNetworks)
+                        }
+                    } 
+                    : {}),
                 ...settings,
             }}
         >
