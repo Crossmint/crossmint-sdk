@@ -25,10 +25,10 @@ export default function DynamicContextProviderWrapper({
                 ...(apiKeyEnvironment === "production"
                     ? {
                         overrides: {
-                          evmNetworks: (defaultNetworks) =>
-                            mergeNetworks(additionalEvmMainnetNetworks, defaultNetworks),
+                            evmNetworks: (defaultNetworks) =>
+                                mergeNetworks(additionalEvmMainnetNetworks, defaultNetworks),
                         },
-                      }
+                    }
                     : {}),                  
                 ...settings,
             }}
