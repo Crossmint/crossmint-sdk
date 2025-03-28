@@ -16,6 +16,7 @@ export const EVMBlockchain = {
     CHILIZ: "chiliz",
     STORY: "story",
     MODE: "mode",
+    BOSS: "boss",
 } as const;
 export type EVMBlockchain = ObjectValues<typeof EVMBlockchain>;
 export const EVM_CHAINS = objectValues(EVMBlockchain);

@@ -35,6 +35,7 @@ export const BLOCKCHAIN_TO_COPY_NAME: Record<BlockchainIncludingTestnet, string>
     "mode-sepolia": "Mode Sepolia",
     mode: "Mode",
     chiliz: "Chiliz",
+    boss: "Boss",
 };
 
 export function blockchainToDisplayName(blockchain: BlockchainIncludingTestnet) {
