@@ -31,6 +31,7 @@ export const BLOCKCHAIN_TO_CHAIN_ID: Record<EVMBlockchainIncludingTestnet, numbe
     "mode-sepolia": 919,
     mode: 34443,
     chiliz: 88888,
+    boss: 70701,
 };
 
 export function blockchainToChainId(blockchain: EVMBlockchainIncludingTestnet) {
