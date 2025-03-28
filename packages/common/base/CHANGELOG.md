@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.3.4
+
+### Patch Changes
+
+- 952630a: Adding boss
+
 ## 0.3.3
 
 ### Patch Changes

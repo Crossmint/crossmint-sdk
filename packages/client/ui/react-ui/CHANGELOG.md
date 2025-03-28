@@ -1,5 +1,17 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.16.7
+
+### Patch Changes
+
+- 952630a: Adding boss
+- Updated dependencies [952630a]
+  - @crossmint/common-sdk-base@0.3.4
+  - @crossmint/client-sdk-auth@1.1.24
+  - @crossmint/client-sdk-base@1.4.15
+  - @crossmint/common-sdk-auth@1.0.22
+  - @crossmint/wallets-sdk@0.4.1
+
 ## 1.16.6
 
 ### Patch Changes
