@@ -49,4 +49,4 @@ const evmNetworks = [
         rpcUrls: ["https://rpc.boss.proofofplay.com/"],
         vanityName: "Boss",
     },
-]
+];
