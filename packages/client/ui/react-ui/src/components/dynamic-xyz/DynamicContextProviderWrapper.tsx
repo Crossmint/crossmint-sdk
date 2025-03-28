@@ -24,12 +24,12 @@ export default function DynamicContextProviderWrapper({
                 cssOverrides: `.powered-by-dynamic { display: none !important; }`,
                 ...(apiKeyEnvironment === "production"
                     ? {
-                        overrides: {
-                            evmNetworks: (defaultNetworks) =>
-                                mergeNetworks(additionalEvmMainnetNetworks, defaultNetworks),
-                        },
-                    }
-                    : {}),                  
+                          overrides: {
+                              evmNetworks: (defaultNetworks) =>
+                                  mergeNetworks(additionalEvmMainnetNetworks, defaultNetworks),
+                          },
+                      }
+                    : {}),
                 ...settings,
             }}
         >
