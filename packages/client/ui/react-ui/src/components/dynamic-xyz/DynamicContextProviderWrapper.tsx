@@ -49,21 +49,4 @@ const evmNetworks = [
         rpcUrls: ["https://rpc.boss.proofofplay.com/"],
         vanityName: "Boss",
     },
-    {
-        blockExplorerUrls: ["https://explorer.apex.proofofplay.com/"],
-        chainId: 70700,
-        chainName: "Apex Mainnet",
-        iconUrls: ["https:/www.crossmint.com/assets/ui/logos/apex.svg"],
-        name: "Boss",
-        nativeCurrency: {
-            decimals: 18,
-            name: "Ether",
-            symbol: "ETH",
-            iconUrl: "https://app.dynamic.xyz/assets/networks/eth.svg",
-        },
-        networkId: 70700,
-
-        rpcUrls: ["https://rpc.apex.proofofplay.com/"],
-        vanityName: "Apex",
-    }
 ]
