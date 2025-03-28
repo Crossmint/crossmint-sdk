@@ -1,5 +1,14 @@
 # @crossmint/client-sdk-nextjs-starter
 
+## 1.4.44
+
+### Patch Changes
+
+- 952630a: Adding boss
+- Updated dependencies [952630a]
+  - @crossmint/client-sdk-react-ui@1.16.7
+  - @crossmint/client-sdk-base@1.4.15
+
 ## 1.4.43
 
 ### Patch Changes
