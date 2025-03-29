@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-base
 
+## 1.4.16
+
+### Patch Changes
+
+- b9bf059: Fix CrossmintErrors not exported
+
 ## 1.4.15
 
 ### Patch Changes
