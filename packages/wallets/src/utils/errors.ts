@@ -143,3 +143,29 @@ export class PendingApprovalsError extends CrossmintSDKError {
         super(message, WalletErrorCode.TRANSACTION_FAILED, details);
     }
 }
+
+export type WalletError =
+    | InvalidApiKeyError
+    | InvalidEnvironmentError
+    | WalletTypeNotSupportedError
+    | WalletNotAvailableError
+    | InvalidWalletConfigError
+    | WalletCreationError
+    | WalletTypeMismatchError
+    | SignerTypeMismatchError
+    | InvalidSignerError
+    | InvalidMessageFormatError
+    | InvalidTypedDataError
+    | SignatureNotFoundError
+    | SigningFailedError
+    | MessageSigningNotSupportedError
+    | SignatureNotCreatedError
+    | SignatureNotAvailableError
+    | TransactionNotCreatedError
+    | TransactionNotAvailableError
+    | TransactionConfirmationTimeoutError
+    | TransactionSendingFailedError
+    | TransactionAwaitingApprovalError
+    | TransactionHashNotFoundError
+    | TransactionFailedError
+    | PendingApprovalsError;
