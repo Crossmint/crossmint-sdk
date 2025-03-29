@@ -1,4 +1,10 @@
-import { CrossmintSDKError, CrossmintErrors } from "@crossmint/common-sdk-base";
+import {
+    CrossmintSDKError,
+    PaymentErrors,
+    SmartWalletErrorCode,
+    WalletErrorCode,
+    CrossmintErrors,
+} from "@crossmint/common-sdk-base";
 
 export class CrossmintServiceError extends CrossmintSDKError {
     public status?: number;
@@ -61,3 +67,5 @@ export class OutOfCreditsError extends CrossmintSDKError {
         );
     }
 }
+
+export { CrossmintSDKError, PaymentErrors, SmartWalletErrorCode, WalletErrorCode, CrossmintErrors };
