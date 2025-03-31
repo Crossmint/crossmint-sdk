@@ -1,5 +1,5 @@
 {
-    "name": "exp0",
+    "name": "expo-demo",
     "main": "expo-router/entry",
     "version": "1.0.0",
     "scripts": {
