@@ -12,6 +12,7 @@ import {
 import { CrossmintAuth, getCookie } from "@crossmint/client-sdk-auth";
 import { type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
 import { type AuthMaterialWithUser, SESSION_PREFIX, type SDKExternalUser } from "@crossmint/common-sdk-auth";
+import type { EVMSignerInput, SolanaSignerInput } from "@crossmint/wallets-sdk";
 
 import AuthFormDialog from "../components/auth/AuthFormDialog";
 import { useCrossmint, useWallet } from "../hooks";
@@ -104,6 +105,8 @@ export function CrossmintAuthProvider({
     const [dialogOpen, setDialogOpen] = useState(false);
     const [initialized, setInitialized] = useState(false);
     const [defaultEmail, setdefaultEmail] = useState<string | undefined>(undefined);
+    const [eoaSignerAddress, setEoaSignerAddress] = useState<string | null>(null);
+    console.log({ eoaSignerAddress });
 
     const triggerHasJustLoggedIn = useCallback(() => {
         onLoginSuccess?.();
@@ -191,6 +194,7 @@ export function CrossmintAuthProvider({
                                 triggerHasJustLoggedIn();
                             }
                         }}
+                        setEoaSignerAddress={setEoaSignerAddress}
                         preFetchOAuthUrls={getAuthStatus() === "logged-out" && prefetchOAuthUrls}
                         initialState={{
                             appearance,
@@ -202,7 +206,11 @@ export function CrossmintAuthProvider({
                             defaultEmail,
                         }}
                     >
-                        <WalletManager embeddedWallets={embeddedWallets} accessToken={crossmint.jwt}>
+                        <WalletManager
+                            embeddedWallets={embeddedWallets}
+                            accessToken={crossmint.jwt}
+                            eoaSignerAddress={eoaSignerAddress}
+                        >
                             {children}
                         </WalletManager>
 
@@ -218,18 +226,39 @@ function WalletManager({
     embeddedWallets,
     children,
     accessToken,
+    eoaSignerAddress,
 }: {
     embeddedWallets: CrossmintAuthEmbeddedWallets;
     children: ReactNode;
     accessToken: string | undefined;
+    eoaSignerAddress: string | null;
 }) {
-    const { type, createOnLogin, adminSigner, linkedUser } = embeddedWallets;
+    const { type, createOnLogin, adminSigner: defaultAdminSigner, linkedUser } = embeddedWallets;
     const { getOrCreateWallet, clearWallet, status: walletStatus } = useWallet();
     const canGetOrCreateWallet = createOnLogin === "all-users" && walletStatus === "not-loaded" && accessToken != null;
+
+    let adminSigner: EVMSignerInput | SolanaSignerInput | undefined = defaultAdminSigner;
 
     const handleWalletCreation = useCallback(() => {
         if (!canGetOrCreateWallet) {
             return;
+        }
+        if (eoaSignerAddress != null) {
+            // If the user is signing in with an EOA wallet, use the EOA wallet as the admin signer
+            switch (type) {
+                case "evm-smart-wallet":
+                    adminSigner = {
+                        type: "evm-keypair",
+                        address: eoaSignerAddress,
+                    } as EVMSignerInput;
+                    break;
+                case "solana-smart-wallet":
+                    adminSigner = {
+                        type: "solana-keypair",
+                        address: eoaSignerAddress,
+                    } as SolanaSignerInput;
+                    break;
+            }
         }
         getOrCreateWallet({
             type: embeddedWallets.type,
@@ -239,7 +268,7 @@ function WalletManager({
                 linkedUser,
             },
         } as GetOrCreateWalletProps);
-    }, [canGetOrCreateWallet, getOrCreateWallet, type, adminSigner, linkedUser]);
+    }, [canGetOrCreateWallet, getOrCreateWallet, type, adminSigner, linkedUser, eoaSignerAddress]);
 
     const handleWalletCleanup = useCallback(() => {
         if (walletStatus === "loaded" && accessToken == null) {

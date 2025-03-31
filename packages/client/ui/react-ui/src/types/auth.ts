@@ -3,5 +3,5 @@ export type OtpEmailPayload = {
     emailId: string;
 };
 
-export type LoginMethod = "email" | "google" | "farcaster" | "web3" | "twitter";
+export type LoginMethod = "email" | "google" | "farcaster" | "twitter" | "web3" | "web3:evm-only" | "web3:solana-only";
 export type AuthStatus = "logged-in" | "logged-out" | "in-progress" | "initializing";

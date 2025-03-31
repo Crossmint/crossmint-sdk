@@ -27,6 +27,7 @@ interface AuthFormContextType {
     setStep: (step: AuthStep) => void;
     setError: (error: string | null) => void;
     setDialogOpen: (open: boolean, successfulLogin?: boolean) => void;
+    setEoaSignerAddress: (eoaSignerAddress: string | null) => void;
 }
 
 type ContextInitialStateProps = {
@@ -42,6 +43,7 @@ type ContextInitialStateProps = {
 
 type AuthFormProviderProps = {
     setDialogOpen?: (open: boolean, successfulLogin?: boolean) => void;
+    setEoaSignerAddress: (eoaSignerAddress: string | null) => void;
     preFetchOAuthUrls: boolean;
     initialState: ContextInitialStateProps;
     children: ReactNode;
@@ -62,6 +64,7 @@ export const AuthFormProvider = ({
     preFetchOAuthUrls,
     initialState,
     children,
+    setEoaSignerAddress,
 }: AuthFormProviderProps) => {
     const { crossmintAuth } = useCrossmintAuth();
     const [step, setStep] = useState<AuthStep>("initial");
@@ -69,12 +72,7 @@ export const AuthFormProvider = ({
     const [oauthUrlMap, setOauthUrlMap] = useState<OAuthUrlMap>(initialOAuthUrlMap);
     const [isLoadingOauthUrlMap, setIsLoadingOauthUrlMap] = useState(true);
 
-    const { loginMethods, baseUrl, appearance, embeddedWallets, termsOfServiceText, authModalTitle, defaultEmail } =
-        initialState;
-
-    if (loginMethods.includes("web3") && embeddedWallets?.createOnLogin === "all-users") {
-        throw new Error("Creating wallets on login is not yet supported for web3 login method");
-    }
+    const { loginMethods, baseUrl, appearance, termsOfServiceText, authModalTitle, defaultEmail } = initialState;
 
     const preFetchAndSetOauthUrl = useCallback(async () => {
         setIsLoadingOauthUrlMap(true);
@@ -127,6 +125,7 @@ export const AuthFormProvider = ({
         defaultEmail,
         oauthUrlMap,
         isLoadingOauthUrlMap,
+        setEoaSignerAddress,
         setDialogOpen: handleToggleDialog,
         setError,
         setStep,

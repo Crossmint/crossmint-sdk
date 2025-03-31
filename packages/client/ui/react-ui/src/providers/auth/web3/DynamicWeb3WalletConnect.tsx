@@ -12,7 +12,14 @@ export function DynamicWeb3WalletConnect({
     apiKeyEnvironment,
 }: { children: React.ReactNode; apiKeyEnvironment: APIKeyEnvironmentPrefix }) {
     const { crossmintAuth } = useCrossmintAuth();
-    const { appearance } = useAuthForm();
+    const { appearance, setEoaSignerAddress, loginMethods } = useAuthForm();
+
+    let connectors = [EthereumWalletConnectors, SolanaWalletConnectors];
+    if (loginMethods.includes("web3:evm-only")) {
+        connectors = [EthereumWalletConnectors];
+    } else if (loginMethods.includes("web3:solana-only")) {
+        connectors = [SolanaWalletConnectors];
+    }
 
     const cssOverrides = `.powered-by-dynamic { display: none !important; } .wallet-list__scroll-container { padding: 0px !important; } .wallet-list__search-container { padding-left: 0px !important; padding-right: 0px !important; } .dynamic-footer { display: none !important; } h1 { color: ${appearance?.colors?.textPrimary} !important; } * { color: ${appearance?.colors?.textSecondary} !important; }`;
 
@@ -20,9 +27,41 @@ export function DynamicWeb3WalletConnect({
         <DynamicContextProviderWrapper
             apiKeyEnvironment={apiKeyEnvironment}
             settings={{
-                walletConnectors: [EthereumWalletConnectors, SolanaWalletConnectors],
+                walletConnectors: connectors,
                 cssOverrides,
                 events: {
+                    onWalletAdded: async ({ wallet }) => {
+                        console.log("[CryptoWalletConnectionHandler] onWalletAdded", wallet);
+                        const address = wallet.address;
+                        if (!address) {
+                            console.error("[CryptoWalletConnectionHandler] handleConnectedWallet: address is missing");
+                            return false;
+                        }
+
+                        const chain = await dynamicChainToCrossmintChain(wallet);
+                        const type = chain === "solana" ? "solana" : "ethereum";
+
+                        console.log({ chain, type, wallet });
+
+                        try {
+                            const res = await crossmintAuth?.signInWithSmartWallet(address, type);
+                            const signature = (await wallet.signMessage(res.challenge)) as string;
+                            const authResponse = (await crossmintAuth?.authenticateSmartWallet(
+                                address,
+                                type,
+                                signature
+                            )) as {
+                                oneTimeSecret: string;
+                            };
+                            const oneTimeSecret = authResponse.oneTimeSecret;
+                            await crossmintAuth?.handleRefreshAuthMaterial(oneTimeSecret);
+
+                            console.log("Setting eoaSignerAddress from onWalletAdded event");
+                            setEoaSignerAddress(address);
+                        } catch (error) {
+                            console.error("[CryptoWalletConnectionHandler] Error authenticating wallet:", error);
+                        }
+                    },
                     onAuthFlowCancel() {
                         console.log("[CryptoWalletConnectionHandler] onAuthFlowCancel");
                     },
@@ -37,32 +76,13 @@ export function DynamicWeb3WalletConnect({
                     },
                 },
                 handlers: {
-                    handleConnectedWallet: async (wallet) => {
-                        console.log("[CryptoWalletConnectionHandler] handleConnectedWallet", wallet);
-
-                        const address = wallet.address;
-                        if (!address) {
-                            console.error("[CryptoWalletConnectionHandler] handleConnectedWallet: address is missing");
-                            return false;
+                    handleConnectedWallet: (args) => {
+                        console.log("[CryptoWalletConnectionHandler] handleConnectedWallet", args);
+                        if (args.address) {
+                            console.log("Setting eoaSignerAddress from handleConnectWallet handler");
+                            setEoaSignerAddress(args.address);
                         }
-
-                        const chain = await dynamicChainToCrossmintChain(wallet);
-                        console.log({ chain });
-
-                        try {
-                            const res = await crossmintAuth?.signInWithSmartWallet(address);
-                            const signature = (await wallet.signMessage?.(res.challenge)) as `0x${string}`;
-                            const authResponse = (await crossmintAuth?.authenticateSmartWallet(address, signature)) as {
-                                oneTimeSecret: string;
-                            };
-                            const oneTimeSecret = authResponse.oneTimeSecret;
-                            await crossmintAuth?.handleRefreshAuthMaterial(oneTimeSecret);
-                        } catch (error) {
-                            console.error("[CryptoWalletConnectionHandler] Error authenticating wallet:", error);
-                            return false;
-                        }
-
-                        return true;
+                        return Promise.resolve(true);
                     },
                 },
             }}

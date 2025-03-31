@@ -11,12 +11,16 @@ import { classNames } from "@/utils/classNames";
 import { AlertIcon } from "@/icons/alert";
 import { TwitterSignIn } from "./methods/twitter/TwitterSignIn";
 
-const Web3AuthFlow = lazy(() =>
+// We'll dynamically import it each time the component renders
+// This ensures it's freshly loaded each time but only when needed
+function getWeb3AuthFlow() {
     // @ts-expect-error - Error because we dont use 'module' field in tsconfig, which is expected because we use tsup to compile
-    import("./methods/web3/Web3AuthFlow").then((mod) => ({
+    return import("./methods/web3/Web3AuthFlow").then((mod) => ({
         default: mod.Web3AuthFlow,
-    }))
-);
+    }));
+}
+
+const Web3AuthFlow = lazy(getWeb3AuthFlow);
 
 export function AuthForm({ className }: { className?: string }) {
     const { step, appearance, loginMethods, baseUrl, error, termsOfServiceText, authModalTitle } = useAuthForm();
@@ -68,7 +72,7 @@ export function AuthForm({ className }: { className?: string }) {
                 </FarcasterProvider>
             ) : null}
             {loginMethods.includes("twitter") ? <TwitterSignIn /> : null}
-            {loginMethods.includes("web3") ? <Web3AuthFlow /> : null}
+            {loginMethods.some((method) => method.startsWith("web3")) ? <Web3AuthFlow /> : null}
 
             {loginMethods.includes("email") ? (
                 <div>
