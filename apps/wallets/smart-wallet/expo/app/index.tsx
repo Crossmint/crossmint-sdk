@@ -31,7 +31,6 @@ export default function Index() {
                 42, 42, 42, 42, 42, 42,
             ])
         );
-        console.log("keypair", keypair.publicKey.toBase58());
         getOrCreateWallet({
             type: "solana-smart-wallet",
             args: {
