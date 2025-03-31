@@ -1,0 +1,33 @@
+{
+    "name": "@crossmint/client-sdk-react-base",
+    "version": "0.0.0",
+    "repository": "https://github.com/Crossmint/crossmint-sdk",
+    "license": "Apache-2.0",
+    "author": "Paella Labs Inc",
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        "import": "./dist/index.js",
+        "require": "./dist/index.cjs"
+    },
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "files": ["dist", "LICENSE"],
+    "scripts": {
+        "build": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsup",
+        "dev": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsup --watch",
+        "test:vitest": "vitest run"
+    },
+    "dependencies": {
+        "@crossmint/common-sdk-base": "workspace:*",
+        "@crossmint/client-sdk-base": "workspace:*",
+        "@crossmint/wallets-sdk": "workspace:*"
+    },
+    "devDependencies": {
+        "@types/react": "19.0.12"
+    },
+    "peerDependencies": {
+        "react": ">=17.0.2"
+    }
+}
