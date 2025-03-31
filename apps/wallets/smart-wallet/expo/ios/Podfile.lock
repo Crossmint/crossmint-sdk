@@ -1882,8 +1882,8 @@ DEPENDENCIES:
   - "React-logger (from `../../../../../node_modules/.pnpm/react-native@0.76.7_@babel+core@7.26.0_@babel+preset-env@7.26.0_@babel+core@7.26.0__@react-na_sslfvq4snowdcs6ifcg2ychyaa/node_modules/react-native/ReactCommon/logger`)"
   - "React-Mapbuffer (from `../../../../../node_modules/.pnpm/react-native@0.76.7_@babel+core@7.26.0_@babel+preset-env@7.26.0_@babel+core@7.26.0__@react-na_sslfvq4snowdcs6ifcg2ychyaa/node_modules/react-native/ReactCommon`)"
   - "React-microtasksnativemodule (from `../../../../../node_modules/.pnpm/react-native@0.76.7_@babel+core@7.26.0_@babel+preset-env@7.26.0_@babel+core@7.26.0__@react-na_sslfvq4snowdcs6ifcg2ychyaa/node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)"
-  - react-native-get-random-values (from `../../../../../node_modules/react-native-get-random-values`)
-  - react-native-quick-crypto (from `../../../../../node_modules/react-native-quick-crypto`)
+  - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
+  - react-native-quick-crypto (from `../node_modules/react-native-quick-crypto`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-webview (from `../node_modules/react-native-webview`)
   - "React-nativeconfig (from `../../../../../node_modules/.pnpm/react-native@0.76.7_@babel+core@7.26.0_@babel+preset-env@7.26.0_@babel+core@7.26.0__@react-na_sslfvq4snowdcs6ifcg2ychyaa/node_modules/react-native/ReactCommon`)"
@@ -2026,9 +2026,9 @@ EXTERNAL SOURCES:
   React-microtasksnativemodule:
     :path: "../../../../../node_modules/.pnpm/react-native@0.76.7_@babel+core@7.26.0_@babel+preset-env@7.26.0_@babel+core@7.26.0__@react-na_sslfvq4snowdcs6ifcg2ychyaa/node_modules/react-native/ReactCommon/react/nativemodule/microtasks"
   react-native-get-random-values:
-    :path: "../../../../../node_modules/react-native-get-random-values"
+    :path: "../node_modules/react-native-get-random-values"
   react-native-quick-crypto:
-    :path: "../../../../../node_modules/react-native-quick-crypto"
+    :path: "../node_modules/react-native-quick-crypto"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
   react-native-webview:

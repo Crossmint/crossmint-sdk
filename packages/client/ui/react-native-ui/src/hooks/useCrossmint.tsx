@@ -1,9 +1,11 @@
 import { type ReactNode, createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 
-import { type Crossmint, createCrossmint } from "@crossmint/common-sdk-base";
+import { createCrossmint } from "@crossmint/common-sdk-base";
+import type { Crossmint } from "@crossmint/wallets-sdk";
 
 export interface CrossmintContext {
     crossmint: Crossmint;
+    appId: string;
     setJwt: (jwt: string | undefined) => void;
 }
 
@@ -12,8 +14,10 @@ const CrossmintContext = createContext<CrossmintContext | null>(null);
 export function CrossmintProvider({
     children,
     apiKey,
+    appId,
     overrideBaseUrl,
 }: Omit<Crossmint, "jwt"> & {
+    appId: string;
     children: ReactNode;
 }) {
     const [version, setVersion] = useState(0);
@@ -40,9 +44,10 @@ export function CrossmintProvider({
             get crossmint() {
                 return crossmintRef.current;
             },
+            appId,
             setJwt,
         }),
-        [setJwt, version]
+        [setJwt, appId, version]
     );
 
     return <CrossmintContext.Provider value={value}>{children}</CrossmintContext.Provider>;

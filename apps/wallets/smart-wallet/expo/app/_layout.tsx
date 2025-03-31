@@ -12,7 +12,10 @@ export default function RootLayout() {
 
 function CrossmintProviders({ children }: { children: ReactNode }) {
     return (
-        <CrossmintProvider apiKey={process.env.EXPO_PUBLIC_CROSSMINT_API_KEY ?? ""}>
+        <CrossmintProvider
+            apiKey={process.env.EXPO_PUBLIC_CROSSMINT_API_KEY ?? ""}
+            appId={process.env.EXPO_PUBLIC_CROSSMINT_APP_ID ?? ""}
+        >
             <CrossmintWalletProvider>{children}</CrossmintWalletProvider>
         </CrossmintProvider>
     );

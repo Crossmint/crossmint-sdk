@@ -54,11 +54,8 @@ export function CrossmintWalletProvider({
 }: {
     children: ReactNode;
 }) {
-    const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
-    const smartWalletSDK = useMemo(
-        () => CrossmintWallets.from({ apiKey: crossmint.apiKey, jwt: crossmint?.jwt }),
-        [crossmint.apiKey, crossmint.jwt]
-    );
+    const { crossmint, appId } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
+    const smartWalletSDK = useMemo(() => CrossmintWallets.from(crossmint, { appId }), [crossmint, appId]);
 
     const [walletState, setWalletState] = useState<ValidWalletState>({
         status: "not-loaded",
