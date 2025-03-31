@@ -1,22 +1,22 @@
 import { type ReactNode, useMemo, useState } from "react";
-import { CrossmintWallets, type EVMSmartWallet, type SolanaSmartWallet } from "@crossmint/wallets-sdk";
-import { WalletContext } from "@crossmint/client-sdk-react-base";
+import { CrossmintWallets } from "@crossmint/wallets-sdk";
+import {
+    type ValidWalletState,
+    type GetOrCreateWalletProps,
+    WalletContext,
+    deriveErrorState,
+} from "@crossmint/client-sdk-react-base";
 
 import { useCrossmint } from "@/hooks";
-import type { GetOrCreateWalletProps } from "@/types/wallet";
-
-type ValidWalletState =
-    | { status: "not-loaded" | "in-progress" }
-    | { status: "loaded"; wallet: EVMSmartWallet; type: "evm-smart-wallet" }
-    | { status: "loaded"; wallet: SolanaSmartWallet; type: "solana-smart-wallet" }
-    | { status: "loading-error"; error: string };
+import { useCrossmintMobile } from "@/hooks/useCrossmint";
 
 export function CrossmintWalletProvider({
     children,
 }: {
     children: ReactNode;
 }) {
-    const { crossmint, appId } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
+    const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
+    const { appId } = useCrossmintMobile("CrossmintWalletProvider must be used within CrossmintProvider");
     const smartWalletSDK = useMemo(() => CrossmintWallets.from(crossmint, { appId }), [crossmint, appId]);
 
     const [walletState, setWalletState] = useState<ValidWalletState>({
@@ -81,15 +81,4 @@ export function CrossmintWalletProvider({
             {children}
         </WalletContext.Provider>
     );
-}
-
-function deriveErrorState(error: unknown): {
-    status: "loading-error";
-    error: string;
-} {
-    const message = error instanceof Error ? error.message : String(error);
-    return {
-        status: "loading-error",
-        error: message,
-    };
 }

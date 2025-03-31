@@ -1,15 +1,21 @@
-import { type ReactNode, createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
+import { type ReactNode, createContext, useContext, useMemo } from "react";
 
-import { createCrossmint } from "@crossmint/common-sdk-base";
-import type { Crossmint } from "@crossmint/wallets-sdk";
+import { CrossmintProvider as BaseCrossmintProvider } from "@crossmint/client-sdk-react-base";
+import type { Crossmint } from "@crossmint/common-sdk-base";
 
-export interface CrossmintContext {
-    crossmint: Crossmint;
+export interface CrossmintMobileContext {
     appId: string;
-    setJwt: (jwt: string | undefined) => void;
 }
 
-const CrossmintContext = createContext<CrossmintContext | null>(null);
+const CrossmintMobileContext = createContext<CrossmintMobileContext | null>(null);
+
+export function useCrossmintMobile(missingContextMessage?: string) {
+    const context = useContext(CrossmintMobileContext);
+    if (context == null) {
+        throw new Error(missingContextMessage ?? "useCrossmint must be used within a CrossmintProvider");
+    }
+    return context;
+}
 
 export function CrossmintProvider({
     children,
@@ -17,46 +23,14 @@ export function CrossmintProvider({
     appId,
     overrideBaseUrl,
 }: Omit<Crossmint, "jwt"> & {
-    appId: string;
     children: ReactNode;
+    appId: string;
 }) {
-    const [version, setVersion] = useState(0);
+    const value = useMemo(() => ({ appId }), [appId]);
 
-    const crossmintRef = useRef<Crossmint>(
-        new Proxy<Crossmint>(createCrossmint({ apiKey, overrideBaseUrl }), {
-            set(target, prop, value) {
-                if (prop === "jwt" && target.jwt !== value) {
-                    setVersion((v) => v + 1);
-                }
-                return Reflect.set(target, prop, value);
-            },
-        })
+    return (
+        <BaseCrossmintProvider apiKey={apiKey} overrideBaseUrl={overrideBaseUrl}>
+            <CrossmintMobileContext.Provider value={value}>{children}</CrossmintMobileContext.Provider>
+        </BaseCrossmintProvider>
     );
-
-    const setJwt = useCallback((jwt: string | undefined) => {
-        if (jwt !== crossmintRef.current.jwt) {
-            crossmintRef.current.jwt = jwt;
-        }
-    }, []);
-
-    const value = useMemo(
-        () => ({
-            get crossmint() {
-                return crossmintRef.current;
-            },
-            appId,
-            setJwt,
-        }),
-        [setJwt, appId, version]
-    );
-
-    return <CrossmintContext.Provider value={value}>{children}</CrossmintContext.Provider>;
-}
-
-export function useCrossmint(missingContextMessage?: string) {
-    const context = useContext(CrossmintContext);
-    if (context == null) {
-        throw new Error(missingContextMessage ?? "useCrossmint must be used within a CrossmintProvider");
-    }
-    return context;
 }

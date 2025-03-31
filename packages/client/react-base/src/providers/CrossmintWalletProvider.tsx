@@ -3,6 +3,12 @@ import type { EVMSmartWallet, SolanaSmartWallet } from "@crossmint/wallets-sdk";
 
 import type { GetOrCreateWalletProps } from "@/types/wallet";
 
+export type ValidWalletState =
+    | { status: "not-loaded" | "in-progress" }
+    | { status: "loaded"; wallet: EVMSmartWallet; type: "evm-smart-wallet" }
+    | { status: "loaded"; wallet: SolanaSmartWallet; type: "solana-smart-wallet" }
+    | { status: "loading-error"; error: string };
+
 type WalletContextFunctions = {
     getOrCreateWallet: (args: GetOrCreateWalletProps) => Promise<{ startedCreation: boolean; reason?: string }>;
     clearWallet: () => void;
@@ -41,3 +47,14 @@ export const WalletContext = createContext<WalletContext>({
     getOrCreateWallet: () => Promise.resolve({ startedCreation: false }),
     clearWallet: () => {},
 });
+
+export function deriveErrorState(error: unknown): {
+    status: "loading-error";
+    error: string;
+} {
+    const message = error instanceof Error ? error.message : String(error);
+    return {
+        status: "loading-error",
+        error: message,
+    };
+}
