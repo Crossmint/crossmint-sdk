@@ -16,7 +16,8 @@
     "files": ["dist", "LICENSE"],
     "scripts": {
         "build": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsup",
-        "dev": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsup --watch"
+        "dev": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsup --watch",
+        "test:vitest": "vitest run"
     },
     "dependencies": {
         "@crossmint/common-sdk-base": "workspace:*",
