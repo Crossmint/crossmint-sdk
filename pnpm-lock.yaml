@@ -714,12 +714,12 @@ importers:
       '@crossmint/client-sdk-base':
         specifier: workspace:*
         version: link:../../base
-      '@crossmint/common-sdk-base':
-        specifier: workspace:*
-        version: link:../../../common/base
       '@crossmint/client-sdk-react-base':
         specifier: workspace:*
         version: link:../../react-base
+      '@crossmint/common-sdk-base':
+        specifier: workspace:*
+        version: link:../../../common/base
       '@crossmint/wallets-sdk':
         specifier: workspace:*
         version: link:../../../wallets
@@ -742,6 +742,9 @@ importers:
       '@crossmint/client-sdk-base':
         specifier: workspace:*
         version: link:../../base
+      '@crossmint/client-sdk-react-base':
+        specifier: workspace:*
+        version: link:../../react-base
       '@crossmint/client-sdk-window':
         specifier: workspace:*
         version: link:../../window
