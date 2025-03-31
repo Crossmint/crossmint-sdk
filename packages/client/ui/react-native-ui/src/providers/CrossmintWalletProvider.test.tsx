@@ -4,7 +4,7 @@ import { createCrossmint } from "@crossmint/common-sdk-base";
 import { CrossmintWallets, type EVMSmartWallet } from "@crossmint/wallets-sdk";
 
 import { useCrossmint } from "../hooks/useCrossmint";
-import { MOCK_API_KEY } from "../testUtils.js";
+import { MOCK_API_KEY, MOCK_APP_ID } from "../testUtils.js";
 
 vi.mock("@crossmint/wallets-sdk", async () => {
     const actual = await vi.importActual("@crossmint/wallets-sdk");
@@ -43,6 +43,7 @@ describe("CrossmintWalletProvider", () => {
                 apiKey: MOCK_API_KEY,
                 jwt: "mock-jwt",
             },
+            appId: MOCK_APP_ID,
             setJwt: () => {},
         });
 
