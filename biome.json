@@ -12,10 +12,13 @@
             "node_modules",
             "public",
             ".next",
+            ".expo",
             ".vercel",
             "playwright-report",
             "pnpm-lock.yaml",
             ".github",
+            "**/ios/**",
+            "**/android/**",
             "**/gen/**",
             "**/dist/**",
             "**/build/**"

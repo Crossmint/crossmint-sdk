@@ -60,10 +60,7 @@ export class WalletFactory {
         options?: WalletOptions
     ): Promise<CreateWalletResponse> {
         const existingWallet = this.apiClient.isServerSide ? null : await this.apiClient.getWallet(`me:${type}`);
-        if (existingWallet && "error" in existingWallet) {
-            throw new WalletNotAvailableError(JSON.stringify(existingWallet));
-        }
-        if (existingWallet) {
+        if (existingWallet && !("error" in existingWallet)) {
             return existingWallet;
         }
         await options?.experimental_callbacks?.onWalletCreationStart?.();

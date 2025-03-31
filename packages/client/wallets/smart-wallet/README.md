@@ -1,5 +1,8 @@
 # Smart Wallet SDK
 
+> [!WARNING]
+> Smart Wallet SDK is no longer maintained, use [Wallets SDK](https://github.com/Crossmint/crossmint-sdk/tree/main/packages/wallets) instead.
+
 A client-side SDK for interacting with Crossmint Smart Wallets. This SDK enables developers to create and manage smart contract wallets that support both traditional keypair-based signing and passkey authentication.
 
 ## Installation
