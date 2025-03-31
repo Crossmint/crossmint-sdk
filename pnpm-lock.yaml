@@ -690,6 +690,25 @@ importers:
         specifier: 9.0.4
         version: 9.0.4
 
+  packages/client/react-base:
+    dependencies:
+      '@crossmint/client-sdk-base':
+        specifier: workspace:*
+        version: link:../base
+      '@crossmint/common-sdk-base':
+        specifier: workspace:*
+        version: link:../../common/base
+      '@crossmint/wallets-sdk':
+        specifier: workspace:*
+        version: link:../../wallets
+      react:
+        specifier: '>=17.0.2'
+        version: 18.3.1
+    devDependencies:
+      '@types/react':
+        specifier: 19.0.12
+        version: 19.0.12
+
   packages/client/ui/react-native:
     dependencies:
       '@crossmint/client-sdk-base':
@@ -698,6 +717,9 @@ importers:
       '@crossmint/common-sdk-base':
         specifier: workspace:*
         version: link:../../../common/base
+      '@crossmint/client-sdk-react-base':
+        specifier: workspace:*
+        version: link:../../react-base
       '@crossmint/wallets-sdk':
         specifier: workspace:*
         version: link:../../../wallets
