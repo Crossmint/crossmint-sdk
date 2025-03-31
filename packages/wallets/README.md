@@ -1,4 +1,4 @@
-# @crossmint/wallets-sdk
+# Wallets SDK
 
 A Typescript SDK to interact with Crossmint Wallets. This SDK enables developers to create and manage smart contract wallets that support both traditional keypair-based signing and passkey authentication across Solana and EVM chains.
 
