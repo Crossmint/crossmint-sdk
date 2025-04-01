@@ -8,6 +8,7 @@ import type { PasskeySigner } from "@/types/passkey";
 import { useCrossmint } from "../hooks";
 import type { GetOrCreateWalletProps } from "@/types/wallet";
 import { createWebAuthnPasskeySigner } from "@/utils/createPasskeySigner";
+import { clearEOASigner } from "@/utils/eoaSignerStorage";
 
 type ValidPasskeyPromptType =
     | "create-wallet"
@@ -172,6 +173,7 @@ export function CrossmintWalletProvider({
 
     const clearWallet = () => {
         setWalletState({ status: "not-loaded" });
+        clearEOASigner();
     };
 
     const createPasskeySigner = async (name: string, promptType?: ValidPasskeyPromptType) => {

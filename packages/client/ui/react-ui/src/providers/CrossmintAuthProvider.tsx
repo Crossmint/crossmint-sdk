@@ -12,7 +12,6 @@ import {
 import { CrossmintAuth, getCookie } from "@crossmint/client-sdk-auth";
 import { type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
 import { type AuthMaterialWithUser, SESSION_PREFIX, type SDKExternalUser } from "@crossmint/common-sdk-auth";
-import type { EVMSignerInput, SolanaSignerInput } from "@crossmint/wallets-sdk";
 
 import AuthFormDialog from "../components/auth/AuthFormDialog";
 import { useCrossmint, useWallet } from "../hooks";
@@ -21,6 +20,7 @@ import { AuthFormProvider } from "./auth/AuthFormProvider";
 import { TwindProvider } from "./TwindProvider";
 import type { AuthStatus, LoginMethod } from "@/types/auth";
 import type { CrossmintAuthEmbeddedWallets, GetOrCreateWalletProps } from "@/types/wallet";
+import { clearEOASigner, getCompatibleEOASigner } from "@/utils/eoaSignerStorage";
 
 type CrossmintAuthProviderProps = {
     embeddedWallets?: CrossmintAuthEmbeddedWallets;
@@ -88,6 +88,7 @@ export function CrossmintAuthProvider({
                     onLogout: () => {
                         setJwt(undefined);
                         setUser(undefined);
+                        clearEOASigner();
                     },
                     onTokenRefresh: (authMaterial: AuthMaterialWithUser) => {
                         setJwt(authMaterial.jwt);
@@ -105,8 +106,6 @@ export function CrossmintAuthProvider({
     const [dialogOpen, setDialogOpen] = useState(false);
     const [initialized, setInitialized] = useState(false);
     const [defaultEmail, setdefaultEmail] = useState<string | undefined>(undefined);
-    const [eoaSignerAddress, setEoaSignerAddress] = useState<string | null>(null);
-    console.log({ eoaSignerAddress });
 
     const triggerHasJustLoggedIn = useCallback(() => {
         onLoginSuccess?.();
@@ -194,7 +193,6 @@ export function CrossmintAuthProvider({
                                 triggerHasJustLoggedIn();
                             }
                         }}
-                        setEoaSignerAddress={setEoaSignerAddress}
                         preFetchOAuthUrls={getAuthStatus() === "logged-out" && prefetchOAuthUrls}
                         initialState={{
                             appearance,
@@ -206,11 +204,7 @@ export function CrossmintAuthProvider({
                             defaultEmail,
                         }}
                     >
-                        <WalletManager
-                            embeddedWallets={embeddedWallets}
-                            accessToken={crossmint.jwt}
-                            eoaSignerAddress={eoaSignerAddress}
-                        >
+                        <WalletManager embeddedWallets={embeddedWallets} accessToken={crossmint.jwt}>
                             {children}
                         </WalletManager>
 
@@ -226,49 +220,29 @@ function WalletManager({
     embeddedWallets,
     children,
     accessToken,
-    eoaSignerAddress,
 }: {
     embeddedWallets: CrossmintAuthEmbeddedWallets;
     children: ReactNode;
     accessToken: string | undefined;
-    eoaSignerAddress: string | null;
 }) {
     const { type, createOnLogin, adminSigner: defaultAdminSigner, linkedUser } = embeddedWallets;
     const { getOrCreateWallet, clearWallet, status: walletStatus } = useWallet();
     const canGetOrCreateWallet = createOnLogin === "all-users" && walletStatus === "not-loaded" && accessToken != null;
 
-    let adminSigner: EVMSignerInput | SolanaSignerInput | undefined = defaultAdminSigner;
-
     const handleWalletCreation = useCallback(() => {
         if (!canGetOrCreateWallet) {
             return;
         }
-        if (eoaSignerAddress != null) {
-            // If the user is signing in with an EOA wallet, use the EOA wallet as the admin signer
-            switch (type) {
-                case "evm-smart-wallet":
-                    adminSigner = {
-                        type: "evm-keypair",
-                        address: eoaSignerAddress,
-                    } as EVMSignerInput;
-                    break;
-                case "solana-smart-wallet":
-                    adminSigner = {
-                        type: "solana-keypair",
-                        address: eoaSignerAddress,
-                    } as SolanaSignerInput;
-                    break;
-            }
-        }
+
         getOrCreateWallet({
             type: embeddedWallets.type,
             args: {
                 ...(embeddedWallets.type === "evm-smart-wallet" ? { chain: embeddedWallets.defaultChain } : {}),
-                adminSigner,
+                adminSigner: getCompatibleEOASigner(embeddedWallets.type) ?? defaultAdminSigner,
                 linkedUser,
             },
         } as GetOrCreateWalletProps);
-    }, [canGetOrCreateWallet, getOrCreateWallet, type, adminSigner, linkedUser, eoaSignerAddress]);
+    }, [canGetOrCreateWallet, getOrCreateWallet, type, linkedUser]);
 
     const handleWalletCleanup = useCallback(() => {
         if (walletStatus === "loaded" && accessToken == null) {

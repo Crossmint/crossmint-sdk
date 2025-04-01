@@ -27,7 +27,6 @@ interface AuthFormContextType {
     setStep: (step: AuthStep) => void;
     setError: (error: string | null) => void;
     setDialogOpen: (open: boolean, successfulLogin?: boolean) => void;
-    setEoaSignerAddress: (eoaSignerAddress: string | null) => void;
 }
 
 type ContextInitialStateProps = {
@@ -43,7 +42,6 @@ type ContextInitialStateProps = {
 
 type AuthFormProviderProps = {
     setDialogOpen?: (open: boolean, successfulLogin?: boolean) => void;
-    setEoaSignerAddress: (eoaSignerAddress: string | null) => void;
     preFetchOAuthUrls: boolean;
     initialState: ContextInitialStateProps;
     children: ReactNode;
@@ -64,7 +62,6 @@ export const AuthFormProvider = ({
     preFetchOAuthUrls,
     initialState,
     children,
-    setEoaSignerAddress,
 }: AuthFormProviderProps) => {
     const { crossmintAuth } = useCrossmintAuth();
     const [step, setStep] = useState<AuthStep>("initial");
@@ -125,7 +122,6 @@ export const AuthFormProvider = ({
         defaultEmail,
         oauthUrlMap,
         isLoadingOauthUrlMap,
-        setEoaSignerAddress,
         setDialogOpen: handleToggleDialog,
         setError,
         setStep,
