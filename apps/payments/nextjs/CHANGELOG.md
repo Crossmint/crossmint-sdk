@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-nextjs-starter
 
+## 1.4.46
+
+### Patch Changes
+
+- a47515a: embed: sui wallet connection
+- Updated dependencies [a47515a]
+  - @crossmint/client-sdk-react-ui@1.16.9
+
 ## 1.4.45
 
 ### Patch Changes
