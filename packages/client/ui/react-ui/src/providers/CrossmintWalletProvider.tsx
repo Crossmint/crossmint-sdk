@@ -91,8 +91,6 @@ export function CrossmintWalletProvider({
         status: "not-loaded",
     });
 
-    console.log({ walletState });
-
     const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
 
     const getOrCreateWallet = async (props: GetOrCreateWalletProps) => {

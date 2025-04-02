@@ -2,11 +2,12 @@ import { render, fireEvent, waitFor } from "@testing-library/react";
 import { beforeEach } from "vitest";
 import { AuthFormProvider, useAuthForm } from "./AuthFormProvider";
 import { describe, expect, it, vi } from "vitest";
-import type { CrossmintAuthEmbeddedWallets } from "..";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
-import type { LoginMethod } from "@/types/auth";
+import { useDynamicConnect } from "@/hooks/useDynamicConnect";
+import type { CrossmintAuthProviderEmbeddedWallets, LoginMethod } from "@/types/auth";
 
 vi.mock("@/hooks/useCrossmintAuth");
+vi.mock("@/hooks/useDynamicConnect");
 
 // Mock component to test the AuthFormProvider
 function TestComponent() {
@@ -40,7 +41,7 @@ describe("AuthFormProvider", () => {
             createOnLogin: "off",
             defaultChain: "base-sepolia",
             type: "evm-smart-wallet",
-        } as CrossmintAuthEmbeddedWallets,
+        } as CrossmintAuthProviderEmbeddedWallets,
         appearance: {
             colors: {
                 textPrimary: "#000000",
@@ -58,6 +59,12 @@ describe("AuthFormProvider", () => {
                 getOAuthUrl: mockedGetOAuthUrl.mockResolvedValue("https://oauth.example.com"),
             },
         } as any);
+        vi.mocked(useDynamicConnect).mockReturnValue({
+            getAdminSigner: vi.fn().mockResolvedValue(null),
+            cleanup: vi.fn(),
+            sdkHasLoaded: true,
+            isDynamicWalletConnected: false,
+        });
     });
 
     it("provides initial context values and fetches OAuth URLs", async () => {
@@ -119,25 +126,5 @@ describe("AuthFormProvider", () => {
             expect(getByTestId("oauth-url").textContent).toBe('{"google":"","twitter":""}');
             expect(getByTestId("is-loading-oauth-url").textContent).toBe("false");
         });
-    });
-
-    test("throws error when web3 login method is used with createOnLogin=all-users", () => {
-        const invalidState = {
-            ...mockInitialState,
-            loginMethods: ["web3"] as LoginMethod[],
-            embeddedWallets: {
-                createOnLogin: "all-users",
-                defaultChain: "base-sepolia",
-                type: "evm-smart-wallet",
-            } as CrossmintAuthEmbeddedWallets,
-        };
-
-        expect(() =>
-            render(
-                <AuthFormProvider initialState={invalidState} preFetchOAuthUrls={true}>
-                    <TestComponent />
-                </AuthFormProvider>
-            )
-        ).toThrowError("Creating wallets on login is not yet supported for web3 login method");
     });
 });

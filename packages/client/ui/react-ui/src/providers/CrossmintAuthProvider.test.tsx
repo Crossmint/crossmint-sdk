@@ -11,7 +11,44 @@ import { useAuth, useWallet } from "../hooks";
 import { CrossmintProvider, useCrossmint } from "../hooks/useCrossmint";
 import { MOCK_API_KEY } from "../testUtils";
 import { CrossmintAuthProvider } from "./CrossmintAuthProvider";
-import type { CrossmintAuthEmbeddedWallets } from "@/types/wallet";
+import type { CrossmintAuthProviderEmbeddedWallets, LoginMethod } from "@/types/auth";
+import { useDynamicConnect } from "@/hooks/useDynamicConnect";
+
+vi.mock("@dynamic-labs/sdk-react-core", () => ({
+    useDynamicContext: vi.fn().mockReturnValue({
+        primaryWallet: undefined,
+        sdkHasLoaded: true,
+        removeWallet: vi.fn(),
+        handleUnlinkWallet: vi.fn(),
+    }),
+}));
+
+vi.mock("@dynamic-labs/ethereum", () => ({
+    isEthereumWallet: vi.fn().mockReturnValue(false),
+    EthereumWalletConnectors: {},
+}));
+
+vi.mock("@dynamic-labs/solana", () => ({
+    isSolanaWallet: vi.fn().mockReturnValue(false),
+    SolanaWalletConnectors: {},
+}));
+
+vi.mock("@/hooks/useDynamicConnect", () => ({
+    useDynamicConnect: vi.fn().mockImplementation(() => ({
+        getAdminSigner: vi.fn().mockResolvedValue(null),
+        cleanup: vi.fn(),
+        sdkHasLoaded: true,
+        isDynamicWalletConnected: false,
+    })),
+}));
+
+vi.mock("@/components/dynamic-xyz/DynamicContextProviderWrapper", () => ({
+    default: ({ children }: { children: ReactNode }) => <>{children}</>,
+}));
+
+vi.mock("../providers/auth/web3/DynamicWeb3WalletConnect", () => ({
+    DynamicWeb3WalletConnect: ({ children }: { children: ReactNode }) => <>{children}</>,
+}));
 
 vi.mock("@crossmint/wallets-sdk", async () => {
     const actual = await vi.importActual("@crossmint/wallets-sdk");
@@ -47,13 +84,17 @@ vi.mock("@crossmint/client-sdk-auth", async () => {
 function renderAuthProvider({
     children,
     embeddedWallets,
+    loginMethods,
 }: {
     children: ReactNode;
-    embeddedWallets: CrossmintAuthEmbeddedWallets;
+    embeddedWallets: CrossmintAuthProviderEmbeddedWallets;
+    loginMethods?: LoginMethod[];
 }) {
     return render(
         <CrossmintProvider apiKey={MOCK_API_KEY}>
-            <CrossmintAuthProvider embeddedWallets={embeddedWallets}>{children}</CrossmintAuthProvider>
+            <CrossmintAuthProvider embeddedWallets={embeddedWallets} loginMethods={loginMethods}>
+                {children}
+            </CrossmintAuthProvider>
         </CrossmintProvider>
     );
 }
@@ -86,7 +127,7 @@ function TestComponent() {
 describe("CrossmintAuthProvider", () => {
     let mockSDK: CrossmintWallets;
     let mockWallet: EVMSmartWallet;
-    let embeddedWallets: CrossmintAuthEmbeddedWallets;
+    let embeddedWallets: CrossmintAuthProviderEmbeddedWallets;
     let handleRefreshAuthMaterialSpy: MockInstance;
     let getOAuthUrlSpy: MockInstance;
 
@@ -121,6 +162,12 @@ describe("CrossmintAuthProvider", () => {
         vi.mocked(CrossmintWallets.from).mockReturnValue(mockSDK);
         vi.mocked(mockSDK.getOrCreateWallet).mockResolvedValue(mockWallet);
         vi.mocked(getJWTExpiration).mockReturnValue(1000);
+        vi.mocked(useDynamicConnect).mockReturnValue({
+            getAdminSigner: vi.fn().mockResolvedValue(null),
+            cleanup: vi.fn(),
+            sdkHasLoaded: true,
+            isDynamicWalletConnected: false,
+        });
         const mockPasskeySigner = mock<EVMSignerInput>({
             type: "evm-passkey",
             name: "Crossmint Wallet",
@@ -248,6 +295,37 @@ describe("CrossmintAuthProvider", () => {
 
         await waitFor(() => {
             expect(getByTestId("auth-status").textContent).toBe("logged-in");
+        });
+    });
+
+    it("throws error when web3 wallet is not connected and type is missing", async () => {
+        await act(() => {
+            document.cookie = `${REFRESH_TOKEN_PREFIX}=mock-refresh-token; path=/; SameSite=Lax;`;
+            document.cookie = `${SESSION_PREFIX}=mock-jwt; path=/; SameSite=Lax;`;
+        });
+        vi.mocked(useDynamicConnect).mockReturnValueOnce({
+            getAdminSigner: vi.fn().mockResolvedValue(null),
+            cleanup: vi.fn(),
+            sdkHasLoaded: true,
+            isDynamicWalletConnected: false,
+        });
+
+        const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+        renderAuthProvider({
+            children: <TestComponent />,
+            embeddedWallets: {
+                defaultChain: "polygon",
+                createOnLogin: "all-users",
+                type: undefined,
+            },
+            loginMethods: ["web3"],
+        });
+
+        await waitFor(() => {
+            expect(consoleErrorSpy).toHaveBeenCalledWith(
+                "[CrossmintAuthProvider] ⚠️ embeddedWallets.type is required when no external wallet is connected"
+            );
         });
     });
 });
