@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 0.4.3
+
+### Patch Changes
+
+- 0175422: Allow passing appId
+
 ## 0.4.2
 
 ### Patch Changes

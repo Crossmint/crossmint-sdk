@@ -1,5 +1,15 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.16.9
+
+### Patch Changes
+
+- a47515a: embed: sui wallet connection
+- Updated dependencies [0175422]
+- Updated dependencies [0175422]
+  - @crossmint/client-sdk-react-base@0.1.0
+  - @crossmint/wallets-sdk@0.4.3
+
 ## 1.16.8
 
 ### Patch Changes
