@@ -23,6 +23,10 @@ export async function handleSendTransaction(
             // @ts-expect-error - Error because we dont use 'module' field in tsconfig, which is expected because we use tsup to compile
             const { handleSolanaTransaction } = await import("./handleSolanaTransaction");
             return await handleSolanaTransaction({ ...commonParams, primaryWallet });
+        case "SUI":
+            // @ts-expect-error - Error because we dont use 'module' field in tsconfig, which is expected because we use tsup to compile
+            const { handleSuiTransaction } = await import("./handleSuiTransaction");
+            return await handleSuiTransaction({ ...commonParams, primaryWallet });
         default:
             throw new Error(`Connected wallet is on an unsupported chain: ${primaryWallet.chain}`);
     }

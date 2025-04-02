@@ -17,6 +17,9 @@ export async function dynamicChainToCrossmintChain(
     if (chain === "SOL") {
         return "solana";
     }
+    if (chain === "SUI") {
+        return "sui";
+    }
     const chainId = await wallet.connector?.getNetwork();
     if (typeof chainId !== "number") {
         throw new Error("chainId is not a number");
