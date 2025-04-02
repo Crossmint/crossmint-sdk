@@ -2,4 +2,4 @@
 "@crossmint/wallets-sdk": patch
 ---
 
-fixed admin signer for signing sol txns
+fix signing for solana transactions
