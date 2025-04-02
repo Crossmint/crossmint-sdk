@@ -1,21 +1,22 @@
 import type React from "react";
-import type { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
+import base58 from "bs58";
 import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
 import { SolanaWalletConnectors } from "@dynamic-labs/solana";
+import type { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
 import DynamicContextProviderWrapper from "@/components/dynamic-xyz/DynamicContextProviderWrapper";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
 import { useAuthForm } from "../AuthFormProvider";
 import { dynamicChainToCrossmintChain } from "@/utils/dynamic/dynamicChainToCrossmintChain";
-import { clearEOASigner, setEOASigner } from "@/utils/eoaSignerStorage";
 
 export function DynamicWeb3WalletConnect({
     children,
     apiKeyEnvironment,
-}: { children: React.ReactNode; apiKeyEnvironment: APIKeyEnvironmentPrefix }) {
+    enabled,
+}: { children: React.ReactNode; apiKeyEnvironment: APIKeyEnvironmentPrefix; enabled: boolean }) {
     const { crossmintAuth } = useCrossmintAuth();
     const { appearance, loginMethods } = useAuthForm();
 
-    let connectors = [EthereumWalletConnectors, SolanaWalletConnectors];
+    let connectors = enabled ? [EthereumWalletConnectors, SolanaWalletConnectors] : undefined;
     if (loginMethods.includes("web3:evm-only")) {
         connectors = [EthereumWalletConnectors];
     } else if (loginMethods.includes("web3:solana-only")) {
@@ -33,7 +34,6 @@ export function DynamicWeb3WalletConnect({
                 events: {
                     onWalletRemoved() {
                         console.log("[CryptoWalletConnectionHandler] onWalletRemoved");
-                        clearEOASigner();
                     },
                     onAuthFlowCancel() {
                         console.log("[CryptoWalletConnectionHandler] onAuthFlowCancel");
@@ -64,7 +64,16 @@ export function DynamicWeb3WalletConnect({
 
                         try {
                             const res = await crossmintAuth?.signInWithSmartWallet(address, type);
-                            const signature = (await args.connector?.proveOwnership(address, res.challenge)) as string;
+                            const rawSignature = (await args.connector?.proveOwnership(
+                                address,
+                                res.challenge
+                            )) as string;
+
+                            let signature = rawSignature;
+                            if (type === "solana") {
+                                const signatureBuffer = Buffer.from(rawSignature, "base64");
+                                signature = base58.encode(signatureBuffer);
+                            }
                             const authResponse = (await crossmintAuth?.authenticateSmartWallet(
                                 address,
                                 type,
@@ -74,9 +83,6 @@ export function DynamicWeb3WalletConnect({
                             };
                             const oneTimeSecret = authResponse.oneTimeSecret;
                             await crossmintAuth?.handleRefreshAuthMaterial(oneTimeSecret);
-
-                            console.log("Setting eoaSignerAddress from onWalletAdded event");
-                            setEOASigner({ type: type === "ethereum" ? "evm-keypair" : "solana-keypair", address });
                         } catch (error) {
                             console.error("[CryptoWalletConnectionHandler] Error authenticating wallet:", error);
                             false;

@@ -1,4 +1,3 @@
-import { lazy } from "react";
 import Color from "color";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import { EmailAuthFlow } from "./methods/email/EmailAuthFlow";
@@ -10,17 +9,7 @@ import { FarcasterProvider } from "../../providers/auth/FarcasterProvider";
 import { classNames } from "@/utils/classNames";
 import { AlertIcon } from "@/icons/alert";
 import { TwitterSignIn } from "./methods/twitter/TwitterSignIn";
-
-// We'll dynamically import it each time the component renders
-// This ensures it's freshly loaded each time but only when needed
-function getWeb3AuthFlow() {
-    // @ts-expect-error - Error because we dont use 'module' field in tsconfig, which is expected because we use tsup to compile
-    return import("./methods/web3/Web3AuthFlow").then((mod) => ({
-        default: mod.Web3AuthFlow,
-    }));
-}
-
-const Web3AuthFlow = lazy(getWeb3AuthFlow);
+import { Web3AuthFlow } from "./methods/web3/Web3AuthFlow";
 
 export function AuthForm({ className }: { className?: string }) {
     const { step, appearance, loginMethods, baseUrl, error, termsOfServiceText, authModalTitle } = useAuthForm();
