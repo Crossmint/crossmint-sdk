@@ -23,14 +23,13 @@ export function DynamicWeb3WalletConnect({
         connectors = [SolanaWalletConnectors];
     }
 
-    const cssOverrides = `.powered-by-dynamic { display: none !important; } .wallet-list__scroll-container { padding: 0px !important; } .wallet-list__search-container { padding-left: 0px !important; padding-right: 0px !important; } .dynamic-footer { display: none !important; } h1 { color: ${appearance?.colors?.textPrimary} !important; } * { color: ${appearance?.colors?.textSecondary} !important; }`;
-
     return (
         <DynamicContextProviderWrapper
+            key={`${apiKeyEnvironment}-${loginMethods.join(",")}`}
             apiKeyEnvironment={apiKeyEnvironment}
             settings={{
                 walletConnectors: connectors,
-                cssOverrides,
+                cssOverrides: `.powered-by-dynamic { display: none !important; } .wallet-list__scroll-container { padding: 0px !important; } .wallet-list__search-container { padding-left: 0px !important; padding-right: 0px !important; } .dynamic-footer { display: none !important; } h1 { color: ${appearance?.colors?.textPrimary} !important; } * { color: ${appearance?.colors?.textSecondary} !important; }`,
                 events: {
                     onWalletRemoved() {
                         console.log("[CryptoWalletConnectionHandler] onWalletRemoved");
@@ -56,12 +55,8 @@ export function DynamicWeb3WalletConnect({
                             console.error("[CryptoWalletConnectionHandler] handleConnectedWallet: address is missing");
                             return false;
                         }
-
                         const chain = await dynamicChainToCrossmintChain(args);
                         const type = chain === "solana" ? "solana" : "ethereum";
-
-                        console.log({ chain, type, args });
-
                         try {
                             const res = await crossmintAuth?.signInWithSmartWallet(address, type);
                             const rawSignature = (await args.connector?.proveOwnership(
