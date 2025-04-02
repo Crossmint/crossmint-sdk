@@ -8,6 +8,7 @@ import {
 import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
 import { DynamicContext, useDynamicContext } from "@dynamic-labs/sdk-react-core";
 import { SolanaWalletConnectors } from "@dynamic-labs/solana";
+import { SuiWalletConnectors } from "@dynamic-labs/sui";
 import { type Dispatch, type SetStateAction, useContext, useEffect, useState } from "react";
 import { handleSendTransaction } from "./utils/handleSendTransaction";
 import { ChainNotSupportedError, dynamicChainToCrossmintChain } from "@/utils/dynamic/dynamicChainToCrossmintChain";
@@ -22,7 +23,7 @@ export function CryptoWalletConnectionHandler(props: {
         <DynamicContextProviderWrapper
             apiKeyEnvironment={apiKeyEnvironment}
             settings={{
-                walletConnectors: [EthereumWalletConnectors, SolanaWalletConnectors],
+                walletConnectors: [EthereumWalletConnectors, SolanaWalletConnectors, SuiWalletConnectors],
                 events: {
                     onAuthFlowCancel() {
                         console.log("[CryptoWalletConnectionHandler] onAuthFlowCancel");
