@@ -365,7 +365,7 @@ describe("CrossmintAuthClient", () => {
             expect(mockApiClient.post).toHaveBeenCalledWith(
                 `api/2024-09-26/session/sdk/auth/crypto_wallets/authenticate/start`,
                 expect.objectContaining({
-                    body: JSON.stringify({ walletAddress: mockAddress, walletType: "evm" }),
+                    body: JSON.stringify({ walletAddress: mockAddress, walletType: "ethereum" }),
                     headers: {
                         "Content-Type": "application/json",
                     },
