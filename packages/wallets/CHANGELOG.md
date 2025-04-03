@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 0.4.4
+
+### Patch Changes
+
+- 30841fa: fix signing for solana transactions
+
 ## 0.4.3
 
 ### Patch Changes
