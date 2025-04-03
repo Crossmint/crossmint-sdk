@@ -1,4 +1,3 @@
-import { lazy } from "react";
 import Color from "color";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import { EmailAuthFlow } from "./methods/email/EmailAuthFlow";
@@ -10,13 +9,7 @@ import { FarcasterProvider } from "../../providers/auth/FarcasterProvider";
 import { classNames } from "@/utils/classNames";
 import { AlertIcon } from "@/icons/alert";
 import { TwitterSignIn } from "./methods/twitter/TwitterSignIn";
-
-const Web3AuthFlow = lazy(() =>
-    // @ts-expect-error - Error because we dont use 'module' field in tsconfig, which is expected because we use tsup to compile
-    import("./methods/web3/Web3AuthFlow").then((mod) => ({
-        default: mod.Web3AuthFlow,
-    }))
-);
+import { Web3AuthFlow } from "./methods/web3/Web3AuthFlow";
 
 export function AuthForm({ className }: { className?: string }) {
     const { step, appearance, loginMethods, baseUrl, error, termsOfServiceText, authModalTitle } = useAuthForm();
@@ -68,7 +61,7 @@ export function AuthForm({ className }: { className?: string }) {
                 </FarcasterProvider>
             ) : null}
             {loginMethods.includes("twitter") ? <TwitterSignIn /> : null}
-            {loginMethods.includes("web3") ? <Web3AuthFlow /> : null}
+            {loginMethods.some((method) => method.startsWith("web3")) ? <Web3AuthFlow /> : null}
 
             {loginMethods.includes("email") ? (
                 <div>

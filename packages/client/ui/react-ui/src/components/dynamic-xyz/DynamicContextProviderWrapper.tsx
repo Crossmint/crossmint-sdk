@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 
 export interface DynamicContextProviderWrapperProps {
     children?: ReactNode;
-    settings: Omit<DynamicContextProps["settings"], "initialAuthenticationMode" | "environmentId">;
+    settings: Omit<DynamicContextProps["settings"], "environmentId">;
     apiKeyEnvironment: APIKeyEnvironmentPrefix;
 }
 

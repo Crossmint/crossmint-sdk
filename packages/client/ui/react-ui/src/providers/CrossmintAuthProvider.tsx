@@ -8,7 +8,6 @@ import {
     useState,
     useCallback,
 } from "react";
-
 import { CrossmintAuth, getCookie } from "@crossmint/client-sdk-auth";
 import { type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
 import { type AuthMaterialWithUser, SESSION_PREFIX, type SDKExternalUser } from "@crossmint/common-sdk-auth";
@@ -18,11 +17,14 @@ import { useCrossmint, useWallet } from "../hooks";
 import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
 import { AuthFormProvider } from "./auth/AuthFormProvider";
 import { TwindProvider } from "./TwindProvider";
-import type { AuthStatus, LoginMethod } from "@/types/auth";
-import type { CrossmintAuthEmbeddedWallets, GetOrCreateWalletProps } from "@/types/wallet";
+import type { AuthStatus, CrossmintAuthProviderEmbeddedWallets, LoginMethod } from "@/types/auth";
+import type { GetOrCreateWalletAdminSigner, GetOrCreateWalletProps } from "@/types/wallet";
+import { DynamicWeb3WalletConnect } from "./auth/web3/DynamicWeb3WalletConnect";
+import { mapSignerToWalletType } from "@/utils/mapSignerToWalletType";
+import { useDynamicConnect } from "@/hooks/useDynamicConnect";
 
 type CrossmintAuthProviderProps = {
-    embeddedWallets?: CrossmintAuthEmbeddedWallets;
+    embeddedWallets?: CrossmintAuthProviderEmbeddedWallets;
     appearance?: UIConfig;
     termsOfServiceText?: string | ReactNode;
     prefetchOAuthUrls?: boolean;
@@ -56,7 +58,7 @@ const defaultContextValue: AuthContextType = {
 
 export const AuthContext = createContext<AuthContextType>(defaultContextValue);
 
-const defaultEmbeddedWallets: CrossmintAuthEmbeddedWallets = {
+const defaultEmbeddedWallets: CrossmintAuthProviderEmbeddedWallets = {
     defaultChain: "base-sepolia",
     createOnLogin: "off",
     type: "evm-smart-wallet",
@@ -103,12 +105,16 @@ export function CrossmintAuthProvider({
     const crossmintBaseUrl = validateApiKeyAndGetCrossmintBaseUrl(crossmint.apiKey);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [initialized, setInitialized] = useState(false);
-    const [defaultEmail, setdefaultEmail] = useState<string | undefined>(undefined);
+    const [defaultEmail, setDefaultEmail] = useState<string | undefined>(undefined);
+    // Web3 auth related state
+    const [isDynamicSdkLoaded, setIsDynamicSdkLoaded] = useState(false);
+    const isWeb3Enabled = loginMethods.some((method) => method.startsWith("web3"));
 
     const triggerHasJustLoggedIn = useCallback(() => {
         onLoginSuccess?.();
     }, [onLoginSuccess]);
 
+    // Initialize auth state
     useEffect(() => {
         if (crossmint.jwt == null) {
             const jwt = getCookie(SESSION_PREFIX);
@@ -117,6 +123,7 @@ export function CrossmintAuthProvider({
         setInitialized(true);
     }, [crossmint.jwt, setJwt]);
 
+    // Close dialog on successful login
     useEffect(() => {
         if (crossmint.jwt != null && dialogOpen) {
             setDialogOpen(false);
@@ -124,26 +131,33 @@ export function CrossmintAuthProvider({
         }
     }, [crossmint.jwt, dialogOpen, triggerHasJustLoggedIn]);
 
-    const login = (defaultEmail?: string | MouseEvent) => {
-        if (crossmint.jwt != null) {
-            console.log("User already logged in");
-            return;
-        }
+    const login = useCallback(
+        (defaultEmail?: string | MouseEvent) => {
+            if (crossmint.jwt != null) {
+                console.log("User already logged in");
+                return;
+            }
 
-        // Only set defaultEmail when explicitly passed as a string, ignoring MouseEvent from onClick handlers
-        // PREVENTS BREAKING CHANGE!
-        if (defaultEmail != null && typeof defaultEmail === "string") {
-            setdefaultEmail(defaultEmail);
-        }
-        setDialogOpen(true);
-    };
+            // Only set defaultEmail when explicitly passed as a string, ignoring MouseEvent from onClick handlers
+            // PREVENTS BREAKING CHANGE!
+            if (defaultEmail != null && typeof defaultEmail === "string") {
+                setDefaultEmail(defaultEmail);
+            }
+            setDialogOpen(true);
+        },
+        [crossmint.jwt]
+    );
 
-    const logout = () => {
+    const logout = useCallback(() => {
         crossmintAuth.logout();
-    };
+    }, [crossmintAuth]);
 
-    const getAuthStatus = (): AuthStatus => {
+    const getAuthStatus = useCallback((): AuthStatus => {
         if (!initialized) {
+            return "initializing";
+        }
+        // For web3-enabled auth, we need to wait for the Dynamic SDK to load
+        if (isWeb3Enabled && !isDynamicSdkLoaded) {
             return "initializing";
         }
         if (crossmint.jwt != null) {
@@ -153,9 +167,9 @@ export function CrossmintAuthProvider({
             return "in-progress";
         }
         return "logged-out";
-    };
+    }, [initialized, crossmint.jwt, dialogOpen, isDynamicSdkLoaded, isWeb3Enabled]);
 
-    const getUser = async () => {
+    const getUser = useCallback(async () => {
         if (crossmint.jwt == null) {
             console.log("User not logged in");
             return;
@@ -163,21 +177,24 @@ export function CrossmintAuthProvider({
 
         const user = await crossmintAuth.getUser();
         setUser(user);
-    };
+    }, [crossmint.jwt, crossmintAuth]);
+
+    const authContextValue = useMemo(
+        () => ({
+            crossmintAuth,
+            login,
+            logout,
+            jwt: crossmint.jwt,
+            user,
+            status: getAuthStatus(),
+            getUser,
+        }),
+        [crossmintAuth, login, logout, crossmint.jwt, user, getAuthStatus, getUser]
+    );
 
     return (
         <TwindProvider>
-            <AuthContext.Provider
-                value={{
-                    crossmintAuth,
-                    login,
-                    logout,
-                    jwt: crossmint.jwt,
-                    user,
-                    status: getAuthStatus(),
-                    getUser,
-                }}
-            >
+            <AuthContext.Provider value={authContextValue}>
                 <CrossmintWalletProvider
                     key={crossmint.jwt}
                     showPasskeyHelpers={embeddedWallets.showPasskeyHelpers}
@@ -202,11 +219,20 @@ export function CrossmintAuthProvider({
                             defaultEmail,
                         }}
                     >
-                        <WalletManager embeddedWallets={embeddedWallets} accessToken={crossmint.jwt}>
-                            {children}
-                        </WalletManager>
+                        <DynamicWeb3WalletConnect
+                            enabled={isWeb3Enabled}
+                            apiKeyEnvironment={crossmint.apiKey.includes("production") ? "production" : "staging"}
+                        >
+                            <WalletManager
+                                embeddedWallets={embeddedWallets}
+                                accessToken={crossmint.jwt}
+                                setIsDynamicSdkLoaded={setIsDynamicSdkLoaded}
+                                isWeb3Enabled={isWeb3Enabled}
+                            />
 
-                        <AuthFormDialog open={dialogOpen} />
+                            {children}
+                            <AuthFormDialog open={dialogOpen} />
+                        </DynamicWeb3WalletConnect>
                     </AuthFormProvider>
                 </CrossmintWalletProvider>
             </AuthContext.Provider>
@@ -216,41 +242,69 @@ export function CrossmintAuthProvider({
 
 function WalletManager({
     embeddedWallets,
-    children,
     accessToken,
+    setIsDynamicSdkLoaded,
+    isWeb3Enabled,
 }: {
-    embeddedWallets: CrossmintAuthEmbeddedWallets;
-    children: ReactNode;
+    embeddedWallets: CrossmintAuthProviderEmbeddedWallets;
     accessToken: string | undefined;
+    setIsDynamicSdkLoaded: (sdkHasLoaded: boolean) => void;
+    isWeb3Enabled: boolean;
 }) {
-    const { type, createOnLogin, adminSigner, linkedUser } = embeddedWallets;
     const { getOrCreateWallet, clearWallet, status: walletStatus } = useWallet();
-    const canGetOrCreateWallet = createOnLogin === "all-users" && walletStatus === "not-loaded" && accessToken != null;
+    const { sdkHasLoaded, getAdminSigner, cleanup, isDynamicWalletConnected } = useDynamicConnect(
+        isWeb3Enabled,
+        setIsDynamicSdkLoaded,
+        accessToken
+    );
+    const { createOnLogin, adminSigner: defaultAdminSigner, linkedUser } = embeddedWallets;
+    const canGetOrCreateWallet =
+        createOnLogin === "all-users" && walletStatus === "not-loaded" && accessToken != null && sdkHasLoaded;
 
-    const handleWalletCreation = useCallback(() => {
+    const handleWalletCreation = useCallback(async () => {
         if (!canGetOrCreateWallet) {
             return;
         }
+
+        let adminSigner: GetOrCreateWalletAdminSigner = defaultAdminSigner;
+        let walletType = embeddedWallets.type;
+
+        if (isDynamicWalletConnected) {
+            adminSigner = (await getAdminSigner()) ?? adminSigner;
+            walletType = mapSignerToWalletType(adminSigner?.type) ?? walletType;
+        }
+
+        // If an external wallet is not connected, the type is required
+        if (!isDynamicWalletConnected && embeddedWallets.type == null) {
+            console.error(
+                "[CrossmintAuthProvider] ⚠️ embeddedWallets.type is required when no external wallet is connected"
+            );
+            return;
+        }
+
+        // @ts-ignore - TypeScript can't properly infer chain.network from Dynamic's type when using nullish coalescing
+        const chain = embeddedWallets.defaultChain ?? adminSigner?.chain?.network ?? undefined;
         getOrCreateWallet({
-            type: embeddedWallets.type,
+            type: walletType,
             args: {
-                ...(embeddedWallets.type === "evm-smart-wallet" ? { chain: embeddedWallets.defaultChain } : {}),
+                chain,
                 adminSigner,
                 linkedUser,
             },
         } as GetOrCreateWalletProps);
-    }, [canGetOrCreateWallet, getOrCreateWallet, type, adminSigner, linkedUser]);
+    }, [canGetOrCreateWallet, getOrCreateWallet, linkedUser, defaultAdminSigner, embeddedWallets.type, getAdminSigner]);
 
     const handleWalletCleanup = useCallback(() => {
-        if (walletStatus === "loaded" && accessToken == null) {
+        if (accessToken == null && walletStatus === "loaded") {
             clearWallet();
         }
-    }, [walletStatus, accessToken, clearWallet]);
+        cleanup();
+    }, [walletStatus, accessToken, clearWallet, cleanup]);
 
     useEffect(() => {
         handleWalletCreation();
         handleWalletCleanup();
     }, [handleWalletCreation, handleWalletCleanup]);
 
-    return <>{children}</>;
+    return null;
 }

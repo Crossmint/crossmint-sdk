@@ -221,16 +221,13 @@ export class CrossmintAuthClient extends CrossmintAuth {
         }
     }
 
-    public async signInWithSmartWallet(address: string) {
+    public async signInWithSmartWallet(address: string, type: "evm" | "solana") {
         try {
-            const queryParams = new URLSearchParams({ signinAuthenticationMethod: "evm" });
-            const response = await this.apiClient.post(
-                `${AUTH_SDK_ROOT_ENDPOINT}/crypto_wallets/authenticate/start?${queryParams}`,
-                {
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ walletAddress: address }),
-                }
-            );
+            const walletType = type === "evm" ? "ethereum" : "solana";
+            const response = await this.apiClient.post(`${AUTH_SDK_ROOT_ENDPOINT}/crypto_wallets/authenticate/start`, {
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ walletAddress: address, walletType }),
+            });
 
             if (!response.ok) {
                 throw new Error(JSON.parse(await response.text())?.message);
@@ -244,10 +241,10 @@ export class CrossmintAuthClient extends CrossmintAuth {
         }
     }
 
-    public async authenticateSmartWallet(address: string, signature: string) {
+    public async authenticateSmartWallet(address: string, type: "evm" | "solana", signature: string) {
         try {
             const queryParams = new URLSearchParams({
-                signinAuthenticationMethod: "evm",
+                signinAuthenticationMethod: type,
                 // TODO: Remove this when we deprecate frames
                 callbackUrl: `${this.apiClient.baseUrl}/${AUTH_SDK_ROOT_ENDPOINT}/callback`,
             });
