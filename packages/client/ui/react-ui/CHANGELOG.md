@@ -1,5 +1,19 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.17.0
+
+### Minor Changes
+
+- 648ad21: Added support for web3 eoa functionality
+
+### Patch Changes
+
+- Updated dependencies [648ad21]
+- Updated dependencies [30841fa]
+  - @crossmint/client-sdk-auth@1.1.26
+  - @crossmint/wallets-sdk@0.4.4
+  - @crossmint/client-sdk-react-base@0.1.1
+
 ## 1.16.9
 
 ### Patch Changes
