@@ -4,6 +4,37 @@ import type { ApiClient } from "../../api";
 import { mock } from "vitest-mock-extended";
 import type { SolanaNonCustodialSigner } from "../types/signers";
 import base58 from "bs58";
+import { VersionedMessage, VersionedTransaction } from "@solana/web3.js";
+
+vi.mock("@solana/web3.js", () => {
+    return {
+        PublicKey: class {
+            key: string;
+            constructor(key: string) {
+                this.key = key;
+            }
+            equals() {
+                return true;
+            }
+            toBase58() {
+                return "mock-address";
+            }
+        },
+        VersionedMessage: {
+            deserialize: () => ({
+                staticAccountKeys: [{ equals: () => true }],
+            }),
+        },
+        VersionedTransaction: class {
+            message: any;
+            signatures: any;
+            constructor() {
+                this.message = { staticAccountKeys: [{ equals: () => true }] };
+                this.signatures = [new Uint8Array([1, 2, 3])];
+            }
+        },
+    };
+});
 
 vi.mock("../../../utils", () => ({
     sleep: vi.fn(),
@@ -21,16 +52,24 @@ describe("SolanaApprovalsService", () => {
 
     describe("approve", () => {
         it("should successfully approve a transaction with single signer", async () => {
-            const messageBytes = base58.decode("jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN");
+            const messageBase58 = "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN";
+            const mockSignedTxn = {
+                message: {
+                    staticAccountKeys: [{ equals: vi.fn().mockReturnValue(true) }],
+                },
+                signatures: [new Uint8Array([1, 2, 3])],
+            };
+
+            // Create a mock signer that implements signTransaction
             const signer = mock<SolanaNonCustodialSigner>({
                 address: "mock-address",
-                signMessage: vi.fn().mockResolvedValue(messageBytes),
+                signTransaction: vi.fn().mockResolvedValue(mockSignedTxn),
             });
 
             const pendingApprovals = [
                 {
                     signer: "mock-address",
-                    message: "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN",
+                    message: messageBase58,
                 },
             ];
 
@@ -40,12 +79,17 @@ describe("SolanaApprovalsService", () => {
 
             const result = await approvalsService.approve("mock-tx-id", pendingApprovals, [signer]);
 
-            expect(signer.signMessage).toHaveBeenCalledWith(messageBytes);
+            // Verify signTransaction was called with a VersionedTransaction
+            expect(signer.signTransaction).toHaveBeenCalled();
+            const txnArg = signer.signTransaction.mock.calls[0][0];
+            expect(txnArg).toBeInstanceOf(VersionedTransaction);
+
+            // Verify API call
             expect(apiClient.approveTransaction).toHaveBeenCalledWith(walletLocator, "mock-tx-id", {
                 approvals: [
                     {
                         signer: "mock-address",
-                        signature: "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN",
+                        signature: expect.any(String),
                     },
                 ],
             });
@@ -53,23 +97,30 @@ describe("SolanaApprovalsService", () => {
         });
 
         it("should successfully approve a transaction with multiple signers", async () => {
-            const messageBytes = base58.decode("jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN");
+            const messageBase58 = "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN";
+            const messageBytes = base58.decode(messageBase58);
+
+            // Create mock transactions
+            const mockSignedTxn = new VersionedTransaction(VersionedMessage.deserialize(messageBytes));
+
             const signer1 = mock<SolanaNonCustodialSigner>({
                 address: "mock-address-1",
-                signMessage: vi.fn().mockResolvedValue(messageBytes),
+                signTransaction: vi.fn().mockResolvedValue(mockSignedTxn),
             });
+
             const signer2 = mock<SolanaNonCustodialSigner>({
                 address: "mock-address-2",
-                signMessage: vi.fn().mockResolvedValue(messageBytes),
+                signTransaction: vi.fn().mockResolvedValue(mockSignedTxn),
             });
+
             const pendingApprovals = [
                 {
                     signer: "mock-address-1",
-                    message: "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN",
+                    message: messageBase58,
                 },
                 {
                     signer: "mock-address-2",
-                    message: "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN",
+                    message: messageBase58,
                 },
             ];
 
@@ -79,18 +130,21 @@ describe("SolanaApprovalsService", () => {
 
             const result = await approvalsService.approve("mock-tx-id", pendingApprovals, [signer1, signer2]);
 
-            expect(signer1.signMessage).toHaveBeenCalledWith(messageBytes);
-            expect(signer2.signMessage).toHaveBeenCalledWith(messageBytes);
+            // Verify signTransaction was called for both signers
+            expect(signer1.signTransaction).toHaveBeenCalled();
+            expect(signer2.signTransaction).toHaveBeenCalled();
+
+            // Verify API call
             expect(apiClient.approveTransaction).toHaveBeenCalledTimes(1);
             expect(apiClient.approveTransaction).toHaveBeenCalledWith(walletLocator, "mock-tx-id", {
                 approvals: [
                     {
                         signer: "mock-address-1",
-                        signature: "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN",
+                        signature: expect.any(String),
                     },
                     {
                         signer: "mock-address-2",
-                        signature: "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN",
+                        signature: expect.any(String),
                     },
                 ],
             });
