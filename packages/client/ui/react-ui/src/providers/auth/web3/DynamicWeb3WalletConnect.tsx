@@ -58,7 +58,7 @@ export function DynamicWeb3WalletConnect({
                             return false;
                         }
                         const chain = await dynamicChainToCrossmintChain(args);
-                        const type = chain === "solana" ? "solana" : "ethereum";
+                        const type = chain === "solana" ? "solana" : "evm";
                         try {
                             const res = await crossmintAuth?.signInWithSmartWallet(address, type);
                             const rawSignature = (await args.connector?.proveOwnership(

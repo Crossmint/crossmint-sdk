@@ -18,7 +18,7 @@ import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
 import { AuthFormProvider } from "./auth/AuthFormProvider";
 import { TwindProvider } from "./TwindProvider";
 import type { AuthStatus, CrossmintAuthProviderEmbeddedWallets, LoginMethod } from "@/types/auth";
-import type { GetOrCreateWalletProps } from "@/types/wallet";
+import type { GetOrCreateWalletAdminSigner, GetOrCreateWalletProps } from "@/types/wallet";
 import { DynamicWeb3WalletConnect } from "./auth/web3/DynamicWeb3WalletConnect";
 import { mapSignerToWalletType } from "@/utils/mapSignerToWalletType";
 import { useDynamicConnect } from "@/hooks/useDynamicConnect";
@@ -266,7 +266,7 @@ function WalletManager({
             return;
         }
 
-        let adminSigner: any = defaultAdminSigner;
+        let adminSigner: GetOrCreateWalletAdminSigner = defaultAdminSigner;
         let walletType = embeddedWallets.type;
 
         if (isDynamicWalletConnected) {
@@ -282,6 +282,7 @@ function WalletManager({
             return;
         }
 
+        // @ts-ignore - TypeScript can't properly infer chain.network from Dynamic's type when using nullish coalescing
         const chain = embeddedWallets.defaultChain ?? adminSigner?.chain?.network ?? undefined;
         getOrCreateWallet({
             type: walletType,

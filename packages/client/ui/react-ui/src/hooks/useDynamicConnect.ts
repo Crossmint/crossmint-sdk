@@ -1,21 +1,34 @@
-import type { SignableMessage } from "viem";
+import type { Account, Chain, SignableMessage, Transport, WalletClient } from "viem";
 import { isEthereumWallet } from "@dynamic-labs/ethereum";
 import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
-import { isSolanaWallet } from "@dynamic-labs/solana";
+import { type IEmbeddedWalletSolanaSigner, isSolanaWallet } from "@dynamic-labs/solana";
 import { useCallback, useEffect } from "react";
 
-type DynamicConnectResult = {
-    getAdminSigner: () => Promise<any | undefined>;
-    cleanup: () => void;
-    sdkHasLoaded: boolean;
-    isDynamicWalletConnected: boolean;
+type EVMWalletClient = WalletClient<Transport, Chain, Account>;
+
+export type CustomEVMAdminSigner = EVMWalletClient & {
+    type: "evm-keypair";
+    address: `0x${string}`;
+    signer: {
+        type: "viem_v2";
+        signMessage: (data: {
+            message: SignableMessage;
+        }) => Promise<`0x${string}`>;
+        account: Account;
+    };
+};
+
+export type CustomSolanaAdminSigner = IEmbeddedWalletSolanaSigner & {
+    type: "solana-keypair";
+    address: string;
+    signer: IEmbeddedWalletSolanaSigner;
 };
 
 export function useDynamicConnect(
     isWeb3Enabled: boolean,
     setIsDynamicSdkLoaded: (sdkHasLoaded: boolean) => void,
     accessToken?: string
-): DynamicConnectResult {
+) {
     const {
         primaryWallet: connectedDynamicWallet,
         sdkHasLoaded,
@@ -53,7 +66,7 @@ export function useDynamicConnect(
                         },
                     },
                     type: "evm-keypair",
-                };
+                } as CustomEVMAdminSigner;
             }
             if (isSolanaWallet(connectedDynamicWallet)) {
                 const signer = await connectedDynamicWallet.getSigner();
@@ -64,7 +77,7 @@ export function useDynamicConnect(
                         ...signer,
                     },
                     type: "solana-keypair",
-                };
+                } as CustomSolanaAdminSigner;
             }
             return null;
         } catch (error) {

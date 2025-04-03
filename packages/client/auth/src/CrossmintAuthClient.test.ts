@@ -358,14 +358,14 @@ describe("CrossmintAuthClient", () => {
                 ok: true,
             });
 
-            const result = await crossmintAuthClient.signInWithSmartWallet(mockAddress, "ethereum");
+            const result = await crossmintAuthClient.signInWithSmartWallet(mockAddress, "evm");
 
             expect(result).toEqual(mockResponse);
 
             expect(mockApiClient.post).toHaveBeenCalledWith(
                 `api/2024-09-26/session/sdk/auth/crypto_wallets/authenticate/start`,
                 expect.objectContaining({
-                    body: JSON.stringify({ walletAddress: mockAddress, walletType: "ethereum" }),
+                    body: JSON.stringify({ walletAddress: mockAddress, walletType: "evm" }),
                     headers: {
                         "Content-Type": "application/json",
                     },
@@ -390,7 +390,7 @@ describe("CrossmintAuthClient", () => {
                 ok: true,
             });
 
-            const evmResult = await crossmintAuthClient.authenticateSmartWallet(mockAddress, "ethereum", mockSignature);
+            const evmResult = await crossmintAuthClient.authenticateSmartWallet(mockAddress, "evm", mockSignature);
 
             expect(evmResult).toEqual(mockResponse);
             const queryParams = new URLSearchParams({
