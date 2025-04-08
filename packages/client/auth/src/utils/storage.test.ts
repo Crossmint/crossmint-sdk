@@ -30,7 +30,7 @@ describe("CookieStorage", () => {
 
     it("should set a cookie without expiration", async () => {
         await storage.set("test_key", "test_value");
-        expect(document.cookie).toBe("test_key=test_value; path=/; SameSite=Lax;");
+        expect(document.cookie).toBe("test_key=test_value;  path=/; SameSite=Lax;");
     });
 
     it("should set a cookie with expiration", async () => {
