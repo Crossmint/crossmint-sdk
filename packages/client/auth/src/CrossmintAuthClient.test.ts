@@ -64,16 +64,16 @@ describe("CrossmintAuthClient", () => {
     });
 
     describe("storeAuthMaterial", () => {
-        it("should store auth material in cookies", () => {
+        it("should store auth material in cookies", async () => {
             const mockAuthMaterial: AuthMaterialWithUser = {
                 jwt: "mock.jwt.token",
                 refreshToken: { secret: "refresh-token", expiresAt: "2023-12-31T23:59:59Z" },
                 user: { id: "user123" },
             };
 
-            crossmintAuthClient.storeAuthMaterial(mockAuthMaterial);
+            await crossmintAuthClient.storeAuthMaterial(mockAuthMaterial);
 
-            expect(cookiesUtils.setCookie).toHaveBeenCalledWith("crossmint-jwt", mockAuthMaterial.jwt);
+            expect(cookiesUtils.setCookie).toHaveBeenCalledWith("crossmint-jwt", mockAuthMaterial.jwt, undefined);
             expect(cookiesUtils.setCookie).toHaveBeenCalledWith(
                 "crossmint-refresh-token",
                 mockAuthMaterial.refreshToken.secret,
