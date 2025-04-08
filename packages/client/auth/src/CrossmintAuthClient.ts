@@ -74,18 +74,18 @@ export class CrossmintAuthClient extends CrossmintAuth {
     }
 
     public async logout() {
+        // Store the old refresh token to pass it to the logout route before deleting the storage
+        const oldRefreshToken = await this.storageProvider.get(REFRESH_TOKEN_PREFIX);
+
+        // Even if there's a server error, we want to clear the storage and we do it first to load faster
+        await Promise.all([
+            this.storageProvider.remove(REFRESH_TOKEN_PREFIX),
+            this.storageProvider.remove(SESSION_PREFIX),
+        ]);
+
+        this.callbacks.onLogout?.();
+
         try {
-            // Store the old refresh token to pass it to the logout route before deleting the storage
-            const oldRefreshToken = await this.storageProvider.get(REFRESH_TOKEN_PREFIX);
-
-            // Even if there's a server error, we want to clear the storage and we do it first to load faster
-            await Promise.all([
-                this.storageProvider.remove(REFRESH_TOKEN_PREFIX),
-                this.storageProvider.remove(SESSION_PREFIX),
-            ]);
-
-            this.callbacks.onLogout?.();
-
             if (this.logoutRoute != null) {
                 await this.logoutFromCustomRoute();
             } else if (oldRefreshToken != null) {
