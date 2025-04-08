@@ -1,6 +1,6 @@
 import { WebAuthnP256 } from "ox";
 import type { CreateWalletResponse } from "../api";
-import type { EVMSigner, EVMSignerInput, PasskeyCreationCallback } from "./wallet";
+import type { EVMSigner, EVMSignerInput, PasskeyCreationCallback } from "./types/signers";
 import { SignerTypeMismatchError } from "../utils/errors";
 
 export function getEvmAdminSigner(

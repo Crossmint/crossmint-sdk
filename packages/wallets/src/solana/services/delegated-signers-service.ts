@@ -26,4 +26,9 @@ export class SolanaDelegatedSignerService {
         const response = await this.apiClient.getSigner(this.walletLocator, signer);
         return response;
     }
+
+    public async getDelegatedSigners() {
+        const response = await this.apiClient.getSigners(this.walletLocator);
+        return response;
+    }
 }

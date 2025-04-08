@@ -173,6 +173,15 @@ class ApiClient extends CrossmintApiClient {
         return response.json();
     }
 
+    async getSigners(walletLocator: WalletLocator): Promise<GetSignerResponse[]> {
+        const walletResponse = await this.get(`${this.apiPrefix}/${walletLocator}`, {
+            headers: this.headers,
+        });
+        const wallet = await walletResponse.json();
+        const signers = wallet.config?.delegatedSigners ?? [];
+        return signers;
+    }
+
     public get isServerSide() {
         return this.parsedAPIKey.usageOrigin === APIKeyUsageOrigin.SERVER;
     }

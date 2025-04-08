@@ -1,6 +1,5 @@
 import { WebAuthnP256 } from "ox";
 import {
-    type Account,
     type Address,
     type Hex,
     type SignableMessage,
@@ -9,13 +8,18 @@ import {
     type TypedData,
     type TypedDataDefinition,
     type TypedDataDomain,
-    type EIP1193Provider,
     http,
     createPublicClient,
     concat,
 } from "viem";
 
-import type { ApiClient, GetSignatureResponse, EvmWalletLocator, CreateTransactionSuccessResponse } from "../api";
+import type {
+    ApiClient,
+    GetSignatureResponse,
+    EvmWalletLocator,
+    CreateTransactionSuccessResponse,
+    GetTransactionsResponse,
+} from "../api";
 import { sleep } from "../utils";
 import type { Callbacks } from "../utils/options";
 import { ENTRY_POINT_ADDRESS, STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
@@ -39,49 +43,13 @@ import {
 
 import entryPointAbi from "./abi/entryPoint";
 import { toViemChain, type EVMSmartWalletChain } from "./chains";
+import type { EVMSigner } from "./types/signers";
 
 export interface TransactionInput {
     to: Address;
     data?: Hex;
     value?: bigint;
 }
-
-export type PasskeySigningCallback = (
-    message: string
-) => Promise<{ signature: Hex; metadata: WebAuthnP256.SignMetadata }>;
-export type PasskeyCreationCallback = (name: string) => Promise<{ id: string; publicKey: { x: string; y: string } }>;
-
-export type EVMSignerInput =
-    | {
-          type: "evm-keypair";
-          address: string;
-          signer:
-              | {
-                    type: "provider";
-                    provider: EIP1193Provider;
-                }
-              | {
-                    type: "viem_v2";
-                    account: Account;
-                };
-      }
-    | {
-          type: "evm-passkey";
-          name?: string;
-          signingCallback?: PasskeySigningCallback;
-          creationCallback?: PasskeyCreationCallback;
-      };
-export type EVMSigner = EVMSignerInput & {
-    locator: string;
-} & (
-        | {
-              type: "evm-passkey";
-              id: string;
-          }
-        | {
-              type: "evm-keypair";
-          }
-    );
 
 export interface ViemWallet {
     /**
@@ -126,7 +94,7 @@ export interface ViemWallet {
 
 type PendingApproval = NonNullable<NonNullable<CreateTransactionSuccessResponse["approvals"]>["pending"]>[number];
 
-export class EVMSmartWallet implements ViemWallet {
+export class IEVMSmartWallet implements ViemWallet {
     public readonly publicClient: PublicClient<HttpTransport>;
 
     constructor(
@@ -147,7 +115,7 @@ export class EVMSmartWallet implements ViemWallet {
      * @param tokens - The tokens
      * @returns The balances
      */
-    public async balances(tokens: Address[]) {
+    public async getBalances(tokens: Address[]) {
         return await this.apiClient.getBalance(this.getAddress(), {
             chains: [this.chain],
             tokens,
@@ -158,12 +126,14 @@ export class EVMSmartWallet implements ViemWallet {
      * Get the wallet transactions
      * @returns The transactions
      */
-    public async transactions() {
+    public async getTransactions() {
         const transactions = await this.apiClient.getTransactions(this.walletLocator);
         if ("error" in transactions) {
             throw new TransactionNotAvailableError(JSON.stringify(transactions));
         }
-        return transactions.transactions.filter((transaction) => transaction.walletType === "evm-smart-wallet");
+        return transactions.transactions.filter(
+            (transaction) => transaction.walletType === "evm-smart-wallet"
+        ) as unknown as GetTransactionsResponse;
     }
 
     /**
@@ -174,7 +144,7 @@ export class EVMSmartWallet implements ViemWallet {
      * @param locator - The locator
      * @returns The NFTs
      */
-    public async nfts(perPage: number, page: number, chain: string, locator?: EvmWalletLocator) {
+    public async getNfts(perPage: number, page: number, chain: string, locator?: EvmWalletLocator) {
         return await this.apiClient.getNfts(chain, locator ?? this.walletLocator, perPage, page);
     }
 
