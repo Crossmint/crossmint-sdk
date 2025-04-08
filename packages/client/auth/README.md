@@ -36,6 +36,72 @@ const user = await crossmintAuth.getUser();
 crossmintAuth.logout();
 ```
 
+## Custom Storage Providers
+
+By default, the SDK uses browser cookies for storing authentication materials. For environments where cookies are not available, such as React Native, you can provide a custom storage provider.
+
+### React Native Storage Options
+
+The SDK provides several secure storage implementations for React Native:
+
+#### 1. Expo SecureStore (Recommended for Expo apps)
+
+**First install dependencies:**
+
+```bash
+npx expo install expo-secure-store
+```
+
+For Expo applications, use SecureStore which provides a secure encrypted storage solution:
+
+```typescript
+import * as SecureStore from 'expo-secure-store';
+import { ExpoSecureStorage, CrossmintAuth } from "@crossmint/client-sdk-auth";
+
+// Create a custom storage provider using Expo's SecureStore
+const storageProvider = new ExpoSecureStorage(SecureStore);
+
+// Initialize auth client with secure storage
+const crossmintAuth = CrossmintAuth.from(crossmint, {
+  storageProvider
+});
+```
+
+#### 2. React Native Encrypted Storage (Recommended for non-Expo apps)
+
+**First install dependencies:**
+
+```bash
+npm install react-native-encrypted-storage
+```
+
+For vanilla React Native apps, use EncryptedStorage:
+
+```typescript
+import EncryptedStorage from 'react-native-encrypted-storage';
+import { RNEncryptedStorage, CrossmintAuth } from "@crossmint/client-sdk-auth";
+
+// Create a custom storage provider using react-native-encrypted-storage
+const storageProvider = new RNEncryptedStorage(EncryptedStorage);
+
+// Initialize auth client with secure storage
+const crossmintAuth = CrossmintAuth.from(crossmint, {
+  storageProvider
+});
+```
+
+### Implementing Custom Storage
+
+You can implement any storage solution by implementing the `StorageProvider` interface:
+
+```typescript
+export interface StorageProvider {
+  get(key: string): string | undefined | Promise<string | undefined>;
+  set(key: string, value: string, expiresAt?: string): void | Promise<void>;
+  remove(key: string): void | Promise<void>;
+}
+```
+
 ## Secure setup using HttpOnly cookies
 
 To secure the authentication material, you can set up a custom endpoint in your backend that will handle refreshing the authentication material and storing it in HttpOnly cookies. This way, the authentication material is not accessible to JavaScript running in the browser.

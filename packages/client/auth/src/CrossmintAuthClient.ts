@@ -12,11 +12,13 @@ import {
 } from "@crossmint/common-sdk-auth";
 import type { Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
 import { type CancellableTask, queueTask } from "@crossmint/client-sdk-base";
-import { deleteCookie, getCookie, getJWTExpiration, setCookie, TIME_BEFORE_EXPIRING_JWT_IN_SECONDS } from "./utils";
+import { getJWTExpiration, TIME_BEFORE_EXPIRING_JWT_IN_SECONDS } from "./utils";
+import { type StorageProvider, getDefaultStorageProvider } from "./utils/storage";
 
 export type CrossmintAuthClientConfig = CrossmintAuthOptions & {
     callbacks?: CrossmintAuthClientCallbacks;
     logoutRoute?: string;
+    storageProvider?: StorageProvider;
 };
 
 export class CrossmintAuthClient extends CrossmintAuth {
@@ -24,11 +26,13 @@ export class CrossmintAuthClient extends CrossmintAuth {
     private refreshTask: CancellableTask | null = null;
     private refreshPromise: Promise<AuthMaterialWithUser> | null = null;
     private logoutRoute: string | null;
+    private storageProvider: StorageProvider;
 
     protected constructor(crossmint: Crossmint, apiClient: CrossmintApiClient, config: CrossmintAuthClientConfig = {}) {
         super(crossmint, apiClient, config);
         this.callbacks = config.callbacks ?? {};
         this.logoutRoute = config.logoutRoute ?? null;
+        this.storageProvider = config.storageProvider ?? getDefaultStorageProvider();
     }
 
     public static from(crossmint: Crossmint, config: CrossmintAuthClientConfig = {}): CrossmintAuthClient {
@@ -58,20 +62,30 @@ export class CrossmintAuthClient extends CrossmintAuth {
         }
     }
 
-    public storeAuthMaterial(authMaterial: AuthMaterialWithUser) {
-        setCookie(SESSION_PREFIX, authMaterial.jwt);
-        setCookie(REFRESH_TOKEN_PREFIX, authMaterial.refreshToken.secret, authMaterial.refreshToken.expiresAt);
+    public async storeAuthMaterial(authMaterial: AuthMaterialWithUser) {
+        await Promise.all([
+            this.storageProvider.set(SESSION_PREFIX, authMaterial.jwt),
+            this.storageProvider.set(
+                REFRESH_TOKEN_PREFIX,
+                authMaterial.refreshToken.secret,
+                authMaterial.refreshToken.expiresAt
+            ),
+        ]);
     }
 
     public async logout() {
-        // Store the old refresh token to pass it to the logout route before deleting the cookies
-        const oldRefreshToken = getCookie(REFRESH_TOKEN_PREFIX);
-
-        // Even if there's a server error, we want to clear the cookies and we do it first to load faster
-        deleteCookie(REFRESH_TOKEN_PREFIX);
-        deleteCookie(SESSION_PREFIX);
-        this.callbacks.onLogout?.();
         try {
+            // Store the old refresh token to pass it to the logout route before deleting the storage
+            const oldRefreshToken = await this.storageProvider.get(REFRESH_TOKEN_PREFIX);
+
+            // Even if there's a server error, we want to clear the storage and we do it first to load faster
+            await Promise.all([
+                this.storageProvider.remove(REFRESH_TOKEN_PREFIX),
+                this.storageProvider.remove(SESSION_PREFIX),
+            ]);
+
+            this.callbacks.onLogout?.();
+
             if (this.logoutRoute != null) {
                 await this.logoutFromCustomRoute();
             } else if (oldRefreshToken != null) {
@@ -83,13 +97,13 @@ export class CrossmintAuthClient extends CrossmintAuth {
     }
 
     public async handleRefreshAuthMaterial(refreshTokenSecret?: string): Promise<void> {
-        const refreshToken = refreshTokenSecret ?? getCookie(REFRESH_TOKEN_PREFIX);
-        // If there is a custom refresh route, that endpoint will fetch the cookies itself
-        if (refreshToken == null && this.refreshRoute == null) {
-            return;
-        }
-
         try {
+            const refreshToken = refreshTokenSecret ?? (await this.storageProvider.get(REFRESH_TOKEN_PREFIX));
+            // If there is a custom refresh route, that endpoint will fetch the cookies itself
+            if (refreshToken == null && this.refreshRoute == null) {
+                return;
+            }
+
             // Create new refresh promise if none exists
             if (this.refreshPromise == null) {
                 this.refreshPromise = this.refreshAuthMaterial(refreshToken);
@@ -98,7 +112,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
 
             // If a custom refresh route is set, storing in cookies is handled in the server
             if (this.refreshRoute == null) {
-                this.storeAuthMaterial(authMaterial);
+                await this.storeAuthMaterial(authMaterial);
             }
 
             this.callbacks.onTokenRefresh?.(authMaterial);
@@ -106,7 +120,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
             this.scheduleNextRefresh(authMaterial.jwt);
         } catch (error) {
             console.error(error);
-            this.logout();
+            await this.logout();
         } finally {
             this.refreshPromise = null;
         }
