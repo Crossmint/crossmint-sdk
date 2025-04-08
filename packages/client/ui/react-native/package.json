@@ -19,10 +19,14 @@
         "dev": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsup --watch"
     },
     "dependencies": {
-        "@crossmint/common-sdk-base": "workspace:*",
+        "@crossmint/client-sdk-auth": "workspace:*",
         "@crossmint/client-sdk-base": "workspace:*",
         "@crossmint/client-sdk-react-base": "workspace:*",
-        "@crossmint/wallets-sdk": "workspace:*"
+        "@crossmint/common-sdk-auth": "workspace:*",
+        "@crossmint/common-sdk-base": "workspace:*",
+        "@crossmint/wallets-sdk": "workspace:*",
+        "expo-secure-store": "14.0.1",
+        "expo-web-browser": "~14.0.2"
     },
     "devDependencies": {
         "@types/react": "19.0.12"
