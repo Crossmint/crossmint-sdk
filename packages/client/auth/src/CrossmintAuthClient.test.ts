@@ -64,16 +64,16 @@ describe("CrossmintAuthClient", () => {
     });
 
     describe("storeAuthMaterial", () => {
-        it("should store auth material in cookies", () => {
+        it("should store auth material in cookies", async () => {
             const mockAuthMaterial: AuthMaterialWithUser = {
                 jwt: "mock.jwt.token",
                 refreshToken: { secret: "refresh-token", expiresAt: "2023-12-31T23:59:59Z" },
                 user: { id: "user123" },
             };
 
-            crossmintAuthClient.storeAuthMaterial(mockAuthMaterial);
+            await crossmintAuthClient.storeAuthMaterial(mockAuthMaterial);
 
-            expect(cookiesUtils.setCookie).toHaveBeenCalledWith("crossmint-jwt", mockAuthMaterial.jwt);
+            expect(cookiesUtils.setCookie).toHaveBeenCalledWith("crossmint-jwt", mockAuthMaterial.jwt, undefined);
             expect(cookiesUtils.setCookie).toHaveBeenCalledWith(
                 "crossmint-refresh-token",
                 mockAuthMaterial.refreshToken.secret,
@@ -358,16 +358,14 @@ describe("CrossmintAuthClient", () => {
                 ok: true,
             });
 
-            const result = await crossmintAuthClient.signInWithSmartWallet(mockAddress);
+            const result = await crossmintAuthClient.signInWithSmartWallet(mockAddress, "evm");
 
             expect(result).toEqual(mockResponse);
-            const queryParams = new URLSearchParams({
-                signinAuthenticationMethod: "evm",
-            });
+
             expect(mockApiClient.post).toHaveBeenCalledWith(
-                `api/2024-09-26/session/sdk/auth/crypto_wallets/authenticate/start?${queryParams}`,
+                `api/2024-09-26/session/sdk/auth/crypto_wallets/authenticate/start`,
                 expect.objectContaining({
-                    body: JSON.stringify({ walletAddress: mockAddress }),
+                    body: JSON.stringify({ walletAddress: mockAddress, walletType: "ethereum" }),
                     headers: {
                         "Content-Type": "application/json",
                     },
@@ -392,9 +390,9 @@ describe("CrossmintAuthClient", () => {
                 ok: true,
             });
 
-            const result = await crossmintAuthClient.authenticateSmartWallet(mockAddress, mockSignature);
+            const evmResult = await crossmintAuthClient.authenticateSmartWallet(mockAddress, "evm", mockSignature);
 
-            expect(result).toEqual(mockResponse);
+            expect(evmResult).toEqual(mockResponse);
             const queryParams = new URLSearchParams({
                 signinAuthenticationMethod: "evm",
                 callbackUrl: `${mockApiClient.baseUrl}/${AUTH_SDK_ROOT_ENDPOINT}/callback`,

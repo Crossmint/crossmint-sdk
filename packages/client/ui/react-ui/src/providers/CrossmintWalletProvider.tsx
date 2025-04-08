@@ -94,6 +94,8 @@ export function CrossmintWalletProvider({
     const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
 
     const getOrCreateWallet = async (props: GetOrCreateWalletProps) => {
+        console.log("getOrCreateWallet", props);
+
         if (walletState.status == "in-progress") {
             console.log("Wallet already loading");
             return {
@@ -111,7 +113,7 @@ export function CrossmintWalletProvider({
 
         try {
             setWalletState({ status: "in-progress" });
-            const experimental_callbacks = {
+            const passkeyPromptCallbacks = {
                 onWalletCreationStart: createPasskeyPrompt("create-wallet"),
                 onWalletCreationFail: createPasskeyPrompt("create-wallet-error"),
                 onTransactionStart: createPasskeyPrompt("transaction"),
@@ -126,15 +128,14 @@ export function CrossmintWalletProvider({
                         linkedUser: props.args.linkedUser,
                     };
                     const wallet = await smartWalletSDK.getOrCreateWallet("evm-smart-wallet", walletArgs, {
-                        experimental_callbacks,
+                        experimental_callbacks:
+                            walletArgs.adminSigner?.type === "evm-passkey" ? passkeyPromptCallbacks : undefined,
                     });
                     setWalletState({ status: "loaded", wallet, type: "evm-smart-wallet" });
                     break;
                 }
                 case "solana-smart-wallet": {
-                    const wallet = await smartWalletSDK.getOrCreateWallet("solana-smart-wallet", props.args, {
-                        experimental_callbacks,
-                    });
+                    const wallet = await smartWalletSDK.getOrCreateWallet("solana-smart-wallet", props.args);
                     setWalletState({ status: "loaded", wallet, type: "solana-smart-wallet" });
                     break;
                 }

@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-auth
 
+## 1.1.26
+
+### Patch Changes
+
+- 648ad21: added wallet type param to auth endpoints
+
 ## 1.1.25
 
 ### Patch Changes

@@ -1,9 +1,10 @@
 "use client";
 
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+const WALLET_TYPE_STORAGE_KEY = "crossmint-wallets-demo-preferred-network";
 
 // Define wallet types
-export type WalletType = "evm-smart-wallet" | "solana-smart-wallet";
+export type WalletType = "evm-smart-wallet" | "solana-smart-wallet" | undefined;
 
 // Define the context type
 interface WalletConfigContextType {
@@ -13,12 +14,25 @@ interface WalletConfigContextType {
 
 // Create the context with default values
 const WalletConfigContext = createContext<WalletConfigContextType>({
-    walletType: "evm-smart-wallet",
+    walletType: undefined,
     setWalletType: () => {},
 });
 
 export function WalletConfigProvider({ children }: { children: ReactNode }) {
-    const [walletType, setWalletType] = useState<WalletType>("evm-smart-wallet");
+    const [walletType, setWalletType] = useState<WalletType>();
+    useEffect(() => {
+        // Load initial state from localStorage
+        const savedWalletType = localStorage.getItem(WALLET_TYPE_STORAGE_KEY) as WalletType;
+        if (savedWalletType) {
+            setWalletType(savedWalletType);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (walletType != null) {
+            localStorage.setItem(WALLET_TYPE_STORAGE_KEY, walletType);
+        }
+    }, [walletType]);
 
     return (
         <WalletConfigContext.Provider value={{ walletType, setWalletType }}>{children}</WalletConfigContext.Provider>
