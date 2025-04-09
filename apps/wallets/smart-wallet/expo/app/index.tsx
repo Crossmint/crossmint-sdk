@@ -5,11 +5,17 @@ install();
 import { useCrossmintAuth, useWallet, type SolanaSmartWallet } from "@crossmint/client-sdk-react-native-ui";
 import { useMemo } from "react";
 import { Button, Text, View } from "react-native";
-import { PublicKey, TransactionInstruction, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
-
+import {
+    Connection,
+    PublicKey,
+    TransactionInstruction,
+    TransactionMessage,
+    VersionedTransaction,
+} from "@solana/web3.js";
 export default function Index() {
-    const { loginWithOAuth, user } = useCrossmintAuth();
+    const { loginWithOAuth, user, logout } = useCrossmintAuth();
     const { wallet, error, getOrCreateWallet } = useWallet();
+    const walletAddress = useMemo(() => wallet?.getAddress(), [wallet]);
 
     function initWallet() {
         console.log("user", user);
@@ -19,9 +25,7 @@ export default function Index() {
         }
         getOrCreateWallet({
             type: "solana-smart-wallet",
-            args: {
-                linkedUser: `email:${user?.email}`,
-            },
+            args: {},
         });
     }
 
@@ -38,9 +42,11 @@ export default function Index() {
             programId: new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
         });
 
+        const connection = new Connection("https://api.devnet.solana.com");
+        const blockhash = (await connection.getLatestBlockhash()).blockhash;
         const newMessage = new TransactionMessage({
-            payerKey: new PublicKey("11111111111111111111111111111112"),
-            recentBlockhash: "11111111111111111111111111111111",
+            payerKey: new PublicKey(wallet.getAddress()),
+            recentBlockhash: blockhash,
             instructions: [memoInstruction],
         });
 
@@ -57,8 +63,6 @@ export default function Index() {
         }
     }
 
-    const walletAddress = useMemo(() => wallet?.getAddress(), [wallet]);
-
     return (
         <View
             style={{
@@ -67,6 +71,7 @@ export default function Index() {
                 alignItems: "center",
             }}
         >
+            <Text>User: {user?.email}</Text>
             <Text>Wallet: {walletAddress}</Text>
             <Text>Error: {error}</Text>
             <Button title="Init Wallet" onPress={() => initWallet()} />
@@ -76,6 +81,13 @@ export default function Index() {
                 onPress={() => {
                     console.log("login with google");
                     loginWithOAuth("google");
+                }}
+            />
+            <Button
+                title="Logout"
+                onPress={() => {
+                    console.log("logout");
+                    logout();
                 }}
             />
         </View>

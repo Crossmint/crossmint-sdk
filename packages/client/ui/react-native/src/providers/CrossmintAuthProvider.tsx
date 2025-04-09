@@ -170,10 +170,15 @@ export function CrossmintAuthProvider({
             }
 
             await WebBrowser.warmUpAsync();
-            const result = await WebBrowser.openAuthSessionAsync(oauthUrlMap[provider]);
+            const baseUrl = new URL(oauthUrlMap[provider]);
+            // Add prompt=select_account for Google OAuth to force account picker
+            if (provider === "google") {
+                baseUrl.searchParams.append("provider_prompt", "select_account");
+            }
+
+            const result = await WebBrowser.openAuthSessionAsync(baseUrl.toString());
             if (result.type === "success") {
                 const oneTimeSecret = extractOneTimeSecretFromUrl(result.url);
-                console.log("[CrossmintAuthProvider] oneTimeSecret", oneTimeSecret);
                 await crossmintAuth.handleRefreshAuthMaterial(oneTimeSecret);
             }
             await WebBrowser.coolDownAsync();
@@ -202,7 +207,8 @@ export function CrossmintAuthProvider({
 }
 
 const extractOneTimeSecretFromUrl = (url: string): string | undefined => {
-    const regex = /[?&]oneTimeSecret=([^&]+)/; // Use the refined regex
+    const regex = /[?&]oneTimeSecret=([^&#]+)/;
     const match = url.match(regex);
-    return match ? decodeURIComponent(match[1]) : undefined;
+    const secret = match ? decodeURIComponent(match[1]) : undefined;
+    return secret;
 };
