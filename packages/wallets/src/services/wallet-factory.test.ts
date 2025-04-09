@@ -1,9 +1,10 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi, expectTypeOf } from "vitest";
 import { mock } from "vitest-mock-extended";
+import { Keypair } from "@solana/web3.js";
 import type { ApiClient } from "../api";
 import { WalletFactory } from "./wallet-factory";
-import { Keypair } from "@solana/web3.js";
-import { SolanaSmartWallet } from "../solana";
+import type { EVMSmartWallet } from "../evm";
+import type { SolanaSmartWallet } from "../solana";
 
 describe("WalletSDK", () => {
     let factory: WalletFactory;
@@ -15,6 +16,38 @@ describe("WalletSDK", () => {
             environment: "development",
         });
         factory = new WalletFactory(apiClient);
+    });
+
+    it("should create a EVM wallet with a keypair admin signer", async () => {
+        const adminSigner = {
+            type: "evm-keypair",
+            address: "mock-address",
+        };
+        apiClient.createWallet.mockResolvedValueOnce({
+            type: "evm-smart-wallet",
+            address: "mock-address",
+            config: {
+                adminSigner,
+            },
+        });
+        const wallet = await factory.getOrCreateWallet("evm-smart-wallet", {
+            chain: "base",
+            adminSigner,
+        });
+
+        expectTypeOf(wallet).toMatchTypeOf<EVMSmartWallet>();
+        expect(typeof wallet.sendTransaction).toBe("function");
+        expect(typeof wallet.getBalances).toBe("function");
+        expect(typeof wallet.getTransactions).toBe("function");
+        expect(typeof wallet.getNfts).toBe("function");
+        expect(typeof wallet.getAddress).toBe("function");
+        expect(typeof wallet.getNonce).toBe("function");
+        expect(typeof wallet.signMessage).toBe("function");
+        expect(typeof wallet.signTypedData).toBe("function");
+        expect(typeof wallet.chain).toBe("string");
+        expect(typeof wallet.publicClient).toBe("object");
+        expect(wallet.getAddress()).toBe("mock-address");
+        expect(wallet.chain).toBe("base");
     });
 
     it("should create a SSW with a keypair admin signer", async () => {
@@ -40,7 +73,16 @@ describe("WalletSDK", () => {
         });
 
         // Wallet Checks
-        expect(wallet).toBeInstanceOf(SolanaSmartWallet);
+        expectTypeOf(wallet).toMatchTypeOf<SolanaSmartWallet>();
+        expect(typeof wallet.sendTransaction).toBe("function");
+        expect(typeof wallet.getBalances).toBe("function");
+        expect(typeof wallet.getTransactions).toBe("function");
+        expect(typeof wallet.getNfts).toBe("function");
+        expect(typeof wallet.addDelegatedSigner).toBe("function");
+        expect(typeof wallet.getDelegatedSigners).toBe("function");
+        expect(typeof wallet.adminSigner).toBe("object");
+        expect(typeof wallet.getPublicKey).toBe("function");
+        expect(typeof wallet.getAddress).toBe("function");
         expect(wallet.getPublicKey().toBase58()).toBe(walletAddress);
         expect(wallet.adminSigner.type).toBe("solana-keypair");
         expect(wallet.adminSigner.address).toBe(adminSigner.address);
@@ -86,7 +128,7 @@ describe("WalletSDK", () => {
         });
 
         // Wallet Checks
-        expect(wallet).toBeInstanceOf(SolanaSmartWallet);
+        expectTypeOf(wallet).toMatchTypeOf<SolanaSmartWallet>();
         expect(wallet.getPublicKey().toBase58()).toBe(walletAddress);
         expect(wallet.adminSigner.type).toBe("solana-keypair");
         expect(wallet.adminSigner.address).toBe(adminSigner.address);
@@ -127,7 +169,7 @@ describe("WalletSDK", () => {
         });
 
         // Wallet Checks
-        expect(wallet).toBeInstanceOf(SolanaSmartWallet);
+        expectTypeOf(wallet).toMatchTypeOf<SolanaSmartWallet>();
         expect(wallet.getPublicKey().toBase58()).toBe(walletAddress);
         expect(wallet.adminSigner.type).toBe("solana-fireblocks-custodial");
         expect(wallet.getAddress()).toBe(walletAddress);

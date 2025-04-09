@@ -1,6 +1,5 @@
 import { WebAuthnP256 } from "ox";
 import {
-    type Account,
     type Address,
     type Hex,
     type SignableMessage,
@@ -9,13 +8,18 @@ import {
     type TypedData,
     type TypedDataDefinition,
     type TypedDataDomain,
-    type EIP1193Provider,
     http,
     createPublicClient,
     concat,
 } from "viem";
 
-import type { ApiClient, GetSignatureResponse, EvmWalletLocator, CreateTransactionSuccessResponse } from "../api";
+import type {
+    ApiClient,
+    GetSignatureResponse,
+    EvmWalletLocator,
+    CreateTransactionSuccessResponse,
+    GetTransactionsResponse,
+} from "../api";
 import { sleep } from "../utils";
 import type { Callbacks } from "../utils/options";
 import { ENTRY_POINT_ADDRESS, STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
@@ -39,94 +43,12 @@ import {
 
 import entryPointAbi from "./abi/entryPoint";
 import { toViemChain, type EVMSmartWalletChain } from "./chains";
-
-export interface TransactionInput {
-    to: Address;
-    data?: Hex;
-    value?: bigint;
-}
-
-export type PasskeySigningCallback = (
-    message: string
-) => Promise<{ signature: Hex; metadata: WebAuthnP256.SignMetadata }>;
-export type PasskeyCreationCallback = (name: string) => Promise<{ id: string; publicKey: { x: string; y: string } }>;
-
-export type EVMSignerInput =
-    | {
-          type: "evm-keypair";
-          address: string;
-          signer:
-              | {
-                    type: "provider";
-                    provider: EIP1193Provider;
-                }
-              | {
-                    type: "viem_v2";
-                    account: Account;
-                };
-      }
-    | {
-          type: "evm-passkey";
-          name?: string;
-          signingCallback?: PasskeySigningCallback;
-          creationCallback?: PasskeyCreationCallback;
-      };
-export type EVMSigner = EVMSignerInput & {
-    locator: string;
-} & (
-        | {
-              type: "evm-passkey";
-              id: string;
-          }
-        | {
-              type: "evm-keypair";
-          }
-    );
-
-export interface ViemWallet {
-    /**
-     * Get the wallet address
-     * @returns The wallet address
-     */
-    getAddress: () => Address;
-
-    /**
-     * Get the wallet nonce
-     * @param parameters - The parameters
-     * @returns The nonce
-     */
-    getNonce?: ((parameters?: { key?: bigint | undefined } | undefined) => Promise<bigint>) | undefined;
-
-    /**
-     * Sign a message
-     * @param parameters - The parameters
-     * @returns The signature
-     */
-    signMessage: (parameters: { message: SignableMessage }) => Promise<Hex>;
-
-    /**
-     * Sign a typed data
-     * @param parameters - The parameters
-     * @returns The signature
-     */
-    signTypedData: <
-        const typedData extends TypedData | Record<string, unknown>,
-        primaryType extends keyof typedData | "EIP712Domain" = keyof typedData,
-    >(
-        parameters: TypedDataDefinition<typedData, primaryType>
-    ) => Promise<Hex>;
-
-    /**
-     * Sign and submit a transaction
-     * @param parameters - The transaction parameters
-     * @returns The transaction hash
-     */
-    sendTransaction: (parameters: TransactionInput) => Promise<Hex>;
-}
+import type { EVMSigner } from "./types/signers";
+import type { TransactionInput, ViemWallet } from "./types/wallet";
 
 type PendingApproval = NonNullable<NonNullable<CreateTransactionSuccessResponse["approvals"]>["pending"]>[number];
 
-export class EVMSmartWallet implements ViemWallet {
+export class EVMSmartWalletImpl implements ViemWallet {
     public readonly publicClient: PublicClient<HttpTransport>;
 
     constructor(
@@ -147,7 +69,7 @@ export class EVMSmartWallet implements ViemWallet {
      * @param tokens - The tokens
      * @returns The balances
      */
-    public async balances(tokens: Address[]) {
+    public async getBalances(tokens: Address[]) {
         return await this.apiClient.getBalance(this.getAddress(), {
             chains: [this.chain],
             tokens,
@@ -158,12 +80,14 @@ export class EVMSmartWallet implements ViemWallet {
      * Get the wallet transactions
      * @returns The transactions
      */
-    public async transactions() {
+    public async getTransactions() {
         const transactions = await this.apiClient.getTransactions(this.walletLocator);
         if ("error" in transactions) {
             throw new TransactionNotAvailableError(JSON.stringify(transactions));
         }
-        return transactions.transactions.filter((transaction) => transaction.walletType === "evm-smart-wallet");
+        return transactions.transactions.filter(
+            (transaction) => transaction.walletType === "evm-smart-wallet"
+        ) as unknown as GetTransactionsResponse;
     }
 
     /**
@@ -174,7 +98,7 @@ export class EVMSmartWallet implements ViemWallet {
      * @param locator - The locator
      * @returns The NFTs
      */
-    public async nfts(perPage: number, page: number, chain: string, locator?: EvmWalletLocator) {
+    public async getNfts(perPage: number, page: number, chain: string, locator?: EvmWalletLocator) {
         return await this.apiClient.getNfts(chain, locator ?? this.walletLocator, perPage, page);
     }
 
