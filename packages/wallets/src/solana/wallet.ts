@@ -21,7 +21,12 @@ import {
 } from "./types/signers";
 import { SolanaTransactionsService } from "./services/transactions-service";
 import { SolanaDelegatedSignerService } from "./services/delegated-signers-service";
-import type { SolanaSmartWallet, SmartWalletTransactionParams, SolanaMPCWallet } from "./types/wallet";
+import type {
+    SolanaSmartWallet,
+    SmartWalletTransactionParams,
+    SolanaMPCWallet,
+    BaseSolanaWallet,
+} from "./types/wallet";
 
 export type Transaction = VersionedTransaction;
 
@@ -30,7 +35,7 @@ interface MPCTransactionParams {
     additionalSigners?: SolanaNonCustodialSignerInput[];
 }
 
-export abstract class SolanaWallet {
+export abstract class SolanaWallet implements BaseSolanaWallet {
     protected readonly transactionsService: SolanaTransactionsService;
     protected readonly delegatedSignerService: SolanaDelegatedSignerService;
     constructor(
@@ -102,7 +107,7 @@ export abstract class SolanaWallet {
     }
 }
 
-export class ISolanaSmartWallet extends SolanaWallet implements SolanaSmartWallet {
+export class SolanaSmartWalletImpl extends SolanaWallet implements SolanaSmartWallet {
     public readonly adminSigner: SolanaSigner;
     constructor(
         apiClient: ApiClient,
@@ -163,7 +168,7 @@ export class ISolanaSmartWallet extends SolanaWallet implements SolanaSmartWalle
     }
 }
 
-export class ISolanaMPCWallet extends SolanaWallet implements SolanaMPCWallet {
+export class SolanaMPCWalletImpl extends SolanaWallet implements SolanaMPCWallet {
     /**
      * Sign and submit a transaction
      * @param parameters - The transaction parameters

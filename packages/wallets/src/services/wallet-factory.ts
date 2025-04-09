@@ -4,8 +4,8 @@ import type { Address } from "viem";
 import type { EvmWalletType, SolanaWalletType, WalletTypeToArgs, WalletTypeToWallet } from "./types";
 import type { ApiClient, CreateWalletResponse, GetWalletSuccessResponse } from "../api";
 import { createPasskeySigner, getEvmAdminSigner } from "../evm/utils";
-import { ISolanaMPCWallet, ISolanaSmartWallet, type SolanaMPCWallet, type SolanaSmartWallet } from "../solana";
-import { IEVMSmartWallet, type EVMSmartWallet } from "../evm";
+import { SolanaMPCWalletImpl, SolanaSmartWalletImpl, type SolanaMPCWallet, type SolanaSmartWallet } from "../solana";
+import { EVMSmartWalletImpl, type EVMSmartWallet } from "../evm";
 import { parseSolanaSignerInput } from "../solana/types/signers";
 import { getConnectionFromEnvironment } from "../solana/utils";
 import type { WalletOptions } from "../utils/options";
@@ -143,7 +143,7 @@ export class WalletFactory {
             case "evm-smart-wallet": {
                 const { chain, adminSigner: adminSignerInput } = args as WalletTypeToArgs["evm-smart-wallet"];
                 const evmResponse = walletResponse as Extract<CreateWalletResponse, { type: "evm-smart-wallet" }>;
-                const wallet = new IEVMSmartWallet(
+                const wallet = new EVMSmartWalletImpl(
                     chain,
                     this.apiClient,
                     evmResponse.address as Address,
@@ -161,7 +161,7 @@ export class WalletFactory {
                     sendTransaction: wallet.sendTransaction.bind(wallet),
                     chain: wallet.chain,
                     publicClient: wallet.publicClient,
-                } as EVMSmartWallet;
+                } satisfies EVMSmartWallet;
             }
         }
     }
@@ -176,7 +176,7 @@ export class WalletFactory {
         switch (type) {
             case "solana-smart-wallet": {
                 const { adminSigner: adminSignerInput } = args as WalletTypeToArgs["solana-smart-wallet"];
-                const wallet = new ISolanaSmartWallet(
+                const wallet = new SolanaSmartWalletImpl(
                     this.apiClient,
                     new PublicKey(solanaResponse.address),
                     adminSignerInput ?? {
@@ -195,10 +195,10 @@ export class WalletFactory {
                     getNfts: wallet.getNfts.bind(wallet),
                     sendTransaction: wallet.sendTransaction.bind(wallet),
                     getTransactions: wallet.getTransactions.bind(wallet),
-                } as SolanaSmartWallet;
+                } satisfies SolanaSmartWallet;
             }
             case "solana-mpc-wallet": {
-                const wallet = new ISolanaMPCWallet(
+                const wallet = new SolanaMPCWalletImpl(
                     this.apiClient,
                     new PublicKey(solanaResponse.address),
                     getConnectionFromEnvironment(this.apiClient.environment),
@@ -211,7 +211,7 @@ export class WalletFactory {
                     getPublicKey: wallet.getPublicKey.bind(wallet),
                     getNfts: wallet.getNfts.bind(wallet),
                     getTransactions: wallet.getTransactions.bind(wallet),
-                } as SolanaMPCWallet;
+                } satisfies SolanaMPCWallet;
             }
         }
     }

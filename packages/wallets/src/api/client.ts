@@ -173,7 +173,7 @@ class ApiClient extends CrossmintApiClient {
         return response.json();
     }
 
-    async getSigners(walletLocator: WalletLocator): Promise<GetSignerResponse[]> {
+    async getDelegatedSigners(walletLocator: WalletLocator): Promise<GetSignerResponse[]> {
         const walletResponse = await this.get(`${this.apiPrefix}/${walletLocator}`, {
             headers: this.headers,
         });

@@ -44,57 +44,11 @@ import {
 import entryPointAbi from "./abi/entryPoint";
 import { toViemChain, type EVMSmartWalletChain } from "./chains";
 import type { EVMSigner } from "./types/signers";
-
-export interface TransactionInput {
-    to: Address;
-    data?: Hex;
-    value?: bigint;
-}
-
-export interface ViemWallet {
-    /**
-     * Get the wallet address
-     * @returns The wallet address
-     */
-    getAddress: () => Address;
-
-    /**
-     * Get the wallet nonce
-     * @param parameters - The parameters
-     * @returns The nonce
-     */
-    getNonce?: ((parameters?: { key?: bigint | undefined } | undefined) => Promise<bigint>) | undefined;
-
-    /**
-     * Sign a message
-     * @param parameters - The parameters
-     * @returns The signature
-     */
-    signMessage: (parameters: { message: SignableMessage }) => Promise<Hex>;
-
-    /**
-     * Sign a typed data
-     * @param parameters - The parameters
-     * @returns The signature
-     */
-    signTypedData: <
-        const typedData extends TypedData | Record<string, unknown>,
-        primaryType extends keyof typedData | "EIP712Domain" = keyof typedData,
-    >(
-        parameters: TypedDataDefinition<typedData, primaryType>
-    ) => Promise<Hex>;
-
-    /**
-     * Sign and submit a transaction
-     * @param parameters - The transaction parameters
-     * @returns The transaction hash
-     */
-    sendTransaction: (parameters: TransactionInput) => Promise<Hex>;
-}
+import type { TransactionInput, ViemWallet } from "./types/wallet";
 
 type PendingApproval = NonNullable<NonNullable<CreateTransactionSuccessResponse["approvals"]>["pending"]>[number];
 
-export class IEVMSmartWallet implements ViemWallet {
+export class EVMSmartWalletImpl implements ViemWallet {
     public readonly publicClient: PublicClient<HttpTransport>;
 
     constructor(
