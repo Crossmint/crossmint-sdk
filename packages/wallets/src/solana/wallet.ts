@@ -4,6 +4,7 @@ import type {
     ApiClient,
     GetBalanceResponse,
     GetNftsResponse,
+    GetSignerResponse,
     GetTransactionsResponse,
     SolanaWalletLocator,
 } from "../api";
@@ -20,6 +21,12 @@ import {
 } from "./types/signers";
 import { SolanaTransactionsService } from "./services/transactions-service";
 import { SolanaDelegatedSignerService } from "./services/delegated-signers-service";
+import type {
+    SolanaSmartWallet,
+    SmartWalletTransactionParams,
+    SolanaMPCWallet,
+    BaseSolanaWallet,
+} from "./types/wallet";
 
 export type Transaction = VersionedTransaction;
 
@@ -28,13 +35,7 @@ interface MPCTransactionParams {
     additionalSigners?: SolanaNonCustodialSignerInput[];
 }
 
-interface SmartWalletTransactionParams {
-    transaction: VersionedTransaction;
-    additionalSigners?: SolanaNonCustodialSignerInput[];
-    delegatedSigner?: SolanaNonCustodialSignerInput;
-}
-
-abstract class SolanaWallet {
+export abstract class SolanaWallet implements BaseSolanaWallet {
     protected readonly transactionsService: SolanaTransactionsService;
     protected readonly delegatedSignerService: SolanaDelegatedSignerService;
     constructor(
@@ -72,7 +73,7 @@ abstract class SolanaWallet {
      * @param tokens - The tokens
      * @returns The balances
      */
-    public async balances(tokens: SolanaSupportedToken[]): Promise<GetBalanceResponse> {
+    public async getBalances(tokens: SolanaSupportedToken[]): Promise<GetBalanceResponse> {
         return await this.apiClient.getBalance(this.getAddress(), {
             tokens,
         });
@@ -82,7 +83,7 @@ abstract class SolanaWallet {
      * Get the wallet transactions
      * @returns The transactions
      */
-    public async transactions(): Promise<GetTransactionsResponse> {
+    public async getTransactions(): Promise<GetTransactionsResponse> {
         return await this.transactionsService.getTransactions();
     }
 
@@ -93,7 +94,7 @@ abstract class SolanaWallet {
      * @param locator - The wallet locator
      * @returns The NFTs
      */
-    public async nfts(perPage: number, page: number, locator?: SolanaWalletLocator): Promise<GetNftsResponse> {
+    public async getNfts(perPage: number, page: number, locator?: SolanaWalletLocator): Promise<GetNftsResponse> {
         return await this.apiClient.getNfts("solana", locator ?? this.walletLocator, perPage, page);
     }
 
@@ -106,7 +107,7 @@ abstract class SolanaWallet {
     }
 }
 
-export class SolanaSmartWallet extends SolanaWallet {
+export class SolanaSmartWalletImpl extends SolanaWallet implements SolanaSmartWallet {
     public readonly adminSigner: SolanaSigner;
     constructor(
         apiClient: ApiClient,
@@ -146,6 +147,14 @@ export class SolanaSmartWallet extends SolanaWallet {
         );
     }
 
+    /**
+     * Gets delegated signers for the wallet
+     * @returns The delegated signers
+     */
+    public async getDelegatedSigners(): Promise<GetSignerResponse[]> {
+        return await this.delegatedSignerService.getDelegatedSigners();
+    }
+
     private getEffectiveTransactionSigner(
         signer: SolanaNonCustodialSignerInput | undefined
     ): SolanaNonCustodialSigner | undefined {
@@ -159,7 +168,7 @@ export class SolanaSmartWallet extends SolanaWallet {
     }
 }
 
-export class SolanaMPCWallet extends SolanaWallet {
+export class SolanaMPCWalletImpl extends SolanaWallet implements SolanaMPCWallet {
     /**
      * Sign and submit a transaction
      * @param parameters - The transaction parameters
