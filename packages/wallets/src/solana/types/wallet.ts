@@ -11,16 +11,14 @@ import type { SolanaSupportedToken } from "../tokens";
 
 export interface BaseSolanaWallet {
     /**
-     * Get the wallet public key
-     * @returns The wallet public key
+     * The wallet public key
      */
-    getPublicKey(): PublicKey;
+    publicKey: PublicKey;
 
     /**
-     * Get the wallet address
-     * @returns The wallet address
+     * The wallet address
      */
-    getAddress(): string;
+    address: string;
 
     /**
      * Get the wallet balances
@@ -42,7 +40,7 @@ export interface BaseSolanaWallet {
      * @param locator - The wallet locator
      * @returns The NFTs
      */
-    getNfts(perPage: number, page: number, locator?: SolanaWalletLocator): Promise<GetNftsResponse>;
+    unstable_getNfts(perPage: number, page: number, locator?: SolanaWalletLocator): Promise<GetNftsResponse>;
 }
 
 export interface SolanaSmartWallet extends BaseSolanaWallet {

@@ -1,5 +1,5 @@
 ---
-"@crossmint/wallets-sdk": major
+"@crossmint/wallets-sdk": minor
 ---
 
-Fixed wallet return types
+Fixed wallet return type and renamed properties and methods. 

@@ -67,9 +67,9 @@ export default function Index() {
         queryKey: ["smart-wallet"],
         queryFn: async () => {
             if (type === "evm-smart-wallet") {
-                return (await wallet?.getNfts(11, 1, wallet.chain, wallet.getAddress())) as NFT[];
+                return (await wallet.unstable_getNfts(11, 1, wallet.chain, wallet.address)) as NFT[];
             } else if (type === "solana-smart-wallet") {
-                return (await wallet?.getNfts(11, 1, wallet?.getAddress())) as NFT[];
+                return (await wallet.unstable_getNfts(11, 1, wallet.address)) as NFT[];
             }
             return [];
         },

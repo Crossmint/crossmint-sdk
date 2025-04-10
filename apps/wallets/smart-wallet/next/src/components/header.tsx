@@ -32,7 +32,7 @@ export const Header: React.FC = () => {
 
     const handleCopyAddress = async () => {
         if (wallet != null) {
-            await navigator.clipboard.writeText(wallet.getAddress());
+            await navigator.clipboard.writeText(wallet.address);
             toast({ title: "Address copied to clipboard", duration: 5000 });
         }
     };
@@ -88,7 +88,7 @@ const UserMenu: React.FC<{
                 <div className="flex items-center min-w-[150px] bg-skeleton rounded-full px-4 py-2 gap-2 text-secondary-foreground">
                     {getWalletIcon(walletType)}
                     <Typography>
-                        {walletStatus !== "loaded" ? "Loading..." : formatWalletAddress(wallet.getAddress(), 6, 3)}
+                        {walletStatus !== "loaded" ? "Loading..." : formatWalletAddress(wallet.address, 6, 3)}
                     </Typography>
                 </div>
                 <Avatar className="h-9 w-9">
@@ -102,7 +102,7 @@ const UserMenu: React.FC<{
         <DropdownMenuContent align="end" className="w-56 overflow-y-auto max-h-[80vh]">
             <div className="flex flex-col gap-2">
                 <div className="flex gap-3 text-muted items-center cursor-pointer py-2" onClick={onCopyAddress}>
-                    <Typography>{wallet ? formatWalletAddress(wallet.getAddress(), 14, 6) : ""}</Typography>
+                    <Typography>{wallet ? formatWalletAddress(wallet.address, 14, 6) : ""}</Typography>
                     <Copy className="h-5 w-5" />
                 </div>
                 <Link href="/wallet" prefetch={false} className="text-secondary-foreground flex gap-3 py-2">

@@ -53,7 +53,7 @@ export default function Index() {
         const memoInstruction = new TransactionInstruction({
             keys: [
                 {
-                    pubkey: new PublicKey(wallet.getAddress()),
+                    pubkey: new PublicKey(wallet.address),
                     isSigner: true,
                     isWritable: true,
                 },
@@ -64,7 +64,7 @@ export default function Index() {
 
         const blockhash = (await connection.getLatestBlockhash()).blockhash;
         const newMessage = new TransactionMessage({
-            payerKey: new PublicKey(wallet.getAddress()),
+            payerKey: new PublicKey(wallet.address),
             recentBlockhash: blockhash,
             instructions: [memoInstruction],
         });
@@ -77,7 +77,7 @@ export default function Index() {
         console.log("txHash", txHash);
     }
 
-    const walletAddress = useMemo(() => wallet?.getAddress(), [wallet]);
+    const walletAddress = useMemo(() => wallet?.address, [wallet]);
 
     return (
         <View
