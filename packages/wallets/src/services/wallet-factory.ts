@@ -145,20 +145,20 @@ export class WalletFactory {
                 const evmResponse = walletResponse as Extract<CreateWalletResponse, { type: "evm-smart-wallet" }>;
                 const wallet = new EVMSmartWalletImpl(
                     chain,
-                    this.apiClient,
                     evmResponse.address as Address,
+                    this.apiClient,
                     getEvmAdminSigner(adminSignerInput, evmResponse),
                     options?.experimental_callbacks ?? {}
                 );
                 return {
                     getBalances: wallet.getBalances.bind(wallet),
                     getTransactions: wallet.getTransactions.bind(wallet),
-                    getNfts: wallet.getNfts.bind(wallet),
-                    getAddress: wallet.getAddress.bind(wallet),
+                    unstable_getNfts: wallet.unstable_getNfts.bind(wallet),
                     getNonce: wallet.getNonce.bind(wallet),
                     signMessage: wallet.signMessage.bind(wallet),
                     signTypedData: wallet.signTypedData.bind(wallet),
                     sendTransaction: wallet.sendTransaction.bind(wallet),
+                    address: wallet.address,
                     chain: wallet.chain,
                     publicClient: wallet.publicClient,
                 } satisfies EVMSmartWallet;
@@ -188,13 +188,13 @@ export class WalletFactory {
                 return {
                     getDelegatedSigners: wallet.getDelegatedSigners.bind(wallet),
                     addDelegatedSigner: wallet.addDelegatedSigner.bind(wallet),
-                    adminSigner: wallet.adminSigner,
                     getBalances: wallet.getBalances.bind(wallet),
-                    getAddress: wallet.getAddress.bind(wallet),
-                    getPublicKey: wallet.getPublicKey.bind(wallet),
-                    getNfts: wallet.getNfts.bind(wallet),
+                    unstable_getNfts: wallet.unstable_getNfts.bind(wallet),
                     sendTransaction: wallet.sendTransaction.bind(wallet),
                     getTransactions: wallet.getTransactions.bind(wallet),
+                    address: wallet.address,
+                    publicKey: wallet.publicKey,
+                    adminSigner: wallet.adminSigner,
                 } satisfies SolanaSmartWallet;
             }
             case "solana-mpc-wallet": {
@@ -207,10 +207,10 @@ export class WalletFactory {
                 return {
                     sendTransaction: wallet.sendTransaction.bind(wallet),
                     getBalances: wallet.getBalances.bind(wallet),
-                    getAddress: wallet.getAddress.bind(wallet),
-                    getPublicKey: wallet.getPublicKey.bind(wallet),
-                    getNfts: wallet.getNfts.bind(wallet),
+                    unstable_getNfts: wallet.unstable_getNfts.bind(wallet),
                     getTransactions: wallet.getTransactions.bind(wallet),
+                    address: wallet.address,
+                    publicKey: wallet.publicKey,
                 } satisfies SolanaMPCWallet;
             }
         }

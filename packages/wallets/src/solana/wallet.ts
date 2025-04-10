@@ -40,7 +40,7 @@ export abstract class SolanaWallet implements BaseSolanaWallet {
     protected readonly delegatedSignerService: SolanaDelegatedSignerService;
     constructor(
         protected readonly apiClient: ApiClient,
-        protected readonly publicKey: PublicKey,
+        public readonly publicKey: PublicKey,
         protected readonly client: Connection,
         protected readonly callbacks: Callbacks
     ) {
@@ -53,18 +53,9 @@ export abstract class SolanaWallet implements BaseSolanaWallet {
     }
 
     /**
-     * Get the wallet public key
-     * @returns The wallet public key
+     * The wallet address
      */
-    public getPublicKey(): PublicKey {
-        return this.publicKey;
-    }
-
-    /**
-     * Get the wallet address
-     * @returns The wallet address
-     */
-    public getAddress(): string {
+    public get address(): string {
         return this.publicKey.toBase58();
     }
 
@@ -74,7 +65,7 @@ export abstract class SolanaWallet implements BaseSolanaWallet {
      * @returns The balances
      */
     public async getBalances(tokens: SolanaSupportedToken[]): Promise<GetBalanceResponse> {
-        return await this.apiClient.getBalance(this.getAddress(), {
+        return await this.apiClient.getBalance(this.address, {
             tokens,
         });
     }
@@ -93,14 +84,19 @@ export abstract class SolanaWallet implements BaseSolanaWallet {
      * @param page - The page number
      * @param locator - The wallet locator
      * @returns The NFTs
+     * @unstable This API is unstable and may change in the future
      */
-    public async getNfts(perPage: number, page: number, locator?: SolanaWalletLocator): Promise<GetNftsResponse> {
-        return await this.apiClient.getNfts("solana", locator ?? this.walletLocator, perPage, page);
+    public async unstable_getNfts(
+        perPage: number,
+        page: number,
+        locator?: SolanaWalletLocator
+    ): Promise<GetNftsResponse> {
+        return await this.apiClient.unstable_getNfts("solana", locator ?? this.walletLocator, perPage, page);
     }
 
     protected get walletLocator(): SolanaWalletLocator {
         if (this.apiClient.isServerSide) {
-            return this.getAddress();
+            return this.address;
         } else {
             return `me:solana-smart-wallet`;
         }

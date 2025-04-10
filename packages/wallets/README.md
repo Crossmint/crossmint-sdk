@@ -78,7 +78,7 @@ const connection = new Connection("https://api.devnet.solana.com");
 const memoInstruction = new TransactionInstruction({
     keys: [
         {
-            pubkey: new PublicKey(wallet.getAddress()),
+            pubkey: new PublicKey(wallet.address),
             isSigner: true,
             isWritable: true,
         },
@@ -89,7 +89,7 @@ const memoInstruction = new TransactionInstruction({
 
 const blockhash = (await connection.getLatestBlockhash()).blockhash;
 const newMessage = new TransactionMessage({
-    payerKey: new PublicKey(wallet.getAddress()),
+    payerKey: new PublicKey(wallet.address),
     recentBlockhash: blockhash,
     instructions: [memoInstruction],
 });

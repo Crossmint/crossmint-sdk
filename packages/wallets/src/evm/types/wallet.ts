@@ -5,7 +5,7 @@ import type { EVMSmartWalletChain } from "../chains";
 export interface EVMSmartWallet extends ViemWallet {
     getBalances(tokens: Address[]): Promise<GetBalanceResponse>;
     getTransactions(): Promise<GetTransactionsResponse>;
-    getNfts(perPage: number, page: number, chain: string, locator?: string): Promise<GetNftsResponse>;
+    unstable_getNfts(perPage: number, page: number, chain: string, locator?: string): Promise<GetNftsResponse>;
     chain: EVMSmartWalletChain;
     publicClient: PublicClient<HttpTransport>;
 }
@@ -18,10 +18,9 @@ export interface TransactionInput {
 
 export interface ViemWallet {
     /**
-     * Get the wallet address
-     * @returns The wallet address
+     * The wallet address
      */
-    getAddress: () => Address;
+    address: Address;
 
     /**
      * Get the wallet nonce
