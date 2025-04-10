@@ -1,5 +1,17 @@
 # @crossmint/wallets-sdk
 
+## 0.5.0
+
+### Minor Changes
+
+- fcf3c21: Fixed wallet return type and renamed properties and methods.
+
+### Patch Changes
+
+- Updated dependencies [89deaad]
+  - @crossmint/common-sdk-base@0.4.0
+  - @crossmint/common-sdk-auth@1.0.24
+
 ## 0.4.4
 
 ### Patch Changes

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { CookieStorage, StorageProvider } from "./storage";
+import { CookieStorage, type StorageProvider } from "./storage";
 
 describe("CookieStorage", () => {
     let storage: StorageProvider;

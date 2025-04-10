@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-vanilla-ui
 
+## 1.1.41
+
+### Patch Changes
+
+- Updated dependencies [89deaad]
+  - @crossmint/common-sdk-base@0.4.0
+  - @crossmint/client-sdk-base@1.4.17
+
 ## 1.1.40
 
 ### Patch Changes
