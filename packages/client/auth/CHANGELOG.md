@@ -1,5 +1,18 @@
 # @crossmint/client-sdk-auth
 
+## 1.2.0
+
+### Minor Changes
+
+- 615a8c1: Supports custom storage options
+
+### Patch Changes
+
+- Updated dependencies [89deaad]
+  - @crossmint/common-sdk-base@0.4.0
+  - @crossmint/client-sdk-base@1.4.17
+  - @crossmint/common-sdk-auth@1.0.24
+
 ## 1.1.26
 
 ### Patch Changes
