@@ -29,7 +29,7 @@ export function CrossmintProvider({
     const value = useMemo(() => ({ appId }), [appId]);
 
     return (
-        <BaseCrossmintProvider apiKey={apiKey} overrideBaseUrl={overrideBaseUrl}>
+        <BaseCrossmintProvider apiKey={apiKey} overrideBaseUrl={overrideBaseUrl} appId={appId}>
             <CrossmintMobileContext.Provider value={value}>{children}</CrossmintMobileContext.Provider>
         </BaseCrossmintProvider>
     );

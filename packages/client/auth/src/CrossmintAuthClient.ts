@@ -126,9 +126,17 @@ export class CrossmintAuthClient extends CrossmintAuth {
         }
     }
 
-    public async getOAuthUrl(provider: OAuthProvider) {
+    public async getOAuthUrl(provider: OAuthProvider, options?: { appSchema?: string }) {
         try {
-            const response = await this.apiClient.get(`${AUTH_SDK_ROOT_ENDPOINT}/social/${provider}/start`, {
+            const queryParams = new URLSearchParams();
+            if (options?.appSchema != null) {
+                queryParams.set("appSchema", options.appSchema);
+            }
+
+            const queryString = queryParams.toString();
+            const url = `${AUTH_SDK_ROOT_ENDPOINT}/social/${provider}/start${queryString ? `?${queryString}` : ""}`;
+
+            const response = await this.apiClient.get(url, {
                 headers: { "Content-Type": "application/json" },
             });
 

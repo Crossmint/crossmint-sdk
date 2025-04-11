@@ -1,4 +1,8 @@
-import { CrossmintProvider, CrossmintWalletProvider } from "@crossmint/client-sdk-react-native-ui";
+import {
+    CrossmintAuthProvider,
+    CrossmintProvider,
+    CrossmintWalletProvider,
+} from "@crossmint/client-sdk-react-native-ui";
 import { Stack } from "expo-router";
 import type { ReactNode } from "react";
 
@@ -15,8 +19,11 @@ function CrossmintProviders({ children }: { children: ReactNode }) {
         <CrossmintProvider
             apiKey={process.env.EXPO_PUBLIC_CROSSMINT_API_KEY ?? ""}
             appId={process.env.EXPO_PUBLIC_CROSSMINT_APP_ID ?? ""}
+            overrideBaseUrl=""
         >
-            <CrossmintWalletProvider>{children}</CrossmintWalletProvider>
+            <CrossmintAuthProvider>
+                <CrossmintWalletProvider>{children}</CrossmintWalletProvider>
+            </CrossmintAuthProvider>
         </CrossmintProvider>
     );
 }
