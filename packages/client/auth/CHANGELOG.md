@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-auth
 
+## 1.2.1
+
+### Patch Changes
+
+- 5505a43: Adds appSchema query param to getOAuthUrl for deeplinks after oauth
+
 ## 1.2.0
 
 ### Minor Changes
