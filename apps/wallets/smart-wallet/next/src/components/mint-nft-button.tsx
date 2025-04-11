@@ -38,7 +38,7 @@ export const MintNFTButton = ({ setNftSuccessfullyMinted }: { setNftSuccessfully
                 return;
             }
 
-            console.log("Minting NFT", wallet.getAddress());
+            console.log("Minting NFT", wallet.address);
             switch (type) {
                 case "evm-smart-wallet":
                     const evmTxnHash = await wallet.sendTransaction({
@@ -46,7 +46,7 @@ export const MintNFTButton = ({ setNftSuccessfullyMinted }: { setNftSuccessfully
                         data: encodeFunctionData({
                             abi: CollectionABI,
                             functionName: "mintTo",
-                            args: [wallet.getAddress()],
+                            args: [wallet.address],
                         }),
                     });
                     console.log("NFT mint. Tx hash:", evmTxnHash);

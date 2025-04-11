@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.4.0
+
+### Minor Changes
+
+- 89deaad: Support app id header in crossmint requests
+
 ## 0.3.4
 
 ### Patch Changes

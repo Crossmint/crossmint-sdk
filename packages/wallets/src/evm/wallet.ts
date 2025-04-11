@@ -53,8 +53,8 @@ export class EVMSmartWalletImpl implements ViemWallet {
 
     constructor(
         public readonly chain: EVMSmartWalletChain,
+        public readonly address: Address,
         private readonly apiClient: ApiClient,
-        private readonly address: Address,
         private readonly adminSigner: EVMSigner,
         private readonly callbacks: Callbacks
     ) {
@@ -70,7 +70,7 @@ export class EVMSmartWalletImpl implements ViemWallet {
      * @returns The balances
      */
     public async getBalances(tokens: Address[]) {
-        return await this.apiClient.getBalance(this.getAddress(), {
+        return await this.apiClient.getBalance(this.address, {
             chains: [this.chain],
             tokens,
         });
@@ -97,13 +97,10 @@ export class EVMSmartWalletImpl implements ViemWallet {
      * @param chain - The chain
      * @param locator - The locator
      * @returns The NFTs
+     * @unstable This API is unstable and may change in the future
      */
-    public async getNfts(perPage: number, page: number, chain: string, locator?: EvmWalletLocator) {
-        return await this.apiClient.getNfts(chain, locator ?? this.walletLocator, perPage, page);
-    }
-
-    public getAddress() {
-        return this.address;
+    public async unstable_getNfts(perPage: number, page: number, chain: string, locator?: EvmWalletLocator) {
+        return await this.apiClient.unstable_getNfts(chain, locator ?? this.walletLocator, perPage, page);
     }
 
     public async getNonce(parameters?: { key?: bigint | undefined } | undefined): Promise<bigint> {

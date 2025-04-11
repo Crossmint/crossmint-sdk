@@ -37,7 +37,13 @@ export default function Index() {
         }
 
         const memoInstruction = new TransactionInstruction({
-            keys: [],
+            keys: [
+                {
+                    pubkey: new PublicKey(wallet.getAddress()),
+                    isSigner: true,
+                    isWritable: true,
+                },
+            ],
             data: Buffer.from("Hello from Crossmint SDK", "utf-8"),
             programId: new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
         });
