@@ -2,4 +2,4 @@
 "@crossmint/client-sdk-react-native-ui": minor
 ---
 
-Adds CrossmintAuthProvider
+Adds android support for oauth

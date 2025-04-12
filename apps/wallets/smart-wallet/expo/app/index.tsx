@@ -3,8 +3,9 @@ import { install } from "react-native-quick-crypto";
 install();
 
 import { useCrossmintAuth, useWallet, type SolanaSmartWallet } from "@crossmint/client-sdk-react-native-ui";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button, Text, View } from "react-native";
+import * as Linking from "expo-linking";
 import {
     Connection,
     PublicKey,
@@ -12,13 +13,21 @@ import {
     TransactionMessage,
     VersionedTransaction,
 } from "@solana/web3.js";
+
 export default function Index() {
-    const { loginWithOAuth, user, logout } = useCrossmintAuth();
+    const { loginWithOAuth, user, logout, createAuthSession } = useCrossmintAuth();
     const { wallet, error, getOrCreateWallet } = useWallet();
+    const [txHash, setTxHash] = useState<string | null>(null);
     const walletAddress = useMemo(() => wallet?.getAddress(), [wallet]);
+    const url = Linking.useURL();
+
+    useEffect(() => {
+        if (url != null) {
+            createAuthSession(url);
+        }
+    }, [url, createAuthSession]);
 
     function initWallet() {
-        console.log("user", user);
         if (user == null) {
             console.log("User not logged in");
             return;
@@ -30,7 +39,6 @@ export default function Index() {
     }
 
     async function makeTransaction() {
-        console.log("wallet", wallet);
         if (wallet == null) {
             console.log("Wallet not initialized");
             return;
@@ -57,13 +65,12 @@ export default function Index() {
         });
 
         const transaction = new VersionedTransaction(newMessage.compileToV0Message());
-        console.log("transaction", transaction);
 
         try {
             const txHash = await (wallet as SolanaSmartWallet).sendTransaction({
                 transaction,
             });
-            console.log("txHash", txHash);
+            setTxHash(txHash);
         } catch (error) {
             console.log("error", error);
         }
@@ -79,6 +86,7 @@ export default function Index() {
         >
             <Text>User: {user?.email}</Text>
             <Text>Wallet: {walletAddress}</Text>
+            <Text>Transaction Hash: {txHash}</Text>
             <Text>Error: {error}</Text>
             <Button title="Init Wallet" onPress={() => initWallet()} />
             <Button title="Make Transaction" onPress={() => makeTransaction()} />
