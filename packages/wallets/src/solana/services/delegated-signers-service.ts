@@ -2,7 +2,7 @@ import type { ApiClient, DelegatedSigner, SolanaWalletLocator } from "@/api";
 
 import type { SolanaTransactionsService } from "./transactions-service";
 import type { SolanaNonCustodialSigner } from "../types/signers";
-import { WalletNotAvailableError, WalletTypeNotSupportedError } from "@/utils/errors";
+import { WalletNotAvailableError, WalletTypeNotSupportedError } from "../../utils/errors";
 
 export class SolanaDelegatedSignerService {
     constructor(

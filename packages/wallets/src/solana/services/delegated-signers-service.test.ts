@@ -4,6 +4,7 @@ import type { ApiClient } from "../../api";
 import { mock } from "vitest-mock-extended";
 import type { SolanaTransactionsService } from "./transactions-service";
 import type { SolanaNonCustodialSigner } from "../types/signers";
+import { WalletNotAvailableError, WalletTypeNotSupportedError } from "../../utils/errors";
 
 vi.mock("../../utils", () => ({
     sleep: vi.fn(),
@@ -75,22 +76,60 @@ describe("SolanaDelegatedSignerService", () => {
         });
     });
 
-    describe("getDelegatedSigner", () => {
-        it("should get a delegated signer", async () => {
-            const signerAddress = "mock-signer-address";
+    describe("getDelegatedSigners", () => {
+        it("should get all delegated signers", async () => {
+            const delegatedSigners = [
+                {
+                    address: "mock-signer-address-1",
+                    status: "active",
+                },
+                {
+                    address: "mock-signer-address-2",
+                    status: "active",
+                },
+            ];
 
-            apiClient.getSigner.mockResolvedValueOnce({
-                address: signerAddress,
-                status: "active",
+            apiClient.getWallet.mockResolvedValueOnce({
+                type: "solana-smart-wallet",
+                config: {
+                    delegatedSigners: delegatedSigners,
+                },
             });
 
-            const result = await delegatedSignerService.getDelegatedSigner(signerAddress);
+            const result = await delegatedSignerService.getDelegatedSigners();
 
-            expect(apiClient.getSigner).toHaveBeenCalledWith(walletLocator, signerAddress);
-            expect(result).toEqual({
-                address: signerAddress,
-                status: "active",
+            expect(apiClient.getWallet).toHaveBeenCalledWith(walletLocator);
+            expect(result).toEqual(delegatedSigners);
+        });
+
+        it("should return empty array when no delegated signers exist", async () => {
+            apiClient.getWallet.mockResolvedValueOnce({
+                type: "solana-smart-wallet",
+                config: {},
             });
+
+            const result = await delegatedSignerService.getDelegatedSigners();
+
+            expect(apiClient.getWallet).toHaveBeenCalledWith(walletLocator);
+            expect(result).toEqual([]);
+        });
+
+        it("should throw error when wallet type is not supported", async () => {
+            apiClient.getWallet.mockResolvedValueOnce({
+                type: "unsupported-wallet-type",
+            });
+
+            await expect(delegatedSignerService.getDelegatedSigners()).rejects.toThrow(WalletTypeNotSupportedError);
+            expect(apiClient.getWallet).toHaveBeenCalledWith(walletLocator);
+        });
+
+        it("should throw error when wallet is not available", async () => {
+            apiClient.getWallet.mockResolvedValueOnce({
+                error: "wallet not found",
+            });
+
+            await expect(delegatedSignerService.getDelegatedSigners()).rejects.toThrow(WalletNotAvailableError);
+            expect(apiClient.getWallet).toHaveBeenCalledWith(walletLocator);
         });
     });
 });
