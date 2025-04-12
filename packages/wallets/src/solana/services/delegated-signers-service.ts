@@ -1,7 +1,8 @@
-import type { ApiClient, SolanaWalletLocator } from "@/api";
+import type { ApiClient, DelegatedSigner, SolanaWalletLocator } from "@/api";
 
 import type { SolanaTransactionsService } from "./transactions-service";
 import type { SolanaNonCustodialSigner } from "../types/signers";
+import { WalletNotAvailableError, WalletTypeNotSupportedError } from "@/utils/errors";
 
 export class SolanaDelegatedSignerService {
     constructor(
@@ -28,7 +29,14 @@ export class SolanaDelegatedSignerService {
     }
 
     public async getDelegatedSigners() {
-        const response = await this.apiClient.getDelegatedSigners(this.walletLocator);
-        return response;
+        const walletResponse = await this.apiClient.getWallet(this.walletLocator);
+        if ("error" in walletResponse) {
+            throw new WalletNotAvailableError(JSON.stringify(walletResponse));
+        }
+        if (walletResponse.type !== "solana-smart-wallet") {
+            throw new WalletTypeNotSupportedError(`Wallet type ${walletResponse.type} not supported`);
+        }
+        const signers = (walletResponse.config?.delegatedSigners as unknown as DelegatedSigner[]) ?? [];
+        return signers;
     }
 }

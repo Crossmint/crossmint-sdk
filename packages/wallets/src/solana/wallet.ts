@@ -2,11 +2,11 @@ import type { Connection, PublicKey, VersionedTransaction } from "@solana/web3.j
 
 import type {
     ApiClient,
-    GetBalanceResponse,
+    DelegatedSigner,
     GetNftsResponse,
-    GetSignerResponse,
     GetTransactionsResponse,
     SolanaWalletLocator,
+    WalletBalance,
 } from "../api";
 import type { Callbacks } from "../utils/options";
 import type { SolanaSupportedToken } from "./tokens";
@@ -64,10 +64,14 @@ export abstract class SolanaWallet implements BaseSolanaWallet {
      * @param tokens - The tokens
      * @returns The balances
      */
-    public async getBalances(tokens: SolanaSupportedToken[]): Promise<GetBalanceResponse> {
-        return await this.apiClient.getBalance(this.address, {
+    public async getBalances(tokens: SolanaSupportedToken[]): Promise<WalletBalance> {
+        const response = await this.apiClient.getBalance(this.address, {
             tokens,
         });
+        if ("error" in response) {
+            throw new Error(`Failed to get balances: ${JSON.stringify(response.error)}`);
+        }
+        return response;
     }
 
     /**
@@ -146,8 +150,10 @@ export class SolanaSmartWalletImpl extends SolanaWallet implements SolanaSmartWa
     /**
      * Gets delegated signers for the wallet
      * @returns The delegated signers
+     * @throws {WalletNotAvailableError} If the wallet is not found
+     * @throws {WalletTypeNotSupportedError} If the wallet type is not supported
      */
-    public async getDelegatedSigners(): Promise<GetSignerResponse[]> {
+    public async getDelegatedSigners(): Promise<DelegatedSigner[]> {
         return await this.delegatedSignerService.getDelegatedSigners();
     }
 

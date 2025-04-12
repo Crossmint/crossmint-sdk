@@ -1,9 +1,10 @@
 import type {
-    GetBalanceResponse,
     GetNftsResponse,
     GetSignerResponse,
+    WalletBalance,
     GetTransactionsResponse,
     SolanaWalletLocator,
+    DelegatedSigner,
 } from "@/api";
 import type { SolanaNonCustodialSignerInput, SolanaSigner } from "./signers";
 import type { PublicKey, VersionedTransaction } from "@solana/web3.js";
@@ -25,7 +26,7 @@ export interface BaseSolanaWallet {
      * @param tokens - The tokens
      * @returns The balances
      */
-    getBalances(tokens: SolanaSupportedToken[]): Promise<GetBalanceResponse>;
+    getBalances(tokens: SolanaSupportedToken[]): Promise<WalletBalance>;
 
     /**
      * Get the wallet transactions
@@ -45,7 +46,7 @@ export interface BaseSolanaWallet {
 
 export interface SolanaSmartWallet extends BaseSolanaWallet {
     addDelegatedSigner(signer: string): Promise<GetSignerResponse>;
-    getDelegatedSigners(): Promise<GetSignerResponse[]>;
+    getDelegatedSigners(): Promise<DelegatedSigner[]>;
     adminSigner: SolanaSigner;
     sendTransaction(parameters: SmartWalletTransactionParams): Promise<string>;
 }

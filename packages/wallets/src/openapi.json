@@ -9009,6 +9009,80 @@
                                                 }
                                             }
                                         ]
+                                    },
+                                    "delegatedSigners": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "type": "string",
+                                                    "enum": ["solana-keypair", "solana-fireblocks-custodial"],
+                                                    "description": "Specifies the type of Solana signer being used, describing the method of key management and transaction signing."
+                                                },
+                                                "locator": {
+                                                    "type": "string",
+                                                    "description": "The locator of the signer"
+                                                },
+                                                "transaction": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "onChain": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "transaction": {
+                                                                    "type": "string"
+                                                                },
+                                                                "lastValidBlockHeight": {
+                                                                    "type": "number"
+                                                                }
+                                                            }
+                                                        },
+                                                        "id": {
+                                                            "type": "string"
+                                                        },
+                                                        "status": {
+                                                            "type": "string"
+                                                        },
+                                                        "approvals": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "required": {
+                                                                    "type": "number"
+                                                                },
+                                                                "pending": {
+                                                                    "type": "array",
+                                                                    "items": {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "signer": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "message": {
+                                                                                "type": "string"
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                },
+                                                                "submitted": {
+                                                                    "type": "array",
+                                                                    "items": {
+                                                                        "type": "object"
+                                                                    }
+                                                                }
+                                                            }
+                                                        },
+                                                        "createdAt": {
+                                                            "type": "string",
+                                                            "format": "date-time"
+                                                        }
+                                                    },
+                                                    "description": "The transaction for the signer"
+                                                }
+                                            },
+                                            "required": ["type", "locator", "transaction"]
+                                        },
+                                        "description": "Optional array of additional signers for the wallet"
                                     }
                                 },
                                 "required": ["adminSigner"],
