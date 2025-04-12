@@ -7,15 +7,11 @@ import type { WalletOptions } from "./utils/options.js";
 
 type WalletType = keyof WalletTypeToArgs;
 
-export type Options = {
-    appId?: string;
-};
-
 export class CrossmintWallets {
     private readonly walletFactory: WalletFactory;
 
-    private constructor(crossmint: Crossmint, options?: Options) {
-        const apiClient = new ApiClient(crossmint, options?.appId);
+    private constructor(crossmint: Crossmint) {
+        const apiClient = new ApiClient(crossmint);
         this.walletFactory = new WalletFactory(apiClient);
     }
 
@@ -24,8 +20,8 @@ export class CrossmintWallets {
      * @param crossmint - Crossmint data (use `createCrossmint` to initialize)
      * @returns A new CrossmintWallets instance
      */
-    public static from(crossmint: Crossmint, options?: Options): CrossmintWallets {
-        return new CrossmintWallets(crossmint, options);
+    public static from(crossmint: Crossmint): CrossmintWallets {
+        return new CrossmintWallets(crossmint);
     }
 
     /**

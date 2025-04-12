@@ -5,11 +5,12 @@ import type { AuthMaterialWithUser, SDKExternalUser, OAuthProvider } from "@cros
 
 import { useCrossmint } from "../hooks";
 import { SecureStorage } from "../utils/SecureStorage";
+import { Platform } from "react-native";
 
-type OAuthUrlMap = Record<OAuthProvider, string>;
+type OAuthUrlMap = Record<OAuthProvider, string | null>;
 const initialOAuthUrlMap: OAuthUrlMap = {
-    google: "",
-    twitter: "",
+    google: null,
+    twitter: null,
 };
 
 type AuthStatus = "logged-in" | "logged-out" | "in-progress" | "initializing";
@@ -31,9 +32,8 @@ type AuthContextType = {
     user?: SDKExternalUser;
     status: AuthStatus;
     getUser: () => void;
-    oauthUrlMap: OAuthUrlMap;
-    isLoadingOauthUrlMap: boolean;
     loginWithOAuth: (provider: OAuthProvider) => Promise<void>;
+    createAuthSession: (urlOrOneTimeSecret: string) => Promise<void>;
 };
 
 const defaultContextValue: AuthContextType = {
@@ -43,9 +43,8 @@ const defaultContextValue: AuthContextType = {
     user: undefined,
     status: "initializing",
     getUser: () => {},
-    oauthUrlMap: initialOAuthUrlMap,
-    isLoadingOauthUrlMap: true,
     loginWithOAuth: () => Promise.resolve(),
+    createAuthSession: () => Promise.resolve(),
 };
 
 export const AuthContext = createContext<AuthContextType>(defaultContextValue);
@@ -60,9 +59,8 @@ export function CrossmintAuthProvider({
     const [user, setUser] = useState<SDKExternalUser | undefined>(undefined);
     const { crossmint, setJwt } = useCrossmint("CrossmintAuthProvider must be used within CrossmintProvider");
     const [oauthUrlMap, setOauthUrlMap] = useState<OAuthUrlMap>(initialOAuthUrlMap);
-    const [isLoadingOauthUrlMap, setIsLoadingOauthUrlMap] = useState(true);
     const crossmintAuthRef = useRef<CrossmintAuth | null>(null);
-    const storageProvider = useMemo(() => customStorageProvider || new SecureStorage(), [customStorageProvider]);
+    const storageProvider = useMemo(() => customStorageProvider ?? new SecureStorage(), [customStorageProvider]);
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: crossmint can't be a dependency because it updates with each jwt change
     const crossmintAuth = useMemo(() => {
@@ -74,7 +72,6 @@ export function CrossmintAuthProvider({
                         setUser(undefined);
                     },
                     onTokenRefresh: (authMaterial: AuthMaterialWithUser) => {
-                        console.log("[CrossmintAuthProvider] onTokenRefresh", authMaterial);
                         setJwt(authMaterial.jwt);
                         setUser(authMaterial.user);
                     },
@@ -97,7 +94,7 @@ export function CrossmintAuthProvider({
 
     useEffect(() => {
         if (crossmint.jwt == null) {
-            storageProvider.get("jwt").then((jwt) => {
+            storageProvider?.get("jwt").then((jwt) => {
                 if (jwt != null) {
                     console.log("[CrossmintAuthProvider] jwt", jwt);
                     setJwt(jwt);
@@ -118,7 +115,6 @@ export function CrossmintAuthProvider({
     };
 
     const preFetchAndSetOauthUrl = useCallback(async () => {
-        setIsLoadingOauthUrlMap(true);
         try {
             const oauthProviders = Object.keys(initialOAuthUrlMap);
 
@@ -131,8 +127,6 @@ export function CrossmintAuthProvider({
             setOauthUrlMap(oauthUrlMap);
         } catch (error) {
             console.error(error);
-        } finally {
-            setIsLoadingOauthUrlMap(false);
         }
     }, [crossmintAuth]);
 
@@ -164,28 +158,42 @@ export function CrossmintAuthProvider({
 
     const loginWithOAuth = async (provider: OAuthProvider) => {
         try {
-            if (!oauthUrlMap[provider]) {
-                console.error(`[CrossmintAuthProvider] OAuth URL for ${provider} is not available`);
-                return;
-            }
+            const oauthUrl = oauthUrlMap[provider] ?? (await crossmintAuth.getOAuthUrl(provider));
 
             await WebBrowser.warmUpAsync();
-            const baseUrl = new URL(oauthUrlMap[provider]);
+            const baseUrl = new URL(oauthUrl);
             // Add prompt=select_account for Google OAuth to force account picker
             if (provider === "google") {
                 baseUrl.searchParams.append("provider_prompt", "select_account");
             }
 
-            const result = await WebBrowser.openAuthSessionAsync(baseUrl.toString());
-            if (result.type === "success") {
-                const oneTimeSecret = extractOneTimeSecretFromUrl(result.url);
-                await crossmintAuth.handleRefreshAuthMaterial(oneTimeSecret);
+            if (Platform.OS === "android") {
+                await WebBrowser.openBrowserAsync(baseUrl.toString());
+            } else {
+                const result = await WebBrowser.openAuthSessionAsync(baseUrl.toString());
+                if (result.type === "success") {
+                    await createAuthSession(result.url);
+                }
             }
             await WebBrowser.coolDownAsync();
         } catch (error) {
             console.error("[CrossmintAuthProvider] Error during OAuth login:", error);
         }
     };
+
+    const createAuthSession = useCallback(
+        async (urlOrOneTimeSecret: string) => {
+            const oneTimeSecret = urlOrOneTimeSecret.includes("://")
+                ? extractOneTimeSecretFromUrl(urlOrOneTimeSecret)
+                : urlOrOneTimeSecret;
+
+            if (oneTimeSecret != null) {
+                return await crossmintAuth.handleRefreshAuthMaterial(oneTimeSecret);
+            }
+            return;
+        },
+        [crossmintAuth]
+    );
 
     return (
         <AuthContext.Provider
@@ -196,9 +204,8 @@ export function CrossmintAuthProvider({
                 user,
                 status: getAuthStatus(),
                 getUser,
-                oauthUrlMap,
-                isLoadingOauthUrlMap,
                 loginWithOAuth,
+                createAuthSession,
             }}
         >
             {children}
