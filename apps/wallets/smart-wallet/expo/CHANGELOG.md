@@ -1,5 +1,13 @@
 # expo-demo
 
+## 1.1.1
+
+### Patch Changes
+
+- 58b967e: Fixes oauth in android
+- Updated dependencies [58b967e]
+  - @crossmint/client-sdk-react-native-ui@0.3.0
+
 ## 1.1.0
 
 ### Minor Changes

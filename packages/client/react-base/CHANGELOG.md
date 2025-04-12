@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-react-base
 
+## 0.2.1
+
+### Patch Changes
+
+- 58b967e: Simplified wallet provider
+- Updated dependencies [58b967e]
+  - @crossmint/wallets-sdk@0.5.1
+
 ## 0.2.0
 
 ### Minor Changes

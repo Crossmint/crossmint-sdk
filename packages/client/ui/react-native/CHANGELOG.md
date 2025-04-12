@@ -1,5 +1,18 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.3.0
+
+### Minor Changes
+
+- 58b967e: Adds android support for oauth
+
+### Patch Changes
+
+- Updated dependencies [58b967e]
+- Updated dependencies [58b967e]
+  - @crossmint/client-sdk-react-base@0.2.1
+  - @crossmint/wallets-sdk@0.5.1
+
 ## 0.2.0
 
 ### Minor Changes

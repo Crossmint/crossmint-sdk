@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 0.5.1
+
+### Patch Changes
+
+- 58b967e: Simplifies setup no longer needing appId as it's in the crossmint instance
+
 ## 0.5.0
 
 ### Minor Changes
