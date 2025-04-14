@@ -37,7 +37,6 @@ export class SolanaApprovalsService {
                 const walletPublicKey = new PublicKey(signer.address);
 
                 const signature = this.retrieveValidSignature(signedTxn, walletPublicKey);
-                console.log("Signature from tx", signature);
                 return {
                     signature,
                     signer: approval.signer,
