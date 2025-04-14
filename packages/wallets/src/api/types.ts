@@ -58,10 +58,14 @@ export type GetTransactionsResponse =
     | WalletsV1ControllerGetTransactionsWithoutChain4Error;
 export type GetNftsResponse = Nftevm | Nftsol | FetchContentFromWalletError;
 export type GetBalanceResponse = WalletBalanceResponseDto | BalanceControllerGetBalanceForLocator2Error;
+export type WalletBalance = WalletBalanceResponseDto;
 
 export type RegisterSignerParams = CreateSignerInputDto;
 export type RegisterSignerResponse = DelegatedSignerDto | WalletsV1ControllerCreateDelegatedSigner4Error;
 export type GetSignerResponse = DelegatedSignerDto | WalletsV1ControllerGetDelegatedSigner4Error;
+export type GetDelegatedSignersResponse = Array<DelegatedSignerDto> | WalletsV1ControllerGetDelegatedSigner4Error;
+export type DelegatedSigner = DelegatedSignerDto;
+
 type WalletType = CreateWalletDto["type"];
 export type EvmWalletLocator = `me:${WalletType}` | Address;
 type SolanaAddress = string;

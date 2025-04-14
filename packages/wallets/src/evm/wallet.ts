@@ -19,6 +19,7 @@ import type {
     EvmWalletLocator,
     CreateTransactionSuccessResponse,
     GetTransactionsResponse,
+    WalletBalance,
 } from "../api";
 import { sleep } from "../utils";
 import type { Callbacks } from "../utils/options";
@@ -68,12 +69,17 @@ export class EVMSmartWalletImpl implements ViemWallet {
      * Get the wallet balances
      * @param tokens - The tokens
      * @returns The balances
+     * @throws {Error} If the balances cannot be retrieved
      */
-    public async getBalances(tokens: Address[]) {
-        return await this.apiClient.getBalance(this.address, {
+    public async getBalances(tokens: Address[]): Promise<WalletBalance> {
+        const response = await this.apiClient.getBalance(this.address, {
             chains: [this.chain],
             tokens,
         });
+        if ("error" in response) {
+            throw new Error(`Failed to get balances: ${JSON.stringify(response.error)}`);
+        }
+        return response;
     }
 
     /**

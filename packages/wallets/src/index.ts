@@ -4,3 +4,4 @@ export type { Callbacks } from "./utils/options";
 export type { SolanaSmartWallet, SolanaMPCWallet, SolanaSignerInput } from "./solana";
 export type { EVMSmartWallet, EVMSignerInput, EVMSigner, EVMSmartWalletChain } from "./evm";
 export type { WalletTypeToArgs } from "./services/types";
+export type { DelegatedSigner, WalletBalance } from "./api";
