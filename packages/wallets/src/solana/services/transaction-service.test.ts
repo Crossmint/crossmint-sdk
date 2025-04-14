@@ -6,6 +6,7 @@ import type { SolanaApprovalsService } from "./approvals-service";
 import type { VersionedTransaction } from "@solana/web3.js";
 import type { SolanaNonCustodialSigner } from "../types/signers";
 import bs58 from "bs58";
+import type { WalletsV1Alpha2TransactionResponseDto } from "@/api/gen";
 
 vi.mock("../../../utils", () => ({
     sleep: vi.fn(),
@@ -18,7 +19,11 @@ describe("SolanaTransactionsService", () => {
     let transactionsService: SolanaTransactionsService;
     beforeEach(() => {
         vi.resetAllMocks();
-        transactionsService = new SolanaTransactionsService(walletLocator, apiClient, approvalsService);
+        transactionsService = new SolanaTransactionsService(
+            walletLocator,
+            apiClient,
+            approvalsService
+        );
     });
     it("transaction creation complete flow -- happy path", async () => {
         const signer = mock<SolanaNonCustodialSigner>({
@@ -32,7 +37,8 @@ describe("SolanaTransactionsService", () => {
             },
         ];
 
-        const serializedTransactionString = "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN";
+        const serializedTransactionString =
+            "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN";
         const serializedTransaction = bs58.decode(serializedTransactionString);
         transaction.serialize.mockReturnValueOnce(serializedTransaction);
         apiClient.createTransaction.mockResolvedValueOnce({
@@ -42,17 +48,23 @@ describe("SolanaTransactionsService", () => {
             },
         });
 
+        const mockTransaction: WalletsV1Alpha2TransactionResponseDto = {
+            id: "mock-tx-id",
+            walletType: "solana-smart-wallet",
+            onChain: {
+                transaction: serializedTransactionString,
+            },
+            status: "awaiting-approval",
+            approvals: {
+                pending: pendingApprovals,
+            },
+        };
+
         approvalsService.approve.mockResolvedValueOnce({
             id: "mock-approval-id",
         });
         apiClient.getTransaction
-            .mockResolvedValueOnce({
-                id: "mock-tx-id",
-                status: "awaiting-approval",
-                approvals: {
-                    pending: pendingApprovals,
-                },
-            })
+            .mockResolvedValueOnce(mockTransaction)
             .mockResolvedValueOnce({
                 id: "mock-tx-id",
                 status: "pending",
@@ -76,16 +88,26 @@ describe("SolanaTransactionsService", () => {
 
         expect(transaction.serialize).toHaveBeenCalledTimes(1);
         expect(apiClient.createTransaction).toHaveBeenCalledTimes(1);
-        expect(apiClient.createTransaction).toHaveBeenCalledWith(walletLocator, {
-            params: {
-                signer: "mock-address",
-                transaction: serializedTransactionString,
-                additionalSigners: [],
-            },
-        });
+        expect(apiClient.createTransaction).toHaveBeenCalledWith(
+            walletLocator,
+            {
+                params: {
+                    signer: "mock-address",
+                    transaction: serializedTransactionString,
+                    additionalSigners: [],
+                },
+            }
+        );
         expect(approvalsService.approve).toHaveBeenCalledTimes(1);
-        expect(approvalsService.approve).toHaveBeenCalledWith("mock-tx-id", pendingApprovals, [signer]);
+        expect(approvalsService.approve).toHaveBeenCalledWith(
+            mockTransaction,
+            pendingApprovals,
+            [signer]
+        );
         expect(apiClient.getTransaction).toHaveBeenCalledTimes(4);
-        expect(apiClient.getTransaction).toHaveBeenCalledWith(walletLocator, "mock-tx-id");
+        expect(apiClient.getTransaction).toHaveBeenCalledWith(
+            walletLocator,
+            "mock-tx-id"
+        );
     });
 });
