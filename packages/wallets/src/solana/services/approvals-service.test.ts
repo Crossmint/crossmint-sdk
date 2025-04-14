@@ -56,13 +56,10 @@ describe("SolanaApprovalsService", () => {
 
     describe("approve", () => {
         it("should successfully approve a transaction with single signer", async () => {
-            const transactionBase58 =
-                "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN";
+            const transactionBase58 = "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN";
             const mockSignedTxn = {
                 message: {
-                    staticAccountKeys: [
-                        { equals: vi.fn().mockReturnValue(true) },
-                    ],
+                    staticAccountKeys: [{ equals: vi.fn().mockReturnValue(true) }],
                 },
                 signatures: [new Uint8Array([1, 2, 3])],
             };
@@ -93,11 +90,7 @@ describe("SolanaApprovalsService", () => {
                 id: "mock-approval-id",
             });
 
-            const result = await approvalsService.approve(
-                mockTransaction,
-                pendingApprovals,
-                [signer]
-            );
+            const result = await approvalsService.approve(mockTransaction, pendingApprovals, [signer]);
 
             // Verify signTransaction was called with a VersionedTransaction
             expect(signer.signTransaction).toHaveBeenCalled();
@@ -105,24 +98,19 @@ describe("SolanaApprovalsService", () => {
             expect(txnArg).toBeInstanceOf(VersionedTransaction);
 
             // Verify API call
-            expect(apiClient.approveTransaction).toHaveBeenCalledWith(
-                walletLocator,
-                "mock-tx-id",
-                {
-                    approvals: [
-                        {
-                            signer: "mock-address",
-                            signature: expect.any(String),
-                        },
-                    ],
-                }
-            );
+            expect(apiClient.approveTransaction).toHaveBeenCalledWith(walletLocator, "mock-tx-id", {
+                approvals: [
+                    {
+                        signer: "mock-address",
+                        signature: expect.any(String),
+                    },
+                ],
+            });
             expect(result).toEqual({ id: "mock-approval-id" });
         });
 
         it("should successfully approve a transaction with multiple signers", async () => {
-            const transactionBase58 =
-                "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN";
+            const transactionBase58 = "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN";
 
             // Create mock transactions
             const mockSignedTxn = new VersionedTransaction(
@@ -163,11 +151,7 @@ describe("SolanaApprovalsService", () => {
                 id: "mock-tx-id",
             });
 
-            const result = await approvalsService.approve(
-                mockTransaction,
-                pendingApprovals,
-                [signer1, signer2]
-            );
+            const result = await approvalsService.approve(mockTransaction, pendingApprovals, [signer1, signer2]);
 
             // Verify signTransaction was called for both signers
             expect(signer1.signTransaction).toHaveBeenCalled();
@@ -175,22 +159,18 @@ describe("SolanaApprovalsService", () => {
 
             // Verify API call
             expect(apiClient.approveTransaction).toHaveBeenCalledTimes(1);
-            expect(apiClient.approveTransaction).toHaveBeenCalledWith(
-                walletLocator,
-                "mock-tx-id",
-                {
-                    approvals: [
-                        {
-                            signer: "mock-address-1",
-                            signature: expect.any(String),
-                        },
-                        {
-                            signer: "mock-address-2",
-                            signature: expect.any(String),
-                        },
-                    ],
-                }
-            );
+            expect(apiClient.approveTransaction).toHaveBeenCalledWith(walletLocator, "mock-tx-id", {
+                approvals: [
+                    {
+                        signer: "mock-address-1",
+                        signature: expect.any(String),
+                    },
+                    {
+                        signer: "mock-address-2",
+                        signature: expect.any(String),
+                    },
+                ],
+            });
             expect(result).toEqual({ id: "mock-tx-id" });
         });
 
@@ -202,8 +182,7 @@ describe("SolanaApprovalsService", () => {
             const pendingApprovals = [
                 {
                     signer: "different-address",
-                    message:
-                        "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN",
+                    message: "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN",
                 },
             ];
 
@@ -211,17 +190,12 @@ describe("SolanaApprovalsService", () => {
                 id: "mock-tx-id",
                 walletType: "solana-smart-wallet",
                 onChain: {
-                    transaction:
-                        "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN",
+                    transaction: "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN",
                 },
                 status: "awaiting-approval",
             };
 
-            await expect(
-                approvalsService.approve(mockTransaction, pendingApprovals, [
-                    signer,
-                ])
-            ).rejects.toThrow(
+            await expect(approvalsService.approve(mockTransaction, pendingApprovals, [signer])).rejects.toThrow(
                 "Signer different-address is required for the transaction but was not found in the signer list"
             );
         });
@@ -234,8 +208,7 @@ describe("SolanaApprovalsService", () => {
             const pendingApprovals = [
                 {
                     signer: "mock-address",
-                    message:
-                        "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN",
+                    message: "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN",
                 },
             ];
 
@@ -243,17 +216,14 @@ describe("SolanaApprovalsService", () => {
                 id: "mock-tx-id",
                 walletType: "unsupported-wallet",
                 onChain: {
-                    transaction:
-                        "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN",
+                    transaction: "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN",
                 },
                 status: "awaiting-approval",
             };
 
-            await expect(
-                approvalsService.approve(mockTransaction, pendingApprovals, [
-                    signer,
-                ])
-            ).rejects.toThrow("Unsupported wallet type: unsupported-wallet");
+            await expect(approvalsService.approve(mockTransaction, pendingApprovals, [signer])).rejects.toThrow(
+                "Unsupported wallet type: unsupported-wallet"
+            );
         });
     });
 });
