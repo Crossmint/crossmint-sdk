@@ -1,5 +1,12 @@
 # @crossmint/client-sdk-nextjs-starter
 
+## 1.4.51
+
+### Patch Changes
+
+- Updated dependencies [d177723]
+  - @crossmint/client-sdk-react-ui@1.17.4
+
 ## 1.4.50
 
 ### Patch Changes

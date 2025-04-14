@@ -1,5 +1,14 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.3.1
+
+### Patch Changes
+
+- d177723: Fix issue when signing with backpack for solana smart wallets transactions
+- Updated dependencies [d177723]
+  - @crossmint/client-sdk-react-base@0.2.2
+  - @crossmint/wallets-sdk@0.5.2
+
 ## 0.3.0
 
 ### Minor Changes
