@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 0.5.3
+
+### Patch Changes
+
+- f729711: Fix get delegate signers and get balances types and error handling
+
 ## 0.5.2
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.17.5
+
+### Patch Changes
+
+- f729711: Expose two new types from wallets-sdk: WalletBalance, DelegatedSigner
+- Updated dependencies [f729711]
+  - @crossmint/wallets-sdk@0.5.3
+  - @crossmint/client-sdk-react-base@0.2.3
+
 ## 1.17.4
 
 ### Patch Changes
