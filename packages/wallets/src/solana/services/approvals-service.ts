@@ -1,8 +1,9 @@
 import bs58 from "bs58";
-import { PublicKey, VersionedMessage, VersionedTransaction } from "@solana/web3.js";
+import { PublicKey, VersionedTransaction } from "@solana/web3.js";
 import type { ApiClient, CreateTransactionSuccessResponse, SolanaWalletLocator } from "@/api";
 import type { SolanaNonCustodialSigner } from "../types/signers";
 import { PendingApprovalsError, InvalidSignerError, TransactionFailedError } from "../../utils/errors";
+import type { WalletsV1Alpha2TransactionResponseDto } from "@/api/gen";
 
 type PendingApproval = NonNullable<NonNullable<CreateTransactionSuccessResponse["approvals"]>["pending"]>[number];
 
@@ -13,10 +14,13 @@ export class SolanaApprovalsService {
     ) {}
 
     public async approve(
-        transactionId: string,
+        transaction: WalletsV1Alpha2TransactionResponseDto,
         pendingApprovals: Array<PendingApproval>,
         signers: Array<SolanaNonCustodialSigner>
     ) {
+        if (transaction.walletType !== "solana-smart-wallet" && transaction.walletType !== "solana-mpc-wallet") {
+            throw new Error(`Unsupported wallet type: ${transaction.walletType}`);
+        }
         const approvals = await Promise.all(
             pendingApprovals.map(async (approval) => {
                 const signer = signers.find((s) => approval.signer.includes(s.address));
@@ -25,14 +29,13 @@ export class SolanaApprovalsService {
                         `Signer ${approval.signer} is required for the transaction but was not found in the signer list`
                     );
                 }
-                // Convert the decoded transaction message from server back into a VersionedTransaction
-                const messageBytes = bs58.decode(approval.message);
-                const message = VersionedMessage.deserialize(messageBytes);
-                const transaction = new VersionedTransaction(message);
+                const transactionBytes = bs58.decode(transaction.onChain.transaction);
+                const deserializedTransaction = VersionedTransaction.deserialize(transactionBytes);
                 // Sign the transaction (we can't use signMessage on transactions, so we need to sign the transaction directly)
-                const signedTxn = await signer.signTransaction(transaction);
+                const signedTxn = await signer.signTransaction(deserializedTransaction);
                 // Get the signature from the signed transaction
                 const walletPublicKey = new PublicKey(signer.address);
+
                 const signature = this.retrieveValidSignature(signedTxn, walletPublicKey);
                 return {
                     signature,
@@ -40,16 +43,16 @@ export class SolanaApprovalsService {
                 };
             })
         );
-        const transaction = await this.apiClient.approveTransaction(this.walletLocator, transactionId, {
+        const approvedTransaction = await this.apiClient.approveTransaction(this.walletLocator, transaction.id, {
             approvals,
         });
-        if (transaction.error) {
-            throw new TransactionFailedError(JSON.stringify(transaction));
+        if (approvedTransaction.error) {
+            throw new TransactionFailedError(JSON.stringify(approvedTransaction));
         }
-        if (transaction.status === "awaiting-approval") {
+        if (approvedTransaction.status === "awaiting-approval") {
             throw new PendingApprovalsError("Still has pending approvals, please submit all approvals");
         }
-        return transaction;
+        return approvedTransaction;
     }
 
     private retrieveValidSignature(signedTxn: VersionedTransaction, signerPublicKey: PublicKey) {

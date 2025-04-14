@@ -6,6 +6,7 @@ import type { SolanaApprovalsService } from "./approvals-service";
 import type { VersionedTransaction } from "@solana/web3.js";
 import type { SolanaNonCustodialSigner } from "../types/signers";
 import bs58 from "bs58";
+import type { WalletsV1Alpha2TransactionResponseDto } from "@/api/gen";
 
 vi.mock("../../../utils", () => ({
     sleep: vi.fn(),
@@ -42,17 +43,23 @@ describe("SolanaTransactionsService", () => {
             },
         });
 
+        const mockTransaction: WalletsV1Alpha2TransactionResponseDto = {
+            id: "mock-tx-id",
+            walletType: "solana-smart-wallet",
+            onChain: {
+                transaction: serializedTransactionString,
+            },
+            status: "awaiting-approval",
+            approvals: {
+                pending: pendingApprovals,
+            },
+        };
+
         approvalsService.approve.mockResolvedValueOnce({
             id: "mock-approval-id",
         });
         apiClient.getTransaction
-            .mockResolvedValueOnce({
-                id: "mock-tx-id",
-                status: "awaiting-approval",
-                approvals: {
-                    pending: pendingApprovals,
-                },
-            })
+            .mockResolvedValueOnce(mockTransaction)
             .mockResolvedValueOnce({
                 id: "mock-tx-id",
                 status: "pending",
@@ -84,7 +91,7 @@ describe("SolanaTransactionsService", () => {
             },
         });
         expect(approvalsService.approve).toHaveBeenCalledTimes(1);
-        expect(approvalsService.approve).toHaveBeenCalledWith("mock-tx-id", pendingApprovals, [signer]);
+        expect(approvalsService.approve).toHaveBeenCalledWith(mockTransaction, pendingApprovals, [signer]);
         expect(apiClient.getTransaction).toHaveBeenCalledTimes(4);
         expect(apiClient.getTransaction).toHaveBeenCalledWith(walletLocator, "mock-tx-id");
     });

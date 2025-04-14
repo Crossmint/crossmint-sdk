@@ -5,6 +5,7 @@ import { mock } from "vitest-mock-extended";
 import type { SolanaNonCustodialSigner } from "../types/signers";
 import base58 from "bs58";
 import { VersionedMessage, VersionedTransaction } from "@solana/web3.js";
+import type { WalletsV1Alpha2TransactionResponseDto } from "@/api/gen";
 
 vi.mock("@solana/web3.js", () => {
     return {
@@ -32,6 +33,9 @@ vi.mock("@solana/web3.js", () => {
                 this.message = { staticAccountKeys: [{ equals: () => true }] };
                 this.signatures = [new Uint8Array([1, 2, 3])];
             }
+            static deserialize() {
+                return new this();
+            }
         },
     };
 });
@@ -52,7 +56,7 @@ describe("SolanaApprovalsService", () => {
 
     describe("approve", () => {
         it("should successfully approve a transaction with single signer", async () => {
-            const messageBase58 = "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN";
+            const transactionBase58 = "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN";
             const mockSignedTxn = {
                 message: {
                     staticAccountKeys: [{ equals: vi.fn().mockReturnValue(true) }],
@@ -69,15 +73,24 @@ describe("SolanaApprovalsService", () => {
             const pendingApprovals = [
                 {
                     signer: "mock-address",
-                    message: messageBase58,
+                    message: transactionBase58,
                 },
             ];
+
+            const mockTransaction: WalletsV1Alpha2TransactionResponseDto = {
+                id: "mock-tx-id",
+                walletType: "solana-smart-wallet",
+                onChain: {
+                    transaction: transactionBase58,
+                },
+                status: "awaiting-approval",
+            };
 
             apiClient.approveTransaction.mockResolvedValueOnce({
                 id: "mock-approval-id",
             });
 
-            const result = await approvalsService.approve("mock-tx-id", pendingApprovals, [signer]);
+            const result = await approvalsService.approve(mockTransaction, pendingApprovals, [signer]);
 
             // Verify signTransaction was called with a VersionedTransaction
             expect(signer.signTransaction).toHaveBeenCalled();
@@ -97,11 +110,12 @@ describe("SolanaApprovalsService", () => {
         });
 
         it("should successfully approve a transaction with multiple signers", async () => {
-            const messageBase58 = "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN";
-            const messageBytes = base58.decode(messageBase58);
+            const transactionBase58 = "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN";
 
             // Create mock transactions
-            const mockSignedTxn = new VersionedTransaction(VersionedMessage.deserialize(messageBytes));
+            const mockSignedTxn = new VersionedTransaction(
+                VersionedMessage.deserialize(base58.decode(transactionBase58))
+            );
 
             const signer1 = mock<SolanaNonCustodialSigner>({
                 address: "mock-address-1",
@@ -116,19 +130,28 @@ describe("SolanaApprovalsService", () => {
             const pendingApprovals = [
                 {
                     signer: "mock-address-1",
-                    message: messageBase58,
+                    message: transactionBase58,
                 },
                 {
                     signer: "mock-address-2",
-                    message: messageBase58,
+                    message: transactionBase58,
                 },
             ];
+
+            const mockTransaction: WalletsV1Alpha2TransactionResponseDto = {
+                id: "mock-tx-id",
+                walletType: "solana-smart-wallet",
+                onChain: {
+                    transaction: transactionBase58,
+                },
+                status: "awaiting-approval",
+            };
 
             apiClient.approveTransaction.mockResolvedValueOnce({
                 id: "mock-tx-id",
             });
 
-            const result = await approvalsService.approve("mock-tx-id", pendingApprovals, [signer1, signer2]);
+            const result = await approvalsService.approve(mockTransaction, pendingApprovals, [signer1, signer2]);
 
             // Verify signTransaction was called for both signers
             expect(signer1.signTransaction).toHaveBeenCalled();
@@ -163,8 +186,43 @@ describe("SolanaApprovalsService", () => {
                 },
             ];
 
-            await expect(approvalsService.approve("mock-tx-id", pendingApprovals, [signer])).rejects.toThrow(
+            const mockTransaction: WalletsV1Alpha2TransactionResponseDto = {
+                id: "mock-tx-id",
+                walletType: "solana-smart-wallet",
+                onChain: {
+                    transaction: "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN",
+                },
+                status: "awaiting-approval",
+            };
+
+            await expect(approvalsService.approve(mockTransaction, pendingApprovals, [signer])).rejects.toThrow(
                 "Signer different-address is required for the transaction but was not found in the signer list"
+            );
+        });
+
+        it("should throw error for unsupported wallet type", async () => {
+            const signer = mock<SolanaNonCustodialSigner>({
+                address: "mock-address",
+            });
+
+            const pendingApprovals = [
+                {
+                    signer: "mock-address",
+                    message: "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN",
+                },
+            ];
+
+            const mockTransaction: WalletsV1Alpha2TransactionResponseDto = {
+                id: "mock-tx-id",
+                walletType: "unsupported-wallet",
+                onChain: {
+                    transaction: "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN",
+                },
+                status: "awaiting-approval",
+            };
+
+            await expect(approvalsService.approve(mockTransaction, pendingApprovals, [signer])).rejects.toThrow(
+                "Unsupported wallet type: unsupported-wallet"
             );
         });
     });

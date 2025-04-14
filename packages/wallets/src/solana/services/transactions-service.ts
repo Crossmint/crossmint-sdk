@@ -52,7 +52,7 @@ export class SolanaTransactionsService {
             throw new TransactionNotAvailableError(JSON.stringify(transaction));
         }
         if (transaction.status === "awaiting-approval") {
-            await this.approvalsService.approve(transaction.id, transaction.approvals?.pending || [], signers);
+            await this.approvalsService.approve(transaction, transaction.approvals?.pending || [], signers);
         }
     }
 
