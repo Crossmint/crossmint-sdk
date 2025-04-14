@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 0.5.2
+
+### Patch Changes
+
+- d177723: Fix issue when signing with backpack for solana smart wallets transactions
+
 ## 0.5.1
 
 ### Patch Changes

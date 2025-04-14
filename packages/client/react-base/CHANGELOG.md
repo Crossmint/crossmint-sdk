@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-react-base
 
+## 0.2.2
+
+### Patch Changes
+
+- d177723: Fix issue when signing with backpack for solana smart wallets transactions
+- Updated dependencies [d177723]
+  - @crossmint/wallets-sdk@0.5.2
+
 ## 0.2.1
 
 ### Patch Changes
