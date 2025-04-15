@@ -66,7 +66,10 @@ export function CrossmintAuthProvider({
     const storageProvider = useMemo(() => customStorageProvider ?? new SecureStorage(), [customStorageProvider]);
 
     const singleAppSchema = Array.isArray(appSchema) ? appSchema[0] : appSchema;
-    const isRunningInExpoGo = Constants.executionEnvironment === "storeClient";
+    const isRunningInExpoGo =
+        Constants.executionEnvironment === "storeClient" ||
+        Constants.appOwnership === "expo" ||
+        !!Constants.expoVersion;
     const resolvedAppSchema = isRunningInExpoGo ? "exp://127.0.0.1:8081" : singleAppSchema;
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: crossmint can't be a dependency because it updates with each jwt change
