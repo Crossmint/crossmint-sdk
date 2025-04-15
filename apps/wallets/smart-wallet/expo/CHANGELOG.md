@@ -1,5 +1,14 @@
 # expo-demo
 
+## 1.1.6
+
+### Patch Changes
+
+- d7cac39: No need to pass in expo go app schema
+- Updated dependencies [d7cac39]
+- Updated dependencies [d7cac39]
+  - @crossmint/client-sdk-react-native-ui@0.3.5
+
 ## 1.1.5
 
 ### Patch Changes

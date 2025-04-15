@@ -1,5 +1,15 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.3.5
+
+### Patch Changes
+
+- d7cac39: Detect expo go and set is as app schema
+- d7cac39: Exports types from wallet and fixes exporting CrossmintAuthProvider
+- Updated dependencies [8cb19bf]
+  - @crossmint/wallets-sdk@0.6.0
+  - @crossmint/client-sdk-react-base@0.2.4
+
 ## 0.3.4
 
 ### Patch Changes
