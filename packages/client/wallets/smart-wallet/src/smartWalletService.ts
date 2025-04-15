@@ -24,7 +24,7 @@ import type { CreateWalletResponse, TransactionResponse, Signer, SignatureRespon
 import type { SmartWalletChain } from "./evm/chains";
 import type { SmartWalletClient } from "./evm/smartWalletClient";
 import { EVMSmartWallet } from "./evm/wallet";
-import { getAlchemyRPC } from "./evm/rpc";
+import { getRPC } from "./evm/rpc";
 import { sleep } from "./utils";
 import { ENTRY_POINT_ADDRESS, STATUS_POLLING_INTERVAL_MS } from "./utils/constants";
 import {
@@ -86,7 +86,7 @@ export class SmartWalletService {
     ): Promise<EVMSmartWallet> {
         this.callbacks = callbacks;
         const publicClient = createPublicClient({
-            transport: http(getAlchemyRPC(chain)),
+            transport: http(getRPC(chain)),
         });
         const { signer } = walletParams;
         const walletResponse = await this.createWallet(user, signer);
@@ -114,7 +114,7 @@ export class SmartWalletService {
 
             getNonce: async (params?: { key?: bigint }) => {
                 const publicClient = createPublicClient({
-                    transport: http(getAlchemyRPC(chain)),
+                    transport: http(getRPC(chain)),
                 });
                 const nonce = await publicClient.readContract({
                     abi: entryPointAbi,
