@@ -17,11 +17,9 @@ export default function RootLayout() {
 }
 
 function CrossmintProviders({ children }: { children: ReactNode }) {
-    const expoGoScheme = "exp://127.0.0.1:8081";
-
     return (
         <CrossmintProvider apiKey={process.env.EXPO_PUBLIC_CROSSMINT_API_KEY ?? ""} overrideBaseUrl="">
-            <CrossmintAuthProvider appSchema={expoGoScheme}>
+            <CrossmintAuthProvider>
                 <CrossmintWalletProvider>{children}</CrossmintWalletProvider>
             </CrossmintAuthProvider>
         </CrossmintProvider>
