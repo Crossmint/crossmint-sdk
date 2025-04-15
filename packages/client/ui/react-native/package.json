@@ -25,6 +25,7 @@
         "@crossmint/common-sdk-auth": "workspace:*",
         "@crossmint/common-sdk-base": "workspace:*",
         "@crossmint/wallets-sdk": "workspace:*",
+        "expo-constants": "~17.0.8",
         "expo-secure-store": "14.0.1",
         "expo-web-browser": "~14.0.2"
     },

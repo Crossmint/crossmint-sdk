@@ -1,5 +1,4 @@
 import { type ReactNode, createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
-
 import { type Crossmint, createCrossmint } from "@crossmint/common-sdk-base";
 
 export interface CrossmintContext {
@@ -14,7 +13,7 @@ export function CrossmintProvider({
     apiKey,
     appId,
     overrideBaseUrl,
-}: Omit<Crossmint, "jwt"> & {
+}: Crossmint & {
     children: ReactNode;
 }) {
     const [version, setVersion] = useState(0);

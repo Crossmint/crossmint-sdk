@@ -6,6 +6,8 @@ import {
 import { Stack } from "expo-router";
 import type { ReactNode } from "react";
 
+import "../utils/polyfills";
+
 export default function RootLayout() {
     return (
         <CrossmintProviders>
@@ -15,13 +17,11 @@ export default function RootLayout() {
 }
 
 function CrossmintProviders({ children }: { children: ReactNode }) {
+    const expoGoScheme = "exp://127.0.0.1:8081";
+
     return (
-        <CrossmintProvider
-            apiKey={process.env.EXPO_PUBLIC_CROSSMINT_API_KEY ?? ""}
-            appId={process.env.EXPO_PUBLIC_CROSSMINT_APP_ID ?? ""}
-            overrideBaseUrl=""
-        >
-            <CrossmintAuthProvider>
+        <CrossmintProvider apiKey={process.env.EXPO_PUBLIC_CROSSMINT_API_KEY ?? ""} overrideBaseUrl="">
+            <CrossmintAuthProvider appSchema={expoGoScheme}>
                 <CrossmintWalletProvider>{children}</CrossmintWalletProvider>
             </CrossmintAuthProvider>
         </CrossmintProvider>

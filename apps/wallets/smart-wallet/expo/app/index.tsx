@@ -1,7 +1,3 @@
-import "react-native-get-random-values";
-import { install } from "react-native-quick-crypto";
-install();
-
 import { useCrossmintAuth, useWallet, type SolanaSmartWallet } from "@crossmint/client-sdk-react-native-ui";
 import { useEffect, useMemo, useState } from "react";
 import { Button, Text, View } from "react-native";
@@ -16,9 +12,9 @@ import {
 
 export default function Index() {
     const { loginWithOAuth, user, logout, createAuthSession } = useCrossmintAuth();
-    const { wallet, error, getOrCreateWallet } = useWallet();
+    const { wallet, type, error, getOrCreateWallet } = useWallet();
     const [txHash, setTxHash] = useState<string | null>(null);
-    const walletAddress = useMemo(() => wallet?.getAddress(), [wallet]);
+    const walletAddress = useMemo(() => wallet?.address, [wallet]);
     const url = Linking.useURL();
 
     useEffect(() => {
@@ -44,32 +40,36 @@ export default function Index() {
             return;
         }
 
-        const memoInstruction = new TransactionInstruction({
-            keys: [
-                {
-                    pubkey: new PublicKey(wallet.getAddress()),
-                    isSigner: true,
-                    isWritable: true,
-                },
-            ],
-            data: Buffer.from("Hello from Crossmint SDK", "utf-8"),
-            programId: new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
-        });
-
-        const connection = new Connection("https://api.devnet.solana.com");
-        const blockhash = (await connection.getLatestBlockhash()).blockhash;
-        const newMessage = new TransactionMessage({
-            payerKey: new PublicKey(wallet.getAddress()),
-            recentBlockhash: blockhash,
-            instructions: [memoInstruction],
-        });
-
-        const transaction = new VersionedTransaction(newMessage.compileToV0Message());
-
         try {
+            const memoInstruction = new TransactionInstruction({
+                keys: [
+                    {
+                        pubkey: new PublicKey(wallet.address),
+                        isSigner: true,
+                        isWritable: true,
+                    },
+                ],
+                data: Buffer.from("Hello from Crossmint SDK", "utf-8"),
+                programId: new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
+            });
+
+            const connection = new Connection("https://api.devnet.solana.com");
+            const blockhash = (await connection.getLatestBlockhash()).blockhash;
+            const newMessage = new TransactionMessage({
+                payerKey: new PublicKey(wallet.address),
+                recentBlockhash: blockhash,
+                instructions: [memoInstruction],
+            });
+
+            const transaction = new VersionedTransaction(newMessage.compileToV0Message());
+
+            if (type !== "solana-smart-wallet") {
+                throw new Error("Wallet type is not solana-smart-wallet");
+            }
             const txHash = await (wallet as SolanaSmartWallet).sendTransaction({
                 transaction,
             });
+
             setTxHash(txHash);
         } catch (error) {
             console.log("error", error);

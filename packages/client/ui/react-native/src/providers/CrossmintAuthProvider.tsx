@@ -23,6 +23,7 @@ type CrossmintAuthProviderProps = {
     refreshRoute?: string;
     logoutRoute?: string;
     customStorageProvider?: StorageProvider;
+    appSchema?: string | string[];
 };
 
 type AuthContextType = {
@@ -55,12 +56,14 @@ export function CrossmintAuthProvider({
     refreshRoute,
     logoutRoute,
     customStorageProvider,
+    appSchema,
 }: CrossmintAuthProviderProps) {
     const [user, setUser] = useState<SDKExternalUser | undefined>(undefined);
     const { crossmint, setJwt } = useCrossmint("CrossmintAuthProvider must be used within CrossmintProvider");
     const [oauthUrlMap, setOauthUrlMap] = useState<OAuthUrlMap>(initialOAuthUrlMap);
     const crossmintAuthRef = useRef<CrossmintAuth | null>(null);
     const storageProvider = useMemo(() => customStorageProvider ?? new SecureStorage(), [customStorageProvider]);
+    const resolvedAppSchema = Array.isArray(appSchema) ? appSchema[0] : appSchema;
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: crossmint can't be a dependency because it updates with each jwt change
     const crossmintAuth = useMemo(() => {
@@ -119,7 +122,9 @@ export function CrossmintAuthProvider({
             const oauthProviders = Object.keys(initialOAuthUrlMap);
 
             const oauthPromiseList = oauthProviders.map(async (provider) => {
-                const url = await crossmintAuth?.getOAuthUrl(provider as OAuthProvider);
+                const url = await crossmintAuth?.getOAuthUrl(provider as OAuthProvider, {
+                    appSchema: resolvedAppSchema,
+                });
                 return { [provider]: url };
             });
 
@@ -158,7 +163,8 @@ export function CrossmintAuthProvider({
 
     const loginWithOAuth = async (provider: OAuthProvider) => {
         try {
-            const oauthUrl = oauthUrlMap[provider] ?? (await crossmintAuth.getOAuthUrl(provider));
+            const oauthUrl =
+                oauthUrlMap[provider] ?? (await crossmintAuth.getOAuthUrl(provider, { appSchema: resolvedAppSchema }));
 
             await WebBrowser.warmUpAsync();
             const baseUrl = new URL(oauthUrl);

@@ -14,7 +14,6 @@ Create a `.env` file and provide a valid Crossmint API and an app identifier:
 
 ```bash
 EXPO_PUBLIC_CROSSMINT_API_KEY=
-EXPO_PUBLIC_CROSSMINT_APP_ID=
 ```
 
 ## Running
