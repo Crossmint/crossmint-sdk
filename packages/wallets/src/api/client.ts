@@ -128,7 +128,7 @@ class ApiClient extends CrossmintApiClient {
         walletLocator: WalletLocator;
         perPage: number;
         page: number;
-        chain?: string;
+        chain: string;
     }): Promise<GetNftsResponse> {
         const queryParams = new URLSearchParams();
         queryParams.append("page", params.page.toString());

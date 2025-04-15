@@ -42,6 +42,9 @@ describe("WalletSDK", () => {
         expect(typeof wallet.unstable_getNfts).toBe("function");
         expect(typeof wallet.signMessage).toBe("function");
         expect(typeof wallet.address).toBe("string");
+        expect(typeof wallet.getViemClient).toBe("function");
+        expect(typeof wallet.getNonce).toBe("function");
+        expect(typeof wallet.signTypedData).toBe("function");
         expect(wallet.address).toBe("mock-address");
     });
 

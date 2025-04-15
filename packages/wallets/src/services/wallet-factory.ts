@@ -156,6 +156,9 @@ export class WalletFactory {
                     signMessage: wallet.signMessage.bind(wallet),
                     sendTransaction: wallet.sendTransaction.bind(wallet),
                     address: wallet.address,
+                    getViemClient: wallet.getViemClient.bind(wallet),
+                    getNonce: wallet.getNonce.bind(wallet),
+                    signTypedData: wallet.signTypedData.bind(wallet),
                 } satisfies EVMSmartWallet;
             }
         }
