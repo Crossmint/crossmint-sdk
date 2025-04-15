@@ -21,10 +21,9 @@ import { WebAuthnP256 } from "ox";
 import entryPointAbi from "./abi/entryPoint";
 import type { CrossmintApiService } from "./apiService";
 import type { CreateWalletResponse, TransactionResponse, Signer, SignatureResponse } from "./types/api";
-import type { SmartWalletChain } from "./evm/chains";
+import { viemNetworks, type SmartWalletChain } from "./evm/chains";
 import type { SmartWalletClient } from "./evm/smartWalletClient";
 import { EVMSmartWallet } from "./evm/wallet";
-import { getAlchemyRPC } from "./evm/rpc";
 import { sleep } from "./utils";
 import { ENTRY_POINT_ADDRESS, STATUS_POLLING_INTERVAL_MS } from "./utils/constants";
 import {
@@ -85,16 +84,16 @@ export class SmartWalletService {
         callbacks?: Callbacks
     ): Promise<EVMSmartWallet> {
         this.callbacks = callbacks;
-        const publicClient = createPublicClient({
-            transport: http(getAlchemyRPC(chain)),
-        });
         const { signer } = walletParams;
         const walletResponse = await this.createWallet(user, signer);
         const address = walletResponse.address;
         return new EVMSmartWallet(
             {
                 wallet: this.smartAccountClient(user, signer, chain, address),
-                public: publicClient,
+                public: createPublicClient({
+                    chain: viemNetworks[chain],
+                    transport: http(),
+                }),
             },
             chain,
             this.crossmintApiService
@@ -113,10 +112,10 @@ export class SmartWalletService {
             },
 
             getNonce: async (params?: { key?: bigint }) => {
-                const publicClient = createPublicClient({
-                    transport: http(getAlchemyRPC(chain)),
-                });
-                const nonce = await publicClient.readContract({
+                const nonce = await createPublicClient({
+                    chain: viemNetworks[chain],
+                    transport: http(),
+                }).readContract({
                     abi: entryPointAbi,
                     address: ENTRY_POINT_ADDRESS,
                     functionName: "getNonce",

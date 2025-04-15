@@ -27,11 +27,11 @@ export class EVMSmartWallet {
             /**
              * An interface to interact with the smart wallet, execute transactions, sign messages, etc.
              */
-            public: PublicClient<HttpTransport>;
+            wallet: SmartWalletClient;
             /**
              * An interface to read onchain data, fetch transactions, retrieve account balances, etc. Corresponds to public [JSON-RPC API](https://ethereum.org/en/developers/docs/apis/json-rpc/) methods.
              */
-            wallet: SmartWalletClient;
+            public: PublicClient<HttpTransport>;
         },
         public readonly chain: SmartWalletChain,
         private readonly apiService: CrossmintApiService
