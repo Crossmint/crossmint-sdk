@@ -3,10 +3,10 @@ import type { EVMBlockchainIncludingTestnet } from "@crossmint/common-sdk-base";
 export function getUrlProviderByBlockchain(chain: EVMBlockchainIncludingTestnet) {
     const url = new Map<EVMBlockchainIncludingTestnet, string | null>([
         ["ethereum", "https://eth.llamarpc.com"],
-        ["polygon", "https://rpc.ankr.com/polygon"],
+        ["polygon", "https://polygon-rpc.com"],
         ["bsc", "https://binance.llamarpc.com"],
-        ["optimism", "https://rpc.ankr.com/optimism"],
-        ["arbitrum", "https://rpc.ankr.com/arbitrum"],
+        ["optimism", "https://mainnet.optimism.io"],
+        ["arbitrum", "https://arb1.arbitrum.io/rpc"],
         ["ethereum-sepolia", "https://ethereum-sepolia.publicnode.com"],
         ["polygon-amoy", "https://rpc-amoy.polygon.technology"],
         ["zkatana", "https://rpc.startale.com/zkatana"],

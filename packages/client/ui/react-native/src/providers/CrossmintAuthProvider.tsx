@@ -99,7 +99,6 @@ export function CrossmintAuthProvider({
         if (crossmint.jwt == null) {
             storageProvider?.get("jwt").then((jwt) => {
                 if (jwt != null) {
-                    console.log("[CrossmintAuthProvider] jwt", jwt);
                     setJwt(jwt);
                 }
             });
