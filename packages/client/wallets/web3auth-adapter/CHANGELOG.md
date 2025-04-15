@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-smart-wallet-web3auth-adapter
 
+## 0.2.11
+
+### Patch Changes
+
+- c1a03ec: Uses non-ankr rpc urls, uses defaults from viem
+
 ## 0.2.10
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.3.4
+
+### Patch Changes
+
+- c1a03ec: Exports types from wallet and fixes exporting CrossmintAuthProvider
+
 ## 0.3.3
 
 ### Patch Changes
