@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-smart-wallet
 
+## 0.3.7
+
+### Patch Changes
+
+- 2e43147: Use public RPCs
+
 ## 0.3.6
 
 ### Patch Changes
