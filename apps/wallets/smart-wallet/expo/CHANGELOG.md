@@ -1,5 +1,13 @@
 # expo-demo
 
+## 1.1.4
+
+### Patch Changes
+
+- b460260: Removes appId, adds schema for expo go and fixes polyfills for expo go
+- Updated dependencies [b460260]
+  - @crossmint/client-sdk-react-native-ui@0.3.3
+
 ## 1.1.3
 
 ### Patch Changes

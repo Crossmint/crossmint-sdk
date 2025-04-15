@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.3.3
+
+### Patch Changes
+
+- b460260: Allows setting schema but makes it optional together with appId
+
 ## 0.3.2
 
 ### Patch Changes
