@@ -28,5 +28,5 @@ export async function dynamicChainToCrossmintChain(
     if (!chainFromChainId) {
         throw new ChainNotSupportedError(chainId);
     }
-    return chainFromChainId as BlockchainIncludingTestnet;
+    return chainFromChainId;
 }

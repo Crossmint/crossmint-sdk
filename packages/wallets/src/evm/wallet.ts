@@ -12,7 +12,6 @@ import {
     createPublicClient,
     concat,
 } from "viem";
-
 import type {
     ApiClient,
     GetSignatureResponse,
@@ -45,36 +44,33 @@ import {
 import entryPointAbi from "./abi/entryPoint";
 import { toViemChain, type EVMSmartWalletChain } from "./chains";
 import type { EVMSigner } from "./types/signers";
-import type { TransactionInput, ViemWallet } from "./types/wallet";
+import type { EVMSmartWallet, TransactionInput } from "./types/wallet";
 
 type PendingApproval = NonNullable<NonNullable<CreateTransactionSuccessResponse["approvals"]>["pending"]>[number];
 
-export class EVMSmartWalletImpl implements ViemWallet {
-    public readonly publicClient: PublicClient<HttpTransport>;
-
+export class EVMSmartWalletImpl implements EVMSmartWallet {
     constructor(
-        public readonly chain: EVMSmartWalletChain,
         public readonly address: Address,
         private readonly apiClient: ApiClient,
         private readonly adminSigner: EVMSigner,
         private readonly callbacks: Callbacks
-    ) {
-        this.publicClient = createPublicClient({
-            chain: toViemChain(chain),
-            transport: http(),
-        });
-    }
+    ) {}
 
     /**
      * Get the wallet balances
-     * @param tokens - The tokens
-     * @returns The balances
+     * @param {Object} params - The parameters
+     * @param {EVMSmartWalletChain} params.chain - The chain
+     * @param {Address[]} params.tokens - The tokens
+     * @returns {Promise<WalletBalance>} The balances
      * @throws {Error} If the balances cannot be retrieved
      */
-    public async getBalances(tokens: Address[]): Promise<WalletBalance> {
+    public async getBalances(params: {
+        chain: EVMSmartWalletChain;
+        tokens: Address[];
+    }): Promise<WalletBalance> {
         const response = await this.apiClient.getBalance(this.address, {
-            chains: [this.chain],
-            tokens,
+            chains: [params.chain],
+            tokens: params.tokens,
         });
         if ("error" in response) {
             throw new Error(`Failed to get balances: ${JSON.stringify(response.error)}`);
@@ -98,31 +94,64 @@ export class EVMSmartWalletImpl implements ViemWallet {
 
     /**
      * Get the wallet NFTs
-     * @param perPage - The number of NFTs per page
-     * @param page - The page number
-     * @param chain - The chain
-     * @param locator - The locator
+     * @param {Object} params - The parameters
+     * @param {number} params.perPage - The number of NFTs per page
+     * @param {number} params.page - The page number
+     * @param {EVMSmartWalletChain} params.chain - The chain
+     * @param {EvmWalletLocator} [params.locator] - The locator
      * @returns The NFTs
      * @unstable This API is unstable and may change in the future
      */
-    public async unstable_getNfts(perPage: number, page: number, chain: string, locator?: EvmWalletLocator) {
-        return await this.apiClient.unstable_getNfts(chain, locator ?? this.walletLocator, perPage, page);
+    public async unstable_getNfts(params: {
+        perPage: number;
+        page: number;
+        chain: EVMSmartWalletChain;
+        locator?: EvmWalletLocator;
+    }) {
+        return await this.apiClient.unstable_getNfts({
+            ...params,
+            walletLocator: this.walletLocator,
+        });
     }
 
-    public async getNonce(parameters?: { key?: bigint | undefined } | undefined): Promise<bigint> {
-        const nonce = await this.publicClient.readContract({
+    /**
+     * Get the nonce
+     * @param {Object} params - The parameters
+     * @param {EVMSmartWalletChain} params.chain - The chain
+     * @param {bigint} [params.key] - The key
+     * @param {HttpTransport} [params.transport] - Custom transport
+     * @returns {Promise<bigint>} The nonce
+     */
+    public async getNonce(params: {
+        chain: EVMSmartWalletChain;
+        key?: bigint | undefined;
+        transport?: HttpTransport;
+    }): Promise<bigint> {
+        const viemClient = this.getViemClient({
+            chain: params.chain,
+            transport: params?.transport,
+        });
+        const nonce = await viemClient.readContract({
             abi: entryPointAbi,
             address: ENTRY_POINT_ADDRESS,
             functionName: "getNonce",
-            args: [this.address, parameters?.key ?? BigInt(0)],
+            args: [this.address, params?.key ?? BigInt(0)],
         });
         return nonce;
     }
 
-    public async signMessage(parameters: {
+    /**
+     * Sign a message
+     * @param {Object} params - The parameters
+     * @param {SignableMessage} params.message - The message
+     * @param {EVMSmartWalletChain} params.chain - The chain
+     * @returns {Promise<Hex>} The signature
+     */
+    public async signMessage(params: {
         message: SignableMessage;
+        chain: EVMSmartWalletChain;
     }): Promise<Hex> {
-        const signatureCreationResponse = await this.createSignature(parameters.message);
+        const signatureCreationResponse = await this.createSignature(params);
         const signatureId = signatureCreationResponse.id;
         const pendingApprovals = signatureCreationResponse.approvals?.pending || [];
         const signature = await this.approveSignature(pendingApprovals, signatureId);
@@ -133,8 +162,8 @@ export class EVMSmartWalletImpl implements ViemWallet {
     public async signTypedData<
         const typedData extends TypedData | Record<string, unknown>,
         primaryType extends keyof typedData | "EIP712Domain" = keyof typedData,
-    >(parameters: TypedDataDefinition<typedData, primaryType>): Promise<Hex> {
-        const signatureCreationResponse = await this.createTypedDataSignature(parameters);
+    >(params: TypedDataDefinition<typedData, primaryType> & { chain: EVMSmartWalletChain }): Promise<Hex> {
+        const signatureCreationResponse = await this.createTypedDataSignature(params);
         const signatureId = signatureCreationResponse.id;
         const pendingApprovals = signatureCreationResponse.approvals?.pending || [];
         const signature = await this.approveSignature(pendingApprovals, signatureId);
@@ -142,12 +171,38 @@ export class EVMSmartWalletImpl implements ViemWallet {
         return signature;
     }
 
-    public async sendTransaction(parameters: TransactionInput): Promise<Hex> {
-        await this.callbacks?.onTransactionStart?.(parameters);
-        const transactionCreationResponse = await this.createTransaction(parameters);
+    /**
+     * Send a transaction
+     * @param {TransactionInput} params - The parameters
+     * @param {Address} params.to - The recipient address
+     * @param {EVMSmartWalletChain} params.chain - The blockchain network
+     * @param {Hex} [params.data] - The transaction calldata
+     * @param {bigint} [params.value] - The amount of native currency to send (in wei)
+     * @returns {Promise<Hex>} The transaction hash
+     */
+    public async sendTransaction(params: TransactionInput): Promise<Hex> {
+        await this.callbacks?.onTransactionStart?.(params);
+        const transactionCreationResponse = await this.createTransaction(params);
         const transactionId = transactionCreationResponse.id;
         await this.approveTransaction(transactionCreationResponse.approvals?.pending || [], transactionId);
         return await this.waitForTransaction(transactionId);
+    }
+
+    /**
+     * Get a viem client for a chain
+     * @param {Object} params - The parameters
+     * @param {EVMSmartWalletChain} params.chain - The chain
+     * @param {HttpTransport} [params.transport] - Optional custom transport
+     * @returns {PublicClient<HttpTransport>} The viem client
+     */
+    public getViemClient(params: {
+        chain: EVMSmartWalletChain;
+        transport?: HttpTransport;
+    }): PublicClient<HttpTransport> {
+        return createPublicClient({
+            transport: params.transport ?? http(),
+            chain: toViemChain(params.chain),
+        });
     }
 
     private get walletLocator(): EvmWalletLocator {
@@ -203,16 +258,16 @@ export class EVMSmartWalletImpl implements ViemWallet {
         }
     }
 
-    private async createTransaction(parameters: TransactionInput) {
+    private async createTransaction(params: TransactionInput) {
         const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
             params: {
                 signer: this.signerLocator,
-                chain: this.chain,
+                chain: params.chain,
                 calls: [
                     {
-                        to: parameters.to,
-                        value: parameters.value ? parameters.value.toString() : "0",
-                        data: parameters.data ?? "0x",
+                        to: params.to,
+                        value: params.value ? params.value.toString() : "0",
+                        data: params.data ?? "0x",
                     },
                 ],
             },
@@ -298,16 +353,19 @@ export class EVMSmartWalletImpl implements ViemWallet {
         return transactionHash as Hex;
     }
 
-    private async createSignature(message: SignableMessage) {
-        if (typeof message !== "string") {
+    private async createSignature(params: {
+        message: SignableMessage;
+        chain: EVMSmartWalletChain;
+    }) {
+        if (typeof params.message !== "string") {
             throw new InvalidMessageFormatError("Message must be a string");
         }
         const signatureCreationResponse = await this.apiClient.createSignature(this.walletLocator, {
             type: "evm-message",
             params: {
-                message,
+                message: params.message,
                 signer: this.signerLocator,
-                chain: this.chain,
+                chain: params.chain,
             },
         });
         if ("error" in signatureCreationResponse) {
@@ -319,9 +377,9 @@ export class EVMSmartWalletImpl implements ViemWallet {
     private async createTypedDataSignature<
         const typedData extends TypedData | Record<string, unknown>,
         primaryType extends keyof typedData | "EIP712Domain" = keyof typedData,
-    >(parameters: TypedDataDefinition<typedData, primaryType>) {
-        const { domain, message, primaryType, types } = parameters;
-        if (!domain || !message || !types) {
+    >(params: TypedDataDefinition<typedData, primaryType> & { chain: EVMSmartWalletChain }) {
+        const { domain, message, primaryType, types, chain } = params;
+        if (!domain || !message || !types || !chain) {
             throw new InvalidTypedDataError("Invalid typed data");
         }
 
@@ -346,7 +404,7 @@ export class EVMSmartWalletImpl implements ViemWallet {
                     types: types as Record<string, Array<{ name: string; type: string }>>,
                 },
                 signer: this.signerLocator,
-                chain: this.chain,
+                chain,
                 isSmartWalletSignature: false,
             },
         });

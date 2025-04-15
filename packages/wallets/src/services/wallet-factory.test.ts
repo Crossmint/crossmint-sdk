@@ -31,7 +31,6 @@ describe("WalletSDK", () => {
             },
         });
         const wallet = (await factory.getOrCreateWallet("evm-smart-wallet", {
-            chain: "base",
             adminSigner,
         })) satisfies EVMSmartWallet;
 
@@ -41,14 +40,12 @@ describe("WalletSDK", () => {
         expect(typeof wallet.getBalances).toBe("function");
         expect(typeof wallet.getTransactions).toBe("function");
         expect(typeof wallet.unstable_getNfts).toBe("function");
-        expect(typeof wallet.getNonce).toBe("function");
         expect(typeof wallet.signMessage).toBe("function");
-        expect(typeof wallet.signTypedData).toBe("function");
         expect(typeof wallet.address).toBe("string");
-        expect(typeof wallet.chain).toBe("string");
-        expect(typeof wallet.publicClient).toBe("object");
+        expect(typeof wallet.getViemClient).toBe("function");
+        expect(typeof wallet.getNonce).toBe("function");
+        expect(typeof wallet.signTypedData).toBe("function");
         expect(wallet.address).toBe("mock-address");
-        expect(wallet.chain).toBe("base");
     });
 
     it("should create a SSW with a keypair admin signer", async () => {

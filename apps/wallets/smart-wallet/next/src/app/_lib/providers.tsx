@@ -30,11 +30,7 @@ function CrossmintProviders({ children }: { children: ReactNode }) {
     return (
         <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_AUTH_SMART_WALLET_API_KEY ?? ""}>
             <CrossmintAuthProvider
-                embeddedWallets={{
-                    createOnLogin: "all-users",
-                    type: walletType,
-                    defaultChain: walletType === "evm-smart-wallet" ? "polygon-amoy" : undefined,
-                }}
+                embeddedWallets={{ createOnLogin: "all-users", type: walletType }}
                 appearance={{
                     borderRadius: "24px",
                     colors: {

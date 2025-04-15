@@ -1,6 +1,5 @@
 import type { EVMSignerInput } from "@/evm/types/signers";
 import type { EVMSmartWallet } from "@/evm/types/wallet";
-import type { EVMSmartWalletChain } from "@/evm/chains";
 import type { SolanaSignerInput } from "@/solana/types/signers";
 import type { SolanaSmartWallet, SolanaMPCWallet } from "@/solana/types/wallet";
 
@@ -16,7 +15,6 @@ export type WalletTypeToWallet = {
 
 export type WalletTypeToArgs = {
     "evm-smart-wallet": {
-        chain: EVMSmartWalletChain;
         adminSigner: EVMSignerInput;
         linkedUser?: string;
     };

@@ -173,7 +173,6 @@ describe("CrossmintAuthProvider", () => {
             name: "Crossmint Wallet",
         });
         embeddedWallets = {
-            defaultChain: "polygon",
             createOnLogin: "all-users",
             type: "evm-smart-wallet",
             showPasskeyHelpers: false,
@@ -252,7 +251,6 @@ describe("CrossmintAuthProvider", () => {
         const { getByTestId } = await renderAuthProvider({
             children: <TestComponent />,
             embeddedWallets: {
-                defaultChain: "polygon",
                 createOnLogin: "off",
                 type: "evm-smart-wallet",
             },
@@ -315,7 +313,6 @@ describe("CrossmintAuthProvider", () => {
         renderAuthProvider({
             children: <TestComponent />,
             embeddedWallets: {
-                defaultChain: "polygon",
                 createOnLogin: "all-users",
                 type: undefined,
             },

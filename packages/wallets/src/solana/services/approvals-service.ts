@@ -3,7 +3,6 @@ import { PublicKey, VersionedTransaction } from "@solana/web3.js";
 import type { ApiClient, CreateTransactionSuccessResponse, SolanaWalletLocator } from "@/api";
 import type { SolanaNonCustodialSigner } from "../types/signers";
 import { PendingApprovalsError, InvalidSignerError, TransactionFailedError } from "../../utils/errors";
-import type { WalletsV1Alpha2TransactionResponseDto } from "@/api/gen";
 
 type PendingApproval = NonNullable<NonNullable<CreateTransactionSuccessResponse["approvals"]>["pending"]>[number];
 
@@ -14,7 +13,7 @@ export class SolanaApprovalsService {
     ) {}
 
     public async approve(
-        transaction: WalletsV1Alpha2TransactionResponseDto,
+        transaction: CreateTransactionSuccessResponse,
         pendingApprovals: Array<PendingApproval>,
         signers: Array<SolanaNonCustodialSigner>
     ) {
