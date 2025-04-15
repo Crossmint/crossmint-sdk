@@ -1,12 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { SolanaTransactionsService } from "./transactions-service";
-import type { ApiClient } from "../../api";
+import type { ApiClient, CreateTransactionSuccessResponse } from "../../api";
 import { mock } from "vitest-mock-extended";
 import type { SolanaApprovalsService } from "./approvals-service";
 import type { VersionedTransaction } from "@solana/web3.js";
 import type { SolanaNonCustodialSigner } from "../types/signers";
 import bs58 from "bs58";
-import type { WalletsV1Alpha2TransactionResponseDto } from "@/api/gen";
 
 vi.mock("../../../utils", () => ({
     sleep: vi.fn(),
@@ -43,7 +42,7 @@ describe("SolanaTransactionsService", () => {
             },
         });
 
-        const mockTransaction: WalletsV1Alpha2TransactionResponseDto = {
+        const mockTransaction: CreateTransactionSuccessResponse = {
             id: "mock-tx-id",
             walletType: "solana-smart-wallet",
             onChain: {
@@ -52,6 +51,11 @@ describe("SolanaTransactionsService", () => {
             status: "awaiting-approval",
             approvals: {
                 pending: pendingApprovals,
+                submitted: [],
+            },
+            createdAt: 1234567890,
+            params: {
+                transaction: serializedTransactionString,
             },
         };
 

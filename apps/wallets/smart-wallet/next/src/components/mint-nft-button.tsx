@@ -43,6 +43,7 @@ export const MintNFTButton = ({ setNftSuccessfullyMinted }: { setNftSuccessfully
                 case "evm-smart-wallet":
                     const evmTxnHash = await wallet.sendTransaction({
                         to: AMOY_CONTRACT,
+                        chain: "polygon-amoy",
                         data: encodeFunctionData({
                             abi: CollectionABI,
                             functionName: "mintTo",

@@ -52,21 +52,15 @@ export abstract class SolanaWallet implements BaseSolanaWallet {
         );
     }
 
-    /**
-     * The wallet address
-     */
     public get address(): string {
         return this.publicKey.toBase58();
     }
 
-    /**
-     * Get the wallet balances
-     * @param tokens - The tokens
-     * @returns The balances
-     */
-    public async getBalances(tokens: SolanaSupportedToken[]): Promise<WalletBalance> {
+    public async getBalances(params: {
+        tokens: SolanaSupportedToken[];
+    }): Promise<WalletBalance> {
         const response = await this.apiClient.getBalance(this.address, {
-            tokens,
+            tokens: params.tokens,
         });
         if ("error" in response) {
             throw new Error(`Failed to get balances: ${JSON.stringify(response.error)}`);
@@ -74,28 +68,21 @@ export abstract class SolanaWallet implements BaseSolanaWallet {
         return response;
     }
 
-    /**
-     * Get the wallet transactions
-     * @returns The transactions
-     */
     public async getTransactions(): Promise<GetTransactionsResponse> {
         return await this.transactionsService.getTransactions();
     }
 
-    /**
-     * Get the wallet NFTs
-     * @param perPage - The number of NFTs per page
-     * @param page - The page number
-     * @param locator - The wallet locator
-     * @returns The NFTs
-     * @unstable This API is unstable and may change in the future
-     */
-    public async unstable_getNfts(
-        perPage: number,
-        page: number,
-        locator?: SolanaWalletLocator
-    ): Promise<GetNftsResponse> {
-        return await this.apiClient.unstable_getNfts("solana", locator ?? this.walletLocator, perPage, page);
+    public async unstable_getNfts(params: {
+        perPage: number;
+        page: number;
+        locator?: SolanaWalletLocator;
+    }): Promise<GetNftsResponse> {
+        return await this.apiClient.unstable_getNfts({
+            walletLocator: params.locator ?? this.walletLocator,
+            perPage: params.perPage,
+            page: params.page,
+            chain: "solana",
+        });
     }
 
     protected get walletLocator(): SolanaWalletLocator {
@@ -122,14 +109,14 @@ export class SolanaSmartWalletImpl extends SolanaWallet implements SolanaSmartWa
 
     /**
      * Sign and submit a transaction
-     * @param parameters - The transaction parameters
+     * @param {SmartWalletTransactionParams} params - The transaction params
      * @returns The transaction hash
      */
-    public async sendTransaction(parameters: SmartWalletTransactionParams): Promise<string> {
-        const signer = this.getEffectiveTransactionSigner(parameters.delegatedSigner);
-        const additionalSigners = parameters.additionalSigners?.map(parseSolanaNonCustodialSignerInput);
+    public async sendTransaction(params: SmartWalletTransactionParams): Promise<string> {
+        const signer = this.getEffectiveTransactionSigner(params.delegatedSigner);
+        const additionalSigners = params.additionalSigners?.map(parseSolanaNonCustodialSignerInput);
         return await this.transactionsService.createSignAndConfirm({
-            transaction: parameters.transaction,
+            transaction: params.transaction,
             signer,
             additionalSigners,
         });
@@ -173,13 +160,13 @@ export class SolanaSmartWalletImpl extends SolanaWallet implements SolanaSmartWa
 export class SolanaMPCWalletImpl extends SolanaWallet implements SolanaMPCWallet {
     /**
      * Sign and submit a transaction
-     * @param parameters - The transaction parameters
+     * @param {MPCTransactionParams} params - The transaction params
      * @returns The transaction hash
      */
-    public async sendTransaction(parameters: MPCTransactionParams): Promise<string> {
+    public async sendTransaction(params: MPCTransactionParams): Promise<string> {
         return await this.transactionsService.createSignAndConfirm({
-            transaction: parameters.transaction,
-            additionalSigners: parameters.additionalSigners?.map(parseSolanaNonCustodialSignerInput),
+            transaction: params.transaction,
+            additionalSigners: params.additionalSigners?.map(parseSolanaNonCustodialSignerInput),
         });
     }
 }

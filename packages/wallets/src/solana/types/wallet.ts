@@ -23,10 +23,13 @@ export interface BaseSolanaWallet {
 
     /**
      * Get the wallet balances
-     * @param tokens - The tokens
-     * @returns The balances
+     * @param {Object} params - The parameters
+     * @param {SolanaSupportedToken[]} params.tokens - The tokens
+     * @returns {Promise<WalletBalance>} The balances
      */
-    getBalances(tokens: SolanaSupportedToken[]): Promise<WalletBalance>;
+    getBalances(params: {
+        tokens: SolanaSupportedToken[];
+    }): Promise<WalletBalance>;
 
     /**
      * Get the wallet transactions
@@ -36,12 +39,17 @@ export interface BaseSolanaWallet {
 
     /**
      * Get the wallet NFTs
-     * @param perPage - The number of NFTs per page
-     * @param page - The page number
-     * @param locator - The wallet locator
-     * @returns The NFTs
+     * @param {Object} params - The parameters
+     * @param {number} params.perPage - The number of NFTs per page
+     * @param {number} params.page - The page number
+     * @param {SolanaWalletLocator} [params.locator] - The wallet locator
+     * @returns {Promise<GetNftsResponse>} The NFTs
      */
-    unstable_getNfts(perPage: number, page: number, locator?: SolanaWalletLocator): Promise<GetNftsResponse>;
+    unstable_getNfts(params: {
+        perPage: number;
+        page: number;
+        locator?: SolanaWalletLocator;
+    }): Promise<GetNftsResponse>;
 }
 
 export interface SolanaSmartWallet extends BaseSolanaWallet {

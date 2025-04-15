@@ -141,10 +141,9 @@ export class WalletFactory {
     ) {
         switch (type) {
             case "evm-smart-wallet": {
-                const { chain, adminSigner: adminSignerInput } = args as WalletTypeToArgs["evm-smart-wallet"];
+                const { adminSigner: adminSignerInput } = args as WalletTypeToArgs["evm-smart-wallet"];
                 const evmResponse = walletResponse as Extract<CreateWalletResponse, { type: "evm-smart-wallet" }>;
                 const wallet = new EVMSmartWalletImpl(
-                    chain,
                     evmResponse.address as Address,
                     this.apiClient,
                     getEvmAdminSigner(adminSignerInput, evmResponse),
@@ -154,13 +153,9 @@ export class WalletFactory {
                     getBalances: wallet.getBalances.bind(wallet),
                     getTransactions: wallet.getTransactions.bind(wallet),
                     unstable_getNfts: wallet.unstable_getNfts.bind(wallet),
-                    getNonce: wallet.getNonce.bind(wallet),
                     signMessage: wallet.signMessage.bind(wallet),
-                    signTypedData: wallet.signTypedData.bind(wallet),
                     sendTransaction: wallet.sendTransaction.bind(wallet),
                     address: wallet.address,
-                    chain: wallet.chain,
-                    publicClient: wallet.publicClient,
                 } satisfies EVMSmartWallet;
             }
         }

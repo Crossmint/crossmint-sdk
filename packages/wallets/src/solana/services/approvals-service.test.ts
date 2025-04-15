@@ -1,11 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { SolanaApprovalsService } from "./approvals-service";
-import type { ApiClient } from "../../api";
+import type { ApiClient, CreateTransactionSuccessResponse } from "../../api";
 import { mock } from "vitest-mock-extended";
 import type { SolanaNonCustodialSigner } from "../types/signers";
 import base58 from "bs58";
 import { VersionedMessage, VersionedTransaction } from "@solana/web3.js";
-import type { WalletsV1Alpha2TransactionResponseDto } from "@/api/gen";
 
 vi.mock("@solana/web3.js", () => {
     return {
@@ -77,13 +76,17 @@ describe("SolanaApprovalsService", () => {
                 },
             ];
 
-            const mockTransaction: WalletsV1Alpha2TransactionResponseDto = {
+            const mockTransaction: CreateTransactionSuccessResponse = {
                 id: "mock-tx-id",
                 walletType: "solana-smart-wallet",
                 onChain: {
                     transaction: transactionBase58,
                 },
                 status: "awaiting-approval",
+                createdAt: 1234567890,
+                params: {
+                    transaction: transactionBase58,
+                },
             };
 
             apiClient.approveTransaction.mockResolvedValueOnce({
@@ -138,13 +141,17 @@ describe("SolanaApprovalsService", () => {
                 },
             ];
 
-            const mockTransaction: WalletsV1Alpha2TransactionResponseDto = {
+            const mockTransaction: CreateTransactionSuccessResponse = {
                 id: "mock-tx-id",
                 walletType: "solana-smart-wallet",
                 onChain: {
                     transaction: transactionBase58,
                 },
                 status: "awaiting-approval",
+                createdAt: 1234567890,
+                params: {
+                    transaction: transactionBase58,
+                },
             };
 
             apiClient.approveTransaction.mockResolvedValueOnce({
@@ -186,13 +193,17 @@ describe("SolanaApprovalsService", () => {
                 },
             ];
 
-            const mockTransaction: WalletsV1Alpha2TransactionResponseDto = {
+            const mockTransaction: CreateTransactionSuccessResponse = {
                 id: "mock-tx-id",
                 walletType: "solana-smart-wallet",
                 onChain: {
                     transaction: "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN",
                 },
                 status: "awaiting-approval",
+                createdAt: 1234567890,
+                params: {
+                    transaction: "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN",
+                },
             };
 
             await expect(approvalsService.approve(mockTransaction, pendingApprovals, [signer])).rejects.toThrow(
@@ -212,13 +223,18 @@ describe("SolanaApprovalsService", () => {
                 },
             ];
 
-            const mockTransaction: WalletsV1Alpha2TransactionResponseDto = {
+            const mockTransaction: CreateTransactionSuccessResponse = {
                 id: "mock-tx-id",
+                // @ts-expect-error - This is a test error
                 walletType: "unsupported-wallet",
                 onChain: {
                     transaction: "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN",
                 },
                 status: "awaiting-approval",
+                createdAt: 1234567890,
+                params: {
+                    transaction: "jbvfjrXhwBBfLh5GiWf7owJQUkvokFFp1wxsnPhEciZqE87GMdN",
+                },
             };
 
             await expect(approvalsService.approve(mockTransaction, pendingApprovals, [signer])).rejects.toThrow(

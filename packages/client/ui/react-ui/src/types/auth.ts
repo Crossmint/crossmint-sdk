@@ -1,5 +1,4 @@
 import type { CrossmintAuthEmbeddedWallets } from "@crossmint/client-sdk-react-base";
-import type { EVMSmartWalletChain } from "@crossmint/wallets-sdk";
 
 export type OtpEmailPayload = {
     email: string;
@@ -12,5 +11,4 @@ export type AuthStatus = "logged-in" | "logged-out" | "in-progress" | "initializ
 export type CrossmintAuthProviderEmbeddedWallets = Omit<CrossmintAuthEmbeddedWallets, "type"> & {
     // Type is optional as we can now infer it from the connected Dynamic wallet
     type?: CrossmintAuthEmbeddedWallets["type"];
-    defaultChain?: EVMSmartWalletChain;
 };

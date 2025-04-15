@@ -123,7 +123,6 @@ export function CrossmintWalletProvider({
             switch (props.type) {
                 case "evm-smart-wallet": {
                     const walletArgs = {
-                        chain: props.args.chain,
                         adminSigner: props.args.adminSigner ?? { type: "evm-passkey" },
                         linkedUser: props.args.linkedUser,
                     };

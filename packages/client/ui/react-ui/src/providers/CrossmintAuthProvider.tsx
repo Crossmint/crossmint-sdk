@@ -59,7 +59,6 @@ const defaultContextValue: AuthContextType = {
 export const AuthContext = createContext<AuthContextType>(defaultContextValue);
 
 const defaultEmbeddedWallets: CrossmintAuthProviderEmbeddedWallets = {
-    defaultChain: "base-sepolia",
     createOnLogin: "off",
     type: "evm-smart-wallet",
 };
@@ -282,12 +281,9 @@ function WalletManager({
             return;
         }
 
-        // @ts-ignore - TypeScript can't properly infer chain.network from Dynamic's type when using nullish coalescing
-        const chain = embeddedWallets.defaultChain ?? adminSigner?.chain?.network ?? undefined;
         getOrCreateWallet({
             type: walletType,
             args: {
-                chain,
                 adminSigner,
                 linkedUser,
             },
