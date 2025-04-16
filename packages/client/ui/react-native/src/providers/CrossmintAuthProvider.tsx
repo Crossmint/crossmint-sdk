@@ -215,10 +215,15 @@ export function CrossmintAuthProvider({
                 : urlOrOneTimeSecret;
 
             if (oneTimeSecret != null) {
-                setInProgress(true);
-                const authMaterial = await crossmintAuth.handleRefreshAuthMaterial(oneTimeSecret);
-                setInProgress(false);
-                return authMaterial;
+                try {
+                    setInProgress(true);
+                    const authMaterial = await crossmintAuth.handleRefreshAuthMaterial(oneTimeSecret);
+                    return authMaterial;
+                } catch (error) {
+                    throw error;
+                } finally {
+                    setInProgress(false);
+                }
             }
             return;
         },
