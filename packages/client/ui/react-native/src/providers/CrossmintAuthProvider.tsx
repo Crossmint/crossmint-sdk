@@ -1,7 +1,12 @@
 import { type ReactNode, createContext, useEffect, useMemo, useRef, useState, useCallback } from "react";
 import * as WebBrowser from "expo-web-browser";
 import { CrossmintAuth, type StorageProvider } from "@crossmint/client-sdk-auth";
-import type { AuthMaterialWithUser, SDKExternalUser, OAuthProvider } from "@crossmint/common-sdk-auth";
+import {
+    type AuthMaterialWithUser,
+    type SDKExternalUser,
+    type OAuthProvider,
+    SESSION_PREFIX,
+} from "@crossmint/common-sdk-auth";
 
 import { useCrossmint } from "../hooks";
 import { SecureStorage } from "../utils/SecureStorage";
@@ -64,6 +69,8 @@ export function CrossmintAuthProvider({
     const [oauthUrlMap, setOauthUrlMap] = useState<OAuthUrlMap>(initialOAuthUrlMap);
     const crossmintAuthRef = useRef<CrossmintAuth | null>(null);
     const storageProvider = useMemo(() => customStorageProvider ?? new SecureStorage(), [customStorageProvider]);
+    const [initialized, setInitialized] = useState(false);
+    const [inProgress, setInProgress] = useState(false);
 
     const singleAppSchema = Array.isArray(appSchema) ? appSchema[0] : appSchema;
     const isRunningInExpoGo =
@@ -96,21 +103,25 @@ export function CrossmintAuthProvider({
         return crossmintAuthRef.current;
     }, [storageProvider]);
 
-    const [initialized, setInitialized] = useState(false);
-
     const triggerHasJustLoggedIn = useCallback(() => {
         onLoginSuccess?.();
     }, [onLoginSuccess]);
 
     useEffect(() => {
         if (crossmint.jwt == null) {
-            storageProvider?.get("jwt").then((jwt) => {
-                if (jwt != null) {
-                    setJwt(jwt);
-                }
-            });
+            storageProvider
+                ?.get(SESSION_PREFIX)
+                .then((jwt) => {
+                    if (jwt != null) {
+                        setJwt(jwt);
+                    }
+                })
+                .finally(() => {
+                    setInitialized(true);
+                });
+        } else {
+            setInitialized(true);
         }
-        setInitialized(true);
     }, [crossmint.jwt, setJwt, storageProvider]);
 
     useEffect(() => {
@@ -151,6 +162,9 @@ export function CrossmintAuthProvider({
         if (!initialized) {
             return "initializing";
         }
+        if (inProgress) {
+            return "in-progress";
+        }
         if (crossmint.jwt != null) {
             return "logged-in";
         }
@@ -169,6 +183,7 @@ export function CrossmintAuthProvider({
 
     const loginWithOAuth = async (provider: OAuthProvider) => {
         try {
+            setInProgress(true);
             const oauthUrl =
                 oauthUrlMap[provider] ?? (await crossmintAuth.getOAuthUrl(provider, { appSchema: resolvedAppSchema }));
 
@@ -200,7 +215,10 @@ export function CrossmintAuthProvider({
                 : urlOrOneTimeSecret;
 
             if (oneTimeSecret != null) {
-                return await crossmintAuth.handleRefreshAuthMaterial(oneTimeSecret);
+                setInProgress(true);
+                const authMaterial = await crossmintAuth.handleRefreshAuthMaterial(oneTimeSecret);
+                setInProgress(false);
+                return authMaterial;
             }
             return;
         },

@@ -20,7 +20,6 @@ export function useWalletState({
 
     const getOrCreateWallet = async (props: GetOrCreateWalletProps) => {
         if (state.status == "in-progress") {
-            console.log("Wallet already loading");
             return {
                 startedCreation: false,
                 reason: "Wallet is already loading.",
