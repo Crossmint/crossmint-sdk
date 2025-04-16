@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.3.6
+
+### Patch Changes
+
+- 97b86e5: Correctly handles current status
+
 ## 0.3.5
 
 ### Patch Changes
