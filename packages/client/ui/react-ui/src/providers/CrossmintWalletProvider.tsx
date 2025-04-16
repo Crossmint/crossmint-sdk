@@ -94,10 +94,7 @@ export function CrossmintWalletProvider({
     const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
 
     const getOrCreateWallet = async (props: GetOrCreateWalletProps) => {
-        console.log("getOrCreateWallet", props);
-
         if (walletState.status == "in-progress") {
-            console.log("Wallet already loading");
             return {
                 startedCreation: false,
                 reason: "Wallet is already loading.",
