@@ -1,5 +1,17 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.18.0
+
+### Minor Changes
+
+- 8cb19bf: - Removed "chain" property from CrossmintWalletProvider.
+
+### Patch Changes
+
+- Updated dependencies [8cb19bf]
+  - @crossmint/wallets-sdk@0.6.0
+  - @crossmint/client-sdk-react-base@0.2.4
+
 ## 1.17.5
 
 ### Patch Changes
