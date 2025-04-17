@@ -10,6 +10,7 @@ import {
     ParentIncomingEvents,
     ParentOutgoingEvents,
 } from "@crossmint/client-signers";
+import { VersionedTransaction } from "@solana/web3.js";
 
 // For the iframe implementation, we need to flip the events:
 // - What the parent sends out (ParentOutgoingEvents), we receive (ChildIncomingEvents)
@@ -50,30 +51,12 @@ class SolanaLocalSigner {
     }
 
     async signTransaction(
-        transaction: web3.Transaction | web3.VersionedTransaction
-    ): Promise<web3.Transaction | web3.VersionedTransaction> {
-        if (transaction instanceof web3.Transaction) {
-            transaction.sign(this.keypair);
+        transaction: web3.VersionedTransaction
+    ): Promise<web3.VersionedTransaction> {
+        try {
+            transaction.sign([this.keypair]);
             return transaction;
-        } else if (
-            "version" in transaction &&
-            "signatures" in transaction &&
-            "message" in transaction
-        ) {
-            const signData = transaction.message.serialize();
-            const signature = nacl.sign.detached(
-                Uint8Array.from(signData),
-                this.keypair.secretKey
-            );
-
-            const transactionAsAny = transaction as any;
-            transactionAsAny.signatures[0] = {
-                signature: Buffer.from(signature),
-                publicKey: this.keypair.publicKey,
-            };
-
-            return transaction;
-        } else {
+        } catch (error: unknown) {
             throw new Error("Unsupported transaction type");
         }
     }
@@ -267,33 +250,14 @@ export default function IFramePage() {
             addLog("📤 Received request:sign-transaction");
             try {
                 // Decode the transaction from base58
-                const serializedTransaction = bs58.decode(data.transaction);
-                console.log(
-                    `${LOG_PREFIX} Decoded transaction length:`,
-                    serializedTransaction.length
+                const serializedTransaction = VersionedTransaction.deserialize(
+                    bs58.decode(data.transaction)
                 );
 
-                // Determine if legacy or versioned transaction
-                const isVersioned = serializedTransaction[0] === 0x80;
                 console.log(
-                    `${LOG_PREFIX} Transaction type:`,
-                    isVersioned ? "Versioned" : "Legacy"
+                    `${LOG_PREFIX} Deserializing versioned transaction`
                 );
-
-                let transaction;
-                if (isVersioned) {
-                    console.log(
-                        `${LOG_PREFIX} Deserializing versioned transaction`
-                    );
-                    transaction = web3.VersionedTransaction.deserialize(
-                        serializedTransaction
-                    );
-                } else {
-                    console.log(
-                        `${LOG_PREFIX} Deserializing legacy transaction`
-                    );
-                    transaction = web3.Transaction.from(serializedTransaction);
-                }
+                const transaction = serializedTransaction;
 
                 // Sign the transaction
                 console.log(`${LOG_PREFIX} Signing transaction...`);
@@ -303,22 +267,11 @@ export default function IFramePage() {
                 console.log(`${LOG_PREFIX} Transaction signed successfully`);
 
                 // Serialize and return
-                let serializedSignedTransaction;
-                if (isVersioned) {
-                    console.log(
-                        `${LOG_PREFIX} Serializing signed versioned transaction`
-                    );
-                    serializedSignedTransaction = (
-                        signedTransaction as web3.VersionedTransaction
-                    ).serialize();
-                } else {
-                    console.log(
-                        `${LOG_PREFIX} Serializing signed legacy transaction`
-                    );
-                    serializedSignedTransaction = (
-                        signedTransaction as web3.Transaction
-                    ).serialize();
-                }
+                console.log(
+                    `${LOG_PREFIX} Serializing signed versioned transaction`
+                );
+                const serializedSignedTransaction =
+                    signedTransaction.serialize();
 
                 const response = {
                     transaction: bs58.encode(
@@ -326,7 +279,9 @@ export default function IFramePage() {
                     ),
                 };
                 messenger.send("response:sign-transaction", response);
-                addLog("📬 Transaction signed successfully");
+                addLog(
+                    `📬 Transaction signed successfully: ${response.transaction}`
+                );
             } catch (error) {
                 handleError(messenger, error, "Error signing transaction");
             }

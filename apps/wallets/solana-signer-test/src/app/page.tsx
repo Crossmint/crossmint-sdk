@@ -12,6 +12,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { createCrossmintSmartWallet } from "@/lib/create-crossmint-wallet";
+import { TransactionMessage, VersionedTransaction } from "@solana/web3.js";
+import { createMemoInstruction } from "@solana/spl-memo";
 
 // Simple Loader component
 const Loader = () => (
@@ -35,7 +38,7 @@ const Loader = () => (
 // Import from the SDK
 import {
     createSolanaIFrameSigner,
-    SolanaIFrameSigner,
+    type SolanaIFrameSigner,
 } from "@crossmint/client-signers";
 
 // Define the iframe ID constant for consistent referencing
@@ -57,7 +60,19 @@ export default function Home() {
     const [isLoading, setIsLoading] = useState<{ [key: string]: boolean }>({
         init: false,
         publicKey: false,
-        signMessage: false,
+        createWallet: false,
+        sendTransaction: false,
+    });
+
+    // Add state for the smart wallet
+    const [smartWallet, setSmartWallet] = useState<{
+        address: string;
+        status: "creating" | "created" | null;
+        wallet: any | null;
+    }>({
+        address: "",
+        status: null,
+        wallet: null,
     });
 
     // Log function
@@ -158,40 +173,79 @@ export default function Home() {
         }
     };
 
-    // Sign a message
-    const signMessage = async () => {
-        if (!signer) {
-            addLog("No signer available. Please initialize the signer first.");
+    // Send a transaction using the smart wallet
+    const sendTransaction = async (transaction?: VersionedTransaction) => {
+        if (!smartWallet.wallet) {
+            addLog("Smart wallet not available. Please create a wallet first.");
+            return;
+        }
+
+        if (!transaction) {
+            addLog(
+                "No transaction provided. Waiting for transaction building implementation."
+            );
             return;
         }
 
         try {
-            setIsLoading((prev) => ({ ...prev, signMessage: true }));
-            addLog("Signing message...");
+            setIsLoading((prev) => ({ ...prev, sendTransaction: true }));
+            addLog("Sending transaction through smart wallet...");
 
-            // Create a simple message to sign
-            const message = new TextEncoder().encode("Hello, Solana!");
+            // Call the wallet.sendTransaction() method with the provided transaction
+            const signature = await smartWallet.wallet.sendTransaction({
+                transaction,
+            });
 
-            // Sign the message
-            const signature = await signer.signMessage(message);
-
-            // Convert signature to hex for display
-            const signatureHex = Array.from(signature)
-                .map((b) => b.toString(16).padStart(2, "0"))
-                .join("");
-
-            addLog(
-                `Message signed successfully: ${signatureHex.substring(
-                    0,
-                    20
-                )}...`
-            );
+            addLog(`Transaction sent successfully! Signature: ${signature}`);
         } catch (error) {
-            console.error("Failed to sign message", error);
+            console.error("Failed to send transaction", error);
             setErrorMessage((error as Error).message);
-            addLog(`Error: ${(error as Error).message}`);
+            addLog(`Error sending transaction: ${(error as Error).message}`);
         } finally {
-            setIsLoading((prev) => ({ ...prev, signMessage: false }));
+            setIsLoading((prev) => ({ ...prev, sendTransaction: false }));
+        }
+    };
+
+    // Create a Crossmint smart wallet
+    const createWallet = async () => {
+        if (!signer || !publicKey) {
+            addLog("Signer or public key not available. Please connect first.");
+            return;
+        }
+
+        try {
+            setIsLoading((prev) => ({ ...prev, createWallet: true }));
+            setSmartWallet((prev) => ({ ...prev, status: "creating" }));
+            addLog("Creating Crossmint smart wallet...");
+
+            // Create the iframeSigner format required by createCrossmintSmartWallet
+            const iframeSigner = {
+                type: "solana-keypair" as const,
+                address: publicKey,
+                signer: {
+                    signMessage: signer.signMessage.bind(signer),
+                    signTransaction: signer.signTransaction.bind(signer),
+                },
+            };
+
+            // Create the smart wallet
+            const wallet = await createCrossmintSmartWallet(iframeSigner);
+
+            // Update wallet state
+            setSmartWallet({
+                address: wallet.address,
+                status: "created",
+                wallet: wallet,
+            });
+
+            addLog(`Smart wallet created with address: ${wallet.address}`);
+        } catch (error) {
+            console.error("Failed to create smart wallet", error);
+            setErrorMessage((error as Error).message);
+            addLog(`Error creating smart wallet: ${(error as Error).message}`);
+            setSmartWallet((prev) => ({ ...prev, status: null }));
+        } finally {
+            setIsLoading((prev) => ({ ...prev, createWallet: false }));
         }
     };
 
@@ -202,6 +256,7 @@ export default function Home() {
             setSigner(null);
             setPublicKey(null);
             setSignerStatus("not-initialized");
+            setSmartWallet({ address: "", status: null, wallet: null });
             addLog("Signer disposed");
         }
     };
@@ -273,6 +328,22 @@ export default function Home() {
                                 )}
                             </div>
 
+                            {/* Smart Wallet */}
+                            <div>
+                                <p className="text-sm font-medium mb-1">
+                                    Smart Wallet
+                                </p>
+                                {smartWallet.address ? (
+                                    <code className="text-xs bg-slate-100 dark:bg-slate-800 rounded p-1 block overflow-hidden">
+                                        {smartWallet.address}
+                                    </code>
+                                ) : (
+                                    <p className="text-xs text-slate-500">
+                                        No smart wallet created
+                                    </p>
+                                )}
+                            </div>
+
                             {/* Error Message */}
                             {errorMessage && (
                                 <Alert variant="destructive">
@@ -301,25 +372,60 @@ export default function Home() {
                                         Getting...
                                     </>
                                 ) : (
-                                    "Get Public Key"
+                                    "Get Signer Public Key"
                                 )}
                             </Button>
                         </div>
                         <Button
-                            onClick={signMessage}
+                            onClick={createWallet}
                             disabled={
-                                isLoading.signMessage ||
-                                signerStatus !== "connected"
+                                isLoading.createWallet ||
+                                signerStatus !== "connected" ||
+                                smartWallet.status === "created"
                             }
-                            className="w-full"
+                            className="w-full bg-indigo-600 hover:bg-indigo-700"
                         >
-                            {isLoading.signMessage ? (
+                            {isLoading.createWallet ? (
                                 <>
                                     <Loader />
-                                    Signing...
+                                    Creating Wallet...
+                                </>
+                            ) : smartWallet.status === "created" ? (
+                                "Wallet Created"
+                            ) : (
+                                "Create Smart Wallet"
+                            )}
+                        </Button>
+                        <Button
+                            onClick={() =>
+                                sendTransaction(
+                                    new VersionedTransaction(
+                                        new TransactionMessage({
+                                            payerKey:
+                                                smartWallet.wallet.publicKey,
+                                            recentBlockhash:
+                                                "11111111111111111111111111111111",
+                                            instructions: [
+                                                createMemoInstruction(
+                                                    "Hello, Solana!"
+                                                ),
+                                            ],
+                                        }).compileToV0Message()
+                                    )
+                                )
+                            }
+                            disabled={
+                                isLoading.sendTransaction || !smartWallet.wallet
+                            }
+                            className="w-full bg-green-600 hover:bg-green-700"
+                        >
+                            {isLoading.sendTransaction ? (
+                                <>
+                                    <Loader />
+                                    Sending Transaction...
                                 </>
                             ) : (
-                                "Sign Message"
+                                "Send Transaction"
                             )}
                         </Button>
                         <Button

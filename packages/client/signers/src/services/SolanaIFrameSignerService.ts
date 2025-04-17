@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { IFrameWindow } from "@crossmint/client-sdk-window";
-import type { VersionedTransaction } from "@solana/web3.js";
+import { VersionedTransaction } from "@solana/web3.js";
 import bs58 from "bs58";
 import {
     BaseAttestationValidator,
@@ -233,9 +233,9 @@ export class SolanaIFrameSignerService extends BaseAttestationValidator {
                 responseEvent: "response:sign-transaction",
             });
 
-            return {
-                serialize: () => bs58.decode(response.transaction),
-            } as VersionedTransaction;
+            return VersionedTransaction.deserialize(
+                bs58.decode(response.transaction)
+            );
         } catch (error) {
             console.error("Failed to sign transaction", error);
             throw error;
