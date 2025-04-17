@@ -20,9 +20,7 @@ export interface AsymmetricEncryptionService {
  * Implementation of the asymmetric encryption service
  * Currently provides a placeholder implementation
  */
-export class AsymmetricEncryptionServiceImpl
-    implements AsymmetricEncryptionService
-{
+export class AsymmetricEncryptionServiceImpl implements AsymmetricEncryptionService {
     /**
      * Encrypts data using a public key
      * Currently a placeholder implementation

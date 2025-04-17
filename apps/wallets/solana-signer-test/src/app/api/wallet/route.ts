@@ -1,10 +1,5 @@
 import { NextResponse } from "next/server";
-import {
-    Connection,
-    Keypair,
-    LAMPORTS_PER_SOL,
-    PublicKey,
-} from "@solana/web3.js";
+import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 
 export async function POST(request: Request) {
     try {
@@ -17,17 +12,11 @@ export async function POST(request: Request) {
         const secretKey = Buffer.from(wallet.secretKey).toString("hex");
 
         // Connect to Solana devnet
-        const connection = new Connection(
-            "https://api.devnet.solana.com",
-            "confirmed"
-        );
+        const connection = new Connection("https://api.devnet.solana.com", "confirmed");
 
         // Request an airdrop of SOL for testing (on devnet)
         try {
-            const signature = await connection.requestAirdrop(
-                wallet.publicKey,
-                LAMPORTS_PER_SOL
-            );
+            const signature = await connection.requestAirdrop(wallet.publicKey, LAMPORTS_PER_SOL);
 
             // Wait for confirmation
             await connection.confirmTransaction(signature);
@@ -59,10 +48,7 @@ export async function POST(request: Request) {
         }
     } catch (error) {
         console.error("Error creating wallet:", error);
-        return NextResponse.json(
-            { success: false, error: "Failed to create wallet" },
-            { status: 500 }
-        );
+        return NextResponse.json({ success: false, error: "Failed to create wallet" }, { status: 500 });
     }
 }
 
@@ -72,18 +58,12 @@ export async function GET(request: Request) {
     const publicKey = searchParams.get("publicKey");
 
     if (!publicKey) {
-        return NextResponse.json(
-            { success: false, error: "Public key is required" },
-            { status: 400 }
-        );
+        return NextResponse.json({ success: false, error: "Public key is required" }, { status: 400 });
     }
 
     try {
         // Connect to Solana devnet
-        const connection = new Connection(
-            "https://api.devnet.solana.com",
-            "confirmed"
-        );
+        const connection = new Connection("https://api.devnet.solana.com", "confirmed");
 
         // Get the wallet balance
         const balance = await connection.getBalance(new PublicKey(publicKey));
@@ -97,9 +77,6 @@ export async function GET(request: Request) {
         });
     } catch (error) {
         console.error("Error fetching wallet:", error);
-        return NextResponse.json(
-            { success: false, error: "Failed to fetch wallet info" },
-            { status: 500 }
-        );
+        return NextResponse.json({ success: false, error: "Failed to fetch wallet info" }, { status: 500 });
     }
 }

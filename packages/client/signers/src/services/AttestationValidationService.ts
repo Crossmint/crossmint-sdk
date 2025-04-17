@@ -57,9 +57,7 @@ export type AttestationRequestFn = () => Promise<Attestation>;
  * Implementation of the attestation validation service
  * Validates attestations and manages validation state
  */
-export class AttestationValidationServiceImpl
-    implements AttestationValidationService
-{
+export class AttestationValidationServiceImpl implements AttestationValidationService {
     private attestationValidated = false;
     private attestationPublicKey: string | null = null;
     private requestAttestationFn: AttestationRequestFn;
@@ -84,8 +82,7 @@ export class AttestationValidationServiceImpl
                 this.attestationPublicKey = attestationData.publicKey;
             }
 
-            this.attestationValidated =
-                this.validateAttestationData(attestationData);
+            this.attestationValidated = this.validateAttestationData(attestationData);
 
             if (!this.attestationValidated) {
                 this.attestationPublicKey = null;
@@ -106,9 +103,7 @@ export class AttestationValidationServiceImpl
 
     public ensureAttestationValidated(): void {
         if (!this.attestationValidated) {
-            throw new Error(
-                "Attestation not validated. Call validateAttestation() first"
-            );
+            throw new Error("Attestation not validated. Call validateAttestation() first");
         }
     }
 

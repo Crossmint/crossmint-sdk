@@ -6,10 +6,7 @@ import * as web3 from "@solana/web3.js";
 import nacl from "tweetnacl";
 import { ChildWindow } from "@crossmint/client-sdk-window";
 import { z } from "zod";
-import {
-    SecureIFrameParentIncomingEvents,
-    SecureIFrameParentOutgoingEvents,
-} from "@crossmint/client-signers";
+import { SecureIFrameParentIncomingEvents, SecureIFrameParentOutgoingEvents } from "@crossmint/client-signers";
 import { VersionedTransaction } from "@solana/web3.js";
 
 // For the iframe implementation, we need to flip the events:
@@ -43,16 +40,11 @@ class SolanaLocalSigner {
     }
 
     async signMessage(message: Uint8Array): Promise<Uint8Array> {
-        const signature = nacl.sign.detached(
-            Uint8Array.from(message),
-            this.keypair.secretKey
-        );
+        const signature = nacl.sign.detached(Uint8Array.from(message), this.keypair.secretKey);
         return Uint8Array.from(signature);
     }
 
-    async signTransaction(
-        transaction: web3.VersionedTransaction
-    ): Promise<web3.VersionedTransaction> {
+    async signTransaction(transaction: web3.VersionedTransaction): Promise<web3.VersionedTransaction> {
         try {
             transaction.sign([this.keypair]);
             return transaction;
@@ -79,10 +71,7 @@ export default function IFramePage() {
     const addLog = (message: string) => {
         console.log(`${LOG_PREFIX} Log: ${message}`);
         setLogs((prev) => {
-            const newLogs = [
-                ...prev,
-                `${new Date().toISOString().slice(11, 19)} - ${message}`,
-            ];
+            const newLogs = [...prev, `${new Date().toISOString().slice(11, 19)} - ${message}`];
             return newLogs.slice(-50);
         });
     };
@@ -99,12 +88,8 @@ export default function IFramePage() {
                 console.log(`${LOG_PREFIX} Creating signer instance...`);
                 const signerInstance = await getOrCreateSigner();
                 setSigner(signerInstance);
-                addLog(
-                    `Initialized signer with address: ${signerInstance.address}`
-                );
-                console.log(
-                    `${LOG_PREFIX} Signer created with address: ${signerInstance.address}`
-                );
+                addLog(`Initialized signer with address: ${signerInstance.address}`);
+                console.log(`${LOG_PREFIX} Signer created with address: ${signerInstance.address}`);
 
                 // Create the ChildWindow for communication with parent
                 console.log(`${LOG_PREFIX} Creating ChildWindow instance...`);
@@ -140,10 +125,7 @@ export default function IFramePage() {
                             address: signerInstance.address,
                         });
                     } catch (error) {
-                        console.error(
-                            `${LOG_PREFIX} Error sending heartbeat:`,
-                            error
-                        );
+                        console.error(`${LOG_PREFIX} Error sending heartbeat:`, error);
                     }
                 }, 5000);
 
@@ -153,11 +135,7 @@ export default function IFramePage() {
                 };
             } catch (error) {
                 console.error(`${LOG_PREFIX} Error setting up iframe:`, error);
-                addLog(
-                    `❌ Error setting up iframe: ${
-                        error instanceof Error ? error.message : String(error)
-                    }`
-                );
+                addLog(`❌ Error setting up iframe: ${error instanceof Error ? error.message : String(error)}`);
                 setLoading(false);
             }
         };
@@ -171,10 +149,7 @@ export default function IFramePage() {
 
     // Setup event handlers for the parent's requests
     const setupEventHandlers = (
-        messenger: ChildWindow<
-            typeof ChildIncomingEvents,
-            typeof ChildOutgoingEvents
-        >,
+        messenger: ChildWindow<typeof ChildIncomingEvents, typeof ChildOutgoingEvents>,
         signerInstance: SolanaLocalSigner
     ) => {
         // Handle get-public-key request
@@ -220,17 +195,11 @@ export default function IFramePage() {
             try {
                 // Decode the message from base58
                 const message = bs58.decode(data.message);
-                console.log(
-                    `${LOG_PREFIX} Decoded message length:`,
-                    message.length
-                );
+                console.log(`${LOG_PREFIX} Decoded message length:`, message.length);
 
                 // Sign the message
                 const signature = await signerInstance.signMessage(message);
-                console.log(
-                    `${LOG_PREFIX} Message signed, signature length:`,
-                    signature.length
-                );
+                console.log(`${LOG_PREFIX} Message signed, signature length:`, signature.length);
 
                 // Send back the signature
                 const response = {
@@ -250,38 +219,25 @@ export default function IFramePage() {
             addLog("📤 Received request:sign-transaction");
             try {
                 // Decode the transaction from base58
-                const serializedTransaction = VersionedTransaction.deserialize(
-                    bs58.decode(data.transaction)
-                );
+                const serializedTransaction = VersionedTransaction.deserialize(bs58.decode(data.transaction));
 
-                console.log(
-                    `${LOG_PREFIX} Deserializing versioned transaction`
-                );
+                console.log(`${LOG_PREFIX} Deserializing versioned transaction`);
                 const transaction = serializedTransaction;
 
                 // Sign the transaction
                 console.log(`${LOG_PREFIX} Signing transaction...`);
-                const signedTransaction = await signerInstance.signTransaction(
-                    transaction
-                );
+                const signedTransaction = await signerInstance.signTransaction(transaction);
                 console.log(`${LOG_PREFIX} Transaction signed successfully`);
 
                 // Serialize and return
-                console.log(
-                    `${LOG_PREFIX} Serializing signed versioned transaction`
-                );
-                const serializedSignedTransaction =
-                    signedTransaction.serialize();
+                console.log(`${LOG_PREFIX} Serializing signed versioned transaction`);
+                const serializedSignedTransaction = signedTransaction.serialize();
 
                 const response = {
-                    transaction: bs58.encode(
-                        Array.from(serializedSignedTransaction)
-                    ),
+                    transaction: bs58.encode(Array.from(serializedSignedTransaction)),
                 };
                 messenger.send("response:sign-transaction", response);
-                addLog(
-                    `📬 Transaction signed successfully: ${response.transaction}`
-                );
+                addLog(`📬 Transaction signed successfully: ${response.transaction}`);
             } catch (error) {
                 handleError(messenger, error, "Error signing transaction");
             }
@@ -289,16 +245,11 @@ export default function IFramePage() {
 
         // Helper function to handle errors
         const handleError = (
-            messenger: ChildWindow<
-                typeof ChildIncomingEvents,
-                typeof ChildOutgoingEvents
-            >,
+            messenger: ChildWindow<typeof ChildIncomingEvents, typeof ChildOutgoingEvents>,
             error: any,
             prefix: string
         ) => {
-            const errorMessage = `${prefix}: ${
-                error instanceof Error ? error.message : String(error)
-            }`;
+            const errorMessage = `${prefix}: ${error instanceof Error ? error.message : String(error)}`;
             console.error(`${LOG_PREFIX} ${errorMessage}`, error);
             addLog(`❌ ${errorMessage}`);
 
@@ -318,9 +269,7 @@ export default function IFramePage() {
                 {signer && (
                     <div className="text-sm mt-1">
                         <span className="font-medium">Wallet Address:</span>{" "}
-                        <code className="bg-gray-200 p-1 rounded">
-                            {signer.address}
-                        </code>
+                        <code className="bg-gray-200 p-1 rounded">{signer.address}</code>
                     </div>
                 )}
             </header>
@@ -334,10 +283,7 @@ export default function IFramePage() {
                 ) : (
                     <div className="space-y-1">
                         {logs.map((log, index) => (
-                            <div
-                                key={index}
-                                className="text-xs font-mono border-b border-gray-100 pb-1"
-                            >
+                            <div key={index} className="text-xs font-mono border-b border-gray-100 pb-1">
                                 {log}
                             </div>
                         ))}

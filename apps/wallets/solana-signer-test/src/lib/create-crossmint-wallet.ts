@@ -6,9 +6,7 @@ export async function createCrossmintSmartWallet(iframeSigner: {
     address: string;
     signer: {
         signMessage: (message: Uint8Array) => Promise<Uint8Array>;
-        signTransaction: (
-            transaction: VersionedTransaction
-        ) => Promise<VersionedTransaction>;
+        signTransaction: (transaction: VersionedTransaction) => Promise<VersionedTransaction>;
     };
 }) {
     const crossmint = createCrossmint({
@@ -19,12 +17,9 @@ export async function createCrossmintSmartWallet(iframeSigner: {
             })(),
     });
     const crossmintWallets = CrossmintWallets.from(crossmint);
-    const wallet = await crossmintWallets.getOrCreateWallet(
-        "solana-smart-wallet",
-        {
-            adminSigner: iframeSigner,
-        }
-    );
+    const wallet = await crossmintWallets.getOrCreateWallet("solana-smart-wallet", {
+        adminSigner: iframeSigner,
+    });
 
     return wallet;
 }

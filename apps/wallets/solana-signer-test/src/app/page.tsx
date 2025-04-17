@@ -1,14 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -19,14 +12,7 @@ import { createMemoInstruction } from "@solana/spl-memo";
 // Simple Loader component
 const Loader = () => (
     <svg className="animate-spin h-4 w-4 mr-2" viewBox="0 0 24 24">
-        <circle
-            className="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="4"
-        ></circle>
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
         <path
             className="opacity-75"
             fill="currentColor"
@@ -36,10 +22,7 @@ const Loader = () => (
 );
 
 // Import from the SDK
-import {
-    createSolanaIFrameSigner,
-    type SolanaIFrameSigner,
-} from "@crossmint/client-signers";
+import { createSolanaIFrameSigner, type SolanaIFrameSigner } from "@crossmint/client-signers";
 
 // Define the iframe ID constant for consistent referencing
 const IFRAME_ID = "solana-signer-iframe";
@@ -48,11 +31,7 @@ export default function Home() {
     const [signer, setSigner] = useState<SolanaIFrameSigner | null>(null);
     const [publicKey, setPublicKey] = useState<string | null>(null);
     const [signerStatus, setSignerStatus] = useState<
-        | "not-initialized"
-        | "initializing"
-        | "initialized"
-        | "connected"
-        | "error"
+        "not-initialized" | "initializing" | "initialized" | "connected" | "error"
     >("not-initialized");
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [logs, setLogs] = useState<string[]>([]);
@@ -79,10 +58,7 @@ export default function Home() {
 
     // Log function
     const addLog = (message: string) => {
-        setLogs((prev) => [
-            ...prev,
-            `[${new Date().toLocaleTimeString()}] ${message}`,
-        ]);
+        setLogs((prev) => [...prev, `[${new Date().toLocaleTimeString()}] ${message}`]);
     };
 
     // Initialize the signer
@@ -93,15 +69,11 @@ export default function Home() {
             addLog("Initializing Solana iFrame signer...");
 
             // First ensure we have a proper iframe with correct ID
-            const iframe = document.getElementById(
-                IFRAME_ID
-            ) as HTMLIFrameElement;
+            const iframe = document.getElementById(IFRAME_ID) as HTMLIFrameElement;
             if (iframe) {
                 addLog(`Found existing iframe with ID: ${IFRAME_ID}`);
             } else {
-                addLog(
-                    `No iframe found with ID: ${IFRAME_ID}, this may cause issues`
-                );
+                addLog(`No iframe found with ID: ${IFRAME_ID}, this may cause issues`);
             }
 
             // Create new signer instance
@@ -149,10 +121,7 @@ export default function Home() {
             addLog("Getting public key...");
 
             // First make sure the signer is initialized
-            if (
-                signerStatus !== "initialized" &&
-                signerStatus !== "connected"
-            ) {
+            if (signerStatus !== "initialized" && signerStatus !== "connected") {
                 await signer.init();
                 addLog("Signer initialized");
             }
@@ -183,9 +152,7 @@ export default function Home() {
         }
 
         if (!transaction) {
-            addLog(
-                "No transaction provided. Waiting for transaction building implementation."
-            );
+            addLog("No transaction provided. Waiting for transaction building implementation.");
             return;
         }
 
@@ -265,84 +232,56 @@ export default function Home() {
 
     return (
         <div className="container mx-auto py-10">
-            <h1 className="text-2xl font-bold mb-6">
-                Solana iFrame Signer Test
-            </h1>
+            <h1 className="text-2xl font-bold mb-6">Solana iFrame Signer Test</h1>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Signer Controls */}
                 <Card>
                     <CardHeader>
                         <CardTitle>iFrame Signer Controls</CardTitle>
-                        <CardDescription>
-                            Manage the Solana iFrame Signer
-                        </CardDescription>
+                        <CardDescription>Manage the Solana iFrame Signer</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
                             {/* Status */}
                             <div>
-                                <p className="text-sm font-medium mb-1">
-                                    Status
-                                </p>
+                                <p className="text-sm font-medium mb-1">Status</p>
                                 <div>
                                     {signerStatus === "not-initialized" && (
-                                        <Badge variant="outline">
-                                            Not Initialized
-                                        </Badge>
+                                        <Badge variant="outline">Not Initialized</Badge>
                                     )}
                                     {signerStatus === "initializing" && (
-                                        <Badge variant="secondary">
-                                            Initializing...
-                                        </Badge>
+                                        <Badge variant="secondary">Initializing...</Badge>
                                     )}
-                                    {signerStatus === "initialized" && (
-                                        <Badge variant="secondary">
-                                            Initialized
-                                        </Badge>
-                                    )}
+                                    {signerStatus === "initialized" && <Badge variant="secondary">Initialized</Badge>}
                                     {signerStatus === "connected" && (
-                                        <Badge className="bg-green-500 text-white">
-                                            Connected
-                                        </Badge>
+                                        <Badge className="bg-green-500 text-white">Connected</Badge>
                                     )}
-                                    {signerStatus === "error" && (
-                                        <Badge variant="destructive">
-                                            Error
-                                        </Badge>
-                                    )}
+                                    {signerStatus === "error" && <Badge variant="destructive">Error</Badge>}
                                 </div>
                             </div>
 
                             {/* Public Key */}
                             <div>
-                                <p className="text-sm font-medium mb-1">
-                                    Public Key
-                                </p>
+                                <p className="text-sm font-medium mb-1">Public Key</p>
                                 {publicKey ? (
                                     <code className="text-xs bg-slate-100 dark:bg-slate-800 rounded p-1 block overflow-hidden">
                                         {publicKey}
                                     </code>
                                 ) : (
-                                    <p className="text-xs text-slate-500">
-                                        No public key available
-                                    </p>
+                                    <p className="text-xs text-slate-500">No public key available</p>
                                 )}
                             </div>
 
                             {/* Smart Wallet */}
                             <div>
-                                <p className="text-sm font-medium mb-1">
-                                    Smart Wallet
-                                </p>
+                                <p className="text-sm font-medium mb-1">Smart Wallet</p>
                                 {smartWallet.address ? (
                                     <code className="text-xs bg-slate-100 dark:bg-slate-800 rounded p-1 block overflow-hidden">
                                         {smartWallet.address}
                                     </code>
                                 ) : (
-                                    <p className="text-xs text-slate-500">
-                                        No smart wallet created
-                                    </p>
+                                    <p className="text-xs text-slate-500">No smart wallet created</p>
                                 )}
                             </div>
 
@@ -350,9 +289,7 @@ export default function Home() {
                             {errorMessage && (
                                 <Alert variant="destructive">
                                     <AlertTitle>Error</AlertTitle>
-                                    <AlertDescription>
-                                        {errorMessage}
-                                    </AlertDescription>
+                                    <AlertDescription>{errorMessage}</AlertDescription>
                                 </Alert>
                             )}
                         </div>
@@ -363,8 +300,7 @@ export default function Home() {
                                 onClick={getPublicKey}
                                 disabled={
                                     isLoading.publicKey ||
-                                    (signerStatus !== "initialized" &&
-                                        signerStatus !== "connected")
+                                    (signerStatus !== "initialized" && signerStatus !== "connected")
                                 }
                                 className="w-full"
                             >
@@ -403,22 +339,14 @@ export default function Home() {
                                 sendTransaction(
                                     new VersionedTransaction(
                                         new TransactionMessage({
-                                            payerKey:
-                                                smartWallet.wallet.publicKey,
-                                            recentBlockhash:
-                                                "11111111111111111111111111111111",
-                                            instructions: [
-                                                createMemoInstruction(
-                                                    "Hello, Solana!"
-                                                ),
-                                            ],
+                                            payerKey: smartWallet.wallet.publicKey,
+                                            recentBlockhash: "11111111111111111111111111111111",
+                                            instructions: [createMemoInstruction("Hello, Solana!")],
                                         }).compileToV0Message()
                                     )
                                 )
                             }
-                            disabled={
-                                isLoading.sendTransaction || !smartWallet.wallet
-                            }
+                            disabled={isLoading.sendTransaction || !smartWallet.wallet}
                             className="w-full bg-green-600 hover:bg-green-700"
                         >
                             {isLoading.sendTransaction ? (
@@ -438,14 +366,8 @@ export default function Home() {
                         >
                             Reset Signer
                         </Button>
-                        <Button
-                            onClick={() => setIsDebugMode(!isDebugMode)}
-                            variant="outline"
-                            className="w-full"
-                        >
-                            {isDebugMode
-                                ? "Hide Debug View"
-                                : "Show Debug View"}
+                        <Button onClick={() => setIsDebugMode(!isDebugMode)} variant="outline" className="w-full">
+                            {isDebugMode ? "Hide Debug View" : "Show Debug View"}
                         </Button>
                     </CardFooter>
                 </Card>
@@ -454,9 +376,7 @@ export default function Home() {
                 <Card>
                     <CardHeader>
                         <CardTitle>Activity Logs</CardTitle>
-                        <CardDescription>
-                            See what's happening with the signer
-                        </CardDescription>
+                        <CardDescription>See what's happening with the signer</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div
@@ -464,9 +384,7 @@ export default function Home() {
                             style={{ fontFamily: "monospace" }}
                         >
                             {logs.length === 0 ? (
-                                <p className="text-slate-500">
-                                    No activity yet.
-                                </p>
+                                <p className="text-slate-500">No activity yet.</p>
                             ) : (
                                 logs.map((log, index) => (
                                     <div
@@ -487,15 +405,10 @@ export default function Home() {
                 <Card className="mt-6">
                     <CardHeader>
                         <CardTitle>iFrame Preview (Debug Mode)</CardTitle>
-                        <CardDescription>
-                            Live view of the Solana signer iframe
-                        </CardDescription>
+                        <CardDescription>Live view of the Solana signer iframe</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div
-                            className="border rounded-lg overflow-hidden"
-                            style={{ height: "300px" }}
-                        >
+                        <div className="border rounded-lg overflow-hidden" style={{ height: "300px" }}>
                             {iframeUrl && (
                                 <iframe
                                     src={iframeUrl}
