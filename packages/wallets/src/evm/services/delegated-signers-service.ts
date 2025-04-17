@@ -71,17 +71,14 @@ export class EVMDelegatedSignerService {
         >;
 
         const chainResponse = response.chains?.[chain];
-
         if (chainResponse?.status === "awaiting-approval") {
             if (!options?.adminSigner) {
                 throw new Error("Admin signer is required to approve delegated signer registration");
             }
-
             const pendingApprovals = chainResponse.approvals?.pending || [];
             await this.wallet.approveSignature(pendingApprovals, chainResponse.id);
             await this.wallet.waitForSignature(chainResponse.id);
         }
-
         return this.getDelegatedSigner(signer);
     }
 
