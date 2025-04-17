@@ -67,18 +67,9 @@ export default function Index() {
         queryKey: ["smart-wallet"],
         queryFn: async () => {
             if (type === "evm-smart-wallet") {
-                return (await wallet.unstable_getNfts({
-                    page: 1,
-                    perPage: 11,
-                    chain: "polygon-amoy",
-                    locator: wallet.address,
-                })) as NFT[];
+                return (await wallet.unstable_getNfts({ page: 1, perPage: 11, chain: "polygon-amoy" })) as NFT[];
             } else if (type === "solana-smart-wallet") {
-                return (await wallet.unstable_getNfts({
-                    page: 1,
-                    perPage: 11,
-                    locator: wallet.address,
-                })) as NFT[];
+                return (await wallet.unstable_getNfts({ page: 1, perPage: 11 })) as NFT[];
             }
             return [];
         },
