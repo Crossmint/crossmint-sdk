@@ -38,7 +38,7 @@ export class EVMDelegatedSignerService {
         })) as Extract<
             Awaited<ReturnType<typeof this.apiClient.registerSigner>>,
             {
-                type: "evm-keypair" | "evm-fireblocks-custodial";
+                type: "evm-keypair" | "evm-fireblocks-custodial" | "evm-passkey";
                 chains?: {
                     [key: string]:
                         | {
