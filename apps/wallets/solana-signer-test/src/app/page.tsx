@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { createCrossmintSmartWallet } from "@/lib/create-crossmint-wallet";
 import { TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import { createMemoInstruction } from "@solana/spl-memo";
+import { Input } from "@/components/ui/input";
 
 // Simple Loader component
 const Loader = () => (
@@ -23,6 +24,7 @@ const Loader = () => (
 
 // Import from the SDK
 import { createSolanaIFrameSigner, type SolanaIFrameSigner } from "@crossmint/client-signers";
+import type { SolanaSmartWallet } from "@crossmint/wallets-sdk";
 
 // Define the iframe ID constant for consistent referencing
 const IFRAME_ID = "solana-signer-iframe";
@@ -41,13 +43,15 @@ export default function Home() {
         publicKey: false,
         createWallet: false,
         sendTransaction: false,
+        createSigner: false,
+        sendOtp: false,
     });
 
     // Add state for the smart wallet
     const [smartWallet, setSmartWallet] = useState<{
         address: string;
         status: "creating" | "created" | null;
-        wallet: any | null;
+        wallet: SolanaSmartWallet | null;
     }>({
         address: "",
         status: null,
@@ -55,6 +59,11 @@ export default function Home() {
     });
 
     const [isDebugMode, setIsDebugMode] = useState<boolean>(false);
+
+    // Add state for signer creation
+    const [requestId, setRequestId] = useState<string | null>(null);
+    const [otpCode, setOtpCode] = useState<string>("");
+    const [otpStatus, setOtpStatus] = useState<"not-sent" | "success" | "failed">("not-sent");
 
     // Log function
     const addLog = (message: string) => {
@@ -77,7 +86,12 @@ export default function Home() {
             }
 
             // Create new signer instance
-            const newSigner = createSolanaIFrameSigner(iframeUrl);
+            const newSigner = createSolanaIFrameSigner(
+                process.env.NEXT_PUBLIC_IFRAME_URL ||
+                    (() => {
+                        throw new Error("NEXT_PUBLIC_IFRAME_URL is not set");
+                    })()
+            );
             setSigner(newSigner);
             addLog("SolanaIFrameSigner instance created");
 
@@ -98,8 +112,8 @@ export default function Home() {
 
     useEffect(() => {
         // Get origin for iframe URL
-        const origin = window.location.origin;
-        setIframeUrl(`${origin}/iframe`);
+        // const origin = window.location.origin;
+        setIframeUrl(`http://localhost:3000/ncs`);
     }, []);
 
     // Automatically initialize the signer when the iframe URL is set
@@ -230,6 +244,85 @@ export default function Home() {
         }
     };
 
+    // Create a signer using the iframe
+    const createSigner = async () => {
+        if (!signer) {
+            addLog("No signer available. Please initialize the signer first.");
+            return;
+        }
+
+        try {
+            setIsLoading((prev) => ({ ...prev, createSigner: true }));
+            addLog("Sending create-signer request...");
+
+            // Mock values for testing - in a real implementation, use actual values
+            const createSignerData = {
+                userId: "test-user-id",
+                projectId: "test-project-id",
+                authId: "test-auth-id",
+            };
+
+            // Using the internal service to send the create-signer request
+            const response = await signer["service"]["emitter"].sendAction({
+                event: "request:create-signer",
+                data: createSignerData,
+                responseEvent: "response:create-signer",
+            });
+
+            // Extract the request ID from the response
+            const id = response.requestId;
+            setRequestId(id);
+
+            addLog(`Create signer request successful! Request ID: ${id}`);
+        } catch (error) {
+            console.error("Failed to create signer", error);
+            setErrorMessage((error as Error).message);
+            addLog(`Error creating signer: ${(error as Error).message}`);
+        } finally {
+            setIsLoading((prev) => ({ ...prev, createSigner: false }));
+        }
+    };
+
+    // Send OTP code for verification
+    const sendOtp = async () => {
+        if (!signer || !requestId) {
+            addLog("Signer or request ID not available. Please create a signer first.");
+            return;
+        }
+
+        if (!otpCode) {
+            addLog("Please enter an OTP code.");
+            return;
+        }
+
+        try {
+            setIsLoading((prev) => ({ ...prev, sendOtp: true }));
+            addLog(`Sending OTP code for request ID: ${requestId}...`);
+
+            // Using the internal service to send the send-otp request
+            const response = await signer["service"]["emitter"].sendAction({
+                event: "request:send-otp",
+                data: {
+                    otp: otpCode,
+                    requestId: requestId,
+                },
+                responseEvent: "response:send-otp",
+            });
+
+            // Update OTP status based on the response
+            const success = response.success;
+            setOtpStatus(success ? "success" : "failed");
+            addLog(`OTP verification ${success ? "successful" : "failed"}!`);
+        } catch (error) {
+            console.error("Failed to verify OTP", error);
+            setErrorMessage((error as Error).message);
+            addLog(`Error verifying OTP: ${(error as Error).message}`);
+            setOtpStatus("failed");
+        } finally {
+            setIsLoading((prev) => ({ ...prev, sendOtp: false }));
+        }
+    };
+
     return (
         <div className="container mx-auto py-10">
             <h1 className="text-2xl font-bold mb-6">Solana iFrame Signer Test</h1>
@@ -273,6 +366,48 @@ export default function Home() {
                                 )}
                             </div>
 
+                            {/* Request ID */}
+                            <div>
+                                <p className="text-sm font-medium mb-1">Signer Request ID</p>
+                                {requestId ? (
+                                    <code className="text-xs bg-slate-100 dark:bg-slate-800 rounded p-1 block overflow-hidden">
+                                        {requestId}
+                                    </code>
+                                ) : (
+                                    <p className="text-xs text-slate-500">No request ID available</p>
+                                )}
+                            </div>
+
+                            {/* OTP Status */}
+                            {requestId && (
+                                <div>
+                                    <p className="text-sm font-medium mb-1">OTP Verification</p>
+                                    <div className="flex space-x-2 mb-2">
+                                        <Input
+                                            type="text"
+                                            placeholder="Enter OTP code"
+                                            value={otpCode}
+                                            onChange={(e) => setOtpCode(e.target.value)}
+                                            className="flex-1"
+                                        />
+                                        <Button onClick={sendOtp} disabled={isLoading.sendOtp || !otpCode} size="sm">
+                                            {isLoading.sendOtp ? (
+                                                <>
+                                                    <Loader />
+                                                    Verifying...
+                                                </>
+                                            ) : (
+                                                "Verify OTP"
+                                            )}
+                                        </Button>
+                                    </div>
+                                    {otpStatus === "success" && (
+                                        <Badge className="bg-green-500 text-white">OTP Verified</Badge>
+                                    )}
+                                    {otpStatus === "failed" && <Badge variant="destructive">OTP Failed</Badge>}
+                                </div>
+                            )}
+
                             {/* Smart Wallet */}
                             <div>
                                 <p className="text-sm font-medium mb-1">Smart Wallet</p>
@@ -297,10 +432,30 @@ export default function Home() {
                     <CardFooter className="flex flex-col space-y-2">
                         <div className="grid grid-cols-1 gap-2 w-full">
                             <Button
+                                onClick={createSigner}
+                                disabled={
+                                    isLoading.createSigner || signerStatus !== "initialized" || requestId !== null
+                                }
+                                className="w-full bg-purple-600 hover:bg-purple-700"
+                            >
+                                {isLoading.createSigner ? (
+                                    <>
+                                        <Loader />
+                                        Creating Signer...
+                                    </>
+                                ) : requestId ? (
+                                    "Signer Created"
+                                ) : (
+                                    "Create Signer"
+                                )}
+                            </Button>
+                            <Button
                                 onClick={getPublicKey}
                                 disabled={
                                     isLoading.publicKey ||
-                                    (signerStatus !== "initialized" && signerStatus !== "connected")
+                                    (signerStatus !== "initialized" && signerStatus !== "connected") ||
+                                    !requestId ||
+                                    otpStatus !== "success"
                                 }
                                 className="w-full"
                             >
@@ -319,7 +474,9 @@ export default function Home() {
                             disabled={
                                 isLoading.createWallet ||
                                 signerStatus !== "connected" ||
-                                smartWallet.status === "created"
+                                smartWallet.status === "created" ||
+                                !requestId ||
+                                otpStatus !== "success"
                             }
                             className="w-full bg-indigo-600 hover:bg-indigo-700"
                         >
@@ -339,14 +496,14 @@ export default function Home() {
                                 sendTransaction(
                                     new VersionedTransaction(
                                         new TransactionMessage({
-                                            payerKey: smartWallet.wallet.publicKey,
+                                            payerKey: smartWallet.wallet!.publicKey,
                                             recentBlockhash: "11111111111111111111111111111111",
                                             instructions: [createMemoInstruction("Hello, Solana!")],
                                         }).compileToV0Message()
                                     )
                                 )
                             }
-                            disabled={isLoading.sendTransaction || !smartWallet.wallet}
+                            disabled={isLoading.sendTransaction || !smartWallet.wallet || !requestId}
                             className="w-full bg-green-600 hover:bg-green-700"
                         >
                             {isLoading.sendTransaction ? (
@@ -376,7 +533,7 @@ export default function Home() {
                 <Card>
                     <CardHeader>
                         <CardTitle>Activity Logs</CardTitle>
-                        <CardDescription>See what's happening with the signer</CardDescription>
+                        <CardDescription>See what&apos;s happening with the signer</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div

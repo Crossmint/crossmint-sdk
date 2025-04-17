@@ -1,10 +1,7 @@
 import { IFrameWindow } from "@crossmint/client-sdk-window";
 import { SolanaIFrameSignerService } from "../services/SolanaIFrameSignerService";
 import type { VersionedTransaction } from "@solana/web3.js";
-import {
-    SecureIFrameParentIncomingEvents,
-    SecureIFrameParentOutgoingEvents,
-} from "../services/SolanaIFrameSignerService";
+import { SecureIFrameParentIncomingEvents, SecureIFrameParentOutgoingEvents } from "../services/SolanaEvents";
 
 /**
  * SolanaIFrameSigner is a signer implementation that uses an iframe for Solana wallet operations

@@ -1,4 +1,3 @@
-import { z } from "zod";
 import { IFrameWindow } from "@crossmint/client-sdk-window";
 import { VersionedTransaction } from "@solana/web3.js";
 import bs58 from "bs58";
@@ -8,48 +7,7 @@ import {
     type Attestation,
 } from "./AttestationValidationService";
 import { type AsymmetricEncryptionService, AsymmetricEncryptionServiceImpl } from "./AsymmetricEncryptionService";
-
-export const AuthenticationDataSchema = z.object({
-    signerAddress: z.string(),
-    // TODO: add user-id, project-id, auth-id
-});
-
-// Define incoming events (events that the iframe sends o us)
-export const SecureIFrameParentIncomingEvents = {
-    "response:sign-message": z.object({
-        address: z.string(),
-        signature: z.string(),
-    }),
-    "response:sign-transaction": z.object({
-        transaction: z.string(), // Base58 serialized transaction
-    }),
-    "response:attestation": z.object({
-        attestation: z.record(z.string(), z.any()),
-    }),
-    "response:get-public-key": z.object({
-        publicKey: z.string(),
-    }),
-    error: z.object({
-        code: z.number(),
-        message: z.string(),
-    }),
-} as const;
-
-// Define outgoing events (events that we send to the iframe)
-export const SecureIFrameParentOutgoingEvents = {
-    "request:attestation": z.undefined(),
-    "request:sign-message": AuthenticationDataSchema.extend({
-        message: z.string(), // Base58 encoded message
-    }),
-    "request:sign-transaction": AuthenticationDataSchema.extend({
-        transaction: z.string(), // Base58 serialized transaction
-    }),
-    "request:get-public-key": z.object({}),
-} as const;
-
-// Type definitions for our events
-export type ParentIncomingEventMap = typeof SecureIFrameParentIncomingEvents;
-export type ParentOutgoingEventMap = typeof SecureIFrameParentOutgoingEvents;
+import { SecureIFrameParentIncomingEvents, SecureIFrameParentOutgoingEvents } from "./SolanaEvents";
 
 export interface SolanaIFrameSignerServiceConfig {
     iframeUrl: string;
@@ -77,7 +35,10 @@ export interface AsymmetricEncryptionProvider {
  */
 export class SolanaIFrameSignerService implements AsymmetricEncryptionProvider {
     private iframe: HTMLIFrameElement | null = null;
-    private emitter: IFrameWindow<ParentIncomingEventMap, ParentOutgoingEventMap> | null = null;
+    private emitter: IFrameWindow<
+        typeof SecureIFrameParentIncomingEvents,
+        typeof SecureIFrameParentOutgoingEvents
+    > | null = null;
     private config: SolanaIFrameSignerServiceConfig;
     private address: string | null = null;
     private attestationService: AttestationValidationService;
@@ -299,7 +260,9 @@ export class SolanaIFrameSignerService implements AsymmetricEncryptionProvider {
         this.iframe = iframe;
     }
 
-    setEmitter(emitter: IFrameWindow<ParentIncomingEventMap, ParentOutgoingEventMap>): void {
+    setEmitter(
+        emitter: IFrameWindow<typeof SecureIFrameParentIncomingEvents, typeof SecureIFrameParentOutgoingEvents>
+    ): void {
         this.emitter = emitter;
     }
 
