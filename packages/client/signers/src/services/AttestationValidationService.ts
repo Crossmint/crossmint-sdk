@@ -1,6 +1,5 @@
 /**
  * Attestation validation system for secure communication with iframe-based services.
- * This provides a framework for validating attestations before performing sensitive operations.
  */
 
 /**
@@ -17,7 +16,7 @@ export interface Attestation {
  * Implementers must provide functionality to validate attestations
  * and access the attestation public key for secure communication
  */
-export interface AttestationValidator {
+export interface AttestationValidationService {
     /**
      * Requests and validates an attestation from a service
      * @returns Promise that resolves to true if attestation is valid
@@ -49,21 +48,37 @@ export interface AttestationValidator {
 }
 
 /**
- * Base implementation of attestation validation
- * Provides common validation logic and state management
- * Concrete implementations need only implement the requestAttestation method
+ * Definition for the attestation request function
+ * This is a callback that the AttestationValidationService uses to request attestation data
  */
-export abstract class BaseAttestationValidator implements AttestationValidator {
-    protected attestationValidated = false;
-    protected attestationPublicKey: string | null = null;
+export type AttestationRequestFn = () => Promise<Attestation>;
+
+/**
+ * Implementation of the attestation validation service
+ * Validates attestations and manages validation state
+ */
+export class AttestationValidationServiceImpl
+    implements AttestationValidationService
+{
+    private attestationValidated = false;
+    private attestationPublicKey: string | null = null;
+    private requestAttestationFn: AttestationRequestFn;
 
     /**
-     * Template method that implements the attestation validation flow
-     * Requests attestation data from derived classes and validates it
+     * Creates a new AttestationValidationService
+     * @param requestAttestationFn Function to request attestation data
+     */
+    constructor(requestAttestationFn: AttestationRequestFn) {
+        this.requestAttestationFn = requestAttestationFn;
+    }
+
+    /**
+     * Implements the attestation validation flow
+     * Requests attestation data and validates it
      */
     public async validateAttestation(): Promise<boolean> {
         try {
-            const attestationData = await this.requestAttestation();
+            const attestationData = await this.requestAttestationFn();
 
             if (attestationData.publicKey) {
                 this.attestationPublicKey = attestationData.publicKey;
@@ -114,7 +129,7 @@ export abstract class BaseAttestationValidator implements AttestationValidator {
      * @param attestation The attestation object to validate
      * @returns True if the attestation data is valid
      */
-    protected validateAttestationData(attestation: Attestation): boolean {
+    private validateAttestationData(attestation: Attestation): boolean {
         // TODO: Implement actual attestation validation logic
 
         if (!attestation || Object.keys(attestation).length === 0) {
@@ -128,11 +143,7 @@ export abstract class BaseAttestationValidator implements AttestationValidator {
 
         return true;
     }
-
-    /**
-     * Abstract method to request attestation from the specific service
-     * Each concrete implementation must provide its own request mechanism
-     * @returns Promise resolving to attestation data
-     */
-    protected abstract requestAttestation(): Promise<Attestation>;
 }
+
+// For backward compatibility with existing code
+export type AttestationValidator = AttestationValidationService;

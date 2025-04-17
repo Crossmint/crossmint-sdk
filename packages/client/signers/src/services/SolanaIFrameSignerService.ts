@@ -3,17 +3,22 @@ import { IFrameWindow } from "@crossmint/client-sdk-window";
 import { VersionedTransaction } from "@solana/web3.js";
 import bs58 from "bs58";
 import {
-    BaseAttestationValidator,
+    AttestationValidationService,
+    AttestationValidationServiceImpl,
     Attestation,
 } from "./AttestationValidationService";
+import {
+    AsymmetricEncryptionService,
+    AsymmetricEncryptionServiceImpl,
+} from "./AsymmetricEncryptionService";
 
 export const AuthenticationDataSchema = z.object({
     signerAddress: z.string(),
     // TODO: add user-id, project-id, auth-id
 });
 
-// Define incoming events (events that the iframe sends to us)
-export const ParentIncomingEvents = {
+// Define incoming events (events that the iframe sends o us)
+export const SecureIFrameParentIncomingEvents = {
     "response:sign-message": z.object({
         address: z.string(),
         signature: z.string(),
@@ -34,7 +39,7 @@ export const ParentIncomingEvents = {
 } as const;
 
 // Define outgoing events (events that we send to the iframe)
-export const ParentOutgoingEvents = {
+export const SecureIFrameParentOutgoingEvents = {
     "request:attestation": z.undefined(),
     "request:sign-message": AuthenticationDataSchema.extend({
         message: z.string(), // Base58 encoded message
@@ -46,34 +51,34 @@ export const ParentOutgoingEvents = {
 } as const;
 
 // Type definitions for our events
-export type ParentIncomingEventMap = typeof ParentIncomingEvents;
-export type ParentOutgoingEventMap = typeof ParentOutgoingEvents;
+export type ParentIncomingEventMap = typeof SecureIFrameParentIncomingEvents;
+export type ParentOutgoingEventMap = typeof SecureIFrameParentOutgoingEvents;
 
 export interface SolanaIFrameSignerServiceConfig {
     iframeUrl: string;
     targetOrigin?: string;
+    attestationValidationService?: AttestationValidationService;
+    encryptionService?: AsymmetricEncryptionService;
 }
 
 /**
- * Placeholder encryption implementation
- * Uses the attestation public key to encrypt messages
- *
- * @param message - Data to encrypt
- * @param publicKey - Attestation public key for encryption
- * @returns Encrypted data (currently a placeholder)
+ * Interface for asymmetric encryption operations in the IFrameSignerService
  */
-function encryptMessage(message: Uint8Array, publicKey: string): Uint8Array {
-    // TODO: Replace with actual encryption implementation
-    console.log(`Encrypting message with public key: ${publicKey}`);
-    return message;
+export interface AsymmetricEncryptionProvider {
+    /**
+     * Encrypts data using the attestation public key
+     * @param data The data to encrypt
+     * @returns The encrypted data
+     */
+    encryptData(data: Uint8Array): Uint8Array;
 }
 
 /**
  * Solana signer service that communicates with an iframe wallet
- * Extends the BaseAttestationValidator to require attestation validation
+ * Uses the AttestationValidationService to validate attestations
  * before performing any operations
  */
-export class SolanaIFrameSignerService extends BaseAttestationValidator {
+export class SolanaIFrameSignerService implements AsymmetricEncryptionProvider {
     private iframe: HTMLIFrameElement | null = null;
     private emitter: IFrameWindow<
         ParentIncomingEventMap,
@@ -81,39 +86,60 @@ export class SolanaIFrameSignerService extends BaseAttestationValidator {
     > | null = null;
     private config: SolanaIFrameSignerServiceConfig;
     private address: string | null = null;
+    private attestationService: AttestationValidationService;
+    private encryptionService: AsymmetricEncryptionService;
 
     constructor(config: SolanaIFrameSignerServiceConfig) {
-        super();
         this.config = config;
+
+        // Use provided services or create default ones
+        this.encryptionService =
+            config.encryptionService || new AsymmetricEncryptionServiceImpl();
+
+        // Create the attestation service with a requestAttestation function
+        this.attestationService =
+            config.attestationValidationService ||
+            new AttestationValidationServiceImpl(
+                this.requestAttestation.bind(this)
+            );
     }
 
     /**
      * Initializes communication with the iframe
      * Creates and configures the invisible iframe
      */
-    public async init(): Promise<void> {
+    public async init({ hidden = true } = {}): Promise<void> {
         if (this.emitter) {
             console.log("SolanaIFrameSignerService already initialized");
             return;
         }
 
-        this.resetAttestationState();
+        this.attestationService.resetAttestationState();
 
         try {
             this.emitter = await IFrameWindow.init(this.config.iframeUrl, {
-                incomingEvents: ParentIncomingEvents,
-                outgoingEvents: ParentOutgoingEvents,
+                incomingEvents: SecureIFrameParentIncomingEvents,
+                outgoingEvents: SecureIFrameParentOutgoingEvents,
                 targetOrigin: this.config.targetOrigin,
             });
 
             this.iframe = this.emitter.iframe;
-
-            if (this.iframe && !document.body.contains(this.iframe)) {
+            if (this.iframe != null && hidden) {
+                this.iframe.style.display = "none";
                 this.iframe.style.position = "absolute";
                 this.iframe.style.width = "0";
                 this.iframe.style.height = "0";
                 this.iframe.style.border = "none";
                 this.iframe.style.visibility = "hidden";
+                this.iframe.style.opacity = "0";
+                this.iframe.style.pointerEvents = "none";
+                this.iframe.style.clip = "rect(0, 0, 0, 0)";
+                this.iframe.style.overflow = "hidden";
+                this.iframe.setAttribute("aria-hidden", "true");
+                this.iframe.setAttribute("tabindex", "-1");
+            }
+
+            if (this.iframe && !document.body.contains(this.iframe)) {
                 document.body.appendChild(this.iframe);
             }
 
@@ -130,9 +156,9 @@ export class SolanaIFrameSignerService extends BaseAttestationValidator {
 
     /**
      * Requests attestation from the iframe
-     * Implements the abstract method from BaseAttestationValidator
+     * Used by the AttestationValidationService
      */
-    protected async requestAttestation(): Promise<Attestation> {
+    private async requestAttestation(): Promise<Attestation> {
         if (!this.emitter) {
             throw new Error("SolanaIFrameSignerService not initialized");
         }
@@ -152,6 +178,30 @@ export class SolanaIFrameSignerService extends BaseAttestationValidator {
     }
 
     /**
+     * Validates the attestation for this service
+     * @returns Promise resolving to true if attestation was validated
+     */
+    public async validateAttestation(): Promise<boolean> {
+        return this.attestationService.validateAttestation();
+    }
+
+    /**
+     * Encrypts data using the attestation public key
+     * Implements the AsymmetricEncryptionProvider interface
+     *
+     * @param data The data to encrypt
+     * @returns The encrypted data
+     */
+    public encryptData(data: Uint8Array): Uint8Array {
+        const publicKey = this.attestationService.getAttestationPublicKey();
+        if (!publicKey) {
+            throw new Error("Attestation public key not available");
+        }
+
+        return this.encryptionService.encrypt(data, publicKey);
+    }
+
+    /**
      * Signs a message using the iframe wallet
      * Message is encrypted with the attestation public key
      *
@@ -163,7 +213,7 @@ export class SolanaIFrameSignerService extends BaseAttestationValidator {
             throw new Error("SolanaIFrameSignerService not initialized");
         }
 
-        this.ensureAttestationValidated();
+        this.attestationService.ensureAttestationValidated();
 
         try {
             // Ensure we have an address
@@ -171,12 +221,7 @@ export class SolanaIFrameSignerService extends BaseAttestationValidator {
                 this.address = await this.getPublicKey();
             }
 
-            const publicKey = this.getAttestationPublicKey();
-            if (!publicKey) {
-                throw new Error("Attestation public key not available");
-            }
-
-            const encryptedMessage = encryptMessage(message, publicKey);
+            const encryptedMessage = this.encryptData(message);
 
             const response = await this.emitter.sendAction({
                 event: "request:sign-message",
@@ -208,7 +253,7 @@ export class SolanaIFrameSignerService extends BaseAttestationValidator {
             throw new Error("SolanaIFrameSignerService not initialized");
         }
 
-        this.ensureAttestationValidated();
+        this.attestationService.ensureAttestationValidated();
 
         try {
             // Ensure we have an address
@@ -216,13 +261,8 @@ export class SolanaIFrameSignerService extends BaseAttestationValidator {
                 this.address = await this.getPublicKey();
             }
 
-            const publicKey = this.getAttestationPublicKey();
-            if (!publicKey) {
-                throw new Error("Attestation public key not available");
-            }
-
             const serializedTx = transaction.serialize();
-            const encryptedTx = encryptMessage(serializedTx, publicKey);
+            const encryptedTx = this.encryptData(serializedTx);
 
             const response = await this.emitter.sendAction({
                 event: "request:sign-transaction",
@@ -266,6 +306,24 @@ export class SolanaIFrameSignerService extends BaseAttestationValidator {
         }
     }
 
+    getIFrameUrl(): string | null {
+        return this.config?.iframeUrl || this.iframe?.src || null;
+    }
+
+    getIFrame(): HTMLIFrameElement | null {
+        return this.iframe;
+    }
+
+    setIFrame(iframe: HTMLIFrameElement): void {
+        this.iframe = iframe;
+    }
+
+    setEmitter(
+        emitter: IFrameWindow<ParentIncomingEventMap, ParentOutgoingEventMap>
+    ): void {
+        this.emitter = emitter;
+    }
+
     /**
      * Cleans up resources and resets state
      */
@@ -276,6 +334,6 @@ export class SolanaIFrameSignerService extends BaseAttestationValidator {
         this.iframe = null;
         this.emitter = null;
         this.address = null;
-        this.resetAttestationState();
+        this.attestationService.resetAttestationState();
     }
 }

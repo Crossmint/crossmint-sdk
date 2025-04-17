@@ -75,6 +75,8 @@ export default function Home() {
         wallet: null,
     });
 
+    const [isDebugMode, setIsDebugMode] = useState<boolean>(false);
+
     // Log function
     const addLog = (message: string) => {
         setLogs((prev) => [
@@ -436,6 +438,15 @@ export default function Home() {
                         >
                             Reset Signer
                         </Button>
+                        <Button
+                            onClick={() => setIsDebugMode(!isDebugMode)}
+                            variant="outline"
+                            className="w-full"
+                        >
+                            {isDebugMode
+                                ? "Hide Debug View"
+                                : "Show Debug View"}
+                        </Button>
                     </CardFooter>
                 </Card>
 
@@ -471,29 +482,32 @@ export default function Home() {
                 </Card>
             </div>
 
-            <Card className="mt-6">
-                <CardHeader>
-                    <CardTitle>iFrame Preview</CardTitle>
-                    <CardDescription>
-                        Live view of the Solana signer iframe
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div
-                        className="border rounded-lg overflow-hidden"
-                        style={{ height: "300px" }}
-                    >
-                        {iframeUrl && (
-                            <iframe
-                                src={iframeUrl}
-                                className="w-full h-full"
-                                id={IFRAME_ID}
-                                title="Solana Signer iframe"
-                            />
-                        )}
-                    </div>
-                </CardContent>
-            </Card>
+            {/* Only show iframe preview in debug mode */}
+            {isDebugMode && (
+                <Card className="mt-6">
+                    <CardHeader>
+                        <CardTitle>iFrame Preview (Debug Mode)</CardTitle>
+                        <CardDescription>
+                            Live view of the Solana signer iframe
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div
+                            className="border rounded-lg overflow-hidden"
+                            style={{ height: "300px" }}
+                        >
+                            {iframeUrl && (
+                                <iframe
+                                    src={iframeUrl}
+                                    className="w-full h-full"
+                                    id={IFRAME_ID}
+                                    title="Solana Signer iframe"
+                                />
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
         </div>
     );
 }

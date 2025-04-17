@@ -1,5 +1,10 @@
+import { IFrameWindow } from "@crossmint/client-sdk-window";
 import { SolanaIFrameSignerService } from "../services/SolanaIFrameSignerService";
 import type { VersionedTransaction } from "@solana/web3.js";
+import {
+    SecureIFrameParentIncomingEvents,
+    SecureIFrameParentOutgoingEvents,
+} from "../services/SolanaIFrameSignerService";
 
 /**
  * SolanaIFrameSigner is a signer implementation that uses an iframe for Solana wallet operations
@@ -24,10 +29,10 @@ export class SolanaIFrameSigner {
     /**
      * Initialize the signer
      */
-    public async init(): Promise<void> {
+    public async init(hidden = true): Promise<void> {
         try {
             console.log("Initializing SolanaIFrameSigner...");
-            await this.service.init();
+            await this.service.init({ hidden });
             console.log("SolanaIFrameSigner initialization successful");
         } catch (error) {
             console.error("Error initializing SolanaIFrameSigner:", error);
@@ -36,15 +41,12 @@ export class SolanaIFrameSigner {
             if (this.service) {
                 console.log("Trying to recover from initialization error...");
 
-                // If handshake failed but we have a service, try to set some minimal properties
                 try {
                     // Find any existing iframe that might work
-                    const serviceAny = this.service as any;
                     const iframeUrl =
-                        serviceAny.config?.iframeUrl ||
-                        (serviceAny.iframe?.src
-                            ? new URL(serviceAny.iframe.src).href
-                            : "");
+                        this.service.getIFrameUrl() ||
+                        new URL(this.service.getIFrame()?.src || "").href;
+
                     const existingIframe = document.querySelector(
                         'iframe[src*="' + iframeUrl + '"]'
                     ) as HTMLIFrameElement;
@@ -53,29 +55,29 @@ export class SolanaIFrameSigner {
                         console.log(
                             "Found existing iframe, attempting to use it"
                         );
-                        (this.service as any).iframe = existingIframe;
+                        this.service.setIFrame(existingIframe);
 
-                        // Try to set a minimal emitter
-                        (this.service as any).emitter = {
-                            iframe: existingIframe,
-                            isConnected: true,
-                            send: (event: string, data: any) => {
-                                existingIframe.contentWindow?.postMessage(
-                                    { type: event, data },
-                                    "*"
-                                );
-                                return true;
-                            },
-                        };
+                        // Create a proper IFrameWindow instance
+                        // First, manually set the iframe source to match
+                        const src = existingIframe.src || iframeUrl;
+                        existingIframe.src = src;
 
-                        return; // Return without error after recovery attempt
+                        // Then use init to create a proper IFrameWindow
+                        const iframeWindow = IFrameWindow.init(src, {
+                            incomingEvents: SecureIFrameParentIncomingEvents,
+                            outgoingEvents: SecureIFrameParentOutgoingEvents,
+                            targetOrigin: "*",
+                        });
+
+                        this.service.setEmitter(await iframeWindow);
+                        return;
                     }
                 } catch (recoveryError) {
                     console.error("Recovery attempt failed:", recoveryError);
                 }
             }
 
-            throw error; // Re-throw the original error if recovery wasn't possible
+            throw error;
         }
     }
 
@@ -134,8 +136,6 @@ export class SolanaIFrameSigner {
 }
 
 /**
- * Usage example:
- *
  * This shows how to use the SolanaIFrameSigner in a client application.
  * The iframeUrl should point to an HTML page that initializes the SolanaIFrameContentHandler.
  */
@@ -144,32 +144,3 @@ export function createSolanaIFrameSigner(
 ): SolanaIFrameSigner {
     return new SolanaIFrameSigner(iframeUrl);
 }
-
-/**
- * Example of how to use the signer:
- *
- * ```typescript
- * // Initialize the signer with the iframe URL
- * const signer = createSolanaIFrameSigner('https://your-domain.com/solana-wallet-iframe.html');
- *
- * // Setup
- * await signer.init();
- * await signer.validateAttestation();
- *
- * // Get the public key
- * const publicKey = await signer.getPublicKey();
- * console.log(`Solana public key: ${publicKey}`);
- *
- * // Sign a message
- * const message = new TextEncoder().encode('Hello, Solana!');
- * const signature = await signer.signMessage(message);
- * console.log(`Signed message: ${signature}`);
- *
- * // Sign a transaction (using @solana/web3.js)
- * const transaction = new VersionedTransaction(...); // Create your transaction
- * const signedTransaction = await signer.signTransaction(transaction);
- *
- * // Cleanup when done
- * signer.dispose();
- * ```
- */

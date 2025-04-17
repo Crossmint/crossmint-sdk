@@ -7,19 +7,19 @@ import nacl from "tweetnacl";
 import { ChildWindow } from "@crossmint/client-sdk-window";
 import { z } from "zod";
 import {
-    ParentIncomingEvents,
-    ParentOutgoingEvents,
+    SecureIFrameParentIncomingEvents,
+    SecureIFrameParentOutgoingEvents,
 } from "@crossmint/client-signers";
 import { VersionedTransaction } from "@solana/web3.js";
 
 // For the iframe implementation, we need to flip the events:
-// - What the parent sends out (ParentOutgoingEvents), we receive (ChildIncomingEvents)
-// - What the parent receives (ParentIncomingEvents), we send out (ChildOutgoingEvents)
-const ChildIncomingEvents = ParentOutgoingEvents;
+// - What the parent sends out (SecureIFrameParentOutgoingEvents), we receive (ChildIncomingEvents)
+// - What the parent receives (SecureIFrameParentIncomingEvents), we send out (ChildOutgoingEvents)
+const ChildIncomingEvents = SecureIFrameParentOutgoingEvents;
 
 // Extend the outgoing events to include the heartbeat event
 const ChildOutgoingEvents = {
-    ...ParentIncomingEvents,
+    ...SecureIFrameParentIncomingEvents,
     "iframe:heartbeat": z.object({
         timestamp: z.number(),
         address: z.string(),
