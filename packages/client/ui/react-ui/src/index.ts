@@ -12,6 +12,6 @@ export {
     type SolanaSmartWallet,
     type DelegatedSigner,
     type WalletBalance,
-    isValidChain,
+    isValidEVMChain,
 } from "@crossmint/wallets-sdk";
 export type { CrossmintEvent, CrossmintEventMap } from "@crossmint/client-sdk-base";

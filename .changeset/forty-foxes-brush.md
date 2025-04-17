@@ -2,4 +2,4 @@
 "@crossmint/wallets-sdk": patch
 ---
 
-Expose new function isValidChain
+Expose new function isValidEVMChain

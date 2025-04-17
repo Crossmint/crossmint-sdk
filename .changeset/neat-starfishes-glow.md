@@ -3,4 +3,4 @@
 ---
 
 - Expose EVMSmartWalletChain type
-- Add isValidChain to check if a chain is valid
+- Add isValidEVMChain to check if a chain is valid

@@ -7,7 +7,7 @@ export {
     type EVMSignerInput,
     type EVMSigner,
     type EVMSmartWalletChain,
-    isValidChain,
+    isValidChain as isValidEVMChain,
 } from "./evm";
 export type { WalletTypeToArgs } from "./services/types";
 export type { DelegatedSigner, WalletBalance } from "./api";
