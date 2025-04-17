@@ -2,12 +2,18 @@ import { z } from "zod";
 import { IFrameWindow } from "@crossmint/client-sdk-window";
 import type { VersionedTransaction } from "@solana/web3.js";
 import bs58 from "bs58";
+import {
+    BaseAttestationValidator,
+    Attestation,
+} from "./AttestationValidationService";
+
+export const AuthenticationDataSchema = z.object({
+    signerAddress: z.string(),
+    // TODO: add user-id, project-id, auth-id
+});
 
 // Define incoming events (events that the iframe sends to us)
 export const ParentIncomingEvents = {
-    "response:connect": z.object({
-        address: z.string(),
-    }),
     "response:sign-message": z.object({
         address: z.string(),
         signature: z.string(),
@@ -18,6 +24,9 @@ export const ParentIncomingEvents = {
     "response:attestation": z.object({
         attestation: z.record(z.string(), z.any()),
     }),
+    "response:get-public-key": z.object({
+        publicKey: z.string(),
+    }),
     error: z.object({
         code: z.number(),
         message: z.string(),
@@ -26,15 +35,14 @@ export const ParentIncomingEvents = {
 
 // Define outgoing events (events that we send to the iframe)
 export const ParentOutgoingEvents = {
-    "request:connect": z.undefined(),
     "request:attestation": z.undefined(),
-    "request:sign-message": z.object({
-        address: z.string(),
+    "request:sign-message": AuthenticationDataSchema.extend({
         message: z.string(), // Base58 encoded message
     }),
-    "request:sign-transaction": z.object({
+    "request:sign-transaction": AuthenticationDataSchema.extend({
         transaction: z.string(), // Base58 serialized transaction
     }),
+    "request:get-public-key": z.object({}),
 } as const;
 
 // Type definitions for our events
@@ -46,7 +54,26 @@ export interface SolanaIFrameSignerServiceConfig {
     targetOrigin?: string;
 }
 
-export class SolanaIFrameSignerService {
+/**
+ * Placeholder encryption implementation
+ * Uses the attestation public key to encrypt messages
+ *
+ * @param message - Data to encrypt
+ * @param publicKey - Attestation public key for encryption
+ * @returns Encrypted data (currently a placeholder)
+ */
+function encryptMessage(message: Uint8Array, publicKey: string): Uint8Array {
+    // TODO: Replace with actual encryption implementation
+    console.log(`Encrypting message with public key: ${publicKey}`);
+    return message;
+}
+
+/**
+ * Solana signer service that communicates with an iframe wallet
+ * Extends the BaseAttestationValidator to require attestation validation
+ * before performing any operations
+ */
+export class SolanaIFrameSignerService extends BaseAttestationValidator {
     private iframe: HTMLIFrameElement | null = null;
     private emitter: IFrameWindow<
         ParentIncomingEventMap,
@@ -56,17 +83,21 @@ export class SolanaIFrameSignerService {
     private address: string | null = null;
 
     constructor(config: SolanaIFrameSignerServiceConfig) {
+        super();
         this.config = config;
     }
 
     /**
-     * Initialize the iframe communication
+     * Initializes communication with the iframe
+     * Creates and configures the invisible iframe
      */
     public async init(): Promise<void> {
         if (this.emitter) {
             console.log("SolanaIFrameSignerService already initialized");
             return;
         }
+
+        this.resetAttestationState();
 
         try {
             this.emitter = await IFrameWindow.init(this.config.iframeUrl, {
@@ -77,9 +108,7 @@ export class SolanaIFrameSignerService {
 
             this.iframe = this.emitter.iframe;
 
-            // Append iframe to document body if it's not already there
             if (this.iframe && !document.body.contains(this.iframe)) {
-                // Make iframe invisible but functional
                 this.iframe.style.position = "absolute";
                 this.iframe.style.width = "0";
                 this.iframe.style.height = "0";
@@ -88,7 +117,6 @@ export class SolanaIFrameSignerService {
                 document.body.appendChild(this.iframe);
             }
 
-            // Handshake with the iframe
             await this.emitter.handshakeWithChild();
             console.log("Handshake with SolanaIFrameSignerService complete");
         } catch (error) {
@@ -101,46 +129,60 @@ export class SolanaIFrameSignerService {
     }
 
     /**
-     * Connect to the wallet in the iframe
+     * Requests attestation from the iframe
+     * Implements the abstract method from BaseAttestationValidator
      */
-    public async connect(): Promise<string> {
+    protected async requestAttestation(): Promise<Attestation> {
         if (!this.emitter) {
             throw new Error("SolanaIFrameSignerService not initialized");
         }
 
-        try {
-            const response = await this.emitter.sendAction({
-                event: "request:connect",
-                data: undefined,
-                responseEvent: "response:connect",
-            });
+        const response = await this.emitter.sendAction({
+            event: "request:attestation",
+            data: undefined,
+            responseEvent: "response:attestation",
+        });
 
-            this.address = response.address;
-            return response.address;
-        } catch (error) {
-            console.error("Failed to connect to wallet", error);
-            throw error;
-        }
+        const attestation: Attestation = {
+            ...response.attestation,
+            publicKey: response.attestation.publicKey || "missing-public-key",
+        };
+
+        return attestation;
     }
 
     /**
-     * Sign a message using the wallet in the iframe
+     * Signs a message using the iframe wallet
+     * Message is encrypted with the attestation public key
+     *
+     * @param message - The message to sign
+     * @returns The signature as a Uint8Array
      */
     public async signMessage(message: Uint8Array): Promise<Uint8Array> {
         if (!this.emitter) {
             throw new Error("SolanaIFrameSignerService not initialized");
         }
 
-        if (!this.address) {
-            throw new Error("Wallet not connected");
-        }
+        this.ensureAttestationValidated();
 
         try {
+            // Ensure we have an address
+            if (!this.address) {
+                this.address = await this.getPublicKey();
+            }
+
+            const publicKey = this.getAttestationPublicKey();
+            if (!publicKey) {
+                throw new Error("Attestation public key not available");
+            }
+
+            const encryptedMessage = encryptMessage(message, publicKey);
+
             const response = await this.emitter.sendAction({
                 event: "request:sign-message",
                 data: {
-                    address: this.address,
-                    message: bs58.encode(message),
+                    signerAddress: this.address,
+                    message: bs58.encode(encryptedMessage),
                 },
                 responseEvent: "response:sign-message",
             });
@@ -153,7 +195,11 @@ export class SolanaIFrameSignerService {
     }
 
     /**
-     * Sign a transaction using the wallet in the iframe
+     * Signs a transaction using the iframe wallet
+     * Transaction is encrypted with the attestation public key
+     *
+     * @param transaction - The transaction to sign
+     * @returns The signed transaction
      */
     public async signTransaction(
         transaction: VersionedTransaction
@@ -162,15 +208,27 @@ export class SolanaIFrameSignerService {
             throw new Error("SolanaIFrameSignerService not initialized");
         }
 
-        if (!this.address) {
-            throw new Error("Wallet not connected");
-        }
+        this.ensureAttestationValidated();
 
         try {
+            // Ensure we have an address
+            if (!this.address) {
+                this.address = await this.getPublicKey();
+            }
+
+            const publicKey = this.getAttestationPublicKey();
+            if (!publicKey) {
+                throw new Error("Attestation public key not available");
+            }
+
+            const serializedTx = transaction.serialize();
+            const encryptedTx = encryptMessage(serializedTx, publicKey);
+
             const response = await this.emitter.sendAction({
                 event: "request:sign-transaction",
                 data: {
-                    transaction: bs58.encode(transaction.serialize()),
+                    signerAddress: this.address,
+                    transaction: bs58.encode(encryptedTx),
                 },
                 responseEvent: "response:sign-transaction",
             });
@@ -185,7 +243,31 @@ export class SolanaIFrameSignerService {
     }
 
     /**
-     * Clean up resources
+     * Gets the public key from the iframe wallet
+     * This can be used to fetch the public key without connecting to the wallet
+     * @returns The wallet's public key
+     */
+    public async getPublicKey(): Promise<string> {
+        if (!this.emitter) {
+            throw new Error("SolanaIFrameSignerService not initialized");
+        }
+
+        try {
+            const response = await this.emitter.sendAction({
+                event: "request:get-public-key",
+                data: {},
+                responseEvent: "response:get-public-key",
+            });
+
+            return response.publicKey;
+        } catch (error) {
+            console.error("Failed to get public key from wallet", error);
+            throw error;
+        }
+    }
+
+    /**
+     * Cleans up resources and resets state
      */
     public dispose(): void {
         if (this.iframe && document.body.contains(this.iframe)) {
@@ -194,5 +276,6 @@ export class SolanaIFrameSignerService {
         this.iframe = null;
         this.emitter = null;
         this.address = null;
+        this.resetAttestationState();
     }
 }

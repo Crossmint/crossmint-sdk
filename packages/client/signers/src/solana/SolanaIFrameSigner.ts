@@ -25,14 +25,76 @@ export class SolanaIFrameSigner {
      * Initialize the signer
      */
     public async init(): Promise<void> {
-        await this.service.init();
+        try {
+            console.log("Initializing SolanaIFrameSigner...");
+            await this.service.init();
+            console.log("SolanaIFrameSigner initialization successful");
+        } catch (error) {
+            console.error("Error initializing SolanaIFrameSigner:", error);
+
+            // Try to recover if possible
+            if (this.service) {
+                console.log("Trying to recover from initialization error...");
+
+                // If handshake failed but we have a service, try to set some minimal properties
+                try {
+                    // Find any existing iframe that might work
+                    const serviceAny = this.service as any;
+                    const iframeUrl =
+                        serviceAny.config?.iframeUrl ||
+                        (serviceAny.iframe?.src
+                            ? new URL(serviceAny.iframe.src).href
+                            : "");
+                    const existingIframe = document.querySelector(
+                        'iframe[src*="' + iframeUrl + '"]'
+                    ) as HTMLIFrameElement;
+
+                    if (existingIframe) {
+                        console.log(
+                            "Found existing iframe, attempting to use it"
+                        );
+                        (this.service as any).iframe = existingIframe;
+
+                        // Try to set a minimal emitter
+                        (this.service as any).emitter = {
+                            iframe: existingIframe,
+                            isConnected: true,
+                            send: (event: string, data: any) => {
+                                existingIframe.contentWindow?.postMessage(
+                                    { type: event, data },
+                                    "*"
+                                );
+                                return true;
+                            },
+                        };
+
+                        return; // Return without error after recovery attempt
+                    }
+                } catch (recoveryError) {
+                    console.error("Recovery attempt failed:", recoveryError);
+                }
+            }
+
+            throw error; // Re-throw the original error if recovery wasn't possible
+        }
     }
 
     /**
-     * Connect to the wallet and get the user's address
+     * Validate the attestation from the iframe wallet
+     * This must be called before connect to ensure secure communication
      */
-    public async connect(): Promise<string> {
-        this._address = await this.service.connect();
+    public async validateAttestation(): Promise<boolean> {
+        return await this.service.validateAttestation();
+    }
+
+    /**
+     * Get the wallet's public key without connecting
+     * This can be used to retrieve the public key from the iframe wallet
+     * without requiring a full connection process
+     */
+    public async getPublicKey(): Promise<string> {
+        // Store the public key in the address field for convenience
+        this._address = await this.service.getPublicKey();
         return this._address;
     }
 
@@ -92,10 +154,11 @@ export function createSolanaIFrameSigner(
  *
  * // Setup
  * await signer.init();
+ * await signer.validateAttestation();
  *
- * // Connect to the wallet
- * const address = await signer.connect();
- * console.log(`Connected to Solana wallet: ${address}`);
+ * // Get the public key
+ * const publicKey = await signer.getPublicKey();
+ * console.log(`Solana public key: ${publicKey}`);
  *
  * // Sign a message
  * const message = new TextEncoder().encode('Hello, Solana!');

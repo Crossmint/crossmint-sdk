@@ -1,0 +1,17 @@
+{
+    "files": {
+        "include": ["src/**/*.js", "test/**/*.js"],
+        "ignore": ["**/*.min.js"]
+    },
+    "linter": {
+        "ignore": ["test"],
+        "rules": {
+            "suspicious": {
+                "useAwait": "off",
+                "noUnusedImports": "off",
+                "noUnusedVariables": "off",
+                "noExplicitAny": "off"
+            }
+        }
+    }
+}
