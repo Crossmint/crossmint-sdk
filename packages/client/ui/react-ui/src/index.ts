@@ -6,11 +6,12 @@ export type { LoginMethod } from "./types/auth";
 
 export { CrossmintEvents, useCrossmintEvents } from "@crossmint/client-sdk-base";
 
-export type {
-    EVMSmartWallet,
-    EVMSmartWalletChain,
-    SolanaSmartWallet,
-    DelegatedSigner,
-    WalletBalance,
+export {
+    type EVMSmartWallet,
+    type EVMSmartWalletChain,
+    type SolanaSmartWallet,
+    type DelegatedSigner,
+    type WalletBalance,
+    isValidChain,
 } from "@crossmint/wallets-sdk";
 export type { CrossmintEvent, CrossmintEventMap } from "@crossmint/client-sdk-base";
