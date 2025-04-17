@@ -3,7 +3,6 @@ import type {
     GetSignerResponse,
     WalletBalance,
     GetTransactionsResponse,
-    SolanaWalletLocator,
     DelegatedSigner,
 } from "@/api";
 import type { SolanaNonCustodialSignerInput, SolanaSigner } from "./signers";
@@ -45,11 +44,7 @@ export interface BaseSolanaWallet {
      * @param {SolanaWalletLocator} [params.locator] - The wallet locator
      * @returns {Promise<GetNftsResponse>} The NFTs
      */
-    unstable_getNfts(params: {
-        perPage: number;
-        page: number;
-        locator?: SolanaWalletLocator;
-    }): Promise<GetNftsResponse>;
+    unstable_getNfts(params: { perPage: number; page: number }): Promise<GetNftsResponse>;
 }
 
 export interface SolanaSmartWallet extends BaseSolanaWallet {

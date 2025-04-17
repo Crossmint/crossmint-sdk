@@ -19,6 +19,7 @@ import type {
     CreateTransactionSuccessResponse,
     GetTransactionsResponse,
     WalletBalance,
+    DelegatedSigner,
 } from "../api";
 import { sleep } from "../utils";
 import type { Callbacks } from "../utils/options";
@@ -45,16 +46,23 @@ import entryPointAbi from "./abi/entryPoint";
 import { toViemChain, type EVMSmartWalletChain } from "./chains";
 import type { EVMSigner } from "./types/signers";
 import type { EVMSmartWallet, TransactionInput } from "./types/wallet";
+import { EVMDelegatedSignerService } from "./services/delegated-signers-service";
 
 type PendingApproval = NonNullable<NonNullable<CreateTransactionSuccessResponse["approvals"]>["pending"]>[number];
 
 export class EVMSmartWalletImpl implements EVMSmartWallet {
+    protected readonly delegatedSignerService: EVMDelegatedSignerService;
     constructor(
         public readonly address: Address,
         private readonly apiClient: ApiClient,
         private readonly adminSigner: EVMSigner,
         private readonly callbacks: Callbacks
-    ) {}
+    ) {
+        this.delegatedSignerService = new EVMDelegatedSignerService(this.walletLocator, this, this.apiClient);
+    }
+
+    // Public API Methods
+    // ===================
 
     /**
      * Get the wallet balances
@@ -66,7 +74,7 @@ export class EVMSmartWalletImpl implements EVMSmartWallet {
      */
     public async getBalances(params: {
         chain: EVMSmartWalletChain;
-        tokens: Address[];
+        tokens: string[];
     }): Promise<WalletBalance> {
         const response = await this.apiClient.getBalance(this.address, {
             chains: [params.chain],
@@ -106,11 +114,10 @@ export class EVMSmartWalletImpl implements EVMSmartWallet {
         perPage: number;
         page: number;
         chain: EVMSmartWalletChain;
-        locator?: EvmWalletLocator;
     }) {
         return await this.apiClient.unstable_getNfts({
             ...params,
-            walletLocator: this.walletLocator,
+            address: this.address,
         });
     }
 
@@ -204,6 +211,35 @@ export class EVMSmartWalletImpl implements EVMSmartWallet {
             chain: toViemChain(params.chain),
         });
     }
+
+    /**
+     * Add a delegated signer to the wallet
+     * @param {Object} params - The parameters
+     * @param {EVMSmartWalletChain} params.chain - The chain
+     * @param {string} params.signer - The signer
+     * @returns The delegated signer
+     */
+    public async addDelegatedSigner(params: {
+        chain: EVMSmartWalletChain;
+        signer: string;
+    }) {
+        return await this.delegatedSignerService.registerDelegatedSigner(params.chain, params.signer, {
+            adminSigner: this.adminSigner,
+        });
+    }
+
+    /**
+     * Gets delegated signers for the wallet
+     * @returns The delegated signers
+     * @throws {WalletNotAvailableError} If the wallet is not found
+     * @throws {WalletTypeNotSupportedError} If the wallet type is not supported
+     */
+    public async getDelegatedSigners(): Promise<DelegatedSigner[]> {
+        return await this.delegatedSignerService.getDelegatedSigners();
+    }
+
+    // Private Methods
+    // ===============
 
     private get walletLocator(): EvmWalletLocator {
         if (this.apiClient.isServerSide) {
@@ -353,6 +389,60 @@ export class EVMSmartWalletImpl implements EVMSmartWallet {
         return transactionHash as Hex;
     }
 
+    /**
+     * @internal Used by DelegatedSignerService
+     */
+    async approveSignature(pendingApprovals: Array<PendingApproval>, signatureId: string) {
+        const pendingApproval = pendingApprovals.find((approval) => approval.signer === this.signerLocator);
+        if (!pendingApproval) {
+            throw new InvalidSignerError(`Signer ${this.signerLocator} not found in pending approvals`);
+        }
+        const message = pendingApproval.message as Hex;
+
+        const { signature, metadata } = await this.signWithAdminSigner(message);
+
+        if (signature === undefined) {
+            throw new SignatureNotFoundError("Signature not available");
+        }
+
+        await this.apiClient.approveSignature(this.walletLocator, signatureId, {
+            approvals: [
+                {
+                    signer: this.signerLocator,
+                    // @ts-ignore the generated types are wrong
+                    signature:
+                        this.adminSigner.type === "evm-passkey"
+                            ? {
+                                  r: signature.slice(0, 66),
+                                  s: `0x${signature.slice(66)}`,
+                              }
+                            : signature,
+                    metadata,
+                },
+            ],
+        });
+
+        return signature;
+    }
+
+    /**
+     * @internal Used by DelegatedSignerService
+     */
+    async waitForSignature(signatureId: string) {
+        let signatureResponse: GetSignatureResponse | null = null;
+        do {
+            await sleep(STATUS_POLLING_INTERVAL_MS);
+            signatureResponse = await this.apiClient.getSignature(this.walletLocator, signatureId);
+            if ("error" in signatureResponse) {
+                throw new SignatureNotAvailableError(JSON.stringify(signatureResponse));
+            }
+        } while (signatureResponse === null || signatureResponse.status === "pending");
+
+        if (signatureResponse.status === "failed") {
+            throw new SigningFailedError("Signature signing failed");
+        }
+    }
+
     private async createSignature(params: {
         message: SignableMessage;
         chain: EVMSmartWalletChain;
@@ -412,53 +502,5 @@ export class EVMSmartWalletImpl implements EVMSmartWallet {
             throw new SignatureNotCreatedError(JSON.stringify(signatureCreationResponse));
         }
         return signatureCreationResponse;
-    }
-
-    private async approveSignature(pendingApprovals: Array<PendingApproval>, signatureId: string) {
-        const pendingApproval = pendingApprovals.find((approval) => approval.signer === this.signerLocator);
-        if (!pendingApproval) {
-            throw new InvalidSignerError(`Signer ${this.signerLocator} not found in pending approvals`);
-        }
-        const message = pendingApproval.message as Hex;
-
-        const { signature, metadata } = await this.signWithAdminSigner(message);
-
-        if (signature === undefined) {
-            throw new SignatureNotFoundError("Signature not available");
-        }
-
-        await this.apiClient.approveSignature(this.walletLocator, signatureId, {
-            approvals: [
-                {
-                    signer: this.signerLocator,
-                    // @ts-ignore the generated types are wrong
-                    signature:
-                        this.adminSigner.type === "evm-passkey"
-                            ? {
-                                  r: signature.slice(0, 66),
-                                  s: `0x${signature.slice(66)}`,
-                              }
-                            : signature,
-                    metadata,
-                },
-            ],
-        });
-
-        return signature;
-    }
-
-    private async waitForSignature(signatureId: string) {
-        let signatureResponse: GetSignatureResponse | null = null;
-        do {
-            await sleep(STATUS_POLLING_INTERVAL_MS);
-            signatureResponse = await this.apiClient.getSignature(this.walletLocator, signatureId);
-            if ("error" in signatureResponse) {
-                throw new SignatureNotAvailableError(JSON.stringify(signatureResponse));
-            }
-        } while (signatureResponse === null || signatureResponse.status === "pending");
-
-        if (signatureResponse.status === "failed") {
-            throw new SigningFailedError("Signature signing failed");
-        }
     }
 }
