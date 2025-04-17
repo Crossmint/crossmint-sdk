@@ -1,5 +1,12 @@
 "use client";
 
+/*
+ *
+ * This is just a mock for the iframe.
+ * Will be replaced really soon, it just shows a way to
+ * handle events
+ */
+
 import { useEffect, useState } from "react";
 import bs58 from "bs58";
 import * as web3 from "@solana/web3.js";
