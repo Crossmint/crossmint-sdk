@@ -4,17 +4,6 @@ import { WalletNotAvailableError, WalletTypeNotSupportedError } from "../../util
 import type { EVMSmartWalletChain } from "../chains";
 import type { EVMSmartWalletImpl } from "../wallet";
 
-interface SignerPermissions {
-    type: string;
-    data: {
-        count?: number; // For rate-limit type
-        interval?: number; // For rate-limit type
-        assets?: string[]; // For asset restrictions
-        maxValue?: string; // For value limits
-        allowedAddresses?: string[]; // For contract allowlists
-    };
-}
-
 export class EVMDelegatedSignerService {
     constructor(
         private readonly walletLocator: EvmWalletLocator,
@@ -26,7 +15,6 @@ export class EVMDelegatedSignerService {
         chain: EVMSmartWalletChain,
         signer: string,
         options?: {
-            permissions?: SignerPermissions;
             expiresAt?: number;
             adminSigner?: EVMSigner;
         }
@@ -57,13 +45,7 @@ export class EVMDelegatedSignerService {
                                       submittedAt: number;
                                       signer: string;
                                       message: string;
-                                      metadata?: {
-                                          deviceInfo?: string;
-                                          ipAddress?: string;
-                                          userAgent?: string;
-                                      };
                                   }>;
-                                  required?: number;
                               };
                           };
                 };
