@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 0.7.0
+
+### Minor Changes
+
+- 487d336: Added delegated signer methods for evm smart wallets
+
 ## 0.6.0
 
 ### Minor Changes
