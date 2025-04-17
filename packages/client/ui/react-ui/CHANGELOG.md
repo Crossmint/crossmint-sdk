@@ -1,5 +1,15 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.18.2
+
+### Patch Changes
+
+- dd64400: - Expose EVMSmartWalletChain type
+  - Add isValidEVMChain to check if a chain is valid
+- Updated dependencies [dd64400]
+  - @crossmint/wallets-sdk@0.7.1
+  - @crossmint/client-sdk-react-base@0.2.6
+
 ## 1.18.1
 
 ### Patch Changes
