@@ -125,7 +125,7 @@ class ApiClient extends CrossmintApiClient {
     }
 
     async unstable_getNfts(params: {
-        walletLocator: WalletLocator;
+        address: string;
         perPage: number;
         page: number;
         chain: string;
@@ -133,7 +133,7 @@ class ApiClient extends CrossmintApiClient {
         const queryParams = new URLSearchParams();
         queryParams.append("page", params.page.toString());
         queryParams.append("perPage", params.perPage.toString());
-        const identifier = `${params.chain}:${params.walletLocator}`;
+        const identifier = `${params.chain}:${params.address}`;
         const response = await this.get(`${this.apiPrefix}/${identifier}/nfts?${queryParams.toString()}`, {
             headers: this.headers,
         });

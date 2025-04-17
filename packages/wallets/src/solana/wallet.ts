@@ -75,10 +75,9 @@ export abstract class SolanaWallet implements BaseSolanaWallet {
     public async unstable_getNfts(params: {
         perPage: number;
         page: number;
-        locator?: SolanaWalletLocator;
     }): Promise<GetNftsResponse> {
         return await this.apiClient.unstable_getNfts({
-            walletLocator: params.locator ?? this.walletLocator,
+            address: this.address,
             perPage: params.perPage,
             page: params.page,
             chain: "solana",
