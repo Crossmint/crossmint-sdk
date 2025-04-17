@@ -43,18 +43,14 @@ export class SolanaIFrameSigner {
 
                 try {
                     // Find any existing iframe that might work
-                    const iframeUrl =
-                        this.service.getIFrameUrl() ||
-                        new URL(this.service.getIFrame()?.src || "").href;
+                    const iframeUrl = this.service.getIFrameUrl() || new URL(this.service.getIFrame()?.src || "").href;
 
                     const existingIframe = document.querySelector(
                         'iframe[src*="' + iframeUrl + '"]'
                     ) as HTMLIFrameElement;
 
                     if (existingIframe) {
-                        console.log(
-                            "Found existing iframe, attempting to use it"
-                        );
+                        console.log("Found existing iframe, attempting to use it");
                         this.service.setIFrame(existingIframe);
 
                         // Create a proper IFrameWindow instance
@@ -118,9 +114,7 @@ export class SolanaIFrameSigner {
      * Sign a transaction using the connected wallet
      */
 
-    public async signTransaction(
-        transaction: VersionedTransaction
-    ): Promise<VersionedTransaction> {
+    public async signTransaction(transaction: VersionedTransaction): Promise<VersionedTransaction> {
         return this.service.signTransaction(transaction);
     }
 
@@ -137,8 +131,6 @@ export class SolanaIFrameSigner {
  * This shows how to use the SolanaIFrameSigner in a client application.
  * The iframeUrl should point to an HTML page that initializes the SolanaIFrameContentHandler.
  */
-export function createSolanaIFrameSigner(
-    iframeUrl: string
-): SolanaIFrameSigner {
+export function createSolanaIFrameSigner(iframeUrl: string): SolanaIFrameSigner {
     return new SolanaIFrameSigner(iframeUrl);
 }
