@@ -7,7 +7,10 @@ import {
     AttestationValidationServiceImpl,
     type Attestation,
 } from "./AttestationValidationService";
-import { type AsymmetricEncryptionService, AsymmetricEncryptionServiceImpl } from "./AsymmetricEncryptionService";
+import {
+    type AsymmetricEncryptionService,
+    AsymmetricEncryptionServiceImpl,
+} from "./AsymmetricEncryptionService";
 
 export const AuthenticationDataSchema = z.object({
     signerAddress: z.string(),
@@ -77,7 +80,10 @@ export interface AsymmetricEncryptionProvider {
  */
 export class SolanaIFrameSignerService implements AsymmetricEncryptionProvider {
     private iframe: HTMLIFrameElement | null = null;
-    private emitter: IFrameWindow<ParentIncomingEventMap, ParentOutgoingEventMap> | null = null;
+    private emitter: IFrameWindow<
+        ParentIncomingEventMap,
+        ParentOutgoingEventMap
+    > | null = null;
     private config: SolanaIFrameSignerServiceConfig;
     private address: string | null = null;
     private attestationService: AttestationValidationService;
@@ -87,12 +93,15 @@ export class SolanaIFrameSignerService implements AsymmetricEncryptionProvider {
         this.config = config;
 
         // Use provided services or create default ones
-        this.encryptionService = config.encryptionService || new AsymmetricEncryptionServiceImpl();
+        this.encryptionService =
+            config.encryptionService || new AsymmetricEncryptionServiceImpl();
 
         // Create the attestation service with a requestAttestation function
         this.attestationService =
             config.attestationValidationService ||
-            new AttestationValidationServiceImpl(this.requestAttestation.bind(this));
+            new AttestationValidationServiceImpl(
+                this.requestAttestation.bind(this)
+            );
     }
 
     /**
@@ -137,7 +146,10 @@ export class SolanaIFrameSignerService implements AsymmetricEncryptionProvider {
             await this.emitter.handshakeWithChild();
             console.log("Handshake with SolanaIFrameSignerService complete");
         } catch (error) {
-            console.error("Failed to initialize SolanaIFrameSignerService", error);
+            console.error(
+                "Failed to initialize SolanaIFrameSignerService",
+                error
+            );
             throw error;
         }
     }
@@ -209,13 +221,11 @@ export class SolanaIFrameSignerService implements AsymmetricEncryptionProvider {
                 this.address = await this.getPublicKey();
             }
 
-            const encryptedMessage = this.encryptData(message);
-
             const response = await this.emitter.sendAction({
                 event: "request:sign-message",
                 data: {
                     signerAddress: this.address,
-                    message: bs58.encode(encryptedMessage),
+                    message: bs58.encode(message),
                 },
                 responseEvent: "response:sign-message",
             });
@@ -234,7 +244,9 @@ export class SolanaIFrameSignerService implements AsymmetricEncryptionProvider {
      * @param transaction - The transaction to sign
      * @returns The signed transaction
      */
-    public async signTransaction(transaction: VersionedTransaction): Promise<VersionedTransaction> {
+    public async signTransaction(
+        transaction: VersionedTransaction
+    ): Promise<VersionedTransaction> {
         if (!this.emitter) {
             throw new Error("SolanaIFrameSignerService not initialized");
         }
@@ -248,18 +260,19 @@ export class SolanaIFrameSignerService implements AsymmetricEncryptionProvider {
             }
 
             const serializedTx = transaction.serialize();
-            const encryptedTx = this.encryptData(serializedTx);
 
             const response = await this.emitter.sendAction({
                 event: "request:sign-transaction",
                 data: {
                     signerAddress: this.address,
-                    transaction: bs58.encode(encryptedTx),
+                    transaction: bs58.encode(serializedTx),
                 },
                 responseEvent: "response:sign-transaction",
             });
 
-            return VersionedTransaction.deserialize(bs58.decode(response.transaction));
+            return VersionedTransaction.deserialize(
+                bs58.decode(response.transaction)
+            );
         } catch (error) {
             console.error("Failed to sign transaction", error);
             throw error;
@@ -302,7 +315,9 @@ export class SolanaIFrameSignerService implements AsymmetricEncryptionProvider {
         this.iframe = iframe;
     }
 
-    setEmitter(emitter: IFrameWindow<ParentIncomingEventMap, ParentOutgoingEventMap>): void {
+    setEmitter(
+        emitter: IFrameWindow<ParentIncomingEventMap, ParentOutgoingEventMap>
+    ): void {
         this.emitter = emitter;
     }
 
