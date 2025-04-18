@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 0.7.1
+
+### Patch Changes
+
+- dd64400: Expose new function isValidEVMChain
+
 ## 0.7.0
 
 ### Minor Changes
