@@ -5,21 +5,19 @@ const SupportedChainLayer = z.enum(["solana", "evm"]);
 const VersionedEvent = z.object({
     version: z.number(),
 });
-
-const AuthenticatedEvent = VersionedEvent.extend({
+const AuthenticatedEventRequest = VersionedEvent.extend({
     jwt: z.string(),
-    publicKey: z.string(),
 });
 
 export const GetAttestationPayloadSchema = {
     request: VersionedEvent,
     response: VersionedEvent.extend({
-        attestationDocument: z.record(z.string(), z.any()),
+        attestationDocument: z.record(z.string(), z.any()), // TODO: Refine this type
     }),
 };
 
 export const SignMessagePayloadSchema = {
-    request: AuthenticatedEvent.extend({
+    request: AuthenticatedEventRequest.extend({
         message: z.string(),
         chainLayer: SupportedChainLayer,
         encoding: z.enum(["base58"]).optional().default("base58"),
@@ -31,7 +29,7 @@ export const SignMessagePayloadSchema = {
 };
 
 export const SignTransactionPayloadSchema = {
-    request: AuthenticatedEvent.extend({
+    request: AuthenticatedEventRequest.extend({
         transaction: z.string(),
         chainLayer: SupportedChainLayer,
         encoding: z.enum(["base58"]).optional().default("base58"),
@@ -43,17 +41,20 @@ export const SignTransactionPayloadSchema = {
 };
 
 export const CreateSignerPayloadSchema = {
-    request: AuthenticatedEvent.extend({}),
+    request: AuthenticatedEventRequest.extend({
+        authId: z.string(),
+    }),
     response: VersionedEvent.extend({
         signerId: z.string(),
     }),
 };
 
 export const SendEncryptedOtpPayloadSchema = {
-    request: AuthenticatedEvent.extend({
+    request: AuthenticatedEventRequest.extend({
         encryptedOtp: z.string(),
     }),
     response: VersionedEvent.extend({
         encryptedOtp: z.string(),
+        publicKey: z.string(),
     }),
 };
