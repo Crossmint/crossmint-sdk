@@ -13,13 +13,15 @@
     "main": "./dist/index.cjs",
     "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
-    "files": ["dist", "LICENSE"],
+    "files": [
+        "dist",
+        "LICENSE"
+    ],
     "scripts": {
         "build": "tsup",
         "dev": "tsup --watch"
     },
     "dependencies": {
-        "@crossmint/client-sdk-window": "workspace:*",
         "@crossmint/common-sdk-base": "workspace:*",
         "@solana/web3.js": "1.98.0",
         "bs58": "5.0.0",
