@@ -717,15 +717,6 @@ importers:
 
   packages/client/signers:
     dependencies:
-      '@crossmint/common-sdk-base':
-        specifier: workspace:*
-        version: link:../../common/base
-      '@solana/web3.js':
-        specifier: 1.98.0
-        version: 1.98.0(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
-      bs58:
-        specifier: 5.0.0
-        version: 5.0.0
       zod:
         specifier: 3.22.4
         version: 3.22.4
