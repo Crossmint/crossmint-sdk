@@ -14,8 +14,7 @@ export const SecureSignerIFrameEventNames = [
     "send-otp",
 ] as const;
 
-export type SecureSignerIFrameEventName =
-    (typeof SecureSignerIFrameEventNames)[number];
+export type SecureSignerIFrameEventName = (typeof SecureSignerIFrameEventNames)[number];
 
 export const SecureSignerInboundEvents = {
     "request:create-signer": CreateSignerPayloadSchema.request,
