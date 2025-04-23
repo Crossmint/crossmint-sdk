@@ -1,6 +1,7 @@
-export {
-    SecureSignerInboundEvents,
-    SecureSignerOutboundEvents,
-} from "./events";
+export { signerInboundEvents, signerOutboundEvents } from "./events";
 
-export type { SecureSignerIFrameEventName } from "./events";
+export type {
+    SignerIFrameEventName,
+    SignerInputEvent,
+    SignerOutputEvent,
+} from "./events";
