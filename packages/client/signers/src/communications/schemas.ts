@@ -3,7 +3,10 @@ import { z } from "zod";
 const SupportedChainLayer = z.enum(["solana", "evm"]);
 
 const AuthenticatedEventRequest = z.object({
-    jwt: z.string(),
+    authData: z.object({
+        jwt: z.string(),
+        apiKey: z.string(),
+    }),
 });
 
 export const GetAttestationPayloadSchema = {
@@ -17,10 +20,12 @@ export const GetAttestationPayloadSchema = {
 
 export const SignMessagePayloadSchema = {
     request: AuthenticatedEventRequest.extend({
-        chainLayer: SupportedChainLayer,
-        message: z.string(),
         deviceId: z.string(),
-        encoding: z.enum(["base58"]).optional().default("base58"),
+        data: z.object({
+            chainLayer: SupportedChainLayer,
+            message: z.string(),
+            encoding: z.enum(["base58"]).optional().default("base58"),
+        }),
     }),
     response: z.object({
         signature: z.string(),
@@ -30,10 +35,12 @@ export const SignMessagePayloadSchema = {
 
 export const SignTransactionPayloadSchema = {
     request: AuthenticatedEventRequest.extend({
-        transaction: z.string(),
-        chainLayer: SupportedChainLayer,
         deviceId: z.string(),
-        encoding: z.enum(["base58"]).optional().default("base58"),
+        data: z.object({
+            transaction: z.string(),
+            chainLayer: SupportedChainLayer,
+            encoding: z.enum(["base58"]).optional().default("base58"),
+        }),
     }),
     response: z.object({
         signature: z.string(),
@@ -43,28 +50,33 @@ export const SignTransactionPayloadSchema = {
 
 export const CreateSignerPayloadSchema = {
     request: AuthenticatedEventRequest.extend({
-        authId: z.string(),
         deviceId: z.string(),
+        data: z.object({
+            authId: z.string(),
+        }),
     }),
     response: z.object({}),
 };
 
 export const SendEncryptedOtpPayloadSchema = {
     request: AuthenticatedEventRequest.extend({
-        encryptedOtp: z.string(),
-        chainLayer: SupportedChainLayer,
         deviceId: z.string(),
+        data: z.object({
+            encryptedOtp: z.string(),
+            chainLayer: SupportedChainLayer,
+        }),
     }),
     response: z.object({
-        encryptedOtp: z.string(),
         address: z.string(),
     }),
 };
 
 export const GetPublicKeyPayloadSchema = {
     request: AuthenticatedEventRequest.extend({
-        chainLayer: SupportedChainLayer,
         deviceId: z.string(),
+        data: z.object({
+            chainLayer: SupportedChainLayer,
+        }),
     }),
     response: z.object({
         publicKey: z.string(),

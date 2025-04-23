@@ -15,6 +15,7 @@ export const SIGNER_EVENTS = [
     "sign-message",
     "sign-transaction",
     "send-otp",
+    "get-public-key",
 ] as const;
 export type SignerIFrameEventName = (typeof SIGNER_EVENTS)[number];
 
