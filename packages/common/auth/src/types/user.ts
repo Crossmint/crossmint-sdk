@@ -8,10 +8,14 @@ export type FarcasterMetadata = {
     verifications: string[];
 };
 
+export type TwitterMetadata = {
+    username: string;
+};
+
 export type SDKExternalUser = {
     id: string;
     email?: string;
     phoneNumber?: string;
     farcaster?: FarcasterMetadata;
-    twitter?: string;
+    twitter?: TwitterMetadata;
 };
