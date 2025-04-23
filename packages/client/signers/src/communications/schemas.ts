@@ -18,8 +18,9 @@ export const GetAttestationPayloadSchema = {
 
 export const SignMessagePayloadSchema = {
     request: AuthenticatedEventRequest.extend({
-        message: z.string(),
         chainLayer: SupportedChainLayer,
+        message: z.string(),
+        deviceId: z.string(),
         encoding: z.enum(["base58"]).optional().default("base58"),
     }),
     response: VersionedEvent.extend({
@@ -32,6 +33,7 @@ export const SignTransactionPayloadSchema = {
     request: AuthenticatedEventRequest.extend({
         transaction: z.string(),
         chainLayer: SupportedChainLayer,
+        deviceId: z.string(),
         encoding: z.enum(["base58"]).optional().default("base58"),
     }),
     response: VersionedEvent.extend({
@@ -43,18 +45,29 @@ export const SignTransactionPayloadSchema = {
 export const CreateSignerPayloadSchema = {
     request: AuthenticatedEventRequest.extend({
         authId: z.string(),
+        deviceId: z.string(),
     }),
-    response: VersionedEvent.extend({
-        signerId: z.string(),
-    }),
+    response: z.object({}),
 };
 
 export const SendEncryptedOtpPayloadSchema = {
     request: AuthenticatedEventRequest.extend({
         encryptedOtp: z.string(),
+        chainLayer: SupportedChainLayer,
+        deviceId: z.string(),
     }),
     response: VersionedEvent.extend({
         encryptedOtp: z.string(),
+        address: z.string(),
+    }),
+};
+
+export const GetPublicKeyPayloadSchema = {
+    request: AuthenticatedEventRequest.extend({
+        chainLayer: SupportedChainLayer,
+        deviceId: z.string(),
+    }),
+    response: z.object({
         publicKey: z.string(),
     }),
 };
