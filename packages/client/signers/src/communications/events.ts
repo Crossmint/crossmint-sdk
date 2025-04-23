@@ -1,6 +1,7 @@
 import {
     CreateSignerPayloadSchema,
     GetAttestationPayloadSchema,
+    GetPublicKeyPayloadSchema,
     SendEncryptedOtpPayloadSchema,
     SignMessagePayloadSchema,
     SignTransactionPayloadSchema,
@@ -22,6 +23,7 @@ export const SecureSignerInboundEvents = {
     "request:sign-message": SignMessagePayloadSchema.request,
     "request:sign-transaction": SignTransactionPayloadSchema.request,
     "request:send-otp": SendEncryptedOtpPayloadSchema.request,
+    "request:get-public-key": GetPublicKeyPayloadSchema.request,
 } as const;
 
 export const SecureSignerOutboundEvents = {
@@ -30,4 +32,5 @@ export const SecureSignerOutboundEvents = {
     "response:sign-message": SignMessagePayloadSchema.response,
     "response:sign-transaction": SignTransactionPayloadSchema.response,
     "response:send-otp": SendEncryptedOtpPayloadSchema.response,
+    "response:get-public-key": GetPublicKeyPayloadSchema.response,
 } as const;
