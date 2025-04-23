@@ -1,5 +1,11 @@
 # @crossmint/client-signers
 
+## 0.0.3
+
+### Patch Changes
+
+- 82d4f4c: Events
+
 ## 0.0.2
 
 ### Patch Changes
