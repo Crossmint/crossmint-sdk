@@ -2,16 +2,15 @@ import { z } from "zod";
 
 const SupportedChainLayer = z.enum(["solana", "evm"]);
 
-const VersionedEvent = z.object({
-    version: z.number(),
-});
-const AuthenticatedEventRequest = VersionedEvent.extend({
+const AuthenticatedEventRequest = z.object({
     jwt: z.string(),
 });
 
 export const GetAttestationPayloadSchema = {
-    request: VersionedEvent,
-    response: VersionedEvent.extend({
+    request: z.object({
+        challenge: z.string(),
+    }),
+    response: z.object({
         attestationDocument: z.record(z.string(), z.any()), // TODO: Refine this type
     }),
 };
@@ -23,7 +22,7 @@ export const SignMessagePayloadSchema = {
         deviceId: z.string(),
         encoding: z.enum(["base58"]).optional().default("base58"),
     }),
-    response: VersionedEvent.extend({
+    response: z.object({
         signature: z.string(),
         publicKey: z.string(),
     }),
@@ -36,7 +35,7 @@ export const SignTransactionPayloadSchema = {
         deviceId: z.string(),
         encoding: z.enum(["base58"]).optional().default("base58"),
     }),
-    response: VersionedEvent.extend({
+    response: z.object({
         signature: z.string(),
         publicKey: z.string(),
     }),
@@ -56,7 +55,7 @@ export const SendEncryptedOtpPayloadSchema = {
         chainLayer: SupportedChainLayer,
         deviceId: z.string(),
     }),
-    response: VersionedEvent.extend({
+    response: z.object({
         encryptedOtp: z.string(),
         address: z.string(),
     }),
