@@ -37,9 +37,7 @@ export const signerOutboundEvents = {
     "response:get-public-key": GetPublicKeyPayloadSchema.response,
 } as const;
 
-export type SignerInputEvent<E extends SignerIFrameEventName> = z.infer<
-    (typeof signerInboundEvents)[`request:${E}`]
->;
+export type SignerInputEvent<E extends SignerIFrameEventName> = z.infer<(typeof signerInboundEvents)[`request:${E}`]>;
 export type SignerOutputEvent<E extends SignerIFrameEventName> = z.infer<
     (typeof signerOutboundEvents)[`response:${E}`]
 >;
