@@ -1120,9 +1120,19 @@ importers:
       nanoid:
         specifier: 5.0.9
         version: 5.0.9
+      react:
+        specifier: 18.3.1
+        version: 18.3.1
+      react-native-webview:
+        specifier: 13.12.5
+        version: 13.12.5(react-native@0.76.9(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@react-native-community/cli@13.6.4(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10))(@types/react@18.3.20)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10))(react@18.3.1)
       zod:
         specifier: 3.22.4
         version: 3.22.4
+    devDependencies:
+      '@types/react':
+        specifier: ~18.3.12
+        version: 18.3.20
 
   packages/common/auth:
     dependencies:
