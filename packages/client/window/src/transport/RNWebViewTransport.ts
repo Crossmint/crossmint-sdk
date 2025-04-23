@@ -1,0 +1,90 @@
+import type { z } from "zod";
+import type { WebViewMessageEvent } from "react-native-webview";
+import type { EventMap } from "../EventEmitter";
+import type { SimpleMessageEvent, Transport } from "./Transport";
+import { generateRandomString } from "../utils/generateRandomString";
+import type { RefObject } from "react";
+import type { WebView } from "react-native-webview";
+
+export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> implements Transport<OutgoingEvents> {
+    private listeners = new Map<string, (event: SimpleMessageEvent) => void>();
+    private isWebView: boolean;
+
+    constructor(private webviewRef?: RefObject<WebView>) {
+        this.isWebView = typeof (window as any).ReactNativeWebView !== "undefined";
+    }
+
+    private dispatchToListeners(event: SimpleMessageEvent) {
+        for (const listener of this.listeners.values()) {
+            listener(event);
+        }
+    }
+
+    send<K extends keyof OutgoingEvents>(message: { event: K; data: z.infer<OutgoingEvents[K]> }): void {
+        if (this.isWebView) {
+            if ((window as any).ReactNativeWebView?.postMessage) {
+                (window as any).ReactNativeWebView.postMessage(JSON.stringify(message));
+            } else {
+                console.error("[WebView] ReactNativeWebView.postMessage not available");
+            }
+        } else {
+            if (this.webviewRef?.current?.injectJavaScript) {
+                const messageStr = JSON.stringify(message);
+                // The way to send message to RN is to inject a script into the WebView
+                const script = `
+                    (function() {
+                        if (window.onMessageFromRN) {
+                            window.onMessageFromRN(${JSON.stringify(messageStr)});
+                        } else {
+                            console.error("[RN] onMessageFromRN not found");
+                        }
+                        true;
+                    })()
+                `;
+                this.webviewRef.current.injectJavaScript(script);
+            } else {
+                console.warn("[RN] WebView ref not available for injection");
+            }
+        }
+    }
+
+    addMessageListener(listener: (event: SimpleMessageEvent) => void): string {
+        const id = generateRandomString();
+        this.listeners.set(id, listener);
+
+        if (this.isWebView) {
+            window.addEventListener("message", (event: MessageEvent) => {
+                this.dispatchToListeners({
+                    type: "message",
+                    data: event.data,
+                });
+            });
+        }
+
+        return id;
+    }
+
+    removeMessageListener(id: string): void {
+        const listener = this.listeners.get(id);
+        if (listener != null) {
+            this.listeners.delete(id);
+        }
+    }
+
+    public handleMessage = (event: WebViewMessageEvent) => {
+        if (!this.isWebView) {
+            try {
+                const message = JSON.parse(event.nativeEvent.data);
+                this.dispatchToListeners({
+                    type: "message",
+                    data: message,
+                });
+            } catch (error) {
+                console.error(
+                    "[RN] Error handling WebView message:",
+                    error instanceof Error ? error.message : String(error)
+                );
+            }
+        }
+    };
+}

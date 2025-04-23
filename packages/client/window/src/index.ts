@@ -1,4 +1,2 @@
-export * from "./handshake";
 export * from "./windows";
-
-export * from "./EventEmitter";
+export * from "./rn-webview";

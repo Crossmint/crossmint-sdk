@@ -9,6 +9,7 @@ import {
     type HandshakeParentEvents,
 } from ".";
 import { EventEmitter, type EventMap, type OnActionArgs, type OnActionOptions } from "../EventEmitter";
+import type { Transport } from "../transport/Transport";
 
 export class HandshakeChild<IncomingEvents extends EventMap, OutgoingEvents extends EventMap> extends EventEmitter<
     IncomingEvents,
@@ -18,8 +19,7 @@ export class HandshakeChild<IncomingEvents extends EventMap, OutgoingEvents exte
     isConnected = false;
 
     constructor(
-        otherWindow: Window,
-        targetOrigin: string | string[],
+        transport: Transport<OutgoingEvents>,
         options?: EventEmitterWithHandshakeOptions<IncomingEvents, OutgoingEvents>
     ) {
         const mergedIncomingEvents = {
@@ -30,9 +30,7 @@ export class HandshakeChild<IncomingEvents extends EventMap, OutgoingEvents exte
             ...options?.outgoingEvents,
             ...HANDSHAKE_EVENTS.fromChild,
         } as any satisfies OutgoingEvents;
-
-        super(otherWindow, targetOrigin, mergedIncomingEvents, mergedOutgoingEvents);
-
+        super(transport, mergedIncomingEvents, mergedOutgoingEvents);
         this.handshakeOptions = { ...DEFAULT_HANDSHAKE_OPTIONS, ...options?.handshakeOptions };
     }
 
@@ -65,7 +63,7 @@ export class HandshakeChild<IncomingEvents extends EventMap, OutgoingEvents exte
     private async _onAction<K extends keyof HandshakeParentEvents, R extends keyof HandshakeChildEvents>(
         args: OnActionArgs<HandshakeParentEvents, HandshakeChildEvents, K, R>
     ): Promise<z.infer<IncomingEvents[K]>> {
-        return super.onAction({
+        return await super.onAction({
             ...args,
             options: args.options as OnActionOptions<EventMap, keyof EventMap>, // Fixes weird TS behavior when compiling
         });

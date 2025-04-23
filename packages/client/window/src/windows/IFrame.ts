@@ -3,6 +3,7 @@ import { urlToOrigin } from "@/utils/urlToOrigin";
 import type { EventMap } from "../EventEmitter";
 import type { EventEmitterWithHandshakeOptions } from "../handshake";
 import { HandshakeParent } from "../handshake/Parent";
+import { WindowTransport } from "../transport/WindowTransport";
 
 export class IFrameWindow<IncomingEvents extends EventMap, OutgoingEvents extends EventMap> extends HandshakeParent<
     IncomingEvents,
@@ -17,7 +18,8 @@ export class IFrameWindow<IncomingEvents extends EventMap, OutgoingEvents extend
         if (!contentWindow) {
             throw new Error("IFrame must have a contentWindow");
         }
-        super(contentWindow, targetOrigin, options);
+        const transport = new WindowTransport<OutgoingEvents>(contentWindow, targetOrigin);
+        super(transport, options);
     }
 
     static async init<IncomingEvents extends EventMap, OutgoingEvents extends EventMap>(

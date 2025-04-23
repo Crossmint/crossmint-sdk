@@ -4,6 +4,7 @@ import { urlToOrigin } from "@/utils/urlToOrigin";
 import type { EventMap } from "../EventEmitter";
 import type { EventEmitterWithHandshakeOptions } from "../handshake";
 import { HandshakeParent } from "../handshake/Parent";
+import { WindowTransport } from "../transport/WindowTransport";
 
 export interface PopupWindowOptions {
     width: number;
@@ -21,7 +22,8 @@ export class PopupWindow<IncomingEvents extends EventMap, OutgoingEvents extends
         targetOrigin: string,
         options?: EventEmitterWithHandshakeOptions<IncomingEvents, OutgoingEvents>
     ) {
-        super(window, targetOrigin, options);
+        const transport = new WindowTransport<OutgoingEvents>(window, targetOrigin);
+        super(transport, options);
     }
 
     static async init<IncomingEvents extends EventMap, OutgoingEvents extends EventMap>(

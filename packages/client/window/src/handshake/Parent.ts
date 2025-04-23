@@ -10,6 +10,7 @@ import {
     type HandshakeParentEvents,
 } from ".";
 import { EventEmitter, type EventMap, type SendActionArgs, type SendActionOptions } from "../EventEmitter";
+import type { Transport } from "../transport/Transport";
 
 export class HandshakeParent<IncomingEvents extends EventMap, OutgoingEvents extends EventMap> extends EventEmitter<
     IncomingEvents,
@@ -19,8 +20,7 @@ export class HandshakeParent<IncomingEvents extends EventMap, OutgoingEvents ext
     isConnected = false;
 
     constructor(
-        otherWindow: Window,
-        targetOrigin: string,
+        transport: Transport<OutgoingEvents>,
         options?: EventEmitterWithHandshakeOptions<IncomingEvents, OutgoingEvents>
     ) {
         const mergedIncomingEvents = {
@@ -31,11 +31,8 @@ export class HandshakeParent<IncomingEvents extends EventMap, OutgoingEvents ext
             ...options?.outgoingEvents,
             ...HANDSHAKE_EVENTS.fromParent,
         } as any satisfies OutgoingEvents;
-
-        super(otherWindow, targetOrigin, mergedIncomingEvents, mergedOutgoingEvents);
-
+        super(transport, mergedIncomingEvents, mergedOutgoingEvents);
         this.handshakeOptions = { ...DEFAULT_HANDSHAKE_OPTIONS, ...options?.handshakeOptions };
-        this.targetOrigin = targetOrigin;
     }
 
     async handshakeWithChild() {
