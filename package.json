@@ -33,7 +33,7 @@
         "tsup": "8.1.0",
         "turbo": "2.2.3",
         "typescript": "5.5.3",
-        "vitest": "1.0.2",
+        "vitest": "0.34.5",
         "vitest-mock-extended": "2.0.2"
     },
     "packageManager": "pnpm@9.3.0",
