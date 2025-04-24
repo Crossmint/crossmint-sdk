@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-auth
 
+## 1.0.25
+
+### Patch Changes
+
+- 1c71b43: Added TwitterMetadata type
+
 ## 1.0.24
 
 ### Patch Changes
