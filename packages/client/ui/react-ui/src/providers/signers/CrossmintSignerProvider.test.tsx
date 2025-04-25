@@ -50,8 +50,10 @@ vi.mock("@/hooks/useSignerInvisibleIFrame", () => ({
 
 // Test component to use the hook
 function TestComponent() {
-    const { getOrCreateWalletWithNonCustodialSigner } = useCrossmintSigner();
-    return <button onClick={() => getOrCreateWalletWithNonCustodialSigner({ type: "solana" })}>Create Wallet</button>;
+    const { experimental_getOrCreateWalletWithRecoveryKey } = useCrossmintSigner();
+    return (
+        <button onClick={() => experimental_getOrCreateWalletWithRecoveryKey({ type: "solana" })}>Create Wallet</button>
+    );
 }
 
 describe("CrossmintSignerProvider", () => {

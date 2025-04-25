@@ -37,7 +37,7 @@ type WalletContextFunctions = {
     getOrCreateWallet: (args: GetOrCreateWalletProps) => Promise<{ startedCreation: boolean; reason?: string }>;
     createPasskeySigner: (name: string, promptType?: ValidPasskeyPromptType) => Promise<PasskeySigner | null>;
     clearWallet: () => void;
-    experimental_getOrCreateWalletWithNonCustodialSigner?: (args: { type: "solana" }) => Promise<void>;
+    experimental_getOrCreateWalletWithRecoveryKey?: (args: { type: "solana" }) => Promise<void>;
     passkeySigner?: PasskeySigner;
 };
 
@@ -80,27 +80,33 @@ export function CrossmintWalletProvider({
     children,
     showPasskeyHelpers = true,
     appearance,
+    experimental_enableRecoveryKeys = false,
 }: {
     children: ReactNode;
     showPasskeyHelpers?: boolean;
     appearance?: UIConfig;
+    experimental_enableRecoveryKeys?: boolean;
 }) {
     const [walletState, setWalletState] = useState<ValidWalletState>({
         status: "not-loaded",
     });
-    return (
+
+    const walletProviderProps = {
+        walletState,
+        setWalletState,
+        showPasskeyHelpers,
+        appearance,
+        experimental_enableRecoveryKeys,
+    };
+
+    return experimental_enableRecoveryKeys ? (
         <TwindProvider>
             <CrossmintSignerProvider walletState={walletState} setWalletState={setWalletState} appearance={appearance}>
-                <WalletProvider
-                    walletState={walletState}
-                    setWalletState={setWalletState}
-                    showPasskeyHelpers={showPasskeyHelpers}
-                    appearance={appearance}
-                >
-                    {children}
-                </WalletProvider>
+                <WalletProvider {...walletProviderProps}>{children}</WalletProvider>
             </CrossmintSignerProvider>
         </TwindProvider>
+    ) : (
+        <WalletProvider {...walletProviderProps}>{children}</WalletProvider>
     );
 }
 
@@ -110,15 +116,19 @@ function WalletProvider({
     appearance,
     walletState,
     setWalletState,
+    experimental_enableRecoveryKeys,
 }: {
     children: ReactNode;
     showPasskeyHelpers?: boolean;
     appearance?: UIConfig;
     walletState: ValidWalletState;
     setWalletState: Dispatch<SetStateAction<ValidWalletState>>;
+    experimental_enableRecoveryKeys?: boolean;
 }) {
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
-    const { getOrCreateWalletWithNonCustodialSigner } = useCrossmintSigner();
+    const { experimental_getOrCreateWalletWithRecoveryKey } = useCrossmintSigner({
+        enabled: experimental_enableRecoveryKeys ?? false,
+    });
 
     const smartWalletSDK = useMemo(
         () => CrossmintWallets.from({ apiKey: crossmint.apiKey, jwt: crossmint?.jwt }),
@@ -214,9 +224,9 @@ function WalletProvider({
             getOrCreateWallet,
             createPasskeySigner,
             clearWallet,
-            experimental_getOrCreateWalletWithNonCustodialSigner: getOrCreateWalletWithNonCustodialSigner,
+            experimental_getOrCreateWalletWithRecoveryKey,
         }),
-        [walletState, getOrCreateWalletWithNonCustodialSigner]
+        [walletState, experimental_getOrCreateWalletWithRecoveryKey]
     );
 
     return (

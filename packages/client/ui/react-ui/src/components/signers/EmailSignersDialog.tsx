@@ -40,10 +40,10 @@ export function EmailSignersDialog({
                 }}
             >
                 <VisuallyHidden asChild>
-                    <DialogTitle>Crossmint Non-custodial signer</DialogTitle>
+                    <DialogTitle>Crossmint Recovery Key</DialogTitle>
                 </VisuallyHidden>
                 <VisuallyHidden asChild>
-                    <DialogDescription>Create a non-custodial signer</DialogDescription>
+                    <DialogDescription>Create a recovery key</DialogDescription>
                 </VisuallyHidden>
 
                 <div className="relative pt-10 pb-[30px] px-6 !min-[480px]:px-10 flex flex-col gap-[10px] antialiased animate-none max-w-[448px]">

@@ -60,7 +60,7 @@ export function EmailOTPInput({ email, onSubmitOTP, handleOnBack, onResendCode, 
                     className="text-base font-normal mt-4 mb-1 text-center text-cm-text-primary"
                     style={{ color: appearance?.colors?.textPrimary }}
                 >
-                    {"Verify Recovery Key Creation"}
+                    Verify Recovery Key Creation
                 </p>
                 <p
                     className="text-center text-cm-text-secondary px-4"

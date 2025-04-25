@@ -32,7 +32,7 @@ interface CrossmintSignerProviderProps {
 }
 
 type CrossmintSignerContext = {
-    getOrCreateWalletWithNonCustodialSigner: (args: { type: "solana" }) => Promise<void>;
+    experimental_getOrCreateWalletWithRecoveryKey: (args: { type: "solana" }) => Promise<void>;
 };
 
 export const CrossmintSignerContext = createContext<CrossmintSignerContext | null>(null);
@@ -49,7 +49,7 @@ export function CrossmintSignerProvider({ children, setWalletState, appearance }
     const successHandlerRef = useRef<(() => void) | null>(null);
     const errorHandlerRef = useRef<((error: Error) => void) | null>(null);
 
-    const getOrCreateWalletWithNonCustodialSigner = async (args: { type: "solana" }) => {
+    const experimental_getOrCreateWalletWithRecoveryKey = async (args: { type: "solana" }) => {
         if (args.type !== "solana") {
             throw new Error("Unsupported wallet type, only solana is supported at the moment");
         }
@@ -89,7 +89,7 @@ export function CrossmintSignerProvider({ children, setWalletState, appearance }
         }
     };
 
-    const handleOnGetOrCreateSigner = async (email: string) => {
+    const handleOnGetOrCreateRecoveryKey = async (email: string) => {
         try {
             if (!iframeWindow.current) {
                 throw new Error("IFrame window not initialized");
@@ -99,7 +99,7 @@ export function CrossmintSignerProvider({ children, setWalletState, appearance }
                 throw new Error("JWT not set");
             }
 
-            console.log("Creating signer");
+            console.log("Creating Recovery Key");
             const res = await iframeWindow.current?.sendAction({
                 event: "request:create-signer",
                 responseEvent: "response:create-signer",
@@ -119,12 +119,12 @@ export function CrossmintSignerProvider({ children, setWalletState, appearance }
                 throw new Error(res.error);
             }
 
-            console.log("[handleOnGetOrCreateSigner] success for email: ", email);
-            console.log({ existingSignerForEmail: res });
+            console.log("[handleOnGetOrCreateRecoveryKey] success for email: ", email);
+            console.log({ existingRecoveryKeyForEmail: res });
 
             // If the signer already exists, proceed directly to wallet creation
             if (res.status === "success" && res.address != null) {
-                await createWalletWithSigner(res.address);
+                await getOrCreateSolanaWalletWithSigner(res.address);
                 setStep("initial");
                 setDialogOpen(false);
                 return true; // Return true to indicate we handled everything
@@ -136,21 +136,10 @@ export function CrossmintSignerProvider({ children, setWalletState, appearance }
         }
     };
 
-    const createWalletWithSigner = async (signerAddress: string) => {
-        try {
-            const wallet = await getOrCreateSolanaWalletWithSigner(signerAddress);
-            setWalletState({ status: "loaded", wallet, type: "solana-smart-wallet" });
-        } catch (error) {
-            console.error("Error creating wallet with signer:", error);
-            setWalletState(deriveWalletErrorState(error));
-            throw error;
-        }
-    };
-
     const handleEmailSubmit = async (email: string) => {
         try {
-            const hasExistingSigner = await handleOnGetOrCreateSigner(email);
-            if (!hasExistingSigner) {
+            const hasExistingRecoveryKey = await handleOnGetOrCreateRecoveryKey(email);
+            if (!hasExistingRecoveryKey) {
                 setStep("otp");
             } else {
                 // Resolve the promise when the flow is complete
@@ -189,7 +178,7 @@ export function CrossmintSignerProvider({ children, setWalletState, appearance }
                 throw new Error(res.error);
             }
 
-            await createWalletWithSigner(res.address);
+            await getOrCreateSolanaWalletWithSigner(res.address);
             setStep("initial");
             setDialogOpen(false);
 
@@ -207,71 +196,78 @@ export function CrossmintSignerProvider({ children, setWalletState, appearance }
             throw new Error("[getOrCreateSolanaWalletWithSigner] JWT not set!");
         }
 
-        return await smartWalletSDK.getOrCreateWallet("solana-smart-wallet", {
-            adminSigner: {
-                type: "solana-keypair",
-                address: publicSignerAddress,
-                signer: {
-                    signMessage: async (message: Uint8Array) => {
-                        if (iframeWindow.current == null) {
-                            throw new Error("IFrame window not initialized");
-                        }
+        try {
+            const wallet = await smartWalletSDK.getOrCreateWallet("solana-smart-wallet", {
+                adminSigner: {
+                    type: "solana-keypair",
+                    address: publicSignerAddress,
+                    signer: {
+                        signMessage: async (message: Uint8Array) => {
+                            if (iframeWindow.current == null) {
+                                throw new Error("IFrame window not initialized");
+                            }
 
-                        const res = await iframeWindow.current.sendAction({
-                            event: "request:sign-message",
-                            responseEvent: "response:sign-message",
-                            data: {
-                                authData: {
-                                    jwt,
-                                    apiKey,
-                                },
+                            const res = await iframeWindow.current.sendAction({
+                                event: "request:sign-message",
+                                responseEvent: "response:sign-message",
                                 data: {
-                                    message: base58.encode(message),
-                                    chainLayer: "solana",
-                                    encoding: "base58",
+                                    authData: {
+                                        jwt,
+                                        apiKey,
+                                    },
+                                    data: {
+                                        message: base58.encode(message),
+                                        chainLayer: "solana",
+                                        encoding: "base58",
+                                    },
                                 },
-                            },
-                            options: DEFAULT_EVENT_OPTIONS,
-                        });
-                        if (res.status === "error") {
-                            throw new Error(res.error);
-                        }
-                        if (res.signature == null) {
-                            throw new Error("Failed to sign message");
-                        }
-                        return base58.decode(res.signature);
-                    },
-                    signTransaction: async (transaction: VersionedTransaction) => {
-                        console.log("Signing transaction...", transaction);
-                        const res = await iframeWindow.current?.sendAction({
-                            event: "request:sign-transaction",
-                            responseEvent: "response:sign-transaction",
-                            data: {
-                                authData: {
-                                    jwt,
-                                    apiKey,
-                                },
+                                options: DEFAULT_EVENT_OPTIONS,
+                            });
+                            if (res.status === "error") {
+                                throw new Error(res.error);
+                            }
+                            if (res.signature == null) {
+                                throw new Error("Failed to sign message");
+                            }
+                            return base58.decode(res.signature);
+                        },
+                        signTransaction: async (transaction: VersionedTransaction) => {
+                            console.log("Signing transaction...", transaction);
+                            const res = await iframeWindow.current?.sendAction({
+                                event: "request:sign-transaction",
+                                responseEvent: "response:sign-transaction",
                                 data: {
-                                    transaction: base58.encode(transaction.serialize()),
-                                    chainLayer: "solana",
-                                    encoding: "base58",
+                                    authData: {
+                                        jwt,
+                                        apiKey,
+                                    },
+                                    data: {
+                                        transaction: base58.encode(transaction.serialize()),
+                                        chainLayer: "solana",
+                                        encoding: "base58",
+                                    },
                                 },
-                            },
-                            options: DEFAULT_EVENT_OPTIONS,
-                        });
+                                options: DEFAULT_EVENT_OPTIONS,
+                            });
 
-                        if (res?.status === "error") {
-                            throw new Error(res.error);
-                        }
-                        if (res?.signature == null) {
-                            throw new Error("Failed to sign transaction");
-                        }
-                        transaction.addSignature(new PublicKey(publicSignerAddress), base58.decode(res.signature));
-                        return transaction;
+                            if (res?.status === "error") {
+                                throw new Error(res.error);
+                            }
+                            if (res?.signature == null) {
+                                throw new Error("Failed to sign transaction");
+                            }
+                            transaction.addSignature(new PublicKey(publicSignerAddress), base58.decode(res.signature));
+                            return transaction;
+                        },
                     },
                 },
-            },
-        });
+            });
+            setWalletState({ status: "loaded", wallet, type: "solana-smart-wallet" });
+        } catch (error) {
+            console.error("Error creating wallet with signer:", error);
+            setWalletState(deriveWalletErrorState(error));
+            throw error;
+        }
     }
 
     useEffect(() => {
@@ -279,7 +275,7 @@ export function CrossmintSignerProvider({ children, setWalletState, appearance }
     }, [dialogOpen]);
 
     return (
-        <CrossmintSignerContext.Provider value={{ getOrCreateWalletWithNonCustodialSigner }}>
+        <CrossmintSignerContext.Provider value={{ experimental_getOrCreateWalletWithRecoveryKey }}>
             <EmailSignersDialog
                 open={dialogOpen}
                 setOpen={setDialogOpen}
@@ -287,7 +283,7 @@ export function CrossmintSignerProvider({ children, setWalletState, appearance }
                 setStep={setStep}
                 onSubmitOTP={handleOTPSubmit}
                 onResendOTPCode={async (email: string) => {
-                    await handleOnGetOrCreateSigner(email);
+                    await handleOnGetOrCreateRecoveryKey(email);
                     setStep("otp");
                 }}
                 onSubmitEmail={handleEmailSubmit}
@@ -298,8 +294,17 @@ export function CrossmintSignerProvider({ children, setWalletState, appearance }
     );
 }
 
-export function useCrossmintSigner() {
+export function useCrossmintSigner({ enabled = true }: { enabled?: boolean } = {}) {
     const context = useContext(CrossmintSignerContext);
+    if (!enabled) {
+        return {
+            experimental_getOrCreateWalletWithRecoveryKey: async () => {
+                await Promise.reject(
+                    new Error("useCrossmintSigner is disabled, please set 'experimental_enableRecoveryKeys' to true")
+                );
+            },
+        };
+    }
     if (context === null) {
         throw new Error("useCrossmintSigner must be used within a CrossmintSignerProvider");
     }

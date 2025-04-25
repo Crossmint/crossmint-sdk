@@ -61,6 +61,7 @@ export const AuthContext = createContext<AuthContextType>(defaultContextValue);
 const defaultEmbeddedWallets: CrossmintAuthProviderEmbeddedWallets = {
     createOnLogin: "off",
     type: "evm-smart-wallet",
+    experimental_enableRecoveryKeys: false,
 };
 
 export function CrossmintAuthProvider({
@@ -198,6 +199,7 @@ export function CrossmintAuthProvider({
                     key={crossmint.jwt}
                     showPasskeyHelpers={embeddedWallets.showPasskeyHelpers}
                     appearance={appearance}
+                    experimental_enableRecoveryKeys={embeddedWallets.experimental_enableRecoveryKeys ?? false}
                 >
                     <AuthFormProvider
                         setDialogOpen={(open, successfulLogin) => {
