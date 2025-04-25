@@ -122,7 +122,7 @@ export default function SignerScreen() {
                 <Button
                     title="1. Create/Load Recovery Signer"
                     onPress={handleCreateSigner}
-                    disabled={isLoading || !isWebViewReady || !authId  || recoverySigner != null}
+                    disabled={isLoading || !isWebViewReady || !authId || recoverySigner != null}
                 />
             </View>
 

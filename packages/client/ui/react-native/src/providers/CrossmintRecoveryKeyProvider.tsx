@@ -110,9 +110,9 @@ export function CrossmintRecoveryKeyProvider({
                                 },
                                 options: defaultEventOptions,
                             });
-                            if (response == null || response.status === 'error' || response.signature == null) {
-                                throw new Error('Failed to sign message');
-                              }
+                            if (response == null || response.status === "error" || response.signature == null) {
+                                throw new Error("Failed to sign message");
+                            }
                             return bs58.decode(response.signature);
                         } catch (err) {
                             throw err;
@@ -133,9 +133,9 @@ export function CrossmintRecoveryKeyProvider({
                                 },
                                 options: defaultEventOptions,
                             });
-                            if (response == null || response.status === 'error' || response.signature == null) {
-                                throw new Error('Failed to sign transaction: No signature returned');
-                              }
+                            if (response == null || response.status === "error" || response.signature == null) {
+                                throw new Error("Failed to sign transaction: No signature returned");
+                            }
                             transaction.addSignature(new PublicKey(address), bs58.decode(response.signature));
                             return transaction;
                         } catch (err) {
@@ -170,7 +170,7 @@ export function CrossmintRecoveryKeyProvider({
                     },
                     options: defaultEventOptions,
                 });
-                if (response?.status === 'success' && response.address) {
+                if (response?.status === "success" && response.address) {
                     const newSigner = buildRecoverySigner(response.address);
                     setRecoverySigner(newSigner);
                 }
@@ -206,8 +206,8 @@ export function CrossmintRecoveryKeyProvider({
                     options: defaultEventOptions,
                 });
 
-                if (response == null || response.status === 'error' || response.address == null) {
-                    throw new Error('Failed to validate encrypted OTP');
+                if (response == null || response.status === "error" || response.address == null) {
+                    throw new Error("Failed to validate encrypted OTP");
                 }
 
                 const newSigner = buildRecoverySigner(response.address);

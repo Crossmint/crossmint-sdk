@@ -1,10 +1,10 @@
+import * as React from "react";
 import {
     CrossmintAuthProvider,
     CrossmintProvider,
     CrossmintWalletProvider,
 } from "@crossmint/client-sdk-react-native-ui";
 import { Stack } from "expo-router";
-import type { ReactNode } from "react";
 
 import "../utils/polyfills";
 
@@ -16,7 +16,7 @@ export default function RootLayout() {
     );
 }
 
-function CrossmintProviders({ children }: { children: ReactNode }) {
+function CrossmintProviders({ children }: { children: React.ReactNode }) {
     return (
         <CrossmintProvider apiKey={process.env.EXPO_PUBLIC_CROSSMINT_API_KEY ?? ""} overrideBaseUrl="">
             <CrossmintAuthProvider>
