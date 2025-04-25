@@ -10,6 +10,7 @@ const AuthenticatedEventRequest = z.object({
 });
 
 const ErrorResponse = z.object({
+    status: z.literal("error"),
     error: z.string(),
     code: z.string().optional(),
     data: z.any().optional(),
