@@ -24,6 +24,7 @@
         "@crossmint/client-sdk-base": "workspace:*",
         "@crossmint/client-sdk-react-base": "workspace:*",
         "@crossmint/client-sdk-window": "workspace:*",
+        "@crossmint/client-signers": "workspace:*",
         "@crossmint/common-sdk-auth": "workspace:*",
         "@crossmint/common-sdk-base": "workspace:*",
         "@crossmint/wallets-sdk": "workspace:*",
@@ -48,6 +49,7 @@
         "react-jss": "10.10.0",
         "tailwind-merge": "2.4.0",
         "tailwindcss": "3.4.10",
+        "uuid": "9.0.1",
         "viem": "2.23.6",
         "zod": "3.22.4"
     },
@@ -57,6 +59,7 @@
         "@types/lodash.isequal": "4.5.6",
         "@types/react": "^18.3.0",
         "@types/react-dom": "^18.3.0",
+        "@types/uuid": "9.0.4",
         "pino-pretty": "^7.6.0",
         "react": "^18.3.0",
         "react-dom": "^18.3.0"
