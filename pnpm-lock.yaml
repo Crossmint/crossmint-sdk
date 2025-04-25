@@ -850,9 +850,6 @@ importers:
       tailwindcss:
         specifier: 3.4.10
         version: 3.4.10(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.5.3))
-      uuid:
-        specifier: 9.0.1
-        version: 9.0.1
       viem:
         specifier: 2.23.6
         version: 2.23.6(bufferutil@4.0.8)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
@@ -875,9 +872,6 @@ importers:
       '@types/react-dom':
         specifier: ^18.3.0
         version: 18.3.0
-      '@types/uuid':
-        specifier: 9.0.4
-        version: 9.0.4
       pino-pretty:
         specifier: ^7.6.0
         version: 7.6.1
