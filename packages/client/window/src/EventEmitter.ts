@@ -1,6 +1,5 @@
 import type { z } from "zod";
-
-import { generateRandomString } from "./utils/generateRandomString";
+import type { SimpleMessageEvent, Transport } from "./transport/Transport";
 
 export type EventMap = Record<string, z.ZodTypeAny>;
 
@@ -51,36 +50,28 @@ export type OnActionArgs<
       };
 
 export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extends EventMap> {
-    private listeners: Map<string, (message: MessageEvent) => void> = new Map();
+    protected transport: Transport<OutgoingEvents>;
+    public incomingEvents: IncomingEvents;
+    public outgoingEvents: OutgoingEvents;
 
-    constructor(
-        public otherWindow: Window,
-        public targetOrigin: string | string[],
-        public incomingEvents: IncomingEvents,
-        public outgoingEvents: OutgoingEvents
-    ) {
-        this.otherWindow = otherWindow;
-        this.targetOrigin = targetOrigin;
+    constructor(transport: Transport<OutgoingEvents>, incomingEvents: IncomingEvents, outgoingEvents: OutgoingEvents) {
+        this.transport = transport;
+        this.incomingEvents = incomingEvents;
+        this.outgoingEvents = outgoingEvents;
     }
 
     send<K extends keyof OutgoingEvents>(event: K, data: z.infer<OutgoingEvents[K]>) {
         const result = this.outgoingEvents[event].safeParse(data);
         if (result.success) {
-            if (Array.isArray(this.targetOrigin)) {
-                this.targetOrigin.forEach((origin) => {
-                    this.otherWindow?.postMessage({ event, data }, origin);
-                });
-            } else {
-                this.otherWindow?.postMessage({ event, data }, this.targetOrigin);
-            }
+            this.transport.send({ event, data });
         } else {
             console.error("Invalid data for event", event, result.error);
         }
     }
 
     on<K extends keyof IncomingEvents>(event: K, callback: (data: z.infer<IncomingEvents[K]>) => void): string {
-        const listener = (message: MessageEvent) => {
-            if (message.data.event === event && this.isTargetOrigin(message.origin)) {
+        const listener = (message: SimpleMessageEvent) => {
+            if (message.data.event === event) {
                 const data = this.incomingEvents[event].safeParse(message.data.data);
                 if (data.success) {
                     callback(data.data);
@@ -90,10 +81,7 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
             }
         };
 
-        const id = generateRandomString();
-        this.listeners.set(id, listener);
-        window.addEventListener("message", listener);
-        return id;
+        return this.transport.addMessageListener(listener);
     }
 
     sendAction<K extends keyof OutgoingEvents, R extends keyof IncomingEvents>({
@@ -105,7 +93,7 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
         const timeoutMs = options?.timeoutMs ?? 7000;
 
         return new Promise((resolve, reject) => {
-            let interval: NodeJS.Timeout | undefined = undefined;
+            let interval: ReturnType<typeof setInterval> | undefined = undefined;
             const timer = setTimeout(() => {
                 reject(
                     `Timed out waiting for ${String(responseEvent)} event${
@@ -168,21 +156,6 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
     }
 
     off(id: string) {
-        const listener = this.listeners.get(id);
-        if (listener) {
-            window.removeEventListener("message", listener);
-            this.listeners.delete(id);
-        }
-    }
-
-    protected isTargetOrigin(otherOrigin: string) {
-        if (Array.isArray(this.targetOrigin)) {
-            return this.targetOrigin.includes(otherOrigin);
-        }
-
-        if (this.targetOrigin === "*") {
-            return true;
-        }
-        return this.targetOrigin === otherOrigin;
+        this.transport.removeMessageListener(id);
     }
 }

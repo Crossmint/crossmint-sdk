@@ -1,4 +1,5 @@
-export * from "./handshake";
 export * from "./windows";
-
-export * from "./EventEmitter";
+export * from "./handshake";
+export type { Transport, SimpleMessageEvent } from "./transport/Transport";
+export type { EventMap } from "./EventEmitter";
+export { generateRandomString } from "./utils/generateRandomString";

@@ -715,6 +715,25 @@ importers:
         specifier: 19.0.12
         version: 19.0.12
 
+  packages/client/rn-window:
+    dependencies:
+      '@crossmint/client-sdk-window':
+        specifier: workspace:*
+        version: link:../window
+      react:
+        specifier: '>=18.0.0'
+        version: 18.3.1
+      react-native-webview:
+        specifier: '>=13.0.0'
+        version: 13.12.5(react-native@0.76.9(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@react-native-community/cli@13.6.4(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10))(@types/react@18.3.20)(bufferutil@4.0.8)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10))(react@18.3.1)
+      zod:
+        specifier: 3.22.4
+        version: 3.22.4
+    devDependencies:
+      '@types/react':
+        specifier: ~18.3.12
+        version: 18.3.20
+
   packages/client/signers:
     dependencies:
       zod:
@@ -1117,9 +1136,6 @@ importers:
 
   packages/client/window:
     dependencies:
-      nanoid:
-        specifier: 5.0.9
-        version: 5.0.9
       zod:
         specifier: 3.22.4
         version: 3.22.4
@@ -12392,11 +12408,6 @@ packages:
   nanoid@3.3.8:
     resolution: {integrity: sha512-WNLf5Sd8oZxOm+TzppcYk8gVOgP+l58xNy58D0nbUnOxOWRWvlcCV4kUF7ltmI6PsrLl/BgKEyS4mqsGChFN0w==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
-    hasBin: true
-
-  nanoid@5.0.9:
-    resolution: {integrity: sha512-Aooyr6MXU6HpvvWXKoVoXwKMs/KyVakWwg7xQfv5/S/RIgJMy0Ifa45H9qqYy7pTCszrHzP21Uk4PZq2HpEM8Q==}
-    engines: {node: ^18 || >=20}
     hasBin: true
 
   native-fetch@3.0.0:
@@ -35038,8 +35049,6 @@ snapshots:
   nanoid@3.3.4: {}
 
   nanoid@3.3.8: {}
-
-  nanoid@5.0.9: {}
 
   native-fetch@3.0.0(node-fetch@2.7.0(encoding@0.1.13)):
     dependencies:

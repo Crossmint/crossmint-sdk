@@ -1,6 +1,6 @@
 {
-    "name": "@crossmint/client-sdk-window",
-    "version": "0.2.3",
+    "name": "@crossmint/client-sdk-rn-window",
+    "version": "0.1.0",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
@@ -19,6 +19,14 @@
         "dev": "tsup --watch"
     },
     "dependencies": {
+        "@crossmint/client-sdk-window": "workspace:*",
         "zod": "3.22.4"
+    },
+    "peerDependencies": {
+        "react": ">=18.0.0",
+        "react-native-webview": ">=13.0.0"
+    },
+    "devDependencies": {
+        "@types/react": "~18.3.12"
     }
 }
