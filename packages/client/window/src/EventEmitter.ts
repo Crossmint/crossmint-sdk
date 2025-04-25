@@ -71,17 +71,13 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
 
     on<K extends keyof IncomingEvents>(event: K, callback: (data: z.infer<IncomingEvents[K]>) => void): string {
         const listener = (message: SimpleMessageEvent) => {
-            try {
-                if (message.data.event === event) {
-                    const data = this.incomingEvents[event].safeParse(message.data.data);
-                    if (data.success) {
-                        callback(data.data);
-                    } else {
-                        console.error("Invalid data for event", event, data.error);
-                    }
+            if (message.data.event === event) {
+                const data = this.incomingEvents[event].safeParse(message.data.data);
+                if (data.success) {
+                    callback(data.data);
+                } else {
+                    console.error("Invalid data for event", event, data.error);
                 }
-            } catch (error) {
-                console.error("Error processing message:", error);
             }
         };
 
