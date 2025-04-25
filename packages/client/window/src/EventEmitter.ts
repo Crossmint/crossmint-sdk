@@ -93,7 +93,7 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
         const timeoutMs = options?.timeoutMs ?? 7000;
 
         return new Promise((resolve, reject) => {
-            let interval: number | undefined = undefined;
+            let interval: ReturnType<typeof setInterval> | undefined = undefined;
             const timer = setTimeout(() => {
                 reject(
                     `Timed out waiting for ${String(responseEvent)} event${
