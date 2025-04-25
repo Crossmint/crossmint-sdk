@@ -35,7 +35,7 @@ export function useCrossmintRecoveryKey() {
 
 export interface CrossmintRecoveryKeyProviderProps {
     children: ReactNode;
-    secureEndpointUrl?: string;
+    experimental_secureEndpointUrl?: string;
 }
 
 const defaultEventOptions = {
@@ -47,7 +47,7 @@ const DEFAULT_SECURE_ENDPOINT_URL = "https://crossmint-signer-frames.onrender.co
 
 export function CrossmintRecoveryKeyProvider({
     children,
-    secureEndpointUrl = DEFAULT_SECURE_ENDPOINT_URL,
+    experimental_secureEndpointUrl = DEFAULT_SECURE_ENDPOINT_URL,
 }: CrossmintRecoveryKeyProviderProps) {
     const {
         crossmint: { apiKey, jwt },
@@ -61,7 +61,7 @@ export function CrossmintRecoveryKeyProvider({
     const [isWebViewReady, setIsWebViewReady] = useState(false);
 
     useEffect(() => {
-        if (webviewRef.current != null && !webViewParentRef.current == null) {
+        if (webviewRef.current != null && webViewParentRef.current == null) {
             webViewParentRef.current = new WebViewParent(webviewRef, {
                 incomingEvents: signerOutboundEvents,
                 outgoingEvents: signerInboundEvents,
@@ -236,7 +236,7 @@ export function CrossmintRecoveryKeyProvider({
             <View style={{ position: "absolute", width: 0, height: 0, overflow: "hidden" }}>
                 <RNWebView
                     ref={webviewRef}
-                    source={{ uri: secureEndpointUrl }}
+                    source={{ uri: experimental_secureEndpointUrl }}
                     onLoadEnd={onWebViewLoad}
                     onMessage={handleMessage}
                     onError={() => setIsWebViewReady(false)}

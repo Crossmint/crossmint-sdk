@@ -54,13 +54,13 @@ function WalletProviderInternal({ children }: { children: ReactNode }) {
 
 export interface CrossmintWalletProviderProps extends Omit<CrossmintRecoveryKeyProviderProps, "children"> {
     children: ReactNode;
-    useRecoveryKey?: boolean;
+    experimental_enableRecoveryKeys?: boolean;
 }
 
 export function CrossmintWalletProvider({
     children,
-    useRecoveryKey = false,
-    secureEndpointUrl,
+    experimental_enableRecoveryKeys = false,
+    experimental_secureEndpointUrl,
 }: CrossmintWalletProviderProps) {
     const WalletTree = (
         <BaseCrossmintWalletProvider>
@@ -68,9 +68,9 @@ export function CrossmintWalletProvider({
         </BaseCrossmintWalletProvider>
     );
 
-    if (useRecoveryKey) {
+    if (experimental_enableRecoveryKeys) {
         return (
-            <CrossmintRecoveryKeyProvider secureEndpointUrl={secureEndpointUrl}>
+            <CrossmintRecoveryKeyProvider experimental_secureEndpointUrl={experimental_secureEndpointUrl}>
                 {WalletTree}
             </CrossmintRecoveryKeyProvider>
         );

@@ -1,4 +1,4 @@
-import * as React from "react";
+import type { ReactNode } from "react";
 import {
     CrossmintAuthProvider,
     CrossmintProvider,
@@ -16,13 +16,11 @@ export default function RootLayout() {
     );
 }
 
-function CrossmintProviders({ children }: { children: React.ReactNode }) {
+function CrossmintProviders({ children }: { children: ReactNode }) {
     return (
         <CrossmintProvider apiKey={process.env.EXPO_PUBLIC_CROSSMINT_API_KEY ?? ""} overrideBaseUrl="">
             <CrossmintAuthProvider>
-                <CrossmintWalletProvider useRecoveryKey={true} secureEndpointUrl="http://localhost:54825">
-                    {children}
-                </CrossmintWalletProvider>
+                <CrossmintWalletProvider experimental_enableRecoveryKeys={true}>{children}</CrossmintWalletProvider>
             </CrossmintAuthProvider>
         </CrossmintProvider>
     );
