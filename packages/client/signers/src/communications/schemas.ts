@@ -75,7 +75,7 @@ export const CreateSignerPayloadSchema = {
     }),
     response: ResultResponse(
         z.object({
-            address: z.string(),
+            address: z.string().optional(),
         })
     ),
 };
