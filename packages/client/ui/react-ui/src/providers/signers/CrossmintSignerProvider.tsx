@@ -17,7 +17,7 @@ import type { UIConfig } from "@crossmint/common-sdk-base";
 import { useCrossmint } from "@/hooks";
 import { deriveWalletErrorState } from "@/utils/errorUtils";
 import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
-import { useIFrameWindow } from "@/hooks/useInvisibleSigneriFrame";
+import { useSignerIFrameWindow } from "@/hooks/useSignerInvisibleIFrame";
 
 const DEFAULT_EVENT_OPTIONS = {
     timeoutMs: 10_000,
@@ -45,7 +45,7 @@ export function CrossmintSignerProvider({ children, setWalletState, appearance }
 
     const [step, setStep] = useState<"initial" | "otp">("initial");
     const [dialogOpen, setDialogOpen] = useState(false);
-    const iframeWindow = useIFrameWindow();
+    const iframeWindow = useSignerIFrameWindow();
     const successHandlerRef = useRef<(() => void) | null>(null);
     const errorHandlerRef = useRef<((error: Error) => void) | null>(null);
 
@@ -119,7 +119,7 @@ export function CrossmintSignerProvider({ children, setWalletState, appearance }
                 throw new Error(res.error);
             }
 
-            console.log("handleOnGetOrCreateSigner for email: ", email);
+            console.log("[handleOnGetOrCreateSigner] success for email: ", email);
             console.log({ existingSignerForEmail: res });
 
             // If the signer already exists, proceed directly to wallet creation

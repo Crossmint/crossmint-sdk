@@ -23,7 +23,7 @@ async function createInvisibleIFrame(url: string): Promise<HTMLIFrameElement> {
     });
 }
 
-export function useIFrameWindow() {
+export function useSignerIFrameWindow() {
     const iframeWindow = useRef<IFrameWindow<typeof signerOutboundEvents, typeof signerInboundEvents> | null>(null);
     useEffect(() => {
         const initIFrameWindow = async () => {

@@ -8,7 +8,7 @@ import type { PasskeySigner } from "@/types/passkey";
 import { useCrossmint } from "../hooks";
 import type { GetOrCreateWalletProps } from "@/types/wallet";
 import { createWebAuthnPasskeySigner } from "@/utils/createPasskeySigner";
-import { CrossmintSignerProvider, useCrossmintSigner } from "./non-custodial-signer/CrossmintSignerProvider";
+import { CrossmintSignerProvider, useCrossmintSigner } from "./signers/CrossmintSignerProvider";
 import { TwindProvider } from "./TwindProvider";
 import { deriveWalletErrorState } from "@/utils/errorUtils";
 
