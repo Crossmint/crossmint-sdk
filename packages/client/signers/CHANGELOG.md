@@ -1,5 +1,11 @@
 # @crossmint/client-signers
 
+## 0.0.5
+
+### Patch Changes
+
+- 8ea8875: Adapting events
+
 ## 0.0.4
 
 ### Patch Changes
