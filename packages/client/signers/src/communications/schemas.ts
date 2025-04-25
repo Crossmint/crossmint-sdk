@@ -9,13 +9,29 @@ const AuthenticatedEventRequest = z.object({
     }),
 });
 
+const ErrorResponse = z.object({
+    status: z.literal("error"),
+    error: z.string(),
+    code: z.string().optional(),
+    data: z.any().optional(),
+});
+
+const ResultResponse = <T extends z.ZodRawShape>(schema: z.ZodObject<T>) =>
+    ErrorResponse.or(
+        schema.extend({
+            status: z.literal("success"),
+        })
+    );
+
 export const GetAttestationPayloadSchema = {
     request: z.object({
         challenge: z.string(),
     }),
-    response: z.object({
-        attestationDocument: z.record(z.string(), z.any()), // TODO: Refine this type
-    }),
+    response: ResultResponse(
+        z.object({
+            attestationDocument: z.record(z.string(), z.any()), // TODO: Refine this type
+        })
+    ),
 };
 
 export const SignMessagePayloadSchema = {
@@ -26,10 +42,12 @@ export const SignMessagePayloadSchema = {
             encoding: z.enum(["base58"]).optional().default("base58"),
         }),
     }),
-    response: z.object({
-        signature: z.string(),
-        publicKey: z.string(),
-    }),
+    response: ResultResponse(
+        z.object({
+            signature: z.string(),
+            publicKey: z.string(),
+        })
+    ),
 };
 
 export const SignTransactionPayloadSchema = {
@@ -40,19 +58,26 @@ export const SignTransactionPayloadSchema = {
             encoding: z.enum(["base58"]).optional().default("base58"),
         }),
     }),
-    response: z.object({
-        signature: z.string(),
-        publicKey: z.string(),
-    }),
+    response: ResultResponse(
+        z.object({
+            signature: z.string(),
+            publicKey: z.string(),
+        })
+    ),
 };
 
 export const CreateSignerPayloadSchema = {
     request: AuthenticatedEventRequest.extend({
         data: z.object({
             authId: z.string(),
+            chainLayer: SupportedChainLayer,
         }),
     }),
-    response: z.object({}),
+    response: ResultResponse(
+        z.object({
+            address: z.string(),
+        })
+    ),
 };
 
 export const SendEncryptedOtpPayloadSchema = {
@@ -62,9 +87,11 @@ export const SendEncryptedOtpPayloadSchema = {
             chainLayer: SupportedChainLayer,
         }),
     }),
-    response: z.object({
-        address: z.string(),
-    }),
+    response: ResultResponse(
+        z.object({
+            address: z.string(),
+        })
+    ),
 };
 
 export const GetPublicKeyPayloadSchema = {
@@ -73,7 +100,9 @@ export const GetPublicKeyPayloadSchema = {
             chainLayer: SupportedChainLayer,
         }),
     }),
-    response: z.object({
-        publicKey: z.string(),
-    }),
+    response: ResultResponse(
+        z.object({
+            publicKey: z.string(),
+        })
+    ),
 };
