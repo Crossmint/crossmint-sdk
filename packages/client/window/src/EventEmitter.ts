@@ -63,7 +63,6 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
     send<K extends keyof OutgoingEvents>(event: K, data: z.infer<OutgoingEvents[K]>) {
         const result = this.outgoingEvents[event].safeParse(data);
         if (result.success) {
-            console.log("sending", event, data);
             this.transport.send({ event, data });
         } else {
             console.error("Invalid data for event", event, result.error);
@@ -98,7 +97,7 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
         const timeoutMs = options?.timeoutMs ?? 7000;
 
         return new Promise((resolve, reject) => {
-            let interval: NodeJS.Timeout | undefined = undefined;
+            let interval: number | undefined = undefined;
             const timer = setTimeout(() => {
                 reject(
                     `Timed out waiting for ${String(responseEvent)} event${
@@ -120,7 +119,6 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
                 resolve(data);
             });
 
-            console.log("sending action", event, data);
             this.send(event, data);
             if (options?.intervalMs) {
                 interval = setInterval(() => this.send(event, data), options?.intervalMs);

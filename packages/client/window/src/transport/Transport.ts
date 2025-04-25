@@ -1,7 +1,6 @@
 import type { z } from "zod";
 import type { EventMap } from "../EventEmitter";
 
-// Simple event type with just what we need
 export type SimpleMessageEvent = {
     type: string;
     data: {
