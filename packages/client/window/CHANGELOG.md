@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-window
 
+## 1.0.0
+
+### Major Changes
+
+- 5acfc2f: Refactors to support multiple different transport options and adds webview
+
 ## 0.2.3
 
 ### Patch Changes
