@@ -1,5 +1,11 @@
 # @crossmint/client-signers
 
+## 0.0.4
+
+### Patch Changes
+
+- db1fca8: Remove device from iframe payload
+
 ## 0.0.3
 
 ### Patch Changes
