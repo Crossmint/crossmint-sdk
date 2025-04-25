@@ -1,5 +1,12 @@
 # @crossmint/client-signers
 
+## 0.0.6
+
+### Patch Changes
+
+- 953df23: Adapting events
+- 953df23: Small fix
+
 ## 0.0.5
 
 ### Patch Changes
