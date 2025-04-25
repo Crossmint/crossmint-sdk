@@ -1,6 +1,5 @@
-import type { EventMap } from "../EventEmitter";
-import type { EventEmitterWithHandshakeOptions } from "../handshake";
-import { HandshakeChild } from "../handshake/Child";
+import type { EventMap, EventEmitterWithHandshakeOptions } from "@crossmint/client-sdk-window";
+import { HandshakeChild } from "@crossmint/client-sdk-window";
 import { RNWebViewTransport } from "../transport/RNWebViewTransport";
 
 export class RNWebViewChild<IncomingEvents extends EventMap, OutgoingEvents extends EventMap> extends HandshakeChild<

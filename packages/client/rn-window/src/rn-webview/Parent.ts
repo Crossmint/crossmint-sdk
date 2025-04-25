@@ -1,14 +1,15 @@
-import { RNWebViewTransport } from "@/transport/RNWebViewTransport";
-import type { EventMap } from "../EventEmitter";
-import type { EventEmitterWithHandshakeOptions } from "../handshake";
-import { HandshakeParent } from "../handshake/Parent";
+import type { EventMap, EventEmitterWithHandshakeOptions } from "@crossmint/client-sdk-window";
+import { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { RefObject } from "react";
 import type { WebView, WebViewMessageEvent } from "react-native-webview";
+import { RNWebViewTransport } from "../transport/RNWebViewTransport";
 
 export class WebViewParent<IncomingEvents extends EventMap, OutgoingEvents extends EventMap> extends HandshakeParent<
     IncomingEvents,
     OutgoingEvents
 > {
+    protected transport: RNWebViewTransport<OutgoingEvents>;
+
     /**
      * @param webviewRef A React ref to the WebView component
      * @param options Optional EventEmitter and handshake options

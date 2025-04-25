@@ -1,10 +1,8 @@
 import type { z } from "zod";
-import type { WebViewMessageEvent } from "react-native-webview";
-import type { EventMap } from "../EventEmitter";
-import type { SimpleMessageEvent, Transport } from "./Transport";
-import { generateRandomString } from "../utils/generateRandomString";
+import type { WebViewMessageEvent, WebView } from "react-native-webview";
+import type { EventMap, SimpleMessageEvent, Transport } from "@crossmint/client-sdk-window";
+import { generateRandomString } from "@crossmint/client-sdk-window";
 import type { RefObject } from "react";
-import type { WebView } from "react-native-webview";
 
 export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> implements Transport<OutgoingEvents> {
     private listeners = new Map<string, (event: SimpleMessageEvent) => void>();
