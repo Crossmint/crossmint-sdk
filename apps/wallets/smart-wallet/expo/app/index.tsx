@@ -9,6 +9,7 @@ import {
     TransactionMessage,
     VersionedTransaction,
 } from "@solana/web3.js";
+import { Link } from "expo-router";
 
 export default function Index() {
     const { loginWithOAuth, user, logout, createAuthSession } = useCrossmintAuth();
@@ -104,6 +105,9 @@ export default function Index() {
                     logout();
                 }}
             />
+            <Link href="/signer" asChild>
+                <Button title="Go to Signer Flow" />
+            </Link>
         </View>
     );
 }

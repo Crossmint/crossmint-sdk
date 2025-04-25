@@ -1,6 +1,5 @@
 import * as React from "react";
-import type { WebViewProps } from "react-native-webview";
-import { WebView } from "react-native-webview";
+import { WebView, type WebViewProps} from "react-native-webview";
 
 const INJECTED_BRIDGE_JS = `
 (function() {
