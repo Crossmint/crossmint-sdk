@@ -148,9 +148,6 @@ export function CrossmintSignerProvider({ children, setWalletState, appearance }
                 throw new Error(res.error);
             }
 
-            console.log("[handleOnGetOrCreateRecoveryKey] success for email: ", email);
-            console.log({ existingRecoveryKeyForEmail: res });
-
             // If the signer already exists, proceed directly to wallet creation
             if (res.status === "success" && res.address != null) {
                 await getOrCreateSolanaWalletWithSigner(res.address);
