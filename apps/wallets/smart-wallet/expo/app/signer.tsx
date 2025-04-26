@@ -137,7 +137,7 @@ export default function SignerScreen() {
                 <Button
                     title="2. Validate OTP"
                     onPress={handleSendOtp}
-                    disabled={isLoading || !isWebViewReady || !otp || wallet != null || recoverySigner == null}
+                    disabled={isLoading || !isWebViewReady || (!otp && recoverySigner == null)}
                 />
             </View>
 
