@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.18.5
+
+### Patch Changes
+
+- bb32766: version bump
+
 ## 1.18.4
 
 ### Patch Changes
