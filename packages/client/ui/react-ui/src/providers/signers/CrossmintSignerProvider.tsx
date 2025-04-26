@@ -32,7 +32,7 @@ interface CrossmintSignerProviderProps {
 }
 
 type CrossmintSignerContext = {
-    experimental_getOrCreateWalletWithRecoveryKey: (args: { type: "solana" }) => Promise<void>;
+    experimental_getOrCreateWalletWithRecoveryKey: (args: { type: "solana"; email?: string }) => Promise<void>;
 };
 
 export const CrossmintSignerContext = createContext<CrossmintSignerContext | null>(null);
@@ -49,7 +49,7 @@ export function CrossmintSignerProvider({ children, setWalletState, appearance }
     const successHandlerRef = useRef<(() => void) | null>(null);
     const errorHandlerRef = useRef<((error: Error) => void) | null>(null);
 
-    const experimental_getOrCreateWalletWithRecoveryKey = async (args: { type: "solana" }) => {
+    const experimental_getOrCreateWalletWithRecoveryKey = async (args: { type: "solana"; email?: string }) => {
         if (args.type !== "solana") {
             throw new Error("Unsupported wallet type, only solana is supported at the moment");
         }
@@ -59,6 +59,35 @@ export function CrossmintSignerProvider({ children, setWalletState, appearance }
 
         try {
             setWalletState({ status: "in-progress" });
+
+            // First check if the signer already exists
+            const signerResponse = await iframeWindow.current?.sendAction({
+                event: "request:get-public-key",
+                responseEvent: "response:get-public-key",
+                data: {
+                    authData: {
+                        jwt: jwt!,
+                        apiKey,
+                    },
+                    data: {
+                        chainLayer: "solana",
+                    },
+                },
+            });
+
+            if (signerResponse.status === "success") {
+                // Return the existing wallet
+                await getOrCreateSolanaWalletWithSigner(signerResponse.publicKey);
+                return;
+            }
+
+            if (args.email != null) {
+                // Submit the email and move straight to OTP step
+                await handleEmailSubmit(args.email);
+                return;
+            }
+
+            // OTHERWISE, we need to create a new signer
             // Create a promise that resolves when the flow is complete
             return new Promise<void>((resolve, reject) => {
                 setDialogOpen(true);
@@ -127,9 +156,7 @@ export function CrossmintSignerProvider({ children, setWalletState, appearance }
                 await getOrCreateSolanaWalletWithSigner(res.address);
                 setStep("initial");
                 setDialogOpen(false);
-                return true; // Return true to indicate we handled everything
             }
-            return false; // Return false to indicate we need OTP flow
         } catch (err) {
             console.error("There was an error creating a recovery key ", err);
             throw err;
@@ -138,13 +165,9 @@ export function CrossmintSignerProvider({ children, setWalletState, appearance }
 
     const handleEmailSubmit = async (email: string) => {
         try {
-            const hasExistingRecoveryKey = await handleOnGetOrCreateRecoveryKey(email);
-            if (!hasExistingRecoveryKey) {
-                setStep("otp");
-            } else {
-                // Resolve the promise when the flow is complete
-                successHandlerRef.current?.();
-            }
+            await handleOnGetOrCreateRecoveryKey(email);
+            setStep("otp");
+            setDialogOpen(true);
         } catch (error) {
             console.error("Error in email submission:", error);
             errorHandlerRef.current?.(error as Error);
@@ -174,6 +197,7 @@ export function CrossmintSignerProvider({ children, setWalletState, appearance }
                     },
                 },
             });
+
             if (res.status === "error") {
                 throw new Error(res.error);
             }
