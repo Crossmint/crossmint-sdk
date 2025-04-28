@@ -7,14 +7,26 @@ import type { RefObject } from "react";
 export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> implements Transport<OutgoingEvents> {
     private listeners = new Map<string, (event: SimpleMessageEvent) => void>();
     private isWebView: boolean;
+    private globalListenerAttached = false;
 
     constructor(private webviewRef?: RefObject<WebView>) {
         this.isWebView = typeof (window as any).ReactNativeWebView !== "undefined";
     }
 
+    private handleGlobalMessage = (event: MessageEvent) => {
+        this.dispatchToListeners({
+            type: "message",
+            data: event.data,
+        });
+    };
+
     private dispatchToListeners(event: SimpleMessageEvent) {
         for (const listener of this.listeners.values()) {
-            listener(event);
+            try {
+                listener(event);
+            } catch (e) {
+                console.error(`[RNTransport ${this.isWebView ? "WebView" : "RN"}] Error in listener:`, e);
+            }
         }
     }
 
@@ -23,9 +35,10 @@ export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> impl
             if ((window as any).ReactNativeWebView?.postMessage) {
                 (window as any).ReactNativeWebView.postMessage(JSON.stringify(message));
             } else {
-                console.error("[WebView] ReactNativeWebView.postMessage not available");
+                console.error("[RNTransport WebView] ReactNativeWebView.postMessage not available");
             }
         } else {
+            console.log("[RN] Sending message:", message);
             if (this.webviewRef?.current?.injectJavaScript) {
                 const messageStr = JSON.stringify(message);
                 // The way to send message to RN is to inject a script into the WebView
@@ -41,7 +54,7 @@ export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> impl
                 `;
                 this.webviewRef.current.injectJavaScript(script);
             } else {
-                console.warn("[RN] WebView ref not available for injection");
+                console.warn("[RNTransport RN] WebView ref not available for injection");
             }
         }
     }
@@ -50,13 +63,9 @@ export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> impl
         const id = generateRandomString();
         this.listeners.set(id, listener);
 
-        if (this.isWebView) {
-            window.addEventListener("message", (event: MessageEvent) => {
-                this.dispatchToListeners({
-                    type: "message",
-                    data: event.data,
-                });
-            });
+        if (this.isWebView && !this.globalListenerAttached) {
+            window.addEventListener("message", this.handleGlobalMessage);
+            this.globalListenerAttached = true;
         }
 
         return id;
@@ -67,20 +76,27 @@ export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> impl
         if (listener != null) {
             this.listeners.delete(id);
         }
+
+        if (this.isWebView && this.globalListenerAttached && this.listeners.size === 0) {
+            window.removeEventListener("message", this.handleGlobalMessage);
+            this.globalListenerAttached = false;
+        }
     }
 
     public handleMessage = (event: WebViewMessageEvent) => {
         if (!this.isWebView) {
             try {
-                const message = JSON.parse(event.nativeEvent.data);
+                const parsedData = JSON.parse(event.nativeEvent.data);
                 this.dispatchToListeners({
                     type: "message",
-                    data: message,
+                    data: parsedData,
                 });
             } catch (error) {
                 console.error(
-                    "[RN] Error handling WebView message:",
-                    error instanceof Error ? error.message : String(error)
+                    "[RNTransport RN] Error parsing/handling WebView message:",
+                    error instanceof Error ? error.message : String(error),
+                    "Raw data:",
+                    event.nativeEvent.data
                 );
             }
         }
