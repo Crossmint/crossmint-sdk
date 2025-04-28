@@ -6,16 +6,18 @@ import {
     GetPublicKeyPayloadSchema,
     SendEncryptedOtpPayloadSchema,
     SignMessagePayloadSchema,
+    SignPayloadSchema,
     SignTransactionPayloadSchema,
 } from "./schemas";
 
 export const SIGNER_EVENTS = [
     "create-signer",
     "get-attestation",
-    "sign-message",
-    "sign-transaction",
+    "sign-message", // Deprecated, use sign instead
+    "sign-transaction", // Deprecated, use sign instead
     "send-otp",
     "get-public-key",
+    "sign",
 ] as const;
 export type SignerIFrameEventName = (typeof SIGNER_EVENTS)[number];
 
@@ -26,6 +28,7 @@ export const signerInboundEvents = {
     "request:sign-transaction": SignTransactionPayloadSchema.request,
     "request:send-otp": SendEncryptedOtpPayloadSchema.request,
     "request:get-public-key": GetPublicKeyPayloadSchema.request,
+    "request:sign": SignPayloadSchema.request,
 } as const;
 
 export const signerOutboundEvents = {
@@ -35,6 +38,7 @@ export const signerOutboundEvents = {
     "response:sign-transaction": SignTransactionPayloadSchema.response,
     "response:send-otp": SendEncryptedOtpPayloadSchema.response,
     "response:get-public-key": GetPublicKeyPayloadSchema.response,
+    "response:sign": SignPayloadSchema.response,
 } as const;
 
 export type SignerInputEvent<E extends SignerIFrameEventName> = z.infer<(typeof signerInboundEvents)[`request:${E}`]>;
