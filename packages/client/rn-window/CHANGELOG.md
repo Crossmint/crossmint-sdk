@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-rn-window
 
+## 0.2.1
+
+### Patch Changes
+
+- f1d93a8: Fixes adding only one handler for all events
+
 ## 0.2.0
 
 ### Minor Changes
