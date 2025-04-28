@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 const SupportedChainLayer = z.enum(["solana", "evm"]);
+const KeyType = z.enum(["secp256k1", "ed25519"]);
 
 const AuthenticatedEventRequest = z.object({
     authData: z.object({
@@ -102,6 +103,22 @@ export const GetPublicKeyPayloadSchema = {
     }),
     response: ResultResponse(
         z.object({
+            publicKey: z.string(),
+        })
+    ),
+};
+
+export const SignPayloadSchema = {
+    request: AuthenticatedEventRequest.extend({
+        data: z.object({
+            keyType: KeyType,
+            bytes: z.string(),
+            encoding: z.enum(["base58"]).optional().default("base58"),
+        }),
+    }),
+    response: ResultResponse(
+        z.object({
+            signature: z.string(),
             publicKey: z.string(),
         })
     ),
