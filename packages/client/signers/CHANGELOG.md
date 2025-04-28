@@ -1,5 +1,11 @@
 # @crossmint/client-signers
 
+## 0.0.7
+
+### Patch Changes
+
+- 99bfc83: Add new sign event
+
 ## 0.0.6
 
 ### Patch Changes
