@@ -70,21 +70,19 @@ export function CrossmintSignerProvider({ children, setWalletState, appearance }
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${jwt}`,
                         "x-api-key": apiKey,
+                        credentials: "omit",
                     },
                     body: JSON.stringify({
-                        authId: encodeURIComponent(`email:${args.email}`),
+                        authId: `email:${args.email}`,
                         signingAlgorithm: "EDDSA_ED25519",
                     }),
                 }
             );
-
-            // TODO:
-            // response is encoded in base64,
-            // decode in baste58
-            console.log({ response });
-
-            // @TODO: update to get from main server
-            const adminSignerAddress = "6Pv6sDtdL5mspBDP4Lh5YJp7xwHfMToRvR4Cex6zsH4G";
+            const responseData = await response.json();
+            // Decode the base64 public key to Uint8Array then encode to base58
+            const base64PublicKey = responseData.publicKey;
+            const binaryData = Buffer.from(base64PublicKey, "base64");
+            const adminSignerAddress = base58.encode(binaryData);
             const wallet = await getOrCreateSolanaWalletWithSigner(adminSignerAddress);
 
             const walletWithRecovery = {
