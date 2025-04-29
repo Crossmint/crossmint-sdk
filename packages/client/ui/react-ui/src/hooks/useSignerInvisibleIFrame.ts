@@ -28,7 +28,7 @@ export function useSignerIFrameWindow() {
     useEffect(() => {
         const initIFrameWindow = async () => {
             try {
-                const iframeUrl = new URL("https://crossmint-signer-frames.onrender.com/");
+                const iframeUrl = new URL("https://signers.crossmint.com/");
                 const iframeElement = await createInvisibleIFrame(iframeUrl.toString());
                 iframeWindow.current = await IFrameWindow.init(iframeElement, {
                     targetOrigin: iframeUrl.origin,
