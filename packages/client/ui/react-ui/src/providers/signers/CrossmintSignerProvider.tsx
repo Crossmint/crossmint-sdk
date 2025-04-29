@@ -14,7 +14,7 @@ import { CrossmintWallets } from "@crossmint/wallets-sdk";
 import type { ValidWalletState } from "@crossmint/client-sdk-react-base";
 import { PublicKey, type VersionedTransaction } from "@solana/web3.js";
 import base58 from "bs58";
-import type { UIConfig } from "@crossmint/common-sdk-base";
+import { environmentToCrossmintBaseURL, type UIConfig } from "@crossmint/common-sdk-base";
 import { useCrossmint } from "@/hooks";
 import { deriveWalletErrorState } from "@/utils/errorUtils";
 import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
@@ -62,25 +62,25 @@ export function CrossmintSignerProvider({ children, setWalletState, appearance }
             setWalletState({ status: "in-progress" });
             setEmail(args.email);
 
-            const response = await fetch(
-                "https://staging.crossmint.com/api/unstable/wallets/ncs/doesnt-matter/public-key",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${jwt}`,
-                        "x-api-key": apiKey,
-                    },
-                    body: JSON.stringify({
-                        authId: `email:${args.email}`,
-                        signingAlgorithm: "EDDSA_ED25519",
-                    }),
-                }
+            const baseUrl = environmentToCrossmintBaseURL(
+                apiKey.startsWith("ck_development_") ? "development" : "staging"
             );
+            const response = await fetch(`${baseUrl}/api/unstable/wallets/ncs/doesnt-matter/public-key`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${jwt}`,
+                    "x-api-key": apiKey,
+                },
+                body: JSON.stringify({
+                    authId: `email:${args.email}`,
+                    signingAlgorithm: "EDDSA_ED25519",
+                }),
+            });
             const responseData = await response.json();
             // Decode the base64 public key to Uint8Array then encode to base58
             const base64PublicKey = responseData.publicKey;
-            const binaryData = Buffer.from(base64PublicKey, "base64");
+            const binaryData = Uint8Array.from(atob(base64PublicKey), (c) => c.charCodeAt(0));
             const adminSignerAddress = base58.encode(binaryData);
             const wallet = await getOrCreateSolanaWalletWithSigner(adminSignerAddress);
 
