@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.19.2
+
+### Patch Changes
+
+- e3c9a0b: Fix bug with experimental feature
+
 ## 1.19.1
 
 ### Patch Changes
