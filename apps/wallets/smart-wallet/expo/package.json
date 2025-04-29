@@ -16,10 +16,15 @@
     },
     "dependencies": {
         "@crossmint/client-sdk-react-native-ui": "workspace:*",
+        "@crossmint/client-sdk-rn-window": "workspace:*",
+        "@crossmint/client-signers": "workspace:*",
+        "@crossmint/wallets-sdk": "workspace:*",
         "@expo/vector-icons": "^14.0.2",
         "@react-navigation/bottom-tabs": "^7.2.0",
         "@react-navigation/native": "^7.0.14",
+        "@solana/spl-memo": "0.2.5",
         "@solana/web3.js": "1.98.0",
+        "bs58": "^5.0.0",
         "buffer": "^6.0.3",
         "expo": "~52.0.46",
         "expo-blur": "~14.0.3",
@@ -49,6 +54,7 @@
     },
     "devDependencies": {
         "@babel/core": "^7.25.2",
+        "@babel/runtime": "^7.26.0",
         "@types/jest": "^29.5.12",
         "@types/react": "~18.3.12",
         "@types/react-test-renderer": "^18.3.0",

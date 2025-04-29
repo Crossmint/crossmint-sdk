@@ -1,5 +1,4 @@
 import { useContext } from "react";
-
 import { WalletContext } from "@/providers/CrossmintWalletProvider";
 
 export function useWallet() {

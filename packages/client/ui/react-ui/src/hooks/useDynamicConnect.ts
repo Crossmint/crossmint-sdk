@@ -1,28 +1,9 @@
-import type { Account, Chain, SignableMessage, Transport, WalletClient } from "viem";
+import type { SignableMessage } from "viem";
 import { isEthereumWallet } from "@dynamic-labs/ethereum";
 import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
-import { type IEmbeddedWalletSolanaSigner, isSolanaWallet } from "@dynamic-labs/solana";
+import { isSolanaWallet } from "@dynamic-labs/solana";
 import { useCallback, useEffect } from "react";
-
-type EVMWalletClient = WalletClient<Transport, Chain, Account>;
-
-export type CustomEVMAdminSigner = EVMWalletClient & {
-    type: "evm-keypair";
-    address: `0x${string}`;
-    signer: {
-        type: "viem_v2";
-        signMessage: (data: {
-            message: SignableMessage;
-        }) => Promise<`0x${string}`>;
-        account: Account;
-    };
-};
-
-export type CustomSolanaAdminSigner = IEmbeddedWalletSolanaSigner & {
-    type: "solana-keypair";
-    address: string;
-    signer: IEmbeddedWalletSolanaSigner;
-};
+import type { EVMSignerInput, SolanaSignerInput } from "@crossmint/wallets-sdk";
 
 export function useDynamicConnect(
     isWeb3Enabled: boolean,
@@ -66,7 +47,7 @@ export function useDynamicConnect(
                         },
                     },
                     type: "evm-keypair",
-                } as CustomEVMAdminSigner;
+                } as EVMSignerInput;
             }
             if (isSolanaWallet(connectedDynamicWallet)) {
                 const signer = await connectedDynamicWallet.getSigner();
@@ -75,9 +56,12 @@ export function useDynamicConnect(
                     address: connectedDynamicWallet.address,
                     signer: {
                         ...signer,
+                        signMessage: async (message: Uint8Array) => {
+                            return (await signer.signMessage(message)).signature;
+                        },
                     },
                     type: "solana-keypair",
-                } as CustomSolanaAdminSigner;
+                } as SolanaSignerInput;
             }
             return null;
         } catch (error) {
