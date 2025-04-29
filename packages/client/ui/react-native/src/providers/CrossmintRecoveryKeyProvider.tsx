@@ -2,7 +2,8 @@ import React, { type ReactNode, useCallback, useContext, useEffect, useRef, useS
 import bs58 from "bs58";
 import { PublicKey, type VersionedTransaction } from "@solana/web3.js";
 import type { WebView, WebViewMessageEvent } from "react-native-webview";
-import { RNWebView, WebViewParent } from "@crossmint/client-sdk-rn-window";
+import { RNWebView } from "@crossmint/client-sdk-rn-window/src/rn-webview/RNWebView";
+import { WebViewParent } from "@crossmint/client-sdk-rn-window";
 import { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
 import { useCrossmint } from "../hooks";
 import { View } from "react-native";
@@ -50,7 +51,7 @@ export function CrossmintRecoveryKeyProvider({
     experimental_secureEndpointUrl = DEFAULT_SECURE_ENDPOINT_URL,
 }: CrossmintRecoveryKeyProviderProps) {
     const {
-        crossmint: { apiKey, jwt },
+        crossmint: { apiKey, jwt, appId },
     } = useCrossmint();
 
     const webviewRef = useRef<WebView>(null);
@@ -59,6 +60,13 @@ export function CrossmintRecoveryKeyProvider({
     );
     const [recoverySigner, setRecoverySigner] = useState<RecoverySigner | null>(null);
     const [isWebViewReady, setIsWebViewReady] = useState(false);
+
+    const injectedGlobalsScript = useMemo(() => {
+        if (appId != null) {
+            return `window.crossmintAppId = '${appId}';`;
+        }
+        return "";
+    }, [appId]);
 
     useEffect(() => {
         if (webviewRef.current != null && webViewParentRef.current == null) {
@@ -74,7 +82,8 @@ export function CrossmintRecoveryKeyProvider({
             try {
                 await webViewParentRef.current.handshakeWithChild();
                 setIsWebViewReady(true);
-            } catch (_) {
+            } catch (e) {
+                console.error("[RN] handshakeWithChild error:", e);
                 setIsWebViewReady(false);
             }
         }
@@ -85,6 +94,47 @@ export function CrossmintRecoveryKeyProvider({
         if (parent == null) {
             return;
         }
+
+        try {
+            const messageData = JSON.parse(event.nativeEvent.data);
+            if (messageData && typeof messageData.type === "string" && messageData.type.startsWith("console.")) {
+                const consoleMethod = messageData.type.split(".")[1];
+                const args = (messageData.data || []).map((argStr: string) => {
+                    try {
+                        if (
+                            argStr === "[Function]" ||
+                            argStr === "[Circular Reference]" ||
+                            argStr === "[Unserializable Object]"
+                        ) {
+                            return argStr;
+                        }
+                        return JSON.parse(argStr);
+                    } catch (e) {
+                        return argStr;
+                    }
+                });
+
+                const prefix = `[WebView:${consoleMethod.toUpperCase()}]`;
+                switch (consoleMethod) {
+                    case "log":
+                        console.log(prefix, ...args);
+                        break;
+                    case "error":
+                        console.error(prefix, ...args);
+                        break;
+                    case "warn":
+                        console.warn(prefix, ...args);
+                        break;
+                    case "info":
+                        console.info(prefix, ...args);
+                        break;
+                    default:
+                        console.log(`[WebView Unknown:${consoleMethod}]`, ...args);
+                }
+                return;
+            }
+        } catch (_) {}
+
         parent.handleMessage(event);
     }, []);
 
@@ -170,6 +220,7 @@ export function CrossmintRecoveryKeyProvider({
                     },
                     options: defaultEventOptions,
                 });
+
                 if (response?.status === "success" && response.address) {
                     const newSigner = buildRecoverySigner(response.address);
                     setRecoverySigner(newSigner);
@@ -245,6 +296,7 @@ export function CrossmintRecoveryKeyProvider({
                         width: 1,
                         height: 1,
                     }}
+                    injectedGlobals={injectedGlobalsScript}
                 />
             </View>
         </CrossmintRecoveryKeyContext.Provider>

@@ -87,8 +87,16 @@ const INJECTED_BRIDGE_JS = `
 })();
 `;
 
-export const RNWebView = React.forwardRef<WebView, WebViewProps>((props, ref) => {
-    return <WebView ref={ref} {...props} injectedJavaScriptBeforeContentLoaded={INJECTED_BRIDGE_JS} />;
+export interface RNWebViewProps extends WebViewProps {
+    injectedGlobals?: string;
+}
+
+export const RNWebView = React.forwardRef<WebView, RNWebViewProps>(({ injectedGlobals = "", ...props }, ref) => {
+    const combinedInjectedJs = `
+        ${INJECTED_BRIDGE_JS}
+        ${injectedGlobals}
+    `;
+    return <WebView ref={ref} {...props} injectedJavaScriptBeforeContentLoaded={combinedInjectedJs} />;
 });
 
 RNWebView.displayName = "RNWebView";
