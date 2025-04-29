@@ -137,9 +137,7 @@ export default function SignerScreen() {
                 <Button
                     title="2. Validate OTP"
                     onPress={handleSendOtp}
-                    disabled={
-                        isLoading || experimental_recoveryKeyStatus !== "awaiting-otp-validation"
-                    }
+                    disabled={isLoading || experimental_recoveryKeyStatus !== "awaiting-otp-validation"}
                 />
             </View>
 
@@ -147,7 +145,9 @@ export default function SignerScreen() {
                 <Button
                     title="3. Get or Create Wallet"
                     onPress={handleGetOrCreateWallet}
-                    disabled={isLoading || status === "in-progress" || (experimental_recoverySigner == null && wallet == null)}
+                    disabled={
+                        isLoading || status === "in-progress" || (experimental_recoverySigner == null && wallet == null)
+                    }
                 />
             </View>
 

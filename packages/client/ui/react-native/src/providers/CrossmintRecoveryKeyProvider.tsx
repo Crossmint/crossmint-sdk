@@ -293,7 +293,12 @@ export function CrossmintRecoveryKeyProvider({
             experimental_createRecoveryKeySigner,
             experimental_validateEmailOtp,
         }),
-        [experimental_recoveryKeyStatus, experimental_recoverySigner, experimental_createRecoveryKeySigner, experimental_validateEmailOtp]
+        [
+            experimental_recoveryKeyStatus,
+            experimental_recoverySigner,
+            experimental_createRecoveryKeySigner,
+            experimental_validateEmailOtp,
+        ]
     );
 
     return (
