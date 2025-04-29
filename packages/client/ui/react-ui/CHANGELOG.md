@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.19.0
+
+### Minor Changes
+
+- e96cb4a: Added experimental non custodial signers
+
 ## 1.18.5
 
 ### Patch Changes
