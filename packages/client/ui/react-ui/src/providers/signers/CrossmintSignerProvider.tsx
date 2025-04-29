@@ -9,6 +9,7 @@ import {
     type Dispatch,
     type SetStateAction,
 } from "react";
+import type { SmartWalletTransactionParams } from "@crossmint/wallets-sdk/dist/solana/types/wallet"; /** @TODO: remove this once the type is exported from the SDK */
 import { CrossmintWallets } from "@crossmint/wallets-sdk";
 import type { ValidWalletState } from "@crossmint/client-sdk-react-base";
 import { PublicKey, type VersionedTransaction } from "@solana/web3.js";
@@ -32,7 +33,7 @@ interface CrossmintSignerProviderProps {
 }
 
 type CrossmintSignerContext = {
-    experimental_getOrCreateWalletWithRecoveryKey: (args: { type: "solana"; email?: string }) => Promise<void>;
+    experimental_getOrCreateWalletWithRecoveryKey: (args: { type: "solana"; email: string }) => Promise<void>;
 };
 
 export const CrossmintSignerContext = createContext<CrossmintSignerContext | null>(null);
@@ -43,74 +44,67 @@ export function CrossmintSignerProvider({ children, setWalletState, appearance }
     } = useCrossmint();
     const smartWalletSDK = useMemo(() => CrossmintWallets.from({ apiKey, jwt }), [apiKey, jwt]);
 
+    const iframeWindow = useSignerIFrameWindow();
+    const [email, setEmail] = useState<string>("");
     const [step, setStep] = useState<"initial" | "otp">("initial");
     const [dialogOpen, setDialogOpen] = useState(false);
-    const iframeWindow = useSignerIFrameWindow();
     const successHandlerRef = useRef<(() => void) | null>(null);
     const errorHandlerRef = useRef<((error: Error) => void) | null>(null);
 
-    const experimental_getOrCreateWalletWithRecoveryKey = async (args: { type: "solana"; email?: string }) => {
-        if (args.type !== "solana") {
-            throw new Error("Unsupported wallet type, only solana is supported at the moment");
-        }
-        if (!iframeWindow.current) {
-            throw new Error("IFrame window not initialized");
-        }
-
+    const experimental_getOrCreateWalletWithRecoveryKey = async (args: { type: "solana"; email: string }) => {
         try {
             setWalletState({ status: "in-progress" });
+            setEmail(args.email);
 
-            // First check if the signer already exists
-            const signerResponse = await iframeWindow.current?.sendAction({
-                event: "request:get-public-key",
-                responseEvent: "response:get-public-key",
-                data: {
-                    authData: {
-                        jwt: jwt!,
-                        apiKey,
-                    },
-                    data: {
-                        chainLayer: "solana",
-                    },
-                },
+            // @TODO: update to staging!
+            const response = await fetch("http://localhost:3000/api/unstable/wallets/ncs/public-key", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${jwt}`, "x-api-key": apiKey },
+                body: JSON.stringify({
+                    authId: `email:${args.email}`,
+                    signingAlgorithm: "EDDSA_ED25519",
+                }),
             });
 
-            if (signerResponse.status === "success") {
-                // Return the existing wallet
-                await getOrCreateSolanaWalletWithSigner(signerResponse.publicKey);
-                return;
+            if (!response.ok) {
+                console.log(response);
+                throw new Error("[experimental_getOrCreateWalletWithRecoveryKey] Failed to get signers public-key");
             }
 
-            if (args.email != null) {
-                // Submit the email and move straight to OTP step
-                await handleEmailSubmit(args.email);
-                return;
-            }
+            console.log({ response });
 
-            // OTHERWISE, we need to create a new signer
-            // Create a promise that resolves when the flow is complete
-            return new Promise<void>((resolve, reject) => {
-                setDialogOpen(true);
-                setStep("initial");
+            // @TODO: update to get from main server
+            const adminSignerAddress = "6Pv6sDtdL5mspBDP4Lh5YJp7xwHfMToRvR4Cex6zsH4G";
+            const wallet = await getOrCreateSolanaWalletWithSigner(adminSignerAddress);
 
-                const cleanup = () => {
-                    setDialogOpen(false);
-                    setStep("initial");
-                };
+            const walletWithRecovery = {
+                ...wallet,
+                sendTransaction: async (props: SmartWalletTransactionParams) =>
+                    new Promise<string>((resolve, reject) => {
+                        const cleanup = () => {
+                            setDialogOpen(false);
+                            setStep("initial");
+                        };
+                        const successHandler = async () => {
+                            cleanup();
+                            try {
+                                const txHash = await wallet.sendTransaction(props);
+                                resolve(txHash);
+                            } catch (error) {
+                                reject(error);
+                            }
+                        };
+                        const errorHandler = (error: Error) => {
+                            cleanup();
+                            reject(error);
+                        };
+                        successHandlerRef.current = successHandler;
+                        errorHandlerRef.current = errorHandler;
+                        handleGetRecoverySigner(args.email).then(successHandler).catch(errorHandler);
+                    }),
+            };
 
-                const successHandler = () => {
-                    cleanup();
-                    resolve();
-                };
-
-                const errorHandler = (error: Error) => {
-                    cleanup();
-                    reject(error);
-                };
-
-                successHandlerRef.current = successHandler;
-                errorHandlerRef.current = errorHandler;
-            });
+            setWalletState({ status: "loaded", wallet: walletWithRecovery, type: "solana-smart-wallet" });
         } catch (error) {
             console.error("There was an error creating a wallet ", error);
             setWalletState(deriveWalletErrorState(error));
@@ -118,16 +112,55 @@ export function CrossmintSignerProvider({ children, setWalletState, appearance }
         }
     };
 
-    const handleOnGetOrCreateRecoveryKey = async (email: string) => {
+    async function handleGetRecoverySigner(email?: string) {
+        if (!iframeWindow.current || jwt == null) {
+            throw new Error("[handleGetRecoverySigner] IFrame window not initialized or JWT not set");
+        }
+        return new Promise<void>(async (resolve, reject) => {
+            try {
+                // Attempt to get the signer's public key
+                const signerResponse = await iframeWindow.current?.sendAction({
+                    event: "request:get-public-key",
+                    responseEvent: "response:get-public-key",
+                    data: {
+                        authData: {
+                            jwt,
+                            apiKey,
+                        },
+                        data: {
+                            chainLayer: "solana",
+                        },
+                    },
+                });
+                if (signerResponse?.status === "success") {
+                    // signer exists, skip OTP flow
+                    console.log("Signer already exists, skipping OTP flow");
+                    return resolve();
+                }
+                // Store the resolve/reject functions to be called after OTP completion
+                successHandlerRef.current = () => resolve();
+                errorHandlerRef.current = (error) => reject(error);
+
+                if (email != null) {
+                    // signer doesn't exist yet, handle email submission
+                    await handleSendEmailOTP(email);
+                } else {
+                    // if no email was provided, initiate the OTP flow from the start
+                    setStep("initial");
+                    setDialogOpen(true);
+                }
+            } catch (err) {
+                console.error("Error getting recovery signer", err);
+                reject(err);
+            }
+        });
+    }
+
+    const handleSendEmailOTP = async (email: string) => {
+        if (!iframeWindow.current || jwt == null) {
+            throw new Error("[handleSendEmailOTP] IFrame window not initialized or JWT not set");
+        }
         try {
-            if (!iframeWindow.current) {
-                throw new Error("IFrame window not initialized");
-            }
-
-            if (jwt == null) {
-                throw new Error("JWT not set");
-            }
-
             console.log("Creating Recovery Key");
             const res = await iframeWindow.current?.sendAction({
                 event: "request:create-signer",
@@ -148,21 +181,16 @@ export function CrossmintSignerProvider({ children, setWalletState, appearance }
                 throw new Error(res.error);
             }
 
-            // If the signer already exists, proceed directly to wallet creation
+            // If the signer already exists, skip OTP flow and continue BAU
             if (res.status === "success" && res.address != null) {
-                await getOrCreateSolanaWalletWithSigner(res.address);
+                console.log("Signer already exists, skipping OTP flow");
                 setStep("initial");
                 setDialogOpen(false);
+                return;
             }
-        } catch (err) {
-            console.error("There was an error creating a recovery key ", err);
-            throw err;
-        }
-    };
 
-    const handleEmailSubmit = async (email: string) => {
-        try {
-            await handleOnGetOrCreateRecoveryKey(email);
+            // proceed to OTP flow
+            console.log("Proceeding to OTP flow");
             setStep("otp");
             setDialogOpen(true);
         } catch (error) {
@@ -173,11 +201,8 @@ export function CrossmintSignerProvider({ children, setWalletState, appearance }
     };
 
     const handleOTPSubmit = async (token: string) => {
-        if (!iframeWindow.current) {
-            throw new Error("IFrame window not initialized");
-        }
-        if (jwt == null) {
-            throw new Error("JWT not set");
+        if (!iframeWindow.current || jwt == null) {
+            throw new Error("[handleOTPSubmit] IFrame window not initialized or JWT not set");
         }
         try {
             const res = await iframeWindow.current.sendAction({
@@ -199,7 +224,6 @@ export function CrossmintSignerProvider({ children, setWalletState, appearance }
                 throw new Error(res.error);
             }
 
-            await getOrCreateSolanaWalletWithSigner(res.address);
             setStep("initial");
             setDialogOpen(false);
 
@@ -216,9 +240,8 @@ export function CrossmintSignerProvider({ children, setWalletState, appearance }
         if (jwt == null) {
             throw new Error("[getOrCreateSolanaWalletWithSigner] JWT not set!");
         }
-
         try {
-            const wallet = await smartWalletSDK.getOrCreateWallet("solana-smart-wallet", {
+            return await smartWalletSDK.getOrCreateWallet("solana-smart-wallet", {
                 adminSigner: {
                     type: "solana-keypair",
                     address: publicSignerAddress,
@@ -283,7 +306,6 @@ export function CrossmintSignerProvider({ children, setWalletState, appearance }
                     },
                 },
             });
-            setWalletState({ status: "loaded", wallet, type: "solana-smart-wallet" });
         } catch (error) {
             console.error("Error creating wallet with signer:", error);
             setWalletState(deriveWalletErrorState(error));
@@ -298,16 +320,15 @@ export function CrossmintSignerProvider({ children, setWalletState, appearance }
     return (
         <CrossmintSignerContext.Provider value={{ experimental_getOrCreateWalletWithRecoveryKey }}>
             <EmailSignersDialog
+                email={email}
+                setEmail={setEmail}
                 open={dialogOpen}
                 setOpen={setDialogOpen}
                 step={step}
                 setStep={setStep}
                 onSubmitOTP={handleOTPSubmit}
-                onResendOTPCode={async (email: string) => {
-                    await handleOnGetOrCreateRecoveryKey(email);
-                    setStep("otp");
-                }}
-                onSubmitEmail={handleEmailSubmit}
+                onResendOTPCode={handleSendEmailOTP}
+                onSubmitEmail={handleSendEmailOTP}
                 appearance={appearance}
             />
             {children}

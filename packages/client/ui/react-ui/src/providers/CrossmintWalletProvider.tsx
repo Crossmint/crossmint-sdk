@@ -37,7 +37,7 @@ type WalletContextFunctions = {
     getOrCreateWallet: (args: GetOrCreateWalletProps) => Promise<{ startedCreation: boolean; reason?: string }>;
     createPasskeySigner: (name: string, promptType?: ValidPasskeyPromptType) => Promise<PasskeySigner | null>;
     clearWallet: () => void;
-    experimental_getOrCreateWalletWithRecoveryKey?: (args: { type: "solana"; email?: string }) => Promise<void>;
+    experimental_getOrCreateWalletWithRecoveryKey?: (args: { type: "solana"; email: string }) => Promise<void>;
     passkeySigner?: PasskeySigner;
 };
 

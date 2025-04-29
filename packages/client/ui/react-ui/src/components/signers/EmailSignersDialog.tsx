@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "../common/Dialog";
@@ -6,6 +5,8 @@ import { EmailOTPInput } from "./EmailOTPInput";
 import { EmailInput } from "./EmailInput";
 
 interface EmailSignersDialogProps {
+    email: string;
+    setEmail: (email: string) => void;
     open: boolean;
     setOpen: (open: boolean) => void;
     step: "initial" | "otp";
@@ -17,6 +18,8 @@ interface EmailSignersDialogProps {
 }
 
 export function EmailSignersDialog({
+    email,
+    setEmail,
     open,
     setOpen,
     step,
@@ -26,8 +29,6 @@ export function EmailSignersDialog({
     onSubmitEmail,
     appearance,
 }: EmailSignersDialogProps) {
-    const [email, setEmail] = useState<string>("");
-
     return (
         <Dialog modal={false} open={open} onOpenChange={setOpen}>
             <DialogContent
