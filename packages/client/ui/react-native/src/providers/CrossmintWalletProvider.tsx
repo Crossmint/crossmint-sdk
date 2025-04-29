@@ -12,8 +12,8 @@ import {
 import { WalletContext, type ReactNativeWalletContextState } from "@/hooks/useWallet";
 
 const recoveryKeyPropNames: Array<keyof CrossmintRecoveryKeyContextState> = [
-    "isWebViewReady",
-    "recoverySigner",
+    "experimental_recoveryKeyStatus",
+    "experimental_recoverySigner",
     "experimental_createRecoveryKeySigner",
     "experimental_validateEmailOtp",
 ];
