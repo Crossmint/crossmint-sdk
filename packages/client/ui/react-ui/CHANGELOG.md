@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.19.1
+
+### Patch Changes
+
+- 100c1b5: Fixes build
+
 ## 1.19.0
 
 ### Minor Changes

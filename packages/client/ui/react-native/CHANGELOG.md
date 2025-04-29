@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.4.0
+
+### Minor Changes
+
+- 100c1b5: Support experimental ncs
+
 ## 0.3.10
 
 ### Patch Changes
