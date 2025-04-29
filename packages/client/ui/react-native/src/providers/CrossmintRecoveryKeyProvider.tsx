@@ -1,4 +1,4 @@
-import { type ReactNode, createContext, useCallback, useContext, useEffect, useRef, useState, useMemo } from "react";
+import React, { type ReactNode, useCallback, useContext, useEffect, useRef, useState, useMemo } from "react";
 import bs58 from "bs58";
 import { PublicKey, type VersionedTransaction } from "@solana/web3.js";
 import type { WebView, WebViewMessageEvent } from "react-native-webview";
@@ -23,7 +23,7 @@ export interface CrossmintRecoveryKeyContextState {
     experimental_validateEmailOtp: (encryptedOtp: string) => Promise<string | null>;
 }
 
-export const CrossmintRecoveryKeyContext = createContext<CrossmintRecoveryKeyContextState | null>(null);
+export const CrossmintRecoveryKeyContext = React.createContext<CrossmintRecoveryKeyContextState | null>(null);
 
 export function useCrossmintRecoveryKey() {
     const context = useContext(CrossmintRecoveryKeyContext);
