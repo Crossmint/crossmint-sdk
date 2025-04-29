@@ -794,6 +794,9 @@ importers:
       '@crossmint/client-sdk-window':
         specifier: workspace:*
         version: link:../../window
+      '@crossmint/client-signers':
+        specifier: workspace:*
+        version: link:../../signers
       '@crossmint/common-sdk-auth':
         specifier: workspace:*
         version: link:../../../common/auth
