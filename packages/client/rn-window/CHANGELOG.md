@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-rn-window
 
+## 0.2.2
+
+### Patch Changes
+
+- 0052d3a: Prop to add custom global js
+
 ## 0.2.1
 
 ### Patch Changes

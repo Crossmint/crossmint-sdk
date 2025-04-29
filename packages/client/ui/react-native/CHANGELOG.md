@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.4.1
+
+### Patch Changes
+
+- 0052d3a: Manage status and fix import
+- Updated dependencies [0052d3a]
+  - @crossmint/client-sdk-rn-window@0.2.2
+
 ## 0.4.0
 
 ### Minor Changes
