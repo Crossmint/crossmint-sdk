@@ -70,7 +70,6 @@ export function CrossmintSignerProvider({ children, setWalletState, appearance }
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${jwt}`,
                         "x-api-key": apiKey,
-                        credentials: "omit",
                     },
                     body: JSON.stringify({
                         authId: `email:${args.email}`,
