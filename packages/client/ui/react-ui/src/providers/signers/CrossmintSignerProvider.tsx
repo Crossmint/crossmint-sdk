@@ -33,7 +33,10 @@ interface CrossmintSignerProviderProps {
 }
 
 type CrossmintSignerContext = {
-    experimental_getOrCreateWalletWithRecoveryKey: (args: { type: "solana"; email: string }) => Promise<void>;
+    experimental_getOrCreateWalletWithRecoveryKey: (args: {
+        type: "solana-smart-wallet";
+        email: string;
+    }) => Promise<void>;
 };
 
 export const CrossmintSignerContext = createContext<CrossmintSignerContext | null>(null);
@@ -51,26 +54,33 @@ export function CrossmintSignerProvider({ children, setWalletState, appearance }
     const successHandlerRef = useRef<(() => void) | null>(null);
     const errorHandlerRef = useRef<((error: Error) => void) | null>(null);
 
-    const experimental_getOrCreateWalletWithRecoveryKey = async (args: { type: "solana"; email: string }) => {
+    const experimental_getOrCreateWalletWithRecoveryKey = async (args: {
+        type: "solana-smart-wallet";
+        email: string;
+    }) => {
         try {
             setWalletState({ status: "in-progress" });
             setEmail(args.email);
 
-            // @TODO: update to staging!
-            const response = await fetch("http://localhost:3000/api/unstable/wallets/ncs/public-key", {
-                method: "POST",
-                headers: { "Content-Type": "application/json", Authorization: `Bearer ${jwt}`, "x-api-key": apiKey },
-                body: JSON.stringify({
-                    authId: `email:${args.email}`,
-                    signingAlgorithm: "EDDSA_ED25519",
-                }),
-            });
+            const response = await fetch(
+                "https://staging.crossmint.com/api/unstable/wallets/ncs/doesnt-matter/public-key",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${jwt}`,
+                        "x-api-key": apiKey,
+                    },
+                    body: JSON.stringify({
+                        authId: encodeURIComponent(`email:${args.email}`),
+                        signingAlgorithm: "EDDSA_ED25519",
+                    }),
+                }
+            );
 
-            if (!response.ok) {
-                console.log(response);
-                throw new Error("[experimental_getOrCreateWalletWithRecoveryKey] Failed to get signers public-key");
-            }
-
+            // TODO:
+            // response is encoded in base64,
+            // decode in baste58
             console.log({ response });
 
             // @TODO: update to get from main server
