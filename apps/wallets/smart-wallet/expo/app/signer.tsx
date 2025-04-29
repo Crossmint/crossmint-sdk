@@ -12,8 +12,8 @@ export default function SignerScreen() {
         getOrCreateWallet,
         clearWallet,
         error: walletError,
-        isWebViewReady,
-        recoverySigner,
+        experimental_recoveryKeyStatus,
+        experimental_recoverySigner,
         experimental_createRecoveryKeySigner,
         experimental_validateEmailOtp,
     } = useWallet();
@@ -66,7 +66,7 @@ export default function SignerScreen() {
     };
 
     const handleGetOrCreateWallet = async () => {
-        if (recoverySigner == null) {
+        if (experimental_recoverySigner == null) {
             return;
         }
         setIsLoading(true);
@@ -74,7 +74,7 @@ export default function SignerScreen() {
             await getOrCreateWallet({
                 type: "solana-smart-wallet",
                 args: {
-                    adminSigner: recoverySigner,
+                    adminSigner: experimental_recoverySigner,
                 },
             });
         } catch (e) {
@@ -111,8 +111,8 @@ export default function SignerScreen() {
             <View style={styles.statusSection}>
                 <Text>Wallet Status: {status}</Text>
                 {walletError && <Text style={styles.errorText}>Wallet Error: {walletError}</Text>}
-                <Text>WebView Ready: {isWebViewReady ? "Yes" : "No"}</Text>
-                <Text>Recovery Signer: {recoverySigner?.address ?? "Not Available"}</Text>
+                <Text>WebView Ready: {experimental_recoveryKeyStatus}</Text>
+                <Text>Recovery Signer: {experimental_recoverySigner?.address ?? "Not Available"}</Text>
                 <Text>Wallet Address: {wallet?.address ?? "Not Loaded"}</Text>
                 {txHash && <Text>Last Tx Hash: {txHash}</Text>}
                 {isLoading && <ActivityIndicator size="small" color="#0000ff" />}
@@ -122,7 +122,7 @@ export default function SignerScreen() {
                 <Button
                     title="1. Create/Load Recovery Signer"
                     onPress={handleCreateSigner}
-                    disabled={isLoading || !isWebViewReady || !authId || recoverySigner != null}
+                    disabled={isLoading || experimental_recoveryKeyStatus !== "frame-loaded"}
                 />
             </View>
 
@@ -132,12 +132,12 @@ export default function SignerScreen() {
                     value={otp}
                     onChangeText={setOtp}
                     style={styles.input}
-                    editable={!isLoading && isWebViewReady}
+                    editable={!isLoading && experimental_recoveryKeyStatus === "awaiting-otp-validation"}
                 />
                 <Button
                     title="2. Validate OTP"
                     onPress={handleSendOtp}
-                    disabled={isLoading || !isWebViewReady || (!otp && recoverySigner == null)}
+                    disabled={isLoading || experimental_recoveryKeyStatus !== "awaiting-otp-validation"}
                 />
             </View>
 
@@ -145,7 +145,9 @@ export default function SignerScreen() {
                 <Button
                     title="3. Get or Create Wallet"
                     onPress={handleGetOrCreateWallet}
-                    disabled={isLoading || status === "in-progress" || (recoverySigner == null && wallet == null)}
+                    disabled={
+                        isLoading || status === "in-progress" || (experimental_recoverySigner == null && wallet == null)
+                    }
                 />
             </View>
 

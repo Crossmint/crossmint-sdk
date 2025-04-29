@@ -2,7 +2,7 @@ import React, { type ReactNode, useCallback, useContext, useEffect, useRef, useS
 import bs58 from "bs58";
 import { PublicKey, type VersionedTransaction } from "@solana/web3.js";
 import type { WebView, WebViewMessageEvent } from "react-native-webview";
-import { RNWebView } from "@crossmint/client-sdk-rn-window/src/rn-webview/RNWebView";
+import { RNWebView } from "@crossmint/client-sdk-rn-window";
 import { WebViewParent } from "@crossmint/client-sdk-rn-window";
 import { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
 import { useCrossmint } from "../hooks";
@@ -17,10 +17,12 @@ export interface RecoverySigner {
     };
 }
 
+type RecoveryKeyStatus = "not-loaded" | "frame-loaded" | "awaiting-otp-validation" | "loaded";
+
 export interface CrossmintRecoveryKeyContextState {
-    isWebViewReady: boolean;
-    recoverySigner: RecoverySigner | null;
-    experimental_createRecoveryKeySigner: (authId: string) => Promise<void>;
+    experimental_recoveryKeyStatus: RecoveryKeyStatus;
+    experimental_recoverySigner: RecoverySigner | null;
+    experimental_createRecoveryKeySigner: (authId: string) => Promise<RecoverySigner | null>;
     experimental_validateEmailOtp: (encryptedOtp: string) => Promise<string | null>;
 }
 
@@ -58,8 +60,9 @@ export function CrossmintRecoveryKeyProvider({
     const webViewParentRef = useRef<WebViewParent<typeof signerOutboundEvents, typeof signerInboundEvents> | null>(
         null
     );
-    const [recoverySigner, setRecoverySigner] = useState<RecoverySigner | null>(null);
+    const [experimental_recoverySigner, setRecoverySigner] = useState<RecoverySigner | null>(null);
     const [isWebViewReady, setIsWebViewReady] = useState(false);
+    const [experimental_recoveryKeyStatus, setRecoveryKeyStatus] = useState<RecoveryKeyStatus>("not-loaded");
 
     const injectedGlobalsScript = useMemo(() => {
         if (appId != null) {
@@ -82,9 +85,11 @@ export function CrossmintRecoveryKeyProvider({
             try {
                 await webViewParentRef.current.handshakeWithChild();
                 setIsWebViewReady(true);
+                setRecoveryKeyStatus("frame-loaded");
             } catch (e) {
                 console.error("[RN] handshakeWithChild error:", e);
                 setIsWebViewReady(false);
+                setRecoveryKeyStatus("not-loaded");
             }
         }
     }, []);
@@ -199,7 +204,7 @@ export function CrossmintRecoveryKeyProvider({
     );
 
     const experimental_createRecoveryKeySigner = useCallback(
-        async (authId: string) => {
+        async (authId: string): Promise<RecoverySigner | null> => {
             const parent = webViewParentRef.current;
             if (parent == null || !isWebViewReady) {
                 const message = "WebViewParent not ready or handshake incomplete.";
@@ -210,13 +215,15 @@ export function CrossmintRecoveryKeyProvider({
                 throw new Error(message);
             }
 
+            const prefixedAuthId = authId.startsWith("email:") ? authId : `email:${authId}`;
+
             try {
                 const response = await parent.sendAction({
                     event: "request:create-signer",
                     responseEvent: "response:create-signer",
                     data: {
                         authData: { jwt, apiKey },
-                        data: { authId, chainLayer: "solana" },
+                        data: { authId: prefixedAuthId, chainLayer: "solana" },
                     },
                     options: defaultEventOptions,
                 });
@@ -224,8 +231,14 @@ export function CrossmintRecoveryKeyProvider({
                 if (response?.status === "success" && response.address) {
                     const newSigner = buildRecoverySigner(response.address);
                     setRecoverySigner(newSigner);
+                    setRecoveryKeyStatus("loaded");
+                    return newSigner;
                 }
+
+                setRecoveryKeyStatus("awaiting-otp-validation");
+                return null;
             } catch (err) {
+                setRecoveryKeyStatus("not-loaded");
                 throw err;
             }
         },
@@ -263,8 +276,10 @@ export function CrossmintRecoveryKeyProvider({
 
                 const newSigner = buildRecoverySigner(response.address);
                 setRecoverySigner(newSigner);
+                setRecoveryKeyStatus("loaded");
                 return response.address;
             } catch (_) {
+                setRecoveryKeyStatus("not-loaded");
                 return null;
             }
         },
@@ -273,12 +288,17 @@ export function CrossmintRecoveryKeyProvider({
 
     const contextValue = useMemo(
         () => ({
-            isWebViewReady,
-            recoverySigner,
+            experimental_recoveryKeyStatus,
+            experimental_recoverySigner,
             experimental_createRecoveryKeySigner,
             experimental_validateEmailOtp,
         }),
-        [isWebViewReady, recoverySigner, experimental_createRecoveryKeySigner, experimental_validateEmailOtp]
+        [
+            experimental_recoveryKeyStatus,
+            experimental_recoverySigner,
+            experimental_createRecoveryKeySigner,
+            experimental_validateEmailOtp,
+        ]
     );
 
     return (
