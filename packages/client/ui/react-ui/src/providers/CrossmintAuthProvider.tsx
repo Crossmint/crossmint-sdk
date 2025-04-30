@@ -62,6 +62,7 @@ const defaultEmbeddedWallets: CrossmintAuthProviderEmbeddedWallets = {
     createOnLogin: "off",
     type: "evm-smart-wallet",
     experimental_enableRecoveryKeys: false,
+    experimental_signersURL: undefined,
 };
 
 export function CrossmintAuthProvider({

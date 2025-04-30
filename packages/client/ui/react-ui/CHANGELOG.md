@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.19.3
+
+### Patch Changes
+
+- f644657: URL configurable
+
 ## 1.19.2
 
 ### Patch Changes

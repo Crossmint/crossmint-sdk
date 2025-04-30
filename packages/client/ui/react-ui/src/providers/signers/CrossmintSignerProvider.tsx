@@ -30,6 +30,7 @@ interface CrossmintSignerProviderProps {
     walletState: ValidWalletState;
     appearance?: UIConfig;
     setWalletState: Dispatch<SetStateAction<ValidWalletState>>;
+    signersURL?: string;
 }
 
 type CrossmintSignerContext = {
@@ -41,13 +42,18 @@ type CrossmintSignerContext = {
 
 export const CrossmintSignerContext = createContext<CrossmintSignerContext | null>(null);
 
-export function CrossmintSignerProvider({ children, setWalletState, appearance }: CrossmintSignerProviderProps) {
+export function CrossmintSignerProvider({
+    children,
+    setWalletState,
+    appearance,
+    signersURL,
+}: CrossmintSignerProviderProps) {
     const {
         crossmint: { apiKey, jwt },
     } = useCrossmint();
     const smartWalletSDK = useMemo(() => CrossmintWallets.from({ apiKey, jwt }), [apiKey, jwt]);
 
-    const iframeWindow = useSignerIFrameWindow();
+    const iframeWindow = useSignerIFrameWindow(signersURL);
     const [email, setEmail] = useState<string>("");
     const [step, setStep] = useState<"initial" | "otp">("initial");
     const [dialogOpen, setDialogOpen] = useState(false);
