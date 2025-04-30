@@ -1,5 +1,11 @@
 # @crossmint/client-signers
 
+## 0.0.8
+
+### Patch Changes
+
+- dc5d24d: Unifying Solana NCS signatures
+
 ## 0.0.7
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.4.2
+
+### Patch Changes
+
+- dc5d24d: Unifying Solana NCS signatures
+- Updated dependencies [dc5d24d]
+  - @crossmint/client-signers@0.0.8
+
 ## 0.4.1
 
 ### Patch Changes
