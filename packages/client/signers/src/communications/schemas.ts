@@ -35,38 +35,6 @@ export const GetAttestationPayloadSchema = {
     ),
 };
 
-export const SignMessagePayloadSchema = {
-    request: AuthenticatedEventRequest.extend({
-        data: z.object({
-            chainLayer: SupportedChainLayer,
-            message: z.string(),
-            encoding: z.enum(["base58"]).optional().default("base58"),
-        }),
-    }),
-    response: ResultResponse(
-        z.object({
-            signature: z.string(),
-            publicKey: z.string(),
-        })
-    ),
-};
-
-export const SignTransactionPayloadSchema = {
-    request: AuthenticatedEventRequest.extend({
-        data: z.object({
-            transaction: z.string(),
-            chainLayer: SupportedChainLayer,
-            encoding: z.enum(["base58"]).optional().default("base58"),
-        }),
-    }),
-    response: ResultResponse(
-        z.object({
-            signature: z.string(),
-            publicKey: z.string(),
-        })
-    ),
-};
-
 export const CreateSignerPayloadSchema = {
     request: AuthenticatedEventRequest.extend({
         data: z.object({

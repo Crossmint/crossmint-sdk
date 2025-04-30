@@ -269,16 +269,16 @@ export function CrossmintSignerProvider({
                             }
 
                             const res = await iframeWindow.current.sendAction({
-                                event: "request:sign-message",
-                                responseEvent: "response:sign-message",
+                                event: "request:sign",
+                                responseEvent: "response:sign",
                                 data: {
                                     authData: {
                                         jwt,
                                         apiKey,
                                     },
                                     data: {
-                                        message: base58.encode(message),
-                                        chainLayer: "solana",
+                                        keyType: "ed25519",
+                                        bytes: base58.encode(message),
                                         encoding: "base58",
                                     },
                                 },
@@ -294,17 +294,18 @@ export function CrossmintSignerProvider({
                         },
                         signTransaction: async (transaction: VersionedTransaction) => {
                             console.log("Signing transaction...", transaction);
+                            const messageData = transaction.message.serialize();
                             const res = await iframeWindow.current?.sendAction({
-                                event: "request:sign-transaction",
-                                responseEvent: "response:sign-transaction",
+                                event: "request:sign",
+                                responseEvent: "response:sign",
                                 data: {
                                     authData: {
                                         jwt,
                                         apiKey,
                                     },
                                     data: {
-                                        transaction: base58.encode(transaction.serialize()),
-                                        chainLayer: "solana",
+                                        keyType: "ed25519",
+                                        bytes: base58.encode(messageData),
                                         encoding: "base58",
                                     },
                                 },

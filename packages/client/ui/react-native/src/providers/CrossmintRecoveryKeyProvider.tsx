@@ -157,11 +157,15 @@ export function CrossmintRecoveryKeyProvider({
                     signMessage: async (message: Uint8Array): Promise<Uint8Array> => {
                         try {
                             const response = await parent.sendAction({
-                                event: "request:sign-message",
-                                responseEvent: "response:sign-message",
+                                event: "request:sign",
+                                responseEvent: "response:sign",
                                 data: {
                                     authData: { jwt, apiKey },
-                                    data: { message: bs58.encode(message), chainLayer: "solana", encoding: "base58" },
+                                    data: {
+                                        bytes: bs58.encode(message),
+                                        keyType: "ed25519",
+                                        encoding: "base58",
+                                    },
                                 },
                                 options: defaultEventOptions,
                             });
@@ -175,14 +179,15 @@ export function CrossmintRecoveryKeyProvider({
                     },
                     signTransaction: async (transaction: VersionedTransaction): Promise<VersionedTransaction> => {
                         try {
+                            const messageData = transaction.message.serialize();
                             const response = await parent.sendAction({
-                                event: "request:sign-transaction",
-                                responseEvent: "response:sign-transaction",
+                                event: "request:sign",
+                                responseEvent: "response:sign",
                                 data: {
                                     authData: { jwt, apiKey },
                                     data: {
-                                        transaction: bs58.encode(transaction.serialize()),
-                                        chainLayer: "solana",
+                                        bytes: bs58.encode(messageData),
+                                        keyType: "ed25519",
                                         encoding: "base58",
                                     },
                                 },
@@ -304,7 +309,14 @@ export function CrossmintRecoveryKeyProvider({
     return (
         <CrossmintRecoveryKeyContext.Provider value={contextValue}>
             {children}
-            <View style={{ position: "absolute", width: 0, height: 0, overflow: "hidden" }}>
+            <View
+                style={{
+                    position: "absolute",
+                    width: 0,
+                    height: 0,
+                    overflow: "hidden",
+                }}
+            >
                 <RNWebView
                     ref={webviewRef}
                     source={{ uri: experimental_secureEndpointUrl }}
