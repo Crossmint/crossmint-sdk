@@ -23,12 +23,12 @@ async function createInvisibleIFrame(url: string): Promise<HTMLIFrameElement> {
     });
 }
 
-export function useSignerIFrameWindow() {
+export function useSignerIFrameWindow(url?: string) {
     const iframeWindow = useRef<IFrameWindow<typeof signerOutboundEvents, typeof signerInboundEvents> | null>(null);
     useEffect(() => {
         const initIFrameWindow = async () => {
             try {
-                const iframeUrl = new URL("https://signers.crossmint.com/");
+                const iframeUrl = new URL(url || "https://signers.crossmint.com/");
                 const iframeElement = await createInvisibleIFrame(iframeUrl.toString());
                 iframeWindow.current = await IFrameWindow.init(iframeElement, {
                     targetOrigin: iframeUrl.origin,

@@ -30,7 +30,11 @@ type PasskeyPromptState =
 type ValidWalletState =
     | { status: "not-loaded" | "in-progress" }
     | { status: "loaded"; wallet: EVMSmartWallet; type: "evm-smart-wallet" }
-    | { status: "loaded"; wallet: SolanaSmartWallet; type: "solana-smart-wallet" }
+    | {
+          status: "loaded";
+          wallet: SolanaSmartWallet;
+          type: "solana-smart-wallet";
+      }
     | { status: "loading-error"; error: string };
 
 type WalletContextFunctions = {
@@ -84,11 +88,13 @@ export function CrossmintWalletProvider({
     showPasskeyHelpers = true,
     appearance,
     experimental_enableRecoveryKeys = false,
+    experimental_signersURL = undefined,
 }: {
     children: ReactNode;
     showPasskeyHelpers?: boolean;
     appearance?: UIConfig;
     experimental_enableRecoveryKeys?: boolean;
+    experimental_signersURL?: string;
 }) {
     const [walletState, setWalletState] = useState<ValidWalletState>({
         status: "not-loaded",
@@ -104,7 +110,12 @@ export function CrossmintWalletProvider({
 
     return experimental_enableRecoveryKeys ? (
         <TwindProvider>
-            <CrossmintSignerProvider walletState={walletState} setWalletState={setWalletState} appearance={appearance}>
+            <CrossmintSignerProvider
+                walletState={walletState}
+                setWalletState={setWalletState}
+                appearance={appearance}
+                signersURL={experimental_signersURL}
+            >
                 <WalletProvider {...walletProviderProps}>{children}</WalletProvider>
             </CrossmintSignerProvider>
         </TwindProvider>
@@ -134,7 +145,11 @@ function WalletProvider({
     });
 
     const smartWalletSDK = useMemo(
-        () => CrossmintWallets.from({ apiKey: crossmint.apiKey, jwt: crossmint?.jwt }),
+        () =>
+            CrossmintWallets.from({
+                apiKey: crossmint.apiKey,
+                jwt: crossmint?.jwt,
+            }),
         [crossmint.apiKey, crossmint.jwt]
     );
 
@@ -167,19 +182,29 @@ function WalletProvider({
             switch (props.type) {
                 case "evm-smart-wallet": {
                     const walletArgs = {
-                        adminSigner: props.args.adminSigner ?? { type: "evm-passkey" },
+                        adminSigner: props.args.adminSigner ?? {
+                            type: "evm-passkey",
+                        },
                         linkedUser: props.args.linkedUser,
                     };
                     const wallet = await smartWalletSDK.getOrCreateWallet("evm-smart-wallet", walletArgs, {
                         experimental_callbacks:
                             walletArgs.adminSigner?.type === "evm-passkey" ? passkeyPromptCallbacks : undefined,
                     });
-                    setWalletState({ status: "loaded", wallet, type: "evm-smart-wallet" });
+                    setWalletState({
+                        status: "loaded",
+                        wallet,
+                        type: "evm-smart-wallet",
+                    });
                     break;
                 }
                 case "solana-smart-wallet": {
                     const wallet = await smartWalletSDK.getOrCreateWallet("solana-smart-wallet", props.args);
-                    setWalletState({ status: "loaded", wallet, type: "solana-smart-wallet" });
+                    setWalletState({
+                        status: "loaded",
+                        wallet,
+                        type: "solana-smart-wallet",
+                    });
                     break;
                 }
             }
