@@ -12,4 +12,5 @@ export type CrossmintAuthProviderEmbeddedWallets = Omit<CrossmintAuthEmbeddedWal
     // Type is optional as we can now infer it from the connected Dynamic wallet
     type?: CrossmintAuthEmbeddedWallets["type"];
     experimental_enableRecoveryKeys?: boolean;
+    experimental_signersURL?: string;
 };
