@@ -38,7 +38,7 @@ function WalletProviderInternal({ children }: { children: ReactNode }) {
                 Object.defineProperty(state, propName, {
                     get() {
                         throw new Error(
-                            `Cannot access '${propName}'. Ensure 'useRecoveryKey={true}' is set on CrossmintWalletProvider.`
+                            `Cannot access '${propName}'. Ensure 'experimental_enableRecoveryKeys={true}' is set on CrossmintWalletProvider.`
                         );
                     },
                     enumerable: true,
