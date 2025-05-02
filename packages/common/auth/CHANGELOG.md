@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-auth
 
+## 1.0.27
+
+### Patch Changes
+
+- 27ed2c2: Adds Twitter ID to Twitter Metadata
+
 ## 1.0.26
 
 ### Patch Changes
