@@ -1,10 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import {
-    useCrossmint,
-    useWallet as useCrossmintWallet,
-} from "@crossmint/client-sdk-react-ui";
+import { useCrossmint, useWallet as useCrossmintWallet } from "@crossmint/client-sdk-react-ui";
 import { usePrivy, useSolanaWallets, useWallets } from "@privy-io/react-auth";
 
 /* ============================================================ */
@@ -41,17 +38,14 @@ export const useEVMPrivyConnector = () => {
         }
     }, [ready, authenticated, getAccessToken, setJwt]);
 
-    const privyEmbeddedWallet =
-        privyWallets?.find((wallet) => wallet.walletClientType === "privy") ??
-        null;
+    const privyEmbeddedWallet = privyWallets?.find((wallet) => wallet.walletClientType === "privy") ?? null;
 
     useEffect(() => {
         const createCrossmintWallet = async () => {
             if (!privyEmbeddedWallet || !authenticated || !ready) {
                 return;
             }
-            const privyProvider =
-                await privyEmbeddedWallet.getEthereumProvider();
+            const privyProvider = await privyEmbeddedWallet.getEthereumProvider();
             try {
                 await getOrCreateCrossmintWallet({
                     type: "evm-smart-wallet",
@@ -64,15 +58,9 @@ export const useEVMPrivyConnector = () => {
                                 provider: {
                                     // @ts-ignore something wrong with EIP1193Provider type from our wallets sdk
                                     on: privyProvider.on.bind(privyProvider),
-                                    removeListener:
-                                        privyProvider.removeListener.bind(
-                                            privyProvider
-                                        ),
+                                    removeListener: privyProvider.removeListener.bind(privyProvider),
                                     // @ts-ignore something wrong with EIP1193Provider type from our wallets sdk
-                                    request:
-                                        privyProvider.request.bind(
-                                            privyProvider
-                                        ),
+                                    request: privyProvider.request.bind(privyProvider),
                                 },
                             },
                         },
@@ -129,9 +117,7 @@ export const useSolanaPrivyConnector = () => {
         }
     }, [ready, authenticated, getAccessToken, setJwt]);
 
-    const privyEmbeddedWallet =
-        privyWallets?.find((wallet) => wallet.walletClientType === "privy") ??
-        null;
+    const privyEmbeddedWallet = privyWallets?.find((wallet) => wallet.walletClientType === "privy") ?? null;
 
     useEffect(() => {
         const createCrossmintWallet = async () => {
@@ -146,8 +132,7 @@ export const useSolanaPrivyConnector = () => {
                             address: privyEmbeddedWallet.address,
                             signer: {
                                 signMessage: privyEmbeddedWallet.signMessage,
-                                signTransaction:
-                                    privyEmbeddedWallet.signTransaction as any,
+                                signTransaction: privyEmbeddedWallet.signTransaction as any,
                             },
                             type: "solana-keypair",
                         },

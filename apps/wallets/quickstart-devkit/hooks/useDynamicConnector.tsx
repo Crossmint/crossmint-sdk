@@ -2,18 +2,14 @@
 
 import { useEffect } from "react";
 import {
-    EVMSmartWalletChain,
+    type EVMSmartWalletChain,
     useCrossmint,
     useWallet as useCrossmintWallet,
 } from "@crossmint/client-sdk-react-ui";
-import {
-    getAuthToken,
-    useDynamicContext,
-    useIsLoggedIn,
-} from "@dynamic-labs/sdk-react-core";
+import { getAuthToken, useDynamicContext, useIsLoggedIn } from "@dynamic-labs/sdk-react-core";
 import { isSolanaWallet } from "@dynamic-labs/solana";
 import { isEthereumWallet } from "@dynamic-labs/ethereum";
-import { SignableMessage } from "viem";
+import type { SignableMessage } from "viem";
 
 /* ============================================================ */
 /*                    EVM DYNAMIC CONNECTOR                     */
@@ -28,8 +24,7 @@ export const useEVMDynamicConnector = () => {
         type: crossmintWalletType,
     } = useCrossmintWallet();
 
-    const { primaryWallet: dynamicPrimaryWallet, sdkHasLoaded } =
-        useDynamicContext();
+    const { primaryWallet: dynamicPrimaryWallet, sdkHasLoaded } = useDynamicContext();
     const isAuthenticated = useIsLoggedIn();
     const jwt = getAuthToken();
 
@@ -49,13 +44,11 @@ export const useEVMDynamicConnector = () => {
             }
 
             try {
-                const dynamicClient =
-                    await dynamicPrimaryWallet.getWalletClient();
+                const dynamicClient = await dynamicPrimaryWallet.getWalletClient();
                 await getOrCreateCrossmintWallet({
                     type: "evm-smart-wallet",
                     args: {
-                        chain: process.env
-                            .NEXT_PUBLIC_EVM_CHAIN as EVMSmartWalletChain,
+                        chain: process.env.NEXT_PUBLIC_EVM_CHAIN as EVMSmartWalletChain,
                         adminSigner: {
                             address: dynamicPrimaryWallet.address,
                             type: "evm-keypair",
@@ -107,8 +100,7 @@ export const useSolanaDynamicConnector = () => {
         type: crossmintWalletType,
     } = useCrossmintWallet();
 
-    const { primaryWallet: dynamicPrimaryWallet, sdkHasLoaded } =
-        useDynamicContext();
+    const { primaryWallet: dynamicPrimaryWallet, sdkHasLoaded } = useDynamicContext();
     const isAuthenticated = useIsLoggedIn();
     const jwt = getAuthToken();
 
@@ -118,12 +110,7 @@ export const useSolanaDynamicConnector = () => {
 
     useEffect(() => {
         const fetchCrossmintWallet = async () => {
-            if (
-                !crossmint.jwt ||
-                !isAuthenticated ||
-                !dynamicPrimaryWallet ||
-                !isSolanaWallet(dynamicPrimaryWallet)
-            ) {
+            if (!crossmint.jwt || !isAuthenticated || !dynamicPrimaryWallet || !isSolanaWallet(dynamicPrimaryWallet)) {
                 return null;
             }
 
@@ -136,13 +123,8 @@ export const useSolanaDynamicConnector = () => {
                             address: dynamicPrimaryWallet.address,
                             signer: {
                                 signMessage: async (message: Uint8Array) => {
-                                    const signedMessage =
-                                        await dynamicSigner.signMessage(
-                                            message
-                                        );
-                                    return new Uint8Array(
-                                        signedMessage.signature
-                                    );
+                                    const signedMessage = await dynamicSigner.signMessage(message);
+                                    return new Uint8Array(signedMessage.signature);
                                 },
                                 // @ts-ignore todo: unsure what this type error is fix later!
                                 signTransaction: dynamicSigner.signTransaction,

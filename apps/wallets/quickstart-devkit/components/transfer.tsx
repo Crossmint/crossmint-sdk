@@ -1,13 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { EVMSmartWalletChain, useWallet } from "@crossmint/client-sdk-react-ui";
+import { type EVMSmartWalletChain, useWallet } from "@crossmint/client-sdk-react-ui";
 import { PublicKey } from "@solana/web3.js";
-import { Address, encodeFunctionData, erc20Abi, isAddress } from "viem";
-import {
-    createSolTransferTransaction,
-    createTokenTransferTransaction,
-} from "@/lib/createTransaction";
+import { type Address, encodeFunctionData, erc20Abi, isAddress } from "viem";
+import { createSolTransferTransaction, createTokenTransferTransaction } from "@/lib/createTransaction";
 
 /* ============================================================ */
 /*                    EVM WALLET TRANSFER                        */
@@ -21,13 +18,7 @@ export function EVMTransferFunds() {
     const [txnHash, setTxnHash] = useState<string | null>(null);
 
     async function handleOnTransfer() {
-        if (
-            wallet == null ||
-            token == null ||
-            type !== "evm-smart-wallet" ||
-            recipient == null ||
-            amount == null
-        ) {
+        if (wallet == null || token == null || type !== "evm-smart-wallet" || recipient == null || amount == null) {
             alert("Transfer: missing required fields");
             return;
         }
@@ -47,8 +38,7 @@ export function EVMTransferFunds() {
                     to: recipient as Address,
                     value: BigInt(amount * 10 ** 9), // Convert to Gwei
                     data: "0x", // Empty data for native transfers
-                    chain: process.env
-                        .NEXT_PUBLIC_EVM_CHAIN as EVMSmartWalletChain,
+                    chain: process.env.NEXT_PUBLIC_EVM_CHAIN as EVMSmartWalletChain,
                 });
             } else if (token === "usdc") {
                 // For USDC transfers, we use ERC20 transfer
@@ -61,8 +51,7 @@ export function EVMTransferFunds() {
                     to: "0x5fd84259d66Cd46123540766Be93DFE6D43130D7", // USDC token mint on OP sepolia
                     value: BigInt(0),
                     data,
-                    chain: process.env
-                        .NEXT_PUBLIC_EVM_CHAIN as EVMSmartWalletChain,
+                    chain: process.env.NEXT_PUBLIC_EVM_CHAIN as EVMSmartWalletChain,
                 });
             }
             setTxnHash(`https://optimism-sepolia.blockscout.com/tx/${txn}`);
@@ -78,9 +67,7 @@ export function EVMTransferFunds() {
         <div className="bg-white flex flex-col gap-3 rounded-xl border shadow-sm p-5">
             <div>
                 <h2 className="text-lg font-medium">Transfer funds</h2>
-                <p className="text-sm text-gray-500">
-                    Send funds to another wallet
-                </p>
+                <p className="text-sm text-gray-500">Send funds to another wallet</p>
             </div>
             <div className="flex flex-col gap-3 w-full">
                 <div className="flex gap-4">
@@ -120,9 +107,7 @@ export function EVMTransferFunds() {
                     </div>
                 </div>
                 <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium">
-                        Recipient wallet
-                    </label>
+                    <label className="text-sm font-medium">Recipient wallet</label>
                     <input
                         type="text"
                         className="w-full px-3 py-2 border rounded-md text-sm"
@@ -179,13 +164,7 @@ export function SolanaTransferFunds() {
     };
 
     async function handleOnTransfer() {
-        if (
-            wallet == null ||
-            token == null ||
-            type !== "solana-smart-wallet" ||
-            recipient == null ||
-            amount == null
-        ) {
+        if (wallet == null || token == null || type !== "solana-smart-wallet" || recipient == null || amount == null) {
             alert("Transfer: missing required fields");
             return;
         }
@@ -200,16 +179,11 @@ export function SolanaTransferFunds() {
             setIsLoading(true);
             function buildTransaction() {
                 return token === "sol"
-                    ? createSolTransferTransaction(
-                          wallet?.address!,
-                          recipient!,
-                          amount!
-                      )
+                    ? createSolTransferTransaction(wallet?.address!, recipient!, amount!)
                     : createTokenTransferTransaction(
                           wallet?.address!,
                           recipient!,
-                          process.env.NEXT_PUBLIC_USDC_TOKEN_MINT ||
-                              "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU", // USDC token mint
+                          process.env.NEXT_PUBLIC_USDC_TOKEN_MINT || "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU", // USDC token mint
                           amount!
                       );
             }
@@ -231,9 +205,7 @@ export function SolanaTransferFunds() {
         <div className="bg-white flex flex-col gap-3 rounded-xl border shadow-sm p-5">
             <div>
                 <h2 className="text-lg font-medium">Transfer funds</h2>
-                <p className="text-sm text-gray-500">
-                    Send funds to another wallet
-                </p>
+                <p className="text-sm text-gray-500">Send funds to another wallet</p>
             </div>
             <div className="flex flex-col gap-3 w-full">
                 <div className="flex gap-4">
@@ -273,9 +245,7 @@ export function SolanaTransferFunds() {
                     </div>
                 </div>
                 <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium">
-                        Recipient wallet
-                    </label>
+                    <label className="text-sm font-medium">Recipient wallet</label>
                     <input
                         type="text"
                         className="w-full px-3 py-2 border rounded-md text-sm"

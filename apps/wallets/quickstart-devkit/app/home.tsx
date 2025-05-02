@@ -1,10 +1,10 @@
 "use client";
 
 import Image from "next/image";
+import { useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
 import { WalletBalance } from "../components/balance";
 import { EVMTransferFunds, SolanaTransferFunds } from "../components/transfer";
 import { DelegatedSigner } from "../components/delegated-signer";
-import { useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
 import { CrossmintAuthLogoutButton } from "../components/logout";
 import { CrossmintAuthLoginButton } from "../components/login";
 // import { useEVMPrivyConnector, useSolanaPrivyConnector } from "@/hooks/usePrivyConnector";
