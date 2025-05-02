@@ -10,6 +10,7 @@ export type FarcasterMetadata = {
 
 export type TwitterMetadata = {
     username: string;
+    id: string;
 };
 
 export type SDKExternalUser = {
