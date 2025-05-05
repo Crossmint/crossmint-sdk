@@ -36,7 +36,18 @@ export interface CrossmintHostedCheckoutV3Appearance {
     variables?: CrossmintHostedCheckoutV3AppearanceVariables;
     overlay?: CrossmintHostedCheckoutV3OverlayOptions;
     display?: "popup" | "new-tab" | "same-tab";
+    rules?: HostedCheckoutV3AppearanceRules;
 }
+
+// TODO: Should we just allow all the other embedded rules?
+export type HostedCheckoutV3AppearanceRules = {
+    DestinationInput?: {
+        display?: "hidden";
+    };
+    ReceiptEmailInput?: {
+        display?: "hidden";
+    };
+};
 
 export type CrossmintHostedCheckoutV3Theme = "light" | "dark";
 export type CrossmintHostedCheckoutV3ButtonTheme = "light" | "dark" | "crossmint";
