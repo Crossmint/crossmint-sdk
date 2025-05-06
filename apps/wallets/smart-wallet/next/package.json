@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-smart-wallet-next-starter",
-    "version": "0.1.105",
+    "version": "0.1.106",
     "private": true,
     "scripts": {
         "build": "next build",
