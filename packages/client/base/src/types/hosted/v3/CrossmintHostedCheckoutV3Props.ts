@@ -39,7 +39,8 @@ export interface CrossmintHostedCheckoutV3Appearance {
     rules?: HostedCheckoutV3AppearanceRules;
 }
 
-// TODO: Should we just allow all the other embedded rules?
+// This type is different that the one in Embedded.
+// Read: https://crossmint.slack.com/archives/C064HDR6VP1/p1746450589948919
 export type HostedCheckoutV3AppearanceRules = {
     DestinationInput?: {
         display?: "hidden";
