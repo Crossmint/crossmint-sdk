@@ -9,13 +9,13 @@ import {
     type CrossmintRecoveryKeyContextState,
     type CrossmintRecoveryKeyProviderProps,
 } from "./CrossmintRecoveryKeyProvider";
-import { WalletContext, type ReactNativeWalletContextState } from "@/hooks/useWallet";
+import { WalletContext, type ReactNativeWalletContextState } from "../hooks/useWallet";
 
 const recoveryKeyPropNames: Array<keyof CrossmintRecoveryKeyContextState> = [
-    "experimental_recoveryKeyStatus",
-    "experimental_recoverySigner",
+    "experimental_needsAuth",
     "experimental_createRecoveryKeySigner",
-    "experimental_validateEmailOtp",
+    "experimental_sendEmailWithOtp",
+    "experimental_verifyOtp",
 ];
 
 function WalletProviderInternal({ children }: { children: ReactNode }) {
@@ -62,19 +62,22 @@ export function CrossmintWalletProvider({
     experimental_enableRecoveryKeys = false,
     experimental_secureEndpointUrl,
 }: CrossmintWalletProviderProps) {
-    const WalletTree = (
+    const RecoveryWrapper = ({ children: wrapperChildren }: { children: ReactNode }) => {
+        if (experimental_enableRecoveryKeys) {
+            return (
+                <CrossmintRecoveryKeyProvider experimental_secureEndpointUrl={experimental_secureEndpointUrl}>
+                    {wrapperChildren}
+                </CrossmintRecoveryKeyProvider>
+            );
+        }
+        return <>{wrapperChildren}</>;
+    };
+
+    return (
         <BaseCrossmintWalletProvider>
-            <WalletProviderInternal>{children}</WalletProviderInternal>
+            <RecoveryWrapper>
+                <WalletProviderInternal>{children}</WalletProviderInternal>
+            </RecoveryWrapper>
         </BaseCrossmintWalletProvider>
     );
-
-    if (experimental_enableRecoveryKeys) {
-        return (
-            <CrossmintRecoveryKeyProvider experimental_secureEndpointUrl={experimental_secureEndpointUrl}>
-                {WalletTree}
-            </CrossmintRecoveryKeyProvider>
-        );
-    }
-
-    return WalletTree;
 }
