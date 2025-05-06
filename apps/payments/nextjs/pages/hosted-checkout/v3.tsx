@@ -89,6 +89,9 @@ function createCrossmintButtonSection(
                         quantity: 1,
                     },
                 }}
+                recipient={{
+                    walletAddress: "0xCf78e5d70436B232C16cE7Aa94049DAB6148Ac64",
+                }}
                 payment={{
                     crypto: {
                         enabled: cryptoEnabled,
@@ -101,6 +104,11 @@ function createCrossmintButtonSection(
                 appearance={{
                     theme: {
                         button: buttonTheme,
+                    },
+                    rules: {
+                        DestinationInput: {
+                            display: "hidden",
+                        },
                     },
                 }}
             />
