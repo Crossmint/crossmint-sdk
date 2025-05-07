@@ -48,7 +48,7 @@ type WalletContext =
 export const WalletContext = createContext<WalletContext>({
     status: "not-loaded",
     getOrCreateWallet: () => Promise.resolve({ startedCreation: false }),
-    clearWallet: () => {},
+    clearWallet: () => null,
 });
 
 export function deriveErrorState(error: unknown): {
