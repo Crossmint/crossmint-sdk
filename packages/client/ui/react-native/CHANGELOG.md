@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.4.5
+
+### Patch Changes
+
+- 1038ef3: Moves to sending otp when needed and expose functions to set up custom flow
+
 ## 0.4.4
 
 ### Patch Changes
