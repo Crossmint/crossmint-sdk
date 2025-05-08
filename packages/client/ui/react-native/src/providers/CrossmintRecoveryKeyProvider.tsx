@@ -527,11 +527,11 @@ export function CrossmintRecoveryKeyProvider({
                         height: 1,
                     }}
                     javaScriptCanOpenWindowsAutomatically={false}
-                    // thirdPartyCookiesEnabled={false}
-                    // sharedCookiesEnabled={false}
-                    // incognito={false}
-                    // setSupportMultipleWindows={false}
-                    // originWhitelist={[DEFAULT_SECURE_ENDPOINT_URL]}
+                    thirdPartyCookiesEnabled={false}
+                    sharedCookiesEnabled={false}
+                    incognito={false}
+                    setSupportMultipleWindows={false}
+                    originWhitelist={[DEFAULT_SECURE_ENDPOINT_URL]}
                 />
             </View>
         </CrossmintRecoveryKeyContext.Provider>

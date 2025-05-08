@@ -1,5 +1,18 @@
 # @crossmint/common-sdk-auth
 
+## 1.0.28
+
+### Patch Changes
+
+- Updated dependencies [e24643c]
+  - @crossmint/client-sdk-base@1.4.19
+
+## 1.0.27
+
+### Patch Changes
+
+- 27ed2c2: Adds Twitter ID to Twitter Metadata
+
 ## 1.0.26
 
 ### Patch Changes
