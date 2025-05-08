@@ -18,5 +18,7 @@ export function useWalletsAuth(): CrossmintRecoveryKeyContextState {
         experimental_createRecoveryKeySigner: context.experimental_createRecoveryKeySigner,
         experimental_sendEmailWithOtp: context.experimental_sendEmailWithOtp,
         experimental_verifyOtp: context.experimental_verifyOtp,
+        experimental_clearStorage: context.experimental_clearStorage,
+        onAuthRequired: context.onAuthRequired,
     };
 }

@@ -19,6 +19,7 @@ export default function SignerScreen() {
         experimental_createRecoveryKeySigner,
         experimental_sendEmailWithOtp,
         experimental_verifyOtp,
+        experimental_clearStorage,
     } = useBaseWallet() as ReactNativeWalletContextState;
 
     const { user } = useCrossmintAuth();
@@ -154,6 +155,10 @@ export default function SignerScreen() {
                     onPress={() => handleAction(async () => clearWallet())}
                     disabled={!canClear}
                 />
+            </View>
+
+            <View style={styles.section}>
+                <Button title="Clear Storage" onPress={() => handleAction(async () => experimental_clearStorage())} />
             </View>
         </ScrollView>
     );

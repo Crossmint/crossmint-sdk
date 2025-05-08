@@ -70,6 +70,7 @@ export function useWalletState({
 
     return {
         state,
+        setState,
         getOrCreateWallet,
         clearWallet,
     };
