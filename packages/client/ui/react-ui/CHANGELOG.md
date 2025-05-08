@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.19.8
+
+### Patch Changes
+
+- ea7a53e: Updated experimental ncs ui
+
 ## 1.19.7
 
 ### Patch Changes
