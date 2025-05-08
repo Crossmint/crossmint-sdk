@@ -1,5 +1,12 @@
 # @crossmint/client-sdk-react-base
 
+## 0.2.11
+
+### Patch Changes
+
+- 1921ada: Refactor to imitate onAuthRequired that will be in wallets sdk
+- 1921ada: Expose setState for wallets
+
 ## 0.2.10
 
 ### Patch Changes
