@@ -96,12 +96,12 @@ export class CrossmintAuthClient extends CrossmintAuth {
         }
     }
 
-    public async handleRefreshAuthMaterial(refreshTokenSecret?: string): Promise<void> {
+    public async handleRefreshAuthMaterial(refreshTokenSecret?: string): Promise<AuthMaterialWithUser | null> {
         try {
             const refreshToken = refreshTokenSecret ?? (await this.storageProvider.get(REFRESH_TOKEN_PREFIX));
             // If there is a custom refresh route, that endpoint will fetch the cookies itself
             if (refreshToken == null && this.refreshRoute == null) {
-                return;
+                return null;
             }
 
             // Create new refresh promise if none exists
@@ -118,9 +118,11 @@ export class CrossmintAuthClient extends CrossmintAuth {
             this.callbacks.onTokenRefresh?.(authMaterial);
 
             this.scheduleNextRefresh(authMaterial.jwt);
+            return authMaterial;
         } catch (error) {
             console.error(error);
             await this.logout();
+            return null;
         } finally {
             this.refreshPromise = null;
         }
