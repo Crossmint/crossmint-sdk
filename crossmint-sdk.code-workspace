@@ -45,6 +45,10 @@
             "path": "apps/wallets/smart-wallet/next"
         },
         {
+            "name": "⚛️🔒 Wallets Quickstart Devkit",
+            "path": "apps/wallets/quickstart-devkit"
+        },
+        {
             "name": "⚪ @crossmint/client-sdk-vanilla-ui",
             "path": "packages/client/ui/vanilla-ui"
         },
