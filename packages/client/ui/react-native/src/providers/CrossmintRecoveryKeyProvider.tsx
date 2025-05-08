@@ -71,8 +71,14 @@ export function CrossmintRecoveryKeyProvider({
     const [isWebViewReady, setIsWebViewReady] = useState(false);
     const [email, setEmail] = useState<string | null>(null);
     const [experimental_needsAuth, setNeedsAuth] = useState(false);
-    const needsAuthRef = useRef(experimental_needsAuth);
     const hasClearedWalletRef = useRef(false);
+
+    // Add a promise that will be resolved when auth is complete
+    const authPromiseRef = useRef<{
+        resolve: () => void;
+        reject: (error: Error) => void;
+        promise: Promise<void>;
+    } | null>(null);
 
     const injectedGlobalsScript = useMemo(() => {
         if (appId != null) {
@@ -104,8 +110,33 @@ export function CrossmintRecoveryKeyProvider({
         }
     }, [jwt, isWebViewReady]);
 
-    useEffect(() => {
-        needsAuthRef.current = experimental_needsAuth;
+    const handleAuthRequired = useCallback(async () => {
+        if (!experimental_needsAuth) {
+            return;
+        }
+
+        let resolvePromise: () => void;
+        let rejectPromise: (error: Error) => void;
+
+        const promise = new Promise<void>((resolve, reject) => {
+            resolvePromise = resolve;
+            rejectPromise = reject;
+        });
+
+        authPromiseRef.current = {
+            promise,
+            resolve: resolvePromise!,
+            reject: rejectPromise!,
+        };
+
+        // Wait for the developer to complete the auth flow
+        try {
+            console.log("Waiting for auth promise");
+            await authPromiseRef.current.promise;
+            console.log("Auth promise resolved");
+        } catch (error) {
+            throw error;
+        }
     }, [experimental_needsAuth]);
 
     const experimental_sendEmailWithOtp = useCallback(
@@ -148,6 +179,7 @@ export function CrossmintRecoveryKeyProvider({
                 console.log("[sendEmailWithOtp] OTP process likely initiated. Waiting for verification.");
             } catch (err) {
                 console.error("[sendEmailWithOtp] Error sending create-signer request:", err);
+                authPromiseRef.current?.reject(err as Error);
                 throw err;
             }
         },
@@ -181,17 +213,23 @@ export function CrossmintRecoveryKeyProvider({
                 if (response?.status === "success" && response.address) {
                     console.log("[verifyOtp] OTP validation successful. Signer address:", response.address);
                     setNeedsAuth(false);
+                    // Resolve the auth promise since verification was successful
+                    authPromiseRef.current?.resolve();
                     return;
                 } else {
                     console.error("[verifyOtp] Failed to validate OTP:", response);
                     setNeedsAuth(true);
                     const errorMessage =
                         response && response.status === "error" ? response.error : "Failed to validate encrypted OTP";
+                    // Reject the auth promise since verification failed
+                    authPromiseRef.current?.reject(new Error(errorMessage));
                     throw new Error(errorMessage);
                 }
             } catch (err) {
                 console.error("[verifyOtp] Error sending OTP validation request:", err);
                 setNeedsAuth(true);
+                // Reject the auth promise since verification failed
+                authPromiseRef.current?.reject(err as Error);
                 throw err;
             }
         },
@@ -202,19 +240,6 @@ export function CrossmintRecoveryKeyProvider({
     const onAuthRequired = useCallback((handler: (opts: OnAuthRequiredOptions) => Promise<void>) => {
         authRequiredHandlerRef.current = handler;
     }, []);
-
-    const handleAuthRequired = useCallback(async () => {
-        if (!experimental_needsAuth) {
-            return;
-        }
-        if (authRequiredHandlerRef.current == null) {
-            throw new Error("Authentication required but no onAuthRequired handler provided.");
-        }
-        await authRequiredHandlerRef.current({
-            sendEmailWithOtp: experimental_sendEmailWithOtp,
-            verifyOtp: experimental_verifyOtp,
-        });
-    }, [experimental_needsAuth, experimental_sendEmailWithOtp, experimental_verifyOtp]);
 
     const buildRecoverySigner = useCallback(
         (address: string): RecoverySigner => {
