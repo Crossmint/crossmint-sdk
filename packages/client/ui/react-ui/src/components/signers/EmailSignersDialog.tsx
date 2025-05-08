@@ -2,15 +2,13 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "../common/Dialog";
 import { EmailOTPInput } from "./EmailOTPInput";
-import { EmailInput } from "./EmailInput";
+import { EmailConfirmation } from "./EmailConfirmation";
 
 interface EmailSignersDialogProps {
     email: string;
-    setEmail: (email: string) => void;
     open: boolean;
     setOpen: (open: boolean) => void;
     step: "initial" | "otp";
-    setStep: (step: "initial" | "otp") => void;
     onSubmitOTP: (token: string) => Promise<void>;
     onResendOTPCode: (email: string) => Promise<void>;
     onSubmitEmail: (email: string) => Promise<void>;
@@ -19,11 +17,9 @@ interface EmailSignersDialogProps {
 
 export function EmailSignersDialog({
     email,
-    setEmail,
     open,
     setOpen,
     step,
-    setStep,
     onSubmitOTP,
     onResendOTPCode,
     onSubmitEmail,
@@ -41,7 +37,7 @@ export function EmailSignersDialog({
                 }}
             >
                 <VisuallyHidden asChild>
-                    <DialogTitle>Crossmint Recovery Key</DialogTitle>
+                    <DialogTitle>Confirm it's you</DialogTitle>
                 </VisuallyHidden>
                 <VisuallyHidden asChild>
                     <DialogDescription>Create a recovery key</DialogDescription>
@@ -49,18 +45,19 @@ export function EmailSignersDialog({
 
                 <div className="relative pt-10 pb-[30px] px-6 !min-[480px]:px-10 flex flex-col gap-[10px] antialiased animate-none max-w-[448px]">
                     {step === "initial" ? (
-                        <div>
+                        <div className="flex flex-col gap-4">
                             <h1
                                 className="text-2xl font-bold text-cm-text-primary"
                                 style={{ color: appearance?.colors?.textPrimary }}
                             >
-                                Create Recovery Key
+                                Confirm it's you
                             </h1>
                             <p
                                 className="text-base font-normal mb-3 text-cm-text-secondary"
                                 style={{ color: appearance?.colors?.textSecondary }}
                             >
-                                Enter your email to create a recovery key
+                                You're using this wallet for the first time on this device. Click 'Send code' to get a
+                                one-time verification code.
                             </p>
                         </div>
                     ) : null}
@@ -69,15 +66,14 @@ export function EmailSignersDialog({
                         <EmailOTPInput
                             email={email}
                             onSubmitOTP={onSubmitOTP}
-                            handleOnBack={() => setStep("initial")}
                             onResendCode={() => onResendOTPCode(email)}
                             appearance={appearance}
                         />
                     ) : (
-                        <EmailInput
+                        <EmailConfirmation
                             email={email}
-                            setEmail={setEmail}
-                            onSubmitEmail={onSubmitEmail}
+                            onConfirm={onSubmitEmail}
+                            onCancel={() => setOpen(false)}
                             appearance={appearance}
                         />
                     )}

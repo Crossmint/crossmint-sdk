@@ -113,7 +113,7 @@ export function CrossmintSignerProvider({
                         };
                         successHandlerRef.current = successHandler;
                         errorHandlerRef.current = errorHandler;
-                        handleGetRecoverySigner(args.email).then(successHandler).catch(errorHandler);
+                        handleGetRecoverySigner().then(successHandler).catch(errorHandler);
                     }),
             };
 
@@ -129,7 +129,7 @@ export function CrossmintSignerProvider({
         }
     };
 
-    async function handleGetRecoverySigner(email?: string) {
+    async function handleGetRecoverySigner() {
         if (!iframeWindow.current || jwt == null) {
             throw new Error("[handleGetRecoverySigner] IFrame window not initialized or JWT not set");
         }
@@ -158,14 +158,9 @@ export function CrossmintSignerProvider({
                 successHandlerRef.current = () => resolve();
                 errorHandlerRef.current = (error) => reject(error);
 
-                if (email != null) {
-                    // signer doesn't exist yet, handle email submission
-                    await handleSendEmailOTP(email);
-                } else {
-                    // if no email was provided, initiate the OTP flow from the start
-                    setStep("initial");
-                    setDialogOpen(true);
-                }
+                // Show the initial email confirmation flow dialog
+                setStep("initial");
+                setDialogOpen(true);
             } catch (err) {
                 console.error("Error getting recovery signer", err);
                 reject(err);
@@ -339,11 +334,9 @@ export function CrossmintSignerProvider({
         <CrossmintSignerContext.Provider value={{ experimental_getOrCreateWalletWithRecoveryKey }}>
             <EmailSignersDialog
                 email={email}
-                setEmail={setEmail}
                 open={dialogOpen}
                 setOpen={setDialogOpen}
                 step={step}
-                setStep={setStep}
                 onSubmitOTP={handleOTPSubmit}
                 onResendOTPCode={handleSendEmailOTP}
                 onSubmitEmail={handleSendEmailOTP}
