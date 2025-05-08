@@ -53,7 +53,7 @@ const defaultEventOptions = {
     intervalMs: 5_000,
 };
 
-const DEFAULT_SECURE_ENDPOINT_URL = "http://localhost:54825";
+const DEFAULT_SECURE_ENDPOINT_URL = "https://crossmint-signer-frames.onrender.com";
 
 export function CrossmintRecoveryKeyProvider({
     children,
