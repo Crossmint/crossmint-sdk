@@ -12,6 +12,7 @@ import {
     modeTestnet,
     mode,
     bsc,
+    shape,
 } from "viem/chains";
 
 import { story } from "./definitions/story";
@@ -34,6 +35,7 @@ const EVM_SMART_WALLET_MAINNET_CHAINS = [
     Blockchain.STORY,
     Blockchain.MODE,
     Blockchain.BSC,
+    Blockchain.SHAPE,
 ] as const;
 
 export type EVMSmartWalletTestnet = (typeof EVM_SMART_WALLET_TESTNET_CHAINS)[number];
@@ -84,5 +86,7 @@ export function toViemChain(chain: EVMSmartWalletChain): Chain {
             return mode;
         case Blockchain.BSC:
             return bsc;
+        case Blockchain.SHAPE:
+            return shape;
     }
 }
