@@ -72,6 +72,7 @@ export function CrossmintRecoveryKeyProvider({
     const [email, setEmail] = useState<string | null>(null);
     const [experimental_needsAuth, setNeedsAuth] = useState(false);
     const hasClearedWalletRef = useRef(false);
+    const needsAuthRef = useRef(false);
 
     // Add a promise that will be resolved when auth is complete
     const authPromiseRef = useRef<{
@@ -110,8 +111,13 @@ export function CrossmintRecoveryKeyProvider({
         }
     }, [jwt, isWebViewReady]);
 
+    useEffect(() => {
+        needsAuthRef.current = experimental_needsAuth;
+    }, [experimental_needsAuth]);
+
     const handleAuthRequired = useCallback(async () => {
-        if (!experimental_needsAuth) {
+        console.log("handleAuthRequired needsAuth", needsAuthRef.current);
+        if (!needsAuthRef.current) {
             return;
         }
 
@@ -129,7 +135,6 @@ export function CrossmintRecoveryKeyProvider({
             reject: rejectPromise!,
         };
 
-        // Wait for the developer to complete the auth flow
         try {
             console.log("Waiting for auth promise");
             await authPromiseRef.current.promise;
@@ -137,7 +142,7 @@ export function CrossmintRecoveryKeyProvider({
         } catch (error) {
             throw error;
         }
-    }, [experimental_needsAuth]);
+    }, []);
 
     const experimental_sendEmailWithOtp = useCallback(
         async (emailInput: string): Promise<void> => {
@@ -341,6 +346,7 @@ export function CrossmintRecoveryKeyProvider({
                 setNeedsAuth(false);
                 await getOrCreateWallet({ type: "solana-smart-wallet", args: { adminSigner: existingSigner } });
             } else {
+                console.log("checkSignerExists needsAuth true", experimental_needsAuth);
                 setNeedsAuth(true);
             }
         } catch (error) {
@@ -413,7 +419,7 @@ export function CrossmintRecoveryKeyProvider({
 
     const experimental_createRecoveryKeySigner = useCallback(
         async (emailInput: string): Promise<RecoverySigner | null> => {
-            if (!isWebViewReady || jwt == null || apiKey == null) {
+            if (jwt == null || apiKey == null) {
                 console.warn(
                     "[createRecoveryKeySigner] Prerequisites not met (WebView ready, JWT, API Key). Cannot proceed."
                 );
@@ -464,6 +470,7 @@ export function CrossmintRecoveryKeyProvider({
                 const fetchedSigner = buildRecoverySigner(adminSignerAddress);
 
                 await getOrCreateWallet({ type: "solana-smart-wallet", args: { adminSigner: fetchedSigner } });
+                console.log("createRecoveryKeySigner needsAuth true", experimental_needsAuth);
                 setNeedsAuth(true);
                 return null;
             } catch (error) {
@@ -472,7 +479,7 @@ export function CrossmintRecoveryKeyProvider({
                 return null;
             }
         },
-        [isWebViewReady, jwt, apiKey, buildRecoverySigner, getOrCreateWallet]
+        [jwt, apiKey, buildRecoverySigner, getOrCreateWallet]
     );
 
     const clearStorage = useCallback(() => {
