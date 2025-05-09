@@ -70,6 +70,7 @@ export default function SignerScreen() {
         }
         await handleAction(async () => {
             const signer = await experimental_verifyOtp(otp);
+            console.log("handleVerifyOtpInput signer", signer);
             if (signer) {
                 setOtp("");
                 setIsInOtpFlow(false);
