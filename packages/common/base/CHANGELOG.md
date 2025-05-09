@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.4.1
+
+### Patch Changes
+
+- 150a68a: Adds Shape
+
 ## 0.4.0
 
 ### Minor Changes
