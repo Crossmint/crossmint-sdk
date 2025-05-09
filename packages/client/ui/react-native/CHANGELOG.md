@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.4.7
+
+### Patch Changes
+
+- 091dd67: Adds logs for testing and fixing needAuth check
+
 ## 0.4.6
 
 ### Patch Changes
