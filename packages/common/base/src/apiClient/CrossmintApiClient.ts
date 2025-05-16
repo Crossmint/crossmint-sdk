@@ -42,8 +42,10 @@ export class CrossmintApiClient extends ApiClient {
         return ApiClient.normalizePath(baseUrl);
     }
 
-    get authHeaders() {
+    get commonHeaders() {
         return {
+            "x-client-name": this.internalConfig.sdkMetadata.name,
+            "x-client-version": this.internalConfig.sdkMetadata.version,
             "x-api-key": this.crossmint.apiKey,
             ...(this.crossmint.appId ? { "x-app-identifier": this.crossmint.appId } : {}),
             ...(this.crossmint.jwt ? { Authorization: `Bearer ${this.crossmint.jwt}` } : {}),
