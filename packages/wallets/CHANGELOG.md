@@ -1,5 +1,13 @@
 # @crossmint/wallets-sdk
 
+## 0.7.7
+
+### Patch Changes
+
+- Updated dependencies [edc4198]
+  - @crossmint/common-sdk-base@0.4.2
+  - @crossmint/common-sdk-auth@1.0.30
+
 ## 0.7.6
 
 ### Patch Changes

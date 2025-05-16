@@ -1,5 +1,11 @@
 # @crossmint/client-signers
 
+## 0.0.9
+
+### Patch Changes
+
+- 01dd7af: Add get status event
+
 ## 0.0.8
 
 ### Patch Changes
