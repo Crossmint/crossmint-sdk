@@ -80,7 +80,7 @@ export const GetStatusPayloadSchema = {
     request: AuthenticatedEventRequest,
     response: ResultResponse(
         z.object({
-            status: z.enum(["ready", "new-device"]),
+            signerStatus: z.enum(["ready", "new-device"]),
         })
     ),
 };
