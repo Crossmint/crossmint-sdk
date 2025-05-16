@@ -28,7 +28,7 @@ function CrossmintProviders({ children }: { children: ReactNode }) {
         web3LoginMethod = "web3:solana-only";
     }
     return (
-        <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_AUTH_SMART_WALLET_API_KEY ?? ""}>
+        <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_API_KEY ?? ""}>
             <CrossmintAuthProvider
                 embeddedWallets={{ createOnLogin: "all-users", type: walletType }}
                 appearance={{
