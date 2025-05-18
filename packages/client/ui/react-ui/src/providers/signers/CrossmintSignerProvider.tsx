@@ -146,9 +146,6 @@ export function CrossmintSignerProvider({
                     },
                 });
 
-                console.log("grabbing signer status");
-                console.log(signerResponse);
-
                 if (signerResponse?.status !== "success") {
                     throw new Error(signerResponse?.error);
                 }
@@ -284,8 +281,6 @@ export function CrossmintSignerProvider({
                                     options: DEFAULT_EVENT_OPTIONS,
                                 });
                                 if (res.status === "error") {
-                                    console.log("here's the error");
-                                    console.log(res);
                                     const err = new Error(res.error);
                                     (err as any).code = res.code;
                                     throw err;
@@ -316,8 +311,6 @@ export function CrossmintSignerProvider({
                                     options: DEFAULT_EVENT_OPTIONS,
                                 });
                                 if (res?.status === "error") {
-                                    console.log("here's the error");
-                                    console.log(res);
                                     const err = new Error(res.error);
                                     (err as any).code = res.code;
                                     throw err;
