@@ -340,10 +340,6 @@ export function CrossmintSignerProvider({
         try {
             return await signFn();
         } catch (error: any) {
-            console.log("Here's the error");
-            console.log(error);
-            console.log(JSON.stringify(error));
-            console.log(error.code);
             if (error.code === "invalid-device-share") {
                 await handleGetRecoverySigner();
                 return await signFn();
