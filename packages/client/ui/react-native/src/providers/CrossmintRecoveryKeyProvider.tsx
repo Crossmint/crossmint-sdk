@@ -19,11 +19,18 @@ export interface RecoverySigner {
     };
 }
 
+export type OnAuthRequiredOptions = {
+    sendEmailWithOtp: (email: string) => Promise<void>;
+    verifyOtp: (otp: string) => Promise<RecoverySigner | undefined>;
+};
+
 export interface CrossmintRecoveryKeyContextState {
     experimental_needsAuth: boolean;
     experimental_createRecoveryKeySigner: (email: string) => Promise<RecoverySigner | null>;
     experimental_sendEmailWithOtp: (email: string) => Promise<void>;
     experimental_verifyOtp: (otp: string) => Promise<RecoverySigner | undefined>;
+    onAuthRequired: (handler: (opts: OnAuthRequiredOptions) => Promise<void>) => void;
+    experimental_clearStorage: () => void;
 }
 
 export const CrossmintRecoveryKeyContext = React.createContext<CrossmintRecoveryKeyContextState | null>(null);
@@ -55,7 +62,7 @@ export function CrossmintRecoveryKeyProvider({
     const {
         crossmint: { apiKey, jwt, appId },
     } = useCrossmint();
-    const { getOrCreateWallet } = useContext(BaseWalletContext);
+    const { getOrCreateWallet, clearWallet } = useContext(BaseWalletContext);
 
     const webviewRef = useRef<WebView>(null);
     const webViewParentRef = useRef<WebViewParent<typeof signerOutboundEvents, typeof signerInboundEvents> | null>(
@@ -64,7 +71,15 @@ export function CrossmintRecoveryKeyProvider({
     const [isWebViewReady, setIsWebViewReady] = useState(false);
     const [email, setEmail] = useState<string | null>(null);
     const [experimental_needsAuth, setNeedsAuth] = useState(false);
-    const needsAuthRef = useRef(experimental_needsAuth);
+    const hasClearedWalletRef = useRef(false);
+    const needsAuthRef = useRef(false);
+
+    // Add a promise that will be resolved when auth is complete
+    const authPromiseRef = useRef<{
+        resolve: () => void;
+        reject: (error: Error) => void;
+        promise: Promise<void>;
+    } | null>(null);
 
     const injectedGlobalsScript = useMemo(() => {
         if (appId != null) {
@@ -83,17 +98,153 @@ export function CrossmintRecoveryKeyProvider({
     }, []);
 
     useEffect(() => {
-        if (jwt == null) {
+        if (jwt == null && !hasClearedWalletRef.current) {
             setNeedsAuth(false);
             setEmail(null);
-        } else if (isWebViewReady) {
-            checkSignerExists();
+            clearWallet();
+            hasClearedWalletRef.current = true;
+        } else if (jwt != null) {
+            hasClearedWalletRef.current = false;
+            if (isWebViewReady) {
+                checkSignerExists();
+            }
         }
     }, [jwt, isWebViewReady]);
 
     useEffect(() => {
         needsAuthRef.current = experimental_needsAuth;
     }, [experimental_needsAuth]);
+
+    const handleAuthRequired = useCallback(async () => {
+        console.log("handleAuthRequired needsAuth", needsAuthRef.current);
+        if (!needsAuthRef.current) {
+            return;
+        }
+
+        let resolvePromise: () => void;
+        let rejectPromise: (error: Error) => void;
+
+        const promise = new Promise<void>((resolve, reject) => {
+            resolvePromise = resolve;
+            rejectPromise = reject;
+        });
+
+        authPromiseRef.current = {
+            promise,
+            resolve: resolvePromise!,
+            reject: rejectPromise!,
+        };
+
+        try {
+            console.log("Waiting for auth promise");
+            await authPromiseRef.current.promise;
+            console.log("Auth promise resolved");
+        } catch (error) {
+            throw error;
+        }
+    }, []);
+
+    const experimental_sendEmailWithOtp = useCallback(
+        async (emailInput: string): Promise<void> => {
+            const parent = webViewParentRef.current;
+            if (parent == null || !isWebViewReady) {
+                throw new Error("[sendEmailWithOtp] WebViewParent not ready or handshake incomplete.");
+            }
+            if (jwt == null || apiKey == null) {
+                throw new Error("[sendEmailWithOtp] Missing authentication credentials (JWT or API Key).");
+            }
+            if (!experimental_needsAuth) {
+                throw new Error("OTP email request is not applicable in the current state.");
+            }
+
+            setEmail(emailInput);
+            const authId = `email:${emailInput}`;
+
+            try {
+                const response = await parent.sendAction({
+                    event: "request:create-signer",
+                    responseEvent: "response:create-signer",
+                    data: {
+                        authData: { jwt, apiKey },
+                        data: { authId, chainLayer: "solana" },
+                    },
+                    options: defaultEventOptions,
+                });
+
+                if (response?.status === "success" && response.address) {
+                    setNeedsAuth(false);
+                    return;
+                }
+
+                if (response?.status === "error") {
+                    console.error("[sendEmailWithOtp] Failed to send OTP:", response);
+                    throw new Error(response.error || "Failed to initiate OTP process.");
+                }
+
+                console.log("[sendEmailWithOtp] OTP process likely initiated. Waiting for verification.");
+            } catch (err) {
+                console.error("[sendEmailWithOtp] Error sending create-signer request:", err);
+                authPromiseRef.current?.reject(err as Error);
+                throw err;
+            }
+        },
+        [isWebViewReady, jwt, apiKey, experimental_needsAuth]
+    );
+
+    const experimental_verifyOtp = useCallback(
+        async (encryptedOtp: string): Promise<RecoverySigner | undefined> => {
+            const parent = webViewParentRef.current;
+            if (parent == null || !isWebViewReady) {
+                throw new Error("[verifyOtp] WebViewParent not ready or handshake incomplete.");
+            }
+            if (jwt == null || apiKey == null) {
+                throw new Error("[verifyOtp] Missing authentication credentials (JWT or API Key).");
+            }
+            if (!experimental_needsAuth) {
+                throw new Error("Not currently awaiting OTP validation.");
+            }
+
+            try {
+                const response = await parent.sendAction({
+                    event: "request:send-otp",
+                    responseEvent: "response:send-otp",
+                    data: {
+                        authData: { jwt, apiKey },
+                        data: { chainLayer: "solana", encryptedOtp },
+                    },
+                    options: defaultEventOptions,
+                });
+
+                if (response?.status === "success" && response.address) {
+                    console.log("[verifyOtp] OTP validation successful. Signer address:", response.address);
+                    setNeedsAuth(false);
+                    // Resolve the auth promise since verification was successful
+                    authPromiseRef.current?.resolve();
+                    return;
+                } else {
+                    console.error("[verifyOtp] Failed to validate OTP:", response);
+                    setNeedsAuth(true);
+                    const errorMessage =
+                        response && response.status === "error" ? response.error : "Failed to validate encrypted OTP";
+                    // Reject the auth promise since verification failed
+                    authPromiseRef.current?.reject(new Error(errorMessage));
+                    throw new Error(errorMessage);
+                }
+            } catch (err) {
+                console.error("[verifyOtp] Error sending OTP validation request:", err);
+                setNeedsAuth(true);
+                // Reject the auth promise since verification failed
+                authPromiseRef.current?.reject(err as Error);
+                throw err;
+            }
+        },
+        [isWebViewReady, jwt, apiKey, experimental_needsAuth]
+    );
+
+    const authRequiredHandlerRef = useRef<((opts: OnAuthRequiredOptions) => Promise<void>) | null>(null);
+    const onAuthRequired = useCallback((handler: (opts: OnAuthRequiredOptions) => Promise<void>) => {
+        authRequiredHandlerRef.current = handler;
+    }, []);
 
     const buildRecoverySigner = useCallback(
         (address: string): RecoverySigner => {
@@ -107,11 +258,7 @@ export function CrossmintRecoveryKeyProvider({
                 address,
                 signer: {
                     signMessage: async (message: Uint8Array): Promise<Uint8Array> => {
-                        if (experimental_needsAuth) {
-                            throw new Error(
-                                "Authentication required. Please complete the OTP verification process before signing."
-                            );
-                        }
+                        await handleAuthRequired();
 
                         try {
                             const response = await parent.sendAction({
@@ -138,11 +285,7 @@ export function CrossmintRecoveryKeyProvider({
                         }
                     },
                     signTransaction: async (transaction: VersionedTransaction): Promise<VersionedTransaction> => {
-                        if (needsAuthRef.current) {
-                            throw new Error(
-                                "Authentication required. Please complete the OTP verification process before signing."
-                            );
-                        }
+                        await handleAuthRequired();
 
                         try {
                             const messageData = transaction.message.serialize();
@@ -172,7 +315,7 @@ export function CrossmintRecoveryKeyProvider({
                 },
             };
         },
-        [jwt, apiKey, experimental_needsAuth]
+        [jwt, apiKey, handleAuthRequired]
     );
 
     const checkSignerExists = useCallback(async () => {
@@ -195,7 +338,7 @@ export function CrossmintRecoveryKeyProvider({
                     authData: { jwt, apiKey },
                     data: { chainLayer: "solana" },
                 },
-                options: { timeoutMs: 5000 },
+                options: defaultEventOptions,
             });
 
             if (signerResponse?.status === "success" && signerResponse.publicKey) {
@@ -203,6 +346,7 @@ export function CrossmintRecoveryKeyProvider({
                 setNeedsAuth(false);
                 await getOrCreateWallet({ type: "solana-smart-wallet", args: { adminSigner: existingSigner } });
             } else {
+                console.log("checkSignerExists needsAuth true", experimental_needsAuth);
                 setNeedsAuth(true);
             }
         } catch (error) {
@@ -275,7 +419,7 @@ export function CrossmintRecoveryKeyProvider({
 
     const experimental_createRecoveryKeySigner = useCallback(
         async (emailInput: string): Promise<RecoverySigner | null> => {
-            if (!isWebViewReady || jwt == null || apiKey == null) {
+            if (jwt == null || apiKey == null) {
                 console.warn(
                     "[createRecoveryKeySigner] Prerequisites not met (WebView ready, JWT, API Key). Cannot proceed."
                 );
@@ -294,12 +438,14 @@ export function CrossmintRecoveryKeyProvider({
 
             try {
                 const baseUrl = validateApiKeyAndGetCrossmintBaseUrl(apiKey);
-                const response = await fetch(`${baseUrl}/api/unstable/wallets/ncs/irrelevant/public-key`, {
+
+                const response = await fetch(`${baseUrl}api/unstable/wallets/ncs/irrelevant/public-key`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${jwt}`,
                         "x-api-key": apiKey,
+                        "x-app-identifier": appId!,
                     },
                     body: JSON.stringify({
                         authId: `email:${emailInput}`,
@@ -324,6 +470,7 @@ export function CrossmintRecoveryKeyProvider({
                 const fetchedSigner = buildRecoverySigner(adminSignerAddress);
 
                 await getOrCreateWallet({ type: "solana-smart-wallet", args: { adminSigner: fetchedSigner } });
+                console.log("createRecoveryKeySigner needsAuth true", experimental_needsAuth);
                 setNeedsAuth(true);
                 return null;
             } catch (error) {
@@ -332,94 +479,34 @@ export function CrossmintRecoveryKeyProvider({
                 return null;
             }
         },
-        [isWebViewReady, jwt, apiKey, buildRecoverySigner, getOrCreateWallet]
+        [jwt, apiKey, buildRecoverySigner, getOrCreateWallet]
     );
 
-    const experimental_sendEmailWithOtp = useCallback(async (): Promise<void> => {
-        const parent = webViewParentRef.current;
-        if (parent == null || !isWebViewReady) {
-            throw new Error("[sendEmailWithOtp] WebViewParent not ready or handshake incomplete.");
-        }
-        if (jwt == null || apiKey == null) {
-            throw new Error("[sendEmailWithOtp] Missing authentication credentials (JWT or API Key).");
-        }
-        if (!experimental_needsAuth) {
-            throw new Error("OTP email request is not applicable in the current state.");
+    const clearStorage = useCallback(() => {
+        if (webviewRef.current == null) {
+            return;
         }
 
-        const authId = `email:${email}`;
-
-        try {
-            const response = await parent.sendAction({
-                event: "request:create-signer",
-                responseEvent: "response:create-signer",
-                data: {
-                    authData: { jwt, apiKey },
-                    data: { authId, chainLayer: "solana" },
-                },
-                options: defaultEventOptions,
-            });
-
-            if (response?.status === "success" && response.address) {
-                setNeedsAuth(false);
-                return;
-            }
-
-            if (response?.status === "error") {
-                console.error("[sendEmailWithOtp] Failed to send OTP:", response);
-                throw new Error(response.error || "Failed to initiate OTP process.");
-            }
-
-            console.log("[sendEmailWithOtp] OTP process likely initiated. Waiting for verification.");
-        } catch (err) {
-            console.error("[sendEmailWithOtp] Error sending create-signer request:", err);
-            throw err;
-        }
-    }, [isWebViewReady, jwt, apiKey, email, experimental_needsAuth, buildRecoverySigner, getOrCreateWallet]);
-
-    const experimental_verifyOtp = useCallback(
-        async (encryptedOtp: string): Promise<RecoverySigner | undefined> => {
-            const parent = webViewParentRef.current;
-            if (parent == null || !isWebViewReady) {
-                throw new Error("[verifyOtp] WebViewParent not ready or handshake incomplete.");
-            }
-            if (jwt == null || apiKey == null) {
-                throw new Error("[verifyOtp] Missing authentication credentials (JWT or API Key).");
-            }
-            if (!experimental_needsAuth) {
-                throw new Error("Not currently awaiting OTP validation.");
-            }
-
+        const clearStorageScript = `
             try {
-                const response = await parent.sendAction({
-                    event: "request:send-otp",
-                    responseEvent: "response:send-otp",
-                    data: {
-                        authData: { jwt, apiKey },
-                        data: { chainLayer: "solana", encryptedOtp },
-                    },
-                    options: defaultEventOptions,
-                });
-
-                if (response?.status === "success" && response.address) {
-                    console.log("[verifyOtp] OTP validation successful. Signer address:", response.address);
-                    setNeedsAuth(false);
-                    return;
-                } else {
-                    console.error("[verifyOtp] Failed to validate OTP:", response);
-                    setNeedsAuth(true);
-                    const errorMessage =
-                        response && response.status === "error" ? response.error : "Failed to validate encrypted OTP";
-                    throw new Error(errorMessage);
+                localStorage.clear();
+                sessionStorage.clear();
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i];
+                    const eqPos = cookie.indexOf('=');
+                    const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+                    document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
                 }
-            } catch (err) {
-                console.error("[verifyOtp] Error sending OTP validation request:", err);
-                setNeedsAuth(true);
-                throw err;
+                indexedDB.deleteDatabase('crossmint');
+                indexedDB.deleteDatabase('crossmint-signer');
+            } catch (error) {
+                console.error('Error clearing storage:', error);
             }
-        },
-        [isWebViewReady, jwt, apiKey, experimental_needsAuth]
-    );
+        `;
+
+        webviewRef.current.injectJavaScript(clearStorageScript);
+    }, []);
 
     const contextValue = useMemo(
         () => ({
@@ -427,12 +514,16 @@ export function CrossmintRecoveryKeyProvider({
             experimental_createRecoveryKeySigner,
             experimental_sendEmailWithOtp,
             experimental_verifyOtp,
+            onAuthRequired,
+            experimental_clearStorage: clearStorage,
         }),
         [
             experimental_needsAuth,
             experimental_createRecoveryKeySigner,
             experimental_sendEmailWithOtp,
             experimental_verifyOtp,
+            onAuthRequired,
+            clearStorage,
         ]
     );
 
@@ -450,6 +541,7 @@ export function CrossmintRecoveryKeyProvider({
                 <RNWebView
                     ref={webviewRef}
                     source={{ uri: experimental_secureEndpointUrl }}
+                    injectedGlobals={injectedGlobalsScript}
                     onLoadEnd={onWebViewLoad}
                     onMessage={handleMessage}
                     onError={(syntheticEvent) => {
@@ -466,7 +558,12 @@ export function CrossmintRecoveryKeyProvider({
                         width: 1,
                         height: 1,
                     }}
-                    injectedGlobals={injectedGlobalsScript}
+                    javaScriptCanOpenWindowsAutomatically={false}
+                    thirdPartyCookiesEnabled={false}
+                    sharedCookiesEnabled={false}
+                    incognito={false}
+                    setSupportMultipleWindows={false}
+                    originWhitelist={[DEFAULT_SECURE_ENDPOINT_URL]}
                 />
             </View>
         </CrossmintRecoveryKeyContext.Provider>

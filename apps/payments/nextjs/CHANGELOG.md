@@ -1,5 +1,39 @@
 # @crossmint/client-sdk-nextjs-starter
 
+## 1.4.70
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@1.19.11
+
+## 1.4.69
+
+### Patch Changes
+
+- edc4198: api client: sdk meta headers
+  - @crossmint/client-sdk-base@1.4.21
+  - @crossmint/client-sdk-react-ui@1.19.10
+
+## 1.4.68
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@1.19.9
+- @crossmint/client-sdk-base@1.4.20
+
+## 1.4.67
+
+### Patch Changes
+
+- Updated dependencies [ea7a53e]
+  - @crossmint/client-sdk-react-ui@1.19.8
+
+## 1.4.66
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@1.19.7
+
 ## 1.4.65
 
 ### Patch Changes

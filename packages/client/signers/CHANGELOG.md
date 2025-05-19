@@ -1,5 +1,17 @@
 # @crossmint/client-signers
 
+## 0.0.10
+
+### Patch Changes
+
+- e25ed59: Schema update
+
+## 0.0.9
+
+### Patch Changes
+
+- 01dd7af: Add get status event
+
 ## 0.0.8
 
 ### Patch Changes

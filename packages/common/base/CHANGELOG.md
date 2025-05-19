@@ -1,5 +1,17 @@
 # @crossmint/common-sdk-base
 
+## 0.4.2
+
+### Patch Changes
+
+- edc4198: api client: sdk meta headers
+
+## 0.4.1
+
+### Patch Changes
+
+- 150a68a: Adds Shape
+
 ## 0.4.0
 
 ### Minor Changes

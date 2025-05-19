@@ -1,5 +1,53 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.4.10
+
+### Patch Changes
+
+- Updated dependencies [e25ed59]
+  - @crossmint/client-signers@0.0.10
+
+## 0.4.9
+
+### Patch Changes
+
+- Updated dependencies [edc4198]
+- Updated dependencies [01dd7af]
+  - @crossmint/common-sdk-base@0.4.2
+  - @crossmint/client-signers@0.0.9
+  - @crossmint/client-sdk-auth@1.2.7
+  - @crossmint/client-sdk-base@1.4.21
+  - @crossmint/client-sdk-react-base@0.2.13
+  - @crossmint/common-sdk-auth@1.0.30
+  - @crossmint/wallets-sdk@0.7.7
+
+## 0.4.8
+
+### Patch Changes
+
+- Updated dependencies [150a68a]
+- Updated dependencies [150a68a]
+  - @crossmint/wallets-sdk@0.7.6
+  - @crossmint/common-sdk-base@0.4.1
+  - @crossmint/client-sdk-react-base@0.2.12
+  - @crossmint/client-sdk-auth@1.2.6
+  - @crossmint/client-sdk-base@1.4.20
+  - @crossmint/common-sdk-auth@1.0.29
+
+## 0.4.7
+
+### Patch Changes
+
+- 091dd67: Adds logs for testing and fixing needAuth check
+
+## 0.4.6
+
+### Patch Changes
+
+- Updated dependencies [1921ada]
+- Updated dependencies [1921ada]
+  - @crossmint/client-sdk-react-base@0.2.11
+
 ## 0.4.5
 
 ### Patch Changes
