@@ -100,7 +100,7 @@ Before you begin, ensure you have the following installed:
     ```
 4. In the directory containing this README.md file, rename the `.env.example` file to `.env` and add your API key to the file.
     ```bash
-    NEXT_PUBLIC_CROSSMINT_AUTH_SMART_WALLET_API_KEY="ENTER YOUR CROSSMINT API KEY";
+    NEXT_PUBLIC_CROSSMINT_API_KEY="ENTER YOUR CROSSMINT API KEY";
     ```
 5. Start the development server
     ```sh
@@ -129,7 +129,7 @@ import { CrossmintProvider, CrossmintAuthProvider } from "@crossmint/client-sdk-
 
 export default function App({ Component, pageProps }) {
     return (
-        <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_AUTH_SMART_WALLET_API_KEY ?? ""}>
+        <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_API_KEY ?? ""}>
             <CrossmintAuthProvider
                 embeddedWallets={{
                     createOnLogin: "all-users",

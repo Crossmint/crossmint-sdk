@@ -108,7 +108,7 @@ cd apps/wallets/smart-wallet/next
 
 2. Add the following environment variable:
 ```shell
-NEXT_PUBLIC_CROSSMINT_AUTH_SMART_WALLET_API_KEY=your_api_key_here
+NEXT_PUBLIC_CROSSMINT_API_KEY=your_api_key_here
 ```
 
 You can obtain a staging client-side API key from the [Crossmint Console](https://staging.crossmint.com/console/projects/apiKeys). For detailed instructions on getting an API key, see our [documentation](https://docs.crossmint.com/wallets/quickstarts/EVM/non-custodial-wallets/evm-non-custodial-client-side#2-get-an-api-key).
