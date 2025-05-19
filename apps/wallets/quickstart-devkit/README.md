@@ -15,7 +15,7 @@
 </div>
 
 ## Introduction
-Create and interact with Crossmint wallets in Solana or EVM. This developer kit is designed to work for internal development pruposes ONLY. It supports using Crossmint auth and Bring Your Own Wallet (BYOW).
+Create and interact with Crossmint wallets in Solana or EVM. This developer kit is designed to work for internal development purposes ONLY. It supports using Crossmint auth and Bring Your Own Wallet (BYOW).
 
 **Supported features:**
 - Create a wallet
@@ -46,7 +46,7 @@ cp .env.template .env
 NEXT_PUBLIC_CROSSMINT_API_KEY=your_api_key
 ```
 
-for testing anything regarding BYOA, you'll need a api key. 
+for testing anything regarding BYOA, you'll need an API key. 
 
 4. Run the development server:
 ```bash
