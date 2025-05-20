@@ -6,7 +6,7 @@ import type { GetOrCreateWalletProps } from "@crossmint/client-sdk-react-base";
 import { CrossmintWalletProvider, WalletContext } from "@/providers/CrossmintWalletProvider";
 import { useCrossmint } from "@/hooks";
 
-vi.mock("../../hooks", () => ({
+vi.mock("@/hooks", () => ({
     useCrossmint: vi.fn(),
 }));
 
