@@ -1,21 +1,10 @@
-import React, {
-    type ReactNode,
-    useCallback,
-    useContext,
-    useEffect,
-    useRef,
-    useState,
-    useMemo,
-} from "react";
+import React, { type ReactNode, useCallback, useContext, useEffect, useRef, useState, useMemo } from "react";
 import bs58 from "bs58";
 import { PublicKey, type VersionedTransaction } from "@solana/web3.js";
 import type { WebView, WebViewMessageEvent } from "react-native-webview";
 import { RNWebView } from "@crossmint/client-sdk-rn-window";
 import { WebViewParent } from "@crossmint/client-sdk-rn-window";
-import {
-    signerInboundEvents,
-    signerOutboundEvents,
-} from "@crossmint/client-signers";
+import { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
 import { useCrossmint } from "../hooks";
 import { View } from "react-native";
 import { validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
@@ -26,9 +15,7 @@ export interface RecoverySigner {
     address: string;
     signer: {
         signMessage: (message: Uint8Array) => Promise<Uint8Array>;
-        signTransaction: (
-            transaction: VersionedTransaction
-        ) => Promise<VersionedTransaction>;
+        signTransaction: (transaction: VersionedTransaction) => Promise<VersionedTransaction>;
     };
 }
 
@@ -39,28 +26,19 @@ export type OnAuthRequiredOptions = {
 
 export interface CrossmintRecoveryKeyContextState {
     experimental_needsAuth: boolean;
-    experimental_createRecoveryKeySigner: (
-        email: string
-    ) => Promise<RecoverySigner | null>;
+    experimental_createRecoveryKeySigner: (email: string) => Promise<RecoverySigner | null>;
     experimental_sendEmailWithOtp: (email: string) => Promise<void>;
-    experimental_verifyOtp: (
-        otp: string
-    ) => Promise<RecoverySigner | undefined>;
-    onAuthRequired: (
-        handler: (opts: OnAuthRequiredOptions) => Promise<void>
-    ) => void;
+    experimental_verifyOtp: (otp: string) => Promise<RecoverySigner | undefined>;
+    onAuthRequired: (handler: (opts: OnAuthRequiredOptions) => Promise<void>) => void;
     experimental_clearStorage: () => void;
 }
 
-export const CrossmintRecoveryKeyContext =
-    React.createContext<CrossmintRecoveryKeyContextState | null>(null);
+export const CrossmintRecoveryKeyContext = React.createContext<CrossmintRecoveryKeyContextState | null>(null);
 
 export function useCrossmintRecoveryKey() {
     const context = useContext(CrossmintRecoveryKeyContext);
     if (context == null) {
-        throw new Error(
-            "useCrossmintRecoveryKey must be used within a CrossmintRecoveryKeyProvider"
-        );
+        throw new Error("useCrossmintRecoveryKey must be used within a CrossmintRecoveryKeyProvider");
     }
     return context;
 }
@@ -75,8 +53,7 @@ const defaultEventOptions = {
     intervalMs: 5_000,
 };
 
-const DEFAULT_SECURE_ENDPOINT_URL =
-    "https://crossmint-signer-frames.onrender.com";
+const DEFAULT_SECURE_ENDPOINT_URL = "https://crossmint-signer-frames.onrender.com";
 
 export function CrossmintRecoveryKeyProvider({
     children,
@@ -88,10 +65,9 @@ export function CrossmintRecoveryKeyProvider({
     const { getOrCreateWallet, clearWallet } = useContext(BaseWalletContext);
 
     const webviewRef = useRef<WebView>(null);
-    const webViewParentRef = useRef<WebViewParent<
-        typeof signerOutboundEvents,
-        typeof signerInboundEvents
-    > | null>(null);
+    const webViewParentRef = useRef<WebViewParent<typeof signerOutboundEvents, typeof signerInboundEvents> | null>(
+        null
+    );
     const [isWebViewReady, setIsWebViewReady] = useState(false);
     const [email, setEmail] = useState<string | null>(null);
     const [experimental_needsAuth, setNeedsAuth] = useState(false);
@@ -172,19 +148,13 @@ export function CrossmintRecoveryKeyProvider({
         async (emailInput: string): Promise<void> => {
             const parent = webViewParentRef.current;
             if (parent == null || !isWebViewReady) {
-                throw new Error(
-                    "[sendEmailWithOtp] WebViewParent not ready or handshake incomplete."
-                );
+                throw new Error("[sendEmailWithOtp] WebViewParent not ready or handshake incomplete.");
             }
             if (jwt == null || apiKey == null) {
-                throw new Error(
-                    "[sendEmailWithOtp] Missing authentication credentials (JWT or API Key)."
-                );
+                throw new Error("[sendEmailWithOtp] Missing authentication credentials (JWT or API Key).");
             }
             if (!experimental_needsAuth) {
-                throw new Error(
-                    "OTP email request is not applicable in the current state."
-                );
+                throw new Error("OTP email request is not applicable in the current state.");
             }
 
             setEmail(emailInput);
@@ -207,23 +177,13 @@ export function CrossmintRecoveryKeyProvider({
                 }
 
                 if (response?.status === "error") {
-                    console.error(
-                        "[sendEmailWithOtp] Failed to send OTP:",
-                        response
-                    );
-                    throw new Error(
-                        response.error || "Failed to initiate OTP process."
-                    );
+                    console.error("[sendEmailWithOtp] Failed to send OTP:", response);
+                    throw new Error(response.error || "Failed to initiate OTP process.");
                 }
 
-                console.log(
-                    "[sendEmailWithOtp] OTP process likely initiated. Waiting for verification."
-                );
+                console.log("[sendEmailWithOtp] OTP process likely initiated. Waiting for verification.");
             } catch (err) {
-                console.error(
-                    "[sendEmailWithOtp] Error sending create-signer request:",
-                    err
-                );
+                console.error("[sendEmailWithOtp] Error sending create-signer request:", err);
                 authPromiseRef.current?.reject(err as Error);
                 throw err;
             }
@@ -235,14 +195,10 @@ export function CrossmintRecoveryKeyProvider({
         async (encryptedOtp: string): Promise<RecoverySigner | undefined> => {
             const parent = webViewParentRef.current;
             if (parent == null || !isWebViewReady) {
-                throw new Error(
-                    "[verifyOtp] WebViewParent not ready or handshake incomplete."
-                );
+                throw new Error("[verifyOtp] WebViewParent not ready or handshake incomplete.");
             }
             if (jwt == null || apiKey == null) {
-                throw new Error(
-                    "[verifyOtp] Missing authentication credentials (JWT or API Key)."
-                );
+                throw new Error("[verifyOtp] Missing authentication credentials (JWT or API Key).");
             }
             if (!experimental_needsAuth) {
                 throw new Error("Not currently awaiting OTP validation.");
@@ -260,33 +216,22 @@ export function CrossmintRecoveryKeyProvider({
                 });
 
                 if (response?.status === "success" && response.publicKey) {
-                    console.log(
-                        "[verifyOtp] OTP validation successful. Signer address:",
-                        response.publicKey
-                    );
+                    console.log("[verifyOtp] OTP validation successful. Signer address:", response.publicKey);
                     setNeedsAuth(false);
                     // Resolve the auth promise since verification was successful
                     authPromiseRef.current?.resolve();
                     return;
                 } else {
-                    console.error(
-                        "[verifyOtp] Failed to validate OTP:",
-                        response
-                    );
+                    console.error("[verifyOtp] Failed to validate OTP:", response);
                     setNeedsAuth(true);
                     const errorMessage =
-                        response && response.status === "error"
-                            ? response.error
-                            : "Failed to validate encrypted OTP";
+                        response && response.status === "error" ? response.error : "Failed to validate encrypted OTP";
                     // Reject the auth promise since verification failed
                     authPromiseRef.current?.reject(new Error(errorMessage));
                     throw new Error(errorMessage);
                 }
             } catch (err) {
-                console.error(
-                    "[verifyOtp] Error sending OTP validation request:",
-                    err
-                );
+                console.error("[verifyOtp] Error sending OTP validation request:", err);
                 setNeedsAuth(true);
                 // Reject the auth promise since verification failed
                 authPromiseRef.current?.reject(err as Error);
@@ -296,32 +241,23 @@ export function CrossmintRecoveryKeyProvider({
         [isWebViewReady, jwt, apiKey, experimental_needsAuth]
     );
 
-    const authRequiredHandlerRef = useRef<
-        ((opts: OnAuthRequiredOptions) => Promise<void>) | null
-    >(null);
-    const onAuthRequired = useCallback(
-        (handler: (opts: OnAuthRequiredOptions) => Promise<void>) => {
-            authRequiredHandlerRef.current = handler;
-        },
-        []
-    );
+    const authRequiredHandlerRef = useRef<((opts: OnAuthRequiredOptions) => Promise<void>) | null>(null);
+    const onAuthRequired = useCallback((handler: (opts: OnAuthRequiredOptions) => Promise<void>) => {
+        authRequiredHandlerRef.current = handler;
+    }, []);
 
     const buildRecoverySigner = useCallback(
         (address: string): RecoverySigner => {
             const parent = webViewParentRef.current;
             if (parent == null || jwt == null || apiKey == null) {
-                throw new Error(
-                    "Cannot build signer: Missing prerequisites (parent, jwt, apiKey)."
-                );
+                throw new Error("Cannot build signer: Missing prerequisites (parent, jwt, apiKey).");
             }
 
             return {
                 type: "solana-keypair",
                 address,
                 signer: {
-                    signMessage: async (
-                        message: Uint8Array
-                    ): Promise<Uint8Array> => {
+                    signMessage: async (message: Uint8Array): Promise<Uint8Array> => {
                         await handleAuthRequired();
 
                         try {
@@ -338,15 +274,8 @@ export function CrossmintRecoveryKeyProvider({
                                 },
                                 options: defaultEventOptions,
                             });
-                            if (
-                                response == null ||
-                                response.status === "error" ||
-                                response.signature == null
-                            ) {
-                                console.error(
-                                    "Failed signMessage response:",
-                                    response
-                                );
+                            if (response == null || response.status === "error" || response.signature == null) {
+                                console.error("Failed signMessage response:", response);
                                 throw new Error("Failed to sign message");
                             }
                             return bs58.decode(response.signature);
@@ -355,9 +284,7 @@ export function CrossmintRecoveryKeyProvider({
                             throw err;
                         }
                     },
-                    signTransaction: async (
-                        transaction: VersionedTransaction
-                    ): Promise<VersionedTransaction> => {
+                    signTransaction: async (transaction: VersionedTransaction): Promise<VersionedTransaction> => {
                         await handleAuthRequired();
 
                         try {
@@ -375,19 +302,10 @@ export function CrossmintRecoveryKeyProvider({
                                 },
                                 options: defaultEventOptions,
                             });
-                            if (
-                                response == null ||
-                                response.status === "error" ||
-                                response.signature == null
-                            ) {
-                                throw new Error(
-                                    "Failed to sign transaction: No signature returned"
-                                );
+                            if (response == null || response.status === "error" || response.signature == null) {
+                                throw new Error("Failed to sign transaction: No signature returned");
                             }
-                            transaction.addSignature(
-                                new PublicKey(address),
-                                bs58.decode(response.signature)
-                            );
+                            transaction.addSignature(new PublicKey(address), bs58.decode(response.signature));
                             return transaction;
                         } catch (err) {
                             console.error("Error during signTransaction:", err);
@@ -402,20 +320,12 @@ export function CrossmintRecoveryKeyProvider({
 
     const checkSignerExists = useCallback(async () => {
         const parent = webViewParentRef.current;
-        if (
-            parent == null ||
-            !isWebViewReady ||
-            jwt == null ||
-            apiKey == null
-        ) {
-            console.warn(
-                "[checkSignerExists] Prerequisites not met (WebView, JWT, API Key). Status:",
-                {
-                    isWebViewReady,
-                    hasJwt: jwt != null,
-                    hasApiKey: apiKey != null,
-                }
-            );
+        if (parent == null || !isWebViewReady || jwt == null || apiKey == null) {
+            console.warn("[checkSignerExists] Prerequisites not met (WebView, JWT, API Key). Status:", {
+                isWebViewReady,
+                hasJwt: jwt != null,
+                hasApiKey: apiKey != null,
+            });
             setNeedsAuth(false);
             return;
         }
@@ -431,30 +341,19 @@ export function CrossmintRecoveryKeyProvider({
                 options: defaultEventOptions,
             });
 
-            if (
-                signerResponse?.status === "success" &&
-                signerResponse.publicKey
-            ) {
-                const existingSigner = buildRecoverySigner(
-                    signerResponse.publicKey
-                );
+            if (signerResponse?.status === "success" && signerResponse.publicKey) {
+                const existingSigner = buildRecoverySigner(signerResponse.publicKey);
                 setNeedsAuth(false);
                 await getOrCreateWallet({
                     type: "solana-smart-wallet",
                     args: { adminSigner: existingSigner },
                 });
             } else {
-                console.log(
-                    "checkSignerExists needsAuth true",
-                    experimental_needsAuth
-                );
+                console.log("checkSignerExists needsAuth true", experimental_needsAuth);
                 setNeedsAuth(true);
             }
         } catch (error) {
-            console.error(
-                "[checkSignerExists] Error checking for signer:",
-                error
-            );
+            console.error("[checkSignerExists] Error checking for signer:", error);
             setNeedsAuth(true);
         }
     }, [isWebViewReady, jwt, apiKey, buildRecoverySigner, getOrCreateWallet]);
@@ -480,11 +379,7 @@ export function CrossmintRecoveryKeyProvider({
 
         try {
             const messageData = JSON.parse(event.nativeEvent.data);
-            if (
-                messageData &&
-                typeof messageData.type === "string" &&
-                messageData.type.startsWith("console.")
-            ) {
+            if (messageData && typeof messageData.type === "string" && messageData.type.startsWith("console.")) {
                 const consoleMethod = messageData.type.split(".")[1];
                 const args = (messageData.data || []).map((argStr: string) => {
                     try {
@@ -516,10 +411,7 @@ export function CrossmintRecoveryKeyProvider({
                         console.info(prefix, ...args);
                         break;
                     default:
-                        console.log(
-                            `[WebView Unknown:${consoleMethod}]`,
-                            ...args
-                        );
+                        console.log(`[WebView Unknown:${consoleMethod}]`, ...args);
                 }
                 return;
             }
@@ -542,9 +434,7 @@ export function CrossmintRecoveryKeyProvider({
 
             const parent = webViewParentRef.current;
             if (parent == null) {
-                console.error(
-                    "[createRecoveryKeySigner] WebView parent disappeared unexpectedly."
-                );
+                console.error("[createRecoveryKeySigner] WebView parent disappeared unexpectedly.");
                 setNeedsAuth(false);
                 return null;
             }
@@ -552,41 +442,32 @@ export function CrossmintRecoveryKeyProvider({
             try {
                 const baseUrl = validateApiKeyAndGetCrossmintBaseUrl(apiKey);
 
-                const response = await fetch(
-                    `${baseUrl}api/unstable/wallets/ncs/irrelevant/public-key`,
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${jwt}`,
-                            "x-api-key": apiKey,
-                            "x-app-identifier": appId!,
-                        },
-                        body: JSON.stringify({
-                            authId: `email:${emailInput}`,
-                            signingAlgorithm: "EDDSA_ED25519",
-                        }),
-                    }
-                );
+                const response = await fetch(`${baseUrl}api/unstable/wallets/ncs/irrelevant/public-key`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${jwt}`,
+                        "x-api-key": apiKey,
+                        "x-app-identifier": appId!,
+                    },
+                    body: JSON.stringify({
+                        authId: `email:${emailInput}`,
+                        signingAlgorithm: "EDDSA_ED25519",
+                    }),
+                });
 
                 if (!response.ok) {
                     const errorBody = await response.text();
-                    throw new Error(
-                        `Failed to fetch public key: ${response.status} ${errorBody}`
-                    );
+                    throw new Error(`Failed to fetch public key: ${response.status} ${errorBody}`);
                 }
 
                 const responseData = await response.json();
                 if (!responseData.publicKey) {
-                    throw new Error(
-                        "Fetched data does not contain a public key."
-                    );
+                    throw new Error("Fetched data does not contain a public key.");
                 }
 
                 const base64PublicKey = responseData.publicKey;
-                const binaryData = Uint8Array.from(atob(base64PublicKey), (c) =>
-                    c.charCodeAt(0)
-                );
+                const binaryData = Uint8Array.from(atob(base64PublicKey), (c) => c.charCodeAt(0));
                 const adminSignerAddress = bs58.encode(binaryData);
 
                 const fetchedSigner = buildRecoverySigner(adminSignerAddress);
@@ -595,17 +476,11 @@ export function CrossmintRecoveryKeyProvider({
                     type: "solana-smart-wallet",
                     args: { adminSigner: fetchedSigner },
                 });
-                console.log(
-                    "createRecoveryKeySigner needsAuth true",
-                    experimental_needsAuth
-                );
+                console.log("createRecoveryKeySigner needsAuth true", experimental_needsAuth);
                 setNeedsAuth(true);
                 return null;
             } catch (error) {
-                console.error(
-                    "[createRecoveryKeySigner] Error during public key fetch or processing:",
-                    error
-                );
+                console.error("[createRecoveryKeySigner] Error during public key fetch or processing:", error);
                 setNeedsAuth(true);
                 return null;
             }
@@ -676,18 +551,12 @@ export function CrossmintRecoveryKeyProvider({
                     onLoadEnd={onWebViewLoad}
                     onMessage={handleMessage}
                     onError={(syntheticEvent) => {
-                        console.error(
-                            "WebView onError:",
-                            syntheticEvent.nativeEvent
-                        );
+                        console.error("WebView onError:", syntheticEvent.nativeEvent);
                         setIsWebViewReady(false);
                         setNeedsAuth(false);
                     }}
                     onHttpError={(syntheticEvent) => {
-                        console.error(
-                            "WebView onHttpError:",
-                            syntheticEvent.nativeEvent
-                        );
+                        console.error("WebView onHttpError:", syntheticEvent.nativeEvent);
                         setIsWebViewReady(false);
                         setNeedsAuth(false);
                     }}
