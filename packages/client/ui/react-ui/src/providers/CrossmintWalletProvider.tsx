@@ -16,18 +16,13 @@ import type { UIConfig } from "@crossmint/common-sdk-base";
 import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
 import type { PasskeySigner } from "@/types/passkey";
 import { useCrossmint } from "../hooks";
-import type {
-    CrossmintAuthEmbeddedWallets,
-    GetOrCreateWalletAdminSigner,
-    GetOrCreateWalletProps,
-} from "@/types/wallet";
+import type { CreateOnLogin, GetOrCreateWalletProps } from "@/types/wallet";
 import { createWebAuthnPasskeySigner } from "@/utils/createPasskeySigner";
 import { CrossmintSignerProvider, useCrossmintSigner } from "./signers/CrossmintSignerProvider";
 import { TwindProvider } from "./TwindProvider";
 import { deriveWalletErrorState } from "@/utils/errorUtils";
-import { AuthContext, type AuthContextType } from "./CrossmintAuthProvider";
-import { useDynamicConnect } from "@/hooks/useDynamicConnect";
-import { mapSignerToWalletType } from "@/utils/mapSignerToWalletType";
+import { AuthContext } from "./CrossmintAuthProvider";
+import { CrossmintAuthWalletManager } from "./CrossmintAuthWalletManager";
 
 type ValidPasskeyPromptType =
     | "create-wallet"
@@ -92,13 +87,6 @@ type WalletContext =
       } & WalletContextFunctions)
     | (LoadedWalletState<"evm-smart-wallet"> & WalletContextFunctions)
     | (LoadedWalletState<"solana-smart-wallet"> & WalletContextFunctions);
-
-type CreateOnLogin = {
-    walletType: CrossmintAuthEmbeddedWallets["type"];
-    walletAuth?: unknown;
-    adminSigner?: GetOrCreateWalletAdminSigner;
-    linkedUser?: string;
-};
 
 export const WalletContext = createContext<WalletContext>({
     status: "not-loaded",
@@ -289,12 +277,17 @@ function WalletProvider({
         [walletState, experimental_getOrCreateWalletWithRecoveryKey]
     );
 
-    // skip wallet creation if using CrossmintAuthProvider
+    /**
+     * This is only used for Bring Your Own Auth (BYOA).
+     * Defer to <CrossmintAuthWalletManager/> for automatic wallet creation if using CrossmintAuthProvider.
+     */
     const canAutomaticallyGetOrCreateWallet =
         createOnLogin?.walletType != null &&
         walletState.status === "not-loaded" &&
         crossmint.jwt != null &&
         !isUsingCrossmintAuthProvider;
+
+    console.log({ canAutomaticallyGetOrCreateWallet });
 
     const handleAutomaticWalletCreation = useCallback(async () => {
         if (!canAutomaticallyGetOrCreateWallet) {
@@ -303,11 +296,11 @@ function WalletProvider({
         await getOrCreateWallet({
             type: createOnLogin?.walletType,
             args: {
-                adminSigner: createOnLogin?.adminSigner,
-                linkedUser: createOnLogin?.linkedUser,
+                adminSigner: createOnLogin?.signer,
+                linkedUser: createOnLogin?.owner,
             },
         } as GetOrCreateWalletProps);
-    }, [canAutomaticallyGetOrCreateWallet, getOrCreateWallet]);
+    }, [canAutomaticallyGetOrCreateWallet]);
 
     const handleWalletCleanup = useCallback(() => {
         if (crossmint.jwt == null && walletState.status === "loaded") {
@@ -323,7 +316,7 @@ function WalletProvider({
     return (
         <WalletContext.Provider value={contextValue}>
             {isUsingCrossmintAuthProvider && createOnLogin != null ? (
-                <WalletProviderWithCrossmintAuthManager
+                <CrossmintAuthWalletManager
                     authContext={crossmintAuthContext}
                     createOnLogin={createOnLogin}
                     walletState={walletState}
@@ -337,71 +330,4 @@ function WalletProvider({
                 : null}
         </WalletContext.Provider>
     );
-}
-
-function WalletProviderWithCrossmintAuthManager({
-    authContext,
-    createOnLogin,
-    getOrCreateWallet,
-    walletState,
-    setWalletState,
-}: {
-    authContext: AuthContextType;
-    createOnLogin?: CreateOnLogin;
-    walletState: ValidWalletState;
-    setWalletState: Dispatch<SetStateAction<ValidWalletState>>;
-    getOrCreateWallet: (props: GetOrCreateWalletProps) => Promise<{ startedCreation: boolean; reason?: string }>;
-}) {
-    const { setIsDynamicSdkLoaded, jwt } = authContext;
-    const { sdkHasLoaded, getAdminSigner, cleanup, isDynamicWalletConnected } = useDynamicConnect(
-        setIsDynamicSdkLoaded,
-        jwt
-    );
-
-    const canGetOrCreateWallet =
-        createOnLogin != null && walletState.status === "not-loaded" && jwt != null && sdkHasLoaded;
-
-    const handleWalletCreation = useCallback(async () => {
-        if (!canGetOrCreateWallet) {
-            return;
-        }
-
-        let adminSigner: GetOrCreateWalletAdminSigner = createOnLogin?.adminSigner;
-        let walletType = createOnLogin.walletType;
-
-        if (isDynamicWalletConnected) {
-            adminSigner = (await getAdminSigner()) ?? adminSigner;
-            walletType = mapSignerToWalletType(adminSigner?.type) ?? walletType;
-        }
-
-        // If an external wallet is not connected, the type is required
-        if (!isDynamicWalletConnected && walletType == null) {
-            console.error(
-                "[CrossmintAuthProvider] ⚠️ createOnLogin.walletType is required when no external wallet is connected"
-            );
-            return;
-        }
-
-        getOrCreateWallet({
-            type: walletType,
-            args: {
-                adminSigner,
-                linkedUser: createOnLogin?.linkedUser,
-            },
-        } as GetOrCreateWalletProps);
-    }, [canGetOrCreateWallet, getOrCreateWallet, createOnLogin, getAdminSigner]);
-
-    const handleWalletCleanup = useCallback(() => {
-        if (jwt == null && walletState.status === "loaded") {
-            setWalletState({ status: "not-loaded" });
-        }
-        cleanup();
-    }, [walletState.status, jwt, cleanup]);
-
-    useEffect(() => {
-        handleWalletCreation();
-        handleWalletCleanup();
-    }, [handleWalletCreation, handleWalletCleanup]);
-
-    return null;
 }

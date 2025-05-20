@@ -7,12 +7,14 @@ import { beforeEach, describe, expect, vi, it, type MockInstance } from "vitest"
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { mock } from "vitest-mock-extended";
 
-import { useAuth, useWallet } from "../hooks";
-import { CrossmintProvider, useCrossmint } from "../hooks/useCrossmint";
-import { MOCK_API_KEY } from "../testUtils";
-import { CrossmintAuthProvider } from "./CrossmintAuthProvider";
-import type { CrossmintAuthProviderEmbeddedWallets, LoginMethod } from "@/types/auth";
+import { useAuth, useWallet } from "@/hooks";
+import { CrossmintProvider, useCrossmint } from "@/hooks/useCrossmint";
+import { MOCK_API_KEY } from "@/testUtils";
+import { CrossmintAuthProvider } from "@/providers/CrossmintAuthProvider";
+import type { LoginMethod } from "@/types/auth";
 import { useDynamicConnect } from "@/hooks/useDynamicConnect";
+import { CrossmintWalletProvider } from "../CrossmintWalletProvider";
+import type { CreateOnLogin } from "@/types/wallet";
 
 vi.mock("@dynamic-labs/sdk-react-core", () => ({
     useDynamicContext: vi.fn().mockReturnValue({
@@ -81,19 +83,26 @@ vi.mock("@crossmint/client-sdk-auth", async () => {
     };
 });
 
+const mockPasskeySigner = mock<EVMSignerInput>({
+    type: "evm-passkey",
+    name: "Crossmint Wallet",
+});
+
 function renderAuthProvider({
     children,
-    embeddedWallets,
+    createOnLogin,
     loginMethods,
 }: {
     children: ReactNode;
-    embeddedWallets: CrossmintAuthProviderEmbeddedWallets;
+    createOnLogin?: CreateOnLogin;
     loginMethods?: LoginMethod[];
 }) {
     return render(
         <CrossmintProvider apiKey={MOCK_API_KEY}>
-            <CrossmintAuthProvider embeddedWallets={embeddedWallets} loginMethods={loginMethods}>
-                {children}
+            <CrossmintAuthProvider loginMethods={loginMethods}>
+                <CrossmintWalletProvider showPasskeyHelpers={false} createOnLogin={createOnLogin}>
+                    {children}
+                </CrossmintWalletProvider>
             </CrossmintAuthProvider>
         </CrossmintProvider>
     );
@@ -127,7 +136,6 @@ function TestComponent() {
 describe("CrossmintAuthProvider", () => {
     let mockSDK: CrossmintWallets;
     let mockWallet: EVMSmartWallet;
-    let embeddedWallets: CrossmintAuthProviderEmbeddedWallets;
     let handleRefreshAuthMaterialSpy: MockInstance;
     let getOAuthUrlSpy: MockInstance;
 
@@ -168,16 +176,6 @@ describe("CrossmintAuthProvider", () => {
             sdkHasLoaded: true,
             isDynamicWalletConnected: false,
         });
-        const mockPasskeySigner = mock<EVMSignerInput>({
-            type: "evm-passkey",
-            name: "Crossmint Wallet",
-        });
-        embeddedWallets = {
-            createOnLogin: "all-users",
-            type: "evm-smart-wallet",
-            showPasskeyHelpers: false,
-            adminSigner: mockPasskeySigner,
-        };
 
         deleteCookie(REFRESH_TOKEN_PREFIX);
         deleteCookie(SESSION_PREFIX);
@@ -202,7 +200,10 @@ describe("CrossmintAuthProvider", () => {
     it("When user is logged out", async () => {
         const { getByTestId } = renderAuthProvider({
             children: <TestComponent />,
-            embeddedWallets,
+            createOnLogin: {
+                walletType: "evm-smart-wallet",
+                signer: mockPasskeySigner,
+            },
         });
 
         expect(getByTestId("auth-status").textContent).toBe("logged-out");
@@ -224,7 +225,10 @@ describe("CrossmintAuthProvider", () => {
 
         const { getByTestId } = renderAuthProvider({
             children: <TestComponent />,
-            embeddedWallets,
+            createOnLogin: {
+                walletType: "evm-smart-wallet",
+                signer: mockPasskeySigner,
+            },
         });
 
         expect(getByTestId("wallet-status").textContent).toBe("in-progress");
@@ -250,10 +254,7 @@ describe("CrossmintAuthProvider", () => {
         document.cookie = `${SESSION_PREFIX}=mock-jwt; path=/;SameSite=Lax;`;
         const { getByTestId } = await renderAuthProvider({
             children: <TestComponent />,
-            embeddedWallets: {
-                createOnLogin: "off",
-                type: "evm-smart-wallet",
-            },
+            createOnLogin: undefined,
         });
 
         await waitFor(() => {
@@ -267,7 +268,10 @@ describe("CrossmintAuthProvider", () => {
     it(`When the jwt from crossmint provider is not defined, wallet is not loaded`, async () => {
         const { getByTestId } = await renderAuthProvider({
             children: <TestComponent />,
-            embeddedWallets,
+            createOnLogin: {
+                walletType: "evm-smart-wallet",
+                signer: mockPasskeySigner,
+            },
         });
 
         await waitFor(() => {
@@ -282,7 +286,10 @@ describe("CrossmintAuthProvider", () => {
     it(`Logging in and asserting the auth status`, async () => {
         const { getByTestId } = await renderAuthProvider({
             children: <TestComponent />,
-            embeddedWallets,
+            createOnLogin: {
+                walletType: "evm-smart-wallet",
+                signer: mockPasskeySigner,
+            },
         });
 
         await waitFor(() => {
@@ -312,16 +319,17 @@ describe("CrossmintAuthProvider", () => {
 
         renderAuthProvider({
             children: <TestComponent />,
-            embeddedWallets: {
-                createOnLogin: "all-users",
-                type: undefined,
+
+            createOnLogin: {
+                walletType: undefined as any,
+                signer: mockPasskeySigner,
             },
             loginMethods: ["web3"],
         });
 
         await waitFor(() => {
             expect(consoleErrorSpy).toHaveBeenCalledWith(
-                "[CrossmintAuthProvider] ⚠️ embeddedWallets.type is required when no external wallet is connected"
+                "[CrossmintAuthProvider] ⚠️ createOnLogin.walletType is required when no external wallet is connected"
             );
         });
     });
