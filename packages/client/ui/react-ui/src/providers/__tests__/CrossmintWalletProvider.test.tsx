@@ -52,14 +52,11 @@ function renderWalletProvider({ children }: { children: ReactNode }) {
 
 describe("CrossmintWalletProvider", () => {
     let mockSDK: any;
-
     beforeEach(() => {
         mockSDK = {
             getOrCreateWallet: vi.fn().mockResolvedValue({ address: "mock-address" }),
         };
-
         vi.mocked(CrossmintWallets.from).mockReturnValue(mockSDK);
-
         vi.mocked(useCrossmint).mockReturnValue({
             crossmint: {
                 apiKey: MOCK_API_KEY,
