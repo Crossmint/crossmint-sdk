@@ -13,7 +13,7 @@ import { MOCK_API_KEY } from "@/testUtils";
 import { CrossmintAuthProvider } from "@/providers/CrossmintAuthProvider";
 import type { LoginMethod } from "@/types/auth";
 import { useDynamicConnect } from "@/hooks/useDynamicConnect";
-import { CrossmintWalletProvider } from "../CrossmintWalletProvider";
+import { CrossmintWalletProvider } from "@/providers/CrossmintWalletProvider";
 import type { CreateOnLogin } from "@/types/wallet";
 
 vi.mock("@dynamic-labs/sdk-react-core", () => ({

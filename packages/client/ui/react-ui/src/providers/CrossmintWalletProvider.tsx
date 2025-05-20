@@ -287,8 +287,6 @@ function WalletProvider({
         crossmint.jwt != null &&
         !isUsingCrossmintAuthProvider;
 
-    console.log({ canAutomaticallyGetOrCreateWallet });
-
     const handleAutomaticWalletCreation = useCallback(async () => {
         if (!canAutomaticallyGetOrCreateWallet) {
             return;

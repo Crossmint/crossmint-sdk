@@ -3,8 +3,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, fireEvent, waitFor } from "@testing-library/react";
 import { CrossmintWallets } from "@crossmint/wallets-sdk";
 import type { GetOrCreateWalletProps } from "@crossmint/client-sdk-react-base";
-import { CrossmintWalletProvider, WalletContext } from "../CrossmintWalletProvider";
-import { useCrossmint } from "../../hooks";
+import { CrossmintWalletProvider, WalletContext } from "@/providers/CrossmintWalletProvider";
+import { useCrossmint } from "@/hooks";
 
 vi.mock("../../hooks", () => ({
     useCrossmint: vi.fn(),
