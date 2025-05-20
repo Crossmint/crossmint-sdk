@@ -135,25 +135,26 @@ export function CrossmintSignerProvider({
         }
         return new Promise<void>(async (resolve, reject) => {
             try {
-                // Attempt to get the signer's public key
                 const signerResponse = await iframeWindow.current?.sendAction({
-                    event: "request:get-public-key",
-                    responseEvent: "response:get-public-key",
+                    event: "request:get-status",
+                    responseEvent: "response:get-status",
                     data: {
                         authData: {
                             jwt,
                             apiKey,
                         },
-                        data: {
-                            chainLayer: "solana",
-                        },
                     },
                 });
-                if (signerResponse?.status === "success") {
-                    // signer exists, skip OTP flow
+
+                if (signerResponse?.status !== "success") {
+                    throw new Error(signerResponse?.error);
+                }
+
+                if (signerResponse.signerStatus === "ready") {
                     console.log("Signer already exists, skipping OTP flow");
                     return resolve();
                 }
+
                 // Store the resolve/reject functions to be called after OTP completion
                 successHandlerRef.current = () => resolve();
                 errorHandlerRef.current = (error) => reject(error);
@@ -258,63 +259,71 @@ export function CrossmintSignerProvider({
                     type: "solana-keypair",
                     address: publicSignerAddress,
                     signer: {
-                        signMessage: async (message: Uint8Array) => {
-                            if (iframeWindow.current == null) {
-                                throw new Error("IFrame window not initialized");
-                            }
-
-                            const res = await iframeWindow.current.sendAction({
-                                event: "request:sign",
-                                responseEvent: "response:sign",
-                                data: {
-                                    authData: {
-                                        jwt,
-                                        apiKey,
-                                    },
+                        signMessage: (message: Uint8Array) => {
+                            return signWithRecovery(async () => {
+                                if (iframeWindow.current == null) {
+                                    throw new Error("IFrame window not initialized");
+                                }
+                                const res = await iframeWindow.current.sendAction({
+                                    event: "request:sign",
+                                    responseEvent: "response:sign",
                                     data: {
-                                        keyType: "ed25519",
-                                        bytes: base58.encode(message),
-                                        encoding: "base58",
+                                        authData: {
+                                            jwt,
+                                            apiKey,
+                                        },
+                                        data: {
+                                            keyType: "ed25519",
+                                            bytes: base58.encode(message),
+                                            encoding: "base58",
+                                        },
                                     },
-                                },
-                                options: DEFAULT_EVENT_OPTIONS,
+                                    options: DEFAULT_EVENT_OPTIONS,
+                                });
+                                if (res.status === "error") {
+                                    const err = new Error(res.error);
+                                    (err as any).code = res.code;
+                                    throw err;
+                                }
+                                if (res.signature == null) {
+                                    throw new Error("Failed to sign message");
+                                }
+                                return base58.decode(res.signature);
                             });
-                            if (res.status === "error") {
-                                throw new Error(res.error);
-                            }
-                            if (res.signature == null) {
-                                throw new Error("Failed to sign message");
-                            }
-                            return base58.decode(res.signature);
                         },
-                        signTransaction: async (transaction: VersionedTransaction) => {
-                            console.log("Signing transaction...", transaction);
-                            const messageData = transaction.message.serialize();
-                            const res = await iframeWindow.current?.sendAction({
-                                event: "request:sign",
-                                responseEvent: "response:sign",
-                                data: {
-                                    authData: {
-                                        jwt,
-                                        apiKey,
-                                    },
+                        signTransaction: (transaction: VersionedTransaction) => {
+                            return signWithRecovery(async () => {
+                                const messageData = transaction.message.serialize();
+                                const res = await iframeWindow.current?.sendAction({
+                                    event: "request:sign",
+                                    responseEvent: "response:sign",
                                     data: {
-                                        keyType: "ed25519",
-                                        bytes: base58.encode(messageData),
-                                        encoding: "base58",
+                                        authData: {
+                                            jwt,
+                                            apiKey,
+                                        },
+                                        data: {
+                                            keyType: "ed25519",
+                                            bytes: base58.encode(messageData),
+                                            encoding: "base58",
+                                        },
                                     },
-                                },
-                                options: DEFAULT_EVENT_OPTIONS,
+                                    options: DEFAULT_EVENT_OPTIONS,
+                                });
+                                if (res?.status === "error") {
+                                    const err = new Error(res.error);
+                                    (err as any).code = res.code;
+                                    throw err;
+                                }
+                                if (res?.signature == null) {
+                                    throw new Error("Failed to sign transaction");
+                                }
+                                transaction.addSignature(
+                                    new PublicKey(publicSignerAddress),
+                                    base58.decode(res.signature)
+                                );
+                                return transaction;
                             });
-
-                            if (res?.status === "error") {
-                                throw new Error(res.error);
-                            }
-                            if (res?.signature == null) {
-                                throw new Error("Failed to sign transaction");
-                            }
-                            transaction.addSignature(new PublicKey(publicSignerAddress), base58.decode(res.signature));
-                            return transaction;
                         },
                     },
                 },
@@ -322,6 +331,19 @@ export function CrossmintSignerProvider({
         } catch (error) {
             console.error("Error creating wallet with signer:", error);
             setWalletState(deriveWalletErrorState(error));
+            throw error;
+        }
+    }
+
+    // Helper to wrap signing with OTP recovery
+    async function signWithRecovery<T>(signFn: () => Promise<T>): Promise<T> {
+        try {
+            return await signFn();
+        } catch (error: any) {
+            if (error.code === "invalid-device-share") {
+                await handleGetRecoverySigner();
+                return await signFn();
+            }
             throw error;
         }
     }
