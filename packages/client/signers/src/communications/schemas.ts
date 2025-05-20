@@ -76,6 +76,15 @@ export const GetPublicKeyPayloadSchema = {
     ),
 };
 
+export const GetStatusPayloadSchema = {
+    request: AuthenticatedEventRequest,
+    response: ResultResponse(
+        z.object({
+            signerStatus: z.enum(["ready", "new-device"]),
+        })
+    ),
+};
+
 export const SignPayloadSchema = {
     request: AuthenticatedEventRequest.extend({
         data: z.object({

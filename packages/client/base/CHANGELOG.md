@@ -1,5 +1,25 @@
 # @crossmint/client-sdk-base
 
+## 1.4.21
+
+### Patch Changes
+
+- Updated dependencies [edc4198]
+  - @crossmint/common-sdk-base@0.4.2
+
+## 1.4.20
+
+### Patch Changes
+
+- Updated dependencies [150a68a]
+  - @crossmint/common-sdk-base@0.4.1
+
+## 1.4.19
+
+### Patch Changes
+
+- e24643c: Add appearance rules to hosted v3
+
 ## 1.4.18
 
 ### Patch Changes

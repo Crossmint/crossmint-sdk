@@ -1,5 +1,38 @@
 # @crossmint/client-sdk-auth
 
+## 1.2.7
+
+### Patch Changes
+
+- Updated dependencies [edc4198]
+  - @crossmint/common-sdk-base@0.4.2
+  - @crossmint/client-sdk-base@1.4.21
+  - @crossmint/common-sdk-auth@1.0.30
+
+## 1.2.6
+
+### Patch Changes
+
+- Updated dependencies [150a68a]
+  - @crossmint/common-sdk-base@0.4.1
+  - @crossmint/client-sdk-base@1.4.20
+  - @crossmint/common-sdk-auth@1.0.29
+
+## 1.2.5
+
+### Patch Changes
+
+- Updated dependencies [e24643c]
+  - @crossmint/client-sdk-base@1.4.19
+  - @crossmint/common-sdk-auth@1.0.28
+
+## 1.2.4
+
+### Patch Changes
+
+- Updated dependencies [27ed2c2]
+  - @crossmint/common-sdk-auth@1.0.27
+
 ## 1.2.3
 
 ### Patch Changes

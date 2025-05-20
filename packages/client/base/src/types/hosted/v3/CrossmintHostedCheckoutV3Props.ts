@@ -36,7 +36,19 @@ export interface CrossmintHostedCheckoutV3Appearance {
     variables?: CrossmintHostedCheckoutV3AppearanceVariables;
     overlay?: CrossmintHostedCheckoutV3OverlayOptions;
     display?: "popup" | "new-tab" | "same-tab";
+    rules?: HostedCheckoutV3AppearanceRules;
 }
+
+// This type is different that the one in Embedded.
+// Read: https://crossmint.slack.com/archives/C064HDR6VP1/p1746450589948919
+export type HostedCheckoutV3AppearanceRules = {
+    DestinationInput?: {
+        display?: "hidden";
+    };
+    ReceiptEmailInput?: {
+        display?: "hidden";
+    };
+};
 
 export type CrossmintHostedCheckoutV3Theme = "light" | "dark";
 export type CrossmintHostedCheckoutV3ButtonTheme = "light" | "dark" | "crossmint";

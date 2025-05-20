@@ -1,5 +1,35 @@
 # @crossmint/wallets-sdk
 
+## 0.7.7
+
+### Patch Changes
+
+- Updated dependencies [edc4198]
+  - @crossmint/common-sdk-base@0.4.2
+  - @crossmint/common-sdk-auth@1.0.30
+
+## 0.7.6
+
+### Patch Changes
+
+- 150a68a: Adds Shape for EVM Smart Wallets
+- Updated dependencies [150a68a]
+  - @crossmint/common-sdk-base@0.4.1
+  - @crossmint/common-sdk-auth@1.0.29
+
+## 0.7.5
+
+### Patch Changes
+
+- @crossmint/common-sdk-auth@1.0.28
+
+## 0.7.4
+
+### Patch Changes
+
+- Updated dependencies [27ed2c2]
+  - @crossmint/common-sdk-auth@1.0.27
+
 ## 0.7.3
 
 ### Patch Changes

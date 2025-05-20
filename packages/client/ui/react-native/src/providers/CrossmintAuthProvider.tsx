@@ -40,7 +40,7 @@ type AuthContextType = {
     status: AuthStatus;
     getUser: () => void;
     loginWithOAuth: (provider: OAuthProvider) => Promise<void>;
-    createAuthSession: (urlOrOneTimeSecret: string) => Promise<void>;
+    createAuthSession: (urlOrOneTimeSecret: string) => Promise<AuthMaterialWithUser | null>;
 };
 
 const defaultContextValue: AuthContextType = {
@@ -51,7 +51,7 @@ const defaultContextValue: AuthContextType = {
     status: "initializing",
     getUser: () => {},
     loginWithOAuth: () => Promise.resolve(),
-    createAuthSession: () => Promise.resolve(),
+    createAuthSession: () => Promise.resolve(null),
 };
 
 export const AuthContext = createContext<AuthContextType>(defaultContextValue);
@@ -225,7 +225,7 @@ export function CrossmintAuthProvider({
                     setInProgress(false);
                 }
             }
-            return;
+            return null;
         },
         [crossmintAuth]
     );

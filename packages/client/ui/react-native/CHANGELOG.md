@@ -1,5 +1,80 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.4.10
+
+### Patch Changes
+
+- Updated dependencies [e25ed59]
+  - @crossmint/client-signers@0.0.10
+
+## 0.4.9
+
+### Patch Changes
+
+- Updated dependencies [edc4198]
+- Updated dependencies [01dd7af]
+  - @crossmint/common-sdk-base@0.4.2
+  - @crossmint/client-signers@0.0.9
+  - @crossmint/client-sdk-auth@1.2.7
+  - @crossmint/client-sdk-base@1.4.21
+  - @crossmint/client-sdk-react-base@0.2.13
+  - @crossmint/common-sdk-auth@1.0.30
+  - @crossmint/wallets-sdk@0.7.7
+
+## 0.4.8
+
+### Patch Changes
+
+- Updated dependencies [150a68a]
+- Updated dependencies [150a68a]
+  - @crossmint/wallets-sdk@0.7.6
+  - @crossmint/common-sdk-base@0.4.1
+  - @crossmint/client-sdk-react-base@0.2.12
+  - @crossmint/client-sdk-auth@1.2.6
+  - @crossmint/client-sdk-base@1.4.20
+  - @crossmint/common-sdk-auth@1.0.29
+
+## 0.4.7
+
+### Patch Changes
+
+- 091dd67: Adds logs for testing and fixing needAuth check
+
+## 0.4.6
+
+### Patch Changes
+
+- Updated dependencies [1921ada]
+- Updated dependencies [1921ada]
+  - @crossmint/client-sdk-react-base@0.2.11
+
+## 0.4.5
+
+### Patch Changes
+
+- 1038ef3: Moves to sending otp when needed and expose functions to set up custom flow
+
+## 0.4.4
+
+### Patch Changes
+
+- Updated dependencies [e24643c]
+  - @crossmint/client-sdk-base@1.4.19
+  - @crossmint/client-sdk-auth@1.2.5
+  - @crossmint/client-sdk-react-base@0.2.10
+  - @crossmint/common-sdk-auth@1.0.28
+  - @crossmint/wallets-sdk@0.7.5
+
+## 0.4.3
+
+### Patch Changes
+
+- Updated dependencies [27ed2c2]
+  - @crossmint/common-sdk-auth@1.0.27
+  - @crossmint/client-sdk-auth@1.2.4
+  - @crossmint/wallets-sdk@0.7.4
+  - @crossmint/client-sdk-react-base@0.2.9
+
 ## 0.4.2
 
 ### Patch Changes

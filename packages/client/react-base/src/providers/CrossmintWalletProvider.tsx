@@ -1,4 +1,4 @@
-import { createContext, type ReactNode, useMemo } from "react";
+import { createContext, type Dispatch, type ReactNode, type SetStateAction, useMemo } from "react";
 import type { EVMSmartWallet, SolanaSmartWallet } from "@crossmint/wallets-sdk";
 import { CrossmintWallets } from "@crossmint/wallets-sdk";
 
@@ -14,6 +14,7 @@ export type ValidWalletState =
 
 type WalletContextFunctions = {
     getOrCreateWallet: (args: GetOrCreateWalletProps) => Promise<{ startedCreation: boolean; reason?: string }>;
+    setState: Dispatch<SetStateAction<ValidWalletState>>;
     clearWallet: () => void;
 };
 
@@ -47,8 +48,9 @@ type WalletContext =
 
 export const WalletContext = createContext<WalletContext>({
     status: "not-loaded",
+    setState: () => {},
     getOrCreateWallet: () => Promise.resolve({ startedCreation: false }),
-    clearWallet: () => {},
+    clearWallet: () => null,
 });
 
 export function deriveErrorState(error: unknown): {
@@ -72,6 +74,7 @@ export function CrossmintWalletProvider({
 
     const {
         state: walletState,
+        setState,
         getOrCreateWallet,
         clearWallet,
     } = useWalletState({
@@ -83,6 +86,7 @@ export function CrossmintWalletProvider({
         <WalletContext.Provider
             value={{
                 ...walletState,
+                setState,
                 getOrCreateWallet,
                 clearWallet,
             }}
