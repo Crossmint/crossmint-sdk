@@ -162,8 +162,8 @@ export function CrossmintRecoveryKeyProvider({
 
             try {
                 const response = await parent.sendAction({
-                    event: "request:create-signer",
-                    responseEvent: "response:create-signer",
+                    event: "request:start-onboarding",
+                    responseEvent: "response:start-onboarding",
                     data: {
                         authData: { jwt, apiKey },
                         data: { authId, keyType: "ed25519" },
@@ -183,7 +183,7 @@ export function CrossmintRecoveryKeyProvider({
 
                 console.log("[sendEmailWithOtp] OTP process likely initiated. Waiting for verification.");
             } catch (err) {
-                console.error("[sendEmailWithOtp] Error sending create-signer request:", err);
+                console.error("[sendEmailWithOtp] Error sending start-onboarding request:", err);
                 authPromiseRef.current?.reject(err as Error);
                 throw err;
             }
@@ -206,8 +206,8 @@ export function CrossmintRecoveryKeyProvider({
 
             try {
                 const response = await parent.sendAction({
-                    event: "request:send-otp",
-                    responseEvent: "response:send-otp",
+                    event: "request:complete-onboarding",
+                    responseEvent: "response:complete-onboarding",
                     data: {
                         authData: { jwt, apiKey },
                         data: { keyType: "ed25519", encryptedOtp },

@@ -53,7 +53,7 @@ export const GetAttestationPayloadSchema = {
     ),
 };
 
-export const CreateSignerPayloadSchema = {
+export const StartOnboardingPayloadSchema = {
     request: AuthenticatedEventRequest.extend({
         data: z
             .object({
@@ -69,7 +69,7 @@ export const CreateSignerPayloadSchema = {
     ),
 };
 
-export const SendEncryptedOtpPayloadSchema = {
+export const CompleteOnboardingPayloadSchema = {
     request: AuthenticatedEventRequest.extend({
         data: z
             .object({

@@ -1,37 +1,37 @@
 import type { z } from "zod";
 
 import {
-    CreateSignerPayloadSchema,
     GetAttestationPayloadSchema,
     GetPublicKeyPayloadSchema,
     GetStatusPayloadSchema,
-    SendEncryptedOtpPayloadSchema,
     SignPayloadSchema,
+    StartOnboardingPayloadSchema,
+    CompleteOnboardingPayloadSchema,
 } from "./schemas";
 
 export const SIGNER_EVENTS = [
-    "create-signer",
-    "get-attestation",
-    "send-otp",
+    "start-onboarding",
+    "complete-onboarding",
     "get-public-key",
     "sign",
     "get-status",
+    "get-attestation",
 ] as const;
 export type SignerIFrameEventName = (typeof SIGNER_EVENTS)[number];
 
 export const signerInboundEvents = {
-    "request:create-signer": CreateSignerPayloadSchema.request,
+    "request:start-onboarding": StartOnboardingPayloadSchema.request,
     "request:get-attestation": GetAttestationPayloadSchema.request,
-    "request:send-otp": SendEncryptedOtpPayloadSchema.request,
+    "request:complete-onboarding": CompleteOnboardingPayloadSchema.request,
     "request:get-public-key": GetPublicKeyPayloadSchema.request,
     "request:sign": SignPayloadSchema.request,
     "request:get-status": GetStatusPayloadSchema.request,
 } as const;
 
 export const signerOutboundEvents = {
-    "response:create-signer": CreateSignerPayloadSchema.response,
+    "response:start-onboarding": StartOnboardingPayloadSchema.response,
     "response:get-attestation": GetAttestationPayloadSchema.response,
-    "response:send-otp": SendEncryptedOtpPayloadSchema.response,
+    "response:complete-onboarding": CompleteOnboardingPayloadSchema.response,
     "response:get-public-key": GetPublicKeyPayloadSchema.response,
     "response:sign": SignPayloadSchema.response,
     "response:get-status": GetStatusPayloadSchema.response,
