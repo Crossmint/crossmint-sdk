@@ -4,7 +4,7 @@ import { PublicKey, type VersionedTransaction } from "@solana/web3.js";
 import type { WebView, WebViewMessageEvent } from "react-native-webview";
 import { RNWebView } from "@crossmint/client-sdk-rn-window";
 import { WebViewParent } from "@crossmint/client-sdk-rn-window";
-import { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
+import { type Encoding, type KeyType, signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
 import { useCrossmint } from "../hooks";
 import { View } from "react-native";
 import { validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
@@ -248,8 +248,8 @@ export function CrossmintRecoveryKeyProvider({
 
     const assertCorrectPublicKey = (publicKey: {
         bytes: string;
-        encoding: "base58" | "base64";
-        keyType: "secp256k1" | "ed25519";
+        encoding: Encoding;
+        keyType: KeyType;
     }) => {
         if (publicKey.encoding !== "base58" || publicKey.keyType !== "ed25519") {
             throw new Error("Unsupported key type and encoding: " + publicKey.keyType + " " + publicKey.encoding);
