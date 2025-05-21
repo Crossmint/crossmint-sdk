@@ -1,7 +1,9 @@
 import { z } from "zod";
 
 const KeyTypeSchema = z.enum(["secp256k1", "ed25519"]).describe("Type of cryptographic key");
-const EncodingSchema = z.enum(["base58", "base64"]).describe("Encoding format for the key or data");
+export type KeyType = z.infer<typeof KeyTypeSchema>;
+const EncodingSchema = z.enum(["base58", "base64", "hex"]).describe("Encoding format for the key or data");
+export type Encoding = z.infer<typeof EncodingSchema>;
 
 const UserPublicKeySchema = z.object({
     bytes: z.string().describe("The encoded public key value"),
