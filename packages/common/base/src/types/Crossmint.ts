@@ -1,14 +1,19 @@
 import { type ValidateAPIKeyPrefixExpectations, validateAPIKey } from "@/apiKey";
 
+export type User = {
+    email: string;
+};
+
 export type Crossmint = {
     apiKey: string;
     jwt?: string;
     overrideBaseUrl?: string;
     appId?: string;
+    user?: User;
 };
 
 export function createCrossmint(config: Crossmint, apiKeyExpectations?: ValidateAPIKeyPrefixExpectations): Crossmint {
-    const { apiKey, jwt, overrideBaseUrl, appId } = config;
+    const { apiKey, jwt, overrideBaseUrl, appId, user } = config;
     const apiKeyValidationResult = validateAPIKey(apiKey, apiKeyExpectations);
     if (!apiKeyValidationResult.isValid) {
         throw new Error(apiKeyValidationResult.message);
@@ -18,5 +23,6 @@ export function createCrossmint(config: Crossmint, apiKeyExpectations?: Validate
         jwt,
         overrideBaseUrl,
         appId,
+        user,
     };
 }
