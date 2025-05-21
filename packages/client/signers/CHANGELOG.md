@@ -1,5 +1,11 @@
 # @crossmint/client-signers
 
+## 0.0.12
+
+### Patch Changes
+
+- e457da9: Minor type fix
+
 ## 0.0.11
 
 ### Patch Changes
