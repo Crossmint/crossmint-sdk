@@ -1,4 +1,4 @@
-const abi = [
+export const abi = [
     {
         inputs: [
             {

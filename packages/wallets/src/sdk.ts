@@ -1,20 +1,32 @@
 import { type Crossmint, createCrossmint } from "@crossmint/common-sdk-base";
 import type { VersionedTransaction } from "@solana/web3.js";
-import type { Hex } from "viem";
+import {
+    concat,
+    type HttpTransport,
+    type Hex,
+    type Address,
+    type SignableMessage,
+    createPublicClient,
+    http,
+    type TypedDataDefinition,
+    type TypedData,
+} from "viem";
+import { WebAuthnP256 } from "ox";
 
 import { ApiClient, type WalletBalance } from "./api";
 import { WalletFactory } from "./services/wallet-factory";
 import type { WalletTypeToArgs, WalletTypeToWallet } from "./services/types";
 import type { WalletOptions } from "./utils/options";
-import type { EVMSmartWalletChain, TransactionInput } from "./evm";
+import { abi as entryPointAbi, toViemChain, type EVMSmartWalletChain, type TransactionInput } from "./evm";
 import {
+    MessageSigningNotSupportedError,
     TransactionConfirmationTimeoutError,
     WalletNotAvailableError,
     WalletTypeNotSupportedError,
 } from "./utils/errors";
 import { SolanaTransactionsService } from "./solana/services/transactions-service";
-import type { SolanaNonCustodialSigner } from "./solana";
-import { STATUS_POLLING_INTERVAL_MS } from "./utils/constants";
+import type { SolanaNonCustodialSigner, SolanaSupportedToken } from "./solana";
+import { ENTRY_POINT_ADDRESS, STATUS_POLLING_INTERVAL_MS } from "./utils/constants";
 import { sleep } from "./utils";
 
 type WalletType = keyof WalletTypeToArgs;
@@ -46,8 +58,9 @@ type EVMSigner =
     | {
           type: "passkey";
           name: string;
+          id: string;
           onCreatePasskey?: string;
-          onSignWithPasskey?: string;
+          onSignWithPasskey?: (message: Uint8Array) => Promise<Uint8Array>;
       }
     | {
           type: "external-wallet";
@@ -114,11 +127,13 @@ export class Wallet<C extends Chain> {
      */
     public async balances(tokens: string[]): Promise<WalletBalance> {
         const response = await this.apiClient.getBalance(this.address, {
-            chains: this.chain === "solana" ? undefined : [this.chain],
+            chains: this.isSolanaWallet ? undefined : [this.chain],
             tokens,
         });
         if ("error" in response) {
-            throw new Error(`Failed to get balances: ${JSON.stringify(response.error)}`);
+            throw new Error(
+                `Failed to get balances for ${this.isSolanaWallet ? "Solana" : "EVM"} wallet: ${JSON.stringify(response.error)}`
+            );
         }
         return response;
     }
@@ -151,14 +166,6 @@ export class Wallet<C extends Chain> {
         return await this.apiClient.getTransactions(this.walletLocator);
     }
 
-    private get walletLocator(): string {
-        if (this.apiClient.isServerSide) {
-            return this.address;
-        } else {
-            return `me:${this.chain === "solana" ? "solana-smart-wallet" : "evm-smart-wallet"}`;
-        }
-    }
-
     // async grantPermission({ to: DelegatedSigner | string });
     /**
      * Add a delegated signer to the wallet
@@ -166,15 +173,15 @@ export class Wallet<C extends Chain> {
      * @returns The delegated signer
      */
     public async grantPermission({ to }: { to: DelegatedSigner | string }) {
-        //     // 1. Call register signer
-        //     // 2. Get approval, sign it and approve transaction
-        //     // 3. Poll and wait for approval
-        //     // 4. Return delegated signer
+        // 1. Call register signer
+        // 2. Get approval, sign it and approve transaction
+        // 3. Poll and wait for approval
+        // 4. Return delegated signer
 
         // Convert string address to DelegatedSigner if needed
         const signerAddress = typeof to === "string" ? to : to.type === "external-wallet" ? to.address : to;
 
-        if (this.chain === "solana") {
+        if (this.isSolanaWallet) {
             const solanaTxService = new SolanaTransactionsService(this.walletLocator, this.apiClient);
             const response = await this.apiClient.registerSigner(this.walletLocator, {
                 signer: signerAddress.toString(),
@@ -282,7 +289,6 @@ export class Wallet<C extends Chain> {
                         if ("error" in signatureResponse) {
                             throw new WalletNotAvailableError(JSON.stringify(signatureResponse));
                         }
-
                         await sleep(STATUS_POLLING_INTERVAL_MS);
                     } while (
                         "chains" in signatureResponse &&
@@ -322,43 +328,184 @@ export class Wallet<C extends Chain> {
 
     private passKeySignMessageFallback() {}
 
-    protected signWithAdminSigner(message: string) {
+    protected async signWithAdminSigner(message: Uint8Array & string) {
         if (this.adminSigner.type === "api-key") {
             throw new Error("Admin signer is not supported for API key");
         }
 
         if (this.adminSigner.type === "email") {
-            // if onSignMessage is set call that
-            // else ignore
+            // TODO: Implement email sign message fallback
         }
 
         if (this.adminSigner.type === "passkey") {
-            // this.adminSigner.onSignWithPasskey?.()
+            // If onSignWithPasskey is set call that
+            if (this.adminSigner.onSignWithPasskey) {
+                return this.adminSigner.onSignWithPasskey(message);
+            }
+            // If not set, use webauthn
+            if (this.isSolanaWallet) {
+                // TODO: Implement solana passkey signing
+            } else {
+                const { metadata, signature } = await WebAuthnP256.sign({
+                    credentialId: this.adminSigner.id,
+                    challenge: message as `0x${string}`,
+                });
+
+                return {
+                    signature: concat([`0x${signature.r.toString(16)}`, `0x${signature.s.toString(16)}`]),
+                    metadata,
+                };
+            }
         }
 
         if (this.adminSigner.type === "external-wallet") {
-            if (this.chain === "solana") {
-                // Solana
-            } else {
-                // EVM
+            if (!this.adminSigner.onSignMessage) {
+                throw new MessageSigningNotSupportedError("Account does not support onSignMessage");
             }
+            const signature = await this.adminSigner.onSignMessage(message);
+            return { signature };
         }
+    }
+
+    protected get walletLocator(): string {
+        if (this.apiClient.isServerSide) {
+            return this.address;
+        } else {
+            return `me:${this.isSolanaWallet ? "solana-smart-wallet" : "evm-smart-wallet"}`;
+        }
+    }
+
+    protected get isSolanaWallet(): boolean {
+        return this.chain === "solana";
     }
 }
 
-// class EVMWallet extends Wallet<C extends EVMChain> {
-//     static from(wallet: Wallet) {
-//         new EVMWallet(wallet: Wallet);
-//     }
+export class EVMWallet extends Wallet<EVMChain> {
+    static from(wallet: Wallet<EVMChain>) {
+        const crossmintInstance = wallet.apiClient.crossmint;
+        return new EVMWallet(crossmintInstance, {
+            chain: wallet.chain,
+            address: wallet.address,
+            owner: wallet.owner,
+            adminSigner: wallet.adminSigner,
+        });
+    }
 
-//     //signMessage()
-//     //sendTransaction()
-//     //getViemObject()
-// }
+    public async getBalances(params: { tokens: string[] }) {
+        return await this.balances(params.tokens);
+    }
 
-// class SolanaWallet extends Wallet<C extends SolanaChain> {
+    public async getTransactions() {
+        return await this.unstable_transactions();
+    }
 
-// }
+    public async unstable_getNfts(params: { perPage: number; page: number }) {
+        return await this.unstable_nfts(params);
+    }
+
+    public async getNonce(params?: { key?: bigint; transport?: HttpTransport }) {
+        const viemClient = this.getViemClient({
+            transport: params?.transport,
+        });
+        const nonce = await viemClient.readContract({
+            abi: entryPointAbi,
+            address: ENTRY_POINT_ADDRESS,
+            functionName: "getNonce",
+            args: [this.address as Address, params?.key ?? BigInt(0)],
+        });
+        return nonce;
+    }
+
+    public async signMessage(params: { message: SignableMessage }): Promise<Hex> {
+        // @todo: Implement
+        throw new Error("Method not implemented");
+    }
+
+    public async signTypedData<
+        const typedData extends TypedData | Record<string, unknown>,
+        primaryType extends keyof typedData | "EIP712Domain" = keyof typedData,
+    >(params: TypedDataDefinition<typedData, primaryType>): Promise<Hex> {
+        // @todo: Implement
+        throw new Error("Method not implemented");
+    }
+
+    public async sendTransaction(params: TransactionInput): Promise<Hex> {
+        // @todo: Implement
+        throw new Error("Method not implemented");
+    }
+
+    public getViemClient(params?: { transport?: HttpTransport }) {
+        return createPublicClient({
+            transport: params?.transport ?? http(),
+            chain: toViemChain(this.chain),
+        });
+    }
+
+    public async addDelegatedSigner(signer: string) {
+        return await this.grantPermission({ to: signer });
+    }
+
+    public async getDelegatedSigners() {
+        return await this.permissions();
+    }
+}
+
+export class SolanaWallet extends Wallet<SolanaChain> {
+    static from(wallet: Wallet<SolanaChain>) {
+        const crossmintInstance = wallet.apiClient.crossmint;
+        return new SolanaWallet(crossmintInstance, {
+            chain: "solana",
+            address: wallet.address,
+            owner: wallet.owner,
+            adminSigner: wallet.adminSigner,
+        });
+    }
+
+    public async getBalances(params: {
+        tokens: SolanaSupportedToken[];
+    }) {
+        return await this.balances(params.tokens);
+    }
+
+    public async getTransactions() {
+        return await this.unstable_transactions();
+    }
+
+    public async unstable_getNfts(params: { perPage: number; page: number }) {
+        return await this.unstable_nfts(params);
+    }
+
+    public async sendTransaction(params: TransactionInput): Promise<Hex> {
+        // @todo: Implement
+        throw new Error("Method not implemented");
+    }
+
+    public async addDelegatedSigner(signer: string) {
+        return await this.grantPermission({ to: signer });
+    }
+
+    public async getDelegatedSigners() {
+        return await this.permissions();
+    }
+}
+
+/***********************************************
+ * *********************************************
+ * *********************************************
+ * *********************************************
+ * *********************************************
+ * *********************************************
+ * *********************************************
+ * *********************************************
+ *            REGULAR SDK DOWN BELOW
+ * *********************************************
+ * *********************************************
+ * *********************************************
+ * *********************************************
+ * *********************************************
+ * *********************************************
+ * *********************************************
+ */
 
 export class CrossmintWallets {
     private readonly walletFactory: WalletFactory;
