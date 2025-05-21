@@ -25,7 +25,7 @@ import {
     WalletTypeNotSupportedError,
 } from "./utils/errors";
 import { SolanaTransactionsService } from "./solana/services/transactions-service";
-import type { SolanaNonCustodialSigner, SolanaSupportedToken } from "./solana";
+import type { SolanaNonCustodialSigner } from "./solana";
 import { ENTRY_POINT_ADDRESS, STATUS_POLLING_INTERVAL_MS } from "./utils/constants";
 import { sleep } from "./utils";
 
@@ -166,7 +166,6 @@ export class Wallet<C extends Chain> {
         return await this.apiClient.getTransactions(this.walletLocator);
     }
 
-    // async grantPermission({ to: DelegatedSigner | string });
     /**
      * Add a delegated signer to the wallet
      * @param signer - The signer
@@ -391,18 +390,6 @@ export class EVMWallet extends Wallet<EVMChain> {
         });
     }
 
-    public async getBalances(params: { tokens: string[] }) {
-        return await this.balances(params.tokens);
-    }
-
-    public async getTransactions() {
-        return await this.unstable_transactions();
-    }
-
-    public async unstable_getNfts(params: { perPage: number; page: number }) {
-        return await this.unstable_nfts(params);
-    }
-
     public async getNonce(params?: { key?: bigint; transport?: HttpTransport }) {
         const viemClient = this.getViemClient({
             transport: params?.transport,
@@ -440,14 +427,6 @@ export class EVMWallet extends Wallet<EVMChain> {
             chain: toViemChain(this.chain),
         });
     }
-
-    public async addDelegatedSigner(signer: string) {
-        return await this.grantPermission({ to: signer });
-    }
-
-    public async getDelegatedSigners() {
-        return await this.permissions();
-    }
 }
 
 export class SolanaWallet extends Wallet<SolanaChain> {
@@ -461,31 +440,9 @@ export class SolanaWallet extends Wallet<SolanaChain> {
         });
     }
 
-    public async getBalances(params: {
-        tokens: SolanaSupportedToken[];
-    }) {
-        return await this.balances(params.tokens);
-    }
-
-    public async getTransactions() {
-        return await this.unstable_transactions();
-    }
-
-    public async unstable_getNfts(params: { perPage: number; page: number }) {
-        return await this.unstable_nfts(params);
-    }
-
     public async sendTransaction(params: TransactionInput): Promise<Hex> {
         // @todo: Implement
         throw new Error("Method not implemented");
-    }
-
-    public async addDelegatedSigner(signer: string) {
-        return await this.grantPermission({ to: signer });
-    }
-
-    public async getDelegatedSigners() {
-        return await this.permissions();
     }
 }
 
