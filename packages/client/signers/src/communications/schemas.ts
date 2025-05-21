@@ -78,7 +78,7 @@ export const SendEncryptedOtpPayloadSchema = {
     }),
     response: ResultResponse(
         z.object({
-            publicKey: UserPublicKeySchema.optional().describe("The public key created for the authenticated signer"),
+            publicKey: UserPublicKeySchema.describe("The public key created for the authenticated signer"),
         })
     ),
 };
