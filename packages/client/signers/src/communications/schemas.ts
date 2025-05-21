@@ -62,7 +62,7 @@ export const CreateSignerPayloadSchema = {
     }),
     response: ResultResponse(
         z.object({
-            publicKey: UserPublicKeySchema.describe("The public key of the created signer"),
+            publicKey: UserPublicKeySchema.optional().describe("The public key of the created signer"),
         })
     ),
 };
