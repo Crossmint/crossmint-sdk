@@ -143,9 +143,6 @@ export function CrossmintSignerProvider({
                             jwt,
                             apiKey,
                         },
-                        data: {
-                            keyType: "ed25519",
-                        },
                     },
                 });
 
