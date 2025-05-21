@@ -1,5 +1,11 @@
 # @crossmint/client-signers
 
+## 0.0.13
+
+### Patch Changes
+
+- 1586365: NCS: Add Hex as encoding
+
 ## 0.0.12
 
 ### Patch Changes
