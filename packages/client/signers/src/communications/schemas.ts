@@ -7,7 +7,7 @@ const EncodingSchema = z
     .enum(["base58", "base64"])
     .describe("Encoding format for the key or data");
 
-const PublicKeySchema = z.object({
+const UserPublicKeySchema = z.object({
     bytes: z.string().describe("The encoded public key value"),
     encoding: EncodingSchema.describe(
         "The encoding format of the public key payload"
@@ -80,7 +80,7 @@ export const CreateSignerPayloadSchema = {
     }),
     response: ResultResponse(
         z.object({
-            publicKey: PublicKeySchema.describe(
+            publicKey: UserPublicKeySchema.describe(
                 "The public key of the created signer"
             ),
         })
@@ -102,7 +102,7 @@ export const SendEncryptedOtpPayloadSchema = {
     }),
     response: ResultResponse(
         z.object({
-            publicKey: PublicKeySchema.describe(
+            publicKey: UserPublicKeySchema.describe(
                 "The public key created for the authenticated signer"
             ),
         })
@@ -121,7 +121,7 @@ export const GetPublicKeyPayloadSchema = {
     }),
     response: ResultResponse(
         z.object({
-            publicKey: PublicKeySchema.describe("The requested public key"),
+            publicKey: UserPublicKeySchema.describe("The requested public key"),
         })
     ),
 };
@@ -156,7 +156,7 @@ export const SignPayloadSchema = {
     response: ResultResponse(
         z.object({
             signature: SignatureSchema.describe("The generated signature"),
-            publicKey: PublicKeySchema.describe(
+            publicKey: UserPublicKeySchema.describe(
                 "The public key that signed the data"
             ),
         })
