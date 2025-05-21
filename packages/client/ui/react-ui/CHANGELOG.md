@@ -1,5 +1,28 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.19.14
+
+### Patch Changes
+
+- Updated dependencies [1586365]
+  - @crossmint/client-signers@0.0.13
+
+## 1.19.13
+
+### Patch Changes
+
+- Updated dependencies [e457da9]
+  - @crossmint/client-signers@0.0.12
+
+## 1.19.12
+
+### Patch Changes
+
+- db41c76: Adapting events payloads
+- 1c6b6fe: Handle Device Key Share Mismatch
+- Updated dependencies [db41c76]
+  - @crossmint/client-signers@0.0.11
+
 ## 1.19.11
 
 ### Patch Changes

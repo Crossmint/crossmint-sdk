@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-smart-wallet-react-starter
 
+## 1.5.51
+
+### Patch Changes
+
+- 6682391: Updating the elliptic dependency
+
 ## 1.5.50
 
 ### Patch Changes

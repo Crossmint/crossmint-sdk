@@ -1,5 +1,23 @@
 # @crossmint/client-signers
 
+## 0.0.13
+
+### Patch Changes
+
+- 1586365: NCS: Add Hex as encoding
+
+## 0.0.12
+
+### Patch Changes
+
+- e457da9: Minor type fix
+
+## 0.0.11
+
+### Patch Changes
+
+- db41c76: Adapting events payloads
+
 ## 0.0.10
 
 ### Patch Changes

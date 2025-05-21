@@ -184,7 +184,7 @@ export function CrossmintSignerProvider({
                         apiKey,
                     },
                     data: {
-                        chainLayer: "solana",
+                        keyType: "ed25519",
                         authId: `email:${email}`,
                     },
                 },
@@ -195,7 +195,7 @@ export function CrossmintSignerProvider({
             }
 
             // If the signer already exists, skip OTP flow and continue BAU
-            if (res.status === "success" && res.address != null) {
+            if (res.status === "success" && res.publicKey != null) {
                 console.log("Signer already exists, skipping OTP flow");
                 setStep("initial");
                 setDialogOpen(false);
@@ -228,7 +228,7 @@ export function CrossmintSignerProvider({
                     },
                     data: {
                         encryptedOtp: token,
-                        chainLayer: "solana",
+                        keyType: "ed25519",
                     },
                 },
             });
@@ -288,7 +288,10 @@ export function CrossmintSignerProvider({
                                 if (res.signature == null) {
                                     throw new Error("Failed to sign message");
                                 }
-                                return base58.decode(res.signature);
+                                if (res.signature.encoding !== "base58") {
+                                    throw new Error("Unsupported signature encoding: " + res.signature.encoding);
+                                }
+                                return base58.decode(res.signature.bytes);
                             });
                         },
                         signTransaction: (transaction: VersionedTransaction) => {
@@ -318,9 +321,12 @@ export function CrossmintSignerProvider({
                                 if (res?.signature == null) {
                                     throw new Error("Failed to sign transaction");
                                 }
+                                if (res.signature.encoding !== "base58") {
+                                    throw new Error("Unsupported signature encoding: " + res.signature.encoding);
+                                }
                                 transaction.addSignature(
                                     new PublicKey(publicSignerAddress),
-                                    base58.decode(res.signature)
+                                    base58.decode(res.signature.bytes)
                                 );
                                 return transaction;
                             });

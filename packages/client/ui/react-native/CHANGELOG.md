@@ -1,5 +1,27 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.4.13
+
+### Patch Changes
+
+- Updated dependencies [1586365]
+  - @crossmint/client-signers@0.0.13
+
+## 0.4.12
+
+### Patch Changes
+
+- Updated dependencies [e457da9]
+  - @crossmint/client-signers@0.0.12
+
+## 0.4.11
+
+### Patch Changes
+
+- db41c76: Adapting events payloads
+- Updated dependencies [db41c76]
+  - @crossmint/client-signers@0.0.11
+
 ## 0.4.10
 
 ### Patch Changes

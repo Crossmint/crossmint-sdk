@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-walletconnect
 
+## 1.2.10
+
+### Patch Changes
+
+- 6682391: Updating the elliptic dependency
+
 ## 1.2.9
 
 ### Patch Changes

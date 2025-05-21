@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-verifiable-credentials
 
+## 3.4.37
+
+### Patch Changes
+
+- 6682391: Updating the elliptic dependency
+
 ## 3.4.36
 
 ### Patch Changes
