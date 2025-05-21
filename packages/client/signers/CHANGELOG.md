@@ -1,5 +1,11 @@
 # @crossmint/client-signers
 
+## 0.0.11
+
+### Patch Changes
+
+- db41c76: Adapting events payloads
+
 ## 0.0.10
 
 ### Patch Changes
