@@ -1,5 +1,12 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.4.12
+
+### Patch Changes
+
+- Updated dependencies [e457da9]
+  - @crossmint/client-signers@0.0.12
+
 ## 0.4.11
 
 ### Patch Changes
