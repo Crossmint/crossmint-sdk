@@ -180,8 +180,8 @@ export function CrossmintSignerProvider({
         try {
             console.log("Creating Recovery Key");
             const res = await iframeWindow.current?.sendAction({
-                event: "request:create-signer",
-                responseEvent: "response:create-signer",
+                event: "request:start-onboarding",
+                responseEvent: "response:start-onboarding",
                 data: {
                     authData: {
                         jwt,
@@ -223,15 +223,17 @@ export function CrossmintSignerProvider({
         }
         try {
             const res = await iframeWindow.current.sendAction({
-                event: "request:send-otp",
-                responseEvent: "response:send-otp",
+                event: "request:complete-onboarding",
+                responseEvent: "response:complete-onboarding",
                 data: {
                     authData: {
                         jwt,
                         apiKey,
                     },
                     data: {
-                        encryptedOtp: token,
+                        onboardingAuthentication: {
+                            encryptedOtp: token,
+                        },
                         keyType: "ed25519",
                     },
                 },
@@ -247,7 +249,7 @@ export function CrossmintSignerProvider({
             // Resolve the promise when the flow is complete
             successHandlerRef.current?.();
         } catch (error) {
-            console.error("Error in OTP submission:", error);
+            console.error("Error completing onboarding:", error);
             errorHandlerRef.current?.(error as Error);
             throw error;
         }
