@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-base
 
+## 0.2.14
+
+### Patch Changes
+
+- 6c50129: Avoid updating state unnecessarily
+
 ## 0.2.13
 
 ### Patch Changes

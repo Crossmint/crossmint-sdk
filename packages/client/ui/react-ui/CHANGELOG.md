@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.19.15
+
+### Patch Changes
+
+- 8f65e3c: Configure environment automatically
+- Updated dependencies [6c50129]
+  - @crossmint/client-sdk-react-base@0.2.14
+
 ## 1.19.14
 
 ### Patch Changes
