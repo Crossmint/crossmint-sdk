@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-react-ui",
-    "version": "1.19.13",
+    "version": "1.19.14",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
@@ -15,8 +15,8 @@
     "types": "./dist/index.d.ts",
     "files": ["dist", "LICENSE"],
     "scripts": {
-        "build": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsup",
-        "dev": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsup --watch",
+        "build": "cross-env NODE_OPTIONS='--max-old-space-size=16384' tsup",
+        "dev": "cross-env NODE_OPTIONS='--max-old-space-size=16384' tsup --watch",
         "test:vitest": "vitest run"
     },
     "dependencies": {

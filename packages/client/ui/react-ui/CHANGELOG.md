@@ -1,5 +1,12 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.19.14
+
+### Patch Changes
+
+- Updated dependencies [1586365]
+  - @crossmint/client-signers@0.0.13
+
 ## 1.19.13
 
 ### Patch Changes
