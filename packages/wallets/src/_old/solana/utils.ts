@@ -1,8 +1,10 @@
-import { InvalidEnvironmentError } from "../utils/errors";
+import { InvalidEnvironmentError } from "../../utils/errors";
 import type { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
 import { Connection } from "@solana/web3.js";
 
-export const getConnectionFromEnvironment = (environment: APIKeyEnvironmentPrefix) => {
+export const getConnectionFromEnvironment = (
+    environment: APIKeyEnvironmentPrefix
+) => {
     if (environment === "development" || environment === "staging") {
         return new Connection("https://api.devnet.solana.com");
     } else if (environment === "production") {

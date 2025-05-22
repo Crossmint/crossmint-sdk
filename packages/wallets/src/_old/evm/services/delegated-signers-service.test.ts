@@ -2,9 +2,12 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { EVMDelegatedSignerService } from "./delegated-signers-service";
 import { mock } from "vitest-mock-extended";
 import type { EVMSmartWalletImpl } from "../wallet";
-import { WalletNotAvailableError, WalletTypeNotSupportedError } from "../../utils/errors";
+import {
+    WalletNotAvailableError,
+    WalletTypeNotSupportedError,
+} from "../../../utils/errors";
 import type { EVMSigner } from "../types/signers";
-import type { ApiClient } from "../../api";
+import type { ApiClient } from "../../../api";
 
 describe("EVMDelegatedSignerService", () => {
     const walletLocator = "mock-wallet-locator";
@@ -14,7 +17,11 @@ describe("EVMDelegatedSignerService", () => {
 
     beforeEach(() => {
         vi.resetAllMocks();
-        delegatedSignerService = new EVMDelegatedSignerService(walletLocator, wallet, apiClient);
+        delegatedSignerService = new EVMDelegatedSignerService(
+            walletLocator,
+            wallet,
+            apiClient
+        );
     });
 
     describe("registerDelegatedSigner", () => {
@@ -32,22 +39,35 @@ describe("EVMDelegatedSignerService", () => {
             };
 
             apiClient.registerSigner.mockResolvedValueOnce(mockResponse);
-            apiClient.getSigner.mockResolvedValueOnce({ address: signerAddress });
-
-            const result = await delegatedSignerService.registerDelegatedSigner(chain, signerAddress);
-
-            expect(apiClient.registerSigner).toHaveBeenCalledWith(walletLocator, {
-                signer: signerAddress,
-                chain,
-                expiresAt: undefined,
+            apiClient.getSigner.mockResolvedValueOnce({
+                address: signerAddress,
             });
-            expect(apiClient.getSigner).toHaveBeenCalledWith(walletLocator, signerAddress);
+
+            const result = await delegatedSignerService.registerDelegatedSigner(
+                chain,
+                signerAddress
+            );
+
+            expect(apiClient.registerSigner).toHaveBeenCalledWith(
+                walletLocator,
+                {
+                    signer: signerAddress,
+                    chain,
+                    expiresAt: undefined,
+                }
+            );
+            expect(apiClient.getSigner).toHaveBeenCalledWith(
+                walletLocator,
+                signerAddress
+            );
             expect(result).toEqual({ address: signerAddress });
         });
 
         it("should register a delegated signer with approval and admin signer", async () => {
             const adminSigner = mock<EVMSigner>();
-            const pendingApprovals = [{ signer: "signer1", message: "message1" }];
+            const pendingApprovals = [
+                { signer: "signer1", message: "message1" },
+            ];
             const mockResponse = {
                 type: "evm-keypair",
                 chains: {
@@ -62,20 +82,35 @@ describe("EVMDelegatedSignerService", () => {
             };
 
             apiClient.registerSigner.mockResolvedValueOnce(mockResponse);
-            apiClient.getSigner.mockResolvedValueOnce({ address: signerAddress });
-
-            const result = await delegatedSignerService.registerDelegatedSigner(chain, signerAddress, {
-                adminSigner,
+            apiClient.getSigner.mockResolvedValueOnce({
+                address: signerAddress,
             });
 
-            expect(apiClient.registerSigner).toHaveBeenCalledWith(walletLocator, {
-                signer: signerAddress,
+            const result = await delegatedSignerService.registerDelegatedSigner(
                 chain,
-                expiresAt: undefined,
-            });
-            expect(wallet.approveSignature).toHaveBeenCalledWith(pendingApprovals, "approval-id");
+                signerAddress,
+                {
+                    adminSigner,
+                }
+            );
+
+            expect(apiClient.registerSigner).toHaveBeenCalledWith(
+                walletLocator,
+                {
+                    signer: signerAddress,
+                    chain,
+                    expiresAt: undefined,
+                }
+            );
+            expect(wallet.approveSignature).toHaveBeenCalledWith(
+                pendingApprovals,
+                "approval-id"
+            );
             expect(wallet.waitForSignature).toHaveBeenCalledWith("approval-id");
-            expect(apiClient.getSigner).toHaveBeenCalledWith(walletLocator, signerAddress);
+            expect(apiClient.getSigner).toHaveBeenCalledWith(
+                walletLocator,
+                signerAddress
+            );
             expect(result).toEqual({ address: signerAddress });
         });
 
@@ -92,7 +127,12 @@ describe("EVMDelegatedSignerService", () => {
 
             apiClient.registerSigner.mockResolvedValueOnce(mockResponse);
 
-            await expect(delegatedSignerService.registerDelegatedSigner(chain, signerAddress)).rejects.toThrow(
+            await expect(
+                delegatedSignerService.registerDelegatedSigner(
+                    chain,
+                    signerAddress
+                )
+            ).rejects.toThrow(
                 "Admin signer is required to approve delegated signer registration"
             );
         });
@@ -135,7 +175,9 @@ describe("EVMDelegatedSignerService", () => {
                 type: "unsupported-wallet-type",
             });
 
-            await expect(delegatedSignerService.getDelegatedSigners()).rejects.toThrow(WalletTypeNotSupportedError);
+            await expect(
+                delegatedSignerService.getDelegatedSigners()
+            ).rejects.toThrow(WalletTypeNotSupportedError);
         });
 
         it("should throw error when wallet is not available", async () => {
@@ -143,7 +185,9 @@ describe("EVMDelegatedSignerService", () => {
                 error: "wallet not found",
             });
 
-            await expect(delegatedSignerService.getDelegatedSigners()).rejects.toThrow(WalletNotAvailableError);
+            await expect(
+                delegatedSignerService.getDelegatedSigners()
+            ).rejects.toThrow(WalletNotAvailableError);
         });
     });
 
@@ -154,9 +198,14 @@ describe("EVMDelegatedSignerService", () => {
 
             apiClient.getSigner.mockResolvedValueOnce(mockSigner);
 
-            const result = await delegatedSignerService.getDelegatedSigner(signerAddress);
+            const result = await delegatedSignerService.getDelegatedSigner(
+                signerAddress
+            );
 
-            expect(apiClient.getSigner).toHaveBeenCalledWith(walletLocator, signerAddress);
+            expect(apiClient.getSigner).toHaveBeenCalledWith(
+                walletLocator,
+                signerAddress
+            );
             expect(result).toEqual(mockSigner);
         });
     });

@@ -1,4 +1,8 @@
-import type { Connection, PublicKey, VersionedTransaction } from "@solana/web3.js";
+import type {
+    Connection,
+    PublicKey,
+    VersionedTransaction,
+} from "@solana/web3.js";
 
 import type {
     ApiClient,
@@ -7,8 +11,8 @@ import type {
     GetTransactionsResponse,
     SolanaWalletLocator,
     WalletBalance,
-} from "../api";
-import type { Callbacks } from "../utils/options";
+} from "../../api";
+import type { Callbacks } from "../../utils/options";
 import type { SolanaSupportedToken } from "./tokens";
 import {
     type SolanaSigner,
@@ -44,7 +48,10 @@ export abstract class SolanaWallet implements BaseSolanaWallet {
         protected readonly client: Connection,
         protected readonly callbacks: Callbacks
     ) {
-        this.transactionsService = new SolanaTransactionsService(this.walletLocator, this.apiClient);
+        this.transactionsService = new SolanaTransactionsService(
+            this.walletLocator,
+            this.apiClient
+        );
         this.delegatedSignerService = new SolanaDelegatedSignerService(
             this.walletLocator,
             this.transactionsService,
@@ -63,7 +70,9 @@ export abstract class SolanaWallet implements BaseSolanaWallet {
             tokens: params.tokens,
         });
         if ("error" in response) {
-            throw new Error(`Failed to get balances: ${JSON.stringify(response.error)}`);
+            throw new Error(
+                `Failed to get balances: ${JSON.stringify(response.error)}`
+            );
         }
         return response;
     }
@@ -93,7 +102,10 @@ export abstract class SolanaWallet implements BaseSolanaWallet {
     }
 }
 
-export class SolanaSmartWalletImpl extends SolanaWallet implements SolanaSmartWallet {
+export class SolanaSmartWalletImpl
+    extends SolanaWallet
+    implements SolanaSmartWallet
+{
     public readonly adminSigner: SolanaSigner;
     constructor(
         apiClient: ApiClient,
@@ -111,9 +123,15 @@ export class SolanaSmartWalletImpl extends SolanaWallet implements SolanaSmartWa
      * @param {SmartWalletTransactionParams} params - The transaction params
      * @returns The transaction hash
      */
-    public async sendTransaction(params: SmartWalletTransactionParams): Promise<string> {
-        const signer = this.getEffectiveTransactionSigner(params.delegatedSigner);
-        const additionalSigners = params.additionalSigners?.map(parseSolanaNonCustodialSignerInput);
+    public async sendTransaction(
+        params: SmartWalletTransactionParams
+    ): Promise<string> {
+        const signer = this.getEffectiveTransactionSigner(
+            params.delegatedSigner
+        );
+        const additionalSigners = params.additionalSigners?.map(
+            parseSolanaNonCustodialSignerInput
+        );
         return await this.transactionsService.createSignAndConfirm({
             transaction: params.transaction,
             signer,
@@ -129,7 +147,9 @@ export class SolanaSmartWalletImpl extends SolanaWallet implements SolanaSmartWa
     public async addDelegatedSigner(signer: string) {
         return await this.delegatedSignerService.registerDelegatedSigner(
             signer,
-            isNonCustodialSigner(this.adminSigner) ? this.adminSigner : undefined
+            isNonCustodialSigner(this.adminSigner)
+                ? this.adminSigner
+                : undefined
         );
     }
 
@@ -156,16 +176,23 @@ export class SolanaSmartWalletImpl extends SolanaWallet implements SolanaSmartWa
     }
 }
 
-export class SolanaMPCWalletImpl extends SolanaWallet implements SolanaMPCWallet {
+export class SolanaMPCWalletImpl
+    extends SolanaWallet
+    implements SolanaMPCWallet
+{
     /**
      * Sign and submit a transaction
      * @param {MPCTransactionParams} params - The transaction params
      * @returns The transaction hash
      */
-    public async sendTransaction(params: MPCTransactionParams): Promise<string> {
+    public async sendTransaction(
+        params: MPCTransactionParams
+    ): Promise<string> {
         return await this.transactionsService.createSignAndConfirm({
             transaction: params.transaction,
-            additionalSigners: params.additionalSigners?.map(parseSolanaNonCustodialSignerInput),
+            additionalSigners: params.additionalSigners?.map(
+                parseSolanaNonCustodialSignerInput
+            ),
         });
     }
 }

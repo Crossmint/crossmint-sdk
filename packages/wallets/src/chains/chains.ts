@@ -1,5 +1,5 @@
 import { BlockchainIncludingTestnet as Blockchain } from "@crossmint/common-sdk-base";
-import type { Chain } from "viem";
+import type { Chain as ViemChain } from "viem";
 import {
     baseSepolia,
     base,
@@ -38,27 +38,36 @@ const EVM_SMART_WALLET_MAINNET_CHAINS = [
     Blockchain.SHAPE,
 ] as const;
 
-export type EVMSmartWalletTestnet = (typeof EVM_SMART_WALLET_TESTNET_CHAINS)[number];
-export type EVMSmartWalletMainnet = (typeof EVM_SMART_WALLET_MAINNET_CHAINS)[number];
+export type EVMSmartWalletTestnet =
+    (typeof EVM_SMART_WALLET_TESTNET_CHAINS)[number];
+export type EVMSmartWalletMainnet =
+    (typeof EVM_SMART_WALLET_MAINNET_CHAINS)[number];
 export type EVMSmartWalletChain = EVMSmartWalletTestnet | EVMSmartWalletMainnet;
 
-export function isTestnetChain(chain: EVMSmartWalletChain): chain is EVMSmartWalletTestnet {
-    return (EVM_SMART_WALLET_TESTNET_CHAINS as readonly EVMSmartWalletTestnet[]).includes(
-        chain as EVMSmartWalletTestnet
-    );
+export function isTestnetChain(
+    chain: EVMSmartWalletChain
+): chain is EVMSmartWalletTestnet {
+    return (
+        EVM_SMART_WALLET_TESTNET_CHAINS as readonly EVMSmartWalletTestnet[]
+    ).includes(chain as EVMSmartWalletTestnet);
 }
 
-export function isMainnetChain(chain: EVMSmartWalletChain): chain is EVMSmartWalletMainnet {
-    return (EVM_SMART_WALLET_MAINNET_CHAINS as readonly EVMSmartWalletMainnet[]).includes(
-        chain as EVMSmartWalletMainnet
-    );
+export function isMainnetChain(
+    chain: EVMSmartWalletChain
+): chain is EVMSmartWalletMainnet {
+    return (
+        EVM_SMART_WALLET_MAINNET_CHAINS as readonly EVMSmartWalletMainnet[]
+    ).includes(chain as EVMSmartWalletMainnet);
 }
 
 export function isValidChain(chain: string): chain is EVMSmartWalletChain {
-    return isTestnetChain(chain as EVMSmartWalletTestnet) || isMainnetChain(chain as EVMSmartWalletMainnet);
+    return (
+        isTestnetChain(chain as EVMSmartWalletTestnet) ||
+        isMainnetChain(chain as EVMSmartWalletMainnet)
+    );
 }
 
-export function toViemChain(chain: EVMSmartWalletChain): Chain {
+export function toViemChain(chain: EVMSmartWalletChain): ViemChain {
     switch (chain) {
         case Blockchain.BASE_SEPOLIA:
             return baseSepolia;
@@ -88,5 +97,12 @@ export function toViemChain(chain: EVMSmartWalletChain): Chain {
             return bsc;
         case Blockchain.SHAPE:
             return shape;
+        default:
+            throw new Error(`Unknown chain: ${chain}`);
     }
 }
+
+export type SolanaChain = "solana";
+export type EVMChain = EVMSmartWalletChain;
+
+export type Chain = SolanaChain | EVMChain;

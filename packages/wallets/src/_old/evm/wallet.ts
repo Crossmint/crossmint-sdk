@@ -20,10 +20,13 @@ import type {
     GetTransactionsResponse,
     WalletBalance,
     DelegatedSigner,
-} from "../api";
-import { sleep } from "../utils";
-import type { Callbacks } from "../utils/options";
-import { ENTRY_POINT_ADDRESS, STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
+} from "../../api";
+import { sleep } from "../../utils";
+import type { Callbacks } from "../../utils/options";
+import {
+    ENTRY_POINT_ADDRESS,
+    STATUS_POLLING_INTERVAL_MS,
+} from "../../utils/constants";
 import {
     InvalidMessageFormatError,
     InvalidSignerError,
@@ -40,15 +43,17 @@ import {
     TransactionNotAvailableError,
     TransactionNotCreatedError,
     TransactionSendingFailedError,
-} from "../utils/errors";
+} from "../../utils/errors";
 
-import entryPointAbi from "./abi/entryPoint";
+import entryPointAbi from "../../abi/entryPoint";
 import { toViemChain, type EVMSmartWalletChain } from "./chains";
 import type { EVMSigner } from "./types/signers";
 import type { EVMSmartWallet, TransactionInput } from "./types/wallet";
 import { EVMDelegatedSignerService } from "./services/delegated-signers-service";
 
-type PendingApproval = NonNullable<NonNullable<CreateTransactionSuccessResponse["approvals"]>["pending"]>[number];
+type PendingApproval = NonNullable<
+    NonNullable<CreateTransactionSuccessResponse["approvals"]>["pending"]
+>[number];
 
 export class EVMSmartWalletImpl implements EVMSmartWallet {
     protected readonly delegatedSignerService: EVMDelegatedSignerService;
@@ -58,7 +63,11 @@ export class EVMSmartWalletImpl implements EVMSmartWallet {
         private readonly adminSigner: EVMSigner,
         private readonly callbacks: Callbacks
     ) {
-        this.delegatedSignerService = new EVMDelegatedSignerService(this.walletLocator, this, this.apiClient);
+        this.delegatedSignerService = new EVMDelegatedSignerService(
+            this.walletLocator,
+            this,
+            this.apiClient
+        );
     }
 
     // Public API Methods
@@ -81,7 +90,9 @@ export class EVMSmartWalletImpl implements EVMSmartWallet {
             tokens: params.tokens,
         });
         if ("error" in response) {
-            throw new Error(`Failed to get balances: ${JSON.stringify(response.error)}`);
+            throw new Error(
+                `Failed to get balances: ${JSON.stringify(response.error)}`
+            );
         }
         return response;
     }
@@ -91,9 +102,13 @@ export class EVMSmartWalletImpl implements EVMSmartWallet {
      * @returns The transactions
      */
     public async getTransactions() {
-        const transactions = await this.apiClient.getTransactions(this.walletLocator);
+        const transactions = await this.apiClient.getTransactions(
+            this.walletLocator
+        );
         if ("error" in transactions) {
-            throw new TransactionNotAvailableError(JSON.stringify(transactions));
+            throw new TransactionNotAvailableError(
+                JSON.stringify(transactions)
+            );
         }
         return transactions.transactions.filter(
             (transaction) => transaction.walletType === "evm-smart-wallet"
@@ -160,20 +175,34 @@ export class EVMSmartWalletImpl implements EVMSmartWallet {
     }): Promise<Hex> {
         const signatureCreationResponse = await this.createSignature(params);
         const signatureId = signatureCreationResponse.id;
-        const pendingApprovals = signatureCreationResponse.approvals?.pending || [];
-        const signature = await this.approveSignature(pendingApprovals, signatureId);
+        const pendingApprovals =
+            signatureCreationResponse.approvals?.pending || [];
+        const signature = await this.approveSignature(
+            pendingApprovals,
+            signatureId
+        );
         await this.waitForSignature(signatureId);
         return signature;
     }
 
     public async signTypedData<
         const typedData extends TypedData | Record<string, unknown>,
-        primaryType extends keyof typedData | "EIP712Domain" = keyof typedData,
-    >(params: TypedDataDefinition<typedData, primaryType> & { chain: EVMSmartWalletChain }): Promise<Hex> {
-        const signatureCreationResponse = await this.createTypedDataSignature(params);
+        primaryType extends keyof typedData | "EIP712Domain" = keyof typedData
+    >(
+        params: TypedDataDefinition<typedData, primaryType> & {
+            chain: EVMSmartWalletChain;
+        }
+    ): Promise<Hex> {
+        const signatureCreationResponse = await this.createTypedDataSignature(
+            params
+        );
         const signatureId = signatureCreationResponse.id;
-        const pendingApprovals = signatureCreationResponse.approvals?.pending || [];
-        const signature = await this.approveSignature(pendingApprovals, signatureId);
+        const pendingApprovals =
+            signatureCreationResponse.approvals?.pending || [];
+        const signature = await this.approveSignature(
+            pendingApprovals,
+            signatureId
+        );
         await this.waitForSignature(signatureId);
         return signature;
     }
@@ -189,9 +218,14 @@ export class EVMSmartWalletImpl implements EVMSmartWallet {
      */
     public async sendTransaction(params: TransactionInput): Promise<Hex> {
         await this.callbacks?.onTransactionStart?.(params);
-        const transactionCreationResponse = await this.createTransaction(params);
+        const transactionCreationResponse = await this.createTransaction(
+            params
+        );
         const transactionId = transactionCreationResponse.id;
-        await this.approveTransaction(transactionCreationResponse.approvals?.pending || [], transactionId);
+        await this.approveTransaction(
+            transactionCreationResponse.approvals?.pending || [],
+            transactionId
+        );
         return await this.waitForTransaction(transactionId);
     }
 
@@ -223,9 +257,13 @@ export class EVMSmartWalletImpl implements EVMSmartWallet {
         chain: EVMSmartWalletChain;
         signer: string;
     }) {
-        return await this.delegatedSignerService.registerDelegatedSigner(params.chain, params.signer, {
-            adminSigner: this.adminSigner,
-        });
+        return await this.delegatedSignerService.registerDelegatedSigner(
+            params.chain,
+            params.signer,
+            {
+                adminSigner: this.adminSigner,
+            }
+        );
     }
 
     /**
@@ -253,7 +291,9 @@ export class EVMSmartWalletImpl implements EVMSmartWallet {
         return this.adminSigner.locator;
     }
 
-    private async signWithAdminSigner(message: Hex): Promise<{ signature: Hex; metadata?: WebAuthnP256.SignMetadata }> {
+    private async signWithAdminSigner(
+        message: Hex
+    ): Promise<{ signature: Hex; metadata?: WebAuthnP256.SignMetadata }> {
         switch (this.adminSigner.type) {
             case "evm-passkey": {
                 // Custom signing function
@@ -266,7 +306,10 @@ export class EVMSmartWalletImpl implements EVMSmartWallet {
                 });
 
                 return {
-                    signature: concat([`0x${signature.r.toString(16)}`, `0x${signature.s.toString(16)}`]),
+                    signature: concat([
+                        `0x${signature.r.toString(16)}`,
+                        `0x${signature.s.toString(16)}`,
+                    ]),
                     metadata,
                 };
             }
@@ -275,7 +318,9 @@ export class EVMSmartWalletImpl implements EVMSmartWallet {
                 if (this.adminSigner.signer.type === "viem_v2") {
                     const account = this.adminSigner.signer.account;
                     if (!account.signMessage) {
-                        throw new MessageSigningNotSupportedError("Account does not support signMessage");
+                        throw new MessageSigningNotSupportedError(
+                            "Account does not support signMessage"
+                        );
                     }
                     const signature = await account.signMessage({
                         message: {
@@ -284,10 +329,11 @@ export class EVMSmartWalletImpl implements EVMSmartWallet {
                     });
                     return { signature };
                 } else {
-                    const signature = await this.adminSigner.signer.provider.request({
-                        method: "personal_sign",
-                        params: [message, signerAddress],
-                    });
+                    const signature =
+                        await this.adminSigner.signer.provider.request({
+                            method: "personal_sign",
+                            params: [message, signerAddress],
+                        });
                     return { signature };
                 }
             }
@@ -295,29 +341,39 @@ export class EVMSmartWalletImpl implements EVMSmartWallet {
     }
 
     private async createTransaction(params: TransactionInput) {
-        const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
-            params: {
-                signer: this.signerLocator,
-                chain: params.chain,
-                calls: [
-                    {
-                        to: params.to,
-                        value: params.value ? params.value.toString() : "0",
-                        data: params.data ?? "0x",
-                    },
-                ],
-            },
-        });
+        const transactionCreationResponse =
+            await this.apiClient.createTransaction(this.walletLocator, {
+                params: {
+                    signer: this.signerLocator,
+                    chain: params.chain,
+                    calls: [
+                        {
+                            to: params.to,
+                            value: params.value ? params.value.toString() : "0",
+                            data: params.data ?? "0x",
+                        },
+                    ],
+                },
+            });
         if ("error" in transactionCreationResponse) {
-            throw new TransactionNotCreatedError(JSON.stringify(transactionCreationResponse));
+            throw new TransactionNotCreatedError(
+                JSON.stringify(transactionCreationResponse)
+            );
         }
         return transactionCreationResponse;
     }
 
-    private async approveTransaction(pendingApprovals: Array<PendingApproval>, transactionId: string) {
-        const pendingApproval = pendingApprovals.find((approval) => approval.signer === this.signerLocator);
+    private async approveTransaction(
+        pendingApprovals: Array<PendingApproval>,
+        transactionId: string
+    ) {
+        const pendingApproval = pendingApprovals.find(
+            (approval) => approval.signer === this.signerLocator
+        );
         if (!pendingApproval) {
-            const error = new InvalidSignerError(`Signer ${this.signerLocator} not found in pending approvals`);
+            const error = new InvalidSignerError(
+                `Signer ${this.signerLocator} not found in pending approvals`
+            );
             await this.callbacks?.onTransactionFail?.(error);
             throw error;
         }
@@ -325,48 +381,64 @@ export class EVMSmartWalletImpl implements EVMSmartWallet {
 
         const { signature, metadata } = await this.signWithAdminSigner(message);
 
-        const approvalResponse = await this.apiClient.approveTransaction(this.walletLocator, transactionId, {
-            approvals: [
-                {
-                    signer: this.signerLocator,
-                    // @ts-ignore the generated types are wrong
-                    signature:
-                        this.adminSigner.type === "evm-passkey"
-                            ? {
-                                  r: signature.slice(0, 66),
-                                  s: `0x${signature.slice(66)}`,
-                              }
-                            : signature,
-                    ...(metadata && { metadata }),
-                },
-            ],
-        });
+        const approvalResponse = await this.apiClient.approveTransaction(
+            this.walletLocator,
+            transactionId,
+            {
+                approvals: [
+                    {
+                        signer: this.signerLocator,
+                        // @ts-ignore the generated types are wrong
+                        signature:
+                            this.adminSigner.type === "evm-passkey"
+                                ? {
+                                      r: signature.slice(0, 66),
+                                      s: `0x${signature.slice(66)}`,
+                                  }
+                                : signature,
+                        ...(metadata && { metadata }),
+                    },
+                ],
+            }
+        );
         if ("error" in approvalResponse) {
             throw new TransactionFailedError(JSON.stringify(approvalResponse));
         }
     }
 
-    private async waitForTransaction(transactionId: string, timeoutMs = 60000): Promise<Hex> {
+    private async waitForTransaction(
+        transactionId: string,
+        timeoutMs = 60000
+    ): Promise<Hex> {
         const startTime = Date.now();
         let transactionResponse;
 
         do {
             if (Date.now() - startTime > timeoutMs) {
-                const error = new TransactionConfirmationTimeoutError("Transaction confirmation timeout");
+                const error = new TransactionConfirmationTimeoutError(
+                    "Transaction confirmation timeout"
+                );
                 await this.callbacks.onTransactionFail?.(error);
                 throw error;
             }
 
-            transactionResponse = await this.apiClient.getTransaction(this.walletLocator, transactionId);
+            transactionResponse = await this.apiClient.getTransaction(
+                this.walletLocator,
+                transactionId
+            );
             if ("error" in transactionResponse) {
-                throw new TransactionNotAvailableError(JSON.stringify(transactionResponse));
+                throw new TransactionNotAvailableError(
+                    JSON.stringify(transactionResponse)
+                );
             }
             await sleep(STATUS_POLLING_INTERVAL_MS);
         } while (transactionResponse.status === "pending");
 
         if (transactionResponse.status === "failed") {
             const error = new TransactionSendingFailedError(
-                `Transaction sending failed: ${JSON.stringify(transactionResponse.error)}`
+                `Transaction sending failed: ${JSON.stringify(
+                    transactionResponse.error
+                )}`
             );
             await this.callbacks.onTransactionFail?.(error);
             throw error;
@@ -382,7 +454,9 @@ export class EVMSmartWalletImpl implements EVMSmartWallet {
 
         const transactionHash = transactionResponse.onChain.txId;
         if (transactionHash == null) {
-            const error = new TransactionHashNotFoundError("Transaction hash not found on transaction response");
+            const error = new TransactionHashNotFoundError(
+                "Transaction hash not found on transaction response"
+            );
             await this.callbacks.onTransactionFail?.(error);
             throw error;
         }
@@ -392,10 +466,17 @@ export class EVMSmartWalletImpl implements EVMSmartWallet {
     /**
      * @internal Used by DelegatedSignerService
      */
-    async approveSignature(pendingApprovals: Array<PendingApproval>, signatureId: string) {
-        const pendingApproval = pendingApprovals.find((approval) => approval.signer === this.signerLocator);
+    async approveSignature(
+        pendingApprovals: Array<PendingApproval>,
+        signatureId: string
+    ) {
+        const pendingApproval = pendingApprovals.find(
+            (approval) => approval.signer === this.signerLocator
+        );
         if (!pendingApproval) {
-            throw new InvalidSignerError(`Signer ${this.signerLocator} not found in pending approvals`);
+            throw new InvalidSignerError(
+                `Signer ${this.signerLocator} not found in pending approvals`
+            );
         }
         const message = pendingApproval.message as Hex;
 
@@ -432,11 +513,19 @@ export class EVMSmartWalletImpl implements EVMSmartWallet {
         let signatureResponse: GetSignatureResponse | null = null;
         do {
             await sleep(STATUS_POLLING_INTERVAL_MS);
-            signatureResponse = await this.apiClient.getSignature(this.walletLocator, signatureId);
+            signatureResponse = await this.apiClient.getSignature(
+                this.walletLocator,
+                signatureId
+            );
             if ("error" in signatureResponse) {
-                throw new SignatureNotAvailableError(JSON.stringify(signatureResponse));
+                throw new SignatureNotAvailableError(
+                    JSON.stringify(signatureResponse)
+                );
             }
-        } while (signatureResponse === null || signatureResponse.status === "pending");
+        } while (
+            signatureResponse === null ||
+            signatureResponse.status === "pending"
+        );
 
         if (signatureResponse.status === "failed") {
             throw new SigningFailedError("Signature signing failed");
@@ -450,56 +539,74 @@ export class EVMSmartWalletImpl implements EVMSmartWallet {
         if (typeof params.message !== "string") {
             throw new InvalidMessageFormatError("Message must be a string");
         }
-        const signatureCreationResponse = await this.apiClient.createSignature(this.walletLocator, {
-            type: "evm-message",
-            params: {
-                message: params.message,
-                signer: this.signerLocator,
-                chain: params.chain,
-            },
-        });
+        const signatureCreationResponse = await this.apiClient.createSignature(
+            this.walletLocator,
+            {
+                type: "evm-message",
+                params: {
+                    message: params.message,
+                    signer: this.signerLocator,
+                    chain: params.chain,
+                },
+            }
+        );
         if ("error" in signatureCreationResponse) {
-            throw new SignatureNotCreatedError(JSON.stringify(signatureCreationResponse));
+            throw new SignatureNotCreatedError(
+                JSON.stringify(signatureCreationResponse)
+            );
         }
         return signatureCreationResponse;
     }
 
     private async createTypedDataSignature<
         const typedData extends TypedData | Record<string, unknown>,
-        primaryType extends keyof typedData | "EIP712Domain" = keyof typedData,
-    >(params: TypedDataDefinition<typedData, primaryType> & { chain: EVMSmartWalletChain }) {
+        primaryType extends keyof typedData | "EIP712Domain" = keyof typedData
+    >(
+        params: TypedDataDefinition<typedData, primaryType> & {
+            chain: EVMSmartWalletChain;
+        }
+    ) {
         const { domain, message, primaryType, types, chain } = params;
         if (!domain || !message || !types || !chain) {
             throw new InvalidTypedDataError("Invalid typed data");
         }
 
-        const { name, version, chainId, verifyingContract, salt } = domain as TypedDataDomain;
+        const { name, version, chainId, verifyingContract, salt } =
+            domain as TypedDataDomain;
         if (!name || !version || !chainId || !verifyingContract) {
             throw new InvalidTypedDataError("Invalid typed data domain");
         }
 
-        const signatureCreationResponse = await this.apiClient.createSignature(this.walletLocator, {
-            type: "evm-typed-data",
-            params: {
-                typedData: {
-                    domain: {
-                        name,
-                        version,
-                        chainId: Number(chainId),
-                        verifyingContract,
-                        salt,
+        const signatureCreationResponse = await this.apiClient.createSignature(
+            this.walletLocator,
+            {
+                type: "evm-typed-data",
+                params: {
+                    typedData: {
+                        domain: {
+                            name,
+                            version,
+                            chainId: Number(chainId),
+                            verifyingContract,
+                            salt,
+                        },
+                        message,
+                        primaryType,
+                        types: types as Record<
+                            string,
+                            Array<{ name: string; type: string }>
+                        >,
                     },
-                    message,
-                    primaryType,
-                    types: types as Record<string, Array<{ name: string; type: string }>>,
+                    signer: this.signerLocator,
+                    chain,
+                    isSmartWalletSignature: false,
                 },
-                signer: this.signerLocator,
-                chain,
-                isSmartWalletSignature: false,
-            },
-        });
+            }
+        );
         if ("error" in signatureCreationResponse) {
-            throw new SignatureNotCreatedError(JSON.stringify(signatureCreationResponse));
+            throw new SignatureNotCreatedError(
+                JSON.stringify(signatureCreationResponse)
+            );
         }
         return signatureCreationResponse;
     }

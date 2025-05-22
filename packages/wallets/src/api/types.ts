@@ -58,7 +58,7 @@ export type GetTransactionsResponse =
     | WalletsV1ControllerGetTransactionsWithoutChain4Error;
 export type GetNftsResponse = Nftevm | Nftsol | FetchContentFromWalletError;
 export type GetBalanceResponse = WalletBalanceResponseDto | BalanceControllerGetBalanceForLocator2Error;
-export type WalletBalance = WalletBalanceResponseDto;
+export type Balances = WalletBalanceResponseDto;
 
 export type RegisterSignerParams = CreateSignerInputDto;
 export type RegisterSignerResponse = DelegatedSignerDto | WalletsV1ControllerCreateDelegatedSigner4Error;
