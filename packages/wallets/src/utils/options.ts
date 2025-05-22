@@ -1,12 +1,9 @@
-import type { EVMSmartWallet, TransactionInput as EVMTransaction } from "@/evm";
-import type { SolanaMPCWallet, SolanaSmartWallet, Transaction as SolanaTransaction } from "@/solana";
-
-export type Wallet = EVMSmartWallet | SolanaSmartWallet | SolanaMPCWallet;
-export type Transaction = EVMTransaction | SolanaTransaction;
+import type { Chain } from "@/types";
+import type { Wallet } from "@/wallet";
 
 export interface Callbacks {
     onWalletCreationStart?: () => Promise<void>;
-    onWalletCreationComplete?: (wallet: Wallet) => Promise<void>;
+    onWalletCreationComplete?: (wallet: Wallet<Chain>) => Promise<void>;
     onWalletCreationFail?: (error: Error) => Promise<void>;
     onTransactionStart?: (transaction: Transaction) => Promise<void>;
     onTransactionComplete?: (transaction: Transaction) => Promise<void>;

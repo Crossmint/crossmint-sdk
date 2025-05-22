@@ -54,7 +54,7 @@ export function isMainnetChain(chain: EVMSmartWalletChain): chain is EVMSmartWal
     );
 }
 
-export function isValidChain(chain: string): chain is EVMSmartWalletChain {
+export function isValidEVMChain(chain: string): chain is EVMSmartWalletChain {
     return isTestnetChain(chain as EVMSmartWalletTestnet) || isMainnetChain(chain as EVMSmartWalletMainnet);
 }
 

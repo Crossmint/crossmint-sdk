@@ -24,7 +24,7 @@ import type {
     RegisterSignerResponse,
     GetSignerResponse,
     WalletLocator,
-    EvmWalletLocator,
+    GetDelegatedSignersResponse,
 } from "./types";
 
 class ApiClient extends CrossmintApiClient {
@@ -110,7 +110,7 @@ class ApiClient extends CrossmintApiClient {
         return response.json();
     }
 
-    async getSignature(walletLocator: EvmWalletLocator, signatureId: string): Promise<GetSignatureResponse> {
+    async getSignature(walletLocator: WalletLocator, signatureId: string): Promise<GetSignatureResponse> {
         const response = await this.get(`${this.apiPrefix}/${walletLocator}/signatures/${signatureId}`, {
             headers: this.headers,
         });
@@ -168,6 +168,24 @@ class ApiClient extends CrossmintApiClient {
 
     async getSigner(walletLocator: WalletLocator, signer: string): Promise<GetSignerResponse> {
         const response = await this.get(`${this.apiPrefix}/${walletLocator}/signers/${signer}`, {
+            headers: this.headers,
+        });
+        return response.json();
+    }
+
+    async registerDelegatedSigner(
+        walletLocator: WalletLocator,
+        params: { chain: string; signer: string }
+    ): Promise<RegisterSignerResponse> {
+        const response = await this.post(`${this.apiPrefix}/${walletLocator}/signers`, {
+            body: JSON.stringify(params),
+            headers: this.headers,
+        });
+        return response.json();
+    }
+
+    async getDelegatedSigners(walletLocator: WalletLocator): Promise<GetDelegatedSignersResponse> {
+        const response = await this.get(`${this.apiPrefix}/${walletLocator}/signers`, {
             headers: this.headers,
         });
         return response.json();

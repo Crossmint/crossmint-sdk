@@ -1,5 +1,3 @@
-import type { Address } from "viem";
-
 import type {
     CreateWalletDto,
     WalletV1Alpha2ErrorDto,
@@ -67,7 +65,7 @@ export type GetDelegatedSignersResponse = Array<DelegatedSignerDto> | WalletsV1C
 export type DelegatedSigner = DelegatedSignerDto;
 
 type WalletType = CreateWalletDto["type"];
-export type EvmWalletLocator = `me:${WalletType}` | Address;
+export type EvmWalletLocator = string | `me:evm-smart-wallet`;
 type SolanaAddress = string;
 export type SolanaWalletLocator = `me:${WalletType}` | SolanaAddress;
 export type WalletLocator = EvmWalletLocator | SolanaWalletLocator;
