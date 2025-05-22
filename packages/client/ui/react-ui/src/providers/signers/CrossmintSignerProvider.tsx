@@ -14,7 +14,7 @@ import { CrossmintWallets } from "@crossmint/wallets-sdk";
 import type { ValidWalletState } from "@crossmint/client-sdk-react-base";
 import { PublicKey, type VersionedTransaction } from "@solana/web3.js";
 import base58 from "bs58";
-import { environmentToCrossmintBaseURL, type UIConfig } from "@crossmint/common-sdk-base";
+import { environmentToCrossmintBaseURL, getEnvironmentForKey, type UIConfig } from "@crossmint/common-sdk-base";
 import { useCrossmint } from "@/hooks";
 import { deriveWalletErrorState } from "@/utils/errorUtils";
 import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
@@ -53,7 +53,11 @@ export function CrossmintSignerProvider({
     } = useCrossmint();
     const smartWalletSDK = useMemo(() => CrossmintWallets.from({ apiKey, jwt }), [apiKey, jwt]);
 
-    const iframeWindow = useSignerIFrameWindow(signersURL);
+    const environment = getEnvironmentForKey(apiKey);
+    if (environment == null) {
+        throw new Error("Could not determine environment from API key");
+    }
+    const iframeWindow = useSignerIFrameWindow(environment, signersURL);
     const [email, setEmail] = useState<string>("");
     const [step, setStep] = useState<"initial" | "otp">("initial");
     const [dialogOpen, setDialogOpen] = useState(false);
