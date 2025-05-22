@@ -12,7 +12,7 @@ export type EmailSignerConfig = {
         verifyOtp: (otp: string) => Promise<void>,
         reject: (error: Error) => void
     ) => Promise<void>;
-}
+};
 
 export type ExternalWalletSignerConfig = {
     type: "external-wallet";
@@ -22,7 +22,10 @@ export type ExternalWalletSignerConfig = {
 
 export type ApiKeySignerConfig = { type: "api-key" };
 
-export type BaseSignerConfig = EmailSignerConfig | ExternalWalletSignerConfig | ApiKeySignerConfig;
+export type BaseSignerConfig =
+    | EmailSignerConfig
+    | ExternalWalletSignerConfig
+    | ApiKeySignerConfig;
 
 export type PasskeySignerConfig = {
     type: "passkey";
@@ -54,10 +57,8 @@ type SignResultMap = {
     };
 };
 
-export interface Signer<
-    T extends keyof SignResultMap = keyof SignResultMap
-> {
+export interface Signer<T extends keyof SignResultMap = keyof SignResultMap> {
     type: T;
-    legacyLocator(): string;
+    locator(): string;
     sign(message: string): Promise<SignResultMap[T]>;
 }

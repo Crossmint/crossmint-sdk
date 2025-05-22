@@ -6,7 +6,7 @@ export class EmailSigner implements Signer {
     constructor(private config: EmailSignerConfig) {}
 
     // TODO: update for the wallet locator
-    legacyLocator() {
+    locator() {
         return `email:${this.config.email}`;
     }
 

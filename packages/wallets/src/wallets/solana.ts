@@ -27,7 +27,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
     }: SolanaTransactionInput): Promise<string> {
         const transactionParams = {
             transaction: bs58.encode(versionedTransaction.serialize()),
-            signer: this.signer.legacyLocator(),
+            signer: this.signer.locator(),
         };
 
         const transactionCreationResponse =
@@ -41,9 +41,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
             );
         }
 
-        const hash = await this.approveAndWait(
-            transactionCreationResponse.id
-        );
+        const hash = await this.approveAndWait(transactionCreationResponse.id);
 
         return hash;
     }

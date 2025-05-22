@@ -9,7 +9,7 @@ export class PasskeySigner implements Signer {
         this.id = config.id;
     }
 
-    legacyLocator() {
+    locator() {
         return `evm-passkey:${this.id}`;
     }
 

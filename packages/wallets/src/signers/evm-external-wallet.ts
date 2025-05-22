@@ -9,7 +9,7 @@ export class EVMExternalWalletSigner implements Signer {
         this.address = config.address;
     }
 
-    legacyLocator() {
+    locator() {
         return `evm-keypair:${this.address}`;
     }
 

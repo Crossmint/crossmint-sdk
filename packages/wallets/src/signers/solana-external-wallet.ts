@@ -2,14 +2,14 @@ import { ExternalWalletSignerConfig, Signer } from "./types";
 
 export class SolanaExternalWalletSigner implements Signer {
     type = "external-wallet" as const;
-    
+
     address: string;
 
     constructor(private config: ExternalWalletSignerConfig) {
         this.address = config.address;
     }
 
-    legacyLocator() {
+    locator() {
         return `solana-keypair:${this.address}`;
     }
 

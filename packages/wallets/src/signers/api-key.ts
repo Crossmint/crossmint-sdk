@@ -4,7 +4,7 @@ export class ApiKeySigner implements Signer {
     type = "api-key" as const;
 
     // TODO: figure out if we need this..
-    legacyLocator() {
+    locator() {
         return "api-key";
     }
 

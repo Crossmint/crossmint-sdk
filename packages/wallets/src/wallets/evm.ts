@@ -18,7 +18,6 @@ import {
 import { GetSignatureResponse } from "@/api/types";
 import { STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
 
-
 export class EVMWallet extends Wallet<EVMChain> {
     constructor(wallet: Wallet<EVMChain>) {
         super(
@@ -40,7 +39,7 @@ export class EVMWallet extends Wallet<EVMChain> {
         const transactionCreationResponse =
             await this.apiClient.createTransaction(this.walletLocator, {
                 params: {
-                    signer: this.signer.legacyLocator(),
+                    signer: this.signer.locator(),
                     chain: this.chain,
                     calls: [
                         {
@@ -69,7 +68,7 @@ export class EVMWallet extends Wallet<EVMChain> {
                 type: "evm-message",
                 params: {
                     message: message,
-                    signer: this.signer.legacyLocator(),
+                    signer: this.signer.locator(),
                     chain: this.chain,
                 },
             }
@@ -126,7 +125,7 @@ export class EVMWallet extends Wallet<EVMChain> {
                             Array<{ name: string; type: string }>
                         >,
                     },
-                    signer: this.signer.legacyLocator(),
+                    signer: this.signer.locator(),
                     chain,
                     isSmartWalletSignature: false,
                 },
@@ -158,11 +157,11 @@ export class EVMWallet extends Wallet<EVMChain> {
         signatureId: string
     ) {
         const pendingApproval = pendingApprovals.find(
-            (approval) => approval.signer === this.signer.legacyLocator()
+            (approval) => approval.signer === this.signer.locator()
         );
         if (!pendingApproval) {
             throw new InvalidSignerError(
-                `Signer ${this.signer.legacyLocator()} not found in pending approvals`
+                `Signer ${this.signer.locator()} not found in pending approvals`
             );
         }
         const message = pendingApproval.message as Hex;
@@ -176,7 +175,7 @@ export class EVMWallet extends Wallet<EVMChain> {
         await this.apiClient.approveSignature(this.walletLocator, signatureId, {
             approvals: [
                 {
-                    signer: this.signer.legacyLocator(),
+                    signer: this.signer.locator(),
                     // @ts-ignore the generated types are wrong
                     signature: signature,
                 },

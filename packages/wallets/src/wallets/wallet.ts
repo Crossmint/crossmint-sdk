@@ -208,7 +208,7 @@ export class Wallet<C extends Chain> {
             return transaction;
         }
 
-        const signerLocator = this.signer.legacyLocator();
+        const signerLocator = this.signer.locator();
 
         const pendingApproval = pendingApprovals.find(
             ({ signer }: { signer: string }) => signer === signerLocator
