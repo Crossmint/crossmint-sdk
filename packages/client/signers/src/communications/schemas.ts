@@ -25,6 +25,10 @@ const AuthenticatedEventRequest = z.object({
         .describe("Authentication data for the request"),
 });
 
+const OnboardingAuthenticationDataSchema = z.object({
+    encryptedOtp: z.string().describe("Encrypted one-time password"),
+});
+
 const ErrorResponse = z.object({
     status: z.literal("error"),
     error: z.string(),
@@ -73,7 +77,7 @@ export const CompleteOnboardingPayloadSchema = {
     request: AuthenticatedEventRequest.extend({
         data: z
             .object({
-                encryptedOtp: z.string().describe("Encrypted one-time password"),
+                onboardingAuthentication: OnboardingAuthenticationDataSchema,
                 keyType: KeyTypeSchema.describe("Type of cryptographic key to use"),
             })
             .describe("Data needed for encrypted OTP verification"),

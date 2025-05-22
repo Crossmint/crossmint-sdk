@@ -227,7 +227,9 @@ export function CrossmintSignerProvider({
                         apiKey,
                     },
                     data: {
-                        encryptedOtp: token,
+                        onboardingAuthentication: {
+                            encryptedOtp: token,
+                        },
                         keyType: "ed25519",
                     },
                 },
