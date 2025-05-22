@@ -1,5 +1,11 @@
 # @crossmint/client-signers
 
+## 0.0.14
+
+### Patch Changes
+
+- 73cbe5b: NCS: Rename events
+
 ## 0.0.13
 
 ### Patch Changes

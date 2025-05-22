@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.19.16
+
+### Patch Changes
+
+- 73cbe5b: NCS: Rename events
+- Updated dependencies [73cbe5b]
+  - @crossmint/client-signers@0.0.14
+
 ## 1.19.15
 
 ### Patch Changes
