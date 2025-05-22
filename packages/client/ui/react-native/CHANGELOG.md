@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.4.15
+
+### Patch Changes
+
+- 73cbe5b: NCS: Rename events
+- Updated dependencies [73cbe5b]
+  - @crossmint/client-signers@0.0.14
+
 ## 0.4.14
 
 ### Patch Changes
