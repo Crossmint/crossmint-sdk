@@ -1,5 +1,16 @@
 # @crossmint/client-sdk-base
 
+## 1.5.0
+
+### Minor Changes
+
+- e597884: Remove support for Cardano
+
+### Patch Changes
+
+- Updated dependencies [e597884]
+  - @crossmint/common-sdk-base@0.5.0
+
 ## 1.4.21
 
 ### Patch Changes

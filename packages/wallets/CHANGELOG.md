@@ -1,5 +1,17 @@
 # @crossmint/wallets-sdk
 
+## 0.8.0
+
+### Minor Changes
+
+- e597884: Remove support for Cardano
+
+### Patch Changes
+
+- Updated dependencies [e597884]
+  - @crossmint/common-sdk-base@0.5.0
+  - @crossmint/common-sdk-auth@1.0.31
+
 ## 0.7.7
 
 ### Patch Changes
