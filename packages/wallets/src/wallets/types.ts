@@ -10,14 +10,21 @@ export interface EVMTransactionInput {
 }
 
 export interface SolanaTransactionInput {
-    versionedTransaction: VersionedTransaction;
+    transaction: VersionedTransaction;
 }
 
 export type Permission = {
-    to: string;
+    for: string;
 };
 
 // Approvals
 export type PendingApproval = NonNullable<
     NonNullable<CreateTransactionSuccessResponse["approvals"]>["pending"]
 >[number];
+
+export type WalletOptions = {
+    experimental_callbacks?: {
+        onWalletCreationStart?: () => Promise<void>;
+        onTransactionStart?: () => Promise<void>;
+    };
+};

@@ -1,5 +1,5 @@
 import { WebAuthnP256 } from "ox";
-import { PasskeySignerConfig, Signer } from "./types";
+import type { PasskeySignerConfig, Signer } from "./types";
 
 export class PasskeySigner implements Signer {
     type = "passkey" as const;

@@ -1,74 +1,60 @@
+import { WebAuthnP256 } from "ox";
 import type { ApiClient, GetWalletSuccessResponse } from "../api";
 import { WalletCreationError, WalletNotAvailableError } from "../utils/errors";
-import { Chain } from "../chains/chains";
-import { SignerConfigForChain } from "../signers/types";
+import type { Chain } from "../chains/chains";
+import type { SignerConfigForChain } from "../signers/types";
 import { Wallet } from "./wallet";
-import { WebAuthnP256 } from "ox";
 import { createSigner } from "../signers";
+import type { WalletOptions } from "./types";
 
-export type WalletOptionsFor<C extends Chain> = {
+export type WalletArgsFor<C extends Chain> = {
     chain: C;
     signer?: SignerConfigForChain<C>;
     owner?: string;
+    options?: WalletOptions;
 };
 
 export class WalletFactory {
     constructor(private readonly apiClient: ApiClient) {}
 
-    public async getOrCreateWallet<C extends Chain>(
-        options: WalletOptionsFor<C>
-    ): Promise<Wallet<C>> {
+    public async getOrCreateWallet<C extends Chain>(args: WalletArgsFor<C>): Promise<Wallet<C>> {
         if (this.apiClient.isServerSide) {
-            throw new WalletCreationError(
-                "getOrCreateWallet is not supported on server side"
-            );
+            throw new WalletCreationError("getOrCreateWallet is not supported on server side");
         }
 
-        return await this.getOrCreateWalletInternal(options);
+        return await this.getOrCreateWalletInternal(args);
     }
 
-    public async getWallet<C extends Chain>(
-        walletLocator: string,
-        options: WalletOptionsFor<C>
-    ): Promise<Wallet<C>> {
+    public async getWallet<C extends Chain>(walletLocator: string, args: WalletArgsFor<C>): Promise<Wallet<C>> {
         if (!this.apiClient.isServerSide) {
-            throw new WalletCreationError(
-                "getWallet is not supported on client side, use getOrCreateWallet instead"
-            );
+            throw new WalletCreationError("getWallet is not supported on client side, use getOrCreateWallet instead");
         }
 
         const walletResponse = await this.apiClient.getWallet(walletLocator);
         if ("error" in walletResponse) {
             throw new WalletNotAvailableError(JSON.stringify(walletResponse));
         }
-        return this.createWalletInstance(walletResponse, options);
+        return this.createWalletInstance(walletResponse, args);
     }
 
-    public async createWallet<C extends Chain>(
-        options: WalletOptionsFor<C>
-    ): Promise<Wallet<C>> {
+    public async createWallet<C extends Chain>(args: WalletArgsFor<C>): Promise<Wallet<C>> {
+        await args.options?.experimental_callbacks?.onWalletCreationStart?.();
         let walletPayload: any;
-        if (options.chain === "solana") {
+        if (args.chain === "solana") {
             walletPayload = {
                 type: "solana-smart-wallet",
                 config: {
-                    adminSigner: await this.configureSigner(
-                        options.chain,
-                        options.signer
-                    ),
+                    adminSigner: await this.configureSigner(args.chain, args.signer),
                 },
-                linkedUser: options.owner ?? undefined,
+                linkedUser: args.owner ?? undefined,
             };
         } else {
             walletPayload = {
                 type: "evm-smart-wallet",
                 config: {
-                    adminSigner: await this.configureSigner(
-                        options.chain,
-                        options.signer
-                    ),
+                    adminSigner: await this.configureSigner(args.chain, args.signer),
                 },
-                linkedUser: options.owner ?? undefined,
+                linkedUser: args.owner ?? undefined,
             };
         }
 
@@ -78,54 +64,63 @@ export class WalletFactory {
             throw new WalletCreationError(JSON.stringify(walletResponse));
         }
 
-        return this.createWalletInstance(walletResponse, options);
+        return this.createWalletInstance(walletResponse, args);
     }
 
-    private async getOrCreateWalletInternal<C extends Chain>(
-        options: WalletOptionsFor<C>
-    ): Promise<Wallet<C>> {
+    private async getOrCreateWalletInternal<C extends Chain>(args: WalletArgsFor<C>): Promise<Wallet<C>> {
         const existingWallet = await this.apiClient.getWallet(
-            `me:${
-                options.chain === "solana"
-                    ? "solana-smart-wallet"
-                    : "evm-smart-wallet"
-            }`
+            `me:${args.chain === "solana" ? "solana-smart-wallet" : "evm-smart-wallet"}`
         );
 
         if (existingWallet && !("error" in existingWallet)) {
-            return this.createWalletInstance(existingWallet, options);
+            return this.createWalletInstance(existingWallet, args);
         }
 
-        return this.createWallet(options);
+        return this.createWallet(args);
     }
 
     private createWalletInstance<C extends Chain>(
         walletResponse: GetWalletSuccessResponse,
-        options: WalletOptionsFor<C>
+        args: WalletArgsFor<C>
     ): Wallet<C> {
+        let signer: SignerConfigForChain<C> | { type: "api-key-legacy"; address: string };
+        if (args.signer == null || args.signer?.type === "api-key") {
+            let address;
+            switch (walletResponse.type) {
+                case "solana-smart-wallet":
+                    address = walletResponse.config.adminSigner.address;
+                    break;
+                case "evm-smart-wallet":
+                    if (walletResponse.config.adminSigner.type === "evm-fireblocks-custodial") {
+                        address = walletResponse.config.adminSigner.address;
+                    }
+                    break;
+            }
+            if (address == null) {
+                throw new WalletCreationError("Wallet signer 'api-key' has no address");
+            }
+            signer = {
+                type: "api-key-legacy",
+                address,
+            };
+        } else {
+            signer = args.signer;
+        }
         return Wallet.fromAPIResponse(
             {
-                chain: options.chain,
+                chain: args.chain,
                 address: walletResponse.address,
-                signer: createSigner(
-                    options.chain,
-                    options.signer ?? { type: "api-key" }
-                ),
+                signer: createSigner(args.chain, signer),
+                options: args.options,
             },
             this.apiClient
         );
     }
 
-    private async configureSigner<C extends Chain>(
-        chain: C,
-        signer?: SignerConfigForChain<C>
-    ) {
+    private async configureSigner<C extends Chain>(chain: C, signer?: SignerConfigForChain<C>) {
         if (!signer || signer.type === "api-key") {
             return {
-                type:
-                    chain === "solana"
-                        ? "solana-fireblocks-custodial"
-                        : "evm-fireblocks-custodial",
+                type: chain === "solana" ? "solana-fireblocks-custodial" : "evm-fireblocks-custodial",
             };
         }
 

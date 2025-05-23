@@ -1,8 +1,8 @@
 import { ApiClient } from "./api";
-import { WalletFactory, WalletOptionsFor } from "./wallets/wallet-factory";
+import { WalletFactory, type WalletArgsFor } from "./wallets/wallet-factory";
 import { type Crossmint, createCrossmint } from "@crossmint/common-sdk-base";
-import { Wallet } from "./wallets/wallet";
-import { Chain } from "./chains/chains";
+import type { Wallet } from "./wallets/wallet";
+import type { Chain } from "./chains/chains";
 
 export class CrossmintWallets {
     private readonly walletFactory: WalletFactory;
@@ -27,10 +27,8 @@ export class CrossmintWallets {
      * @param options - Wallet options
      * @returns A new wallet
      */
-    public async getOrCreateWallet<C extends Chain>(
-        options: WalletOptionsFor<C>
-    ): Promise<Wallet<C>> {
-        return this.walletFactory.getOrCreateWallet(options);
+    public async getOrCreateWallet<C extends Chain>(options: WalletArgsFor<C>): Promise<Wallet<C>> {
+        return await this.walletFactory.getOrCreateWallet(options);
     }
 
     /**
@@ -39,11 +37,8 @@ export class CrossmintWallets {
      * @param options - Wallet options
      * @returns A wallet
      */
-    public async getWallet<C extends Chain>(
-        walletLocator: string,
-        options: WalletOptionsFor<C>
-    ): Promise<Wallet<C>> {
-        return this.walletFactory.getWallet(walletLocator, options);
+    public async getWallet<C extends Chain>(walletLocator: string, options: WalletArgsFor<C>): Promise<Wallet<C>> {
+        return await this.walletFactory.getWallet(walletLocator, options);
     }
 
     /**
@@ -51,10 +46,8 @@ export class CrossmintWallets {
      * @param options - Wallet options
      * @returns A new wallet
      */
-    public async createWallet<C extends Chain>(
-        options: WalletOptionsFor<C>
-    ): Promise<Wallet<C>> {
-        return this.walletFactory.createWallet(options);
+    public async createWallet<C extends Chain>(options: WalletArgsFor<C>): Promise<Wallet<C>> {
+        return await this.walletFactory.createWallet(options);
     }
 }
 

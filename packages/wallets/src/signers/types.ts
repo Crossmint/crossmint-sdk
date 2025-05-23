@@ -22,18 +22,13 @@ export type ExternalWalletSignerConfig = {
 
 export type ApiKeySignerConfig = { type: "api-key" };
 
-export type BaseSignerConfig =
-    | EmailSignerConfig
-    | ExternalWalletSignerConfig
-    | ApiKeySignerConfig;
+export type BaseSignerConfig = EmailSignerConfig | ExternalWalletSignerConfig | ApiKeySignerConfig;
 
 export type PasskeySignerConfig = {
     type: "passkey";
     name: string;
     id: string;
-    onCreatePasskey?: (
-        name: string
-    ) => Promise<{ id: string; publicKey: { x: string; y: string } }>;
+    onCreatePasskey?: (name: string) => Promise<{ id: string; publicKey: { x: string; y: string } }>;
     onSignWithPasskey?: (message: string) => Promise<string>;
 };
 

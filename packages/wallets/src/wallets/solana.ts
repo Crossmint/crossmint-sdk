@@ -1,7 +1,7 @@
-import { SolanaChain } from "../chains/chains";
-import { SolanaTransactionInput } from "./types";
-import { Wallet } from "./wallet";
 import bs58 from "bs58";
+import type { SolanaChain } from "../chains/chains";
+import type { SolanaTransactionInput } from "./types";
+import { Wallet } from "./wallet";
 import { TransactionNotCreatedError } from "../utils/errors";
 
 export class SolanaWallet extends Wallet<SolanaChain> {
@@ -22,27 +22,20 @@ export class SolanaWallet extends Wallet<SolanaChain> {
     }
 
     // TODO: Add additional signers
-    public async sendTransaction({
-        versionedTransaction,
-    }: SolanaTransactionInput): Promise<string> {
+    public async sendTransaction({ transaction }: SolanaTransactionInput): Promise<string> {
         const transactionParams = {
-            transaction: bs58.encode(versionedTransaction.serialize()),
+            transaction: bs58.encode(transaction.serialize()),
             signer: this.signer.locator(),
         };
 
-        const transactionCreationResponse =
-            await this.apiClient.createTransaction(this.walletLocator, {
-                params: transactionParams,
-            });
+        const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
+            params: transactionParams,
+        });
 
         if (transactionCreationResponse.error) {
-            throw new TransactionNotCreatedError(
-                JSON.stringify(transactionCreationResponse)
-            );
+            throw new TransactionNotCreatedError(JSON.stringify(transactionCreationResponse));
         }
 
-        const hash = await this.approveAndWait(transactionCreationResponse.id);
-
-        return hash;
+        return await this.approveAndWait(transactionCreationResponse.id);
     }
 }
