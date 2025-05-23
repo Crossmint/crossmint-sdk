@@ -37,6 +37,7 @@ export const BLOCKCHAIN_TO_COPY_NAME: Record<BlockchainIncludingTestnet, string>
     chiliz: "Chiliz",
     boss: "Boss",
     shape: "Shape",
+    worldchain: "Worldchain",
 };
 
 export function blockchainToDisplayName(blockchain: BlockchainIncludingTestnet) {
