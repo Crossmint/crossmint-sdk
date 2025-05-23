@@ -23,4 +23,4 @@ export type NFTOrNFTLocator =
     | NFTLocator<"solana">
     | NFTLocator<"ethereum">
     | NFTLocator<"polygon">
-    | NFTLocator<"bsc">
+    | NFTLocator<"bsc">;

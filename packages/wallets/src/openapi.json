@@ -5828,13 +5828,7 @@
                     "id": { "type": "string", "description": "Unique identifier for the signature" },
                     "type": {
                         "type": "string",
-                        "enum": [
-                            "evm-message",
-                            "solana-message",
-                            "evm-typed-data",
-                            "aptos-message",
-                            "sui-message"
-                        ],
+                        "enum": ["evm-message", "solana-message", "evm-typed-data", "aptos-message", "sui-message"],
                         "description": "The type of signature"
                     },
                     "status": {
