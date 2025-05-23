@@ -1,5 +1,12 @@
 # @crossmint/client-sdk-smart-wallet-web3auth-adapter
 
+## 0.2.15
+
+### Patch Changes
+
+- Updated dependencies [e597884]
+  - @crossmint/common-sdk-base@0.5.0
+
 ## 0.2.14
 
 ### Patch Changes
