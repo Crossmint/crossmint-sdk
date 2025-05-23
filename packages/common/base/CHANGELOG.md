@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.5.1
+
+### Patch Changes
+
+- 8e4d900: Add support for world-chain
+
 ## 0.5.0
 
 ### Minor Changes
