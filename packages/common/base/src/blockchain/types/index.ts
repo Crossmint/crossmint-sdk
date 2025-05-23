@@ -3,7 +3,6 @@ import { EVMBlockchain, EVMBlockchainTestnet } from "./evm";
 
 export const Blockchain = {
     SOLANA: "solana",
-    CARDANO: "cardano",
     SUI: "sui",
     APTOS: "aptos",
     ...EVMBlockchain,
@@ -35,3 +34,4 @@ export * from "./baseLayers";
 export * from "./evm";
 export * from "./nft";
 export * from "./wallet";
+

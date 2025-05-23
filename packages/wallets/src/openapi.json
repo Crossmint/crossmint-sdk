@@ -1438,8 +1438,6 @@
                             "ethereum:0x1234...890:1",
                             "solana:sol",
                             "solana:EPjF...Dt1v",
-                            "cardano:ada",
-                            "cardano:asset1...xyz",
                             "sui:sui",
                             "sui:0x123...xyz",
                             "aptos:apt",
@@ -4252,28 +4250,6 @@
                     {
                         "type": "object",
                         "properties": {
-                            "type": { "type": "string", "enum": ["cardano-mpc-wallet"] },
-                            "config": {},
-                            "linkedUser": {
-                                "type": "string",
-                                "description": "A user locator can be of the format:\n- `email:<email>`\n- `userId:<userId>`\n- `phoneNumber:<phoneNumber>`\n- `twitter:<handle>`\n- `x:<handle>`",
-                                "example": [
-                                    "email:user@example.com",
-                                    "userId:507f1f77bcf86cd799439011",
-                                    "userId:did:example:cm4lr5piw0h6t1bjho0onryql",
-                                    "phoneNumber:+12125551234",
-                                    "twitter:johndoe",
-                                    "x:@johndoe"
-                                ]
-                            }
-                        },
-                        "required": ["type"],
-                        "title": "Cardano MPC wallet creation input",
-                        "description": "Cardano MPC wallet creation input"
-                    },
-                    {
-                        "type": "object",
-                        "properties": {
                             "type": { "type": "string", "enum": ["sui-mpc-wallet"] },
                             "config": {},
                             "linkedUser": {
@@ -5434,7 +5410,6 @@
                                         "solana-message",
                                         "evm-typed-data",
                                         "aptos-message",
-                                        "cardano-message",
                                         "sui-message"
                                     ],
                                     "description": "The type of signature"
@@ -5858,7 +5833,6 @@
                             "solana-message",
                             "evm-typed-data",
                             "aptos-message",
-                            "cardano-message",
                             "sui-message"
                         ],
                         "description": "The type of signature"
@@ -10449,34 +10423,6 @@
                         },
                         "required": ["type", "address"],
                         "title": "Aptos MPC wallet output"
-                    },
-                    {
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "type": "string",
-                                "enum": ["cardano-mpc-wallet"],
-                                "description": "The type of wallet configuration"
-                            },
-                            "config": { "description": "Cardano MPC wallet type specific configuration settings" },
-                            "address": {
-                                "type": "string",
-                                "description": "The onchain address of the wallet",
-                                "example": "0x1234567890123456789012345678901234567890"
-                            },
-                            "linkedUser": {
-                                "type": "string",
-                                "description": "The user that is linked to this wallet in format <locatorType>:<value>",
-                                "example": "email:test@test.com"
-                            },
-                            "createdAt": {
-                                "type": "number",
-                                "description": "ISO timestamp of when the wallet was created",
-                                "example": "2024-01-01T00:00:00.000Z"
-                            }
-                        },
-                        "required": ["type", "address"],
-                        "title": "Cardano MPC wallet output"
                     },
                     {
                         "type": "object",

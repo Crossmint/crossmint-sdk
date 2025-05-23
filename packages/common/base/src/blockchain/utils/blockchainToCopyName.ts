@@ -9,7 +9,6 @@ export const BLOCKCHAIN_TO_COPY_NAME: Record<BlockchainIncludingTestnet, string>
     polygon: "Polygon",
     "polygon-mumbai": "Polygon Mumbai",
     "polygon-amoy": "Polygon Amoy Testnet",
-    cardano: "Cardano",
     bsc: "BNB Smart Chain",
     "bsc-testnet": "BNB Smart Chain Testnet",
     sui: "Sui",
