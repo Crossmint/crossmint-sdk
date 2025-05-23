@@ -46,7 +46,6 @@ export const CryptoCurrency = {
     ...Erc20Currency,
     ...SplTokenCurrency,
     SOL: "sol",
-    ADA: "ada",
     BNB: "bnb",
     SUI: "sui",
     APT: "apt",

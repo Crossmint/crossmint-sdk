@@ -29,8 +29,6 @@ function getNFTLocator(nft: NFTOrNFTLocator) {
         case "polygon-amoy":
         case "bsc":
             return `${nft.chain}:${nft.contractAddress}:${nft.tokenId}`;
-        case "cardano":
-            return `${nft.chain}:${nft.assetId}`;
         default:
             throw new Error(`Invalid chain type ${JSON.stringify(nft)}`);
     }

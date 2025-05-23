@@ -12,21 +12,15 @@ export interface SolanaNFT {
     chain: "solana";
 }
 
-export interface CardanoNFT {
-    chain: "cardano";
-    assetId: string;
-}
-
 export type NFTLocator<T extends Blockchain> = `${T}:${string}${T extends EVMBlockchainIncludingTestnet
     ? `:${string}`
     : ""}`;
 
-export type NFT = SolanaNFT | EVMNFT | CardanoNFT;
+export type NFT = SolanaNFT | EVMNFT;
 
 export type NFTOrNFTLocator =
     | NFT
     | NFTLocator<"solana">
     | NFTLocator<"ethereum">
     | NFTLocator<"polygon">
-    | NFTLocator<"bsc">
-    | NFTLocator<"cardano">;
+    | NFTLocator<"bsc">;
