@@ -24,14 +24,14 @@ function EVMCrossmintAuthProvider({ children }: { children: React.ReactNode }) {
         <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_API_KEY || ""}>
             <CrossmintAuthProvider
                 authModalTitle="EVM Wallets Quickstart"
-                embeddedWallets={{
-                    createOnLogin: "all-users",
-                    type: "evm-smart-wallet",
-                    showPasskeyHelpers: true,
-                }}
                 loginMethods={["google", "twitter", "web3:evm-only"]}
             >
-                {children}
+                <CrossmintWalletProvider
+                    showPasskeyHelpers
+                    createOnLogin={{ walletType: "evm-smart-wallet", chain: "polygon-amoy" }}
+                >
+                    {children}
+                </CrossmintWalletProvider>
             </CrossmintAuthProvider>
         </CrossmintProvider>
     );
@@ -86,14 +86,11 @@ function SolanaCrossmintAuthProvider({ children }: { children: React.ReactNode }
         <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_API_KEY || ""}>
             <CrossmintAuthProvider
                 authModalTitle="Solana Wallets Quickstart"
-                embeddedWallets={{
-                    createOnLogin: "all-users",
-                    type: "solana-smart-wallet",
-                    showPasskeyHelpers: true,
-                }}
                 loginMethods={["google", "twitter", "web3:solana-only"]}
             >
-                {children}
+                <CrossmintWalletProvider showPasskeyHelpers createOnLogin={{ walletType: "solana-smart-wallet" }}>
+                    {children}
+                </CrossmintWalletProvider>
             </CrossmintAuthProvider>
         </CrossmintProvider>
     );

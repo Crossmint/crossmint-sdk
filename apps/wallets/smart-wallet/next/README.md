@@ -125,19 +125,15 @@ First, wrap your application with the `CrossmintProvider` and `CrossmintAuthProv
 
 // Important: this ensures the client SDK only runs on the client
 
-import { CrossmintProvider, CrossmintAuthProvider } from "@crossmint/client-sdk-react-ui";
+import { CrossmintProvider, CrossmintAuthProvider, CrossmintWalletProvider } from "@crossmint/client-sdk-react-ui";
 
 export default function App({ Component, pageProps }) {
     return (
         <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_API_KEY ?? ""}>
-            <CrossmintAuthProvider
-                embeddedWallets={{
-                    createOnLogin: "all-users",
-                    defaultChain: "polygon-amoy",
-                    type: "evm-smart-wallet",
-                }}
-            >
-                <Component {...pageProps} />
+            <CrossmintAuthProvider>
+                <CrossmintWalletProvider createOnLogin={{ walletType: "evm-smart-wallet", chain: "polygon-amoy" }}>
+                    <Component {...pageProps} />
+                </CrossmintWalletProvider>
             </CrossmintAuthProvider>
         </CrossmintProvider>
     );

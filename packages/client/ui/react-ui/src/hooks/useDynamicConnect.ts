@@ -5,24 +5,17 @@ import { isSolanaWallet } from "@dynamic-labs/solana";
 import { useCallback, useEffect } from "react";
 import type { EVMSignerInput, SolanaSignerInput } from "@crossmint/wallets-sdk";
 
-export function useDynamicConnect(
-    isWeb3Enabled: boolean,
-    setIsDynamicSdkLoaded: (sdkHasLoaded: boolean) => void,
-    accessToken?: string
-) {
+export function useDynamicConnect(setIsDynamicSdkLoaded: (sdkHasLoaded: boolean) => void, accessToken?: string) {
     const {
         primaryWallet: connectedDynamicWallet,
         sdkHasLoaded,
         removeWallet,
         handleUnlinkWallet,
     } = useDynamicContext();
-    const dynamicSdkHasLoaded = !isWeb3Enabled || sdkHasLoaded;
 
     useEffect(() => {
-        if (isWeb3Enabled) {
-            setIsDynamicSdkLoaded(dynamicSdkHasLoaded);
-        }
-    }, [dynamicSdkHasLoaded, isWeb3Enabled]);
+        setIsDynamicSdkLoaded(sdkHasLoaded);
+    }, [sdkHasLoaded]);
 
     const getAdminSigner = async () => {
         if (!connectedDynamicWallet) {
@@ -78,7 +71,7 @@ export function useDynamicConnect(
     }, [accessToken, connectedDynamicWallet, removeWallet, handleUnlinkWallet]);
 
     return {
-        sdkHasLoaded: dynamicSdkHasLoaded,
+        sdkHasLoaded,
         getAdminSigner,
         cleanup,
         isDynamicWalletConnected: !!connectedDynamicWallet,
