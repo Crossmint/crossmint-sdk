@@ -204,14 +204,33 @@ export class Wallet<C extends Chain> {
             throw new InvalidSignerError(`Signer ${signerLocator} not found in pending approvals`);
         }
 
-        const signature = await this.signer.sign(pendingApproval.message);
+        let signature: string | { r: string; s: string } | undefined;
+        let metadata: any | undefined;
+        if (transaction.walletType === "solana-smart-wallet" && this.signer.type === "external-wallet") {
+            signature = await this.signer.signTransaction?.(transaction.onChain.transaction);
+        }
+        if (transaction.walletType === "evm-smart-wallet" && this.signer.type === "external-wallet") {
+            signature = await this.signer.signMessage?.(pendingApproval.message);
+        }
+        if (this.signer.type === "passkey") {
+            const { signature: sig, metadata: meta } = await this.signer.sign(pendingApproval.message);
+            signature = {
+                r: sig.r.slice(0, 66),
+                s: `0x${sig.s.slice(66)}`,
+            };
+            metadata = meta;
+        }
+
+        if (signature == null) {
+            throw new SignatureNotFoundError("Signature not available");
+        }
 
         const approvedTransaction = await this.apiClient.approveTransaction(this.walletLocator, transaction.id, {
             approvals: [
                 {
                     signer: signerLocator,
-                    // @ts-ignore it's the proper signature expected by the API
                     signature,
+                    ...(metadata && { metadata }),
                 },
                 ...(signWithAdditionalSigners ? await signWithAdditionalSigners(pendingApproval) : []),
             ],
@@ -224,6 +243,7 @@ export class Wallet<C extends Chain> {
         return approvedTransaction;
     }
 
+    // This method is only applicable to EVM smart wallets
     protected async approveSignature(pendingApprovals: Array<PendingApproval>, signatureId: string) {
         const pendingApproval = pendingApprovals.find((approval) => approval.signer === this.signer.locator());
         if (!pendingApproval) {
@@ -231,9 +251,22 @@ export class Wallet<C extends Chain> {
         }
         const message = pendingApproval.message;
 
-        const signature = await this.signer.sign(message);
+        let signature: string | { r: string; s: string } | undefined;
+        let metadata: any | undefined;
 
-        if (signature === undefined) {
+        if (this.signer.type === "external-wallet") {
+            signature = await this.signer.signMessage?.(message);
+        }
+        if (this.signer.type === "passkey") {
+            const { signature: sig, metadata: meta } = await this.signer.sign(message);
+            signature = {
+                r: sig.r.slice(0, 66),
+                s: `0x${sig.s.slice(66)}`,
+            };
+            metadata = meta;
+        }
+
+        if (signature == null) {
             throw new SignatureNotFoundError("Signature not available");
         }
 
@@ -243,6 +276,7 @@ export class Wallet<C extends Chain> {
                     signer: this.signer.locator(),
                     // @ts-ignore the generated types are wrong
                     signature: signature,
+                    ...(metadata && { metadata }),
                 },
             ],
         });

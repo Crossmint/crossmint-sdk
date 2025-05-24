@@ -42,9 +42,7 @@ export class EVMWallet extends Wallet<EVMChain> {
             throw new TransactionNotCreatedError(JSON.stringify(transactionCreationResponse));
         }
 
-        const hash = await this.approveAndWait(transactionCreationResponse.id);
-
-        return hash;
+        return await this.approveAndWait(transactionCreationResponse.id);
     }
 
     public async signMessage(message: string): Promise<string> {

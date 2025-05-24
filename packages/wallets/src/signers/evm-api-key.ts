@@ -1,6 +1,6 @@
-import type { Signer } from "./types";
+import type { IApiKeySigner } from "./types";
 
-export class EVMApiKeySigner implements Signer {
+export class EVMApiKeySigner implements IApiKeySigner {
     type = "api-key" as const;
 
     constructor(private readonly address: string) {}

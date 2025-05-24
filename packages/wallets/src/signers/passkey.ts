@@ -1,7 +1,7 @@
 import { WebAuthnP256 } from "ox";
-import type { PasskeySignerConfig, Signer } from "./types";
+import type { IPasskeySigner, PasskeySignerConfig } from "./types";
 
-export class PasskeySigner implements Signer {
+export class PasskeySigner implements IPasskeySigner {
     type = "passkey" as const;
     id: string;
 
@@ -13,11 +13,8 @@ export class PasskeySigner implements Signer {
         return `evm-passkey:${this.id}`;
     }
 
-    async sign(message: string) {
-        if (this.config.onSignWithPasskey) {
-            return this.config.onSignWithPasskey(message);
-        }
-        const { metadata, signature } = await WebAuthnP256.sign({
+    async sign(message: string): Promise<{ signature: { r: string; s: string }; metadata: any }> {
+        const { signature, metadata } = await WebAuthnP256.sign({
             credentialId: this.id,
             challenge: message as `0x${string}`,
         });

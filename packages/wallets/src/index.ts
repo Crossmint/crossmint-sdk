@@ -6,3 +6,4 @@ export * from "./wallets/solana";
 export * from "./wallets/evm";
 export * from "./wallets/types";
 export * from "./chains/chains";
+export * from "./signers/types";

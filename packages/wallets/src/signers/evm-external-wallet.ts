@@ -1,21 +1,48 @@
-import { ExternalWalletSignerConfig, Signer } from "./types";
+import type { Account, EIP1193Provider as ViemEIP1193Provider } from "viem";
+import type { ExternalWalletSignerConfig, GenericEIP1193Provider, IExternalWalletSigner } from "./types";
 
-export class EVMExternalWalletSigner implements Signer {
+export class EVMExternalWalletSigner implements IExternalWalletSigner {
     type = "external-wallet" as const;
-
     address: string;
+    provider?: GenericEIP1193Provider | ViemEIP1193Provider;
+    viemAccount?: Account;
 
-    constructor(private config: ExternalWalletSignerConfig) {
+    constructor(config: ExternalWalletSignerConfig) {
         this.address = config.address;
+        this.provider = config.provider;
+        this.viemAccount = config.viemAccount;
     }
 
     locator() {
         return `evm-keypair:${this.address}`;
     }
 
-    async sign(message: string) {
-        // call onSignMessage with the message if set
-        // else sign the message with the passed provider, viem v2 or eip1193
-        return "123";
+    async signMessage(message: string) {
+        if (this.provider != null) {
+            const signature = await this.provider.request({
+                method: "personal_sign",
+                params: [message, this.address] as any,
+            });
+            if (signature == null) {
+                throw new Error(
+                    "[EVMExternalWalletSigner] Failed to sign message: EIP1193 provider signMessage returned null"
+                );
+            }
+            return signature as string;
+        }
+        if (this.viemAccount?.signMessage != null) {
+            const signature = await this.viemAccount.signMessage({
+                message: {
+                    raw: message as `0x${string}`,
+                },
+            });
+            if (signature == null) {
+                throw new Error(
+                    "[EVMExternalWalletSigner] Failed to sign message: Viem account signMessage returned null"
+                );
+            }
+            return signature;
+        }
+        throw new Error("No signer provider or viem account provided");
     }
 }

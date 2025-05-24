@@ -1,6 +1,6 @@
-import { EmailSignerConfig, Signer } from "./types";
+import { EmailSignerConfig, IEmailSigner } from "./types";
 
-export class EmailSigner implements Signer {
+export class EmailSigner implements IEmailSigner {
     type = "email" as const;
 
     constructor(private config: EmailSignerConfig) {}
