@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.19.20
+
+### Patch Changes
+
+- 611585d: Adapt endpoint
+
 ## 1.19.19
 
 ### Patch Changes
