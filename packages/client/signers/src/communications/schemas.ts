@@ -16,6 +16,15 @@ const SignatureSchema = z.object({
     encoding: EncodingSchema.describe("The encoding format of the signature payload"),
 });
 
+const PublicKeyMappingSchema = z.record(KeyTypeSchema, UserPublicKeySchema.omit({ keyType: true }));
+const ReadySignerResponseSchema = z.object({
+    signerStatus: z.enum(["ready"]).describe("Current status of the signer"),
+    publicKeys: PublicKeyMappingSchema.describe("The public keys of the created signer"),
+});
+const NewDeviceSignerResponseSchema = z.object({
+    signerStatus: z.enum(["new-device"]).describe("Current status of the signer"),
+});
+
 const AuthenticatedEventRequest = z.object({
     authData: z
         .object({
@@ -36,12 +45,8 @@ const ErrorResponse = z.object({
     data: z.any().optional().describe("Optional additional error data"),
 });
 
-const ResultResponse = <T extends z.ZodRawShape>(schema: z.ZodObject<T>) =>
-    ErrorResponse.or(
-        schema.extend({
-            status: z.literal("success"),
-        })
-    );
+const ResultResponse = <T extends z.ZodTypeAny>(schema: T) =>
+    ErrorResponse.or(z.object({ status: z.literal("success") }).and(schema));
 
 export const GetAttestationPayloadSchema = {
     request: z.object({
@@ -62,15 +67,10 @@ export const StartOnboardingPayloadSchema = {
         data: z
             .object({
                 authId: z.string().describe("Authentication identifier for the signer"),
-                keyType: KeyTypeSchema.describe("Type of cryptographic key to create"),
             })
             .describe("Data needed to create a new signer"),
     }),
-    response: ResultResponse(
-        z.object({
-            publicKey: UserPublicKeySchema.optional().describe("The public key of the created signer"),
-        })
-    ),
+    response: ResultResponse(z.union([ReadySignerResponseSchema, NewDeviceSignerResponseSchema])),
 };
 
 export const CompleteOnboardingPayloadSchema = {
@@ -78,15 +78,10 @@ export const CompleteOnboardingPayloadSchema = {
         data: z
             .object({
                 onboardingAuthentication: OnboardingAuthenticationDataSchema,
-                keyType: KeyTypeSchema.describe("Type of cryptographic key to use"),
             })
             .describe("Data needed for encrypted OTP verification"),
     }),
-    response: ResultResponse(
-        z.object({
-            publicKey: UserPublicKeySchema.describe("The public key created for the authenticated signer"),
-        })
-    ),
+    response: ResultResponse(ReadySignerResponseSchema),
 };
 
 export const GetPublicKeyPayloadSchema = {
@@ -106,11 +101,7 @@ export const GetPublicKeyPayloadSchema = {
 
 export const GetStatusPayloadSchema = {
     request: AuthenticatedEventRequest,
-    response: ResultResponse(
-        z.object({
-            signerStatus: z.enum(["ready", "new-device"]).describe("Current status of the signer"),
-        })
-    ),
+    response: ResultResponse(z.union([ReadySignerResponseSchema, NewDeviceSignerResponseSchema])),
 };
 
 export const SignPayloadSchema = {

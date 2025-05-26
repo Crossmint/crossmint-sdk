@@ -188,7 +188,6 @@ export function CrossmintSignerProvider({
                         apiKey,
                     },
                     data: {
-                        keyType: "ed25519",
                         authId: `email:${email}`,
                     },
                 },
@@ -199,7 +198,7 @@ export function CrossmintSignerProvider({
             }
 
             // If the signer already exists, skip OTP flow and continue BAU
-            if (res.status === "success" && res.publicKey != null) {
+            if (res.status === "success" && res.signerStatus === "ready") {
                 console.log("Signer already exists, skipping OTP flow");
                 setStep("initial");
                 setDialogOpen(false);
@@ -234,7 +233,6 @@ export function CrossmintSignerProvider({
                         onboardingAuthentication: {
                             encryptedOtp: token,
                         },
-                        keyType: "ed25519",
                     },
                 },
             });

@@ -166,12 +166,12 @@ export function CrossmintRecoveryKeyProvider({
                     responseEvent: "response:start-onboarding",
                     data: {
                         authData: { jwt, apiKey },
-                        data: { authId, keyType: "ed25519" },
+                        data: { authId },
                     },
                     options: defaultEventOptions,
                 });
 
-                if (response?.status === "success" && response.publicKey) {
+                if (response?.status === "success" && response.signerStatus === "ready") {
                     setNeedsAuth(false);
                     return;
                 }
@@ -211,15 +211,14 @@ export function CrossmintRecoveryKeyProvider({
                     data: {
                         authData: { jwt, apiKey },
                         data: {
-                            keyType: "ed25519",
                             onboardingAuthentication: { encryptedOtp },
                         },
                     },
                     options: defaultEventOptions,
                 });
 
-                if (response?.status === "success" && response.publicKey) {
-                    console.log("[verifyOtp] OTP validation successful. Signer address:", response.publicKey);
+                if (response?.status === "success") {
+                    console.log("[verifyOtp] OTP validation successful");
                     setNeedsAuth(false);
                     // Resolve the auth promise since verification was successful
                     authPromiseRef.current?.resolve();
@@ -353,17 +352,24 @@ export function CrossmintRecoveryKeyProvider({
 
         try {
             const signerResponse = await parent.sendAction({
-                event: "request:get-public-key",
-                responseEvent: "response:get-public-key",
+                event: "request:get-status",
+                responseEvent: "response:get-status",
                 data: {
                     authData: { jwt, apiKey },
-                    data: { keyType: "ed25519" },
                 },
                 options: defaultEventOptions,
             });
-            if (signerResponse?.status === "success" && signerResponse.publicKey) {
-                assertCorrectPublicKey(signerResponse.publicKey);
-                const existingSigner = buildRecoverySigner(signerResponse.publicKey.bytes);
+            if (signerResponse?.status === "success" && signerResponse.signerStatus === "ready") {
+                const publicKey = signerResponse.publicKeys?.ed25519;
+                if (publicKey == null || publicKey.bytes == null || publicKey.encoding == null) {
+                    throw new Error("No public key found");
+                }
+
+                assertCorrectPublicKey({
+                    ...publicKey,
+                    keyType: "ed25519",
+                });
+                const existingSigner = buildRecoverySigner(publicKey.bytes);
                 setNeedsAuth(false);
                 await getOrCreateWallet({
                     type: "solana-smart-wallet",
