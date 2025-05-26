@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.4.19
+
+### Patch Changes
+
+- 611585d: Adapt endpoint
+
 ## 0.4.18
 
 ### Patch Changes
