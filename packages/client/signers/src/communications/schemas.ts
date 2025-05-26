@@ -46,7 +46,7 @@ const ErrorResponse = z.object({
 });
 
 const ResultResponse = <T extends z.ZodTypeAny>(schema: T) =>
-    ErrorResponse.or(z.object({ status: z.literal("success") }).and(schema));
+    z.discriminatedUnion("status", [ErrorResponse, z.object({ status: z.literal("success") }).and(schema)]);
 
 export const GetAttestationPayloadSchema = {
     request: z.object({
@@ -72,6 +72,7 @@ export const StartOnboardingPayloadSchema = {
     }),
     response: ResultResponse(z.union([ReadySignerResponseSchema, NewDeviceSignerResponseSchema])),
 };
+type StartOnboardingPayload = z.infer<typeof StartOnboardingPayloadSchema.response>;
 
 export const CompleteOnboardingPayloadSchema = {
     request: AuthenticatedEventRequest.extend({
