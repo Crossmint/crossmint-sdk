@@ -64,13 +64,13 @@ export const StartOnboardingPayloadSchema = {
         data: z
             .object({
                 authId: z.string().describe("Authentication identifier for the signer"),
-                keyType: KeyTypeSchema.describe("Type of cryptographic key to create"),
             })
             .describe("Data needed to create a new signer"),
     }),
     response: ResultResponse(
         z.object({
-            publicKey: UserPublicKeySchema.optional().describe("The public key of the created signer"),
+            signerStatus: z.enum(["ready", "new-device"]).describe("Current status of the signer"),
+            publicKeys: PublicKeyMappingSchema.optional().describe("The public keys of the created signer"),
         })
     ),
 };
