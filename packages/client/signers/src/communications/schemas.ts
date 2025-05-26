@@ -38,12 +38,8 @@ const ErrorResponse = z.object({
     data: z.any().optional().describe("Optional additional error data"),
 });
 
-const ResultResponse = <T extends z.ZodRawShape>(schema: z.ZodObject<T>) =>
-    ErrorResponse.or(
-        schema.extend({
-            status: z.literal("success"),
-        })
-    );
+const ResultResponse = <T extends z.ZodTypeAny>(schema: T) =>
+    ErrorResponse.or(z.object({ status: z.literal("success") }).and(schema));
 
 export const GetAttestationPayloadSchema = {
     request: z.object({
@@ -68,10 +64,15 @@ export const StartOnboardingPayloadSchema = {
             .describe("Data needed to create a new signer"),
     }),
     response: ResultResponse(
-        z.object({
-            signerStatus: z.enum(["ready", "new-device"]).describe("Current status of the signer"),
-            publicKeys: PublicKeyMappingSchema.optional().describe("The public keys of the created signer"),
-        })
+        z.union([
+            z.object({
+                signerStatus: z.enum(["ready"]).describe("Current status of the signer"),
+                publicKeys: PublicKeyMappingSchema.describe("The public keys of the created signer"),
+            }),
+            z.object({
+                signerStatus: z.enum(["new-device"]).describe("Current status of the signer"),
+            }),
+        ])
     ),
 };
 
@@ -86,7 +87,7 @@ export const CompleteOnboardingPayloadSchema = {
     response: ResultResponse(
         z.object({
             signerStatus: z.enum(["ready"]).describe("Current status of the signer"),
-            publicKey: PublicKeyMappingSchema.describe("The public keys created for the authenticated signer"),
+            publicKeys: PublicKeyMappingSchema.describe("The public keys created for the authenticated signer"),
         })
     ),
 };
@@ -109,12 +110,15 @@ export const GetPublicKeyPayloadSchema = {
 export const GetStatusPayloadSchema = {
     request: AuthenticatedEventRequest,
     response: ResultResponse(
-        z.object({
-            signerStatus: z.enum(["ready", "new-device"]).describe("Current status of the signer"),
-            publicKeys: PublicKeyMappingSchema.optional().describe(
-                "The public keys created for the authenticated signer"
-            ),
-        })
+        z.union([
+            z.object({
+                signerStatus: z.enum(["ready"]).describe("Current status of the signer"),
+                publicKeys: PublicKeyMappingSchema.describe("The public keys of the created signer"),
+            }),
+            z.object({
+                signerStatus: z.enum(["new-device"]).describe("Current status of the signer"),
+            }),
+        ])
     ),
 };
 

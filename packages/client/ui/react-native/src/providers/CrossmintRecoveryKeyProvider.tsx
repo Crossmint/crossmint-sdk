@@ -166,12 +166,12 @@ export function CrossmintRecoveryKeyProvider({
                     responseEvent: "response:start-onboarding",
                     data: {
                         authData: { jwt, apiKey },
-                        data: { authId, keyType: "ed25519" },
+                        data: { authId },
                     },
                     options: defaultEventOptions,
                 });
 
-                if (response?.status === "success" && response.publicKey) {
+                if (response?.status === "success" && response.signerStatus === "ready") {
                     setNeedsAuth(false);
                     return;
                 }
@@ -217,8 +217,8 @@ export function CrossmintRecoveryKeyProvider({
                     options: defaultEventOptions,
                 });
 
-                if (response?.status === "success" && response.publicKey) {
-                    console.log("[verifyOtp] OTP validation successful. Signer address:", response.publicKey);
+                if (response?.status === "success") {
+                    console.log("[verifyOtp] OTP validation successful");
                     setNeedsAuth(false);
                     // Resolve the auth promise since verification was successful
                     authPromiseRef.current?.resolve();
