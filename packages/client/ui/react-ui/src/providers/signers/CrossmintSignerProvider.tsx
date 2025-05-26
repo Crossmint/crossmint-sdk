@@ -75,7 +75,7 @@ export function CrossmintSignerProvider({
             const baseUrl = environmentToCrossmintBaseURL(
                 apiKey.startsWith("ck_development_") ? "development" : "staging"
             );
-            const response = await fetch(`${baseUrl}/api/v1/signers/get-public-key`, {
+            const response = await fetch(`${baseUrl}/api/v1/signers/derive-public-key`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -84,7 +84,7 @@ export function CrossmintSignerProvider({
                 },
                 body: JSON.stringify({
                     authId: `email:${args.email}`,
-                    signingAlgorithm: "ed25519",
+                    keyType: "ed25519",
                 }),
             });
             const responseData = await response.json();

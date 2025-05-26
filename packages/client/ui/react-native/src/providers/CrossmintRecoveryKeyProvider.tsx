@@ -463,7 +463,7 @@ export function CrossmintRecoveryKeyProvider({
             try {
                 const baseUrl = validateApiKeyAndGetCrossmintBaseUrl(apiKey);
 
-                const response = await fetch(`${baseUrl}api/unstable/wallets/ncs/irrelevant/public-key`, {
+                const response = await fetch(`${baseUrl}api/v1/signers/derive-public-key`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -473,7 +473,7 @@ export function CrossmintRecoveryKeyProvider({
                     },
                     body: JSON.stringify({
                         authId: `email:${emailInput}`,
-                        signingAlgorithm: "EDDSA_ED25519",
+                        keyType: "ed25519",
                     }),
                 });
 
@@ -483,14 +483,18 @@ export function CrossmintRecoveryKeyProvider({
                 }
 
                 const responseData = await response.json();
-                if (!responseData.publicKey) {
-                    throw new Error("Fetched data does not contain a public key.");
+                const publicKey = responseData.publicKey;
+                if (publicKey == null) {
+                    throw new Error("No public key found");
+                }
+                if (publicKey.encoding !== "base58" || publicKey.keyType !== "ed25519" || publicKey.bytes == null) {
+                    throw new Error(
+                        "Not supported. Expected public key to be in base58 encoding and ed25519 key type. Got: " +
+                            JSON.stringify(publicKey)
+                    );
                 }
 
-                const base64PublicKey = responseData.publicKey;
-                const binaryData = Uint8Array.from(atob(base64PublicKey), (c) => c.charCodeAt(0));
-                const adminSignerAddress = bs58.encode(binaryData);
-
+                const adminSignerAddress = publicKey.bytes;
                 const fetchedSigner = buildRecoverySigner(adminSignerAddress);
 
                 await getOrCreateWallet({
