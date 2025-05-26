@@ -2,7 +2,6 @@ import type { z } from "zod";
 
 import {
     GetAttestationPayloadSchema,
-    GetPublicKeyPayloadSchema,
     GetStatusPayloadSchema,
     SignPayloadSchema,
     StartOnboardingPayloadSchema,
@@ -12,7 +11,6 @@ import {
 export const SIGNER_EVENTS = [
     "start-onboarding",
     "complete-onboarding",
-    "get-public-key",
     "sign",
     "get-status",
     "get-attestation",
@@ -23,7 +21,6 @@ export const signerInboundEvents = {
     "request:start-onboarding": StartOnboardingPayloadSchema.request,
     "request:get-attestation": GetAttestationPayloadSchema.request,
     "request:complete-onboarding": CompleteOnboardingPayloadSchema.request,
-    "request:get-public-key": GetPublicKeyPayloadSchema.request,
     "request:sign": SignPayloadSchema.request,
     "request:get-status": GetStatusPayloadSchema.request,
 } as const;
@@ -32,7 +29,6 @@ export const signerOutboundEvents = {
     "response:start-onboarding": StartOnboardingPayloadSchema.response,
     "response:get-attestation": GetAttestationPayloadSchema.response,
     "response:complete-onboarding": CompleteOnboardingPayloadSchema.response,
-    "response:get-public-key": GetPublicKeyPayloadSchema.response,
     "response:sign": SignPayloadSchema.response,
     "response:get-status": GetStatusPayloadSchema.response,
 } as const;

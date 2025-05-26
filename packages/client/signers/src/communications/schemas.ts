@@ -17,6 +17,13 @@ const SignatureSchema = z.object({
 });
 
 const PublicKeyMappingSchema = z.record(KeyTypeSchema, UserPublicKeySchema.omit({ keyType: true }));
+const ReadySignerResponseSchema = z.object({
+    signerStatus: z.enum(["ready"]).describe("Current status of the signer"),
+    publicKeys: PublicKeyMappingSchema.describe("The public keys of the created signer"),
+});
+const NewDeviceSignerResponseSchema = z.object({
+    signerStatus: z.enum(["new-device"]).describe("Current status of the signer"),
+});
 
 const AuthenticatedEventRequest = z.object({
     authData: z
@@ -63,17 +70,7 @@ export const StartOnboardingPayloadSchema = {
             })
             .describe("Data needed to create a new signer"),
     }),
-    response: ResultResponse(
-        z.union([
-            z.object({
-                signerStatus: z.enum(["ready"]).describe("Current status of the signer"),
-                publicKeys: PublicKeyMappingSchema.describe("The public keys of the created signer"),
-            }),
-            z.object({
-                signerStatus: z.enum(["new-device"]).describe("Current status of the signer"),
-            }),
-        ])
-    ),
+    response: ResultResponse(z.union([ReadySignerResponseSchema, NewDeviceSignerResponseSchema])),
 };
 
 export const CompleteOnboardingPayloadSchema = {
@@ -84,12 +81,7 @@ export const CompleteOnboardingPayloadSchema = {
             })
             .describe("Data needed for encrypted OTP verification"),
     }),
-    response: ResultResponse(
-        z.object({
-            signerStatus: z.enum(["ready"]).describe("Current status of the signer"),
-            publicKeys: PublicKeyMappingSchema.describe("The public keys created for the authenticated signer"),
-        })
-    ),
+    response: ResultResponse(ReadySignerResponseSchema),
 };
 
 export const GetPublicKeyPayloadSchema = {
@@ -109,17 +101,7 @@ export const GetPublicKeyPayloadSchema = {
 
 export const GetStatusPayloadSchema = {
     request: AuthenticatedEventRequest,
-    response: ResultResponse(
-        z.union([
-            z.object({
-                signerStatus: z.enum(["ready"]).describe("Current status of the signer"),
-                publicKeys: PublicKeyMappingSchema.describe("The public keys of the created signer"),
-            }),
-            z.object({
-                signerStatus: z.enum(["new-device"]).describe("Current status of the signer"),
-            }),
-        ])
-    ),
+    response: ResultResponse(z.union([ReadySignerResponseSchema, NewDeviceSignerResponseSchema])),
 };
 
 export const SignPayloadSchema = {
