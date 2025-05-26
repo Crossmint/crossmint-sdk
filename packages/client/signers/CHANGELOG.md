@@ -1,5 +1,11 @@
 # @crossmint/client-signers
 
+## 0.0.15
+
+### Patch Changes
+
+- 660e538: Adapt event interface (NCS)
+
 ## 0.0.14
 
 ### Patch Changes

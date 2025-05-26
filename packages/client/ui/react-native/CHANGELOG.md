@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.4.18
+
+### Patch Changes
+
+- 660e538: Adapt event interface (NCS)
+- Updated dependencies [660e538]
+  - @crossmint/client-signers@0.0.15
+
 ## 0.4.17
 
 ### Patch Changes

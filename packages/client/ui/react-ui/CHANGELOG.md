@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.19.19
+
+### Patch Changes
+
+- 660e538: Adapt event interface (NCS)
+- Updated dependencies [660e538]
+  - @crossmint/client-signers@0.0.15
+
 ## 1.19.18
 
 ### Patch Changes
