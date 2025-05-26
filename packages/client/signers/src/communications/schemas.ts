@@ -16,6 +16,8 @@ const SignatureSchema = z.object({
     encoding: EncodingSchema.describe("The encoding format of the signature payload"),
 });
 
+const PublicKeyMappingSchema = z.record(KeyTypeSchema, UserPublicKeySchema.omit({ keyType: true }));
+
 const AuthenticatedEventRequest = z.object({
     authData: z
         .object({
@@ -78,13 +80,13 @@ export const CompleteOnboardingPayloadSchema = {
         data: z
             .object({
                 onboardingAuthentication: OnboardingAuthenticationDataSchema,
-                keyType: KeyTypeSchema.describe("Type of cryptographic key to use"),
             })
             .describe("Data needed for encrypted OTP verification"),
     }),
     response: ResultResponse(
         z.object({
-            publicKey: UserPublicKeySchema.describe("The public key created for the authenticated signer"),
+            signerStatus: z.enum(["ready"]).describe("Current status of the signer"),
+            publicKey: PublicKeyMappingSchema.describe("The public keys created for the authenticated signer"),
         })
     ),
 };
@@ -109,6 +111,9 @@ export const GetStatusPayloadSchema = {
     response: ResultResponse(
         z.object({
             signerStatus: z.enum(["ready", "new-device"]).describe("Current status of the signer"),
+            publicKeys: PublicKeyMappingSchema.optional().describe(
+                "The public keys created for the authenticated signer"
+            ),
         })
     ),
 };

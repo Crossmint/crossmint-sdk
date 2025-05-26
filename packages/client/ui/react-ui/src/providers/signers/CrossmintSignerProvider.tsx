@@ -234,7 +234,6 @@ export function CrossmintSignerProvider({
                         onboardingAuthentication: {
                             encryptedOtp: token,
                         },
-                        keyType: "ed25519",
                     },
                 },
             });

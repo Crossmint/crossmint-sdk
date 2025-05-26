@@ -211,7 +211,6 @@ export function CrossmintRecoveryKeyProvider({
                     data: {
                         authData: { jwt, apiKey },
                         data: {
-                            keyType: "ed25519",
                             onboardingAuthentication: { encryptedOtp },
                         },
                     },
