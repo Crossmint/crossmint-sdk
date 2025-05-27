@@ -1,9 +1,11 @@
 import { z } from "zod";
 
 const KeyTypeSchema = z.enum(["secp256k1", "ed25519"]).describe("Type of cryptographic key");
+export const KEY_TYPES = Object.values(KeyTypeSchema.options);
 export type KeyType = z.infer<typeof KeyTypeSchema>;
 const EncodingSchema = z.enum(["base58", "base64", "hex"]).describe("Encoding format for the key or data");
 export type Encoding = z.infer<typeof EncodingSchema>;
+export const KEY_ENCODINGS = Object.values(EncodingSchema.options);
 
 const UserPublicKeySchema = z.object({
     bytes: z.string().describe("The encoded public key value"),
@@ -118,6 +120,21 @@ export const SignPayloadSchema = {
         z.object({
             signature: SignatureSchema.describe("The generated signature"),
             publicKey: UserPublicKeySchema.describe("The public key that signed the data"),
+        })
+    ),
+};
+
+export const ExportKeysPayloadSchema = {
+    request: AuthenticatedEventRequest.extend({
+        data: z
+            .object({
+                keyTypes: z.array(KeyTypeSchema).default(KEY_TYPES).describe("Types of cryptographic keys to export"),
+            })
+            .describe("Data needed to export keys"),
+    }),
+    response: ResultResponse(
+        z.object({
+            publicKeys: PublicKeyMappingSchema.describe("The public keys of the signer for the active user"),
         })
     ),
 };
