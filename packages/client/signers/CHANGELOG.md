@@ -1,5 +1,11 @@
 # @crossmint/client-signers
 
+## 0.0.16
+
+### Patch Changes
+
+- f27237a: NCS: add export-keys event
+
 ## 0.0.15
 
 ### Patch Changes
