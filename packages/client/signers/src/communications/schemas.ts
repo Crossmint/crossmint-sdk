@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 const KeyTypeSchema = z.enum(["secp256k1", "ed25519"]).describe("Type of cryptographic key");
+const KEY_TYPES = Object.values(KeyTypeSchema.options);
 export type KeyType = z.infer<typeof KeyTypeSchema>;
 const EncodingSchema = z.enum(["base58", "base64", "hex"]).describe("Encoding format for the key or data");
 export type Encoding = z.infer<typeof EncodingSchema>;
@@ -126,7 +127,7 @@ export const ExportKeysPayloadSchema = {
     request: AuthenticatedEventRequest.extend({
         data: z
             .object({
-                keyTypes: z.array(KeyTypeSchema).describe("Types of cryptographic keys to export"),
+                keyTypes: z.array(KeyTypeSchema).default(KEY_TYPES).describe("Types of cryptographic keys to export"),
             })
             .describe("Data needed to export keys"),
     }),
