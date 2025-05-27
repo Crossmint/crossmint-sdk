@@ -132,7 +132,7 @@ export const ExportKeysPayloadSchema = {
     }),
     response: ResultResponse(
         z.object({
-            publicKeys: PublicKeyMappingSchema.describe("The public keys of the created signer"),
+            publicKeys: PublicKeyMappingSchema.describe("The public keys of the signer for the active user"),
         })
     ),
 };
