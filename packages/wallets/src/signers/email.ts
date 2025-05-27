@@ -1,9 +1,9 @@
-import type { EmailSignerConfig, Signer } from "./types";
+import type { EmailInternalSignerConfig, Signer } from "./types";
 
 export class EmailSigner implements Signer {
     type = "email" as const;
 
-    constructor(private config: EmailSignerConfig) {}
+    constructor(private config: EmailInternalSignerConfig) {}
 
     // TODO: update for the wallet locator
     locator() {

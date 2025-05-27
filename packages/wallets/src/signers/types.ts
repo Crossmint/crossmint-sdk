@@ -16,15 +16,27 @@ export type EmailSignerConfig = {
     ) => Promise<void>;
 };
 
-export type ExternalWalletSignerConfig = {
+export type BaseExternalWalletSignerConfig = {
     type: "external-wallet";
     address: string;
-    // For EVM wallets
+};
+
+export type EvmExternalWalletSignerConfig = BaseExternalWalletSignerConfig & {
     provider?: GenericEIP1193Provider | ViemEIP1193Provider;
     viemAccount?: Account;
-    // For Solana wallets
-    onSignTransaction: (transaction: VersionedTransaction) => Promise<VersionedTransaction>;
 };
+
+export type SolanaExternalWalletSignerConfig =
+    BaseExternalWalletSignerConfig & {
+        onSignTransaction: (
+            transaction: VersionedTransaction
+        ) => Promise<VersionedTransaction>;
+    };
+
+export type ExternalWalletSignerConfigForChain<C extends Chain> =
+    C extends SolanaChain
+        ? SolanaExternalWalletSignerConfig
+        : EvmExternalWalletSignerConfig;
 
 // Generic EIP1193 Provider interface that should work with different implementations
 export interface GenericEIP1193Provider {
@@ -35,16 +47,45 @@ export interface GenericEIP1193Provider {
 
 export type ApiKeySignerConfig = { type: "api-key" };
 
-export type BaseSignerConfig = EmailSignerConfig | ExternalWalletSignerConfig | ApiKeySignerConfig;
+export type BaseSignerConfig<C extends Chain> =
+    | EmailSignerConfig
+    | ExternalWalletSignerConfigForChain<C>
+    | ApiKeySignerConfig;
 
 export type PasskeySignerConfig = {
     type: "passkey";
     name?: string;
-    id?: string;
-    onCreatePasskey?: (name: string) => Promise<{ id: string; publicKey: { x: string; y: string } }>;
+    onCreatePasskey?: (
+        name: string
+    ) => Promise<{ id: string; publicKey: { x: string; y: string } }>;
     onSignWithPasskey?: (message: string) => Promise<PasskeySignResult>;
 };
 
+////////////////////////////////////////////////////////////
+// Internal signer config
+////////////////////////////////////////////////////////////
+export type EmailInternalSignerConfig = EmailSignerConfig;
+
+export type PasskeyInternalSignerConfig = PasskeySignerConfig & {
+    id: string;
+};
+
+export type ApiKeyInternalSignerConfig = ApiKeySignerConfig & {
+    address: string;
+};
+
+export type ExternalWalletInternalSignerConfig<C extends Chain> =
+    ExternalWalletSignerConfigForChain<C>;
+
+export type InternalSignerConfig<C extends Chain> =
+    | EmailInternalSignerConfig
+    | PasskeyInternalSignerConfig
+    | ApiKeyInternalSignerConfig
+    | ExternalWalletInternalSignerConfig<C>;
+
+////////////////////////////////////////////////////////////
+// Signers
+////////////////////////////////////////////////////////////
 export type SimpleSignResult = {
     signature: string;
 };
@@ -58,8 +99,8 @@ export type PasskeySignResult = {
 };
 
 export type SignerConfigForChain<C extends Chain> = C extends SolanaChain
-    ? BaseSignerConfig
-    : PasskeySignerConfig | BaseSignerConfig;
+    ? BaseSignerConfig<C>
+    : PasskeySignerConfig | BaseSignerConfig<C>;
 
 ////////////////////////////////////////////////////////////
 // Signer base types

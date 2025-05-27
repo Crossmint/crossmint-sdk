@@ -1,5 +1,5 @@
 import { PublicKey, VersionedTransaction } from "@solana/web3.js";
-import type { ExternalWalletSignerConfig, Signer } from "./types";
+import type { Signer, SolanaExternalWalletSignerConfig } from "./types";
 import base58 from "bs58";
 import { TransactionFailedError } from "@/utils/errors";
 
@@ -8,7 +8,7 @@ export class SolanaExternalWalletSigner implements Signer {
     address: string;
     onSignTransaction: (transaction: VersionedTransaction) => Promise<VersionedTransaction>;
 
-    constructor(config: ExternalWalletSignerConfig) {
+    constructor(config: SolanaExternalWalletSignerConfig) {
         this.address = config.address;
         this.onSignTransaction = config.onSignTransaction;
     }

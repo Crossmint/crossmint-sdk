@@ -1,12 +1,12 @@
-import type { Signer } from "./types";
+import type { ApiKeyInternalSignerConfig, Signer } from "./types";
 
 export class SolanaApiKeySigner implements Signer {
     type = "api-key" as const;
 
-    constructor(private readonly address: string) {}
+    constructor(private readonly config: ApiKeyInternalSignerConfig) {}
 
     locator() {
-        return `solana-fireblocks-custodial:${this.address}`;
+        return `solana-fireblocks-custodial:${this.config.address}`;
     }
 
     async signMessage() {

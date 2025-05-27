@@ -101,11 +101,14 @@ export class Wallet<C extends Chain> {
      * @param signer - The signer
      * @returns The delegated signer
      */
-    public async grantPermission({ to }: { to: string }) {
-        const response = await this.apiClient.registerSigner(this.walletLocator, {
-            signer: to,
-            chain: this.chain === "solana" ? undefined : this.chain,
-        });
+    public async updatePermissions({ signer }: { signer: string }) {
+        const response = await this.apiClient.registerSigner(
+            this.walletLocator,
+            {
+                signer: signer,
+                chain: this.chain === "solana" ? undefined : this.chain,
+            }
+        );
 
         if ("error" in response) {
             throw new Error(`Failed to register signer: ${JSON.stringify(response.error)}`);
@@ -148,7 +151,7 @@ export class Wallet<C extends Chain> {
                 // If there's a colon, keep everything after it; otherwise treat the whole string as “rest”
                 const address = colonIndex >= 0 ? signer.locator.slice(colonIndex + 1) : signer.locator;
                 return {
-                    for: `external-wallet:${address}`,
+                    signer: `external-wallet:${address}`,
                 };
             }) ?? []
         );

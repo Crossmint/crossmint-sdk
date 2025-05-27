@@ -14,7 +14,7 @@ export interface SolanaTransactionInput {
 }
 
 export type Permission = {
-    for: string;
+    signer: string;
 };
 
 // Approvals

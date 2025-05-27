@@ -4,28 +4,33 @@ import { EVMExternalWalletSigner } from "./evm-external-wallet";
 import { PasskeySigner } from "./passkey";
 import { EVMApiKeySigner } from "./evm-api-key";
 import { SolanaApiKeySigner } from "./solana-api-key";
-
 import type { Chain } from "../chains/chains";
-import type { Signer, SignerConfigForChain } from "./types";
+import type {
+    InternalSignerConfig,
+    Signer,
+    SolanaExternalWalletSignerConfig,
+} from "./types";
 
-export function createSigner<C extends Chain>(
+export function assembleSigner<C extends Chain>(
     chain: C,
-    raw: SignerConfigForChain<C> | { type: "api-key-legacy"; address: string }
+    config: InternalSignerConfig<C>
 ): Signer {
-    switch (raw.type) {
+    switch (config.type) {
         case "email":
-            return new EmailSigner(raw);
+            return new EmailSigner(config);
 
-        case "api-key-legacy":
-            return chain === "solana" ? new SolanaApiKeySigner(raw.address) : new EVMApiKeySigner(raw.address);
+        case "api-key":
+            return chain === "solana"
+                ? new SolanaApiKeySigner(config)
+                : new EVMApiKeySigner(config);
 
         case "external-wallet":
-            return chain === "solana" ? new SolanaExternalWalletSigner(raw) : new EVMExternalWalletSigner(raw);
+            // TODO: Figure out way to avoid this cast
+            return chain === "solana"
+                ? new SolanaExternalWalletSigner(config as SolanaExternalWalletSignerConfig)
+                : new EVMExternalWalletSigner(config);
 
         case "passkey":
-            return new PasskeySigner(raw);
-
-        default:
-            throw new Error(`Unsupported signer type: ${(raw as any).type}`);
+            return new PasskeySigner(config);
     }
 }

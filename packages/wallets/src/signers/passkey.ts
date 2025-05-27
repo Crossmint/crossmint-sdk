@@ -1,12 +1,12 @@
 import { WebAuthnP256 } from "ox";
-import type { PasskeySignerConfig, PasskeySignResult, Signer } from "./types";
+import type { PasskeyInternalSignerConfig, PasskeySignResult, Signer } from "./types";
 
 export class PasskeySigner implements Signer {
     type = "passkey" as const;
     id: string;
 
-    constructor(private config: PasskeySignerConfig) {
-        this.id = config.id ?? "todo fix this";
+    constructor(private config: PasskeyInternalSignerConfig) {
+        this.id = config.id;
     }
 
     locator() {

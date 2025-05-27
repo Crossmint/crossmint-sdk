@@ -1,12 +1,12 @@
-import type { Signer } from "./types";
+import type { ApiKeyInternalSignerConfig, Signer } from "./types";
 
 export class EVMApiKeySigner implements Signer {
     type = "api-key" as const;
 
-    constructor(private readonly address: string) {}
+    constructor(private readonly config: ApiKeyInternalSignerConfig) {}
 
     locator() {
-        return `evm-fireblocks-custodial:${this.address}`;
+        return `evm-fireblocks-custodial:${this.config.address}`;
     }
 
     async signMessage() {
