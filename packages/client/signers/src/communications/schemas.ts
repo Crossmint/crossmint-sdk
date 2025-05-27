@@ -121,3 +121,18 @@ export const SignPayloadSchema = {
         })
     ),
 };
+
+export const ExportKeysPayloadSchema = {
+    request: AuthenticatedEventRequest.extend({
+        data: z
+            .object({
+                keyTypes: z.array(KeyTypeSchema).describe("Types of cryptographic keys to export"),
+            })
+            .describe("Data needed to export keys"),
+    }),
+    response: ResultResponse(
+        z.object({
+            publicKeys: PublicKeyMappingSchema.describe("The public keys of the created signer"),
+        })
+    ),
+};
