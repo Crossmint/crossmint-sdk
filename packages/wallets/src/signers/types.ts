@@ -1,7 +1,7 @@
-import type { Account, EIP1193Provider as ViemEIP1193Provider } from "viem";
-import type { Chain, SolanaChain } from "../chains/chains";
 import type { WebAuthnP256 } from "ox";
 import type { VersionedTransaction } from "@solana/web3.js";
+import type { Account, EIP1193Provider as ViemEIP1193Provider } from "viem";
+import type { Chain, SolanaChain } from "../chains/chains";
 
 ////////////////////////////////////////////////////////////
 // Signer configs
@@ -26,17 +26,13 @@ export type EvmExternalWalletSignerConfig = BaseExternalWalletSignerConfig & {
     viemAccount?: Account;
 };
 
-export type SolanaExternalWalletSignerConfig =
-    BaseExternalWalletSignerConfig & {
-        onSignTransaction: (
-            transaction: VersionedTransaction
-        ) => Promise<VersionedTransaction>;
-    };
+export type SolanaExternalWalletSignerConfig = BaseExternalWalletSignerConfig & {
+    onSignTransaction: (transaction: VersionedTransaction) => Promise<VersionedTransaction>;
+};
 
-export type ExternalWalletSignerConfigForChain<C extends Chain> =
-    C extends SolanaChain
-        ? SolanaExternalWalletSignerConfig
-        : EvmExternalWalletSignerConfig;
+export type ExternalWalletSignerConfigForChain<C extends Chain> = C extends SolanaChain
+    ? SolanaExternalWalletSignerConfig
+    : EvmExternalWalletSignerConfig;
 
 // Generic EIP1193 Provider interface that should work with different implementations
 export interface GenericEIP1193Provider {
@@ -55,9 +51,7 @@ export type BaseSignerConfig<C extends Chain> =
 export type PasskeySignerConfig = {
     type: "passkey";
     name?: string;
-    onCreatePasskey?: (
-        name: string
-    ) => Promise<{ id: string; publicKey: { x: string; y: string } }>;
+    onCreatePasskey?: (name: string) => Promise<{ id: string; publicKey: { x: string; y: string } }>;
     onSignWithPasskey?: (message: string) => Promise<PasskeySignResult>;
 };
 
@@ -74,8 +68,7 @@ export type ApiKeyInternalSignerConfig = ApiKeySignerConfig & {
     address: string;
 };
 
-export type ExternalWalletInternalSignerConfig<C extends Chain> =
-    ExternalWalletSignerConfigForChain<C>;
+export type ExternalWalletInternalSignerConfig<C extends Chain> = ExternalWalletSignerConfigForChain<C>;
 
 export type InternalSignerConfig<C extends Chain> =
     | EmailInternalSignerConfig

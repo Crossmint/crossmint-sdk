@@ -10,9 +10,9 @@ import {
     TransactionHashNotFoundError,
     TransactionNotAvailableError,
     TransactionSendingFailedError,
+    WalletNotAvailableError,
     WalletTypeNotSupportedError,
 } from "../utils/errors";
-import { WalletNotAvailableError } from "../utils/errors";
 import { STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
 import type { Chain } from "../chains/chains";
 import type { Signer } from "../signers/types";
@@ -102,13 +102,10 @@ export class Wallet<C extends Chain> {
      * @returns The delegated signer
      */
     public async updatePermissions({ signer }: { signer: string }) {
-        const response = await this.apiClient.registerSigner(
-            this.walletLocator,
-            {
-                signer: signer,
-                chain: this.chain === "solana" ? undefined : this.chain,
-            }
-        );
+        const response = await this.apiClient.registerSigner(this.walletLocator, {
+            signer: signer,
+            chain: this.chain === "solana" ? undefined : this.chain,
+        });
 
         if ("error" in response) {
             throw new Error(`Failed to register signer: ${JSON.stringify(response.error)}`);
