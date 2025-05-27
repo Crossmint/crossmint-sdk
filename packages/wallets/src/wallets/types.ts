@@ -24,9 +24,11 @@ export type PendingApproval = NonNullable<
     NonNullable<CreateTransactionSuccessResponse["approvals"]>["pending"]
 >[number];
 
+export type Callbacks = {
+    onWalletCreationStart?: () => Promise<void>;
+    onTransactionStart?: () => Promise<void>;
+};
+
 export type WalletOptions = {
-    experimental_callbacks?: {
-        onWalletCreationStart?: () => Promise<void>;
-        onTransactionStart?: () => Promise<void>;
-    };
+    experimental_callbacks?: Callbacks;
 };
