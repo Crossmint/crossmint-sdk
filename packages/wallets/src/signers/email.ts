@@ -1,6 +1,6 @@
-import { EmailSignerConfig, IEmailSigner } from "./types";
+import type { EmailSignerConfig, Signer } from "./types";
 
-export class EmailSigner implements IEmailSigner {
+export class EmailSigner implements Signer {
     type = "email" as const;
 
     constructor(private config: EmailSignerConfig) {}
@@ -10,7 +10,10 @@ export class EmailSigner implements IEmailSigner {
         return `email:${this.config.email}`;
     }
 
-    async sign(message: string) {
-        return "0xDEADBEEF";
+    async signMessage() {
+        return await Promise.reject(new Error("signMessage method not implemented for email signer"));
+    }
+    async signTransaction() {
+        return await Promise.reject(new Error("signTransaction method not implemented for email signer"));
     }
 }

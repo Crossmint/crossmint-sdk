@@ -1,19 +1,22 @@
 import { WebAuthnP256 } from "ox";
-import type { IPasskeySigner, PasskeySignerConfig } from "./types";
+import type { PasskeySignerConfig, PasskeySignResult, Signer } from "./types";
 
-export class PasskeySigner implements IPasskeySigner {
+export class PasskeySigner implements Signer {
     type = "passkey" as const;
     id: string;
 
     constructor(private config: PasskeySignerConfig) {
-        this.id = config.id;
+        this.id = config.id ?? "todo fix this";
     }
 
     locator() {
         return `evm-passkey:${this.id}`;
     }
 
-    async sign(message: string): Promise<{ signature: { r: string; s: string }; metadata: any }> {
+    async signMessage(message: string): Promise<PasskeySignResult> {
+        if (this.config.onSignWithPasskey) {
+            return await this.config.onSignWithPasskey(message);
+        }
         const { signature, metadata } = await WebAuthnP256.sign({
             credentialId: this.id,
             challenge: message as `0x${string}`,
@@ -26,5 +29,9 @@ export class PasskeySigner implements IPasskeySigner {
             },
             metadata,
         };
+    }
+
+    async signTransaction(transaction: string) {
+        return await this.signMessage(transaction);
     }
 }

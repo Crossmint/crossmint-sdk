@@ -1,7 +1,7 @@
 import type { Account, EIP1193Provider as ViemEIP1193Provider } from "viem";
-import type { ExternalWalletSignerConfig, GenericEIP1193Provider, IExternalWalletSigner } from "./types";
+import type { ExternalWalletSignerConfig, GenericEIP1193Provider, Signer } from "./types";
 
-export class EVMExternalWalletSigner implements IExternalWalletSigner {
+export class EVMExternalWalletSigner implements Signer {
     type = "external-wallet" as const;
     address: string;
     provider?: GenericEIP1193Provider | ViemEIP1193Provider;
@@ -28,7 +28,7 @@ export class EVMExternalWalletSigner implements IExternalWalletSigner {
                     "[EVMExternalWalletSigner] Failed to sign message: EIP1193 provider signMessage returned null"
                 );
             }
-            return signature as string;
+            return { signature };
         }
         if (this.viemAccount?.signMessage != null) {
             const signature = await this.viemAccount.signMessage({
@@ -41,8 +41,12 @@ export class EVMExternalWalletSigner implements IExternalWalletSigner {
                     "[EVMExternalWalletSigner] Failed to sign message: Viem account signMessage returned null"
                 );
             }
-            return signature;
+            return { signature };
         }
         throw new Error("No signer provider or viem account provided");
+    }
+
+    async signTransaction(transaction: string) {
+        return await this.signMessage(transaction);
     }
 }

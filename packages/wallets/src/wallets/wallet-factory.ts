@@ -39,6 +39,7 @@ export class WalletFactory {
 
     public async createWallet<C extends Chain>(args: WalletArgsFor<C>): Promise<Wallet<C>> {
         await args.options?.experimental_callbacks?.onWalletCreationStart?.();
+        // TODO: fix wallet type
         let walletPayload: any;
         if (args.chain === "solana") {
             walletPayload = {
@@ -83,7 +84,11 @@ export class WalletFactory {
         walletResponse: GetWalletSuccessResponse,
         args: WalletArgsFor<C>
     ): Wallet<C> {
-        let signer: SignerConfigForChain<C> | { type: "api-key-legacy"; address: string };
+        let signerConfig: SignerConfigForChain<C> | { type: "api-key-legacy"; address: string };
+
+        // if (args.signer?.type === "passkey" && walletResponse.type === "evm-smart-wallet") {
+        //     // todo: implement this
+        // }
         if (args.signer == null || args.signer?.type === "api-key") {
             let address;
             switch (walletResponse.type) {
@@ -99,18 +104,18 @@ export class WalletFactory {
             if (address == null) {
                 throw new WalletCreationError("Wallet signer 'api-key' has no address");
             }
-            signer = {
+            signerConfig = {
                 type: "api-key-legacy",
                 address,
             };
         } else {
-            signer = args.signer;
+            signerConfig = args.signer;
         }
         return Wallet.fromAPIResponse(
             {
                 chain: args.chain,
                 address: walletResponse.address,
-                signer: createSigner(args.chain, signer),
+                signer: createSigner(args.chain, signerConfig),
                 options: args.options,
             },
             this.apiClient

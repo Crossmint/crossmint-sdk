@@ -3,7 +3,6 @@ import { PendingApproval, Permission, WalletOptions } from "./types";
 import {
     InvalidSignerError,
     SignatureNotAvailableError,
-    SignatureNotFoundError,
     SigningFailedError,
     TransactionAwaitingApprovalError,
     TransactionConfirmationTimeoutError,
@@ -168,12 +167,12 @@ export class Wallet<C extends Chain> {
     }
 
     protected async approveAndWait(transactionId: string) {
-        await this.approve(transactionId);
+        await this.approveTransaction(transactionId);
         return await this.waitForTransaction(transactionId);
     }
 
     // TODO: Fix signWithAdditionalSigners parameter
-    protected async approve(
+    protected async approveTransaction(
         transactionId: string,
         signWithAdditionalSigners?: (approval: PendingApproval) => Promise<{ signer: string; signature: string }[]>
     ) {
@@ -204,33 +203,19 @@ export class Wallet<C extends Chain> {
             throw new InvalidSignerError(`Signer ${signerLocator} not found in pending approvals`);
         }
 
-        let signature: string | { r: string; s: string } | undefined;
-        let metadata: any | undefined;
-        if (transaction.walletType === "solana-smart-wallet" && this.signer.type === "external-wallet") {
-            signature = await this.signer.signTransaction?.(transaction.onChain.transaction);
-        }
-        if (transaction.walletType === "evm-smart-wallet" && this.signer.type === "external-wallet") {
-            signature = await this.signer.signMessage?.(pendingApproval.message);
-        }
-        if (this.signer.type === "passkey") {
-            const { signature: sig, metadata: meta } = await this.signer.sign(pendingApproval.message);
-            signature = {
-                r: sig.r.slice(0, 66),
-                s: `0x${sig.s.slice(66)}`,
-            };
-            metadata = meta;
-        }
+        const transactionToSign =
+            transaction.walletType === "solana-smart-wallet"
+                ? transaction.onChain.transaction
+                : pendingApproval.message;
 
-        if (signature == null) {
-            throw new SignatureNotFoundError("Signature not available");
-        }
+        const signature = await this.signer.signTransaction(transactionToSign);
 
         const approvedTransaction = await this.apiClient.approveTransaction(this.walletLocator, transaction.id, {
             approvals: [
+                // @ts-ignore the generated types are wrong
                 {
                     signer: signerLocator,
-                    signature,
-                    ...(metadata && { metadata }),
+                    ...signature,
                 },
                 ...(signWithAdditionalSigners ? await signWithAdditionalSigners(pendingApproval) : []),
             ],
@@ -249,34 +234,15 @@ export class Wallet<C extends Chain> {
         if (!pendingApproval) {
             throw new InvalidSignerError(`Signer ${this.signer.locator()} not found in pending approvals`);
         }
-        const message = pendingApproval.message;
 
-        let signature: string | { r: string; s: string } | undefined;
-        let metadata: any | undefined;
-
-        if (this.signer.type === "external-wallet") {
-            signature = await this.signer.signMessage?.(message);
-        }
-        if (this.signer.type === "passkey") {
-            const { signature: sig, metadata: meta } = await this.signer.sign(message);
-            signature = {
-                r: sig.r.slice(0, 66),
-                s: `0x${sig.s.slice(66)}`,
-            };
-            metadata = meta;
-        }
-
-        if (signature == null) {
-            throw new SignatureNotFoundError("Signature not available");
-        }
+        const signature = await this.signer.signMessage(pendingApproval.message);
 
         await this.apiClient.approveSignature(this.walletLocator, signatureId, {
             approvals: [
+                // @ts-ignore the generated types are wrong
                 {
                     signer: this.signer.locator(),
-                    // @ts-ignore the generated types are wrong
-                    signature: signature,
-                    ...(metadata && { metadata }),
+                    ...signature,
                 },
             ],
         });
