@@ -6,4 +6,4 @@ export type {
     SignerOutputEvent,
 } from "./events";
 
-export type { KeyType, Encoding } from "./schemas";
+export type { KeyType, Encoding, KEY_ENCODINGS, KEY_TYPES } from "./schemas";
