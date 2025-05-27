@@ -26,10 +26,10 @@ const crossmint = createCrossmint({
     jwt: "<USER_TOKEN>", // Not needed for server wallets
 });
 const crossmintWallets = CrossmintWallets.from(crossmint);
-const wallet = await crossmintWallets.getOrCreateWallet("evm-smart-wallet", {
+const wallet = await crossmintWallets.getOrCreateWallet({
     chain: "base-sepolia",
-    adminSigner: {
-        type: "evm-passkey",
+    signer: {
+        type: "passkey",
     },
 });
 
@@ -46,11 +46,14 @@ const address = wallet.address;
 import { Keypair } from "@solana/web3.js";
 
 const keypair = Keypair.generate();
-const wallet = await crossmintWallets.getOrCreateWallet("solana-smart-wallet", {
-    adminSigner: {
-        type: "solana-keypair",
-        signer: keypair,
+const wallet = await crossmintWallets.getOrCreateWallet({
+    chain: "solana",
+    signer: {
+        type: "external-wallet",
         address: keypair.publicKey.toBase58(),
+        onSignTransaction: async (transaction: VersionedTransaction) => {
+            return await keypair.signTransaction(transaction);
+        },
     },
 });
 ```
@@ -59,7 +62,7 @@ const wallet = await crossmintWallets.getOrCreateWallet("solana-smart-wallet", {
 
 ```ts
 const wallet = await crossmintWallets.getOrCreateWallet("solana-mpc-wallet", {
-    linkedUser: "<USER_UD>",
+    owner: "<USER_UD>",
 });
 ```
 
@@ -123,10 +126,10 @@ const txHash = await wallet.sendTransaction({
 #### Passkey Smart Wallets
 
 ```ts
-const wallet = await crossmintWallets.getOrCreateWallet("evm-smart-wallet", {
+const wallet = await crossmintWallets.getOrCreateWallet({
     chain: "base-sepolia",
-    adminSigner: {
-        type: "evm-passkey",
+    signer: {
+        type: "passkey",
         name: "My Wallet",
     },
 });
@@ -138,15 +141,12 @@ const wallet = await crossmintWallets.getOrCreateWallet("evm-smart-wallet", {
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 
 const account = privateKeyToAccount(generatePrivateKey());
-const wallet = await crossmintWallets.getOrCreateWallet("evm-smart-wallet", {
+const wallet = await crossmintWallets.getOrCreateWallet({
     chain: "base-sepolia",
-    adminSigner: {
-        type: "evm-keypair",
+    signer: {
+        type: "external-wallet",
         address: account.address,
-        signer: {
-            type: "viem_v2",
-            account,
-        },
+        viemAccount: account,
     },
 });
 ```
