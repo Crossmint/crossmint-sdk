@@ -4,7 +4,7 @@ import type { EVMTransactionInput } from "./types";
 import { type EVMSmartWalletChain, toViemChain } from "../chains/chains";
 import { Wallet } from "./wallet";
 import type { EVMChain } from "../chains/chains";
-import { InvalidTypedDataError, SignatureNotCreatedError, TransactionNotCreatedError } from "@/utils/errors";
+import { InvalidTypedDataError, SignatureNotCreatedError, TransactionNotCreatedError } from "../utils/errors";
 
 export class EVMWallet extends Wallet<EVMChain> {
     constructor(wallet: Wallet<EVMChain>) {
