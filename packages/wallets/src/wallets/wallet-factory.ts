@@ -22,7 +22,15 @@ export class WalletFactory {
             throw new WalletCreationError("getOrCreateWallet is not supported on server side");
         }
 
-        return await this.getOrCreateWalletInternal(args);
+        const existingWallet = await this.apiClient.getWallet(
+            `me:${args.chain === "solana" ? "solana-smart-wallet" : "evm-smart-wallet"}`
+        );
+
+        if (existingWallet && !("error" in existingWallet)) {
+            return this.createWalletInstance(existingWallet, args);
+        }
+
+        return this.createWallet(args);
     }
 
     public async getWallet<C extends Chain>(walletLocator: string, args: WalletArgsFor<C>): Promise<Wallet<C>> {
@@ -65,18 +73,6 @@ export class WalletFactory {
         }
 
         return this.createWalletInstance(walletResponse, args);
-    }
-
-    private async getOrCreateWalletInternal<C extends Chain>(args: WalletArgsFor<C>): Promise<Wallet<C>> {
-        const existingWallet = await this.apiClient.getWallet(
-            `me:${args.chain === "solana" ? "solana-smart-wallet" : "evm-smart-wallet"}`
-        );
-
-        if (existingWallet && !("error" in existingWallet)) {
-            return this.createWalletInstance(existingWallet, args);
-        }
-
-        return this.createWallet(args);
     }
 
     private createWalletInstance<C extends Chain>(
