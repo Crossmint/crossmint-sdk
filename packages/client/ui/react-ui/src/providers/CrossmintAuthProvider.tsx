@@ -9,7 +9,7 @@ import {
     useCallback,
 } from "react";
 import { CrossmintAuth, getCookie } from "@crossmint/client-sdk-auth";
-import { type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
+import { type UIConfig, type User, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
 import { type AuthMaterialWithUser, SESSION_PREFIX, type SDKExternalUser } from "@crossmint/common-sdk-auth";
 
 import AuthFormDialog from "../components/auth/AuthFormDialog";
@@ -78,7 +78,11 @@ export function CrossmintAuthProvider({
     logoutRoute,
 }: CrossmintAuthProviderProps) {
     const [user, setUser] = useState<SDKExternalUser | undefined>(undefined);
-    const { crossmint, setJwt } = useCrossmint("CrossmintAuthProvider must be used within CrossmintProvider");
+    const {
+        crossmint,
+        setJwt,
+        setUser: setCrossmintUser,
+    } = useCrossmint("CrossmintAuthProvider must be used within CrossmintProvider");
     // Only create the CrossmintAuth instance once, even in StrictMode, as the constructor calls /refresh
     // It can only be called once to avoid race conditions
     const crossmintAuthRef = useRef<CrossmintAuth | null>(null);
@@ -90,10 +94,12 @@ export function CrossmintAuthProvider({
                     onLogout: () => {
                         setJwt(undefined);
                         setUser(undefined);
+                        setCrossmintUser(undefined);
                     },
                     onTokenRefresh: (authMaterial: AuthMaterialWithUser) => {
                         setJwt(authMaterial.jwt);
                         setUser(authMaterial.user);
+                        setCrossmintUser(authMaterial.user as User);
                     },
                 },
                 refreshRoute,
@@ -178,6 +184,7 @@ export function CrossmintAuthProvider({
 
         const user = await crossmintAuth.getUser();
         setUser(user);
+        setCrossmintUser(user as User);
     }, [crossmint.jwt, crossmintAuth]);
 
     const authContextValue = useMemo(

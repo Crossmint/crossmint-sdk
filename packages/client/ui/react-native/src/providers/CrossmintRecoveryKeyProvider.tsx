@@ -60,7 +60,7 @@ export function CrossmintRecoveryKeyProvider({
     experimental_secureEndpointUrl = DEFAULT_SECURE_ENDPOINT_URL,
 }: CrossmintRecoveryKeyProviderProps) {
     const {
-        crossmint: { apiKey, jwt, appId },
+        crossmint: { apiKey, jwt, appId, user },
     } = useCrossmint();
     const { getOrCreateWallet, clearWallet } = useContext(BaseWalletContext);
 
@@ -69,7 +69,6 @@ export function CrossmintRecoveryKeyProvider({
         null
     );
     const [isWebViewReady, setIsWebViewReady] = useState(false);
-    const [email, setEmail] = useState<string | null>(null);
     const [experimental_needsAuth, setNeedsAuth] = useState(false);
     const hasClearedWalletRef = useRef(false);
     const needsAuthRef = useRef(false);
@@ -100,7 +99,6 @@ export function CrossmintRecoveryKeyProvider({
     useEffect(() => {
         if (jwt == null && !hasClearedWalletRef.current) {
             setNeedsAuth(false);
-            setEmail(null);
             clearWallet();
             hasClearedWalletRef.current = true;
         } else if (jwt != null) {
@@ -157,7 +155,6 @@ export function CrossmintRecoveryKeyProvider({
                 throw new Error("OTP email request is not applicable in the current state.");
             }
 
-            setEmail(emailInput);
             const authId = `email:${emailInput}`;
 
             try {
@@ -447,8 +444,6 @@ export function CrossmintRecoveryKeyProvider({
                 setNeedsAuth(false);
                 return null;
             }
-
-            setEmail(emailInput);
 
             const parent = webViewParentRef.current;
             if (parent == null) {

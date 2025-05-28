@@ -4,6 +4,7 @@ import { type Crossmint, type User, createCrossmint } from "@crossmint/common-sd
 export interface CrossmintContext {
     crossmint: Crossmint;
     setJwt: (jwt: string | undefined) => void;
+    setUser: (user: User | undefined) => void;
 }
 
 const CrossmintContext = createContext<CrossmintContext | null>(null);

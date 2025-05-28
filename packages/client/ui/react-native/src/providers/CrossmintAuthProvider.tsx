@@ -12,6 +12,7 @@ import { useCrossmint } from "../hooks";
 import { SecureStorage } from "../utils/SecureStorage";
 import { Platform } from "react-native";
 import Constants from "expo-constants";
+import { User } from "@crossmint/common-sdk-base";
 
 type OAuthUrlMap = Record<OAuthProvider, string | null>;
 const initialOAuthUrlMap: OAuthUrlMap = {
@@ -65,7 +66,11 @@ export function CrossmintAuthProvider({
     appSchema,
 }: CrossmintAuthProviderProps) {
     const [user, setUser] = useState<SDKExternalUser | undefined>(undefined);
-    const { crossmint, setJwt } = useCrossmint("CrossmintAuthProvider must be used within CrossmintProvider");
+    const {
+        crossmint,
+        setJwt,
+        setUser: setCrossmintUser,
+    } = useCrossmint("CrossmintAuthProvider must be used within CrossmintProvider");
     const [oauthUrlMap, setOauthUrlMap] = useState<OAuthUrlMap>(initialOAuthUrlMap);
     const crossmintAuthRef = useRef<CrossmintAuth | null>(null);
     const storageProvider = useMemo(() => customStorageProvider ?? new SecureStorage(), [customStorageProvider]);
@@ -87,10 +92,12 @@ export function CrossmintAuthProvider({
                     onLogout: () => {
                         setJwt(undefined);
                         setUser(undefined);
+                        setCrossmintUser(undefined);
                     },
                     onTokenRefresh: (authMaterial: AuthMaterialWithUser) => {
                         setJwt(authMaterial.jwt);
                         setUser(authMaterial.user);
+                        setCrossmintUser(authMaterial.user as User);
                     },
                 },
                 refreshRoute,
@@ -179,6 +186,7 @@ export function CrossmintAuthProvider({
 
         const user = await crossmintAuth.getUser();
         setUser(user);
+        setCrossmintUser(user as User);
     };
 
     const loginWithOAuth = async (provider: OAuthProvider) => {
