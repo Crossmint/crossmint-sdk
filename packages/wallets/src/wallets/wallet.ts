@@ -42,10 +42,6 @@ export class Wallet<C extends Chain> {
         this.options = options;
     }
 
-    public static fromAPIResponse<C extends Chain>(args: WalletContructorType<C>, apiClient: ApiClient) {
-        return new Wallet(args, apiClient);
-    }
-
     protected static getApiClient<C extends Chain>(wallet: Wallet<C>): ApiClient {
         return wallet.apiClient;
     }
@@ -97,9 +93,9 @@ export class Wallet<C extends Chain> {
     }
 
     /**
-     * Add a delegated signer to the wallet
+     * Update permissions for a signer
      * @param signer - The signer
-     * @returns The delegated signer
+     * @returns The permissions
      */
     public async updatePermissions({ signer }: { signer: string }) {
         const response = await this.apiClient.registerSigner(this.walletLocator, {
