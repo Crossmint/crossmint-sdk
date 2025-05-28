@@ -1,6 +1,6 @@
-import { VersionedTransaction } from "@solana/web3.js";
-import { CreateTransactionSuccessResponse } from "../api";
-import { EVMSmartWalletChain } from "../chains/chains";
+import type { VersionedTransaction } from "@solana/web3.js";
+import type { CreateTransactionSuccessResponse } from "../api";
+import type { EVMSmartWalletChain } from "../chains/chains";
 
 export type { Balances } from "../api/types";
 

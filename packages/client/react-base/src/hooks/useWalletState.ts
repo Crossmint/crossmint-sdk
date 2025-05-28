@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 
 import type { Callbacks, Chain, CrossmintWallets, WalletArgsFor } from "@crossmint/wallets-sdk";
 
@@ -17,40 +17,48 @@ export function useWalletState({
         status: "not-loaded",
     });
 
-    const getOrCreateWallet = async <C extends Chain>(props: WalletArgsFor<C>) => {
-        if (state.status == "in-progress") {
-            return {
-                startedCreation: false,
-                reason: "Wallet is already loading.",
-            };
-        }
+    const statusRef = useRef<ValidWalletState["status"]>(state.status);
+    useEffect(() => {
+        statusRef.current = state.status;
+    }, [state.status]);
 
-        if (crossmintJwt == null) {
-            return {
-                startedCreation: false,
-                reason: `Jwt not set in "CrossmintProvider".`,
-            };
-        }
+    const getOrCreateWallet = useCallback(
+        async <C extends Chain>(props: WalletArgsFor<C>) => {
+            if (statusRef.current === "in-progress") {
+                return {
+                    startedCreation: false,
+                    reason: "Wallet is already loading.",
+                };
+            }
 
-        try {
-            setState({ status: "in-progress" });
-            const wallet = await crossmintWallets.getOrCreateWallet({
-                ...props,
-                options: {
-                    experimental_callbacks: callbacks,
-                },
-            });
-            setState({ status: "loaded", wallet });
-        } catch (error: unknown) {
-            console.error("There was an error creating a wallet ", error);
-            setState(deriveErrorState(error));
-        }
-        return { startedCreation: true };
-    };
+            if (crossmintJwt == null) {
+                return {
+                    startedCreation: false,
+                    reason: `Jwt not set in "CrossmintProvider".`,
+                };
+            }
 
-    const clearWallet = () => {
+            try {
+                setState({ status: "in-progress" });
+                const wallet = await crossmintWallets.getOrCreateWallet({
+                    ...props,
+                    options: {
+                        experimental_callbacks: callbacks,
+                    },
+                });
+                setState({ status: "loaded", wallet });
+            } catch (error: unknown) {
+                console.error("There was an error creating a wallet ", error);
+                setState(deriveErrorState(error));
+            }
+            return { startedCreation: true };
+        },
+        [crossmintJwt, crossmintWallets, callbacks]
+    );
+
+    const clearWallet = useCallback(() => {
         setState({ status: "not-loaded" });
-    };
+    }, []);
 
     return {
         state,

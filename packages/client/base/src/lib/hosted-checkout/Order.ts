@@ -87,7 +87,6 @@ declare const orderSchema: z.ZodObject<
                         readonly ZORA_SEPOLIA: "zora-sepolia";
                         readonly MODE_SEPOLIA: "mode-sepolia";
                         readonly SOLANA: "solana";
-                        readonly CARDANO: "cardano";
                         readonly SUI: "sui";
                         readonly APTOS: "aptos";
                     }>;
@@ -1449,7 +1448,6 @@ declare const orderSchema: z.ZodObject<
                         | "zora-sepolia"
                         | "mode-sepolia"
                         | "solana"
-                        | "cardano"
                         | "sui"
                         | "aptos";
                     quantity: number;
@@ -1713,7 +1711,6 @@ declare const orderSchema: z.ZodObject<
                         | "zora-sepolia"
                         | "mode-sepolia"
                         | "solana"
-                        | "cardano"
                         | "sui"
                         | "aptos";
                     quantity: number;
@@ -2323,7 +2320,6 @@ declare const orderSchema: z.ZodObject<
                                             readonly ZORA_SEPOLIA: "zora-sepolia";
                                             readonly MODE_SEPOLIA: "mode-sepolia";
                                             readonly SOLANA: "solana";
-                                            readonly CARDANO: "cardano";
                                             readonly SUI: "sui";
                                             readonly APTOS: "aptos";
                                         }>
@@ -2395,7 +2391,6 @@ declare const orderSchema: z.ZodObject<
                                         | "zora-sepolia"
                                         | "mode-sepolia"
                                         | "solana"
-                                        | "cardano"
                                         | "sui"
                                         | "aptos"
                                         | undefined;
@@ -2464,7 +2459,6 @@ declare const orderSchema: z.ZodObject<
                                         | "zora-sepolia"
                                         | "mode-sepolia"
                                         | "solana"
-                                        | "cardano"
                                         | "sui"
                                         | "aptos"
                                         | undefined;
@@ -2596,7 +2590,6 @@ declare const orderSchema: z.ZodObject<
                                         readonly ZORA_SEPOLIA: "zora-sepolia";
                                         readonly MODE_SEPOLIA: "mode-sepolia";
                                         readonly SOLANA: "solana";
-                                        readonly CARDANO: "cardano";
                                         readonly SUI: "sui";
                                         readonly APTOS: "aptos";
                                     }>;
@@ -2691,7 +2684,6 @@ declare const orderSchema: z.ZodObject<
                                         | "zora-sepolia"
                                         | "mode-sepolia"
                                         | "solana"
-                                        | "cardano"
                                         | "sui"
                                         | "aptos";
                                 },
@@ -2783,7 +2775,6 @@ declare const orderSchema: z.ZodObject<
                                         | "zora-sepolia"
                                         | "mode-sepolia"
                                         | "solana"
-                                        | "cardano"
                                         | "sui"
                                         | "aptos";
                                 }
@@ -2982,7 +2973,6 @@ declare const orderSchema: z.ZodObject<
                                         readonly ZORA_SEPOLIA: "zora-sepolia";
                                         readonly MODE_SEPOLIA: "mode-sepolia";
                                         readonly SOLANA: "solana";
-                                        readonly CARDANO: "cardano";
                                         readonly SUI: "sui";
                                         readonly APTOS: "aptos";
                                     }>;
@@ -3077,7 +3067,6 @@ declare const orderSchema: z.ZodObject<
                                         | "zora-sepolia"
                                         | "mode-sepolia"
                                         | "solana"
-                                        | "cardano"
                                         | "sui"
                                         | "aptos";
                                 },
@@ -3169,7 +3158,6 @@ declare const orderSchema: z.ZodObject<
                                         | "zora-sepolia"
                                         | "mode-sepolia"
                                         | "solana"
-                                        | "cardano"
                                         | "sui"
                                         | "aptos";
                                 }
@@ -3441,7 +3429,6 @@ declare const orderSchema: z.ZodObject<
                               | "zora-sepolia"
                               | "mode-sepolia"
                               | "solana"
-                              | "cardano"
                               | "sui"
                               | "aptos"
                               | undefined;
@@ -3571,7 +3558,6 @@ declare const orderSchema: z.ZodObject<
                               | "zora-sepolia"
                               | "mode-sepolia"
                               | "solana"
-                              | "cardano"
                               | "sui"
                               | "aptos";
                       }
@@ -3692,7 +3678,6 @@ declare const orderSchema: z.ZodObject<
                               | "zora-sepolia"
                               | "mode-sepolia"
                               | "solana"
-                              | "cardano"
                               | "sui"
                               | "aptos";
                       }
@@ -3867,7 +3852,6 @@ declare const orderSchema: z.ZodObject<
                               | "zora-sepolia"
                               | "mode-sepolia"
                               | "solana"
-                              | "cardano"
                               | "sui"
                               | "aptos"
                               | undefined;
@@ -3997,7 +3981,6 @@ declare const orderSchema: z.ZodObject<
                               | "zora-sepolia"
                               | "mode-sepolia"
                               | "solana"
-                              | "cardano"
                               | "sui"
                               | "aptos";
                       }
@@ -4118,7 +4101,6 @@ declare const orderSchema: z.ZodObject<
                               | "zora-sepolia"
                               | "mode-sepolia"
                               | "solana"
-                              | "cardano"
                               | "sui"
                               | "aptos";
                       }
@@ -4337,7 +4319,6 @@ declare const orderSchema: z.ZodObject<
                           | "zora-sepolia"
                           | "mode-sepolia"
                           | "solana"
-                          | "cardano"
                           | "sui"
                           | "aptos"
                           | undefined;
@@ -4467,7 +4448,6 @@ declare const orderSchema: z.ZodObject<
                           | "zora-sepolia"
                           | "mode-sepolia"
                           | "solana"
-                          | "cardano"
                           | "sui"
                           | "aptos";
                   }
@@ -4588,7 +4568,6 @@ declare const orderSchema: z.ZodObject<
                           | "zora-sepolia"
                           | "mode-sepolia"
                           | "solana"
-                          | "cardano"
                           | "sui"
                           | "aptos";
                   }
@@ -4676,7 +4655,6 @@ declare const orderSchema: z.ZodObject<
                 | "zora-sepolia"
                 | "mode-sepolia"
                 | "solana"
-                | "cardano"
                 | "sui"
                 | "aptos";
             quantity: number;
@@ -5087,7 +5065,6 @@ declare const orderSchema: z.ZodObject<
                           | "zora-sepolia"
                           | "mode-sepolia"
                           | "solana"
-                          | "cardano"
                           | "sui"
                           | "aptos"
                           | undefined;
@@ -5217,7 +5194,6 @@ declare const orderSchema: z.ZodObject<
                           | "zora-sepolia"
                           | "mode-sepolia"
                           | "solana"
-                          | "cardano"
                           | "sui"
                           | "aptos";
                   }
@@ -5338,7 +5314,6 @@ declare const orderSchema: z.ZodObject<
                           | "zora-sepolia"
                           | "mode-sepolia"
                           | "solana"
-                          | "cardano"
                           | "sui"
                           | "aptos";
                   }
@@ -5426,7 +5401,6 @@ declare const orderSchema: z.ZodObject<
                 | "zora-sepolia"
                 | "mode-sepolia"
                 | "solana"
-                | "cardano"
                 | "sui"
                 | "aptos";
             quantity: number;

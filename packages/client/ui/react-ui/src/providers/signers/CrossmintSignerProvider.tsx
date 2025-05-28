@@ -13,7 +13,7 @@ import { CrossmintWallets, SolanaChain, SolanaTransactionInput, SolanaWallet, Wa
 import type { ValidWalletState } from "@crossmint/client-sdk-react-base";
 import { PublicKey, type VersionedTransaction } from "@solana/web3.js";
 import base58 from "bs58";
-import { environmentToCrossmintBaseURL, type UIConfig } from "@crossmint/common-sdk-base";
+import { environmentToCrossmintBaseURL, getEnvironmentForKey, type UIConfig } from "@crossmint/common-sdk-base";
 import { useCrossmint } from "@/hooks";
 import { deriveWalletErrorState } from "@/utils/errorUtils";
 import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
@@ -51,7 +51,11 @@ export function CrossmintSignerProvider({
     } = useCrossmint();
     const smartWalletSDK = useMemo(() => CrossmintWallets.from({ apiKey, jwt }), [apiKey, jwt]);
 
-    const iframeWindow = useSignerIFrameWindow(signersURL);
+    const environment = getEnvironmentForKey(apiKey);
+    if (environment == null) {
+        throw new Error("Could not determine environment from API key");
+    }
+    const iframeWindow = useSignerIFrameWindow(environment, signersURL);
     const [email, setEmail] = useState<string>("");
     const [step, setStep] = useState<"initial" | "otp">("initial");
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -68,7 +72,7 @@ export function CrossmintSignerProvider({
             const baseUrl = environmentToCrossmintBaseURL(
                 apiKey.startsWith("ck_development_") ? "development" : "staging"
             );
-            const response = await fetch(`${baseUrl}/api/unstable/wallets/ncs/doesnt-matter/public-key`, {
+            const response = await fetch(`${baseUrl}/api/v1/signers/derive-public-key`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -77,14 +81,21 @@ export function CrossmintSignerProvider({
                 },
                 body: JSON.stringify({
                     authId: `email:${args.email}`,
-                    signingAlgorithm: "EDDSA_ED25519",
+                    keyType: "ed25519",
                 }),
             });
             const responseData = await response.json();
-            // Decode the base64 public key to Uint8Array then encode to base58
-            const base64PublicKey = responseData.publicKey;
-            const binaryData = Uint8Array.from(atob(base64PublicKey), (c) => c.charCodeAt(0));
-            const adminSignerAddress = base58.encode(binaryData);
+            const publicKey = responseData.publicKey;
+            if (publicKey == null) {
+                throw new Error("No public key found");
+            }
+            if (publicKey.encoding !== "base58" || publicKey.keyType !== "ed25519" || publicKey.bytes == null) {
+                throw new Error(
+                    "Not supported. Expected public key to be in base58 encoding and ed25519 key type. Got: " +
+                        JSON.stringify(publicKey)
+                );
+            }
+            const adminSignerAddress = publicKey.bytes;
             const wallet = await getOrCreateSolanaWalletWithSigner(adminSignerAddress);
             const solanaWallet = SolanaWallet.from(wallet);
 
@@ -173,15 +184,14 @@ export function CrossmintSignerProvider({
         try {
             console.log("Creating Recovery Key");
             const res = await iframeWindow.current?.sendAction({
-                event: "request:create-signer",
-                responseEvent: "response:create-signer",
+                event: "request:start-onboarding",
+                responseEvent: "response:start-onboarding",
                 data: {
                     authData: {
                         jwt,
                         apiKey,
                     },
                     data: {
-                        chainLayer: "solana",
                         authId: `email:${email}`,
                     },
                 },
@@ -192,7 +202,7 @@ export function CrossmintSignerProvider({
             }
 
             // If the signer already exists, skip OTP flow and continue BAU
-            if (res.status === "success" && res.address != null) {
+            if (res.status === "success" && res.signerStatus === "ready") {
                 console.log("Signer already exists, skipping OTP flow");
                 setStep("initial");
                 setDialogOpen(false);
@@ -216,16 +226,17 @@ export function CrossmintSignerProvider({
         }
         try {
             const res = await iframeWindow.current.sendAction({
-                event: "request:send-otp",
-                responseEvent: "response:send-otp",
+                event: "request:complete-onboarding",
+                responseEvent: "response:complete-onboarding",
                 data: {
                     authData: {
                         jwt,
                         apiKey,
                     },
                     data: {
-                        encryptedOtp: token,
-                        chainLayer: "solana",
+                        onboardingAuthentication: {
+                            encryptedOtp: token,
+                        },
                     },
                 },
             });
@@ -240,7 +251,7 @@ export function CrossmintSignerProvider({
             // Resolve the promise when the flow is complete
             successHandlerRef.current?.();
         } catch (error) {
-            console.error("Error in OTP submission:", error);
+            console.error("Error completing onboarding:", error);
             errorHandlerRef.current?.(error as Error);
             throw error;
         }
@@ -283,7 +294,13 @@ export function CrossmintSignerProvider({
                             if (res?.signature == null) {
                                 throw new Error("Failed to sign transaction");
                             }
-                            transaction.addSignature(new PublicKey(publicSignerAddress), base58.decode(res.signature));
+                            if (res.signature.encoding !== "base58") {
+                                throw new Error("Unsupported signature encoding: " + res.signature.encoding);
+                            }
+                            transaction.addSignature(
+                                new PublicKey(publicSignerAddress),
+                                base58.decode(res.signature.bytes)
+                            );
                             return transaction;
                         });
                     },
