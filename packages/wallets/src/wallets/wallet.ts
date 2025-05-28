@@ -166,16 +166,12 @@ export class Wallet<C extends Chain> {
         return this.chain === "solana";
     }
 
-    protected async approveAndWait(transactionId: string) {
-        await this.approveTransaction(transactionId);
+    protected async approveAndWait(transactionId: string, additionalSigners?: Signer[]) {
+        await this.approveTransaction(transactionId, additionalSigners);
         return await this.waitForTransaction(transactionId);
     }
 
-    // TODO: Fix signWithAdditionalSigners parameter
-    protected async approveTransaction(
-        transactionId: string,
-        signWithAdditionalSigners?: (approval: PendingApproval) => Promise<{ signer: string; signature: string }[]>
-    ) {
+    protected async approveTransaction(transactionId: string, additionalSigners?: Signer[]) {
         const transaction = await this.apiClient.getTransaction(this.walletLocator, transactionId);
 
         if (transaction.error) {
@@ -195,30 +191,26 @@ export class Wallet<C extends Chain> {
             return transaction;
         }
 
-        const signerLocator = this.signer.locator();
+        const signers = [...(additionalSigners ?? []), this.signer];
 
-        const pendingApproval = pendingApprovals.find(({ signer }: { signer: string }) => signer === signerLocator);
+        const signedApprovals = await Promise.all(
+            pendingApprovals.map((pendingApproval) => {
+                const signer = signers.find((s) => s.locator() === pendingApproval.signer);
+                if (signer == null) {
+                    throw new InvalidSignerError(`Signer ${pendingApproval.signer} not found in pending approvals`);
+                }
+                const transactionToSign =
+                    transaction.walletType === "solana-smart-wallet"
+                        ? transaction.onChain.transaction
+                        : pendingApproval.message;
 
-        if (!pendingApproval) {
-            throw new InvalidSignerError(`Signer ${signerLocator} not found in pending approvals`);
-        }
-
-        const transactionToSign =
-            transaction.walletType === "solana-smart-wallet"
-                ? transaction.onChain.transaction
-                : pendingApproval.message;
-
-        const signature = await this.signer.signTransaction(transactionToSign);
+                return signer.signTransaction(transactionToSign);
+            })
+        );
 
         const approvedTransaction = await this.apiClient.approveTransaction(this.walletLocator, transaction.id, {
-            approvals: [
-                // @ts-ignore the generated types are wrong
-                {
-                    signer: signerLocator,
-                    ...signature,
-                },
-                ...(signWithAdditionalSigners ? await signWithAdditionalSigners(pendingApproval) : []),
-            ],
+            // @ts-ignore the generated types are wrong
+            approvals: signedApprovals,
         });
 
         if (approvedTransaction.error) {
@@ -230,6 +222,10 @@ export class Wallet<C extends Chain> {
 
     // This method is only applicable to EVM smart wallets
     protected async approveSignature(pendingApprovals: Array<PendingApproval>, signatureId: string) {
+        if (this.isSolanaWallet) {
+            throw new Error("Approving signatures is only supported for EVM smart wallets");
+        }
+
         const pendingApproval = pendingApprovals.find((approval) => approval.signer === this.signer.locator());
         if (!pendingApproval) {
             throw new InvalidSignerError(`Signer ${this.signer.locator()} not found in pending approvals`);

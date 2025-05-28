@@ -165,7 +165,6 @@ export class WalletFactory {
         }
 
         if (signer.type === "passkey") {
-            // Create a passkey
             const passkeyName = signer.name ?? `Crossmint Wallet ${Date.now()}`;
             const passkeyCredential = signer.onCreatePasskey
                 ? await signer.onCreatePasskey(passkeyName)
