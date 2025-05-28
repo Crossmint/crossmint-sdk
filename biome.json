@@ -21,7 +21,9 @@
             "**/android/**",
             "**/gen/**",
             "**/dist/**",
-            "**/build/**"
+            "**/build/**",
+            ".turbo",
+            "*.d.ts"
         ]
     },
     "organizeImports": {
@@ -88,7 +90,9 @@
             "services/snowcrash",
             "pnpm-lock.yaml",
             "**/build/**",
-            "**/dist/**"
+            "**/dist/**",
+            ".turbo",
+            "*.d.ts"
         ]
     },
     "javascript": {

@@ -1,5 +1,66 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.4.20
+
+### Patch Changes
+
+- Updated dependencies [f27237a]
+  - @crossmint/client-signers@0.0.16
+
+## 0.4.19
+
+### Patch Changes
+
+- 611585d: Adapt endpoint
+
+## 0.4.18
+
+### Patch Changes
+
+- 660e538: Adapt event interface (NCS)
+- Updated dependencies [660e538]
+  - @crossmint/client-signers@0.0.15
+
+## 0.4.17
+
+### Patch Changes
+
+- Updated dependencies [8e4d900]
+  - @crossmint/common-sdk-base@0.5.1
+  - @crossmint/client-sdk-auth@1.2.9
+  - @crossmint/client-sdk-base@1.5.1
+  - @crossmint/client-sdk-react-base@0.2.16
+  - @crossmint/common-sdk-auth@1.0.32
+  - @crossmint/wallets-sdk@0.8.1
+
+## 0.4.16
+
+### Patch Changes
+
+- Updated dependencies [e597884]
+  - @crossmint/client-sdk-base@1.5.0
+  - @crossmint/common-sdk-base@0.5.0
+  - @crossmint/wallets-sdk@0.8.0
+  - @crossmint/client-sdk-auth@1.2.8
+  - @crossmint/client-sdk-react-base@0.2.15
+  - @crossmint/common-sdk-auth@1.0.31
+
+## 0.4.15
+
+### Patch Changes
+
+- 73cbe5b: NCS: Rename events
+- Updated dependencies [73cbe5b]
+  - @crossmint/client-signers@0.0.14
+
+## 0.4.14
+
+### Patch Changes
+
+- 6c50129: Avoid updating state unnecessarily
+- Updated dependencies [6c50129]
+  - @crossmint/client-sdk-react-base@0.2.14
+
 ## 0.4.13
 
 ### Patch Changes

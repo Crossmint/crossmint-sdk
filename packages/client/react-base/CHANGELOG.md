@@ -1,5 +1,29 @@
 # @crossmint/client-sdk-react-base
 
+## 0.2.16
+
+### Patch Changes
+
+- Updated dependencies [8e4d900]
+  - @crossmint/common-sdk-base@0.5.1
+  - @crossmint/client-sdk-base@1.5.1
+  - @crossmint/wallets-sdk@0.8.1
+
+## 0.2.15
+
+### Patch Changes
+
+- Updated dependencies [e597884]
+  - @crossmint/client-sdk-base@1.5.0
+  - @crossmint/common-sdk-base@0.5.0
+  - @crossmint/wallets-sdk@0.8.0
+
+## 0.2.14
+
+### Patch Changes
+
+- 6c50129: Avoid updating state unnecessarily
+
 ## 0.2.13
 
 ### Patch Changes

@@ -1,40 +1,40 @@
 import type { z } from "zod";
 
 import {
-    CreateSignerPayloadSchema,
     GetAttestationPayloadSchema,
-    GetPublicKeyPayloadSchema,
     GetStatusPayloadSchema,
-    SendEncryptedOtpPayloadSchema,
     SignPayloadSchema,
+    StartOnboardingPayloadSchema,
+    CompleteOnboardingPayloadSchema,
+    ExportKeysPayloadSchema,
 } from "./schemas";
 
 export const SIGNER_EVENTS = [
-    "create-signer",
-    "get-attestation",
-    "send-otp",
-    "get-public-key",
+    "start-onboarding",
+    "complete-onboarding",
     "sign",
     "get-status",
+    "get-attestation",
+    "export-keys",
 ] as const;
 export type SignerIFrameEventName = (typeof SIGNER_EVENTS)[number];
 
 export const signerInboundEvents = {
-    "request:create-signer": CreateSignerPayloadSchema.request,
+    "request:start-onboarding": StartOnboardingPayloadSchema.request,
     "request:get-attestation": GetAttestationPayloadSchema.request,
-    "request:send-otp": SendEncryptedOtpPayloadSchema.request,
-    "request:get-public-key": GetPublicKeyPayloadSchema.request,
+    "request:complete-onboarding": CompleteOnboardingPayloadSchema.request,
     "request:sign": SignPayloadSchema.request,
     "request:get-status": GetStatusPayloadSchema.request,
+    "request:export-keys": ExportKeysPayloadSchema.request,
 } as const;
 
 export const signerOutboundEvents = {
-    "response:create-signer": CreateSignerPayloadSchema.response,
+    "response:start-onboarding": StartOnboardingPayloadSchema.response,
     "response:get-attestation": GetAttestationPayloadSchema.response,
-    "response:send-otp": SendEncryptedOtpPayloadSchema.response,
-    "response:get-public-key": GetPublicKeyPayloadSchema.response,
+    "response:complete-onboarding": CompleteOnboardingPayloadSchema.response,
     "response:sign": SignPayloadSchema.response,
     "response:get-status": GetStatusPayloadSchema.response,
+    "response:export-keys": ExportKeysPayloadSchema.response,
 } as const;
 
 export type SignerInputEvent<E extends SignerIFrameEventName> = z.infer<(typeof signerInboundEvents)[`request:${E}`]>;
