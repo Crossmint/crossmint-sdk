@@ -5,24 +5,15 @@ import { PasskeySigner } from "./passkey";
 import { EVMApiKeySigner } from "./evm-api-key";
 import { SolanaApiKeySigner } from "./solana-api-key";
 import type { Chain } from "../chains/chains";
-import type {
-    InternalSignerConfig,
-    Signer,
-    SolanaExternalWalletSignerConfig,
-} from "./types";
+import type { InternalSignerConfig, Signer, SolanaExternalWalletSignerConfig } from "./types";
 
-export function assembleSigner<C extends Chain>(
-    chain: C,
-    config: InternalSignerConfig<C>
-): Signer {
+export function assembleSigner<C extends Chain>(chain: C, config: InternalSignerConfig<C>): Signer {
     switch (config.type) {
         case "email":
             return new EmailSigner(config);
 
         case "api-key":
-            return chain === "solana"
-                ? new SolanaApiKeySigner(config)
-                : new EVMApiKeySigner(config);
+            return chain === "solana" ? new SolanaApiKeySigner(config) : new EVMApiKeySigner(config);
 
         case "external-wallet":
             // TODO: Figure out way to avoid this cast

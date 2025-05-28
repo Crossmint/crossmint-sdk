@@ -1,5 +1,5 @@
-import { ApiClient, Balances, GetSignatureResponse } from "../api";
-import { PendingApproval, Permission, WalletOptions } from "./types";
+import type { ApiClient, Balances, GetSignatureResponse } from "../api";
+import type { PendingApproval, Permission, WalletOptions } from "./types";
 import {
     InvalidSignerError,
     SignatureNotAvailableError,

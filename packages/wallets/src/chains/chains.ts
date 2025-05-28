@@ -38,33 +38,24 @@ const EVM_SMART_WALLET_MAINNET_CHAINS = [
     Blockchain.SHAPE,
 ] as const;
 
-export type EVMSmartWalletTestnet =
-    (typeof EVM_SMART_WALLET_TESTNET_CHAINS)[number];
-export type EVMSmartWalletMainnet =
-    (typeof EVM_SMART_WALLET_MAINNET_CHAINS)[number];
+export type EVMSmartWalletTestnet = (typeof EVM_SMART_WALLET_TESTNET_CHAINS)[number];
+export type EVMSmartWalletMainnet = (typeof EVM_SMART_WALLET_MAINNET_CHAINS)[number];
 export type EVMSmartWalletChain = EVMSmartWalletTestnet | EVMSmartWalletMainnet;
 
-export function isTestnetChain(
-    chain: EVMSmartWalletChain
-): chain is EVMSmartWalletTestnet {
-    return (
-        EVM_SMART_WALLET_TESTNET_CHAINS as readonly EVMSmartWalletTestnet[]
-    ).includes(chain as EVMSmartWalletTestnet);
+export function isTestnetChain(chain: EVMSmartWalletChain): chain is EVMSmartWalletTestnet {
+    return (EVM_SMART_WALLET_TESTNET_CHAINS as readonly EVMSmartWalletTestnet[]).includes(
+        chain as EVMSmartWalletTestnet
+    );
 }
 
-export function isMainnetChain(
-    chain: EVMSmartWalletChain
-): chain is EVMSmartWalletMainnet {
-    return (
-        EVM_SMART_WALLET_MAINNET_CHAINS as readonly EVMSmartWalletMainnet[]
-    ).includes(chain as EVMSmartWalletMainnet);
+export function isMainnetChain(chain: EVMSmartWalletChain): chain is EVMSmartWalletMainnet {
+    return (EVM_SMART_WALLET_MAINNET_CHAINS as readonly EVMSmartWalletMainnet[]).includes(
+        chain as EVMSmartWalletMainnet
+    );
 }
 
 export function isValidChain(chain: string): chain is EVMSmartWalletChain {
-    return (
-        isTestnetChain(chain as EVMSmartWalletTestnet) ||
-        isMainnetChain(chain as EVMSmartWalletMainnet)
-    );
+    return isTestnetChain(chain as EVMSmartWalletTestnet) || isMainnetChain(chain as EVMSmartWalletMainnet);
 }
 
 export function toViemChain(chain: EVMSmartWalletChain): ViemChain {
