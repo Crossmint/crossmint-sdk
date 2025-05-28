@@ -1,3 +1,4 @@
+import type { UIConfig } from "@crossmint/common-sdk-base";
 import type { Chain, SignerConfigForChain } from "@crossmint/wallets-sdk";
 
 export type {
@@ -11,10 +12,14 @@ export type {
 
 export { EVMWallet, SolanaWallet } from "@crossmint/wallets-sdk";
 
-export type CrossmintAuthEmbeddedWallets = {
-    createOnLogin: "all-users" | "off";
-    showPasskeyHelpers?: boolean;
+export type CreateOnLogin = {
     chain: Chain;
+    signer: SignerConfigForChain<Chain>;
     owner?: string;
-    signer?: SignerConfigForChain<Chain>;
+};
+
+export type BaseCrossmintWalletProviderProps = {
+    createOnLogin?: CreateOnLogin;
+    showPasskeyHelpers?: boolean;
+    appearance?: UIConfig;
 };

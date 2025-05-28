@@ -2,7 +2,7 @@ import React, { type ReactNode } from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, fireEvent, waitFor } from "@testing-library/react";
 import { mock } from "vitest-mock-extended";
-import { CrossmintWallets, PasskeySignerConfig } from "@crossmint/wallets-sdk";
+import { CrossmintWallets, type PasskeySignerConfig } from "@crossmint/wallets-sdk";
 import { CrossmintWalletProvider, WalletContext } from "@/providers/CrossmintWalletProvider";
 import { useCrossmint } from "@/hooks";
 

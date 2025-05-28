@@ -13,11 +13,11 @@ import { createPortal } from "react-dom";
 import { CrossmintWallets, type Wallet, type WalletArgsFor } from "@crossmint/wallets-sdk";
 import type { Chain } from "@crossmint/wallets-sdk";
 import type { UIConfig } from "@crossmint/common-sdk-base";
+import type { CreateOnLogin } from "@crossmint/client-sdk-react-base";
 
 import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
 import type { PasskeySigner } from "@/types/passkey";
 import { useCrossmint } from "../hooks";
-import type { CreateOnLogin, GetOrCreateWalletProps } from "@/types/wallet";
 import { createWebAuthnPasskeySigner } from "@/utils/createPasskeySigner";
 import { deriveWalletErrorState } from "@/utils/errorUtils";
 import { AuthContext } from "./CrossmintAuthProvider";
@@ -244,7 +244,7 @@ function WalletProvider({
      * Defer to <CrossmintAuthWalletManager/> for automatic wallet creation if using CrossmintAuthProvider.
      */
     const canAutomaticallyGetOrCreateWallet =
-        createOnLogin?.walletType != null &&
+        createOnLogin != null &&
         walletState.status === "not-loaded" &&
         crossmint.jwt != null &&
         !isUsingCrossmintAuthProvider;
@@ -254,12 +254,10 @@ function WalletProvider({
             return;
         }
         await getOrCreateWallet({
-            type: createOnLogin?.walletType,
-            args: {
-                adminSigner: createOnLogin?.signer,
-                linkedUser: createOnLogin?.owner,
-            },
-        } as GetOrCreateWalletProps);
+            chain: createOnLogin.chain,
+            signer: createOnLogin.signer,
+            owner: createOnLogin.owner,
+        });
     }, [canAutomaticallyGetOrCreateWallet]);
 
     const handleWalletCleanup = useCallback(() => {

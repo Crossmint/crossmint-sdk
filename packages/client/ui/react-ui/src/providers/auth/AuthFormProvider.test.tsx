@@ -4,7 +4,7 @@ import { AuthFormProvider, useAuthForm } from "./AuthFormProvider";
 import { describe, expect, it, vi } from "vitest";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
 import { useDynamicConnect } from "@/hooks/useDynamicConnect";
-import type { CrossmintAuthProviderEmbeddedWallets, LoginMethod } from "@/types/auth";
+import type { LoginMethod } from "@/types/auth";
 
 vi.mock("@/hooks/useCrossmintAuth");
 vi.mock("@/hooks/useDynamicConnect");
@@ -37,10 +37,6 @@ describe("AuthFormProvider", () => {
         baseUrl: "https://api.example.com",
         loginMethods: ["email", "google", "farcaster", "web3"] as LoginMethod[],
         setDialogOpen: vi.fn(),
-        embeddedWallets: {
-            createOnLogin: "off",
-            chain: "base-sepolia",
-        } as CrossmintAuthProviderEmbeddedWallets,
         appearance: {
             colors: {
                 textPrimary: "#000000",

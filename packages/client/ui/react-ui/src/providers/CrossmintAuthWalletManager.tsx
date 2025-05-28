@@ -1,9 +1,8 @@
 import { type Dispatch, type SetStateAction, useCallback, useEffect } from "react";
-import type { GetOrCreateWalletProps, ValidWalletState } from "@crossmint/client-sdk-react-base";
+import type { Chain, CreateOnLogin, ValidWalletState } from "@crossmint/client-sdk-react-base";
+import type { WalletArgsFor } from "@crossmint/wallets-sdk";
 import type { AuthContextType } from "./CrossmintAuthProvider";
-import type { CreateOnLogin, GetOrCreateWalletAdminSigner } from "@/types/wallet";
 import { useDynamicConnect } from "@/hooks/useDynamicConnect";
-import { mapSignerToWalletType } from "@/utils/mapSignerToWalletType";
 
 export function CrossmintAuthWalletManager({
     authContext,
@@ -16,7 +15,9 @@ export function CrossmintAuthWalletManager({
     createOnLogin?: CreateOnLogin;
     walletState: ValidWalletState;
     setWalletState: Dispatch<SetStateAction<ValidWalletState>>;
-    getOrCreateWallet: (props: GetOrCreateWalletProps) => Promise<{ startedCreation: boolean; reason?: string }>;
+    getOrCreateWallet: <C extends Chain>(
+        props: WalletArgsFor<C>
+    ) => Promise<{ startedCreation: boolean; reason?: string }>;
 }) {
     const { setIsDynamicSdkLoaded, jwt } = authContext;
     const { sdkHasLoaded, getAdminSigner, cleanup, isDynamicWalletConnected } = useDynamicConnect(
@@ -32,30 +33,9 @@ export function CrossmintAuthWalletManager({
             return;
         }
 
-        let adminSigner: GetOrCreateWalletAdminSigner = createOnLogin?.signer;
-        let walletType = createOnLogin.walletType;
-
-        if (isDynamicWalletConnected) {
-            adminSigner = (await getAdminSigner()) ?? adminSigner;
-            walletType = mapSignerToWalletType(adminSigner?.type) ?? walletType;
-        }
-
-        // If an external wallet is not connected, the type is required
-        if (!isDynamicWalletConnected && walletType == null) {
-            console.error(
-                "[CrossmintAuthProvider] ⚠️ createOnLogin.walletType is required when no external wallet is connected"
-            );
-            return;
-        }
-
-        getOrCreateWallet({
-            type: walletType,
-            args: {
-                adminSigner,
-                linkedUser: createOnLogin?.owner,
-            },
-        } as GetOrCreateWalletProps);
-    }, [canGetOrCreateWallet, getOrCreateWallet, createOnLogin, getAdminSigner]);
+        const signer = isDynamicWalletConnected ? await getAdminSigner() : createOnLogin.signer;
+        await getOrCreateWallet({ chain: createOnLogin.chain, signer, owner: createOnLogin.owner });
+    }, [canGetOrCreateWallet, getOrCreateWallet, getAdminSigner, createOnLogin, isDynamicWalletConnected]);
 
     const handleWalletCleanup = useCallback(() => {
         if (jwt == null && walletState.status === "loaded") {

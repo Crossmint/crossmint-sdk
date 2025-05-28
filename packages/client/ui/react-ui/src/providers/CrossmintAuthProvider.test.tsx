@@ -6,15 +6,15 @@ import { createCrossmint } from "@crossmint/common-sdk-base";
 import { beforeEach, describe, expect, vi, it, type MockInstance } from "vitest";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { mock } from "vitest-mock-extended";
+import type { CreateOnLogin } from "@crossmint/client-sdk-react-base";
 
 import { useAuth, useWallet } from "@/hooks";
 import { CrossmintProvider, useCrossmint } from "@/hooks/useCrossmint";
 import { MOCK_API_KEY } from "@/testUtils";
 import { CrossmintAuthProvider } from "@/providers/CrossmintAuthProvider";
-import type { CrossmintAuthProviderEmbeddedWallets, LoginMethod } from "@/types/auth";
+import type { LoginMethod } from "@/types/auth";
 import { useDynamicConnect } from "@/hooks/useDynamicConnect";
 import { CrossmintWalletProvider } from "@/providers/CrossmintWalletProvider";
-import type { CreateOnLogin } from "@/types/wallet";
 
 vi.mock("@dynamic-labs/sdk-react-core", () => ({
     useDynamicContext: vi.fn().mockReturnValue({
@@ -83,8 +83,8 @@ vi.mock("@crossmint/client-sdk-auth", async () => {
     };
 });
 
-const mockPasskeySigner = mock<EVMSignerInput>({
-    type: "evm-passkey",
+const mockPasskeySigner = mock<SignerConfigForChain<Chain>>({
+    type: "passkey",
     name: "Crossmint Wallet",
 });
 
@@ -135,7 +135,6 @@ function TestComponent() {
 describe("CrossmintAuthProvider", () => {
     let mockSDK: CrossmintWallets;
     let mockWallet: Wallet<Chain>;
-    let embeddedWallets: CrossmintAuthProviderEmbeddedWallets;
     let handleRefreshAuthMaterialSpy: MockInstance;
     let getOAuthUrlSpy: MockInstance;
 
@@ -176,16 +175,6 @@ describe("CrossmintAuthProvider", () => {
             sdkHasLoaded: true,
             isDynamicWalletConnected: false,
         });
-        const mockPasskeySigner = mock<SignerConfigForChain<Chain>>({
-            type: "passkey",
-            name: "Crossmint Wallet",
-        });
-        embeddedWallets = {
-            createOnLogin: "all-users",
-            showPasskeyHelpers: false,
-            signer: mockPasskeySigner,
-            chain: "polygon-amoy",
-        };
 
         deleteCookie(REFRESH_TOKEN_PREFIX);
         deleteCookie(SESSION_PREFIX);
@@ -211,7 +200,7 @@ describe("CrossmintAuthProvider", () => {
         const { getByTestId } = renderAuthProvider({
             children: <TestComponent />,
             createOnLogin: {
-                walletType: "evm-smart-wallet",
+                chain: "polygon-amoy",
                 signer: mockPasskeySigner,
             },
         });
@@ -236,7 +225,7 @@ describe("CrossmintAuthProvider", () => {
         const { getByTestId } = renderAuthProvider({
             children: <TestComponent />,
             createOnLogin: {
-                walletType: "evm-smart-wallet",
+                chain: "polygon-amoy",
                 signer: mockPasskeySigner,
             },
         });
@@ -262,9 +251,9 @@ describe("CrossmintAuthProvider", () => {
         document.cookie = `${SESSION_PREFIX}=mock-jwt; path=/;SameSite=Lax;`;
         const { getByTestId } = await renderAuthProvider({
             children: <TestComponent />,
-            embeddedWallets: {
-                createOnLogin: "off",
+            createOnLogin: {
                 chain: "polygon-amoy",
+                signer: mockPasskeySigner,
             },
         });
 
@@ -280,7 +269,7 @@ describe("CrossmintAuthProvider", () => {
         const { getByTestId } = await renderAuthProvider({
             children: <TestComponent />,
             createOnLogin: {
-                walletType: "evm-smart-wallet",
+                chain: "polygon-amoy",
                 signer: mockPasskeySigner,
             },
         });
@@ -298,7 +287,7 @@ describe("CrossmintAuthProvider", () => {
         const { getByTestId } = await renderAuthProvider({
             children: <TestComponent />,
             createOnLogin: {
-                walletType: "evm-smart-wallet",
+                chain: "polygon-amoy",
                 signer: mockPasskeySigner,
             },
         });
