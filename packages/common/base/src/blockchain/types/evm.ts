@@ -18,6 +18,7 @@ export const EVMBlockchain = {
     MODE: "mode",
     BOSS: "boss",
     SHAPE: "shape",
+    WORLDCHAIN: "worldchain",
 } as const;
 export type EVMBlockchain = ObjectValues<typeof EVMBlockchain>;
 export const EVM_CHAINS = objectValues(EVMBlockchain);

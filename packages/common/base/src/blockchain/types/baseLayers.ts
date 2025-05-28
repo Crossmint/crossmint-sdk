@@ -3,7 +3,6 @@ import { type ObjectValues, objectValues } from "@/types";
 export const BlockchainBaseLayer = {
     EVM: "evm",
     SOLANA: "solana",
-    CARDANO: "cardano",
     SUI: "sui",
     APTOS: "aptos",
 } as const;

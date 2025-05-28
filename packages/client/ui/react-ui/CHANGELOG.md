@@ -1,5 +1,89 @@
 # @crossmint/client-sdk-react-ui
 
+## 1.19.21
+
+### Patch Changes
+
+- Updated dependencies [f27237a]
+  - @crossmint/client-signers@0.0.16
+
+## 1.19.20
+
+### Patch Changes
+
+- 611585d: Adapt endpoint
+
+## 1.19.19
+
+### Patch Changes
+
+- 660e538: Adapt event interface (NCS)
+- Updated dependencies [660e538]
+  - @crossmint/client-signers@0.0.15
+
+## 1.19.18
+
+### Patch Changes
+
+- Updated dependencies [8e4d900]
+  - @crossmint/common-sdk-base@0.5.1
+  - @crossmint/client-sdk-auth@1.2.9
+  - @crossmint/client-sdk-base@1.5.1
+  - @crossmint/client-sdk-react-base@0.2.16
+  - @crossmint/common-sdk-auth@1.0.32
+  - @crossmint/wallets-sdk@0.8.1
+
+## 1.19.17
+
+### Patch Changes
+
+- Updated dependencies [e597884]
+  - @crossmint/client-sdk-base@1.5.0
+  - @crossmint/common-sdk-base@0.5.0
+  - @crossmint/wallets-sdk@0.8.0
+  - @crossmint/client-sdk-auth@1.2.8
+  - @crossmint/client-sdk-react-base@0.2.15
+  - @crossmint/common-sdk-auth@1.0.31
+
+## 1.19.16
+
+### Patch Changes
+
+- 73cbe5b: NCS: Rename events
+- Updated dependencies [73cbe5b]
+  - @crossmint/client-signers@0.0.14
+
+## 1.19.15
+
+### Patch Changes
+
+- 8f65e3c: Configure environment automatically
+- Updated dependencies [6c50129]
+  - @crossmint/client-sdk-react-base@0.2.14
+
+## 1.19.14
+
+### Patch Changes
+
+- Updated dependencies [1586365]
+  - @crossmint/client-signers@0.0.13
+
+## 1.19.13
+
+### Patch Changes
+
+- Updated dependencies [e457da9]
+  - @crossmint/client-signers@0.0.12
+
+## 1.19.12
+
+### Patch Changes
+
+- db41c76: Adapting events payloads
+- 1c6b6fe: Handle Device Key Share Mismatch
+- Updated dependencies [db41c76]
+  - @crossmint/client-signers@0.0.11
+
 ## 1.19.11
 
 ### Patch Changes
