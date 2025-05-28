@@ -3,6 +3,7 @@ import type { SolanaChain } from "../chains/chains";
 import type { SolanaTransactionInput } from "./types";
 import { Wallet } from "./wallet";
 import { TransactionNotCreatedError } from "../utils/errors";
+import { SolanaExternalWalletSigner } from "@/signers/solana-external-wallet";
 
 export class SolanaWallet extends Wallet<SolanaChain> {
     constructor(wallet: Wallet<SolanaChain>) {
@@ -21,8 +22,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
         return new SolanaWallet(wallet);
     }
 
-    // TODO: Add additional signers
-    public async sendTransaction({ transaction }: SolanaTransactionInput): Promise<string> {
+    public async sendTransaction({ transaction, additionalSigners }: SolanaTransactionInput): Promise<string> {
         const transactionParams = {
             transaction: bs58.encode(transaction.serialize()),
         };
@@ -35,6 +35,18 @@ export class SolanaWallet extends Wallet<SolanaChain> {
             throw new TransactionNotCreatedError(JSON.stringify(transactionCreationResponse));
         }
 
-        return await this.approveAndWait(transactionCreationResponse.id);
+        const _additionalSigners = additionalSigners?.map(
+            (signer) =>
+                new SolanaExternalWalletSigner({
+                    type: "external-wallet",
+                    address: signer.publicKey.toString(),
+                    onSignTransaction: (transaction) => {
+                        transaction.sign([signer]);
+                        return Promise.resolve(transaction);
+                    },
+                })
+        );
+
+        return await this.approveAndWait(transactionCreationResponse.id, _additionalSigners);
     }
 }

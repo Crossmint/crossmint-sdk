@@ -1,4 +1,4 @@
-import type { VersionedTransaction } from "@solana/web3.js";
+import type { Keypair, VersionedTransaction } from "@solana/web3.js";
 import type { CreateTransactionSuccessResponse } from "../api";
 import type { EVMSmartWalletChain } from "../chains/chains";
 
@@ -13,6 +13,7 @@ export interface EVMTransactionInput {
 
 export interface SolanaTransactionInput {
     transaction: VersionedTransaction;
+    additionalSigners?: Keypair[];
 }
 
 export type Permission = {

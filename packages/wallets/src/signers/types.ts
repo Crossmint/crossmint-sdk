@@ -79,7 +79,7 @@ export type InternalSignerConfig<C extends Chain> =
 ////////////////////////////////////////////////////////////
 // Signers
 ////////////////////////////////////////////////////////////
-export type SimpleSignResult = {
+export type BaseSignResult = {
     signature: string;
 };
 
@@ -99,9 +99,9 @@ export type SignerConfigForChain<C extends Chain> = C extends SolanaChain
 // Signer base types
 ////////////////////////////////////////////////////////////
 type SignResultMap = {
-    email: SimpleSignResult;
-    "api-key": SimpleSignResult;
-    "external-wallet": SimpleSignResult;
+    email: BaseSignResult;
+    "api-key": BaseSignResult;
+    "external-wallet": BaseSignResult;
     passkey: PasskeySignResult;
 };
 

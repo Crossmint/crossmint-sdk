@@ -1,7 +1,7 @@
 import { PublicKey, VersionedTransaction } from "@solana/web3.js";
-import type { Signer, SolanaExternalWalletSignerConfig } from "./types";
 import base58 from "bs58";
-import { TransactionFailedError } from "@/utils/errors";
+import type { Signer, SolanaExternalWalletSignerConfig } from "./types";
+import { TransactionFailedError } from "../utils/errors";
 
 export class SolanaExternalWalletSigner implements Signer {
     type = "external-wallet" as const;
