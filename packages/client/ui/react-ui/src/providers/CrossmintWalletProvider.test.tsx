@@ -1,8 +1,8 @@
 import React, { type ReactNode } from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, fireEvent, waitFor } from "@testing-library/react";
-import { CrossmintWallets } from "@crossmint/wallets-sdk";
-import type { GetOrCreateWalletProps } from "@crossmint/client-sdk-react-base";
+import { mock } from "vitest-mock-extended";
+import { CrossmintWallets, PasskeySignerConfig } from "@crossmint/wallets-sdk";
 import { CrossmintWalletProvider, WalletContext } from "@/providers/CrossmintWalletProvider";
 import { useCrossmint } from "@/hooks";
 
@@ -24,19 +24,22 @@ const MOCK_JWT = "mock-jwt";
 // Test component to consume wallet context
 function TestComponent() {
     const wallet = React.useContext(WalletContext);
+    const mockPasskeySigner = mock<PasskeySignerConfig>({
+        type: "passkey",
+        name: "Crossmint Wallet",
+    });
     return (
         <div>
             <div data-testid="status">{wallet.status}</div>
             <div data-testid="wallet">{wallet.status === "loaded" ? "Wallet Loaded" : "No Wallet"}</div>
             <div data-testid="error">{wallet.error ?? "No Error"}</div>
-            <div data-testid="wallet-type">{wallet.type ?? "No Type"}</div>
             <button
                 data-testid="create-wallet-button"
                 onClick={() =>
                     wallet.getOrCreateWallet({
-                        type: "evm-smart-wallet",
-                        args: { adminSigner: { type: "evm-passkey" } },
-                    } as GetOrCreateWalletProps)
+                        chain: "polygon-amoy",
+                        signer: mockPasskeySigner,
+                    })
                 }
             >
                 Create Wallet

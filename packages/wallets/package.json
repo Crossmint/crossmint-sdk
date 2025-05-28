@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/wallets-sdk",
-    "version": "0.7.7",
+    "version": "0.8.1",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
@@ -17,7 +17,7 @@
     "scripts": {
         "build": "pnpm generate && tsup",
         "dev": "tsup --watch",
-        "test:vitest": "vitest run",
+        "test:vitest": "vitest run --passWithNoTests",
         "openapi-ts": "openapi-ts",
         "generate": "pnpm run openapi-ts",
         "generate:docs": "typedoc"

@@ -9,12 +9,11 @@ import {
     type Dispatch,
     type SetStateAction,
 } from "react";
-import type { SmartWalletTransactionParams } from "@crossmint/wallets-sdk/dist/solana/types/wallet"; /** @TODO: remove this once the type is exported from the SDK */
-import { CrossmintWallets } from "@crossmint/wallets-sdk";
+import { CrossmintWallets, SolanaChain, SolanaTransactionInput, SolanaWallet, Wallet } from "@crossmint/wallets-sdk";
 import type { ValidWalletState } from "@crossmint/client-sdk-react-base";
 import { PublicKey, type VersionedTransaction } from "@solana/web3.js";
 import base58 from "bs58";
-import { environmentToCrossmintBaseURL, type UIConfig } from "@crossmint/common-sdk-base";
+import { environmentToCrossmintBaseURL, getEnvironmentForKey, type UIConfig } from "@crossmint/common-sdk-base";
 import { useCrossmint } from "@/hooks";
 import { deriveWalletErrorState } from "@/utils/errorUtils";
 import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
@@ -35,7 +34,6 @@ interface CrossmintSignerProviderProps {
 
 type CrossmintSignerContext = {
     experimental_getOrCreateWalletWithRecoveryKey: (args: {
-        type: "solana-smart-wallet";
         email: string;
     }) => Promise<void>;
 };
@@ -53,7 +51,11 @@ export function CrossmintSignerProvider({
     } = useCrossmint();
     const smartWalletSDK = useMemo(() => CrossmintWallets.from({ apiKey, jwt }), [apiKey, jwt]);
 
-    const iframeWindow = useSignerIFrameWindow(signersURL);
+    const environment = getEnvironmentForKey(apiKey);
+    if (environment == null) {
+        throw new Error("Could not determine environment from API key");
+    }
+    const iframeWindow = useSignerIFrameWindow(environment, signersURL);
     const [email, setEmail] = useState<string>("");
     const [step, setStep] = useState<"initial" | "otp">("initial");
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -61,7 +63,6 @@ export function CrossmintSignerProvider({
     const errorHandlerRef = useRef<((error: Error) => void) | null>(null);
 
     const experimental_getOrCreateWalletWithRecoveryKey = async (args: {
-        type: "solana-smart-wallet";
         email: string;
     }) => {
         try {
@@ -71,7 +72,7 @@ export function CrossmintSignerProvider({
             const baseUrl = environmentToCrossmintBaseURL(
                 apiKey.startsWith("ck_development_") ? "development" : "staging"
             );
-            const response = await fetch(`${baseUrl}/api/unstable/wallets/ncs/doesnt-matter/public-key`, {
+            const response = await fetch(`${baseUrl}/api/v1/signers/derive-public-key`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -80,19 +81,26 @@ export function CrossmintSignerProvider({
                 },
                 body: JSON.stringify({
                     authId: `email:${args.email}`,
-                    signingAlgorithm: "EDDSA_ED25519",
+                    keyType: "ed25519",
                 }),
             });
             const responseData = await response.json();
-            // Decode the base64 public key to Uint8Array then encode to base58
-            const base64PublicKey = responseData.publicKey;
-            const binaryData = Uint8Array.from(atob(base64PublicKey), (c) => c.charCodeAt(0));
-            const adminSignerAddress = base58.encode(binaryData);
+            const publicKey = responseData.publicKey;
+            if (publicKey == null) {
+                throw new Error("No public key found");
+            }
+            if (publicKey.encoding !== "base58" || publicKey.keyType !== "ed25519" || publicKey.bytes == null) {
+                throw new Error(
+                    "Not supported. Expected public key to be in base58 encoding and ed25519 key type. Got: " +
+                        JSON.stringify(publicKey)
+                );
+            }
+            const adminSignerAddress = publicKey.bytes;
             const wallet = await getOrCreateSolanaWalletWithSigner(adminSignerAddress);
-
+            const solanaWallet = SolanaWallet.from(wallet);
             const walletWithRecovery = {
                 ...wallet,
-                sendTransaction: async (props: SmartWalletTransactionParams) =>
+                sendTransaction: async (props: SolanaTransactionInput) =>
                     new Promise<string>((resolve, reject) => {
                         const cleanup = () => {
                             setDialogOpen(false);
@@ -101,7 +109,7 @@ export function CrossmintSignerProvider({
                         const successHandler = async () => {
                             cleanup();
                             try {
-                                const txHash = await wallet.sendTransaction(props);
+                                const txHash = await solanaWallet.sendTransaction(props);
                                 resolve(txHash);
                             } catch (error) {
                                 reject(error);
@@ -119,8 +127,7 @@ export function CrossmintSignerProvider({
 
             setWalletState({
                 status: "loaded",
-                wallet: walletWithRecovery,
-                type: "solana-smart-wallet",
+                wallet: walletWithRecovery as unknown as Wallet<SolanaChain>,
             });
         } catch (error) {
             console.error("There was an error creating a wallet ", error);
@@ -135,25 +142,26 @@ export function CrossmintSignerProvider({
         }
         return new Promise<void>(async (resolve, reject) => {
             try {
-                // Attempt to get the signer's public key
                 const signerResponse = await iframeWindow.current?.sendAction({
-                    event: "request:get-public-key",
-                    responseEvent: "response:get-public-key",
+                    event: "request:get-status",
+                    responseEvent: "response:get-status",
                     data: {
                         authData: {
                             jwt,
                             apiKey,
                         },
-                        data: {
-                            chainLayer: "solana",
-                        },
                     },
                 });
-                if (signerResponse?.status === "success") {
-                    // signer exists, skip OTP flow
+
+                if (signerResponse?.status !== "success") {
+                    throw new Error(signerResponse?.error);
+                }
+
+                if (signerResponse.signerStatus === "ready") {
                     console.log("Signer already exists, skipping OTP flow");
                     return resolve();
                 }
+
                 // Store the resolve/reject functions to be called after OTP completion
                 successHandlerRef.current = () => resolve();
                 errorHandlerRef.current = (error) => reject(error);
@@ -175,15 +183,14 @@ export function CrossmintSignerProvider({
         try {
             console.log("Creating Recovery Key");
             const res = await iframeWindow.current?.sendAction({
-                event: "request:create-signer",
-                responseEvent: "response:create-signer",
+                event: "request:start-onboarding",
+                responseEvent: "response:start-onboarding",
                 data: {
                     authData: {
                         jwt,
                         apiKey,
                     },
                     data: {
-                        chainLayer: "solana",
                         authId: `email:${email}`,
                     },
                 },
@@ -194,7 +201,7 @@ export function CrossmintSignerProvider({
             }
 
             // If the signer already exists, skip OTP flow and continue BAU
-            if (res.status === "success" && res.address != null) {
+            if (res.status === "success" && res.signerStatus === "ready") {
                 console.log("Signer already exists, skipping OTP flow");
                 setStep("initial");
                 setDialogOpen(false);
@@ -218,16 +225,17 @@ export function CrossmintSignerProvider({
         }
         try {
             const res = await iframeWindow.current.sendAction({
-                event: "request:send-otp",
-                responseEvent: "response:send-otp",
+                event: "request:complete-onboarding",
+                responseEvent: "response:complete-onboarding",
                 data: {
                     authData: {
                         jwt,
                         apiKey,
                     },
                     data: {
-                        encryptedOtp: token,
-                        chainLayer: "solana",
+                        onboardingAuthentication: {
+                            encryptedOtp: token,
+                        },
                     },
                 },
             });
@@ -242,7 +250,7 @@ export function CrossmintSignerProvider({
             // Resolve the promise when the flow is complete
             successHandlerRef.current?.();
         } catch (error) {
-            console.error("Error in OTP submission:", error);
+            console.error("Error completing onboarding:", error);
             errorHandlerRef.current?.(error as Error);
             throw error;
         }
@@ -253,42 +261,13 @@ export function CrossmintSignerProvider({
             throw new Error("[getOrCreateSolanaWalletWithSigner] JWT not set!");
         }
         try {
-            return await smartWalletSDK.getOrCreateWallet("solana-smart-wallet", {
-                adminSigner: {
-                    type: "solana-keypair",
+            return await smartWalletSDK.getOrCreateWallet({
+                chain: "solana",
+                signer: {
+                    type: "external-wallet",
                     address: publicSignerAddress,
-                    signer: {
-                        signMessage: async (message: Uint8Array) => {
-                            if (iframeWindow.current == null) {
-                                throw new Error("IFrame window not initialized");
-                            }
-
-                            const res = await iframeWindow.current.sendAction({
-                                event: "request:sign",
-                                responseEvent: "response:sign",
-                                data: {
-                                    authData: {
-                                        jwt,
-                                        apiKey,
-                                    },
-                                    data: {
-                                        keyType: "ed25519",
-                                        bytes: base58.encode(message),
-                                        encoding: "base58",
-                                    },
-                                },
-                                options: DEFAULT_EVENT_OPTIONS,
-                            });
-                            if (res.status === "error") {
-                                throw new Error(res.error);
-                            }
-                            if (res.signature == null) {
-                                throw new Error("Failed to sign message");
-                            }
-                            return base58.decode(res.signature);
-                        },
-                        signTransaction: async (transaction: VersionedTransaction) => {
-                            console.log("Signing transaction...", transaction);
+                    onSignTransaction: (transaction: VersionedTransaction) => {
+                        return signWithRecovery(async () => {
                             const messageData = transaction.message.serialize();
                             const res = await iframeWindow.current?.sendAction({
                                 event: "request:sign",
@@ -306,22 +285,42 @@ export function CrossmintSignerProvider({
                                 },
                                 options: DEFAULT_EVENT_OPTIONS,
                             });
-
                             if (res?.status === "error") {
-                                throw new Error(res.error);
+                                const err = new Error(res.error);
+                                (err as any).code = res.code;
+                                throw err;
                             }
                             if (res?.signature == null) {
                                 throw new Error("Failed to sign transaction");
                             }
-                            transaction.addSignature(new PublicKey(publicSignerAddress), base58.decode(res.signature));
+                            if (res.signature.encoding !== "base58") {
+                                throw new Error("Unsupported signature encoding: " + res.signature.encoding);
+                            }
+                            transaction.addSignature(
+                                new PublicKey(publicSignerAddress),
+                                base58.decode(res.signature.bytes)
+                            );
                             return transaction;
-                        },
+                        });
                     },
                 },
             });
         } catch (error) {
             console.error("Error creating wallet with signer:", error);
             setWalletState(deriveWalletErrorState(error));
+            throw error;
+        }
+    }
+
+    // Helper to wrap signing with OTP recovery
+    async function signWithRecovery<T>(signFn: () => Promise<T>): Promise<T> {
+        try {
+            return await signFn();
+        } catch (error: any) {
+            if (error.code === "invalid-device-share") {
+                await handleGetRecoverySigner();
+                return await signFn();
+            }
             throw error;
         }
     }

@@ -1,11 +1,8 @@
 import { type Crossmint, createCrossmint } from "@crossmint/common-sdk-base";
-
-import { ApiClient } from "./api/index.js";
-import { WalletFactory } from "./services/wallet-factory";
-import type { WalletTypeToArgs, WalletTypeToWallet } from "./services/types.js";
-import type { WalletOptions } from "./utils/options.js";
-
-type WalletType = keyof WalletTypeToArgs;
+import { ApiClient } from "./api";
+import { WalletFactory, type WalletArgsFor } from "./wallets/wallet-factory";
+import type { Wallet } from "./wallets/wallet";
+import type { Chain } from "./chains/chains";
 
 export class CrossmintWallets {
     private readonly walletFactory: WalletFactory;
@@ -25,35 +22,32 @@ export class CrossmintWallets {
     }
 
     /**
-     * Get or create a wallet
-     * @param type - Wallet type
+     * Get or create a wallet, can only be called on the client side
      * @param args - Wallet data
      * @param options - Wallet options
      * @returns A new wallet
      */
-    public getOrCreateWallet<T extends WalletType>(
-        type: T,
-        args: WalletTypeToArgs[T],
-        options?: WalletOptions
-    ): Promise<WalletTypeToWallet[T]> {
-        return this.walletFactory.getOrCreateWallet(type, args, options);
+    public async getOrCreateWallet<C extends Chain>(options: WalletArgsFor<C>): Promise<Wallet<C>> {
+        return await this.walletFactory.getOrCreateWallet(options);
     }
 
     /**
-     * Get an existing wallet by address
-     * @param address - Wallet address
-     * @param type - Wallet type
-     * @param args - Wallet data
+     * Get an existing wallet by its locator, can only be called on the server side
+     * @param walletLocator - Wallet locator
      * @param options - Wallet options
      * @returns A wallet
      */
-    public getWallet<T extends WalletType>(
-        address: string,
-        type: T,
-        args: WalletTypeToArgs[T],
-        options?: WalletOptions
-    ): Promise<WalletTypeToWallet[T]> {
-        return this.walletFactory.getWallet(address, type, args, options);
+    public async getWallet<C extends Chain>(walletLocator: string, options: WalletArgsFor<C>): Promise<Wallet<C>> {
+        return await this.walletFactory.getWallet(walletLocator, options);
+    }
+
+    /**
+     * Create a new wallet, can only be called on the server side
+     * @param options - Wallet options
+     * @returns A new wallet
+     */
+    public async createWallet<C extends Chain>(options: WalletArgsFor<C>): Promise<Wallet<C>> {
+        return await this.walletFactory.createWallet(options);
     }
 }
 

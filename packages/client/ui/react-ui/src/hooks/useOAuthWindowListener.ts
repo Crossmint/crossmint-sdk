@@ -78,7 +78,7 @@ export const useOAuthWindowListener = (provider: OAuthProvider) => {
         // Add a check for manual window closure
         // Ideally we should find a more explicit way of doing this, but I think this is fine for now.
         const checkWindowClosure = setInterval(() => {
-            if (popup.window.closed) {
+            if (popup.window?.closed) {
                 clearInterval(checkWindowClosure);
                 setIsLoading(false);
                 childRef.current?.off("authMaterialFromPopupCallback");

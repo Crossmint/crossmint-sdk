@@ -1,5 +1,41 @@
 # @crossmint/client-signers
 
+## 0.0.16
+
+### Patch Changes
+
+- f27237a: NCS: add export-keys event
+
+## 0.0.15
+
+### Patch Changes
+
+- 660e538: Adapt event interface (NCS)
+
+## 0.0.14
+
+### Patch Changes
+
+- 73cbe5b: NCS: Rename events
+
+## 0.0.13
+
+### Patch Changes
+
+- 1586365: NCS: Add Hex as encoding
+
+## 0.0.12
+
+### Patch Changes
+
+- e457da9: Minor type fix
+
+## 0.0.11
+
+### Patch Changes
+
+- db41c76: Adapting events payloads
+
 ## 0.0.10
 
 ### Patch Changes

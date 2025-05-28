@@ -1,9 +1,10 @@
+import { useCallback, useEffect } from "react";
 import type { SignableMessage } from "viem";
+import type { VersionedTransaction } from "@solana/web3.js";
 import { isEthereumWallet } from "@dynamic-labs/ethereum";
 import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
 import { isSolanaWallet } from "@dynamic-labs/solana";
-import { useCallback, useEffect } from "react";
-import type { EVMSignerInput, SolanaSignerInput } from "@crossmint/wallets-sdk";
+import type { EvmExternalWalletSignerConfig, SolanaExternalWalletSignerConfig } from "@crossmint/wallets-sdk";
 
 export function useDynamicConnect(setIsDynamicSdkLoaded: (sdkHasLoaded: boolean) => void, accessToken?: string) {
     const {
@@ -19,47 +20,39 @@ export function useDynamicConnect(setIsDynamicSdkLoaded: (sdkHasLoaded: boolean)
 
     const getAdminSigner = async () => {
         if (!connectedDynamicWallet) {
-            return null;
+            throw new Error("No connected wallet");
         }
 
         try {
             if (isEthereumWallet(connectedDynamicWallet)) {
                 const dynamicClient = await connectedDynamicWallet.getWalletClient();
                 return {
-                    ...dynamicClient,
+                    type: "external-wallet",
                     address: dynamicClient.account.address,
-                    signer: {
-                        type: "viem_v2",
-                        account: {
-                            ...dynamicClient.account,
-                            signMessage: async (data: { message: SignableMessage }) => {
-                                return await dynamicClient.signMessage({
-                                    message: data.message,
-                                });
-                            },
+                    viemAccount: {
+                        ...dynamicClient.account,
+                        signMessage: async (data: { message: SignableMessage }) => {
+                            return await dynamicClient.signMessage({
+                                message: data.message,
+                            });
                         },
                     },
-                    type: "evm-keypair",
-                } as EVMSignerInput;
+                } as EvmExternalWalletSignerConfig;
             }
             if (isSolanaWallet(connectedDynamicWallet)) {
                 const signer = await connectedDynamicWallet.getSigner();
                 return {
-                    ...signer,
+                    type: "external-wallet",
                     address: connectedDynamicWallet.address,
-                    signer: {
-                        ...signer,
-                        signMessage: async (message: Uint8Array) => {
-                            return (await signer.signMessage(message)).signature;
-                        },
+                    onSignTransaction: async (transaction: VersionedTransaction) => {
+                        return await signer.signTransaction(transaction);
                     },
-                    type: "solana-keypair",
-                } as SolanaSignerInput;
+                } as SolanaExternalWalletSignerConfig;
             }
-            return null;
+            throw new Error("Unsupported wallet type");
         } catch (error) {
             console.error("Failed to get admin signer", error);
-            return null;
+            throw new Error("Failed to get admin signer");
         }
     };
 

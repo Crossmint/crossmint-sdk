@@ -52,7 +52,11 @@ function CrossmintProviders({ children }: { children: ReactNode }) {
                 authModalTitle="Sign in to Wallet Demo"
                 loginMethods={["google", "email", "farcaster", "twitter", web3LoginMethod]}
             >
-                <CrossmintWalletProvider createOnLogin={{ walletType: walletType ?? "evm-smart-wallet" }}>
+                <CrossmintWalletProvider
+                    createOnLogin={{
+                        chain: walletType === "solana-smart-wallet" ? "solana" : (process.env.NEXT_PUBLIC_CHAIN as any),
+                    }}
+                >
                     {children}
                 </CrossmintWalletProvider>
             </CrossmintAuthProvider>

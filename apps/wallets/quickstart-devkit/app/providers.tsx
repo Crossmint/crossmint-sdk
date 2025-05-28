@@ -13,13 +13,16 @@ if (!crossmintApiKey) {
 
 export function Providers({ children }: { children: React.ReactNode }) {
     /* @TODO update to your desired provider here */
-    return <SolanaCrossmintAuthProvider>{children}</SolanaCrossmintAuthProvider>;
+    return <EVMCrossmintAuthProvider>{children}</EVMCrossmintAuthProvider>;
 }
 
 /* ============================================================ */
 /*                    ALL EVM WALLET PROVIDERS                  */
 /* ============================================================ */
 function EVMCrossmintAuthProvider({ children }: { children: React.ReactNode }) {
+    if (!process.env.NEXT_PUBLIC_EVM_CHAIN) {
+        throw new Error("NEXT_PUBLIC_EVM_CHAIN is not set");
+    }
     return (
         <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_API_KEY || ""}>
             <CrossmintAuthProvider
@@ -28,7 +31,7 @@ function EVMCrossmintAuthProvider({ children }: { children: React.ReactNode }) {
             >
                 <CrossmintWalletProvider
                     showPasskeyHelpers
-                    createOnLogin={{ walletType: "evm-smart-wallet", chain: "polygon-amoy" }}
+                    createOnLogin={{ walletType: "evm-smart-wallet", chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any }}
                 >
                     {children}
                 </CrossmintWalletProvider>
@@ -54,7 +57,7 @@ function EVMPrivyProvider({ children }: { children: React.ReactNode }) {
             }}
         >
             <CrossmintProvider apiKey={crossmintApiKey}>
-                <CrossmintWalletProvider>{children}</CrossmintWalletProvider>
+                <CrossmintWalletProvider showPasskeyHelpers={false}>{children}</CrossmintWalletProvider>
             </CrossmintProvider>
         </PrivyProvider>
     );
@@ -88,7 +91,10 @@ function SolanaCrossmintAuthProvider({ children }: { children: React.ReactNode }
                 authModalTitle="Solana Wallets Quickstart"
                 loginMethods={["google", "twitter", "web3:solana-only"]}
             >
-                <CrossmintWalletProvider showPasskeyHelpers createOnLogin={{ walletType: "solana-smart-wallet" }}>
+                <CrossmintWalletProvider
+                    showPasskeyHelpers={false}
+                    createOnLogin={{ walletType: "solana-smart-wallet", chain: "solana" }}
+                >
                     {children}
                 </CrossmintWalletProvider>
             </CrossmintAuthProvider>
@@ -113,7 +119,7 @@ function SolanaPrivyProvider({ children }: { children: React.ReactNode }) {
             }}
         >
             <CrossmintProvider apiKey={crossmintApiKey}>
-                <CrossmintWalletProvider>{children}</CrossmintWalletProvider>
+                <CrossmintWalletProvider showPasskeyHelpers={false}>{children}</CrossmintWalletProvider>
             </CrossmintProvider>
         </PrivyProvider>
     );

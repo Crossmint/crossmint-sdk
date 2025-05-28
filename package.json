@@ -42,5 +42,10 @@
         "npm": "please-use-pnpm",
         "pnpm": ">=9",
         "yarn": "please-use-pnpm"
+    },
+    "pnpm": {
+        "overrides": {
+            "elliptic@6": "6.6.1"
+        }
     }
 }

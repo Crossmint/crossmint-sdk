@@ -8,9 +8,8 @@ export type OtpEmailPayload = {
 export type LoginMethod = "email" | "google" | "farcaster" | "twitter" | "web3" | "web3:evm-only" | "web3:solana-only";
 export type AuthStatus = "logged-in" | "logged-out" | "in-progress" | "initializing";
 
-export type CrossmintAuthProviderEmbeddedWallets = Omit<CrossmintAuthEmbeddedWallets, "type"> & {
+export type CrossmintAuthProviderEmbeddedWallets = CrossmintAuthEmbeddedWallets & {
     // Type is optional as we can now infer it from the connected Dynamic wallet
-    type?: CrossmintAuthEmbeddedWallets["type"];
     experimental_enableRecoveryKeys?: boolean;
     experimental_signersURL?: string;
 };
