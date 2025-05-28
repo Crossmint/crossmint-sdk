@@ -61,18 +61,11 @@ const SkeletonLoader = () => {
 };
 
 export default function Index() {
-    const { wallet, type, status: walletStatus } = useWallet();
+    const { wallet, status: walletStatus } = useWallet();
 
     const { data, isLoading: isLoadingNFTs } = useQuery({
         queryKey: ["smart-wallet"],
-        queryFn: async () => {
-            if (type === "evm-smart-wallet") {
-                return (await wallet.unstable_getNfts({ page: 1, perPage: 11, chain: "polygon-amoy" })) as NFT[];
-            } else if (type === "solana-smart-wallet") {
-                return (await wallet.unstable_getNfts({ page: 1, perPage: 11 })) as NFT[];
-            }
-            return [];
-        },
+        queryFn: async () => (await wallet?.unstable_nfts({ page: 1, perPage: 11 })) as NFT[],
         refetchOnWindowFocus: false,
         refetchOnMount: false,
         staleTime: 1000 * 60 * 5, // 5 minutes

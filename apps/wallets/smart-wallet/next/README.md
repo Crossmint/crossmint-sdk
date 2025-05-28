@@ -133,8 +133,7 @@ export default function App({ Component, pageProps }) {
             <CrossmintAuthProvider
                 embeddedWallets={{
                     createOnLogin: "all-users",
-                    defaultChain: "polygon-amoy",
-                    type: "evm-smart-wallet",
+                    chain: "polygon-amoy",
                 }}
             >
                 <Component {...pageProps} />

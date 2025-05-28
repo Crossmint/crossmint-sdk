@@ -6,7 +6,7 @@ import FingerprintIcon from "../../icons/fingerprint";
 import PasskeyIcon from "../../icons/passkey";
 import PasskeyPromptLogo from "../../icons/passkeyPromptLogo";
 import { SecuredByCrossmint } from "../common/SecuredByCrossmint";
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from "../common/Dialog";
+import { Dialog, DialogContent, DialogTitle } from "../common/Dialog";
 import { classNames } from "@/utils/classNames";
 
 type PasskeyPromptCoreProps = {
@@ -31,9 +31,6 @@ function PasskeyPromptCore({ title, content, primaryButton, secondaryAction, app
             >
                 <VisuallyHidden asChild>
                     <DialogTitle>{title}</DialogTitle>
-                </VisuallyHidden>
-                <VisuallyHidden asChild>
-                    <DialogDescription>{content}</DialogDescription>
                 </VisuallyHidden>
 
                 <div className="relative pt-10 pb-[30px] px-6 !min-[480px]:px-10 flex flex-col gap-[10px] antialiased animate-none">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useWallet } from "@crossmint/client-sdk-react-ui";
+import { EVMWallet, useWallet } from "@crossmint/client-sdk-react-ui";
 import { encodeFunctionData, type Address } from "viem";
 import { motion } from "framer-motion";
 import { Fingerprint } from "lucide-react";
@@ -14,7 +14,7 @@ import { CollectionABI } from "@/utils/collection-abi";
 const AMOY_CONTRACT: Address = "0x5c030a01e9d2c4bb78212d06f88b7724b494b755";
 
 export const MintNFTButton = ({ setNftSuccessfullyMinted }: { setNftSuccessfullyMinted: (a: boolean) => void }) => {
-    const { wallet, type } = useWallet();
+    const { wallet } = useWallet();
     const [isLoadingMint, setIsLoadingMint] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const { toast } = useToast();
@@ -39,23 +39,17 @@ export const MintNFTButton = ({ setNftSuccessfullyMinted }: { setNftSuccessfully
             }
 
             console.log("Minting NFT", wallet.address);
-            switch (type) {
-                case "evm-smart-wallet":
-                    const evmTxnHash = await wallet.sendTransaction({
-                        to: AMOY_CONTRACT,
-                        chain: "polygon-amoy",
-                        data: encodeFunctionData({
-                            abi: CollectionABI,
-                            functionName: "mintTo",
-                            args: [wallet.address],
-                        }),
-                    });
-                    console.log("NFT mint. Tx hash:", evmTxnHash);
-                    break;
-                case "solana-smart-wallet":
-                    console.error("TODO: add solana token mint");
-                    throw new Error("Solana minting not implemented");
-            }
+            const evmWallet = EVMWallet.from(wallet as EVMWallet);
+            const evmTxnHash = await evmWallet.sendTransaction({
+                to: AMOY_CONTRACT,
+                chain: "polygon-amoy",
+                data: encodeFunctionData({
+                    abi: CollectionABI,
+                    functionName: "mintTo",
+                    args: [wallet.address as `0x${string}`],
+                }),
+            });
+            console.log("NFT mint. Tx hash:", evmTxnHash);
             setNftSuccessfullyMinted(true);
         } catch (error) {
             console.error("Error minting NFT:", error);

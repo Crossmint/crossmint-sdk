@@ -16,7 +16,6 @@ export function assembleSigner<C extends Chain>(chain: C, config: InternalSigner
             return chain === "solana" ? new SolanaApiKeySigner(config) : new EVMApiKeySigner(config);
 
         case "external-wallet":
-            // TODO: Figure out way to avoid this cast
             return chain === "solana"
                 ? new SolanaExternalWalletSigner(config as SolanaExternalWalletSignerConfig)
                 : new EVMExternalWalletSigner(config);

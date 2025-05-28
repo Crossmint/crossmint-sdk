@@ -1,50 +1,39 @@
 import { createContext, type Dispatch, type ReactNode, type SetStateAction, useMemo } from "react";
-import type { EVMSmartWallet, SolanaSmartWallet } from "@crossmint/wallets-sdk";
-import { CrossmintWallets } from "@crossmint/wallets-sdk";
+import { type Chain, CrossmintWallets, type Wallet, type WalletArgsFor } from "@crossmint/wallets-sdk";
 
-import type { GetOrCreateWalletProps } from "@/types/wallet";
 import { useWalletState } from "@/hooks/useWalletState";
 import { useCrossmint } from "@/hooks";
 
 export type ValidWalletState =
     | { status: "not-loaded" | "in-progress" }
-    | { status: "loaded"; wallet: EVMSmartWallet; type: "evm-smart-wallet" }
-    | { status: "loaded"; wallet: SolanaSmartWallet; type: "solana-smart-wallet" }
+    | { status: "loaded"; wallet: Wallet<Chain> }
     | { status: "loading-error"; error: string };
 
 type WalletContextFunctions = {
-    getOrCreateWallet: (args: GetOrCreateWalletProps) => Promise<{ startedCreation: boolean; reason?: string }>;
+    getOrCreateWallet: <C extends Chain>(
+        props: WalletArgsFor<C>
+    ) => Promise<{ startedCreation: boolean; reason?: string }>;
     setState: Dispatch<SetStateAction<ValidWalletState>>;
     clearWallet: () => void;
 };
 
-type WalletType = {
-    "evm-smart-wallet": EVMSmartWallet;
-    "solana-smart-wallet": SolanaSmartWallet;
-};
-
-type LoadedWalletState<T extends keyof WalletType> = {
+type LoadedWalletState<C extends Chain> = {
     status: "loaded";
-    wallet: WalletType[T];
-    type: T;
+    wallet: Wallet<C>;
     error?: undefined;
 };
-
-type WalletContext =
+type WalletContext<C extends Chain = Chain> =
     | ({
           status: "not-loaded" | "in-progress";
           wallet?: undefined;
-          type?: undefined;
           error?: undefined;
       } & WalletContextFunctions)
     | ({
           status: "loading-error";
           wallet?: undefined;
-          type?: undefined;
           error: string;
       } & WalletContextFunctions)
-    | (LoadedWalletState<"evm-smart-wallet"> & WalletContextFunctions)
-    | (LoadedWalletState<"solana-smart-wallet"> & WalletContextFunctions);
+    | (LoadedWalletState<C> & WalletContextFunctions);
 
 export const WalletContext = createContext<WalletContext>({
     status: "not-loaded",

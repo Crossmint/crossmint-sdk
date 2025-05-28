@@ -39,8 +39,7 @@ describe("AuthFormProvider", () => {
         setDialogOpen: vi.fn(),
         embeddedWallets: {
             createOnLogin: "off",
-            defaultChain: "base-sepolia",
-            type: "evm-smart-wallet",
+            chain: "base-sepolia",
         } as CrossmintAuthProviderEmbeddedWallets,
         appearance: {
             colors: {

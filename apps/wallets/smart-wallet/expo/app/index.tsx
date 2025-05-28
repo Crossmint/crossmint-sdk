@@ -1,4 +1,4 @@
-import { useCrossmintAuth, useWallet, type SolanaSmartWallet } from "@crossmint/client-sdk-react-native-ui";
+import { useCrossmintAuth, useWallet } from "@crossmint/client-sdk-react-native-ui";
 import { useEffect, useMemo, useState } from "react";
 import { Button, Text, View } from "react-native";
 import * as Linking from "expo-linking";
@@ -10,10 +10,11 @@ import {
     VersionedTransaction,
 } from "@solana/web3.js";
 import { Link } from "expo-router";
+import { SolanaWallet } from "@crossmint/wallets-sdk";
 
 export default function Index() {
     const { loginWithOAuth, user, logout, createAuthSession } = useCrossmintAuth();
-    const { wallet, type, error, getOrCreateWallet } = useWallet();
+    const { wallet, error, getOrCreateWallet } = useWallet();
     const [txHash, setTxHash] = useState<string | null>(null);
     const walletAddress = useMemo(() => wallet?.address, [wallet]);
     const url = Linking.useURL();
@@ -29,10 +30,7 @@ export default function Index() {
             console.log("User not logged in");
             return;
         }
-        getOrCreateWallet({
-            type: "solana-smart-wallet",
-            args: {},
-        });
+        getOrCreateWallet({ chain: "solana" });
     }
 
     async function makeTransaction() {
@@ -64,10 +62,8 @@ export default function Index() {
 
             const transaction = new VersionedTransaction(newMessage.compileToV0Message());
 
-            if (type !== "solana-smart-wallet") {
-                throw new Error("Wallet type is not solana-smart-wallet");
-            }
-            const txHash = await (wallet as SolanaSmartWallet).sendTransaction({
+            const solanaWallet = SolanaWallet.from(wallet as SolanaWallet);
+            const txHash = await solanaWallet.sendTransaction({
                 transaction,
             });
 
