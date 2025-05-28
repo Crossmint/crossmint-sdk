@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { EVMWallet, SolanaWallet, useWallet } from "@crossmint/client-sdk-react-ui";
+import { useWallet } from "@crossmint/client-sdk-react-ui";
 import { PublicKey } from "@solana/web3.js";
-import { type Address, encodeFunctionData, erc20Abi, isAddress } from "viem";
+import { isAddress } from "viem";
 
 /* ============================================================ */
 /*                    EVM WALLET TRANSFER                        */
