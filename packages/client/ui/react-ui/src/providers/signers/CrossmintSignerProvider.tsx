@@ -98,9 +98,8 @@ export function CrossmintSignerProvider({
             const adminSignerAddress = publicKey.bytes;
             const wallet = await getOrCreateSolanaWalletWithSigner(adminSignerAddress);
             const solanaWallet = SolanaWallet.from(wallet);
-
             const walletWithRecovery = {
-                ...solanaWallet,
+                ...wallet,
                 sendTransaction: async (props: SolanaTransactionInput) =>
                     new Promise<string>((resolve, reject) => {
                         const cleanup = () => {
