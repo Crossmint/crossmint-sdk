@@ -39,7 +39,6 @@ export class WalletFactory {
 
     public async createWallet<C extends Chain>(args: WalletArgsFor<C>): Promise<Wallet<C>> {
         await args.options?.experimental_callbacks?.onWalletCreationStart?.();
-        // TODO: fix wallet type
         let walletPayload: any;
         if (args.chain === "solana") {
             walletPayload = {
@@ -85,7 +84,7 @@ export class WalletFactory {
         args: WalletArgsFor<C>
     ): Wallet<C> {
         const signerConfig = this.toInternalSignerConfig(walletResponse, args.signer);
-        return Wallet.fromAPIResponse(
+        return new Wallet(
             {
                 chain: args.chain,
                 address: walletResponse.address,

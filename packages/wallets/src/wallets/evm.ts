@@ -112,7 +112,6 @@ export class EVMWallet extends Wallet<EVMChain> {
         return await this.waitForSignature(signatureId);
     }
 
-    // TODO: implement proper viem client...
     public getViemClient(params?: { transport?: HttpTransport }) {
         return createPublicClient({
             transport: params?.transport ?? http(),
