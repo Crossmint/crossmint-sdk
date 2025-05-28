@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { createCrossmint } from "@crossmint/common-sdk-base";
-import { CrossmintWallets, type EVMSmartWallet, type EVMSignerInput } from "@crossmint/wallets-sdk";
+import { type Chain, CrossmintWallets, type PasskeySignerConfig, type Wallet } from "@crossmint/wallets-sdk";
 
 import { CrossmintProvider, useCrossmint } from "../hooks/useCrossmint";
 import { useWallet } from "../hooks/useWallet";
@@ -45,9 +45,9 @@ function renderWalletProvider({ children }: { children: ReactNode }) {
 }
 
 function TestComponent() {
-    const { status, wallet, type, error, getOrCreateWallet, clearWallet } = useWallet();
-    const mockPasskeySigner = mock<EVMSignerInput>({
-        type: "evm-passkey",
+    const { status, wallet, error, getOrCreateWallet, clearWallet } = useWallet();
+    const mockPasskeySigner = mock<PasskeySignerConfig>({
+        type: "passkey",
         name: "Crossmint Wallet",
     });
 
@@ -56,16 +56,12 @@ function TestComponent() {
             <div data-testid="error">{error ?? "No Error"}</div>
             <div data-testid="status">{status}</div>
             <div data-testid="wallet">{wallet ? "Wallet Loaded" : "No Wallet"}</div>
-            <div data-testid="wallet-type">{type}</div>
             <button
                 data-testid="create-wallet-button"
                 onClick={() =>
                     getOrCreateWallet({
-                        type: "evm-smart-wallet",
-                        args: {
-                            chain: "polygon-amoy",
-                            adminSigner: mockPasskeySigner,
-                        },
+                        chain: "polygon-amoy",
+                        signer: mockPasskeySigner,
                     })
                 }
             >
@@ -80,7 +76,7 @@ function TestComponent() {
 
 describe("CrossmintWalletProvider", () => {
     let mockSDK: CrossmintWallets;
-    let mockWallet: EVMSmartWallet;
+    let mockWallet: Wallet<Chain>;
     beforeEach(() => {
         vi.resetAllMocks();
         vi.mocked(createCrossmint).mockImplementation(() => ({}) as any);
@@ -93,7 +89,7 @@ describe("CrossmintWalletProvider", () => {
         });
 
         mockSDK = mock<CrossmintWallets>();
-        mockWallet = mock<EVMSmartWallet>();
+        mockWallet = mock<Wallet<Chain>>();
         vi.mocked(CrossmintWallets.from).mockReturnValue(mockSDK);
         vi.mocked(mockSDK.getOrCreateWallet).mockResolvedValue(mockWallet);
     });
@@ -105,7 +101,6 @@ describe("CrossmintWalletProvider", () => {
             });
             expect(getByTestId("wallet").textContent).toBe("No Wallet");
             expect(getByTestId("error").textContent).toBe("No Error");
-            expect(getByTestId("wallet-type").textContent).not.toBe("evm-smart-wallet");
 
             fireEvent.click(getByTestId("create-wallet-button"));
 
@@ -119,7 +114,6 @@ describe("CrossmintWalletProvider", () => {
                 expect(getByTestId("status").textContent).toBe("loaded");
                 expect(getByTestId("wallet").textContent).toBe("Wallet Loaded");
                 expect(getByTestId("error").textContent).toBe("No Error");
-                expect(getByTestId("wallet-type").textContent).toBe("evm-smart-wallet");
             });
 
             expect(vi.mocked(mockSDK.getOrCreateWallet)).toHaveBeenCalledOnce();

@@ -30,7 +30,10 @@ function CrossmintProviders({ children }: { children: ReactNode }) {
     return (
         <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_API_KEY ?? ""}>
             <CrossmintAuthProvider
-                embeddedWallets={{ createOnLogin: "all-users", type: walletType }}
+                embeddedWallets={{
+                    createOnLogin: "all-users",
+                    chain: walletType === "solana-smart-wallet" ? "solana" : (process.env.NEXT_PUBLIC_CHAIN as any),
+                }}
                 appearance={{
                     borderRadius: "24px",
                     colors: {

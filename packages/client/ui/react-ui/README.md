@@ -74,7 +74,6 @@ import { useWallet } from "@crossmint/client-sdk-react-ui";
 Handles wallet creation and management. Key features:
 - `status` - Wallet state ("not-loaded" | "in-progress" | "loading-error" | "loaded")
 - `wallet` - Access to the EVMSmartWallet instance
-- `type` - Wallet type ("evm-smart-wallet" | "solana-smart-wallet")
 - `getOrCreateWallet()` - Initialize or retrieve user's wallet
 - `clearWallet()` - Reset wallet state
 - `createPasskeySigner()` - Create a passkey signer for the wallet (not supported for Solana)

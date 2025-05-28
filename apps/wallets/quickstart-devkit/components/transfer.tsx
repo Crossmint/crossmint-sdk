@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { type EVMSmartWalletChain, useWallet } from "@crossmint/client-sdk-react-ui";
+import { EVMWallet, SolanaWallet, useWallet } from "@crossmint/client-sdk-react-ui";
 import { PublicKey } from "@solana/web3.js";
 import { type Address, encodeFunctionData, erc20Abi, isAddress } from "viem";
 import { createSolTransferTransaction, createTokenTransferTransaction } from "@/lib/createTransaction";
@@ -10,7 +10,7 @@ import { createSolTransferTransaction, createTokenTransferTransaction } from "@/
 /*                    EVM WALLET TRANSFER                        */
 /* ============================================================ */
 export function EVMTransferFunds() {
-    const { wallet, type } = useWallet();
+    const { wallet } = useWallet();
     const [token, setToken] = useState<"eth" | "usdc" | null>(null);
     const [recipient, setRecipient] = useState<string | null>(null);
     const [amount, setAmount] = useState<number | null>(null);
@@ -18,7 +18,7 @@ export function EVMTransferFunds() {
     const [txnHash, setTxnHash] = useState<string | null>(null);
 
     async function handleOnTransfer() {
-        if (wallet == null || token == null || type !== "evm-smart-wallet" || recipient == null || amount == null) {
+        if (wallet == null || token == null || recipient == null || amount == null) {
             alert("Transfer: missing required fields");
             return;
         }
@@ -28,17 +28,18 @@ export function EVMTransferFunds() {
             alert("Transfer: Invalid recipient address");
             return;
         }
+        const evmWallet = EVMWallet.from(wallet as EVMWallet);
 
         try {
             setIsLoading(true);
             let txn;
             if (token === "eth") {
                 // For ETH transfers, we use native transfer
-                txn = await wallet.sendTransaction({
+                txn = await evmWallet.sendTransaction({
                     to: recipient as Address,
                     value: BigInt(amount * 10 ** 9), // Convert to Gwei
                     data: "0x", // Empty data for native transfers
-                    chain: process.env.NEXT_PUBLIC_EVM_CHAIN as EVMSmartWalletChain,
+                    chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any,
                 });
             } else if (token === "usdc") {
                 // For USDC transfers, we use ERC20 transfer
@@ -47,11 +48,11 @@ export function EVMTransferFunds() {
                     functionName: "transfer",
                     args: [recipient as Address, BigInt(amount * 10 ** 6)], // USDC has 6 decimals
                 });
-                txn = await wallet.sendTransaction({
+                txn = await evmWallet.sendTransaction({
                     to: "0x5fd84259d66Cd46123540766Be93DFE6D43130D7", // USDC token mint on OP sepolia
                     value: BigInt(0),
                     data,
-                    chain: process.env.NEXT_PUBLIC_EVM_CHAIN as EVMSmartWalletChain,
+                    chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any,
                 });
             }
             setTxnHash(`https://optimism-sepolia.blockscout.com/tx/${txn}`);
@@ -147,7 +148,7 @@ export function EVMTransferFunds() {
 /*                    SOLANA WALLET TRANSFER                    */
 /* ============================================================ */
 export function SolanaTransferFunds() {
-    const { wallet, type } = useWallet();
+    const { wallet } = useWallet();
     const [token, setToken] = useState<"sol" | "usdc" | null>("sol");
     const [recipient, setRecipient] = useState<string | null>(null);
     const [amount, setAmount] = useState<number | null>(null);
@@ -164,7 +165,7 @@ export function SolanaTransferFunds() {
     };
 
     async function handleOnTransfer() {
-        if (wallet == null || token == null || type !== "solana-smart-wallet" || recipient == null || amount == null) {
+        if (wallet == null || token == null || recipient == null || amount == null) {
             alert("Transfer: missing required fields");
             return;
         }
@@ -174,6 +175,8 @@ export function SolanaTransferFunds() {
             alert("Transfer: Invalid Solana recipient address");
             return;
         }
+
+        const solanaWallet = SolanaWallet.from(wallet as SolanaWallet);
 
         try {
             setIsLoading(true);
@@ -189,7 +192,7 @@ export function SolanaTransferFunds() {
             }
 
             const txn = await buildTransaction();
-            const txnHash = await wallet.sendTransaction({
+            const txnHash = await solanaWallet.sendTransaction({
                 transaction: txn,
             });
             setTxnHash(`https://solscan.io/tx/${txnHash}?cluster=devnet`);

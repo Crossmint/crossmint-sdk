@@ -3,10 +3,10 @@
 import Image from "next/image";
 import { useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
 import { WalletBalance } from "../components/balance";
-import { EVMTransferFunds, SolanaTransferFunds } from "../components/transfer";
-import { DelegatedSigner } from "../components/delegated-signer";
+import { Permissions } from "../components/permissions";
 import { CrossmintAuthLogoutButton } from "../components/logout";
 import { CrossmintAuthLoginButton } from "../components/login";
+import { EVMTransferFunds, SolanaTransferFunds } from "@/components/transfer";
 // import { useEVMPrivyConnector, useSolanaPrivyConnector } from "@/hooks/usePrivyConnector";
 // import { useEVMDynamicConnector, useSolanaDynamicConnector } from "@/hooks/useDynamicConnector";
 
@@ -37,7 +37,7 @@ export function HomeContent() {
     //     isLoading,
     //     type
     // } = useEVMDynamicConnector();
-    const { wallet, status, type } = useWallet();
+    const { wallet, status } = useWallet();
     const { status: crossminAuthStatus } = useAuth();
     const isLoading = status === "in-progress" || crossminAuthStatus === "initializing";
 
@@ -72,7 +72,7 @@ export function HomeContent() {
             <div className="flex flex-col mb-8">
                 <Image src="/crossmint.svg" alt="Crossmint logo" priority width={150} height={150} className="mb-4" />
                 <h1 className="text-2xl font-semibold mb-2">
-                    Wallets Quickstart (Devkit) - {type === "evm-smart-wallet" ? "EVM" : "Solana"}
+                    Wallets Quickstart (Devkit) - {wallet?.chain === "solana" ? "Solana" : "EVM"}
                 </h1>
                 <p className="text-gray-600 text-sm">The easiest way to build onchain</p>
             </div>
@@ -113,9 +113,9 @@ export function HomeContent() {
                     {/* <PrivyLogoutButton /> */}
                     {/* <DynamicLabsLogoutButton /> */}
                 </div>
-                {type === "evm-smart-wallet" && <EVMTransferFunds />}
-                {type === "solana-smart-wallet" && <SolanaTransferFunds />}
-                <DelegatedSigner />
+                {wallet?.chain !== "solana" && <EVMTransferFunds />}
+                {wallet?.chain === "solana" && <SolanaTransferFunds />}
+                <Permissions />
             </div>
         </div>
     );

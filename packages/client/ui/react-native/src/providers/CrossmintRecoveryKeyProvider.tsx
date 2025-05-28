@@ -9,9 +9,10 @@ import { useCrossmint } from "../hooks";
 import { View } from "react-native";
 import { validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
 import { WalletContext as BaseWalletContext } from "@crossmint/client-sdk-react-base";
+import type { SolanaExternalWalletSignerConfig } from "@crossmint/wallets-sdk";
 
 export interface RecoverySigner {
-    type: "solana-keypair";
+    type: "external-wallet";
     address: string;
     signer: {
         signMessage: (message: Uint8Array) => Promise<Uint8Array>;
@@ -266,7 +267,7 @@ export function CrossmintRecoveryKeyProvider({
             }
 
             return {
-                type: "solana-keypair",
+                type: "external-wallet",
                 address,
                 signer: {
                     signMessage: async (message: Uint8Array): Promise<Uint8Array> => {
@@ -372,8 +373,8 @@ export function CrossmintRecoveryKeyProvider({
                 const existingSigner = buildRecoverySigner(publicKey.bytes);
                 setNeedsAuth(false);
                 await getOrCreateWallet({
-                    type: "solana-smart-wallet",
-                    args: { adminSigner: existingSigner },
+                    chain: "solana",
+                    signer: existingSigner as unknown as SolanaExternalWalletSignerConfig,
                 });
             } else {
                 console.log("checkSignerExists needsAuth true", experimental_needsAuth);
@@ -504,8 +505,8 @@ export function CrossmintRecoveryKeyProvider({
                 const fetchedSigner = buildRecoverySigner(adminSignerAddress);
 
                 await getOrCreateWallet({
-                    type: "solana-smart-wallet",
-                    args: { adminSigner: fetchedSigner },
+                    chain: "solana",
+                    signer: fetchedSigner as unknown as SolanaExternalWalletSignerConfig,
                 });
                 setNeedsAuth(true);
                 return null;

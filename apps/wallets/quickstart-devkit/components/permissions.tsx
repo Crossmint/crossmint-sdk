@@ -1,32 +1,27 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-    type DelegatedSigner,
-    type EVMSmartWalletChain,
-    useCrossmint,
-    useWallet,
-} from "@crossmint/client-sdk-react-ui";
+import { type Permission, useCrossmint, useWallet } from "@crossmint/client-sdk-react-ui";
 import { cn } from "../lib/utils";
 
-export function DelegatedSigner() {
+export function Permissions() {
     const {
         crossmint: { jwt },
     } = useCrossmint();
-    const { wallet, type } = useWallet();
+    const { wallet } = useWallet();
 
     const [isLoading, setIsLoading] = useState(false);
-    const [delegatedSigners, setDelegatedSigners] = useState<DelegatedSigner[]>([]);
+    const [permissions, setPermissions] = useState<Permission[]>([]);
     const [newSigner, setNewSigner] = useState<string>("");
 
     useEffect(() => {
-        const fetchDelegatedSigners = async () => {
+        const fetchPermissions = async () => {
             if (wallet != null) {
-                const signers = await wallet.getDelegatedSigners();
-                setDelegatedSigners(signers);
+                const signers = await wallet.permissions();
+                setPermissions(signers);
             }
         };
-        fetchDelegatedSigners();
+        fetchPermissions();
     }, [wallet, jwt]);
 
     const addNewSigner = async () => {
@@ -39,20 +34,12 @@ export function DelegatedSigner() {
         }
         try {
             setIsLoading(true);
-            if (type === "evm-smart-wallet") {
-                await wallet.addDelegatedSigner({
-                    chain: process.env.NEXT_PUBLIC_EVM_CHAIN as EVMSmartWalletChain,
-                    signer: newSigner,
-                });
-            }
-            if (type === "solana-smart-wallet") {
-                await wallet.addDelegatedSigner(`solana-keypair:${newSigner}`);
-            }
-            const signers = await wallet.getDelegatedSigners();
-            setDelegatedSigners(signers);
+            await wallet.updatePermissions({ signer: newSigner });
+            const signers = await wallet.permissions();
+            setPermissions(signers);
         } catch (err) {
-            console.error("Delegated Signer: ", err);
-            alert(`Delegated Signer: ${err}`);
+            console.error("Permissions: ", err);
+            alert(`Permissions: ${err}`);
         } finally {
             setIsLoading(false);
         }
@@ -61,7 +48,7 @@ export function DelegatedSigner() {
     return (
         <div className="bg-white flex flex-col gap-3 rounded-xl border shadow-sm p-5">
             <div>
-                <h2 className="text-lg font-medium">Add Delegated Signer</h2>
+                <h2 className="text-lg font-medium">Add Permission</h2>
                 <p className="text-sm text-gray-500">
                     Allow third parties to sign transactions on behalf of your wallet.{" "}
                     <a
@@ -93,24 +80,19 @@ export function DelegatedSigner() {
             >
                 {isLoading ? "Processing..." : "Add"}
             </button>
-            {/* List of delegated signers */}
-            {delegatedSigners.length > 0 && (
+            {/* List of permissions */}
+            {permissions.length > 0 && (
                 <div className="bg-gray-50 py-2 px-3 rounded-md">
                     <p className="text-xs text-gray-500 mb-1.5">Registered signers</p>
-                    {delegatedSigners.length > 0 && (
-                        <div className="overflow-x-auto bg-white p-1 rounded border border-gray-100">
-                            <ul className="flex flex-col gap-1">
-                                {delegatedSigners.map((signer, index) => (
-                                    <li
-                                        key={index}
-                                        className="whitespace-nowrap px-2 py-1 rounded text-xs text-gray-600"
-                                    >
-                                        {signer.locator}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
+                    <div className="overflow-x-auto bg-white p-1 rounded border border-gray-100">
+                        <ul className="flex flex-col gap-1">
+                            {permissions.map(({ signer }, index) => (
+                                <li key={index} className="whitespace-nowrap px-2 py-1 rounded text-xs text-gray-600">
+                                    {signer}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
                 </div>
             )}
         </div>
