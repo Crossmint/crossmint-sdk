@@ -9,8 +9,7 @@ import {
     type Dispatch,
     type SetStateAction,
 } from "react";
-import type { SmartWalletTransactionParams } from "@crossmint/wallets-sdk/dist/solana/types/wallet"; /** @TODO: remove this once the type is exported from the SDK */
-import { CrossmintWallets } from "@crossmint/wallets-sdk";
+import { CrossmintWallets, SolanaChain, SolanaTransactionInput, SolanaWallet, Wallet } from "@crossmint/wallets-sdk";
 import type { ValidWalletState } from "@crossmint/client-sdk-react-base";
 import { PublicKey, type VersionedTransaction } from "@solana/web3.js";
 import base58 from "bs58";
@@ -35,7 +34,6 @@ interface CrossmintSignerProviderProps {
 
 type CrossmintSignerContext = {
     experimental_getOrCreateWalletWithRecoveryKey: (args: {
-        type: "solana-smart-wallet";
         email: string;
     }) => Promise<void>;
 };
@@ -61,7 +59,6 @@ export function CrossmintSignerProvider({
     const errorHandlerRef = useRef<((error: Error) => void) | null>(null);
 
     const experimental_getOrCreateWalletWithRecoveryKey = async (args: {
-        type: "solana-smart-wallet";
         email: string;
     }) => {
         try {
@@ -89,10 +86,11 @@ export function CrossmintSignerProvider({
             const binaryData = Uint8Array.from(atob(base64PublicKey), (c) => c.charCodeAt(0));
             const adminSignerAddress = base58.encode(binaryData);
             const wallet = await getOrCreateSolanaWalletWithSigner(adminSignerAddress);
+            const solanaWallet = SolanaWallet.from(wallet);
 
             const walletWithRecovery = {
-                ...wallet,
-                sendTransaction: async (props: SmartWalletTransactionParams) =>
+                ...solanaWallet,
+                sendTransaction: async (props: SolanaTransactionInput) =>
                     new Promise<string>((resolve, reject) => {
                         const cleanup = () => {
                             setDialogOpen(false);
@@ -101,7 +99,7 @@ export function CrossmintSignerProvider({
                         const successHandler = async () => {
                             cleanup();
                             try {
-                                const txHash = await wallet.sendTransaction(props);
+                                const txHash = await solanaWallet.sendTransaction(props);
                                 resolve(txHash);
                             } catch (error) {
                                 reject(error);
@@ -119,8 +117,7 @@ export function CrossmintSignerProvider({
 
             setWalletState({
                 status: "loaded",
-                wallet: walletWithRecovery,
-                type: "solana-smart-wallet",
+                wallet: walletWithRecovery as unknown as Wallet<SolanaChain>,
             });
         } catch (error) {
             console.error("There was an error creating a wallet ", error);
@@ -254,77 +251,41 @@ export function CrossmintSignerProvider({
             throw new Error("[getOrCreateSolanaWalletWithSigner] JWT not set!");
         }
         try {
-            return await smartWalletSDK.getOrCreateWallet("solana-smart-wallet", {
-                adminSigner: {
-                    type: "solana-keypair",
+            return await smartWalletSDK.getOrCreateWallet({
+                chain: "solana",
+                signer: {
+                    type: "external-wallet",
                     address: publicSignerAddress,
-                    signer: {
-                        signMessage: (message: Uint8Array) => {
-                            return signWithRecovery(async () => {
-                                if (iframeWindow.current == null) {
-                                    throw new Error("IFrame window not initialized");
-                                }
-                                const res = await iframeWindow.current.sendAction({
-                                    event: "request:sign",
-                                    responseEvent: "response:sign",
-                                    data: {
-                                        authData: {
-                                            jwt,
-                                            apiKey,
-                                        },
-                                        data: {
-                                            keyType: "ed25519",
-                                            bytes: base58.encode(message),
-                                            encoding: "base58",
-                                        },
+                    onSignTransaction: (transaction: VersionedTransaction) => {
+                        return signWithRecovery(async () => {
+                            const messageData = transaction.message.serialize();
+                            const res = await iframeWindow.current?.sendAction({
+                                event: "request:sign",
+                                responseEvent: "response:sign",
+                                data: {
+                                    authData: {
+                                        jwt,
+                                        apiKey,
                                     },
-                                    options: DEFAULT_EVENT_OPTIONS,
-                                });
-                                if (res.status === "error") {
-                                    const err = new Error(res.error);
-                                    (err as any).code = res.code;
-                                    throw err;
-                                }
-                                if (res.signature == null) {
-                                    throw new Error("Failed to sign message");
-                                }
-                                return base58.decode(res.signature);
-                            });
-                        },
-                        signTransaction: (transaction: VersionedTransaction) => {
-                            return signWithRecovery(async () => {
-                                const messageData = transaction.message.serialize();
-                                const res = await iframeWindow.current?.sendAction({
-                                    event: "request:sign",
-                                    responseEvent: "response:sign",
                                     data: {
-                                        authData: {
-                                            jwt,
-                                            apiKey,
-                                        },
-                                        data: {
-                                            keyType: "ed25519",
-                                            bytes: base58.encode(messageData),
-                                            encoding: "base58",
-                                        },
+                                        keyType: "ed25519",
+                                        bytes: base58.encode(messageData),
+                                        encoding: "base58",
                                     },
-                                    options: DEFAULT_EVENT_OPTIONS,
-                                });
-                                if (res?.status === "error") {
-                                    const err = new Error(res.error);
-                                    (err as any).code = res.code;
-                                    throw err;
-                                }
-                                if (res?.signature == null) {
-                                    throw new Error("Failed to sign transaction");
-                                }
-                                transaction.addSignature(
-                                    new PublicKey(publicSignerAddress),
-                                    base58.decode(res.signature)
-                                );
-                                return transaction;
+                                },
+                                options: DEFAULT_EVENT_OPTIONS,
                             });
-                        },
+                            if (res?.status === "error") {
+                                const err = new Error(res.error);
+                                (err as any).code = res.code;
+                                throw err;
+                            }
+                            if (res?.signature == null) {
+                                throw new Error("Failed to sign transaction");
+                            }
+                            transaction.addSignature(new PublicKey(publicSignerAddress), base58.decode(res.signature));
+                            return transaction;
+                        });
                     },
                 },
             });

@@ -5,14 +5,14 @@ import {
     useCrossmintAuth,
     type ReactNativeWalletContextState,
 } from "@crossmint/client-sdk-react-native-ui";
-import { TransactionMessage, VersionedTransaction } from "@solana/web3.js";
+import { PublicKey, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import { createMemoInstruction } from "@solana/spl-memo";
+import { SolanaWallet } from "@crossmint/wallets-sdk";
 
 export default function SignerScreen() {
     const {
         status,
         wallet,
-        type,
         clearWallet,
         error: walletError,
         experimental_needsAuth,
@@ -79,7 +79,7 @@ export default function SignerScreen() {
     };
 
     const handleSendTransaction = async () => {
-        if (status !== "loaded" || wallet == null || type !== "solana-smart-wallet") {
+        if (status !== "loaded" || wallet == null) {
             Alert.alert("Error", "Wallet is not loaded or is not a Solana smart wallet.");
             return;
         }
@@ -91,12 +91,13 @@ export default function SignerScreen() {
         await handleAction(async () => {
             const transaction = new VersionedTransaction(
                 new TransactionMessage({
-                    payerKey: wallet.publicKey,
+                    payerKey: new PublicKey(wallet.address),
                     recentBlockhash: "11111111111111111111111111111111",
                     instructions: [createMemoInstruction(`Hello from Crossmint Smart Wallet! ${Date.now()}`)],
                 }).compileToV0Message()
             );
-            const signature = await wallet.sendTransaction({ transaction });
+            const solanaWallet = SolanaWallet.from(wallet as SolanaWallet);
+            const signature = await solanaWallet.sendTransaction({ transaction });
             if (signature) {
                 setTxHash(signature);
                 Alert.alert("Success", `Transaction Sent: ${signature}`);
@@ -108,7 +109,7 @@ export default function SignerScreen() {
     };
 
     const canCreateLoad = !isLoading && user?.email != null && wallet == null;
-    const canSendTx = !isLoading && status === "loaded" && type === "solana-smart-wallet";
+    const canSendTx = !isLoading && status === "loaded";
     const canClear = !isLoading && status !== "not-loaded";
 
     return (

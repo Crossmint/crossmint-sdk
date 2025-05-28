@@ -5,13 +5,14 @@ import type { WebView, WebViewMessageEvent } from "react-native-webview";
 import { RNWebView } from "@crossmint/client-sdk-rn-window";
 import { WebViewParent } from "@crossmint/client-sdk-rn-window";
 import { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
-import { useCrossmint } from "../hooks";
 import { View } from "react-native";
 import { validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
 import { WalletContext as BaseWalletContext } from "@crossmint/client-sdk-react-base";
+import type { SolanaExternalWalletSignerConfig } from "@crossmint/wallets-sdk";
+import { useCrossmint } from "../hooks";
 
 export interface RecoverySigner {
-    type: "solana-keypair";
+    type: "external-wallet";
     address: string;
     signer: {
         signMessage: (message: Uint8Array) => Promise<Uint8Array>;
@@ -254,7 +255,7 @@ export function CrossmintRecoveryKeyProvider({
             }
 
             return {
-                type: "solana-keypair",
+                type: "external-wallet",
                 address,
                 signer: {
                     signMessage: async (message: Uint8Array): Promise<Uint8Array> => {
@@ -344,7 +345,10 @@ export function CrossmintRecoveryKeyProvider({
             if (signerResponse?.status === "success" && signerResponse.publicKey) {
                 const existingSigner = buildRecoverySigner(signerResponse.publicKey);
                 setNeedsAuth(false);
-                await getOrCreateWallet({ type: "solana-smart-wallet", args: { adminSigner: existingSigner } });
+                await getOrCreateWallet({
+                    chain: "solana",
+                    signer: existingSigner as unknown as SolanaExternalWalletSignerConfig,
+                });
             } else {
                 console.log("checkSignerExists needsAuth true", experimental_needsAuth);
                 setNeedsAuth(true);
@@ -469,7 +473,10 @@ export function CrossmintRecoveryKeyProvider({
 
                 const fetchedSigner = buildRecoverySigner(adminSignerAddress);
 
-                await getOrCreateWallet({ type: "solana-smart-wallet", args: { adminSigner: fetchedSigner } });
+                await getOrCreateWallet({
+                    chain: "solana",
+                    signer: fetchedSigner as unknown as SolanaExternalWalletSignerConfig,
+                });
                 console.log("createRecoveryKeySigner needsAuth true", experimental_needsAuth);
                 setNeedsAuth(true);
                 return null;

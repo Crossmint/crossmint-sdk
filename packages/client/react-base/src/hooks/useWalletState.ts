@@ -1,9 +1,8 @@
 import { useState } from "react";
 
-import type { CrossmintWallets, Callbacks } from "@crossmint/wallets-sdk";
+import type { Callbacks, Chain, CrossmintWallets, WalletArgsFor } from "@crossmint/wallets-sdk";
 
 import { deriveErrorState, type ValidWalletState } from "@/providers";
-import type { GetOrCreateWalletProps } from "@/types";
 
 export function useWalletState({
     crossmintWallets,
@@ -18,7 +17,7 @@ export function useWalletState({
         status: "not-loaded",
     });
 
-    const getOrCreateWallet = async (props: GetOrCreateWalletProps) => {
+    const getOrCreateWallet = async <C extends Chain>(props: WalletArgsFor<C>) => {
         if (state.status == "in-progress") {
             return {
                 startedCreation: false,
@@ -35,28 +34,13 @@ export function useWalletState({
 
         try {
             setState({ status: "in-progress" });
-
-            switch (props.type) {
-                case "evm-smart-wallet": {
-                    const walletArgs = {
-                        chain: props.args.chain,
-                        adminSigner: props.args.adminSigner ?? { type: "evm-passkey" },
-                        linkedUser: props.args.linkedUser,
-                    };
-                    const wallet = await crossmintWallets.getOrCreateWallet("evm-smart-wallet", walletArgs, {
-                        experimental_callbacks: callbacks,
-                    });
-                    setState({ status: "loaded", wallet, type: "evm-smart-wallet" });
-                    break;
-                }
-                case "solana-smart-wallet": {
-                    const wallet = await crossmintWallets.getOrCreateWallet("solana-smart-wallet", props.args, {
-                        experimental_callbacks: callbacks,
-                    });
-                    setState({ status: "loaded", wallet, type: "solana-smart-wallet" });
-                    break;
-                }
-            }
+            const wallet = await crossmintWallets.getOrCreateWallet({
+                ...props,
+                options: {
+                    experimental_callbacks: callbacks,
+                },
+            });
+            setState({ status: "loaded", wallet });
         } catch (error: unknown) {
             console.error("There was an error creating a wallet ", error);
             setState(deriveErrorState(error));

@@ -18,9 +18,7 @@ import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
 import { AuthFormProvider } from "./auth/AuthFormProvider";
 import { TwindProvider } from "./TwindProvider";
 import type { AuthStatus, CrossmintAuthProviderEmbeddedWallets, LoginMethod } from "@/types/auth";
-import type { GetOrCreateWalletAdminSigner, GetOrCreateWalletProps } from "@/types/wallet";
 import { DynamicWeb3WalletConnect } from "./auth/web3/DynamicWeb3WalletConnect";
-import { mapSignerToWalletType } from "@/utils/mapSignerToWalletType";
 import { useDynamicConnect } from "@/hooks/useDynamicConnect";
 
 type CrossmintAuthProviderProps = {
@@ -60,7 +58,8 @@ export const AuthContext = createContext<AuthContextType>(defaultContextValue);
 
 const defaultEmbeddedWallets: CrossmintAuthProviderEmbeddedWallets = {
     createOnLogin: "off",
-    type: "evm-smart-wallet",
+    chain: "solana",
+    showPasskeyHelpers: false,
     experimental_enableRecoveryKeys: false,
     experimental_signersURL: undefined,
 };
@@ -248,7 +247,7 @@ function WalletManager({
     setIsDynamicSdkLoaded,
     isWeb3Enabled,
 }: {
-    embeddedWallets: CrossmintAuthProviderEmbeddedWallets;
+    embeddedWallets: CrossmintAuthProviderProps["embeddedWallets"];
     accessToken: string | undefined;
     setIsDynamicSdkLoaded: (sdkHasLoaded: boolean) => void;
     isWeb3Enabled: boolean;
@@ -259,39 +258,20 @@ function WalletManager({
         setIsDynamicSdkLoaded,
         accessToken
     );
-    const { createOnLogin, adminSigner: defaultAdminSigner, linkedUser } = embeddedWallets;
     const canGetOrCreateWallet =
-        createOnLogin === "all-users" && walletStatus === "not-loaded" && accessToken != null && sdkHasLoaded;
+        embeddedWallets?.createOnLogin === "all-users" &&
+        walletStatus === "not-loaded" &&
+        accessToken != null &&
+        sdkHasLoaded;
 
     const handleWalletCreation = useCallback(async () => {
         if (!canGetOrCreateWallet) {
             return;
         }
 
-        let adminSigner: GetOrCreateWalletAdminSigner = defaultAdminSigner;
-        let walletType = embeddedWallets.type;
-
-        if (isDynamicWalletConnected) {
-            adminSigner = (await getAdminSigner()) ?? adminSigner;
-            walletType = mapSignerToWalletType(adminSigner?.type) ?? walletType;
-        }
-
-        // If an external wallet is not connected, the type is required
-        if (!isDynamicWalletConnected && embeddedWallets.type == null) {
-            console.error(
-                "[CrossmintAuthProvider] ⚠️ embeddedWallets.type is required when no external wallet is connected"
-            );
-            return;
-        }
-
-        getOrCreateWallet({
-            type: walletType,
-            args: {
-                adminSigner,
-                linkedUser,
-            },
-        } as GetOrCreateWalletProps);
-    }, [canGetOrCreateWallet, getOrCreateWallet, linkedUser, defaultAdminSigner, embeddedWallets.type, getAdminSigner]);
+        const signer = isDynamicWalletConnected ? await getAdminSigner() : embeddedWallets.signer;
+        await getOrCreateWallet({ chain: embeddedWallets.chain, signer, owner: embeddedWallets.owner });
+    }, [canGetOrCreateWallet, getOrCreateWallet, getAdminSigner, embeddedWallets, isDynamicWalletConnected]);
 
     const handleWalletCleanup = useCallback(() => {
         if (accessToken == null && walletStatus === "loaded") {

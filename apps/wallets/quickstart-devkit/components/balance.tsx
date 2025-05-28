@@ -2,22 +2,19 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { useWallet, type WalletBalance } from "@crossmint/client-sdk-react-ui";
+import { type Balances, useWallet } from "@crossmint/client-sdk-react-ui";
 
 export function WalletBalance() {
-    const { wallet, type } = useWallet();
-    const [balances, setBalances] = useState<WalletBalance>([]);
+    const { wallet } = useWallet();
+    const [balances, setBalances] = useState<Balances>([]);
 
     useEffect(() => {
         async function fetchBalances() {
-            if (!wallet) return;
+            if (!wallet) {
+                return;
+            }
             try {
-                const balances = await wallet.getBalances({
-                    // @ts-ignore TODO: wallet types will be fixed at some point!
-                    chain: type === "evm-smart-wallet" ? process.env.NEXT_PUBLIC_EVM_CHAIN! : undefined,
-                    // @ts-ignore TODO: wallet types will be fixed at some point!
-                    tokens: type === "evm-smart-wallet" ? ["eth", "usdc"] : ["sol", "usdc"],
-                });
+                const balances = await wallet.balances(wallet.chain === "solana" ? ["sol", "usdc"] : ["eth", "usdc"]);
                 setBalances(balances);
             } catch (error) {
                 console.error("Error fetching wallet balances:", error);
@@ -25,7 +22,7 @@ export function WalletBalance() {
             }
         }
         fetchBalances();
-    }, [wallet, type]);
+    }, [wallet]);
 
     const formatBalance = (balance: string, decimals: number) => {
         return (Number(balance) / Math.pow(10, decimals)).toFixed(2);
@@ -37,21 +34,21 @@ export function WalletBalance() {
 
     return (
         <div className="flex flex-col gap-2">
-            {type === "evm-smart-wallet" ? (
-                <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                        <Image src="/eth.svg" alt="Ethereum" width={24} height={24} />
-                        <p className="font-medium">Ethereum</p>
-                    </div>
-                    <div className="text-gray-700 font-medium">{formatBalance(ethBalance, 18)} ETH</div>
-                </div>
-            ) : (
+            {wallet?.chain === "solana" ? (
                 <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
                         <Image src="/sol.svg" alt="Solana" width={24} height={24} />
                         <p className="font-medium">Solana</p>
                     </div>
                     <div className="text-gray-700 font-medium">{formatBalance(solBalance, 9)} SOL</div>
+                </div>
+            ) : (
+                <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                        <Image src="/eth.svg" alt="Ethereum" width={24} height={24} />
+                        <p className="font-medium">Ethereum</p>
+                    </div>
+                    <div className="text-gray-700 font-medium">{formatBalance(ethBalance, 18)} ETH</div>
                 </div>
             )}
             <div className="border-t my-1"></div>
@@ -64,11 +61,7 @@ export function WalletBalance() {
             </div>
 
             <div className="flex flex-col gap-2 mt-2">
-                {type === "evm-smart-wallet" ? (
-                    <div className="flex items-center justify-center gap-1.5 text-sm py-1.5 px-3 rounded-md bg-accent/10 text-accent hover:bg-accent/20 transition-colors">
-                        ETH Faucet coming soon
-                    </div>
-                ) : (
+                {wallet?.chain !== "solana" ? (
                     <a
                         href="https://faucet.solana.com"
                         target="_blank"
@@ -77,6 +70,10 @@ export function WalletBalance() {
                     >
                         + Get free test SOL
                     </a>
+                ) : (
+                    <div className="flex items-center justify-center gap-1.5 text-sm py-1.5 px-3 rounded-md bg-accent/10 text-accent hover:bg-accent/20 transition-colors">
+                        ETH Faucet coming soon
+                    </div>
                 )}
                 <a
                     href="https://faucet.circle.com"

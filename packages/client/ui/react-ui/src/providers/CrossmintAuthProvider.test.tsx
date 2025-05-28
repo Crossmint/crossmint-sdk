@@ -1,6 +1,6 @@
 import { type ReactNode, act } from "react";
 import { CrossmintAuth as CrossmintAuthClient, getJWTExpiration, deleteCookie } from "@crossmint/client-sdk-auth";
-import { CrossmintWallets, type EVMSignerInput, type EVMSmartWallet } from "@crossmint/wallets-sdk";
+import { Chain, CrossmintWallets, SignerConfigForChain, Wallet } from "@crossmint/wallets-sdk";
 import { SESSION_PREFIX, REFRESH_TOKEN_PREFIX } from "@crossmint/common-sdk-auth";
 import { createCrossmint } from "@crossmint/common-sdk-base";
 import { beforeEach, describe, expect, vi, it, type MockInstance } from "vitest";
@@ -101,13 +101,12 @@ function renderAuthProvider({
 
 function TestComponent() {
     const { setJwt } = useCrossmint();
-    const { wallet, type, status: walletStatus, error, clearWallet } = useWallet();
+    const { wallet, status: walletStatus, error, clearWallet } = useWallet();
     const { status: authStatus, jwt } = useAuth();
     return (
         <div>
             <div data-testid="error">{error ?? "No Error"}</div>
             <div data-testid="wallet-status">{walletStatus}</div>
-            <div data-testid="wallet-type">{type}</div>
             <div data-testid="auth-status">{authStatus}</div>
             <div data-testid="wallet">{wallet ? "Wallet Loaded" : "No Wallet"}</div>
             <div data-testid="auth-jwt">{jwt}</div>
@@ -126,7 +125,7 @@ function TestComponent() {
 
 describe("CrossmintAuthProvider", () => {
     let mockSDK: CrossmintWallets;
-    let mockWallet: EVMSmartWallet;
+    let mockWallet: Wallet<Chain>;
     let embeddedWallets: CrossmintAuthProviderEmbeddedWallets;
     let handleRefreshAuthMaterialSpy: MockInstance;
     let getOAuthUrlSpy: MockInstance;
@@ -157,7 +156,7 @@ describe("CrossmintAuthProvider", () => {
         });
 
         mockSDK = mock<CrossmintWallets>();
-        mockWallet = mock<EVMSmartWallet>();
+        mockWallet = mock<Wallet<Chain>>();
 
         vi.mocked(CrossmintWallets.from).mockReturnValue(mockSDK);
         vi.mocked(mockSDK.getOrCreateWallet).mockResolvedValue(mockWallet);
@@ -168,15 +167,15 @@ describe("CrossmintAuthProvider", () => {
             sdkHasLoaded: true,
             isDynamicWalletConnected: false,
         });
-        const mockPasskeySigner = mock<EVMSignerInput>({
-            type: "evm-passkey",
+        const mockPasskeySigner = mock<SignerConfigForChain<Chain>>({
+            type: "passkey",
             name: "Crossmint Wallet",
         });
         embeddedWallets = {
             createOnLogin: "all-users",
-            type: "evm-smart-wallet",
             showPasskeyHelpers: false,
-            adminSigner: mockPasskeySigner,
+            signer: mockPasskeySigner,
+            chain: "polygon-amoy",
         };
 
         deleteCookie(REFRESH_TOKEN_PREFIX);
@@ -231,14 +230,12 @@ describe("CrossmintAuthProvider", () => {
         expect(getByTestId("auth-status").textContent).toBe("logged-in");
         expect(getByTestId("wallet").textContent).toBe("No Wallet");
         expect(getByTestId("error").textContent).toBe("No Error");
-        expect(getByTestId("wallet-type").textContent).not.toBe("evm-smart-wallet");
 
         await waitFor(() => {
             expect(getByTestId("wallet-status").textContent).toBe("loaded");
             expect(getByTestId("auth-status").textContent).toBe("logged-in");
             expect(getByTestId("wallet").textContent).toBe("Wallet Loaded");
             expect(getByTestId("error").textContent).toBe("No Error");
-            expect(getByTestId("wallet-type").textContent).toBe("evm-smart-wallet");
         });
 
         expect(handleRefreshAuthMaterialSpy).not.toHaveBeenCalled();
@@ -252,7 +249,7 @@ describe("CrossmintAuthProvider", () => {
             children: <TestComponent />,
             embeddedWallets: {
                 createOnLogin: "off",
-                type: "evm-smart-wallet",
+                chain: "polygon-amoy",
             },
         });
 
@@ -293,36 +290,6 @@ describe("CrossmintAuthProvider", () => {
 
         await waitFor(() => {
             expect(getByTestId("auth-status").textContent).toBe("logged-in");
-        });
-    });
-
-    it("throws error when web3 wallet is not connected and type is missing", async () => {
-        await act(() => {
-            document.cookie = `${REFRESH_TOKEN_PREFIX}=mock-refresh-token; path=/; SameSite=Lax;`;
-            document.cookie = `${SESSION_PREFIX}=mock-jwt; path=/; SameSite=Lax;`;
-        });
-        vi.mocked(useDynamicConnect).mockReturnValueOnce({
-            getAdminSigner: vi.fn().mockResolvedValue(null),
-            cleanup: vi.fn(),
-            sdkHasLoaded: true,
-            isDynamicWalletConnected: false,
-        });
-
-        const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-
-        renderAuthProvider({
-            children: <TestComponent />,
-            embeddedWallets: {
-                createOnLogin: "all-users",
-                type: undefined,
-            },
-            loginMethods: ["web3"],
-        });
-
-        await waitFor(() => {
-            expect(consoleErrorSpy).toHaveBeenCalledWith(
-                "[CrossmintAuthProvider] ⚠️ embeddedWallets.type is required when no external wallet is connected"
-            );
         });
     });
 });
