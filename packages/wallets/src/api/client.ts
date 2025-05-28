@@ -25,6 +25,8 @@ import type {
     GetSignerResponse,
     WalletLocator,
     EvmWalletLocator,
+    SendParams,
+    SendResponse,
 } from "./types";
 
 class ApiClient extends CrossmintApiClient {
@@ -168,6 +170,14 @@ class ApiClient extends CrossmintApiClient {
 
     async getSigner(walletLocator: WalletLocator, signer: string): Promise<GetSignerResponse> {
         const response = await this.get(`${this.apiPrefix}/${walletLocator}/signers/${signer}`, {
+            headers: this.headers,
+        });
+        return response.json();
+    }
+
+    async send(walletLocator: WalletLocator, tokenLocator: string, params: SendParams): Promise<SendResponse> {
+        const response = await this.post(`${this.apiPrefix}/${walletLocator}/tokens/${tokenLocator}/transfers`, {
+            body: JSON.stringify(params),
             headers: this.headers,
         });
         return response.json();

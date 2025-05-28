@@ -27,6 +27,8 @@ import type {
     DelegatedSignerDto,
     WalletsV1ControllerCreateDelegatedSigner4Error,
     WalletsV1ControllerGetDelegatedSigner4Error,
+    WalletsSendTokenControllerSendToken2Response,
+    SendTokenDto,
 } from "./gen/types.gen";
 
 export type CreateWalletParams = CreateWalletDto;
@@ -65,6 +67,9 @@ export type RegisterSignerResponse = DelegatedSignerDto | WalletsV1ControllerCre
 export type GetSignerResponse = DelegatedSignerDto | WalletsV1ControllerGetDelegatedSigner4Error;
 export type GetDelegatedSignersResponse = Array<DelegatedSignerDto> | WalletsV1ControllerGetDelegatedSigner4Error;
 export type DelegatedSigner = DelegatedSignerDto;
+
+export type SendParams = SendTokenDto;
+export type SendResponse = WalletsSendTokenControllerSendToken2Response;
 
 type WalletType = CreateWalletDto["type"];
 export type EvmWalletLocator = `me:${WalletType}` | Address;

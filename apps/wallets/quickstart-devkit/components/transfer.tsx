@@ -4,7 +4,6 @@ import { useState } from "react";
 import { type EVMSmartWalletChain, useWallet } from "@crossmint/client-sdk-react-ui";
 import { PublicKey } from "@solana/web3.js";
 import { type Address, encodeFunctionData, erc20Abi, isAddress } from "viem";
-import { createSolTransferTransaction, createTokenTransferTransaction } from "@/lib/createTransaction";
 
 /* ============================================================ */
 /*                    EVM WALLET TRANSFER                        */
@@ -177,21 +176,7 @@ export function SolanaTransferFunds() {
 
         try {
             setIsLoading(true);
-            function buildTransaction() {
-                return token === "sol"
-                    ? createSolTransferTransaction(wallet?.address!, recipient!, amount!)
-                    : createTokenTransferTransaction(
-                          wallet?.address!,
-                          recipient!,
-                          process.env.NEXT_PUBLIC_USDC_TOKEN_MINT || "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU", // USDC token mint
-                          amount!
-                      );
-            }
-
-            const txn = await buildTransaction();
-            const txnHash = await wallet.sendTransaction({
-                transaction: txn,
-            });
+            const txnHash = await wallet.send(recipient, token, amount.toString());
             setTxnHash(`https://solscan.io/tx/${txnHash}?cluster=devnet`);
         } catch (err) {
             console.error("Transfer: ", err);
