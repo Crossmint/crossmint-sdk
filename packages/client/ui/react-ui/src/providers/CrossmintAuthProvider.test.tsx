@@ -247,14 +247,10 @@ describe("CrossmintAuthProvider", () => {
         expect(vi.mocked(mockSDK.getOrCreateWallet)).toHaveBeenCalledOnce();
     });
 
-    it(`When "createOnLogin" is "false", wallet is not loaded`, async () => {
+    it(`When "createOnLogin" is undefined, wallet is not loaded`, async () => {
         document.cookie = `${SESSION_PREFIX}=mock-jwt; path=/;SameSite=Lax;`;
         const { getByTestId } = await renderAuthProvider({
             children: <TestComponent />,
-            createOnLogin: {
-                chain: "polygon-amoy",
-                signer: mockPasskeySigner,
-            },
         });
 
         await waitFor(() => {

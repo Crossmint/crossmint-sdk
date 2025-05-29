@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { CrossmintProvider, CrossmintAuthProvider } from "@crossmint/client-sdk-react-ui";
+import { CrossmintProvider, CrossmintAuthProvider, CrossmintWalletProvider } from "@crossmint/client-sdk-react-ui";
 
 export default function CrossmintProviders({ children }: { children: ReactNode }) {
     return (
@@ -11,7 +11,7 @@ export default function CrossmintProviders({ children }: { children: ReactNode }
                 refreshRoute="/api/refresh"
                 logoutRoute="/api/logout"
             >
-                {children}
+                <CrossmintWalletProvider>{children}</CrossmintWalletProvider>
             </CrossmintAuthProvider>
         </CrossmintProvider>
     );

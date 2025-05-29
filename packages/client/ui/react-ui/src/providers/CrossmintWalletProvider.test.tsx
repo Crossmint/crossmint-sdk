@@ -88,12 +88,6 @@ describe("CrossmintWalletProvider", () => {
             expect(getByTestId("status").textContent).toBe("loaded");
             expect(getByTestId("wallet").textContent).toBe("Wallet Loaded");
         });
-
-        expect(mockSDK.getOrCreateWallet).toHaveBeenCalledWith(
-            "evm-smart-wallet",
-            { adminSigner: { type: "evm-passkey" } },
-            expect.anything()
-        );
     });
 
     it("does not create a wallet when JWT is missing", async () => {
