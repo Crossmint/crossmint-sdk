@@ -6,6 +6,7 @@ import type { InternalSignerConfig, SignerConfigForChain, ExternalWalletInternal
 import { Wallet } from "./wallet";
 import { assembleSigner } from "../signers";
 import type { WalletOptions } from "./types";
+import { EmailSigner } from "@/signers/email";
 
 export type WalletArgsFor<C extends Chain> = {
     chain: C;
@@ -175,6 +176,14 @@ export class WalletFactory {
                     y: passkeyCredential.publicKey.y.toString(),
                 },
             } as const;
+        }
+
+        if (signer.type === "email") {
+            const emailSigner = new EmailSigner(signer, this.apiClient.environment, this.apiClient.crossmint);
+            return {
+                type: "email",
+                email: signer.email,
+            };
         }
 
         throw new Error("Invalid signer type");

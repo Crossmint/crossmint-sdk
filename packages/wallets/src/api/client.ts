@@ -30,10 +30,7 @@ import type {
 class ApiClient extends CrossmintApiClient {
     private apiPrefix = "api/2022-06-09/wallets";
 
-    constructor(
-        crossmint: Crossmint,
-        private readonly appId?: string
-    ) {
+    constructor(crossmint: Crossmint) {
         super(crossmint, {
             internalConfig: {
                 sdkMetadata: { name: SDK_NAME, version: SDK_VERSION },
@@ -188,9 +185,6 @@ class ApiClient extends CrossmintApiClient {
         const headers: Record<string, string> = {
             "Content-Type": "application/json",
         };
-        if (this.appId) {
-            headers["X-App-Identifier"] = this.appId;
-        }
         return headers;
     }
 }

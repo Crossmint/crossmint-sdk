@@ -1,17 +1,19 @@
-import { type HandshakeParent, IFrameWindow } from "@crossmint/client-sdk-window";
+import { IFrameWindow } from "@crossmint/client-sdk-window";
 import { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
-import type { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
+import type { Crossmint } from "@crossmint/common-sdk-base";
 import type { EmailInternalSignerConfig, Signer } from "./types";
+import { EmailSignerApiClient } from "./email-signer-api-client";
 
 export class EmailSigner implements Signer {
     type = "email" as const;
-    private _handshakeParent: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents> | null = null;
+    private _apiClient: EmailSignerApiClient;
 
     constructor(
         private config: EmailInternalSignerConfig,
-        private environment: APIKeyEnvironmentPrefix
+        crossmint: Crossmint
     ) {
-        this.initHandshakeParent(this.environment, config._handshakeParent);
+        this._apiClient = new EmailSignerApiClient(crossmint);
+        this.initHandshakeParent();
     }
 
     // TODO: update for the wallet locator
@@ -26,23 +28,27 @@ export class EmailSigner implements Signer {
         return await Promise.reject(new Error("signTransaction method not implemented for email signer"));
     }
 
-    private async initHandshakeParent(
-        environment: string,
-        configHandshakeParent?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>
-    ) {
-        if (configHandshakeParent == null) {
+    private async initHandshakeParent() {
+        if (this.config._handshakeParent == null) {
             const iframeUrl = new URL("https://signers.crossmint.com/");
-            iframeUrl.searchParams.set("environment", environment);
+            iframeUrl.searchParams.set("environment", this._apiClient.environment);
             const iframeElement = await this.createInvisibleIFrame(iframeUrl.toString());
-            this._handshakeParent = await IFrameWindow.init(iframeElement, {
+            const handshakeParent = await IFrameWindow.init(iframeElement, {
                 targetOrigin: iframeUrl.origin,
                 incomingEvents: signerOutboundEvents,
                 outgoingEvents: signerInboundEvents,
             });
-            await this._handshakeParent.handshakeWithChild();
-        } else {
-            this._handshakeParent = configHandshakeParent;
+            this.config._handshakeParent = handshakeParent;
+            await handshakeParent.handshakeWithChild();
         }
+    }
+
+    private async pregenerateSigner() {
+        if (this.config.email == null) {
+            throw new Error("Email is required to pregenerate a signer");
+        }
+        const response = await this._apiClient.pregenerateSigner(this.config.email);
+        return response;
     }
 
     private async createInvisibleIFrame(url: string): Promise<HTMLIFrameElement> {
