@@ -17,12 +17,12 @@ import { useCrossmint, useWallet } from "../hooks";
 import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
 import { AuthFormProvider } from "./auth/AuthFormProvider";
 import { TwindProvider } from "./TwindProvider";
-import type { AuthStatus, CrossmintAuthProviderEmbeddedWallets, LoginMethod } from "@/types/auth";
+import type { AuthStatus, CrossmintAuthEmbeddedWallets, LoginMethod } from "@/types/auth";
 import { DynamicWeb3WalletConnect } from "./auth/web3/DynamicWeb3WalletConnect";
 import { useDynamicConnect } from "@/hooks/useDynamicConnect";
 
 type CrossmintAuthProviderProps = {
-    embeddedWallets?: CrossmintAuthProviderEmbeddedWallets;
+    embeddedWallets?: CrossmintAuthEmbeddedWallets;
     appearance?: UIConfig;
     termsOfServiceText?: string | ReactNode;
     prefetchOAuthUrls?: boolean;
@@ -56,12 +56,10 @@ const defaultContextValue: AuthContextType = {
 
 export const AuthContext = createContext<AuthContextType>(defaultContextValue);
 
-const defaultEmbeddedWallets: CrossmintAuthProviderEmbeddedWallets = {
+const defaultEmbeddedWallets: CrossmintAuthEmbeddedWallets = {
     createOnLogin: "off",
     chain: "solana",
     showPasskeyHelpers: false,
-    experimental_enableRecoveryKeys: false,
-    experimental_signersURL: undefined,
 };
 
 export function CrossmintAuthProvider({
@@ -199,7 +197,6 @@ export function CrossmintAuthProvider({
                     key={crossmint.jwt}
                     showPasskeyHelpers={embeddedWallets.showPasskeyHelpers}
                     appearance={appearance}
-                    experimental_enableRecoveryKeys={embeddedWallets.experimental_enableRecoveryKeys ?? false}
                 >
                     <AuthFormProvider
                         setDialogOpen={(open, successfulLogin) => {

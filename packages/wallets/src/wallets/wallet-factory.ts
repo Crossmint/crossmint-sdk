@@ -157,6 +157,7 @@ export class WalletFactory {
                 email: signer.email,
                 signerAddress: address,
                 crossmint: this.apiClient.crossmint,
+                onAuthRequired: signer.onAuthRequired,
             };
         }
 

@@ -143,6 +143,18 @@ export class EmailSigner implements Signer {
             reject: rejectPromise!,
         };
 
+        if (this.config.onAuthRequired != null) {
+            try {
+                await this.config.onAuthRequired(
+                    this._needsAuth,
+                    this.sendEmailWithOtp,
+                    this.verifyOtp,
+                    this._authPromise.reject
+                );
+            } catch (error) {
+                this._authPromise.reject(error as Error);
+            }
+        }
         try {
             await this._authPromise.promise;
         } catch (error) {

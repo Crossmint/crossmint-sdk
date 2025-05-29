@@ -1,4 +1,4 @@
-import { type Dispatch, type ReactNode, type SetStateAction, createContext, useMemo, useState } from "react";
+import { type Dispatch, type ReactNode, type SetStateAction, createContext, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { CrossmintWallets, type Wallet, type WalletArgsFor } from "@crossmint/wallets-sdk";
 import type { Chain } from "@crossmint/wallets-sdk";
@@ -10,7 +10,7 @@ import { useCrossmint } from "../hooks";
 import { createWebAuthnPasskeySigner } from "@/utils/createPasskeySigner";
 import { deriveWalletErrorState } from "@/utils/errorUtils";
 import { TwindProvider } from "./TwindProvider";
-import { CrossmintSignerProvider, useCrossmintSigner } from "./signers/CrossmintSignerProvider";
+import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
 
 type ValidPasskeyPromptType =
     | "create-wallet"
@@ -38,7 +38,6 @@ type WalletContextFunctions = {
     ) => Promise<{ startedCreation: boolean; reason?: string }>;
     createPasskeySigner: (name: string, promptType?: ValidPasskeyPromptType) => Promise<PasskeySigner | null>;
     clearWallet: () => void;
-    experimental_getOrCreateWalletWithRecoveryKey?: (args: { email: string }) => Promise<void>;
     passkeySigner?: PasskeySigner;
 };
 
@@ -72,14 +71,10 @@ export function CrossmintWalletProvider({
     children,
     showPasskeyHelpers = true,
     appearance,
-    experimental_enableRecoveryKeys = false,
-    experimental_signersURL = undefined,
 }: {
     children: ReactNode;
     showPasskeyHelpers?: boolean;
     appearance?: UIConfig;
-    experimental_enableRecoveryKeys?: boolean;
-    experimental_signersURL?: string;
 }) {
     const [walletState, setWalletState] = useState<ValidWalletState>({
         status: "not-loaded",
@@ -90,23 +85,11 @@ export function CrossmintWalletProvider({
         setWalletState,
         showPasskeyHelpers,
         appearance,
-        experimental_enableRecoveryKeys,
     };
 
     return (
         <TwindProvider>
-            {experimental_enableRecoveryKeys ? (
-                <CrossmintSignerProvider
-                    walletState={walletState}
-                    setWalletState={setWalletState}
-                    appearance={appearance}
-                    signersURL={experimental_signersURL}
-                >
-                    <WalletProvider {...walletProviderProps}>{children}</WalletProvider>
-                </CrossmintSignerProvider>
-            ) : (
-                <WalletProvider {...walletProviderProps}>{children}</WalletProvider>
-            )}
+            <WalletProvider {...walletProviderProps}>{children}</WalletProvider>
         </TwindProvider>
     );
 }
@@ -117,21 +100,24 @@ function WalletProvider({
     appearance,
     walletState,
     setWalletState,
-    experimental_enableRecoveryKeys,
 }: {
     children: ReactNode;
     showPasskeyHelpers?: boolean;
     appearance?: UIConfig;
     walletState: ValidWalletState;
     setWalletState: Dispatch<SetStateAction<ValidWalletState>>;
-    experimental_enableRecoveryKeys?: boolean;
 }) {
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
-    const { experimental_getOrCreateWalletWithRecoveryKey } = useCrossmintSigner({
-        enabled: experimental_enableRecoveryKeys ?? false,
-    });
 
     const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
+    const [email, setEmail] = useState<string>("");
+    const [emailSignerDialogOpen, setEmailSignerDialogOpen] = useState<boolean>(false);
+    const [emailSignerDialogStep, setEmailSignerDialogStep] = useState<"initial" | "otp">("initial");
+
+    const needsAuthRef = useRef<boolean | undefined>();
+    const sendEmailWithOtpRef = useRef<((email: string) => Promise<void>) | undefined>();
+    const verifyOtpRef = useRef<((otp: string) => Promise<void>) | undefined>();
+    const rejectRef = useRef<((error: Error) => void) | undefined>();
 
     const getOrCreateWallet = async <C extends Chain>(props: WalletArgsFor<C>) => {
         if (walletState.status == "in-progress") {
@@ -150,6 +136,27 @@ function WalletProvider({
 
         try {
             setWalletState({ status: "in-progress" });
+
+            if (props?.signer?.type === "email") {
+                if (props.signer.email) {
+                    setEmail(props.signer.email);
+                }
+
+                // biome-ignore lint/suspicious/useAwait: fix type later
+                props.signer.onAuthRequired = async (needsAuth, sendEmailWithOtp, verifyOtp, reject) => {
+                    needsAuthRef.current = needsAuth;
+                    sendEmailWithOtpRef.current = sendEmailWithOtp;
+                    verifyOtpRef.current = verifyOtp;
+                    rejectRef.current = reject;
+
+                    console.log("onAuthRequired", needsAuth, sendEmailWithOtp, verifyOtp, reject);
+
+                    if (needsAuth) {
+                        setEmailSignerDialogOpen(true);
+                        setEmailSignerDialogStep("initial");
+                    }
+                };
+            }
 
             const smartWalletSDK = CrossmintWallets.from({
                 apiKey: crossmint.apiKey,
@@ -174,6 +181,41 @@ function WalletProvider({
             setWalletState(deriveWalletErrorState(error));
         }
         return { startedCreation: true };
+    };
+
+    const emailsigners_handleSendEmailOTP = async (emailAddress: string) => {
+        if (!sendEmailWithOtpRef.current) {
+            console.error("sendEmailWithOtp function is not available");
+            return;
+        }
+
+        try {
+            setEmail(emailAddress);
+            await sendEmailWithOtpRef.current(emailAddress);
+            setEmailSignerDialogStep("otp");
+        } catch (error) {
+            console.error("Failed to send email OTP", error);
+            if (rejectRef.current) {
+                rejectRef.current(new Error("Failed to send email OTP"));
+            }
+        }
+    };
+
+    const emailsigners_handleOTPSubmit = async (otp: string) => {
+        if (!verifyOtpRef.current) {
+            console.error("verifyOtp function is not available");
+            return;
+        }
+        try {
+            await verifyOtpRef.current(otp);
+            setEmailSignerDialogOpen(false);
+            setEmailSignerDialogStep("initial");
+        } catch (error) {
+            console.error("Failed to verify OTP", error);
+            if (rejectRef.current) {
+                rejectRef.current(new Error("Failed to verify OTP"));
+            }
+        }
     };
 
     const createPasskeyPrompt = (type: ValidPasskeyPromptType) => () =>
@@ -213,14 +255,29 @@ function WalletProvider({
             getOrCreateWallet,
             createPasskeySigner,
             clearWallet,
-            experimental_getOrCreateWalletWithRecoveryKey,
         }),
-        [walletState, experimental_getOrCreateWalletWithRecoveryKey]
+        [walletState]
     );
 
     return (
         <WalletContext.Provider value={contextValue}>
             {children}
+
+            {emailSignerDialogOpen
+                ? createPortal(
+                      <EmailSignersDialog
+                          email={email}
+                          open={emailSignerDialogOpen}
+                          setOpen={setEmailSignerDialogOpen}
+                          step={emailSignerDialogStep}
+                          onSubmitOTP={emailsigners_handleOTPSubmit}
+                          onResendOTPCode={emailsigners_handleSendEmailOTP}
+                          onSubmitEmail={emailsigners_handleSendEmailOTP}
+                          appearance={appearance}
+                      />,
+                      document.body
+                  )
+                : null}
             {passkeyPromptState.open
                 ? createPortal(<PasskeyPrompt state={passkeyPromptState} appearance={appearance} />, document.body)
                 : null}

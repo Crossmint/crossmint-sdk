@@ -11,7 +11,7 @@ import { useAuth, useWallet } from "../hooks";
 import { CrossmintProvider, useCrossmint } from "../hooks/useCrossmint";
 import { MOCK_API_KEY } from "../testUtils";
 import { CrossmintAuthProvider } from "./CrossmintAuthProvider";
-import type { CrossmintAuthProviderEmbeddedWallets, LoginMethod } from "@/types/auth";
+import type { CrossmintAuthEmbeddedWallets, LoginMethod } from "@/types/auth";
 import { useDynamicConnect } from "@/hooks/useDynamicConnect";
 
 vi.mock("@dynamic-labs/sdk-react-core", () => ({
@@ -87,7 +87,7 @@ function renderAuthProvider({
     loginMethods,
 }: {
     children: ReactNode;
-    embeddedWallets: CrossmintAuthProviderEmbeddedWallets;
+    embeddedWallets: CrossmintAuthEmbeddedWallets;
     loginMethods?: LoginMethod[];
 }) {
     return render(
@@ -126,7 +126,7 @@ function TestComponent() {
 describe("CrossmintAuthProvider", () => {
     let mockSDK: CrossmintWallets;
     let mockWallet: Wallet<Chain>;
-    let embeddedWallets: CrossmintAuthProviderEmbeddedWallets;
+    let embeddedWallets: CrossmintAuthEmbeddedWallets;
     let handleRefreshAuthMaterialSpy: MockInstance;
     let getOAuthUrlSpy: MockInstance;
 

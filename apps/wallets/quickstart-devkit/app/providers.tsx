@@ -13,7 +13,7 @@ if (!crossmintApiKey) {
 
 export function Providers({ children }: { children: React.ReactNode }) {
     /* @TODO update to your desired provider here */
-    return <EVMCrossmintAuthProvider>{children}</EVMCrossmintAuthProvider>;
+    return <SolanaCrossmintAuthProvider>{children}</SolanaCrossmintAuthProvider>;
 }
 
 /* ============================================================ */
@@ -91,13 +91,13 @@ function SolanaCrossmintAuthProvider({ children }: { children: React.ReactNode }
             <CrossmintAuthProvider
                 authModalTitle="Solana Wallets Quickstart"
                 embeddedWallets={{
-                    createOnLogin: "all-users",
+                    createOnLogin: "off",
                     chain: "solana",
                     showPasskeyHelpers: false,
                 }}
-                loginMethods={["google", "twitter", "web3:solana-only"]}
+                loginMethods={["google", "twitter", "web3:solana-only", "email"]}
             >
-                {children}
+                <CrossmintWalletProvider>{children}</CrossmintWalletProvider>
             </CrossmintAuthProvider>
         </CrossmintProvider>
     );
