@@ -1,3 +1,4 @@
+import { isValidAddress } from "@crossmint/common-sdk-base";
 import type { ApiClient, Balances, GetSignatureResponse } from "../api";
 import type { PendingApproval, Permission, WalletOptions } from "./types";
 import {
@@ -9,6 +10,7 @@ import {
     TransactionFailedError,
     TransactionHashNotFoundError,
     TransactionNotAvailableError,
+    TransactionNotCreatedError,
     TransactionSendingFailedError,
     WalletNotAvailableError,
     WalletTypeNotSupportedError,
@@ -93,6 +95,26 @@ export class Wallet<C extends Chain> {
     }
 
     /**
+     * Send a token to a wallet or user locator
+     * @param {string | UserLocator} to - The recipient (address or user locator)
+     * @param {string} token - The token (address or currency symbol)
+     * @param {string} amount - The amount to send (decimal units)
+     * @returns {string} The transaction hash
+     */
+    public async send(to: string | UserLocator, token: string, amount: string) {
+        const recipient = toRecipientLocator(to);
+        const tokenLocator = toTokenLocator(token, this.chain);
+        const params = { recipient, amount };
+        const transactionCreationResponse = await this.apiClient.send(this.walletLocator, tokenLocator, params);
+        if ("error" in transactionCreationResponse) {
+            throw new TransactionNotCreatedError(
+                `Failed to send token: ${JSON.stringify(transactionCreationResponse.error)}`
+            );
+        }
+        return await this.approveAndWait(transactionCreationResponse.id);
+    }
+
+    /**
      * Update permissions for a signer
      * @param signer - The signer
      * @returns The permissions
@@ -141,7 +163,7 @@ export class Wallet<C extends Chain> {
         return (
             walletResponse?.config?.delegatedSigners?.map((signer) => {
                 const colonIndex = signer.locator.indexOf(":");
-                // If there's a colon, keep everything after it; otherwise treat the whole string as “rest”
+                // If there's a colon, keep everything after it; otherwise treat the whole string as "rest"
                 const address = colonIndex >= 0 ? signer.locator.slice(colonIndex + 1) : signer.locator;
                 return {
                     signer: `external-wallet:${address}`,
@@ -308,4 +330,41 @@ export class Wallet<C extends Chain> {
 
         return transactionHash;
     }
+}
+
+export type UserLocator =
+    | { email: string }
+    | { x: string }
+    | { twitter: string }
+    | { phone: string }
+    | { userId: string };
+
+function toRecipientLocator(to: string | UserLocator): string {
+    if (typeof to === "string") {
+        return to;
+    }
+    if ("email" in to) {
+        return `email:${to.email}`;
+    }
+    if ("x" in to) {
+        return `x:${to.x}`;
+    }
+    if ("twitter" in to) {
+        return `twitter:${to.twitter}`;
+    }
+    if ("phone" in to) {
+        return `phoneNumber:${to.phone}`;
+    }
+    if ("userId" in to) {
+        return `userId:${to.userId}`;
+    }
+    throw new Error("Invalid recipient locator");
+}
+
+function toTokenLocator(token: string, chain: string): string {
+    if (isValidAddress(token)) {
+        return `${chain}:${token}`;
+    }
+    // Otherwise, treat as currency symbol (lowercase)
+    return `${chain}:${token.toLowerCase()}`;
 }

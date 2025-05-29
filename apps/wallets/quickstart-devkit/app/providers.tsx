@@ -21,7 +21,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
 /* ============================================================ */
 function EVMCrossmintAuthProvider({ children }: { children: React.ReactNode }) {
     if (!process.env.NEXT_PUBLIC_EVM_CHAIN) {
-        return console.error("NEXT_PUBLIC_EVM_CHAIN is not set");
+        console.error("NEXT_PUBLIC_EVM_CHAIN is not set");
+        return;
     }
     return (
         <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_API_KEY || ""}>
