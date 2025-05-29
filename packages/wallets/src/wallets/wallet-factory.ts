@@ -84,7 +84,7 @@ export class WalletFactory {
             {
                 chain: args.chain,
                 address: walletResponse.address,
-                signer: assembleSigner(args.chain, signerConfig),
+                signer: assembleSigner(args.chain, signerConfig, this.apiClient.environment),
                 options: args.options,
             },
             this.apiClient

@@ -1,6 +1,8 @@
 import type { WebAuthnP256 } from "ox";
 import type { VersionedTransaction } from "@solana/web3.js";
 import type { Account, EIP1193Provider as ViemEIP1193Provider } from "viem";
+import type { HandshakeParent } from "@crossmint/client-sdk-window";
+import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
 import type { Chain, SolanaChain } from "../chains/chains";
 
 ////////////////////////////////////////////////////////////
@@ -14,6 +16,7 @@ export type EmailSignerConfig = {
         verifyOtp: (otp: string) => Promise<void>,
         reject: (error: Error) => void
     ) => Promise<void>;
+    _handshakeParent?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
 };
 
 export type BaseExternalWalletSignerConfig = {

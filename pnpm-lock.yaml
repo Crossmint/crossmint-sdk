@@ -1279,6 +1279,12 @@ importers:
 
   packages/wallets:
     dependencies:
+      '@crossmint/client-sdk-window':
+        specifier: workspace:*
+        version: link:../client/window
+      '@crossmint/client-signers':
+        specifier: workspace:*
+        version: link:../client/signers
       '@crossmint/common-sdk-auth':
         specifier: workspace:*
         version: link:../common/auth
