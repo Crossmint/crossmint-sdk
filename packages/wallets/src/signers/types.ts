@@ -9,6 +9,14 @@ import type { Chain, SolanaChain } from "../chains/chains";
 ////////////////////////////////////////////////////////////
 // Signer configs
 ////////////////////////////////////////////////////////////
+
+export class AuthRejectedError extends Error {
+    constructor() {
+        super("Authentication was rejected by the user");
+        this.name = "AuthRejectedError";
+    }
+}
+
 export type EmailSignerConfig = {
     type: "email";
     email?: string;
@@ -16,7 +24,7 @@ export type EmailSignerConfig = {
         needsAuth: boolean,
         sendEmailWithOtp: (email: string) => Promise<void>,
         verifyOtp: (otp: string) => Promise<void>,
-        reject: (error: Error) => void
+        reject: () => void
     ) => Promise<void>;
 };
 

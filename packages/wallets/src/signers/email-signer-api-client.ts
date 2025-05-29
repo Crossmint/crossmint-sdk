@@ -18,7 +18,11 @@ export class EmailSignerApiClient extends CrossmintApiClient {
             body: JSON.stringify({ authId: `email:${email}`, keyType: "ed25519" }),
             headers: this.headers,
         });
-        return response.json();
+        if (!response.ok) {
+            const errorBody = await response.text();
+            throw new Error(`Failed to fetch public key: ${response.status} ${errorBody}`);
+        }
+        return await response.json();
     }
 
     public get isServerSide() {
