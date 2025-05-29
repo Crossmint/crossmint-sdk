@@ -37,6 +37,7 @@ export class SolanaTransactionsService {
             ...(params.signer != null ? [params.signer] : []),
             ...(params.additionalSigners || []),
         ]);
+        await sleep(1_000); // Rule of thumb: tx won't be confirmed in less than 1 second
         const transactionHash = await this.waitForTransaction(transaction.id);
         await this.callbacks.onTransactionComplete?.(params.transaction);
         return transactionHash;
@@ -81,7 +82,19 @@ export class SolanaTransactionsService {
         return transactionCreationResponse;
     }
 
-    async waitForTransaction(transactionId: string, timeoutMs = 60000): Promise<string> {
+    async waitForTransaction(
+        transactionId: string,
+        timeoutMs = 60_000,
+        {
+            backoffMultiplier = 1.1,
+            maxBackoffMs = 2_000,
+            initialBackoffMs = STATUS_POLLING_INTERVAL_MS,
+        }: {
+            initialBackoffMs?: number;
+            backoffMultiplier?: number;
+            maxBackoffMs?: number;
+        } = {}
+    ): Promise<string> {
         const startTime = Date.now();
         let transactionResponse;
 
@@ -96,7 +109,8 @@ export class SolanaTransactionsService {
             if (transactionResponse.error) {
                 throw new TransactionNotAvailableError(JSON.stringify(transactionResponse));
             }
-            await sleep(STATUS_POLLING_INTERVAL_MS);
+            await sleep(initialBackoffMs);
+            initialBackoffMs = Math.min(initialBackoffMs * backoffMultiplier, maxBackoffMs);
         } while (transactionResponse.status === "pending");
 
         if (transactionResponse.status === "failed") {
