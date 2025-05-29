@@ -1,4 +1,4 @@
-import type { ApiClient, SolanaWalletLocator } from "../../api";
+import type { ApiClient, CreateTransactionSuccessResponse, SolanaWalletLocator } from "../../api";
 import type { SolanaNonCustodialSigner } from "../types/signers";
 import type { VersionedTransaction } from "@solana/web3.js";
 import { SolanaApprovalsService } from "./approvals-service";
@@ -33,7 +33,7 @@ export class SolanaTransactionsService {
     }) {
         await this.callbacks.onTransactionStart?.(params.transaction);
         const transaction = await this.create(params);
-        await this.approveTransaction(transaction.id, [
+        await this.approveTransaction(transaction, [
             ...(params.signer != null ? [params.signer] : []),
             ...(params.additionalSigners || []),
         ]);
@@ -46,11 +46,7 @@ export class SolanaTransactionsService {
         return await this.apiClient.getTransactions(this.walletLocator);
     }
 
-    async approveTransaction(transactionId: string, signers: SolanaNonCustodialSigner[]) {
-        const transaction = await this.apiClient.getTransaction(this.walletLocator, transactionId);
-        if (transaction.error) {
-            throw new TransactionNotAvailableError(JSON.stringify(transaction));
-        }
+    async approveTransaction(transaction: CreateTransactionSuccessResponse, signers: SolanaNonCustodialSigner[]) {
         if (transaction.status === "awaiting-approval") {
             await this.approvalsService.approve(transaction, transaction.approvals?.pending || [], signers);
         }
@@ -60,7 +56,7 @@ export class SolanaTransactionsService {
         transaction: VersionedTransaction;
         signer?: SolanaNonCustodialSigner;
         additionalSigners?: SolanaNonCustodialSigner[];
-    }) {
+    }): Promise<CreateTransactionSuccessResponse> {
         const { transaction, signer, additionalSigners } = params;
         const transactionParams = {
             transaction: bs58.encode(transaction.serialize()),
@@ -81,7 +77,7 @@ export class SolanaTransactionsService {
         return transactionCreationResponse;
     }
 
-    async waitForTransaction(transactionId: string, timeoutMs = 60000): Promise<string> {
+    async waitForTransaction(transactionId: string, timeoutMs = 60_000): Promise<string> {
         const startTime = Date.now();
         let transactionResponse;
 
