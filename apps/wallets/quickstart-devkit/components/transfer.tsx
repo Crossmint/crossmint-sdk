@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { EVMWallet, SolanaWallet, useWallet } from "@crossmint/client-sdk-react-ui";
+import { useWallet } from "@crossmint/client-sdk-react-ui";
 import { PublicKey } from "@solana/web3.js";
-import { type Address, encodeFunctionData, erc20Abi, isAddress } from "viem";
-import { createSolTransferTransaction, createTokenTransferTransaction } from "@/lib/createTransaction";
+import { isAddress } from "viem";
 
 /* ============================================================ */
 /*                    EVM WALLET TRANSFER                        */
@@ -28,34 +27,11 @@ export function EVMTransferFunds() {
             alert("Transfer: Invalid recipient address");
             return;
         }
-        const evmWallet = EVMWallet.from(wallet as EVMWallet);
 
         try {
             setIsLoading(true);
-            let txn;
-            if (token === "eth") {
-                // For ETH transfers, we use native transfer
-                txn = await evmWallet.sendTransaction({
-                    to: recipient as Address,
-                    value: BigInt(amount * 10 ** 9), // Convert to Gwei
-                    data: "0x", // Empty data for native transfers
-                    chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any,
-                });
-            } else if (token === "usdc") {
-                // For USDC transfers, we use ERC20 transfer
-                const data = encodeFunctionData({
-                    abi: erc20Abi,
-                    functionName: "transfer",
-                    args: [recipient as Address, BigInt(amount * 10 ** 6)], // USDC has 6 decimals
-                });
-                txn = await evmWallet.sendTransaction({
-                    to: "0x5fd84259d66Cd46123540766Be93DFE6D43130D7", // USDC token mint on OP sepolia
-                    value: BigInt(0),
-                    data,
-                    chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any,
-                });
-            }
-            setTxnHash(`https://optimism-sepolia.blockscout.com/tx/${txn}`);
+            const txnHash = await wallet.send(recipient, token, amount.toString());
+            setTxnHash(`https://optimism-sepolia.blockscout.com/tx/${txnHash}`);
         } catch (err) {
             console.error("Transfer: ", err);
             alert("Transfer: " + err);
@@ -176,25 +152,9 @@ export function SolanaTransferFunds() {
             return;
         }
 
-        const solanaWallet = SolanaWallet.from(wallet as SolanaWallet);
-
         try {
             setIsLoading(true);
-            function buildTransaction() {
-                return token === "sol"
-                    ? createSolTransferTransaction(wallet?.address!, recipient!, amount!)
-                    : createTokenTransferTransaction(
-                          wallet?.address!,
-                          recipient!,
-                          process.env.NEXT_PUBLIC_USDC_TOKEN_MINT || "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU", // USDC token mint
-                          amount!
-                      );
-            }
-
-            const txn = await buildTransaction();
-            const txnHash = await solanaWallet.sendTransaction({
-                transaction: txn,
-            });
+            const txnHash = await wallet.send(recipient, token, amount.toString());
             setTxnHash(`https://solscan.io/tx/${txnHash}?cluster=devnet`);
         } catch (err) {
             console.error("Transfer: ", err);
