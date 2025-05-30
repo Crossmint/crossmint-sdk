@@ -92,9 +92,7 @@ function SolanaCrossmintAuthProvider({ children }: { children: React.ReactNode }
                 authModalTitle="Solana Wallets Quickstart"
                 loginMethods={["google", "twitter", "web3:solana-only", "email"]}
             >
-                <CrossmintWalletProvider showPasskeyHelpers={false} createOnLogin={{ chain: "solana" }}>
-                    {children}
-                </CrossmintWalletProvider>
+                <CrossmintWalletProvider showPasskeyHelpers={false}>{children}</CrossmintWalletProvider>
             </CrossmintAuthProvider>
         </CrossmintProvider>
     );

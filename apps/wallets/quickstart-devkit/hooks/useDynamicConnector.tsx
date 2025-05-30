@@ -14,7 +14,6 @@ export const useEVMDynamicConnector = () => {
     const {
         getOrCreateWallet: getOrCreateCrossmintWallet,
         status: crossmintWalletStatus,
-        error: crossmintWalletError,
         wallet: crossmintWallet,
     } = useCrossmintWallet();
 
@@ -60,7 +59,6 @@ export const useEVMDynamicConnector = () => {
         dynamicPrimaryWallet,
         crossmintWallet,
         crossmintWalletStatus,
-        crossmintWalletError,
         isLoading: crossmintWalletStatus === "in-progress" || !sdkHasLoaded,
     };
 };
@@ -73,7 +71,6 @@ export const useSolanaDynamicConnector = () => {
     const {
         getOrCreateWallet: getOrCreateCrossmintWallet,
         status: crossmintWalletStatus,
-        error: crossmintWalletError,
         wallet: crossmintWallet,
     } = useCrossmintWallet();
 
@@ -113,7 +110,6 @@ export const useSolanaDynamicConnector = () => {
         dynamicPrimaryWallet,
         crossmintWallet,
         crossmintWalletStatus,
-        crossmintWalletError,
         isLoading: crossmintWalletStatus === "in-progress" || !sdkHasLoaded,
     };
 };
