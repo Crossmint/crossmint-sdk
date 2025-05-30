@@ -52,6 +52,8 @@ export function HomePrimaryAction() {
             </>
         );
     } else {
-        return wallet.chain !== "solana" ? <MintNFTButton setNftSuccessfullyMinted={setNftSuccessfullyMinted} /> : null;
+        return wallet?.chain !== "solana" ? (
+            <MintNFTButton setNftSuccessfullyMinted={setNftSuccessfullyMinted} />
+        ) : null;
     }
 }

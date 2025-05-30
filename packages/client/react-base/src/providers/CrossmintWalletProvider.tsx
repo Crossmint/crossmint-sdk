@@ -7,7 +7,7 @@ import { useCrossmint } from "@/hooks";
 export type ValidWalletState =
     | { status: "not-loaded" | "in-progress" }
     | { status: "loaded"; wallet: Wallet<Chain> }
-    | { status: "loading-error"; error: string };
+    | { status: "error"; error: string };
 
 type WalletContextFunctions = {
     getOrCreateWallet: <C extends Chain>(
@@ -29,7 +29,7 @@ type WalletContext<C extends Chain = Chain> =
           error?: undefined;
       } & WalletContextFunctions)
     | ({
-          status: "loading-error";
+          status: "error";
           wallet?: undefined;
           error: string;
       } & WalletContextFunctions)
@@ -43,12 +43,12 @@ export const WalletContext = createContext<WalletContext>({
 });
 
 export function deriveErrorState(error: unknown): {
-    status: "loading-error";
+    status: "error";
     error: string;
 } {
     const message = error instanceof Error ? error.message : String(error);
     return {
-        status: "loading-error",
+        status: "error",
         error: message,
     };
 }
