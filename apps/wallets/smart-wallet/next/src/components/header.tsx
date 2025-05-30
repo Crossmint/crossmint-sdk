@@ -48,7 +48,7 @@ export const Header: React.FC = () => {
                         onCopyAddress={handleCopyAddress}
                     />
                 )}
-            {walletStatus === "loading-error" ? (
+            {walletStatus === "error" ? (
                 <Button
                     onClick={() => {
                         logout();

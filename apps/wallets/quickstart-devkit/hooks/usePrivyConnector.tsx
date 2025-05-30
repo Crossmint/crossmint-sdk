@@ -16,7 +16,6 @@ export const useEVMPrivyConnector = () => {
     const {
         getOrCreateWallet: getOrCreateCrossmintWallet,
         status: crossmintWalletStatus,
-        error: crossmintWalletError,
         wallet: crossmintWallet,
     } = useCrossmintWallet();
 
@@ -69,7 +68,6 @@ export const useEVMPrivyConnector = () => {
         privyEmbeddedWallet,
         crossmintWallet,
         crossmintWalletStatus,
-        crossmintWalletError,
         isLoading: crossmintWalletStatus === "in-progress" || !privyReady,
     };
 };
@@ -82,7 +80,6 @@ export const useSolanaPrivyConnector = () => {
     const {
         getOrCreateWallet: getOrCreateCrossmintWallet,
         status: crossmintWalletStatus,
-        error: crossmintWalletError,
         wallet: crossmintWallet,
     } = useCrossmintWallet();
 
@@ -136,7 +133,6 @@ export const useSolanaPrivyConnector = () => {
         privyEmbeddedWallet,
         crossmintWallet,
         crossmintWalletStatus,
-        crossmintWalletError,
         isLoading: crossmintWalletStatus === "in-progress" || !privyReady,
     };
 };
