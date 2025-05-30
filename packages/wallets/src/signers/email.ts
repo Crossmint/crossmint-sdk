@@ -8,7 +8,7 @@ import { validateAPIKey, type Crossmint } from "@crossmint/common-sdk-base";
 
 export class EmailSigner implements Signer {
     type = "email" as const;
-    private _needsAuth = false;
+    private _needsAuth = true;
     private _authPromise: {
         promise: Promise<void>;
         resolve: () => void;
@@ -79,7 +79,21 @@ export class EmailSigner implements Signer {
             throw new Error("Handshake parent not initialized");
         }
 
-        if (!this._needsAuth) {
+        const signerResponse = await this.config._handshakeParent?.sendAction({
+            event: "request:get-status",
+            responseEvent: "response:get-status",
+            data: {
+                authData: { jwt: this.config.crossmint.jwt ?? "", apiKey: this.config.crossmint.apiKey },
+            },
+            options: DEFAULT_EVENT_OPTIONS,
+        });
+
+        if (signerResponse?.status !== "success") {
+            throw new Error(signerResponse?.error);
+        }
+
+        if (signerResponse.signerStatus === "ready") {
+            this._needsAuth = false;
             return;
         }
 
