@@ -10,14 +10,16 @@ import {
     useContext,
 } from "react";
 import { CrossmintWallets, type WalletArgsFor } from "@crossmint/wallets-sdk";
-import type { Chain } from "@crossmint/wallets-sdk";
+import type { Chain, Wallet } from "@crossmint/wallets-sdk";
 import type { UIConfig } from "@crossmint/common-sdk-base";
+import type { CreateOnLogin } from "@crossmint/client-sdk-react-base";
 
 import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
 import { useCrossmint } from "../hooks";
 import { createWebAuthnPasskeySigner } from "@/utils/createPasskeySigner";
 import { TwindProvider } from "./TwindProvider";
 import { useDynamicWallet } from "./dynamic/DynamicWalletProvider";
+import type { PasskeySigner } from "@/types/passkey";
 
 type ValidPasskeyPromptType =
     | "create-wallet"
@@ -41,7 +43,7 @@ type ValidWalletState =
     | { status: "not-loaded" }
     | { status: "in-progress" }
     | { status: "error"; error: Error }
-    | { status: "loaded"; wallet: any };
+    | { status: "loaded"; wallet: Wallet<Chain> };
 
 type WalletContextType = {
     walletState: ValidWalletState;
@@ -50,7 +52,7 @@ type WalletContextType = {
     appearance?: UIConfig;
     createPasskeyPrompt: (type: ValidPasskeyPromptType) => () => Promise<void>;
     getOrCreateWallet: <C extends Chain>(args: WalletArgsFor<C>) => Promise<{ startedCreation: boolean }>;
-    createPasskeySigner: () => Promise<any>;
+    createPasskeySigner: () => Promise<PasskeySigner>;
     clearWallet: () => void;
 };
 
@@ -69,17 +71,11 @@ export function CrossmintWalletProvider({
     showPasskeyHelpers = true,
     appearance,
     createOnLogin,
-    chain,
-    signer,
-    owner,
 }: {
     children: ReactNode;
     showPasskeyHelpers?: boolean;
     appearance?: UIConfig;
-    createOnLogin?: "all-users" | "off";
-    chain?: Chain;
-    signer?: any;
-    owner?: string;
+    createOnLogin?: CreateOnLogin;
 }) {
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
     const { isDynamicWalletConnected, getAdminSigner, sdkHasLoaded } = useDynamicWallet();
@@ -125,7 +121,7 @@ export function CrossmintWalletProvider({
                 setWalletState({ status: "in-progress" });
                 const wallets = CrossmintWallets.from({
                     apiKey: crossmint.apiKey,
-                    jwt: crossmint.jwt,
+                    jwt: crossmint?.jwt,
                 });
                 const wallet = await wallets.getOrCreateWallet<C>({
                     ...args,
@@ -158,17 +154,23 @@ export function CrossmintWalletProvider({
 
     useEffect(() => {
         async function handleWalletGetOrCreate() {
-            if (walletState.status !== "not-loaded" || crossmint.jwt == null || !sdkHasLoaded || chain == null) {
+            // Can get or create wallet if
+            if (
+                walletState.status !== "not-loaded" ||
+                crossmint.jwt == null ||
+                !sdkHasLoaded ||
+                createOnLogin?.chain == null
+            ) {
                 return;
             }
 
             try {
-                const finalSigner = isDynamicWalletConnected ? await getAdminSigner() : signer;
+                const finalSigner = isDynamicWalletConnected ? await getAdminSigner() : createOnLogin.signer;
 
                 await getOrCreateWallet({
-                    chain,
+                    chain: createOnLogin.chain,
                     signer: finalSigner,
-                    owner,
+                    owner: createOnLogin.owner,
                     options: {
                         experimental_callbacks: {
                             onWalletCreationStart: createPasskeyPrompt("create-wallet"),
@@ -181,21 +183,20 @@ export function CrossmintWalletProvider({
             }
         }
 
-        if (createOnLogin === "all-users") {
+        if (createOnLogin != null) {
             handleWalletGetOrCreate();
         }
     }, [
-        createOnLogin,
         walletState.status,
         crossmint.jwt,
         sdkHasLoaded,
-        chain,
         isDynamicWalletConnected,
         getAdminSigner,
-        signer,
-        owner,
         getOrCreateWallet,
         createPasskeyPrompt,
+        createOnLogin?.chain,
+        createOnLogin?.signer,
+        createOnLogin?.owner,
     ]);
 
     useEffect(() => {

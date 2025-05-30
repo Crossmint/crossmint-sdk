@@ -45,7 +45,7 @@ function renderWalletProvider({ children }: { children: ReactNode }) {
 }
 
 function TestComponent() {
-    const { status, wallet, error, getOrCreateWallet, clearWallet } = useWallet();
+    const { status, wallet, getOrCreateWallet, clearWallet } = useWallet();
     const mockPasskeySigner = mock<PasskeySignerConfig>({
         type: "passkey",
         name: "Crossmint Wallet",
@@ -53,7 +53,6 @@ function TestComponent() {
 
     return (
         <div>
-            <div data-testid="error">{error ?? "No Error"}</div>
             <div data-testid="status">{status}</div>
             <div data-testid="wallet">{wallet ? "Wallet Loaded" : "No Wallet"}</div>
             <button
@@ -100,20 +99,17 @@ describe("CrossmintWalletProvider", () => {
                 children: <TestComponent />,
             });
             expect(getByTestId("wallet").textContent).toBe("No Wallet");
-            expect(getByTestId("error").textContent).toBe("No Error");
 
             fireEvent.click(getByTestId("create-wallet-button"));
 
             await waitFor(() => {
                 expect(getByTestId("status").textContent).toBe("in-progress");
                 expect(getByTestId("wallet").textContent).toBe("No Wallet");
-                expect(getByTestId("error").textContent).toBe("No Error");
             });
 
             await waitFor(() => {
                 expect(getByTestId("status").textContent).toBe("loaded");
                 expect(getByTestId("wallet").textContent).toBe("Wallet Loaded");
-                expect(getByTestId("error").textContent).toBe("No Error");
             });
 
             expect(vi.mocked(mockSDK.getOrCreateWallet)).toHaveBeenCalledOnce();
@@ -140,7 +136,6 @@ describe("CrossmintWalletProvider", () => {
                 await waitFor(() => {
                     expect(getByTestId("status").textContent).toBe("not-loaded");
                     expect(getByTestId("wallet").textContent).toBe("No Wallet");
-                    expect(getByTestId("error").textContent).toBe("No Error");
                 });
 
                 expect(vi.mocked(mockSDK.getOrCreateWallet)).not.toHaveBeenCalled();
@@ -162,41 +157,11 @@ describe("CrossmintWalletProvider", () => {
                 await waitFor(() => {
                     expect(getByTestId("status").textContent).toBe("in-progress");
                     expect(getByTestId("wallet").textContent).toBe("No Wallet");
-                    expect(getByTestId("error").textContent).toBe("No Error");
                 });
 
                 await waitFor(() => {
-                    expect(getByTestId("status").textContent).toBe("loading-error");
+                    expect(getByTestId("status").textContent).toBe("error");
                     expect(getByTestId("wallet").textContent).toBe("No Wallet");
-                    expect(getByTestId("error").textContent).toBe("Wallet creation failed");
-                });
-
-                expect(vi.mocked(mockSDK.getOrCreateWallet)).toHaveBeenCalledOnce();
-            });
-        });
-
-        describe("When getOrCreateWallet throws an unknown error", () => {
-            beforeEach(() => {
-                vi.mocked(mockSDK.getOrCreateWallet).mockRejectedValue("Wallet creation failed");
-            });
-
-            it("should set the error with the thrown error wrapped with a SmartWalletError", async () => {
-                const { getByTestId } = renderWalletProvider({
-                    children: <TestComponent />,
-                });
-
-                fireEvent.click(getByTestId("create-wallet-button"));
-
-                await waitFor(() => {
-                    expect(getByTestId("status").textContent).toBe("in-progress");
-                    expect(getByTestId("wallet").textContent).toBe("No Wallet");
-                    expect(getByTestId("error").textContent).toBe("No Error");
-                });
-
-                await waitFor(() => {
-                    expect(getByTestId("status").textContent).toBe("loading-error");
-                    expect(getByTestId("wallet").textContent).toBe("No Wallet");
-                    expect(getByTestId("error").textContent).toBe("Wallet creation failed");
                 });
 
                 expect(vi.mocked(mockSDK.getOrCreateWallet)).toHaveBeenCalledOnce();
@@ -214,7 +179,6 @@ describe("CrossmintWalletProvider", () => {
         await waitFor(() => {
             expect(getByTestId("status").textContent).toBe("loaded");
             expect(getByTestId("wallet").textContent).toBe("Wallet Loaded");
-            expect(getByTestId("error").textContent).toBe("No Error");
         });
 
         fireEvent.click(getByTestId("clear-wallet-button"));
@@ -222,7 +186,6 @@ describe("CrossmintWalletProvider", () => {
         await waitFor(() => {
             expect(getByTestId("status").textContent).toBe("not-loaded");
             expect(getByTestId("wallet").textContent).toBe("No Wallet");
-            expect(getByTestId("error").textContent).toBe("No Error");
         });
     });
 });
