@@ -9,7 +9,6 @@ import type { Chain, SolanaChain } from "../chains/chains";
 ////////////////////////////////////////////////////////////
 // Signer configs
 ////////////////////////////////////////////////////////////
-
 export class AuthRejectedError extends Error {
     constructor() {
         super("Authentication was rejected by the user");

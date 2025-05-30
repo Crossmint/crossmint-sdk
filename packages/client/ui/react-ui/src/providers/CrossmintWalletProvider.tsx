@@ -160,7 +160,7 @@ function WalletProvider({
 
             const smartWalletSDK = CrossmintWallets.from({
                 apiKey: crossmint.apiKey,
-                jwt: crossmint.jwt,
+                jwt: crossmint?.jwt,
             });
 
             const wallet = await smartWalletSDK.getOrCreateWallet({
@@ -266,6 +266,7 @@ function WalletProvider({
             {emailSignerDialogOpen
                 ? createPortal(
                       <EmailSignersDialog
+                          rejectRef={rejectRef}
                           email={email}
                           open={emailSignerDialogOpen}
                           setOpen={setEmailSignerDialogOpen}

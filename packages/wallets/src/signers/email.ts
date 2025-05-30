@@ -79,6 +79,7 @@ export class EmailSigner implements Signer {
             throw new Error("Handshake parent not initialized");
         }
 
+        // Determine if we need to authenticate the user via OTP or not
         const signerResponse = await this.config._handshakeParent?.sendAction({
             event: "request:get-status",
             responseEvent: "response:get-status",

@@ -227,8 +227,10 @@ export class Wallet<C extends Chain> {
         );
 
         const approvedTransaction = await this.apiClient.approveTransaction(this.walletLocator, transaction.id, {
-            // @ts-ignore the generated types are wrong
-            approvals: signedApprovals,
+            approvals: signedApprovals.map((signature) => ({
+                signer: this.signer.locator(),
+                ...signature,
+            })),
         });
 
         if (approvedTransaction.error) {
@@ -253,7 +255,6 @@ export class Wallet<C extends Chain> {
 
         await this.apiClient.approveSignature(this.walletLocator, signatureId, {
             approvals: [
-                // @ts-ignore the generated types are wrong
                 {
                     signer: this.signer.locator(),
                     ...signature,
