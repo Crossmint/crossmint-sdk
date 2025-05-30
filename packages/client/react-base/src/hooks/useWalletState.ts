@@ -22,18 +22,23 @@ export function useWalletState({
     const [state, setState] = useState<ValidWalletState>({
         status: "not-loaded",
     });
-    // Track whether email signer needs authentication
-    const [needsAuthState, setNeedsAuthState] = useState<boolean>(false);
 
     const statusRef = useRef<ValidWalletState["status"]>(state.status);
     useEffect(() => {
         statusRef.current = state.status;
     }, [state.status]);
 
-    const needsAuthRef = useRef<boolean>(false);
+    const [needsAuthState, setNeedsAuthState] = useState<boolean>(false);
     const sendEmailWithOtpRef = useRef<(email: string) => Promise<void>>(throwNotAvailable("sendEmailWithOtp"));
     const verifyOtpRef = useRef<(otp: string) => Promise<void>>(throwNotAvailable("verifyOtp"));
     const rejectRef = useRef<(error: Error) => void>(throwNotAvailable("reject"));
+
+    const clearEmailSignerFunctions = useCallback(() => {
+        setNeedsAuthState(false);
+        sendEmailWithOtpRef.current = throwNotAvailable("sendEmailWithOtp");
+        verifyOtpRef.current = throwNotAvailable("verifyOtp");
+        rejectRef.current = throwNotAvailable("reject");
+    }, []);
 
     const getOrCreateWallet = useCallback(
         async <C extends Chain>(props: WalletArgsFor<C>) => {
@@ -55,12 +60,9 @@ export function useWalletState({
                 setState({ status: "in-progress" });
 
                 if (props.signer?.type === "email") {
-                    console.log("[useWalletState] setting onAuthRequired");
                     const emailSigner = props.signer as EmailInternalSignerConfig;
                     // biome-ignore lint/suspicious/useAwait: fix type later
                     emailSigner.onAuthRequired = async (needsAuth, sendEmailWithOtp, verifyOtp, reject) => {
-                        console.log("[useWalletState] onAuthRequired", needsAuth);
-                        needsAuthRef.current = needsAuth;
                         setNeedsAuthState(needsAuth);
                         sendEmailWithOtpRef.current = sendEmailWithOtp;
                         verifyOtpRef.current = verifyOtp;
@@ -71,11 +73,7 @@ export function useWalletState({
                     emailSigner._handshakeParent = getHandshakeParent?.();
                 } else {
                     // Reset to default functions if not using email signer
-                    needsAuthRef.current = false;
-                    setNeedsAuthState(false);
-                    sendEmailWithOtpRef.current = throwNotAvailable("sendEmailWithOtp");
-                    verifyOtpRef.current = throwNotAvailable("verifyOtp");
-                    rejectRef.current = throwNotAvailable("reject");
+                    clearEmailSignerFunctions();
                 }
 
                 const wallet = await crossmintWallets.getOrCreateWallet(props);
@@ -91,11 +89,7 @@ export function useWalletState({
 
     const clearWallet = useCallback(() => {
         setState({ status: "not-loaded" });
-        needsAuthRef.current = false;
-        setNeedsAuthState(false);
-        sendEmailWithOtpRef.current = throwNotAvailable("sendEmailWithOtp");
-        verifyOtpRef.current = throwNotAvailable("verifyOtp");
-        rejectRef.current = throwNotAvailable("reject");
+        clearEmailSignerFunctions();
     }, []);
 
     return {

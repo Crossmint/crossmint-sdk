@@ -22,7 +22,6 @@ export function CrossmintWalletProvider({ children }: CrossmintWalletProviderPro
         throw new Error("Invalid API key");
     }
     const frameUrl = `${DEFAULT_SECURE_ENDPOINT_URL}/?environment=${parsedAPIKey.environment}`;
-    console.log("[CrossmintWalletProvider] Initializing with frameUrl:", frameUrl);
 
     const webviewRef = useRef<WebView>(null);
     const webViewParentRef = useRef<WebViewParent<typeof signerOutboundEvents, typeof signerInboundEvents> | null>(
@@ -38,9 +37,7 @@ export function CrossmintWalletProvider({ children }: CrossmintWalletProviderPro
     }, [appId]);
 
     useEffect(() => {
-        console.log("[CrossmintWalletProvider] WebView ref effect running");
         if (webviewRef.current != null && webViewParentRef.current == null) {
-            console.log("[CrossmintWalletProvider] Creating WebViewParent");
             webViewParentRef.current = new WebViewParent(webviewRef, {
                 incomingEvents: signerOutboundEvents,
                 outgoingEvents: signerInboundEvents,
@@ -49,13 +46,10 @@ export function CrossmintWalletProvider({ children }: CrossmintWalletProviderPro
     }, []);
 
     const onWebViewLoad = useCallback(async () => {
-        console.log("[CrossmintWalletProvider] WebView onLoadEnd");
         const parent = webViewParentRef.current;
         if (parent != null) {
             try {
-                console.log("[CrossmintWalletProvider] Attempting handshake");
                 await parent.handshakeWithChild();
-                console.log("[CrossmintWalletProvider] Handshake successful");
                 setIsWebViewReady(true);
             } catch (e) {
                 console.error("[CrossmintWalletProvider] Handshake error:", e);

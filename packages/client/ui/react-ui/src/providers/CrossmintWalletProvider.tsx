@@ -148,8 +148,6 @@ function WalletProvider({
                     verifyOtpRef.current = verifyOtp;
                     rejectRef.current = reject;
 
-                    console.log("onAuthRequired", needsAuth, sendEmailWithOtp, verifyOtp, reject);
-
                     if (needsAuth) {
                         setEmailSignerDialogOpen(true);
                         setEmailSignerDialogStep("initial");
