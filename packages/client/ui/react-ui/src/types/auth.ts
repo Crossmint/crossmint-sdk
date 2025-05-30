@@ -1,4 +1,4 @@
-export type { CrossmintAuthEmbeddedWallets } from "@crossmint/client-sdk-react-base";
+export type { BaseCrossmintWalletProviderProps } from "@crossmint/client-sdk-react-base";
 
 export type OtpEmailPayload = {
     email: string;
