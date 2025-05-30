@@ -30,13 +30,12 @@ interface AuthFormContextType {
 
 type ContextInitialStateProps = {
     appearance?: UIConfig;
+    loginMethods: LoginMethod[];
     termsOfServiceText?: string | ReactNode;
     authModalTitle?: string;
-    loginMethods: LoginMethod[];
-    defaultEmail?: string;
+    embeddedWallets?: CrossmintAuthEmbeddedWallets;
     baseUrl: string;
-    setDialogOpen?: (open: boolean, successfulLogin?: boolean) => void;
-    embeddedWallets: CrossmintAuthEmbeddedWallets;
+    defaultEmail?: string;
 };
 
 type AuthFormProviderProps = {
