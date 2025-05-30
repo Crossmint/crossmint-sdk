@@ -88,7 +88,6 @@ export class EmailSigner implements Signer {
             },
             options: DEFAULT_EVENT_OPTIONS,
         });
-        console.log("[handleAuthRequired] signerResponse", signerResponse);
 
         if (signerResponse?.status !== "success") {
             throw new Error(signerResponse?.error);
@@ -98,8 +97,6 @@ export class EmailSigner implements Signer {
             this._needsAuth = false;
             return;
         }
-
-        console.log("[handleAuthRequired] needsAuth", this._needsAuth);
 
         const { promise, resolve, reject } = this.createAuthPromise();
         this._authPromise = { promise, resolve, reject };
