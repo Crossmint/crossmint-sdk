@@ -1,3 +1,4 @@
+import type { MutableRefObject } from "react";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "../common/Dialog";
@@ -12,6 +13,7 @@ interface EmailSignersDialogProps {
     onSubmitOTP: (token: string) => Promise<void>;
     onResendOTPCode: (email: string) => Promise<void>;
     onSubmitEmail: (email: string) => Promise<void>;
+    rejectRef: MutableRefObject<((error: Error) => void) | undefined>;
     appearance?: UIConfig;
 }
 
@@ -23,10 +25,18 @@ export function EmailSignersDialog({
     onSubmitOTP,
     onResendOTPCode,
     onSubmitEmail,
+    rejectRef,
     appearance,
 }: EmailSignersDialogProps) {
+    function handleOnCancel(isOpen?: boolean) {
+        if (open || isOpen) {
+            rejectRef.current?.(new Error());
+            setOpen(false);
+        }
+    }
+
     return (
-        <Dialog modal={false} open={open} onOpenChange={setOpen}>
+        <Dialog modal={false} open={open} onOpenChange={handleOnCancel}>
             <DialogContent
                 onInteractOutside={(e) => e.preventDefault()}
                 onOpenAutoFocus={(e) => e.preventDefault()}
@@ -73,7 +83,7 @@ export function EmailSignersDialog({
                         <EmailConfirmation
                             email={email}
                             onConfirm={onSubmitEmail}
-                            onCancel={() => setOpen(false)}
+                            onCancel={handleOnCancel}
                             appearance={appearance}
                         />
                     )}
