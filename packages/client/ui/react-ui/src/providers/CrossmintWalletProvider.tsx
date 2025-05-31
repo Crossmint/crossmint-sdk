@@ -14,7 +14,8 @@ import { CrossmintWallets, type Wallet, type WalletArgsFor, type Chain } from "@
 import type { UIConfig } from "@crossmint/common-sdk-base";
 
 import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
-import { useCrossmint, throwNotAvailable, type CreateOnLogin } from "@crossmint/client-sdk-react-base";
+import { throwNotAvailable, type CreateOnLogin } from "@crossmint/client-sdk-react-base";
+import { useCrossmint } from "../hooks";
 import { createWebAuthnPasskeySigner } from "@/utils/createPasskeySigner";
 import { TwindProvider } from "./TwindProvider";
 import { useDynamicWallet } from "./dynamic/DynamicWalletProvider";
