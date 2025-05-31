@@ -25,15 +25,14 @@ import type {
     GetSignerResponse,
     WalletLocator,
     EvmWalletLocator,
+    SendParams,
+    SendResponse,
 } from "./types";
 
 class ApiClient extends CrossmintApiClient {
     private apiPrefix = "api/2022-06-09/wallets";
 
-    constructor(
-        crossmint: Crossmint,
-        private readonly appId?: string
-    ) {
+    constructor(crossmint: Crossmint) {
         super(crossmint, {
             internalConfig: {
                 sdkMetadata: { name: SDK_NAME, version: SDK_VERSION },
@@ -173,6 +172,14 @@ class ApiClient extends CrossmintApiClient {
         return response.json();
     }
 
+    async send(walletLocator: WalletLocator, tokenLocator: string, params: SendParams): Promise<SendResponse> {
+        const response = await this.post(`api/unstable/wallets/${walletLocator}/tokens/${tokenLocator}/transfers`, {
+            body: JSON.stringify(params),
+            headers: this.headers,
+        });
+        return response.json();
+    }
+
     public get isServerSide() {
         return this.parsedAPIKey.usageOrigin === APIKeyUsageOrigin.SERVER;
     }
@@ -188,9 +195,6 @@ class ApiClient extends CrossmintApiClient {
         const headers: Record<string, string> = {
             "Content-Type": "application/json",
         };
-        if (this.appId) {
-            headers["X-App-Identifier"] = this.appId;
-        }
         return headers;
     }
 }

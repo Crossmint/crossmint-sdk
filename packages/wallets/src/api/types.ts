@@ -27,6 +27,8 @@ import type {
     DelegatedSignerDto,
     WalletsV1ControllerCreateDelegatedSigner4Error,
     WalletsV1ControllerGetDelegatedSigner4Error,
+    WalletsSendTokenControllerSendToken2Response,
+    SendTokenDto,
 } from "./gen/types.gen";
 
 export type CreateWalletParams = CreateWalletDto;
@@ -58,13 +60,16 @@ export type GetTransactionsResponse =
     | WalletsV1ControllerGetTransactionsWithoutChain4Error;
 export type GetNftsResponse = Nftevm | Nftsol | FetchContentFromWalletError;
 export type GetBalanceResponse = WalletBalanceResponseDto | BalanceControllerGetBalanceForLocator2Error;
-export type WalletBalance = WalletBalanceResponseDto;
+export type Balances = WalletBalanceResponseDto;
 
 export type RegisterSignerParams = CreateSignerInputDto;
 export type RegisterSignerResponse = DelegatedSignerDto | WalletsV1ControllerCreateDelegatedSigner4Error;
 export type GetSignerResponse = DelegatedSignerDto | WalletsV1ControllerGetDelegatedSigner4Error;
 export type GetDelegatedSignersResponse = Array<DelegatedSignerDto> | WalletsV1ControllerGetDelegatedSigner4Error;
 export type DelegatedSigner = DelegatedSignerDto;
+
+export type SendParams = SendTokenDto;
+export type SendResponse = WalletsSendTokenControllerSendToken2Response;
 
 type WalletType = CreateWalletDto["type"];
 export type EvmWalletLocator = `me:${WalletType}` | Address;

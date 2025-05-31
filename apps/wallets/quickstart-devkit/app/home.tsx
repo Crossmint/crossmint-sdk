@@ -1,44 +1,36 @@
 "use client";
 
 import Image from "next/image";
-import { useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
 import { WalletBalance } from "../components/balance";
-import { EVMTransferFunds, SolanaTransferFunds } from "../components/transfer";
-import { DelegatedSigner } from "../components/delegated-signer";
-import { CrossmintAuthLogoutButton } from "../components/logout";
+import { Permissions } from "../components/permissions";
 import { CrossmintAuthLoginButton } from "../components/login";
+import { EVMTransferFunds, SolanaTransferFunds } from "@/components/transfer";
+import { useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
+import { CrossmintAuthLogoutButton } from "@/components/logout";
 // import { useEVMPrivyConnector, useSolanaPrivyConnector } from "@/hooks/usePrivyConnector";
 // import { useEVMDynamicConnector, useSolanaDynamicConnector } from "@/hooks/useDynamicConnector";
 
 export function HomeContent() {
     // @TODO: Uncomment the connector you want to use
 
+    // const { crossmintWallet: wallet, crossmintWalletStatus: status, isLoading } = useSolanaPrivyConnector();
     // const {
     //     crossmintWallet: wallet,
     //     crossmintWalletStatus: status,
     //     isLoading,
-    //     type,
-    // } = useSolanaPrivyConnector();
-    // const {
-    //     crossmintWallet: wallet,
-    //     crossmintWalletStatus: status,
-    //     isLoading,
-    //     type
     // } = useSolanaDynamicConnector();
     // const {
     //     crossmintWallet: wallet,
     //     crossmintWalletStatus: status,
     //     isLoading,
-    //     type
     // } = useEVMPrivyConnector();
     // const {
     //     crossmintWallet: wallet,
     //     crossmintWalletStatus: status,
     //     isLoading,
-    //     type
     // } = useEVMDynamicConnector();
-    const { wallet, status, type } = useWallet();
-    const { status: crossminAuthStatus } = useAuth();
+    const { wallet, status, getOrCreateWallet } = useWallet();
+    const { status: crossminAuthStatus, user } = useAuth();
     const isLoading = status === "in-progress" || crossminAuthStatus === "initializing";
 
     const walletAddress = wallet?.address;
@@ -62,6 +54,26 @@ export function HomeContent() {
                     <CrossmintAuthLoginButton />
                     {/* <PrivyLoginButton /> */}
                     {/* <DynamicLabsLoginButton /> */}
+
+                    {/* @TODO: Uncomment to use email signer */}
+                    {/* <br />
+                    <br />
+                    {user?.email != null && (
+                        <button
+                            className="bg-blue-500 text-white px-4 py-2 rounded-md"
+                            onClick={() => {
+                                getOrCreateWallet({
+                                    chain: "solana",
+                                    signer: {
+                                        type: "email",
+                                        email: user.email,
+                                    },
+                                });
+                            }}
+                        >
+                            fetch wallet using email signers
+                        </button>
+                    )} */}
                 </div>
             </div>
         );
@@ -72,7 +84,7 @@ export function HomeContent() {
             <div className="flex flex-col mb-8">
                 <Image src="/crossmint.svg" alt="Crossmint logo" priority width={150} height={150} className="mb-4" />
                 <h1 className="text-2xl font-semibold mb-2">
-                    Wallets Quickstart (Devkit) - {type === "evm-smart-wallet" ? "EVM" : "Solana"}
+                    Wallets Quickstart (Devkit) - {wallet?.chain === "solana" ? "Solana" : "EVM"}
                 </h1>
                 <p className="text-gray-600 text-sm">The easiest way to build onchain</p>
             </div>
@@ -113,9 +125,9 @@ export function HomeContent() {
                     {/* <PrivyLogoutButton /> */}
                     {/* <DynamicLabsLogoutButton /> */}
                 </div>
-                {type === "evm-smart-wallet" && <EVMTransferFunds />}
-                {type === "solana-smart-wallet" && <SolanaTransferFunds />}
-                <DelegatedSigner />
+                {wallet?.chain !== "solana" && <EVMTransferFunds />}
+                {wallet?.chain === "solana" && <SolanaTransferFunds />}
+                <Permissions />
             </div>
         </div>
     );

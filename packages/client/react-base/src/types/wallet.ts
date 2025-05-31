@@ -1,39 +1,25 @@
-import type { EVMSmartWalletChain, EVMSignerInput, SolanaSignerInput } from "@crossmint/wallets-sdk";
+import type { UIConfig } from "@crossmint/common-sdk-base";
+import type { Chain, SignerConfigForChain } from "@crossmint/wallets-sdk";
 
-type GetOrCreateWalletBaseProps = {
-    args: {
-        linkedUser?: string;
-    };
+export type {
+    Balances,
+    Chain,
+    EvmExternalWalletSignerConfig,
+    Permission,
+    SolanaExternalWalletSignerConfig,
+    Wallet,
+} from "@crossmint/wallets-sdk";
+
+export { EVMWallet, SolanaWallet } from "@crossmint/wallets-sdk";
+
+export type CreateOnLogin = {
+    chain: Chain;
+    signer?: SignerConfigForChain<Chain>;
+    owner?: string;
 };
 
-export type GetOrCreateWalletProps =
-    | ({
-          type: "evm-smart-wallet";
-          args: {
-              chain: EVMSmartWalletChain;
-              adminSigner?: EVMSignerInput;
-          };
-      } & GetOrCreateWalletBaseProps)
-    | ({
-          type: "solana-smart-wallet";
-          args: {
-              adminSigner?: SolanaSignerInput;
-          };
-      } & GetOrCreateWalletBaseProps);
-
-type WalletBaseConfig = {
-    createOnLogin: "all-users" | "off";
+export type BaseCrossmintWalletProviderProps = {
+    createOnLogin?: CreateOnLogin;
     showPasskeyHelpers?: boolean;
-    linkedUser?: string;
+    appearance?: UIConfig;
 };
-
-export type CrossmintAuthEmbeddedWallets =
-    | ({
-          type: "evm-smart-wallet";
-          defaultChain: EVMSmartWalletChain;
-          adminSigner?: EVMSignerInput;
-      } & WalletBaseConfig)
-    | ({
-          type: "solana-smart-wallet";
-          adminSigner?: SolanaSignerInput;
-      } & WalletBaseConfig);

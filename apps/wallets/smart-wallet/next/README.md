@@ -130,14 +130,10 @@ import { CrossmintProvider, CrossmintAuthProvider } from "@crossmint/client-sdk-
 export default function App({ Component, pageProps }) {
     return (
         <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_API_KEY ?? ""}>
-            <CrossmintAuthProvider
-                embeddedWallets={{
-                    createOnLogin: "all-users",
-                    defaultChain: "polygon-amoy",
-                    type: "evm-smart-wallet",
-                }}
-            >
-                <Component {...pageProps} />
+            <CrossmintAuthProvider>
+                <CrossmintWalletProvider createOnLogin={{ chain: "polygon-amoy" }}>
+                    <Component {...pageProps} />
+                </CrossmintWalletProvider>
             </CrossmintAuthProvider>
         </CrossmintProvider>
     );

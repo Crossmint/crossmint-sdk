@@ -6,13 +6,12 @@ import { LogoutIcon } from "@/icons/logout";
 import { Copy, Image as ImageIcon, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type EVMSmartWallet, type SolanaSmartWallet, useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
+import { type Chain, useAuth, useWallet, type Wallet } from "@crossmint/client-sdk-react-ui";
 
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "./dropdown-menu";
 import { Typography } from "./typography";
 import { useToast } from "./use-toast";
-import type { WalletType } from "@/app/context/wallet-config";
 import { Button } from "./button";
 
 function formatWalletAddress(address: string, startLength: number, endLength: number): string {
@@ -21,7 +20,7 @@ function formatWalletAddress(address: string, startLength: number, endLength: nu
 
 export const Header: React.FC = () => {
     const { logout, status: authStatus } = useAuth();
-    const { wallet, status: walletStatus, type } = useWallet();
+    const { wallet, status: walletStatus } = useWallet();
     const router = useRouter();
     const { toast } = useToast();
 
@@ -43,14 +42,13 @@ export const Header: React.FC = () => {
             {(walletStatus === "loaded" || walletStatus === "in-progress" || authStatus === "initializing") &&
                 wallet != null && (
                     <UserMenu
-                        walletType={type}
                         wallet={wallet}
                         walletStatus={walletStatus}
                         onLogout={handleLogout}
                         onCopyAddress={handleCopyAddress}
                     />
                 )}
-            {walletStatus === "loading-error" ? (
+            {walletStatus === "error" ? (
                 <Button
                     onClick={() => {
                         logout();
@@ -76,17 +74,16 @@ const HeaderLogo: React.FC = () => (
 );
 
 const UserMenu: React.FC<{
-    walletType: WalletType;
-    wallet: EVMSmartWallet | SolanaSmartWallet;
+    wallet: Wallet<Chain>;
     walletStatus: string;
     onLogout: () => void;
     onCopyAddress: () => void;
-}> = ({ walletType, wallet, walletStatus, onLogout, onCopyAddress }) => (
+}> = ({ wallet, walletStatus, onLogout, onCopyAddress }) => (
     <DropdownMenu>
         <DropdownMenuTrigger asChild disabled={walletStatus !== "loaded"}>
             <div className="flex items-center gap-5 cursor-pointer">
                 <div className="flex items-center min-w-[150px] bg-skeleton rounded-full px-4 py-2 gap-2 text-secondary-foreground">
-                    {getWalletIcon(walletType)}
+                    {getWalletIcon(wallet.chain)}
                     <Typography>
                         {walletStatus !== "loaded" ? "Loading..." : formatWalletAddress(wallet.address, 6, 3)}
                     </Typography>
@@ -118,12 +115,10 @@ const UserMenu: React.FC<{
     </DropdownMenu>
 );
 
-const getWalletIcon = (walletType: WalletType) => {
-    if (walletType === "evm-smart-wallet") {
+const getWalletIcon = (chain: Chain) => {
+    if (chain === "solana") {
+        return <Image src="/icons/sol.svg" alt="Solana logo" width={24} height={24} className="rounded-md" />;
+    } else {
         return <Image src="/icons/eth.png" alt="Ethereum logo" width={24} height={24} className="rounded-md" />;
     }
-    if (walletType === "solana-smart-wallet") {
-        return <Image src="/icons/sol.svg" alt="Solana logo" width={24} height={24} className="rounded-md" />;
-    }
-    return null;
 };
