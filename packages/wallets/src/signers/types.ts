@@ -25,6 +25,7 @@ export type EmailSignerConfig = {
         verifyOtp: (otp: string) => Promise<void>,
         reject: () => void
     ) => Promise<void>;
+    _handshakeParent?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
 };
 
 export type BaseExternalWalletSignerConfig = {

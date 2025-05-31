@@ -1,5 +1,7 @@
 import { createContext, type Dispatch, type ReactNode, type SetStateAction, useMemo } from "react";
 import { type Chain, CrossmintWallets, type Wallet, type WalletArgsFor } from "@crossmint/wallets-sdk";
+import type { HandshakeParent } from "@crossmint/client-sdk-window";
+import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
 
 import { useWalletState } from "@/hooks/useWalletState";
 import { useCrossmint } from "@/hooks";
@@ -15,6 +17,11 @@ type WalletContextFunctions = {
     ) => Promise<{ startedCreation: boolean; reason?: string }>;
     setState: Dispatch<SetStateAction<ValidWalletState>>;
     clearWallet: () => void;
+    // Email signer functions
+    needsAuth: boolean;
+    sendEmailWithOtp: ((email: string) => Promise<void>) | null;
+    verifyOtp: ((otp: string) => Promise<void>) | null;
+    reject: ((error: Error) => void) | null;
 };
 
 type LoadedWalletState<C extends Chain> = {
@@ -22,7 +29,8 @@ type LoadedWalletState<C extends Chain> = {
     wallet: Wallet<C>;
     error?: undefined;
 };
-type WalletContext<C extends Chain = Chain> =
+
+export type WalletContext<C extends Chain = Chain> =
     | ({
           status: "not-loaded" | "in-progress";
           wallet?: undefined;
@@ -40,6 +48,11 @@ export const WalletContext = createContext<WalletContext>({
     setState: () => {},
     getOrCreateWallet: () => Promise.resolve({ startedCreation: false }),
     clearWallet: () => null,
+    // Email signer functions
+    needsAuth: false,
+    sendEmailWithOtp: null,
+    verifyOtp: null,
+    reject: null,
 });
 
 export function deriveErrorState(error: unknown): {
@@ -53,11 +66,12 @@ export function deriveErrorState(error: unknown): {
     };
 }
 
-export function CrossmintWalletProvider({
-    children,
-}: {
+export interface CrossmintWalletProviderProps {
     children: ReactNode;
-}) {
+    getHandshakeParent?: () => HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
+}
+
+export function CrossmintWalletProvider({ children, getHandshakeParent }: CrossmintWalletProviderProps) {
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
     const smartWalletSDK = useMemo(() => CrossmintWallets.from(crossmint), [crossmint]);
 
@@ -66,21 +80,31 @@ export function CrossmintWalletProvider({
         setState,
         getOrCreateWallet,
         clearWallet,
+        // Email signer functions
+        needsAuth,
+        sendEmailWithOtp,
+        verifyOtp,
+        reject,
     } = useWalletState({
         crossmintWallets: smartWalletSDK,
         crossmintJwt: crossmint.jwt ?? null,
+        getHandshakeParent,
     });
 
-    return (
-        <WalletContext.Provider
-            value={{
-                ...walletState,
-                setState,
-                getOrCreateWallet,
-                clearWallet,
-            }}
-        >
-            {children}
-        </WalletContext.Provider>
+    const contextValue = useMemo(
+        () => ({
+            ...walletState,
+            setState,
+            getOrCreateWallet,
+            clearWallet,
+            // Email signer functions
+            needsAuth,
+            sendEmailWithOtp,
+            verifyOtp,
+            reject,
+        }),
+        [walletState, setState, getOrCreateWallet, clearWallet, needsAuth, sendEmailWithOtp, verifyOtp, reject]
     );
+
+    return <WalletContext.Provider value={contextValue}>{children}</WalletContext.Provider>;
 }

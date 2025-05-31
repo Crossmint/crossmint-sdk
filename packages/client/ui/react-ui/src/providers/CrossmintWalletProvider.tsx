@@ -10,12 +10,11 @@ import {
     useContext,
     useRef,
 } from "react";
-import { CrossmintWallets, type WalletArgsFor } from "@crossmint/wallets-sdk";
-import type { Chain, Wallet } from "@crossmint/wallets-sdk";
+import { CrossmintWallets, type Wallet, type WalletArgsFor, type Chain } from "@crossmint/wallets-sdk";
 import type { UIConfig } from "@crossmint/common-sdk-base";
-import type { CreateOnLogin } from "@crossmint/client-sdk-react-base";
 
 import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
+import { throwNotAvailable, type CreateOnLogin } from "@crossmint/client-sdk-react-base";
 import { useCrossmint } from "../hooks";
 import { createWebAuthnPasskeySigner } from "@/utils/createPasskeySigner";
 import { TwindProvider } from "./TwindProvider";
@@ -90,10 +89,10 @@ export function CrossmintWalletProvider({
     const [emailSignerDialogOpen, setEmailSignerDialogOpen] = useState<boolean>(false);
     const [emailSignerDialogStep, setEmailSignerDialogStep] = useState<"initial" | "otp">("initial");
 
-    const needsAuthRef = useRef<boolean | undefined>();
-    const sendEmailWithOtpRef = useRef<((email: string) => Promise<void>) | undefined>();
-    const verifyOtpRef = useRef<((otp: string) => Promise<void>) | undefined>();
-    const rejectRef = useRef<((error: Error) => void) | undefined>();
+    const needsAuthRef = useRef<boolean>(false);
+    const sendEmailWithOtpRef = useRef<(email: string) => Promise<void>>(throwNotAvailable("sendEmailWithOtp"));
+    const verifyOtpRef = useRef<(otp: string) => Promise<void>>(throwNotAvailable("verifyOtp"));
+    const rejectRef = useRef<(error: Error) => void>(throwNotAvailable("reject"));
 
     const createPasskeyPrompt = useCallback(
         (type: ValidPasskeyPromptType) => () =>
@@ -119,37 +118,24 @@ export function CrossmintWalletProvider({
     );
 
     const emailsigners_handleSendEmailOTP = async (emailAddress: string) => {
-        if (!sendEmailWithOtpRef.current) {
-            console.error("sendEmailWithOtp function is not available");
-            return;
-        }
-
         try {
             setEmail(emailAddress);
             await sendEmailWithOtpRef.current(emailAddress);
             setEmailSignerDialogStep("otp");
         } catch (error) {
             console.error("Failed to send email OTP", error);
-            if (rejectRef.current) {
-                rejectRef.current(new Error("Failed to send email OTP"));
-            }
+            rejectRef.current(new Error("Failed to send email OTP"));
         }
     };
 
     const emailsigners_handleOTPSubmit = async (otp: string) => {
-        if (!verifyOtpRef.current) {
-            console.error("verifyOtp function is not available");
-            return;
-        }
         try {
             await verifyOtpRef.current(otp);
             setEmailSignerDialogOpen(false);
             setEmailSignerDialogStep("initial");
         } catch (error) {
             console.error("Failed to verify OTP", error);
-            if (rejectRef.current) {
-                rejectRef.current(new Error("Failed to verify OTP"));
-            }
+            rejectRef.current(new Error("Failed to verify OTP"));
         }
     };
 
