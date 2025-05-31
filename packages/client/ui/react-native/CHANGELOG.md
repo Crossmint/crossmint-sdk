@@ -1,5 +1,23 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.5.0
+
+### Minor Changes
+
+- d081ac9: Integrated wallet SDK changes for version 2.5 with improved performance and simplified API
+
+### Patch Changes
+
+- Updated dependencies [d081ac9]
+- Updated dependencies [d081ac9]
+- Updated dependencies [d081ac9]
+  - @crossmint/client-sdk-react-base@0.3.0
+  - @crossmint/wallets-sdk@0.9.0
+  - @crossmint/common-sdk-base@0.6.0
+  - @crossmint/client-sdk-auth@1.2.10
+  - @crossmint/client-sdk-base@1.5.2
+  - @crossmint/common-sdk-auth@1.0.33
+
 ## 0.4.20
 
 ### Patch Changes
