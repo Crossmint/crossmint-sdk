@@ -6,6 +6,7 @@ import type { InternalSignerConfig, SignerConfigForChain, ExternalWalletInternal
 import { Wallet } from "./wallet";
 import { assembleSigner } from "../signers";
 import type { WalletOptions } from "./types";
+import { EmailSigner } from "@/signers/email";
 
 export type WalletArgsFor<C extends Chain> = {
     chain: C;
@@ -27,6 +28,7 @@ export class WalletFactory {
         );
 
         if (existingWallet && !("error" in existingWallet)) {
+            // TODO: check that WalletArgs are the same as existingWallet
             return this.createWalletInstance(existingWallet, args);
         }
 
@@ -136,9 +138,27 @@ export class WalletFactory {
         }
 
         if (signer.type === "email") {
+            let address;
+            switch (walletResponse.type) {
+                case "solana-smart-wallet":
+                    address = walletResponse.config.adminSigner.address;
+                    break;
+                case "evm-smart-wallet":
+                    if (walletResponse.config.adminSigner.type === "evm-keypair") {
+                        address = walletResponse.config.adminSigner.address;
+                    }
+                    break;
+            }
+            if (address == null) {
+                throw new WalletCreationError("Wallet signer 'email' has no address");
+            }
             return {
                 type: "email",
                 email: signer.email,
+                signerAddress: address,
+                crossmint: this.apiClient.crossmint,
+                onAuthRequired: signer.onAuthRequired,
+                _handshakeParent: signer._handshakeParent,
             };
         }
 
@@ -175,6 +195,21 @@ export class WalletFactory {
                     y: passkeyCredential.publicKey.y.toString(),
                 },
             } as const;
+        }
+
+        if (signer.type === "email") {
+            if (signer.email == null) {
+                throw new Error("Email is required to create a wallet with email signer");
+            }
+            if (chain !== "solana") {
+                throw new Error("Email signer is only supported for Solana wallets");
+            }
+
+            const emailSignerAddress = await EmailSigner.pregenerateSigner(signer.email, this.apiClient.crossmint);
+            return {
+                type: "solana-keypair",
+                address: emailSignerAddress,
+            };
         }
 
         throw new Error("Invalid signer type");

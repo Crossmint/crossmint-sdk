@@ -1,19 +1,31 @@
 import type { WebAuthnP256 } from "ox";
 import type { VersionedTransaction } from "@solana/web3.js";
 import type { Account, EIP1193Provider as ViemEIP1193Provider } from "viem";
+import type { HandshakeParent } from "@crossmint/client-sdk-window";
+import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
+import type { Crossmint } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain } from "../chains/chains";
 
 ////////////////////////////////////////////////////////////
 // Signer configs
 ////////////////////////////////////////////////////////////
+export class AuthRejectedError extends Error {
+    constructor() {
+        super("Authentication was rejected by the user");
+        this.name = "AuthRejectedError";
+    }
+}
+
 export type EmailSignerConfig = {
     type: "email";
     email?: string;
     onAuthRequired?: (
+        needsAuth: boolean,
         sendEmailWithOtp: (email: string) => Promise<void>,
         verifyOtp: (otp: string) => Promise<void>,
-        reject: (error: Error) => void
+        reject: () => void
     ) => Promise<void>;
+    _handshakeParent?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
 };
 
 export type BaseExternalWalletSignerConfig = {
@@ -43,10 +55,7 @@ export interface GenericEIP1193Provider {
 
 export type ApiKeySignerConfig = { type: "api-key" };
 
-export type BaseSignerConfig<C extends Chain> =
-    | EmailSignerConfig
-    | ExternalWalletSignerConfigForChain<C>
-    | ApiKeySignerConfig;
+export type BaseSignerConfig<C extends Chain> = ExternalWalletSignerConfigForChain<C> | ApiKeySignerConfig;
 
 export type PasskeySignerConfig = {
     type: "passkey";
@@ -58,7 +67,11 @@ export type PasskeySignerConfig = {
 ////////////////////////////////////////////////////////////
 // Internal signer config
 ////////////////////////////////////////////////////////////
-export type EmailInternalSignerConfig = EmailSignerConfig;
+export type EmailInternalSignerConfig = EmailSignerConfig & {
+    signerAddress: string;
+    crossmint: Crossmint;
+    _handshakeParent?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
+};
 
 export type PasskeyInternalSignerConfig = PasskeySignerConfig & {
     id: string;
@@ -92,7 +105,7 @@ export type PasskeySignResult = {
 };
 
 export type SignerConfigForChain<C extends Chain> = C extends SolanaChain
-    ? BaseSignerConfig<C>
+    ? EmailSignerConfig | BaseSignerConfig<C>
     : PasskeySignerConfig | BaseSignerConfig<C>;
 
 ////////////////////////////////////////////////////////////

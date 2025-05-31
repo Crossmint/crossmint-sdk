@@ -3,11 +3,9 @@ import { beforeEach } from "vitest";
 import { AuthFormProvider, useAuthForm } from "./AuthFormProvider";
 import { describe, expect, it, vi } from "vitest";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
-import { useDynamicConnect } from "@/hooks/useDynamicConnect";
-import type { CrossmintAuthProviderEmbeddedWallets, LoginMethod } from "@/types/auth";
+import type { LoginMethod } from "@/types/auth";
 
 vi.mock("@/hooks/useCrossmintAuth");
-vi.mock("@/hooks/useDynamicConnect");
 
 // Mock component to test the AuthFormProvider
 function TestComponent() {
@@ -37,10 +35,6 @@ describe("AuthFormProvider", () => {
         baseUrl: "https://api.example.com",
         loginMethods: ["email", "google", "farcaster", "web3"] as LoginMethod[],
         setDialogOpen: vi.fn(),
-        embeddedWallets: {
-            createOnLogin: "off",
-            chain: "base-sepolia",
-        } as CrossmintAuthProviderEmbeddedWallets,
         appearance: {
             colors: {
                 textPrimary: "#000000",
@@ -58,12 +52,6 @@ describe("AuthFormProvider", () => {
                 getOAuthUrl: mockedGetOAuthUrl.mockResolvedValue("https://oauth.example.com"),
             },
         } as any);
-        vi.mocked(useDynamicConnect).mockReturnValue({
-            getAdminSigner: vi.fn().mockResolvedValue(null),
-            cleanup: vi.fn(),
-            sdkHasLoaded: true,
-            isDynamicWalletConnected: false,
-        });
     });
 
     it("provides initial context values and fetches OAuth URLs", async () => {

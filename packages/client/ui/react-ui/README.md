@@ -72,7 +72,7 @@ Manages authentication state and user sessions. Key features:
 import { useWallet } from "@crossmint/client-sdk-react-ui";
 ```
 Handles wallet creation and management. Key features:
-- `status` - Wallet state ("not-loaded" | "in-progress" | "loading-error" | "loaded")
+- `status` - Wallet state ("not-loaded" | "in-progress" | "error" | "loaded")
 - `wallet` - Access to the EVMSmartWallet instance
 - `getOrCreateWallet()` - Initialize or retrieve user's wallet
 - `clearWallet()` - Reset wallet state

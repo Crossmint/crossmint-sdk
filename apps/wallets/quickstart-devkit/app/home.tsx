@@ -1,44 +1,37 @@
 "use client";
 
 import Image from "next/image";
-import { useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
+// import { useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
 import { WalletBalance } from "../components/balance";
 import { Permissions } from "../components/permissions";
-import { CrossmintAuthLogoutButton } from "../components/logout";
 import { CrossmintAuthLoginButton } from "../components/login";
 import { EVMTransferFunds, SolanaTransferFunds } from "@/components/transfer";
+import { useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
+import { CrossmintAuthLogoutButton } from "@/components/logout";
 // import { useEVMPrivyConnector, useSolanaPrivyConnector } from "@/hooks/usePrivyConnector";
 // import { useEVMDynamicConnector, useSolanaDynamicConnector } from "@/hooks/useDynamicConnector";
 
 export function HomeContent() {
     // @TODO: Uncomment the connector you want to use
 
+    // const { crossmintWallet: wallet, crossmintWalletStatus: status, isLoading } = useSolanaPrivyConnector();
     // const {
     //     crossmintWallet: wallet,
     //     crossmintWalletStatus: status,
     //     isLoading,
-    //     type,
-    // } = useSolanaPrivyConnector();
-    // const {
-    //     crossmintWallet: wallet,
-    //     crossmintWalletStatus: status,
-    //     isLoading,
-    //     type
     // } = useSolanaDynamicConnector();
     // const {
     //     crossmintWallet: wallet,
     //     crossmintWalletStatus: status,
     //     isLoading,
-    //     type
     // } = useEVMPrivyConnector();
     // const {
     //     crossmintWallet: wallet,
     //     crossmintWalletStatus: status,
     //     isLoading,
-    //     type
     // } = useEVMDynamicConnector();
-    const { wallet, status } = useWallet();
-    const { status: crossminAuthStatus } = useAuth();
+    const { wallet, status, getOrCreateWallet } = useWallet();
+    const { status: crossminAuthStatus, user } = useAuth();
     const isLoading = status === "in-progress" || crossminAuthStatus === "initializing";
 
     const walletAddress = wallet?.address;
@@ -62,6 +55,26 @@ export function HomeContent() {
                     <CrossmintAuthLoginButton />
                     {/* <PrivyLoginButton /> */}
                     {/* <DynamicLabsLoginButton /> */}
+
+                    {/* @TODO: Uncomment to use email signer */}
+                    {/* <br />
+                    <br />
+                    {user?.email != null && (
+                        <button
+                            className="bg-blue-500 text-white px-4 py-2 rounded-md"
+                            onClick={() => {
+                                getOrCreateWallet({
+                                    chain: "solana",
+                                    signer: {
+                                        type: "email",
+                                        email: user.email,
+                                    },
+                                });
+                            }}
+                        >
+                            fetch wallet using email signers
+                        </button>
+                    )} */}
                 </div>
             </div>
         );

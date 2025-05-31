@@ -1,83 +1,164 @@
-import { useContext, useMemo, type ReactNode } from "react";
-import {
-    CrossmintWalletProvider as BaseCrossmintWalletProvider,
-    WalletContext as BaseWalletContext,
-} from "@crossmint/client-sdk-react-base";
-import {
-    CrossmintRecoveryKeyProvider,
-    CrossmintRecoveryKeyContext,
-    type CrossmintRecoveryKeyContextState,
-    type CrossmintRecoveryKeyProviderProps,
-} from "./CrossmintRecoveryKeyProvider";
-import { WalletContext, type ReactNativeWalletContextState } from "../hooks/useWallet";
+import { type ReactNode, useCallback, useEffect, useRef, useState, useMemo } from "react";
+import { View } from "react-native";
+import type { WebView, WebViewMessageEvent } from "react-native-webview";
+import { RNWebView, WebViewParent } from "@crossmint/client-sdk-rn-window";
+import { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
+import { CrossmintWalletProvider as BaseCrossmintWalletProvider } from "@crossmint/client-sdk-react-base";
+import { validateAPIKey } from "@crossmint/common-sdk-base";
+import { useCrossmint } from "@/hooks";
 
-const recoveryKeyPropNames: Array<keyof CrossmintRecoveryKeyContextState> = [
-    "experimental_needsAuth",
-    "experimental_createRecoveryKeySigner",
-    "experimental_sendEmailWithOtp",
-    "experimental_verifyOtp",
-];
+const DEFAULT_SECURE_ENDPOINT_URL = "https://signers.crossmint.com";
 
-function WalletProviderInternal({ children }: { children: ReactNode }) {
-    const baseWalletState = useContext(BaseWalletContext);
-    const recoveryKeyState = useContext(CrossmintRecoveryKeyContext);
+export interface CrossmintWalletProviderProps {
+    children: ReactNode;
+    experimental_secureEndpointUrl?: string;
+}
 
-    if (baseWalletState == null) {
-        throw new Error("BaseWalletContext not found. Ensure CrossmintWalletProvider structure is correct.");
+export function CrossmintWalletProvider({ children }: CrossmintWalletProviderProps) {
+    const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
+    const { apiKey, appId } = crossmint;
+    const parsedAPIKey = validateAPIKey(apiKey);
+    if (!parsedAPIKey.isValid) {
+        throw new Error("Invalid API key");
     }
+    const frameUrl = `${DEFAULT_SECURE_ENDPOINT_URL}/?environment=${parsedAPIKey.environment}`;
 
-    const combinedState = useMemo(() => {
-        const state: BaseWalletContext = {
-            ...baseWalletState,
-        };
+    const webviewRef = useRef<WebView>(null);
+    const webViewParentRef = useRef<WebViewParent<typeof signerOutboundEvents, typeof signerInboundEvents> | null>(
+        null
+    );
+    const [isWebViewReady, setIsWebViewReady] = useState(false);
 
-        if (recoveryKeyState != null) {
-            Object.assign(state, recoveryKeyState);
-        } else {
-            for (const propName of recoveryKeyPropNames) {
-                Object.defineProperty(state, propName, {
-                    get() {
-                        throw new Error(
-                            `Cannot access '${propName}'. Ensure 'experimental_enableRecoveryKeys={true}' is set on CrossmintWalletProvider.`
-                        );
-                    },
-                    enumerable: true,
-                    configurable: true,
-                });
+    const injectedGlobalsScript = useMemo(() => {
+        if (appId != null) {
+            return `window.crossmintAppId = '${appId}';`;
+        }
+        return "";
+    }, [appId]);
+
+    useEffect(() => {
+        if (webviewRef.current != null && webViewParentRef.current == null) {
+            webViewParentRef.current = new WebViewParent(webviewRef, {
+                incomingEvents: signerOutboundEvents,
+                outgoingEvents: signerInboundEvents,
+            });
+        }
+    }, []);
+
+    const onWebViewLoad = useCallback(async () => {
+        const parent = webViewParentRef.current;
+        if (parent != null) {
+            try {
+                await parent.handshakeWithChild();
+                setIsWebViewReady(true);
+            } catch (e) {
+                console.error("[CrossmintWalletProvider] Handshake error:", e);
+                setIsWebViewReady(false);
             }
         }
-        return state as ReactNativeWalletContextState;
-    }, [baseWalletState, recoveryKeyState]);
+    }, []);
 
-    return <WalletContext.Provider value={combinedState}>{children}</WalletContext.Provider>;
-}
-
-export interface CrossmintWalletProviderProps extends Omit<CrossmintRecoveryKeyProviderProps, "children"> {
-    children: ReactNode;
-    experimental_enableRecoveryKeys?: boolean;
-}
-
-export function CrossmintWalletProvider({
-    children,
-    experimental_enableRecoveryKeys = false,
-    experimental_secureEndpointUrl,
-}: CrossmintWalletProviderProps) {
-    const RecoveryWrapper = ({ children: wrapperChildren }: { children: ReactNode }) => {
-        if (experimental_enableRecoveryKeys) {
-            return (
-                <CrossmintRecoveryKeyProvider experimental_secureEndpointUrl={experimental_secureEndpointUrl}>
-                    {wrapperChildren}
-                </CrossmintRecoveryKeyProvider>
-            );
+    const handleMessage = useCallback((event: WebViewMessageEvent) => {
+        console.log("[CrossmintWalletProvider] Received message:", event.nativeEvent.data);
+        const parent = webViewParentRef.current;
+        if (parent == null) {
+            return;
         }
-        return <>{wrapperChildren}</>;
-    };
+
+        try {
+            const messageData = JSON.parse(event.nativeEvent.data);
+            if (messageData && typeof messageData.type === "string" && messageData.type.startsWith("console.")) {
+                const consoleMethod = messageData.type.split(".")[1];
+                const args = (messageData.data || []).map((argStr: string) => {
+                    try {
+                        if (
+                            argStr === "[Function]" ||
+                            argStr === "[Circular Reference]" ||
+                            argStr === "[Unserializable Object]"
+                        ) {
+                            return argStr;
+                        }
+                        return JSON.parse(argStr);
+                    } catch (e) {
+                        return argStr;
+                    }
+                });
+
+                const prefix = `[WebView:${consoleMethod.toUpperCase()}]`;
+                switch (consoleMethod) {
+                    case "log":
+                        console.log(prefix, ...args);
+                        break;
+                    case "error":
+                        console.error(prefix, ...args);
+                        break;
+                    case "warn":
+                        console.warn(prefix, ...args);
+                        break;
+                    case "info":
+                        console.info(prefix, ...args);
+                        break;
+                    default:
+                        console.log(`[WebView Unknown:${consoleMethod}]`, ...args);
+                }
+                return;
+            }
+        } catch (_) {}
+
+        parent.handleMessage(event);
+    }, []);
+
+    // Get the handshake parent for email signer
+    const getHandshakeParent = useCallback(() => {
+        if (!isWebViewReady || webViewParentRef.current == null) {
+            throw new Error("WebView not ready or handshake incomplete");
+        }
+        return webViewParentRef.current;
+    }, [isWebViewReady]);
 
     return (
-        <BaseCrossmintWalletProvider>
-            <RecoveryWrapper>
-                <WalletProviderInternal>{children}</WalletProviderInternal>
-            </RecoveryWrapper>
+        <BaseCrossmintWalletProvider getHandshakeParent={getHandshakeParent}>
+            {children}
+            <View
+                style={{
+                    position: "absolute",
+                    width: 0,
+                    height: 0,
+                    overflow: "hidden",
+                }}
+            >
+                <RNWebView
+                    ref={webviewRef}
+                    source={{ uri: frameUrl }}
+                    injectedGlobals={injectedGlobalsScript}
+                    onLoadStart={(event) => {
+                        console.log("[CrossmintWalletProvider] WebView onLoadStart:", event.nativeEvent.url);
+                    }}
+                    onLoadEnd={onWebViewLoad}
+                    onLoadProgress={({ nativeEvent }) => {
+                        console.log("[CrossmintWalletProvider] WebView loading progress:", nativeEvent.progress);
+                    }}
+                    onMessage={handleMessage}
+                    onError={(syntheticEvent) => {
+                        console.error("[CrossmintWalletProvider] WebView error:", syntheticEvent.nativeEvent);
+                        setIsWebViewReady(false);
+                    }}
+                    onHttpError={(syntheticEvent) => {
+                        console.error("[CrossmintWalletProvider] WebView HTTP error:", syntheticEvent.nativeEvent);
+                        setIsWebViewReady(false);
+                    }}
+                    style={{
+                        width: 1,
+                        height: 1,
+                    }}
+                    javaScriptCanOpenWindowsAutomatically={false}
+                    thirdPartyCookiesEnabled={false}
+                    sharedCookiesEnabled={false}
+                    incognito={false}
+                    setSupportMultipleWindows={false}
+                    originWhitelist={[DEFAULT_SECURE_ENDPOINT_URL]}
+                />
+            </View>
         </BaseCrossmintWalletProvider>
     );
 }

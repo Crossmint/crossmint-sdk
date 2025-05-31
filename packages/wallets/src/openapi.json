@@ -6365,98 +6365,90 @@
                 "type": "object",
                 "properties": {
                     "approvals": {
-                        "oneOf": [
-                            {
-                                "type": "array",
-                                "items": {
-                                    "oneOf": [
-                                        {
-                                            "type": "object",
-                                            "properties": {
-                                                "signer": {
-                                                    "type": "string",
-                                                    "description": "The locator for the EVM signer",
-                                                    "example": "evm-keypair:0x1234..."
-                                                },
-                                                "signature": {
-                                                    "type": "string",
-                                                    "description": "The EVM cryptographic signature",
-                                                    "example": "0x4551567890abcdef..."
-                                                }
-                                            },
-                                            "required": ["signer", "signature"],
-                                            "title": "EVM keypair signature submission payload",
-                                            "description": "An EVM signature submission for a transaction"
+                        "type": "array",
+                        "description": "Array of approvals to submit for this transaction",
+                        "items": {
+                            "anyOf": [
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "signer": {
+                                            "type": "string",
+                                            "description": "The locator for the EVM signer",
+                                            "example": "evm-keypair:0x1234..."
                                         },
-                                        {
+                                        "signature": {
+                                            "type": "string",
+                                            "description": "The EVM cryptographic signature",
+                                            "example": "0x4551567890abcdef..."
+                                        }
+                                    },
+                                    "required": ["signer", "signature"],
+                                    "title": "EVM keypair signature submission payload",
+                                    "description": "An EVM signature submission for a transaction"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "signer": {
+                                            "type": "string",
+                                            "description": "The locator for the EVM signer",
+                                            "example": "evm-passkey:-y--aq1hqKC_ipuPHa-8aQ"
+                                        },
+                                        "signature": {
                                             "type": "object",
                                             "properties": {
-                                                "signer": {
+                                                "r": {
                                                     "type": "string",
-                                                    "description": "The locator for the EVM signer",
-                                                    "example": "evm-passkey:-y--aq1hqKC_ipuPHa-8aQ"
+                                                    "description": "R component of the signature as a stringified bigint"
                                                 },
-                                                "signature": {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "r": {
-                                                            "type": "string",
-                                                            "description": "R component of the signature as a stringified bigint"
-                                                        },
-                                                        "s": {
-                                                            "type": "string",
-                                                            "description": "S component of the signature as a stringified bigint"
-                                                        }
-                                                    },
-                                                    "required": ["r", "s"],
-                                                    "description": "The signature components"
-                                                },
-                                                "metadata": {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "authenticatorData": {
-                                                            "type": "string",
-                                                            "description": "WebAuthn authenticator data as hex string"
-                                                        },
-                                                        "challengeIndex": {
-                                                            "type": "number",
-                                                            "description": "Index of the challenge used"
-                                                        },
-                                                        "clientDataJSON": {
-                                                            "type": "string",
-                                                            "description": "WebAuthn client data JSON string"
-                                                        },
-                                                        "typeIndex": {
-                                                            "type": "number",
-                                                            "description": "Index of the signature type"
-                                                        },
-                                                        "userVerificationRequired": {
-                                                            "type": "boolean",
-                                                            "description": "Whether user verification was required"
-                                                        }
-                                                    },
-                                                    "required": [
-                                                        "authenticatorData",
-                                                        "challengeIndex",
-                                                        "clientDataJSON",
-                                                        "typeIndex",
-                                                        "userVerificationRequired"
-                                                    ],
-                                                    "description": "WebAuthn signature metadata"
+                                                "s": {
+                                                    "type": "string",
+                                                    "description": "S component of the signature as a stringified bigint"
                                                 }
                                             },
-                                            "required": ["signer", "signature", "metadata"],
-                                            "description": "Schema for WebAuthn signature data",
-                                            "title": "EVM passkey signature submission payload"
+                                            "required": ["r", "s"],
+                                            "description": "The signature components"
+                                        },
+                                        "metadata": {
+                                            "type": "object",
+                                            "properties": {
+                                                "authenticatorData": {
+                                                    "type": "string",
+                                                    "description": "WebAuthn authenticator data as hex string"
+                                                },
+                                                "challengeIndex": {
+                                                    "type": "number",
+                                                    "description": "Index of the challenge used"
+                                                },
+                                                "clientDataJSON": {
+                                                    "type": "string",
+                                                    "description": "WebAuthn client data JSON string"
+                                                },
+                                                "typeIndex": {
+                                                    "type": "number",
+                                                    "description": "Index of the signature type"
+                                                },
+                                                "userVerificationRequired": {
+                                                    "type": "boolean",
+                                                    "description": "Whether user verification was required"
+                                                }
+                                            },
+                                            "required": [
+                                                "authenticatorData",
+                                                "challengeIndex",
+                                                "clientDataJSON",
+                                                "typeIndex",
+                                                "userVerificationRequired"
+                                            ],
+                                            "description": "WebAuthn signature metadata"
                                         }
-                                    ]
+                                    },
+                                    "required": ["signer", "signature", "metadata"],
+                                    "description": "Schema for WebAuthn signature data",
+                                    "title": "EVM passkey signature submission payload"
                                 },
-                                "minItems": 1,
-                                "title": "EVM signature submissions"
-                            },
-                            {
-                                "type": "array",
-                                "items": {
+                                {
                                     "type": "object",
                                     "properties": {
                                         "signer": {
@@ -6473,12 +6465,10 @@
                                     "required": ["signer", "signature"],
                                     "title": "Solana signature submission",
                                     "description": "A Solana signature submission for a transaction"
-                                },
-                                "minItems": 1,
-                                "title": "Solana signature submissions"
-                            }
-                        ],
-                        "description": "Array of approvals to submit for this transaction"
+                                }
+                            ]
+                        },
+                        "minItems": 1
                     }
                 },
                 "required": ["approvals"],
