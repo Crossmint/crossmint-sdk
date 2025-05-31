@@ -1,5 +1,17 @@
 # @crossmint/wallets-sdk
 
+## 0.9.0
+
+### Minor Changes
+
+- d081ac9: Release wallets SDK version 2.5 with improved performance and simplified API
+
+### Patch Changes
+
+- Updated dependencies [d081ac9]
+  - @crossmint/common-sdk-base@0.6.0
+  - @crossmint/common-sdk-auth@1.0.33
+
 ## 0.8.1
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.6.0
+
+### Minor Changes
+
+- d081ac9: Added utility functions for address validation: `isValidEvmAddress`, `isValidSolanaAddress`, and `isValidAddress`
+
 ## 0.5.1
 
 ### Patch Changes
