@@ -186,6 +186,7 @@ export class Wallet<C extends Chain> {
 
     protected async approveAndWait(transactionId: string, additionalSigners?: Signer[]) {
         await this.approveTransaction(transactionId, additionalSigners);
+        await this.sleep(1_000); // Rule of thumb: tx won't be confirmed in less than 1 second
         return await this.waitForTransaction(transactionId);
     }
 
@@ -291,7 +292,19 @@ export class Wallet<C extends Chain> {
         return signatureResponse.outputSignature;
     }
 
-    protected async waitForTransaction(transactionId: string, timeoutMs = 60000): Promise<string> {
+    protected async waitForTransaction(
+        transactionId: string,
+        timeoutMs = 60_000,
+        {
+            backoffMultiplier = 1.1,
+            maxBackoffMs = 2_000,
+            initialBackoffMs = STATUS_POLLING_INTERVAL_MS,
+        }: {
+            initialBackoffMs?: number;
+            backoffMultiplier?: number;
+            maxBackoffMs?: number;
+        } = {}
+    ): Promise<string> {
         const startTime = Date.now();
         let transactionResponse;
 
@@ -306,7 +319,8 @@ export class Wallet<C extends Chain> {
                 throw new TransactionNotAvailableError(JSON.stringify(transactionResponse));
             }
             // Wait for the polling interval
-            await new Promise((resolve) => setTimeout(resolve, STATUS_POLLING_INTERVAL_MS));
+            await this.sleep(initialBackoffMs);
+            initialBackoffMs = Math.min(initialBackoffMs * backoffMultiplier, maxBackoffMs);
         } while (transactionResponse.status === "pending");
 
         if (transactionResponse.status === "failed") {
@@ -330,6 +344,10 @@ export class Wallet<C extends Chain> {
         }
 
         return transactionHash;
+    }
+
+    protected async sleep(ms: number) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
     }
 }
 
