@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-// import { useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
 import { WalletBalance } from "../components/balance";
 import { Permissions } from "../components/permissions";
 import { CrossmintAuthLoginButton } from "../components/login";
