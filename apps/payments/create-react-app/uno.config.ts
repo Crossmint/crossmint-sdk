@@ -84,7 +84,4 @@ export default defineConfig({
         },
     },
     rules: [["focus-ring-custom", { "box-shadow": "0 0 0 3px var(--focus-ring-color)" }]],
-    content: {
-        filesystem: ["./src/**/*.{js,ts,jsx,tsx}"],
-    },
 });

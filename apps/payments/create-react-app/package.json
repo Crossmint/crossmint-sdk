@@ -7,9 +7,9 @@
     "author": "Paella Labs Inc",
     "files": ["public", "src", ".env", "LICENSE", "package.json", "README.md", "tsconfig.json", "yarn.lock"],
     "scripts": {
-        "build": "react-scripts build",
+        "build": "craco build",
         "eject": "react-scripts eject",
-        "start": "react-scripts start"
+        "start": "craco start"
     },
     "browserslist": {
         "production": [">0.2%", "not dead", "not op_mini all"],
@@ -29,8 +29,11 @@
         "web-vitals": "3.4.0"
     },
     "devDependencies": {
+        "@craco/craco": "^7.1.0",
         "@types/react": "18.2.24",
         "@types/react-dom": "18.2.7",
-        "typescript": "5.3.3"
+        "@unocss/webpack": "^65.5.0",
+        "typescript": "5.3.3",
+        "unocss": "^65.5.0"
     }
 }
