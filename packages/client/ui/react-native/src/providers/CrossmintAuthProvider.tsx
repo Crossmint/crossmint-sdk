@@ -12,7 +12,7 @@ import { useCrossmint } from "../hooks";
 import { SecureStorage } from "../utils/SecureStorage";
 import { Platform } from "react-native";
 import Constants from "expo-constants";
-import { User } from "@crossmint/common-sdk-base";
+import type { User } from "@crossmint/common-sdk-base";
 
 type OAuthUrlMap = Record<OAuthProvider, string | null>;
 const initialOAuthUrlMap: OAuthUrlMap = {
@@ -90,14 +90,15 @@ export function CrossmintAuthProvider({
             const config = {
                 callbacks: {
                     onLogout: () => {
-                        setJwt(undefined);
                         setUser(undefined);
                         setCrossmintUser(undefined);
                     },
                     onTokenRefresh: (authMaterial: AuthMaterialWithUser) => {
-                        setJwt(authMaterial.jwt);
                         setUser(authMaterial.user);
-                        setCrossmintUser(authMaterial.user as User);
+                        setCrossmintUser({
+                            email: authMaterial.user.email,
+                            jwt: authMaterial.jwt,
+                        });
                     },
                 },
                 refreshRoute,

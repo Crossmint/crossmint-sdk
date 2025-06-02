@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { View, Text, Button, TextInput, StyleSheet, ScrollView, ActivityIndicator, Alert } from "react-native";
-import { useCrossmintAuth, useWallet, useWalletEmailSigner } from "@crossmint/client-sdk-react-native-ui";
+import { useCrossmint, useWallet, useWalletEmailSigner } from "@crossmint/client-sdk-react-native-ui";
 import { PublicKey, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import { createMemoInstruction } from "@solana/spl-memo";
 import { SolanaWallet } from "@crossmint/wallets-sdk";
 
 export default function SignerScreen() {
+    const { crossmint } = useCrossmint();
+    const user = crossmint.user;
     const { status, wallet, clearWallet, error: walletError, getOrCreateWallet } = useWallet();
-    const { user } = useCrossmintAuth();
     const { needsAuth, sendEmailWithOtp, verifyOtp } = useWalletEmailSigner();
 
     const [otp, setOtp] = useState("");
@@ -48,7 +49,6 @@ export default function SignerScreen() {
                 chain: "solana",
                 signer: {
                     type: "email",
-                    email: user?.email,
                 },
             });
             if (!startedCreation && reason) {
@@ -64,7 +64,7 @@ export default function SignerScreen() {
             return;
         }
         setIsInOtpFlow(true);
-        await handleAction(() => sendEmailWithOtp(email));
+        await handleAction(() => sendEmailWithOtp());
     };
 
     const handleVerifyOtpInput = async () => {

@@ -3,7 +3,7 @@ import { useContext } from "react";
 
 export type EmailSignerFunctions = {
     needsAuth: boolean;
-    sendEmailWithOtp: (email: string) => Promise<void>;
+    sendEmailWithOtp: () => Promise<void>;
     verifyOtp: (otp: string) => Promise<void>;
     reject: (error: Error) => void;
 };

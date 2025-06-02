@@ -1,7 +1,7 @@
 import { VersionedTransaction } from "@solana/web3.js";
 import base58 from "bs58";
-import type { EmailInternalSignerConfig, Signer } from "./types";
-import { AuthRejectedError } from "./types";
+import type { EmailInternalSignerConfig, Signer } from "../types";
+import { AuthRejectedError } from "../types";
 import { EmailSignerApiClient } from "./email-signer-api-client";
 import { EmailIframeManager } from "./email-iframe-manager";
 import { validateAPIKey, type Crossmint } from "@crossmint/common-sdk-base";
@@ -200,12 +200,12 @@ export class EmailSigner implements Signer {
     }
 
     static async pregenerateSigner(email: string, crossmint: Crossmint): Promise<string> {
-        if (email == null) {
+        if (email == null || crossmint.user?.email == null) {
             throw new Error("Email is required to pregenerate a signer");
         }
 
         try {
-            const response = await new EmailSignerApiClient(crossmint).pregenerateSigner(email);
+            const response = await new EmailSignerApiClient(crossmint).pregenerateSigner(email ?? crossmint.user.email);
             const publicKey = response.publicKey;
 
             if (publicKey == null) {

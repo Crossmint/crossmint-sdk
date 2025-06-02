@@ -1,5 +1,6 @@
 import { type ReactNode, createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
-import { type Crossmint, type User, createCrossmint } from "@crossmint/common-sdk-base";
+import { type Crossmint, type CrossmintConfig, type User, createCrossmint } from "@crossmint/common-sdk-base";
+import isEqual from "lodash.isequal";
 
 export interface CrossmintContext {
     crossmint: Crossmint;
@@ -13,7 +14,7 @@ export function CrossmintProvider({
     children,
     apiKey,
     overrideBaseUrl,
-}: Omit<Crossmint, "jwt"> & {
+}: Omit<CrossmintConfig, "jwt"> & {
     children: ReactNode;
 }) {
     const [version, setVersion] = useState(0);
@@ -36,8 +37,9 @@ export function CrossmintProvider({
     }, []);
 
     const setUser = useCallback((user: User | undefined) => {
-        if (user !== crossmintRef.current.user) {
+        if (user != null && !isEqual(user, crossmintRef.current.user)) {
             crossmintRef.current.user = user;
+            crossmintRef.current.jwt = user.jwt;
         }
     }, []);
 

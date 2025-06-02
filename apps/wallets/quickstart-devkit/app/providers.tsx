@@ -32,7 +32,7 @@ function EVMCrossmintAuthProvider({ children }: { children: React.ReactNode }) {
             >
                 <CrossmintWalletProvider
                     showPasskeyHelpers={false}
-                    createOnLogin={{ chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any }}
+                    createOnLogin={{ chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any, signer: { type: "email" } }}
                 >
                     {children}
                 </CrossmintWalletProvider>
@@ -92,7 +92,12 @@ function SolanaCrossmintAuthProvider({ children }: { children: React.ReactNode }
                 authModalTitle="Solana Wallets Quickstart"
                 loginMethods={["google", "twitter", "web3:solana-only", "email"]}
             >
-                <CrossmintWalletProvider showPasskeyHelpers={false}>{children}</CrossmintWalletProvider>
+                <CrossmintWalletProvider
+                    showPasskeyHelpers={false}
+                    createOnLogin={{ chain: "solana", signer: { type: "email" } }}
+                >
+                    {children}
+                </CrossmintWalletProvider>
             </CrossmintAuthProvider>
         </CrossmintProvider>
     );

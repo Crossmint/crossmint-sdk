@@ -29,7 +29,7 @@ export function useWalletState({
     }, [state.status]);
 
     const [needsAuthState, setNeedsAuthState] = useState<boolean>(false);
-    const sendEmailWithOtpRef = useRef<(email: string) => Promise<void>>(throwNotAvailable("sendEmailWithOtp"));
+    const sendEmailWithOtpRef = useRef<() => Promise<void>>(throwNotAvailable("sendEmailWithOtp"));
     const verifyOtpRef = useRef<(otp: string) => Promise<void>>(throwNotAvailable("verifyOtp"));
     const rejectRef = useRef<(error: Error) => void>(throwNotAvailable("reject"));
 

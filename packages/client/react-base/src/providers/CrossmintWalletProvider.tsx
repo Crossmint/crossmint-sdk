@@ -19,7 +19,7 @@ type WalletContextFunctions = {
     clearWallet: () => void;
     // Email signer functions
     needsAuth: boolean;
-    sendEmailWithOtp: ((email: string) => Promise<void>) | null;
+    sendEmailWithOtp: (() => Promise<void>) | null;
     verifyOtp: ((otp: string) => Promise<void>) | null;
     reject: ((error: Error) => void) | null;
 };

@@ -79,14 +79,15 @@ export function CrossmintAuthProvider({
             crossmintAuthRef.current = CrossmintAuth.from(crossmint, {
                 callbacks: {
                     onLogout: () => {
-                        setJwt(undefined);
                         setUser(undefined);
                         setCrossmintUser(undefined);
                     },
                     onTokenRefresh: (authMaterial: AuthMaterialWithUser) => {
-                        setJwt(authMaterial.jwt);
                         setUser(authMaterial.user);
-                        setCrossmintUser(authMaterial.user as User);
+                        setCrossmintUser({
+                            email: authMaterial.user.email,
+                            jwt: authMaterial.jwt,
+                        });
                     },
                 },
                 refreshRoute,
