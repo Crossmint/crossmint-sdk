@@ -209,18 +209,18 @@ importers:
         specifier: 3.4.0
         version: 3.4.0
     devDependencies:
-      '@craco/craco':
-        specifier: ^7.1.0
-        version: 7.1.0(@types/node@22.7.5)(postcss@8.5.3)(react-scripts@5.0.1(@babel/plugin-syntax-flow@7.26.0(@babel/core@7.26.10))(@babel/plugin-transform-react-jsx@7.25.9(@babel/core@7.26.10))(@types/babel__core@7.20.5)(bufferutil@4.0.9)(esbuild@0.21.5)(eslint@8.57.1)(react@18.2.0)(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.3.3))(type-fest@0.21.3)(typescript@5.3.3)(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16))(typescript@5.3.3)
       '@types/react':
         specifier: 18.2.24
         version: 18.2.24
       '@types/react-dom':
         specifier: 18.2.7
         version: 18.2.7
-      '@unocss/webpack':
+      '@unocss/postcss':
         specifier: ^65.5.0
-        version: 65.5.0(webpack@5.99.7(esbuild@0.21.5))
+        version: 65.5.0(postcss@8.5.3)
+      postcss:
+        specifier: ^8.4.47
+        version: 8.5.3
       typescript:
         specifier: 5.3.3
         version: 5.3.3
@@ -2320,13 +2320,6 @@ packages:
 
   '@cosmjs/utils@0.30.1':
     resolution: {integrity: sha512-KvvX58MGMWh7xA+N+deCfunkA/ZNDvFLw4YbOmX3f/XBIkqrVY7qlotfy2aNb1kgp6h4B6Yc8YawJPDTfvWX7g==}
-
-  '@craco/craco@7.1.0':
-    resolution: {integrity: sha512-oRAcPIKYrfPXp9rSzlsDNeOaVtDiKhoyqSXUoqiK24jCkHr4T8m/a2f74yXIzCbIheoUWDOIfWZyRgFgT+cpqA==}
-    engines: {node: '>=6'}
-    hasBin: true
-    peerDependencies:
-      react-scripts: ^5.0.0
 
   '@crossmint/client-sdk-aa@1.0.0-alpha.1':
     resolution: {integrity: sha512-iz3T2eG29xwi1WTY1NYMAQsRo82JPR/HGFTuXL1YGu+7sVh8PAOeK48eV2EsXfCsyJNOjYcOXsYHhHmwZbD1yw==}
@@ -9386,14 +9379,6 @@ packages:
 
   core-util-is@1.0.3:
     resolution: {integrity: sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ==}
-
-  cosmiconfig-typescript-loader@1.0.9:
-    resolution: {integrity: sha512-tRuMRhxN4m1Y8hP9SNYfz7jRwt8lZdWxdjg/ohg5esKmsndJIn4yT96oJVcf5x0eA11taXl+sIp+ielu529k6g==}
-    engines: {node: '>=12', npm: '>=6'}
-    peerDependencies:
-      '@types/node': '*'
-      cosmiconfig: '>=7'
-      typescript: '>=3'
 
   cosmiconfig@5.2.1:
     resolution: {integrity: sha512-H65gsXo1SKjf8zmrJ67eJk8aIRKV5ff2D4uKZIBZShbhGSpEmsQOPW/SKMKYhSTrqR7ufy6RP69rPogdaPh/kA==}
@@ -17881,10 +17866,6 @@ packages:
     peerDependencies:
       webpack: ^4.44.2 || ^5.47.0
 
-  webpack-merge@5.10.0:
-    resolution: {integrity: sha512-+4zXKdx7UnO+1jaN4l2lHVD+mFvnlZQP/6ljaJVb4SZiwIKeUnrT5l0gkT8z+n4hKpC+jpOv6O9R+gLtag7pSA==}
-    engines: {node: '>=10.0.0'}
-
   webpack-sources@1.4.3:
     resolution: {integrity: sha512-lgTS3Xhv1lCOKo7SA5TjKXMjpSM4sBjNV5+q2bqesbSPs5FjGmU6jjtBSkX9b4qW87vDIsCIlUPOEhbZrMdjeQ==}
 
@@ -18001,9 +17982,6 @@ packages:
   widest-line@3.1.0:
     resolution: {integrity: sha512-NsmoXalsWVDMGupxZ5R08ka9flZjjiLvHVAWYOKtiKM8ujtZWr9cRffak+uSE48+Ob8ObalXpwyeUiyDD6QFgg==}
     engines: {node: '>=8'}
-
-  wildcard@2.0.1:
-    resolution: {integrity: sha512-CC1bOL87PIWSBhDcTrdeLo6eGT7mCFtrg0uIJtqJUFyK+eJnzl8A1niH56uu7KMa5XFrtiV+AQuHO3n7DsHnLQ==}
 
   wonka@6.3.5:
     resolution: {integrity: sha512-SSil+ecw6B4/Dm7Pf2sAshKQ5hWFvfyGlfPbEd6A14dOH6VDjrmbY86u6nZvy9omGwwIPFR8V41+of1EezgoUw==}
@@ -19631,23 +19609,6 @@ snapshots:
       - utf-8-validate
 
   '@cosmjs/utils@0.30.1': {}
-
-  '@craco/craco@7.1.0(@types/node@22.7.5)(postcss@8.5.3)(react-scripts@5.0.1(@babel/plugin-syntax-flow@7.26.0(@babel/core@7.26.10))(@babel/plugin-transform-react-jsx@7.25.9(@babel/core@7.26.10))(@types/babel__core@7.20.5)(bufferutil@4.0.9)(esbuild@0.21.5)(eslint@8.57.1)(react@18.2.0)(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.3.3))(type-fest@0.21.3)(typescript@5.3.3)(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16))(typescript@5.3.3)':
-    dependencies:
-      autoprefixer: 10.4.21(postcss@8.5.3)
-      cosmiconfig: 7.1.0
-      cosmiconfig-typescript-loader: 1.0.9(@types/node@22.7.5)(cosmiconfig@7.1.0)(typescript@5.3.3)
-      cross-spawn: 7.0.6
-      lodash: 4.17.21
-      react-scripts: 5.0.1(@babel/plugin-syntax-flow@7.26.0(@babel/core@7.26.10))(@babel/plugin-transform-react-jsx@7.25.9(@babel/core@7.26.10))(@types/babel__core@7.20.5)(bufferutil@4.0.9)(esbuild@0.21.5)(eslint@8.57.1)(react@18.2.0)(ts-node@10.9.2(@types/node@22.7.5)(typescript@5.3.3))(type-fest@0.21.3)(typescript@5.3.3)(utf-8-validate@5.0.10)(vue-template-compiler@2.7.16)
-      semver: 7.7.1
-      webpack-merge: 5.10.0
-    transitivePeerDependencies:
-      - '@swc/core'
-      - '@swc/wasm'
-      - '@types/node'
-      - postcss
-      - typescript
 
   '@crossmint/client-sdk-aa@1.0.0-alpha.1(@babel/runtime@7.27.0)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.8.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)':
     dependencies:
@@ -29247,6 +29208,7 @@ snapshots:
       unplugin-utils: 0.2.4
       webpack: 5.99.7(esbuild@0.21.5)
       webpack-sources: 3.2.3
+    optional: true
 
   '@unocss/webpack@66.1.3':
     dependencies:
@@ -32958,16 +32920,6 @@ snapshots:
   core-js@3.41.0: {}
 
   core-util-is@1.0.3: {}
-
-  cosmiconfig-typescript-loader@1.0.9(@types/node@22.7.5)(cosmiconfig@7.1.0)(typescript@5.3.3):
-    dependencies:
-      '@types/node': 22.7.5
-      cosmiconfig: 7.1.0
-      ts-node: 10.9.2(@types/node@22.7.5)(typescript@5.3.3)
-      typescript: 5.3.3
-    transitivePeerDependencies:
-      - '@swc/core'
-      - '@swc/wasm'
 
   cosmiconfig@5.2.1:
     dependencies:
@@ -43677,6 +43629,7 @@ snapshots:
       typescript: 5.3.3
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
+    optional: true
 
   ts-node@10.9.2(@types/node@22.7.5)(typescript@5.5.3):
     dependencies:
@@ -44163,6 +44116,7 @@ snapshots:
       acorn: 8.14.1
       picomatch: 4.0.2
       webpack-virtual-modules: 0.6.2
+    optional: true
 
   unquote@1.1.1: {}
 
@@ -45236,12 +45190,6 @@ snapshots:
       webpack: 5.99.7(esbuild@0.21.5)
       webpack-sources: 2.3.1
 
-  webpack-merge@5.10.0:
-    dependencies:
-      clone-deep: 4.0.1
-      flat: 5.0.2
-      wildcard: 2.0.1
-
   webpack-sources@1.4.3:
     dependencies:
       source-list-map: 2.0.1
@@ -45254,7 +45202,8 @@ snapshots:
 
   webpack-sources@3.2.3: {}
 
-  webpack-virtual-modules@0.6.2: {}
+  webpack-virtual-modules@0.6.2:
+    optional: true
 
   webpack@5.99.7(esbuild@0.21.5):
     dependencies:
@@ -45410,8 +45359,6 @@ snapshots:
   widest-line@3.1.0:
     dependencies:
       string-width: 4.2.3
-
-  wildcard@2.0.1: {}
 
   wonka@6.3.5: {}
 
