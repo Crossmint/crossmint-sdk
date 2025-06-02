@@ -131,7 +131,7 @@ export default function App({ Component, pageProps }) {
     return (
         <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_API_KEY ?? ""}>
             <CrossmintAuthProvider>
-                <CrossmintWalletProvider createOnLogin={{ chain: "polygon-amoy" }}>
+                <CrossmintWalletProvider createOnLogin={{ chain: "polygon-amoy", signer: { type: "api-key" } }}>
                     <Component {...pageProps} />
                 </CrossmintWalletProvider>
             </CrossmintAuthProvider>
