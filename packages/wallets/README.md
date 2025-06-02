@@ -58,14 +58,6 @@ const wallet = await crossmintWallets.getOrCreateWallet({
 });
 ```
 
-#### MPC Wallets
-
-```ts
-const wallet = await crossmintWallets.getOrCreateWallet("solana-mpc-wallet", {
-    owner: "<USER_UD>",
-});
-```
-
 ### Sending Transactions
 
 ```ts
