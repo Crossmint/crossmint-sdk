@@ -1,34 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { View, Text, Button, TextInput, StyleSheet, ScrollView, ActivityIndicator, Alert } from "react-native";
-import {
-    useWallet as useBaseWallet,
-    useCrossmintAuth,
-    type ReactNativeWalletContextState,
-} from "@crossmint/client-sdk-react-native-ui";
-import { TransactionMessage, VersionedTransaction } from "@solana/web3.js";
+import { useCrossmintAuth, useWallet, useWalletEmailSigner } from "@crossmint/client-sdk-react-native-ui";
+import { PublicKey, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import { createMemoInstruction } from "@solana/spl-memo";
+import { SolanaWallet } from "@crossmint/wallets-sdk";
 
 export default function SignerScreen() {
-    const {
-        status,
-        wallet,
-        type,
-        clearWallet,
-        error: walletError,
-        experimental_needsAuth,
-        experimental_createRecoveryKeySigner,
-        experimental_sendEmailWithOtp,
-        experimental_verifyOtp,
-        experimental_clearStorage,
-    } = useBaseWallet() as ReactNativeWalletContextState;
-
+    const { status, wallet, clearWallet, error: walletError, getOrCreateWallet } = useWallet();
     const { user } = useCrossmintAuth();
+    const { needsAuth, sendEmailWithOtp, verifyOtp } = useWalletEmailSigner();
 
     const [otp, setOtp] = useState("");
     const [txHash, setTxHash] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isInOtpFlow, setIsInOtpFlow] = useState(false);
     const [uiError, setUiError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (needsAuth && !isInOtpFlow) {
+            setIsInOtpFlow(true);
+        }
+    }, [needsAuth, isInOtpFlow]);
 
     const handleAction = async (action: () => Promise<any>) => {
         setIsLoading(true);
@@ -46,57 +38,63 @@ export default function SignerScreen() {
         }
     };
 
-    const handleCreateOrLoadSigner = () => {
+    const handleCreateOrLoadSigner = async () => {
         if (user?.email == null) {
             Alert.alert("Error", "User email is not available.");
-            return;
-        }
-        handleAction(() => experimental_createRecoveryKeySigner(user.email!));
-    };
-
-    const handleSendOtpEmail = async () => {
-        if (user?.email == null) {
-            Alert.alert("Error", "User email is not available.");
-            return;
-        }
-        setIsInOtpFlow(true);
-        await handleAction(() => experimental_sendEmailWithOtp(user.email!));
-    };
-
-    const handleVerifyOtpInput = async () => {
-        if (!otp) {
-            Alert.alert("Error", "Please enter the OTP.");
             return;
         }
         await handleAction(async () => {
-            const signer = await experimental_verifyOtp(otp);
-            console.log("handleVerifyOtpInput signer", signer);
-            if (signer) {
-                setOtp("");
-                setIsInOtpFlow(false);
+            const { startedCreation, reason } = await getOrCreateWallet({
+                chain: "solana",
+                signer: {
+                    type: "email",
+                    email: user?.email,
+                },
+            });
+            if (!startedCreation && reason) {
+                throw new Error(reason);
             }
         });
     };
 
-    const handleSendTransaction = async () => {
-        if (status !== "loaded" || wallet == null || type !== "solana-smart-wallet") {
-            Alert.alert("Error", "Wallet is not loaded or is not a Solana smart wallet.");
+    const handleSendOtpEmail = async () => {
+        const email = user?.email;
+        if (typeof email !== "string") {
+            Alert.alert("Error", "User email is not available.");
             return;
         }
+        setIsInOtpFlow(true);
+        await handleAction(() => sendEmailWithOtp(email));
+    };
 
-        if (experimental_needsAuth && !isInOtpFlow) {
-            setIsInOtpFlow(true);
+    const handleVerifyOtpInput = async () => {
+        if (!otp || !verifyOtp) {
+            Alert.alert("Error", "Please enter the OTP and ensure email signer is available.");
+            return;
+        }
+        await handleAction(async () => {
+            await verifyOtp(otp);
+            setOtp("");
+            setIsInOtpFlow(false);
+        });
+    };
+
+    const handleSendTransaction = async () => {
+        if (status !== "loaded" || wallet == null) {
+            Alert.alert("Error", "Wallet is not loaded or is not a Solana smart wallet.");
+            return;
         }
 
         await handleAction(async () => {
             const transaction = new VersionedTransaction(
                 new TransactionMessage({
-                    payerKey: wallet.publicKey,
+                    payerKey: new PublicKey(wallet.address),
                     recentBlockhash: "11111111111111111111111111111111",
                     instructions: [createMemoInstruction(`Hello from Crossmint Smart Wallet! ${Date.now()}`)],
                 }).compileToV0Message()
             );
-            const signature = await wallet.sendTransaction({ transaction });
+            const solanaWallet = SolanaWallet.from(wallet as SolanaWallet);
+            const signature = await solanaWallet.sendTransaction({ transaction });
             if (signature) {
                 setTxHash(signature);
                 Alert.alert("Success", `Transaction Sent: ${signature}`);
@@ -108,14 +106,14 @@ export default function SignerScreen() {
     };
 
     const canCreateLoad = !isLoading && user?.email != null && wallet == null;
-    const canSendTx = !isLoading && status === "loaded" && type === "solana-smart-wallet";
+    const canSendTx = !isLoading && status === "loaded";
     const canClear = !isLoading && status !== "not-loaded";
 
     return (
         <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
             <View style={styles.statusSection}>
                 <Text>Auth Status: {status}</Text>
-                <Text>Needs OTP Auth: {experimental_needsAuth ? "Yes" : "No"}</Text>
+                <Text>Needs OTP Auth: {needsAuth ? "Yes" : "No"}</Text>
                 {walletError && <Text style={styles.errorText}>Wallet Error: {walletError}</Text>}
                 {uiError && <Text style={styles.errorText}>Last Action Error: {uiError}</Text>}
                 <Text>Wallet Address: {wallet?.address ?? "Not Loaded"}</Text>
@@ -129,7 +127,7 @@ export default function SignerScreen() {
 
             {isInOtpFlow && (
                 <View style={styles.section}>
-                    <Button title="Send OTP Email" onPress={handleSendOtpEmail} disabled={!user?.email} />
+                    <Button title="Send OTP Email" onPress={handleSendOtpEmail} disabled={user?.email == null} />
                     <TextInput
                         placeholder="Enter OTP from Email"
                         value={otp}
@@ -152,10 +150,6 @@ export default function SignerScreen() {
                     onPress={() => handleAction(async () => clearWallet())}
                     disabled={!canClear}
                 />
-            </View>
-
-            <View style={styles.section}>
-                <Button title="Clear Storage" onPress={() => handleAction(async () => experimental_clearStorage())} />
             </View>
         </ScrollView>
     );

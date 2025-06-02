@@ -1,5 +1,19 @@
 # @crossmint/client-sdk-react-base
 
+## 0.3.0
+
+### Minor Changes
+
+- d081ac9: Integrated wallet SDK changes for version 2.5 with improved performance and simplified API
+
+### Patch Changes
+
+- Updated dependencies [d081ac9]
+- Updated dependencies [d081ac9]
+  - @crossmint/wallets-sdk@0.9.0
+  - @crossmint/common-sdk-base@0.6.0
+  - @crossmint/client-sdk-base@1.5.2
+
 ## 0.2.16
 
 ### Patch Changes

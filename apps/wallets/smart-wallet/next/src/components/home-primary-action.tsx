@@ -13,7 +13,7 @@ import { Spinner } from "@/icons/spinner";
 
 export function HomePrimaryAction() {
     const { status: authStatus } = useAuth();
-    const { type: loggedInWalletType, status: walletStatus } = useWallet();
+    const { status: walletStatus, wallet } = useWallet();
     const [nftSuccessfullyMinted, setNftSuccessfullyMinted] = useState(false);
     const { walletType, setWalletType } = useWalletConfig();
 
@@ -52,7 +52,7 @@ export function HomePrimaryAction() {
             </>
         );
     } else {
-        return loggedInWalletType === "evm-smart-wallet" ? (
+        return wallet?.chain !== "solana" ? (
             <MintNFTButton setNftSuccessfullyMinted={setNftSuccessfullyMinted} />
         ) : null;
     }

@@ -13,18 +13,13 @@ import { type UIConfig, type User, validateApiKeyAndGetCrossmintBaseUrl } from "
 import { type AuthMaterialWithUser, SESSION_PREFIX, type SDKExternalUser } from "@crossmint/common-sdk-auth";
 
 import AuthFormDialog from "../components/auth/AuthFormDialog";
-import { useCrossmint, useWallet } from "../hooks";
-import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
+import { useCrossmint } from "../hooks";
 import { AuthFormProvider } from "./auth/AuthFormProvider";
 import { TwindProvider } from "./TwindProvider";
-import type { AuthStatus, CrossmintAuthProviderEmbeddedWallets, LoginMethod } from "@/types/auth";
-import type { GetOrCreateWalletAdminSigner, GetOrCreateWalletProps } from "@/types/wallet";
-import { DynamicWeb3WalletConnect } from "./auth/web3/DynamicWeb3WalletConnect";
-import { mapSignerToWalletType } from "@/utils/mapSignerToWalletType";
-import { useDynamicConnect } from "@/hooks/useDynamicConnect";
+import type { AuthStatus, LoginMethod } from "@/types/auth";
+import { DynamicWalletProvider } from "./dynamic/DynamicWalletProvider";
 
 type CrossmintAuthProviderProps = {
-    embeddedWallets?: CrossmintAuthProviderEmbeddedWallets;
     appearance?: UIConfig;
     termsOfServiceText?: string | ReactNode;
     prefetchOAuthUrls?: boolean;
@@ -58,15 +53,7 @@ const defaultContextValue: AuthContextType = {
 
 export const AuthContext = createContext<AuthContextType>(defaultContextValue);
 
-const defaultEmbeddedWallets: CrossmintAuthProviderEmbeddedWallets = {
-    createOnLogin: "off",
-    type: "evm-smart-wallet",
-    experimental_enableRecoveryKeys: false,
-    experimental_signersURL: undefined,
-};
-
 export function CrossmintAuthProvider({
-    embeddedWallets = defaultEmbeddedWallets,
     children,
     appearance,
     termsOfServiceText,
@@ -113,8 +100,7 @@ export function CrossmintAuthProvider({
     const [dialogOpen, setDialogOpen] = useState(false);
     const [initialized, setInitialized] = useState(false);
     const [defaultEmail, setDefaultEmail] = useState<string | undefined>(undefined);
-    // Web3 auth related state
-    const [isDynamicSdkLoaded, setIsDynamicSdkLoaded] = useState(false);
+    const [dynamicSdkLoaded, setDynamicSdkLoaded] = useState(true);
     const isWeb3Enabled = loginMethods.some((method) => method.startsWith("web3"));
 
     const triggerHasJustLoggedIn = useCallback(() => {
@@ -156,6 +142,7 @@ export function CrossmintAuthProvider({
     );
 
     const logout = useCallback(() => {
+        console.log("Logging out");
         crossmintAuth.logout();
     }, [crossmintAuth]);
 
@@ -163,8 +150,7 @@ export function CrossmintAuthProvider({
         if (!initialized) {
             return "initializing";
         }
-        // For web3-enabled auth, we need to wait for the Dynamic SDK to load
-        if (isWeb3Enabled && !isDynamicSdkLoaded) {
+        if (isWeb3Enabled && !dynamicSdkLoaded) {
             return "initializing";
         }
         if (crossmint.jwt != null) {
@@ -174,7 +160,7 @@ export function CrossmintAuthProvider({
             return "in-progress";
         }
         return "logged-out";
-    }, [initialized, crossmint.jwt, dialogOpen, isDynamicSdkLoaded, isWeb3Enabled]);
+    }, [initialized, isWeb3Enabled, dynamicSdkLoaded, crossmint.jwt, dialogOpen]);
 
     const getUser = useCallback(async () => {
         if (crossmint.jwt == null) {
@@ -203,114 +189,42 @@ export function CrossmintAuthProvider({
     return (
         <TwindProvider>
             <AuthContext.Provider value={authContextValue}>
-                <CrossmintWalletProvider
-                    key={crossmint.jwt}
-                    showPasskeyHelpers={embeddedWallets.showPasskeyHelpers}
-                    appearance={appearance}
-                    experimental_enableRecoveryKeys={embeddedWallets.experimental_enableRecoveryKeys ?? false}
+                <AuthFormProvider
+                    setDialogOpen={(open, successfulLogin) => {
+                        setDialogOpen(open);
+                        if (successfulLogin) {
+                            // This will be triggered from the OTP form
+                            triggerHasJustLoggedIn();
+                        }
+                    }}
+                    preFetchOAuthUrls={getAuthStatus() === "logged-out" && prefetchOAuthUrls}
+                    initialState={{
+                        appearance,
+                        loginMethods,
+                        termsOfServiceText,
+                        authModalTitle,
+                        baseUrl: crossmintBaseUrl,
+                        defaultEmail,
+                    }}
                 >
-                    <AuthFormProvider
-                        setDialogOpen={(open, successfulLogin) => {
-                            setDialogOpen(open);
-                            if (successfulLogin) {
-                                // This will be triggered from the OTP form
-                                triggerHasJustLoggedIn();
-                            }
-                        }}
-                        preFetchOAuthUrls={getAuthStatus() === "logged-out" && prefetchOAuthUrls}
-                        initialState={{
-                            appearance,
-                            loginMethods,
-                            termsOfServiceText,
-                            authModalTitle,
-                            embeddedWallets,
-                            baseUrl: crossmintBaseUrl,
-                            defaultEmail,
-                        }}
-                    >
-                        <DynamicWeb3WalletConnect
-                            enabled={isWeb3Enabled}
+                    {isWeb3Enabled ? (
+                        <DynamicWalletProvider
                             apiKeyEnvironment={crossmint.apiKey.includes("production") ? "production" : "staging"}
+                            loginMethods={loginMethods}
+                            appearance={appearance}
+                            onSdkLoaded={setDynamicSdkLoaded}
                         >
-                            <WalletManager
-                                embeddedWallets={embeddedWallets}
-                                accessToken={crossmint.jwt}
-                                setIsDynamicSdkLoaded={setIsDynamicSdkLoaded}
-                                isWeb3Enabled={isWeb3Enabled}
-                            />
-
                             {children}
                             <AuthFormDialog open={dialogOpen} />
-                        </DynamicWeb3WalletConnect>
-                    </AuthFormProvider>
-                </CrossmintWalletProvider>
+                        </DynamicWalletProvider>
+                    ) : (
+                        <>
+                            {children}
+                            <AuthFormDialog open={dialogOpen} />
+                        </>
+                    )}
+                </AuthFormProvider>
             </AuthContext.Provider>
         </TwindProvider>
     );
-}
-
-function WalletManager({
-    embeddedWallets,
-    accessToken,
-    setIsDynamicSdkLoaded,
-    isWeb3Enabled,
-}: {
-    embeddedWallets: CrossmintAuthProviderEmbeddedWallets;
-    accessToken: string | undefined;
-    setIsDynamicSdkLoaded: (sdkHasLoaded: boolean) => void;
-    isWeb3Enabled: boolean;
-}) {
-    const { getOrCreateWallet, clearWallet, status: walletStatus } = useWallet();
-    const { sdkHasLoaded, getAdminSigner, cleanup, isDynamicWalletConnected } = useDynamicConnect(
-        isWeb3Enabled,
-        setIsDynamicSdkLoaded,
-        accessToken
-    );
-    const { createOnLogin, adminSigner: defaultAdminSigner, linkedUser } = embeddedWallets;
-    const canGetOrCreateWallet =
-        createOnLogin === "all-users" && walletStatus === "not-loaded" && accessToken != null && sdkHasLoaded;
-
-    const handleWalletCreation = useCallback(async () => {
-        if (!canGetOrCreateWallet) {
-            return;
-        }
-
-        let adminSigner: GetOrCreateWalletAdminSigner = defaultAdminSigner;
-        let walletType = embeddedWallets.type;
-
-        if (isDynamicWalletConnected) {
-            adminSigner = (await getAdminSigner()) ?? adminSigner;
-            walletType = mapSignerToWalletType(adminSigner?.type) ?? walletType;
-        }
-
-        // If an external wallet is not connected, the type is required
-        if (!isDynamicWalletConnected && embeddedWallets.type == null) {
-            console.error(
-                "[CrossmintAuthProvider] ⚠️ embeddedWallets.type is required when no external wallet is connected"
-            );
-            return;
-        }
-
-        getOrCreateWallet({
-            type: walletType,
-            args: {
-                adminSigner,
-                linkedUser,
-            },
-        } as GetOrCreateWalletProps);
-    }, [canGetOrCreateWallet, getOrCreateWallet, linkedUser, defaultAdminSigner, embeddedWallets.type, getAdminSigner]);
-
-    const handleWalletCleanup = useCallback(() => {
-        if (accessToken == null && walletStatus === "loaded") {
-            clearWallet();
-        }
-        cleanup();
-    }, [walletStatus, accessToken, clearWallet, cleanup]);
-
-    useEffect(() => {
-        handleWalletCreation();
-        handleWalletCleanup();
-    }, [handleWalletCreation, handleWalletCleanup]);
-
-    return null;
 }

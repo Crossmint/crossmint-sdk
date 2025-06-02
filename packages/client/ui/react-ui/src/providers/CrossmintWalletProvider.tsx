@@ -1,16 +1,27 @@
-import { type Dispatch, type ReactNode, type SetStateAction, createContext, useMemo, useState } from "react";
-import { createPortal } from "react-dom";
-import { CrossmintWallets, type EVMSmartWallet, type SolanaSmartWallet } from "@crossmint/wallets-sdk";
+import {
+    type Dispatch,
+    type ReactNode,
+    type SetStateAction,
+    createContext,
+    useMemo,
+    useState,
+    useCallback,
+    useEffect,
+    useContext,
+    useRef,
+} from "react";
+import { CrossmintWallets, type Wallet, type WalletArgsFor, type Chain } from "@crossmint/wallets-sdk";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 
 import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
-import type { PasskeySigner } from "@/types/passkey";
+import { throwNotAvailable, type CreateOnLogin } from "@crossmint/client-sdk-react-base";
 import { useCrossmint } from "../hooks";
-import type { GetOrCreateWalletProps } from "@/types/wallet";
 import { createWebAuthnPasskeySigner } from "@/utils/createPasskeySigner";
-import { CrossmintSignerProvider, useCrossmintSigner } from "./signers/CrossmintSignerProvider";
 import { TwindProvider } from "./TwindProvider";
-import { deriveWalletErrorState } from "@/utils/errorUtils";
+import { useDynamicWallet } from "./dynamic/DynamicWalletProvider";
+import type { PasskeySigner } from "@/types/passkey";
+import { createPortal } from "react-dom";
+import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
 
 type ValidPasskeyPromptType =
     | "create-wallet"
@@ -18,251 +29,283 @@ type ValidPasskeyPromptType =
     | "not-supported"
     | "create-wallet-error"
     | "transaction-error";
+
 type PasskeyPromptState =
     | {
-          type: ValidPasskeyPromptType;
           open: true;
+          type: ValidPasskeyPromptType;
           primaryActionOnClick: () => void;
           secondaryActionOnClick?: () => void;
       }
-    | { open: false };
+    | {
+          open: false;
+      };
 
 type ValidWalletState =
-    | { status: "not-loaded" | "in-progress" }
-    | { status: "loaded"; wallet: EVMSmartWallet; type: "evm-smart-wallet" }
-    | {
-          status: "loaded";
-          wallet: SolanaSmartWallet;
-          type: "solana-smart-wallet";
-      }
-    | { status: "loading-error"; error: string };
+    | { status: "not-loaded" }
+    | { status: "in-progress" }
+    | { status: "error"; error: Error }
+    | { status: "loaded"; wallet: Wallet<Chain> };
 
-type WalletContextFunctions = {
-    getOrCreateWallet: (args: GetOrCreateWalletProps) => Promise<{ startedCreation: boolean; reason?: string }>;
-    createPasskeySigner: (name: string, promptType?: ValidPasskeyPromptType) => Promise<PasskeySigner | null>;
+type WalletContextType = {
+    walletState: ValidWalletState;
+    setWalletState: Dispatch<SetStateAction<ValidWalletState>>;
+    showPasskeyHelpers?: boolean;
+    appearance?: UIConfig;
+    createPasskeyPrompt: (type: ValidPasskeyPromptType) => () => Promise<void>;
+    getOrCreateWallet: <C extends Chain>(args: WalletArgsFor<C>) => Promise<{ startedCreation: boolean }>;
+    createPasskeySigner: () => Promise<PasskeySigner>;
     clearWallet: () => void;
-    experimental_getOrCreateWalletWithRecoveryKey?: (args: {
-        type: "solana-smart-wallet";
-        email: string;
-    }) => Promise<void>;
-    passkeySigner?: PasskeySigner;
 };
 
-type WalletType = {
-    "evm-smart-wallet": EVMSmartWallet;
-    "solana-smart-wallet": SolanaSmartWallet;
-};
+export const WalletContext = createContext<WalletContextType | null>(null);
 
-type LoadedWalletState<T extends keyof WalletType> = {
-    status: "loaded";
-    wallet: WalletType[T];
-    type: T;
-    error?: undefined;
-};
-
-type WalletContext =
-    | ({
-          status: "not-loaded" | "in-progress";
-          wallet?: undefined;
-          type?: undefined;
-          error?: undefined;
-      } & WalletContextFunctions)
-    | ({
-          status: "loading-error";
-          wallet?: undefined;
-          type?: undefined;
-          error: string;
-      } & WalletContextFunctions)
-    | (LoadedWalletState<"evm-smart-wallet"> & WalletContextFunctions)
-    | (LoadedWalletState<"solana-smart-wallet"> & WalletContextFunctions);
-
-export const WalletContext = createContext<WalletContext>({
-    status: "not-loaded",
-    getOrCreateWallet: () => Promise.resolve({ startedCreation: false }),
-    createPasskeySigner: () => Promise.resolve(null),
-    clearWallet: () => {},
-});
+export function useWalletContext(componentName?: string) {
+    const context = useContext(WalletContext);
+    if (!context) {
+        throw new Error(`useWallet must be used within WalletProvider${componentName ? ` (${componentName})` : ""}`);
+    }
+    return context;
+}
 
 export function CrossmintWalletProvider({
     children,
     showPasskeyHelpers = true,
     appearance,
-    experimental_enableRecoveryKeys = false,
-    experimental_signersURL = undefined,
+    createOnLogin,
 }: {
     children: ReactNode;
     showPasskeyHelpers?: boolean;
     appearance?: UIConfig;
-    experimental_enableRecoveryKeys?: boolean;
-    experimental_signersURL?: string;
+    createOnLogin?: CreateOnLogin;
 }) {
+    const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
+    const { isDynamicWalletConnected, getAdminSigner, sdkHasLoaded } = useDynamicWallet();
     const [walletState, setWalletState] = useState<ValidWalletState>({
         status: "not-loaded",
     });
-
-    const walletProviderProps = {
-        walletState,
-        setWalletState,
-        showPasskeyHelpers,
-        appearance,
-        experimental_enableRecoveryKeys,
-    };
-
-    return experimental_enableRecoveryKeys ? (
-        <TwindProvider>
-            <CrossmintSignerProvider
-                walletState={walletState}
-                setWalletState={setWalletState}
-                appearance={appearance}
-                signersURL={experimental_signersURL}
-            >
-                <WalletProvider {...walletProviderProps}>{children}</WalletProvider>
-            </CrossmintSignerProvider>
-        </TwindProvider>
-    ) : (
-        <WalletProvider {...walletProviderProps}>{children}</WalletProvider>
-    );
-}
-
-function WalletProvider({
-    children,
-    showPasskeyHelpers = true,
-    appearance,
-    walletState,
-    setWalletState,
-    experimental_enableRecoveryKeys,
-}: {
-    children: ReactNode;
-    showPasskeyHelpers?: boolean;
-    appearance?: UIConfig;
-    walletState: ValidWalletState;
-    setWalletState: Dispatch<SetStateAction<ValidWalletState>>;
-    experimental_enableRecoveryKeys?: boolean;
-}) {
-    const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
-    const { experimental_getOrCreateWalletWithRecoveryKey } = useCrossmintSigner({
-        enabled: experimental_enableRecoveryKeys ?? false,
-    });
-
-    const smartWalletSDK = useMemo(
-        () =>
-            CrossmintWallets.from({
-                apiKey: crossmint.apiKey,
-                jwt: crossmint?.jwt,
-            }),
-        [crossmint.apiKey, crossmint.jwt]
-    );
-
     const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
+    const [email, setEmail] = useState<string>("");
+    const [emailSignerDialogOpen, setEmailSignerDialogOpen] = useState<boolean>(false);
+    const [emailSignerDialogStep, setEmailSignerDialogStep] = useState<"initial" | "otp">("initial");
 
-    const getOrCreateWallet = async (props: GetOrCreateWalletProps) => {
-        if (walletState.status == "in-progress") {
-            return {
-                startedCreation: false,
-                reason: "Wallet is already loading.",
-            };
-        }
+    const needsAuthRef = useRef<boolean>(false);
+    const sendEmailWithOtpRef = useRef<(email: string) => Promise<void>>(throwNotAvailable("sendEmailWithOtp"));
+    const verifyOtpRef = useRef<(otp: string) => Promise<void>>(throwNotAvailable("verifyOtp"));
+    const rejectRef = useRef<(error: Error) => void>(throwNotAvailable("reject"));
 
-        if (crossmint.jwt == null) {
-            return {
-                startedCreation: false,
-                reason: `Jwt not set in "CrossmintProvider".`,
-            };
-        }
+    const createPasskeyPrompt = useCallback(
+        (type: ValidPasskeyPromptType) => () =>
+            new Promise<void>((resolve) => {
+                if (!showPasskeyHelpers) {
+                    resolve();
+                    return;
+                }
+                setPasskeyPromptState({
+                    type,
+                    open: true,
+                    primaryActionOnClick: () => {
+                        setPasskeyPromptState({ open: false });
+                        resolve();
+                    },
+                    secondaryActionOnClick: () => {
+                        setPasskeyPromptState({ open: false });
+                        resolve();
+                    },
+                });
+            }),
+        [showPasskeyHelpers]
+    );
 
+    const emailsigners_handleSendEmailOTP = async (emailAddress: string) => {
         try {
-            setWalletState({ status: "in-progress" });
-            const passkeyPromptCallbacks = {
-                onWalletCreationStart: createPasskeyPrompt("create-wallet"),
-                onWalletCreationFail: createPasskeyPrompt("create-wallet-error"),
-                onTransactionStart: createPasskeyPrompt("transaction"),
-                onTransactionFail: createPasskeyPrompt("transaction-error"),
-            };
-
-            switch (props.type) {
-                case "evm-smart-wallet": {
-                    const walletArgs = {
-                        adminSigner: props.args.adminSigner ?? {
-                            type: "evm-passkey",
-                        },
-                        linkedUser: props.args.linkedUser,
-                    };
-                    const wallet = await smartWalletSDK.getOrCreateWallet("evm-smart-wallet", walletArgs, {
-                        experimental_callbacks:
-                            walletArgs.adminSigner?.type === "evm-passkey" ? passkeyPromptCallbacks : undefined,
-                    });
-                    setWalletState({
-                        status: "loaded",
-                        wallet,
-                        type: "evm-smart-wallet",
-                    });
-                    break;
-                }
-                case "solana-smart-wallet": {
-                    const wallet = await smartWalletSDK.getOrCreateWallet("solana-smart-wallet", props.args);
-                    setWalletState({
-                        status: "loaded",
-                        wallet,
-                        type: "solana-smart-wallet",
-                    });
-                    break;
-                }
-            }
-        } catch (error: unknown) {
-            console.error("There was an error creating a wallet ", error);
-            setWalletState(deriveWalletErrorState(error));
+            setEmail(emailAddress);
+            await sendEmailWithOtpRef.current(emailAddress);
+            setEmailSignerDialogStep("otp");
+        } catch (error) {
+            console.error("Failed to send email OTP", error);
+            rejectRef.current(new Error("Failed to send email OTP"));
         }
-        return { startedCreation: true };
     };
 
-    const createPasskeyPrompt = (type: ValidPasskeyPromptType) => () =>
-        new Promise<void>((resolve) => {
-            if (!showPasskeyHelpers) {
-                resolve();
+    const emailsigners_handleOTPSubmit = async (otp: string) => {
+        try {
+            await verifyOtpRef.current(otp);
+            setEmailSignerDialogOpen(false);
+            setEmailSignerDialogStep("initial");
+        } catch (error) {
+            console.error("Failed to verify OTP", error);
+            rejectRef.current(new Error("Failed to verify OTP"));
+        }
+    };
+
+    const getOrCreateWallet = useCallback(
+        async <C extends Chain>(args: WalletArgsFor<C>) => {
+            if (walletState.status === "in-progress") {
+                return { startedCreation: false };
+            }
+
+            if (!crossmint.jwt) {
+                return { startedCreation: false };
+            }
+
+            try {
+                setWalletState({ status: "in-progress" });
+
+                if (args?.signer?.type === "email") {
+                    if (args.signer.email) {
+                        setEmail(args.signer.email);
+                    }
+
+                    // biome-ignore lint/suspicious/useAwait: fix type later
+                    args.signer.onAuthRequired = async (needsAuth, sendEmailWithOtp, verifyOtp, reject) => {
+                        needsAuthRef.current = needsAuth;
+                        sendEmailWithOtpRef.current = sendEmailWithOtp;
+                        verifyOtpRef.current = verifyOtp;
+                        rejectRef.current = reject;
+
+                        console.log("onAuthRequired", needsAuth, sendEmailWithOtp, verifyOtp, reject);
+
+                        if (needsAuth) {
+                            setEmailSignerDialogOpen(true);
+                            setEmailSignerDialogStep("initial");
+                        }
+                    };
+                }
+
+                const wallets = CrossmintWallets.from({
+                    apiKey: crossmint.apiKey,
+                    jwt: crossmint?.jwt,
+                });
+                const wallet = await wallets.getOrCreateWallet<C>({
+                    ...args,
+                    options: {
+                        ...args.options,
+                        experimental_callbacks: {
+                            onWalletCreationStart: createPasskeyPrompt("create-wallet"),
+                            onTransactionStart: createPasskeyPrompt("transaction"),
+                        },
+                    },
+                });
+                setWalletState({ status: "loaded", wallet });
+                return { startedCreation: true };
+            } catch (error) {
+                console.error("Failed to create wallet:", error);
+                setWalletState({ status: "error", error: error instanceof Error ? error : new Error(String(error)) });
+                return { startedCreation: false };
+            }
+        },
+        [crossmint, walletState.status, createPasskeyPrompt]
+    );
+
+    const createPasskeySigner = useCallback(async () => {
+        return await createWebAuthnPasskeySigner(crossmint.apiKey);
+    }, [crossmint.apiKey]);
+
+    const clearWallet = useCallback(() => {
+        setWalletState({ status: "not-loaded" });
+    }, []);
+
+    useEffect(() => {
+        async function handleWalletGetOrCreate() {
+            // Can get or create wallet if
+            if (
+                walletState.status !== "not-loaded" ||
+                crossmint.jwt == null ||
+                !sdkHasLoaded ||
+                createOnLogin?.chain == null
+            ) {
                 return;
             }
-            setPasskeyPromptState({
-                type,
-                open: true,
-                primaryActionOnClick: () => {
-                    setPasskeyPromptState({ open: false });
-                    resolve();
-                },
-                secondaryActionOnClick: () => {
-                    setPasskeyPromptState({ open: false });
-                    resolve();
-                },
-            });
-        });
 
-    const clearWallet = () => {
-        setWalletState({ status: "not-loaded" });
-    };
+            try {
+                const finalSigner = isDynamicWalletConnected ? await getAdminSigner() : createOnLogin.signer;
 
-    const createPasskeySigner = async (name: string, promptType?: ValidPasskeyPromptType) => {
-        if (promptType != null) {
-            await createPasskeyPrompt(promptType)();
+                await getOrCreateWallet({
+                    chain: createOnLogin.chain,
+                    signer: finalSigner,
+                    owner: createOnLogin.owner,
+                    options: {
+                        experimental_callbacks: {
+                            onWalletCreationStart: createPasskeyPrompt("create-wallet"),
+                            onTransactionStart: createPasskeyPrompt("transaction"),
+                        },
+                    },
+                });
+            } catch (error) {
+                console.error("Failed to create wallet:", error);
+            }
         }
-        return await createWebAuthnPasskeySigner(name);
-    };
+
+        if (createOnLogin != null) {
+            handleWalletGetOrCreate();
+        }
+    }, [
+        walletState.status,
+        crossmint.jwt,
+        sdkHasLoaded,
+        isDynamicWalletConnected,
+        getAdminSigner,
+        getOrCreateWallet,
+        createPasskeyPrompt,
+        createOnLogin?.chain,
+        createOnLogin?.signer,
+        createOnLogin?.owner,
+    ]);
+
+    useEffect(() => {
+        if (crossmint.jwt == null && walletState.status !== "not-loaded") {
+            clearWallet();
+        }
+    }, [crossmint.jwt, walletState.status, clearWallet]);
 
     const contextValue = useMemo(
         () => ({
-            ...walletState,
+            walletState,
+            setWalletState,
+            showPasskeyHelpers,
+            appearance,
+            createPasskeyPrompt,
             getOrCreateWallet,
             createPasskeySigner,
             clearWallet,
-            experimental_getOrCreateWalletWithRecoveryKey,
         }),
-        [walletState, experimental_getOrCreateWalletWithRecoveryKey]
+        [
+            walletState,
+            showPasskeyHelpers,
+            appearance,
+            createPasskeyPrompt,
+            getOrCreateWallet,
+            createPasskeySigner,
+            clearWallet,
+        ]
     );
 
     return (
-        <WalletContext.Provider value={contextValue}>
-            {children}
-            {passkeyPromptState.open
-                ? createPortal(<PasskeyPrompt state={passkeyPromptState} appearance={appearance} />, document.body)
-                : null}
-        </WalletContext.Provider>
+        <TwindProvider>
+            <WalletContext.Provider value={contextValue}>
+                {children}
+
+                {emailSignerDialogOpen
+                    ? createPortal(
+                          <EmailSignersDialog
+                              rejectRef={rejectRef}
+                              email={email}
+                              open={emailSignerDialogOpen}
+                              setOpen={setEmailSignerDialogOpen}
+                              step={emailSignerDialogStep}
+                              onSubmitOTP={emailsigners_handleOTPSubmit}
+                              onResendOTPCode={emailsigners_handleSendEmailOTP}
+                              onSubmitEmail={emailsigners_handleSendEmailOTP}
+                              appearance={appearance}
+                          />,
+                          document.body
+                      )
+                    : null}
+                {passkeyPromptState.open
+                    ? createPortal(<PasskeyPrompt state={passkeyPromptState} appearance={appearance} />, document.body)
+                    : null}
+            </WalletContext.Provider>
+        </TwindProvider>
     );
 }

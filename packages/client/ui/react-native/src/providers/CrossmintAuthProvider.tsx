@@ -22,6 +22,17 @@ const initialOAuthUrlMap: OAuthUrlMap = {
 
 type AuthStatus = "logged-in" | "logged-out" | "in-progress" | "initializing";
 
+export type AuthContextType = {
+    crossmintAuth?: CrossmintAuth;
+    logout: () => void;
+    jwt?: string;
+    user?: SDKExternalUser;
+    status: AuthStatus;
+    getUser: () => void;
+    loginWithOAuth: (provider: OAuthProvider) => Promise<void>;
+    createAuthSession: (urlOrOneTimeSecret: string) => Promise<AuthMaterialWithUser | null>;
+};
+
 type CrossmintAuthProviderProps = {
     prefetchOAuthUrls?: boolean;
     onLoginSuccess?: () => void;
@@ -31,17 +42,6 @@ type CrossmintAuthProviderProps = {
     logoutRoute?: string;
     customStorageProvider?: StorageProvider;
     appSchema?: string | string[];
-};
-
-type AuthContextType = {
-    crossmintAuth?: CrossmintAuth;
-    logout: () => void;
-    jwt?: string;
-    user?: SDKExternalUser;
-    status: AuthStatus;
-    getUser: () => void;
-    loginWithOAuth: (provider: OAuthProvider) => Promise<void>;
-    createAuthSession: (urlOrOneTimeSecret: string) => Promise<AuthMaterialWithUser | null>;
 };
 
 const defaultContextValue: AuthContextType = {

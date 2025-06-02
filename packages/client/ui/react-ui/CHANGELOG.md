@@ -1,5 +1,23 @@
 # @crossmint/client-sdk-react-ui
 
+## 2.0.0
+
+### Major Changes
+
+- d081ac9: Split CrossmintAuthProvider and CrossmintWalletProvider into completely decoupled, separate components, update wallet provider prop names for better clarity, and integrate changes into our new wallets version 2.5 SDK
+
+### Patch Changes
+
+- Updated dependencies [d081ac9]
+- Updated dependencies [d081ac9]
+- Updated dependencies [d081ac9]
+  - @crossmint/client-sdk-react-base@0.3.0
+  - @crossmint/wallets-sdk@0.9.0
+  - @crossmint/common-sdk-base@0.6.0
+  - @crossmint/client-sdk-auth@1.2.10
+  - @crossmint/client-sdk-base@1.5.2
+  - @crossmint/common-sdk-auth@1.0.33
+
 ## 1.19.21
 
 ### Patch Changes
