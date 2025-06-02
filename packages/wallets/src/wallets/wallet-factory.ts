@@ -97,6 +97,10 @@ export class WalletFactory {
         walletResponse: GetWalletSuccessResponse,
         signer: SignerConfigForChain<C>
     ): InternalSignerConfig<C> {
+        if (signer == null) {
+            throw new WalletCreationError("Signer is required to create a wallet");
+        }
+
         switch (signer.type) {
             case "api-key": {
                 let address;
