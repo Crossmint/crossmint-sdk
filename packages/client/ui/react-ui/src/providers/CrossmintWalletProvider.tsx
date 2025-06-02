@@ -17,7 +17,7 @@ import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
 import { throwNotAvailable, type CreateOnLogin } from "@crossmint/client-sdk-react-base";
 import { useCrossmint } from "../hooks";
 import { createWebAuthnPasskeySigner } from "@/utils/createPasskeySigner";
-import { TwindProvider } from "./TwindProvider";
+import { UnoProvider } from "./TwindProvider";
 import { useDynamicWallet } from "./dynamic/DynamicWalletProvider";
 import type { PasskeySigner } from "@/types/passkey";
 import { createPortal } from "react-dom";
@@ -282,7 +282,7 @@ export function CrossmintWalletProvider({
     );
 
     return (
-        <TwindProvider>
+        <UnoProvider>
             <WalletContext.Provider value={contextValue}>
                 {children}
 
@@ -306,6 +306,6 @@ export function CrossmintWalletProvider({
                     ? createPortal(<PasskeyPrompt state={passkeyPromptState} appearance={appearance} />, document.body)
                     : null}
             </WalletContext.Provider>
-        </TwindProvider>
+        </UnoProvider>
     );
 }

@@ -8,6 +8,6 @@
         },
         "jsx": "react-jsx"
     },
-    "include": ["src/**/*", "twind.config.ts"],
+    "include": ["src/**/*", "uno.config.ts"],
     "exclude": ["__tests__"]
 }

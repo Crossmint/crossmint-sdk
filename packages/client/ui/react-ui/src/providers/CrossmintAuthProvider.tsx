@@ -15,7 +15,7 @@ import { type AuthMaterialWithUser, SESSION_PREFIX, type SDKExternalUser } from 
 import AuthFormDialog from "../components/auth/AuthFormDialog";
 import { useCrossmint } from "../hooks";
 import { AuthFormProvider } from "./auth/AuthFormProvider";
-import { TwindProvider } from "./TwindProvider";
+import { UnoProvider } from "./TwindProvider";
 import type { AuthStatus, LoginMethod } from "@/types/auth";
 import { DynamicWalletProvider } from "./dynamic/DynamicWalletProvider";
 
@@ -180,7 +180,7 @@ export function CrossmintAuthProvider({
     );
 
     return (
-        <TwindProvider>
+        <UnoProvider>
             <AuthContext.Provider value={authContextValue}>
                 <AuthFormProvider
                     setDialogOpen={(open, successfulLogin) => {
@@ -218,6 +218,6 @@ export function CrossmintAuthProvider({
                     )}
                 </AuthFormProvider>
             </AuthContext.Provider>
-        </TwindProvider>
+        </UnoProvider>
     );
 }
