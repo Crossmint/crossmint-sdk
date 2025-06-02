@@ -10,7 +10,7 @@ import { EmailSigner } from "@/signers/email";
 
 export type WalletArgsFor<C extends Chain> = {
     chain: C;
-    signer?: SignerConfigForChain<C>;
+    signer: SignerConfigForChain<C>;
     owner?: string;
     options?: WalletOptions;
 };
@@ -95,74 +95,80 @@ export class WalletFactory {
 
     private toInternalSignerConfig<C extends Chain>(
         walletResponse: GetWalletSuccessResponse,
-        signer?: SignerConfigForChain<C>
+        signer: SignerConfigForChain<C>
     ): InternalSignerConfig<C> {
-        if (signer == null || signer.type === "api-key") {
-            let address;
-            switch (walletResponse.type) {
-                case "solana-smart-wallet":
-                    address = walletResponse.config.adminSigner.address;
-                    break;
-                case "evm-smart-wallet":
-                    if (walletResponse.config.adminSigner.type === "evm-fireblocks-custodial") {
+        if (signer == null) {
+            throw new WalletCreationError("Signer is required to create a wallet");
+        }
+
+        switch (signer.type) {
+            case "api-key": {
+                let address;
+                switch (walletResponse.type) {
+                    case "solana-smart-wallet":
                         address = walletResponse.config.adminSigner.address;
-                    }
-                    break;
-            }
-            if (address == null) {
-                throw new WalletCreationError("Wallet signer 'api-key' has no address");
-            }
-            return {
-                type: "api-key",
-                address,
-            };
-        }
-
-        if (signer.type === "external-wallet") {
-            return signer as ExternalWalletInternalSignerConfig<C>;
-        }
-
-        if (signer.type === "passkey") {
-            if (
-                walletResponse.type === "evm-smart-wallet" &&
-                walletResponse.config.adminSigner.type === "evm-passkey"
-            ) {
+                        break;
+                    case "evm-smart-wallet":
+                        if (walletResponse.config.adminSigner.type === "evm-fireblocks-custodial") {
+                            address = walletResponse.config.adminSigner.address;
+                        }
+                        break;
+                }
+                if (address == null) {
+                    throw new WalletCreationError("Wallet signer 'api-key' has no address");
+                }
                 return {
-                    type: "passkey",
-                    id: walletResponse.config.adminSigner.id,
-                    name: walletResponse.config.adminSigner.name,
-                    onCreatePasskey: signer.onCreatePasskey,
-                    onSignWithPasskey: signer.onSignWithPasskey,
+                    type: "api-key",
+                    address,
                 };
             }
-        }
 
-        if (signer.type === "email") {
-            let address;
-            switch (walletResponse.type) {
-                case "solana-smart-wallet":
-                    address = walletResponse.config.adminSigner.address;
-                    break;
-                case "evm-smart-wallet":
-                    if (walletResponse.config.adminSigner.type === "evm-keypair") {
+            case "external-wallet":
+                return signer as ExternalWalletInternalSignerConfig<C>;
+
+            case "passkey":
+                if (
+                    walletResponse.type === "evm-smart-wallet" &&
+                    walletResponse.config.adminSigner.type === "evm-passkey"
+                ) {
+                    return {
+                        type: "passkey",
+                        id: walletResponse.config.adminSigner.id,
+                        name: walletResponse.config.adminSigner.name,
+                        onCreatePasskey: signer.onCreatePasskey,
+                        onSignWithPasskey: signer.onSignWithPasskey,
+                    };
+                }
+                throw new WalletCreationError("Passkey signer is not supported for this wallet type");
+
+            case "email": {
+                let address;
+                switch (walletResponse.type) {
+                    case "solana-smart-wallet":
                         address = walletResponse.config.adminSigner.address;
-                    }
-                    break;
+                        break;
+                    case "evm-smart-wallet":
+                        if (walletResponse.config.adminSigner.type === "evm-keypair") {
+                            address = walletResponse.config.adminSigner.address;
+                        }
+                        break;
+                }
+                if (address == null) {
+                    throw new WalletCreationError("Wallet signer 'email' has no address");
+                }
+                return {
+                    type: "email",
+                    email: signer.email,
+                    signerAddress: address,
+                    crossmint: this.apiClient.crossmint,
+                    onAuthRequired: signer.onAuthRequired,
+                    _handshakeParent: signer._handshakeParent,
+                };
             }
-            if (address == null) {
-                throw new WalletCreationError("Wallet signer 'email' has no address");
-            }
-            return {
-                type: "email",
-                email: signer.email,
-                signerAddress: address,
-                crossmint: this.apiClient.crossmint,
-                onAuthRequired: signer.onAuthRequired,
-                _handshakeParent: signer._handshakeParent,
-            };
-        }
 
-        throw new Error("Invalid signer type");
+            default:
+                throw new Error("Invalid signer type");
+        }
     }
 
     private async configureSigner<C extends Chain>(chain: C, signer?: SignerConfigForChain<C>) {
