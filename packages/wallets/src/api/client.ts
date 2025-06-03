@@ -27,6 +27,7 @@ import type {
     EvmWalletLocator,
     SendParams,
     SendResponse,
+    GetActivityResponse,
 } from "./types";
 import type { Chain } from "../chains/chains";
 
@@ -135,6 +136,15 @@ class ApiClient extends CrossmintApiClient {
         queryParams.append("perPage", params.perPage.toString());
         const identifier = `${params.chain}:${params.address}`;
         const response = await this.get(`${this.apiPrefix}/${identifier}/nfts?${queryParams.toString()}`, {
+            headers: this.headers,
+        });
+        return response.json();
+    }
+
+    async experimental_activity(walletLocator: WalletLocator, params: { chain: Chain }): Promise<GetActivityResponse> {
+        const queryParams = new URLSearchParams();
+        queryParams.append("chain", params.chain.toString());
+        const response = await this.get(`${this.apiPrefix}/${walletLocator}/activity?${queryParams.toString()}`, {
             headers: this.headers,
         });
         return response.json();

@@ -1,5 +1,5 @@
 import { isValidAddress } from "@crossmint/common-sdk-base";
-import type { ApiClient, Balances, GetSignatureResponse } from "../api";
+import type { Activity, ApiClient, Balances, GetSignatureResponse } from "../api";
 import type { PendingApproval, Permission, WalletOptions } from "./types";
 import {
     InvalidSignerError,
@@ -93,6 +93,20 @@ export class Wallet<C extends Chain> {
      */
     public async unstable_transactions() {
         return await this.apiClient.getTransactions(this.walletLocator);
+    }
+
+    /**
+     * Get the wallet activity
+     * @returns The activity
+     * @experimental This API is experimental and may change in the future
+     * @throws {Error} If the activity cannot be retrieved
+     */
+    public async experimental_activity(): Promise<Activity> {
+        const response = await this.apiClient.experimental_activity(this.walletLocator, { chain: this.chain });
+        if ("error" in response) {
+            throw new Error(`Failed to get activity: ${JSON.stringify(response.error)}`);
+        }
+        return response;
     }
 
     /**
