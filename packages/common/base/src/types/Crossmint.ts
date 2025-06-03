@@ -14,7 +14,7 @@ export type CrossmintConfig = {
 };
 
 export type Crossmint = CrossmintConfig & {
-    setUser: (user: User) => Crossmint;
+    experimental_setAuth: (user: User) => Crossmint;
     setJwt: (jwt: string) => Crossmint;
 };
 
@@ -28,7 +28,7 @@ export function createCrossmint(
         throw new Error(apiKeyValidationResult.message);
     }
 
-    function setUser(user: User) {
+    function experimental_setAuth(user: User) {
         return createCrossmint({ ...config, jwt: user.jwt, user });
     }
 
@@ -42,7 +42,7 @@ export function createCrossmint(
         overrideBaseUrl,
         appId,
         user,
-        setUser,
+        experimental_setAuth,
         setJwt,
     };
 }

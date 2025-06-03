@@ -12,7 +12,6 @@ import { useCrossmint } from "../hooks";
 import { SecureStorage } from "../utils/SecureStorage";
 import { Platform } from "react-native";
 import Constants from "expo-constants";
-import type { User } from "@crossmint/common-sdk-base";
 
 type OAuthUrlMap = Record<OAuthProvider, string | null>;
 const initialOAuthUrlMap: OAuthUrlMap = {
@@ -66,11 +65,9 @@ export function CrossmintAuthProvider({
     appSchema,
 }: CrossmintAuthProviderProps) {
     const [user, setUser] = useState<SDKExternalUser | undefined>(undefined);
-    const {
-        crossmint,
-        setJwt,
-        setUser: setCrossmintUser,
-    } = useCrossmint("CrossmintAuthProvider must be used within CrossmintProvider");
+    const { crossmint, setJwt, experimental_setAuth } = useCrossmint(
+        "CrossmintAuthProvider must be used within CrossmintProvider"
+    );
     const [oauthUrlMap, setOauthUrlMap] = useState<OAuthUrlMap>(initialOAuthUrlMap);
     const crossmintAuthRef = useRef<CrossmintAuth | null>(null);
     const storageProvider = useMemo(() => customStorageProvider ?? new SecureStorage(), [customStorageProvider]);
@@ -90,12 +87,12 @@ export function CrossmintAuthProvider({
             const config = {
                 callbacks: {
                     onLogout: () => {
+                        experimental_setAuth(undefined);
                         setUser(undefined);
-                        setCrossmintUser(undefined);
                     },
                     onTokenRefresh: (authMaterial: AuthMaterialWithUser) => {
                         setUser(authMaterial.user);
-                        setCrossmintUser({
+                        experimental_setAuth({
                             email: authMaterial.user.email,
                             jwt: authMaterial.jwt,
                         });
@@ -187,7 +184,8 @@ export function CrossmintAuthProvider({
 
         const user = await crossmintAuth.getUser();
         setUser(user);
-        setCrossmintUser(user as User);
+        experimental_setAuth(user);
+        return user;
     };
 
     const loginWithOAuth = async (provider: OAuthProvider) => {

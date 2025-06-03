@@ -9,7 +9,7 @@ import {
     useCallback,
 } from "react";
 import { CrossmintAuth, getCookie } from "@crossmint/client-sdk-auth";
-import { type UIConfig, type User, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
+import { type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
 import { type AuthMaterialWithUser, SESSION_PREFIX, type SDKExternalUser } from "@crossmint/common-sdk-auth";
 
 import AuthFormDialog from "../components/auth/AuthFormDialog";
@@ -65,11 +65,9 @@ export function CrossmintAuthProvider({
     logoutRoute,
 }: CrossmintAuthProviderProps) {
     const [user, setUser] = useState<SDKExternalUser | undefined>(undefined);
-    const {
-        crossmint,
-        setJwt,
-        setUser: setCrossmintUser,
-    } = useCrossmint("CrossmintAuthProvider must be used within CrossmintProvider");
+    const { crossmint, setJwt, experimental_setAuth } = useCrossmint(
+        "CrossmintAuthProvider must be used within CrossmintProvider"
+    );
     // Only create the CrossmintAuth instance once, even in StrictMode, as the constructor calls /refresh
     // It can only be called once to avoid race conditions
     const crossmintAuthRef = useRef<CrossmintAuth | null>(null);
@@ -80,11 +78,11 @@ export function CrossmintAuthProvider({
                 callbacks: {
                     onLogout: () => {
                         setUser(undefined);
-                        setCrossmintUser(undefined);
+                        experimental_setAuth(undefined);
                     },
                     onTokenRefresh: (authMaterial: AuthMaterialWithUser) => {
                         setUser(authMaterial.user);
-                        setCrossmintUser({
+                        experimental_setAuth({
                             email: authMaterial.user.email,
                             jwt: authMaterial.jwt,
                         });
@@ -171,8 +169,9 @@ export function CrossmintAuthProvider({
 
         const user = await crossmintAuth.getUser();
         setUser(user);
-        setCrossmintUser(user as User);
-    }, [crossmint.jwt, crossmintAuth]);
+        experimental_setAuth(user);
+        return user;
+    }, [crossmint.jwt, crossmintAuth, experimental_setAuth]);
 
     const authContextValue = useMemo(
         () => ({

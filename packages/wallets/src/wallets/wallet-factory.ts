@@ -215,11 +215,7 @@ export class WalletFactory {
         existingWallet: GetWalletSuccessResponse,
         args: WalletArgsFor<C>
     ): Promise<void> {
-        if (
-            args.owner !== undefined &&
-            existingWallet.linkedUser !== undefined &&
-            args.owner !== existingWallet.linkedUser
-        ) {
+        if (args.owner != null && existingWallet.linkedUser != null && args.owner !== existingWallet.linkedUser) {
             throw new WalletCreationError("Wallet owner does not match existing wallet's linked user");
         }
 
@@ -232,7 +228,9 @@ export class WalletFactory {
 
         if (configuredArgsSigner && existingWalletSigner) {
             if (configuredArgsSigner.type !== existingWalletSigner.type) {
-                throw new WalletCreationError("Wallet signer type does not match existing wallet's signer type");
+                throw new WalletCreationError(
+                    "The wallet signer type provided in the wallet config does not match the existing wallet's adminSigner type"
+                );
             }
 
             const signerProps = Object.keys(configuredArgsSigner) as Array<keyof typeof configuredArgsSigner>;

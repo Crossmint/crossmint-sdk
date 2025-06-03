@@ -4,4 +4,4 @@
 "@crossmint/client-sdk-react-base": patch
 ---
 
-setUser in crossmint instance and use user.email for email signer
+experimental_setAuth in crossmint instance and use user.email for email signer

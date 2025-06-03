@@ -5,7 +5,7 @@ import isEqual from "lodash.isequal";
 export interface CrossmintContext {
     crossmint: Crossmint;
     setJwt: (jwt: string | undefined) => void;
-    setUser: (user: User | undefined) => void;
+    experimental_setAuth: (user: User | undefined) => void;
 }
 
 const CrossmintContext = createContext<CrossmintContext | null>(null);
@@ -37,7 +37,7 @@ export function CrossmintProvider({
         }
     }, []);
 
-    const setUser = useCallback((user: User | undefined) => {
+    const experimental_setAuth = useCallback((user: User | undefined) => {
         if (user != null && !isEqual(user, crossmintRef.current.user)) {
             crossmintRef.current.user = user;
             crossmintRef.current.jwt = user.jwt;
@@ -50,9 +50,9 @@ export function CrossmintProvider({
                 return crossmintRef.current;
             },
             setJwt,
-            setUser,
+            experimental_setAuth,
         }),
-        [setJwt, setUser, version]
+        [setJwt, experimental_setAuth, version]
     );
 
     return <CrossmintContext.Provider value={value}>{children}</CrossmintContext.Provider>;

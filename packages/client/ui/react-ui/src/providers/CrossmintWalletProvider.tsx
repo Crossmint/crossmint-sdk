@@ -82,7 +82,7 @@ export function CrossmintWalletProvider({
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
     const email = crossmint.user?.email;
     const { isDynamicWalletConnected, getAdminSigner, sdkHasLoaded } = useDynamicWallet();
-    const { setUser } = useCrossmint();
+    const { experimental_setAuth } = useCrossmint();
     const [walletState, setWalletState] = useState<ValidWalletState>({
         status: "not-loaded",
     });
@@ -231,7 +231,7 @@ export function CrossmintWalletProvider({
                 });
             } catch (error) {
                 console.error("Failed to create wallet:", error);
-                setUser(undefined);
+                experimental_setAuth(undefined);
             }
         }
 
@@ -284,11 +284,11 @@ export function CrossmintWalletProvider({
             <WalletContext.Provider value={contextValue}>
                 {children}
 
-                {emailSignerDialogOpen
+                {emailSignerDialogOpen && email != null
                     ? createPortal(
                           <EmailSignersDialog
                               rejectRef={rejectRef}
-                              email={email ?? ""}
+                              email={email}
                               open={emailSignerDialogOpen}
                               setOpen={setEmailSignerDialogOpen}
                               step={emailSignerDialogStep}
