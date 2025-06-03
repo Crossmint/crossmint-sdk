@@ -28,6 +28,7 @@ import type {
     SendParams,
     SendResponse,
 } from "./types";
+import type { Chain } from "../chains/chains";
 
 class ApiClient extends CrossmintApiClient {
     private apiPrefix = "api/2022-06-09/wallets";
@@ -142,16 +143,14 @@ class ApiClient extends CrossmintApiClient {
     async getBalance(
         walletLocator: WalletLocator,
         params: {
-            chains?: string[];
+            chains: Chain[];
             tokens: string[];
         }
     ): Promise<GetBalanceResponse> {
         const queryParams = new URLSearchParams();
-        if (params.chains) {
-            params.chains.forEach((chain) => queryParams.append("chains", chain));
-        }
-        queryParams.append("tokens", params.tokens.join(","));
-        const response = await this.get(`api/v1-alpha2/wallets/${walletLocator}/balances?${queryParams.toString()}`, {
+        queryParams.append("tokenLocators", params.tokens.join(","));
+        queryParams.append("chains", params.chains.join(","));
+        const response = await this.get(`api/unstable/wallets/${walletLocator}/balances?${queryParams.toString()}`, {
             headers: this.headers,
         });
         return response.json();

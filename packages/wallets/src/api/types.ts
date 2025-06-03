@@ -21,7 +21,6 @@ import type {
     Nftevm,
     Nftsol,
     FetchContentFromWalletError,
-    WalletBalanceResponseDto,
     BalanceControllerGetBalanceForLocator2Error,
     CreateSignerInputDto,
     DelegatedSignerDto,
@@ -29,6 +28,7 @@ import type {
     WalletsV1ControllerGetDelegatedSigner4Error,
     WalletsSendTokenControllerSendToken2Response,
     SendTokenDto,
+    WalletBalanceUnstableResponseDto,
 } from "./gen/types.gen";
 
 export type CreateWalletParams = CreateWalletDto;
@@ -59,8 +59,8 @@ export type GetTransactionsResponse =
     | WalletsV1Alpha2TransactionsResponseDto
     | WalletsV1ControllerGetTransactionsWithoutChain4Error;
 export type GetNftsResponse = Nftevm | Nftsol | FetchContentFromWalletError;
-export type GetBalanceResponse = WalletBalanceResponseDto | BalanceControllerGetBalanceForLocator2Error;
-export type Balances = WalletBalanceResponseDto;
+export type GetBalanceResponse = WalletBalanceUnstableResponseDto | BalanceControllerGetBalanceForLocator2Error;
+export type Balances = WalletBalanceUnstableResponseDto;
 
 export type RegisterSignerParams = CreateSignerInputDto;
 export type RegisterSignerResponse = DelegatedSignerDto | WalletsV1ControllerCreateDelegatedSigner4Error;
