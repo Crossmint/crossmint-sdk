@@ -15,7 +15,8 @@ import base58 from "bs58";
 
 type DynamicWalletContextType = {
     isDynamicWalletConnected: boolean;
-    sdkHasLoaded: boolean;
+    isDynamicProviderAvailable: boolean;
+    hasDynamicSdkLoaded: boolean;
     getAdminSigner: () => Promise<EvmExternalWalletSignerConfig | SolanaExternalWalletSignerConfig>;
     initialize: (jwt?: string, onSdkLoaded?: (loaded: boolean) => void) => void;
     cleanup: () => void;
@@ -28,7 +29,8 @@ export function useDynamicWallet() {
     if (!context) {
         return {
             isDynamicWalletConnected: false,
-            sdkHasLoaded: true,
+            isDynamicProviderAvailable: false,
+            hasDynamicSdkLoaded: true,
             getAdminSigner: () => {
                 throw new Error("useDynamicWallet must be used within DynamicWalletProvider");
             },
@@ -72,7 +74,7 @@ function DynamicWalletStateProvider({ children, enabled, onSdkLoaded }: DynamicW
     } = useDynamicContext();
 
     const isDynamicWalletConnected = !!connectedDynamicWallet;
-    const dynamicSdkHasLoaded = !enabled || sdkHasLoaded;
+    const hasDynamicSdkLoaded = !enabled || sdkHasLoaded;
 
     const initialize = useCallback((newJwt?: string, onSdkLoaded?: (loaded: boolean) => void) => {
         setJwt(newJwt);
@@ -89,10 +91,10 @@ function DynamicWalletStateProvider({ children, enabled, onSdkLoaded }: DynamicW
 
     useEffect(() => {
         if (enabled) {
-            onSdkLoadedCallback?.(dynamicSdkHasLoaded);
-            onSdkLoaded?.(dynamicSdkHasLoaded);
+            onSdkLoadedCallback?.(hasDynamicSdkLoaded);
+            onSdkLoaded?.(hasDynamicSdkLoaded);
         }
-    }, [dynamicSdkHasLoaded, enabled, onSdkLoadedCallback, onSdkLoaded]);
+    }, [hasDynamicSdkLoaded, enabled, onSdkLoadedCallback, onSdkLoaded]);
 
     useEffect(() => {
         if (jwt == null && isInitialized) {
@@ -141,12 +143,13 @@ function DynamicWalletStateProvider({ children, enabled, onSdkLoaded }: DynamicW
     const contextValue = useMemo(
         () => ({
             isDynamicWalletConnected,
-            sdkHasLoaded: dynamicSdkHasLoaded,
+            isDynamicProviderAvailable: true,
+            hasDynamicSdkLoaded,
             getAdminSigner,
             initialize,
             cleanup,
         }),
-        [isDynamicWalletConnected, dynamicSdkHasLoaded, getAdminSigner, initialize, cleanup]
+        [isDynamicWalletConnected, hasDynamicSdkLoaded, getAdminSigner, initialize, cleanup]
     );
 
     return <DynamicWalletContext.Provider value={contextValue}>{children}</DynamicWalletContext.Provider>;

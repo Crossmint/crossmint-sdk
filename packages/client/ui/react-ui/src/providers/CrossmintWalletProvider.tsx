@@ -83,7 +83,8 @@ export function CrossmintWalletProvider({
         "CrossmintWalletProvider must be used within CrossmintProvider"
     );
     const email = crossmint.user?.email;
-    const { isDynamicWalletConnected, getAdminSigner, sdkHasLoaded } = useDynamicWallet();
+    const { isDynamicWalletConnected, isDynamicProviderAvailable, getAdminSigner, hasDynamicSdkLoaded } =
+        useDynamicWallet();
     const [walletState, setWalletState] = useState<ValidWalletState>({
         status: "not-loaded",
     });
@@ -210,14 +211,17 @@ export function CrossmintWalletProvider({
             if (
                 walletState.status !== "not-loaded" ||
                 crossmint.jwt == null ||
-                !sdkHasLoaded ||
+                (isDynamicProviderAvailable && !hasDynamicSdkLoaded) ||
                 createOnLogin?.chain == null
             ) {
                 return;
             }
 
             try {
-                const finalSigner = isDynamicWalletConnected ? await getAdminSigner() : createOnLogin.signer;
+                const finalSigner =
+                    isDynamicProviderAvailable && isDynamicWalletConnected
+                        ? await getAdminSigner()
+                        : createOnLogin.signer;
 
                 await getOrCreateWallet({
                     chain: createOnLogin.chain,
@@ -242,7 +246,7 @@ export function CrossmintWalletProvider({
     }, [
         walletState.status,
         crossmint.jwt,
-        sdkHasLoaded,
+        hasDynamicSdkLoaded,
         isDynamicWalletConnected,
         getAdminSigner,
         getOrCreateWallet,
