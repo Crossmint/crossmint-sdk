@@ -1,5 +1,14 @@
 # @crossmint/client-sdk-smart-wallet
 
+## 0.3.15
+
+### Patch Changes
+
+- f46d3d7: Uses createCrossmint to create the crossmint instance
+- Updated dependencies [f46d3d7]
+  - @crossmint/common-sdk-base@0.7.0
+  - @crossmint/client-sdk-base@1.5.3
+
 ## 0.3.14
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.7.0
+
+### Minor Changes
+
+- f46d3d7: Adds user to crossmint instance with jwt and email
+
 ## 0.6.0
 
 ### Minor Changes

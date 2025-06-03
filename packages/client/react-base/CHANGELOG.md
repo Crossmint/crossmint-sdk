@@ -1,5 +1,21 @@
 # @crossmint/client-sdk-react-base
 
+## 0.4.0
+
+### Minor Changes
+
+- fc6ed7c: type CreateOnLogin.signer is now marked as a mandatory field
+
+### Patch Changes
+
+- f46d3d7: experimental_setAuth in crossmint instance and use user.email for email signer
+- Updated dependencies [f46d3d7]
+- Updated dependencies [f46d3d7]
+- Updated dependencies [fc6ed7c]
+  - @crossmint/common-sdk-base@0.7.0
+  - @crossmint/wallets-sdk@0.9.1
+  - @crossmint/client-sdk-base@1.5.3
+
 ## 0.3.0
 
 ### Minor Changes

@@ -1,5 +1,23 @@
 # @crossmint/client-sdk-react-ui
 
+## 2.0.1
+
+### Patch Changes
+
+- 4e059c1: Fixed bug with auto wallet creation for bring your own auth
+- f46d3d7: experimental_setAuth in crossmint instance and use user.email for email signer
+- Updated dependencies [f46d3d7]
+- Updated dependencies [f46d3d7]
+- Updated dependencies [fc6ed7c]
+- Updated dependencies [f46d3d7]
+- Updated dependencies [fc6ed7c]
+  - @crossmint/common-sdk-base@0.7.0
+  - @crossmint/wallets-sdk@0.9.1
+  - @crossmint/client-sdk-react-base@0.4.0
+  - @crossmint/client-sdk-auth@1.2.11
+  - @crossmint/client-sdk-base@1.5.3
+  - @crossmint/common-sdk-auth@1.0.34
+
 ## 2.0.0
 
 ### Major Changes

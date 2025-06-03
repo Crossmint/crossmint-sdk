@@ -1,5 +1,15 @@
 # @crossmint/wallets-sdk
 
+## 0.9.1
+
+### Patch Changes
+
+- f46d3d7: Uses crossmint.user.email for email signer and refactors signer. Adds validation for wallet config
+- fc6ed7c: Signer is no longer an optional field
+- Updated dependencies [f46d3d7]
+  - @crossmint/common-sdk-base@0.7.0
+  - @crossmint/common-sdk-auth@1.0.34
+
 ## 0.9.0
 
 ### Minor Changes
