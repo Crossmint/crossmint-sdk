@@ -28,7 +28,7 @@ export function useDynamicWallet() {
     if (!context) {
         return {
             isDynamicWalletConnected: false,
-            sdkHasLoaded: false,
+            sdkHasLoaded: true,
             getAdminSigner: () => {
                 throw new Error("useDynamicWallet must be used within DynamicWalletProvider");
             },

@@ -79,10 +79,11 @@ export function CrossmintWalletProvider({
     appearance?: UIConfig;
     createOnLogin?: CreateOnLogin;
 }) {
-    const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
+    const { crossmint, experimental_setAuth } = useCrossmint(
+        "CrossmintWalletProvider must be used within CrossmintProvider"
+    );
     const email = crossmint.user?.email;
     const { isDynamicWalletConnected, getAdminSigner, sdkHasLoaded } = useDynamicWallet();
-    const { experimental_setAuth } = useCrossmint();
     const [walletState, setWalletState] = useState<ValidWalletState>({
         status: "not-loaded",
     });
