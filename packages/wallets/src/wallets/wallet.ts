@@ -55,12 +55,13 @@ export class Wallet<C extends Chain> {
     /**
      * Get the wallet balances
      * @param {string[]} params.tokens - The tokens
+     * @param {Chain[]} params.chains - The chains (optional)
      * @returns {Promise<Balances>} The balances
      * @throws {Error} If the balances cannot be retrieved
      */
-    public async balances(tokens: string[]): Promise<Balances> {
+    public async balances(tokens: string[], chains?: Chain[]): Promise<Balances> {
         const response = await this.apiClient.getBalance(this.address, {
-            chains: [this.chain],
+            chains: chains ?? [this.chain],
             tokens,
         });
         if ("error" in response) {

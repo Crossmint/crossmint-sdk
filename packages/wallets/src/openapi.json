@@ -2012,6 +2012,252 @@
                 }
             }
         },
+        "/unstable/wallets/{walletLocator}/balances": {
+            "get": {
+                "operationId": "BalanceUnstableController-getBalanceForLocator-2",
+                "summary": "Get Wallet Balance",
+                "description": "Get the balance of a wallet for a given chain and currency\n\n**API scope required**: `wallets:balance.read`",
+                "parameters": [
+                    {
+                        "name": "X-API-KEY",
+                        "in": "header",
+                        "description": "API key required for authentication",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "walletLocator",
+                        "required": true,
+                        "in": "path",
+                        "description": "A wallet locator can be of the format:\n- `\u003CwalletAddress\u003E`\n- `email:\u003Cemail\u003E:\u003CwalletType\u003E`\n- `userId:\u003CuserId\u003E:\u003CwalletType\u003E`\n- `userId:\u003CuserId\u003E:\u003CwalletType\u003E` (white label user example)\n- `phoneNumber:\u003CphoneNumber\u003E:\u003CwalletType\u003E`\n- `twitter:\u003Chandle\u003E:\u003CwalletType\u003E`\n- `x:\u003Chandle\u003E:\u003CwalletType\u003E`",
+                        "example": [
+                            "0x1234567890123456789012345678901234567890",
+                            "email:user@example.com:evm-smart-wallet",
+                            "userId:507f1f77bcf86cd799439011:solana-mpc-wallet",
+                            "userId:did:example:cm4lr5piw0h6t1bjho0onryql:evm-smart-wallet",
+                            "phoneNumber:+12125551234:evm-smart-wallet",
+                            "twitter:johndoe:evm-smart-wallet",
+                            "x:@johndoe:evm-smart-wallet"
+                        ],
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "chains",
+                        "required": false,
+                        "in": "query",
+                        "description": "The blockchain(s) to query. Comma-separated list of chains",
+                        "example": "ethereum,polygon",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "tokenLocators",
+                        "required": true,
+                        "in": "query",
+                        "description": "The token locators to query. Comma-separated list of either tokens or token locator strings",
+                        "example": "eth,base:0x123,solana:sol",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Returns the balance of the wallet for the given chain and currency",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WalletBalanceUnstableResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Returns an error (400) if the wallet locator is invalid or if the address type is not supported",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WalletV1Alpha2ErrorDTO"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/unstable/wallets/{locator}/{currency}/balance": {
+            "get": {
+                "operationId": "WalletBalanceController-getBalanceForLocatorAndCurrency-2",
+                "parameters": [
+                    {
+                        "name": "locator",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "currency",
+                        "required": true,
+                        "in": "path",
+                        "schema": {
+                            "enum": [
+                                "ape",
+                                "bnb",
+                                "coti",
+                                "eth",
+                                "matic",
+                                "mnt",
+                                "pol",
+                                "sei",
+                                "chz",
+                                "avax",
+                                "xai",
+                                "fuel",
+                                "hbar",
+                                "vic",
+                                "ip",
+                                "zcx",
+                                "u2u",
+                                "usdc",
+                                "usdce",
+                                "busd",
+                                "usdxm",
+                                "usdt",
+                                "credit",
+                                "weth",
+                                "degen",
+                                "brett",
+                                "toshi",
+                                "eurc",
+                                "superverse",
+                                "pirate",
+                                "wld",
+                                "bonk",
+                                "trump",
+                                "fartcoin",
+                                "giga",
+                                "moodeng",
+                                "jailstool",
+                                "wen",
+                                "mlg",
+                                "duo",
+                                "pep",
+                                "harambe",
+                                "usedcar",
+                                "vine",
+                                "fartboy",
+                                "pnut",
+                                "stonks",
+                                "mew",
+                                "baby",
+                                "michi",
+                                "butthole",
+                                "anglerfish",
+                                "usa",
+                                "chillguy",
+                                "sigma",
+                                "maneki",
+                                "purpe",
+                                "lockin",
+                                "y2k",
+                                "fafo",
+                                "nub",
+                                "fullsend",
+                                "shoggoth",
+                                "mini",
+                                "llm",
+                                "sc",
+                                "fatgf",
+                                "pwease",
+                                "popcat",
+                                "spx",
+                                "fwog",
+                                "mother",
+                                "wif",
+                                "fric",
+                                "etf",
+                                "gyat",
+                                "bigballs",
+                                "goat",
+                                "stupid",
+                                "duko",
+                                "bitcoin",
+                                "buttcoin",
+                                "mcdull",
+                                "skbdi",
+                                "elon4afd",
+                                "mumu",
+                                "gme",
+                                "biao",
+                                "fred",
+                                "pengu",
+                                "asscoin",
+                                "bhad",
+                                "habibi",
+                                "quant",
+                                "hammy",
+                                "boden",
+                                "dolan",
+                                "nap",
+                                "scf",
+                                "titcoin",
+                                "zerebro",
+                                "rfc",
+                                "luce",
+                                "melania",
+                                "slerf",
+                                "bome",
+                                "ban",
+                                "pippin",
+                                "ghibli",
+                                "figure",
+                                "retardio",
+                                "memesai",
+                                "dogeai",
+                                "memecoin",
+                                "routine",
+                                "troll",
+                                "nobody",
+                                "italianrot",
+                                "jockey",
+                                "pppp",
+                                "useless",
+                                "gork",
+                                "hosico",
+                                "neet",
+                                "urmom",
+                                "bert",
+                                "fog",
+                                "mog",
+                                "boopa",
+                                "wizard",
+                                "trencher",
+                                "chacha",
+                                "aurafarm",
+                                "sol",
+                                "sui",
+                                "apt",
+                                "sfuel",
+                                "xion"
+                            ],
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/2022-06-09/wallets/me{walletType}/transactions/{transactionId}/approvals": {
             "post": {
                 "operationId": "WalletsV1Controller-submitMeApprovals-4",
@@ -6329,6 +6575,144 @@
                     "token": "usdc",
                     "chain": "base-sepolia"
                 }
+            },
+            "WalletBalanceUnstableResponseDTO": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "token": {
+                            "type": "string"
+                        },
+                        "decimals": {
+                            "type": "number",
+                            "description": "The number of decimals of the token",
+                            "example": 18
+                        },
+                        "amount": {
+                            "type": "string",
+                            "description": "The amount of the token after placing the decimal point",
+                            "example": "18.8343253454"
+                        },
+                        "rawAmount": {
+                            "type": "string",
+                            "description": "The raw amount of the token",
+                            "example": "18834161225104097789"
+                        },
+                        "forChain": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "oneOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "locator": {
+                                                "type": "string",
+                                                "description": "Either a token string (e.g., 'eth', 'sol') or a token locator string (e.g., 'ethereum:0x123', 'solana:sol')",
+                                                "example": "ethereum:0x123"
+                                            },
+                                            "amount": {
+                                                "type": "string",
+                                                "description": "The amount of the token after placing the decimal point",
+                                                "example": "18.8343253454"
+                                            },
+                                            "rawAmount": {
+                                                "type": "string",
+                                                "description": "The raw amount of the token",
+                                                "example": "18834161225104097789"
+                                            },
+                                            "contractAddress": {
+                                                "type": "string",
+                                                "description": "The contract address of the token on the EVM chain. Not present for native tokens.",
+                                                "example": "0x123"
+                                            }
+                                        },
+                                        "required": ["locator", "amount", "rawAmount"],
+                                        "description": "Balance information per chain",
+                                        "example": {
+                                            "locator": "base:0x123",
+                                            "amount": "18.833423432423",
+                                            "rawAmount": "18834161225104097789",
+                                            "contractAddress": "0x123"
+                                        }
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "locator": {
+                                                "type": "string",
+                                                "description": "Either a token string (e.g., 'eth', 'sol') or a token locator string (e.g., 'ethereum:0x123', 'solana:sol')",
+                                                "example": "ethereum:0x123"
+                                            },
+                                            "amount": {
+                                                "type": "string",
+                                                "description": "The amount of the token after placing the decimal point",
+                                                "example": "18.8343253454"
+                                            },
+                                            "rawAmount": {
+                                                "type": "string",
+                                                "description": "The raw amount of the token",
+                                                "example": "18834161225104097789"
+                                            },
+                                            "mintHash": {
+                                                "type": "string",
+                                                "description": "The mint hash of the token on Solana. Not present for native SOL.",
+                                                "example": "123123"
+                                            }
+                                        },
+                                        "required": ["locator", "amount", "rawAmount"],
+                                        "description": "Balance information for  chain",
+                                        "example": {
+                                            "locator": "solana:31123",
+                                            "amount": "18.833423432423",
+                                            "rawAmount": "18834161225104097789",
+                                            "mintHash": "123123"
+                                        }
+                                    }
+                                ]
+                            },
+                            "description": "Balance information per chain",
+                            "example": {
+                                "base": {
+                                    "contractAddress": "0x123",
+                                    "locator": "base:0x123",
+                                    "amount": "18.833423432423",
+                                    "rawAmount": "18834161225104097789"
+                                },
+                                "solana": {
+                                    "mintHash": "123123",
+                                    "locator": "solana:132",
+                                    "amount": "0",
+                                    "rawAmount": "00000000000000000"
+                                }
+                            }
+                        }
+                    },
+                    "required": ["token", "decimals", "amount", "rawAmount", "forChain"]
+                },
+                "description": "Array of wallet balances per token",
+                "example": [
+                    {
+                        "token": "ethereum:0x123",
+                        "decimals": 18,
+                        "amount": "18.8343253454",
+                        "rawAmount": "18834161225104097789",
+                        "forChain": {
+                            "base": {
+                                "contractAddress": "0x123",
+                                "locator": "base:0x123",
+                                "amount": "18.833423432423",
+                                "rawAmount": "18834161225104097789"
+                            },
+                            "solana": {
+                                "mintHash": "123123",
+                                "locator": "solana:132",
+                                "amount": "0.000000000000000",
+                                "rawAmount": "00000000000000000"
+                            }
+                        }
+                    }
+                ]
             },
             "SendTokenDTO": {
                 "type": "object",
