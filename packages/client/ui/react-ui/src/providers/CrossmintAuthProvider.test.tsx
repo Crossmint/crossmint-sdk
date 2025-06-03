@@ -19,7 +19,8 @@ import { useDynamicWallet } from "./dynamic/DynamicWalletProvider";
 vi.mock("@dynamic-labs/sdk-react-core", () => ({
     useDynamicContext: vi.fn().mockReturnValue({
         primaryWallet: undefined,
-        sdkHasLoaded: true,
+        isDynamicProviderAvailable: false,
+        hasDynamicSdkLoaded: true,
         removeWallet: vi.fn(),
         handleUnlinkWallet: vi.fn(),
     }),
@@ -39,7 +40,8 @@ vi.mock("@/providers/dynamic/DynamicWalletProvider", () => ({
     useDynamicWallet: vi.fn().mockImplementation(() => ({
         getAdminSigner: vi.fn().mockResolvedValue(null),
         cleanup: vi.fn(),
-        sdkHasLoaded: true,
+        isDynamicProviderAvailable: false,
+        hasDynamicSdkLoaded: true,
         isDynamicWalletConnected: false,
         initialize: vi.fn(),
     })),
@@ -177,7 +179,8 @@ describe("CrossmintAuthProvider", () => {
         vi.mocked(useDynamicWallet).mockImplementation(() => ({
             getAdminSigner: vi.fn().mockResolvedValue(null),
             cleanup: vi.fn(),
-            sdkHasLoaded: true,
+            isDynamicProviderAvailable: false,
+            hasDynamicSdkLoaded: true,
             isDynamicWalletConnected: false,
             initialize: vi.fn(),
         }));
