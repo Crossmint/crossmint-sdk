@@ -14,7 +14,7 @@ export { EVMWallet, SolanaWallet } from "@crossmint/wallets-sdk";
 
 export type CreateOnLogin = {
     chain: Chain;
-    signer?: SignerConfigForChain<Chain>;
+    signer: SignerConfigForChain<Chain>;
     owner?: string;
 };
 
