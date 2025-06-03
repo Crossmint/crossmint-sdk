@@ -21,7 +21,7 @@ export type EmailSignerConfig = {
     email?: string;
     onAuthRequired?: (
         needsAuth: boolean,
-        sendEmailWithOtp: (email: string) => Promise<void>,
+        sendEmailWithOtp: () => Promise<void>,
         verifyOtp: (otp: string) => Promise<void>,
         reject: () => void
     ) => Promise<void>;

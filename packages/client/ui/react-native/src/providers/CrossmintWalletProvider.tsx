@@ -11,7 +11,6 @@ const DEFAULT_SECURE_ENDPOINT_URL = "https://signers.crossmint.com";
 
 export interface CrossmintWalletProviderProps {
     children: ReactNode;
-    experimental_secureEndpointUrl?: string;
 }
 
 export function CrossmintWalletProvider({ children }: CrossmintWalletProviderProps) {

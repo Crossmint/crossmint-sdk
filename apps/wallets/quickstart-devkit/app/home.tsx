@@ -29,8 +29,8 @@ export function HomeContent() {
     //     crossmintWalletStatus: status,
     //     isLoading,
     // } = useEVMDynamicConnector();
-    const { wallet, status, getOrCreateWallet } = useWallet();
-    const { status: crossminAuthStatus, user } = useAuth();
+    const { wallet, status } = useWallet();
+    const { status: crossminAuthStatus } = useAuth();
     const isLoading = status === "in-progress" || crossminAuthStatus === "initializing";
 
     const walletAddress = wallet?.address;
@@ -54,26 +54,6 @@ export function HomeContent() {
                     <CrossmintAuthLoginButton />
                     {/* <PrivyLoginButton /> */}
                     {/* <DynamicLabsLoginButton /> */}
-
-                    {/* @TODO: Uncomment to use email signer */}
-                    {/* <br />
-                    <br />
-                    {user?.email != null && (
-                        <button
-                            className="bg-blue-500 text-white px-4 py-2 rounded-md"
-                            onClick={() => {
-                                getOrCreateWallet({
-                                    chain: "solana",
-                                    signer: {
-                                        type: "email",
-                                        email: user.email,
-                                    },
-                                });
-                            }}
-                        >
-                            fetch wallet using email signers
-                        </button>
-                    )} */}
                 </div>
             </div>
         );

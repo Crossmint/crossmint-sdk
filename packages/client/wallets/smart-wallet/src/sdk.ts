@@ -1,4 +1,4 @@
-import { type APIKeyEnvironmentPrefix, validateAPIKey } from "@crossmint/common-sdk-base";
+import { type APIKeyEnvironmentPrefix, createCrossmint, validateAPIKey } from "@crossmint/common-sdk-base";
 import { stringify } from "viem";
 import { WebAuthnP256 } from "ox";
 
@@ -41,9 +41,10 @@ export class SmartWalletSDK {
             throw new InvalidApiKeyError("API key invalid");
         }
 
-        const crossmintService = new CrossmintApiService({
+        const crossmint = createCrossmint({
             apiKey: clientApiKey,
         });
+        const crossmintService = new CrossmintApiService(crossmint);
         const smartWalletService = new SmartWalletService(crossmintService);
         const errorProcessor = new ErrorProcessor(scwDatadogLogger);
 

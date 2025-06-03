@@ -1,4 +1,4 @@
-import { type Crossmint, createCrossmint } from "@crossmint/common-sdk-base";
+import { createCrossmint, type Crossmint } from "@crossmint/common-sdk-base";
 import { ApiClient } from "./api";
 import { WalletFactory, type WalletArgsFor } from "./wallets/wallet-factory";
 import type { Wallet } from "./wallets/wallet";

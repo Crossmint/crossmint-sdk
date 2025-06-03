@@ -80,17 +80,18 @@ export function CrossmintWalletProvider({
     createOnLogin?: CreateOnLogin;
 }) {
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
+    const email = crossmint.user?.email;
     const { isDynamicWalletConnected, getAdminSigner, sdkHasLoaded } = useDynamicWallet();
+    const { experimental_setAuth } = useCrossmint();
     const [walletState, setWalletState] = useState<ValidWalletState>({
         status: "not-loaded",
     });
     const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
-    const [email, setEmail] = useState<string>("");
     const [emailSignerDialogOpen, setEmailSignerDialogOpen] = useState<boolean>(false);
     const [emailSignerDialogStep, setEmailSignerDialogStep] = useState<"initial" | "otp">("initial");
 
     const needsAuthRef = useRef<boolean>(false);
-    const sendEmailWithOtpRef = useRef<(email: string) => Promise<void>>(throwNotAvailable("sendEmailWithOtp"));
+    const sendEmailWithOtpRef = useRef<() => Promise<void>>(throwNotAvailable("sendEmailWithOtp"));
     const verifyOtpRef = useRef<(otp: string) => Promise<void>>(throwNotAvailable("verifyOtp"));
     const rejectRef = useRef<(error: Error) => void>(throwNotAvailable("reject"));
 
@@ -117,10 +118,9 @@ export function CrossmintWalletProvider({
         [showPasskeyHelpers]
     );
 
-    const emailsigners_handleSendEmailOTP = async (emailAddress: string) => {
+    const emailsigners_handleSendEmailOTP = async () => {
         try {
-            setEmail(emailAddress);
-            await sendEmailWithOtpRef.current(emailAddress);
+            await sendEmailWithOtpRef.current();
             setEmailSignerDialogStep("otp");
         } catch (error) {
             console.error("Failed to send email OTP", error);
@@ -153,18 +153,12 @@ export function CrossmintWalletProvider({
                 setWalletState({ status: "in-progress" });
 
                 if (args?.signer?.type === "email") {
-                    if (args.signer.email) {
-                        setEmail(args.signer.email);
-                    }
-
                     // biome-ignore lint/suspicious/useAwait: fix type later
                     args.signer.onAuthRequired = async (needsAuth, sendEmailWithOtp, verifyOtp, reject) => {
                         needsAuthRef.current = needsAuth;
                         sendEmailWithOtpRef.current = sendEmailWithOtp;
                         verifyOtpRef.current = verifyOtp;
                         rejectRef.current = reject;
-
-                        console.log("onAuthRequired", needsAuth, sendEmailWithOtp, verifyOtp, reject);
 
                         if (needsAuth) {
                             setEmailSignerDialogOpen(true);
@@ -173,10 +167,7 @@ export function CrossmintWalletProvider({
                     };
                 }
 
-                const wallets = CrossmintWallets.from({
-                    apiKey: crossmint.apiKey,
-                    jwt: crossmint?.jwt,
-                });
+                const wallets = CrossmintWallets.from(crossmint);
                 const wallet = await wallets.getOrCreateWallet<C>({
                     ...args,
                     options: {
@@ -207,6 +198,12 @@ export function CrossmintWalletProvider({
     }, []);
 
     useEffect(() => {
+        if (crossmint.user?.jwt != null || crossmint.jwt != null) {
+            clearWallet();
+        }
+    }, [crossmint.user?.jwt, crossmint.jwt, clearWallet]);
+
+    useEffect(() => {
         async function handleWalletGetOrCreate() {
             // Can get or create wallet if
             if (
@@ -234,6 +231,7 @@ export function CrossmintWalletProvider({
                 });
             } catch (error) {
                 console.error("Failed to create wallet:", error);
+                experimental_setAuth(undefined);
             }
         }
 
@@ -286,7 +284,7 @@ export function CrossmintWalletProvider({
             <WalletContext.Provider value={contextValue}>
                 {children}
 
-                {emailSignerDialogOpen
+                {emailSignerDialogOpen && email != null
                     ? createPortal(
                           <EmailSignersDialog
                               rejectRef={rejectRef}

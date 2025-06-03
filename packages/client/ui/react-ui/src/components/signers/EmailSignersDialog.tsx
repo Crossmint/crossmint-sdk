@@ -11,8 +11,8 @@ interface EmailSignersDialogProps {
     setOpen: (open: boolean) => void;
     step: "initial" | "otp";
     onSubmitOTP: (token: string) => Promise<void>;
-    onResendOTPCode: (email: string) => Promise<void>;
-    onSubmitEmail: (email: string) => Promise<void>;
+    onResendOTPCode: () => Promise<void>;
+    onSubmitEmail: () => Promise<void>;
     rejectRef: MutableRefObject<((error: Error) => void) | undefined>;
     appearance?: UIConfig;
 }
@@ -28,6 +28,10 @@ export function EmailSignersDialog({
     rejectRef,
     appearance,
 }: EmailSignersDialogProps) {
+    if (email == null) {
+        throw new Error("Email is required");
+    }
+
     function handleOnCancel(isOpen?: boolean) {
         if (open || isOpen) {
             rejectRef.current?.(new Error());
@@ -76,7 +80,7 @@ export function EmailSignersDialog({
                         <EmailOTPInput
                             email={email}
                             onSubmitOTP={onSubmitOTP}
-                            onResendCode={() => onResendOTPCode(email)}
+                            onResendCode={onResendOTPCode}
                             appearance={appearance}
                         />
                     ) : (

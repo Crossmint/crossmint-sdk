@@ -24,10 +24,12 @@
         "@crossmint/client-sdk-base": "workspace:*",
         "@crossmint/client-sdk-window": "workspace:*",
         "@crossmint/client-signers": "workspace:*",
-        "@crossmint/wallets-sdk": "workspace:*"
+        "@crossmint/wallets-sdk": "workspace:*",
+        "lodash.isequal": "4.5.0"
     },
     "devDependencies": {
-        "@types/react": "19.0.12"
+        "@types/react": "19.0.12",
+        "@types/lodash.isequal": "4.5.6"
     },
     "peerDependencies": {
         "react": ">=17.0.2"
