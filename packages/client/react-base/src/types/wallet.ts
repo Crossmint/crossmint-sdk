@@ -5,7 +5,7 @@ export type {
     Balances,
     Chain,
     EvmExternalWalletSignerConfig,
-    Permission,
+    DelegatedSigner,
     SolanaExternalWalletSignerConfig,
     Wallet,
 } from "@crossmint/wallets-sdk";
