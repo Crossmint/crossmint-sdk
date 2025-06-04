@@ -1,5 +1,14 @@
 # @crossmint/wallets-sdk
 
+## 0.9.2
+
+### Patch Changes
+
+- ec09eb6: Migrate to new balance api
+- 39b73aa: sanitize wallet class using es2022 prefix
+- bf146b1: Added new experimental method for getting wallet activity
+- f49fba5: added getDelegatedSigner and delegatedSigners method
+
 ## 0.9.1
 
 ### Patch Changes
