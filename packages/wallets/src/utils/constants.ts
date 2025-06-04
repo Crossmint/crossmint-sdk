@@ -8,7 +8,7 @@ export const STATUS_POLLING_INTERVAL_MS = 500;
 export const TRANSACTION_TIMEOUT_MS = {
     ethereum: 60_000,
     polygon: 180_000, // 3 minutes for Polygon due to network congestion
-    'polygon-amoy': 180_000,
+    "polygon-amoy": 180_000,
     arbitrum: 90_000,
     optimism: 90_000,
     base: 90_000,

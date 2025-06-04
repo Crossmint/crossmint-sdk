@@ -314,7 +314,10 @@ export class Wallet<C extends Chain> {
             maxBackoffMs?: number;
         } = {}
     ): Promise<string> {
-        const effectiveTimeout = timeoutMs ?? TRANSACTION_TIMEOUT_MS[this.chain as keyof typeof TRANSACTION_TIMEOUT_MS] ?? DEFAULT_TRANSACTION_TIMEOUT_MS;
+        const effectiveTimeout =
+            timeoutMs ??
+            TRANSACTION_TIMEOUT_MS[this.chain as keyof typeof TRANSACTION_TIMEOUT_MS] ??
+            DEFAULT_TRANSACTION_TIMEOUT_MS;
         const startTime = Date.now();
         let transactionResponse;
 
