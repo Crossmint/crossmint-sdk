@@ -32,16 +32,16 @@ export class Wallet<C extends Chain> {
     address: string;
     owner?: string;
     signer: Signer;
-    protected options?: WalletOptions;
-    protected apiClient: ApiClient;
+    #options?: WalletOptions;
+    #apiClient: ApiClient;
 
     constructor({ chain, address, owner, signer, options }: WalletContructorType<C>, apiClient: ApiClient) {
-        this.apiClient = apiClient;
+        this.#apiClient = apiClient;
         this.chain = chain;
         this.address = address;
         this.owner = owner;
         this.signer = signer;
-        this.options = options;
+        this.#options = options;
     }
 
     protected static getApiClient<C extends Chain>(wallet: Wallet<C>): ApiClient {
@@ -52,6 +52,14 @@ export class Wallet<C extends Chain> {
         return wallet.options;
     }
 
+    protected get apiClient(): ApiClient {
+        return this.#apiClient;
+    }
+
+    protected get options(): WalletOptions | undefined {
+        return this.#options;
+    }
+
     /**
      * Get the wallet balances
      * @param {string[]} params.tokens - The tokens
@@ -60,7 +68,7 @@ export class Wallet<C extends Chain> {
      * @throws {Error} If the balances cannot be retrieved
      */
     public async balances(tokens: string[], chains?: Chain[]): Promise<Balances> {
-        const response = await this.apiClient.getBalance(this.address, {
+        const response = await this.#apiClient.getBalance(this.address, {
             chains: chains ?? [this.chain],
             tokens,
         });
@@ -80,7 +88,7 @@ export class Wallet<C extends Chain> {
      * @unstable This API is unstable and may change in the future
      */
     public async unstable_nfts(params: { perPage: number; page: number }) {
-        return await this.apiClient.unstable_getNfts({
+        return await this.#apiClient.unstable_getNfts({
             ...params,
             chain: this.chain,
             address: this.address,
@@ -92,7 +100,7 @@ export class Wallet<C extends Chain> {
      * @returns The transactions
      */
     public async unstable_transactions() {
-        return await this.apiClient.getTransactions(this.walletLocator);
+        return await this.#apiClient.getTransactions(this.walletLocator);
     }
 
     /**
@@ -106,7 +114,7 @@ export class Wallet<C extends Chain> {
         const recipient = toRecipientLocator(to);
         const tokenLocator = toTokenLocator(token, this.chain);
         const params = { recipient, amount };
-        const transactionCreationResponse = await this.apiClient.send(this.walletLocator, tokenLocator, params);
+        const transactionCreationResponse = await this.#apiClient.send(this.walletLocator, tokenLocator, params);
         if ("error" in transactionCreationResponse) {
             throw new TransactionNotCreatedError(
                 `Failed to send token: ${JSON.stringify(transactionCreationResponse.error)}`
@@ -121,7 +129,7 @@ export class Wallet<C extends Chain> {
      * @returns The permissions
      */
     public async updatePermissions({ signer }: { signer: string }) {
-        const response = await this.apiClient.registerSigner(this.walletLocator, {
+        const response = await this.#apiClient.registerSigner(this.walletLocator, {
             signer: signer,
             chain: this.chain === "solana" ? undefined : this.chain,
         });
@@ -151,7 +159,7 @@ export class Wallet<C extends Chain> {
     }
 
     public async permissions(): Promise<Permission[]> {
-        const walletResponse = await this.apiClient.getWallet(this.walletLocator);
+        const walletResponse = await this.#apiClient.getWallet(this.walletLocator);
         if ("error" in walletResponse) {
             throw new WalletNotAvailableError(JSON.stringify(walletResponse));
         }
@@ -174,7 +182,7 @@ export class Wallet<C extends Chain> {
     }
 
     protected get walletLocator(): string {
-        if (this.apiClient.isServerSide) {
+        if (this.#apiClient.isServerSide) {
             return this.address;
         } else {
             return `me:${this.isSolanaWallet ? "solana-smart-wallet" : "evm-smart-wallet"}`;
@@ -192,13 +200,13 @@ export class Wallet<C extends Chain> {
     }
 
     protected async approveTransaction(transactionId: string, additionalSigners?: Signer[]) {
-        const transaction = await this.apiClient.getTransaction(this.walletLocator, transactionId);
+        const transaction = await this.#apiClient.getTransaction(this.walletLocator, transactionId);
 
         if (transaction.error) {
             throw new TransactionNotAvailableError(JSON.stringify(transaction));
         }
 
-        await this.options?.experimental_callbacks?.onTransactionStart?.();
+        await this.#options?.experimental_callbacks?.onTransactionStart?.();
 
         // API key signers approve automatically
         if (this.signer.type === "api-key") {
@@ -228,7 +236,7 @@ export class Wallet<C extends Chain> {
             })
         );
 
-        const approvedTransaction = await this.apiClient.approveTransaction(this.walletLocator, transaction.id, {
+        const approvedTransaction = await this.#apiClient.approveTransaction(this.walletLocator, transaction.id, {
             approvals: signedApprovals.map((signature) => ({
                 signer: this.signer.locator(),
                 ...signature,
@@ -255,7 +263,7 @@ export class Wallet<C extends Chain> {
 
         const signature = await this.signer.signMessage(pendingApproval.message);
 
-        await this.apiClient.approveSignature(this.walletLocator, signatureId, {
+        await this.#apiClient.approveSignature(this.walletLocator, signatureId, {
             approvals: [
                 {
                     signer: this.signer.locator(),
@@ -272,7 +280,7 @@ export class Wallet<C extends Chain> {
 
         do {
             await new Promise((resolve) => setTimeout(resolve, STATUS_POLLING_INTERVAL_MS));
-            signatureResponse = await this.apiClient.getSignature(
+            signatureResponse = await this.#apiClient.getSignature(
                 // @ts-ignore id type is wrong
                 this.walletLocator,
                 signatureId
@@ -315,7 +323,7 @@ export class Wallet<C extends Chain> {
                 throw error;
             }
 
-            transactionResponse = await this.apiClient.getTransaction(this.walletLocator, transactionId);
+            transactionResponse = await this.#apiClient.getTransaction(this.walletLocator, transactionId);
             if (transactionResponse.error) {
                 throw new TransactionNotAvailableError(JSON.stringify(transactionResponse));
             }
