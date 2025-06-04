@@ -10,7 +10,7 @@ export function WalletBalance() {
 
     useEffect(() => {
         async function fetchBalances() {
-            if (!wallet) {
+            if (wallet == null) {
                 return;
             }
             try {

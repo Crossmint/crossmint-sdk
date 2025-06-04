@@ -1,18 +1,6 @@
 import { useEffect, useState } from "react";
 import { type Activity as WalletActivity, useWallet } from "@crossmint/client-sdk-react-ui";
-
-function formatDate(timestamp: number) {
-    const date = new Date(timestamp * 1000);
-    return date.toLocaleDateString() + " " + date.toLocaleTimeString();
-}
-
-function shortenAddress(addr: string) {
-    return addr ? addr.slice(0, 6) + "..." + addr.slice(-4) : "";
-}
-
-function shortenHash(hash: string) {
-    return hash ? hash.slice(0, 8) + "..." + hash.slice(-6) : "";
-}
+import { formatDate, shortenAddress, shortenHash } from "@/lib/utils";
 
 export function Activity() {
     const { wallet } = useWallet();
@@ -21,7 +9,7 @@ export function Activity() {
 
     useEffect(() => {
         async function fetchActivity() {
-            if (!wallet) {
+            if (wallet == null) {
                 return;
             }
             setLoading(true);
