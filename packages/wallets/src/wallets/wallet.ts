@@ -15,7 +15,7 @@ import {
     WalletNotAvailableError,
     WalletTypeNotSupportedError,
 } from "../utils/errors";
-import { STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
+import { STATUS_POLLING_INTERVAL_MS, TRANSACTION_TIMEOUT_MS, DEFAULT_TRANSACTION_TIMEOUT_MS } from "../utils/constants";
 import type { Chain } from "../chains/chains";
 import type { Signer } from "../signers/types";
 
@@ -303,7 +303,7 @@ export class Wallet<C extends Chain> {
 
     protected async waitForTransaction(
         transactionId: string,
-        timeoutMs = 60_000,
+        timeoutMs?: number,
         {
             backoffMultiplier = 1.1,
             maxBackoffMs = 2_000,
@@ -314,11 +314,12 @@ export class Wallet<C extends Chain> {
             maxBackoffMs?: number;
         } = {}
     ): Promise<string> {
+        const effectiveTimeout = timeoutMs ?? TRANSACTION_TIMEOUT_MS[this.chain as keyof typeof TRANSACTION_TIMEOUT_MS] ?? DEFAULT_TRANSACTION_TIMEOUT_MS;
         const startTime = Date.now();
         let transactionResponse;
 
         do {
-            if (Date.now() - startTime > timeoutMs) {
+            if (Date.now() - startTime > effectiveTimeout) {
                 const error = new TransactionConfirmationTimeoutError("Transaction confirmation timeout");
                 throw error;
             }
