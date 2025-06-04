@@ -16,7 +16,7 @@ export interface SolanaTransactionInput {
     additionalSigners?: Keypair[];
 }
 
-export type Permission = {
+export type DelegatedSigner = {
     signer: string;
 };
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { type Permission, useCrossmint, useWallet } from "@crossmint/client-sdk-react-ui";
+import { type DelegatedSigner, useCrossmint, useWallet } from "@crossmint/client-sdk-react-ui";
 import { cn } from "../lib/utils";
 
 export function Permissions() {
@@ -11,13 +11,13 @@ export function Permissions() {
     const { wallet } = useWallet();
 
     const [isLoading, setIsLoading] = useState(false);
-    const [permissions, setPermissions] = useState<Permission[]>([]);
+    const [permissions, setPermissions] = useState<DelegatedSigner[]>([]);
     const [newSigner, setNewSigner] = useState<string>("");
 
     useEffect(() => {
         const fetchPermissions = async () => {
             if (wallet != null) {
-                const signers = await wallet.permissions();
+                const signers = await wallet.delegatedSigners();
                 setPermissions(signers);
             }
         };
@@ -34,8 +34,8 @@ export function Permissions() {
         }
         try {
             setIsLoading(true);
-            await wallet.updatePermissions({ signer: newSigner });
-            const signers = await wallet.permissions();
+            await wallet.addDelegatedSigner({ signer: newSigner });
+            const signers = await wallet.delegatedSigners();
             setPermissions(signers);
         } catch (err) {
             console.error("Permissions: ", err);

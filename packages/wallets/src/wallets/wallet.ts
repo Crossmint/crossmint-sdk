@@ -1,6 +1,6 @@
 import { isValidAddress } from "@crossmint/common-sdk-base";
 import type { Activity, ApiClient, Balances, GetSignatureResponse } from "../api";
-import type { PendingApproval, Permission, WalletOptions } from "./types";
+import type { PendingApproval, DelegatedSigner, WalletOptions } from "./types";
 import {
     InvalidSignerError,
     SignatureNotAvailableError,
@@ -138,11 +138,11 @@ export class Wallet<C extends Chain> {
     }
 
     /**
-     * Update permissions for a signer
+     * Add a delegated signer to the wallet
      * @param signer - The signer
-     * @returns The permissions
+     * @returns The delegated signer
      */
-    public async updatePermissions({ signer }: { signer: string }) {
+    public async addDelegatedSigner({ signer }: { signer: string }) {
         const response = await this.#apiClient.registerSigner(this.walletLocator, {
             signer: signer,
             chain: this.chain === "solana" ? undefined : this.chain,
@@ -172,7 +172,7 @@ export class Wallet<C extends Chain> {
         }
     }
 
-    public async permissions(): Promise<Permission[]> {
+    public async delegatedSigners(): Promise<DelegatedSigner[]> {
         const walletResponse = await this.#apiClient.getWallet(this.walletLocator);
         if ("error" in walletResponse) {
             throw new WalletNotAvailableError(JSON.stringify(walletResponse));
