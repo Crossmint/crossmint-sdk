@@ -7,6 +7,7 @@ import { Wallet } from "./wallet";
 import { assembleSigner } from "../signers";
 import type { WalletOptions } from "./types";
 import { EmailSigner } from "@/signers/email/email";
+import { deepCompare } from "@/utils/signer-validation";
 
 export type WalletArgsFor<C extends Chain> = {
     chain: C;
@@ -167,20 +168,7 @@ export class WalletFactory {
     }
 
     private async configureSigner<C extends Chain>(chain: C, signer?: SignerConfigForChain<C>) {
-        if (!signer || signer.type === "api-key") {
-            return {
-                type: chain === "solana" ? "solana-fireblocks-custodial" : "evm-fireblocks-custodial",
-            };
-        }
-
-        if (signer.type === "external-wallet") {
-            return {
-                type: chain === "solana" ? "solana-keypair" : "evm-keypair",
-                address: signer.address,
-            };
-        }
-
-        if (signer.type === "passkey") {
+        if (signer?.type === "passkey") {
             const passkeyName = signer.name ?? `Crossmint Wallet ${Date.now()}`;
             const passkeyCredential = signer.onCreatePasskey
                 ? await signer.onCreatePasskey(passkeyName)
@@ -194,6 +182,45 @@ export class WalletFactory {
                     y: passkeyCredential.publicKey.y.toString(),
                 },
             } as const;
+        }
+
+        return await this.toExternalSignerConfig(chain, signer);
+    }
+
+    private async toExternalSignerConfig<C extends Chain>(
+        chain: C,
+        signer?: SignerConfigForChain<C>,
+        existingWallet?: GetWalletSuccessResponse
+    ) {
+        if (!signer || signer.type === "api-key") {
+            return {
+                type: chain === "solana" ? "solana-fireblocks-custodial" : "evm-fireblocks-custodial",
+            };
+        }
+
+        if (signer.type === "external-wallet") {
+            return {
+                type: chain === "solana" ? "solana-keypair" : "evm-keypair",
+                address: signer.address,
+            };
+        }
+
+        if (signer.type === "passkey" && existingWallet != null) {
+            if (
+                existingWallet?.type !== "evm-smart-wallet" ||
+                existingWallet.config.adminSigner.type !== "evm-passkey"
+            ) {
+                throw new WalletCreationError("Passkey signer is not supported for this wallet type");
+            }
+            return {
+                type: "evm-passkey",
+                id: existingWallet.config.adminSigner.id,
+                name: existingWallet.config.adminSigner.name,
+                publicKey: {
+                    x: existingWallet.config.adminSigner.publicKey.x,
+                    y: existingWallet.config.adminSigner.publicKey.y,
+                },
+            };
         }
 
         if (signer.type === "email") {
@@ -227,20 +254,7 @@ export class WalletFactory {
             return;
         }
 
-        let configuredArgsSigner;
-        if (args.signer.type === "passkey" && existingWallet.config.adminSigner.type === "evm-passkey") {
-            configuredArgsSigner = {
-                type: "evm-passkey",
-                id: existingWallet.config.adminSigner.id,
-                name: args.signer.name ?? existingWallet.config.adminSigner.name,
-                publicKey: {
-                    x: existingWallet.config.adminSigner.publicKey.x,
-                    y: existingWallet.config.adminSigner.publicKey.y,
-                },
-            } as const;
-        } else {
-            configuredArgsSigner = await this.configureSigner(args.chain, args.signer);
-        }
+        const configuredArgsSigner = await this.toExternalSignerConfig(args.chain, args.signer, existingWallet);
         const existingWalletSigner = existingWallet.config.adminSigner as any;
 
         if (configuredArgsSigner && existingWalletSigner) {
@@ -249,26 +263,6 @@ export class WalletFactory {
                     "The wallet signer type provided in the wallet config does not match the existing wallet's adminSigner type"
                 );
             }
-
-            const deepCompare = (obj1: any, obj2: any, path = ""): void => {
-                if (obj1 === obj2) {
-                    return;
-                }
-                if (typeof obj1 !== "object" || obj1 === null || obj2 === null) {
-                    throw new WalletCreationError(
-                        `Wallet signer ${path} does not match existing wallet's signer ${path}`
-                    );
-                }
-                for (const key of Object.keys(obj1)) {
-                    const newPath = path ? `${path}.${key}` : key;
-                    if (!(key in obj2)) {
-                        throw new WalletCreationError(
-                            `Wallet signer ${newPath} does not match existing wallet's signer ${newPath}`
-                        );
-                    }
-                    deepCompare(obj1[key], obj2[key], newPath);
-                }
-            };
             deepCompare(configuredArgsSigner, existingWalletSigner);
         }
     }
