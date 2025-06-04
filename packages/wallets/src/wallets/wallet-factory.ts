@@ -184,9 +184,7 @@ export class WalletFactory {
             const passkeyName = signer.name ?? `Crossmint Wallet ${Date.now()}`;
             const passkeyCredential = signer.onCreatePasskey
                 ? await signer.onCreatePasskey(passkeyName)
-                : await WebAuthnP256.createCredential({
-                      name: passkeyName,
-                  });
+                : await WebAuthnP256.createCredential({ name: passkeyName });
             return {
                 type: "evm-passkey",
                 id: passkeyCredential.id,
@@ -229,7 +227,20 @@ export class WalletFactory {
             return;
         }
 
-        const configuredArgsSigner = await this.configureSigner(args.chain, args.signer);
+        let configuredArgsSigner;
+        if (args.signer.type === "passkey" && existingWallet.config.adminSigner.type === "evm-passkey") {
+            configuredArgsSigner = {
+                type: "evm-passkey",
+                id: existingWallet.config.adminSigner.id,
+                name: args.signer.name ?? existingWallet.config.adminSigner.name,
+                publicKey: {
+                    x: existingWallet.config.adminSigner.publicKey.x,
+                    y: existingWallet.config.adminSigner.publicKey.y,
+                },
+            } as const;
+        } else {
+            configuredArgsSigner = await this.configureSigner(args.chain, args.signer);
+        }
         const existingWalletSigner = existingWallet.config.adminSigner as any;
 
         if (configuredArgsSigner && existingWalletSigner) {
@@ -239,14 +250,26 @@ export class WalletFactory {
                 );
             }
 
-            const signerProps = Object.keys(configuredArgsSigner) as Array<keyof typeof configuredArgsSigner>;
-            for (const prop of signerProps) {
-                if (prop in existingWalletSigner && configuredArgsSigner[prop] !== existingWalletSigner[prop]) {
+            const deepCompare = (obj1: any, obj2: any, path = ""): void => {
+                if (obj1 === obj2) {
+                    return;
+                }
+                if (typeof obj1 !== "object" || obj1 === null || obj2 === null) {
                     throw new WalletCreationError(
-                        `Wallet signer ${prop} does not match existing wallet's signer ${prop}`
+                        `Wallet signer ${path} does not match existing wallet's signer ${path}`
                     );
                 }
-            }
+                for (const key of Object.keys(obj1)) {
+                    const newPath = path ? `${path}.${key}` : key;
+                    if (!(key in obj2)) {
+                        throw new WalletCreationError(
+                            `Wallet signer ${newPath} does not match existing wallet's signer ${newPath}`
+                        );
+                    }
+                    deepCompare(obj1[key], obj2[key], newPath);
+                }
+            };
+            deepCompare(configuredArgsSigner, existingWalletSigner);
         }
     }
 }
