@@ -1,5 +1,19 @@
 # @crossmint/client-sdk-react-ui
 
+## 2.0.2
+
+### Patch Changes
+
+- bf146b1: Surfaced activity type from wallets sdk
+- f49fba5: Renamed type Permission to DelegatedSigner
+- Updated dependencies [ec09eb6]
+- Updated dependencies [39b73aa]
+- Updated dependencies [f49fba5]
+- Updated dependencies [bf146b1]
+- Updated dependencies [f49fba5]
+  - @crossmint/wallets-sdk@0.9.2
+  - @crossmint/client-sdk-react-base@0.4.1
+
 ## 2.0.1
 
 ### Patch Changes
