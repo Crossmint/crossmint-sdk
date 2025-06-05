@@ -172,7 +172,10 @@ export class EmailSigner implements Signer {
                 event: "request:complete-onboarding",
                 responseEvent: "response:complete-onboarding",
                 data: {
-                    authData: { jwt: this.config.crossmint.jwt ?? "", apiKey: this.config.crossmint.apiKey },
+                    authData: {
+                        jwt: this.config.crossmint.jwt ?? "",
+                        apiKey: this.config.crossmint.apiKey,
+                    },
                     data: {
                         onboardingAuthentication: { encryptedOtp },
                     },
@@ -200,12 +203,14 @@ export class EmailSigner implements Signer {
     }
 
     static async pregenerateSigner(email: string, crossmint: Crossmint): Promise<string> {
-        if (email == null || crossmint.user?.email == null) {
+        if (email == null || crossmint.experimental_customAuth?.email == null) {
             throw new Error("Email is required to pregenerate a signer");
         }
 
         try {
-            const response = await new EmailSignerApiClient(crossmint).pregenerateSigner(email ?? crossmint.user.email);
+            const response = await new EmailSignerApiClient(crossmint).pregenerateSigner(
+                email ?? crossmint.experimental_customAuth.email
+            );
             const publicKey = response.publicKey;
 
             if (publicKey == null) {

@@ -1,11 +1,11 @@
 import { type ReactNode, createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
-import { type Crossmint, type CrossmintConfig, type User, createCrossmint } from "@crossmint/common-sdk-base";
+import { type Crossmint, type CrossmintConfig, type CustomAuth, createCrossmint } from "@crossmint/common-sdk-base";
 import isEqual from "lodash.isequal";
 
 export interface CrossmintContext {
     crossmint: Crossmint;
     setJwt: (jwt: string | undefined) => void;
-    experimental_setAuth: (user: User | undefined) => void;
+    experimental_setCustomAuth: (experimental_customAuth: CustomAuth | undefined) => void;
 }
 
 const CrossmintContext = createContext<CrossmintContext | null>(null);
@@ -37,10 +37,10 @@ export function CrossmintProvider({
         }
     }, []);
 
-    const experimental_setAuth = useCallback((user: User | undefined) => {
-        if (user != null && !isEqual(user, crossmintRef.current.user)) {
-            crossmintRef.current.user = user;
-            crossmintRef.current.jwt = user.jwt;
+    const experimental_setCustomAuth = useCallback((experimental_customAuth: CustomAuth | undefined) => {
+        if (!isEqual(experimental_customAuth, crossmintRef.current.experimental_customAuth)) {
+            crossmintRef.current.experimental_customAuth = experimental_customAuth;
+            crossmintRef.current.jwt = experimental_customAuth?.jwt;
         }
     }, []);
 
@@ -50,9 +50,9 @@ export function CrossmintProvider({
                 return crossmintRef.current;
             },
             setJwt,
-            experimental_setAuth,
+            experimental_setCustomAuth,
         }),
-        [setJwt, experimental_setAuth, version]
+        [setJwt, experimental_setCustomAuth, version]
     );
 
     return <CrossmintContext.Provider value={value}>{children}</CrossmintContext.Provider>;

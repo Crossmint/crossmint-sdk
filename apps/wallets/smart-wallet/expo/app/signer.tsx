@@ -7,7 +7,7 @@ import { SolanaWallet } from "@crossmint/wallets-sdk";
 
 export default function SignerScreen() {
     const { crossmint } = useCrossmint();
-    const user = crossmint.user;
+    const crossmintCustomAuth = crossmint.experimental_customAuth;
     const { status, wallet, clearWallet, error: walletError, getOrCreateWallet } = useWallet();
     const { needsAuth, sendEmailWithOtp, verifyOtp } = useWalletEmailSigner();
 
@@ -40,7 +40,7 @@ export default function SignerScreen() {
     };
 
     const handleCreateOrLoadSigner = async () => {
-        if (user?.email == null) {
+        if (crossmintCustomAuth?.email == null) {
             Alert.alert("Error", "User email is not available.");
             return;
         }
@@ -58,7 +58,7 @@ export default function SignerScreen() {
     };
 
     const handleSendOtpEmail = async () => {
-        const email = user?.email;
+        const email = crossmintCustomAuth?.email;
         if (typeof email !== "string") {
             Alert.alert("Error", "User email is not available.");
             return;
@@ -105,7 +105,7 @@ export default function SignerScreen() {
         });
     };
 
-    const canCreateLoad = !isLoading && user?.email != null && wallet == null;
+    const canCreateLoad = !isLoading && crossmintCustomAuth?.email != null && wallet == null;
     const canSendTx = !isLoading && status === "loaded";
     const canClear = !isLoading && status !== "not-loaded";
 
@@ -127,7 +127,11 @@ export default function SignerScreen() {
 
             {isInOtpFlow && (
                 <View style={styles.section}>
-                    <Button title="Send OTP Email" onPress={handleSendOtpEmail} disabled={user?.email == null} />
+                    <Button
+                        title="Send OTP Email"
+                        onPress={handleSendOtpEmail}
+                        disabled={crossmintCustomAuth?.email == null}
+                    />
                     <TextInput
                         placeholder="Enter OTP from Email"
                         value={otp}

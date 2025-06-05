@@ -1,8 +1,8 @@
 import { type ValidateAPIKeyPrefixExpectations, validateAPIKey } from "@/apiKey";
 
-export type User = {
+export type CustomAuth = {
     email?: string;
-    jwt: string;
+    jwt?: string;
 };
 
 export type CrossmintConfig = {
@@ -10,11 +10,11 @@ export type CrossmintConfig = {
     jwt?: string;
     overrideBaseUrl?: string;
     appId?: string;
-    user?: User;
+    experimental_customAuth?: CustomAuth;
 };
 
 export type Crossmint = CrossmintConfig & {
-    experimental_setAuth: (user: User) => Crossmint;
+    experimental_setCustomAuth: (customAuth: CustomAuth) => Crossmint;
     setJwt: (jwt: string) => Crossmint;
 };
 
@@ -22,14 +22,14 @@ export function createCrossmint(
     config: CrossmintConfig,
     apiKeyExpectations?: ValidateAPIKeyPrefixExpectations
 ): Crossmint {
-    const { apiKey, jwt, overrideBaseUrl, appId, user } = config;
+    const { apiKey, jwt, overrideBaseUrl, appId, experimental_customAuth } = config;
     const apiKeyValidationResult = validateAPIKey(apiKey, apiKeyExpectations);
     if (!apiKeyValidationResult.isValid) {
         throw new Error(apiKeyValidationResult.message);
     }
 
-    function experimental_setAuth(user: User) {
-        return createCrossmint({ ...config, jwt: user.jwt, user });
+    function experimental_setCustomAuth(customAuth: CustomAuth) {
+        return createCrossmint({ ...config, jwt: customAuth.jwt, experimental_customAuth: customAuth });
     }
 
     function setJwt(jwt: string) {
@@ -41,8 +41,8 @@ export function createCrossmint(
         jwt,
         overrideBaseUrl,
         appId,
-        user,
-        experimental_setAuth,
+        experimental_customAuth,
+        experimental_setCustomAuth,
         setJwt,
     };
 }

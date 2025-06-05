@@ -65,7 +65,7 @@ export function CrossmintAuthProvider({
     logoutRoute,
 }: CrossmintAuthProviderProps) {
     const [user, setUser] = useState<SDKExternalUser | undefined>(undefined);
-    const { crossmint, setJwt, experimental_setAuth } = useCrossmint(
+    const { crossmint, setJwt, experimental_setCustomAuth } = useCrossmint(
         "CrossmintAuthProvider must be used within CrossmintProvider"
     );
     // Only create the CrossmintAuth instance once, even in StrictMode, as the constructor calls /refresh
@@ -78,11 +78,11 @@ export function CrossmintAuthProvider({
                 callbacks: {
                     onLogout: () => {
                         setUser(undefined);
-                        experimental_setAuth(undefined);
+                        experimental_setCustomAuth(undefined);
                     },
                     onTokenRefresh: (authMaterial: AuthMaterialWithUser) => {
                         setUser(authMaterial.user);
-                        experimental_setAuth({
+                        experimental_setCustomAuth({
                             email: authMaterial.user.email,
                             jwt: authMaterial.jwt,
                         });
@@ -169,9 +169,9 @@ export function CrossmintAuthProvider({
 
         const user = await crossmintAuth.getUser();
         setUser(user);
-        experimental_setAuth(user);
+        experimental_setCustomAuth(user);
         return user;
-    }, [crossmint.jwt, crossmintAuth, experimental_setAuth]);
+    }, [crossmint.jwt, crossmintAuth, experimental_setCustomAuth]);
 
     const authContextValue = useMemo(
         () => ({

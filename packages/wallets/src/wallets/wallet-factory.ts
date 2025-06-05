@@ -151,7 +151,7 @@ export class WalletFactory {
                 }
 
                 const address = walletResponse.config.adminSigner.address;
-                const email = signer.email ?? this.apiClient.crossmint.user?.email;
+                const email = signer.email ?? this.apiClient.crossmint.experimental_customAuth?.email;
                 return {
                     type: "email",
                     email,
@@ -224,7 +224,7 @@ export class WalletFactory {
         }
 
         if (signer.type === "email") {
-            const email = signer.email ?? this.apiClient.crossmint.user?.email;
+            const email = signer.email ?? this.apiClient.crossmint.experimental_customAuth?.email;
             if (email == null) {
                 throw new Error("Email is required to create a wallet with email signer");
             }
