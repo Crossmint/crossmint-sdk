@@ -1,4 +1,4 @@
-import { createContext, type Dispatch, type ReactNode, type SetStateAction, useMemo } from "react";
+import { createContext, type Dispatch, type ReactNode, type SetStateAction, useEffect, useMemo } from "react";
 import { type Chain, CrossmintWallets, type Wallet, type WalletArgsFor } from "@crossmint/wallets-sdk";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
@@ -90,6 +90,12 @@ export function CrossmintWalletProvider({ children, getHandshakeParent }: Crossm
         crossmintJwt: crossmint.jwt ?? null,
         getHandshakeParent,
     });
+
+    useEffect(() => {
+        if (crossmint.jwt == null && walletState.status !== "not-loaded") {
+            clearWallet();
+        }
+    }, [crossmint.jwt, walletState.status, clearWallet]);
 
     const contextValue = useMemo(
         () => ({

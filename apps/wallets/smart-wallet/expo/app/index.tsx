@@ -30,7 +30,7 @@ export default function Index() {
             console.log("User not logged in");
             return;
         }
-        getOrCreateWallet({ chain: "solana" });
+        getOrCreateWallet({ chain: "solana", signer: { type: "api-key" } });
     }
 
     async function makeTransaction() {

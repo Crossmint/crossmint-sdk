@@ -50,7 +50,7 @@ export class EmailSigner implements Signer {
             event: "request:sign",
             responseEvent: "response:sign",
             data: {
-                authData: {
+                experimental_customAuth: {
                     jwt: this.config.crossmint.jwt ?? "",
                     apiKey: this.config.crossmint.apiKey,
                 },
@@ -84,7 +84,7 @@ export class EmailSigner implements Signer {
             event: "request:get-status",
             responseEvent: "response:get-status",
             data: {
-                authData: { jwt: this.config.crossmint.jwt ?? "", apiKey: this.config.crossmint.apiKey },
+                experimental_customAuth: { jwt: this.config.crossmint.jwt ?? "", apiKey: this.config.crossmint.apiKey },
             },
             options: DEFAULT_EVENT_OPTIONS,
         });
@@ -144,7 +144,7 @@ export class EmailSigner implements Signer {
             event: "request:start-onboarding",
             responseEvent: "response:start-onboarding",
             data: {
-                authData: { jwt: this.config.crossmint.jwt ?? "", apiKey: this.config.crossmint.apiKey },
+                experimental_customAuth: { jwt: this.config.crossmint.jwt ?? "", apiKey: this.config.crossmint.apiKey },
                 data: { authId },
             },
             options: DEFAULT_EVENT_OPTIONS,
@@ -172,7 +172,10 @@ export class EmailSigner implements Signer {
                 event: "request:complete-onboarding",
                 responseEvent: "response:complete-onboarding",
                 data: {
-                    authData: { jwt: this.config.crossmint.jwt ?? "", apiKey: this.config.crossmint.apiKey },
+                    experimental_customAuth: {
+                        jwt: this.config.crossmint.jwt ?? "",
+                        apiKey: this.config.crossmint.apiKey,
+                    },
                     data: {
                         onboardingAuthentication: { encryptedOtp },
                     },

@@ -19,7 +19,7 @@
 
 ### Patch Changes
 
-- f46d3d7: experimental_setAuth in crossmint instance and use user.email for email signer
+- f46d3d7: experimental_setCustomAuth in crossmint instance and use user.email for email signer
 - Updated dependencies [f46d3d7]
 - Updated dependencies [f46d3d7]
 - Updated dependencies [fc6ed7c]

@@ -79,10 +79,10 @@ export function CrossmintWalletProvider({
     appearance?: UIConfig;
     createOnLogin?: CreateOnLogin;
 }) {
-    const { crossmint, experimental_setAuth } = useCrossmint(
+    const { crossmint, experimental_setCustomAuth } = useCrossmint(
         "CrossmintWalletProvider must be used within CrossmintProvider"
     );
-    const email = crossmint.user?.email;
+    const email = crossmint.experimental_customAuth?.email;
     const { isDynamicWalletConnected, isDynamicProviderAvailable, getAdminSigner, hasDynamicSdkLoaded } =
         useDynamicWallet();
     const [walletState, setWalletState] = useState<ValidWalletState>({
@@ -147,7 +147,7 @@ export function CrossmintWalletProvider({
                 return { startedCreation: false };
             }
 
-            if (!crossmint.jwt) {
+            if (crossmint.jwt == null) {
                 return { startedCreation: false };
             }
 
@@ -200,10 +200,10 @@ export function CrossmintWalletProvider({
     }, []);
 
     useEffect(() => {
-        if (crossmint.user?.jwt != null || crossmint.jwt != null) {
+        if (crossmint.experimental_customAuth?.jwt != null || crossmint.jwt != null) {
             clearWallet();
         }
-    }, [crossmint.user?.jwt, crossmint.jwt, clearWallet]);
+    }, [crossmint.experimental_customAuth?.jwt, crossmint.jwt, clearWallet]);
 
     useEffect(() => {
         async function handleWalletGetOrCreate() {
@@ -236,7 +236,7 @@ export function CrossmintWalletProvider({
                 });
             } catch (error) {
                 console.error("Failed to create wallet:", error);
-                experimental_setAuth(undefined);
+                experimental_setCustomAuth(undefined);
             }
         }
 

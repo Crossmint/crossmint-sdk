@@ -65,7 +65,7 @@ export function CrossmintAuthProvider({
     appSchema,
 }: CrossmintAuthProviderProps) {
     const [user, setUser] = useState<SDKExternalUser | undefined>(undefined);
-    const { crossmint, setJwt, experimental_setAuth } = useCrossmint(
+    const { crossmint, setJwt, experimental_setCustomAuth } = useCrossmint(
         "CrossmintAuthProvider must be used within CrossmintProvider"
     );
     const [oauthUrlMap, setOauthUrlMap] = useState<OAuthUrlMap>(initialOAuthUrlMap);
@@ -87,12 +87,12 @@ export function CrossmintAuthProvider({
             const config = {
                 callbacks: {
                     onLogout: () => {
-                        experimental_setAuth(undefined);
+                        experimental_setCustomAuth(undefined);
                         setUser(undefined);
                     },
                     onTokenRefresh: (authMaterial: AuthMaterialWithUser) => {
                         setUser(authMaterial.user);
-                        experimental_setAuth({
+                        experimental_setCustomAuth({
                             email: authMaterial.user.email,
                             jwt: authMaterial.jwt,
                         });
@@ -184,7 +184,10 @@ export function CrossmintAuthProvider({
 
         const user = await crossmintAuth.getUser();
         setUser(user);
-        experimental_setAuth(user);
+        experimental_setCustomAuth({
+            email: user.email,
+            jwt: crossmint.experimental_customAuth?.jwt,
+        });
         return user;
     };
 
@@ -212,6 +215,7 @@ export function CrossmintAuthProvider({
             await WebBrowser.coolDownAsync();
         } catch (error) {
             console.error("[CrossmintAuthProvider] Error during OAuth login:", error);
+            throw new Error(`Error during OAuth login: ${error}`);
         }
     };
 
