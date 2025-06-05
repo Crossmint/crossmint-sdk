@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 2.1.0
+
+### Minor Changes
+
+- a302528: Fix issue with crossmint provider styles overriding client app styles
+
 ## 2.0.4
 
 ### Patch Changes
