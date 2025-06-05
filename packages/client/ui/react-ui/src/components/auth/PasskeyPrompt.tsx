@@ -140,7 +140,7 @@ export function PasskeyPrompt({ state, appearance }: PasskeyPromptProps) {
         case "transaction":
             return (
                 <PasskeyPromptCore
-                    title="First Time Using Your Wallet"
+                    title="Use Your Wallet"
                     appearance={appearance}
                     content={
                         <div className="flex flex-col gap-2">
