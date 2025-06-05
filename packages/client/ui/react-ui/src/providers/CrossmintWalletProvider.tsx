@@ -169,15 +169,18 @@ export function CrossmintWalletProvider({
                     };
                 }
 
+                const addPasskeyCallbacks = args.signer.type === "passkey" && showPasskeyHelpers;
                 const wallets = CrossmintWallets.from(crossmint);
                 const wallet = await wallets.getOrCreateWallet<C>({
                     ...args,
                     options: {
                         ...args.options,
-                        experimental_callbacks: {
-                            onWalletCreationStart: createPasskeyPrompt("create-wallet"),
-                            onTransactionStart: createPasskeyPrompt("transaction"),
-                        },
+                        ...(addPasskeyCallbacks && {
+                            experimental_callbacks: {
+                                onWalletCreationStart: createPasskeyPrompt("create-wallet"),
+                                onTransactionStart: createPasskeyPrompt("transaction"),
+                            },
+                        }),
                     },
                 });
                 setWalletState({ status: "loaded", wallet });
@@ -227,12 +230,6 @@ export function CrossmintWalletProvider({
                     chain: createOnLogin.chain,
                     signer: finalSigner,
                     owner: createOnLogin.owner,
-                    options: {
-                        experimental_callbacks: {
-                            onWalletCreationStart: createPasskeyPrompt("create-wallet"),
-                            onTransactionStart: createPasskeyPrompt("transaction"),
-                        },
-                    },
                 });
             } catch (error) {
                 console.error("Failed to create wallet:", error);
