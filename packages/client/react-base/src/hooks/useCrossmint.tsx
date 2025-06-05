@@ -38,12 +38,9 @@ export function CrossmintProvider({
     }, []);
 
     const experimental_setCustomAuth = useCallback((experimental_customAuth: CustomAuth | undefined) => {
-        if (
-            experimental_customAuth != null &&
-            !isEqual(experimental_customAuth, crossmintRef.current.experimental_customAuth)
-        ) {
+        if (!isEqual(experimental_customAuth, crossmintRef.current.experimental_customAuth)) {
             crossmintRef.current.experimental_customAuth = experimental_customAuth;
-            crossmintRef.current.jwt = experimental_customAuth.jwt;
+            crossmintRef.current.jwt = experimental_customAuth?.jwt;
         }
     }, []);
 
