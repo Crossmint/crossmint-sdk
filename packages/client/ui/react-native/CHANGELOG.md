@@ -1,5 +1,20 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.5.4
+
+### Patch Changes
+
+- 34d723f: Updates to crossmint.customAuth and handles logout properly
+- Updated dependencies [34d723f]
+- Updated dependencies [34d723f]
+- Updated dependencies [34d723f]
+  - @crossmint/client-sdk-react-base@0.4.3
+  - @crossmint/common-sdk-base@0.7.1
+  - @crossmint/wallets-sdk@0.9.4
+  - @crossmint/client-sdk-auth@1.2.12
+  - @crossmint/client-sdk-base@1.5.4
+  - @crossmint/common-sdk-auth@1.0.35
+
 ## 0.5.3
 
 ### Patch Changes

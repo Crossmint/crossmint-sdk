@@ -1,5 +1,14 @@
 # @crossmint/wallets-sdk
 
+## 0.9.4
+
+### Patch Changes
+
+- 34d723f: Fixes send api error message and uses latest crossmint.customAuth
+- Updated dependencies [34d723f]
+  - @crossmint/common-sdk-base@0.7.1
+  - @crossmint/common-sdk-auth@1.0.35
+
 ## 0.9.3
 
 ### Patch Changes

@@ -1,5 +1,16 @@
 # @crossmint/client-sdk-react-base
 
+## 0.4.3
+
+### Patch Changes
+
+- 34d723f: Updates to crossmint.customAuth and handles logout properly
+- Updated dependencies [34d723f]
+- Updated dependencies [34d723f]
+  - @crossmint/common-sdk-base@0.7.1
+  - @crossmint/wallets-sdk@0.9.4
+  - @crossmint/client-sdk-base@1.5.4
+
 ## 0.4.2
 
 ### Patch Changes
