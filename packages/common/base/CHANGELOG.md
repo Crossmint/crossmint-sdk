@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.7.1
+
+### Patch Changes
+
+- 34d723f: Renames to experimental_customAuth as we're still figuring it out
+
 ## 0.7.0
 
 ### Minor Changes
