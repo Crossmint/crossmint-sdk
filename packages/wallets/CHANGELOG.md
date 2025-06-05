@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 0.9.3
+
+### Patch Changes
+
+- bc85816: Fix bug with passkey signer validation
+
 ## 0.9.2
 
 ### Patch Changes
