@@ -1,21 +1,23 @@
 import { useState, useEffect } from "react";
 import { View, Text, Button, TextInput, StyleSheet, ScrollView, ActivityIndicator, Alert } from "react-native";
 import { useCrossmint, useWallet, useWalletEmailSigner } from "@crossmint/client-sdk-react-native-ui";
-import { PublicKey, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
-import { createMemoInstruction } from "@solana/spl-memo";
-import { SolanaWallet } from "@crossmint/wallets-sdk";
+import { useRouter } from "expo-router";
 
 export default function SignerScreen() {
     const { crossmint } = useCrossmint();
-    const crossmintCustomAuth = crossmint.experimental_customAuth;
-    const { status, wallet, clearWallet, error: walletError, getOrCreateWallet } = useWallet();
+    const loggedInUserEmail = crossmint.experimental_customAuth?.email ?? null;
+    const { status: walletStatus, wallet, clearWallet, error: walletError } = useWallet();
     const { needsAuth, sendEmailWithOtp, verifyOtp } = useWalletEmailSigner();
+    const router = useRouter();
 
     const [otp, setOtp] = useState("");
     const [txHash, setTxHash] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isInOtpFlow, setIsInOtpFlow] = useState(false);
     const [uiError, setUiError] = useState<string | null>(null);
+    const [recipientAddress, setRecipientAddress] = useState("");
+    const [amount, setAmount] = useState<string>("");
+    const [usdcBalance, setUsdcBalance] = useState<string | null>(null);
 
     useEffect(() => {
         if (needsAuth && !isInOtpFlow) {
@@ -23,7 +25,22 @@ export default function SignerScreen() {
         }
     }, [needsAuth, isInOtpFlow]);
 
-    const handleAction = async (action: () => Promise<any>) => {
+    useEffect(() => {
+        async function fetchBalances() {
+            if (wallet == null) {
+                return;
+            }
+            try {
+                const balances = await wallet.balances(["usdc"]);
+                setUsdcBalance(balances[0].amount);
+            } catch (error) {
+                console.log("Error fetching wallet balances:", error);
+            }
+        }
+        fetchBalances();
+    }, [wallet]);
+
+    const handleAction = async (action: () => Promise<any> | void) => {
         setIsLoading(true);
         setUiError(null);
         setTxHash(null);
@@ -39,27 +56,8 @@ export default function SignerScreen() {
         }
     };
 
-    const handleCreateOrLoadSigner = async () => {
-        if (crossmintCustomAuth?.email == null) {
-            Alert.alert("Error", "User email is not available.");
-            return;
-        }
-        await handleAction(async () => {
-            const { startedCreation, reason } = await getOrCreateWallet({
-                chain: "solana",
-                signer: {
-                    type: "email",
-                },
-            });
-            if (!startedCreation && reason) {
-                throw new Error(reason);
-            }
-        });
-    };
-
     const handleSendOtpEmail = async () => {
-        const email = crossmintCustomAuth?.email;
-        if (typeof email !== "string") {
+        if (typeof loggedInUserEmail !== "string") {
             Alert.alert("Error", "User email is not available.");
             return;
         }
@@ -79,59 +77,43 @@ export default function SignerScreen() {
         });
     };
 
-    const handleSendTransaction = async () => {
-        if (status !== "loaded" || wallet == null) {
+    async function sendUSDC() {
+        if (walletStatus !== "loaded" || wallet == null) {
             Alert.alert("Error", "Wallet is not loaded or is not a Solana smart wallet.");
             return;
         }
+        setIsLoading(true);
+        try {
+            const txHash = await wallet.send(recipientAddress, "usdc", amount);
+            console.log(`Sent ${amount} USDC to ${recipientAddress}. Tx Hash: ${txHash}`);
+            setTxHash(txHash);
+            setRecipientAddress("");
+            setAmount("");
+        } catch (error) {
+            console.log("error sending usdc", error);
+        } finally {
+            setIsLoading(false);
+        }
+    }
 
-        await handleAction(async () => {
-            const transaction = new VersionedTransaction(
-                new TransactionMessage({
-                    payerKey: new PublicKey(wallet.address),
-                    recentBlockhash: "11111111111111111111111111111111",
-                    instructions: [createMemoInstruction(`Hello from Crossmint Smart Wallet! ${Date.now()}`)],
-                }).compileToV0Message()
-            );
-            const solanaWallet = SolanaWallet.from(wallet as SolanaWallet);
-            const signature = await solanaWallet.sendTransaction({ transaction });
-            if (signature) {
-                setTxHash(signature);
-                Alert.alert("Success", `Transaction Sent: ${signature}`);
-            } else {
-                setUiError("Transaction sending did not return a signature.");
-                Alert.alert("Info", "Transaction sent, but no signature was immediately returned.");
-            }
-        });
-    };
-
-    const canCreateLoad = !isLoading && crossmintCustomAuth?.email != null && wallet == null;
-    const canSendTx = !isLoading && status === "loaded";
-    const canClear = !isLoading && status !== "not-loaded";
+    const canClear = !isLoading && walletStatus !== "not-loaded";
 
     return (
         <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
             <View style={styles.statusSection}>
-                <Text>Auth Status: {status}</Text>
+                <Text>Auth Status: {walletStatus}</Text>
                 <Text>Needs OTP Auth: {needsAuth ? "Yes" : "No"}</Text>
                 {walletError && <Text style={styles.errorText}>Wallet Error: {walletError}</Text>}
                 {uiError && <Text style={styles.errorText}>Last Action Error: {uiError}</Text>}
                 <Text>Wallet Address: {wallet?.address ?? "Not Loaded"}</Text>
+                <Text>USDC Balance: {usdcBalance}</Text>
                 {txHash && <Text>Last Tx Hash: {txHash}</Text>}
                 {isLoading && <ActivityIndicator size="large" color="#0000ff" style={{ marginTop: 10 }} />}
             </View>
 
-            <View style={styles.section}>
-                <Button title="1. Create / Load Signer" onPress={handleCreateOrLoadSigner} disabled={!canCreateLoad} />
-            </View>
-
             {isInOtpFlow && (
                 <View style={styles.section}>
-                    <Button
-                        title="Send OTP Email"
-                        onPress={handleSendOtpEmail}
-                        disabled={crossmintCustomAuth?.email == null}
-                    />
+                    <Button title="Send OTP Email" onPress={handleSendOtpEmail} disabled={loggedInUserEmail == null} />
                     <TextInput
                         placeholder="Enter OTP from Email"
                         value={otp}
@@ -145,13 +127,38 @@ export default function SignerScreen() {
             )}
 
             <View style={styles.section}>
-                <Button title="Send Memo Transaction" onPress={handleSendTransaction} disabled={!canSendTx} />
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 10, width: "100%" }}>
+                    <View style={{ flex: 1 }}>
+                        <Text>Send USDC to</Text>
+                        <TextInput
+                            placeholder="Enter address"
+                            value={recipientAddress}
+                            onChangeText={setRecipientAddress}
+                            style={{ borderWidth: 1, padding: 5, borderRadius: 5 }}
+                        />
+                    </View>
+                    <View style={{ width: 100 }}>
+                        <Text>Amount</Text>
+                        <TextInput
+                            placeholder="Amount"
+                            value={amount}
+                            onChangeText={setAmount}
+                            style={{ borderWidth: 1, padding: 5, borderRadius: 5 }}
+                        />
+                    </View>
+                </View>
+                <Button title="Send USDC" onPress={sendUSDC} disabled={isLoading || amount === ""} />
             </View>
 
             <View style={styles.section}>
                 <Button
                     title="Clear Wallet State"
-                    onPress={() => handleAction(async () => clearWallet())}
+                    onPress={() =>
+                        handleAction(() => {
+                            clearWallet();
+                            router.replace("/");
+                        })
+                    }
                     disabled={!canClear}
                 />
             </View>
