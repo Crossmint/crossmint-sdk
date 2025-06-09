@@ -6,6 +6,8 @@ import {
 } from "@crossmint/client-sdk-react-native-ui";
 import { Stack } from "expo-router";
 
+import "../utils/polyfills";
+
 export default function RootLayout() {
     return (
         <CrossmintProviders>
