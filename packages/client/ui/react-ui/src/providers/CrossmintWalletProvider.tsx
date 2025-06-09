@@ -53,7 +53,9 @@ type WalletContextType = {
     showPasskeyHelpers?: boolean;
     appearance?: UIConfig;
     createPasskeyPrompt: (type: ValidPasskeyPromptType) => () => Promise<void>;
-    getOrCreateWallet: <C extends Chain>(args: WalletArgsFor<C>) => Promise<{ startedCreation: boolean }>;
+    getOrCreateWallet: <C extends Chain>(
+        args: WalletArgsFor<C>
+    ) => Promise<{ startedCreation: boolean; reason?: string; wallet?: Wallet<C> }>;
     createPasskeySigner: () => Promise<PasskeySigner>;
     clearWallet: () => void;
 };
@@ -184,14 +186,14 @@ export function CrossmintWalletProvider({
                     },
                 });
                 setWalletState({ status: "loaded", wallet });
-                return { startedCreation: true };
+                return { startedCreation: true, wallet };
             } catch (error) {
                 console.error("Failed to create wallet:", error);
                 setWalletState({ status: "error", error: error instanceof Error ? error : new Error(String(error)) });
-                return { startedCreation: false };
+                return { startedCreation: false, reason: `Failed to create wallet ${error}` };
             }
         },
-        [crossmint, walletState.status, createPasskeyPrompt]
+        [crossmint, walletState.status, createPasskeyPrompt, showPasskeyHelpers]
     );
 
     const createPasskeySigner = useCallback(async () => {

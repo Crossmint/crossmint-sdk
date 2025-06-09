@@ -78,13 +78,14 @@ export function useWalletState({
 
                 const wallet = await crossmintWallets.getOrCreateWallet(props);
                 setState({ status: "loaded", wallet });
+                return { startedCreation: true, wallet };
             } catch (error: unknown) {
                 console.error("There was an error creating a wallet ", error);
                 setState(deriveErrorState(error));
+                return { startedCreation: true, reason: `There was an error creating a wallet ${error}` };
             }
-            return { startedCreation: true };
         },
-        [crossmintJwt, crossmintWallets, getHandshakeParent]
+        [crossmintJwt, crossmintWallets, getHandshakeParent, clearEmailSignerFunctions]
     );
 
     const clearWallet = useCallback(() => {
