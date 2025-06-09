@@ -14,7 +14,7 @@ export type ValidWalletState =
 type WalletContextFunctions = {
     getOrCreateWallet: <C extends Chain>(
         props: WalletArgsFor<C>
-    ) => Promise<{ startedCreation: boolean; reason?: string }>;
+    ) => Promise<{ startedCreation: boolean; reason?: string; wallet?: Wallet<C> }>;
     setState: Dispatch<SetStateAction<ValidWalletState>>;
     clearWallet: () => void;
     // Email signer functions
