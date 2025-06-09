@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.5.5
+
+### Patch Changes
+
+- a3c9d8e: Exported types Balances and DelegatedSigner
+- Updated dependencies [039759d]
+  - @crossmint/client-sdk-react-base@0.4.4
+
 ## 0.5.4
 
 ### Patch Changes
