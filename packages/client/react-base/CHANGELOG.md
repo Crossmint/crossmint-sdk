@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-base
 
+## 0.4.4
+
+### Patch Changes
+
+- 039759d: Makes getOrCreateWallet return the wallet instance
+
 ## 0.4.3
 
 ### Patch Changes
