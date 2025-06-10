@@ -14,7 +14,7 @@ export function CrossmintProvider({
     children,
     apiKey,
     overrideBaseUrl,
-}: Omit<CrossmintConfig, "jwt"> & {
+}: Pick<CrossmintConfig, "apiKey" | "overrideBaseUrl"> & {
     children: ReactNode;
 }) {
     const [version, setVersion] = useState(0);
