@@ -1,5 +1,8 @@
 import { WalletCreationError } from "./errors";
 
+const signersDontMatchErrorMessage = (newPath: string, val1: unknown, val2: unknown) =>
+    `Wallet signer configuration mismatch at "${newPath}" - expected "${val2}" from existing wallet but found "${val1}"`;
+
 export function deepCompare(obj1: Record<string, unknown>, obj2: Record<string, unknown>, path = "") {
     if (obj1 === obj2) {
         return;
@@ -9,11 +12,16 @@ export function deepCompare(obj1: Record<string, unknown>, obj2: Record<string, 
     }
     for (const key of Object.keys(obj1)) {
         const newPath = path ? `${path}.${key}` : key;
+        const val1 = obj1[key];
+        const val2 = obj2[key];
+
         if (!(key in obj2)) {
-            throw new WalletCreationError(
-                `Wallet signer configuration mismatch at "${newPath}" - expected "${obj2[key]}" from existing wallet but found "${obj1[key]}"`
-            );
+            throw new WalletCreationError(signersDontMatchErrorMessage(newPath, val1, val2));
         }
-        deepCompare(obj1[key] as Record<string, unknown>, obj2[key] as Record<string, unknown>, newPath);
+        if (typeof val1 === "object" && val1 !== null && typeof val2 === "object" && val2 !== null) {
+            deepCompare(val1 as Record<string, unknown>, val2 as Record<string, unknown>, newPath);
+        } else if (val1 !== val2) {
+            throw new WalletCreationError(signersDontMatchErrorMessage(newPath, val1, val2));
+        }
     }
 }
