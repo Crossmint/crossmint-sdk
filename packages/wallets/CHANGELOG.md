@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 0.9.5
+
+### Patch Changes
+
+- 030c56e: Fix bug with signer object comparison
+
 ## 0.9.4
 
 ### Patch Changes
