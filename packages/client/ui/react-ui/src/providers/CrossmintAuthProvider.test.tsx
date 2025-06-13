@@ -1,30 +1,18 @@
-import { type ReactNode, act } from "react";
+import type { ReactNode } from "react";
 import { CrossmintAuth as CrossmintAuthClient, getJWTExpiration, deleteCookie } from "@crossmint/client-sdk-auth";
 import { type Chain, CrossmintWallets, type SignerConfigForChain, type Wallet } from "@crossmint/wallets-sdk";
 import { SESSION_PREFIX, REFRESH_TOKEN_PREFIX } from "@crossmint/common-sdk-auth";
 import { createCrossmint, type UIConfig } from "@crossmint/common-sdk-base";
-import type { CreateOnLogin } from "@crossmint/client-sdk-react-base";
+import { CrossmintProvider, type CreateOnLogin } from "@crossmint/client-sdk-react-base";
 import { beforeEach, describe, expect, vi, it, type MockInstance } from "vitest";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { mock } from "vitest-mock-extended";
 
-import { useAuth, useWallet } from "../hooks";
-import { CrossmintProvider, useCrossmint } from "../hooks/useCrossmint";
+import { useAuth, useCrossmint, useWallet } from "../hooks";
 import { MOCK_API_KEY } from "../testUtils";
 import { CrossmintAuthProvider } from "./CrossmintAuthProvider";
 import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
 import type { LoginMethod } from "@/types/auth";
-import { useDynamicWallet } from "./dynamic/DynamicWalletProvider";
-
-vi.mock("@dynamic-labs/sdk-react-core", () => ({
-    useDynamicContext: vi.fn().mockReturnValue({
-        primaryWallet: undefined,
-        isDynamicProviderAvailable: false,
-        hasDynamicSdkLoaded: true,
-        removeWallet: vi.fn(),
-        handleUnlinkWallet: vi.fn(),
-    }),
-}));
 
 vi.mock("@dynamic-labs/ethereum", () => ({
     isEthereumWallet: vi.fn().mockReturnValue(false),
@@ -34,17 +22,6 @@ vi.mock("@dynamic-labs/ethereum", () => ({
 vi.mock("@dynamic-labs/solana", () => ({
     isSolanaWallet: vi.fn().mockReturnValue(false),
     SolanaWalletConnectors: {},
-}));
-
-vi.mock("@/providers/dynamic/DynamicWalletProvider", () => ({
-    useDynamicWallet: vi.fn().mockImplementation(() => ({
-        getAdminSigner: vi.fn().mockResolvedValue(null),
-        cleanup: vi.fn(),
-        isDynamicProviderAvailable: false,
-        hasDynamicSdkLoaded: true,
-        isDynamicWalletConnected: false,
-        initialize: vi.fn(),
-    })),
 }));
 
 vi.mock("@/components/dynamic-xyz/DynamicContextProviderWrapper", () => ({
@@ -116,7 +93,7 @@ function renderAuthProvider({
 
 function TestComponent() {
     const { setJwt } = useCrossmint();
-    const { wallet, status: walletStatus, clearWallet } = useWallet();
+    const { wallet, status: walletStatus } = useWallet();
     const { status: authStatus, jwt } = useAuth();
     return (
         <div>
@@ -129,9 +106,6 @@ function TestComponent() {
             </button>
             <button data-testid="clear-jwt-button" onClick={() => setJwt(undefined)}>
                 Clear JWT
-            </button>
-            <button data-testid="clear-wallet-button" onClick={clearWallet}>
-                Clear Wallet
             </button>
         </div>
     );
@@ -176,14 +150,6 @@ describe("CrossmintAuthProvider", () => {
         vi.mocked(mockSDK.getOrCreateWallet).mockResolvedValue(mockWallet);
         vi.mocked(getJWTExpiration).mockReturnValue(1000);
 
-        vi.mocked(useDynamicWallet).mockImplementation(() => ({
-            getAdminSigner: vi.fn().mockResolvedValue(null),
-            cleanup: vi.fn(),
-            isDynamicProviderAvailable: false,
-            hasDynamicSdkLoaded: true,
-            isDynamicWalletConnected: false,
-            initialize: vi.fn(),
-        }));
         const mockPasskeySigner = mock<SignerConfigForChain<Chain>>({
             type: "passkey",
             name: "Crossmint Wallet",
@@ -206,7 +172,10 @@ describe("CrossmintAuthProvider", () => {
                     secret: "mock-refresh-token",
                     expiresAt: 123456,
                 },
-                user: {},
+                user: {
+                    id: "test-user-id",
+                    email: "test@example.com",
+                },
             })
         );
         const mockCrossmintAuth = CrossmintAuthClient.from(createCrossmint({ apiKey: MOCK_API_KEY }));
@@ -232,10 +201,8 @@ describe("CrossmintAuthProvider", () => {
     });
 
     it("Happy path", async () => {
-        await act(() => {
-            document.cookie = `${REFRESH_TOKEN_PREFIX}=mock-refresh-token; path=/; SameSite=Lax;`;
-            document.cookie = `${SESSION_PREFIX}=mock-jwt; path=/; SameSite=Lax;`;
-        });
+        document.cookie = `${REFRESH_TOKEN_PREFIX}=mock-refresh-token; path=/; SameSite=Lax;`;
+        document.cookie = `${SESSION_PREFIX}=mock-jwt; path=/; SameSite=Lax;`;
 
         const { getByTestId } = renderAuthProvider({
             children: <TestComponent />,

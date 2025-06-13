@@ -203,14 +203,12 @@ export class EmailSigner implements Signer {
     }
 
     static async pregenerateSigner(email: string, crossmint: Crossmint): Promise<string> {
-        if (email == null || crossmint.experimental_customAuth?.email == null) {
+        if (email == null) {
             throw new Error("Email is required to pregenerate a signer");
         }
 
         try {
-            const response = await new EmailSignerApiClient(crossmint).pregenerateSigner(
-                email ?? crossmint.experimental_customAuth.email
-            );
+            const response = await new EmailSignerApiClient(crossmint).pregenerateSigner(email);
             const publicKey = response.publicKey;
 
             if (publicKey == null) {

@@ -10,7 +10,7 @@ import { isEthereumWallet } from "@dynamic-labs/ethereum";
 /*                    EVM DYNAMIC CONNECTOR                     */
 /* ============================================================ */
 export const useEVMDynamicConnector = () => {
-    const { crossmint, setJwt } = useCrossmint();
+    const { crossmint, experimental_setCustomAuth } = useCrossmint();
     const {
         getOrCreateWallet: getOrCreateCrossmintWallet,
         status: crossmintWalletStatus,
@@ -22,7 +22,7 @@ export const useEVMDynamicConnector = () => {
     const jwt = getAuthToken();
 
     useEffect(() => {
-        setJwt(jwt);
+        experimental_setCustomAuth({ jwt });
     }, [jwt]);
 
     useEffect(() => {
@@ -67,7 +67,7 @@ export const useEVMDynamicConnector = () => {
 /*                    SOLANA DYNAMIC CONNECTOR                  */
 /* ============================================================ */
 export const useSolanaDynamicConnector = () => {
-    const { crossmint, setJwt } = useCrossmint();
+    const { crossmint, experimental_setCustomAuth } = useCrossmint();
     const {
         getOrCreateWallet: getOrCreateCrossmintWallet,
         status: crossmintWalletStatus,
@@ -79,7 +79,7 @@ export const useSolanaDynamicConnector = () => {
     const jwt = getAuthToken();
 
     useEffect(() => {
-        setJwt(jwt);
+        experimental_setCustomAuth({ jwt });
     }, [jwt]);
 
     useEffect(() => {

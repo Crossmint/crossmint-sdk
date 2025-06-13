@@ -151,10 +151,9 @@ export class WalletFactory {
                 }
 
                 const address = walletResponse.config.adminSigner.address;
-                const email = signer.email ?? this.apiClient.crossmint.experimental_customAuth?.email;
                 return {
                     type: "email",
-                    email,
+                    email: signer.email,
                     signerAddress: address,
                     crossmint: this.apiClient.crossmint,
                     onAuthRequired: signer.onAuthRequired,
@@ -224,15 +223,14 @@ export class WalletFactory {
         }
 
         if (signer.type === "email") {
-            const email = signer.email ?? this.apiClient.crossmint.experimental_customAuth?.email;
-            if (email == null) {
+            if (signer.email == null) {
                 throw new Error("Email is required to create a wallet with email signer");
             }
             if (chain !== "solana") {
                 throw new Error("Email signer is only supported for Solana wallets");
             }
 
-            const emailSignerAddress = await EmailSigner.pregenerateSigner(email, this.apiClient.crossmint);
+            const emailSignerAddress = await EmailSigner.pregenerateSigner(signer.email, this.apiClient.crossmint);
             return {
                 type: "solana-keypair",
                 address: emailSignerAddress,

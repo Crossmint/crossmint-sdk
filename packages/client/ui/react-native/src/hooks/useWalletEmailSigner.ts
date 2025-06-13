@@ -1,4 +1,4 @@
-import { WalletContext } from "@crossmint/client-sdk-react-base";
+import { CrossmintWalletEmailSignerContext } from "@/providers/CrossmintWalletProvider";
 import { useContext } from "react";
 
 export type EmailSignerFunctions = {
@@ -9,7 +9,7 @@ export type EmailSignerFunctions = {
 };
 
 export function useWalletEmailSigner(): EmailSignerFunctions {
-    const context = useContext(WalletContext);
+    const context = useContext(CrossmintWalletEmailSignerContext);
 
     if (context == null) {
         throw new Error("useWalletEmailSigner must be used within CrossmintWalletProvider");

@@ -1,1 +1,2 @@
-export * from "./CrossmintWalletProvider";
+export * from "./CrossmintWalletBaseProvider";
+export * from "./CrossmintProvider";

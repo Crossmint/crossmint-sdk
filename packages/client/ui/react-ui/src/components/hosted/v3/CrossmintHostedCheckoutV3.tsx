@@ -1,5 +1,5 @@
 import { CrossmintLogoV2 } from "@/components/common/CrossmintLogoV2/CrossmintLogoV2";
-import { useCrossmint } from "@/hooks/useCrossmint";
+import { useCrossmint } from "@crossmint/client-sdk-react-base";
 import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
 import {
     crossmintHostedCheckoutV3Service,

@@ -4,14 +4,19 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { type Crossmint, createCrossmint } from "@crossmint/common-sdk-base";
 
-import { CrossmintProvider, useCrossmint } from "./useCrossmint";
+import { useCrossmint } from "./useCrossmint";
+import { CrossmintProvider } from "@/providers";
 
 const MOCK_API_KEY =
     "sk_development_5ZUNkuhjP8aYZEgUTDfWToqFpo5zakEqte1db4pHZgPAVKZ9JuSvnKeGiqY654DoBuuZEzYz4Eb8gRV2ePqQ1fxTjEP8tTaUQdzbGfyG9RgyeN5YbqViXinqxk8EayEkAGtvSSgjpjEr6iaBptJtUFwPW59DjQzTQP6P8uZdiajenVg7bARGKjzFyByNuVEoz41DpRB4hDZNFdwCTuf5joFv";
 
-vi.mock("@crossmint/common-sdk-base", () => ({
-    createCrossmint: vi.fn(),
-}));
+vi.mock("@crossmint/common-sdk-base", async () => {
+    const actual = await vi.importActual("@crossmint/common-sdk-base");
+    return {
+        ...actual,
+        createCrossmint: vi.fn(),
+    };
+});
 
 class MockSDK {
     constructor(public crossmint: Crossmint) {}
@@ -30,6 +35,7 @@ describe("CrossmintProvider", () => {
         vi.mocked(createCrossmint).mockImplementation(() => ({
             apiKey: MOCK_API_KEY,
             jwt: "",
+            setJwt: vi.fn(),
         }));
     });
 
@@ -48,11 +54,11 @@ describe("CrossmintProvider", () => {
 
     it("updates JWT using setJwt", () => {
         const TestComponent = () => {
-            const { crossmint, setJwt } = useCrossmint();
+            const { crossmint, experimental_setCustomAuth } = useCrossmint();
             return (
                 <div>
                     <div data-testid="jwt">{crossmint.jwt}</div>
-                    <button onClick={() => setJwt("new_jwt")}>Update JWT</button>
+                    <button onClick={() => experimental_setCustomAuth({ jwt: "new_jwt" })}>Update JWT</button>
                 </div>
             );
         };
@@ -81,14 +87,14 @@ describe("CrossmintProvider", () => {
     it("triggers re-render on JWT change", () => {
         const renderCount = vi.fn();
         const TestComponent = () => {
-            const { crossmint, setJwt } = useCrossmint();
+            const { crossmint, experimental_setCustomAuth } = useCrossmint();
             useEffect(() => {
                 renderCount();
             });
             return (
                 <div>
                     <div data-testid="jwt">{crossmint.jwt}</div>
-                    <button onClick={() => setJwt("new_jwt")}>Update JWT</button>
+                    <button onClick={() => experimental_setCustomAuth({ jwt: "new_jwt" })}>Update JWT</button>
                 </div>
             );
         };
