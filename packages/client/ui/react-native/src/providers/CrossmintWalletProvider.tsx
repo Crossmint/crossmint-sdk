@@ -164,47 +164,47 @@ export function CrossmintWalletProvider({ children }: CrossmintWalletProviderPro
         <CrossmintWalletBaseProvider onAuthRequired={onAuthRequired} getHandshakeParent={getHandshakeParent}>
             <CrossmintWalletEmailSignerContext.Provider value={authContextValue}>
                 {children}
-                <View
-                    style={{
-                        position: "absolute",
-                        width: 0,
-                        height: 0,
-                        overflow: "hidden",
-                    }}
-                >
-                    <RNWebView
-                        ref={webviewRef}
-                        source={{ uri: frameUrl }}
-                        injectedGlobals={injectedGlobalsScript}
-                        onLoadStart={(event) => {
-                            console.log("[CrossmintWalletProvider] WebView onLoadStart:", event.nativeEvent.url);
-                        }}
-                        onLoadEnd={onWebViewLoad}
-                        onLoadProgress={({ nativeEvent }) => {
-                            console.log("[CrossmintWalletProvider] WebView loading progress:", nativeEvent.progress);
-                        }}
-                        onMessage={handleMessage}
-                        onError={(syntheticEvent) => {
-                            console.error("[CrossmintWalletProvider] WebView error:", syntheticEvent.nativeEvent);
-                            setIsWebViewReady(false);
-                        }}
-                        onHttpError={(syntheticEvent) => {
-                            console.error("[CrossmintWalletProvider] WebView HTTP error:", syntheticEvent.nativeEvent);
-                            setIsWebViewReady(false);
-                        }}
-                        style={{
-                            width: 1,
-                            height: 1,
-                        }}
-                        javaScriptCanOpenWindowsAutomatically={false}
-                        thirdPartyCookiesEnabled={false}
-                        sharedCookiesEnabled={false}
-                        incognito={false}
-                        setSupportMultipleWindows={false}
-                        originWhitelist={[DEFAULT_SECURE_ENDPOINT_URL]}
-                    />
-                </View>
             </CrossmintWalletEmailSignerContext.Provider>
+            <View
+                style={{
+                    position: "absolute",
+                    width: 0,
+                    height: 0,
+                    overflow: "hidden",
+                }}
+            >
+                <RNWebView
+                    ref={webviewRef}
+                    source={{ uri: frameUrl }}
+                    injectedGlobals={injectedGlobalsScript}
+                    onLoadStart={(event) => {
+                        console.log("[CrossmintWalletProvider] WebView onLoadStart:", event.nativeEvent.url);
+                    }}
+                    onLoadEnd={onWebViewLoad}
+                    onLoadProgress={({ nativeEvent }) => {
+                        console.log("[CrossmintWalletProvider] WebView loading progress:", nativeEvent.progress);
+                    }}
+                    onMessage={handleMessage}
+                    onError={(syntheticEvent) => {
+                        console.error("[CrossmintWalletProvider] WebView error:", syntheticEvent.nativeEvent);
+                        setIsWebViewReady(false);
+                    }}
+                    onHttpError={(syntheticEvent) => {
+                        console.error("[CrossmintWalletProvider] WebView HTTP error:", syntheticEvent.nativeEvent);
+                        setIsWebViewReady(false);
+                    }}
+                    style={{
+                        width: 1,
+                        height: 1,
+                    }}
+                    javaScriptCanOpenWindowsAutomatically={false}
+                    thirdPartyCookiesEnabled={false}
+                    sharedCookiesEnabled={false}
+                    incognito={false}
+                    setSupportMultipleWindows={false}
+                    originWhitelist={[DEFAULT_SECURE_ENDPOINT_URL]}
+                />
+            </View>
         </CrossmintWalletBaseProvider>
     );
 }
