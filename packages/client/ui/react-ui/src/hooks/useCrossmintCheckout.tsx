@@ -1,7 +1,7 @@
 import { createContext, type ReactNode, useContext, useEffect, useState } from "react";
 import type { embeddedCheckoutV3IncomingEvents, Order } from "@crossmint/client-sdk-base";
 import type { z } from "zod";
-import { useCrossmint } from "./useCrossmint";
+import { useCrossmint } from "@crossmint/client-sdk-react-base";
 import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
 
 export interface CrossmintCheckoutContext {

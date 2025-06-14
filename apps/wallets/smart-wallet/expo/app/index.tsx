@@ -6,9 +6,9 @@ import { fundUSDC } from "@/utils/usdcFaucet";
 
 export default function Index() {
     const { loginWithOAuth, user, logout, createAuthSession, jwt } = useCrossmintAuth();
-    const { crossmint } = useCrossmint();
-    const loggedInUserEmail = crossmint.experimental_customAuth?.email ?? null;
-    const { wallet, error, getOrCreateWallet, status: walletStatus, clearWallet } = useWallet();
+    const { experimental_customAuth } = useCrossmint();
+    const loggedInUserEmail = experimental_customAuth?.email ?? null;
+    const { wallet, getOrCreateWallet, status: walletStatus } = useWallet();
     const { needsAuth, sendEmailWithOtp, verifyOtp } = useWalletEmailSigner();
     const walletAddress = useMemo(() => wallet?.address, [wallet]);
     const url = Linking.useURL();
@@ -152,7 +152,6 @@ export default function Index() {
                 <Text>Auth Status: {walletStatus}</Text>
                 <Text>Needs OTP Auth: {needsAuth ? "Yes" : "No"}</Text>
                 <Text>USDC Balance: {usdcBalance}</Text>
-                {error && <Text style={styles.errorText}>Wallet Error: {error}</Text>}
                 {uiError && <Text style={styles.errorText}>Last Action Error: {uiError}</Text>}
                 {txHash && <Text>Last Tx Hash: {txHash}</Text>}
             </View>
@@ -220,21 +219,6 @@ export default function Index() {
                         </View>
                     </View>
                     <Button title="Send USDC" onPress={sendUSDC} disabled={isLoading || amount === ""} />
-                </View>
-            )}
-
-            {walletAddress != null && (
-                <View style={styles.section}>
-                    <Button
-                        title="Clear Wallet State"
-                        onPress={() =>
-                            handleAction(() => {
-                                clearWallet();
-                                setIsInOtpFlow(false);
-                            })
-                        }
-                        disabled={walletAddress == null}
-                    />
                 </View>
             )}
         </ScrollView>

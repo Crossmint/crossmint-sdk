@@ -65,7 +65,7 @@ export function CrossmintAuthProvider({
     appSchema,
 }: CrossmintAuthProviderProps) {
     const [user, setUser] = useState<SDKExternalUser | undefined>(undefined);
-    const { crossmint, setJwt, experimental_setCustomAuth } = useCrossmint(
+    const { crossmint, experimental_customAuth, experimental_setCustomAuth, setJwt } = useCrossmint(
         "CrossmintAuthProvider must be used within CrossmintProvider"
     );
     const [oauthUrlMap, setOauthUrlMap] = useState<OAuthUrlMap>(initialOAuthUrlMap);
@@ -93,7 +93,7 @@ export function CrossmintAuthProvider({
                     onTokenRefresh: (authMaterial: AuthMaterialWithUser) => {
                         setUser(authMaterial.user);
                         experimental_setCustomAuth({
-                            email: authMaterial.user.email,
+                            email: authMaterial.user?.email,
                             jwt: authMaterial.jwt,
                         });
                     },
@@ -127,7 +127,7 @@ export function CrossmintAuthProvider({
         } else {
             setInitialized(true);
         }
-    }, [crossmint.jwt, setJwt, storageProvider]);
+    }, [crossmint.jwt, storageProvider]);
 
     useEffect(() => {
         if (crossmint.jwt != null) {
@@ -186,7 +186,7 @@ export function CrossmintAuthProvider({
         setUser(user);
         experimental_setCustomAuth({
             email: user.email,
-            jwt: crossmint.experimental_customAuth?.jwt,
+            jwt: experimental_customAuth?.jwt,
         });
         return user;
     };

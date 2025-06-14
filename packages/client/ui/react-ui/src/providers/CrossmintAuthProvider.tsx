@@ -10,10 +10,10 @@ import {
 } from "react";
 import { CrossmintAuth, getCookie } from "@crossmint/client-sdk-auth";
 import { type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
-import { type AuthMaterialWithUser, SESSION_PREFIX, type SDKExternalUser } from "@crossmint/common-sdk-auth";
+import { SESSION_PREFIX, type AuthMaterialWithUser, type SDKExternalUser } from "@crossmint/common-sdk-auth";
+import { useCrossmint } from "@crossmint/client-sdk-react-base";
 
 import AuthFormDialog from "../components/auth/AuthFormDialog";
-import { useCrossmint } from "../hooks";
 import { AuthFormProvider } from "./auth/AuthFormProvider";
 import { TwindProvider } from "./TwindProvider";
 import type { AuthStatus, LoginMethod } from "@/types/auth";
@@ -65,9 +65,16 @@ export function CrossmintAuthProvider({
     logoutRoute,
 }: CrossmintAuthProviderProps) {
     const [user, setUser] = useState<SDKExternalUser | undefined>(undefined);
-    const { crossmint, setJwt, experimental_setCustomAuth } = useCrossmint(
+    const { crossmint, experimental_setCustomAuth, setJwt } = useCrossmint(
         "CrossmintAuthProvider must be used within CrossmintProvider"
     );
+    const crossmintBaseUrl = validateApiKeyAndGetCrossmintBaseUrl(crossmint.apiKey);
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [initialized, setInitialized] = useState(false);
+    const [defaultEmail, setDefaultEmail] = useState<string | undefined>(undefined);
+    const [dynamicSdkLoaded, setDynamicSdkLoaded] = useState(true);
+    const isWeb3Enabled = loginMethods.some((method) => method.startsWith("web3"));
+
     // Only create the CrossmintAuth instance once, even in StrictMode, as the constructor calls /refresh
     // It can only be called once to avoid race conditions
     const crossmintAuthRef = useRef<CrossmintAuth | null>(null);
@@ -83,7 +90,7 @@ export function CrossmintAuthProvider({
                     onTokenRefresh: (authMaterial: AuthMaterialWithUser) => {
                         setUser(authMaterial.user);
                         experimental_setCustomAuth({
-                            email: authMaterial.user.email,
+                            email: authMaterial.user?.email,
                             jwt: authMaterial.jwt,
                         });
                     },
@@ -94,13 +101,6 @@ export function CrossmintAuthProvider({
         }
         return crossmintAuthRef.current;
     }, []);
-
-    const crossmintBaseUrl = validateApiKeyAndGetCrossmintBaseUrl(crossmint.apiKey);
-    const [dialogOpen, setDialogOpen] = useState(false);
-    const [initialized, setInitialized] = useState(false);
-    const [defaultEmail, setDefaultEmail] = useState<string | undefined>(undefined);
-    const [dynamicSdkLoaded, setDynamicSdkLoaded] = useState(true);
-    const isWeb3Enabled = loginMethods.some((method) => method.startsWith("web3"));
 
     const triggerHasJustLoggedIn = useCallback(() => {
         onLoginSuccess?.();
@@ -113,7 +113,7 @@ export function CrossmintAuthProvider({
             setJwt(jwt);
         }
         setInitialized(true);
-    }, [crossmint.jwt, setJwt]);
+    }, [crossmint.jwt]);
 
     // Close dialog on successful login
     useEffect(() => {
@@ -169,9 +169,8 @@ export function CrossmintAuthProvider({
 
         const user = await crossmintAuth.getUser();
         setUser(user);
-        experimental_setCustomAuth(user);
         return user;
-    }, [crossmint.jwt, crossmintAuth, experimental_setCustomAuth]);
+    }, [crossmint.jwt, crossmintAuth]);
 
     const authContextValue = useMemo(
         () => ({
