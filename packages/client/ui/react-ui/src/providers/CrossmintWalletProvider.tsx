@@ -120,6 +120,7 @@ export function CrossmintWalletProvider({
         verifyOtp: (otp: string) => Promise<void>,
         reject: () => void
     ) => {
+        setEmailSignerDialogOpen(needsAuth);
         setNeedsAuthState(needsAuth);
         sendEmailWithOtpRef.current = sendEmailWithOtp;
         verifyOtpRef.current = verifyOtp;
