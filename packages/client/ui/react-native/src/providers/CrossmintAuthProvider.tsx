@@ -28,7 +28,7 @@ export type AuthContextType = {
     user?: SDKExternalUser;
     status: AuthStatus;
     getUser: () => void;
-    loginWithOAuth: (provider: OAuthProvider) => Promise<void>;
+    loginWithOAuth: (provider: OAuthProvider) => Promise<SDKExternalUser | null>;
     createAuthSession: (urlOrOneTimeSecret: string) => Promise<AuthMaterialWithUser | null>;
 };
 
@@ -50,7 +50,7 @@ const defaultContextValue: AuthContextType = {
     user: undefined,
     status: "initializing",
     getUser: () => {},
-    loginWithOAuth: () => Promise.resolve(),
+    loginWithOAuth: () => Promise.resolve(null),
     createAuthSession: () => Promise.resolve(null),
 };
 
@@ -191,7 +191,7 @@ export function CrossmintAuthProvider({
         return user;
     };
 
-    const loginWithOAuth = async (provider: OAuthProvider) => {
+    const loginWithOAuth = async (provider: OAuthProvider): Promise<SDKExternalUser | null> => {
         try {
             setInProgress(true);
             const oauthUrl =
@@ -205,17 +205,29 @@ export function CrossmintAuthProvider({
             }
 
             if (Platform.OS === "android") {
-                await WebBrowser.openBrowserAsync(baseUrl.toString());
+                const result = await WebBrowser.openBrowserAsync(baseUrl.toString());
+                if (result.type === "cancel") {
+                    throw new Error("OAuth login was cancelled by user");
+                }
             } else {
                 const result = await WebBrowser.openAuthSessionAsync(baseUrl.toString());
                 if (result.type === "success") {
-                    await createAuthSession(result.url);
+                    const authMaterial = await createAuthSession(result.url);
+                    if (authMaterial?.user) {
+                        return authMaterial.user;
+                    }
+                } else if (result.type === "cancel") {
+                    throw new Error("OAuth login was cancelled by user");
                 }
             }
             await WebBrowser.coolDownAsync();
+
+            return null;
         } catch (error) {
             console.error("[CrossmintAuthProvider] Error during OAuth login:", error);
-            throw new Error(`Error during OAuth login: ${error}`);
+            throw error;
+        } finally {
+            setInProgress(false);
         }
     };
 
