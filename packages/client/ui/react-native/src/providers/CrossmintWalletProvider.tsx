@@ -11,9 +11,10 @@ const DEFAULT_SECURE_ENDPOINT_URL = "https://signers.crossmint.com";
 
 export interface CrossmintWalletProviderProps {
     children: ReactNode;
+    debug?: boolean;
 }
 
-export function CrossmintWalletProvider({ children }: CrossmintWalletProviderProps) {
+export function CrossmintWalletProvider({ children, debug = false }: CrossmintWalletProviderProps) {
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
     const { apiKey, appId } = crossmint;
     const parsedAPIKey = validateAPIKey(apiKey);
@@ -58,7 +59,9 @@ export function CrossmintWalletProvider({ children }: CrossmintWalletProviderPro
     }, []);
 
     const handleMessage = useCallback((event: WebViewMessageEvent) => {
-        console.log("[CrossmintWalletProvider] Received message:", event.nativeEvent.data);
+        if (debug) {
+            console.log("[CrossmintWalletProvider] Received message:", event.nativeEvent.data);
+        }
         const parent = webViewParentRef.current;
         if (parent == null) {
             return;
@@ -86,7 +89,9 @@ export function CrossmintWalletProvider({ children }: CrossmintWalletProviderPro
                 const prefix = `[WebView:${consoleMethod.toUpperCase()}]`;
                 switch (consoleMethod) {
                     case "log":
-                        console.log(prefix, ...args);
+                        if (debug) {
+                            console.log(prefix, ...args);
+                        }
                         break;
                     case "error":
                         console.error(prefix, ...args);
@@ -95,17 +100,21 @@ export function CrossmintWalletProvider({ children }: CrossmintWalletProviderPro
                         console.warn(prefix, ...args);
                         break;
                     case "info":
-                        console.info(prefix, ...args);
+                        if (debug) {
+                            console.info(prefix, ...args);
+                        }
                         break;
                     default:
-                        console.log(`[WebView Unknown:${consoleMethod}]`, ...args);
+                        if (debug) {
+                            console.log(`[WebView Unknown:${consoleMethod}]`, ...args);
+                        }
                 }
                 return;
             }
         } catch (_) {}
 
         parent.handleMessage(event);
-    }, []);
+    }, [debug]);
 
     // Get the handshake parent for email signer
     const getHandshakeParent = useCallback(() => {
@@ -131,15 +140,24 @@ export function CrossmintWalletProvider({ children }: CrossmintWalletProviderPro
                     source={{ uri: frameUrl }}
                     injectedGlobals={injectedGlobalsScript}
                     onLoadStart={(event) => {
-                        console.log("[CrossmintWalletProvider] WebView onLoadStart:", event.nativeEvent.url);
+                        if (debug) {
+                            console.log("[CrossmintWalletProvider] WebView onLoadStart:", event.nativeEvent.url);
+                        }
                     }}
                     onLoadEnd={onWebViewLoad}
                     onLoadProgress={({ nativeEvent }) => {
-                        console.log("[CrossmintWalletProvider] WebView loading progress:", nativeEvent.progress);
+                        if (debug) {
+                            console.log("[CrossmintWalletProvider] WebView loading progress:", nativeEvent.progress);
+                        }
                     }}
                     onMessage={handleMessage}
                     onError={(syntheticEvent) => {
-                        console.error("[CrossmintWalletProvider] WebView error:", syntheticEvent.nativeEvent);
+                        const errorMessage = syntheticEvent.nativeEvent.description || '';
+                        if (errorMessage.includes('AttestationService') || errorMessage.includes('XMIF')) {
+                            console.warn("[CrossmintWalletProvider] WebView attestation service error (non-critical):", errorMessage);
+                        } else {
+                            console.error("[CrossmintWalletProvider] WebView error:", syntheticEvent.nativeEvent);
+                        }
                         setIsWebViewReady(false);
                     }}
                     onHttpError={(syntheticEvent) => {
