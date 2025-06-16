@@ -6,21 +6,15 @@ import type { CrossmintConfig } from "@crossmint/common-sdk-base";
 export function CrossmintProvider({
     children,
     apiKey,
-    extensionId,
     overrideBaseUrl,
-}: Pick<CrossmintConfig, "apiKey" | "extensionId" | "overrideBaseUrl"> & {
+}: Pick<CrossmintConfig, "apiKey" | "overrideBaseUrl"> & {
     children: ReactNode;
 }) {
     // Get app ID from Expo constants
     const appId = Constants.expoConfig?.ios?.bundleIdentifier ?? Constants.expoConfig?.android?.package;
 
     return (
-        <BaseCrossmintProvider
-            apiKey={apiKey}
-            appId={appId}
-            extensionId={extensionId}
-            overrideBaseUrl={overrideBaseUrl}
-        >
+        <BaseCrossmintProvider apiKey={apiKey} appId={appId} overrideBaseUrl={overrideBaseUrl}>
             {children}
         </BaseCrossmintProvider>
     );
