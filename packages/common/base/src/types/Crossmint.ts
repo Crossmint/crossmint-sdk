@@ -10,6 +10,7 @@ export type CrossmintConfig = {
     jwt?: string;
     overrideBaseUrl?: string;
     appId?: string;
+    extensionId?: string;
     experimental_customAuth?: CustomAuth;
 };
 
@@ -22,7 +23,7 @@ export function createCrossmint(
     config: CrossmintConfig,
     apiKeyExpectations?: ValidateAPIKeyPrefixExpectations
 ): Crossmint {
-    const { apiKey, jwt, overrideBaseUrl, appId, experimental_customAuth } = config;
+    const { apiKey, jwt, overrideBaseUrl, appId, extensionId, experimental_customAuth } = config;
     const apiKeyValidationResult = validateAPIKey(apiKey, apiKeyExpectations);
     if (!apiKeyValidationResult.isValid) {
         throw new Error(apiKeyValidationResult.message);
@@ -41,6 +42,7 @@ export function createCrossmint(
         jwt,
         overrideBaseUrl,
         appId,
+        extensionId,
         experimental_customAuth,
         experimental_setCustomAuth,
         setJwt,
