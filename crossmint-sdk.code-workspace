@@ -5,35 +5,35 @@
             "path": "."
         },
         {
-            "name": "crossmint sdk",
+            "name": "sdk",
             "path": "packages/crossmint"
         },
         {
-            "name": "crossmint server-sdk",
+            "name": "server-sdk",
             "path": "packages/server"
         },
         {
-            "name": "crossmint client-sdk",
+            "name": "client-sdk",
             "path": "packages/client"
         },
         {
-            "name": "crossmint common-sdk-base",
+            "name": "common-sdk-base",
             "path": "packages/common/base"
         },
         {
-            "name": "crossmint common-sdk-auth",
+            "name": "common-sdk-auth",
             "path": "packages/common/auth"
         },
         {
-            "name": "crossmint client-sdk-base",
+            "name": "client-sdk-base",
             "path": "packages/client/base"
         },
         {
-            "name": "crossmint client-sdk-auth",
+            "name": "client-sdk-auth",
             "path": "packages/client/auth"
         },
         {
-            "name": "crossmint client-sdk-react-ui",
+            "name": "client-sdk-react-ui",
             "path": "packages/client/ui/react-ui"
         },
         {
@@ -49,23 +49,23 @@
             "path": "apps/wallets/quickstart-devkit"
         },
         {
-            "name": "crossmint client-sdk-vanilla-ui",
+            "name": "client-sdk-vanilla-ui",
             "path": "packages/client/ui/vanilla-ui"
         },
         {
-            "name": "crossmint client-sdk-vue-ui",
+            "name": "client-sdk-vue-ui",
             "path": "packages/client/ui/vue-ui"
         },
         {
-            "name": "crossmint client-sdk-verifiable-credentials",
+            "name": "client-sdk-verifiable-credentials",
             "path": "packages/client/verifiable-credentials"
         },
         {
-            "name": "crossmint client-sdk-smart-wallet",
+            "name": "client-sdk-smart-wallet",
             "path": "packages/client/wallets/smart-wallet"
         },
         {
-            "name": "crossmint wallets-sdk",
+            "name": "wallets-sdk",
             "path": "packages/wallets"
         },
         {
