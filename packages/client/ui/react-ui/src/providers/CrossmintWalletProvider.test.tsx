@@ -104,7 +104,7 @@ describe("CrossmintWalletProvider", () => {
 
     it("accepts callbacks prop", () => {
         const callbacks = {
-            onWalletCreationStarted: vi.fn(),
+            onWalletCreationStart: vi.fn(),
             onTransactionStart: vi.fn(),
         };
 

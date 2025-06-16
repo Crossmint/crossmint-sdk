@@ -35,7 +35,7 @@ type CrossmintWalletProviderProps = {
     appearance?: UIConfig;
     createOnLogin?: CreateOnLogin;
     callbacks?: {
-        onWalletCreationStarted?: () => Promise<void>;
+        onWalletCreationStart?: () => Promise<void>;
         onTransactionStart?: () => Promise<void>;
     };
 };
@@ -103,15 +103,15 @@ export function CrossmintWalletProvider({
     };
 
     const getCallbacks = () => {
-        let onWalletCreationStarted = callbacks?.onWalletCreationStarted;
+        let onWalletCreationStart = callbacks?.onWalletCreationStart;
         let onTransactionStart = callbacks?.onTransactionStart;
 
         if (createOnLogin?.signer.type === "passkey" && showPasskeyHelpers) {
-            onWalletCreationStarted = createPasskeyPrompt("create-wallet");
+            onWalletCreationStart = createPasskeyPrompt("create-wallet");
             onTransactionStart = createPasskeyPrompt("transaction");
         }
 
-        return { onWalletCreationStarted, onTransactionStart };
+        return { onWalletCreationStart, onTransactionStart };
     };
 
     const onAuthRequired = async (

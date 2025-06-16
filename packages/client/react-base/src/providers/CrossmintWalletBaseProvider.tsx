@@ -32,7 +32,7 @@ export interface CrossmintWalletBaseProviderProps {
     children: ReactNode;
     createOnLogin?: CreateOnLogin;
     callbacks?: {
-        onWalletCreationStarted?: () => Promise<void>;
+        onWalletCreationStart?: () => Promise<void>;
         onTransactionStart?: () => Promise<void>;
     };
     onAuthRequired?: EmailSignerConfig["onAuthRequired"];
@@ -107,7 +107,7 @@ export function CrossmintWalletBaseProvider({
                     signer: args.signer,
                     options: {
                         experimental_callbacks: {
-                            onWalletCreationStart: _onWalletCreationStart ?? callbacks?.onWalletCreationStarted,
+                            onWalletCreationStart: _onWalletCreationStart ?? callbacks?.onWalletCreationStart,
                             onTransactionStart: _onTransactionStart ?? callbacks?.onTransactionStart,
                         },
                     },
