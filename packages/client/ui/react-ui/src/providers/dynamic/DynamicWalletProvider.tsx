@@ -4,7 +4,12 @@ import { isEthereumWallet } from "@dynamic-labs/ethereum";
 import { isSolanaWallet } from "@dynamic-labs/solana";
 import type { SignableMessage } from "viem";
 import type { VersionedTransaction } from "@solana/web3.js";
-import type { EvmExternalWalletSignerConfig, SolanaExternalWalletSignerConfig } from "@crossmint/wallets-sdk";
+import type {
+    Chain,
+    EvmExternalWalletSignerConfig,
+    ExternalWalletSignerConfigForChain,
+    SolanaExternalWalletSignerConfig,
+} from "@crossmint/wallets-sdk";
 import type { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
 import DynamicContextProviderWrapper from "@/components/dynamic-xyz/DynamicContextProviderWrapper";
 import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
@@ -26,19 +31,24 @@ type DynamicWalletProviderProps = {
         };
     };
     onSdkLoaded?: (loaded: boolean) => void;
+    onWalletConnected: (externalWalletSigner: ExternalWalletSignerConfigForChain<Chain>) => void;
 };
 
 type DynamicWalletStateProviderProps = {
     children: ReactNode;
     enabled: boolean;
     onSdkLoaded?: (loaded: boolean) => void;
+    onWalletConnected: (externalWalletSigner: ExternalWalletSignerConfigForChain<Chain>) => void;
 };
 
-function DynamicWalletStateProvider({ children, enabled, onSdkLoaded }: DynamicWalletStateProviderProps) {
+function DynamicWalletStateProvider({
+    children,
+    enabled,
+    onSdkLoaded,
+    onWalletConnected,
+}: DynamicWalletStateProviderProps) {
     const {
         crossmint: { jwt },
-        experimental_customAuth,
-        experimental_setCustomAuth,
     } = useCrossmint();
     const {
         primaryWallet: connectedDynamicWallet,
@@ -85,7 +95,7 @@ function DynamicWalletStateProvider({ children, enabled, onSdkLoaded }: DynamicW
                             },
                         },
                     } as EvmExternalWalletSignerConfig;
-                    experimental_setCustomAuth({ ...experimental_customAuth, externalWalletSigner });
+                    onWalletConnected(externalWalletSigner);
                 } else if (isSolanaWallet(connectedDynamicWallet!)) {
                     const signer = await connectedDynamicWallet.getSigner();
                     const externalWalletSigner = {
@@ -95,7 +105,7 @@ function DynamicWalletStateProvider({ children, enabled, onSdkLoaded }: DynamicW
                             return await signer.signTransaction(transaction);
                         },
                     } as SolanaExternalWalletSignerConfig;
-                    experimental_setCustomAuth({ ...experimental_customAuth, externalWalletSigner });
+                    onWalletConnected(externalWalletSigner);
                 } else {
                     throw new Error("Unsupported wallet type");
                 }
@@ -120,6 +130,7 @@ export function DynamicWalletProvider({
     loginMethods = ["web3"],
     appearance,
     onSdkLoaded,
+    onWalletConnected,
 }: DynamicWalletProviderProps) {
     const { crossmintAuth } = useCrossmintAuth();
     const cssOverrides = useMemo(
@@ -220,7 +231,11 @@ export function DynamicWalletProvider({
                 },
             }}
         >
-            <DynamicWalletStateProvider enabled={enabled} onSdkLoaded={onSdkLoaded}>
+            <DynamicWalletStateProvider
+                enabled={enabled}
+                onSdkLoaded={onSdkLoaded}
+                onWalletConnected={onWalletConnected}
+            >
                 {children}
             </DynamicWalletStateProvider>
         </DynamicContextProviderWrapper>

@@ -1,229 +1,31 @@
-import {
-    type ReactNode,
-    type MouseEvent,
-    createContext,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-    useCallback,
-} from "react";
-import { CrossmintAuth, getCookie } from "@crossmint/client-sdk-auth";
-import { type UIConfig, validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
-import { SESSION_PREFIX, type AuthMaterialWithUser, type SDKExternalUser } from "@crossmint/common-sdk-auth";
+import { type ReactNode, useEffect } from "react";
 import { useCrossmint } from "@crossmint/client-sdk-react-base";
 
-import AuthFormDialog from "../components/auth/AuthFormDialog";
-import { AuthFormProvider } from "./auth/AuthFormProvider";
-import { TwindProvider } from "./TwindProvider";
-import type { AuthStatus, LoginMethod } from "@/types/auth";
-import { DynamicWalletProvider } from "./dynamic/DynamicWalletProvider";
+import type { CrossmintAuthProviderProps } from "@/types/auth";
+import { useAuth } from "@/hooks";
+import { CrossmintAuthProviderInternal } from "./CrossmintAuthProviderInternal";
 
-type CrossmintAuthProviderProps = {
-    appearance?: UIConfig;
-    termsOfServiceText?: string | ReactNode;
-    prefetchOAuthUrls?: boolean;
-    onLoginSuccess?: () => void;
-    authModalTitle?: string;
-    children: ReactNode;
-    loginMethods?: LoginMethod[];
-    refreshRoute?: string;
-    logoutRoute?: string;
-};
+function CrossmintAuthSync({ children }: { children: ReactNode }) {
+    const { experimental_setCustomAuth } = useCrossmint();
+    const { user, jwt, experimental_externalWalletSigner } = useAuth();
 
-type AuthContextType = {
-    crossmintAuth?: CrossmintAuth;
-    login: (defaultEmail?: string | MouseEvent) => void;
-    logout: () => void;
-    jwt?: string;
-    user?: SDKExternalUser;
-    status: AuthStatus;
-    getUser: () => void;
-};
-
-const defaultContextValue: AuthContextType = {
-    crossmintAuth: undefined,
-    login: () => {},
-    logout: () => {},
-    jwt: undefined,
-    user: undefined,
-    status: "initializing",
-    getUser: () => {},
-};
-
-export const AuthContext = createContext<AuthContextType>(defaultContextValue);
-
-export function CrossmintAuthProvider({
-    children,
-    appearance,
-    termsOfServiceText,
-    prefetchOAuthUrls = true,
-    authModalTitle,
-    onLoginSuccess,
-    loginMethods = ["email", "google"],
-    refreshRoute,
-    logoutRoute,
-}: CrossmintAuthProviderProps) {
-    const [user, setUser] = useState<SDKExternalUser | undefined>(undefined);
-    const { crossmint, experimental_setCustomAuth, setJwt } = useCrossmint(
-        "CrossmintAuthProvider must be used within CrossmintProvider"
-    );
-    const crossmintBaseUrl = validateApiKeyAndGetCrossmintBaseUrl(crossmint.apiKey);
-    const [dialogOpen, setDialogOpen] = useState(false);
-    const [initialized, setInitialized] = useState(false);
-    const [defaultEmail, setDefaultEmail] = useState<string | undefined>(undefined);
-    const [dynamicSdkLoaded, setDynamicSdkLoaded] = useState(true);
-    const isWeb3Enabled = loginMethods.some((method) => method.startsWith("web3"));
-
-    // Only create the CrossmintAuth instance once, even in StrictMode, as the constructor calls /refresh
-    // It can only be called once to avoid race conditions
-    const crossmintAuthRef = useRef<CrossmintAuth | null>(null);
-    // biome-ignore lint/correctness/useExhaustiveDependencies: crossmint can't be a dependency because it updates with each jwt change
-    const crossmintAuth = useMemo(() => {
-        if (!crossmintAuthRef.current) {
-            crossmintAuthRef.current = CrossmintAuth.from(crossmint, {
-                callbacks: {
-                    onLogout: () => {
-                        setUser(undefined);
-                        experimental_setCustomAuth(undefined);
-                    },
-                    onTokenRefresh: (authMaterial: AuthMaterialWithUser) => {
-                        setUser(authMaterial.user);
-                        experimental_setCustomAuth({
-                            email: authMaterial.user?.email,
-                            jwt: authMaterial.jwt,
-                        });
-                    },
-                },
-                refreshRoute,
-                logoutRoute,
+    useEffect(() => {
+        if ((experimental_externalWalletSigner != null || user?.email != null) && jwt != null) {
+            experimental_setCustomAuth({
+                jwt,
+                email: user?.email,
+                externalWalletSigner: experimental_externalWalletSigner,
             });
         }
-        return crossmintAuthRef.current;
-    }, []);
+    }, [experimental_externalWalletSigner, jwt, user]);
 
-    const triggerHasJustLoggedIn = useCallback(() => {
-        onLoginSuccess?.();
-    }, [onLoginSuccess]);
+    return children;
+}
 
-    // Initialize auth state
-    useEffect(() => {
-        if (crossmint.jwt == null) {
-            const jwt = getCookie(SESSION_PREFIX);
-            setJwt(jwt);
-        }
-        setInitialized(true);
-    }, [crossmint.jwt]);
-
-    // Close dialog on successful login
-    useEffect(() => {
-        if (crossmint.jwt != null && dialogOpen) {
-            setDialogOpen(false);
-            triggerHasJustLoggedIn();
-        }
-    }, [crossmint.jwt, dialogOpen, triggerHasJustLoggedIn]);
-
-    const login = useCallback(
-        (defaultEmail?: string | MouseEvent) => {
-            if (crossmint.jwt != null) {
-                console.log("User already logged in");
-                return;
-            }
-
-            // Only set defaultEmail when explicitly passed as a string, ignoring MouseEvent from onClick handlers
-            // PREVENTS BREAKING CHANGE!
-            if (defaultEmail != null && typeof defaultEmail === "string") {
-                setDefaultEmail(defaultEmail);
-            }
-            setDialogOpen(true);
-        },
-        [crossmint.jwt]
-    );
-
-    const logout = useCallback(() => {
-        console.log("Logging out");
-        crossmintAuth.logout();
-    }, [crossmintAuth]);
-
-    const getAuthStatus = useCallback((): AuthStatus => {
-        if (!initialized) {
-            return "initializing";
-        }
-        if (isWeb3Enabled && !dynamicSdkLoaded) {
-            return "initializing";
-        }
-        if (crossmint.jwt != null) {
-            return "logged-in";
-        }
-        if (dialogOpen) {
-            return "in-progress";
-        }
-        return "logged-out";
-    }, [initialized, isWeb3Enabled, dynamicSdkLoaded, crossmint.jwt, dialogOpen]);
-
-    const getUser = useCallback(async () => {
-        if (crossmint.jwt == null) {
-            console.log("User not logged in");
-            return;
-        }
-
-        const user = await crossmintAuth.getUser();
-        setUser(user);
-        return user;
-    }, [crossmint.jwt, crossmintAuth]);
-
-    const authContextValue = useMemo(
-        () => ({
-            crossmintAuth,
-            login,
-            logout,
-            jwt: crossmint.jwt,
-            user,
-            status: getAuthStatus(),
-            getUser,
-        }),
-        [crossmintAuth, login, logout, crossmint.jwt, user, getAuthStatus, getUser]
-    );
-
+export function CrossmintAuthProvider({ children, ...props }: CrossmintAuthProviderProps) {
     return (
-        <TwindProvider>
-            <AuthContext.Provider value={authContextValue}>
-                <AuthFormProvider
-                    setDialogOpen={(open, successfulLogin) => {
-                        setDialogOpen(open);
-                        if (successfulLogin) {
-                            // This will be triggered from the OTP form
-                            triggerHasJustLoggedIn();
-                        }
-                    }}
-                    preFetchOAuthUrls={getAuthStatus() === "logged-out" && prefetchOAuthUrls}
-                    initialState={{
-                        appearance,
-                        loginMethods,
-                        termsOfServiceText,
-                        authModalTitle,
-                        baseUrl: crossmintBaseUrl,
-                        defaultEmail,
-                    }}
-                >
-                    {isWeb3Enabled ? (
-                        <DynamicWalletProvider
-                            apiKeyEnvironment={crossmint.apiKey.includes("production") ? "production" : "staging"}
-                            loginMethods={loginMethods}
-                            appearance={appearance}
-                            onSdkLoaded={setDynamicSdkLoaded}
-                        >
-                            {children}
-                            <AuthFormDialog open={dialogOpen} />
-                        </DynamicWalletProvider>
-                    ) : (
-                        <>
-                            {children}
-                            <AuthFormDialog open={dialogOpen} />
-                        </>
-                    )}
-                </AuthFormProvider>
-            </AuthContext.Provider>
-        </TwindProvider>
+        <CrossmintAuthProviderInternal {...props}>
+            <CrossmintAuthSync>{children}</CrossmintAuthSync>
+        </CrossmintAuthProviderInternal>
     );
 }
