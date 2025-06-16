@@ -38,7 +38,7 @@ export function CrossmintCheckoutProvider({ children }: { children: ReactNode })
         return () => {
             window.removeEventListener("message", listener);
         };
-    }, [order]);
+    }, [apiClient.baseUrl]);
 
     return (
         <CrossmintCheckoutContext.Provider value={{ order, orderClientSecret }}>
