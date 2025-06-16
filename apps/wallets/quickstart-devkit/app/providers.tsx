@@ -94,8 +94,7 @@ function SolanaCrossmintAuthProvider({ children }: { children: React.ReactNode }
             >
                 <CrossmintWalletProvider
                     showPasskeyHelpers={false}
-                    // @ts-ignore
-                    createOnLogin={{ chain: "solana", signer: { type: "external-wallet" } }}
+                    createOnLogin={{ chain: "solana", signer: { type: "email" } }}
                 >
                     {children}
                 </CrossmintWalletProvider>
