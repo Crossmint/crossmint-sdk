@@ -58,63 +58,66 @@ export function CrossmintWalletProvider({ children, debug = false }: CrossmintWa
         }
     }, []);
 
-    const handleMessage = useCallback((event: WebViewMessageEvent) => {
-        if (debug) {
-            console.log("[CrossmintWalletProvider] Received message:", event.nativeEvent.data);
-        }
-        const parent = webViewParentRef.current;
-        if (parent == null) {
-            return;
-        }
-
-        try {
-            const messageData = JSON.parse(event.nativeEvent.data);
-            if (messageData && typeof messageData.type === "string" && messageData.type.startsWith("console.")) {
-                const consoleMethod = messageData.type.split(".")[1];
-                const args = (messageData.data || []).map((argStr: string) => {
-                    try {
-                        if (
-                            argStr === "[Function]" ||
-                            argStr === "[Circular Reference]" ||
-                            argStr === "[Unserializable Object]"
-                        ) {
-                            return argStr;
-                        }
-                        return JSON.parse(argStr);
-                    } catch (e) {
-                        return argStr;
-                    }
-                });
-
-                const prefix = `[WebView:${consoleMethod.toUpperCase()}]`;
-                switch (consoleMethod) {
-                    case "log":
-                        if (debug) {
-                            console.log(prefix, ...args);
-                        }
-                        break;
-                    case "error":
-                        console.error(prefix, ...args);
-                        break;
-                    case "warn":
-                        console.warn(prefix, ...args);
-                        break;
-                    case "info":
-                        if (debug) {
-                            console.info(prefix, ...args);
-                        }
-                        break;
-                    default:
-                        if (debug) {
-                            console.log(`[WebView Unknown:${consoleMethod}]`, ...args);
-                        }
-                }
+    const handleMessage = useCallback(
+        (event: WebViewMessageEvent) => {
+            if (debug) {
+                console.log("[CrossmintWalletProvider] Received message:", event.nativeEvent.data);
+            }
+            const parent = webViewParentRef.current;
+            if (parent == null) {
                 return;
             }
-        } catch (_) {}
 
-        parent.handleMessage(event);
-    }, [debug]);
+            try {
+                const messageData = JSON.parse(event.nativeEvent.data);
+                if (messageData && typeof messageData.type === "string" && messageData.type.startsWith("console.")) {
+                    const consoleMethod = messageData.type.split(".")[1];
+                    const args = (messageData.data || []).map((argStr: string) => {
+                        try {
+                            if (
+                                argStr === "[Function]" ||
+                                argStr === "[Circular Reference]" ||
+                                argStr === "[Unserializable Object]"
+                            ) {
+                                return argStr;
+                            }
+                            return JSON.parse(argStr);
+                        } catch (e) {
+                            return argStr;
+                        }
+                    });
+
+                    const prefix = `[WebView:${consoleMethod.toUpperCase()}]`;
+                    switch (consoleMethod) {
+                        case "log":
+                            if (debug) {
+                                console.log(prefix, ...args);
+                            }
+                            break;
+                        case "error":
+                            console.error(prefix, ...args);
+                            break;
+                        case "warn":
+                            console.warn(prefix, ...args);
+                            break;
+                        case "info":
+                            if (debug) {
+                                console.info(prefix, ...args);
+                            }
+                            break;
+                        default:
+                            if (debug) {
+                                console.log(`[WebView Unknown:${consoleMethod}]`, ...args);
+                            }
+                    }
+                    return;
+                }
+            } catch (_) {}
+
+            parent.handleMessage(event);
+        },
+        [debug]
+    );
 
     // Get the handshake parent for email signer
     const getHandshakeParent = useCallback(() => {
@@ -152,9 +155,12 @@ export function CrossmintWalletProvider({ children, debug = false }: CrossmintWa
                     }}
                     onMessage={handleMessage}
                     onError={(syntheticEvent) => {
-                        const errorMessage = syntheticEvent.nativeEvent.description || '';
-                        if (errorMessage.includes('AttestationService') || errorMessage.includes('XMIF')) {
-                            console.warn("[CrossmintWalletProvider] WebView attestation service error (non-critical):", errorMessage);
+                        const errorMessage = syntheticEvent.nativeEvent.description || "";
+                        if (errorMessage.includes("AttestationService") || errorMessage.includes("XMIF")) {
+                            console.warn(
+                                "[CrossmintWalletProvider] WebView attestation service error (non-critical):",
+                                errorMessage
+                            );
                         } else {
                             console.error("[CrossmintWalletProvider] WebView error:", syntheticEvent.nativeEvent);
                         }

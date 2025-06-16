@@ -221,7 +221,7 @@ export function CrossmintAuthProvider({
                 }
             }
             await WebBrowser.coolDownAsync();
-            
+
             return null;
         } catch (error) {
             console.error("[CrossmintAuthProvider] Error during OAuth login:", error);
