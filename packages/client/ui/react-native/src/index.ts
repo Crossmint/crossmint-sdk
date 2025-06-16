@@ -5,4 +5,12 @@ export type { CrossmintEvent, CrossmintEventMap } from "@crossmint/client-sdk-ba
 
 export type { SDKExternalUser, OAuthProvider } from "@crossmint/common-sdk-auth";
 
-export type { Balances, DelegatedSigner } from "@crossmint/client-sdk-react-base";
+export type {
+    Activity,
+    Balances,
+    Chain,
+    DelegatedSigner,
+    EVMWallet,
+    SolanaWallet,
+    Wallet,
+} from "@crossmint/wallets-sdk";
