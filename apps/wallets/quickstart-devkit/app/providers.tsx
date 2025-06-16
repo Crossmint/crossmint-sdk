@@ -13,7 +13,7 @@ if (!crossmintApiKey) {
 
 export function Providers({ children }: { children: React.ReactNode }) {
     /* @TODO update to your desired provider here */
-    return <EVMCrossmintAuthProvider>{children}</EVMCrossmintAuthProvider>;
+    return <SolanaCrossmintAuthProvider>{children}</SolanaCrossmintAuthProvider>;
 }
 
 /* ============================================================ */
@@ -32,11 +32,7 @@ function EVMCrossmintAuthProvider({ children }: { children: React.ReactNode }) {
             >
                 <CrossmintWalletProvider
                     showPasskeyHelpers
-                    createOnLogin={{
-                        chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any,
-                        // @ts-ignore
-                        signer: { type: "external-wallet" },
-                    }}
+                    createOnLogin={{ chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any, signer: { type: "passkey" } }}
                 >
                     {children}
                 </CrossmintWalletProvider>
