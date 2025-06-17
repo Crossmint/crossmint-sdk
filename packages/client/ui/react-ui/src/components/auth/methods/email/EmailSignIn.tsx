@@ -12,7 +12,7 @@ import { ContinueWithGoogle } from "../google/ContinueWithGoogle";
 
 export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEmailPayload) => void }) {
     const { crossmintAuth } = useCrossmintAuth();
-    const { appearance, defaultEmail, setStep, setError } = useAuthForm();
+    const { appearance, defaultEmail, setStep, setError, loginMethods } = useAuthForm();
 
     const [emailInput, setEmailInput] = useState(defaultEmail ?? "");
     const [emailError, setEmailError] = useState("");
@@ -27,7 +27,8 @@ export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEm
         emailInput.toLowerCase().includes("@gmail.com") &&
         !emailInput.toLowerCase().includes("+") &&
         isEmailValid(emailInput) &&
-        !isLoading;
+        !isLoading &&
+        loginMethods.includes("google");
 
     async function handleOnSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
