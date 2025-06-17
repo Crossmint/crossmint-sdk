@@ -54,17 +54,17 @@ export const useOAuthWindowListener = (provider: OAuthProvider) => {
         }
 
         const useNewTab = isWalletBrowser();
-        
-        const popup = useNewTab 
+
+        const popup = useNewTab
             ? await NewTabWindow.init(baseUrl.toString(), {
-                awaitToLoad: false,
-            })
+                  awaitToLoad: false,
+              })
             : await PopupWindow.init(baseUrl.toString(), {
-                awaitToLoad: false,
-                crossOrigin: true,
-                width: 400,
-                height: 700,
-            });
+                  awaitToLoad: false,
+                  crossOrigin: true,
+                  width: 400,
+                  height: 700,
+              });
 
         const handleAuthMaterial = async (data: { oneTimeSecret: string }) => {
             await crossmintAuth?.handleRefreshAuthMaterial(data.oneTimeSecret);
@@ -74,7 +74,7 @@ export const useOAuthWindowListener = (provider: OAuthProvider) => {
         };
 
         const handleError = (data: { error: string }) => {
-            const errorMessage = useNewTab 
+            const errorMessage = useNewTab
                 ? `Authentication failed. Please ensure your wallet browser allows new tabs to open. Error: ${data.error}`
                 : data.error;
             setError(errorMessage);
