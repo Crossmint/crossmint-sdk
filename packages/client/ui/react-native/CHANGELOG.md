@@ -1,5 +1,23 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.6.0
+
+### Minor Changes
+
+- 9481d6c: Update wallet providers to extend consolidated react-base functionality
+
+### Patch Changes
+
+- Updated dependencies [9481d6c]
+- Updated dependencies [9481d6c]
+- Updated dependencies [9481d6c]
+  - @crossmint/common-sdk-base@0.8.0
+  - @crossmint/client-sdk-react-base@0.5.0
+  - @crossmint/wallets-sdk@0.10.0
+  - @crossmint/client-sdk-auth@1.2.14
+  - @crossmint/client-sdk-base@1.5.6
+  - @crossmint/common-sdk-auth@1.0.37
+
 ## 0.5.7
 
 ### Patch Changes
