@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 2.1.4
+
+### Patch Changes
+
+- fd4c47b: Disable login with google when google is not a loginMethod
+
 ## 2.1.3
 
 ### Patch Changes
