@@ -208,10 +208,7 @@ export function CrossmintAuthProvider({
                             loginMethods={loginMethods}
                             appearance={appearance}
                             onSdkLoaded={setDynamicSdkLoaded}
-                            onWalletConnected={(externalWalletSigner) => {
-                                console.log("onWalletConnected in InternalCrossmintAuthProvider", externalWalletSigner);
-                                setExternalWalletSigner(externalWalletSigner);
-                            }}
+                            onWalletConnected={setExternalWalletSigner}
                         >
                             {children}
                             <AuthFormDialog open={dialogOpen} />

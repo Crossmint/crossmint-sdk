@@ -128,7 +128,7 @@ export function CrossmintWalletProvider({ children }: CrossmintWalletProviderPro
     }, []);
 
     // Get the handshake parent for email signer
-    const getHandshakeParent = () => {
+    const _getEmailSignerIframe = () => {
         if (webViewParentRef.current == null) {
             throw new Error("WebView not ready or handshake incomplete");
         }
@@ -158,7 +158,7 @@ export function CrossmintWalletProvider({ children }: CrossmintWalletProviderPro
     );
 
     return (
-        <CrossmintWalletBaseProvider onAuthRequired={onAuthRequired} getHandshakeParent={getHandshakeParent}>
+        <CrossmintWalletBaseProvider onAuthRequired={onAuthRequired} _getEmailSignerIframe={_getEmailSignerIframe}>
             <CrossmintWalletEmailSignerContext.Provider value={authContextValue}>
                 {children}
             </CrossmintWalletEmailSignerContext.Provider>

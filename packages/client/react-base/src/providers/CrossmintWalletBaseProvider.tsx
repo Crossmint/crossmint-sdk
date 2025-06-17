@@ -17,7 +17,7 @@ export type CrossmintWalletBaseContext = {
     status: "not-loaded" | "in-progress" | "loaded" | "error";
     getOrCreateWallet: <C extends Chain>(props: WalletArgsFor<C>) => Promise<Wallet<Chain> | undefined>;
     onAuthRequired?: EmailSignerConfig["onAuthRequired"];
-    getHandshakeParent?: () => HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
+    _getEmailSignerIframe?: () => HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
 };
 
 export const CrossmintWalletBaseContext = createContext<CrossmintWalletBaseContext>({
@@ -25,7 +25,7 @@ export const CrossmintWalletBaseContext = createContext<CrossmintWalletBaseConte
     status: "not-loaded",
     getOrCreateWallet: () => Promise.resolve(undefined),
     onAuthRequired: undefined,
-    getHandshakeParent: undefined,
+    _getEmailSignerIframe: undefined,
 });
 
 export interface CrossmintWalletBaseProviderProps {
@@ -36,7 +36,7 @@ export interface CrossmintWalletBaseProviderProps {
         onTransactionStart?: () => Promise<void>;
     };
     onAuthRequired?: EmailSignerConfig["onAuthRequired"];
-    getHandshakeParent?: () => HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
+    _getEmailSignerIframe?: () => HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
 }
 
 export function CrossmintWalletBaseProvider({
@@ -44,7 +44,7 @@ export function CrossmintWalletBaseProvider({
     createOnLogin,
     callbacks,
     onAuthRequired,
-    getHandshakeParent,
+    _getEmailSignerIframe,
 }: CrossmintWalletBaseProviderProps) {
     const { crossmint, experimental_customAuth } = useCrossmint(
         "CrossmintWalletBaseProvider must be used within CrossmintProvider"
@@ -81,7 +81,7 @@ export function CrossmintWalletBaseProvider({
                         ...args.signer,
                         email,
                         onAuthRequired: _onAuthRequired,
-                        _handshakeParent: getHandshakeParent?.(),
+                        _handshakeParent: _getEmailSignerIframe?.(),
                     };
                 }
 
@@ -144,9 +144,9 @@ export function CrossmintWalletBaseProvider({
             status: walletStatus,
             getOrCreateWallet,
             onAuthRequired,
-            getHandshakeParent,
+            _getEmailSignerIframe,
         }),
-        [getOrCreateWallet, wallet, walletStatus, onAuthRequired, getHandshakeParent]
+        [getOrCreateWallet, wallet, walletStatus, onAuthRequired, _getEmailSignerIframe]
     );
 
     return <CrossmintWalletBaseContext.Provider value={contextValue}>{children}</CrossmintWalletBaseContext.Provider>;

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, type ReactNode } from "react";
+import { useEffect, useMemo, type ReactNode } from "react";
 import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
 import { isEthereumWallet } from "@dynamic-labs/ethereum";
 import { isSolanaWallet } from "@dynamic-labs/solana";
@@ -14,10 +14,10 @@ import type { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
 import DynamicContextProviderWrapper from "@/components/dynamic-xyz/DynamicContextProviderWrapper";
 import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
 import { SolanaWalletConnectors } from "@dynamic-labs/solana";
+import { useCrossmint } from "@crossmint/client-sdk-react-base";
 import { dynamicChainToCrossmintChain } from "@/utils/dynamic/dynamicChainToCrossmintChain";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
 import base58 from "bs58";
-import { useCrossmint } from "@crossmint/client-sdk-react-base";
 
 type DynamicWalletProviderProps = {
     children: ReactNode;
@@ -48,7 +48,7 @@ function DynamicWalletStateProvider({
     onWalletConnected,
 }: DynamicWalletStateProviderProps) {
     const {
-        crossmint: { jwt },
+        crossmint: { experimental_customAuth },
     } = useCrossmint();
     const {
         primaryWallet: connectedDynamicWallet,
@@ -65,18 +65,12 @@ function DynamicWalletStateProvider({
         }
     }, [hasDynamicSdkLoaded, onSdkLoaded]);
 
-    const cleanup = useCallback(() => {
-        if (jwt == null && connectedDynamicWallet) {
+    useEffect(() => {
+        if (experimental_customAuth?.jwt == null && hasDynamicSdkLoaded && connectedDynamicWallet) {
             removeWallet(connectedDynamicWallet.id);
             handleUnlinkWallet(connectedDynamicWallet.id);
         }
-    }, [jwt, connectedDynamicWallet, removeWallet, handleUnlinkWallet]);
-
-    useEffect(() => {
-        if (jwt == null && hasDynamicSdkLoaded) {
-            cleanup();
-        }
-    }, [jwt, cleanup, hasDynamicSdkLoaded]);
+    }, [experimental_customAuth?.jwt, hasDynamicSdkLoaded, connectedDynamicWallet, removeWallet, handleUnlinkWallet]);
 
     useEffect(() => {
         async function handleSettingExternalWalletSigner() {
