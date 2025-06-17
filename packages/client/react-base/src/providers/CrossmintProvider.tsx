@@ -50,6 +50,7 @@ export function CrossmintProvider({
             crossmintRef.current.experimental_customAuth = customAuthParams;
             crossmintRef.current.jwt = customAuthParams?.jwt;
         }
+        setCustomAuth(customAuthParams);
     }, []);
 
     const value = useMemo(
