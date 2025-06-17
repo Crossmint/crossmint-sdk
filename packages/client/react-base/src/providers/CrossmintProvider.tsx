@@ -1,5 +1,6 @@
 import { type ReactNode, createContext, useCallback, useMemo, useRef, useState } from "react";
 import { type Crossmint, type CrossmintConfig, type CustomAuth, createCrossmint } from "@crossmint/common-sdk-base";
+import isEqual from "lodash.isequal";
 
 export interface CrossmintContext {
     crossmint: Crossmint;
@@ -45,8 +46,10 @@ export function CrossmintProvider({
         if (crossmintRef.current.jwt != customAuthParams?.jwt) {
             crossmintRef.current.jwt = customAuthParams?.jwt;
         }
-        crossmintRef.current.experimental_customAuth = customAuthParams;
-        setCustomAuth(customAuthParams);
+        if (!isEqual(customAuthParams, crossmintRef.current.experimental_customAuth)) {
+            crossmintRef.current.experimental_customAuth = customAuthParams;
+            crossmintRef.current.jwt = customAuthParams?.jwt;
+        }
     }, []);
 
     const value = useMemo(
