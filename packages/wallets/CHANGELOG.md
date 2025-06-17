@@ -1,5 +1,13 @@
 # @crossmint/wallets-sdk
 
+## 0.9.6
+
+### Patch Changes
+
+- Updated dependencies [d924fda]
+  - @crossmint/common-sdk-base@0.7.2
+  - @crossmint/common-sdk-auth@1.0.36
+
 ## 0.9.5
 
 ### Patch Changes

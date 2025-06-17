@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-vanilla-ui
 
+## 1.1.51
+
+### Patch Changes
+
+- Updated dependencies [d924fda]
+  - @crossmint/common-sdk-base@0.7.2
+  - @crossmint/client-sdk-base@1.5.5
+
 ## 1.1.50
 
 ### Patch Changes
