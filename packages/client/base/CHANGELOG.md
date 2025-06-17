@@ -1,5 +1,12 @@
 # @crossmint/client-sdk-base
 
+## 1.5.5
+
+### Patch Changes
+
+- Updated dependencies [d924fda]
+  - @crossmint/common-sdk-base@0.7.2
+
 ## 1.5.4
 
 ### Patch Changes

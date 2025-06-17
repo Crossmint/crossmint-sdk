@@ -1,5 +1,13 @@
 # @crossmint/server-sdk
 
+## 1.2.26
+
+### Patch Changes
+
+- Updated dependencies [d924fda]
+  - @crossmint/common-sdk-base@0.7.2
+  - @crossmint/common-sdk-auth@1.0.36
+
 ## 1.2.25
 
 ### Patch Changes

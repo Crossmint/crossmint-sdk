@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.7.2
+
+### Patch Changes
+
+- d924fda: Support new extension-id header to run in Browser Extensions
+
 ## 0.7.1
 
 ### Patch Changes
