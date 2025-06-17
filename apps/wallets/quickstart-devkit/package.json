@@ -17,7 +17,7 @@
         "@solana/spl-token": "0.4.13",
         "@solana/web3.js": "1.98.0",
         "clsx": "2.1.1",
-        "next": "15.3.1",
+        "next": "15.2.4",
         "react": "^18",
         "react-dom": "^18",
         "tailwind-merge": "2.4.0",
