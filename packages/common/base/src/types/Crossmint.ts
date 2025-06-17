@@ -1,10 +1,10 @@
-import { type ValidateAPIKeyPrefixExpectations, validateAPIKey } from "@/apiKey";
 import type { VersionedTransaction } from "@solana/web3.js";
 import type { Account, EIP1193Provider as ViemEIP1193Provider } from "viem";
+import { type ValidateAPIKeyPrefixExpectations, validateAPIKey } from "@/apiKey";
 
 export type BaseExternalWalletSignerConfig = {
     type: "external-wallet";
-    address: string;
+    address?: string;
 };
 
 // Generic EIP1193 Provider interface that should work with different implementations

@@ -3,6 +3,7 @@ import {
     type Chain,
     CrossmintWallets,
     type EmailSignerConfig,
+    type SignerConfigForChain,
     type Wallet,
     type WalletArgsFor,
 } from "@crossmint/wallets-sdk";
@@ -98,8 +99,7 @@ export function CrossmintWalletBaseProvider({
                     // TODO: detect runtime error - maybe move this signer logic to the Wallets SDK
                     // if externalWallet is Evm and chain is Solana => throw
                     // if externalWallet is Solana and chain is Evm => throw
-                    // @ts-expect-error fix this
-                    args.signer = signer;
+                    args.signer = signer as SignerConfigForChain<C>;
                 }
 
                 const wallet = await wallets.getOrCreateWallet<C>({
@@ -129,7 +129,7 @@ export function CrossmintWalletBaseProvider({
         if (createOnLogin != null) {
             getOrCreateWallet(createOnLogin);
         }
-    }, [createOnLogin, experimental_customAuth]);
+    }, [createOnLogin, getOrCreateWallet]);
 
     useEffect(() => {
         if (experimental_customAuth?.jwt == null && walletStatus !== "not-loaded") {

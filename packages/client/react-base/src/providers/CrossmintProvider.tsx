@@ -22,8 +22,6 @@ export function CrossmintProvider({
     children: ReactNode;
 }) {
     const [version, setVersion] = useState(0);
-    const [customAuth, setCustomAuth] = useState<CustomAuth | undefined>(undefined);
-
     const crossmintRef = useRef<Crossmint>(
         new Proxy<Crossmint>(createCrossmint({ apiKey, overrideBaseUrl, appId, extensionId }), {
             set(target, prop, value) {
@@ -48,9 +46,7 @@ export function CrossmintProvider({
         }
         if (!isEqual(customAuthParams, crossmintRef.current.experimental_customAuth)) {
             crossmintRef.current.experimental_customAuth = customAuthParams;
-            crossmintRef.current.jwt = customAuthParams?.jwt;
         }
-        setCustomAuth(customAuthParams);
     }, []);
 
     const value = useMemo(
@@ -59,10 +55,10 @@ export function CrossmintProvider({
                 return crossmintRef.current;
             },
             experimental_setCustomAuth,
-            experimental_customAuth: customAuth,
+            experimental_customAuth: crossmintRef.current.experimental_customAuth,
             setJwt,
         }),
-        [experimental_setCustomAuth, setJwt, version, customAuth]
+        [experimental_setCustomAuth, setJwt, version]
     );
 
     return <CrossmintContext.Provider value={value}>{children}</CrossmintContext.Provider>;

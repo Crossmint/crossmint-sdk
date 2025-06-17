@@ -4,17 +4,15 @@ import { isEthereumWallet } from "@dynamic-labs/ethereum";
 import { isSolanaWallet } from "@dynamic-labs/solana";
 import type { SignableMessage } from "viem";
 import type { VersionedTransaction } from "@solana/web3.js";
+import type { Chain, ExternalWalletSignerConfigForChain } from "@crossmint/wallets-sdk";
 import type {
-    Chain,
+    APIKeyEnvironmentPrefix,
     EvmExternalWalletSignerConfig,
-    ExternalWalletSignerConfigForChain,
     SolanaExternalWalletSignerConfig,
-} from "@crossmint/wallets-sdk";
-import type { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
+} from "@crossmint/common-sdk-base";
 import DynamicContextProviderWrapper from "@/components/dynamic-xyz/DynamicContextProviderWrapper";
 import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
 import { SolanaWalletConnectors } from "@dynamic-labs/solana";
-import { useCrossmint } from "@crossmint/client-sdk-react-base";
 import { dynamicChainToCrossmintChain } from "@/utils/dynamic/dynamicChainToCrossmintChain";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
 import base58 from "bs58";
@@ -37,6 +35,7 @@ type DynamicWalletProviderProps = {
 type DynamicWalletStateProviderProps = {
     children: ReactNode;
     enabled: boolean;
+    jwt?: string;
     onSdkLoaded?: (loaded: boolean) => void;
     onWalletConnected: (externalWalletSigner: ExternalWalletSignerConfigForChain<Chain>) => void;
 };
@@ -46,10 +45,8 @@ function DynamicWalletStateProvider({
     enabled,
     onSdkLoaded,
     onWalletConnected,
+    jwt,
 }: DynamicWalletStateProviderProps) {
-    const {
-        crossmint: { experimental_customAuth },
-    } = useCrossmint();
     const {
         primaryWallet: connectedDynamicWallet,
         sdkHasLoaded,
@@ -66,11 +63,11 @@ function DynamicWalletStateProvider({
     }, [hasDynamicSdkLoaded, onSdkLoaded]);
 
     useEffect(() => {
-        if (experimental_customAuth?.jwt == null && hasDynamicSdkLoaded && connectedDynamicWallet) {
+        if (jwt == null && hasDynamicSdkLoaded && connectedDynamicWallet != null) {
             removeWallet(connectedDynamicWallet.id);
             handleUnlinkWallet(connectedDynamicWallet.id);
         }
-    }, [experimental_customAuth?.jwt, hasDynamicSdkLoaded, connectedDynamicWallet, removeWallet, handleUnlinkWallet]);
+    }, [jwt, hasDynamicSdkLoaded, connectedDynamicWallet, removeWallet, handleUnlinkWallet]);
 
     useEffect(() => {
         async function handleSettingExternalWalletSigner() {
@@ -109,10 +106,10 @@ function DynamicWalletStateProvider({
             }
         }
 
-        if (connectedDynamicWallet != null) {
+        if (connectedDynamicWallet != null && jwt != null) {
             handleSettingExternalWalletSigner();
         }
-    }, [connectedDynamicWallet]);
+    }, [connectedDynamicWallet, jwt, onWalletConnected]);
 
     return children;
 }
@@ -126,7 +123,7 @@ export function DynamicWalletProvider({
     onSdkLoaded,
     onWalletConnected,
 }: DynamicWalletProviderProps) {
-    const { crossmintAuth } = useCrossmintAuth();
+    const { crossmintAuth, jwt } = useCrossmintAuth();
     const cssOverrides = useMemo(
         () =>
             `.powered-by-dynamic { display: none !important; }
@@ -229,6 +226,7 @@ export function DynamicWalletProvider({
                 enabled={enabled}
                 onSdkLoaded={onSdkLoaded}
                 onWalletConnected={onWalletConnected}
+                jwt={jwt}
             >
                 {children}
             </DynamicWalletStateProvider>

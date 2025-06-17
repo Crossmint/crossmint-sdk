@@ -3,7 +3,6 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { CrossmintWalletProvider } from "./CrossmintWalletProvider";
 
-// Mock the dependencies with minimal setup
 vi.mock("@crossmint/client-sdk-react-base", () => ({
     useCrossmint: vi.fn(() => ({
         experimental_customAuth: undefined,
@@ -25,7 +24,6 @@ vi.mock("@/components/signers/EmailSignersDialog", () => ({
     EmailSignersDialog: () => <div data-testid="email-signers-dialog">Email Signers Dialog</div>,
 }));
 
-// Mock createPortal to render children directly
 vi.mock("react-dom", () => ({
     createPortal: (element: React.ReactNode) => element,
 }));
@@ -72,12 +70,11 @@ describe("CrossmintWalletProvider", () => {
             </CrossmintWalletProvider>
         );
 
-        // Should render without errors
         expect(screen.getByTestId("wallet-base-provider")).toBeDefined();
     });
 
     it("accepts appearance prop", () => {
-        const appearance = undefined; // Simplified to avoid type complexities
+        const appearance = undefined;
 
         render(
             <CrossmintWalletProvider appearance={appearance}>
@@ -85,12 +82,11 @@ describe("CrossmintWalletProvider", () => {
             </CrossmintWalletProvider>
         );
 
-        // Should render without errors
         expect(screen.getByTestId("wallet-base-provider")).toBeDefined();
     });
 
     it("accepts createOnLogin prop", () => {
-        const createOnLogin = undefined; // Simplified to avoid type complexities
+        const createOnLogin = undefined;
 
         render(
             <CrossmintWalletProvider createOnLogin={createOnLogin}>
@@ -98,7 +94,6 @@ describe("CrossmintWalletProvider", () => {
             </CrossmintWalletProvider>
         );
 
-        // Should render without errors
         expect(screen.getByTestId("wallet-base-provider")).toBeDefined();
     });
 
@@ -113,8 +108,6 @@ describe("CrossmintWalletProvider", () => {
                 <div>Test</div>
             </CrossmintWalletProvider>
         );
-
-        // Should render without errors
         expect(screen.getByTestId("wallet-base-provider")).toBeDefined();
     });
 });

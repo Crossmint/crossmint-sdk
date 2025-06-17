@@ -3,7 +3,6 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { CrossmintAuthProvider } from "./CrossmintAuthProvider";
 
-// Mock the dependencies with minimal setup
 vi.mock("@crossmint/client-sdk-react-base", () => ({
     useCrossmint: vi.fn(() => ({
         experimental_setCustomAuth: vi.fn(),
@@ -68,8 +67,6 @@ describe("CrossmintAuthProvider", () => {
                 <div>Test</div>
             </CrossmintAuthProvider>
         );
-
-        // Should render without errors, indicating props are handled correctly
         expect(screen.getByTestId("internal-auth-provider")).toBeDefined();
     });
 });
