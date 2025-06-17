@@ -1,9 +1,10 @@
 import type { OAuthProvider } from "@crossmint/common-sdk-auth";
-import { ChildWindow, PopupWindow } from "@crossmint/client-sdk-window";
+import { ChildWindow, PopupWindow, NewTabWindow } from "@crossmint/client-sdk-window";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import { useCrossmintAuth } from "./useCrossmintAuth";
+import { isWalletBrowser } from "@/utils/browserUtils";
 
 export const useOAuthWindowListener = (provider: OAuthProvider) => {
     const { crossmintAuth } = useCrossmintAuth();
@@ -52,12 +53,18 @@ export const useOAuthWindowListener = (provider: OAuthProvider) => {
             });
         }
 
-        const popup = await PopupWindow.init(baseUrl.toString(), {
-            awaitToLoad: false,
-            crossOrigin: true,
-            width: 400,
-            height: 700,
-        });
+        const useNewTab = isWalletBrowser();
+        
+        const popup = useNewTab 
+            ? await NewTabWindow.init(baseUrl.toString(), {
+                awaitToLoad: false,
+            })
+            : await PopupWindow.init(baseUrl.toString(), {
+                awaitToLoad: false,
+                crossOrigin: true,
+                width: 400,
+                height: 700,
+            });
 
         const handleAuthMaterial = async (data: { oneTimeSecret: string }) => {
             await crossmintAuth?.handleRefreshAuthMaterial(data.oneTimeSecret);
@@ -67,7 +74,10 @@ export const useOAuthWindowListener = (provider: OAuthProvider) => {
         };
 
         const handleError = (data: { error: string }) => {
-            setError(data.error);
+            const errorMessage = useNewTab 
+                ? `Authentication failed. Please ensure your wallet browser allows new tabs to open. Error: ${data.error}`
+                : data.error;
+            setError(errorMessage);
             childRef.current?.off("errorFromPopupCallback");
             popup.window.close();
             setIsLoading(false);
