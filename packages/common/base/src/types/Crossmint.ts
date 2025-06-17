@@ -1,8 +1,10 @@
 import { type ValidateAPIKeyPrefixExpectations, validateAPIKey } from "@/apiKey";
+import type { EvmExternalWalletSignerConfig, SolanaExternalWalletSignerConfig } from "./signers";
 
 export type CustomAuth = {
     email?: string;
     jwt?: string;
+    externalWalletSigner?: EvmExternalWalletSignerConfig | SolanaExternalWalletSignerConfig;
 };
 
 export type CrossmintConfig = {

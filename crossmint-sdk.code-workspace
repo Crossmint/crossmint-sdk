@@ -33,6 +33,14 @@
             "path": "packages/client/auth"
         },
         {
+            "name": "⚛️ @crossmint/client-sdk-react-base",
+            "path": "packages/client/react-base"
+        },
+        {
+            "name": "⚛️ @crossmint/client-sdk-react-native-ui",
+            "path": "packages/client/ui/react-native"
+        },
+        {
             "name": "⚛️ @crossmint/client-sdk-react-ui",
             "path": "packages/client/ui/react-ui"
         },
@@ -59,10 +67,6 @@
         {
             "name": "✅ @crossmint/client-sdk-verifiable-credentials",
             "path": "packages/client/verifiable-credentials"
-        },
-        {
-            "name": "🔒 @crossmint/client-sdk-smart-wallet",
-            "path": "packages/client/wallets/smart-wallet"
         },
         {
             "name": "🪪 @crossmint/wallets-sdk",

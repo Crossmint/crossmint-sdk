@@ -51,7 +51,7 @@ export class EmailSigner implements Signer {
             responseEvent: "response:sign",
             data: {
                 authData: {
-                    jwt: this.config.crossmint.jwt ?? "",
+                    jwt: this.config.crossmint.experimental_customAuth?.jwt ?? "",
                     apiKey: this.config.crossmint.apiKey,
                 },
                 data: {
@@ -84,7 +84,10 @@ export class EmailSigner implements Signer {
             event: "request:get-status",
             responseEvent: "response:get-status",
             data: {
-                authData: { jwt: this.config.crossmint.jwt ?? "", apiKey: this.config.crossmint.apiKey },
+                authData: {
+                    jwt: this.config.crossmint.experimental_customAuth?.jwt ?? "",
+                    apiKey: this.config.crossmint.apiKey,
+                },
             },
             options: DEFAULT_EVENT_OPTIONS,
         });
@@ -144,7 +147,10 @@ export class EmailSigner implements Signer {
             event: "request:start-onboarding",
             responseEvent: "response:start-onboarding",
             data: {
-                authData: { jwt: this.config.crossmint.jwt ?? "", apiKey: this.config.crossmint.apiKey },
+                authData: {
+                    jwt: this.config.crossmint.experimental_customAuth?.jwt ?? "",
+                    apiKey: this.config.crossmint.apiKey,
+                },
                 data: { authId },
             },
             options: DEFAULT_EVENT_OPTIONS,
@@ -173,7 +179,7 @@ export class EmailSigner implements Signer {
                 responseEvent: "response:complete-onboarding",
                 data: {
                     authData: {
-                        jwt: this.config.crossmint.jwt ?? "",
+                        jwt: this.config.crossmint.experimental_customAuth?.jwt ?? "",
                         apiKey: this.config.crossmint.apiKey,
                     },
                     data: {

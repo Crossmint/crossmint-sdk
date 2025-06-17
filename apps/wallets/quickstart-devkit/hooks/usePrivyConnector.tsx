@@ -10,7 +10,7 @@ import type { VersionedTransaction } from "@solana/web3.js";
 /* ============================================================ */
 export const useEVMPrivyConnector = () => {
     const {
-        setJwt,
+        experimental_setCustomAuth,
         crossmint: { jwt },
     } = useCrossmint();
     const {
@@ -27,10 +27,10 @@ export const useEVMPrivyConnector = () => {
             try {
                 const privyJwt = await getAccessToken();
                 if (privyJwt != null) {
-                    setJwt(privyJwt);
+                    experimental_setCustomAuth({ jwt: privyJwt });
                 }
             } catch (error) {
-                setJwt(undefined);
+                experimental_setCustomAuth({ jwt: undefined });
                 console.error("Failed to get Privy JWT:", error);
             }
         };
@@ -38,7 +38,7 @@ export const useEVMPrivyConnector = () => {
         if (ready && authenticated) {
             syncPrivyJwt();
         }
-    }, [ready, authenticated, getAccessToken, setJwt]);
+    }, [ready, authenticated, getAccessToken, experimental_setCustomAuth]);
 
     const privyEmbeddedWallet = privyWallets?.find((wallet) => wallet.walletClientType === "privy") ?? null;
 
@@ -76,7 +76,7 @@ export const useEVMPrivyConnector = () => {
 /*                    SOLANA PRIVY CONNECTOR                    */
 /* ============================================================ */
 export const useSolanaPrivyConnector = () => {
-    const { setJwt } = useCrossmint();
+    const { experimental_setCustomAuth } = useCrossmint();
     const {
         getOrCreateWallet: getOrCreateCrossmintWallet,
         status: crossmintWalletStatus,
@@ -91,10 +91,10 @@ export const useSolanaPrivyConnector = () => {
             try {
                 const privyJwt = await getAccessToken();
                 if (privyJwt != null) {
-                    setJwt(privyJwt);
+                    experimental_setCustomAuth({ jwt: privyJwt });
                 }
             } catch (error) {
-                setJwt(undefined);
+                experimental_setCustomAuth({ jwt: undefined });
                 console.error("Failed to get Privy JWT:", error);
             }
         };
@@ -102,7 +102,7 @@ export const useSolanaPrivyConnector = () => {
         if (ready && authenticated) {
             syncPrivyJwt();
         }
-    }, [ready, authenticated, getAccessToken, setJwt]);
+    }, [ready, authenticated, getAccessToken, experimental_setCustomAuth]);
 
     const privyEmbeddedWallet = privyWallets?.find((wallet) => wallet.walletClientType === "privy") ?? null;
 

@@ -1,14 +1,16 @@
-import { type ReactNode, createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
+import { type ReactNode, createContext, useCallback, useMemo, useRef, useState } from "react";
 import { type Crossmint, type CrossmintConfig, type CustomAuth, createCrossmint } from "@crossmint/common-sdk-base";
 import isEqual from "lodash.isequal";
 
 export interface CrossmintContext {
     crossmint: Crossmint;
+    experimental_setCustomAuth: (customAuthParams?: CustomAuth) => void;
+    experimental_customAuth?: CustomAuth;
+    /** @deprecated Use experimental_setCustomAuth instead.*/
     setJwt: (jwt: string | undefined) => void;
-    experimental_setCustomAuth: (customAuth: CustomAuth | undefined) => void;
 }
 
-const CrossmintContext = createContext<CrossmintContext | null>(null);
+export const CrossmintContext = createContext<CrossmintContext | null>(null);
 
 export function CrossmintProvider({
     children,
@@ -16,11 +18,10 @@ export function CrossmintProvider({
     appId,
     extensionId,
     overrideBaseUrl,
-}: Pick<CrossmintConfig, "apiKey" | "appId" | "extensionId" | "overrideBaseUrl"> & {
+}: CrossmintConfig & {
     children: ReactNode;
 }) {
     const [version, setVersion] = useState(0);
-
     const crossmintRef = useRef<Crossmint>(
         new Proxy<Crossmint>(createCrossmint({ apiKey, overrideBaseUrl, appId, extensionId }), {
             set(target, prop, value) {
@@ -38,10 +39,13 @@ export function CrossmintProvider({
         }
     }, []);
 
-    const experimental_setCustomAuth = useCallback((customAuth: CustomAuth | undefined) => {
-        if (!isEqual(customAuth, crossmintRef.current.experimental_customAuth)) {
-            crossmintRef.current.experimental_customAuth = customAuth;
-            crossmintRef.current.jwt = customAuth?.jwt;
+    const experimental_setCustomAuth = useCallback((customAuthParams?: CustomAuth) => {
+        // Maintains backward compatibility in case crossmint.jwt is being used.
+        if (crossmintRef.current.jwt != customAuthParams?.jwt) {
+            crossmintRef.current.jwt = customAuthParams?.jwt;
+        }
+        if (!isEqual(customAuthParams, crossmintRef.current.experimental_customAuth)) {
+            crossmintRef.current.experimental_customAuth = customAuthParams;
         }
     }, []);
 
@@ -50,19 +54,12 @@ export function CrossmintProvider({
             get crossmint() {
                 return crossmintRef.current;
             },
-            setJwt,
             experimental_setCustomAuth,
+            experimental_customAuth: crossmintRef.current.experimental_customAuth,
+            setJwt,
         }),
-        [setJwt, experimental_setCustomAuth, version]
+        [experimental_setCustomAuth, setJwt, version]
     );
 
     return <CrossmintContext.Provider value={value}>{children}</CrossmintContext.Provider>;
-}
-
-export function useCrossmint(missingContextMessage?: string) {
-    const context = useContext(CrossmintContext);
-    if (context == null) {
-        throw new Error(missingContextMessage ?? "useCrossmint must be used within a CrossmintProvider");
-    }
-    return context;
 }

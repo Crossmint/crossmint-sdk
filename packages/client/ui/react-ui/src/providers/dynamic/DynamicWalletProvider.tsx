@@ -1,45 +1,21 @@
-import { createContext, useContext, useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, type ReactNode } from "react";
 import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
 import { isEthereumWallet } from "@dynamic-labs/ethereum";
 import { isSolanaWallet } from "@dynamic-labs/solana";
 import type { SignableMessage } from "viem";
 import type { VersionedTransaction } from "@solana/web3.js";
-import type { EvmExternalWalletSignerConfig, SolanaExternalWalletSignerConfig } from "@crossmint/wallets-sdk";
-import type { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
+import type { Chain, ExternalWalletSignerConfigForChain } from "@crossmint/wallets-sdk";
+import type {
+    APIKeyEnvironmentPrefix,
+    EvmExternalWalletSignerConfig,
+    SolanaExternalWalletSignerConfig,
+} from "@crossmint/common-sdk-base";
 import DynamicContextProviderWrapper from "@/components/dynamic-xyz/DynamicContextProviderWrapper";
 import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
 import { SolanaWalletConnectors } from "@dynamic-labs/solana";
 import { dynamicChainToCrossmintChain } from "@/utils/dynamic/dynamicChainToCrossmintChain";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
 import base58 from "bs58";
-
-type DynamicWalletContextType = {
-    isDynamicWalletConnected: boolean;
-    isDynamicProviderAvailable: boolean;
-    hasDynamicSdkLoaded: boolean;
-    getAdminSigner: () => Promise<EvmExternalWalletSignerConfig | SolanaExternalWalletSignerConfig>;
-    initialize: (jwt?: string, onSdkLoaded?: (loaded: boolean) => void) => void;
-    cleanup: () => void;
-};
-
-const DynamicWalletContext = createContext<DynamicWalletContextType | null>(null);
-
-export function useDynamicWallet() {
-    const context = useContext(DynamicWalletContext);
-    if (!context) {
-        return {
-            isDynamicWalletConnected: false,
-            isDynamicProviderAvailable: false,
-            hasDynamicSdkLoaded: true,
-            getAdminSigner: () => {
-                throw new Error("useDynamicWallet must be used within DynamicWalletProvider");
-            },
-            initialize: () => {},
-            cleanup: () => {},
-        };
-    }
-    return context;
-}
 
 type DynamicWalletProviderProps = {
     children: ReactNode;
@@ -53,19 +29,24 @@ type DynamicWalletProviderProps = {
         };
     };
     onSdkLoaded?: (loaded: boolean) => void;
+    onWalletConnected: (externalWalletSigner: ExternalWalletSignerConfigForChain<Chain>) => void;
 };
 
 type DynamicWalletStateProviderProps = {
     children: ReactNode;
     enabled: boolean;
+    jwt?: string;
     onSdkLoaded?: (loaded: boolean) => void;
+    onWalletConnected: (externalWalletSigner: ExternalWalletSignerConfigForChain<Chain>) => void;
 };
 
-function DynamicWalletStateProvider({ children, enabled, onSdkLoaded }: DynamicWalletStateProviderProps) {
-    const [jwt, setJwt] = useState<string | undefined>();
-    const [onSdkLoadedCallback, setOnSdkLoadedCallback] = useState<((loaded: boolean) => void) | undefined>();
-    const [isInitialized, setIsInitialized] = useState(false);
-
+function DynamicWalletStateProvider({
+    children,
+    enabled,
+    onSdkLoaded,
+    onWalletConnected,
+    jwt,
+}: DynamicWalletStateProviderProps) {
     const {
         primaryWallet: connectedDynamicWallet,
         sdkHasLoaded,
@@ -73,86 +54,64 @@ function DynamicWalletStateProvider({ children, enabled, onSdkLoaded }: DynamicW
         handleUnlinkWallet,
     } = useDynamicContext();
 
-    const isDynamicWalletConnected = !!connectedDynamicWallet;
     const hasDynamicSdkLoaded = !enabled || sdkHasLoaded;
 
-    const initialize = useCallback((newJwt?: string, onSdkLoaded?: (loaded: boolean) => void) => {
-        setJwt(newJwt);
-        setOnSdkLoadedCallback(() => onSdkLoaded);
-        setIsInitialized(true);
-    }, []);
+    useEffect(() => {
+        if (hasDynamicSdkLoaded) {
+            onSdkLoaded?.(hasDynamicSdkLoaded);
+        }
+    }, [hasDynamicSdkLoaded, onSdkLoaded]);
 
-    const cleanup = useCallback(() => {
-        if (jwt == null && connectedDynamicWallet) {
+    useEffect(() => {
+        if (jwt == null && hasDynamicSdkLoaded && connectedDynamicWallet != null) {
             removeWallet(connectedDynamicWallet.id);
             handleUnlinkWallet(connectedDynamicWallet.id);
         }
-    }, [jwt, connectedDynamicWallet, removeWallet, handleUnlinkWallet]);
+    }, [jwt, hasDynamicSdkLoaded, connectedDynamicWallet, removeWallet, handleUnlinkWallet]);
 
     useEffect(() => {
-        if (enabled) {
-            onSdkLoadedCallback?.(hasDynamicSdkLoaded);
-            onSdkLoaded?.(hasDynamicSdkLoaded);
-        }
-    }, [hasDynamicSdkLoaded, enabled, onSdkLoadedCallback, onSdkLoaded]);
-
-    useEffect(() => {
-        if (jwt == null && isInitialized) {
-            cleanup();
-        }
-    }, [jwt, cleanup, isInitialized]);
-
-    const getAdminSigner = useCallback(async () => {
-        if (connectedDynamicWallet == null) {
-            throw new Error("No connected wallet");
-        }
-
-        try {
-            if (isEthereumWallet(connectedDynamicWallet)) {
-                const dynamicClient = await connectedDynamicWallet.getWalletClient();
-                return {
-                    type: "external-wallet",
-                    address: dynamicClient.account.address,
-                    viemAccount: {
-                        ...dynamicClient.account,
-                        signMessage: async (data: { message: SignableMessage }) => {
-                            return await dynamicClient.signMessage({
-                                message: data.message,
-                            });
+        async function handleSettingExternalWalletSigner() {
+            try {
+                if (isEthereumWallet(connectedDynamicWallet!)) {
+                    const dynamicClient = await connectedDynamicWallet.getWalletClient();
+                    const externalWalletSigner = {
+                        type: "external-wallet",
+                        address: dynamicClient.account.address,
+                        viemAccount: {
+                            ...dynamicClient.account,
+                            signMessage: async (data: { message: SignableMessage }) => {
+                                return await dynamicClient.signMessage({
+                                    message: data.message,
+                                });
+                            },
                         },
-                    },
-                } as EvmExternalWalletSignerConfig;
+                    } as EvmExternalWalletSignerConfig;
+                    onWalletConnected(externalWalletSigner);
+                } else if (isSolanaWallet(connectedDynamicWallet!)) {
+                    const signer = await connectedDynamicWallet.getSigner();
+                    const externalWalletSigner = {
+                        type: "external-wallet",
+                        address: connectedDynamicWallet.address,
+                        onSignTransaction: async (transaction: VersionedTransaction) => {
+                            return await signer.signTransaction(transaction);
+                        },
+                    } as SolanaExternalWalletSignerConfig;
+                    onWalletConnected(externalWalletSigner);
+                } else {
+                    throw new Error("Unsupported wallet type");
+                }
+            } catch (error) {
+                console.error("Failed to get admin signer", error);
+                throw new Error("Failed to get admin signer");
             }
-            if (isSolanaWallet(connectedDynamicWallet)) {
-                const signer = await connectedDynamicWallet.getSigner();
-                return {
-                    type: "external-wallet",
-                    address: connectedDynamicWallet.address,
-                    onSignTransaction: async (transaction: VersionedTransaction) => {
-                        return await signer.signTransaction(transaction);
-                    },
-                } as SolanaExternalWalletSignerConfig;
-            }
-            throw new Error("Unsupported wallet type");
-        } catch (error) {
-            console.error("Failed to get admin signer", error);
-            throw new Error("Failed to get admin signer");
         }
-    }, [connectedDynamicWallet]);
 
-    const contextValue = useMemo(
-        () => ({
-            isDynamicWalletConnected,
-            isDynamicProviderAvailable: true,
-            hasDynamicSdkLoaded,
-            getAdminSigner,
-            initialize,
-            cleanup,
-        }),
-        [isDynamicWalletConnected, hasDynamicSdkLoaded, getAdminSigner, initialize, cleanup]
-    );
+        if (connectedDynamicWallet != null && jwt != null) {
+            handleSettingExternalWalletSigner();
+        }
+    }, [connectedDynamicWallet, jwt, onWalletConnected]);
 
-    return <DynamicWalletContext.Provider value={contextValue}>{children}</DynamicWalletContext.Provider>;
+    return children;
 }
 
 export function DynamicWalletProvider({
@@ -162,8 +121,9 @@ export function DynamicWalletProvider({
     loginMethods = ["web3"],
     appearance,
     onSdkLoaded,
+    onWalletConnected,
 }: DynamicWalletProviderProps) {
-    const { crossmintAuth } = useCrossmintAuth();
+    const { crossmintAuth, jwt } = useCrossmintAuth();
     const cssOverrides = useMemo(
         () =>
             `.powered-by-dynamic { display: none !important; }
@@ -262,7 +222,12 @@ export function DynamicWalletProvider({
                 },
             }}
         >
-            <DynamicWalletStateProvider enabled={enabled} onSdkLoaded={onSdkLoaded}>
+            <DynamicWalletStateProvider
+                enabled={enabled}
+                onSdkLoaded={onSdkLoaded}
+                onWalletConnected={onWalletConnected}
+                jwt={jwt}
+            >
                 {children}
             </DynamicWalletStateProvider>
         </DynamicContextProviderWrapper>

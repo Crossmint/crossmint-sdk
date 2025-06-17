@@ -9,6 +9,9 @@ export class SolanaExternalWalletSigner implements Signer {
     onSignTransaction: (transaction: VersionedTransaction) => Promise<VersionedTransaction>;
 
     constructor(config: SolanaExternalWalletSignerConfig) {
+        if (config.address == null) {
+            throw new Error("Please provide an address for the External Wallet Signer");
+        }
         this.address = config.address;
         this.onSignTransaction = config.onSignTransaction;
     }
