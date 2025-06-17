@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { AuthContext, type AuthContextType } from "../providers/CrossmintAuthProviderInternal";
+import { AuthContext, type AuthContextType } from "../providers/CrossmintAuthProvider";
 
 export function useCrossmintAuth(): AuthContextType {
     const context = useContext(AuthContext);

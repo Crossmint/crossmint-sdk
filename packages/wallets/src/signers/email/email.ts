@@ -51,7 +51,7 @@ export class EmailSigner implements Signer {
             responseEvent: "response:sign",
             data: {
                 authData: {
-                    jwt: this.config.crossmint.jwt ?? "",
+                    jwt: this.config.crossmint.experimental_customAuth?.jwt ?? "",
                     apiKey: this.config.crossmint.apiKey,
                 },
                 data: {
@@ -84,7 +84,10 @@ export class EmailSigner implements Signer {
             event: "request:get-status",
             responseEvent: "response:get-status",
             data: {
-                authData: { jwt: this.config.crossmint.jwt ?? "", apiKey: this.config.crossmint.apiKey },
+                authData: {
+                    jwt: this.config.crossmint.experimental_customAuth?.jwt ?? "",
+                    apiKey: this.config.crossmint.apiKey,
+                },
             },
             options: DEFAULT_EVENT_OPTIONS,
         });
@@ -144,7 +147,10 @@ export class EmailSigner implements Signer {
             event: "request:start-onboarding",
             responseEvent: "response:start-onboarding",
             data: {
-                authData: { jwt: this.config.crossmint.jwt ?? "", apiKey: this.config.crossmint.apiKey },
+                authData: {
+                    jwt: this.config.crossmint.experimental_customAuth?.jwt ?? "",
+                    apiKey: this.config.crossmint.apiKey,
+                },
                 data: { authId },
             },
             options: DEFAULT_EVENT_OPTIONS,
@@ -173,7 +179,7 @@ export class EmailSigner implements Signer {
                 responseEvent: "response:complete-onboarding",
                 data: {
                     authData: {
-                        jwt: this.config.crossmint.jwt ?? "",
+                        jwt: this.config.crossmint.experimental_customAuth?.jwt ?? "",
                         apiKey: this.config.crossmint.apiKey,
                     },
                     data: {
@@ -203,12 +209,14 @@ export class EmailSigner implements Signer {
     }
 
     static async pregenerateSigner(email: string, crossmint: Crossmint): Promise<string> {
-        if (email == null) {
+        if (email == null || crossmint.experimental_customAuth?.email == null) {
             throw new Error("Email is required to pregenerate a signer");
         }
 
         try {
-            const response = await new EmailSignerApiClient(crossmint).pregenerateSigner(email);
+            const response = await new EmailSignerApiClient(crossmint).pregenerateSigner(
+                email ?? crossmint.experimental_customAuth.email
+            );
             const publicKey = response.publicKey;
 
             if (publicKey == null) {

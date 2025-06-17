@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { AuthContext } from "../providers/CrossmintAuthProviderInternal";
+import { AuthContext } from "../providers/CrossmintAuthProvider";
 
 export function useCrossmintAuth() {
     const context = useContext(AuthContext);

@@ -132,11 +132,11 @@ export function CrossmintWalletBaseProvider({
     }, [createOnLogin, experimental_customAuth]);
 
     useEffect(() => {
-        if (crossmint.jwt == null && walletStatus !== "not-loaded") {
+        if (experimental_customAuth?.jwt == null && walletStatus !== "not-loaded") {
             setWalletStatus("not-loaded");
             setWallet(undefined);
         }
-    }, [crossmint.jwt, walletStatus]);
+    }, [experimental_customAuth?.jwt, walletStatus]);
 
     const contextValue = useMemo(
         () => ({

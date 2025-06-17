@@ -18,8 +18,8 @@ vi.mock("@/hooks", () => ({
     })),
 }));
 
-vi.mock("./CrossmintAuthProviderInternal", () => ({
-    CrossmintAuthProviderInternal: ({ children }: { children: React.ReactNode }) => (
+vi.mock("./CrossmintAuthProvider", () => ({
+    CrossmintAuthProvider: ({ children }: { children: React.ReactNode }) => (
         <div data-testid="internal-auth-provider">{children}</div>
     ),
 }));
@@ -40,7 +40,7 @@ describe("CrossmintAuthProvider", () => {
         expect(screen.getByText("Test Child")).toBeDefined();
     });
 
-    it("wraps children with CrossmintAuthProviderInternal", () => {
+    it("wraps children with CrossmintAuthProvider", () => {
         render(
             <CrossmintAuthProvider>
                 <div data-testid="test-child">Test Child</div>

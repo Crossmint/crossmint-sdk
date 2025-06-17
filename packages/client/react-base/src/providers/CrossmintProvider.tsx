@@ -1,17 +1,11 @@
 import { type ReactNode, createContext, useCallback, useMemo, useRef, useState } from "react";
-import { type Crossmint, type CrossmintConfig, createCrossmint } from "@crossmint/common-sdk-base";
-import type { EvmExternalWalletSignerConfig, SolanaExternalWalletSignerConfig } from "@crossmint/wallets-sdk";
-
-export type CustomAuth = {
-    email?: string;
-    jwt?: string;
-    externalWalletSigner?: SolanaExternalWalletSignerConfig | EvmExternalWalletSignerConfig;
-};
+import { type Crossmint, type CrossmintConfig, type CustomAuth, createCrossmint } from "@crossmint/common-sdk-base";
 
 export interface CrossmintContext {
     crossmint: Crossmint;
     experimental_setCustomAuth: (customAuthParams?: CustomAuth) => void;
     experimental_customAuth?: CustomAuth;
+    /** @deprecated Use experimental_setCustomAuth instead.*/
     setJwt: (jwt: string | undefined) => void;
 }
 
@@ -46,9 +40,11 @@ export function CrossmintProvider({
     }, []);
 
     const experimental_setCustomAuth = useCallback((customAuthParams?: CustomAuth) => {
+        // Maintains backward compatibility in case crossmint.jwt is being used.
         if (crossmintRef.current.jwt != customAuthParams?.jwt) {
             crossmintRef.current.jwt = customAuthParams?.jwt;
         }
+        crossmintRef.current.experimental_customAuth = customAuthParams;
         setCustomAuth(customAuthParams);
     }, []);
 

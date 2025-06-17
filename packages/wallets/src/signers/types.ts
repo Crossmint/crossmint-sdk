@@ -1,10 +1,18 @@
 import type { WebAuthnP256 } from "ox";
-import type { VersionedTransaction } from "@solana/web3.js";
-import type { Account, EIP1193Provider as ViemEIP1193Provider } from "viem";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
-import type { Crossmint } from "@crossmint/common-sdk-base";
+import type {
+    Crossmint,
+    EvmExternalWalletSignerConfig,
+    SolanaExternalWalletSignerConfig,
+} from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain } from "../chains/chains";
+
+export type {
+    EvmExternalWalletSignerConfig,
+    SolanaExternalWalletSignerConfig,
+    GenericEIP1193Provider,
+} from "@crossmint/common-sdk-base";
 
 ////////////////////////////////////////////////////////////
 // Signer configs
@@ -28,30 +36,9 @@ export type EmailSignerConfig = {
     _handshakeParent?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
 };
 
-export type BaseExternalWalletSignerConfig = {
-    type: "external-wallet";
-    address: string;
-};
-
-export type EvmExternalWalletSignerConfig = BaseExternalWalletSignerConfig & {
-    provider?: GenericEIP1193Provider | ViemEIP1193Provider;
-    viemAccount?: Account;
-};
-
-export type SolanaExternalWalletSignerConfig = BaseExternalWalletSignerConfig & {
-    onSignTransaction: (transaction: VersionedTransaction) => Promise<VersionedTransaction>;
-};
-
 export type ExternalWalletSignerConfigForChain<C extends Chain> = C extends SolanaChain
     ? SolanaExternalWalletSignerConfig
     : EvmExternalWalletSignerConfig;
-
-// Generic EIP1193 Provider interface that should work with different implementations
-export interface GenericEIP1193Provider {
-    request(args: { method: string; params?: any[] }): Promise<any>;
-    on(event: string, listener: (...args: any[]) => void): void;
-    removeListener(event: string, listener: (...args: any[]) => void): void;
-}
 
 export type ApiKeySignerConfig = { type: "api-key" };
 
