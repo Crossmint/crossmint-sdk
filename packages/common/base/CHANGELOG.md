@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.8.0
+
+### Minor Changes
+
+- 9481d6c: Add shared types and utilities to support consolidated wallet providers
+
 ## 0.7.2
 
 ### Patch Changes

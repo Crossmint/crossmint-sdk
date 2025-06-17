@@ -1,5 +1,17 @@
 # @crossmint/wallets-sdk
 
+## 0.10.0
+
+### Minor Changes
+
+- 9481d6c: Update wallet SDK integration with consolidated provider architecture
+
+### Patch Changes
+
+- Updated dependencies [9481d6c]
+  - @crossmint/common-sdk-base@0.8.0
+  - @crossmint/common-sdk-auth@1.0.37
+
 ## 0.9.6
 
 ### Patch Changes
