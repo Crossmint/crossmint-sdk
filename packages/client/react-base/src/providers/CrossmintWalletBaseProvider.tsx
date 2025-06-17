@@ -59,7 +59,6 @@ export function CrossmintWalletBaseProvider({
                 return undefined;
             }
             if (wallet != null) {
-                // Return existing wallet
                 return wallet;
             }
 

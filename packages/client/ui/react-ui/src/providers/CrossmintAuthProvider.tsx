@@ -10,11 +10,9 @@ function CrossmintAuthSync({ children }: { children: ReactNode }) {
     const { user, jwt, experimental_externalWalletSigner } = useAuth();
 
     useEffect(() => {
-        // Logout state
         if (jwt == null && experimental_customAuth?.jwt != null) {
             experimental_setCustomAuth(undefined);
         }
-        // Login state
         if ((experimental_externalWalletSigner != null || user?.email != null) && jwt != null) {
             experimental_setCustomAuth({
                 jwt,

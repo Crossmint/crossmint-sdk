@@ -20,11 +20,9 @@ function CrossmintAuthSync({ children }: { children: ReactNode }) {
     const { user, jwt } = useAuth();
 
     useEffect(() => {
-        // Logout state
         if (jwt == null && experimental_customAuth?.jwt != null) {
             experimental_setCustomAuth(undefined);
         }
-        // Login state
         if (jwt != null) {
             experimental_setCustomAuth({
                 jwt,

@@ -52,7 +52,6 @@ export function CrossmintWalletProvider({
     const [emailSignerDialogOpen, setEmailSignerDialogOpen] = useState<boolean>(false);
     const [emailSignerDialogStep, setEmailSignerDialogStep] = useState<"initial" | "otp">("initial");
 
-    // TODO implement headless ui for email signers
     const [needsAuthState, setNeedsAuthState] = useState<boolean>(false);
     const sendEmailWithOtpRef = useRef<() => Promise<void>>(throwNotAvailable("sendEmailWithOtp"));
     const verifyOtpRef = useRef<(otp: string) => Promise<void>>(throwNotAvailable("verifyOtp"));
