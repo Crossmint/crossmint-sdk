@@ -125,7 +125,7 @@ class ApiClient extends CrossmintApiClient {
         return response.json();
     }
 
-    async unstable_getNfts(params: {
+    async experimental_getNfts(params: {
         address: string;
         perPage: number;
         page: number;

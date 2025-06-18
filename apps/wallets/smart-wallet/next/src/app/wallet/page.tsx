@@ -65,7 +65,7 @@ export default function Index() {
 
     const { data, isLoading: isLoadingNFTs } = useQuery({
         queryKey: ["smart-wallet"],
-        queryFn: async () => (await wallet?.unstable_nfts({ page: 1, perPage: 11 })) as NFT[],
+        queryFn: async () => (await wallet?.experimental_nfts({ page: 1, perPage: 11 })) as NFT[],
         refetchOnWindowFocus: false,
         refetchOnMount: false,
         staleTime: 1000 * 60 * 5, // 5 minutes
