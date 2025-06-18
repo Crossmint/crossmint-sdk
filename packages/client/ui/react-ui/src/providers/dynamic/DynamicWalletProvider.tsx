@@ -156,20 +156,8 @@ export function DynamicWalletProvider({
                 walletConnectors: connectors,
                 cssOverrides,
                 events: {
-                    onWalletRemoved() {
-                        console.log("[DynamicWalletProvider] onWalletRemoved");
-                    },
-                    onAuthFlowCancel() {
-                        console.log("[DynamicWalletProvider] onAuthFlowCancel");
-                    },
-                    onAuthFlowClose() {
-                        console.log("[DynamicWalletProvider] onAuthFlowClose");
-                    },
                     onAuthFailure(data, reason) {
                         console.error("[DynamicWalletProvider] onAuthFailure", data, reason);
-                    },
-                    onAuthSuccess(data) {
-                        console.log("[DynamicWalletProvider] onAuthSuccess", data);
                     },
                 },
                 handlers: {
@@ -179,7 +167,6 @@ export function DynamicWalletProvider({
                             return false;
                         }
 
-                        console.log("[DynamicWalletProvider] handleConnectedWallet", args);
                         const address = args.address;
                         if (address == null) {
                             console.error("[DynamicWalletProvider] handleConnectedWallet: address is missing");

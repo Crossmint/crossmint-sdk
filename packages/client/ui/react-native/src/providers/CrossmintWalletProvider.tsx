@@ -76,7 +76,6 @@ export function CrossmintWalletProvider({ children }: CrossmintWalletProviderPro
     }, []);
 
     const handleMessage = useCallback((event: WebViewMessageEvent) => {
-        console.log("[CrossmintWalletProvider] Received message:", event.nativeEvent.data);
         const parent = webViewParentRef.current;
         if (parent == null) {
             return;
