@@ -33,3 +33,15 @@ export type Callbacks = {
 export type WalletOptions = {
     experimental_callbacks?: Callbacks;
 };
+
+export type UserLocator =
+    | { email: string }
+    | { x: string }
+    | { twitter: string }
+    | { phone: string }
+    | { userId: string };
+
+export type Transaction = {
+    hash: string;
+    explorerLink: string;
+};

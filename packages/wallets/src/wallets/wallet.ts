@@ -1,6 +1,6 @@
-import { isValidAddress } from "@crossmint/common-sdk-base";
-import type { Activity, ApiClient, Balances, GetSignatureResponse } from "../api";
-import type { PendingApproval, DelegatedSigner, WalletOptions } from "./types";
+import { getEnvironmentForKey, isValidAddress } from "@crossmint/common-sdk-base";
+import type { Activity, ApiClient, Balances, GetSignatureResponse, GetTransactionSuccessResponse } from "../api";
+import type { PendingApproval, DelegatedSigner, WalletOptions, UserLocator, Transaction } from "./types";
 import {
     InvalidSignerError,
     SignatureNotAvailableError,
@@ -122,7 +122,7 @@ export class Wallet<C extends Chain> {
      * @param {string | UserLocator} to - The recipient (address or user locator)
      * @param {string} token - The token (address or currency symbol)
      * @param {string} amount - The amount to send (decimal units)
-     * @returns {string} The transaction hash
+     * @returns {Transaction} The transaction
      */
     public async send(to: string | UserLocator, token: string, amount: string) {
         const recipient = toRecipientLocator(to);
@@ -327,7 +327,7 @@ export class Wallet<C extends Chain> {
             backoffMultiplier?: number;
             maxBackoffMs?: number;
         } = {}
-    ): Promise<string> {
+    ): Promise<Transaction> {
         const startTime = Date.now();
         let transactionResponse;
 
@@ -366,7 +366,10 @@ export class Wallet<C extends Chain> {
             throw error;
         }
 
-        return transactionHash;
+        return {
+            hash: transactionHash,
+            explorerLink: toTxExplorerLink(transactionResponse, this.apiClient.crossmint.apiKey),
+        };
     }
 
     protected async sleep(ms: number) {
@@ -374,12 +377,23 @@ export class Wallet<C extends Chain> {
     }
 }
 
-export type UserLocator =
-    | { email: string }
-    | { x: string }
-    | { twitter: string }
-    | { phone: string }
-    | { userId: string };
+function toTxExplorerLink(transactionResponse: GetTransactionSuccessResponse, apiKey: string) {
+    let explorerLink: string | undefined;
+    if (transactionResponse.walletType === "evm-smart-wallet") {
+        explorerLink = transactionResponse.onChain.explorerLink;
+    } else if (transactionResponse.walletType === "solana-smart-wallet") {
+        const queryParams = new URLSearchParams();
+        const env = getEnvironmentForKey(apiKey);
+        if (env !== "production") {
+            queryParams.append("cluster", "devnet");
+        }
+        explorerLink = `https://explorer.solana.com/tx/${transactionResponse.onChain.txId}?${queryParams.toString()}`;
+    }
+    if (explorerLink == null || explorerLink === "") {
+        explorerLink = "Explorer link not available";
+    }
+    return explorerLink;
+}
 
 function toRecipientLocator(to: string | UserLocator): string {
     if (typeof to === "string") {
