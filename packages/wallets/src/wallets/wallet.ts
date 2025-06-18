@@ -126,13 +126,13 @@ export class Wallet<C extends Chain> {
         const nativeTokenData = apiResponse.find(
             (token) => token.token === nativeTokenSymbol || token.token.toLowerCase().includes(nativeTokenSymbol)
         );
-        const usdcData = apiResponse.find((token) => token.token.toLowerCase().includes("USDC"));
+        const usdcData = apiResponse.find((token) => token.token.toLowerCase().includes("usdc"));
 
         const otherTokens = apiResponse.filter((token) => {
             const tokenLower = token.token.toLowerCase();
             return (
                 !tokenLower.includes(nativeTokenSymbol) &&
-                !tokenLower.includes("USDC") &&
+                !tokenLower.includes("usdc") &&
                 requestedTokens?.some((reqToken) => tokenLower.includes(reqToken.toLowerCase()))
             );
         });
@@ -151,7 +151,7 @@ export class Wallet<C extends Chain> {
                 nativeTokenData != null
                     ? transformTokenBalance(nativeTokenData)
                     : createDefaultToken(nativeTokenSymbol),
-            usdc: usdcData != null ? transformTokenBalance(usdcData) : createDefaultToken("USDC"),
+            usdc: usdcData != null ? transformTokenBalance(usdcData) : createDefaultToken("usdc"),
             tokens: otherTokens.map(transformTokenBalance),
         };
     }
