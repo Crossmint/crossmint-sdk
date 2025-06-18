@@ -2,7 +2,7 @@ import type { Keypair, VersionedTransaction } from "@solana/web3.js";
 import type { CreateTransactionSuccessResponse } from "../api";
 import type { EVMSmartWalletChain } from "../chains/chains";
 
-export type { Activity, Balances } from "../api/types";
+export type { Activity } from "../api/types";
 
 export interface EVMTransactionInput {
     to: string;
@@ -32,6 +32,21 @@ export type Callbacks = {
 
 export type WalletOptions = {
     experimental_callbacks?: Callbacks;
+};
+
+export type TokenBalance = {
+    symbol: "SOL" | "ETH" | "USDC" | string;
+    name: string;
+    amount: string;
+    contractAddress?: string;
+    decimals?: number;
+    rawAmount?: string;
+};
+
+export type Balances = {
+    nativeToken: TokenBalance;
+    usdc: TokenBalance;
+    tokens: TokenBalance[];
 };
 
 export type UserLocator =
