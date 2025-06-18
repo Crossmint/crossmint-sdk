@@ -16,8 +16,7 @@ export class EmailIframeManager {
             return this.handshakeParent;
         }
 
-        const baseUrl = environmentUrlConfig[this.config.environment];
-        const iframeUrl = new URL(baseUrl);
+        const iframeUrl = new URL(environmentUrlConfig[this.config.environment]);
 
         const iframeElement = await this.createInvisibleIFrame(iframeUrl.toString());
         this.handshakeParent = await IFrameWindow.init(iframeElement, {
