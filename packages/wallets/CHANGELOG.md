@@ -1,5 +1,18 @@
 # @crossmint/wallets-sdk
 
+## 0.10.1
+
+### Patch Changes
+
+- ffb2d11: Update balance api
+- ac903cd: Return explorer link with tx
+- 934aed9: Renamed unstable api prefix to experimental
+- b5c13a7: Cleanup logging
+- f1653dd: fix surfacing of api error messages
+- fe10244: Production and staging signer urls
+- Updated dependencies [fe10244]
+  - @crossmint/client-signers@0.0.17
+
 ## 0.10.0
 
 ### Minor Changes
