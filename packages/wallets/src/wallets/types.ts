@@ -35,7 +35,7 @@ export type WalletOptions = {
 };
 
 export type TokenBalance = {
-    symbol: "SOL" | "ETH" | "USDC" | string;
+    symbol: "sol" | "eth" | "usdc" | string;
     name: string;
     amount: string;
     contractAddress?: string;
