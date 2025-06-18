@@ -1,22 +1,17 @@
 import { IFrameWindow, type HandshakeParent } from "@crossmint/client-sdk-window";
 import { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
 
-export type IframeConfig = {
-    environment: string;
-};
-
 export class EmailIframeManager {
     private handshakeParent: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents> | null = null;
 
-    constructor(private config: IframeConfig) {}
+    constructor() {}
 
     async initialize(): Promise<HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>> {
         if (this.handshakeParent) {
             return this.handshakeParent;
         }
 
-        const iframeUrl = new URL("https://signers.crossmint.com/");
-        iframeUrl.searchParams.set("environment", this.config.environment);
+        const iframeUrl = new URL("https://signers.signers.crossmint.com/");
 
         const iframeElement = await this.createInvisibleIFrame(iframeUrl.toString());
         this.handshakeParent = await IFrameWindow.init(iframeElement, {
