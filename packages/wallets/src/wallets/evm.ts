@@ -3,8 +3,9 @@ import type { TypedData, TypedDataDefinition, HttpTransport } from "viem";
 import type { EVMTransactionInput, Transaction } from "./types";
 import { type EVMSmartWalletChain, toViemChain } from "../chains/chains";
 import { Wallet } from "./wallet";
-import type { EVMChain } from "../chains/chains";
+import type { Chain, EVMChain } from "../chains/chains";
 import { InvalidTypedDataError, SignatureNotCreatedError, TransactionNotCreatedError } from "../utils/errors";
+import { isValidEvmAddress } from "@crossmint/common-sdk-base";
 
 export class EVMWallet extends Wallet<EVMChain> {
     constructor(wallet: Wallet<EVMChain>) {
@@ -20,8 +21,12 @@ export class EVMWallet extends Wallet<EVMChain> {
         );
     }
 
-    static from(wallet: Wallet<EVMChain>) {
-        return new EVMWallet(wallet);
+    static from(wallet: Wallet<Chain>) {
+        if (!isValidEvmAddress(wallet.address)) {
+            throw new Error("Wallet is not an EVM wallet");
+        }
+
+        return new EVMWallet(wallet as Wallet<EVMChain>);
     }
 
     public async sendTransaction(params: EVMTransactionInput): Promise<Transaction> {

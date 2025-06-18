@@ -3,66 +3,45 @@
 import { useEffect } from "react";
 import { useCrossmint, useWallet as useCrossmintWallet } from "@crossmint/client-sdk-react-ui";
 import { usePrivy, useSolanaWallets, useWallets as usePrivyWallets } from "@privy-io/react-auth";
-import type { VersionedTransaction } from "@solana/web3.js";
+import { VersionedTransaction } from "@solana/web3.js";
 
 /* ============================================================ */
 /*                    EVM PRIVY CONNECTOR                       */
 /* ============================================================ */
 export const useEVMPrivyConnector = () => {
-    const {
-        experimental_setCustomAuth,
-        crossmint: { jwt },
-    } = useCrossmint();
-    const {
-        getOrCreateWallet: getOrCreateCrossmintWallet,
-        status: crossmintWalletStatus,
-        wallet: crossmintWallet,
-    } = useCrossmintWallet();
+    const { experimental_setCustomAuth } = useCrossmint();
+    const { status: crossmintWalletStatus, wallet: crossmintWallet } = useCrossmintWallet();
 
-    const { ready, authenticated, getAccessToken } = usePrivy();
+    const { ready, authenticated, getAccessToken, user } = usePrivy();
     const { wallets: privyWallets, ready: privyReady } = usePrivyWallets();
+    const privyEmbeddedWallet = privyWallets?.find((wallet) => wallet.walletClientType === "privy") ?? null;
 
     useEffect(() => {
         const syncPrivyJwt = async () => {
             try {
                 const privyJwt = await getAccessToken();
+                const privyProvider = await privyEmbeddedWallet?.getEthereumProvider();
                 if (privyJwt != null) {
-                    experimental_setCustomAuth({ jwt: privyJwt });
+                    experimental_setCustomAuth({
+                        jwt: privyJwt,
+                        email: user?.email?.address,
+                        externalWalletSigner: {
+                            type: "external-wallet",
+                            address: privyEmbeddedWallet?.address,
+                            provider: privyProvider,
+                        },
+                    });
                 }
             } catch (error) {
-                experimental_setCustomAuth({ jwt: undefined });
+                experimental_setCustomAuth(undefined);
                 console.error("Failed to get Privy JWT:", error);
             }
         };
 
-        if (ready && authenticated) {
+        if (ready && authenticated && privyEmbeddedWallet) {
             syncPrivyJwt();
         }
-    }, [ready, authenticated, getAccessToken, experimental_setCustomAuth]);
-
-    const privyEmbeddedWallet = privyWallets?.find((wallet) => wallet.walletClientType === "privy") ?? null;
-
-    useEffect(() => {
-        const createCrossmintWallet = async () => {
-            if (!privyEmbeddedWallet || !authenticated || !ready || !jwt) {
-                return;
-            }
-            const privyProvider = await privyEmbeddedWallet.getEthereumProvider();
-            try {
-                await getOrCreateCrossmintWallet({
-                    chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any,
-                    signer: {
-                        type: "external-wallet",
-                        address: privyEmbeddedWallet.address,
-                        provider: privyProvider,
-                    },
-                });
-            } catch (error) {
-                console.error("Failed to create Crossmint wallet:", error);
-            }
-        };
-        createCrossmintWallet();
-    }, [privyEmbeddedWallet, authenticated, ready, jwt]);
+    }, [ready, authenticated, getAccessToken, experimental_setCustomAuth, privyEmbeddedWallet, user]);
 
     return {
         privyEmbeddedWallet,
@@ -77,57 +56,39 @@ export const useEVMPrivyConnector = () => {
 /* ============================================================ */
 export const useSolanaPrivyConnector = () => {
     const { experimental_setCustomAuth } = useCrossmint();
-    const {
-        getOrCreateWallet: getOrCreateCrossmintWallet,
-        status: crossmintWalletStatus,
-        wallet: crossmintWallet,
-    } = useCrossmintWallet();
+    const { status: crossmintWalletStatus, wallet: crossmintWallet } = useCrossmintWallet();
 
-    const { ready, authenticated, getAccessToken } = usePrivy();
+    const { ready, authenticated, getAccessToken, user } = usePrivy();
     const { wallets: privyWallets, ready: privyReady } = useSolanaWallets();
+    const privyEmbeddedWallet = privyWallets?.find((wallet) => wallet.walletClientType === "privy") ?? null;
 
     useEffect(() => {
         const syncPrivyJwt = async () => {
             try {
                 const privyJwt = await getAccessToken();
-                if (privyJwt != null) {
-                    experimental_setCustomAuth({ jwt: privyJwt });
+                if (privyJwt != null && privyEmbeddedWallet) {
+                    experimental_setCustomAuth({
+                        jwt: privyJwt,
+                        email: user?.email?.address,
+                        externalWalletSigner: {
+                            type: "external-wallet",
+                            address: privyEmbeddedWallet?.address,
+                            onSignTransaction: (transaction: VersionedTransaction) => {
+                                return privyEmbeddedWallet?.signTransaction(transaction);
+                            },
+                        },
+                    });
                 }
             } catch (error) {
-                experimental_setCustomAuth({ jwt: undefined });
+                experimental_setCustomAuth(undefined);
                 console.error("Failed to get Privy JWT:", error);
             }
         };
 
-        if (ready && authenticated) {
+        if (ready && authenticated && privyEmbeddedWallet) {
             syncPrivyJwt();
         }
-    }, [ready, authenticated, getAccessToken, experimental_setCustomAuth]);
-
-    const privyEmbeddedWallet = privyWallets?.find((wallet) => wallet.walletClientType === "privy") ?? null;
-
-    useEffect(() => {
-        const createCrossmintWallet = async () => {
-            if (!privyEmbeddedWallet || !authenticated || !ready) {
-                return;
-            }
-            try {
-                await getOrCreateCrossmintWallet({
-                    chain: "solana",
-                    signer: {
-                        type: "external-wallet",
-                        address: privyEmbeddedWallet.address,
-                        onSignTransaction: (transaction: VersionedTransaction) => {
-                            return privyEmbeddedWallet.signTransaction(transaction);
-                        },
-                    },
-                });
-            } catch (error) {
-                console.error("Failed to create Crossmint wallet:", error);
-            }
-        };
-        createCrossmintWallet();
-    }, [privyEmbeddedWallet, authenticated, ready]);
+    }, [ready, authenticated, getAccessToken, experimental_setCustomAuth, privyEmbeddedWallet, user]);
 
     return {
         privyEmbeddedWallet,
