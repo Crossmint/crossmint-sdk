@@ -18,7 +18,7 @@ export default function Index() {
 
     // Email signer states
     const [otp, setOtp] = useState("");
-    const [txHash, setTxHash] = useState<string | null>(null);
+    const [txLink, setTxLink] = useState<string | null>(null);
     const [isInOtpFlow, setIsInOtpFlow] = useState(false);
     const [uiError, setUiError] = useState<string | null>(null);
     const [recipientAddress, setRecipientAddress] = useState("");
@@ -54,7 +54,7 @@ export default function Index() {
     const handleAction = async (action: () => Promise<any> | void) => {
         setIsLoading(true);
         setUiError(null);
-        setTxHash(null);
+        setTxLink(null);
         try {
             await action();
         } catch (e: any) {
@@ -129,9 +129,9 @@ export default function Index() {
         }
         setIsLoading(true);
         try {
-            const txHash = await wallet.send(recipientAddress, "usdc", amount);
-            console.log(`Sent ${amount} USDC to ${recipientAddress}. Tx Hash: ${txHash}`);
-            setTxHash(txHash);
+            const tx = await wallet.send(recipientAddress, "usdc", amount);
+            console.log(`Sent ${amount} USDC to ${recipientAddress}. Tx Link: ${tx.explorerLink}`);
+            setTxLink(tx.explorerLink);
             setRecipientAddress("");
             setAmount("");
             setIsInOtpFlow(false);
@@ -153,7 +153,7 @@ export default function Index() {
                 <Text>Needs OTP Auth: {needsAuth ? "Yes" : "No"}</Text>
                 <Text>USDC Balance: {usdcBalance}</Text>
                 {uiError && <Text style={styles.errorText}>Last Action Error: {uiError}</Text>}
-                {txHash && <Text>Last Tx Hash: {txHash}</Text>}
+                {txLink && <Text>Last Tx Link: {txLink}</Text>}
             </View>
 
             <View style={styles.section}>
