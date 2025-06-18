@@ -61,7 +61,7 @@ export type GetTransactionsResponse =
     | WalletsV1ControllerGetTransactionsWithoutChain4Error;
 export type GetNftsResponse = Nftevm | Nftsol | FetchContentFromWalletError;
 export type GetBalanceResponse = WalletBalanceUnstableResponseDto | BalanceControllerGetBalanceForLocator2Error;
-export type Balances = WalletBalanceUnstableResponseDto;
+export type GetBalanceSuccessResponse = WalletBalanceUnstableResponseDto;
 export type GetActivityResponse = WalletsV1Alpha2ActivityResponseDto | WalletV1Alpha2ErrorDto;
 export type Activity = WalletsV1Alpha2ActivityResponseDto;
 

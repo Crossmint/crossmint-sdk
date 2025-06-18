@@ -1,6 +1,6 @@
 import { isValidAddress } from "@crossmint/common-sdk-base";
-import type { Activity, ApiClient, Balances, GetSignatureResponse } from "../api";
-import type { PendingApproval, DelegatedSigner, WalletOptions } from "./types";
+import type { Activity, ApiClient, GetBalanceSuccessResponse, GetSignatureResponse } from "../api";
+import type { PendingApproval, DelegatedSigner, WalletOptions, Balances, TokenBalance } from "./types";
 import {
     InvalidSignerError,
     SignatureNotAvailableError,
@@ -61,21 +61,85 @@ export class Wallet<C extends Chain> {
     }
 
     /**
-     * Get the wallet balances
-     * @param {string[]} params.tokens - The tokens
-     * @param {Chain[]} params.chains - The chains (optional)
-     * @returns {Promise<Balances>} The balances
+     * Get the wallet balances - always includes USDC and native token (ETH/SOL)
+     * @param {string[]} tokens - Additional tokens to request (optional: native token and usdc are always included)
+     * @param {Chain[]} chains - The chains (optional)
+     * @returns {Promise<Balances>} The balances structured as { nativeToken, usdc, tokens }
      * @throws {Error} If the balances cannot be retrieved
      */
-    public async balances(tokens: string[], chains?: Chain[]): Promise<Balances> {
+    public async balances(tokens?: string[], chains?: Chain[]): Promise<Balances> {
+        const nativeToken = this.chain === "solana" ? "SOL" : "ETH";
+        const allTokens = [nativeToken, "USDC", ...(tokens ?? [])];
+
         const response = await this.#apiClient.getBalance(this.address, {
             chains: chains ?? [this.chain],
-            tokens,
+            tokens: allTokens.map((token) => token.toLowerCase()),
         });
+
         if ("error" in response) {
             throw new Error(`Failed to get balances for wallet: ${JSON.stringify(response.message)}`);
         }
-        return response;
+
+        return this.transformBalanceResponse(response, nativeToken, tokens);
+    }
+
+    /**
+     * Transform the API balance response to the new structure
+     * @private
+     */
+    private transformBalanceResponse(
+        apiResponse: GetBalanceSuccessResponse,
+        nativeTokenSymbol: TokenBalance["symbol"],
+        requestedTokens?: string[]
+    ): Balances {
+        const transformTokenBalance = (tokenData: GetBalanceSuccessResponse[number]): TokenBalance => {
+            let contractAddress: string | undefined;
+            const chainData = tokenData.forChain?.[this.chain];
+            if (chainData && "contractAddress" in chainData) {
+                contractAddress = chainData.contractAddress;
+            }
+
+            return {
+                symbol: tokenData.token,
+                name: tokenData.token, // API doesn't provide name, using symbol as fallback
+                amount: tokenData.amount ?? "0",
+                contractAddress,
+                decimals: tokenData.decimals,
+                rawAmount: tokenData.rawAmount ?? "0",
+            };
+        };
+
+        const nativeTokenData = apiResponse.find(
+            (token) => token.token === nativeTokenSymbol || token.token.toLowerCase().includes(nativeTokenSymbol)
+        );
+        const usdcData = apiResponse.find((token) => token.token.toLowerCase().includes("USDC"));
+
+        const otherTokens = apiResponse.filter((token) => {
+            const tokenLower = token.token.toLowerCase();
+            return (
+                !tokenLower.includes(nativeTokenSymbol) &&
+                !tokenLower.includes("USDC") &&
+                requestedTokens?.some((reqToken) => tokenLower.includes(reqToken.toLowerCase()))
+            );
+        });
+
+        const createDefaultToken = (symbol: TokenBalance["symbol"]): TokenBalance => ({
+            symbol,
+            name: symbol,
+            amount: "0",
+            contractAddress: undefined,
+            decimals: 0,
+            rawAmount: "0",
+        });
+
+        return {
+            nativeToken:
+                nativeTokenData != null
+                    ? transformTokenBalance(nativeTokenData)
+                    : createDefaultToken(nativeTokenSymbol),
+            usdc: usdcData != null ? transformTokenBalance(usdcData) : createDefaultToken("USDC"),
+            tokens: otherTokens.map(transformTokenBalance),
+        };
     }
 
     /**

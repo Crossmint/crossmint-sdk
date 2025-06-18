@@ -1,4 +1,10 @@
-import { useCrossmintAuth, useWallet, useWalletEmailSigner, useCrossmint } from "@crossmint/client-sdk-react-native-ui";
+import {
+    useCrossmintAuth,
+    useWallet,
+    useWalletEmailSigner,
+    useCrossmint,
+    type Balances,
+} from "@crossmint/client-sdk-react-native-ui";
 import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Button, Text, View, TextInput, StyleSheet, ScrollView, Alert } from "react-native";
 import * as Linking from "expo-linking";
@@ -13,7 +19,7 @@ export default function Index() {
     const walletAddress = useMemo(() => wallet?.address, [wallet]);
     const url = Linking.useURL();
 
-    const [usdcBalance, setUsdcBalance] = useState<string | null>(null);
+    const [balances, setBalances] = useState<Balances | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
     // Email signer states
@@ -42,8 +48,8 @@ export default function Index() {
                 return;
             }
             try {
-                const balances = await wallet.balances(["usdc"]);
-                setUsdcBalance(balances[0].amount);
+                const balances = await wallet.balances();
+                setBalances(balances);
             } catch (error) {
                 console.log("Error fetching wallet balances:", error);
             }
@@ -151,7 +157,10 @@ export default function Index() {
                 <Text>Wallet: {walletAddress}</Text>
                 <Text>Auth Status: {walletStatus}</Text>
                 <Text>Needs OTP Auth: {needsAuth ? "Yes" : "No"}</Text>
-                <Text>USDC Balance: {usdcBalance}</Text>
+                <Text>
+                    Native Token Balance: ({balances?.nativeToken.symbol}) {balances?.nativeToken.amount}
+                </Text>
+                <Text>USDC Balance: {balances?.usdc.amount}</Text>
                 {uiError && <Text style={styles.errorText}>Last Action Error: {uiError}</Text>}
                 {txHash && <Text>Last Tx Hash: {txHash}</Text>}
             </View>
