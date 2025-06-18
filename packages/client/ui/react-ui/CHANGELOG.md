@@ -1,5 +1,21 @@
 # @crossmint/client-sdk-react-ui
 
+## 2.2.1
+
+### Patch Changes
+
+- b5c13a7: Cleanup logging
+- ac903cd: Added new 'Transaction' type
+- Updated dependencies [ffb2d11]
+- Updated dependencies [ac903cd]
+- Updated dependencies [934aed9]
+- Updated dependencies [b5c13a7]
+- Updated dependencies [f1653dd]
+- Updated dependencies [fe10244]
+  - @crossmint/wallets-sdk@0.10.1
+  - @crossmint/client-signers@0.0.17
+  - @crossmint/client-sdk-react-base@0.5.1
+
 ## 2.2.0
 
 ### Minor Changes
