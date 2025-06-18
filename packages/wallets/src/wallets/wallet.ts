@@ -73,7 +73,7 @@ export class Wallet<C extends Chain> {
             tokens,
         });
         if ("error" in response) {
-            throw new Error(`Failed to get balances for wallet: ${JSON.stringify(response.error)}`);
+            throw new Error(`Failed to get balances for wallet: ${JSON.stringify(response.message)}`);
         }
         return response;
     }
@@ -112,7 +112,7 @@ export class Wallet<C extends Chain> {
     public async experimental_activity(): Promise<Activity> {
         const response = await this.apiClient.experimental_activity(this.walletLocator, { chain: this.chain });
         if ("error" in response) {
-            throw new Error(`Failed to get activity: ${JSON.stringify(response.error)}`);
+            throw new Error(`Failed to get activity: ${JSON.stringify(response.message)}`);
         }
         return response;
     }
@@ -149,7 +149,7 @@ export class Wallet<C extends Chain> {
         });
 
         if ("error" in response) {
-            throw new Error(`Failed to register signer: ${JSON.stringify(response.error)}`);
+            throw new Error(`Failed to register signer: ${JSON.stringify(response.message)}`);
         }
 
         if ("transaction" in response) {
