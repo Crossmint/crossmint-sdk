@@ -1,14 +1,9 @@
 import { IFrameWindow, type HandshakeParent } from "@crossmint/client-sdk-window";
-import { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
+import { environmentUrlConfig, signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
+import type { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
 
 export type IframeConfig = {
-    environment: string;
-};
-
-const ENVIRONMENT_URL_MAP: Record<string, string> = {
-    production: "https://signers.crossmint.com",
-    staging: "https://staging.signers.crossmint.com",
-    development: "http://localhost:3000",
+    environment: APIKeyEnvironmentPrefix;
 };
 
 export class EmailIframeManager {
@@ -21,7 +16,7 @@ export class EmailIframeManager {
             return this.handshakeParent;
         }
 
-        const baseUrl = ENVIRONMENT_URL_MAP[this.config.environment] || ENVIRONMENT_URL_MAP.staging;
+        const baseUrl = environmentUrlConfig[this.config.environment];
         const iframeUrl = new URL(baseUrl);
 
         const iframeElement = await this.createInvisibleIFrame(iframeUrl.toString());
