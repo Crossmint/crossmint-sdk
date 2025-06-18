@@ -59,16 +59,8 @@ export const useSolanaDynamicConnector = () => {
     const { primaryWallet: dynamicPrimaryWallet, sdkHasLoaded } = useDynamicContext();
     const isAuthenticated = useIsLoggedIn();
     const dynamicJwt = getAuthToken();
-    console.log("sdkHasLoaded", sdkHasLoaded);
 
     useEffect(() => {
-        console.log("dynamicJwt", dynamicJwt);
-        console.log("isAuthenticated", isAuthenticated);
-        console.log("dynamicPrimaryWallet", dynamicPrimaryWallet);
-        console.log("sdkHasLoaded", sdkHasLoaded);
-        console.log("crossmintWalletStatus", crossmintWalletStatus);
-        console.log("crossmintWallet", crossmintWallet);
-
         const fetchCrossmintWallet = async () => {
             if (!isAuthenticated || !dynamicPrimaryWallet || !isSolanaWallet(dynamicPrimaryWallet)) {
                 return null;
