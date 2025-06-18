@@ -12,7 +12,7 @@
     "dependencies": {
         "@crossmint/client-sdk-base": "workspace:*",
         "@crossmint/client-sdk-smart-wallet": "workspace:*",
-        "@crossmint/client-sdk-vue-ui": "workspace:*",
+
         "vue": "3.3.4",
         "vue-router": "4.2.4"
     },

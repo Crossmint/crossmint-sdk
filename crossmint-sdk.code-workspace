@@ -60,10 +60,7 @@
             "name": "⚪ @crossmint/client-sdk-vanilla-ui",
             "path": "packages/client/ui/vanilla-ui"
         },
-        {
-            "name": "🟢 @crossmint/client-sdk-vue-ui",
-            "path": "packages/client/ui/vue-ui"
-        },
+
         {
             "name": "✅ @crossmint/client-sdk-verifiable-credentials",
             "path": "packages/client/verifiable-credentials"

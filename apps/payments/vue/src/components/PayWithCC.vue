@@ -3,7 +3,6 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 
 import type { CrossmintEvent } from "@crossmint/client-sdk-base";
-import "@crossmint/client-sdk-vue-ui/dist/index.css";
 
 const email = ref("");
 const wallet = ref("");
@@ -102,21 +101,11 @@ function onEvent(event: CrossmintEvent) {
                 </label>
             </div>
 
-            <CrossmintPaymentElement
-                environment="http://localhost:3000"
-                collection-id="6845c702-8396-4339-b17e-a2bf12d2cf6d"
-                project-id="a3d161dd-43c8-4ba9-b7c0-a54515bf61d8"
-                :mint-config="{ totalPrice: String(0.001 * quantity), quantity: String(quantity) }"
-                :recipient="{
-                    email,
-                    ...(wallet
-                        ? {
-                              wallet,
-                          }
-                        : {}),
-                }"
-                @event="onEvent"
-            />
+            <iframe
+                src="http://localhost:3000/checkout/embed"
+                allow="payment *"
+                style="border: none; width: 100%; height: 600px;"
+            ></iframe>
         </div>
     </div>
 </template>
