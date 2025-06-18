@@ -11,7 +11,7 @@ export class EmailIframeManager {
             return this.handshakeParent;
         }
 
-        const iframeUrl = new URL("https://signers.signers.crossmint.com/");
+        const iframeUrl = new URL("https://staging.signers.crossmint.com/");
 
         const iframeElement = await this.createInvisibleIFrame(iframeUrl.toString());
         this.handshakeParent = await IFrameWindow.init(iframeElement, {

@@ -7,7 +7,7 @@ import { validateAPIKey } from "@crossmint/common-sdk-base";
 import { CrossmintWalletBaseProvider } from "@crossmint/client-sdk-react-base";
 import { useCrossmint } from "@/hooks";
 
-const DEFAULT_SECURE_ENDPOINT_URL = "https://signers.signers.crossmint.com";
+const DEFAULT_SECURE_ENDPOINT_URL = "https://staging.signers.crossmint.com";
 
 const throwNotAvailable = (functionName: string) => () => {
     throw new Error(`${functionName} is not available. Make sure you're using an email signer wallet.`);
