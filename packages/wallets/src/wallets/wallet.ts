@@ -82,8 +82,8 @@ export class Wallet<C extends Chain> {
      * @throws {Error} If the balances cannot be retrieved
      */
     public async balances(tokens?: string[], chains?: Chain[]): Promise<Balances> {
-        const nativeToken = this.chain === "solana" ? "SOL" : "ETH";
-        const allTokens = [nativeToken, "USDC", ...(tokens ?? [])];
+        const nativeToken = this.chain === "solana" ? "sol" : "eth";
+        const allTokens = [nativeToken, "usdc", ...(tokens ?? [])];
 
         const response = await this.#apiClient.getBalance(this.address, {
             chains: chains ?? [this.chain],
