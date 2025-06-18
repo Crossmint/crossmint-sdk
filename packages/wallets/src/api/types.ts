@@ -45,6 +45,7 @@ export type ApproveTransactionResponse =
     | WalletsV1ControllerGetTransaction4Response
     | WalletsV1ControllerSubmitApprovals4Error;
 export type GetTransactionResponse = WalletsV1Alpha2TransactionResponseDto | WalletsV1ControllerGetTransaction4Error;
+export type GetTransactionSuccessResponse = WalletsV1Alpha2TransactionResponseDto;
 
 export type CreateSignatureParams = CreateSignatureRequestDto;
 export type CreateSignatureResponse =

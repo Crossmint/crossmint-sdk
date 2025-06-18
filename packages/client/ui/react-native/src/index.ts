@@ -12,5 +12,6 @@ export type {
     DelegatedSigner,
     EVMWallet,
     SolanaWallet,
+    Transaction,
     Wallet,
 } from "@crossmint/wallets-sdk";
