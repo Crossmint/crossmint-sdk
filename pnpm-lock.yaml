@@ -232,7 +232,7 @@ importers:
         version: 4.8.3(@babel/core@7.26.10)(@babel/preset-env@7.26.9(@babel/core@7.26.10))(@types/react@18.3.1)(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(utf-8-validate@5.0.10)(viem@2.29.4(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))
       '@dynamic-labs/sdk-react-core':
         specifier: 4.8.3
-        version: 4.8.3(@types/react@18.3.1)(react-dom@18.3.1(react@18.3.1))(react-native@0.74.0(@babel/core@7.26.10)(@babel/preset-env@7.26.9(@babel/core@7.26.10))(@types/react@18.3.1)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10))(react@18.3.1)
+        version: 4.8.3(@types/react@18.3.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@dynamic-labs/solana':
         specifier: 4.8.3
         version: 4.8.3(@babel/core@7.26.10)(@babel/preset-env@7.26.9(@babel/core@7.26.10))(@types/react@18.3.1)(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)
@@ -285,7 +285,7 @@ importers:
     devDependencies:
       '@vitejs/plugin-vue':
         specifier: 4.3.4
-        version: 4.3.4(vite@4.4.9(@types/node@22.7.5)(lightningcss@1.30.1)(terser@5.39.0))(vue@3.3.4)
+        version: 4.3.4(vite@4.5.14(@types/node@22.7.5)(lightningcss@1.30.1)(terser@5.39.0))(vue@3.3.4)
       '@vue/tsconfig':
         specifier: 0.4.0
         version: 0.4.0
@@ -296,8 +296,8 @@ importers:
         specifier: 5.3.3
         version: 5.3.3
       vite:
-        specifier: 4.4.9
-        version: 4.4.9(@types/node@22.7.5)(lightningcss@1.30.1)(terser@5.39.0)
+        specifier: 4.5.14
+        version: 4.5.14(@types/node@22.7.5)(lightningcss@1.30.1)(terser@5.39.0)
       vue-tsc:
         specifier: 1.8.27
         version: 1.8.27(typescript@5.3.3)
@@ -312,7 +312,7 @@ importers:
         version: 4.12.1(@babel/core@7.26.10)(@babel/preset-env@7.26.9(@babel/core@7.26.10))(@types/react@18.3.20)(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.3)(utf-8-validate@5.0.10)(viem@2.23.6(bufferutil@4.0.9)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4))(zod@3.22.4)
       '@dynamic-labs/sdk-react-core':
         specifier: 4.12.1
-        version: 4.12.1(@types/react@18.3.20)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 4.12.1(@types/react@18.3.20)(react-dom@18.3.1(react@18.3.1))(react-native@0.74.0(@babel/core@7.26.10)(@babel/preset-env@7.26.9(@babel/core@7.26.10))(@types/react@18.3.20)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10))(react@18.3.1)
       '@dynamic-labs/solana':
         specifier: 4.12.1
         version: 4.12.1(@babel/core@7.26.10)(@babel/preset-env@7.26.9(@babel/core@7.26.10))(@types/react@18.3.20)(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.22.4)
@@ -1042,7 +1042,7 @@ importers:
         version: 21.1.2
       '@vitejs/plugin-vue':
         specifier: 4.3.4
-        version: 4.3.4(vite@4.4.9(@types/node@22.7.5)(lightningcss@1.30.1)(terser@5.39.0))(vue@3.3.4)
+        version: 4.3.4(vite@4.5.14(@types/node@22.7.5)(lightningcss@1.30.1)(terser@5.39.0))(vue@3.3.4)
       '@vue/eslint-config-prettier':
         specifier: 8.0.0
         version: 8.0.0(@types/eslint@9.6.1)(eslint@8.57.1)(prettier@2.8.8)
@@ -1065,11 +1065,11 @@ importers:
         specifier: 4.1.5
         version: 4.1.5
       vite:
-        specifier: 4.4.9
-        version: 4.4.9(@types/node@22.7.5)(lightningcss@1.30.1)(terser@5.39.0)
+        specifier: 4.5.14
+        version: 4.5.14(@types/node@22.7.5)(lightningcss@1.30.1)(terser@5.39.0)
       vite-plugin-dts:
         specifier: 3.5.3
-        version: 3.5.3(@types/node@22.7.5)(rollup@4.43.0)(typescript@5.8.2)(vite@4.4.9(@types/node@22.7.5)(lightningcss@1.30.1)(terser@5.39.0))
+        version: 3.5.3(@types/node@22.7.5)(rollup@4.43.0)(typescript@5.8.2)(vite@4.5.14(@types/node@22.7.5)(lightningcss@1.30.1)(terser@5.39.0))
       vitest:
         specifier: 1.6.1
         version: 1.6.1(@types/node@22.7.5)(jsdom@22.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(lightningcss@1.30.1)(terser@5.39.0)
@@ -17430,8 +17430,8 @@ packages:
       vite:
         optional: true
 
-  vite@4.4.9:
-    resolution: {integrity: sha512-2mbUn2LlUmNASWwSCNSJ/EG2HuSRTnVNaydp6vMCm5VIqJsjMfbIWtbH2kDuwUVW5mMUKKZvGPX/rqeqVvv1XA==}
+  vite@4.5.14:
+    resolution: {integrity: sha512-+v57oAaoYNnO3hIu5Z/tJRZjq5aHM2zDve9YZ8HngVHbhk66RStobhb1sqPMIPEleV6cNKYK4eGrAbE9Ulbl2g==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
     peerDependencies:
@@ -20335,14 +20335,14 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       react-focus-lock: 2.9.2(@types/react@18.3.20)(react@18.3.1)
-      react-i18next: 13.5.0(i18next@23.4.6)(react-dom@18.3.1(react@18.3.1))(react-native@0.74.0(@babel/core@7.26.10)(@babel/preset-env@7.26.9(@babel/core@7.26.10))(@types/react@18.3.1)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10))(react@18.3.1)
+      react-i18next: 13.5.0(i18next@23.4.6)(react-dom@18.3.1(react@18.3.1))(react-native@0.74.0(@babel/core@7.26.10)(@babel/preset-env@7.26.9(@babel/core@7.26.10))(@types/react@18.3.20)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10))(react@18.3.1)
       react-international-phone: 4.2.5(react@18.3.1)
       yup: 0.32.11
     transitivePeerDependencies:
       - '@types/react'
       - react-native
 
-  '@dynamic-labs/sdk-react-core@4.12.1(@types/react@18.3.20)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@dynamic-labs/sdk-react-core@4.12.1(@types/react@18.3.20)(react-dom@18.3.1(react@18.3.1))(react-native@0.74.0(@babel/core@7.26.10)(@babel/preset-env@7.26.9(@babel/core@7.26.10))(@types/react@18.3.20)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10))(react@18.3.1)':
     dependencies:
       '@dynamic-labs/assert-package-version': 4.12.1
       '@dynamic-labs/iconic': 4.12.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -20366,14 +20366,14 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       react-focus-lock: 2.9.2(@types/react@18.3.20)(react@18.3.1)
-      react-i18next: 13.5.0(i18next@23.4.6)(react-dom@18.3.1(react@18.3.1))(react-native@0.74.0(@babel/core@7.26.10)(@babel/preset-env@7.26.9(@babel/core@7.26.10))(@types/react@18.3.1)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10))(react@18.3.1)
+      react-i18next: 13.5.0(i18next@23.4.6)(react-dom@18.3.1(react@18.3.1))(react-native@0.74.0(@babel/core@7.26.10)(@babel/preset-env@7.26.9(@babel/core@7.26.10))(@types/react@18.3.20)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10))(react@18.3.1)
       react-international-phone: 4.2.5(react@18.3.1)
       yup: 0.32.11
     transitivePeerDependencies:
       - '@types/react'
       - react-native
 
-  '@dynamic-labs/sdk-react-core@4.8.3(@types/react@18.3.1)(react-dom@18.3.1(react@18.3.1))(react-native@0.74.0(@babel/core@7.26.10)(@babel/preset-env@7.26.9(@babel/core@7.26.10))(@types/react@18.3.1)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10))(react@18.3.1)':
+  '@dynamic-labs/sdk-react-core@4.8.3(@types/react@18.3.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@dynamic-labs/assert-package-version': 4.8.3
       '@dynamic-labs/iconic': 4.8.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -20397,7 +20397,7 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       react-focus-lock: 2.9.2(@types/react@18.3.1)(react@18.3.1)
-      react-i18next: 13.5.0(i18next@23.4.6)(react-dom@18.3.1(react@18.3.1))(react-native@0.74.0(@babel/core@7.26.10)(@babel/preset-env@7.26.9(@babel/core@7.26.10))(@types/react@18.3.1)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10))(react@18.3.1)
+      react-i18next: 13.5.0(i18next@23.4.6)(react-dom@18.3.1(react@18.3.1))(react-native@0.74.0(@babel/core@7.26.10)(@babel/preset-env@7.26.9(@babel/core@7.26.10))(@types/react@18.3.20)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10))(react@18.3.1)
       react-international-phone: 4.2.5(react@18.3.1)
       yup: 0.32.11
     transitivePeerDependencies:
@@ -29024,9 +29024,9 @@ snapshots:
 
   '@vanilla-extract/private@1.0.6': {}
 
-  '@vitejs/plugin-vue@4.3.4(vite@4.4.9(@types/node@22.7.5)(lightningcss@1.30.1)(terser@5.39.0))(vue@3.3.4)':
+  '@vitejs/plugin-vue@4.3.4(vite@4.5.14(@types/node@22.7.5)(lightningcss@1.30.1)(terser@5.39.0))(vue@3.3.4)':
     dependencies:
-      vite: 4.4.9(@types/node@22.7.5)(lightningcss@1.30.1)(terser@5.39.0)
+      vite: 4.5.14(@types/node@22.7.5)(lightningcss@1.30.1)(terser@5.39.0)
       vue: 3.3.4
 
   '@vitest/expect@1.6.1':
@@ -35463,7 +35463,7 @@ snapshots:
   interface-datastore@6.1.1:
     dependencies:
       interface-store: 2.0.2
-      nanoid: 3.3.11
+      nanoid: 3.3.4
       uint8arrays: 3.1.1
 
   interface-store@2.0.2: {}
@@ -35526,7 +35526,7 @@ snapshots:
       multiaddr: 10.0.1(node-fetch@2.7.0(encoding@0.1.13))
       multiaddr-to-uri: 8.0.0(node-fetch@2.7.0(encoding@0.1.13))
       multiformats: 9.9.0
-      nanoid: 3.3.11
+      nanoid: 3.3.4
       parse-duration: 1.1.2
       timeout-abort-controller: 3.0.0
       uint8arrays: 3.1.1
@@ -35604,7 +35604,7 @@ snapshots:
       it-glob: 1.0.2
       it-to-stream: 1.0.0
       merge-options: 3.0.4
-      nanoid: 3.3.11
+      nanoid: 3.3.4
       native-fetch: 3.0.0(node-fetch@2.7.0(encoding@0.1.13))
       node-fetch: 2.7.0(encoding@0.1.13)
       react-native-fetch-api: 3.0.0
@@ -40594,7 +40594,7 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  react-i18next@13.5.0(i18next@23.4.6)(react-dom@18.3.1(react@18.3.1))(react-native@0.74.0(@babel/core@7.26.10)(@babel/preset-env@7.26.9(@babel/core@7.26.10))(@types/react@18.3.1)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10))(react@18.3.1):
+  react-i18next@13.5.0(i18next@23.4.6)(react-dom@18.3.1(react@18.3.1))(react-native@0.74.0(@babel/core@7.26.10)(@babel/preset-env@7.26.9(@babel/core@7.26.10))(@types/react@18.3.20)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10))(react@18.3.1):
     dependencies:
       '@babel/runtime': 7.27.0
       html-parse-stringify: 3.0.1
@@ -40602,7 +40602,7 @@ snapshots:
       react: 18.3.1
     optionalDependencies:
       react-dom: 18.3.1(react@18.3.1)
-      react-native: 0.74.0(@babel/core@7.26.10)(@babel/preset-env@7.26.9(@babel/core@7.26.10))(@types/react@18.3.1)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10)
+      react-native: 0.74.0(@babel/core@7.26.10)(@babel/preset-env@7.26.9(@babel/core@7.26.10))(@types/react@18.3.20)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10)
 
   react-icons@4.12.0(react@18.3.1):
     dependencies:
@@ -43995,7 +43995,7 @@ snapshots:
       - supports-color
       - terser
 
-  vite-plugin-dts@3.5.3(@types/node@22.7.5)(rollup@4.43.0)(typescript@5.8.2)(vite@4.4.9(@types/node@22.7.5)(lightningcss@1.30.1)(terser@5.39.0)):
+  vite-plugin-dts@3.5.3(@types/node@22.7.5)(rollup@4.43.0)(typescript@5.8.2)(vite@4.5.14(@types/node@22.7.5)(lightningcss@1.30.1)(terser@5.39.0)):
     dependencies:
       '@microsoft/api-extractor': 7.52.5(@types/node@22.7.5)
       '@rollup/pluginutils': 5.1.4(rollup@4.43.0)
@@ -44005,7 +44005,7 @@ snapshots:
       typescript: 5.8.2
       vue-tsc: 1.8.27(typescript@5.8.2)
     optionalDependencies:
-      vite: 4.4.9(@types/node@22.7.5)(lightningcss@1.30.1)(terser@5.39.0)
+      vite: 4.5.14(@types/node@22.7.5)(lightningcss@1.30.1)(terser@5.39.0)
     transitivePeerDependencies:
       - '@types/node'
       - rollup
@@ -44022,10 +44022,10 @@ snapshots:
       - supports-color
       - typescript
 
-  vite@4.4.9(@types/node@22.7.5)(lightningcss@1.30.1)(terser@5.39.0):
+  vite@4.5.14(@types/node@22.7.5)(lightningcss@1.30.1)(terser@5.39.0):
     dependencies:
       esbuild: 0.18.20
-      postcss: 8.5.3
+      postcss: 8.5.6
       rollup: 3.29.5
     optionalDependencies:
       '@types/node': 22.7.5
