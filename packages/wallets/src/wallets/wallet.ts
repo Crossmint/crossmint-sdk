@@ -85,10 +85,10 @@ export class Wallet<C extends Chain> {
      * @param {number} params.page - The page number
      * @param {EvmWalletLocator} [params.locator] - The locator
      * @returns The NFTs
-     * @unstable This API is unstable and may change in the future
+     * @experimental This API is experimental and may change in the future
      */
-    public async unstable_nfts(params: { perPage: number; page: number }) {
-        return await this.#apiClient.unstable_getNfts({
+    public async experimental_nfts(params: { perPage: number; page: number }) {
+        return await this.#apiClient.experimental_getNfts({
             ...params,
             chain: this.chain,
             address: this.address,
@@ -99,7 +99,7 @@ export class Wallet<C extends Chain> {
      * Get the wallet transactions
      * @returns The transactions
      */
-    public async unstable_transactions() {
+    public async experimental_transactions() {
         return await this.#apiClient.getTransactions(this.walletLocator);
     }
 
