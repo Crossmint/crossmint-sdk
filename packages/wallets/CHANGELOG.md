@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 0.10.3
+
+### Patch Changes
+
+- 4bd3d5b: Fix balance api
+
 ## 0.10.2
 
 ### Patch Changes
