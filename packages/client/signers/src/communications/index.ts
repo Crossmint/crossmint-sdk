@@ -6,4 +6,6 @@ export type {
     SignerOutputEvent,
 } from "./events";
 
+export { environmentUrlConfig } from "./urls";
+
 export type { KeyType, Encoding, KEY_ENCODINGS, KEY_TYPES } from "./schemas";

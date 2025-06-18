@@ -2,12 +2,10 @@ import { type ReactNode, useCallback, useEffect, useRef, useState, useMemo, crea
 import { View } from "react-native";
 import type { WebView, WebViewMessageEvent } from "react-native-webview";
 import { RNWebView, WebViewParent } from "@crossmint/client-sdk-rn-window";
-import { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
+import { environmentUrlConfig, signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
 import { validateAPIKey } from "@crossmint/common-sdk-base";
 import { CrossmintWalletBaseProvider } from "@crossmint/client-sdk-react-base";
 import { useCrossmint } from "@/hooks";
-
-const DEFAULT_SECURE_ENDPOINT_URL = "https://signers.crossmint.com";
 
 const throwNotAvailable = (functionName: string) => () => {
     throw new Error(`${functionName} is not available. Make sure you're using an email signer wallet.`);
@@ -39,7 +37,7 @@ export function CrossmintWalletProvider({ children }: CrossmintWalletProviderPro
     if (!parsedAPIKey.isValid) {
         throw new Error("Invalid API key");
     }
-    const frameUrl = `${DEFAULT_SECURE_ENDPOINT_URL}/?environment=${parsedAPIKey.environment}`;
+    const frameUrl = environmentUrlConfig[parsedAPIKey.environment];
 
     const webviewRef = useRef<WebView>(null);
     const webViewParentRef = useRef<WebViewParent<typeof signerOutboundEvents, typeof signerInboundEvents> | null>(
@@ -197,7 +195,7 @@ export function CrossmintWalletProvider({ children }: CrossmintWalletProviderPro
                     sharedCookiesEnabled={false}
                     incognito={false}
                     setSupportMultipleWindows={false}
-                    originWhitelist={[DEFAULT_SECURE_ENDPOINT_URL]}
+                    originWhitelist={[environmentUrlConfig[parsedAPIKey.environment]]}
                 />
             </View>
         </CrossmintWalletBaseProvider>
