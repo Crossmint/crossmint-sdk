@@ -30,7 +30,7 @@ export class EmailSigner implements Signer {
             if (!parsedAPIKey.isValid) {
                 throw new Error("Invalid API key");
             }
-            const iframeManager = new EmailIframeManager();
+            const iframeManager = new EmailIframeManager({ environment: parsedAPIKey.environment });
             this.config._handshakeParent = await iframeManager.initialize();
         }
     }
