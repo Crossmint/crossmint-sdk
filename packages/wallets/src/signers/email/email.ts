@@ -190,7 +190,6 @@ export class EmailSigner implements Signer {
             });
 
             if (response?.status === "success") {
-                console.log("[verifyOtp] OTP validation successful");
                 this._needsAuth = false;
                 this._authPromise?.resolve();
                 return;
