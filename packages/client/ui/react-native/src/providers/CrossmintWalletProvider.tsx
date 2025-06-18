@@ -4,7 +4,7 @@ import type { WebView, WebViewMessageEvent } from "react-native-webview";
 import { RNWebView, WebViewParent } from "@crossmint/client-sdk-rn-window";
 import { environmentUrlConfig, signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
 import { validateAPIKey } from "@crossmint/common-sdk-base";
-import { CrossmintWalletBaseProvider } from "@crossmint/client-sdk-react-base";
+import { type CreateOnLogin, CrossmintWalletBaseProvider } from "@crossmint/client-sdk-react-base";
 import { useCrossmint } from "@/hooks";
 
 const throwNotAvailable = (functionName: string) => () => {
@@ -28,9 +28,10 @@ export const CrossmintWalletEmailSignerContext = createContext<CrossmintWalletEm
 
 export interface CrossmintWalletProviderProps {
     children: ReactNode;
+    createOnLogin?: CreateOnLogin;
 }
 
-export function CrossmintWalletProvider({ children }: CrossmintWalletProviderProps) {
+export function CrossmintWalletProvider({ children, createOnLogin }: CrossmintWalletProviderProps) {
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
     const { apiKey, appId } = crossmint;
     const parsedAPIKey = validateAPIKey(apiKey);
@@ -155,7 +156,11 @@ export function CrossmintWalletProvider({ children }: CrossmintWalletProviderPro
     );
 
     return (
-        <CrossmintWalletBaseProvider onAuthRequired={onAuthRequired} _getEmailSignerIframe={_getEmailSignerIframe}>
+        <CrossmintWalletBaseProvider
+            createOnLogin={createOnLogin}
+            onAuthRequired={onAuthRequired}
+            _getEmailSignerIframe={_getEmailSignerIframe}
+        >
             <CrossmintWalletEmailSignerContext.Provider value={authContextValue}>
                 {children}
             </CrossmintWalletEmailSignerContext.Provider>
