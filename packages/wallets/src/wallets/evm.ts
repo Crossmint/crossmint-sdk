@@ -1,6 +1,6 @@
 import { createPublicClient, type TypedDataDomain, http } from "viem";
 import type { TypedData, TypedDataDefinition, HttpTransport } from "viem";
-import type { EVMTransactionInput } from "./types";
+import type { EVMTransactionInput, Transaction } from "./types";
 import { type EVMSmartWalletChain, toViemChain } from "../chains/chains";
 import { Wallet } from "./wallet";
 import type { EVMChain } from "../chains/chains";
@@ -24,7 +24,7 @@ export class EVMWallet extends Wallet<EVMChain> {
         return new EVMWallet(wallet);
     }
 
-    public async sendTransaction(params: EVMTransactionInput): Promise<string> {
+    public async sendTransaction(params: EVMTransactionInput): Promise<Transaction> {
         const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
             params: {
                 signer: this.signer.locator(),

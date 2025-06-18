@@ -1,6 +1,6 @@
 import bs58 from "bs58";
 import type { SolanaChain } from "../chains/chains";
-import type { SolanaTransactionInput } from "./types";
+import type { SolanaTransactionInput, Transaction } from "./types";
 import { Wallet } from "./wallet";
 import { TransactionNotCreatedError } from "../utils/errors";
 import { SolanaExternalWalletSigner } from "@/signers/solana-external-wallet";
@@ -22,7 +22,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
         return new SolanaWallet(wallet);
     }
 
-    public async sendTransaction({ transaction, additionalSigners }: SolanaTransactionInput): Promise<string> {
+    public async sendTransaction({ transaction, additionalSigners }: SolanaTransactionInput): Promise<Transaction> {
         const transactionParams = {
             transaction: bs58.encode(transaction.serialize()),
         };

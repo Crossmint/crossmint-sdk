@@ -14,7 +14,7 @@ export function EVMTransferFunds() {
     const [recipient, setRecipient] = useState<string | null>(null);
     const [amount, setAmount] = useState<number | null>(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [txnHash, setTxnHash] = useState<string | null>(null);
+    const [txLink, setTxLink] = useState<string | null>(null);
 
     async function handleOnTransfer() {
         if (wallet == null || token == null || recipient == null || amount == null) {
@@ -30,8 +30,8 @@ export function EVMTransferFunds() {
 
         try {
             setIsLoading(true);
-            const txnHash = await wallet.send(recipient, token, amount.toString());
-            setTxnHash(`https://optimism-sepolia.blockscout.com/tx/${txnHash}`);
+            const tx = await wallet.send(recipient, token, amount.toString());
+            setTxLink(tx.explorerLink);
         } catch (err) {
             console.error("Transfer: ", err);
             alert("Transfer: " + err);
@@ -105,9 +105,9 @@ export function EVMTransferFunds() {
                 >
                     {isLoading ? "Transferring..." : "Transfer"}
                 </button>
-                {txnHash && !isLoading && (
+                {txLink != null && !isLoading && (
                     <a
-                        href={txnHash}
+                        href={txLink}
                         className="text-sm text-gray-500 text-center"
                         target="_blank"
                         rel="noopener noreferrer"
@@ -129,7 +129,7 @@ export function SolanaTransferFunds() {
     const [recipient, setRecipient] = useState<string | null>(null);
     const [amount, setAmount] = useState<number | null>(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [txnHash, setTxnHash] = useState<string | null>(null);
+    const [txLink, setTxLink] = useState<string | null>(null);
 
     const isSolanaAddressValid = (address: string) => {
         try {
@@ -154,8 +154,8 @@ export function SolanaTransferFunds() {
 
         try {
             setIsLoading(true);
-            const txnHash = await wallet.send(recipient, token, amount.toString());
-            setTxnHash(`https://solscan.io/tx/${txnHash}?cluster=devnet`);
+            const tx = await wallet.send(recipient, token, amount.toString());
+            setTxLink(tx.explorerLink);
         } catch (err) {
             console.error("Transfer: ", err);
             alert("Transfer: " + err);
@@ -229,9 +229,9 @@ export function SolanaTransferFunds() {
                 >
                     {isLoading ? "Transferring..." : "Transfer"}
                 </button>
-                {txnHash && !isLoading && (
+                {txLink != null && !isLoading && (
                     <a
-                        href={txnHash}
+                        href={txLink}
                         className="text-sm text-gray-500 text-center"
                         target="_blank"
                         rel="noopener noreferrer"

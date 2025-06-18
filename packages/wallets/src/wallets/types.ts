@@ -48,3 +48,15 @@ export type Balances = {
     usdc: TokenBalance;
     tokens: TokenBalance[];
 };
+
+export type UserLocator =
+    | { email: string }
+    | { x: string }
+    | { twitter: string }
+    | { phone: string }
+    | { userId: string };
+
+export type Transaction = {
+    hash: string;
+    explorerLink: string;
+};
