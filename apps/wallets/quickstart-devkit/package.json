@@ -22,7 +22,7 @@
         "react-dom": "^18",
         "tailwind-merge": "2.4.0",
         "tw-animate-css": "1.2.9",
-        "viem": "2.23.6"
+        "viem": "2.31.3"
     },
     "devDependencies": {
         "@tailwindcss/postcss": "^4",
