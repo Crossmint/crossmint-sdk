@@ -45,6 +45,7 @@
     },
     "pnpm": {
         "overrides": {
+            "@ethersproject/providers@7": "7.5.10",
             "elliptic@6": "6.6.1"
         }
     }
