@@ -47,6 +47,7 @@
         "overrides": {
             "@ethersproject/providers@7": "7.5.10",
             "elliptic@6": "6.6.1",
+            "path-to-regexp": "0.1.12",
             "ws@8": "8.18.1"
         }
     }
