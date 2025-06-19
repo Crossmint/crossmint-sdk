@@ -50,7 +50,7 @@
         "react-native-web": "~0.19.13",
         "react-native-webview": "13.12.5",
         "stream-browserify": "^3.0.0",
-        "viem": "2.23.6"
+        "viem": "2.31.3"
     },
     "devDependencies": {
         "@babel/core": "^7.25.2",
