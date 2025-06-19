@@ -45,7 +45,8 @@
     },
     "pnpm": {
         "overrides": {
-            "elliptic@6": "6.6.1"
+            "elliptic@6": "6.6.1",
+            "trim@0": "0.0.3"
         }
     }
 }
