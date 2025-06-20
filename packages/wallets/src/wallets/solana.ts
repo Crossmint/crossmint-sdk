@@ -1,9 +1,10 @@
 import bs58 from "bs58";
-import type { SolanaChain } from "../chains/chains";
+import type { Chain, SolanaChain } from "../chains/chains";
 import type { SolanaTransactionInput, Transaction } from "./types";
 import { Wallet } from "./wallet";
 import { TransactionNotCreatedError } from "../utils/errors";
 import { SolanaExternalWalletSigner } from "@/signers/solana-external-wallet";
+import { isValidSolanaAddress } from "@crossmint/common-sdk-base";
 
 export class SolanaWallet extends Wallet<SolanaChain> {
     constructor(wallet: Wallet<SolanaChain>) {
@@ -18,8 +19,12 @@ export class SolanaWallet extends Wallet<SolanaChain> {
         );
     }
 
-    static from(wallet: Wallet<SolanaChain>) {
-        return new SolanaWallet(wallet);
+    static from(wallet: Wallet<Chain>) {
+        if (!isValidSolanaAddress(wallet.address)) {
+            throw new Error("Wallet is not a Solana wallet");
+        }
+
+        return new SolanaWallet(wallet as Wallet<SolanaChain>);
     }
 
     public async sendTransaction({ transaction, additionalSigners }: SolanaTransactionInput): Promise<Transaction> {

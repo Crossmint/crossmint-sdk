@@ -117,7 +117,12 @@ function SolanaPrivyProvider({ children }: { children: React.ReactNode }) {
             }}
         >
             <CrossmintProvider apiKey={crossmintApiKey}>
-                <CrossmintWalletProvider showPasskeyHelpers={false}>{children}</CrossmintWalletProvider>
+                <CrossmintWalletProvider
+                    showPasskeyHelpers={false}
+                    createOnLogin={{ chain: "solana", signer: { type: "external-wallet" } }}
+                >
+                    {children}
+                </CrossmintWalletProvider>
             </CrossmintProvider>
         </PrivyProvider>
     );
@@ -139,7 +144,9 @@ function SolanaDynamicLabsProvider({
             }}
         >
             <CrossmintProvider apiKey={crossmintApiKey}>
-                <CrossmintWalletProvider>{children}</CrossmintWalletProvider>
+                <CrossmintWalletProvider createOnLogin={{ chain: "solana", signer: { type: "external-wallet" } }}>
+                    {children}
+                </CrossmintWalletProvider>
             </CrossmintProvider>
         </DynamicContextProvider>
     );
