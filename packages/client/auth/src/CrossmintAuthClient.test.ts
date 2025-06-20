@@ -4,16 +4,41 @@ import { type Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
 import { AUTH_SDK_ROOT_ENDPOINT, type AuthMaterialWithUser } from "@crossmint/common-sdk-auth";
 import { CrossmintAuthClient } from "./CrossmintAuthClient";
 import * as cookiesUtils from "./utils/cookies";
-import { getJWTExpiration } from "./utils";
 import { queueTask } from "@crossmint/client-sdk-base";
+import { getJWTExpiration } from "./utils";
 
 vi.mock("@crossmint/common-sdk-base");
 vi.mock("./utils/cookies");
-vi.mock("./utils/jwt");
 vi.mock("@crossmint/client-sdk-base");
+
+function createMockJWT(expirationTimestamp?: number): string {
+    const exp = expirationTimestamp || Math.floor(Date.now() / 1000) + 3600; // 1 hour from now
+    const header = {
+        alg: "HS256",
+        typ: "JWT",
+    };
+    const payload = {
+        sub: "test-user-id",
+        iat: Math.floor(Date.now() / 1000),
+        exp,
+        iss: "crossmint",
+    };
+
+    const encodeBase64URL = (obj: any) => {
+        const jsonString = JSON.stringify(obj);
+        const base64 = btoa(jsonString);
+        return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    };
+
+    const encodedHeader = encodeBase64URL(header);
+    const encodedPayload = encodeBase64URL(payload);
+    const signature = "mock-signature-that-is-base64url-safe";
+    return `${encodedHeader}.${encodedPayload}.${signature}`;
+}
 
 describe("CrossmintAuthClient", () => {
     let crossmintAuthClient: CrossmintAuthClient;
+    const validJwt = createMockJWT();
     const mockCrossmint = { projectId: "test-project-id" };
     const mockApiClient = {
         baseUrl: "https://api.crossmint.com",
@@ -66,14 +91,18 @@ describe("CrossmintAuthClient", () => {
     describe("storeAuthMaterial", () => {
         it("should store auth material in cookies", async () => {
             const mockAuthMaterial: AuthMaterialWithUser = {
-                jwt: "mock.jwt.token",
+                jwt: validJwt,
                 refreshToken: { secret: "refresh-token", expiresAt: "2023-12-31T23:59:59Z" },
                 user: { id: "user123" },
             };
 
             await crossmintAuthClient.storeAuthMaterial(mockAuthMaterial);
 
-            expect(cookiesUtils.setCookie).toHaveBeenCalledWith("crossmint-jwt", mockAuthMaterial.jwt, undefined);
+            expect(cookiesUtils.setCookie).toHaveBeenCalledWith(
+                "crossmint-jwt",
+                mockAuthMaterial.jwt,
+                new Date(getJWTExpiration(validJwt)! * 1000).toISOString()
+            );
             expect(cookiesUtils.setCookie).toHaveBeenCalledWith(
                 "crossmint-refresh-token",
                 mockAuthMaterial.refreshToken.secret,
@@ -136,7 +165,7 @@ describe("CrossmintAuthClient", () => {
     describe("handleRefreshAuthMaterial", () => {
         const mockRefreshToken = "mock-refresh-token";
         const mockAuthMaterial = {
-            jwt: "new.jwt.token",
+            jwt: validJwt,
             refreshToken: { secret: "new-refresh-token", expiresAt: "2023-12-31T23:59:59Z" },
             user: { id: "user123" },
         };
@@ -144,7 +173,6 @@ describe("CrossmintAuthClient", () => {
         beforeEach(() => {
             vi.spyOn(crossmintAuthClient as any, "refreshAuthMaterial").mockResolvedValue(mockAuthMaterial);
             vi.spyOn(crossmintAuthClient as any, "storeAuthMaterial").mockImplementation(() => {});
-            vi.mocked(getJWTExpiration).mockReturnValue(Date.now() / 1000 + 3600); // 1 hour from now
             vi.mocked(queueTask).mockReturnValue({ cancel: vi.fn() } as any);
             (crossmintAuthClient as any).refreshPromise = null;
         });
@@ -222,15 +250,18 @@ describe("CrossmintAuthClient", () => {
         });
 
         it("should not schedule refresh if JWT is invalid", async () => {
-            vi.mocked(getJWTExpiration).mockReturnValue(null as any);
+            vi.spyOn(crossmintAuthClient as any, "refreshAuthMaterial").mockResolvedValue(null);
+            vi.spyOn(crossmintAuthClient, "logout").mockImplementation(() => Promise.resolve());
 
             await crossmintAuthClient.handleRefreshAuthMaterial(mockRefreshToken);
 
+            expect(crossmintAuthClient.logout).toHaveBeenCalled();
             expect(queueTask).not.toHaveBeenCalled();
         });
 
         it("should not schedule refresh if time to expire is negative", async () => {
-            vi.mocked(getJWTExpiration).mockReturnValue(Date.now() / 1000 - 3600); // 1 hour ago
+            vi.spyOn(crossmintAuthClient as any, "refreshAuthMaterial").mockResolvedValue(null);
+            vi.spyOn(crossmintAuthClient, "logout").mockImplementation(() => Promise.resolve());
 
             await crossmintAuthClient.handleRefreshAuthMaterial(mockRefreshToken);
 

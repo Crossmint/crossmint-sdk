@@ -63,8 +63,13 @@ export class CrossmintAuthClient extends CrossmintAuth {
     }
 
     public async storeAuthMaterial(authMaterial: AuthMaterialWithUser) {
+        const jwtExpiration = getJWTExpiration(authMaterial.jwt);
+        if (jwtExpiration == null) {
+            throw new Error("Invalid JWT");
+        }
+        const jwtExpirationDateInMs = new Date(jwtExpiration * 1000).toISOString();
         await Promise.all([
-            this.storageProvider.set(SESSION_PREFIX, authMaterial.jwt),
+            this.storageProvider.set(SESSION_PREFIX, authMaterial.jwt, jwtExpirationDateInMs),
             this.storageProvider.set(
                 REFRESH_TOKEN_PREFIX,
                 authMaterial.refreshToken.secret,
@@ -101,6 +106,8 @@ export class CrossmintAuthClient extends CrossmintAuth {
             const refreshToken = refreshTokenSecret ?? (await this.storageProvider.get(REFRESH_TOKEN_PREFIX));
             // If there is a custom refresh route, that endpoint will fetch the cookies itself
             if (refreshToken == null && this.refreshRoute == null) {
+                // Early logout if ever the refresh token is null but the jwt exists.
+                await this.logout();
                 return null;
             }
 
@@ -302,7 +309,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
 
     private scheduleNextRefresh(jwt: string): void {
         const jwtExpiration = getJWTExpiration(jwt);
-        if (!jwtExpiration) {
+        if (jwtExpiration == null) {
             throw new Error("Invalid JWT");
         }
 
