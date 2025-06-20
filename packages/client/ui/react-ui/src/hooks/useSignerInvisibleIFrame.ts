@@ -28,7 +28,7 @@ export function useSignerIFrameWindow(environment: string, url?: string) {
     useEffect(() => {
         const initIFrameWindow = async () => {
             try {
-                const iframeUrl = new URL(url || "https://signers.crossmint.com/");
+                const iframeUrl = new URL(url || "https://staging.signers.crossmint.com/");
                 iframeUrl.searchParams.set("environment", environment);
                 const iframeElement = await createInvisibleIFrame(iframeUrl.toString());
                 iframeWindow.current = await IFrameWindow.init(iframeElement, {
