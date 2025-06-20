@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useCrossmint, useWallet as useCrossmintWallet } from "@crossmint/client-sdk-react-ui";
 import { usePrivy, useSolanaWallets, useWallets as usePrivyWallets } from "@privy-io/react-auth";
-import { VersionedTransaction } from "@solana/web3.js";
+import type { VersionedTransaction } from "@solana/web3.js";
 
 /* ============================================================ */
 /*                    EVM PRIVY CONNECTOR                       */

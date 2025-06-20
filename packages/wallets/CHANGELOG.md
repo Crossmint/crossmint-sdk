@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 0.10.4
+
+### Patch Changes
+
+- d14b8bc: Fix wallet type
+
 ## 0.10.3
 
 ### Patch Changes

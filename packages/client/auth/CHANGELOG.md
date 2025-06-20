@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-auth
 
+## 1.2.15
+
+### Patch Changes
+
+- 7bf848c: Fixed issue with stale session using Crossmint Auth
+
 ## 1.2.14
 
 ### Patch Changes
