@@ -1,5 +1,16 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.7.1
+
+### Patch Changes
+
+- d14b8bc: Fixed export issue with types
+- Updated dependencies [7bf848c]
+- Updated dependencies [d14b8bc]
+  - @crossmint/client-sdk-auth@1.2.15
+  - @crossmint/wallets-sdk@0.10.4
+  - @crossmint/client-sdk-react-base@0.5.4
+
 ## 0.7.0
 
 ### Minor Changes
