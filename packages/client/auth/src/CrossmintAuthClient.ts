@@ -309,7 +309,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
 
     private scheduleNextRefresh(jwt: string): void {
         const jwtExpiration = getJWTExpiration(jwt);
-        if (!jwtExpiration) {
+        if (jwtExpiration == null) {
             throw new Error("Invalid JWT");
         }
 
