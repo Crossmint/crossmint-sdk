@@ -1,5 +1,24 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.8.0
+
+### Minor Changes
+
+- 40c55e8: Expose 'callbacks' prop in CrossmintWalletProvider
+
+### Patch Changes
+
+- Updated dependencies [38abd83]
+- Updated dependencies [38abd83]
+- Updated dependencies [ba8495c]
+  - @crossmint/wallets-sdk@0.10.5
+  - @crossmint/common-sdk-base@0.8.1
+  - @crossmint/client-signers@0.0.18
+  - @crossmint/client-sdk-react-base@0.5.5
+  - @crossmint/client-sdk-auth@1.2.16
+  - @crossmint/client-sdk-base@1.5.7
+  - @crossmint/common-sdk-auth@1.0.38
+
 ## 0.7.1
 
 ### Patch Changes

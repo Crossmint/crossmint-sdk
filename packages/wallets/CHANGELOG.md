@@ -1,5 +1,16 @@
 # @crossmint/wallets-sdk
 
+## 0.10.5
+
+### Patch Changes
+
+- 38abd83: Fixed issue with email not set error even when email is set
+- Updated dependencies [38abd83]
+- Updated dependencies [ba8495c]
+  - @crossmint/common-sdk-base@0.8.1
+  - @crossmint/client-signers@0.0.18
+  - @crossmint/common-sdk-auth@1.0.38
+
 ## 0.10.4
 
 ### Patch Changes

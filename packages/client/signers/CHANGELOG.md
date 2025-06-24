@@ -1,5 +1,11 @@
 # @crossmint/client-signers
 
+## 0.0.18
+
+### Patch Changes
+
+- ba8495c: Fixed iframe url mapper for local development
+
 ## 0.0.17
 
 ### Patch Changes
