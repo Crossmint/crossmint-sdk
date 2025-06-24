@@ -69,7 +69,7 @@ export class EVMWallet extends Wallet<EVMChain> {
         return await this.waitForSignature(signatureId);
     }
 
-    public async createTypedDataSignature<
+    public async signTypedData<
         const typedData extends TypedData | Record<string, unknown>,
         primaryType extends keyof typedData | "EIP712Domain" = keyof typedData,
     >(
