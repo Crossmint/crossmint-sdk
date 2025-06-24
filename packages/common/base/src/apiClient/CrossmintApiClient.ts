@@ -30,7 +30,6 @@ export class CrossmintApiClient extends ApiClient {
             throw new Error(apiKeyValidationResult.message);
         }
         super();
-        this.crossmint.jwt = this.crossmint.jwt || this.crossmint.experimental_customAuth?.jwt;
         this.parsedAPIKey = apiKeyValidationResult;
         this.internalConfig = internalConfig;
     }
@@ -50,11 +49,15 @@ export class CrossmintApiClient extends ApiClient {
             "x-api-key": this.crossmint.apiKey,
             ...(this.crossmint.appId ? { "x-app-identifier": this.crossmint.appId } : {}),
             ...(this.crossmint.extensionId ? { "x-extension-id": this.crossmint.extensionId } : {}),
-            ...(this.crossmint.jwt ? { Authorization: `Bearer ${this.crossmint.jwt}` } : {}),
+            ...(this.resolvedJwt ? { Authorization: `Bearer ${this.resolvedJwt}` } : {}),
         };
     }
 
     get environment() {
         return this.parsedAPIKey.environment;
+    }
+
+    private get resolvedJwt(): string | undefined {
+        return this.crossmint.experimental_customAuth?.jwt || this.crossmint.jwt;
     }
 }
