@@ -8,155 +8,78 @@ A Typescript SDK to interact with Crossmint Wallets. This SDK enables developers
 -   **User** (client-side) wallets and **agent** (server-side) wallets
 -   **Familiar API**: follows `viem` and `web3.js` conventions
 
+
+Get a Crossmint client API key from [here](https://docs.crossmint.com/introduction/platform/api-keys/client-side) and add it to your `.env` file. Make sure your API key has all scopes for `Wallet API`, and `Users`.  
+
 ## Installation
 
-```sh
-npm install @crossmint/wallets-sdk
-# or
-pnpm add @crossmint/wallets-sdk
+```bash
+pnpm install @crossmint/wallets-sdk
 ```
 
-## Quick Start
+## Usage
 
 ```ts
 import { CrossmintWallets, createCrossmint } from "@crossmint/wallets-sdk";
 
 const crossmint = createCrossmint({
-    apiKey: "<YOUR_API_KEY>",
-    jwt: "<USER_TOKEN>", // Not needed for server wallets
+    apiKey: "<your-client-OR-server-api-key>",
 });
 const crossmintWallets = CrossmintWallets.from(crossmint);
 const wallet = await crossmintWallets.getOrCreateWallet({
-    chain: "base-sepolia",
-    signer: {
-        type: "passkey",
-    },
+    chain: "<your-chain>",
 });
 
-const address = wallet.address;
+console.log(wallet.address);
 ```
 
-## Solana Examples
-
-### Wallet Creation
-
-#### Smart Wallets
+### Get wallet balances
 
 ```ts
-import { Keypair } from "@solana/web3.js";
+const balances = await wallet.balances();
 
-const keypair = Keypair.generate();
-const wallet = await crossmintWallets.getOrCreateWallet({
-    chain: "solana",
-    signer: {
-        type: "external-wallet",
-        address: keypair.publicKey.toBase58(),
-        onSignTransaction: async (transaction: VersionedTransaction) => {
-            return await keypair.signTransaction(transaction);
-        },
-    },
-});
+console.log(balances.nativeToken.amount);
+console.log(balances.usdc.amount);
 ```
 
-### Sending Transactions
+### Transfer
 
 ```ts
-import {
-    Connection,
-    PublicKey,
-    TransactionInstruction,
-    TransactionMessage,
-    VersionedTransaction,
-} from "@solana/web3.js";
+const transaction = await wallet.send(recipient, "usdc", "100");
 
-const connection = new Connection("https://api.devnet.solana.com");
-const memoInstruction = new TransactionInstruction({
-    keys: [
-        {
-            pubkey: new PublicKey(wallet.address),
-            isSigner: true,
-            isWritable: true,
-        },
-    ],
-    data: Buffer.from("Hello from Crossmint SDK", "utf-8"),
-    programId: new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
-});
-
-const blockhash = (await connection.getLatestBlockhash()).blockhash;
-const newMessage = new TransactionMessage({
-    payerKey: new PublicKey(wallet.address),
-    recentBlockhash: blockhash,
-    instructions: [memoInstruction],
-});
-
-const transaction = new VersionedTransaction(newMessage.compileToV0Message());
-
-const txHash = await wallet.sendTransaction({
-    transaction,
-});
+console.log(transaction.explorerLink);
 ```
 
-### Delegated Signers
+### Get wallet activity
 
 ```ts
-const newSigner = Keypair.generate();
-await wallet.addDelegatedSigner(keypair.publicKey.toBase58());
-const txHash = await wallet.sendTransaction({
-    transaction,
-    delegatedSigner: {
-        type: "solana-keypair",
-        address: keypair.publicKey.toBase58(),
-        signer: newSigner,
-    },
-});
+const activity = await wallet.experimental_activity();
 ```
 
-## EVM Examples
-
-### Wallet Creation
-
-#### Passkey Smart Wallets
+### Delegated signers
 
 ```ts
-const wallet = await crossmintWallets.getOrCreateWallet({
-    chain: "base-sepolia",
-    signer: {
-        type: "passkey",
-        name: "My Wallet",
-    },
-});
+// Add a delegated signer
+await wallet.addDelegatedSigner({ signer: "<signer-address>" });
+
+const signers = await wallet.delegatedSigners();
+
+console.log(signers);
 ```
 
-#### Keypair Smart Wallets
+### Create custom transactions
 
 ```ts
-import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 
-const account = privateKeyToAccount(generatePrivateKey());
-const wallet = await crossmintWallets.getOrCreateWallet({
-    chain: "base-sepolia",
-    signer: {
-        type: "external-wallet",
-        address: account.address,
-        viemAccount: account,
-    },
-});
-```
+import { SolanaWallet, EVMWallet } from "@crossmint/wallets-sdk";
 
-### Sending Transactions
+// Solana
+const solanaWallet = SolanaWallet.from(wallet);
+// EVM
+const evmWallet = EVMWallet.from(wallet);
 
-```ts
-const transaction = await wallet.sendTransaction({
-    to: "0x0000000000000000000000000000000000000042",
-    data: "0xdeadbeef",
-    value: BigInt(0),
-});
-```
-
-### Signing Messages
-
-```ts
-const signature = await wallet.signMessage({
-    message: "Hello from Crossmint SDK",
-});
+// Send a transaction to the Solana network
+const solTx = await solanaWallet.sendTransaction({ transaction: "<transaction-object>" }); 
+// Send a transaction to the EVM network
+const evmTx = await evmWallet.sendTransaction({ transaction: "<transaction-object>" }); 
 ```

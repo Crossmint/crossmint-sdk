@@ -5,16 +5,9 @@ import type { Chain } from "../chains/chains";
 import type { InternalSignerConfig, SignerConfigForChain, ExternalWalletInternalSignerConfig } from "../signers/types";
 import { Wallet } from "./wallet";
 import { assembleSigner } from "../signers";
-import type { WalletOptions } from "./types";
+import type { WalletArgsFor } from "./types";
 import { EmailSigner } from "@/signers/email/email";
 import { deepCompare } from "@/utils/signer-validation";
-
-export type WalletArgsFor<C extends Chain> = {
-    chain: C;
-    signer: SignerConfigForChain<C>;
-    owner?: string;
-    options?: WalletOptions;
-};
 
 export class WalletFactory {
     constructor(private readonly apiClient: ApiClient) {}

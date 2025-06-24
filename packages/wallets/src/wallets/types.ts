@@ -1,6 +1,7 @@
 import type { Keypair, VersionedTransaction } from "@solana/web3.js";
 import type { CreateTransactionSuccessResponse } from "../api";
-import type { EVMSmartWalletChain } from "../chains/chains";
+import type { Chain, EVMSmartWalletChain } from "../chains/chains";
+import type { SignerConfigForChain } from "../signers/types";
 
 export type { Activity } from "../api/types";
 
@@ -32,6 +33,13 @@ export type Callbacks = {
 
 export type WalletOptions = {
     experimental_callbacks?: Callbacks;
+};
+
+export type WalletArgsFor<C extends Chain> = {
+    chain: C;
+    signer: SignerConfigForChain<C>;
+    owner?: string;
+    options?: WalletOptions;
 };
 
 export type TokenBalance = {

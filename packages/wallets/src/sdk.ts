@@ -1,8 +1,9 @@
 import { createCrossmint, type Crossmint } from "@crossmint/common-sdk-base";
 import { ApiClient } from "./api";
-import { WalletFactory, type WalletArgsFor } from "./wallets/wallet-factory";
+import { WalletFactory } from "./wallets/wallet-factory";
 import type { Wallet } from "./wallets/wallet";
 import type { Chain } from "./chains/chains";
+import type { WalletArgsFor } from "./wallets/types";
 
 export class CrossmintWallets {
     private readonly walletFactory: WalletFactory;
