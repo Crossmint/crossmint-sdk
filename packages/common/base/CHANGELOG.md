@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.8.1
+
+### Patch Changes
+
+- 38abd83: Fixed issue with jwt not being set correctly
+
 ## 0.8.0
 
 ### Minor Changes
