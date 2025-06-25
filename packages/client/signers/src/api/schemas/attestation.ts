@@ -10,9 +10,7 @@ export const getAttestationResponseSchema = z.object({
     hash_algorithm: z.literal("sha512"),
     prefix: z.literal("app-data"),
 });
-export type GetAttestationResponse = z.infer<
-    typeof getAttestationResponseSchema
->;
+export type GetAttestationResponse = z.infer<typeof getAttestationResponseSchema>;
 
 export const getPublicKeyRequestSchema = z.undefined();
 export type GetPublicKeyRequest = z.infer<typeof getPublicKeyRequestSchema>;

@@ -7,14 +7,10 @@ export const startOnboardingRequestSchema = z.object({
         publicKey: z.string(),
     }),
 });
-export type StartOnboardingRequest = z.infer<
-    typeof startOnboardingRequestSchema
->;
+export type StartOnboardingRequest = z.infer<typeof startOnboardingRequestSchema>;
 
 export const startOnboardingResponseSchema = z.object({});
-export type StartOnboardingResponse = z.infer<
-    typeof startOnboardingResponseSchema
->;
+export type StartOnboardingResponse = z.infer<typeof startOnboardingResponseSchema>;
 
 export const completeOnboardingRequestSchema = z.object({
     publicKey: z.string(),
@@ -23,14 +19,10 @@ export const completeOnboardingRequestSchema = z.object({
     }),
     deviceId: z.string(),
 });
-export type CompleteOnboardingRequest = z.infer<
-    typeof completeOnboardingRequestSchema
->;
+export type CompleteOnboardingRequest = z.infer<typeof completeOnboardingRequestSchema>;
 
 export const completeOnboardingResponseSchema = z.object({
     deviceKeyShare: z.string(),
     signerId: z.string(),
 });
-export type CompleteOnboardingResponse = z.infer<
-    typeof completeOnboardingResponseSchema
->;
+export type CompleteOnboardingResponse = z.infer<typeof completeOnboardingResponseSchema>;
