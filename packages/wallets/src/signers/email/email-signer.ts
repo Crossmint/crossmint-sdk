@@ -1,4 +1,4 @@
-import type { EmailInternalSignerConfig, Signer } from "../types";
+import type { BaseSignResult, EmailInternalSignerConfig, Signer } from "../types";
 import { AuthRejectedError } from "../types";
 import { EmailIframeManager } from "./email-iframe-manager";
 import { validateAPIKey } from "@crossmint/common-sdk-base";
@@ -17,6 +17,7 @@ export abstract class EmailSigner implements Signer {
     }
 
     abstract locator(): string;
+    abstract signMessage(message: string): Promise<BaseSignResult>;
 
     private async initialize() {
         // Initialize iframe if no custom handshake parent is provided
@@ -28,10 +29,6 @@ export abstract class EmailSigner implements Signer {
             const iframeManager = new EmailIframeManager({ environment: parsedAPIKey.environment });
             this.config._handshakeParent = await iframeManager.initialize();
         }
-    }
-
-    async signMessage() {
-        return await Promise.reject(new Error("signMessage method not implemented for email signer"));
     }
 
     abstract signTransaction(transaction: string): Promise<{ signature: string }>;

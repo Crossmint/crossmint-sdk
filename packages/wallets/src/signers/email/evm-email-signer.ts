@@ -2,7 +2,7 @@ import type { EmailInternalSignerConfig } from "../types";
 import { EmailSignerApiClient } from "./email-signer-api-client";
 import { EmailSigner, DEFAULT_EVENT_OPTIONS } from "./email-signer";
 import type { Crossmint } from "@crossmint/common-sdk-base";
-import { Address, PublicKey } from "ox";
+import { Address, PublicKey, PersonalMessage, Hex } from "ox";
 
 export class EvmEmailSigner extends EmailSigner {
     constructor(config: EmailInternalSignerConfig) {
@@ -13,8 +13,9 @@ export class EvmEmailSigner extends EmailSigner {
         return `evm-keypair:${this.config.signerAddress}`;
     }
 
-    async signMessage() {
-        return await Promise.reject(new Error("signMessage method not implemented for email signer"));
+    async signMessage(message: string) {
+        const messageToSign = PersonalMessage.getSignPayload(message as `0x${string}`);
+        return await this.signTransaction(messageToSign);
     }
 
     async signTransaction(transaction: string): Promise<{ signature: string }> {
