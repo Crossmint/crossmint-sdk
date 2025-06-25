@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 0.10.6
+
+### Patch Changes
+
+- 583757c: Add EVM email signer
+
 ## 0.10.5
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-react-native-ui",
-    "version": "0.8.0",
+    "version": "0.8.1",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
