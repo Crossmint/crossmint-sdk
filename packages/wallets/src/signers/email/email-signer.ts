@@ -168,9 +168,38 @@ export abstract class EmailSigner implements Signer {
             throw err;
         }
     }
+
+    static async pregenerateSigner(email: string, crossmint: Crossmint): Promise<string> {
+        if (email == null || crossmint.experimental_customAuth?.email == null) {
+            throw new Error("Email is required to pregenerate a signer");
+        }
+
+        try {
+            const response = await new EmailSignerApiClient(crossmint).pregenerateSigner(
+                email ?? crossmint.experimental_customAuth.email
+            );
+            const publicKey = response.publicKey;
+
+            if (publicKey == null) {
+                throw new Error("No public key found");
+            }
+
+            if (publicKey.encoding !== "base58" || publicKey.keyType !== "ed25519" || publicKey.bytes == null) {
+                throw new Error(
+                    "Not supported. Expected public key to be in base58 encoding and ed25519 key type. Got: " +
+                        JSON.stringify(publicKey)
+                );
+            }
+
+            return publicKey.bytes;
+        } catch (error) {
+            console.error("[EmailSigner] Failed to pregenerate signer:", error);
+            throw error;
+        }
+    }
 }
 
-export const DEFAULT_EVENT_OPTIONS = {
+const DEFAULT_EVENT_OPTIONS = {
     timeoutMs: 10_000,
     intervalMs: 5_000,
 };
