@@ -54,15 +54,13 @@ export class SolanaEmailSigner extends EmailSigner {
     }
 
     static async pregenerateSigner(email: string, crossmint: Crossmint): Promise<string> {
-        if (email == null || crossmint.experimental_customAuth?.email == null) {
+        const emailToUse = email ?? crossmint.experimental_customAuth?.email;
+        if (emailToUse == null) {
             throw new Error("Email is required to pregenerate a signer");
         }
 
         try {
-            const response = await new EmailSignerApiClient(crossmint).pregenerateSigner(
-                email ?? crossmint.experimental_customAuth.email,
-                "ed25519"
-            );
+            const response = await new EmailSignerApiClient(crossmint).pregenerateSigner(emailToUse, "ed25519");
             const publicKey = response.publicKey;
 
             if (publicKey == null) {
