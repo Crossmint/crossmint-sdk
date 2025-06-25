@@ -27,6 +27,7 @@ export default function App() {
         <CrossmintWalletProvider
           createOnLogin={{
             chain: "solana",
+            signer: { type: "email" }
           }}
         >
           <MainApp />
