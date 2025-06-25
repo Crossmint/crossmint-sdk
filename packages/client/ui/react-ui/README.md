@@ -46,6 +46,8 @@ export default function App({ children }) {
 
 Already have authentication? Skip Crossmint Auth and use wallets with your existing system:
 
+📖 **[Complete Custom Auth Guide](https://docs.crossmint.com/wallets/advanced/bring-your-own-auth)** - Full setup with examples and implementation details.
+
 ```tsx
 "use client";
 
@@ -102,18 +104,6 @@ export default function MyComponent() {
   return <div>Loading wallet...</div>;
 }
 ```
-
-## 🔧 Bring Your Own Authentication
-
-**Simple Setup:** Remove `CrossmintAuthProvider` and create wallets directly for your users.
-
-### Why Use Your Own Auth?
-- ✅ Keep your existing user system
-- ✅ Maintain your login flow and branding  
-- ✅ Full control over user management
-- ✅ Still get all wallet features
-
-📖 **[Complete Custom Auth Guide](https://docs.crossmint.com/wallets/advanced/bring-your-own-auth)** - Full setup with examples and implementation details.
 
 ## 🔐 Authentication
 
