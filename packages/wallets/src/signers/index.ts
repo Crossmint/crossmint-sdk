@@ -1,4 +1,4 @@
-import { EmailSigner } from "./email";
+import { EvmEmailSigner, SolanaEmailSigner } from "./email";
 import { SolanaExternalWalletSigner } from "./solana-external-wallet";
 import { EVMExternalWalletSigner } from "./evm-external-wallet";
 import { PasskeySigner } from "./passkey";
@@ -10,7 +10,7 @@ import type { InternalSignerConfig, Signer, SolanaExternalWalletSignerConfig } f
 export function assembleSigner<C extends Chain>(chain: C, config: InternalSignerConfig<C>): Signer {
     switch (config.type) {
         case "email":
-            return new EmailSigner(config);
+            return chain === "solana" ? new SolanaEmailSigner(config) : new EvmEmailSigner(config);
 
         case "api-key":
             return chain === "solana" ? new SolanaApiKeySigner(config) : new EVMApiKeySigner(config);
