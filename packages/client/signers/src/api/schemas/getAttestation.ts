@@ -11,11 +11,3 @@ export const getAttestationResponseSchema = z.object({
     prefix: z.literal("app-data"),
 });
 export type GetAttestationResponse = z.infer<typeof getAttestationResponseSchema>;
-
-export const getPublicKeyRequestSchema = z.undefined();
-export type GetPublicKeyRequest = z.infer<typeof getPublicKeyRequestSchema>;
-
-export const getPublicKeyResponseSchema = z.object({
-    publicKey: z.string(),
-});
-export type GetPublicKeyResponse = z.infer<typeof getPublicKeyResponseSchema>;
