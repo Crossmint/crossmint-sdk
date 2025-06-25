@@ -76,6 +76,8 @@ The Crossmint SDK is a powerful collection of packages designed to simplify bloc
 ### Client-Side Packages
 
 - `@crossmint/client-sdk-react-ui`: React SDK, with UI components.
+
+- `@crossmint/client-sdk-react-native-ui`: React Native SDK.
 	
 - `@crossmint/client-sdk-auth`: Headless typescript SDK for managing auth and user profiles.
 	
@@ -95,8 +97,9 @@ Other:
 
 ### Demo Applications
 
-- [🔒 Smart Wallet + Auth Demo)](./apps/wallets/smart-wallet/next/README.md): A NextJS application showcasing the full capabilities of the SDK, including authentication and smart wallet integration.
-
+- [🔒 Wallets Quickstart)](https://github.com/Crossmint/wallets-quickstart): Create and interact with Crossmint wallets. This quickstart uses Crossmint Auth and uses your email as a signer for that wallet. [Demo](https://wallets.demos-crossmint.com/)
+- [💳 Hosted Checkout Quickstart)](https://github.com/Crossmint/hosted-checkout-quickstart): Allow your customers to buy NFTs with credit card and crypto payments, using Crossmint's hosted checkout. This quickstart provides a seamless integration for accepting payments in your dApp. [Demo](https://hosted-checkout.demos-crossmint.com/)
+- [🏦 Fintech Quickstart)](https://github.com/Crossmint/fintech-starter-app): Create your own Fintech app in minutes using Crossmint wallets and onramp. [Demo](https://fintech-starter-app.demos-crossmint.com/)
 
 ## Getting Started
 
