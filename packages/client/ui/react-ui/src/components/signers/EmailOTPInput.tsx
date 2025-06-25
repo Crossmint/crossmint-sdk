@@ -1,11 +1,7 @@
 import { useState } from "react";
 import { CountdownButton } from "@/components/common/CountdownButton";
 import type { UIConfig } from "@crossmint/common-sdk-base";
-import {
-    InputOTP,
-    InputOTPGroup,
-    InputOTPSlot,
-} from "@/components/common/InputOTP";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/common/InputOTP";
 import { EmailOtpIcon } from "@/icons/emailOTP";
 const OTP_LENGTH = 9;
 
@@ -16,12 +12,7 @@ interface EmailOTPInputProps {
     appearance?: UIConfig;
 }
 
-export function EmailOTPInput({
-    email,
-    onSubmitOTP,
-    onResendCode,
-    appearance,
-}: EmailOTPInputProps) {
+export function EmailOTPInput({ email, onSubmitOTP, onResendCode, appearance }: EmailOTPInputProps) {
     const [token, setToken] = useState("");
     const [hasError, setHasError] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -47,9 +38,7 @@ export function EmailOTPInput({
             <div className="relative left-3">
                 <EmailOtpIcon
                     customAccentColor={appearance?.colors?.accent}
-                    customButtonBackgroundColor={
-                        appearance?.colors?.buttonBackground
-                    }
+                    customButtonBackgroundColor={appearance?.colors?.buttonBackground}
                     customBackgroundColor={appearance?.colors?.background}
                 />
             </div>
@@ -59,10 +48,7 @@ export function EmailOTPInput({
             >
                 Check your email
             </p>
-            <p
-                className="text-center text-cm-text-secondary px-4"
-                style={{ color: appearance?.colors?.textSecondary }}
-            >
+            <p className="text-center text-cm-text-secondary px-4" style={{ color: appearance?.colors?.textSecondary }}>
                 A temporary login code has been sent to {email}
             </p>
             <div className="py-8">
@@ -80,12 +66,9 @@ export function EmailOTPInput({
                         accent: appearance?.colors?.accent ?? "#04AA6D",
                         danger: appearance?.colors?.danger ?? "#f44336",
                         border: appearance?.colors?.border ?? "#E5E7EB",
-                        textPrimary:
-                            appearance?.colors?.textPrimary ?? "#909ca3",
-                        buttonBackground:
-                            appearance?.colors?.buttonBackground ?? "#eff6ff",
-                        inputBackground:
-                            appearance?.colors?.inputBackground ?? "#FFFFFF",
+                        textPrimary: appearance?.colors?.textPrimary ?? "#909ca3",
+                        buttonBackground: appearance?.colors?.buttonBackground ?? "#eff6ff",
+                        inputBackground: appearance?.colors?.inputBackground ?? "#FFFFFF",
                         borderRadius: appearance?.borderRadius,
                     }}
                 >
