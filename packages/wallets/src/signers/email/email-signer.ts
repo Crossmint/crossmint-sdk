@@ -1,12 +1,9 @@
-import { VersionedTransaction } from "@solana/web3.js";
-import base58 from "bs58";
 import type { EmailInternalSignerConfig, Signer } from "../types";
 import { AuthRejectedError } from "../types";
-import { EmailSignerApiClient } from "./email-signer-api-client";
 import { EmailIframeManager } from "./email-iframe-manager";
-import { validateAPIKey, type Crossmint } from "@crossmint/common-sdk-base";
+import { validateAPIKey } from "@crossmint/common-sdk-base";
 
-export class EmailSigner implements Signer {
+export abstract class EmailSigner implements Signer {
     type = "email" as const;
     private _needsAuth = true;
     private _authPromise: {
@@ -15,13 +12,11 @@ export class EmailSigner implements Signer {
         reject: (error: Error) => void;
     } | null = null;
 
-    constructor(private config: EmailInternalSignerConfig) {
+    constructor(protected config: EmailInternalSignerConfig) {
         this.initialize();
     }
 
-    locator() {
-        return `solana-keypair:${this.config.signerAddress}`;
-    }
+    abstract locator(): string;
 
     private async initialize() {
         // Initialize iframe if no custom handshake parent is provided
@@ -39,42 +34,9 @@ export class EmailSigner implements Signer {
         return await Promise.reject(new Error("signMessage method not implemented for email signer"));
     }
 
-    async signTransaction(transaction: string) {
-        await this.handleAuthRequired();
+    abstract signTransaction(transaction: string): Promise<{ signature: string }>;
 
-        const transactionBytes = base58.decode(transaction);
-        const deserializedTransaction = VersionedTransaction.deserialize(transactionBytes);
-        const messageData = deserializedTransaction.message.serialize();
-
-        const res = await this.config._handshakeParent?.sendAction({
-            event: "request:sign",
-            responseEvent: "response:sign",
-            data: {
-                authData: {
-                    jwt: this.config.crossmint.experimental_customAuth?.jwt ?? "",
-                    apiKey: this.config.crossmint.apiKey,
-                },
-                data: {
-                    keyType: "ed25519",
-                    bytes: base58.encode(messageData),
-                    encoding: "base58",
-                },
-            },
-            options: DEFAULT_EVENT_OPTIONS,
-        });
-
-        if (res?.status === "error") {
-            throw new Error(res.error);
-        }
-
-        if (res?.signature == null) {
-            throw new Error("Failed to sign transaction");
-        }
-
-        return { signature: res.signature.bytes };
-    }
-
-    private async handleAuthRequired() {
+    protected async handleAuthRequired() {
         if (this.config._handshakeParent == null) {
             throw new Error("Handshake parent not initialized");
         }
@@ -206,38 +168,9 @@ export class EmailSigner implements Signer {
             throw err;
         }
     }
-
-    static async pregenerateSigner(email: string, crossmint: Crossmint): Promise<string> {
-        if (email == null || crossmint.experimental_customAuth?.email == null) {
-            throw new Error("Email is required to pregenerate a signer");
-        }
-
-        try {
-            const response = await new EmailSignerApiClient(crossmint).pregenerateSigner(
-                email ?? crossmint.experimental_customAuth.email
-            );
-            const publicKey = response.publicKey;
-
-            if (publicKey == null) {
-                throw new Error("No public key found");
-            }
-
-            if (publicKey.encoding !== "base58" || publicKey.keyType !== "ed25519" || publicKey.bytes == null) {
-                throw new Error(
-                    "Not supported. Expected public key to be in base58 encoding and ed25519 key type. Got: " +
-                        JSON.stringify(publicKey)
-                );
-            }
-
-            return publicKey.bytes;
-        } catch (error) {
-            console.error("[EmailSigner] Failed to pregenerate signer:", error);
-            throw error;
-        }
-    }
 }
 
-const DEFAULT_EVENT_OPTIONS = {
+export const DEFAULT_EVENT_OPTIONS = {
     timeoutMs: 10_000,
     intervalMs: 5_000,
 };

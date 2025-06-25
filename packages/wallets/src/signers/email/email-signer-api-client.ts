@@ -13,9 +13,9 @@ export class EmailSignerApiClient extends CrossmintApiClient {
         });
     }
 
-    async pregenerateSigner(email: string) {
+    async pregenerateSigner(email: string, keyType: "ed25519" | "secp256k1") {
         const response = await this.post(`${this.apiPrefix}/derive-public-key`, {
-            body: JSON.stringify({ authId: `email:${email}`, keyType: "ed25519" }),
+            body: JSON.stringify({ authId: `email:${email}`, keyType }),
             headers: this.headers,
         });
         if (!response.ok) {
