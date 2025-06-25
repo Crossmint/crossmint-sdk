@@ -1,127 +1,223 @@
-# `@crossmint/client-sdk-react-ui`
+# Crossmint React SDK
 
-## You can check the full documentation at [docs.crossmint.com](https://docs.crossmint.com/)
 
----
+> **Create chain-agnostic wallets for your users in minutes**  
+> Supports Solana, 20+ EVM chains (Polygon, Base, etc.), with custodial and non-custodial options.
 
-If you're using React.js, or Next.js, Crossmint provides a client integration specific for you.
+## 🚀 Quick Start
 
-## Quick Setup
-
-First, add the Crossmint Client SDK to your project with the following command:
-
-```shell
+```bash
 pnpm add @crossmint/client-sdk-react-ui
 ```
 
-### Add payment button to your site
 
-Check our dedicated section for payments [in the docs](https://docs.crossmint.com/docs/integration-guide).
+### 1. Setup Providers
 
----
+**Option A: With Crossmint Authentication (Recommended)**
 
-### Crossmint Authentication
+```tsx
+"use client";
 
-Check out our quickstart [in the docs](https://docs.crossmint.com/authentication/quickstart).
+import {
+  CrossmintProvider,
+  CrossmintAuthProvider,
+  CrossmintWalletProvider
+} from "@crossmint/client-sdk-react-ui";
 
-#### Key Components
-We provide two essential React context providers:
-
-- `CrossmintProvider` - Base provider for accessing Crossmint services
-- `CrossmintAuthProvider` - Authentication context provider for your components
-- `CrossmintWalletProvider` - Wallet context provider for your components, can be used to integrate with other auth providers. Visit [Crossmint Signers Demo](https://crossmint-signers-demo.vercel.app/examples/dynamic) for complete implementation details and advanced features.
-
-#### Supported Login Methods
-- **Email OTP**: Passwordless sign-in using a one-time code
-- **Social Accounts**: Sign in with Google, X, and more
-- **Farcaster**: Using the Sign In With Farcaster (SIWF) standard
-- **Web3**: Sign in with EOA wallet (limited support for now)
-
-#### UI Options
-- **Modal Login**: Popup interface for authentication
-- **Embedded Login**: In-page authentication component
-- **Customization**: Flexible UI styling and email template options
-
-<img width="749" alt="Screenshot 2025-01-26 at 11 57 31 AM" src="https://github.com/user-attachments/assets/bd18ce58-ea57-43a0-bda7-9237d77f3b40" />
-
-Visit our [customization guide](https://docs.crossmint.com/authentication/customization) to learn more about styling options and email templates.
-
----
-
-### User Wallets
-
-Check out our quickstart [in the docs](https://docs.crossmint.com/wallets/quickstarts/EVM/non-custodial-wallets/evm-non-custodial-client-side).
-
-We provide two essential React hooks for integrating Crossmint wallets into your application:
-
-#### `useAuth`
-```typescript
-import { useAuth } from "@crossmint/client-sdk-react-ui";
-```
-Manages authentication state and user sessions. Key features:
-- `status` - Current auth state ("logged-in" | "logged-out" | "in-progress" | "initializing")
-- `user` - Active user information
-- `jwt` - Current user's JWT token
-- `getUser()` - Retrieve current user information
-- `login()` - Initiate user authentication
-- `logout()` - End user session
-- `crossmintAuth` - Access to the CrossmintAuth instance
-
-#### `useWallet`
-```typescript
-import { useWallet } from "@crossmint/client-sdk-react-ui";
-```
-Handles wallet creation and management. Key features:
-- `status` - Wallet state ("not-loaded" | "in-progress" | "error" | "loaded")
-- `wallet` - Access to the EVMSmartWallet instance
-- `getOrCreateWallet()` - Initialize or retrieve user's wallet
-- `clearWallet()` - Reset wallet state
-- `createPasskeySigner()` - Create a passkey signer for the wallet (not supported for Solana)
-
-Visit [our documentation](https://docs.crossmint.com/wallets/quickstarts/overview) for complete implementation details and advanced features.
-
----
-
-### Wallet UI Components
-
-We offer two components to help you quickly get up and running with your project using Crossmint wallets:
-
--   `CrossmintNFTCollectionView` - Display a grid of NFTs.
-    ![Wallet Collection Component](https://user-images.githubusercontent.com/20989060/223705873-79197f38-4fb6-4773-98b9-82ef80f24aef.png)
-
--   `CrossmintNFTDetail` - Display a card showing all NFT related details.
-    ![NFT Detail Component](https://user-images.githubusercontent.com/20989060/223704647-8b99ae40-6ebf-4cd6-bc20-c41c5fd13db0.png)
-
-Visit [our documentation](https://docs.crossmint.com/wallets/advanced/wallet-ui-components) for integration instructions.
-
-## Examples
-
-- [Smart Wallets Demo (Next.js Starter Kit)](../../../../apps/wallets/smart-wallet/next/README.md)
-
-### Environment Setup
-
-1. Create a `.env` file in the demo app directory:
-```shell
-cd apps/wallets/smart-wallet/next
+export default function App({ children }) {
+  return (
+    <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_API_KEY}>
+      <CrossmintAuthProvider authModalTitle="Sign in to MyApp">
+        <CrossmintWalletProvider
+          createOnLogin={{ 
+            chain: "polygon-amoy", 
+            signer: { type: "email" } 
+          }}
+        >
+          {children}
+        </CrossmintWalletProvider>
+      </CrossmintAuthProvider>
+    </CrossmintProvider>
+  );
+}
 ```
 
-2. Add the following environment variable:
-```shell
+**Option B: 🔧 Bring Your Own Authentication**
+
+Already have authentication? Skip Crossmint Auth and use wallets with your existing system:
+
+```tsx
+"use client";
+
+import {
+  CrossmintProvider,
+  CrossmintWalletProvider
+} from "@crossmint/client-sdk-react-ui";
+
+export default function App({ children }) {
+  return (
+    <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_API_KEY}>
+      {/* No CrossmintAuthProvider needed! */}
+      <CrossmintWalletProvider 
+        createOnLogin={{ 
+            chain: "solana", 
+            signer: { 
+                type: "email", 
+                email: "<email-from-your-auth-system>" 
+            } 
+        }}>
+        {children}
+      </CrossmintWalletProvider>
+    </CrossmintProvider>
+  );
+}
+```
+
+### 2. Use Authentication & Wallets
+
+```tsx
+import { useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
+
+export default function MyComponent() {
+  const { login, logout, user, status } = useAuth();
+  const { wallet, status: walletStatus } = useWallet();
+
+  if (status === "logged-out") {
+    return <button onClick={login}>Sign In</button>;
+  }
+
+  if (walletStatus === "loaded") {
+    return (
+      <div>
+        <p>Welcome {user?.email}!</p>
+        <p>Wallet: {wallet?.address}</p>
+        <button onClick={() => wallet?.send(recipient, "usdc", "1.0")}>
+          Send 1 USDC
+        </button>
+        <button onClick={logout}>Logout</button>
+      </div>
+    );
+  }
+
+  return <div>Loading wallet...</div>;
+}
+```
+
+## 🔧 Bring Your Own Authentication
+
+**Simple Setup:** Remove `CrossmintAuthProvider` and create wallets directly for your users.
+
+### Why Use Your Own Auth?
+- ✅ Keep your existing user system
+- ✅ Maintain your login flow and branding  
+- ✅ Full control over user management
+- ✅ Still get all wallet features
+
+📖 **[Complete Custom Auth Guide](https://docs.crossmint.com/wallets/advanced/bring-your-own-auth)** - Full setup with examples and implementation details.
+
+## 🔐 Authentication
+
+### Supported Login Methods
+- **Email OTP**: Passwordless sign-in with verification code
+- **Social Accounts**: Google, Twitter/X, Farcaster
+- **Web3 Wallets**: Connect external wallets for authentication
+- **Custom UI**: Headed or headless authentication flows
+
+### Provider Configuration
+```tsx
+<CrossmintAuthProvider
+  loginMethods={["email", "google", "twitter", "farcaster", "web3"]}
+  authModalTitle="Welcome to MyApp"
+  // Optional: Customize the appearance of the auth modal. 
+  // -> See https://docs.crossmint.com/authentication/customization for more details.
+  appearance={{
+    borderRadius: "12px",
+    colors: {
+      background: "#ffffff",
+      textPrimary: "#000000",
+      accent: "#6366f1"
+    }
+  }}
+>
+```
+
+## 💳 Wallets
+
+### Multi-Chain Support
+- **Solana**: Native SOL, SPL tokens
+- **EVM Chains**: Ethereum, Polygon, Base, Arbitrum, and 15+ more
+- **Unified API**: Same code works across all chains
+
+### Wallet Creation Options
+```tsx
+<CrossmintWalletProvider
+  createOnLogin={{
+    chain: "solana", // or EVM chains: "polygon", "base", etc.
+    signer: { 
+      type: "email" // or "api-key", "passkey", "external-wallet"
+    }
+  }}
+>
+```
+
+### Using Wallets
+```tsx
+const { wallet, getOrCreateWallet } = useWallet();
+
+// Get wallet info
+const address = wallet?.address;
+const balance = await wallet?.balances();
+
+// Send tokens
+const tx = await wallet?.send(recipient, "usdc", "10.5");
+console.log("Transaction:", tx.explorerLink);
+
+// For advanced use cases
+const customWallet = await getOrCreateWallet({
+  chain: "<your-chain>",
+  signer: { type: "<your-signer-type>" }
+});
+```
+
+## 🎨 UI Components
+
+Ready-to-use components for displaying wallet content:
+
+```tsx
+import { 
+  CrossmintNFTCollectionView,
+  CrossmintNFTDetail 
+} from "@crossmint/client-sdk-react-ui";
+
+// Display user's NFT collection
+<CrossmintNFTCollectionView {...props} />
+
+// Show NFT details
+<CrossmintNFTDetail {...props} />
+```
+
+## 📱 React Native
+
+For React Native apps, use our dedicated [npm package](https://www.npmjs.com/package/@crossmint/client-sdk-react-native-ui).
+
+
+```bash
+pnpm add @crossmint/client-sdk-react-native-ui
+```
+
+## 🛠️ Environment Setup
+
+1. Get your API key from [Crossmint Console](https://staging.crossmint.com/console/projects/apiKeys)
+
+2. Add to your `.env`:
+```bash
 NEXT_PUBLIC_CROSSMINT_API_KEY=your_api_key_here
 ```
 
-You can obtain a staging client-side API key from the [Crossmint Console](https://staging.crossmint.com/console/projects/apiKeys). For detailed instructions on getting an API key, see our [documentation](https://docs.crossmint.com/wallets/quickstarts/EVM/non-custodial-wallets/evm-non-custodial-client-side#2-get-an-api-key).
+## 📚 Examples & Documentation
 
-### Running the Demo
+- **[Quickstarts](https://www.crossmint.com/quickstarts)** - Find your quickstart for your use case.
 
-1. Build and start the demo application:
-```shell
-cd apps/wallets/smart-wallet/next
-pnpm i
-pnpm build
-pnpm start
-```
+---
 
-For more information on how to run the demo application, see the [Smart Wallets Demo (Next.js Starter Kit) README](../../../../apps/wallets/smart-wallet/next/README.md).
-
-
+**Questions?** Visit our [documentation](https://docs.crossmint.com/introduction/about-crossmint) or contact our support team. 

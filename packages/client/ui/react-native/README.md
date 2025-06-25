@@ -1,66 +1,154 @@
 # Crossmint React Native SDK
 
-This package provides a React Native UI for integrating Crossmint authentication and wallet functionality into your mobile apps.
+> **Create chain-agnostic wallets for your React Native apps in minutes**  
+> Supports Solana, 20+ EVM chains (Polygon, Base, etc.), with secure mobile authentication.
 
-## Installation
+## 🚀 Quick Start
 
 ```bash
 pnpm add @crossmint/client-sdk-react-native-ui expo-secure-store expo-web-browser
 ```
 
-## Authentication with Secure Storage
+### 1. Setup Providers
 
-The React Native SDK uses [Expo's SecureStore](https://docs.expo.dev/versions/latest/sdk/securestore/) for secure, encrypted storage of authentication tokens. This provides a platform-native secure storage solution that encrypts sensitive data on the device.
-
-### Using the Default Secure Storage
-
-The `CrossmintAuthProvider` uses SecureStorage by default:
+**Option A: With Crossmint Authentication (Recommended)**
 
 ```tsx
-import { CrossmintProvider, CrossmintAuthProvider } from "@crossmint/client-sdk-react-native-ui";
+import {
+  CrossmintProvider,
+  CrossmintAuthProvider,
+  CrossmintWalletProvider
+} from "@crossmint/client-sdk-react-native-ui";
 
 export default function App() {
   return (
-    <CrossmintProvider
-      apiKey="YOUR_API_KEY"
-    >
+    <CrossmintProvider apiKey={process.env.EXPO_PUBLIC_CROSSMINT_API_KEY}>
       <CrossmintAuthProvider>
-        {/* Your app content */}
+        <CrossmintWalletProvider
+          createOnLogin={{
+            chain: "solana",
+          }}
+        >
+          <MainApp />
+        </CrossmintWalletProvider>
       </CrossmintAuthProvider>
     </CrossmintProvider>
   );
 }
 ```
 
-### Authentication Hooks
+**Option B: 🔧 Bring Your Own Authentication**
 
-Once the providers are set up, you can use the authentication hooks in your components:
+Already have authentication? Skip Crossmint Auth and use wallets with your existing system:
 
 ```tsx
-import { useCrossmintAuth } from "@crossmint/client-sdk-react-native-ui";
+import {
+  CrossmintProvider,
+  CrossmintWalletProvider
+} from "@crossmint/client-sdk-react-native-ui";
 
-function ProfileScreen() {
-  const { user, status, logout, login } = useCrossmintAuth();
+export default function App() {
+  return (
+    <CrossmintProvider apiKey={process.env.EXPO_PUBLIC_CROSSMINT_API_KEY}>
+      {/* No CrossmintAuthProvider needed! */}
+      <CrossmintWalletProvider>
+        <MainApp />
+      </CrossmintWalletProvider>
+    </CrossmintProvider>
+  );
+}
+```
 
-  if (status === "logged-out") {
+### 2. Use Authentication & Wallets
+
+The React Native SDK uses [Expo's SecureStore](https://docs.expo.dev/versions/latest/sdk/securestore/) for secure, encrypted storage of authentication tokens. This provides a platform-native secure storage solution that encrypts sensitive data on the device.
+
+```tsx
+import { View, Button, Text } from "react-native";
+import { useCrossmintAuth, useWallet } from "@crossmint/client-sdk-react-native-ui";
+
+export default function MainApp() {
+  const { loginWithOAuth, logout, user } = useCrossmintAuth();
+  const { wallet, status } = useWallet();
+
+  if (!user) {
     return (
-      <View>
-        <Button
-          title="Sign in with Google"
-          onPress={() => login("google")}
+      <View style={{ padding: 20 }}>
+        <Button 
+          title="Login with Google" 
+          onPress={() => loginWithOAuth("google")} 
         />
       </View>
     );
   }
 
-  return (
-    <View>
-      <Text>Welcome, {user?.email}</Text>
-      <Button title="Logout" onPress={logout} />
-    </View>
-  );
+  if (status === "loaded") {
+    return (
+      <View style={{ padding: 20 }}>
+        <Text>Welcome {user.email}!</Text>
+        <Text>Wallet: {wallet?.address}</Text>
+        <Button 
+          title="Send 1 USDC" 
+          onPress={() => wallet?.send(recipient, "usdc", "1.0")} 
+        />
+        <Button title="Logout" onPress={logout} />
+      </View>
+    );
+  }
+
+  return <Text>Loading wallet...</Text>;
 }
 ```
+
+## 🔧 Bring Your Own Authentication
+
+**Simple Setup:** Remove `CrossmintAuthProvider` and create wallets directly for your users.
+
+### Why Use Your Own Auth?
+- ✅ Keep your existing user system
+- ✅ Maintain your login flow and branding  
+- ✅ Full control over user management
+- ✅ Still get all wallet features
+
+📖 **[Complete Custom Auth Guide](https://docs.crossmint.com/wallets/advanced/bring-your-own-auth#react-native)** - Full setup with server-side examples and implementation details.
+
+## 🔐 Authentication
+
+### OAuth Login Methods
+```tsx
+const { loginWithOAuth } = useCrossmintAuth();
+
+// Available OAuth providers
+<Button title="Google" onPress={() => loginWithOAuth("google")} />
+<Button title="Twitter" onPress={() => loginWithOAuth("twitter")} />
+```
+
+## 💳 Wallets
+
+### Multi-Chain Support
+- **Solana**: Native SOL, SPL tokens
+- **EVM Chains**: Ethereum, Polygon, Base, Arbitrum, and 15+ more
+- **Unified API**: Same code works across all chains
+
+### Using Wallets
+```tsx
+const { wallet, getOrCreateWallet } = useWallet();
+
+// Get wallet info
+const address = wallet?.address;
+const balance = await wallet?.balances();
+
+// Send tokens
+const tx = await wallet?.send(recipient, "usdc", "10.5");
+console.log("Transaction:", tx.explorerLink);
+
+// For advanced use cases
+const customWallet = await getOrCreateWallet({
+  chain: "<your-chain>",
+  signer: { type: "<your-signer-type>" }
+});
+```
+
 
 ## Custom Storage Provider
 
@@ -98,4 +186,28 @@ function App() {
 }
 ```
 
-For more detailed documentation, please visit the [Crossmint Developer Docs](https://docs.crossmint.com/).
+## 🛠️ Environment Setup
+
+1. Get your API key from [Crossmint Console](https://staging.crossmint.com/console/projects/apiKeys)
+
+2. Add to your `.env`:
+```bash
+EXPO_PUBLIC_CROSSMINT_API_KEY=your_api_key_here
+```
+
+3. Configure deep linking in `app.json`:
+```json
+{
+  "expo": {
+    "scheme": "your-app-scheme"
+  }
+}
+```
+
+## 📚 Examples & Documentation
+
+- **[Wallets Expo Quickstart](https://github.com/Crossmint/wallets-expo-quickstart)** - Create and interact with Crossmint wallets using Crossmint Auth for React Native.
+
+---
+
+**Questions?** Visit our [documentation](https://docs.crossmint.com/introduction/about-crossmint) or contact our support team. 
