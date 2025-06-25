@@ -2,7 +2,7 @@ import type { EmailInternalSignerConfig } from "../types";
 import { EmailSignerApiClient } from "./email-signer-api-client";
 import { EmailSigner, DEFAULT_EVENT_OPTIONS } from "./email-signer";
 import type { Crossmint } from "@crossmint/common-sdk-base";
-import { Address, PublicKey, PersonalMessage, Hex } from "ox";
+import { Address, PublicKey, PersonalMessage } from "ox";
 
 export class EvmEmailSigner extends EmailSigner {
     constructor(config: EmailInternalSignerConfig) {
