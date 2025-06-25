@@ -1,6 +1,7 @@
 import { APIKeyUsageOrigin, type Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
 import { SDK_NAME, SDK_VERSION } from "../../utils/constants";
 import { InvalidApiKeyError } from "@/utils/errors";
+import type { KeyType } from "@crossmint/client-signers";
 
 export class EmailSignerApiClient extends CrossmintApiClient {
     private apiPrefix = "api/v1/signers";
@@ -13,7 +14,7 @@ export class EmailSignerApiClient extends CrossmintApiClient {
         });
     }
 
-    async pregenerateSigner(email: string, keyType: "ed25519" | "secp256k1") {
+    async pregenerateSigner(email: string, keyType: KeyType) {
         const response = await this.post(`${this.apiPrefix}/derive-public-key`, {
             body: JSON.stringify({ authId: `email:${email}`, keyType }),
             headers: this.headers,

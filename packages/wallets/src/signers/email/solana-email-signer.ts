@@ -20,6 +20,7 @@ export class SolanaEmailSigner extends EmailSigner {
 
     async signTransaction(transaction: string): Promise<{ signature: string }> {
         await this.handleAuthRequired();
+        const jwt = this.getJwtOrThrow();
 
         const transactionBytes = base58.decode(transaction);
         const deserializedTransaction = VersionedTransaction.deserialize(transactionBytes);
@@ -30,7 +31,7 @@ export class SolanaEmailSigner extends EmailSigner {
             responseEvent: "response:sign",
             data: {
                 authData: {
-                    jwt: this.config.crossmint.experimental_customAuth?.jwt ?? "",
+                    jwt,
                     apiKey: this.config.crossmint.apiKey,
                 },
                 data: {
@@ -49,7 +50,7 @@ export class SolanaEmailSigner extends EmailSigner {
         if (res?.signature == null) {
             throw new Error("Failed to sign transaction");
         }
-
+        SolanaEmailSigner.verifyPublicKeyFormat(res.publicKey);
         return { signature: res.signature.bytes };
     }
 
@@ -62,22 +63,24 @@ export class SolanaEmailSigner extends EmailSigner {
         try {
             const response = await new EmailSignerApiClient(crossmint).pregenerateSigner(emailToUse, "ed25519");
             const publicKey = response.publicKey;
-
-            if (publicKey == null) {
-                throw new Error("No public key found");
-            }
-
-            if (publicKey.encoding !== "base58" || publicKey.keyType !== "ed25519" || publicKey.bytes == null) {
-                throw new Error(
-                    "Not supported. Expected public key to be in base58 encoding and ed25519 key type. Got: " +
-                        JSON.stringify(publicKey)
-                );
-            }
-
+            this.verifyPublicKeyFormat(publicKey);
             return publicKey.bytes;
         } catch (error) {
             console.error("[EmailSigner] Failed to pregenerate signer:", error);
             throw error;
+        }
+    }
+
+    static verifyPublicKeyFormat(publicKey: { encoding: string; keyType: string; bytes: string } | null) {
+        if (publicKey == null) {
+            throw new Error("No public key found");
+        }
+
+        if (publicKey.encoding !== "base58" || publicKey.keyType !== "ed25519" || publicKey.bytes == null) {
+            throw new Error(
+                "Not supported. Expected public key to be in base58 encoding and ed25519 key type. Got: " +
+                    JSON.stringify(publicKey)
+            );
         }
     }
 }

@@ -86,6 +86,14 @@ export abstract class EmailSigner implements Signer {
         }
     }
 
+    protected getJwtOrThrow() {
+        const jwt = this.config.crossmint.experimental_customAuth?.jwt;
+        if (jwt == null) {
+            throw new Error("JWT is required");
+        }
+        return jwt;
+    }
+
     private createAuthPromise(): { promise: Promise<void>; resolve: () => void; reject: (error: Error) => void } {
         let resolvePromise!: () => void;
         let rejectPromise!: (error: Error) => void;

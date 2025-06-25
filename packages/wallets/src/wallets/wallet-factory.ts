@@ -9,6 +9,7 @@ import type { WalletOptions } from "./types";
 import { deepCompare } from "@/utils/signer-validation";
 import { EvmEmailSigner } from "@/signers/email/evm-email-signer";
 import { SolanaEmailSigner } from "@/signers/email/solana-email-signer";
+import { isEVMBlockchain } from "@crossmint/common-sdk-base";
 
 export type WalletArgsFor<C extends Chain> = {
     chain: C;
@@ -240,7 +241,7 @@ export class WalletFactory {
                     type: "solana-keypair",
                     address: emailSignerAddress,
                 };
-            } else {
+            } else if (isEVMBlockchain(chain)) {
                 const emailSignerAddress = await EvmEmailSigner.pregenerateSigner(email, this.apiClient.crossmint);
                 return {
                     type: "evm-keypair",

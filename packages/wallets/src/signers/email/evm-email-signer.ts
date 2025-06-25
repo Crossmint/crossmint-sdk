@@ -19,15 +19,16 @@ export class EvmEmailSigner extends EmailSigner {
 
     async signTransaction(transaction: string): Promise<{ signature: string }> {
         await this.handleAuthRequired();
+        const jwt = this.getJwtOrThrow();
 
-        const hexString = transaction.startsWith("0x") ? transaction.slice(2) : transaction;
+        const hexString = transaction.replace("0x", "");
 
         const res = await this.config._handshakeParent?.sendAction({
             event: "request:sign",
             responseEvent: "response:sign",
             data: {
                 authData: {
-                    jwt: this.config.crossmint.experimental_customAuth?.jwt ?? "",
+                    jwt,
                     apiKey: this.config.crossmint.apiKey,
                 },
                 data: {
@@ -46,7 +47,7 @@ export class EvmEmailSigner extends EmailSigner {
         if (res?.signature == null) {
             throw new Error("Failed to sign transaction");
         }
-
+        EvmEmailSigner.verifyPublicKeyFormat(res.publicKey);
         return { signature: res.signature.bytes };
     }
 
@@ -59,22 +60,24 @@ export class EvmEmailSigner extends EmailSigner {
         try {
             const response = await new EmailSignerApiClient(crossmint).pregenerateSigner(emailToUse, "secp256k1");
             const publicKey = response.publicKey;
-
-            if (publicKey == null) {
-                throw new Error("No public key found");
-            }
-
-            if (publicKey.encoding !== "hex" || publicKey.keyType !== "secp256k1" || publicKey.bytes == null) {
-                throw new Error(
-                    "Not supported. Expected public key to be in hex encoding and secp256k1 key type. Got: " +
-                        JSON.stringify(publicKey)
-                );
-            }
-
+            this.verifyPublicKeyFormat(publicKey);
             return this.publicKeyToEvmAddress(publicKey.bytes);
         } catch (error) {
             console.error("[EvmEmailSigner] Failed to pregenerate signer:", error);
             throw error;
+        }
+    }
+
+    static verifyPublicKeyFormat(publicKey: { encoding: string; keyType: string; bytes: string } | null) {
+        if (publicKey == null) {
+            throw new Error("No public key found");
+        }
+
+        if (publicKey.encoding !== "hex" || publicKey.keyType !== "secp256k1" || publicKey.bytes == null) {
+            throw new Error(
+                "Not supported. Expected public key to be in hex encoding and secp256k1 key type. Got: " +
+                    JSON.stringify(publicKey)
+            );
         }
     }
 
