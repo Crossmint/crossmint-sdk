@@ -16,7 +16,6 @@ export class EvmEmailSigner extends EmailSigner {
 
     async signMessage(message: string) {
         const messageRaw = isHex(message) ? (message as Hex) : toHex(message);
-
         const messageToSign = PersonalMessage.getSignPayload(messageRaw);
         return await this.sign(messageToSign);
     }
