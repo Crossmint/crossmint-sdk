@@ -6,7 +6,7 @@ import { TransactionFailedError } from "../utils/errors";
 export class SolanaExternalWalletSigner implements Signer {
     type = "external-wallet" as const;
     address: string;
-    onSignTransaction: (transaction: VersionedTransaction) => Promise<VersionedTransaction>;
+    onSignTransaction?: (transaction: VersionedTransaction) => Promise<VersionedTransaction>;
 
     constructor(config: SolanaExternalWalletSignerConfig) {
         if (config.address == null) {
