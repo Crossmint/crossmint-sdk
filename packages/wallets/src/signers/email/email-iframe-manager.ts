@@ -17,6 +17,7 @@ export class EmailIframeManager {
         }
 
         const iframeUrl = new URL(environmentUrlConfig[this.config.environment]);
+        iframeUrl.searchParams.set("targetOrigin", window.location.origin);
 
         const iframeElement = await this.createInvisibleIFrame(iframeUrl.toString());
         this.handshakeParent = await IFrameWindow.init(iframeElement, {
