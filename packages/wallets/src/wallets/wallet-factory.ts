@@ -84,7 +84,7 @@ export class WalletFactory {
         walletResponse: GetWalletSuccessResponse,
         args: WalletArgsFor<C>
     ): Wallet<C> {
-        const signerConfig = this.toInternalSignerConfig(walletResponse, args.signer);
+        const signerConfig = this.toInternalSignerConfig(walletResponse, args.signer, args.options);
         return new Wallet(
             {
                 chain: args.chain,
@@ -98,7 +98,8 @@ export class WalletFactory {
 
     private toInternalSignerConfig<C extends Chain>(
         walletResponse: GetWalletSuccessResponse,
-        signer: SignerConfigForChain<C>
+        signer: SignerConfigForChain<C>,
+        options?: WalletOptions
     ): InternalSignerConfig<C> {
         if (signer == null) {
             throw new WalletCreationError("Signer is required to create a wallet");
@@ -164,7 +165,7 @@ export class WalletFactory {
                     signerAddress: address,
                     crossmint: this.apiClient.crossmint,
                     onAuthRequired: signer.onAuthRequired,
-                    _handshakeParent: signer._handshakeParent,
+                    clientTEEConnection: options?.clientTEEConnection,
                 };
             }
 

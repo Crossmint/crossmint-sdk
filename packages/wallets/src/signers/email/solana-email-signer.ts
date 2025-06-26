@@ -26,7 +26,7 @@ export class SolanaEmailSigner extends EmailSigner {
         const deserializedTransaction = VersionedTransaction.deserialize(transactionBytes);
         const messageData = deserializedTransaction.message.serialize();
 
-        const res = await this.config._handshakeParent?.sendAction({
+        const res = await this.config.clientTEEConnection?.sendAction({
             event: "request:sign",
             responseEvent: "response:sign",
             data: {
