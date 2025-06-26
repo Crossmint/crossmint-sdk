@@ -2,7 +2,8 @@ import type { EmailInternalSignerConfig } from "../types";
 import { EmailSignerApiClient } from "./email-signer-api-client";
 import { EmailSigner, DEFAULT_EVENT_OPTIONS } from "./email-signer";
 import type { Crossmint } from "@crossmint/common-sdk-base";
-import { Address, PublicKey } from "ox";
+import { Address, PublicKey, PersonalMessage } from "ox";
+import { isHex, toHex, type Hex } from "viem";
 
 export class EvmEmailSigner extends EmailSigner {
     constructor(config: EmailInternalSignerConfig) {
@@ -13,15 +14,21 @@ export class EvmEmailSigner extends EmailSigner {
         return `evm-keypair:${this.config.signerAddress}`;
     }
 
-    async signMessage() {
-        return await Promise.reject(new Error("signMessage method not implemented for email signer"));
+    async signMessage(message: string) {
+        const messageRaw = isHex(message) ? (message as Hex) : toHex(message);
+        const messageToSign = PersonalMessage.getSignPayload(messageRaw);
+        return await this.sign(messageToSign);
     }
 
     async signTransaction(transaction: string): Promise<{ signature: string }> {
+        return await this.sign(transaction);
+    }
+
+    private async sign(raw: string): Promise<{ signature: string }> {
         await this.handleAuthRequired();
         const jwt = this.getJwtOrThrow();
 
-        const hexString = transaction.replace("0x", "");
+        const hexString = raw.replace("0x", "");
 
         const res = await this.config._handshakeParent?.sendAction({
             event: "request:sign",
