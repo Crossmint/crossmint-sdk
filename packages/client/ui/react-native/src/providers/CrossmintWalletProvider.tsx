@@ -130,7 +130,7 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
     }, []);
 
     // Get the handshake parent for email signer
-    const clientTEEConnection = () => {
+    const getClientTEEConnection = () => {
         if (webViewParentRef.current == null) {
             throw new Error("WebView not ready or handshake incomplete");
         }
@@ -163,7 +163,7 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
         <CrossmintWalletBaseProvider
             createOnLogin={createOnLogin}
             onAuthRequired={onAuthRequired}
-            clientTEEConnection={clientTEEConnection}
+            clientTEEConnection={getClientTEEConnection}
             callbacks={callbacks}
         >
             <CrossmintWalletEmailSignerContext.Provider value={authContextValue}>
