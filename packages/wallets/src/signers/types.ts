@@ -56,7 +56,7 @@ export type PasskeySignerConfig = {
 export type EmailInternalSignerConfig = EmailSignerConfig & {
     signerAddress: string;
     crossmint: Crossmint;
-    _handshakeParent?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
+    clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
 };
 
 export type PasskeyInternalSignerConfig = PasskeySignerConfig & {

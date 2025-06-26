@@ -20,13 +20,13 @@ export abstract class EmailSigner implements Signer {
 
     private async initialize() {
         // Initialize iframe if no custom handshake parent is provided
-        if (this.config._handshakeParent == null) {
+        if (this.config.clientTEEConnection == null) {
             const parsedAPIKey = validateAPIKey(this.config.crossmint.apiKey);
             if (!parsedAPIKey.isValid) {
                 throw new Error("Invalid API key");
             }
             const iframeManager = new EmailIframeManager({ environment: parsedAPIKey.environment });
-            this.config._handshakeParent = await iframeManager.initialize();
+            this.config.clientTEEConnection = await iframeManager.initialize();
         }
     }
 
@@ -37,12 +37,12 @@ export abstract class EmailSigner implements Signer {
     abstract signTransaction(transaction: string): Promise<{ signature: string }>;
 
     protected async handleAuthRequired() {
-        if (this.config._handshakeParent == null) {
+        if (this.config.clientTEEConnection == null) {
             throw new Error("Handshake parent not initialized");
         }
 
         // Determine if we need to authenticate the user via OTP or not
-        const signerResponse = await this.config._handshakeParent?.sendAction({
+        const signerResponse = await this.config.clientTEEConnection?.sendAction({
             event: "request:get-status",
             responseEvent: "response:get-status",
             data: {
@@ -107,11 +107,11 @@ export abstract class EmailSigner implements Signer {
     }
 
     private async sendEmailWithOtp() {
-        if (this.config._handshakeParent == null) {
+        if (this.config.clientTEEConnection == null) {
             throw new Error("Handshake parent not initialized");
         }
 
-        const handshakeParent = this.config._handshakeParent;
+        const handshakeParent = this.config.clientTEEConnection;
         const authId = `email:${this.config.email}`;
         const response = await handshakeParent.sendAction({
             event: "request:start-onboarding",
@@ -138,11 +138,11 @@ export abstract class EmailSigner implements Signer {
     }
 
     private async verifyOtp(encryptedOtp: string) {
-        if (this.config._handshakeParent == null) {
+        if (this.config.clientTEEConnection == null) {
             throw new Error("Handshake parent not initialized");
         }
 
-        const handshakeParent = this.config._handshakeParent;
+        const handshakeParent = this.config.clientTEEConnection;
         try {
             const response = await handshakeParent.sendAction({
                 event: "request:complete-onboarding",

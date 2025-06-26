@@ -4,4 +4,4 @@
 "@crossmint/wallets-sdk": patch
 ---
 
-Move \_handshakeParent from signer to options config
+Move \_handshakeParent from signer to options config and rename to clientTEEConnection

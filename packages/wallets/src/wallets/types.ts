@@ -34,7 +34,7 @@ export type Callbacks = {
 
 export type WalletOptions = {
     experimental_callbacks?: Callbacks;
-    _handshakeParent?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
+    clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
 };
 
 export type TokenBalance = {

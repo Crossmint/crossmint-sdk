@@ -23,7 +23,7 @@ export class EvmEmailSigner extends EmailSigner {
 
         const hexString = transaction.replace("0x", "");
 
-        const res = await this.config._handshakeParent?.sendAction({
+        const res = await this.config.clientTEEConnection?.sendAction({
             event: "request:sign",
             responseEvent: "response:sign",
             data: {

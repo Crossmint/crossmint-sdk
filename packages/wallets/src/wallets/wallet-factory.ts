@@ -165,7 +165,7 @@ export class WalletFactory {
                     signerAddress: address,
                     crossmint: this.apiClient.crossmint,
                     onAuthRequired: signer.onAuthRequired,
-                    _handshakeParent: options?._handshakeParent,
+                    clientTEEConnection: options?.clientTEEConnection,
                 };
             }
 

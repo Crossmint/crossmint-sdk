@@ -18,7 +18,7 @@ export type CrossmintWalletBaseContext = {
     status: "not-loaded" | "in-progress" | "loaded" | "error";
     getOrCreateWallet: <C extends Chain>(props: WalletArgsFor<C>) => Promise<Wallet<Chain> | undefined>;
     onAuthRequired?: EmailSignerConfig["onAuthRequired"];
-    _getSignerConnection?: () => HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
+    clientTEEConnection?: () => HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
 };
 
 export const CrossmintWalletBaseContext = createContext<CrossmintWalletBaseContext>({
@@ -26,7 +26,7 @@ export const CrossmintWalletBaseContext = createContext<CrossmintWalletBaseConte
     status: "not-loaded",
     getOrCreateWallet: () => Promise.resolve(undefined),
     onAuthRequired: undefined,
-    _getSignerConnection: undefined,
+    clientTEEConnection: undefined,
 });
 
 export interface CrossmintWalletBaseProviderProps {
@@ -37,7 +37,7 @@ export interface CrossmintWalletBaseProviderProps {
         onTransactionStart?: () => Promise<void>;
     };
     onAuthRequired?: EmailSignerConfig["onAuthRequired"];
-    _getSignerConnection?: () => HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
+    clientTEEConnection?: () => HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
 }
 
 export function CrossmintWalletBaseProvider({
@@ -45,7 +45,7 @@ export function CrossmintWalletBaseProvider({
     createOnLogin,
     callbacks,
     onAuthRequired,
-    _getSignerConnection,
+    clientTEEConnection,
 }: CrossmintWalletBaseProviderProps) {
     const { crossmint, experimental_customAuth } = useCrossmint(
         "CrossmintWalletBaseProvider must be used within CrossmintProvider"
@@ -104,7 +104,7 @@ export function CrossmintWalletBaseProvider({
                     chain: args.chain,
                     signer: args.signer,
                     options: {
-                        _handshakeParent: _getSignerConnection?.(),
+                        clientTEEConnection: clientTEEConnection?.(),
                         experimental_callbacks: {
                             onWalletCreationStart: _onWalletCreationStart ?? callbacks?.onWalletCreationStart,
                             onTransactionStart: _onTransactionStart ?? callbacks?.onTransactionStart,
@@ -143,9 +143,9 @@ export function CrossmintWalletBaseProvider({
             status: walletStatus,
             getOrCreateWallet,
             onAuthRequired,
-            _getSignerConnection,
+            clientTEEConnection,
         }),
-        [getOrCreateWallet, wallet, walletStatus, onAuthRequired, _getSignerConnection]
+        [getOrCreateWallet, wallet, walletStatus, onAuthRequired, clientTEEConnection]
     );
 
     return <CrossmintWalletBaseContext.Provider value={contextValue}>{children}</CrossmintWalletBaseContext.Provider>;
