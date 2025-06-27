@@ -82,7 +82,7 @@ Follow these steps to set up your project locally and get it running. This guide
 
 Before you begin, ensure you have the following installed:
 
--   Node.js (v20.12 or later)
+-   Node.js (v20.18.3 or later)
 -   npm (comes with Node.js)
 -   pnpm (`npm install -g pnpm`)
 
