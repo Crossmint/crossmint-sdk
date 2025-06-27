@@ -33,7 +33,6 @@ export type EmailSignerConfig = {
         verifyOtp: (otp: string) => Promise<void>,
         reject: () => void
     ) => Promise<void>;
-    _handshakeParent?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
 };
 
 export type ExternalWalletSignerConfigForChain<C extends Chain> = C extends SolanaChain
@@ -57,7 +56,7 @@ export type PasskeySignerConfig = {
 export type EmailInternalSignerConfig = EmailSignerConfig & {
     signerAddress: string;
     crossmint: Crossmint;
-    _handshakeParent?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
+    clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
 };
 
 export type PasskeyInternalSignerConfig = PasskeySignerConfig & {
@@ -93,7 +92,7 @@ export type PasskeySignResult = {
 
 export type SignerConfigForChain<C extends Chain> = C extends SolanaChain
     ? EmailSignerConfig | BaseSignerConfig<C>
-    : PasskeySignerConfig | BaseSignerConfig<C>;
+    : EmailSignerConfig | PasskeySignerConfig | BaseSignerConfig<C>;
 
 ////////////////////////////////////////////////////////////
 // Signer base types

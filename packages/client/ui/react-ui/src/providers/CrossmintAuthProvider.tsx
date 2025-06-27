@@ -13,12 +13,14 @@ function CrossmintAuthSync({ children }: { children: ReactNode }) {
         if (jwt == null && experimental_customAuth?.jwt != null) {
             experimental_setCustomAuth(undefined);
         }
-        if ((experimental_externalWalletSigner != null || user?.email != null) && jwt != null) {
+        if (experimental_externalWalletSigner != null || user?.email != null) {
             experimental_setCustomAuth({
                 jwt,
                 email: user?.email,
                 externalWalletSigner: experimental_externalWalletSigner,
             });
+        } else {
+            experimental_setCustomAuth({ jwt });
         }
     }, [experimental_externalWalletSigner, jwt, user]);
 

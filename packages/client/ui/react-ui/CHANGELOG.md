@@ -1,5 +1,44 @@
 # @crossmint/client-sdk-react-ui
 
+## 2.2.7
+
+### Patch Changes
+
+- Updated dependencies [daaf328]
+- Updated dependencies [6a342c4]
+- Updated dependencies [dabb284]
+  - @crossmint/wallets-sdk@0.10.7
+  - @crossmint/client-sdk-react-base@0.5.7
+  - @crossmint/common-sdk-base@0.8.2
+  - @crossmint/client-sdk-auth@1.2.17
+  - @crossmint/client-sdk-base@1.5.8
+  - @crossmint/common-sdk-auth@1.0.39
+
+## 2.2.6
+
+### Patch Changes
+
+- 2ab0922: Fixes generating wallet after Twitter login
+- 9b8220a: Improved readme
+- Updated dependencies [583757c]
+  - @crossmint/wallets-sdk@0.10.6
+  - @crossmint/client-sdk-react-base@0.5.6
+
+## 2.2.5
+
+### Patch Changes
+
+- Updated dependencies [38abd83]
+- Updated dependencies [38abd83]
+- Updated dependencies [ba8495c]
+  - @crossmint/wallets-sdk@0.10.5
+  - @crossmint/common-sdk-base@0.8.1
+  - @crossmint/client-signers@0.0.18
+  - @crossmint/client-sdk-react-base@0.5.5
+  - @crossmint/client-sdk-auth@1.2.16
+  - @crossmint/client-sdk-base@1.5.7
+  - @crossmint/common-sdk-auth@1.0.38
+
 ## 2.2.4
 
 ### Patch Changes

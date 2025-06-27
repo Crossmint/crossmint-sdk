@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-vue-ui",
-    "version": "1.1.52",
+    "version": "1.1.54",
     "type": "module",
     "exports": {
         ".": {

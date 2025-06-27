@@ -29,9 +29,13 @@ export const CrossmintWalletEmailSignerContext = createContext<CrossmintWalletEm
 export interface CrossmintWalletProviderProps {
     children: ReactNode;
     createOnLogin?: CreateOnLogin;
+    callbacks?: {
+        onWalletCreationStart?: () => Promise<void>;
+        onTransactionStart?: () => Promise<void>;
+    };
 }
 
-export function CrossmintWalletProvider({ children, createOnLogin }: CrossmintWalletProviderProps) {
+export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: CrossmintWalletProviderProps) {
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
     const { apiKey, appId } = crossmint;
     const parsedAPIKey = validateAPIKey(apiKey);
@@ -126,7 +130,7 @@ export function CrossmintWalletProvider({ children, createOnLogin }: CrossmintWa
     }, []);
 
     // Get the handshake parent for email signer
-    const _getEmailSignerIframe = () => {
+    const getClientTEEConnection = () => {
         if (webViewParentRef.current == null) {
             throw new Error("WebView not ready or handshake incomplete");
         }
@@ -159,7 +163,8 @@ export function CrossmintWalletProvider({ children, createOnLogin }: CrossmintWa
         <CrossmintWalletBaseProvider
             createOnLogin={createOnLogin}
             onAuthRequired={onAuthRequired}
-            _getEmailSignerIframe={_getEmailSignerIframe}
+            clientTEEConnection={getClientTEEConnection}
+            callbacks={callbacks}
         >
             <CrossmintWalletEmailSignerContext.Provider value={authContextValue}>
                 {children}

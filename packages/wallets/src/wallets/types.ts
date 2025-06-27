@@ -1,4 +1,6 @@
 import type { Keypair, VersionedTransaction } from "@solana/web3.js";
+import type { HandshakeParent } from "@crossmint/client-sdk-window";
+import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
 import type { CreateTransactionSuccessResponse } from "../api";
 import type { Chain, EVMSmartWalletChain } from "../chains/chains";
 import type { SignerConfigForChain } from "../signers/types";
@@ -33,6 +35,7 @@ export type Callbacks = {
 
 export type WalletOptions = {
     experimental_callbacks?: Callbacks;
+    clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
 };
 
 export type WalletArgsFor<C extends Chain> = {
