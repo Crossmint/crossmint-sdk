@@ -78,7 +78,7 @@ export class Wallet<C extends Chain> {
      * Get the wallet balances - always includes USDC and native token (ETH/SOL)
      * @param {string[]} tokens - Additional tokens to request (optional: native token and usdc are always included)
      * @param {Chain[]} chains - The chains (optional)
-     * @returns {Promise<Balances>} The balances structured as { nativeToken, usdc, tokens }
+     * @returns {Promise<Balances>} The balances returns nativeToken, usdc, tokens
      * @throws {Error} If the balances cannot be retrieved
      */
     public async balances(tokens?: string[], chains?: Chain[]): Promise<Balances> {

@@ -5,18 +5,11 @@ import type { Chain } from "../chains/chains";
 import type { InternalSignerConfig, SignerConfigForChain, ExternalWalletInternalSignerConfig } from "../signers/types";
 import { Wallet } from "./wallet";
 import { assembleSigner } from "../signers";
-import type { WalletOptions } from "./types";
+import type { WalletArgsFor, WalletOptions } from "./types";
 import { deepCompare } from "@/utils/signer-validation";
 import { EvmEmailSigner } from "@/signers/email/evm-email-signer";
 import { SolanaEmailSigner } from "@/signers/email/solana-email-signer";
 import { isEVMBlockchain } from "@crossmint/common-sdk-base";
-
-export type WalletArgsFor<C extends Chain> = {
-    chain: C;
-    signer: SignerConfigForChain<C>;
-    owner?: string;
-    options?: WalletOptions;
-};
 
 export class WalletFactory {
     constructor(private readonly apiClient: ApiClient) {}
