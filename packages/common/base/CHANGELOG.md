@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.8.2
+
+### Patch Changes
+
+- dabb284: Fix createOnLogin wallet types based on chain
+
 ## 0.8.1
 
 ### Patch Changes
