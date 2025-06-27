@@ -1,5 +1,16 @@
 # @crossmint/wallets-sdk
 
+## 0.10.7
+
+### Patch Changes
+
+- daaf328: Add EVM signing
+- 6a342c4: Move \_handshakeParent from signer to options config and rename to clientTEEConnection
+- dabb284: Fix createOnLogin wallet types based on chain
+- Updated dependencies [dabb284]
+  - @crossmint/common-sdk-base@0.8.2
+  - @crossmint/common-sdk-auth@1.0.39
+
 ## 0.10.6
 
 ### Patch Changes
