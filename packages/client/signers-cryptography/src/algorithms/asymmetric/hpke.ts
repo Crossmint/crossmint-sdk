@@ -11,9 +11,7 @@ export class HPKE {
         recipientPublicKey: CryptoKey,
         senderKeyPair: CryptoKeyPair
     ): Promise<EncryptionResult<ArrayBuffer>> {
-        const serializedPublicKey = await this.hpkeSuite.kem.serializePublicKey(
-            senderKeyPair.publicKey
-        );
+        const serializedPublicKey = await this.hpkeSuite.kem.serializePublicKey(senderKeyPair.publicKey);
         return this.encryptRaw(
             this.serialize({
                 data,
@@ -25,10 +23,7 @@ export class HPKE {
         );
     }
 
-    async encryptRaw(
-        data: ArrayBuffer,
-        recipientPublicKey: CryptoKey
-    ): Promise<EncryptionResult<ArrayBuffer>> {
+    async encryptRaw(data: ArrayBuffer, recipientPublicKey: CryptoKey): Promise<EncryptionResult<ArrayBuffer>> {
         try {
             const senderContext = await this.hpkeSuite.createSenderContext({
                 recipientPublicKey,
@@ -50,11 +45,7 @@ export class HPKE {
         recipientPublicKey: CryptoKey,
         senderKeyPair: CryptoKeyPair
     ): Promise<EncryptionResult<string>> {
-        const { ciphertext, encapsulatedKey } = await this.encrypt(
-            data,
-            recipientPublicKey,
-            senderKeyPair
-        );
+        const { ciphertext, encapsulatedKey } = await this.encrypt(data, recipientPublicKey, senderKeyPair);
 
         return {
             ciphertext: this.bufferToBase64(ciphertext),
@@ -75,9 +66,7 @@ export class HPKE {
                 senderPublicKey,
             });
 
-            const plaintext = await recipient.open(
-                this.bufferOrStringToBuffer(ciphertextInput)
-            );
+            const plaintext = await recipient.open(this.bufferOrStringToBuffer(ciphertextInput));
             return this.deserialize<T>(plaintext);
         } catch (error) {
             console.error(`[HPKE] Decryption failed: ${error}`);

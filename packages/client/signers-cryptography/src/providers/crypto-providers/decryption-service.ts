@@ -13,28 +13,17 @@ export class DecryptionService {
     }
 
     // HPKE operations
-    async decryptAsymmetric<
-        T extends EncryptablePayload,
-        U extends string | ArrayBuffer
-    >(
+    async decryptAsymmetric<T extends EncryptablePayload, U extends string | ArrayBuffer>(
         ciphertextInput: U,
         encapsulatedKeyInput: U,
         recipientKeyPair: CryptoKeyPair,
         senderPublicKey?: CryptoKey
     ): Promise<T> {
-        return this.hpke.decrypt(
-            ciphertextInput,
-            encapsulatedKeyInput,
-            recipientKeyPair,
-            senderPublicKey
-        );
+        return this.hpke.decrypt(ciphertextInput, encapsulatedKeyInput, recipientKeyPair, senderPublicKey);
     }
 
     // AES-GCM operations
-    async decryptSymmetric(
-        encryptedData: ArrayBuffer,
-        key: CryptoKey
-    ): Promise<ArrayBuffer> {
+    async decryptSymmetric(encryptedData: ArrayBuffer, key: CryptoKey): Promise<ArrayBuffer> {
         return this.aesGcm.decrypt(encryptedData, key);
     }
 

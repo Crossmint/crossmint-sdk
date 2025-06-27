@@ -30,10 +30,7 @@ export class EncryptionService {
     }
 
     // AES-GCM operations
-    async encryptSymmetric(
-        data: ArrayBuffer,
-        key: CryptoKey
-    ): Promise<ArrayBuffer> {
+    async encryptSymmetric(data: ArrayBuffer, key: CryptoKey): Promise<ArrayBuffer> {
         return this.aesGcm.encrypt(data, key);
     }
 

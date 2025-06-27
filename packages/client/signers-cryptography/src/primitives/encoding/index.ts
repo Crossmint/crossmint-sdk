@@ -7,10 +7,7 @@ export * from "./base64";
 export * from "./base58";
 export * from "./hex";
 
-export function encodeBytes(
-    bytes: Uint8Array,
-    encoding: EncodingFormat
-): string {
+export function encodeBytes(bytes: Uint8Array, encoding: EncodingFormat): string {
     switch (encoding) {
         case "base58":
             return encodeBase58(bytes);
@@ -23,10 +20,7 @@ export function encodeBytes(
     }
 }
 
-export function decodeBytes(
-    encoded: string,
-    encoding: EncodingFormat
-): Uint8Array {
+export function decodeBytes(encoded: string, encoding: EncodingFormat): Uint8Array {
     switch (encoding) {
         case "base58":
             return decodeBase58(encoded);

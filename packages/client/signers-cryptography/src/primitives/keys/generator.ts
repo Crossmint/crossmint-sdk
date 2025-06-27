@@ -5,8 +5,5 @@ export async function generateECDHKeyPair(): Promise<CryptoKeyPair> {
 }
 
 export async function generateAESKey(): Promise<CryptoKey> {
-    return crypto.subtle.generateKey(AES256_KEY_SPEC, true, [
-        "encrypt",
-        "decrypt",
-    ]);
+    return crypto.subtle.generateKey(AES256_KEY_SPEC, true, ["encrypt", "decrypt"]);
 }

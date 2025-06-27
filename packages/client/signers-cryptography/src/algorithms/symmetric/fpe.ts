@@ -50,9 +50,7 @@ export class FPE {
      * @throws {Error} When AES256 encryption key has not been initialized
      * @throws {Error} When key export operation fails
      */
-    private async exportSymmetricEncryptionKey(
-        key: CryptoKey
-    ): Promise<Uint8Array> {
+    private async exportSymmetricEncryptionKey(key: CryptoKey): Promise<Uint8Array> {
         return new Uint8Array(await crypto.subtle.exportKey("raw", key));
     }
 }

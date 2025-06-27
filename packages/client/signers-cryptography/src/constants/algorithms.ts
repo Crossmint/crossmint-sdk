@@ -1,9 +1,4 @@
-import {
-    CipherSuite,
-    Aes256Gcm,
-    DhkemP256HkdfSha256,
-    HkdfSha256,
-} from "@hpke/core";
+import { CipherSuite, Aes256Gcm, DhkemP256HkdfSha256, HkdfSha256 } from "@hpke/core";
 
 export const createHpkeSuite = () => {
     return new CipherSuite({

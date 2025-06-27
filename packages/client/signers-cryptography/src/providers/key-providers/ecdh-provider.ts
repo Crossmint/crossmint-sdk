@@ -1,9 +1,5 @@
 import { deriveSymmetricKey } from "../../primitives";
-import type {
-    KeyPairProvider,
-    PublicKeyProvider,
-    SymmetricKeyProvider,
-} from "./interfaces";
+import type { KeyPairProvider, PublicKeyProvider, SymmetricKeyProvider } from "./interfaces";
 
 export class ECDHKeyProvider implements SymmetricKeyProvider {
     constructor(

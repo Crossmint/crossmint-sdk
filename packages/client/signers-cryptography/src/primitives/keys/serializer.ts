@@ -2,10 +2,7 @@ import { encodeBytes, decodeBytes } from "../encoding";
 import type { EncodingFormat } from "../../types";
 
 export class PublicKeySerializer {
-    static async serialize(
-        publicKey: CryptoKey,
-        encoding: EncodingFormat = "base64"
-    ): Promise<string> {
+    static async serialize(publicKey: CryptoKey, encoding: EncodingFormat = "base64"): Promise<string> {
         const keyBytes = await crypto.subtle.exportKey("raw", publicKey);
         return encodeBytes(new Uint8Array(keyBytes), encoding);
     }
