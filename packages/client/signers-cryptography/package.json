@@ -16,7 +16,8 @@
     "files": ["dist", "LICENSE"],
     "scripts": {
         "build": "tsup",
-        "dev": "tsup --watch"
+        "dev": "tsup --watch",
+        "test:vitest": "vitest run"
     },
     "dependencies": {
         "@hpke/core": "^1.7.2",

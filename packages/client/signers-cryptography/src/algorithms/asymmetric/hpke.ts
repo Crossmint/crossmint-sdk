@@ -78,7 +78,7 @@ export class HPKE {
             const plaintext = await recipient.open(
                 this.bufferOrStringToBuffer(ciphertextInput)
             );
-            return this.deserialize<{ data: T }>(plaintext).data;
+            return this.deserialize<T>(plaintext);
         } catch (error) {
             console.error(`[HPKE] Decryption failed: ${error}`);
             throw new Error("Failed to decrypt data");
