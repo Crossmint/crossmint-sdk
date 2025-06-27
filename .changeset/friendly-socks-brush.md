@@ -2,4 +2,4 @@
 "@crossmint/wallets-sdk": patch
 ---
 
-Cleanup exports
+Cleanup exports and update readme
