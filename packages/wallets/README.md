@@ -60,6 +60,8 @@ console.log(transaction.explorerLink);
 
 ```ts
 const activity = await wallet.experimental_activity();
+
+console.log(activity.events);
 ```
 
 ### Delegated signers
@@ -76,16 +78,17 @@ console.log(signers);
 ### Create custom transactions
 
 ```ts
-
 import { SolanaWallet, EVMWallet } from "@crossmint/wallets-sdk";
 
 // Solana
 const solanaWallet = SolanaWallet.from(wallet);
+const solTx = await solanaWallet.sendTransaction({ transaction: "<serialized-or-non-serialized-transaction>" });
+
+console.log(solTx.explorerLink);
+
 // EVM
 const evmWallet = EVMWallet.from(wallet);
+const evmTx = await evmWallet.sendTransaction({ transaction: "<serialized-or-non-serialized-transaction>" });
 
-// Send a transaction to the Solana network
-const solTx = await solanaWallet.sendTransaction({ transaction: "<transaction-object>" }); 
-// Send a transaction to the EVM network
-const evmTx = await evmWallet.sendTransaction({ transaction: "<transaction-object>" }); 
+console.log(evmTx.explorerLink);
 ```
