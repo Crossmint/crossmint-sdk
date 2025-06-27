@@ -103,6 +103,7 @@ export function CrossmintWalletBaseProvider({
                 const wallet = await wallets.getOrCreateWallet<C>({
                     chain: args.chain,
                     signer: args.signer,
+                    owner: args.owner,
                     options: {
                         clientTEEConnection: clientTEEConnection?.(),
                         experimental_callbacks: {
