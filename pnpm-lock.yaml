@@ -1323,9 +1323,6 @@ importers:
       '@crossmint/client-signers':
         specifier: workspace:*
         version: link:../client/signers
-      '@crossmint/common-sdk-auth':
-        specifier: workspace:*
-        version: link:../common/auth
       '@crossmint/common-sdk-base':
         specifier: workspace:*
         version: link:../common/base
@@ -1335,6 +1332,9 @@ importers:
       '@solana/web3.js':
         specifier: 1.98.0
         version: 1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10)
+      abitype:
+        specifier: 1.0.8
+        version: 1.0.8(typescript@5.8.2)(zod@3.22.4)
       bs58:
         specifier: 5.0.0
         version: 5.0.0

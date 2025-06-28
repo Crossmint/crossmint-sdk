@@ -1,18 +1,29 @@
 import type { Keypair, VersionedTransaction } from "@solana/web3.js";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
+import type { Abi } from "abitype";
 import type { CreateTransactionSuccessResponse } from "../api";
-import type { EVMSmartWalletChain } from "../chains/chains";
 
 export type { Activity } from "../api/types";
 
-export interface EVMTransactionInput {
-    to: string;
-    chain: EVMSmartWalletChain;
-    data?: string;
-    value?: bigint;
-}
+export type EVMTransactionInput =
+    | {
+          to: string;
+          functionName?: string;
+          args?: unknown[];
+          value?: bigint;
+          abi?: Abi;
+          data?: `0x${string}`;
+      }
+    | { transaction: string };
 
+export type FormattedEVMTransaction =
+    | {
+          to: string;
+          value: string;
+          data: string;
+      }
+    | { transaction: string };
 export interface SolanaTransactionInput {
     transaction: VersionedTransaction;
     additionalSigners?: Keypair[];
@@ -62,4 +73,8 @@ export type UserLocator =
 export type Transaction = {
     hash: string;
     explorerLink: string;
+};
+
+export type PreparedTransaction = {
+    txId: string;
 };
