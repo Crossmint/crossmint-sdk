@@ -446,31 +446,31 @@ export class Wallet<C extends Chain> {
 
         return {
             hash: transactionHash,
-            explorerLink: toTxExplorerLink(transactionResponse, this.apiClient.crossmint.apiKey),
+            explorerLink: this.toTxExplorerLink(transactionResponse),
         };
     }
 
     protected async sleep(ms: number) {
         return new Promise((resolve) => setTimeout(resolve, ms));
     }
-}
 
-function toTxExplorerLink(transactionResponse: GetTransactionSuccessResponse, apiKey: string) {
-    let explorerLink: string | undefined;
-    if (transactionResponse.walletType === "evm-smart-wallet") {
-        explorerLink = transactionResponse.onChain.explorerLink;
-    } else if (transactionResponse.walletType === "solana-smart-wallet") {
-        const queryParams = new URLSearchParams();
-        const env = getEnvironmentForKey(apiKey);
-        if (env !== "production") {
-            queryParams.append("cluster", "devnet");
+    protected toTxExplorerLink(transactionResponse: GetTransactionSuccessResponse) {
+        let explorerLink: string | undefined;
+        if (transactionResponse.walletType === "evm-smart-wallet") {
+            explorerLink = transactionResponse.onChain.explorerLink;
+        } else if (transactionResponse.walletType === "solana-smart-wallet") {
+            const queryParams = new URLSearchParams();
+            const env = getEnvironmentForKey(this.apiClient.crossmint.apiKey);
+            if (env !== "production") {
+                queryParams.append("cluster", "devnet");
+            }
+            explorerLink = `https://explorer.solana.com/tx/${transactionResponse.onChain.txId}?${queryParams.toString()}`;
         }
-        explorerLink = `https://explorer.solana.com/tx/${transactionResponse.onChain.txId}?${queryParams.toString()}`;
+        if (explorerLink == null || explorerLink === "") {
+            explorerLink = "Explorer link not available";
+        }
+        return explorerLink;
     }
-    if (explorerLink == null || explorerLink === "") {
-        explorerLink = "Explorer link not available";
-    }
-    return explorerLink;
 }
 
 function toRecipientLocator(to: string | UserLocator): string {

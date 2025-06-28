@@ -1,11 +1,19 @@
-import { createPublicClient, type TypedDataDomain, http } from "viem";
-import type { TypedData, TypedDataDefinition, HttpTransport } from "viem";
-import type { EVMTransactionInput, Transaction } from "./types";
+import {
+    createPublicClient,
+    encodeFunctionData,
+    http,
+    type TypedDataDomain,
+    type TypedData,
+    type TypedDataDefinition,
+    type HttpTransport,
+} from "viem";
+import { isValidEvmAddress } from "@crossmint/common-sdk-base";
+import type { EVMTransactionInput, FormattedEVMTransaction, PreparedTransaction, Transaction } from "./types";
 import { type EVMSmartWalletChain, toViemChain } from "../chains/chains";
 import { Wallet } from "./wallet";
 import type { Chain, EVMChain } from "../chains/chains";
 import { InvalidTypedDataError, SignatureNotCreatedError, TransactionNotCreatedError } from "../utils/errors";
-import { isValidEvmAddress } from "@crossmint/common-sdk-base";
+import type { CreateTransactionSuccessResponse } from "@/api";
 
 export class EVMWallet extends Wallet<EVMChain> {
     constructor(wallet: Wallet<EVMChain>) {
@@ -30,24 +38,16 @@ export class EVMWallet extends Wallet<EVMChain> {
     }
 
     public async sendTransaction(params: EVMTransactionInput): Promise<Transaction> {
-        const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
-            params: {
-                signer: this.signer.locator(),
-                chain: this.chain,
-                calls: [
-                    {
-                        to: params.to,
-                        value: params.value ? params.value.toString() : "0",
-                        data: params.data ?? "0x",
-                    },
-                ],
-            },
-        });
-        if ("error" in transactionCreationResponse) {
-            throw new TransactionNotCreatedError(JSON.stringify(transactionCreationResponse));
-        }
+        const preparedTransaction = await this.prepareTransaction(params);
+        return await this.approveAndWait(preparedTransaction.txId);
+    }
 
-        return await this.approveAndWait(transactionCreationResponse.id);
+    public async prepareTransaction(params: EVMTransactionInput): Promise<PreparedTransaction> {
+        const builtTransaction = this.buildTransaction(params);
+        const createdTransaction = await this.createTransaction(builtTransaction);
+        return {
+            txId: createdTransaction.id,
+        };
     }
 
     public async signMessage(message: string): Promise<string> {
@@ -122,5 +122,48 @@ export class EVMWallet extends Wallet<EVMChain> {
             transport: params?.transport ?? http(),
             chain: toViemChain(this.chain),
         });
+    }
+
+    private async createTransaction(transaction: FormattedEVMTransaction): Promise<CreateTransactionSuccessResponse> {
+        const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
+            params: {
+                signer: this.signer.locator(),
+                chain: this.chain,
+                calls: [transaction],
+            },
+        });
+        if ("error" in transactionCreationResponse) {
+            throw new TransactionNotCreatedError(JSON.stringify(transactionCreationResponse));
+        }
+
+        return transactionCreationResponse;
+    }
+
+    private buildTransaction(params: EVMTransactionInput): FormattedEVMTransaction {
+        if ("transaction" in params) {
+            return { transaction: params.transaction };
+        }
+
+        if (params.abi == null) {
+            return {
+                to: params.to,
+                value: params.value?.toString() ?? "0",
+                data: "0x",
+            };
+        }
+
+        if (!params.functionName) {
+            throw new Error("Function name is required");
+        }
+
+        return {
+            to: params.to,
+            value: params.value?.toString() ?? "0",
+            data: encodeFunctionData({
+                abi: params.abi,
+                functionName: params.functionName,
+                args: params.args,
+            }),
+        };
     }
 }

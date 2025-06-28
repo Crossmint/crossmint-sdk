@@ -1,10 +1,11 @@
 import bs58 from "bs58";
+import { isValidSolanaAddress } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain } from "../chains/chains";
-import type { SolanaTransactionInput, Transaction } from "./types";
+import type { PreparedTransaction, SolanaTransactionInput, Transaction } from "./types";
 import { Wallet } from "./wallet";
 import { TransactionNotCreatedError } from "../utils/errors";
 import { SolanaExternalWalletSigner } from "@/signers/solana-external-wallet";
-import { isValidSolanaAddress } from "@crossmint/common-sdk-base";
+import type { CreateTransactionSuccessResponse } from "@/api";
 
 export class SolanaWallet extends Wallet<SolanaChain> {
     constructor(wallet: Wallet<SolanaChain>) {
@@ -28,18 +29,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
     }
 
     public async sendTransaction({ transaction, additionalSigners }: SolanaTransactionInput): Promise<Transaction> {
-        const transactionParams = {
-            transaction: bs58.encode(transaction.serialize()),
-        };
-
-        const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
-            params: transactionParams,
-        });
-
-        if (transactionCreationResponse.error) {
-            throw new TransactionNotCreatedError(JSON.stringify(transactionCreationResponse));
-        }
-
+        const preparedTransaction = await this.prepareTransaction({ transaction });
         const _additionalSigners = additionalSigners?.map(
             (signer) =>
                 new SolanaExternalWalletSigner({
@@ -52,6 +42,27 @@ export class SolanaWallet extends Wallet<SolanaChain> {
                 })
         );
 
-        return await this.approveAndWait(transactionCreationResponse.id, _additionalSigners);
+        return await this.approveAndWait(preparedTransaction.txId, _additionalSigners);
+    }
+
+    public async prepareTransaction({ transaction }: SolanaTransactionInput): Promise<PreparedTransaction> {
+        const createdTransaction = await this.createTransaction({ transaction });
+        return {
+            txId: createdTransaction.id,
+        };
+    }
+
+    private async createTransaction({
+        transaction,
+    }: SolanaTransactionInput): Promise<CreateTransactionSuccessResponse> {
+        const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
+            params: { transaction: bs58.encode(transaction.serialize()) },
+        });
+
+        if (transactionCreationResponse.error) {
+            throw new TransactionNotCreatedError(JSON.stringify(transactionCreationResponse));
+        }
+
+        return transactionCreationResponse;
     }
 }
