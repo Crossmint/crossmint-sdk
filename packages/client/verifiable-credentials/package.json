@@ -28,15 +28,15 @@
         "@ethersproject/providers": "5.7.2",
         "@ethersproject/wallet": "5.7.0",
         "@lit-protocol/auth-helpers": "5.1.0",
-        "@lit-protocol/lit-node-client": "5.1.0",
+        "@lit-protocol/lit-node-client": "6.11.5",
         "@lit-protocol/types": "5.1.0",
         "date-fns": "2.30.0",
         "ethers": "5.7.2"
     },
     "devDependencies": {
+        "ts-node": "10.9.2",
         "typedoc": "0.26.5",
         "typedoc-plugin-frontmatter": "1.0.0",
-        "typedoc-plugin-markdown": "4.2.3",
-        "ts-node": "10.9.2"
+        "typedoc-plugin-markdown": "4.2.3"
     }
 }
