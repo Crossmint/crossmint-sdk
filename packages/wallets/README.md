@@ -32,7 +32,6 @@ const wallet = await crossmintWallets.getOrCreateWallet({
     signer: {
         type: "email",
         email: "<your-email>",
-        userId: "<your-user-id>", // only required for server-side calls
     },
 });
 
