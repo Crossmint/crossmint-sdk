@@ -49,7 +49,8 @@ export class Wallet<C extends Chain> {
     #options?: WalletOptions;
     #apiClient: ApiClient;
 
-    constructor({ chain, address, owner, signer, options }: WalletContructorType<C>, apiClient: ApiClient) {
+    constructor(args: WalletContructorType<C>, apiClient: ApiClient) {
+        const { chain, address, owner, signer, options } = args;
         this.#apiClient = apiClient;
         this.chain = chain;
         this.address = address;
