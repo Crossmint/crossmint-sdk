@@ -1,7 +1,7 @@
 import bs58 from "bs58";
 import { isValidSolanaAddress } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain } from "../chains/chains";
-import type { PreparedTransaction, SolanaTransactionInput, Transaction } from "./types";
+import type { SolanaTransactionInput, Transaction, TransactionInputOptions } from "./types";
 import { Wallet } from "./wallet";
 import { TransactionNotCreatedError } from "../utils/errors";
 import { SolanaExternalWalletSigner } from "@/signers/solana-external-wallet";
@@ -28,9 +28,20 @@ export class SolanaWallet extends Wallet<SolanaChain> {
         return new SolanaWallet(wallet as Wallet<SolanaChain>);
     }
 
-    public async sendTransaction({ transaction, additionalSigners }: SolanaTransactionInput): Promise<Transaction> {
-        const preparedTransaction = await this.prepareTransaction({ transaction });
-        const _additionalSigners = additionalSigners?.map(
+    public async sendTransaction<T extends TransactionInputOptions | undefined = undefined>(
+        params: SolanaTransactionInput & { options?: T }
+    ): Promise<Transaction<T extends { experimental_prepareOnly: true } ? true : false>> {
+        const createdTransaction = await this.createTransaction(params);
+
+        if (params.options?.experimental_prepareOnly) {
+            return {
+                hash: undefined,
+                explorerLink: undefined,
+                transactionId: createdTransaction.id,
+            } as Transaction<T extends { experimental_prepareOnly: true } ? true : false>;
+        }
+
+        const _additionalSigners = params.additionalSigners?.map(
             (signer) =>
                 new SolanaExternalWalletSigner({
                     type: "external-wallet",
@@ -42,14 +53,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
                 })
         );
 
-        return await this.approveAndWait(preparedTransaction.txId, _additionalSigners);
-    }
-
-    public async prepareTransaction({ transaction }: SolanaTransactionInput): Promise<PreparedTransaction> {
-        const createdTransaction = await this.createTransaction({ transaction });
-        return {
-            txId: createdTransaction.id,
-        };
+        return await this.approveAndWait(createdTransaction.id, _additionalSigners);
     }
 
     private async createTransaction({

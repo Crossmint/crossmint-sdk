@@ -6,16 +6,32 @@ import type { CreateTransactionSuccessResponse } from "../api";
 
 export type { Activity } from "../api/types";
 
-export type EVMTransactionInput =
-    | {
-          to: string;
-          functionName?: string;
-          args?: unknown[];
-          value?: bigint;
-          abi?: Abi;
-          data?: `0x${string}`;
-      }
-    | { transaction: string };
+export type TransactionInputOptions = {
+    experimental_prepareOnly?: boolean;
+};
+
+type EVMTransactionInputBase = {
+    options?: TransactionInputOptions;
+};
+
+export type EVMTransactionInput = EVMTransactionInputBase &
+    (
+        | {
+              to: string;
+              functionName?: string;
+              args?: unknown[];
+              value?: bigint;
+              abi?: Abi;
+              data?: `0x${string}`;
+          }
+        | { transaction: string }
+    );
+
+export interface SolanaTransactionInput {
+    transaction: VersionedTransaction;
+    additionalSigners?: Keypair[];
+    options?: TransactionInputOptions;
+}
 
 export type FormattedEVMTransaction =
     | {
@@ -24,10 +40,6 @@ export type FormattedEVMTransaction =
           data: string;
       }
     | { transaction: string };
-export interface SolanaTransactionInput {
-    transaction: VersionedTransaction;
-    additionalSigners?: Keypair[];
-}
 
 export type DelegatedSigner = {
     signer: string;
@@ -70,11 +82,14 @@ export type UserLocator =
     | { phone: string }
     | { userId: string };
 
-export type Transaction = {
-    hash: string;
-    explorerLink: string;
-};
-
-export type PreparedTransaction = {
-    txId: string;
-};
+export type Transaction<TPrepareOnly extends boolean = false> = TPrepareOnly extends true
+    ? {
+          hash?: string;
+          explorerLink?: string;
+          transactionId: string;
+      }
+    : {
+          hash: string;
+          explorerLink: string;
+          transactionId: string;
+      };

@@ -8,7 +8,7 @@ import {
     type HttpTransport,
 } from "viem";
 import { isValidEvmAddress } from "@crossmint/common-sdk-base";
-import type { EVMTransactionInput, FormattedEVMTransaction, PreparedTransaction, Transaction } from "./types";
+import type { EVMTransactionInput, FormattedEVMTransaction, Transaction } from "./types";
 import { type EVMSmartWalletChain, toViemChain } from "../chains/chains";
 import { Wallet } from "./wallet";
 import type { Chain, EVMChain } from "../chains/chains";
@@ -37,17 +37,21 @@ export class EVMWallet extends Wallet<EVMChain> {
         return new EVMWallet(wallet as Wallet<EVMChain>);
     }
 
-    public async sendTransaction(params: EVMTransactionInput): Promise<Transaction> {
-        const preparedTransaction = await this.prepareTransaction(params);
-        return await this.approveAndWait(preparedTransaction.txId);
-    }
-
-    public async prepareTransaction(params: EVMTransactionInput): Promise<PreparedTransaction> {
+    public async sendTransaction<T extends EVMTransactionInput>(
+        params: T
+    ): Promise<Transaction<T["options"] extends { experimental_prepareOnly: true } ? true : false>> {
         const builtTransaction = this.buildTransaction(params);
         const createdTransaction = await this.createTransaction(builtTransaction);
-        return {
-            txId: createdTransaction.id,
-        };
+
+        if (params.options?.experimental_prepareOnly) {
+            return {
+                hash: undefined,
+                explorerLink: undefined,
+                transactionId: createdTransaction.id,
+            } as Transaction<T["options"] extends { experimental_prepareOnly: true } ? true : false>;
+        }
+
+        return await this.approveAndWait(createdTransaction.id);
     }
 
     public async signMessage(message: string): Promise<string> {
@@ -148,7 +152,7 @@ export class EVMWallet extends Wallet<EVMChain> {
             return {
                 to: params.to,
                 value: params.value?.toString() ?? "0",
-                data: "0x",
+                data: params.data ?? "0x",
             };
         }
 
