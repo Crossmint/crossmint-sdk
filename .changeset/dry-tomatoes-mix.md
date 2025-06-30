@@ -2,4 +2,4 @@
 "@crossmint/wallets-sdk": patch
 ---
 
-Add prepareTransaction method on both EVMWallet and SolanaWallet
+Expose new param options.experimental_prepareOnly on EVM/SOL wallet sendTransaction and send methods
