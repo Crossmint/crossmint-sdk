@@ -15,7 +15,7 @@
         "@dynamic-labs/solana": "4.12.1",
         "@privy-io/react-auth": "2.13.0",
         "@solana/spl-token": "0.4.13",
-        "@solana/web3.js": "1.98.0",
+        "@solana/web3.js": "1.98.2",
         "clsx": "2.1.1",
         "next": "15.3.1",
         "react": "^18",

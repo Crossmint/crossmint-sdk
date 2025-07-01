@@ -23,7 +23,7 @@
         "@react-navigation/bottom-tabs": "^7.2.0",
         "@react-navigation/native": "^7.0.14",
         "@solana/spl-memo": "0.2.5",
-        "@solana/web3.js": "1.98.0",
+        "@solana/web3.js": "1.98.2",
         "bs58": "^5.0.0",
         "buffer": "^6.0.3",
         "expo": "~52.0.46",

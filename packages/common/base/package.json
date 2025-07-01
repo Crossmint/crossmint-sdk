@@ -20,7 +20,7 @@
         "test:vitest": "vitest run"
     },
     "dependencies": {
-        "@solana/web3.js": "1.98.0",
+        "@solana/web3.js": "1.98.2",
         "bs58": "5.0.0",
         "tweetnacl": "1.0.3",
         "viem": "2.23.6"
