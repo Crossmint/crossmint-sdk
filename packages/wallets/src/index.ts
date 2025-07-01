@@ -7,3 +7,4 @@ export * from "./wallets/evm";
 export * from "./wallets/types";
 export * from "./chains/chains";
 export * from "./signers/types";
+export { ApiClient as WalletsApiClient } from "./api";
