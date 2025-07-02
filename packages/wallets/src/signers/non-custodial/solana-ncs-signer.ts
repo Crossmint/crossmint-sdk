@@ -1,12 +1,12 @@
 import { VersionedTransaction } from "@solana/web3.js";
 import base58 from "bs58";
-import type { EmailInternalSignerConfig } from "../types";
-import { EmailSignerApiClient } from "./email-signer-api-client";
-import { EmailSigner, DEFAULT_EVENT_OPTIONS } from "./email-signer";
+import type { EmailInternalSignerConfig, NonCustodialSignerType, PhoneInternalSignerConfig } from "../types";
+import { NonCustodialSignerApiClient } from "./ncs-signer-api-client";
+import { NonCustodialSigner, DEFAULT_EVENT_OPTIONS } from "./ncs-signer";
 import type { Crossmint } from "@crossmint/common-sdk-base";
 
-export class SolanaEmailSigner extends EmailSigner {
-    constructor(config: EmailInternalSignerConfig) {
+export class SolanaNcsSigner extends NonCustodialSigner {
+    constructor(config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
         super(config);
     }
 
@@ -50,18 +50,13 @@ export class SolanaEmailSigner extends EmailSigner {
         if (res?.signature == null) {
             throw new Error("Failed to sign transaction");
         }
-        SolanaEmailSigner.verifyPublicKeyFormat(res.publicKey);
+        SolanaNcsSigner.verifyPublicKeyFormat(res.publicKey);
         return { signature: res.signature.bytes };
     }
 
-    static async pregenerateSigner(email: string, crossmint: Crossmint): Promise<string> {
-        const emailToUse = email ?? crossmint.experimental_customAuth?.email;
-        if (emailToUse == null) {
-            throw new Error("Email is required to pregenerate a signer");
-        }
-
+    static async pregenerateSigner(type: NonCustodialSignerType, value: string, crossmint: Crossmint): Promise<string> {
         try {
-            const response = await new EmailSignerApiClient(crossmint).pregenerateSigner(emailToUse, "ed25519");
+            const response = await new NonCustodialSignerApiClient(crossmint).pregenerateSigner(type, value, "ed25519");
             const publicKey = response.publicKey;
             this.verifyPublicKeyFormat(publicKey);
             return publicKey.bytes;

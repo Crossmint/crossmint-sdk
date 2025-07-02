@@ -2,13 +2,18 @@ import { WebAuthnP256 } from "ox";
 import type { ApiClient, GetWalletSuccessResponse } from "../api";
 import { WalletCreationError, WalletNotAvailableError } from "../utils/errors";
 import type { Chain } from "../chains/chains";
-import type { InternalSignerConfig, SignerConfigForChain, ExternalWalletInternalSignerConfig } from "../signers/types";
+import type {
+    InternalSignerConfig,
+    SignerConfigForChain,
+    ExternalWalletInternalSignerConfig,
+    NonCustodialSignerType,
+} from "../signers/types";
 import { Wallet } from "./wallet";
 import { assembleSigner } from "../signers";
 import type { WalletOptions } from "./types";
 import { deepCompare } from "@/utils/signer-validation";
-import { EvmEmailSigner } from "@/signers/email/evm-email-signer";
-import { SolanaEmailSigner } from "@/signers/email/solana-email-signer";
+import { EvmNcsSigner } from "@/signers/non-custodial/evm-ncs-signer";
+import { SolanaNcsSigner } from "@/signers/non-custodial/solana-ncs-signer";
 import { isEVMBlockchain } from "@crossmint/common-sdk-base";
 
 export type WalletArgsFor<C extends Chain> = {
@@ -170,8 +175,29 @@ export class WalletFactory {
                 };
             }
 
-            default:
-                throw new Error("Invalid signer type");
+            case "phone": {
+                if (
+                    !(
+                        (walletResponse.type === "solana-smart-wallet" &&
+                            walletResponse.config.adminSigner.type === "solana-keypair") ||
+                        (walletResponse.type === "evm-smart-wallet" &&
+                            walletResponse.config.adminSigner.type === "evm-keypair")
+                    )
+                ) {
+                    throw new WalletCreationError("Wallet signer 'phone' has no address");
+                }
+
+                const address = walletResponse.config.adminSigner.address;
+                const phone = signer.phone;
+                return {
+                    type: "phone",
+                    phone,
+                    signerAddress: address,
+                    crossmint: this.apiClient.crossmint,
+                    onAuthRequired: signer.onAuthRequired,
+                    clientTEEConnection: options?.clientTEEConnection,
+                };
+            }
         }
     }
 
@@ -231,27 +257,43 @@ export class WalletFactory {
             };
         }
 
+        if (signer.type === "email" || signer.type === "phone") {
+            const { type, value } = this.getSignerTypeAndValue(signer);
+            if (chain === "solana") {
+                const ncsSignerAddress = await SolanaNcsSigner.pregenerateSigner(type, value, this.apiClient.crossmint);
+                return {
+                    type: "solana-keypair",
+                    address: ncsSignerAddress,
+                };
+            } else if (isEVMBlockchain(chain)) {
+                const ncsSignerAddress = await EvmNcsSigner.pregenerateSigner(type, value, this.apiClient.crossmint);
+                return {
+                    type: "evm-keypair",
+                    address: ncsSignerAddress,
+                };
+            }
+        }
+
+        throw new Error("Invalid signer type");
+    }
+
+    private getSignerTypeAndValue(signer: SignerConfigForChain<Chain>): {
+        type: NonCustodialSignerType;
+        value: string;
+    } {
         if (signer.type === "email") {
             const email = signer.email ?? this.apiClient.crossmint.experimental_customAuth?.email;
             if (email == null) {
                 throw new Error("Email is required to create a wallet with email signer");
             }
-
-            if (chain === "solana") {
-                const emailSignerAddress = await SolanaEmailSigner.pregenerateSigner(email, this.apiClient.crossmint);
-                return {
-                    type: "solana-keypair",
-                    address: emailSignerAddress,
-                };
-            } else if (isEVMBlockchain(chain)) {
-                const emailSignerAddress = await EvmEmailSigner.pregenerateSigner(email, this.apiClient.crossmint);
-                return {
-                    type: "evm-keypair",
-                    address: emailSignerAddress,
-                };
+            return { type: "email", value: email };
+        } else if (signer.type === "phone") {
+            const phone = signer.phone;
+            if (phone == null) {
+                throw new Error("Phone is required to create a wallet with phone signer");
             }
+            return { type: "phone", value: phone };
         }
-
         throw new Error("Invalid signer type");
     }
 

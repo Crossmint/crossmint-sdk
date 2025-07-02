@@ -1,10 +1,10 @@
-import type { BaseSignResult, EmailInternalSignerConfig, Signer } from "../types";
+import type { BaseSignResult, EmailInternalSignerConfig, PhoneInternalSignerConfig, Signer } from "../types";
 import { AuthRejectedError } from "../types";
-import { EmailIframeManager } from "./email-iframe-manager";
+import { NCSIframeManager } from "./ncs-iframe-manager";
 import { validateAPIKey } from "@crossmint/common-sdk-base";
 
-export abstract class EmailSigner implements Signer {
-    type = "email" as const;
+export abstract class NonCustodialSigner implements Signer {
+    public readonly type: "email" | "phone";
     private _needsAuth = true;
     private _authPromise: {
         promise: Promise<void>;
@@ -12,8 +12,9 @@ export abstract class EmailSigner implements Signer {
         reject: (error: Error) => void;
     } | null = null;
 
-    constructor(protected config: EmailInternalSignerConfig) {
+    constructor(protected config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
         this.initialize();
+        this.type = this.config.type;
     }
 
     abstract locator(): string;
@@ -26,7 +27,7 @@ export abstract class EmailSigner implements Signer {
             if (!parsedAPIKey.isValid) {
                 throw new Error("Invalid API key");
             }
-            const iframeManager = new EmailIframeManager({ environment: parsedAPIKey.environment });
+            const iframeManager = new NCSIframeManager({ environment: parsedAPIKey.environment });
             this.config.clientTEEConnection = await iframeManager.initialize();
         }
     }
@@ -67,7 +68,7 @@ export abstract class EmailSigner implements Signer {
             try {
                 await this.config.onAuthRequired(
                     this._needsAuth,
-                    () => this.sendEmailWithOtp(),
+                    () => this.sendMessageWithOtp(),
                     (otp) => this.verifyOtp(otp),
                     () => reject(new AuthRejectedError())
                 );
@@ -103,13 +104,13 @@ export abstract class EmailSigner implements Signer {
         return { promise, resolve: resolvePromise, reject: rejectPromise };
     }
 
-    private async sendEmailWithOtp() {
+    private async sendMessageWithOtp() {
         if (this.config.clientTEEConnection == null) {
             throw new Error("Handshake parent not initialized");
         }
 
         const handshakeParent = this.config.clientTEEConnection;
-        const authId = `email:${this.config.email}`;
+        const authId = this.getAuthId();
         const response = await handshakeParent.sendAction({
             event: "request:start-onboarding",
             responseEvent: "response:start-onboarding",
@@ -129,9 +130,18 @@ export abstract class EmailSigner implements Signer {
         }
 
         if (response?.status === "error") {
-            console.error("[sendEmailWithOtp] Failed to send OTP:", response);
+            console.error("[sendMessageWithOtp] Failed to send OTP:", response);
             this._authPromise?.reject(new Error(response.error || "Failed to initiate OTP process."));
         }
+    }
+
+    private getAuthId() {
+        console.log("this.config", this.config);
+        if (this.config.type === "email") {
+            return `email:${this.config.email}`;
+        }
+        console.log("this.config.phone", this.config.phone);
+        return `phone:${this.config.phone}`;
     }
 
     private async verifyOtp(encryptedOtp: string) {

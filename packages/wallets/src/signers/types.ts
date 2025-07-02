@@ -35,6 +35,19 @@ export type EmailSignerConfig = {
     ) => Promise<void>;
 };
 
+export type PhoneSignerConfig = {
+    type: "phone";
+    phone?: string;
+    onAuthRequired?: (
+        needsAuth: boolean,
+        sendOtp: () => Promise<void>,
+        verifyOtp: (otp: string) => Promise<void>,
+        reject: () => void
+    ) => Promise<void>;
+};
+
+export type NonCustodialSignerType = PhoneSignerConfig["type"] | EmailSignerConfig["type"];
+
 export type ExternalWalletSignerConfigForChain<C extends Chain> = C extends SolanaChain
     ? SolanaExternalWalletSignerConfig
     : EvmExternalWalletSignerConfig;
@@ -53,11 +66,15 @@ export type PasskeySignerConfig = {
 ////////////////////////////////////////////////////////////
 // Internal signer config
 ////////////////////////////////////////////////////////////
-export type EmailInternalSignerConfig = EmailSignerConfig & {
+type BaseInternalSignerConfig = {
     signerAddress: string;
     crossmint: Crossmint;
     clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
 };
+
+export type EmailInternalSignerConfig = EmailSignerConfig & BaseInternalSignerConfig;
+
+export type PhoneInternalSignerConfig = PhoneSignerConfig & BaseInternalSignerConfig;
 
 export type PasskeyInternalSignerConfig = PasskeySignerConfig & {
     id: string;
@@ -71,6 +88,7 @@ export type ExternalWalletInternalSignerConfig<C extends Chain> = ExternalWallet
 
 export type InternalSignerConfig<C extends Chain> =
     | EmailInternalSignerConfig
+    | PhoneInternalSignerConfig
     | PasskeyInternalSignerConfig
     | ApiKeyInternalSignerConfig
     | ExternalWalletInternalSignerConfig<C>;
@@ -91,14 +109,15 @@ export type PasskeySignResult = {
 };
 
 export type SignerConfigForChain<C extends Chain> = C extends SolanaChain
-    ? EmailSignerConfig | BaseSignerConfig<C>
-    : EmailSignerConfig | PasskeySignerConfig | BaseSignerConfig<C>;
+    ? EmailSignerConfig | PhoneSignerConfig | BaseSignerConfig<C>
+    : EmailSignerConfig | PhoneSignerConfig | PasskeySignerConfig | BaseSignerConfig<C>;
 
 ////////////////////////////////////////////////////////////
 // Signer base types
 ////////////////////////////////////////////////////////////
 type SignResultMap = {
     email: BaseSignResult;
+    phone: BaseSignResult;
     "api-key": BaseSignResult;
     "external-wallet": BaseSignResult;
     passkey: PasskeySignResult;
