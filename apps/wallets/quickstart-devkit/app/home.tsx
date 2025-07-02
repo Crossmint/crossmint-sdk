@@ -7,7 +7,6 @@ import { CrossmintAuthLoginButton } from "../components/login";
 import { EVMTransferFunds, SolanaTransferFunds } from "@/components/transfer";
 import { useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
 import { CrossmintAuthLogoutButton } from "@/components/logout";
-import { EVMSignMessage } from "@/components/signMessage";
 // import { useEVMPrivyConnector, useSolanaPrivyConnector } from "@/hooks/usePrivyConnector";
 // import { useEVMDynamicConnector, useSolanaDynamicConnector } from "@/hooks/useDynamicConnector";
 
@@ -108,7 +107,6 @@ export function HomeContent() {
                 </div>
                 {wallet?.chain !== "solana" && <EVMTransferFunds />}
                 {wallet?.chain === "solana" && <SolanaTransferFunds />}
-                {wallet?.chain !== "solana" && <EVMSignMessage />}
                 <Permissions />
             </div>
         </div>
