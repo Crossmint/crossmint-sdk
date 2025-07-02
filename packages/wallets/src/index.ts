@@ -10,7 +10,15 @@ export { SolanaWallet } from "./wallets/solana";
 export { EVMWallet } from "./wallets/evm";
 
 // Core types
-export type { Activity, Balances, DelegatedSigner, Transaction, WalletArgsFor } from "./wallets/types";
+export type {
+    Activity,
+    Balances,
+    DelegatedSigner,
+    EVMTransactionInput,
+    Transaction,
+    WalletArgsFor,
+    SolanaTransactionInput,
+} from "./wallets/types";
 export type { Chain, EVMChain, SolanaChain } from "./chains/chains";
 
 // Signer configuration types

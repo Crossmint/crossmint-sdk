@@ -29,11 +29,11 @@ export type EVMTransactionInput = EVMTransactionInputBase &
         | { transaction: string }
     );
 
-export interface SolanaTransactionInput {
+export type SolanaTransactionInput = {
     transaction: VersionedTransaction;
     additionalSigners?: Keypair[];
     options?: TransactionInputOptions;
-}
+};
 
 export type FormattedEVMTransaction =
     | {
