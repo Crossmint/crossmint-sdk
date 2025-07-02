@@ -82,6 +82,7 @@ export class WalletFactory {
             {
                 chain: args.chain,
                 address: walletResponse.address,
+                owner: walletResponse.linkedUser,
                 signer: assembleSigner(args.chain, signerConfig),
                 options: args.options,
             },

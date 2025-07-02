@@ -1,11 +1,5 @@
-import { getEnvironmentForKey, isValidAddress } from "@crossmint/common-sdk-base";
-import type {
-    Activity,
-    ApiClient,
-    GetSignatureResponse,
-    GetTransactionSuccessResponse,
-    GetBalanceSuccessResponse,
-} from "../api";
+import { isValidAddress } from "@crossmint/common-sdk-base";
+import type { Activity, ApiClient, GetSignatureResponse, GetBalanceSuccessResponse } from "../api";
 import type {
     PendingApproval,
     DelegatedSigner,
@@ -14,6 +8,7 @@ import type {
     Transaction,
     Balances,
     TokenBalance,
+    TransactionInputOptions,
 } from "./types";
 import {
     InvalidSignerError,
@@ -201,18 +196,34 @@ export class Wallet<C extends Chain> {
      * @param {string | UserLocator} to - The recipient (address or user locator)
      * @param {string} token - The token (address or currency symbol)
      * @param {string} amount - The amount to send (decimal units)
+     * @param {TransactionInputOptions} options - The options for the transaction
      * @returns {Transaction} The transaction
      */
-    public async send(to: string | UserLocator, token: string, amount: string) {
+    public async send<T extends TransactionInputOptions | undefined = undefined>(
+        to: string | UserLocator,
+        token: string,
+        amount: string,
+        options?: T
+    ): Promise<Transaction<T extends { experimental_prepareOnly: true } ? true : false>> {
         const recipient = toRecipientLocator(to);
         const tokenLocator = toTokenLocator(token, this.chain);
-        const params = { recipient, amount };
-        const transactionCreationResponse = await this.#apiClient.send(this.walletLocator, tokenLocator, params);
+        const sendParams = { recipient, amount };
+        const transactionCreationResponse = await this.#apiClient.send(this.walletLocator, tokenLocator, sendParams);
+
         if ("message" in transactionCreationResponse) {
             throw new TransactionNotCreatedError(
                 `Failed to send token: ${JSON.stringify(transactionCreationResponse.message)}`
             );
         }
+
+        if (options?.experimental_prepareOnly) {
+            return {
+                hash: undefined,
+                explorerLink: undefined,
+                transactionId: transactionCreationResponse.id,
+            } as Transaction<T extends { experimental_prepareOnly: true } ? true : false>;
+        }
+
         return await this.approveAndWait(transactionCreationResponse.id);
     }
 
@@ -447,31 +458,14 @@ export class Wallet<C extends Chain> {
 
         return {
             hash: transactionHash,
-            explorerLink: toTxExplorerLink(transactionResponse, this.apiClient.crossmint.apiKey),
+            explorerLink: transactionResponse.onChain.explorerLink ?? "",
+            transactionId: transactionResponse.id,
         };
     }
 
     protected async sleep(ms: number) {
         return new Promise((resolve) => setTimeout(resolve, ms));
     }
-}
-
-function toTxExplorerLink(transactionResponse: GetTransactionSuccessResponse, apiKey: string) {
-    let explorerLink: string | undefined;
-    if (transactionResponse.walletType === "evm-smart-wallet") {
-        explorerLink = transactionResponse.onChain.explorerLink;
-    } else if (transactionResponse.walletType === "solana-smart-wallet") {
-        const queryParams = new URLSearchParams();
-        const env = getEnvironmentForKey(apiKey);
-        if (env !== "production") {
-            queryParams.append("cluster", "devnet");
-        }
-        explorerLink = `https://explorer.solana.com/tx/${transactionResponse.onChain.txId}?${queryParams.toString()}`;
-    }
-    if (explorerLink == null || explorerLink === "") {
-        explorerLink = "Explorer link not available";
-    }
-    return explorerLink;
 }
 
 function toRecipientLocator(to: string | UserLocator): string {

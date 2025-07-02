@@ -1,23 +1,47 @@
 import type { Keypair, VersionedTransaction } from "@solana/web3.js";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
+import type { Abi } from "abitype";
 import type { CreateTransactionSuccessResponse } from "../api";
-import type { Chain, EVMSmartWalletChain } from "../chains/chains";
+import type { Chain } from "../chains/chains";
 import type { SignerConfigForChain } from "../signers/types";
 
 export type { Activity } from "../api/types";
 
-export interface EVMTransactionInput {
-    to: string;
-    chain: EVMSmartWalletChain;
-    data?: string;
-    value?: bigint;
-}
+export type TransactionInputOptions = {
+    experimental_prepareOnly?: boolean;
+};
+
+type EVMTransactionInputBase = {
+    options?: TransactionInputOptions;
+};
+
+export type EVMTransactionInput = EVMTransactionInputBase &
+    (
+        | {
+              to: string;
+              functionName?: string;
+              args?: unknown[];
+              value?: bigint;
+              abi?: Abi;
+              data?: `0x${string}`;
+          }
+        | { transaction: string }
+    );
 
 export interface SolanaTransactionInput {
     transaction: VersionedTransaction;
     additionalSigners?: Keypair[];
+    options?: TransactionInputOptions;
 }
+
+export type FormattedEVMTransaction =
+    | {
+          to: string;
+          value: string;
+          data: string;
+      }
+    | { transaction: string };
 
 export type DelegatedSigner = {
     signer: string;
@@ -67,7 +91,14 @@ export type UserLocator =
     | { phone: string }
     | { userId: string };
 
-export type Transaction = {
-    hash: string;
-    explorerLink: string;
-};
+export type Transaction<TPrepareOnly extends boolean = false> = TPrepareOnly extends true
+    ? {
+          hash?: string;
+          explorerLink?: string;
+          transactionId: string;
+      }
+    : {
+          hash: string;
+          explorerLink: string;
+          transactionId: string;
+      };

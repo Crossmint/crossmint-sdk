@@ -1,6 +1,9 @@
 // SDK
 export { createCrossmint, CrossmintWallets } from "./sdk";
 
+// API
+export { ApiClient as WalletsApiClient } from "./api";
+
 // Wallets
 export { Wallet } from "./wallets/wallet";
 export { SolanaWallet } from "./wallets/solana";

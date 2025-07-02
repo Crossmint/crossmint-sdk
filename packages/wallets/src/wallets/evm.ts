@@ -1,11 +1,19 @@
-import { createPublicClient, type TypedDataDomain, http } from "viem";
-import type { TypedData, TypedDataDefinition, HttpTransport } from "viem";
-import type { EVMTransactionInput, Transaction } from "./types";
+import {
+    createPublicClient,
+    encodeFunctionData,
+    http,
+    type TypedDataDomain,
+    type TypedData,
+    type TypedDataDefinition,
+    type HttpTransport,
+} from "viem";
+import { isValidEvmAddress } from "@crossmint/common-sdk-base";
+import type { EVMTransactionInput, FormattedEVMTransaction, Transaction } from "./types";
 import { type EVMSmartWalletChain, toViemChain } from "../chains/chains";
 import { Wallet } from "./wallet";
 import type { Chain, EVMChain } from "../chains/chains";
 import { InvalidTypedDataError, SignatureNotCreatedError, TransactionNotCreatedError } from "../utils/errors";
-import { isValidEvmAddress } from "@crossmint/common-sdk-base";
+import type { CreateTransactionSuccessResponse } from "@/api";
 
 export class EVMWallet extends Wallet<EVMChain> {
     constructor(wallet: Wallet<EVMChain>) {
@@ -29,25 +37,21 @@ export class EVMWallet extends Wallet<EVMChain> {
         return new EVMWallet(wallet as Wallet<EVMChain>);
     }
 
-    public async sendTransaction(params: EVMTransactionInput): Promise<Transaction> {
-        const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
-            params: {
-                signer: this.signer.locator(),
-                chain: this.chain,
-                calls: [
-                    {
-                        to: params.to,
-                        value: params.value ? params.value.toString() : "0",
-                        data: params.data ?? "0x",
-                    },
-                ],
-            },
-        });
-        if ("error" in transactionCreationResponse) {
-            throw new TransactionNotCreatedError(JSON.stringify(transactionCreationResponse));
+    public async sendTransaction<T extends EVMTransactionInput>(
+        params: T
+    ): Promise<Transaction<T["options"] extends { experimental_prepareOnly: true } ? true : false>> {
+        const builtTransaction = this.buildTransaction(params);
+        const createdTransaction = await this.createTransaction(builtTransaction);
+
+        if (params.options?.experimental_prepareOnly) {
+            return {
+                hash: undefined,
+                explorerLink: undefined,
+                transactionId: createdTransaction.id,
+            } as Transaction<T["options"] extends { experimental_prepareOnly: true } ? true : false>;
         }
 
-        return await this.approveAndWait(transactionCreationResponse.id);
+        return await this.approveAndWait(createdTransaction.id);
     }
 
     public async signMessage(message: string): Promise<string> {
@@ -122,5 +126,48 @@ export class EVMWallet extends Wallet<EVMChain> {
             transport: params?.transport ?? http(),
             chain: toViemChain(this.chain),
         });
+    }
+
+    private async createTransaction(transaction: FormattedEVMTransaction): Promise<CreateTransactionSuccessResponse> {
+        const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
+            params: {
+                signer: this.signer.locator(),
+                chain: this.chain,
+                calls: [transaction],
+            },
+        });
+        if ("error" in transactionCreationResponse) {
+            throw new TransactionNotCreatedError(JSON.stringify(transactionCreationResponse));
+        }
+
+        return transactionCreationResponse;
+    }
+
+    private buildTransaction(params: EVMTransactionInput): FormattedEVMTransaction {
+        if ("transaction" in params) {
+            return { transaction: params.transaction };
+        }
+
+        if (params.abi == null) {
+            return {
+                to: params.to,
+                value: params.value?.toString() ?? "0",
+                data: params.data ?? "0x",
+            };
+        }
+
+        if (!params.functionName) {
+            throw new Error("Function name is required");
+        }
+
+        return {
+            to: params.to,
+            value: params.value?.toString() ?? "0",
+            data: encodeFunctionData({
+                abi: params.abi,
+                functionName: params.functionName,
+                args: params.args,
+            }),
+        };
     }
 }
