@@ -2,13 +2,6 @@
 
 A Typescript SDK to interact with Crossmint Wallets. This SDK enables developers to create and manage smart contract wallets that support both traditional keypair-based signing and passkey authentication across Solana and EVM chains.
 
--   **Multi-chain**: supports Solana and EVM chains
--   **Multiple signer types**: passkeys, ECDSA keypairs, delegated signers
--   **Smart** and **MPC** wallets
--   **User** (client-side) wallets and **agent** (server-side) wallets
--   **Familiar API**: follows `viem` and `web3.js` conventions
-
-
 Get a Crossmint client API key from [here](https://docs.crossmint.com/introduction/platform/api-keys/client-side) and add it to your `.env` file. Make sure your API key has all scopes for `Wallet API`, and `Users`.  
 
 ## Installation
