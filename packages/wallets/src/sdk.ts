@@ -26,7 +26,7 @@ export class CrossmintWallets {
      * Get or create a wallet, can only be called on the client side
      * @param args - Wallet data
      * @param options - Wallet options
-     * @returns A new wallet
+     * @returns An existing wallet or a new wallet
      */
     public async getOrCreateWallet<C extends Chain>(options: WalletArgsFor<C>): Promise<Wallet<C>> {
         return await this.walletFactory.getOrCreateWallet(options);
@@ -36,7 +36,7 @@ export class CrossmintWallets {
      * Get an existing wallet by its locator, can only be called on the server side
      * @param walletLocator - Wallet locator
      * @param options - Wallet options
-     * @returns A wallet
+     * @returns A wallet if found, throws WalletNotAvailableError if not found
      */
     public async getWallet<C extends Chain>(walletLocator: string, options: WalletArgsFor<C>): Promise<Wallet<C>> {
         return await this.walletFactory.getWallet(walletLocator, options);
