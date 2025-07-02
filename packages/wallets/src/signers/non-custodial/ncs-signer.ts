@@ -136,11 +136,9 @@ export abstract class NonCustodialSigner implements Signer {
     }
 
     private getAuthId() {
-        console.log("this.config", this.config);
         if (this.config.type === "email") {
             return `email:${this.config.email}`;
         }
-        console.log("this.config.phone", this.config.phone);
         return `phone:${this.config.phone}`;
     }
 
