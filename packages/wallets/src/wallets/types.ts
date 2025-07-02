@@ -3,6 +3,8 @@ import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
 import type { Abi } from "abitype";
 import type { CreateTransactionSuccessResponse } from "../api";
+import type { Chain } from "../chains/chains";
+import type { SignerConfigForChain } from "../signers/types";
 
 export type { Activity } from "../api/types";
 
@@ -27,11 +29,11 @@ export type EVMTransactionInput = EVMTransactionInputBase &
         | { transaction: string }
     );
 
-export interface SolanaTransactionInput {
+export type SolanaTransactionInput = {
     transaction: VersionedTransaction;
     additionalSigners?: Keypair[];
     options?: TransactionInputOptions;
-}
+};
 
 export type FormattedEVMTransaction =
     | {
@@ -58,6 +60,13 @@ export type Callbacks = {
 export type WalletOptions = {
     experimental_callbacks?: Callbacks;
     clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
+};
+
+export type WalletArgsFor<C extends Chain> = {
+    chain: C;
+    signer: SignerConfigForChain<C>;
+    owner?: string;
+    options?: WalletOptions;
 };
 
 export type TokenBalance = {

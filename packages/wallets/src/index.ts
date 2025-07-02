@@ -1,10 +1,31 @@
-export * from "./sdk";
-export * from "./utils/errors";
-export * from "./wallets/wallet";
-export * from "./wallets/wallet-factory";
-export * from "./wallets/solana";
-export * from "./wallets/evm";
-export * from "./wallets/types";
-export * from "./chains/chains";
-export * from "./signers/types";
+// SDK
+export { createCrossmint, CrossmintWallets } from "./sdk";
+
+// API
 export { ApiClient as WalletsApiClient } from "./api";
+
+// Wallets
+export { Wallet } from "./wallets/wallet";
+export { SolanaWallet } from "./wallets/solana";
+export { EVMWallet } from "./wallets/evm";
+
+// Core types
+export type {
+    Activity,
+    Balances,
+    DelegatedSigner,
+    EVMTransactionInput,
+    Transaction,
+    WalletArgsFor,
+    SolanaTransactionInput,
+} from "./wallets/types";
+export type { Chain, EVMChain, SolanaChain } from "./chains/chains";
+
+// Signer configuration types
+export type {
+    EmailSignerConfig,
+    EvmExternalWalletSignerConfig,
+    ExternalWalletSignerConfigForChain,
+    SignerConfigForChain,
+    SolanaExternalWalletSignerConfig,
+} from "./signers/types";
