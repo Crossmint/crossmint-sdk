@@ -1,6 +1,6 @@
 import type { BaseSignResult, EmailInternalSignerConfig, PhoneInternalSignerConfig, Signer } from "../types";
 import { AuthRejectedError } from "../types";
-import { NCSIframeManager } from "./ncs-iframe-manager";
+import { NcsIframeManager } from "./ncs-iframe-manager";
 import { validateAPIKey } from "@crossmint/common-sdk-base";
 
 export abstract class NonCustodialSigner implements Signer {
@@ -27,7 +27,7 @@ export abstract class NonCustodialSigner implements Signer {
             if (!parsedAPIKey.isValid) {
                 throw new Error("Invalid API key");
             }
-            const iframeManager = new NCSIframeManager({ environment: parsedAPIKey.environment });
+            const iframeManager = new NcsIframeManager({ environment: parsedAPIKey.environment });
             this.config.clientTEEConnection = await iframeManager.initialize();
         }
     }

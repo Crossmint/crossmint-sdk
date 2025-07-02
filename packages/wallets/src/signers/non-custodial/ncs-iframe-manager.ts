@@ -6,7 +6,7 @@ export type IframeConfig = {
     environment: APIKeyEnvironmentPrefix;
 };
 
-export class NCSIframeManager {
+export class NcsIframeManager {
     private handshakeParent: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents> | null = null;
 
     constructor(private config: IframeConfig) {}
