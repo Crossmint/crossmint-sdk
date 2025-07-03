@@ -6,9 +6,10 @@ import { CrossmintWalletBaseProvider, useCrossmint, type CreateOnLogin } from "@
 import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
 import { TwindProvider } from "./TwindProvider";
 import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
+import { PhoneSignersDialog } from "@/components/signers/PhoneSignersDialog";
 
 const throwNotAvailable = (functionName: string) => () => {
-    throw new Error(`${functionName} is not available. Make sure you're using an email signer wallet.`);
+    throw new Error(`${functionName} is not available. Make sure you're using an email or phone signer wallet.`);
 };
 
 type ValidPasskeyPromptType =
@@ -37,6 +38,12 @@ type CrossmintWalletProviderProps = {
     callbacks?: {
         onWalletCreationStart?: () => Promise<void>;
         onTransactionStart?: () => Promise<void>;
+        // onTEEPhoneAuthRequired?: (
+        //     phone: string,
+        //     sendPhoneWithOtp: () => Promise<void>,
+        //     verifyPhoneOtp: (otp: string) => Promise<void>,
+        //     reject: () => void
+        // ) => Promise<void>;
     };
 };
 
@@ -49,12 +56,26 @@ export function CrossmintWalletProvider({
 }: CrossmintWalletProviderProps) {
     const { experimental_customAuth } = useCrossmint();
     const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
+
+    // Email signer state (for main wallet authentication)
     const [emailSignerDialogOpen, setEmailSignerDialogOpen] = useState<boolean>(false);
     const [emailSignerDialogStep, setEmailSignerDialogStep] = useState<"initial" | "otp">("initial");
 
+    // Phone signer state (for TEE handshake)
+    const [phoneSignerDialogOpen, setPhoneSignerDialogOpen] = useState<boolean>(false);
+    const [phoneSignerDialogStep, setPhoneSignerDialogStep] = useState<"initial" | "otp">("initial");
+    const [phoneNumber, setPhoneNumber] = useState<string>("");
+
     const [needsAuthState, setNeedsAuthState] = useState<boolean>(false);
+
+    // Email signer refs (for main wallet authentication)
     const sendEmailWithOtpRef = useRef<() => Promise<void>>(throwNotAvailable("sendEmailWithOtp"));
     const verifyOtpRef = useRef<(otp: string) => Promise<void>>(throwNotAvailable("verifyOtp"));
+
+    // Phone signer refs (for TEE handshake)
+    const sendPhoneWithOtpRef = useRef<() => Promise<void>>(throwNotAvailable("sendPhoneWithOtp"));
+    const verifyPhoneOtpRef = useRef<(otp: string) => Promise<void>>(throwNotAvailable("verifyPhoneOtp"));
+
     const rejectRef = useRef<(error: Error) => void>(throwNotAvailable("reject"));
 
     const createPasskeyPrompt = useCallback(
@@ -101,6 +122,28 @@ export function CrossmintWalletProvider({
         }
     };
 
+    // Phone authentication handlers (for TEE handshake)
+    const phonesigners_handleSendPhoneOTP = async () => {
+        try {
+            await sendPhoneWithOtpRef.current();
+            setPhoneSignerDialogStep("otp");
+        } catch (error) {
+            console.error("Failed to send phone OTP", error);
+            rejectRef.current(new Error("Failed to send phone OTP"));
+        }
+    };
+
+    const phonesigners_handleOTPSubmit = async (otp: string) => {
+        try {
+            await verifyPhoneOtpRef.current(otp);
+            setPhoneSignerDialogOpen(false);
+            setPhoneSignerDialogStep("initial");
+        } catch (error) {
+            console.error("Failed to verify phone OTP", error);
+            rejectRef.current(new Error("Failed to verify phone OTP"));
+        }
+    };
+
     const getCallbacks = () => {
         let onWalletCreationStart = callbacks?.onWalletCreationStart;
         let onTransactionStart = callbacks?.onTransactionStart;
@@ -119,10 +162,21 @@ export function CrossmintWalletProvider({
         verifyOtp: (otp: string) => Promise<void>,
         reject: () => void
     ) => {
-        setEmailSignerDialogOpen(needsAuth);
+        // Check if we're dealing with a phone signer
+        if (createOnLogin?.signer.type === "phone" && (createOnLogin.signer as any).phone) {
+            setPhoneNumber((createOnLogin.signer as any).phone);
+            setPhoneSignerDialogOpen(needsAuth);
+            // For phone signers, we need to handle the OTP functions differently
+            // The base provider will call these functions for phone authentication
+            sendPhoneWithOtpRef.current = sendEmailWithOtp; // Reuse the same function signature
+            verifyPhoneOtpRef.current = verifyOtp; // Reuse the same function signature
+        } else {
+            // Default email signer behavior
+            setEmailSignerDialogOpen(needsAuth);
+            sendEmailWithOtpRef.current = sendEmailWithOtp;
+            verifyOtpRef.current = verifyOtp;
+        }
         setNeedsAuthState(needsAuth);
-        sendEmailWithOtpRef.current = sendEmailWithOtp;
-        verifyOtpRef.current = verifyOtp;
         rejectRef.current = reject;
     };
 
@@ -146,6 +200,23 @@ export function CrossmintWalletProvider({
                               onSubmitOTP={emailsigners_handleOTPSubmit}
                               onResendOTPCode={emailsigners_handleSendEmailOTP}
                               onSubmitEmail={emailsigners_handleSendEmailOTP}
+                              appearance={appearance}
+                          />,
+                          document.body
+                      )
+                    : null}
+                {phoneSignerDialogOpen && phoneNumber
+                    ? // {phoneSignerDialogOpen && phoneNumber
+                      createPortal(
+                          <PhoneSignersDialog
+                              rejectRef={rejectRef}
+                              phone={phoneNumber}
+                              open={phoneSignerDialogOpen}
+                              setOpen={setPhoneSignerDialogOpen}
+                              step={phoneSignerDialogStep}
+                              onSubmitOTP={phonesigners_handleOTPSubmit}
+                              onResendOTPCode={phonesigners_handleSendPhoneOTP}
+                              onSubmitPhone={phonesigners_handleSendPhoneOTP}
                               appearance={appearance}
                           />,
                           document.body
