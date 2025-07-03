@@ -235,7 +235,7 @@ export class Wallet<C extends Chain> {
     public async addDelegatedSigner({ signer }: { signer: string }) {
         const response = await this.#apiClient.registerSigner(this.walletLocator, {
             signer: signer,
-            chain: this.chain === "solana" ? undefined : this.chain,
+            chain: this.chain === "solana" || this.chain === "stellar" ? undefined : this.chain,
         });
 
         if ("error" in response) {
