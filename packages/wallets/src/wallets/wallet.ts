@@ -1,12 +1,5 @@
 import { isValidAddress } from "@crossmint/common-sdk-base";
-import type {
-    Activity,
-    ApiClient,
-    GetSignatureResponse,
-    GetBalanceSuccessResponse,
-    WalletLocator,
-    EvmWalletLocator,
-} from "../api";
+import type { Activity, ApiClient, GetSignatureResponse, GetBalanceSuccessResponse, WalletLocator } from "../api";
 import type {
     PendingApproval,
     DelegatedSigner,
@@ -88,7 +81,7 @@ export class Wallet<C extends Chain> {
         const nativeToken = this.chain === "solana" ? "sol" : "eth";
         const allTokens = [nativeToken, "usdc", ...(tokens ?? [])];
 
-        const response = await this.#apiClient.getBalance(this.walletLocator, {
+        const response = await this.#apiClient.getBalance(this.address, {
             chains: chains ?? [this.chain],
             tokens: allTokens.map((token) => token.toLowerCase()),
         });
@@ -164,7 +157,7 @@ export class Wallet<C extends Chain> {
      * @param {Object} params - The parameters
      * @param {number} params.perPage - The number of NFTs per page
      * @param {number} params.page - The page number
-     * @param {EvmWalletLocator} [params.locator] - The locator
+     * @param {WalletLocator} [params.locator] - The locator
      * @returns The NFTs
      * @experimental This API is experimental and may change in the future
      */
@@ -394,7 +387,7 @@ export class Wallet<C extends Chain> {
 
         do {
             await new Promise((resolve) => setTimeout(resolve, STATUS_POLLING_INTERVAL_MS));
-            signatureResponse = await this.#apiClient.getSignature(this.walletLocator as EvmWalletLocator, signatureId);
+            signatureResponse = await this.#apiClient.getSignature(this.walletLocator, signatureId);
             if ("error" in signatureResponse) {
                 throw new SignatureNotAvailableError(JSON.stringify(signatureResponse));
             }

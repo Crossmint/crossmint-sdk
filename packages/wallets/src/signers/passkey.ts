@@ -10,7 +10,7 @@ export class PasskeySigner implements Signer {
     }
 
     locator() {
-        return `passkey:${this.id}`;
+        return this.config.locator;
     }
 
     async signMessage(message: string): Promise<PasskeySignResult> {

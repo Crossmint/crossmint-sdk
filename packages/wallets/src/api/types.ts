@@ -76,6 +76,6 @@ export type SendResponse = WalletsSendTokenControllerSendToken2Response;
 
 type WalletType = "smart" | "mpc";
 type SolanaAddress = string;
-export type EvmWalletLocator = `me:evm:${WalletType}` | Address;
-export type SolanaWalletLocator = `me:solana:${WalletType}` | SolanaAddress;
+type EvmWalletLocator = `me:evm:${WalletType}` | Address;
+type SolanaWalletLocator = `me:solana:${WalletType}` | SolanaAddress;
 export type WalletLocator = EvmWalletLocator | SolanaWalletLocator;

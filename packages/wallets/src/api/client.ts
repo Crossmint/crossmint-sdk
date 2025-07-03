@@ -24,7 +24,6 @@ import type {
     RegisterSignerResponse,
     GetSignerResponse,
     WalletLocator,
-    EvmWalletLocator,
     SendParams,
     SendResponse,
     GetActivityResponse,
@@ -111,7 +110,7 @@ class ApiClient extends CrossmintApiClient {
         return response.json();
     }
 
-    async getSignature(walletLocator: EvmWalletLocator, signatureId: string): Promise<GetSignatureResponse> {
+    async getSignature(walletLocator: WalletLocator, signatureId: string): Promise<GetSignatureResponse> {
         const response = await this.get(`${this.apiPrefix}/${walletLocator}/signatures/${signatureId}`, {
             headers: this.headers,
         });

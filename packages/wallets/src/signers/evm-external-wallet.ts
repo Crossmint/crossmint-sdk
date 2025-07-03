@@ -1,5 +1,6 @@
 import type { Account, EIP1193Provider as ViemEIP1193Provider } from "viem";
-import type { GenericEIP1193Provider, Signer, EvmExternalWalletSignerConfig } from "./types";
+import type { GenericEIP1193Provider, Signer, ExternalWalletInternalSignerConfig } from "./types";
+import type { EVMChain } from "@/chains/chains";
 
 export class EVMExternalWalletSigner implements Signer {
     type = "external-wallet" as const;
@@ -7,7 +8,7 @@ export class EVMExternalWalletSigner implements Signer {
     provider?: GenericEIP1193Provider | ViemEIP1193Provider;
     viemAccount?: Account;
 
-    constructor(config: EvmExternalWalletSignerConfig) {
+    constructor(private config: ExternalWalletInternalSignerConfig<EVMChain>) {
         if (config.address == null) {
             throw new Error("Please provide an address for the External Wallet Signer");
         }
@@ -17,7 +18,7 @@ export class EVMExternalWalletSigner implements Signer {
     }
 
     locator() {
-        return `external-wallet:${this.address}`;
+        return this.config.locator;
     }
 
     async signMessage(message: string) {

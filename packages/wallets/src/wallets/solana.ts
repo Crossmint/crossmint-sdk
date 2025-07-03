@@ -46,6 +46,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
                 new SolanaExternalWalletSigner({
                     type: "external-wallet",
                     address: signer.publicKey.toString(),
+                    locator: `external-wallet:${signer.publicKey.toString()}`,
                     onSignTransaction: (transaction) => {
                         transaction.sign([signer]);
                         return Promise.resolve(transaction);
