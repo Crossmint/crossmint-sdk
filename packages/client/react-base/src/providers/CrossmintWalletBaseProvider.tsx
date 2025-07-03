@@ -3,7 +3,7 @@ import {
     type Chain,
     CrossmintWallets,
     type EmailSignerConfig,
-    PhoneSignerConfig,
+    type PhoneSignerConfig,
     type SignerConfigForChain,
     type Wallet,
     type WalletArgsFor,
@@ -18,7 +18,7 @@ export type CrossmintWalletBaseContext = {
     wallet: Wallet<Chain> | undefined;
     status: "not-loaded" | "in-progress" | "loaded" | "error";
     getOrCreateWallet: <C extends Chain>(props: WalletArgsFor<C>) => Promise<Wallet<Chain> | undefined>;
-    onAuthRequired?: EmailSignerConfig["onAuthRequired"];
+    onAuthRequired?: EmailSignerConfig["onAuthRequired"] | PhoneSignerConfig["onAuthRequired"];
     clientTEEConnection?: () => HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
 };
 

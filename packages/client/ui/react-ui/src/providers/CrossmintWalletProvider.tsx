@@ -158,22 +158,20 @@ export function CrossmintWalletProvider({
 
     const onAuthRequired = async (
         needsAuth: boolean,
-        sendEmailWithOtp: () => Promise<void>,
+        sendOtp: () => Promise<void>,
         verifyOtp: (otp: string) => Promise<void>,
         reject: () => void
     ) => {
         // Check if we're dealing with a phone signer
-        if (createOnLogin?.signer.type === "phone" && (createOnLogin.signer as any).phone) {
-            setPhoneNumber((createOnLogin.signer as any).phone);
+        if (createOnLogin?.signer.type === "phone" && createOnLogin.signer.phone) {
+            setPhoneNumber(createOnLogin.signer.phone);
             setPhoneSignerDialogOpen(needsAuth);
-            // For phone signers, we need to handle the OTP functions differently
-            // The base provider will call these functions for phone authentication
-            sendPhoneWithOtpRef.current = sendEmailWithOtp; // Reuse the same function signature
-            verifyPhoneOtpRef.current = verifyOtp; // Reuse the same function signature
+            sendPhoneWithOtpRef.current = sendOtp;
+            verifyPhoneOtpRef.current = verifyOtp;
         } else {
             // Default email signer behavior
             setEmailSignerDialogOpen(needsAuth);
-            sendEmailWithOtpRef.current = sendEmailWithOtp;
+            sendEmailWithOtpRef.current = sendOtp;
             verifyOtpRef.current = verifyOtp;
         }
         setNeedsAuthState(needsAuth);
@@ -206,8 +204,7 @@ export function CrossmintWalletProvider({
                       )
                     : null}
                 {phoneSignerDialogOpen && phoneNumber
-                    ? // {phoneSignerDialogOpen && phoneNumber
-                      createPortal(
+                    ? createPortal(
                           <PhoneSignersDialog
                               rejectRef={rejectRef}
                               phone={phoneNumber}
