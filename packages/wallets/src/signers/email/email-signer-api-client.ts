@@ -1,6 +1,6 @@
 import { APIKeyUsageOrigin, type Crossmint, CrossmintApiClient } from "@crossmint/common-sdk-base";
 import { SDK_NAME, SDK_VERSION } from "../../utils/constants";
-import { InvalidApiKeyError } from "@/utils/errors";
+import { InvalidApiKeyError } from "../../utils/errors";
 import type { KeyType } from "@crossmint/client-signers";
 
 export class EmailSignerApiClient extends CrossmintApiClient {
