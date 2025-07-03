@@ -17,7 +17,7 @@ export class SolanaExternalWalletSigner implements Signer {
     }
 
     locator() {
-        return `solana-keypair:${this.address}`;
+        return `external-wallet:${this.address}`;
     }
 
     async signMessage() {

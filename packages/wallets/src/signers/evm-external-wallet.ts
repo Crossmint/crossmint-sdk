@@ -17,7 +17,7 @@ export class EVMExternalWalletSigner implements Signer {
     }
 
     locator() {
-        return `evm-keypair:${this.address}`;
+        return `external-wallet:${this.address}`;
     }
 
     async signMessage(message: string) {

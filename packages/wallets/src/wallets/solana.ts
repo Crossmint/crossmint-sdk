@@ -63,7 +63,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
             params: { transaction: bs58.encode(transaction.serialize()) },
         });
 
-        if (transactionCreationResponse.error) {
+        if ("error" in transactionCreationResponse) {
             throw new TransactionNotCreatedError(JSON.stringify(transactionCreationResponse));
         }
 

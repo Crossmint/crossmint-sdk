@@ -6,7 +6,7 @@ export class SolanaApiKeySigner implements Signer {
     constructor(private readonly config: ApiKeyInternalSignerConfig) {}
 
     locator() {
-        return `solana-fireblocks-custodial:${this.config.address}`;
+        return `api-key:${this.config.address}`;
     }
 
     async signMessage() {

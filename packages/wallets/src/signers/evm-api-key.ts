@@ -6,7 +6,7 @@ export class EVMApiKeySigner implements Signer {
     constructor(private readonly config: ApiKeyInternalSignerConfig) {}
 
     locator() {
-        return `evm-fireblocks-custodial:${this.config.address}`;
+        return `api-key:${this.config.address}`;
     }
 
     async signMessage() {

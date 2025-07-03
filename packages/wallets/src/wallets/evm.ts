@@ -56,7 +56,7 @@ export class EVMWallet extends Wallet<EVMChain> {
 
     public async signMessage(message: string): Promise<string> {
         const signatureCreationResponse = await this.apiClient.createSignature(this.walletLocator, {
-            type: "evm-message",
+            type: "message",
             params: {
                 message: message,
                 signer: this.signer.locator(),
@@ -92,7 +92,7 @@ export class EVMWallet extends Wallet<EVMChain> {
         }
 
         const signatureCreationResponse = await this.apiClient.createSignature(this.walletLocator, {
-            type: "evm-typed-data",
+            type: "typed-data",
             params: {
                 typedData: {
                     domain: {

@@ -10,7 +10,7 @@ export class PasskeySigner implements Signer {
     }
 
     locator() {
-        return `evm-passkey:${this.id}`;
+        return `passkey:${this.id}`;
     }
 
     async signMessage(message: string): Promise<PasskeySignResult> {

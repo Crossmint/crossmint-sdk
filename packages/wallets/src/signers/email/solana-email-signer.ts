@@ -11,7 +11,7 @@ export class SolanaEmailSigner extends EmailSigner {
     }
 
     locator() {
-        return `solana-keypair:${this.config.signerAddress}`;
+        return `external-wallet:${this.config.signerAddress}`;
     }
 
     async signMessage() {

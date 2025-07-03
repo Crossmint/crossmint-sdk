@@ -11,7 +11,7 @@ export class EvmEmailSigner extends EmailSigner {
     }
 
     locator() {
-        return `evm-keypair:${this.config.signerAddress}`;
+        return `external-wallet:${this.config.signerAddress}`;
     }
 
     async signMessage(message: string) {

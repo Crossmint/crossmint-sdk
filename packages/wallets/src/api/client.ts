@@ -32,7 +32,7 @@ import type {
 import type { Chain } from "../chains/chains";
 
 class ApiClient extends CrossmintApiClient {
-    private apiPrefix = "api/2022-06-09/wallets";
+    private apiPrefix = "api/2025-06-09/wallets";
 
     constructor(crossmint: Crossmint) {
         super(crossmint, {
