@@ -105,7 +105,7 @@ export function CrossmintWalletProvider({
         let onWalletCreationStart = callbacks?.onWalletCreationStart;
         let onTransactionStart = callbacks?.onTransactionStart;
 
-        if (createOnLogin?.signer?.type === "passkey" && showPasskeyHelpers) {
+        if (createOnLogin?.signer.type === "passkey" && showPasskeyHelpers) {
             onWalletCreationStart = createPasskeyPrompt("create-wallet");
             onTransactionStart = createPasskeyPrompt("transaction");
         }

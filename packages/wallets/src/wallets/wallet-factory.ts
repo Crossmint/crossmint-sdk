@@ -170,6 +170,14 @@ export class WalletFactory {
         existingWallet: GetWalletSuccessResponse,
         args: WalletArgsFor<C>
     ): void {
+        const { experimental_customAuth } = this.apiClient.crossmint;
+        if (args.signer.type === "email" && experimental_customAuth?.email != null) {
+            args.signer.email = args.signer.email ?? experimental_customAuth.email;
+        }
+        if (args.signer.type === "external-wallet" && experimental_customAuth?.externalWalletSigner != null) {
+            args.signer = experimental_customAuth.externalWalletSigner as SignerConfigForChain<C>;
+        }
+
         if (args.owner != null && existingWallet.owner != null && args.owner !== existingWallet.owner) {
             throw new WalletCreationError("Wallet owner does not match existing wallet's linked user");
         }

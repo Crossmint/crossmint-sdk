@@ -3,7 +3,6 @@ import {
     type Chain,
     CrossmintWallets,
     type EmailSignerConfig,
-    type SignerConfigForChain,
     type Wallet,
     type WalletArgsFor,
 } from "@crossmint/wallets-sdk";
@@ -70,30 +69,11 @@ export function CrossmintWalletBaseProvider({
                 const _onTransactionStart = args.options?.experimental_callbacks?.onTransactionStart;
 
                 if (args?.signer?.type === "email") {
-                    const email = args.signer.email ?? experimental_customAuth?.email;
                     const _onAuthRequired = args.signer.onAuthRequired ?? onAuthRequired;
-
-                    if (email == null) {
-                        // Hacky way to re-render when email gets set from crossmint auth (if applicable)
-                        setWalletStatus("not-loaded");
-                        return undefined;
-                    }
                     args.signer = {
                         ...args.signer,
-                        email,
                         onAuthRequired: _onAuthRequired,
                     };
-                }
-
-                if (args?.signer?.type === "external-wallet") {
-                    const signer =
-                        args.signer?.address != null ? args.signer : experimental_customAuth.externalWalletSigner;
-
-                    if (signer != null) {
-                        args.signer = {
-                            ...signer,
-                        } as SignerConfigForChain<C>;
-                    }
                 }
 
                 const wallet = await wallets.getOrCreateWallet<C>({
@@ -125,7 +105,7 @@ export function CrossmintWalletBaseProvider({
         if (createOnLogin != null) {
             getOrCreateWallet(createOnLogin);
         }
-    }, [createOnLogin, getOrCreateWallet, experimental_customAuth?.email]);
+    }, [createOnLogin, getOrCreateWallet]);
 
     useEffect(() => {
         if (experimental_customAuth?.jwt == null && walletStatus !== "not-loaded") {
