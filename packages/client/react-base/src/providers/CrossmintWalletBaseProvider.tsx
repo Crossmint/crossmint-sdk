@@ -3,7 +3,6 @@ import {
     type Chain,
     CrossmintWallets,
     type EmailSignerConfig,
-    type SignerConfigForChain,
     type Wallet,
     type WalletArgsFor,
 } from "@crossmint/wallets-sdk";
@@ -70,34 +69,11 @@ export function CrossmintWalletBaseProvider({
                 const _onTransactionStart = args.options?.experimental_callbacks?.onTransactionStart;
 
                 if (args?.signer?.type === "email") {
-                    const email = args.signer.email ?? experimental_customAuth?.email;
                     const _onAuthRequired = args.signer.onAuthRequired ?? onAuthRequired;
-                    if (email == null) {
-                        throw new Error(
-                            "Email not found in customAuth or signer. Please set email in customAuth or signer."
-                        );
-                    }
                     args.signer = {
                         ...args.signer,
-                        email,
                         onAuthRequired: _onAuthRequired,
                     };
-                }
-
-                if (args?.signer?.type === "external-wallet") {
-                    const signer =
-                        args.signer?.address != null ? args.signer : experimental_customAuth.externalWalletSigner;
-
-                    if (signer == null) {
-                        throw new Error(
-                            "External wallet config not found in customAuth or signer. Please set it in customAuth or signer."
-                        );
-                    }
-
-                    // TODO: detect runtime error - maybe move this signer logic to the Wallets SDK
-                    // if externalWallet is Evm and chain is Solana => throw
-                    // if externalWallet is Solana and chain is Evm => throw
-                    args.signer = signer as SignerConfigForChain<C>;
                 }
 
                 const wallet = await wallets.getOrCreateWallet<C>({

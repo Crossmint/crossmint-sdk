@@ -1,9 +1,7 @@
 import { VersionedTransaction } from "@solana/web3.js";
 import base58 from "bs58";
 import type { EmailInternalSignerConfig } from "../types";
-import { EmailSignerApiClient } from "./email-signer-api-client";
 import { EmailSigner, DEFAULT_EVENT_OPTIONS } from "./email-signer";
-import type { Crossmint } from "@crossmint/common-sdk-base";
 
 export class SolanaEmailSigner extends EmailSigner {
     constructor(config: EmailInternalSignerConfig) {
@@ -11,7 +9,7 @@ export class SolanaEmailSigner extends EmailSigner {
     }
 
     locator() {
-        return `solana-keypair:${this.config.signerAddress}`;
+        return this.config.locator;
     }
 
     async signMessage() {
@@ -52,23 +50,6 @@ export class SolanaEmailSigner extends EmailSigner {
         }
         SolanaEmailSigner.verifyPublicKeyFormat(res.publicKey);
         return { signature: res.signature.bytes };
-    }
-
-    static async pregenerateSigner(email: string, crossmint: Crossmint): Promise<string> {
-        const emailToUse = email ?? crossmint.experimental_customAuth?.email;
-        if (emailToUse == null) {
-            throw new Error("Email is required to pregenerate a signer");
-        }
-
-        try {
-            const response = await new EmailSignerApiClient(crossmint).pregenerateSigner(emailToUse, "ed25519");
-            const publicKey = response.publicKey;
-            this.verifyPublicKeyFormat(publicKey);
-            return publicKey.bytes;
-        } catch (error) {
-            console.error("[EmailSigner] Failed to pregenerate signer:", error);
-            throw error;
-        }
     }
 
     static verifyPublicKeyFormat(publicKey: { encoding: string; keyType: string; bytes: string } | null) {

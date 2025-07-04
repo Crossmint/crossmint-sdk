@@ -1,5 +1,5 @@
 import { isValidAddress } from "@crossmint/common-sdk-base";
-import type { Activity, ApiClient, GetSignatureResponse, GetBalanceSuccessResponse } from "../api";
+import type { Activity, ApiClient, GetSignatureResponse, GetBalanceSuccessResponse, WalletLocator } from "../api";
 import type {
     PendingApproval,
     DelegatedSigner,
@@ -157,7 +157,7 @@ export class Wallet<C extends Chain> {
      * @param {Object} params - The parameters
      * @param {number} params.perPage - The number of NFTs per page
      * @param {number} params.page - The page number
-     * @param {EvmWalletLocator} [params.locator] - The locator
+     * @param {WalletLocator} [params.locator] - The locator
      * @returns The NFTs
      * @experimental This API is experimental and may change in the future
      */
@@ -268,7 +268,10 @@ export class Wallet<C extends Chain> {
             throw new WalletNotAvailableError(JSON.stringify(walletResponse));
         }
 
-        if (walletResponse.type !== "solana-smart-wallet" && walletResponse.type !== "evm-smart-wallet") {
+        if (
+            walletResponse.type !== "smart" ||
+            (walletResponse.chainType !== "evm" && walletResponse.chainType !== "solana")
+        ) {
             throw new WalletTypeNotSupportedError(`Wallet type ${walletResponse.type} not supported`);
         }
 
@@ -285,11 +288,11 @@ export class Wallet<C extends Chain> {
         );
     }
 
-    protected get walletLocator(): string {
+    protected get walletLocator(): WalletLocator {
         if (this.#apiClient.isServerSide) {
             return this.address;
         } else {
-            return `me:${this.isSolanaWallet ? "solana-smart-wallet" : "evm-smart-wallet"}`;
+            return `me:${this.chain === "solana" ? "solana" : "evm"}:smart`;
         }
     }
 
@@ -306,7 +309,7 @@ export class Wallet<C extends Chain> {
     protected async approveTransaction(transactionId: string, additionalSigners?: Signer[]) {
         const transaction = await this.#apiClient.getTransaction(this.walletLocator, transactionId);
 
-        if (transaction.error) {
+        if ("error" in transaction) {
             throw new TransactionNotAvailableError(JSON.stringify(transaction));
         }
 
@@ -327,12 +330,12 @@ export class Wallet<C extends Chain> {
 
         const signedApprovals = await Promise.all(
             pendingApprovals.map((pendingApproval) => {
-                const signer = signers.find((s) => s.locator() === pendingApproval.signer);
+                const signer = signers.find((s) => s.locator() === pendingApproval.signer.locator);
                 if (signer == null) {
                     throw new InvalidSignerError(`Signer ${pendingApproval.signer} not found in pending approvals`);
                 }
                 const transactionToSign =
-                    transaction.walletType === "solana-smart-wallet"
+                    transaction.chainType === "solana" && "transaction" in transaction.onChain
                         ? transaction.onChain.transaction
                         : pendingApproval.message;
 
@@ -360,7 +363,7 @@ export class Wallet<C extends Chain> {
             throw new Error("Approving signatures is only supported for EVM smart wallets");
         }
 
-        const pendingApproval = pendingApprovals.find((approval) => approval.signer === this.signer.locator());
+        const pendingApproval = pendingApprovals.find((approval) => approval.signer.locator === this.signer.locator());
         if (!pendingApproval) {
             throw new InvalidSignerError(`Signer ${this.signer.locator()} not found in pending approvals`);
         }
@@ -384,11 +387,7 @@ export class Wallet<C extends Chain> {
 
         do {
             await new Promise((resolve) => setTimeout(resolve, STATUS_POLLING_INTERVAL_MS));
-            signatureResponse = await this.#apiClient.getSignature(
-                // @ts-ignore id type is wrong
-                this.walletLocator,
-                signatureId
-            );
+            signatureResponse = await this.#apiClient.getSignature(this.walletLocator, signatureId);
             if ("error" in signatureResponse) {
                 throw new SignatureNotAvailableError(JSON.stringify(signatureResponse));
             }
