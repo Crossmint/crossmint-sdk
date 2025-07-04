@@ -3,6 +3,7 @@ import {
     type Chain,
     CrossmintWallets,
     type EmailSignerConfig,
+    PhoneSignerConfig,
     type SignerConfigForChain,
     type Wallet,
     type WalletArgsFor,
@@ -36,7 +37,7 @@ export interface CrossmintWalletBaseProviderProps {
         onWalletCreationStart?: () => Promise<void>;
         onTransactionStart?: () => Promise<void>;
     };
-    onAuthRequired?: EmailSignerConfig["onAuthRequired"];
+    onAuthRequired?: EmailSignerConfig["onAuthRequired"] | PhoneSignerConfig["onAuthRequired"];
     clientTEEConnection?: () => HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
 }
 
@@ -80,6 +81,19 @@ export function CrossmintWalletBaseProvider({
                     args.signer = {
                         ...args.signer,
                         email,
+                        onAuthRequired: _onAuthRequired,
+                    };
+                }
+
+                if (args?.signer?.type === "phone") {
+                    const phone = args.signer.phone;
+                    const _onAuthRequired = args.signer.onAuthRequired ?? onAuthRequired;
+                    if (phone == null) {
+                        throw new Error("Phone not found in signer. Please set phone in signer.");
+                    }
+                    args.signer = {
+                        ...args.signer,
+                        phone,
                         onAuthRequired: _onAuthRequired,
                     };
                 }
