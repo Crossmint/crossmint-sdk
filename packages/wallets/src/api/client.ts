@@ -181,7 +181,7 @@ class ApiClient extends CrossmintApiClient {
     }
 
     async send(walletLocator: WalletLocator, tokenLocator: string, params: SendParams): Promise<SendResponse> {
-        const response = await this.post(`api/unstable/wallets/${walletLocator}/tokens/${tokenLocator}/transfers`, {
+        const response = await this.post(`${this.apiPrefix}/${walletLocator}/tokens/${tokenLocator}/transfers`, {
             body: JSON.stringify(params),
             headers: this.headers,
         });

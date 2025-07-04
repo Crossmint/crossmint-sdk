@@ -2,11 +2,11 @@ import { WebAuthnP256 } from "ox";
 import type { AdminSignerConfig, ApiClient, CreateWalletParams, GetWalletSuccessResponse } from "../api";
 import { WalletCreationError, WalletNotAvailableError } from "../utils/errors";
 import type { Chain } from "../chains/chains";
-import type { InternalSignerConfig, SignerConfigForChain, ExternalWalletInternalSignerConfig } from "../signers/types";
+import type { InternalSignerConfig, SignerConfigForChain } from "../signers/types";
 import { Wallet } from "./wallet";
 import { assembleSigner } from "../signers";
 import type { WalletArgsFor, WalletOptions } from "./types";
-import { deepCompare } from "@/utils/signer-validation";
+import { compareSignerConfigs } from "@/utils/signer-validation";
 
 export class WalletFactory {
     constructor(private readonly apiClient: ApiClient) {}
@@ -19,7 +19,6 @@ export class WalletFactory {
         const existingWallet = await this.apiClient.getWallet(`me:${args.chain === "solana" ? "solana" : "evm"}:smart`);
 
         if (existingWallet != null && !("error" in existingWallet)) {
-            this.validateExistingWalletConfig(existingWallet, args);
             return this.createWalletInstance(existingWallet, args);
         }
 
@@ -31,17 +30,16 @@ export class WalletFactory {
             throw new WalletCreationError("getWallet is not supported on client side, use getOrCreateWallet instead");
         }
 
-        const walletResponse = await this.apiClient.getWallet(walletLocator);
-        if ("error" in walletResponse) {
-            throw new WalletNotAvailableError(JSON.stringify(walletResponse));
+        const existingWallet = await this.apiClient.getWallet(walletLocator);
+        if ("error" in existingWallet) {
+            throw new WalletNotAvailableError(JSON.stringify(existingWallet));
         }
-        return this.createWalletInstance(walletResponse, args);
+
+        return this.createWalletInstance(existingWallet, args);
     }
 
     public async createWallet<C extends Chain>(args: WalletArgsFor<C>): Promise<Wallet<C>> {
         await args.options?.experimental_callbacks?.onWalletCreationStart?.();
-
-        this.validateSigner(args.signer);
 
         const adminSigner =
             args.signer.type === "passkey" ? await this.createPasskeyAdminSigner(args.signer) : args.signer;
@@ -66,6 +64,8 @@ export class WalletFactory {
         walletResponse: GetWalletSuccessResponse,
         args: WalletArgsFor<C>
     ): Wallet<C> {
+        this.validateExistingWalletConfig(walletResponse, args);
+
         const signerConfig = this.toInternalSignerConfig(walletResponse, args.signer, args.options);
         return new Wallet(
             {
@@ -81,18 +81,18 @@ export class WalletFactory {
 
     private toInternalSignerConfig<C extends Chain>(
         walletResponse: GetWalletSuccessResponse,
-        signer: SignerConfigForChain<C>,
+        signerArgs: SignerConfigForChain<C>,
         options?: WalletOptions
     ): InternalSignerConfig<C> {
-        if (signer == null) {
-            throw new WalletCreationError("Signer is required to create a wallet");
-        }
-
         if (!(walletResponse.chainType === "evm" || walletResponse.chainType === "solana")) {
             throw new WalletCreationError(`Wallet type ${walletResponse.chainType} is not supported`);
         }
 
-        switch (signer.type) {
+        if (signerArgs == null && walletResponse.config?.adminSigner == null) {
+            throw new WalletCreationError("Signer is required to create a wallet");
+        }
+
+        switch (signerArgs.type) {
             case "api-key": {
                 if (walletResponse.config?.adminSigner.type !== "api-key") {
                     throw new WalletCreationError("API key signer does not match the wallet's signer type");
@@ -109,22 +109,21 @@ export class WalletFactory {
                 if (walletResponse.config?.adminSigner.type !== "external-wallet") {
                     throw new WalletCreationError("External wallet signer does not match the wallet's signer type");
                 }
-                return {
-                    ...signer,
-                    locator: walletResponse.config.adminSigner.locator,
-                } as ExternalWalletInternalSignerConfig<C>;
+
+                return walletResponse.config.adminSigner;
 
             case "passkey":
                 if (walletResponse.config?.adminSigner.type !== "passkey") {
                     throw new WalletCreationError("Passkey signer does not match the wallet's signer type");
                 }
+
                 return {
                     type: "passkey",
                     id: walletResponse.config.adminSigner.id,
                     name: walletResponse.config.adminSigner.name,
                     locator: walletResponse.config.adminSigner.locator,
-                    onCreatePasskey: signer.onCreatePasskey,
-                    onSignWithPasskey: signer.onSignWithPasskey,
+                    onCreatePasskey: signerArgs.onCreatePasskey,
+                    onSignWithPasskey: signerArgs.onSignWithPasskey,
                 };
 
             case "email": {
@@ -132,41 +131,17 @@ export class WalletFactory {
                     throw new WalletCreationError("Email signer does not match the wallet's signer type");
                 }
 
-                const locator = walletResponse.config.adminSigner.locator;
-                const email = signer.email ?? this.apiClient.crossmint.experimental_customAuth?.email;
+                const { locator, email } = walletResponse.config.adminSigner;
                 return {
                     type: "email",
                     email,
                     locator,
                     crossmint: this.apiClient.crossmint,
-                    onAuthRequired: signer.onAuthRequired,
+                    onAuthRequired: signerArgs.onAuthRequired,
                     clientTEEConnection: options?.clientTEEConnection,
                 };
             }
 
-            default:
-                throw new Error("Invalid signer type");
-        }
-    }
-
-    private validateSigner<C extends Chain>(signer?: SignerConfigForChain<C>): void {
-        if (signer == null || signer.type === "api-key") {
-            return;
-        }
-        switch (signer.type) {
-            case "external-wallet":
-                if (!signer.address) {
-                    throw new WalletCreationError("External wallet signer has no address");
-                }
-                break;
-            case "email":
-                const email = signer.email ?? this.apiClient.crossmint.experimental_customAuth?.email;
-                if (email == null) {
-                    throw new Error("Email is required to create a wallet with email signer");
-                }
-                break;
-            case "passkey":
-                break;
             default:
                 throw new Error("Invalid signer type");
         }
@@ -199,11 +174,18 @@ export class WalletFactory {
             throw new WalletCreationError("Wallet owner does not match existing wallet's linked user");
         }
 
+        if (
+            (args.chain === "solana" && existingWallet.chainType !== "solana") ||
+            (args.chain !== "solana" && existingWallet.chainType === "solana")
+        ) {
+            throw new WalletCreationError(
+                `Wallet chain does not match existing wallet's chain. You must use chain: ${existingWallet.chainType}.`
+            );
+        }
+
         if (existingWallet.type !== "smart") {
             return;
         }
-
-        this.validateSigner(args.signer);
 
         const adminSignerArgs = args.signer;
         const existingWalletSigner = (existingWallet?.config as any)?.adminSigner as AdminSignerConfig;
@@ -214,7 +196,7 @@ export class WalletFactory {
                     "The wallet signer type provided in the wallet config does not match the existing wallet's adminSigner type"
                 );
             }
-            deepCompare(adminSignerArgs, existingWalletSigner);
+            compareSignerConfigs(adminSignerArgs, existingWalletSigner);
         }
     }
 }
