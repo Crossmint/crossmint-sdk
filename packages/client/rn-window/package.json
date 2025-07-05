@@ -24,9 +24,12 @@
     },
     "peerDependencies": {
         "react": ">=18.0.0",
-        "react-native-webview": ">=13.0.0"
+        "react-native-webview": "13.12.5"
     },
     "devDependencies": {
         "@types/react": "~18.3.12"
+    },
+    "overrides": {
+        "react-native": "0.76.9"
     }
 }
