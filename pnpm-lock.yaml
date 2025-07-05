@@ -322,7 +322,7 @@ importers:
         version: 4.12.1(@babel/core@7.26.10)(@types/react@18.3.20)(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.25.74)
       '@privy-io/react-auth':
         specifier: 2.13.0
-        version: 2.13.0(@solana/spl-token@0.4.13(@solana/web3.js@1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.5.3)(utf-8-validate@5.0.10))(@solana/web3.js@1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(@types/react@18.3.20)(bs58@6.0.0)(bufferutil@4.0.9)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.3)(use-sync-external-store@1.5.0(react@18.3.1))(utf-8-validate@5.0.10)(zod@3.25.74)
+        version: 2.13.0(@solana/spl-token@0.4.13(@solana/web3.js@1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.5.3)(utf-8-validate@5.0.10))(@solana/web3.js@1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(@types/react@18.3.20)(bs58@6.0.0)(bufferutil@4.0.9)(immer@10.1.1)(permissionless@0.2.49(viem@2.23.6(bufferutil@4.0.9)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.25.74)))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.3)(use-sync-external-store@1.5.0(react@18.3.1))(utf-8-validate@5.0.10)(zod@3.25.74)
       '@solana/spl-token':
         specifier: 0.4.13
         version: 0.4.13(@solana/web3.js@1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.5.3)(utf-8-validate@5.0.10)
@@ -1286,8 +1286,8 @@ importers:
   packages/common/base:
     dependencies:
       '@solana/web3.js':
-        specifier: 1.98.0
-        version: 1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@6.0.5)
+        specifier: 1.98.2
+        version: 1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@6.0.5)
       bs58:
         specifier: 5.0.0
         version: 5.0.0
@@ -28622,7 +28622,7 @@ snapshots:
 
   '@privy-io/chains@0.0.1': {}
 
-  '@privy-io/js-sdk-core@0.50.0(bufferutil@4.0.9)(typescript@5.5.3)(utf-8-validate@5.0.10)(viem@2.29.4(bufferutil@4.0.9)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.25.74))':
+  '@privy-io/js-sdk-core@0.50.0(bufferutil@4.0.9)(permissionless@0.2.49(viem@2.23.6(bufferutil@4.0.9)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.25.74)))(typescript@5.5.3)(utf-8-validate@5.0.10)(viem@2.29.4(bufferutil@4.0.9)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.25.74))':
     dependencies:
       '@ethersproject/abstract-signer': 5.8.0
       '@ethersproject/bignumber': 5.8.0
@@ -28642,6 +28642,7 @@ snapshots:
       set-cookie-parser: 2.7.1
       uuid: 9.0.1
     optionalDependencies:
+      permissionless: 0.2.49(viem@2.23.6(bufferutil@4.0.9)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.25.74))
       viem: 2.29.4(bufferutil@4.0.9)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.25.74)
     transitivePeerDependencies:
       - bufferutil
@@ -28660,7 +28661,7 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@privy-io/react-auth@2.13.0(@solana/spl-token@0.4.13(@solana/web3.js@1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.5.3)(utf-8-validate@5.0.10))(@solana/web3.js@1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(@types/react@18.3.20)(bs58@6.0.0)(bufferutil@4.0.9)(immer@10.1.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.3)(use-sync-external-store@1.5.0(react@18.3.1))(utf-8-validate@5.0.10)(zod@3.25.74)':
+  '@privy-io/react-auth@2.13.0(@solana/spl-token@0.4.13(@solana/web3.js@1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.5.3)(utf-8-validate@5.0.10))(@solana/web3.js@1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(@types/react@18.3.20)(bs58@6.0.0)(bufferutil@4.0.9)(immer@10.1.1)(permissionless@0.2.49(viem@2.23.6(bufferutil@4.0.9)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.25.74)))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.3)(use-sync-external-store@1.5.0(react@18.3.1))(utf-8-validate@5.0.10)(zod@3.25.74)':
     dependencies:
       '@coinbase/wallet-sdk': 4.3.0
       '@floating-ui/react': 0.26.28(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -28669,7 +28670,7 @@ snapshots:
       '@marsidev/react-turnstile': 0.4.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@metamask/eth-sig-util': 6.0.2
       '@privy-io/chains': 0.0.1
-      '@privy-io/js-sdk-core': 0.50.0(bufferutil@4.0.9)(typescript@5.5.3)(utf-8-validate@5.0.10)(viem@2.29.4(bufferutil@4.0.9)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.25.74))
+      '@privy-io/js-sdk-core': 0.50.0(bufferutil@4.0.9)(permissionless@0.2.49(viem@2.23.6(bufferutil@4.0.9)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.25.74)))(typescript@5.5.3)(utf-8-validate@5.0.10)(viem@2.29.4(bufferutil@4.0.9)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.25.74))
       '@reown/appkit': 1.7.6(@types/react@18.3.20)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.25.74)
       '@scure/base': 1.2.5
       '@simplewebauthn/browser': 9.0.1
@@ -28704,6 +28705,7 @@ snapshots:
     optionalDependencies:
       '@solana/spl-token': 0.4.13(@solana/web3.js@1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.5.3)(utf-8-validate@5.0.10)
       '@solana/web3.js': 1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10)
+      permissionless: 0.2.49(viem@2.23.6(bufferutil@4.0.9)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.25.74))
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -44679,6 +44681,11 @@ snapshots:
       viem: 2.31.7(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@6.0.5)(zod@3.25.74)
     optionalDependencies:
       ox: 0.8.3(typescript@5.8.3)(zod@3.25.74)
+
+  permissionless@0.2.49(viem@2.23.6(bufferutil@4.0.9)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.25.74)):
+    dependencies:
+      viem: 2.23.6(bufferutil@4.0.9)(typescript@5.5.3)(utf-8-validate@5.0.10)(zod@3.25.74)
+    optional: true
 
   picocolors@0.2.1: {}
 
