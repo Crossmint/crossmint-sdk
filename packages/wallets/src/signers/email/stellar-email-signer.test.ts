@@ -49,10 +49,7 @@ describe("StellarEmailSigner", () => {
 
     describe("pregenerateSigner", () => {
         it("should transform ed25519 public key bytes to Stellar address format", async () => {
-            const testPublicKeyBytes = new Uint8Array([
-                242, 158, 87, 90, 40, 57, 243, 15, 67, 59, 98, 209, 167, 50, 53, 224,
-                153, 98, 121, 182, 100, 20, 158, 4, 135, 123, 209, 201, 96, 88, 56, 249
-            ]);
+            const testPublicKeyBytes = new Uint8Array([242, 158, 87, 90, 40, 57, 243, 15, 67, 59, 98, 209, 167, 50, 53, 224, 153, 98, 121, 182, 100, 20, 158, 4, 135, 123, 209, 201, 96, 88, 56, 249]);
             const expectedStellarAddress = "GDZJ4V22FA47GD2DHNRNDJZSGXQJSYTZWZSBJHQEQ555DSLALA4PSOEV";
 
             const mockApiClient = {
@@ -138,10 +135,7 @@ describe("StellarEmailSigner", () => {
     describe("decodeStellarAddress", () => {
         it("should decode valid Stellar address to public key bytes", () => {
             const stellarAddress = "GDZJ4V22FA47GD2DHNRNDJZSGXQJSYTZWZSBJHQEQ555DSLALA4PSOEV";
-            const expectedBytes = new Uint8Array([
-                242, 158, 87, 90, 40, 57, 243, 15, 67, 59, 98, 209, 167, 50, 53, 224,
-                153, 98, 121, 182, 100, 20, 158, 4, 135, 123, 209, 201, 96, 88, 56, 249
-            ]);
+            const expectedBytes = new Uint8Array([242, 158, 87, 90, 40, 57, 243, 15, 67, 59, 98, 209, 167, 50, 53, 224, 153, 98, 121, 182, 100, 20, 158, 4, 135, 123, 209, 201, 96, 88, 56, 249]);
 
             const result = StellarEmailSigner.decodeStellarAddress(stellarAddress);
             expect(result).toEqual(expectedBytes);
@@ -158,10 +152,7 @@ describe("StellarEmailSigner", () => {
 
     describe("Stellar address encoding/decoding round trip", () => {
         it("should correctly encode and decode the specific test case", () => {
-            const testBytes = new Uint8Array([
-                242, 158, 87, 90, 40, 57, 243, 15, 67, 59, 98, 209, 167, 50, 53, 224,
-                153, 98, 121, 182, 100, 20, 158, 4, 135, 123, 209, 201, 96, 88, 56, 249
-            ]);
+            const testBytes = new Uint8Array([242, 158, 87, 90, 40, 57, 243, 15, 67, 59, 98, 209, 167, 50, 53, 224, 153, 98, 121, 182, 100, 20, 158, 4, 135, 123, 209, 201, 96, 88, 56, 249]);
             const expectedAddress = "GDZJ4V22FA47GD2DHNRNDJZSGXQJSYTZWZSBJHQEQ555DSLALA4PSOEV";
 
             const encodedAddress = StrKey.encodeEd25519PublicKey(Buffer.from(testBytes));
