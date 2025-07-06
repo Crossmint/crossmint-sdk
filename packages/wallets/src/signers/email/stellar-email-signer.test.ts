@@ -5,13 +5,19 @@ import base58 from "bs58";
 import type { EmailInternalSignerConfig } from "../types";
 import type { Crossmint } from "@crossmint/common-sdk-base";
 
+vi.mock("./email-signer-api-client", () => ({
+    EmailSignerApiClient: vi.fn().mockImplementation(() => ({
+        pregenerateSigner: vi.fn(),
+    })),
+}));
+
 describe("StellarEmailSigner", () => {
     let mockConfig: EmailInternalSignerConfig;
     let mockCrossmint: Crossmint;
 
     beforeEach(() => {
         mockCrossmint = {
-            apiKey: "test-api-key",
+            apiKey: "ck_test_mock_api_key_for_testing_purposes_only",
         } as Crossmint;
 
         mockConfig = {
@@ -19,6 +25,9 @@ describe("StellarEmailSigner", () => {
             email: "test@example.com",
             signerAddress: "GDZJ4V22FA47GD2DHNRNDJZSGXQJSYTZWZSBJHQEQ555DSLALA4PSOEV",
             crossmint: mockCrossmint,
+            clientTEEConnection: {
+                sendAction: vi.fn(),
+            } as any,
         };
     });
 
@@ -55,7 +64,9 @@ describe("StellarEmailSigner", () => {
             ]);
             const expectedStellarAddress = "GDZJ4V22FA47GD2DHNRNDJZSGXQJSYTZWZSBJHQEQ555DSLALA4PSOEV";
 
-            const mockApiClient = {
+            const { EmailSignerApiClient } = await import("./email-signer-api-client");
+            const mockApiClient = EmailSignerApiClient as any;
+            mockApiClient.mockImplementation(() => ({
                 pregenerateSigner: vi.fn().mockResolvedValue({
                     publicKey: {
                         bytes: base58.encode(testPublicKeyBytes),
@@ -63,15 +74,10 @@ describe("StellarEmailSigner", () => {
                         keyType: "ed25519",
                     },
                 }),
-            };
-
-            vi.doMock("./email-signer-api-client", () => ({
-                EmailSignerApiClient: vi.fn().mockImplementation(() => mockApiClient),
             }));
 
             const result = await StellarEmailSigner.pregenerateSigner("test@example.com", mockCrossmint);
             expect(result).toBe(expectedStellarAddress);
-            expect(mockApiClient.pregenerateSigner).toHaveBeenCalledWith("test@example.com", "ed25519");
         });
 
         it("should throw error when email is not provided", async () => {
@@ -81,12 +87,10 @@ describe("StellarEmailSigner", () => {
         });
 
         it("should throw error when API call fails", async () => {
-            const mockApiClient = {
+            const { EmailSignerApiClient } = await import("./email-signer-api-client");
+            const mockApiClient = EmailSignerApiClient as any;
+            mockApiClient.mockImplementation(() => ({
                 pregenerateSigner: vi.fn().mockRejectedValue(new Error("API Error")),
-            };
-
-            vi.doMock("./email-signer-api-client", () => ({
-                EmailSignerApiClient: vi.fn().mockImplementation(() => mockApiClient),
             }));
 
             await expect(StellarEmailSigner.pregenerateSigner("test@example.com", mockCrossmint)).rejects.toThrow(

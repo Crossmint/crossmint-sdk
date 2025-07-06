@@ -54,8 +54,8 @@ export class StellarEmailSigner extends EmailSigner {
     }
 
     static async pregenerateSigner(email: string, crossmint: Crossmint): Promise<string> {
-        const emailToUse = email ?? crossmint.experimental_customAuth?.email;
-        if (emailToUse == null) {
+        const emailToUse = email;
+        if (emailToUse == null || emailToUse.trim() === "") {
             throw new Error("Email is required to pregenerate a signer");
         }
 
@@ -88,7 +88,8 @@ export class StellarEmailSigner extends EmailSigner {
 
     static decodeStellarAddress(stellarAddress: string): Uint8Array {
         try {
-            return StrKey.decodeEd25519PublicKey(stellarAddress);
+            const buffer = StrKey.decodeEd25519PublicKey(stellarAddress);
+            return new Uint8Array(buffer);
         } catch (error) {
             throw new Error(`Invalid Stellar address format: ${stellarAddress}`);
         }
