@@ -63,7 +63,7 @@ export class StellarEmailSigner extends EmailSigner {
             const response = await new EmailSignerApiClient(crossmint).pregenerateSigner(emailToUse, "ed25519");
             const publicKey = response.publicKey;
             this.verifyPublicKeyFormat(publicKey);
-            
+
             const publicKeyBytes = base58.decode(publicKey.bytes);
             const stellarAddress = StrKey.encodeEd25519PublicKey(Buffer.from(publicKeyBytes));
             return stellarAddress;
