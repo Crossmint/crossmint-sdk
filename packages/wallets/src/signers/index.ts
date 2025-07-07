@@ -1,4 +1,4 @@
-import { EVMNonCustodialSigner, SolanaNonCustodialSigner } from "./email";
+import { EVMNonCustodialSigner, SolanaNonCustodialSigner } from "./non-custodial";
 import { SolanaExternalWalletSigner } from "./solana-external-wallet";
 import { EVMExternalWalletSigner } from "./evm-external-wallet";
 import { PasskeySigner } from "./passkey";
