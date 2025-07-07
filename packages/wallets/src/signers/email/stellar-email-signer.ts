@@ -2,7 +2,7 @@ import { StrKey } from "@stellar/stellar-sdk";
 import base58 from "bs58";
 import type { EmailInternalSignerConfig } from "../types";
 import { EmailSignerApiClient } from "./email-signer-api-client";
-import { EmailSigner, DEFAULT_EVENT_OPTIONS } from "./email-signer";
+import { EmailSigner } from "./email-signer";
 import type { Crossmint } from "@crossmint/common-sdk-base";
 
 export class StellarEmailSigner extends EmailSigner {
@@ -54,5 +54,4 @@ export class StellarEmailSigner extends EmailSigner {
             );
         }
     }
-
 }
