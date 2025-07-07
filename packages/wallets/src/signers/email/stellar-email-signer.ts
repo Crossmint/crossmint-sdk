@@ -2,7 +2,7 @@ import { StrKey } from "@stellar/stellar-sdk";
 import base58 from "bs58";
 import type { EmailInternalSignerConfig } from "../types";
 import { EmailSignerApiClient } from "./email-signer-api-client";
-import { EmailSigner } from "./email-signer";
+import { EmailSigner, DEFAULT_EVENT_OPTIONS } from "./email-signer";
 import type { Crossmint } from "@crossmint/common-sdk-base";
 
 export class StellarEmailSigner extends EmailSigner {
@@ -18,8 +18,36 @@ export class StellarEmailSigner extends EmailSigner {
         return await Promise.reject(new Error("signMessage method not implemented for stellar email signer"));
     }
 
-    async signTransaction(): Promise<{ signature: string }> {
-        return await Promise.reject(new Error("signTransaction method not implemented for stellar email signer"));
+    async signTransaction(transaction: string): Promise<{ signature: string }> {
+        await this.handleAuthRequired();
+        const jwt = this.getJwtOrThrow();
+
+        const res = await this.config.clientTEEConnection?.sendAction({
+            event: "request:sign",
+            responseEvent: "response:sign",
+            data: {
+                authData: {
+                    jwt,
+                    apiKey: this.config.crossmint.apiKey,
+                },
+                data: {
+                    keyType: "ed25519",
+                    bytes: transaction,
+                    encoding: "base58",
+                },
+            },
+            options: DEFAULT_EVENT_OPTIONS,
+        });
+
+        if (res?.status === "error") {
+            throw new Error(res.error);
+        }
+
+        if (res?.signature == null) {
+            throw new Error("Failed to sign transaction");
+        }
+        StellarEmailSigner.verifyPublicKeyFormat(res.publicKey);
+        return { signature: res.signature.bytes };
     }
 
     static async pregenerateSigner(email: string, crossmint: Crossmint): Promise<string> {
