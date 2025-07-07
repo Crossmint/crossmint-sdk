@@ -22756,6 +22756,32 @@
                                                     "email": "user@example.com",
                                                     "locator": "email:user@example.com"
                                                 }
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "type": "string",
+                                                        "enum": ["phone"],
+                                                        "description": "Identifier for phone signer type"
+                                                    },
+                                                    "phone": {
+                                                        "type": "string",
+                                                        "description": "The phone number for the signer"
+                                                    },
+                                                    "locator": {
+                                                        "type": "string",
+                                                        "description": "The locator of the signer"
+                                                    }
+                                                },
+                                                "required": ["type", "phone", "locator"],
+                                                "title": "Phone Signer",
+                                                "description": "Configuration for a phone signer",
+                                                "example": {
+                                                    "type": "phone",
+                                                    "phone": "+1234567890",
+                                                    "locator": "phone:+1234567890"
+                                                }
                                             }
                                         ]
                                     },

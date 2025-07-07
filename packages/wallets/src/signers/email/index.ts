@@ -1,3 +1,3 @@
-export * from "./email-signer";
-export * from "./solana-email-signer";
-export * from "./evm-email-signer";
+export * from "./ncs-signer";
+export * from "./ncs-solana-signer";
+export * from "./ncs-evm-signer";

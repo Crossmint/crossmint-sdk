@@ -1,10 +1,10 @@
 import { VersionedTransaction } from "@solana/web3.js";
 import base58 from "bs58";
-import type { EmailInternalSignerConfig } from "../types";
-import { EmailSigner, DEFAULT_EVENT_OPTIONS } from "./email-signer";
+import type { EmailInternalSignerConfig, PhoneInternalSignerConfig } from "../types";
+import { NonCustodialSigner, DEFAULT_EVENT_OPTIONS } from "./ncs-signer";
 
-export class SolanaEmailSigner extends EmailSigner {
-    constructor(config: EmailInternalSignerConfig) {
+export class SolanaNonCustodialSigner extends NonCustodialSigner {
+    constructor(config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
         super(config);
     }
 
@@ -48,7 +48,7 @@ export class SolanaEmailSigner extends EmailSigner {
         if (res?.signature == null) {
             throw new Error("Failed to sign transaction");
         }
-        SolanaEmailSigner.verifyPublicKeyFormat(res.publicKey);
+        SolanaNonCustodialSigner.verifyPublicKeyFormat(res.publicKey);
         return { signature: res.signature.bytes };
     }
 
