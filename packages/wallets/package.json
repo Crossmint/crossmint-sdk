@@ -27,7 +27,7 @@
         "@crossmint/client-signers": "workspace:*",
         "@crossmint/common-sdk-base": "workspace:*",
         "@hey-api/client-fetch": "0.8.1",
-        "@solana/web3.js": "1.98.0",
+        "@solana/web3.js": "1.98.2",
         "abitype": "1.0.8",
         "bs58": "5.0.0",
         "ox": "0.6.9",
