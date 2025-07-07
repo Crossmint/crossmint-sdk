@@ -18,39 +18,8 @@ export class StellarEmailSigner extends EmailSigner {
         return await Promise.reject(new Error("signMessage method not implemented for stellar email signer"));
     }
 
-    async signTransaction(transaction: string): Promise<{ signature: string }> {
-        await this.handleAuthRequired();
-        const jwt = this.getJwtOrThrow();
-
-        const transactionBytes = base58.decode(transaction);
-        const messageData = transactionBytes;
-
-        const res = await this.config.clientTEEConnection?.sendAction({
-            event: "request:sign",
-            responseEvent: "response:sign",
-            data: {
-                authData: {
-                    jwt,
-                    apiKey: this.config.crossmint.apiKey,
-                },
-                data: {
-                    keyType: "ed25519",
-                    bytes: base58.encode(messageData),
-                    encoding: "base58",
-                },
-            },
-            options: DEFAULT_EVENT_OPTIONS,
-        });
-
-        if (res?.status === "error") {
-            throw new Error(res.error);
-        }
-
-        if (res?.signature == null) {
-            throw new Error("Failed to sign transaction");
-        }
-        StellarEmailSigner.verifyPublicKeyFormat(res.publicKey);
-        return { signature: res.signature.bytes };
+    async signTransaction(): Promise<{ signature: string }> {
+        return await Promise.reject(new Error("signTransaction method not implemented for stellar email signer"));
     }
 
     static async pregenerateSigner(email: string, crossmint: Crossmint): Promise<string> {
@@ -86,12 +55,4 @@ export class StellarEmailSigner extends EmailSigner {
         }
     }
 
-    static decodeStellarAddress(stellarAddress: string): Uint8Array {
-        try {
-            const buffer = StrKey.decodeEd25519PublicKey(stellarAddress);
-            return new Uint8Array(buffer);
-        } catch (error) {
-            throw new Error(`Invalid Stellar address format: ${stellarAddress}`);
-        }
-    }
 }
