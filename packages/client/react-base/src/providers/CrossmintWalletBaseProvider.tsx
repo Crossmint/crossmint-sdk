@@ -3,6 +3,7 @@ import {
     type Chain,
     CrossmintWallets,
     type EmailSignerConfig,
+    type SignerConfigForChain,
     type Wallet,
     type WalletArgsFor,
 } from "@crossmint/wallets-sdk";
@@ -69,11 +70,31 @@ export function CrossmintWalletBaseProvider({
                 const _onTransactionStart = args.options?.experimental_callbacks?.onTransactionStart;
 
                 if (args?.signer?.type === "email") {
+                    const email = args.signer.email ?? experimental_customAuth?.email;
                     const _onAuthRequired = args.signer.onAuthRequired ?? onAuthRequired;
+
+                    if (email == null) {
+                        throw new Error(
+                            "Email not found in experimental_customAuth or signer. Please set email in experimental_customAuth or signer."
+                        );
+                    }
                     args.signer = {
                         ...args.signer,
+                        email,
                         onAuthRequired: _onAuthRequired,
                     };
+                }
+
+                if (args?.signer?.type === "external-wallet") {
+                    const signer =
+                        args.signer?.address != null ? args.signer : experimental_customAuth.externalWalletSigner;
+
+                    if (signer == null) {
+                        throw new Error(
+                            "External wallet config not found in experimental_customAuth or signer. Please set it in experimental_customAuth or signer."
+                        );
+                    }
+                    args.signer = signer as SignerConfigForChain<C>;
                 }
 
                 const wallet = await wallets.getOrCreateWallet<C>({
@@ -103,9 +124,22 @@ export function CrossmintWalletBaseProvider({
 
     useEffect(() => {
         if (createOnLogin != null) {
+            if (
+                (createOnLogin.signer.type === "email" && experimental_customAuth?.email == null) ||
+                (createOnLogin.signer.type === "external-wallet" &&
+                    experimental_customAuth?.externalWalletSigner == null)
+            ) {
+                return;
+            }
+
             getOrCreateWallet(createOnLogin);
         }
-    }, [createOnLogin, getOrCreateWallet]);
+    }, [
+        createOnLogin,
+        getOrCreateWallet,
+        experimental_customAuth?.email,
+        experimental_customAuth?.externalWalletSigner,
+    ]);
 
     useEffect(() => {
         if (experimental_customAuth?.jwt == null && walletStatus !== "not-loaded") {
