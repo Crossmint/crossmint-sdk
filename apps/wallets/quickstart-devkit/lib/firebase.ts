@@ -13,7 +13,7 @@ const firebaseConfig = {
 // Validate that all Firebase config values are defined
 Object.entries(firebaseConfig).forEach(([key, value]) => {
     if (!value) {
-        throw new Error(`Firebase configuration error: environment variable ${key} is not defined`);
+        console.error(`Firebase configuration error: environment variable ${key} is not defined`);
     }
 });
 
