@@ -103,15 +103,12 @@ export class Wallet<C extends Chain> {
         requestedTokens?: string[]
     ): Balances {
         const transformTokenBalance = (tokenData: GetBalanceSuccessResponse[number]): TokenBalance => {
-            let contractAddress: string | undefined;
-            const chainData = tokenData.forChain?.[this.chain];
-            if (chainData && "contractAddress" in chainData) {
-                contractAddress = chainData.contractAddress;
-            }
+            const chainData = tokenData.chains?.[this.chain];
+            const contractAddress = "contractAddress" in chainData ? chainData.contractAddress : undefined;
 
             return {
-                symbol: tokenData.token,
-                name: tokenData.token, // API doesn't provide name, using symbol as fallback
+                symbol: tokenData.symbol ?? "",
+                name: tokenData.symbol ?? "",
                 amount: tokenData.amount ?? "0",
                 contractAddress,
                 decimals: tokenData.decimals,
@@ -119,17 +116,14 @@ export class Wallet<C extends Chain> {
             };
         };
 
-        const nativeTokenData = apiResponse.find(
-            (token) => token.token === nativeTokenSymbol || token.token.toLowerCase().includes(nativeTokenSymbol)
-        );
-        const usdcData = apiResponse.find((token) => token.token.toLowerCase().includes("usdc"));
+        const nativeTokenData = apiResponse.find((token) => token.symbol === nativeTokenSymbol);
+        const usdcData = apiResponse.find((token) => token.symbol === "usdc");
 
         const otherTokens = apiResponse.filter((token) => {
-            const tokenLower = token.token.toLowerCase();
             return (
-                !tokenLower.includes(nativeTokenSymbol) &&
-                !tokenLower.includes("usdc") &&
-                requestedTokens?.some((reqToken) => tokenLower.includes(reqToken.toLowerCase()))
+                token.symbol !== nativeTokenSymbol &&
+                token.symbol !== "usdc" &&
+                requestedTokens?.includes(token.symbol ?? "")
             );
         });
 

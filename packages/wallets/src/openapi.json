@@ -2436,6 +2436,86 @@
                 }
             }
         },
+        "/2025-06-09/wallets/{walletLocator}/balances": {
+            "get": {
+                "operationId": "BalanceV20250609Controller-getBalanceForLocator-2",
+                "summary": "Get Wallet Balance",
+                "description": "Get the balance of a wallet for a given chain and currency\n\n**API scope required**: `wallets:balance.read`",
+                "parameters": [
+                    {
+                        "name": "X-API-KEY",
+                        "in": "header",
+                        "description": "API key required for authentication",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "walletLocator",
+                        "required": true,
+                        "in": "path",
+                        "description": "A wallet locator can be of the format:\n- `\u003CwalletAddress\u003E`\n- `email:\u003Cemail\u003E:\u003CchainType\u003E[:\u003CwalletType\u003E]` (walletType defaults to 'smart')\n- `userId:\u003CuserId\u003E:\u003CchainType\u003E[:\u003CwalletType\u003E]`\n- `userId:\u003CuserId\u003E:\u003CchainType\u003E[:\u003CwalletType\u003E]` (white label user example)\n- `phoneNumber:\u003CphoneNumber\u003E:\u003CchainType\u003E[:\u003CwalletType\u003E]`\n- `twitter:\u003Chandle\u003E:\u003CchainType\u003E[:\u003CwalletType\u003E]`\n- `x:\u003Chandle\u003E:\u003CchainType\u003E[:\u003CwalletType\u003E]`\n- `me:\u003CchainType\u003E[:\u003CwalletType\u003E]` (Use when calling from the client side with a client API key)",
+                        "example": [
+                            "0x1234567890123456789012345678901234567890",
+                            "email:user@example.com:evm:smart",
+                            "email:user@example.com:evm",
+                            "userId:507f1f77bcf86cd799439011:solana:mpc",
+                            "userId:did:example:cm4lr5piw0h6t1bjho0onryql:evm:smart",
+                            "phoneNumber:+12125551234:evm:smart",
+                            "twitter:johndoe:evm:smart",
+                            "x:@johndoe:evm:smart",
+                            "me:evm:smart"
+                        ],
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "chains",
+                        "required": false,
+                        "in": "query",
+                        "description": "The blockchain(s) to query. Comma-separated list of chains",
+                        "example": "ethereum,polygon",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "tokens",
+                        "required": true,
+                        "in": "query",
+                        "description": "The tokens to query. Comma-separated list of either tokens or token locator strings",
+                        "example": "eth,base:0x123,solana:sol",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Returns the balance of the wallet for the given chain and currency",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WalletBalanceV20250609ResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Returns an error (400) if the wallet locator is invalid or if the address type is not supported",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WalletV1Alpha2ErrorDTO"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/2025-06-09/wallets/me{walletLocator}": {
             "get": {
                 "operationId": "WalletsV2025Controller-getMeWallet-2",
@@ -10235,6 +10315,144 @@
                         "amount": "18.8343253454",
                         "rawAmount": "18834161225104097789",
                         "forChain": {
+                            "base": {
+                                "contractAddress": "0x123",
+                                "locator": "base:0x123",
+                                "amount": "18.833423432423",
+                                "rawAmount": "18834161225104097789"
+                            },
+                            "solana": {
+                                "mintHash": "123123",
+                                "locator": "solana:132",
+                                "amount": "0.000000000000000",
+                                "rawAmount": "00000000000000000"
+                            }
+                        }
+                    }
+                ]
+            },
+            "WalletBalanceV20250609ResponseDTO": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "symbol": {
+                            "type": "string"
+                        },
+                        "decimals": {
+                            "type": "number",
+                            "description": "The number of decimals of the token",
+                            "example": 18
+                        },
+                        "amount": {
+                            "type": "string",
+                            "description": "The amount of the token after placing the decimal point",
+                            "example": "18.8343253454"
+                        },
+                        "rawAmount": {
+                            "type": "string",
+                            "description": "The raw amount of the token",
+                            "example": "18834161225104097789"
+                        },
+                        "chains": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "oneOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "locator": {
+                                                "type": "string",
+                                                "description": "Either a token string (e.g., 'eth', 'sol') or a token locator string (e.g., 'ethereum:0x123', 'solana:sol')",
+                                                "example": "ethereum:0x123"
+                                            },
+                                            "amount": {
+                                                "type": "string",
+                                                "description": "The amount of the token after placing the decimal point",
+                                                "example": "18.8343253454"
+                                            },
+                                            "rawAmount": {
+                                                "type": "string",
+                                                "description": "The raw amount of the token",
+                                                "example": "18834161225104097789"
+                                            },
+                                            "contractAddress": {
+                                                "type": "string",
+                                                "description": "The contract address of the token on the EVM chain. Not present for native tokens.",
+                                                "example": "0x123"
+                                            }
+                                        },
+                                        "required": ["locator", "amount", "rawAmount"],
+                                        "description": "Balance information per chain",
+                                        "example": {
+                                            "locator": "base:0x123",
+                                            "amount": "18.833423432423",
+                                            "rawAmount": "18834161225104097789",
+                                            "contractAddress": "0x123"
+                                        }
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "locator": {
+                                                "type": "string",
+                                                "description": "Either a token string (e.g., 'eth', 'sol') or a token locator string (e.g., 'ethereum:0x123', 'solana:sol')",
+                                                "example": "ethereum:0x123"
+                                            },
+                                            "amount": {
+                                                "type": "string",
+                                                "description": "The amount of the token after placing the decimal point",
+                                                "example": "18.8343253454"
+                                            },
+                                            "rawAmount": {
+                                                "type": "string",
+                                                "description": "The raw amount of the token",
+                                                "example": "18834161225104097789"
+                                            },
+                                            "mintHash": {
+                                                "type": "string",
+                                                "description": "The mint hash of the token on Solana. Not present for native SOL.",
+                                                "example": "123123"
+                                            }
+                                        },
+                                        "required": ["locator", "amount", "rawAmount"],
+                                        "description": "Balance information for  chain",
+                                        "example": {
+                                            "locator": "solana:31123",
+                                            "amount": "18.833423432423",
+                                            "rawAmount": "18834161225104097789",
+                                            "mintHash": "123123"
+                                        }
+                                    }
+                                ]
+                            },
+                            "description": "Balance information per chain",
+                            "example": {
+                                "base": {
+                                    "contractAddress": "0x123",
+                                    "locator": "base:0x123",
+                                    "amount": "18.833423432423",
+                                    "rawAmount": "18834161225104097789"
+                                },
+                                "solana": {
+                                    "mintHash": "123123",
+                                    "locator": "solana:132",
+                                    "amount": "0",
+                                    "rawAmount": "00000000000000000"
+                                }
+                            }
+                        }
+                    },
+                    "required": ["decimals", "amount", "rawAmount", "chains"]
+                },
+                "description": "Array of wallet balances per token",
+                "example": [
+                    {
+                        "symbol": "ETH",
+                        "decimals": 18,
+                        "amount": "18.8343253454",
+                        "rawAmount": "18834161225104097789",
+                        "chains": {
                             "base": {
                                 "contractAddress": "0x123",
                                 "locator": "base:0x123",
