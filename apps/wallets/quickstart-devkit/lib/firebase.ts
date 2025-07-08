@@ -10,18 +10,28 @@ const firebaseConfig = {
     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Validate that all Firebase config values are defined
-Object.entries(firebaseConfig).forEach(([key, value]) => {
-    if (!value) {
-        console.error(`Firebase configuration error: environment variable ${key} is not defined`);
+function initApp() {
+    if (firebaseConfig.apiKey == null) {
+        return;
     }
-});
+    return initializeApp(firebaseConfig);
+}
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+function initAuth() {
+    const app = initApp();
+    if (app == null) {
+        return;
+    }
+    return getAuth(app);
+}
+
+const auth = initAuth();
 const googleProvider = new GoogleAuthProvider();
 
 export const signInWithGoogle = async () => {
+    if (auth == null) {
+        return;
+    }
     try {
         const result = await signInWithPopup(auth, googleProvider);
         return result.user;
@@ -32,6 +42,9 @@ export const signInWithGoogle = async () => {
 };
 
 export const signOutUser = async () => {
+    if (auth == null) {
+        return;
+    }
     try {
         await signOut(auth);
     } catch (error) {
@@ -41,6 +54,9 @@ export const signOutUser = async () => {
 };
 
 export const onAuthStateChange = (callback: (user: User | null) => void) => {
+    if (auth == null) {
+        return;
+    }
     return onAuthStateChanged(auth, callback);
 };
 
