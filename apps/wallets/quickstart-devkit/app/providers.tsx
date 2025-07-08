@@ -88,6 +88,10 @@ function EVMDynamicLabsProvider({ children }: { children: React.ReactNode }) {
 }
 
 function EVMFirebaseProvider({ children }: { children: React.ReactNode }) {
+    if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
+        console.error("Make sure to set all firebase .env vars for Firebase BYOA");
+        return;
+    }
     return (
         <CrossmintProvider apiKey={crossmintApiKey}>
             <CrossmintWalletProvider
