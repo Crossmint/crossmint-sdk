@@ -1,12 +1,12 @@
-import type { EmailInternalSignerConfig } from "../types";
-import { EmailSignerApiClient } from "./email-signer-api-client";
-import { EmailSigner, DEFAULT_EVENT_OPTIONS } from "./email-signer";
+import type { EmailInternalSignerConfig, NonCustodialSignerType, PhoneInternalSignerConfig } from "../types";
+import { NonCustodialSignerApiClient } from "./ncs-signer-api-client";
+import { NonCustodialSigner, DEFAULT_EVENT_OPTIONS } from "./ncs-signer";
 import type { Crossmint } from "@crossmint/common-sdk-base";
 import { Address, PublicKey, PersonalMessage } from "ox";
 import { isHex, toHex, type Hex } from "viem";
 
-export class EvmEmailSigner extends EmailSigner {
-    constructor(config: EmailInternalSignerConfig) {
+export class EvmNcsSigner extends NonCustodialSigner {
+    constructor(config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
         super(config);
     }
 
@@ -54,18 +54,17 @@ export class EvmEmailSigner extends EmailSigner {
         if (res?.signature == null) {
             throw new Error("Failed to sign transaction");
         }
-        EvmEmailSigner.verifyPublicKeyFormat(res.publicKey);
+        EvmNcsSigner.verifyPublicKeyFormat(res.publicKey);
         return { signature: res.signature.bytes };
     }
 
-    static async pregenerateSigner(email: string, crossmint: Crossmint): Promise<string> {
-        const emailToUse = email ?? crossmint.experimental_customAuth?.email;
-        if (emailToUse == null) {
-            throw new Error("Email is required to pregenerate a signer");
-        }
-
+    static async pregenerateSigner(type: NonCustodialSignerType, value: string, crossmint: Crossmint): Promise<string> {
         try {
-            const response = await new EmailSignerApiClient(crossmint).pregenerateSigner(emailToUse, "secp256k1");
+            const response = await new NonCustodialSignerApiClient(crossmint).pregenerateSigner(
+                type,
+                value,
+                "secp256k1"
+            );
             const publicKey = response.publicKey;
             this.verifyPublicKeyFormat(publicKey);
             return this.publicKeyToEvmAddress(publicKey.bytes);
