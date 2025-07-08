@@ -1,10 +1,10 @@
-import type { EmailInternalSignerConfig } from "../types";
-import { EmailSigner, DEFAULT_EVENT_OPTIONS } from "./email-signer";
-import { Address, PublicKey, PersonalMessage } from "ox";
+import type { EmailInternalSignerConfig, PhoneInternalSignerConfig } from "../types";
+import { NonCustodialSigner, DEFAULT_EVENT_OPTIONS } from "./ncs-signer";
+import { PersonalMessage } from "ox";
 import { isHex, toHex, type Hex } from "viem";
 
-export class EvmEmailSigner extends EmailSigner {
-    constructor(config: EmailInternalSignerConfig) {
+export class EVMNonCustodialSigner extends NonCustodialSigner {
+    constructor(config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
         super(config);
     }
 
@@ -52,7 +52,7 @@ export class EvmEmailSigner extends EmailSigner {
         if (res?.signature == null) {
             throw new Error("Failed to sign transaction");
         }
-        EvmEmailSigner.verifyPublicKeyFormat(res.publicKey);
+        EVMNonCustodialSigner.verifyPublicKeyFormat(res.publicKey);
         return { signature: res.signature.bytes };
     }
 
@@ -67,10 +67,5 @@ export class EvmEmailSigner extends EmailSigner {
                     JSON.stringify(publicKey)
             );
         }
-    }
-
-    private static publicKeyToEvmAddress(publicKeyHex: string): string {
-        const publicKey = PublicKey.from(`0x${publicKeyHex}`);
-        return Address.fromPublicKey(publicKey, { checksum: true });
     }
 }

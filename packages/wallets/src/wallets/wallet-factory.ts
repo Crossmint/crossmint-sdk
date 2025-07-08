@@ -144,6 +144,22 @@ export class WalletFactory {
                 };
             }
 
+            case "phone": {
+                if (walletResponse.config?.adminSigner.type !== "phone") {
+                    throw new WalletCreationError("Phone signer does not match the wallet's signer type");
+                }
+
+                const { locator, phone } = walletResponse.config.adminSigner;
+                return {
+                    type: "phone",
+                    phone,
+                    locator,
+                    crossmint: this.apiClient.crossmint,
+                    onAuthRequired: signerArgs.onAuthRequired,
+                    clientTEEConnection: options?.clientTEEConnection,
+                };
+            }
+
             default:
                 throw new Error("Invalid signer type");
         }
@@ -172,6 +188,9 @@ export class WalletFactory {
         const { experimental_customAuth } = this.apiClient.crossmint;
         if (args.signer.type === "email" && experimental_customAuth?.email != null) {
             args.signer.email = args.signer.email ?? experimental_customAuth.email;
+        }
+        if (args.signer.type === "phone" && args.signer.phone == null) {
+            throw new WalletCreationError("Phone is required to create a wallet");
         }
         if (args.signer.type === "external-wallet" && experimental_customAuth?.externalWalletSigner != null) {
             args.signer = isNewWalletSigner
