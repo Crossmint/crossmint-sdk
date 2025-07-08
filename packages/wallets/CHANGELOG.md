@@ -1,5 +1,12 @@
 # @crossmint/wallets-sdk
 
+## 0.10.9
+
+### Patch Changes
+
+- b791894: Cleanup exports and update readme
+- d567616: Exposes WalletsApiClient to easily call any wallets endpoint
+
 ## 0.10.8
 
 ### Patch Changes
