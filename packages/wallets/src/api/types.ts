@@ -1,32 +1,32 @@
 import type { Address } from "viem";
 
 import type {
-    WalletV1Alpha2ErrorDto,
-    WalletsV1ControllerSubmitApprovals4Error,
-    WalletsV1ControllerGetTransaction4Error,
-    WalletsV1ControllerGetSignature4Error,
-    WalletsV1ControllerCreateSignatureRequest4Error,
-    WalletsV1ControllerSubmitSignatureApprovals4Error,
-    WalletsV1ControllerGetTransactionsWithoutChain4Error,
     BalanceControllerGetBalanceForLocator2Error,
-    WalletsV1ControllerCreateDelegatedSigner4Error,
-    WalletsV1ControllerGetDelegatedSigner4Error,
-    WalletsSendTokenControllerSendToken2Response,
-    SendTokenDto,
-    WalletBalanceUnstableResponseDto,
-    WalletsV1Alpha2ActivityResponseDto,
-    WalletV2025ResponseDto,
-    CreateWalletV2025Dto,
-    CreateTransactionV2025Dto,
-    WalletsTransactionV2025ResponseDto,
-    WalletV1Alpha2TransactionErrorDto,
-    SubmitApprovalV2025Dto,
-    WalletsMultipleTransactionV2025ResponseDto,
     CreateSignatureV2025Dto,
-    WalletsSignatureV2025ResponseDto,
     CreateSignerV2025InputDto,
+    CreateTransactionV2025Dto,
+    CreateWalletV2025Dto,
     DelegatedSignerV2025Dto,
+    SendTokenDto,
+    SubmitApprovalV2025Dto,
+    WalletBalanceV20250609ResponseDto,
     WalletNftsResponseDto,
+    WalletV1Alpha2ErrorDto,
+    WalletV1Alpha2TransactionErrorDto,
+    WalletV2025ResponseDto,
+    WalletsMultipleTransactionV2025ResponseDto,
+    WalletsSendTokenControllerSendToken2Response,
+    WalletsSignatureV2025ResponseDto,
+    WalletsTransactionV2025ResponseDto,
+    WalletsV1Alpha2ActivityResponseDto,
+    WalletsV1ControllerCreateDelegatedSigner4Error,
+    WalletsV1ControllerCreateSignatureRequest4Error,
+    WalletsV1ControllerGetDelegatedSigner4Error,
+    WalletsV1ControllerGetSignature4Error,
+    WalletsV1ControllerGetTransaction4Error,
+    WalletsV1ControllerGetTransactionsWithoutChain4Error,
+    WalletsV1ControllerSubmitApprovals4Error,
+    WalletsV1ControllerSubmitSignatureApprovals4Error,
 } from "./gen/types.gen";
 
 export type CreateWalletParams = CreateWalletV2025Dto;
@@ -60,8 +60,8 @@ export type GetTransactionsResponse =
     | WalletsMultipleTransactionV2025ResponseDto
     | WalletsV1ControllerGetTransactionsWithoutChain4Error;
 export type GetNftsResponse = WalletNftsResponseDto;
-export type GetBalanceResponse = WalletBalanceUnstableResponseDto | BalanceControllerGetBalanceForLocator2Error;
-export type GetBalanceSuccessResponse = WalletBalanceUnstableResponseDto;
+export type GetBalanceResponse = WalletBalanceV20250609ResponseDto | BalanceControllerGetBalanceForLocator2Error;
+export type GetBalanceSuccessResponse = WalletBalanceV20250609ResponseDto;
 export type GetActivityResponse = WalletsV1Alpha2ActivityResponseDto | WalletV1Alpha2ErrorDto;
 export type Activity = WalletsV1Alpha2ActivityResponseDto;
 

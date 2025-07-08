@@ -157,9 +157,9 @@ class ApiClient extends CrossmintApiClient {
         }
     ): Promise<GetBalanceResponse> {
         const queryParams = new URLSearchParams();
-        queryParams.append("tokenLocators", params.tokens.join(","));
+        queryParams.append("tokens", params.tokens.join(","));
         queryParams.append("chains", params.chains.join(","));
-        const response = await this.get(`api/unstable/wallets/${walletLocator}/balances?${queryParams.toString()}`, {
+        const response = await this.get(`${this.apiPrefix}/${walletLocator}/balances?${queryParams.toString()}`, {
             headers: this.headers,
         });
         return response.json();
