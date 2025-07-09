@@ -46,7 +46,7 @@ function EVMPrivyProvider({ children }: { children: React.ReactNode }) {
         <PrivyProvider
             appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID}
             config={{
-                loginMethods: ["wallet", "email", "google", "passkey"],
+                loginMethods: ["email", "google"],
                 embeddedWallets: {
                     ethereum: {
                         createOnLogin: "users-without-wallets",
@@ -59,7 +59,7 @@ function EVMPrivyProvider({ children }: { children: React.ReactNode }) {
                     showPasskeyHelpers={false}
                     createOnLogin={{
                         chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any,
-                        signer: { type: "external-wallet" },
+                        signer: { type: "email" },
                     }}
                 >
                     {children}
@@ -132,7 +132,7 @@ function SolanaPrivyProvider({ children }: { children: React.ReactNode }) {
         <PrivyProvider
             appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID}
             config={{
-                loginMethods: ["wallet", "email", "google", "passkey"],
+                loginMethods: ["email", "google"],
                 embeddedWallets: {
                     solana: {
                         createOnLogin: "users-without-wallets",
