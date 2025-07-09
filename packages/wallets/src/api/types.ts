@@ -65,7 +65,12 @@ export type GetBalanceSuccessResponse = WalletBalanceV20250609ResponseDto;
 export type GetActivityResponse = WalletsV1Alpha2ActivityResponseDto | WalletV1Alpha2ErrorDto;
 export type Activity = WalletsV1Alpha2ActivityResponseDto;
 
-export type RegisterSignerParams = CreateSignerV2025InputDto;
+export type RegisterSignerChain = Extract<CreateSignerV2025InputDto, { chain: any }>["chain"];
+export type RegisterSignerPasskeyParams = Extract<CreateSignerV2025InputDto["signer"], { type: "passkey" }>;
+export type RegisterSignerParams = {
+    signer: string | RegisterSignerPasskeyParams;
+    chain?: RegisterSignerChain;
+};
 export type RegisterSignerResponse = DelegatedSignerV2025Dto | WalletsV1ControllerCreateDelegatedSigner4Error;
 export type GetSignerResponse = DelegatedSignerV2025Dto | WalletsV1ControllerGetDelegatedSigner4Error;
 export type GetDelegatedSignersResponse = Array<DelegatedSignerV2025Dto> | WalletsV1ControllerGetDelegatedSigner4Error;

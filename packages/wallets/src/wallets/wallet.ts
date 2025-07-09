@@ -1,5 +1,12 @@
 import { isValidAddress } from "@crossmint/common-sdk-base";
-import type { Activity, ApiClient, GetSignatureResponse, GetBalanceSuccessResponse, WalletLocator } from "../api";
+import type {
+    Activity,
+    ApiClient,
+    GetSignatureResponse,
+    GetBalanceSuccessResponse,
+    WalletLocator,
+    RegisterSignerPasskeyParams,
+} from "../api";
 import type {
     PendingApproval,
     DelegatedSigner,
@@ -223,12 +230,12 @@ export class Wallet<C extends Chain> {
 
     /**
      * Add a delegated signer to the wallet
-     * @param signer - The signer
+     * @param signer - The signer. For Solana, it must be a string. For EVM, it can be a string or a passkey.
      * @returns The delegated signer
      */
-    public async addDelegatedSigner({ signer }: { signer: string }) {
+    public async addDelegatedSigner(params: { signer: string | RegisterSignerPasskeyParams }) {
         const response = await this.#apiClient.registerSigner(this.walletLocator, {
-            signer: signer,
+            signer: params.signer,
             chain: this.chain === "solana" ? undefined : this.chain,
         });
 

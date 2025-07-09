@@ -1,5 +1,11 @@
 import { WebAuthnP256 } from "ox";
-import type { AdminSignerConfig, ApiClient, CreateWalletParams, GetWalletSuccessResponse } from "../api";
+import type {
+    AdminSignerConfig,
+    ApiClient,
+    CreateWalletParams,
+    GetWalletSuccessResponse,
+    RegisterSignerPasskeyParams,
+} from "../api";
 import { WalletCreationError, WalletNotAvailableError } from "../utils/errors";
 import type { Chain } from "../chains/chains";
 import type { InternalSignerConfig, SignerConfigForChain } from "../signers/types";
@@ -149,7 +155,9 @@ export class WalletFactory {
         }
     }
 
-    private async createPasskeyAdminSigner<C extends Chain>(signer: SignerConfigForChain<C>) {
+    private async createPasskeyAdminSigner<C extends Chain>(
+        signer: SignerConfigForChain<C>
+    ): Promise<RegisterSignerPasskeyParams> {
         if (signer.type !== "passkey") {
             throw new Error("Signer is not a passkey");
         }
