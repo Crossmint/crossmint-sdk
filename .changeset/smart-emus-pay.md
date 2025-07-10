@@ -2,4 +2,4 @@
 "@crossmint/wallets-sdk": patch
 ---
 
-Add getTransaction method
+Add experimental_transaction method
