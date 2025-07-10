@@ -85,6 +85,20 @@ export function CrossmintWalletBaseProvider({
                     };
                 }
 
+                if (args?.signer?.type === "phone") {
+                    const phone = args.signer.phone;
+                    const _onAuthRequired = args.signer.onAuthRequired ?? onAuthRequired;
+
+                    if (phone == null) {
+                        throw new Error("Phone not found in signer. Please set phone in signer.");
+                    }
+                    args.signer = {
+                        ...args.signer,
+                        phone,
+                        onAuthRequired: _onAuthRequired,
+                    };
+                }
+
                 if (args?.signer?.type === "external-wallet") {
                     const signer =
                         args.signer?.address != null ? args.signer : experimental_customAuth.externalWalletSigner;
