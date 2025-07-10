@@ -1,5 +1,6 @@
 import * as React from "react";
 import { WebView, type WebViewProps } from "react-native-webview";
+import { z } from "zod";
 
 const INJECTED_BRIDGE_JS = `
 (function() {
@@ -87,15 +88,58 @@ const INJECTED_BRIDGE_JS = `
 })();
 `;
 
-export interface RNWebViewProps extends WebViewProps {
-    injectedGlobals?: string;
+/**
+ * Allowed globals - only specific globals that are actually used in the codebase
+ * This provides maximum security by restricting to known, safe values
+ */
+const AllowedGlobalsSchema = z
+    .object({
+        /**
+         * Crossmint application ID - used by the signer iframe for app identification
+         */
+        crossmintAppId: z.string().optional(),
+    })
+    .strict(); // .strict() prevents additional properties
+
+/**
+ * Safe injectable globals - only allows specific allowlisted globals to prevent code injection
+ */
+export type SafeInjectableGlobals = z.infer<typeof AllowedGlobalsSchema>;
+
+/**
+ * Safely converts allowlisted globals to JavaScript code that assigns window properties
+ * This prevents code injection by only allowing known, safe globals
+ */
+function createSafeGlobalsScript(globals: SafeInjectableGlobals): string {
+    // Validate against the strict allowlist
+    const validatedGlobals = AllowedGlobalsSchema.parse(globals);
+
+    const assignments = Object.entries(validatedGlobals)
+        .filter(([, value]) => value != null) // Only assign defined values
+        .map(([key, value]) => {
+            // Safely serialize the value
+            const safeValue = JSON.stringify(value);
+            return `window.${key} = ${safeValue};`;
+        });
+
+    return assignments.join("\n");
 }
 
-export const RNWebView = React.forwardRef<WebView, RNWebViewProps>(({ injectedGlobals = "", ...props }, ref) => {
+export interface RNWebViewProps extends WebViewProps {
+    /**
+     * Safe globals to inject into the WebView. Only allows specific allowlisted globals to prevent code injection.
+     */
+    globals?: SafeInjectableGlobals;
+}
+
+export const RNWebView = React.forwardRef<WebView, RNWebViewProps>(({ globals, ...props }, ref) => {
+    const safeGlobalsScript = globals ? createSafeGlobalsScript(globals) : "";
+
     const combinedInjectedJs = `
         ${INJECTED_BRIDGE_JS}
-        ${injectedGlobals}
+        ${safeGlobalsScript}
     `;
+
     return <WebView ref={ref} {...props} injectedJavaScriptBeforeContentLoaded={combinedInjectedJs} />;
 });
 

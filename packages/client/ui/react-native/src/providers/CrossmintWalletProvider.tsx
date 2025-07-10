@@ -53,11 +53,11 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
     const verifyOtpRef = useRef<(otp: string) => Promise<void>>(throwNotAvailable("verifyOtp"));
     const rejectRef = useRef<(error?: Error) => void>(throwNotAvailable("reject"));
 
-    const injectedGlobalsScript = useMemo(() => {
+    const secureGlobals = useMemo(() => {
         if (appId != null) {
-            return `window.crossmintAppId = '${appId}';`;
+            return { crossmintAppId: appId };
         }
-        return "";
+        return {};
     }, [appId]);
 
     useEffect(() => {
@@ -180,7 +180,7 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
                 <RNWebView
                     ref={webviewRef}
                     source={{ uri: frameUrl }}
-                    injectedGlobals={injectedGlobalsScript}
+                    globals={secureGlobals}
                     onLoadStart={(event) => {
                         console.log("[CrossmintWalletProvider] WebView onLoadStart:", event.nativeEvent.url);
                     }}
