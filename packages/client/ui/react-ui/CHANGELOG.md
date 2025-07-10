@@ -1,5 +1,19 @@
 # @crossmint/client-sdk-react-ui
 
+## 2.2.11
+
+### Patch Changes
+
+- 174d730: checkout: order metadata
+- Updated dependencies [174d730]
+- Updated dependencies [b4fa1ce]
+  - @crossmint/client-sdk-base@1.5.9
+  - @crossmint/common-sdk-base@0.8.3
+  - @crossmint/wallets-sdk@0.10.11
+  - @crossmint/client-sdk-auth@1.2.18
+  - @crossmint/client-sdk-react-base@0.5.11
+  - @crossmint/common-sdk-auth@1.0.40
+
 ## 2.2.10
 
 ### Patch Changes

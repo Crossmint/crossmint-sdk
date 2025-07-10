@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-base
 
+## 1.5.9
+
+### Patch Changes
+
+- 174d730: checkout: order metadata
+- Updated dependencies [174d730]
+  - @crossmint/common-sdk-base@0.8.3
+
 ## 1.5.8
 
 ### Patch Changes
