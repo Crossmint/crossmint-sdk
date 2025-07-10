@@ -1,5 +1,13 @@
 # @crossmint/wallets-sdk
 
+## 0.10.12
+
+### Patch Changes
+
+- fa12984: Add experimental_transaction method
+- Updated dependencies [fa8da3f]
+  - @crossmint/common-sdk-base@0.8.4
+
 ## 0.10.11
 
 ### Patch Changes
