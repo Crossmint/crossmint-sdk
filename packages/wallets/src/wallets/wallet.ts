@@ -174,8 +174,16 @@ export class Wallet<C extends Chain> {
      * Get the wallet transactions
      * @returns The transactions
      */
-    public async experimental_transactions() {
+    public async transactions() {
         return await this.#apiClient.getTransactions(this.walletLocator);
+    }
+
+    /**
+     * Get a transaction by id
+     * @returns The transaction
+     */
+    public async transaction(transactionId: string) {
+        return await this.#apiClient.getTransaction(this.walletLocator, transactionId);
     }
 
     /**
