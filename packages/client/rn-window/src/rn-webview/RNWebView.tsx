@@ -94,16 +94,9 @@ const INJECTED_BRIDGE_JS = `
  */
 const AllowedGlobalsSchema = z
     .object({
-        /**
-         * Crossmint application ID - used by the signer iframe for app identification
-         */
         crossmintAppId: z.string().optional(),
     })
-    .strict(); // .strict() prevents additional properties
-
-/**
- * Safe injectable globals - only allows specific allowlisted globals to prevent code injection
- */
+    .strict();
 export type SafeInjectableGlobals = z.infer<typeof AllowedGlobalsSchema>;
 
 /**
@@ -111,9 +104,7 @@ export type SafeInjectableGlobals = z.infer<typeof AllowedGlobalsSchema>;
  * This prevents code injection by only allowing known, safe globals
  */
 function createSafeGlobalsScript(globals: SafeInjectableGlobals): string {
-    // Validate against the strict allowlist
     const validatedGlobals = AllowedGlobalsSchema.parse(globals);
-
     const assignments = Object.entries(validatedGlobals)
         .filter(([, value]) => value != null) // Only assign defined values
         .map(([key, value]) => {
@@ -126,9 +117,6 @@ function createSafeGlobalsScript(globals: SafeInjectableGlobals): string {
 }
 
 export interface RNWebViewProps extends WebViewProps {
-    /**
-     * Safe globals to inject into the WebView. Only allows specific allowlisted globals to prevent code injection.
-     */
     globals?: SafeInjectableGlobals;
 }
 
