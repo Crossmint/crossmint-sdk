@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-nextjs-starter
 
+## 1.4.103
+
+### Patch Changes
+
+- fa8da3f: fix: world-chain string
+  - @crossmint/client-sdk-base@1.5.10
+  - @crossmint/client-sdk-react-ui@2.2.12
+
 ## 1.4.102
 
 ### Patch Changes

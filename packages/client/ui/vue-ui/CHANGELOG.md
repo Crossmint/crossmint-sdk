@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-vue-ui
 
+## 1.1.56
+
+### Patch Changes
+
+- @crossmint/client-sdk-base@1.5.10
+
 ## 1.1.55
 
 ### Patch Changes
