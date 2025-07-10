@@ -1,5 +1,13 @@
 # @crossmint/wallets-sdk
 
+## 0.10.11
+
+### Patch Changes
+
+- b4fa1ce: fix activity api version
+- Updated dependencies [174d730]
+  - @crossmint/common-sdk-base@0.8.3
+
 ## 0.10.10
 
 ### Patch Changes

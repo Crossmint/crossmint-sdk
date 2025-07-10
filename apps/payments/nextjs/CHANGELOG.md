@@ -1,5 +1,14 @@
 # @crossmint/client-sdk-nextjs-starter
 
+## 1.4.102
+
+### Patch Changes
+
+- 174d730: checkout: order metadata
+- Updated dependencies [174d730]
+  - @crossmint/client-sdk-react-ui@2.2.11
+  - @crossmint/client-sdk-base@1.5.9
+
 ## 1.4.101
 
 ### Patch Changes
