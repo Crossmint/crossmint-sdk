@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 0.10.10
+
+### Patch Changes
+
+- 21ed41d: Migrate to 2.5 rest api
+
 ## 0.10.9
 
 ### Patch Changes
