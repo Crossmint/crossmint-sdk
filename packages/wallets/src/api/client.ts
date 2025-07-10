@@ -32,6 +32,7 @@ import type { Chain } from "../chains/chains";
 
 class ApiClient extends CrossmintApiClient {
     private apiPrefix = "api/2025-06-09/wallets";
+    private legacyApiPrefix = "api/2022-06-09/wallets";
 
     constructor(crossmint: Crossmint) {
         super(crossmint, {
@@ -141,9 +142,13 @@ class ApiClient extends CrossmintApiClient {
     }
 
     async experimental_activity(walletLocator: WalletLocator, params: { chain: Chain }): Promise<GetActivityResponse> {
+        let legacyLocator = walletLocator;
+        if (!this.isServerSide) {
+            legacyLocator = `me:${params.chain === "solana" ? "solana-smart-wallet" : "evm-smart-wallet"}`;
+        }
         const queryParams = new URLSearchParams();
         queryParams.append("chain", params.chain.toString());
-        const response = await this.get(`${this.apiPrefix}/${walletLocator}/activity?${queryParams.toString()}`, {
+        const response = await this.get(`${this.legacyApiPrefix}/${legacyLocator}/activity?${queryParams.toString()}`, {
             headers: this.headers,
         });
         return response.json();
