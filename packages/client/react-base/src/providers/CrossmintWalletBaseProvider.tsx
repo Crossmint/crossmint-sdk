@@ -72,9 +72,10 @@ export function CrossmintWalletBaseProvider({
                 if (args?.signer?.type === "email") {
                     const email = args.signer.email ?? experimental_customAuth?.email;
                     const _onAuthRequired = args.signer.onAuthRequired ?? onAuthRequired;
+
                     if (email == null) {
                         throw new Error(
-                            "Email not found in customAuth or signer. Please set email in customAuth or signer."
+                            "Email not found in experimental_customAuth or signer. Please set email in experimental_customAuth or signer."
                         );
                     }
                     args.signer = {
@@ -90,13 +91,9 @@ export function CrossmintWalletBaseProvider({
 
                     if (signer == null) {
                         throw new Error(
-                            "External wallet config not found in customAuth or signer. Please set it in customAuth or signer."
+                            "External wallet config not found in experimental_customAuth or signer. Please set it in experimental_customAuth or signer."
                         );
                     }
-
-                    // TODO: detect runtime error - maybe move this signer logic to the Wallets SDK
-                    // if externalWallet is Evm and chain is Solana => throw
-                    // if externalWallet is Solana and chain is Evm => throw
                     args.signer = signer as SignerConfigForChain<C>;
                 }
 
@@ -127,9 +124,22 @@ export function CrossmintWalletBaseProvider({
 
     useEffect(() => {
         if (createOnLogin != null) {
+            if (
+                (createOnLogin.signer.type === "email" && experimental_customAuth?.email == null) ||
+                (createOnLogin.signer.type === "external-wallet" &&
+                    experimental_customAuth?.externalWalletSigner == null)
+            ) {
+                return;
+            }
+
             getOrCreateWallet(createOnLogin);
         }
-    }, [createOnLogin, getOrCreateWallet]);
+    }, [
+        createOnLogin,
+        getOrCreateWallet,
+        experimental_customAuth?.email,
+        experimental_customAuth?.externalWalletSigner,
+    ]);
 
     useEffect(() => {
         if (experimental_customAuth?.jwt == null && walletStatus !== "not-loaded") {

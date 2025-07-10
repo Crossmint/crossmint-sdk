@@ -13,17 +13,14 @@ import { CrossmintAuthLogoutButton } from "@/components/logout";
 export function HomeContent() {
     // @TODO: Uncomment the connector you want to use
 
+    // const { crossmintWallet: wallet, crossmintWalletStatus: status, isLoading } = useFirebaseConnector();
     // const { crossmintWallet: wallet, crossmintWalletStatus: status, isLoading } = useSolanaPrivyConnector();
     // const {
     //     crossmintWallet: wallet,
     //     crossmintWalletStatus: status,
     //     isLoading,
     // } = useSolanaDynamicConnector();
-    // const {
-    //     crossmintWallet: wallet,
-    //     crossmintWalletStatus: status,
-    //     isLoading,
-    // } = useEVMPrivyConnector();
+    // const { crossmintWallet: wallet, crossmintWalletStatus: status, isLoading } = useEVMPrivyConnector();
     // const {
     //     crossmintWallet: wallet,
     //     crossmintWalletStatus: status,
@@ -54,6 +51,7 @@ export function HomeContent() {
                     <CrossmintAuthLoginButton />
                     {/* <PrivyLoginButton /> */}
                     {/* <DynamicLabsLoginButton /> */}
+                    {/* <FirebaseLoginButton /> */}
                 </div>
             </div>
         );
@@ -104,6 +102,7 @@ export function HomeContent() {
                     <CrossmintAuthLogoutButton />
                     {/* <PrivyLogoutButton /> */}
                     {/* <DynamicLabsLogoutButton /> */}
+                    {/* <FirebaseLogoutButton /> */}
                 </div>
                 {wallet?.chain !== "solana" && <EVMTransferFunds />}
                 {wallet?.chain === "solana" && <SolanaTransferFunds />}

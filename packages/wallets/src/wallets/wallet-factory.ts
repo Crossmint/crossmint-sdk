@@ -1,15 +1,18 @@
 import { WebAuthnP256 } from "ox";
-import type { ApiClient, GetWalletSuccessResponse } from "../api";
+import type {
+    AdminSignerConfig,
+    ApiClient,
+    CreateWalletParams,
+    GetWalletSuccessResponse,
+    RegisterSignerPasskeyParams,
+} from "../api";
 import { WalletCreationError, WalletNotAvailableError } from "../utils/errors";
 import type { Chain } from "../chains/chains";
-import type { InternalSignerConfig, SignerConfigForChain, ExternalWalletInternalSignerConfig } from "../signers/types";
+import type { InternalSignerConfig, SignerConfigForChain } from "../signers/types";
 import { Wallet } from "./wallet";
 import { assembleSigner } from "../signers";
 import type { WalletArgsFor, WalletOptions } from "./types";
-import { deepCompare } from "@/utils/signer-validation";
-import { EvmEmailSigner } from "@/signers/email/evm-email-signer";
-import { SolanaEmailSigner } from "@/signers/email/solana-email-signer";
-import { isEVMBlockchain } from "@crossmint/common-sdk-base";
+import { compareSignerConfigs } from "@/utils/signer-validation";
 
 export class WalletFactory {
     constructor(private readonly apiClient: ApiClient) {}
@@ -19,12 +22,9 @@ export class WalletFactory {
             throw new WalletCreationError("getOrCreateWallet is not supported on server side");
         }
 
-        const existingWallet = await this.apiClient.getWallet(
-            `me:${args.chain === "solana" ? "solana-smart-wallet" : "evm-smart-wallet"}`
-        );
+        const existingWallet = await this.apiClient.getWallet(`me:${args.chain === "solana" ? "solana" : "evm"}:smart`);
 
-        if (existingWallet && !("error" in existingWallet)) {
-            await this.validateWalletConfig(existingWallet, args);
+        if (existingWallet != null && !("error" in existingWallet)) {
             return this.createWalletInstance(existingWallet, args);
         }
 
@@ -36,35 +36,30 @@ export class WalletFactory {
             throw new WalletCreationError("getWallet is not supported on client side, use getOrCreateWallet instead");
         }
 
-        const walletResponse = await this.apiClient.getWallet(walletLocator);
-        if ("error" in walletResponse) {
-            throw new WalletNotAvailableError(JSON.stringify(walletResponse));
+        const existingWallet = await this.apiClient.getWallet(walletLocator);
+        if ("error" in existingWallet) {
+            throw new WalletNotAvailableError(JSON.stringify(existingWallet));
         }
-        return this.createWalletInstance(walletResponse, args);
+
+        return this.createWalletInstance(existingWallet, args);
     }
 
     public async createWallet<C extends Chain>(args: WalletArgsFor<C>): Promise<Wallet<C>> {
         await args.options?.experimental_callbacks?.onWalletCreationStart?.();
-        let walletPayload: any;
-        if (args.chain === "solana") {
-            walletPayload = {
-                type: "solana-smart-wallet",
-                config: {
-                    adminSigner: await this.configureSigner(args.chain, args.signer),
-                },
-                linkedUser: args.owner ?? undefined,
-            };
-        } else {
-            walletPayload = {
-                type: "evm-smart-wallet",
-                config: {
-                    adminSigner: await this.configureSigner(args.chain, args.signer),
-                },
-                linkedUser: args.owner ?? undefined,
-            };
-        }
 
-        const walletResponse = await this.apiClient.createWallet(walletPayload);
+        this.mutateSignerFromCustomAuth(args, true);
+
+        const adminSigner =
+            args.signer.type === "passkey" ? await this.createPasskeyAdminSigner(args.signer) : args.signer;
+
+        const walletResponse = await this.apiClient.createWallet({
+            type: "smart",
+            chainType: args.chain === "solana" ? "solana" : "evm",
+            config: {
+                adminSigner,
+            },
+            owner: args.owner ?? undefined,
+        } as CreateWalletParams);
 
         if ("error" in walletResponse) {
             throw new WalletCreationError(JSON.stringify(walletResponse));
@@ -77,12 +72,14 @@ export class WalletFactory {
         walletResponse: GetWalletSuccessResponse,
         args: WalletArgsFor<C>
     ): Wallet<C> {
+        this.validateExistingWalletConfig(walletResponse, args);
+
         const signerConfig = this.toInternalSignerConfig(walletResponse, args.signer, args.options);
         return new Wallet(
             {
                 chain: args.chain,
                 address: walletResponse.address,
-                owner: walletResponse.linkedUser,
+                owner: walletResponse.owner,
                 signer: assembleSigner(args.chain, signerConfig),
                 options: args.options,
             },
@@ -92,73 +89,63 @@ export class WalletFactory {
 
     private toInternalSignerConfig<C extends Chain>(
         walletResponse: GetWalletSuccessResponse,
-        signer: SignerConfigForChain<C>,
+        signerArgs: SignerConfigForChain<C>,
         options?: WalletOptions
     ): InternalSignerConfig<C> {
-        if (signer == null) {
+        if (!(walletResponse.chainType === "evm" || walletResponse.chainType === "solana")) {
+            throw new WalletCreationError(`Wallet type ${walletResponse.chainType} is not supported`);
+        }
+
+        if (signerArgs == null && walletResponse.config?.adminSigner == null) {
             throw new WalletCreationError("Signer is required to create a wallet");
         }
 
-        switch (signer.type) {
+        switch (signerArgs.type) {
             case "api-key": {
-                let address;
-                switch (walletResponse.type) {
-                    case "solana-smart-wallet":
-                        address = walletResponse.config.adminSigner.address;
-                        break;
-                    case "evm-smart-wallet":
-                        if (walletResponse.config.adminSigner.type === "evm-fireblocks-custodial") {
-                            address = walletResponse.config.adminSigner.address;
-                        }
-                        break;
+                if (walletResponse.config?.adminSigner.type !== "api-key") {
+                    throw new WalletCreationError("API key signer does not match the wallet's signer type");
                 }
-                if (address == null) {
-                    throw new WalletCreationError("Wallet signer 'api-key' has no address");
-                }
+
                 return {
                     type: "api-key",
-                    address,
+                    address: walletResponse.config.adminSigner.address,
+                    locator: walletResponse.config.adminSigner.locator,
                 };
             }
 
             case "external-wallet":
-                return signer as ExternalWalletInternalSignerConfig<C>;
+                if (walletResponse.config?.adminSigner.type !== "external-wallet") {
+                    throw new WalletCreationError("External wallet signer does not match the wallet's signer type");
+                }
+
+                return { ...walletResponse.config.adminSigner, ...signerArgs };
 
             case "passkey":
-                if (
-                    walletResponse.type === "evm-smart-wallet" &&
-                    walletResponse.config.adminSigner.type === "evm-passkey"
-                ) {
-                    return {
-                        type: "passkey",
-                        id: walletResponse.config.adminSigner.id,
-                        name: walletResponse.config.adminSigner.name,
-                        onCreatePasskey: signer.onCreatePasskey,
-                        onSignWithPasskey: signer.onSignWithPasskey,
-                    };
+                if (walletResponse.config?.adminSigner.type !== "passkey") {
+                    throw new WalletCreationError("Passkey signer does not match the wallet's signer type");
                 }
-                throw new WalletCreationError("Passkey signer is not supported for this wallet type");
+
+                return {
+                    type: "passkey",
+                    id: walletResponse.config.adminSigner.id,
+                    name: walletResponse.config.adminSigner.name,
+                    locator: walletResponse.config.adminSigner.locator,
+                    onCreatePasskey: signerArgs.onCreatePasskey,
+                    onSignWithPasskey: signerArgs.onSignWithPasskey,
+                };
 
             case "email": {
-                if (
-                    !(
-                        (walletResponse.type === "solana-smart-wallet" &&
-                            walletResponse.config.adminSigner.type === "solana-keypair") ||
-                        (walletResponse.type === "evm-smart-wallet" &&
-                            walletResponse.config.adminSigner.type === "evm-keypair")
-                    )
-                ) {
-                    throw new WalletCreationError("Wallet signer 'email' has no address");
+                if (walletResponse.config?.adminSigner.type !== "email") {
+                    throw new WalletCreationError("Email signer does not match the wallet's signer type");
                 }
 
-                const address = walletResponse.config.adminSigner.address;
-                const email = signer.email ?? this.apiClient.crossmint.experimental_customAuth?.email;
+                const { locator, email } = walletResponse.config.adminSigner;
                 return {
                     type: "email",
                     email,
-                    signerAddress: address,
+                    locator,
                     crossmint: this.apiClient.crossmint,
-                    onAuthRequired: signer.onAuthRequired,
+                    onAuthRequired: signerArgs.onAuthRequired,
                     clientTEEConnection: options?.clientTEEConnection,
                 };
             }
@@ -168,108 +155,76 @@ export class WalletFactory {
         }
     }
 
-    private async configureSigner<C extends Chain>(chain: C, signer?: SignerConfigForChain<C>) {
-        if (signer?.type === "passkey") {
-            const passkeyName = signer.name ?? `Crossmint Wallet ${Date.now()}`;
-            const passkeyCredential = signer.onCreatePasskey
-                ? await signer.onCreatePasskey(passkeyName)
-                : await WebAuthnP256.createCredential({ name: passkeyName });
-            return {
-                type: "evm-passkey",
-                id: passkeyCredential.id,
-                name: passkeyName,
-                publicKey: {
-                    x: passkeyCredential.publicKey.x.toString(),
-                    y: passkeyCredential.publicKey.y.toString(),
-                },
-            } as const;
+    private async createPasskeyAdminSigner<C extends Chain>(
+        signer: SignerConfigForChain<C>
+    ): Promise<RegisterSignerPasskeyParams> {
+        if (signer.type !== "passkey") {
+            throw new Error("Signer is not a passkey");
         }
-
-        return await this.toExternalSignerConfig(chain, signer);
+        const passkeyName = signer.name ?? `Crossmint Wallet ${Date.now()}`;
+        const passkeyCredential = signer.onCreatePasskey
+            ? await signer.onCreatePasskey(passkeyName)
+            : await WebAuthnP256.createCredential({ name: passkeyName });
+        return {
+            type: "passkey",
+            id: passkeyCredential.id,
+            name: passkeyName,
+            publicKey: {
+                x: passkeyCredential.publicKey.x.toString(),
+                y: passkeyCredential.publicKey.y.toString(),
+            },
+        };
     }
 
-    private async toExternalSignerConfig<C extends Chain>(
-        chain: C,
-        signer?: SignerConfigForChain<C>,
-        existingWallet?: GetWalletSuccessResponse
-    ) {
-        if (!signer || signer.type === "api-key") {
-            return {
-                type: chain === "solana" ? "solana-fireblocks-custodial" : "evm-fireblocks-custodial",
-            };
+    private mutateSignerFromCustomAuth<C extends Chain>(args: WalletArgsFor<C>, isNewWalletSigner = false): void {
+        const { experimental_customAuth } = this.apiClient.crossmint;
+        if (args.signer.type === "email" && experimental_customAuth?.email != null) {
+            args.signer.email = args.signer.email ?? experimental_customAuth.email;
         }
-
-        if (signer.type === "external-wallet") {
-            return {
-                type: chain === "solana" ? "solana-keypair" : "evm-keypair",
-                address: signer.address,
-            };
+        if (args.signer.type === "external-wallet" && experimental_customAuth?.externalWalletSigner != null) {
+            args.signer = isNewWalletSigner
+                ? ({
+                      type: "external-wallet",
+                      address: experimental_customAuth.externalWalletSigner.address,
+                  } as SignerConfigForChain<C>)
+                : (experimental_customAuth.externalWalletSigner as SignerConfigForChain<C>);
         }
-
-        if (signer.type === "passkey" && existingWallet != null) {
-            if (
-                existingWallet?.type !== "evm-smart-wallet" ||
-                existingWallet.config.adminSigner.type !== "evm-passkey"
-            ) {
-                throw new WalletCreationError("Passkey signer is not supported for this wallet type");
-            }
-            return {
-                type: "evm-passkey",
-                id: existingWallet.config.adminSigner.id,
-                name: existingWallet.config.adminSigner.name,
-                publicKey: {
-                    x: existingWallet.config.adminSigner.publicKey.x,
-                    y: existingWallet.config.adminSigner.publicKey.y,
-                },
-            };
-        }
-
-        if (signer.type === "email") {
-            const email = signer.email ?? this.apiClient.crossmint.experimental_customAuth?.email;
-            if (email == null) {
-                throw new Error("Email is required to create a wallet with email signer");
-            }
-
-            if (chain === "solana") {
-                const emailSignerAddress = await SolanaEmailSigner.pregenerateSigner(email, this.apiClient.crossmint);
-                return {
-                    type: "solana-keypair",
-                    address: emailSignerAddress,
-                };
-            } else if (isEVMBlockchain(chain)) {
-                const emailSignerAddress = await EvmEmailSigner.pregenerateSigner(email, this.apiClient.crossmint);
-                return {
-                    type: "evm-keypair",
-                    address: emailSignerAddress,
-                };
-            }
-        }
-
-        throw new Error("Invalid signer type");
+        return;
     }
 
-    private async validateWalletConfig<C extends Chain>(
+    private validateExistingWalletConfig<C extends Chain>(
         existingWallet: GetWalletSuccessResponse,
         args: WalletArgsFor<C>
-    ): Promise<void> {
-        if (args.owner != null && existingWallet.linkedUser != null && args.owner !== existingWallet.linkedUser) {
+    ): void {
+        this.mutateSignerFromCustomAuth(args);
+
+        if (args.owner != null && existingWallet.owner != null && args.owner !== existingWallet.owner) {
             throw new WalletCreationError("Wallet owner does not match existing wallet's linked user");
         }
 
-        if (existingWallet.type !== "solana-smart-wallet" && existingWallet.type !== "evm-smart-wallet") {
+        if (
+            (args.chain === "solana" && existingWallet.chainType !== "solana") ||
+            (args.chain !== "solana" && existingWallet.chainType === "solana")
+        ) {
+            throw new WalletCreationError(
+                `Wallet chain does not match existing wallet's chain. You must use chain: ${existingWallet.chainType}.`
+            );
+        }
+
+        if (existingWallet.type !== "smart") {
             return;
         }
 
-        const configuredArgsSigner = await this.toExternalSignerConfig(args.chain, args.signer, existingWallet);
-        const existingWalletSigner = existingWallet.config.adminSigner as any;
+        const adminSignerArgs = args.signer;
+        const existingWalletSigner = (existingWallet?.config as any)?.adminSigner as AdminSignerConfig;
 
-        if (configuredArgsSigner && existingWalletSigner) {
-            if (configuredArgsSigner.type !== existingWalletSigner.type) {
+        if (adminSignerArgs != null && existingWalletSigner != null) {
+            if (adminSignerArgs.type !== existingWalletSigner.type) {
                 throw new WalletCreationError(
                     "The wallet signer type provided in the wallet config does not match the existing wallet's adminSigner type"
                 );
             }
-            deepCompare(configuredArgsSigner, existingWalletSigner);
+            compareSignerConfigs(adminSignerArgs, existingWalletSigner);
         }
     }
 }

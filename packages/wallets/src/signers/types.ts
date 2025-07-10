@@ -54,20 +54,24 @@ export type PasskeySignerConfig = {
 // Internal signer config
 ////////////////////////////////////////////////////////////
 export type EmailInternalSignerConfig = EmailSignerConfig & {
-    signerAddress: string;
+    locator: string;
     crossmint: Crossmint;
     clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
 };
 
 export type PasskeyInternalSignerConfig = PasskeySignerConfig & {
+    locator: string;
     id: string;
 };
 
 export type ApiKeyInternalSignerConfig = ApiKeySignerConfig & {
+    locator: string;
     address: string;
 };
 
-export type ExternalWalletInternalSignerConfig<C extends Chain> = ExternalWalletSignerConfigForChain<C>;
+export type ExternalWalletInternalSignerConfig<C extends Chain> = ExternalWalletSignerConfigForChain<C> & {
+    locator: string;
+};
 
 export type InternalSignerConfig<C extends Chain> =
     | EmailInternalSignerConfig

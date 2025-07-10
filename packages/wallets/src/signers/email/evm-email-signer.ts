@@ -1,7 +1,5 @@
 import type { EmailInternalSignerConfig } from "../types";
-import { EmailSignerApiClient } from "./email-signer-api-client";
 import { EmailSigner, DEFAULT_EVENT_OPTIONS } from "./email-signer";
-import type { Crossmint } from "@crossmint/common-sdk-base";
 import { Address, PublicKey, PersonalMessage } from "ox";
 import { isHex, toHex, type Hex } from "viem";
 
@@ -11,7 +9,7 @@ export class EvmEmailSigner extends EmailSigner {
     }
 
     locator() {
-        return `evm-keypair:${this.config.signerAddress}`;
+        return this.config.locator;
     }
 
     async signMessage(message: string) {
@@ -56,23 +54,6 @@ export class EvmEmailSigner extends EmailSigner {
         }
         EvmEmailSigner.verifyPublicKeyFormat(res.publicKey);
         return { signature: res.signature.bytes };
-    }
-
-    static async pregenerateSigner(email: string, crossmint: Crossmint): Promise<string> {
-        const emailToUse = email ?? crossmint.experimental_customAuth?.email;
-        if (emailToUse == null) {
-            throw new Error("Email is required to pregenerate a signer");
-        }
-
-        try {
-            const response = await new EmailSignerApiClient(crossmint).pregenerateSigner(emailToUse, "secp256k1");
-            const publicKey = response.publicKey;
-            this.verifyPublicKeyFormat(publicKey);
-            return this.publicKeyToEvmAddress(publicKey.bytes);
-        } catch (error) {
-            console.error("[EvmEmailSigner] Failed to pregenerate signer:", error);
-            throw error;
-        }
     }
 
     static verifyPublicKeyFormat(publicKey: { encoding: string; keyType: string; bytes: string } | null) {
