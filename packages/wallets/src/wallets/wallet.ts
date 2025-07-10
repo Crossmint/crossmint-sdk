@@ -179,6 +179,14 @@ export class Wallet<C extends Chain> {
     }
 
     /**
+     * Get a transaction by id
+     * @returns The transaction
+     */
+    public async experimental_transaction(transactionId: string) {
+        return await this.#apiClient.getTransaction(this.walletLocator, transactionId);
+    }
+
+    /**
      * Get the wallet activity
      * @returns The activity
      * @experimental This API is experimental and may change in the future
