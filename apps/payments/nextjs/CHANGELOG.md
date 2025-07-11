@@ -1,5 +1,14 @@
 # @crossmint/client-sdk-nextjs-starter
 
+## 1.4.104
+
+### Patch Changes
+
+- c7a5d49: embed: iframe allow persona
+- Updated dependencies [c7a5d49]
+  - @crossmint/client-sdk-react-ui@2.2.13
+  - @crossmint/client-sdk-base@1.5.11
+
 ## 1.4.103
 
 ### Patch Changes
