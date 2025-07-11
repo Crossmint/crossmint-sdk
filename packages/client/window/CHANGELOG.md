@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-window
 
+## 1.0.1
+
+### Patch Changes
+
+- 99171e9: Safe URL parsing
+- 689e639: Same source checking
+- b573834: Improve randomness source
+
 ## 1.0.0
 
 ### Major Changes

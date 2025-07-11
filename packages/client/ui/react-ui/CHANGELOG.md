@@ -1,5 +1,20 @@
 # @crossmint/client-sdk-react-ui
 
+## 2.2.13
+
+### Patch Changes
+
+- c7a5d49: embed: iframe allow persona
+- Updated dependencies [99171e9]
+- Updated dependencies [689e639]
+- Updated dependencies [b573834]
+  - @crossmint/client-sdk-window@1.0.1
+  - @crossmint/client-sdk-base@1.5.11
+  - @crossmint/client-sdk-react-base@0.5.13
+  - @crossmint/wallets-sdk@0.10.13
+  - @crossmint/client-sdk-auth@1.2.20
+  - @crossmint/common-sdk-auth@1.0.42
+
 ## 2.2.12
 
 ### Patch Changes
