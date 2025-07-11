@@ -5,6 +5,7 @@ import type { EventMap } from "../EventEmitter";
 import type { EventEmitterWithHandshakeOptions } from "../handshake";
 import { HandshakeParent } from "../handshake/Parent";
 import { WindowTransport } from "../transport/WindowTransport";
+import { safeUrl } from "@/utils/safeUrl";
 
 export interface PopupWindowOptions {
     width: number;
@@ -53,7 +54,7 @@ export class PopupWindow<IncomingEvents extends EventMap, OutgoingEvents extends
 
 function createPopupSync(url: string, options: PopupWindowOptions) {
     const _window = window.open(
-        url,
+        safeUrl(url),
         "popupWindow",
         createPopupString(options.width, options.height, options?.crossOrigin || false)
     );
@@ -86,7 +87,7 @@ function createPopupString(width: number, height: number, crossOrigin: boolean):
         width
     )},top=${createPopupStrategy.getTop(
         height
-    )},resizable=yes,scrollbars=yes,toolbar=yes,menubar=true,location=no,directories=no,status=yes`;
+    )},resizable=yes,scrollbars=yes,toolbar=yes,menubar=true,location=no,directories=no,status=yes,noopener,noreferrer`;
 }
 
 function getChromeVersion() {
