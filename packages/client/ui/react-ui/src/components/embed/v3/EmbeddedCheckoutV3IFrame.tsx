@@ -68,7 +68,7 @@ export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props
                 src={embeddedCheckoutService.iframe.getUrl(memoizedProps.current)}
                 id="crossmint-embedded-checkout.iframe"
                 role="crossmint-embedded-checkout.iframe"
-                allow="payment *"
+                allow="payment *; microphone; camera"
                 style={{
                     boxShadow: "none",
                     border: "none",
