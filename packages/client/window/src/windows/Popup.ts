@@ -87,7 +87,7 @@ function createPopupString(width: number, height: number, crossOrigin: boolean):
         width
     )},top=${createPopupStrategy.getTop(
         height
-    )},resizable=yes,scrollbars=yes,toolbar=yes,menubar=true,location=no,directories=no,status=yes,noopener,noreferrer`;
+    )},resizable=yes,scrollbars=yes,toolbar=yes,menubar=true,location=no,directories=no,status=yes`;
 }
 
 function getChromeVersion() {
