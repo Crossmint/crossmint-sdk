@@ -33,7 +33,7 @@ export const BLOCKCHAIN_TO_CHAIN_ID: Record<EVMBlockchainIncludingTestnet, numbe
     chiliz: 88888,
     boss: 70701,
     shape: 360,
-    worldchain: 480,
+    "world-chain": 480,
 };
 
 export function blockchainToChainId(blockchain: EVMBlockchainIncludingTestnet) {

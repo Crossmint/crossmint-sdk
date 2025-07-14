@@ -1,5 +1,54 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.8.8
+
+### Patch Changes
+
+- @crossmint/client-sdk-base@1.5.11
+- @crossmint/client-sdk-react-base@0.5.13
+- @crossmint/client-sdk-rn-window@0.3.1
+- @crossmint/wallets-sdk@0.10.13
+- @crossmint/client-sdk-auth@1.2.20
+- @crossmint/common-sdk-auth@1.0.42
+
+## 0.8.7
+
+### Patch Changes
+
+- ab31a54: Security Enhancement
+- Updated dependencies [fa8da3f]
+- Updated dependencies [ab31a54]
+- Updated dependencies [fa12984]
+  - @crossmint/common-sdk-base@0.8.4
+  - @crossmint/client-sdk-rn-window@0.3.0
+  - @crossmint/wallets-sdk@0.10.12
+  - @crossmint/client-sdk-auth@1.2.19
+  - @crossmint/client-sdk-base@1.5.10
+  - @crossmint/client-sdk-react-base@0.5.12
+  - @crossmint/common-sdk-auth@1.0.41
+
+## 0.8.6
+
+### Patch Changes
+
+- Updated dependencies [174d730]
+- Updated dependencies [b4fa1ce]
+  - @crossmint/client-sdk-base@1.5.9
+  - @crossmint/common-sdk-base@0.8.3
+  - @crossmint/wallets-sdk@0.10.11
+  - @crossmint/client-sdk-auth@1.2.18
+  - @crossmint/client-sdk-react-base@0.5.11
+  - @crossmint/common-sdk-auth@1.0.40
+
+## 0.8.5
+
+### Patch Changes
+
+- Updated dependencies [21ed41d]
+- Updated dependencies [21ed41d]
+  - @crossmint/client-sdk-react-base@0.5.10
+  - @crossmint/wallets-sdk@0.10.10
+
 ## 0.8.4
 
 ### Patch Changes

@@ -31,7 +31,7 @@ export const useFirebaseConnector = () => {
             }
         });
 
-        return () => unsubscribe();
+        return () => unsubscribe?.();
     }, [firebaseUser]);
 
     return {

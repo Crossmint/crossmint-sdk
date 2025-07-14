@@ -1,5 +1,44 @@
 # @crossmint/client-sdk-react-base
 
+## 0.5.13
+
+### Patch Changes
+
+- Updated dependencies [99171e9]
+- Updated dependencies [689e639]
+- Updated dependencies [b573834]
+  - @crossmint/client-sdk-window@1.0.1
+  - @crossmint/client-sdk-base@1.5.11
+  - @crossmint/wallets-sdk@0.10.13
+
+## 0.5.12
+
+### Patch Changes
+
+- Updated dependencies [fa8da3f]
+- Updated dependencies [fa12984]
+  - @crossmint/common-sdk-base@0.8.4
+  - @crossmint/wallets-sdk@0.10.12
+  - @crossmint/client-sdk-base@1.5.10
+
+## 0.5.11
+
+### Patch Changes
+
+- Updated dependencies [174d730]
+- Updated dependencies [b4fa1ce]
+  - @crossmint/client-sdk-base@1.5.9
+  - @crossmint/common-sdk-base@0.8.3
+  - @crossmint/wallets-sdk@0.10.11
+
+## 0.5.10
+
+### Patch Changes
+
+- 21ed41d: Fix bug in getOrCreateWallet
+- Updated dependencies [21ed41d]
+  - @crossmint/wallets-sdk@0.10.10
+
 ## 0.5.9
 
 ### Patch Changes

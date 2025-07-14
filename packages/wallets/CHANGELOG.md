@@ -1,5 +1,36 @@
 # @crossmint/wallets-sdk
 
+## 0.10.13
+
+### Patch Changes
+
+- Updated dependencies [99171e9]
+- Updated dependencies [689e639]
+- Updated dependencies [b573834]
+  - @crossmint/client-sdk-window@1.0.1
+
+## 0.10.12
+
+### Patch Changes
+
+- fa12984: Add experimental_transaction method
+- Updated dependencies [fa8da3f]
+  - @crossmint/common-sdk-base@0.8.4
+
+## 0.10.11
+
+### Patch Changes
+
+- b4fa1ce: fix activity api version
+- Updated dependencies [174d730]
+  - @crossmint/common-sdk-base@0.8.3
+
+## 0.10.10
+
+### Patch Changes
+
+- 21ed41d: Migrate to 2.5 rest api
+
 ## 0.10.9
 
 ### Patch Changes

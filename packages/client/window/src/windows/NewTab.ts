@@ -4,6 +4,7 @@ import type { EventMap } from "../EventEmitter";
 import type { EventEmitterWithHandshakeOptions } from "../handshake";
 import { HandshakeParent } from "../handshake/Parent";
 import { WindowTransport } from "../transport/WindowTransport";
+import { safeUrl } from "@/utils/safeUrl";
 
 export interface NewTabWindowOptions {
     awaitToLoad?: boolean;
@@ -48,7 +49,7 @@ export class NewTabWindow<IncomingEvents extends EventMap, OutgoingEvents extend
 }
 
 function createNewTabSync(url: string) {
-    const _window = window.open(url, "_blank");
+    const _window = window.open(safeUrl(url), "_blank", "noopener,noreferrer");
     if (!_window) {
         throw new Error("Failed to open new tab window");
     }

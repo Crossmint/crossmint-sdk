@@ -1,5 +1,37 @@
 # @crossmint/client-sdk-nextjs-starter
 
+## 1.4.104
+
+### Patch Changes
+
+- c7a5d49: embed: iframe allow persona
+- Updated dependencies [c7a5d49]
+  - @crossmint/client-sdk-react-ui@2.2.13
+  - @crossmint/client-sdk-base@1.5.11
+
+## 1.4.103
+
+### Patch Changes
+
+- fa8da3f: fix: world-chain string
+  - @crossmint/client-sdk-base@1.5.10
+  - @crossmint/client-sdk-react-ui@2.2.12
+
+## 1.4.102
+
+### Patch Changes
+
+- 174d730: checkout: order metadata
+- Updated dependencies [174d730]
+  - @crossmint/client-sdk-react-ui@2.2.11
+  - @crossmint/client-sdk-base@1.5.9
+
+## 1.4.101
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@2.2.10
+
 ## 1.4.100
 
 ### Patch Changes

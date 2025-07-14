@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-vue-ui-starter",
-    "version": "1.1.68",
+    "version": "1.1.71",
     "private": true,
     "scripts": {
         "dev": "vite",

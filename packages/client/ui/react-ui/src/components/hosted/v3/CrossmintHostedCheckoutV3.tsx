@@ -18,13 +18,14 @@ export function CrossmintHostedCheckout(props: CrossmintHostedCheckoutV3ReactPro
     const apiClient = createCrossmintApiClient(crossmint);
 
     // separate custom props from jsx button props
-    const { recipient, locale, lineItems, payment, appearance, ...buttonProps } = props;
+    const { recipient, locale, lineItems, payment, appearance, metadata, ...buttonProps } = props;
     const customProps: CrossmintHostedCheckoutV3Props = {
         recipient,
         locale,
         lineItems,
         payment,
         appearance,
+        metadata,
     };
 
     const hostedCheckoutService = crossmintHostedCheckoutV3Service({ apiClient, hostedCheckoutProps: customProps });

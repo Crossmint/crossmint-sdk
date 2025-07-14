@@ -1,5 +1,56 @@
 # @crossmint/client-sdk-react-ui
 
+## 2.2.13
+
+### Patch Changes
+
+- c7a5d49: embed: iframe allow persona
+- Updated dependencies [99171e9]
+- Updated dependencies [689e639]
+- Updated dependencies [b573834]
+  - @crossmint/client-sdk-window@1.0.1
+  - @crossmint/client-sdk-base@1.5.11
+  - @crossmint/client-sdk-react-base@0.5.13
+  - @crossmint/wallets-sdk@0.10.13
+  - @crossmint/client-sdk-auth@1.2.20
+  - @crossmint/common-sdk-auth@1.0.42
+
+## 2.2.12
+
+### Patch Changes
+
+- Updated dependencies [fa8da3f]
+- Updated dependencies [fa12984]
+  - @crossmint/common-sdk-base@0.8.4
+  - @crossmint/wallets-sdk@0.10.12
+  - @crossmint/client-sdk-auth@1.2.19
+  - @crossmint/client-sdk-base@1.5.10
+  - @crossmint/client-sdk-react-base@0.5.12
+  - @crossmint/common-sdk-auth@1.0.41
+
+## 2.2.11
+
+### Patch Changes
+
+- 174d730: checkout: order metadata
+- Updated dependencies [174d730]
+- Updated dependencies [b4fa1ce]
+  - @crossmint/client-sdk-base@1.5.9
+  - @crossmint/common-sdk-base@0.8.3
+  - @crossmint/wallets-sdk@0.10.11
+  - @crossmint/client-sdk-auth@1.2.18
+  - @crossmint/client-sdk-react-base@0.5.11
+  - @crossmint/common-sdk-auth@1.0.40
+
+## 2.2.10
+
+### Patch Changes
+
+- Updated dependencies [21ed41d]
+- Updated dependencies [21ed41d]
+  - @crossmint/client-sdk-react-base@0.5.10
+  - @crossmint/wallets-sdk@0.10.10
+
 ## 2.2.9
 
 ### Patch Changes
