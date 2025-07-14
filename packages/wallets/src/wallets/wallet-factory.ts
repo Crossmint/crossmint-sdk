@@ -198,8 +198,8 @@ export class WalletFactory {
         if (args.signer.type === "email" && experimental_customAuth?.email != null) {
             args.signer.email = args.signer.email ?? experimental_customAuth.email;
         }
-        if (args.signer.type === "phone" && args.signer.phone == null) {
-            throw new WalletCreationError("Phone is required to create a wallet");
+        if (args.signer.type === "phone" && experimental_customAuth?.phone != null) {
+            args.signer.phone = args.signer.phone ?? experimental_customAuth.phone;
         }
         if (args.signer.type === "external-wallet" && experimental_customAuth?.externalWalletSigner != null) {
             args.signer = isNewWalletSigner
