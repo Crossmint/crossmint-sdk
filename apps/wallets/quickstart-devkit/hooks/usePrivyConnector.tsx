@@ -25,6 +25,7 @@ export const useEVMPrivyConnector = () => {
                     experimental_setCustomAuth({
                         jwt: privyJwt,
                         email: user?.email?.address ?? user?.google?.email,
+                        phone: user?.phone?.number,
                         externalWalletSigner: {
                             type: "external-wallet",
                             address: privyEmbeddedWallet?.address,

@@ -86,7 +86,7 @@ export function CrossmintWalletBaseProvider({
                 }
 
                 if (args?.signer?.type === "phone") {
-                    const phone = args.signer.phone;
+                    const phone = args.signer.phone ?? experimental_customAuth?.phone;
                     const _onAuthRequired = args.signer.onAuthRequired ?? onAuthRequired;
 
                     if (phone == null) {
