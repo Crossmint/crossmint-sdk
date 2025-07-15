@@ -3,7 +3,7 @@ import { CountdownButton } from "@/components/common/CountdownButton";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/common/InputOTP";
 import { EmailOtpIcon } from "@/icons/emailOTP";
-
+const OTP_LENGTH = 9;
 interface EmailOTPInputProps {
     email: string;
     onSubmitOTP: (token: string) => Promise<void>;
@@ -52,7 +52,7 @@ export function EmailOTPInput({ email, onSubmitOTP, onResendCode, appearance }: 
             </p>
             <div className="py-8">
                 <InputOTP
-                    maxLength={6}
+                    maxLength={OTP_LENGTH}
                     value={token}
                     onChange={(val) => {
                         setToken(val);
@@ -72,12 +72,9 @@ export function EmailOTPInput({ email, onSubmitOTP, onResendCode, appearance }: 
                     }}
                 >
                     <InputOTPGroup>
-                        <InputOTPSlot index={0} hasError={hasError} />
-                        <InputOTPSlot index={1} hasError={hasError} />
-                        <InputOTPSlot index={2} hasError={hasError} />
-                        <InputOTPSlot index={3} hasError={hasError} />
-                        <InputOTPSlot index={4} hasError={hasError} />
-                        <InputOTPSlot index={5} hasError={hasError} />
+                        {Array.from({ length: OTP_LENGTH }).map((_, index) => (
+                            <InputOTPSlot key={index} index={index} hasError={hasError} />
+                        ))}
                     </InputOTPGroup>
                 </InputOTP>
             </div>
