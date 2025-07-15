@@ -1,5 +1,12 @@
 # @crossmint/client-sdk-window
 
+## 1.0.2
+
+### Patch Changes
+
+- deff029: Reverted change
+- 220e9c9: Revert and fix code related to window source checking
+
 ## 1.0.1
 
 ### Patch Changes
