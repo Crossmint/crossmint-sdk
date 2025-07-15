@@ -49,7 +49,7 @@ export class NewTabWindow<IncomingEvents extends EventMap, OutgoingEvents extend
 }
 
 function createNewTabSync(url: string) {
-    const _window = window.open(safeUrl(url), "_blank", "noopener,noreferrer");
+    const _window = window.open(safeUrl(url), "_blank");
     if (!_window) {
         throw new Error("Failed to open new tab window");
     }
