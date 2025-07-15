@@ -6,10 +6,10 @@ import {
     type SignerConfigForChain,
     type Wallet,
     type WalletArgsFor,
+    type PhoneSignerConfig,
 } from "@crossmint/wallets-sdk";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
-import type { PhoneSignerConfig } from "@crossmint/wallets-sdk/dist/signers/types";
 import { useCrossmint } from "@/hooks";
 import type { CreateOnLogin } from "@/types";
 

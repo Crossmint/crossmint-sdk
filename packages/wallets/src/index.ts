@@ -24,6 +24,7 @@ export type { Chain, EVMChain, SolanaChain } from "./chains/chains";
 // Signer configuration types
 export type {
     EmailSignerConfig,
+    PhoneSignerConfig,
     EvmExternalWalletSignerConfig,
     ExternalWalletSignerConfigForChain,
     SignerConfigForChain,
