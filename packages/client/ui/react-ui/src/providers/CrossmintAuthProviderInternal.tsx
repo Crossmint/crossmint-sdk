@@ -1,19 +1,26 @@
 import { type MouseEvent, createContext, useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { CrossmintAuth, getCookie } from "@crossmint/client-sdk-auth";
 import { validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
-import { SESSION_PREFIX, type AuthMaterialWithUser, type SDKExternalUser } from "@crossmint/common-sdk-auth";
+import {
+    type OAuthProvider,
+    SESSION_PREFIX,
+    type AuthMaterialWithUser,
+    type SDKExternalUser,
+} from "@crossmint/common-sdk-auth";
 import { useCrossmint } from "@crossmint/client-sdk-react-base";
+import type { Chain, ExternalWalletSignerConfigForChain } from "@crossmint/wallets-sdk";
 
 import AuthFormDialog from "../components/auth/AuthFormDialog";
 import { AuthFormProvider } from "./auth/AuthFormProvider";
 import { TwindProvider } from "./TwindProvider";
 import type { AuthStatus, CrossmintAuthProviderProps } from "@/types/auth";
 import { DynamicWalletProvider } from "./dynamic/DynamicWalletProvider";
-import type { Chain, ExternalWalletSignerConfigForChain } from "@crossmint/wallets-sdk";
+import { useOAuthWindowListener as experimental_loginWithOAuth } from "@/hooks/useOAuthWindowListener";
 
 type AuthContextType = {
     crossmintAuth?: CrossmintAuth;
     login: (defaultEmail?: string | MouseEvent) => void;
+    experimental_loginWithOAuth: (provider: OAuthProvider) => void;
     logout: () => void;
     jwt?: string;
     user?: SDKExternalUser;
@@ -25,6 +32,7 @@ type AuthContextType = {
 const defaultContextValue: AuthContextType = {
     crossmintAuth: undefined,
     login: () => {},
+    experimental_loginWithOAuth: () => {},
     logout: () => {},
     jwt: undefined,
     user: undefined,
@@ -157,6 +165,7 @@ export function CrossmintAuthProviderInternal({
         () => ({
             crossmintAuth,
             login,
+            experimental_loginWithOAuth,
             logout,
             jwt,
             user,
