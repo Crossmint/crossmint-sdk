@@ -58,7 +58,6 @@ export function CrossmintWalletProvider({
     // Phone signer state (for TEE handshake)
     const [phoneSignerDialogOpen, setPhoneSignerDialogOpen] = useState<boolean>(false);
     const [phoneSignerDialogStep, setPhoneSignerDialogStep] = useState<"initial" | "otp">("initial");
-    const [phoneNumber, setPhoneNumber] = useState<string>("");
 
     const [needsAuthState, setNeedsAuthState] = useState<boolean>(false);
 
@@ -158,7 +157,6 @@ export function CrossmintWalletProvider({
     ) => {
         // Check if we're dealing with a phone signer
         if (createOnLogin?.signer.type === "phone" && createOnLogin.signer.phone) {
-            setPhoneNumber(createOnLogin.signer.phone);
             setPhoneSignerDialogOpen(needsAuth);
             sendPhoneWithOtpRef.current = sendMessageWithOtp;
             verifyPhoneOtpRef.current = verifyOtp;
@@ -197,11 +195,11 @@ export function CrossmintWalletProvider({
                           document.body
                       )
                     : null}
-                {phoneSignerDialogOpen && phoneNumber
+                {phoneSignerDialogOpen && experimental_customAuth?.phone != null
                     ? createPortal(
                           <PhoneSignersDialog
                               rejectRef={rejectRef}
-                              phone={phoneNumber}
+                              phone={experimental_customAuth?.phone}
                               open={phoneSignerDialogOpen}
                               setOpen={setPhoneSignerDialogOpen}
                               step={phoneSignerDialogStep}

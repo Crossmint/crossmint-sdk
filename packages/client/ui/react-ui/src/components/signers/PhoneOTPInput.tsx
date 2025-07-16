@@ -53,7 +53,7 @@ export function PhoneOTPInput({ phone, onSubmitOTP, onResendCode, appearance }: 
             </p>
             <div className="py-8">
                 <InputOTP
-                    maxLength={6}
+                    maxLength={OTP_LENGTH}
                     value={token}
                     onChange={(val) => {
                         setToken(val);
