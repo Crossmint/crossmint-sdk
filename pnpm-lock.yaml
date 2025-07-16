@@ -755,6 +755,9 @@ importers:
       expo-constants:
         specifier: ~17.0.8
         version: 17.0.8(expo@52.0.46(46a24ztoubjv6c36qmshrzn7ii))(react-native@0.76.9(@babel/core@7.26.10)(@babel/preset-env@7.26.9(@babel/core@7.26.10))(@react-native-community/cli@13.6.4(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(@types/react@19.0.12)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10))
+      expo-device:
+        specifier: ~7.1.4
+        version: 7.1.4(expo@52.0.46(46a24ztoubjv6c36qmshrzn7ii))
       expo-secure-store:
         specifier: ~14.0.0
         version: 14.0.1(expo@52.0.46(46a24ztoubjv6c36qmshrzn7ii))
@@ -9834,6 +9837,11 @@ packages:
       expo: '*'
       react-native: 0.76.9
 
+  expo-device@7.1.4:
+    resolution: {integrity: sha512-HS04IiE1Fy0FRjBLurr9e5A6yj3kbmQB+2jCZvbSGpsjBnCLdSk/LCii4f5VFhPIBWJLyYuN5QqJyEAw6BcS4Q==}
+    peerDependencies:
+      expo: '*'
+
   expo-file-system@18.0.12:
     resolution: {integrity: sha512-HAkrd/mb8r+G3lJ9MzmGeuW2B+BxQR1joKfeCyY4deLl1zoZ48FrAWjgZjHK9aHUVhJ0ehzInu/NQtikKytaeg==}
     peerDependencies:
@@ -16043,6 +16051,10 @@ packages:
   typescript@5.8.2:
     resolution: {integrity: sha512-aJn6wq13/afZp/jT9QZmwEjDqqvSGp1VT5GVg+f/t6/oVyrgXM6BY1h9BRh/O5p3PlUPAe+WuiEZOmb/49RqoQ==}
     engines: {node: '>=14.17'}
+    hasBin: true
+
+  ua-parser-js@0.7.40:
+    resolution: {integrity: sha512-us1E3K+3jJppDBa3Tl0L3MOJiGhe1C6P0+nIvQAFYbxlMAx0h81eOwLmU57xgqToduDDPx3y5QsdjPfDu+FgOQ==}
     hasBin: true
 
   ua-parser-js@1.0.40:
@@ -32246,6 +32258,11 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  expo-device@7.1.4(expo@52.0.46(46a24ztoubjv6c36qmshrzn7ii)):
+    dependencies:
+      expo: 52.0.46(46a24ztoubjv6c36qmshrzn7ii)
+      ua-parser-js: 0.7.40
+
   expo-file-system@18.0.12(expo@52.0.46(46a24ztoubjv6c36qmshrzn7ii))(react-native@0.76.9(@babel/core@7.26.10)(@babel/preset-env@7.26.9(@babel/core@7.26.10))(@react-native-community/cli@13.6.4(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(@types/react@19.0.12)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10)):
     dependencies:
       expo: 52.0.46(46a24ztoubjv6c36qmshrzn7ii)
@@ -40823,6 +40840,8 @@ snapshots:
   typescript@5.5.3: {}
 
   typescript@5.8.2: {}
+
+  ua-parser-js@0.7.40: {}
 
   ua-parser-js@1.0.40: {}
 
