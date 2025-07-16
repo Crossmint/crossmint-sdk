@@ -3,6 +3,7 @@ import type { EvmExternalWalletSignerConfig, SolanaExternalWalletSignerConfig } 
 
 export type CustomAuth = {
     email?: string;
+    phone?: string;
     jwt?: string;
     externalWalletSigner?: EvmExternalWalletSignerConfig | SolanaExternalWalletSignerConfig;
 };

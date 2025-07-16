@@ -2,17 +2,17 @@ import { useState } from "react";
 import { CountdownButton } from "@/components/common/CountdownButton";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/common/InputOTP";
-import { EmailOtpIcon } from "@/icons/emailOTP";
+import { PhoneOtpIcon } from "@/icons/phoneOTP";
 import { OTP_LENGTH } from "./consts";
 
-interface EmailOTPInputProps {
-    email: string;
+interface PhoneOTPInputProps {
+    phone: string;
     onSubmitOTP: (token: string) => Promise<void>;
     onResendCode?: () => Promise<void>;
     appearance?: UIConfig;
 }
 
-export function EmailOTPInput({ email, onSubmitOTP, onResendCode, appearance }: EmailOTPInputProps) {
+export function PhoneOTPInput({ phone, onSubmitOTP, onResendCode, appearance }: PhoneOTPInputProps) {
     const [token, setToken] = useState("");
     const [hasError, setHasError] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -36,7 +36,7 @@ export function EmailOTPInput({ email, onSubmitOTP, onResendCode, appearance }: 
     return (
         <div className="flex flex-col items-center justify-start w-full">
             <div className="relative left-3">
-                <EmailOtpIcon
+                <PhoneOtpIcon
                     customAccentColor={appearance?.colors?.accent}
                     customButtonBackgroundColor={appearance?.colors?.buttonBackground}
                     customBackgroundColor={appearance?.colors?.background}
@@ -46,10 +46,10 @@ export function EmailOTPInput({ email, onSubmitOTP, onResendCode, appearance }: 
                 className="text-base font-normal mt-4 mb-1 text-center text-cm-text-primary"
                 style={{ color: appearance?.colors?.textPrimary }}
             >
-                Check your email
+                Check your phone
             </p>
             <p className="text-center text-cm-text-secondary px-4" style={{ color: appearance?.colors?.textSecondary }}>
-                A temporary login code has been sent to {email}
+                A temporary login code has been sent to {phone}
             </p>
             <div className="py-8">
                 <InputOTP
@@ -89,9 +89,9 @@ export function EmailOTPInput({ email, onSubmitOTP, onResendCode, appearance }: 
 
             <div className="text-xs leading-tight text-cm-text-secondary text-center">
                 <span style={{ color: appearance?.colors?.textSecondary }}>
-                    Can't find the email? Check spam folder.
+                    Didn't receive the SMS? Check your signal.
                     {"\n"}
-                    Some emails may take several minutes to arrive.
+                    Some messages may take several minutes to arrive.
                 </span>
             </div>
 
