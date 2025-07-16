@@ -6,10 +6,10 @@ import {
     type SignerConfigForChain,
     type Wallet,
     type WalletArgsFor,
+    type PhoneSignerConfig,
 } from "@crossmint/wallets-sdk";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
-
 import { useCrossmint } from "@/hooks";
 import type { CreateOnLogin } from "@/types";
 
@@ -17,7 +17,7 @@ export type CrossmintWalletBaseContext = {
     wallet: Wallet<Chain> | undefined;
     status: "not-loaded" | "in-progress" | "loaded" | "error";
     getOrCreateWallet: <C extends Chain>(props: WalletArgsFor<C>) => Promise<Wallet<Chain> | undefined>;
-    onAuthRequired?: EmailSignerConfig["onAuthRequired"];
+    onAuthRequired?: EmailSignerConfig["onAuthRequired"] | PhoneSignerConfig["onAuthRequired"];
     clientTEEConnection?: () => HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
 };
 
@@ -81,6 +81,20 @@ export function CrossmintWalletBaseProvider({
                     args.signer = {
                         ...args.signer,
                         email,
+                        onAuthRequired: _onAuthRequired,
+                    };
+                }
+
+                if (args?.signer?.type === "phone") {
+                    const phone = args.signer.phone ?? experimental_customAuth?.phone;
+                    const _onAuthRequired = args.signer.onAuthRequired ?? onAuthRequired;
+
+                    if (phone == null) {
+                        throw new Error("Phone not found in signer. Please set phone in signer.");
+                    }
+                    args.signer = {
+                        ...args.signer,
+                        phone,
                         onAuthRequired: _onAuthRequired,
                     };
                 }

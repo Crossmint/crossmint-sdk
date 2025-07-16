@@ -22,7 +22,7 @@ export const useFirebaseConnector = () => {
 
             try {
                 const token = await user.getIdToken();
-                experimental_setCustomAuth({ jwt: token, email: user.email ?? "" });
+                experimental_setCustomAuth({ jwt: token, email: user.email ?? "", phone: user.phoneNumber ?? "" });
             } catch (error) {
                 console.error("Failed to get Firebase JWT:", error);
                 experimental_setCustomAuth(undefined);
