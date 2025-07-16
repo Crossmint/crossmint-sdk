@@ -15,6 +15,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
                 address: wallet.address,
                 owner: wallet.owner,
                 signer: wallet.signer,
+                options: Wallet.getOptions(wallet),
             },
             Wallet.getApiClient(wallet)
         );
@@ -59,9 +60,14 @@ export class SolanaWallet extends Wallet<SolanaChain> {
 
     private async createTransaction({
         transaction,
+        options,
     }: SolanaTransactionInput): Promise<CreateTransactionSuccessResponse> {
+        const signer = options?.experimental_signerLocator ?? this.signer.locator();
         const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
-            params: { transaction: bs58.encode(transaction.serialize()) },
+            params: {
+                transaction: bs58.encode(transaction.serialize()),
+                signer,
+            },
         });
 
         if ("error" in transactionCreationResponse) {

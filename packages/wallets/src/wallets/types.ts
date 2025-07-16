@@ -4,12 +4,13 @@ import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/clien
 import type { Abi } from "abitype";
 import type { CreateTransactionSuccessResponse } from "../api";
 import type { Chain } from "../chains/chains";
-import type { SignerConfigForChain } from "../signers/types";
+import type { SignerConfigForChain, Signer, BaseSignResult, PasskeySignResult } from "../signers/types";
 
 export type { Activity } from "../api/types";
 
 export type TransactionInputOptions = {
     experimental_prepareOnly?: boolean;
+    experimental_signerLocator?: string;
 };
 
 type EVMTransactionInputBase = {
@@ -102,3 +103,14 @@ export type Transaction<TPrepareOnly extends boolean = false> = TPrepareOnly ext
           explorerLink: string;
           transactionId: string;
       };
+
+export type ApproveTransactionParams = {
+    transactionId: string;
+    experimental_externalSignature?: ExternalSignature;
+    additionalSigners?: Signer[];
+};
+
+export type ExternalSignature = {
+    signerLocator: string;
+    result: BaseSignResult | PasskeySignResult;
+};
