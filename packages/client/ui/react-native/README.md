@@ -5,36 +5,9 @@
 
 ## 🚀 Quick Start
 
-### Required Polyfill Setup
-
-This package requires the `react-native-get-random-values` polyfill to be installed and imported before using any Crossmint SDK functionality. This is necessary because the SDK uses Web Crypto API features that are not available in React Native by default.
-
-#### Installation
-
 ```bash
-pnpm add @crossmint/client-sdk-react-native-ui expo-secure-store expo-web-browser react-native-get-random-values
+pnpm add @crossmint/client-sdk-react-native-ui expo-secure-store expo-web-browser
 ```
-
-#### Import the polyfill
-
-Create a polyfills file (e.g., `utils/polyfills.ts`) and import it at the very beginning of your app:
-
-```typescript
-// utils/polyfills.ts
-import "react-native-get-random-values";
-```
-
-Then import this polyfill file in your app's entry point (e.g., `App.tsx` or `_layout.tsx` for Expo Router):
-
-```typescript
-// App.tsx or _layout.tsx
-import "./utils/polyfills"; // Import this FIRST, before any other imports
-
-import { CrossmintProvider } from "@crossmint/client-sdk-react-native-ui";
-// ... other imports
-```
-
-**Important**: The polyfill must be imported before any Crossmint SDK components or functionality is used.
 
 ### 1. Setup Providers
 
@@ -228,4 +201,4 @@ EXPO_PUBLIC_CROSSMINT_API_KEY=your_api_key_here
 
 ---
 
-**Questions?** Visit our [documentation](https://docs.crossmint.com/introduction/about-crossmint) or contact our support team.  
+**Questions?** Visit our [documentation](https://docs.crossmint.com/introduction/about-crossmint) or contact our support team. 
