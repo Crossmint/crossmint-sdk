@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-walletconnect",
-    "version": "1.2.21",
+    "version": "1.2.22",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Inc",

@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.8.5
+
+### Patch Changes
+
+- 4ea912c: SMS signer
+
 ## 0.8.4
 
 ### Patch Changes

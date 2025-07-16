@@ -1,5 +1,13 @@
 # @crossmint/wallets-sdk
 
+## 0.10.15
+
+### Patch Changes
+
+- 4ea912c: SMS signer
+- Updated dependencies [4ea912c]
+  - @crossmint/common-sdk-base@0.8.5
+
 ## 0.10.14
 
 ### Patch Changes
