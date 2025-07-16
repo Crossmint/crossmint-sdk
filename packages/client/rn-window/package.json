@@ -4,11 +4,7 @@
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
-    "sideEffects": [
-        "src/polyfills.ts",
-        "dist/polyfills.js",
-        "dist/polyfills.cjs"
-    ],
+    "sideEffects": ["src/polyfills.ts", "dist/polyfills.js", "dist/polyfills.cjs"],
     "type": "module",
     "exports": {
         "import": "./dist/index.js",
