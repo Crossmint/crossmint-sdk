@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-rn-window
 
+## 0.3.3
+
+### Patch Changes
+
+- a9e19b0: feat: rn embedded checkout
+
 ## 0.3.2
 
 ### Patch Changes
