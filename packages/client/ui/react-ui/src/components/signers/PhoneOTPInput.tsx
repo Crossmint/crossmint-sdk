@@ -3,6 +3,7 @@ import { CountdownButton } from "@/components/common/CountdownButton";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/common/InputOTP";
 import { PhoneOtpIcon } from "@/icons/phoneOTP";
+import { OTP_LENGTH } from "./consts";
 
 interface PhoneOTPInputProps {
     phone: string;
@@ -72,12 +73,14 @@ export function PhoneOTPInput({ phone, onSubmitOTP, onResendCode, appearance }: 
                     }}
                 >
                     <InputOTPGroup>
-                        <InputOTPSlot index={0} hasError={hasError} />
-                        <InputOTPSlot index={1} hasError={hasError} />
-                        <InputOTPSlot index={2} hasError={hasError} />
-                        <InputOTPSlot index={3} hasError={hasError} />
-                        <InputOTPSlot index={4} hasError={hasError} />
-                        <InputOTPSlot index={5} hasError={hasError} />
+                        {Array.from({ length: OTP_LENGTH }).map((_, index) => (
+                            <InputOTPSlot
+                                key={index}
+                                index={index}
+                                hasError={hasError}
+                                className="max-sm:w-7 max-sm:h-11 max-sm:text-xl max-sm:mx-0 h-12 w-9"
+                            />
+                        ))}
                     </InputOTPGroup>
                 </InputOTP>
             </div>

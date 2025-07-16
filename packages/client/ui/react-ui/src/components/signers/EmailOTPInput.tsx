@@ -3,7 +3,8 @@ import { CountdownButton } from "@/components/common/CountdownButton";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/common/InputOTP";
 import { EmailOtpIcon } from "@/icons/emailOTP";
-const OTP_LENGTH = 9;
+import { OTP_LENGTH } from "./consts";
+
 interface EmailOTPInputProps {
     email: string;
     onSubmitOTP: (token: string) => Promise<void>;
