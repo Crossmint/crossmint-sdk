@@ -4,7 +4,7 @@
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
-    "sideEffects": false,
+    "sideEffects": ["src/polyfills.ts", "dist/polyfills.js", "dist/polyfills.cjs"],
     "type": "module",
     "exports": {
         "import": "./dist/index.js",
@@ -21,6 +21,7 @@
     },
     "dependencies": {
         "@crossmint/client-sdk-window": "workspace:*",
+        "react-native-get-random-values": "^1.11.0",
         "zod": "3.22.4"
     },
     "peerDependencies": {
