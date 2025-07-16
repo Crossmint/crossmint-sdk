@@ -30,6 +30,7 @@
         "@solana/web3.js": "1.98.0",
         "bs58": "^5.0.0",
         "expo-constants": "~17.0.8",
+        "expo-device": "~7.1.4",
         "expo-secure-store": "~14.0.0",
         "expo-web-browser": "~14.0.2",
         "react-native-webview": "13.12.5"
