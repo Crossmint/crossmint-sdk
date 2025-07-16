@@ -10,7 +10,7 @@ export type { Activity } from "../api/types";
 
 export type TransactionInputOptions = {
     experimental_prepareOnly?: boolean;
-    experimental_signerLocator?: string;
+    experimental_signer?: string;
 };
 
 type EVMTransactionInputBase = {
@@ -104,13 +104,16 @@ export type Transaction<TPrepareOnly extends boolean = false> = TPrepareOnly ext
           transactionId: string;
       };
 
-export type ApproveTransactionParams = {
-    transactionId: string;
+export type ApproveTransactionOptions = {
     experimental_externalSignature?: ExternalSignature;
     additionalSigners?: Signer[];
 };
 
-export type ExternalSignature = {
-    signerLocator: string;
-    result: BaseSignResult | PasskeySignResult;
+export type ApproveTransactionParams = {
+    transactionId: string;
+    options?: ApproveTransactionOptions;
+};
+
+export type ExternalSignature = (BaseSignResult | PasskeySignResult) & {
+    signer: string;
 };

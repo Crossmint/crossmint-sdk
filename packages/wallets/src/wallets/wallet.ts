@@ -20,6 +20,7 @@ import type {
     TransactionInputOptions,
     ApproveTransactionParams,
     ExternalSignature,
+    ApproveTransactionOptions,
 } from "./types";
 import {
     InvalidSignerError,
@@ -254,16 +255,13 @@ export class Wallet<C extends Chain> {
      * Approve a transaction
      * @param params - The parameters
      * @param params.transactionId - The transaction id
-     * @param params.experimental_externalSignature - The external signature
-     * @param params.additionalSigners - The additional signers
+     * @param params.options - The options for the transaction
+     * @param params.options.experimental_externalSignature - The external signature
+     * @param params.options.additionalSigners - The additional signers
      * @returns The transaction
      */
     public async approveTransaction(params: ApproveTransactionParams) {
-        return await this.approveAndWait(
-            params.transactionId,
-            params.additionalSigners,
-            params.experimental_externalSignature
-        );
+        return await this.approveAndWait(params.transactionId, params.options);
     }
 
     /**
@@ -339,21 +337,13 @@ export class Wallet<C extends Chain> {
         return this.chain === "solana";
     }
 
-    protected async approveAndWait(
-        transactionId: string,
-        additionalSigners?: Signer[],
-        externalSignature?: ExternalSignature
-    ) {
-        await this.approveTransactionInternal(transactionId, additionalSigners, externalSignature);
+    protected async approveAndWait(transactionId: string, options?: ApproveTransactionOptions) {
+        await this.approveTransactionInternal(transactionId, options);
         await this.sleep(1_000); // Rule of thumb: tx won't be confirmed in less than 1 second
         return await this.waitForTransaction(transactionId);
     }
 
-    protected async approveTransactionInternal(
-        transactionId: string,
-        additionalSigners?: Signer[],
-        externalSignature?: ExternalSignature
-    ) {
+    protected async approveTransactionInternal(transactionId: string, options?: ApproveTransactionOptions) {
         const transaction = await this.#apiClient.getTransaction(this.walletLocator, transactionId);
 
         if ("error" in transaction) {
@@ -368,13 +358,8 @@ export class Wallet<C extends Chain> {
         }
 
         // If an external signature is provided, use it to approve the transaction
-        if (externalSignature != null) {
-            const approvals = [
-                {
-                    signerLocator: externalSignature.signerLocator,
-                    result: externalSignature.result,
-                },
-            ];
+        if (options?.experimental_externalSignature != null) {
+            const approvals = [options.experimental_externalSignature];
 
             return await this.executeApprovalWithErrorHandling(transactionId, approvals);
         }
@@ -385,7 +370,7 @@ export class Wallet<C extends Chain> {
             return transaction;
         }
 
-        const signers = [...(additionalSigners ?? []), this.signer];
+        const signers = [...(options?.additionalSigners ?? []), this.signer];
 
         const signedApprovals = await Promise.all(
             pendingApprovals.map((pendingApproval) => {
@@ -404,8 +389,8 @@ export class Wallet<C extends Chain> {
 
         const approvals = signedApprovals.map((signature) => {
             return {
-                signerLocator: this.signer.locator(),
-                result: signature,
+                ...signature,
+                signer: this.signer.locator(),
             };
         });
 
@@ -414,10 +399,7 @@ export class Wallet<C extends Chain> {
 
     private async executeApprovalWithErrorHandling(transactionId: string, approvals: ExternalSignature[]) {
         const approvedTransaction = await this.#apiClient.approveTransaction(this.walletLocator, transactionId, {
-            approvals: approvals.map((approval) => ({
-                signer: approval.signerLocator,
-                ...approval.result,
-            })),
+            approvals,
         });
 
         if (approvedTransaction.error) {
