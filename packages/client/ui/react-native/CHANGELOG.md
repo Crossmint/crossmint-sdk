@@ -1,5 +1,16 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.9.0
+
+### Minor Changes
+
+- a9e19b0: feat: rn embedded checkout
+
+### Patch Changes
+
+- Updated dependencies [a9e19b0]
+  - @crossmint/client-sdk-rn-window@0.3.3
+
 ## 0.8.10
 
 ### Patch Changes
