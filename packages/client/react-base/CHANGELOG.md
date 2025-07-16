@@ -1,5 +1,16 @@
 # @crossmint/client-sdk-react-base
 
+## 0.5.15
+
+### Patch Changes
+
+- 4ea912c: SMS signer
+- Updated dependencies [4ea912c]
+- Updated dependencies [4ea912c]
+  - @crossmint/common-sdk-base@0.8.5
+  - @crossmint/wallets-sdk@0.10.15
+  - @crossmint/client-sdk-base@1.5.13
+
 ## 0.5.14
 
 ### Patch Changes
