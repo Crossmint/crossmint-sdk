@@ -1,3 +1,4 @@
+import "../polyfills";
 import type { z } from "zod";
 import type { WebViewMessageEvent, WebView } from "react-native-webview";
 import type { EventMap, SimpleMessageEvent, Transport } from "@crossmint/client-sdk-window";

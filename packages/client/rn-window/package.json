@@ -21,6 +21,7 @@
     },
     "dependencies": {
         "@crossmint/client-sdk-window": "workspace:*",
+        "react-native-get-random-values": "^1.11.0",
         "zod": "3.22.4"
     },
     "peerDependencies": {
