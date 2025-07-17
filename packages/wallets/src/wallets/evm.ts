@@ -8,7 +8,7 @@ import {
     type HttpTransport,
 } from "viem";
 import { isValidEvmAddress } from "@crossmint/common-sdk-base";
-import type { EVMTransactionInput, FormattedEVMTransaction, Transaction } from "./types";
+import type { EVMTransactionInput, FormattedEVMTransaction, Transaction, TransactionInputOptions } from "./types";
 import { type EVMSmartWalletChain, toViemChain } from "../chains/chains";
 import { Wallet } from "./wallet";
 import type { Chain, EVMChain } from "../chains/chains";
@@ -41,7 +41,7 @@ export class EVMWallet extends Wallet<EVMChain> {
         params: T
     ): Promise<Transaction<T["options"] extends { experimental_prepareOnly: true } ? true : false>> {
         const builtTransaction = this.buildTransaction(params);
-        const createdTransaction = await this.createTransaction(builtTransaction);
+        const createdTransaction = await this.createTransaction(builtTransaction, params.options);
 
         if (params.options?.experimental_prepareOnly) {
             return {
@@ -128,10 +128,14 @@ export class EVMWallet extends Wallet<EVMChain> {
         });
     }
 
-    private async createTransaction(transaction: FormattedEVMTransaction): Promise<CreateTransactionSuccessResponse> {
+    private async createTransaction(
+        transaction: FormattedEVMTransaction,
+        options?: TransactionInputOptions
+    ): Promise<CreateTransactionSuccessResponse> {
+        const signer = options?.experimental_signer ?? this.signer.locator();
         const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
             params: {
-                signer: this.signer.locator(),
+                signer,
                 chain: this.chain,
                 calls: [transaction],
             },

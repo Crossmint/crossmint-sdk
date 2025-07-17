@@ -6,6 +6,8 @@ import type {
     GetBalanceSuccessResponse,
     WalletLocator,
     RegisterSignerPasskeyParams,
+    GetTransactionSuccessResponse,
+    GetTransactionsResponse,
 } from "../api";
 import type {
     PendingApproval,
@@ -16,6 +18,9 @@ import type {
     Balances,
     TokenBalance,
     TransactionInputOptions,
+    ApproveTransactionParams,
+    ApproveTransactionOptions,
+    Approval,
 } from "./types";
 import {
     InvalidSignerError,
@@ -173,17 +178,27 @@ export class Wallet<C extends Chain> {
     /**
      * Get the wallet transactions
      * @returns The transactions
+     * @throws {Error} If the transactions cannot be retrieved
      */
-    public async experimental_transactions() {
-        return await this.#apiClient.getTransactions(this.walletLocator);
+    public async experimental_transactions(): Promise<GetTransactionsResponse> {
+        const response = await this.#apiClient.getTransactions(this.walletLocator);
+        if ("error" in response) {
+            throw new Error(`Failed to get transactions: ${JSON.stringify(response.message)}`);
+        }
+        return response;
     }
 
     /**
      * Get a transaction by id
      * @returns The transaction
+     * @throws {Error} If the transaction cannot be retrieved
      */
-    public async experimental_transaction(transactionId: string) {
-        return await this.#apiClient.getTransaction(this.walletLocator, transactionId);
+    public async experimental_transaction(transactionId: string): Promise<GetTransactionSuccessResponse> {
+        const response = await this.#apiClient.getTransaction(this.walletLocator, transactionId);
+        if ("error" in response) {
+            throw new Error(`Failed to get transaction: ${JSON.stringify(response.error)}`);
+        }
+        return response;
     }
 
     /**
@@ -234,6 +249,19 @@ export class Wallet<C extends Chain> {
         }
 
         return await this.approveAndWait(transactionCreationResponse.id);
+    }
+
+    /**
+     * Approve a transaction
+     * @param params - The parameters
+     * @param params.transactionId - The transaction id
+     * @param params.options - The options for the transaction
+     * @param params.options.experimental_approval - The approval
+     * @param params.options.additionalSigners - The additional signers
+     * @returns The transaction
+     */
+    public async approveTransaction(params: ApproveTransactionParams) {
+        return await this.approveAndWait(params.transactionId, params.options);
     }
 
     /**
@@ -309,13 +337,13 @@ export class Wallet<C extends Chain> {
         return this.chain === "solana";
     }
 
-    protected async approveAndWait(transactionId: string, additionalSigners?: Signer[]) {
-        await this.approveTransaction(transactionId, additionalSigners);
+    protected async approveAndWait(transactionId: string, options?: ApproveTransactionOptions) {
+        await this.approveTransactionInternal(transactionId, options);
         await this.sleep(1_000); // Rule of thumb: tx won't be confirmed in less than 1 second
         return await this.waitForTransaction(transactionId);
     }
 
-    protected async approveTransaction(transactionId: string, additionalSigners?: Signer[]) {
+    protected async approveTransactionInternal(transactionId: string, options?: ApproveTransactionOptions) {
         const transaction = await this.#apiClient.getTransaction(this.walletLocator, transactionId);
 
         if ("error" in transaction) {
@@ -329,13 +357,20 @@ export class Wallet<C extends Chain> {
             return transaction;
         }
 
+        // If an external signature is provided, use it to approve the transaction
+        if (options?.experimental_approval != null) {
+            const approvals = [options.experimental_approval];
+
+            return await this.executeApprovalWithErrorHandling(transactionId, approvals);
+        }
+
         const pendingApprovals = transaction.approvals?.pending;
 
         if (pendingApprovals == null) {
             return transaction;
         }
 
-        const signers = [...(additionalSigners ?? []), this.signer];
+        const signers = [...(options?.additionalSigners ?? []), this.signer];
 
         const signedApprovals = await Promise.all(
             pendingApprovals.map((pendingApproval) => {
@@ -352,11 +387,19 @@ export class Wallet<C extends Chain> {
             })
         );
 
-        const approvedTransaction = await this.#apiClient.approveTransaction(this.walletLocator, transaction.id, {
-            approvals: signedApprovals.map((signature) => ({
-                signer: this.signer.locator(),
+        const approvals = signedApprovals.map((signature) => {
+            return {
                 ...signature,
-            })),
+                signer: this.signer.locator(),
+            };
+        });
+
+        return await this.executeApprovalWithErrorHandling(transactionId, approvals);
+    }
+
+    private async executeApprovalWithErrorHandling(transactionId: string, approvals: Approval[]) {
+        const approvedTransaction = await this.#apiClient.approveTransaction(this.walletLocator, transactionId, {
+            approvals,
         });
 
         if (approvedTransaction.error) {

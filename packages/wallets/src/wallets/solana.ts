@@ -1,7 +1,7 @@
 import bs58 from "bs58";
 import { isValidSolanaAddress } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain } from "../chains/chains";
-import type { SolanaTransactionInput, Transaction, TransactionInputOptions } from "./types";
+import type { ApproveTransactionOptions, SolanaTransactionInput, Transaction, TransactionInputOptions } from "./types";
 import { Wallet } from "./wallet";
 import { TransactionNotCreatedError } from "../utils/errors";
 import { SolanaExternalWalletSigner } from "@/signers/solana-external-wallet";
@@ -15,6 +15,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
                 address: wallet.address,
                 owner: wallet.owner,
                 signer: wallet.signer,
+                options: Wallet.getOptions(wallet),
             },
             Wallet.getApiClient(wallet)
         );
@@ -54,14 +55,23 @@ export class SolanaWallet extends Wallet<SolanaChain> {
                 })
         );
 
-        return await this.approveAndWait(createdTransaction.id, _additionalSigners);
+        const options: ApproveTransactionOptions = {
+            additionalSigners: _additionalSigners,
+        };
+
+        return await this.approveAndWait(createdTransaction.id, options);
     }
 
     private async createTransaction({
         transaction,
+        options,
     }: SolanaTransactionInput): Promise<CreateTransactionSuccessResponse> {
+        const signer = options?.experimental_signer ?? this.signer.locator();
         const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
-            params: { transaction: bs58.encode(transaction.serialize()) },
+            params: {
+                transaction: bs58.encode(transaction.serialize()),
+                signer,
+            },
         });
 
         if ("error" in transactionCreationResponse) {
