@@ -1,5 +1,12 @@
 # @crossmint/wallets-sdk
 
+## 0.10.16
+
+### Patch Changes
+
+- 5b2b5bf: Updated readme
+- c13d001: Expose approveTransaction method
+
 ## 0.10.15
 
 ### Patch Changes
