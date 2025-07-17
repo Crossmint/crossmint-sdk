@@ -27,6 +27,14 @@ const wallet = await crossmintWallets.getOrCreateWallet({
     signer: {
         type: "email",
         email: "<your-email>",
+        onAuthRequired: async (needsAuth, sendEmailWithOtp, verifyOtp, reject) => {
+            if (needsAuth) {
+                await sendEmailWithOtp();
+                // Prompt the user to check their email for the OTP code.
+                // Once the user provides the OTP, pass it to verifyOtp(otp).
+                // NOTE: If using our React/React Native SDK, this is handled automatically by the provider.
+            }
+        }, 
     },
 });
 
