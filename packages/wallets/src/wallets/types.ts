@@ -105,7 +105,7 @@ export type Transaction<TPrepareOnly extends boolean = false> = TPrepareOnly ext
       };
 
 export type ApproveTransactionOptions = {
-    experimental_externalSignature?: ExternalSignature;
+    experimental_approval?: Approval;
     additionalSigners?: Signer[];
 };
 
@@ -114,6 +114,6 @@ export type ApproveTransactionParams = {
     options?: ApproveTransactionOptions;
 };
 
-export type ExternalSignature = (BaseSignResult | PasskeySignResult) & {
+export type Approval = (BaseSignResult | PasskeySignResult) & {
     signer: string;
 };

@@ -19,8 +19,8 @@ import type {
     TokenBalance,
     TransactionInputOptions,
     ApproveTransactionParams,
-    ExternalSignature,
     ApproveTransactionOptions,
+    Approval,
 } from "./types";
 import {
     InvalidSignerError,
@@ -256,7 +256,7 @@ export class Wallet<C extends Chain> {
      * @param params - The parameters
      * @param params.transactionId - The transaction id
      * @param params.options - The options for the transaction
-     * @param params.options.experimental_externalSignature - The external signature
+     * @param params.options.experimental_approval - The approval
      * @param params.options.additionalSigners - The additional signers
      * @returns The transaction
      */
@@ -358,8 +358,8 @@ export class Wallet<C extends Chain> {
         }
 
         // If an external signature is provided, use it to approve the transaction
-        if (options?.experimental_externalSignature != null) {
-            const approvals = [options.experimental_externalSignature];
+        if (options?.experimental_approval != null) {
+            const approvals = [options.experimental_approval];
 
             return await this.executeApprovalWithErrorHandling(transactionId, approvals);
         }
@@ -397,7 +397,7 @@ export class Wallet<C extends Chain> {
         return await this.executeApprovalWithErrorHandling(transactionId, approvals);
     }
 
-    private async executeApprovalWithErrorHandling(transactionId: string, approvals: ExternalSignature[]) {
+    private async executeApprovalWithErrorHandling(transactionId: string, approvals: Approval[]) {
         const approvedTransaction = await this.#apiClient.approveTransaction(this.walletLocator, transactionId, {
             approvals,
         });
