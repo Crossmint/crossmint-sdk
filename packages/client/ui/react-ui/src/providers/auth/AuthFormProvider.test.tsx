@@ -1,16 +1,12 @@
-import { render, fireEvent, waitFor } from "@testing-library/react";
+import { render, fireEvent } from "@testing-library/react";
 import { beforeEach } from "vitest";
 import { AuthFormProvider, useAuthForm } from "./AuthFormProvider";
 import { describe, expect, it, vi } from "vitest";
-import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
 import type { LoginMethod } from "@/types/auth";
-
-vi.mock("@/hooks/useCrossmintAuth");
 
 // Mock component to test the AuthFormProvider
 function TestComponent() {
-    const { step, baseUrl, loginMethods, setStep, setDialogOpen, oauthUrlMap, isLoadingOauthUrlMap, appearance } =
-        useAuthForm();
+    const { step, baseUrl, loginMethods, setStep, setDialogOpen, appearance } = useAuthForm();
 
     return (
         <div>
@@ -24,8 +20,6 @@ function TestComponent() {
             <button onClick={() => setDialogOpen(true)} data-testid="set-dialog-open">
                 Open Dialog
             </button>
-            <div data-testid="oauth-url">{JSON.stringify(oauthUrlMap)}</div>
-            <div data-testid="is-loading-oauth-url">{isLoadingOauthUrlMap.toString()}</div>
         </div>
     );
 }
@@ -42,21 +36,14 @@ describe("AuthFormProvider", () => {
             },
         },
     };
-    const mockedGetOAuthUrl = vi.fn();
 
     beforeEach(() => {
         vi.resetAllMocks();
-
-        vi.mocked(useCrossmintAuth).mockReturnValue({
-            crossmintAuth: {
-                getOAuthUrl: mockedGetOAuthUrl.mockResolvedValue("https://oauth.example.com"),
-            },
-        } as any);
     });
 
-    it("provides initial context values and fetches OAuth URLs", async () => {
+    it("provides initial context values", () => {
         const { getByTestId } = render(
-            <AuthFormProvider initialState={mockInitialState} preFetchOAuthUrls={true}>
+            <AuthFormProvider initialState={mockInitialState}>
                 <TestComponent />
             </AuthFormProvider>
         );
@@ -67,16 +54,11 @@ describe("AuthFormProvider", () => {
         expect(getByTestId("appearance").textContent).toBe(
             '{"colors":{"textPrimary":"#000000","textSecondary":"#A4AFB2"}}'
         );
-
-        await waitFor(() => {
-            expect(getByTestId("oauth-url").textContent).toBe('{"google":"https://oauth.example.com"}');
-            expect(getByTestId("is-loading-oauth-url").textContent).toBe("false");
-        });
     });
 
     it("updates step", () => {
         const { getByTestId } = render(
-            <AuthFormProvider initialState={mockInitialState} preFetchOAuthUrls={true}>
+            <AuthFormProvider initialState={mockInitialState}>
                 <TestComponent />
             </AuthFormProvider>
         );
@@ -87,31 +69,12 @@ describe("AuthFormProvider", () => {
 
     it("calls setDialogOpen", () => {
         const { getByTestId } = render(
-            <AuthFormProvider
-                setDialogOpen={mockInitialState.setDialogOpen}
-                initialState={mockInitialState}
-                preFetchOAuthUrls={true}
-            >
+            <AuthFormProvider setDialogOpen={mockInitialState.setDialogOpen} initialState={mockInitialState}>
                 <TestComponent />
             </AuthFormProvider>
         );
 
         fireEvent.click(getByTestId("set-dialog-open"));
         expect(mockInitialState.setDialogOpen).toHaveBeenCalledWith(true, undefined);
-    });
-
-    it("handles OAuth URL fetch error", async () => {
-        vi.mocked(mockedGetOAuthUrl).mockRejectedValue(new Error("Fetch failed"));
-
-        const { getByTestId } = render(
-            <AuthFormProvider initialState={mockInitialState} preFetchOAuthUrls={true}>
-                <TestComponent />
-            </AuthFormProvider>
-        );
-
-        await waitFor(() => {
-            expect(getByTestId("oauth-url").textContent).toBe('{"google":"","twitter":""}');
-            expect(getByTestId("is-loading-oauth-url").textContent).toBe("false");
-        });
     });
 });

@@ -12,10 +12,11 @@ import type { Chain, ExternalWalletSignerConfigForChain } from "@crossmint/walle
 
 import AuthFormDialog from "../components/auth/AuthFormDialog";
 import { AuthFormProvider } from "./auth/AuthFormProvider";
+import { OAuthFlowProvider, useOAuthFlow } from "./auth/OAuthFlowProvider";
 import { TwindProvider } from "./TwindProvider";
 import type { AuthStatus, CrossmintAuthProviderProps } from "@/types/auth";
 import { DynamicWalletProvider } from "./dynamic/DynamicWalletProvider";
-import { useOAuthWindowListener as experimental_loginWithOAuth } from "@/hooks/useOAuthWindowListener";
+import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
 
 type AuthContextType = {
     crossmintAuth?: CrossmintAuth;
@@ -27,6 +28,7 @@ type AuthContextType = {
     status: AuthStatus;
     getUser: () => void;
     experimental_externalWalletSigner: ExternalWalletSignerConfigForChain<Chain> | undefined;
+    loginMethods: CrossmintAuthProviderProps["loginMethods"];
 };
 
 const defaultContextValue: AuthContextType = {
@@ -39,6 +41,7 @@ const defaultContextValue: AuthContextType = {
     status: "initializing",
     getUser: () => {},
     experimental_externalWalletSigner: undefined,
+    loginMethods: [],
 };
 
 export const AuthContext = createContext<AuthContextType>(defaultContextValue);
@@ -47,7 +50,6 @@ export function CrossmintAuthProviderInternal({
     children,
     appearance,
     termsOfServiceText,
-    prefetchOAuthUrls = true,
     authModalTitle,
     onLoginSuccess,
     loginMethods = ["email", "google"],
@@ -68,10 +70,7 @@ export function CrossmintAuthProviderInternal({
         ExternalWalletSignerConfigForChain<Chain> | undefined
     >(undefined);
 
-    // Only create the CrossmintAuth instance once, even in StrictMode, as the constructor calls /refresh
-    // It can only be called once to avoid race conditions
     const crossmintAuthRef = useRef<CrossmintAuth | null>(null);
-    // biome-ignore lint/correctness/useExhaustiveDependencies: crossmint can't be a dependency because it updates with each jwt change
     const crossmintAuth = useMemo(() => {
         if (!crossmintAuthRef.current) {
             crossmintAuthRef.current = CrossmintAuth.from(crossmint, {
@@ -92,11 +91,12 @@ export function CrossmintAuthProviderInternal({
         return crossmintAuthRef.current;
     }, []);
 
+    const loginWithOAuthRef = useRef<((provider: OAuthProvider) => Promise<void>) | null>(null);
+
     const triggerHasJustLoggedIn = useCallback(() => {
         onLoginSuccess?.();
     }, [onLoginSuccess]);
 
-    // Initialize auth state
     useEffect(() => {
         if (jwt == null) {
             const jwt = getCookie(SESSION_PREFIX);
@@ -105,7 +105,6 @@ export function CrossmintAuthProviderInternal({
         setInitialized(true);
     }, [jwt]);
 
-    // Close dialog on successful login
     useEffect(() => {
         if (jwt != null && dialogOpen) {
             setDialogOpen(false);
@@ -120,8 +119,6 @@ export function CrossmintAuthProviderInternal({
                 return;
             }
 
-            // Only set defaultEmail when explicitly passed as a string, ignoring MouseEvent from onClick handlers
-            // PREVENTS BREAKING CHANGE!
             if (defaultEmail != null && typeof defaultEmail === "string") {
                 setDefaultEmail(defaultEmail);
             }
@@ -161,6 +158,13 @@ export function CrossmintAuthProviderInternal({
         return user;
     }, [jwt, crossmintAuth]);
 
+    const experimental_loginWithOAuth = useCallback(
+        async (provider: OAuthProvider) => {
+            await loginWithOAuthRef.current?.(provider);
+        },
+        [loginWithOAuthRef]
+    );
+
     const authContextValue = useMemo(
         () => ({
             crossmintAuth,
@@ -169,11 +173,23 @@ export function CrossmintAuthProviderInternal({
             logout,
             jwt,
             user,
-            experimental_externalWalletSigner: externalWalletSigner,
             status: getAuthStatus(),
             getUser,
+            loginMethods,
+            experimental_externalWalletSigner: externalWalletSigner,
         }),
-        [crossmintAuth, login, logout, jwt, user, getAuthStatus, getUser, externalWalletSigner]
+        [
+            crossmintAuth,
+            login,
+            experimental_loginWithOAuth,
+            logout,
+            jwt,
+            user,
+            getAuthStatus,
+            getUser,
+            loginMethods,
+            externalWalletSigner,
+        ]
     );
 
     return (
@@ -183,11 +199,9 @@ export function CrossmintAuthProviderInternal({
                     setDialogOpen={(open, successfulLogin) => {
                         setDialogOpen(open);
                         if (successfulLogin) {
-                            // This will be triggered from the OTP form
                             triggerHasJustLoggedIn();
                         }
                     }}
-                    preFetchOAuthUrls={getAuthStatus() === "logged-out" && prefetchOAuthUrls}
                     initialState={{
                         appearance,
                         loginMethods,
@@ -197,25 +211,59 @@ export function CrossmintAuthProviderInternal({
                         defaultEmail,
                     }}
                 >
-                    {isWeb3Enabled ? (
-                        <DynamicWalletProvider
-                            apiKeyEnvironment={crossmint.apiKey.includes("production") ? "production" : "staging"}
-                            loginMethods={loginMethods}
-                            appearance={appearance}
-                            onSdkLoaded={setDynamicSdkLoaded}
-                            onWalletConnected={setExternalWalletSigner}
-                        >
-                            {children}
-                            <AuthFormDialog open={dialogOpen} />
-                        </DynamicWalletProvider>
-                    ) : (
-                        <>
-                            {children}
-                            <AuthFormDialog open={dialogOpen} />
-                        </>
-                    )}
+                    <OAuthFlowProvider>
+                        <AuthWrapper loginWithOAuthRef={loginWithOAuthRef}>
+                            {isWeb3Enabled ? (
+                                <DynamicWalletProvider
+                                    apiKeyEnvironment={
+                                        crossmint.apiKey.includes("production") ? "production" : "staging"
+                                    }
+                                    loginMethods={loginMethods}
+                                    appearance={appearance}
+                                    onSdkLoaded={setDynamicSdkLoaded}
+                                    onWalletConnected={setExternalWalletSigner}
+                                >
+                                    {children}
+                                    <AuthFormDialog open={dialogOpen} />
+                                </DynamicWalletProvider>
+                            ) : (
+                                <>
+                                    {children}
+                                    <AuthFormDialog open={dialogOpen} />
+                                </>
+                            )}
+                        </AuthWrapper>
+                    </OAuthFlowProvider>
                 </AuthFormProvider>
             </AuthContext.Provider>
         </TwindProvider>
     );
+}
+
+function AuthWrapper({
+    children,
+    loginWithOAuthRef,
+}: {
+    children: React.ReactNode;
+    loginWithOAuthRef: React.MutableRefObject<((provider: OAuthProvider) => Promise<void>) | null>;
+}) {
+    const { startOAuthLogin } = useOAuthFlow();
+    const { jwt } = useCrossmintAuth();
+
+    const loginWithOAuth = useCallback(
+        async (provider: OAuthProvider) => {
+            if (jwt != null) {
+                console.log("User already logged in");
+                return;
+            }
+            await startOAuthLogin(provider);
+        },
+        [jwt, startOAuthLogin]
+    );
+
+    useEffect(() => {
+        loginWithOAuthRef.current = loginWithOAuth;
+    }, [loginWithOAuth, loginWithOAuthRef]);
+
+    return children;
 }
