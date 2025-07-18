@@ -1,5 +1,14 @@
 # @crossmint/wallets-sdk
 
+## 0.10.17
+
+### Patch Changes
+
+- da46b20: Improve error when missing onAuthRequired callback
+- 2ad2a06: Fix Window Transport Error
+- Updated dependencies [2ad2a06]
+  - @crossmint/client-sdk-window@1.0.3
+
 ## 0.10.16
 
 ### Patch Changes
