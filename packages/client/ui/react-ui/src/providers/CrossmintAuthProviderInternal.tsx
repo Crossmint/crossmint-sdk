@@ -186,25 +186,23 @@ export function CrossmintAuthProviderInternal({
                     defaultEmail,
                 }}
             >
-                <div className="crossmint-components">
-                    {isWeb3Enabled ? (
-                        <DynamicWalletProvider
-                            apiKeyEnvironment={crossmint.apiKey.includes("production") ? "production" : "staging"}
-                            loginMethods={loginMethods}
-                            appearance={appearance}
-                            onSdkLoaded={setDynamicSdkLoaded}
-                            onWalletConnected={setExternalWalletSigner}
-                        >
-                            {children}
-                            <AuthFormDialog open={dialogOpen} />
-                        </DynamicWalletProvider>
-                    ) : (
-                        <>
-                            {children}
-                            <AuthFormDialog open={dialogOpen} />
-                        </>
-                    )}
-                </div>
+                {isWeb3Enabled ? (
+                    <DynamicWalletProvider
+                        apiKeyEnvironment={crossmint.apiKey.includes("production") ? "production" : "staging"}
+                        loginMethods={loginMethods}
+                        appearance={appearance}
+                        onSdkLoaded={setDynamicSdkLoaded}
+                        onWalletConnected={setExternalWalletSigner}
+                    >
+                        {children}
+                        <AuthFormDialog open={dialogOpen} />
+                    </DynamicWalletProvider>
+                ) : (
+                    <>
+                        {children}
+                        <AuthFormDialog open={dialogOpen} />
+                    </>
+                )}
             </AuthFormProvider>
         </AuthContext.Provider>
     );
