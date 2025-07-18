@@ -6,6 +6,11 @@ import { HandshakeParent } from "../handshake/Parent";
 import { WindowTransport } from "../transport/WindowTransport";
 import type { Transport } from "../transport/Transport";
 
+type TransportClassConstructor<OutgoingEvents extends EventMap> = new (
+    otherWindow: Window,
+    targetOrigin: string | string[]
+) => Transport<OutgoingEvents>;
+
 export class IFrameWindow<IncomingEvents extends EventMap, OutgoingEvents extends EventMap> extends HandshakeParent<
     IncomingEvents,
     OutgoingEvents
@@ -14,10 +19,7 @@ export class IFrameWindow<IncomingEvents extends EventMap, OutgoingEvents extend
         public iframe: HTMLIFrameElement,
         targetOrigin: string,
         options?: EventEmitterWithHandshakeOptions<IncomingEvents, OutgoingEvents>,
-        TransportClass: new (
-            otherWindow: Window,
-            targetOrigin: string | string[]
-        ) => Transport<OutgoingEvents> = WindowTransport
+        TransportClass: TransportClassConstructor<OutgoingEvents> = WindowTransport
     ) {
         const contentWindow = iframe.contentWindow;
         if (!contentWindow) {
@@ -30,10 +32,7 @@ export class IFrameWindow<IncomingEvents extends EventMap, OutgoingEvents extend
     static async init<IncomingEvents extends EventMap, OutgoingEvents extends EventMap>(
         urlOrExistingIframe: string | HTMLIFrameElement,
         options?: EventEmitterWithHandshakeOptions<IncomingEvents, OutgoingEvents>,
-        TransportClass: new (
-            otherWindow: Window,
-            targetOrigin: string | string[]
-        ) => Transport<OutgoingEvents> = WindowTransport
+        TransportClass: TransportClassConstructor<OutgoingEvents> = WindowTransport
     ) {
         const iframe =
             typeof urlOrExistingIframe === "string" ? await createIFrame(urlOrExistingIframe) : urlOrExistingIframe;
@@ -44,10 +43,7 @@ export class IFrameWindow<IncomingEvents extends EventMap, OutgoingEvents extend
     static initExistingIFrame<IncomingEvents extends EventMap, OutgoingEvents extends EventMap>(
         iframe: HTMLIFrameElement,
         options?: EventEmitterWithHandshakeOptions<IncomingEvents, OutgoingEvents>,
-        TransportClass: new (
-            otherWindow: Window,
-            targetOrigin: string | string[]
-        ) => Transport<OutgoingEvents> = WindowTransport
+        TransportClass: TransportClassConstructor<OutgoingEvents> = WindowTransport
     ) {
         const targetOrigin = options?.targetOrigin || urlToOrigin(iframe.src);
         return new IFrameWindow<IncomingEvents, OutgoingEvents>(iframe, targetOrigin, options, TransportClass);
