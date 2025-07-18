@@ -25,7 +25,6 @@ export const AuthFormBackButton = ({
             }}
             {...props}
         >
-            penis
             <LeftArrowIcon className={tw("w-6 h-6")} style={{ color: iconColor }} />
         </button>
     );
