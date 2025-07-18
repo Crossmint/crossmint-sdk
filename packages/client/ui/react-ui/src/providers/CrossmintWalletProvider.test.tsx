@@ -12,10 +12,6 @@ vi.mock("@crossmint/client-sdk-react-base", () => ({
     ),
 }));
 
-vi.mock("./TwindProvider", () => ({
-    TwindProvider: ({ children }: { children: React.ReactNode }) => <div data-testid="twind-provider">{children}</div>,
-}));
-
 vi.mock("@/components/auth/PasskeyPrompt", () => ({
     PasskeyPrompt: () => <div data-testid="passkey-prompt">Passkey Prompt</div>,
 }));
@@ -44,14 +40,13 @@ describe("CrossmintWalletProvider", () => {
         expect(screen.getByText("Test Child")).toBeDefined();
     });
 
-    it("wraps children with TwindProvider and CrossmintWalletBaseProvider", () => {
+    it("wraps children with CrossmintWalletBaseProvider", () => {
         render(
             <CrossmintWalletProvider>
                 <div data-testid="test-child">Test Child</div>
             </CrossmintWalletProvider>
         );
 
-        expect(screen.getByTestId("twind-provider")).toBeDefined();
         expect(screen.getByTestId("wallet-base-provider")).toBeDefined();
         expect(screen.getByTestId("test-child")).toBeDefined();
     });
@@ -59,7 +54,6 @@ describe("CrossmintWalletProvider", () => {
     it("renders without crashing when no children provided", () => {
         render(<CrossmintWalletProvider>{null}</CrossmintWalletProvider>);
 
-        expect(screen.getByTestId("twind-provider")).toBeDefined();
         expect(screen.getByTestId("wallet-base-provider")).toBeDefined();
     });
 

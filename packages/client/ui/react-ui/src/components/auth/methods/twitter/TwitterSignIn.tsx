@@ -4,6 +4,7 @@ import { useOAuthFlow } from "@/providers/auth/OAuthFlowProvider";
 import { Spinner } from "@/components/common/Spinner";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import { classNames } from "@/utils/classNames";
+import { tw } from "@/twind-instance";
 
 export function TwitterSignIn({ ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
     const { step, appearance } = useAuthForm();
@@ -29,7 +30,7 @@ export function TwitterSignIn({ ...props }: ButtonHTMLAttributes<HTMLButtonEleme
             {...props}
         >
             <>
-                <TwitterIcon className="max-h-[25px] max-w-[25px] h-[25px] w-[25px] absolute left-[18px]" />
+                <TwitterIcon className={tw("max-h-[25px] max-w-[25px] h-[25px] w-[25px] absolute left-[18px]")} />
 
                 {isLoading ? (
                     <Spinner
@@ -40,14 +41,14 @@ export function TwitterSignIn({ ...props }: ButtonHTMLAttributes<HTMLButtonEleme
                     />
                 ) : (
                     <span
-                        className="font-medium"
+                        className={tw("font-medium")}
                         style={{ margin: "0px 32px", color: appearance?.colors?.textPrimary }}
                     >
                         Sign in with X
                     </span>
                 )}
             </>
-            <span className="sr-only">Sign in with X</span>
+            <span className={tw("sr-only")}>Sign in with X</span>
         </button>
     );
 }

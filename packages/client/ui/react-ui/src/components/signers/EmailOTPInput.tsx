@@ -4,6 +4,7 @@ import type { UIConfig } from "@crossmint/common-sdk-base";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/common/InputOTP";
 import { EmailOtpIcon } from "@/icons/emailOTP";
 import { OTP_LENGTH } from "./consts";
+import { tw } from "@/twind-instance";
 
 interface EmailOTPInputProps {
     email: string;
@@ -34,8 +35,8 @@ export function EmailOTPInput({ email, onSubmitOTP, onResendCode, appearance }: 
     };
 
     return (
-        <div className="flex flex-col items-center justify-start w-full">
-            <div className="relative left-3">
+        <div className={tw("flex flex-col items-center justify-start w-full")}>
+            <div className={tw("relative left-3")}>
                 <EmailOtpIcon
                     customAccentColor={appearance?.colors?.accent}
                     customButtonBackgroundColor={appearance?.colors?.buttonBackground}
@@ -43,15 +44,18 @@ export function EmailOTPInput({ email, onSubmitOTP, onResendCode, appearance }: 
                 />
             </div>
             <p
-                className="text-base font-normal mt-4 mb-1 text-center text-cm-text-primary"
+                className={tw("text-base font-normal mt-4 mb-1 text-center text-cm-text-primary")}
                 style={{ color: appearance?.colors?.textPrimary }}
             >
                 Check your email
             </p>
-            <p className="text-center text-cm-text-secondary px-4" style={{ color: appearance?.colors?.textSecondary }}>
+            <p
+                className={tw("text-center text-cm-text-secondary px-4")}
+                style={{ color: appearance?.colors?.textSecondary }}
+            >
                 A temporary login code has been sent to {email}
             </p>
-            <div className="py-8">
+            <div className={tw("py-8")}>
                 <InputOTP
                     maxLength={OTP_LENGTH}
                     value={token}
@@ -78,16 +82,16 @@ export function EmailOTPInput({ email, onSubmitOTP, onResendCode, appearance }: 
                                 key={index}
                                 index={index}
                                 hasError={hasError}
-                                className="max-sm:w-7 max-sm:h-11 max-sm:text-xl max-sm:mx-0 h-12 w-9"
+                                className={tw("max-sm:w-7 max-sm:h-11 max-sm:text-xl max-sm:mx-0 h-12 w-9")}
                             />
                         ))}
                     </InputOTPGroup>
                 </InputOTP>
             </div>
 
-            {error && <div className="text-sm text-red-500 mb-4">{error}</div>}
+            {error && <div className={tw("text-sm text-red-500 mb-4")}>{error}</div>}
 
-            <div className="text-xs leading-tight text-cm-text-secondary text-center">
+            <div className={tw("text-xs leading-tight text-cm-text-secondary text-center")}>
                 <span style={{ color: appearance?.colors?.textSecondary }}>
                     Can't find the email? Check spam folder.
                     {"\n"}

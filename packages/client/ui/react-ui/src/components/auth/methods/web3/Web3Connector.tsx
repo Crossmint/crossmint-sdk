@@ -1,6 +1,7 @@
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import { SecuredByCrossmint } from "@/components/common/SecuredByCrossmint";
 import { classNames } from "@/utils/classNames";
+import { tw } from "@/twind-instance";
 
 export function Web3Connector({
     icon,
@@ -19,16 +20,16 @@ export function Web3Connector({
 }) {
     return (
         <>
-            <div className="flex flex-col items-center text-center mt-8 mb-4 gap-2">
-                <img src={icon} alt={"metamask"} className="h-[74px] w-[74px]" />
+            <div className={tw("flex flex-col items-center text-center mt-8 mb-4 gap-2")}>
+                <img src={icon} alt={"metamask"} className={tw("h-[74px] w-[74px]")} />
                 <h3
-                    className="text-lg font-semibold text-cm-text-primary"
+                    className={tw("text-lg font-semibold text-cm-text-primary")}
                     style={{ color: appearance?.colors?.textPrimary }}
                 >
                     {headingText}
                 </h3>
                 <p
-                    className="text-base font-normal text-cm-text-primary"
+                    className={tw("text-base font-normal text-cm-text-primary")}
                     style={{ color: appearance?.colors?.textPrimary }}
                 >
                     Don’t see your wallet? Check your other browser windows.
@@ -49,12 +50,12 @@ export function Web3Connector({
                 }}
                 onClick={isLoading ? undefined : onConnectClick}
             >
-                <span className="font-medium" style={{ color: appearance?.colors?.textPrimary }}>
+                <span className={tw("font-medium")} style={{ color: appearance?.colors?.textPrimary }}>
                     {buttonText}
                 </span>
             </button>
 
-            <div className="flex justify-center pt-4">
+            <div className={tw("flex justify-center pt-4")}>
                 <SecuredByCrossmint color={appearance?.colors?.textSecondary} />
             </div>
         </>

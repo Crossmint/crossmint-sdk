@@ -6,6 +6,7 @@ import { Spinner } from "@/components/common/Spinner";
 import { classNames } from "@/utils/classNames";
 import { AuthFormBackButton } from "../../AuthFormBackButton";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
+import { tw } from "@/twind-instance";
 export function FarcasterSignIn() {
     const { step, appearance, setStep, setError } = useAuthForm();
 
@@ -27,14 +28,14 @@ export function FarcasterSignIn() {
                         setError(null);
                     }}
                 >
-                    <FarcasterIcon className="max-h-[25px] max-w-[25px] h-[25px] w-[25px] absolute left-[18px]" />
+                    <FarcasterIcon className={tw("max-h-[25px] max-w-[25px] h-[25px] w-[25px] absolute left-[18px]")} />
                     <span
-                        className="font-medium"
+                        className={tw("font-medium")}
                         style={{ margin: "0px 32px", color: appearance?.colors?.textPrimary }}
                     >
                         Sign in with Farcaster
                     </span>
-                    <span className="sr-only">Sign in with Farcaster</span>
+                    <span className={tw("sr-only")}>Sign in with Farcaster</span>
                 </button>
             </div>
         );
@@ -109,23 +110,23 @@ function FarcasterQRCode() {
                 ringColor={appearance?.colors?.accent}
             />
 
-            <div className="flex flex-col items-center gap-4">
-                <div className="text-center">
+            <div className={tw("flex flex-col items-center gap-4")}>
+                <div className={tw("text-center")}>
                     <h3
-                        className="text-lg font-semibold text-cm-text-primary mb-2"
+                        className={tw("text-lg font-semibold text-cm-text-primary mb-2")}
                         style={{ color: appearance?.colors?.textPrimary }}
                     >
                         Sign in with Farcaster
                     </h3>
                     <p
-                        className="text-base font-normal text-cm-text-secondary"
+                        className={tw("text-base font-normal text-cm-text-secondary")}
                         style={{ color: appearance?.colors?.textSecondary }}
                     >
                         Scan with your phone's camera to continue.
                     </p>
                 </div>
                 <div
-                    className="bg-white aspect-square rounded-lg p-4"
+                    className={tw("bg-white aspect-square rounded-lg p-4")}
                     style={{
                         backgroundColor: appearance?.colors?.inputBackground,
                         borderRadius: appearance?.borderRadius,
@@ -134,7 +135,7 @@ function FarcasterQRCode() {
                     {qrCodeUrl != null ? (
                         <QRCode uri={qrCodeUrl} size={280} />
                     ) : (
-                        <div className="min-h-[246px] flex items-center justify-center">
+                        <div className={tw("min-h-[246px] flex items-center justify-center")}>
                             <Spinner
                                 style={{
                                     color: appearance?.colors?.textSecondary,
@@ -147,7 +148,7 @@ function FarcasterQRCode() {
                 {qrCodeUrl ? (
                     <>
                         <p
-                            className="text-base text-center font-normal text-cm-text-secondary"
+                            className={tw("text-base text-center font-normal text-cm-text-secondary")}
                             style={{ color: appearance?.colors?.textSecondary }}
                         >
                             Alternatively, click on this link to open Warpcast.
@@ -156,7 +157,7 @@ function FarcasterQRCode() {
                             href={qrCodeUrl}
                             rel="noopener noreferrer"
                             target="_blank"
-                            className="text-base font-normal text-cm-link"
+                            className={tw("text-base font-normal text-cm-link")}
                             style={{ color: appearance?.colors?.textLink }}
                         >
                             Open Warpcast

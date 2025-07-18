@@ -3,6 +3,7 @@
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { classNames } from "@/utils/classNames";
+import { tw } from "@/twind-instance";
 
 const Dialog = DialogPrimitive.Root;
 const DialogTrigger = DialogPrimitive.Trigger;
@@ -19,7 +20,7 @@ const DialogContent = React.forwardRef<React.ElementRef<typeof DialogPrimitive.C
     ({ className, children, showCloseButton = true, closeButtonColor, closeButtonRingColor, ...props }, ref) => (
         <DialogPortal>
             {/* Because we're using modal={false}, the regular overlay is not shown. We need to add our own overlay */}
-            <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm overflow-x-hidden" />
+            <div className={tw("fixed inset-0 z-40 bg-black/60 backdrop-blur-sm overflow-x-hidden")} />
             <DialogPrimitive.Content
                 ref={ref}
                 className={classNames(
@@ -56,12 +57,12 @@ const DialogContent = React.forwardRef<React.ElementRef<typeof DialogPrimitive.C
                             strokeWidth="2"
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            className="h-7 w-7"
+                            className={tw("h-7 w-7")}
                         >
                             <path d="M18 6 6 18" />
                             <path d="m6 6 12 12" />
                         </svg>
-                        <span className="sr-only">Close</span>
+                        <span className={tw("sr-only")}>Close</span>
                     </DialogPrimitive.Close>
                 )}
             </DialogPrimitive.Content>

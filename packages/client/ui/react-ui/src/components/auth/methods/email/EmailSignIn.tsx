@@ -9,6 +9,7 @@ import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import type { OtpEmailPayload } from "@/types/auth";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
 import { ContinueWithGoogle } from "../google/ContinueWithGoogle";
+import { tw } from "@/twind-instance";
 
 export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEmailPayload) => void }) {
     const { crossmintAuth } = useCrossmintAuth();
@@ -49,17 +50,17 @@ export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEm
 
     return (
         <>
-            <div className="flex flex-col items-start justify-start w-full rounded-lg">
-                <div className="w-full">
+            <div className={tw("flex flex-col items-start justify-start w-full rounded-lg")}>
+                <div className={tw("w-full")}>
                     <label
-                        className="text-cm-text-primary block mb-[5px]"
+                        className={tw("text-cm-text-primary block mb-[5px]")}
                         style={{ color: appearance?.colors?.textPrimary }}
                     >
                         Email
                     </label>
                     <form
                         role="form"
-                        className="relative"
+                        className={tw("relative")}
                         onSubmit={(e) => {
                             // Prevent form submission if Google button should be shown
                             if (showGoogleContinueButton) {
@@ -75,7 +76,7 @@ export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEm
                         }}
                         noValidate // we want to handle validation ourselves
                     >
-                        <label htmlFor="emailInput" className="sr-only">
+                        <label htmlFor="emailInput" className={tw("sr-only")}>
                             Email
                         </label>
                         <input
@@ -109,7 +110,7 @@ export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEm
                             readOnly={isLoading}
                             aria-describedby="emailError"
                         />
-                        <div className="absolute inset-y-0 right-0 flex items-center pr-4">
+                        <div className={tw("absolute inset-y-0 right-0 flex items-center pr-4")}>
                             {emailError && <AlertIcon customColor={appearance?.colors?.danger} />}
                             {isLoading && (
                                 <Spinner
@@ -139,7 +140,7 @@ export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEm
                             ) : null}
                         </div>
                     </form>
-                    {emailError && <p className="text-xs text-red-500 mb-2 pt-2">{emailError}</p>}
+                    {emailError && <p className={tw("text-xs text-red-500 mb-2 pt-2")}>{emailError}</p>}
                 </div>
             </div>
         </>
