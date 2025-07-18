@@ -2,6 +2,7 @@ import type React from "react";
 import { classNames } from "../../utils/classNames";
 import { LeftArrowIcon } from "@/icons/leftArrow";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
+import { tw } from "@/twind-instance";
 
 export const AuthFormBackButton = ({
     className,
@@ -24,7 +25,8 @@ export const AuthFormBackButton = ({
             }}
             {...props}
         >
-            <LeftArrowIcon className="w-6 h-6" style={{ color: iconColor }} />
+            penis
+            <LeftArrowIcon className={tw("w-6 h-6")} style={{ color: iconColor }} />
         </button>
     );
 };

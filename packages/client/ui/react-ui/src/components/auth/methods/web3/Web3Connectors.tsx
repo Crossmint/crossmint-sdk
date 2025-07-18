@@ -1,6 +1,7 @@
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import { AuthFormBackButton } from "../../AuthFormBackButton";
 import { DynamicEmbeddedWidget } from "@dynamic-labs/sdk-react-core";
+import { tw } from "@/twind-instance";
 
 export function Web3Connectors() {
     const { appearance, step, setStep } = useAuthForm();
@@ -13,9 +14,9 @@ export function Web3Connectors() {
                     iconColor={appearance?.colors?.textPrimary}
                     ringColor={appearance?.colors?.accent}
                 />
-                <div className="flex flex-col items-center">
-                    <div className="flex flex-col gap-[10px] w-full">
-                        <div className="widget-container">
+                <div className={tw("flex flex-col items-center")}>
+                    <div className={tw("flex flex-col gap-[10px] w-full")}>
+                        <div className={tw("widget-container")}>
                             <DynamicEmbeddedWidget background="none" />
                         </div>
                     </div>

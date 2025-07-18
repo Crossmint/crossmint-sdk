@@ -10,6 +10,7 @@ import { classNames } from "@/utils/classNames";
 import { AlertIcon } from "@/icons/alert";
 import { TwitterSignIn } from "./methods/twitter/TwitterSignIn";
 import { Web3AuthFlow } from "./methods/web3/Web3AuthFlow";
+import { tw } from "@/twind-instance";
 
 export function AuthForm({ className }: { className?: string }) {
     const { step, appearance, loginMethods, baseUrl, error, termsOfServiceText, authModalTitle } = useAuthForm();
@@ -23,15 +24,15 @@ export function AuthForm({ className }: { className?: string }) {
         >
             {error != null ? (
                 <div
-                    className="flex items-start justify-start w-full rounded-lg p-2 mt-4 bg-cm-danger-muted"
+                    className={tw("flex items-start justify-start w-full rounded-lg p-2 mt-4 bg-cm-danger-muted")}
                     style={{
                         backgroundColor: new Color(appearance?.colors?.danger ?? "#f44336").alpha(0.12).toString(),
                     }}
                 >
-                    <div className="min-w-[20px]">
+                    <div className={tw("min-w-[20px]")}>
                         <AlertIcon customColor={appearance?.colors?.danger ?? "#f44336"} />
                     </div>
-                    <p className="ml-2 text-sm" style={{ color: appearance?.colors?.danger ?? "#f44336" }}>
+                    <p className={tw("ml-2 text-sm")} style={{ color: appearance?.colors?.danger ?? "#f44336" }}>
                         {error}
                     </p>
                 </div>
@@ -40,13 +41,13 @@ export function AuthForm({ className }: { className?: string }) {
             {step === "initial" ? (
                 <div>
                     <h1
-                        className="text-2xl font-bold text-cm-text-primary"
+                        className={tw("text-2xl font-bold text-cm-text-primary")}
                         style={{ color: appearance?.colors?.textPrimary }}
                     >
                         {authModalTitle ?? "Sign in to Crossmint"}
                     </h1>
                     <p
-                        className="text-base font-normal mb-3 text-cm-text-secondary"
+                        className={tw("text-base font-normal mb-3 text-cm-text-secondary")}
                         style={{ color: appearance?.colors?.textSecondary }}
                     >
                         Access using one of the options below.
@@ -72,7 +73,7 @@ export function AuthForm({ className }: { className?: string }) {
 
             {step === "initial" && termsOfServiceText != null ? (
                 <div
-                    className="text-sm text-center text-cm-text-secondary mt-2"
+                    className={tw("text-sm text-center text-cm-text-secondary mt-2")}
                     style={{ color: appearance?.colors?.textSecondary }}
                 >
                     <style>{`
@@ -86,7 +87,7 @@ export function AuthForm({ className }: { className?: string }) {
 
             {step === "initial" || step === "otp" ? (
                 <SecuredByCrossmint
-                    className="mt-1.5 md:mt-4 justify-center"
+                    className={tw("mt-1.5 md:mt-4 justify-center")}
                     color={appearance?.colors?.textSecondary ?? "#67797F"}
                 />
             ) : null}

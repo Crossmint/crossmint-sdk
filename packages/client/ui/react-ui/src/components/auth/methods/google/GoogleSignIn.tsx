@@ -4,6 +4,7 @@ import { useOAuthWindowListener } from "@/hooks/useOAuthWindowListener";
 import { Spinner } from "@/components/common/Spinner";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import { classNames } from "@/utils/classNames";
+import { tw } from "@/twind-instance";
 
 export function GoogleSignIn({ ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
     const { step, appearance, isLoadingOauthUrlMap } = useAuthForm();
@@ -30,7 +31,7 @@ export function GoogleSignIn({ ...props }: ButtonHTMLAttributes<HTMLButtonElemen
             {...props}
         >
             <>
-                <GoogleIcon className="max-h-[25px] max-w-[25px] h-[25px] w-[25px] absolute left-[18px]" />
+                <GoogleIcon className={tw("max-h-[25px] max-w-[25px] h-[25px] w-[25px] absolute left-[18px]")} />
                 {isLoading ? (
                     <Spinner
                         style={{
@@ -40,14 +41,14 @@ export function GoogleSignIn({ ...props }: ButtonHTMLAttributes<HTMLButtonElemen
                     />
                 ) : (
                     <span
-                        className="font-medium"
+                        className={tw("font-medium")}
                         style={{ margin: "0px 32px", color: appearance?.colors?.textPrimary }}
                     >
                         Sign in with Google
                     </span>
                 )}
             </>
-            <span className="sr-only">Sign in with Google</span>
+            <span className={tw("sr-only")}>Sign in with Google</span>
         </button>
     );
 }

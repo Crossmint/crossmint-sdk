@@ -3,6 +3,7 @@ import type { UIConfig } from "@crossmint/common-sdk-base";
 
 import { Spinner } from "@/components/common/Spinner";
 import { classNames } from "@/utils/classNames";
+import { tw } from "@/twind-instance";
 
 interface EmailInputProps {
     email: string;
@@ -31,14 +32,14 @@ export function EmailConfirmation({ email, onConfirm, onCancel, appearance }: Em
     const borderColor = appearance?.colors?.border || "#E0E0E0";
 
     return (
-        <div className="flex flex-col w-full max-w-md mx-auto rounded-xl">
-            <h2 className="mb-2" style={{ color: textColor }}>
+        <div className={tw("flex flex-col w-full max-w-md mx-auto rounded-xl")}>
+            <h2 className={tw("mb-2")} style={{ color: textColor }}>
                 Send authorization code to
             </h2>
 
-            <div className="w-full mb-8 p-4 rounded-xl border" style={{ borderColor }}>
-                <div className="flex items-center">
-                    <div className="flex-shrink-0 mr-3">
+            <div className={tw("w-full mb-8 p-4 rounded-xl border")} style={{ borderColor }}>
+                <div className={tw("flex items-center")}>
+                    <div className={tw("flex-shrink-0 mr-3")}>
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="24"
@@ -49,7 +50,7 @@ export function EmailConfirmation({ email, onConfirm, onCancel, appearance }: Em
                             strokeWidth="2"
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            className="lucide lucide-mail-icon lucide-mail"
+                            className={tw("lucide lucide-mail-icon lucide-mail")}
                         >
                             <path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7" />
                             <rect x="2" y="4" width="20" height="16" rx="2" />
@@ -59,12 +60,12 @@ export function EmailConfirmation({ email, onConfirm, onCancel, appearance }: Em
                 </div>
             </div>
 
-            {error && <div className="text-red-500 mb-4 text-sm">{error}</div>}
+            {error && <div className={tw("text-red-500 mb-4 text-sm")}>{error}</div>}
 
-            <div className="flex gap-3">
+            <div className={tw("flex gap-3")}>
                 <button
                     onClick={onCancel}
-                    className="flex-1 py-4 px-6 border rounded-full text-center font-medium"
+                    className={tw("flex-1 py-4 px-6 border rounded-full text-center font-medium")}
                     style={{ borderColor }}
                 >
                     Cancel
@@ -80,7 +81,7 @@ export function EmailConfirmation({ email, onConfirm, onCancel, appearance }: Em
                     style={{ backgroundColor: accentColor }}
                 >
                     {isLoading ? (
-                        <div className="flex justify-center items-center">
+                        <div className={tw("flex justify-center items-center")}>
                             <Spinner style={{ color: "white" }} />
                         </div>
                     ) : (

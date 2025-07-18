@@ -1,3 +1,4 @@
+import { type MouseEvent, type JSX, useEffect, useState } from "react";
 import { CrossmintLogoV2 } from "@/components/common/CrossmintLogoV2/CrossmintLogoV2";
 import { useCrossmint } from "@crossmint/client-sdk-react-base";
 import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
@@ -6,8 +7,7 @@ import {
     crossmintHostedCheckoutV3StylesService,
     type CrossmintHostedCheckoutV3Props,
 } from "@crossmint/client-sdk-base";
-import clsx from "clsx";
-import { type MouseEvent, type JSX, useEffect, useState } from "react";
+import { classNames } from "@/utils/classNames";
 
 export type CrossmintHostedCheckoutV3ReactProps = CrossmintHostedCheckoutV3Props & JSX.IntrinsicElements["button"];
 
@@ -58,7 +58,7 @@ export function CrossmintHostedCheckout(props: CrossmintHostedCheckoutV3ReactPro
     return (
         <button
             onClick={_onClick}
-            className={clsx(stylesService.identifiers.buttonClassNames, className)}
+            className={classNames(stylesService.identifiers.buttonClassNames, className)}
             {...restButtonProps}
         >
             <CrossmintLogoV2

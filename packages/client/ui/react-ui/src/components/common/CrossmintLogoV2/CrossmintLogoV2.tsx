@@ -2,6 +2,7 @@ import type { z } from "zod";
 import type { CrossmintLogoColorsAndDisplayType, crossmintLogoColorsAndDisplayTypeSchema } from "./schemas";
 import { CROSSMINT_LOGO_DEFAULTS, CROSSMINT_LOGO_DEFAULT_COLORS, CROSSMINT_LOGO_VIEWBOXES } from "./consts";
 import { useId, type JSX } from "react";
+import { tw } from "@/twind-instance";
 
 export type CrossmintLogoV2Props = Omit<JSX.IntrinsicElements["svg"], "viewBox"> &
     z.input<typeof crossmintLogoColorsAndDisplayTypeSchema>;
@@ -48,15 +49,15 @@ function getSvgGradientDefinition(props: CrossmintLogoColorsAndDisplayType, grad
         <defs>
             <linearGradient
                 id={`logoGradient-${gradientId}`}
-                className={`logoGradient`}
+                className={tw("logoGradient")}
                 x1=".1"
                 y1=".1"
                 x2="85.8"
                 y2="85.8"
                 gradientUnits="userSpaceOnUse"
             >
-                <stop className="stop-0" offset="0" stopColor={iconColor.from} />
-                <stop className="stop-1" offset="1" stopColor={iconColor.to} />
+                <stop className={tw("stop-0")} offset="0" stopColor={iconColor.from} />
+                <stop className={tw("stop-1")} offset="1" stopColor={iconColor.to} />
             </linearGradient>
         </defs>
     );

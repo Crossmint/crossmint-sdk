@@ -1,6 +1,7 @@
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import type React from "react";
 import { classNames } from "../../../../utils/classNames";
+import { tw } from "@/twind-instance";
 
 export function Web3ConnectorButton({
     title,
@@ -27,12 +28,12 @@ export function Web3ConnectorButton({
             {...props}
         >
             <>
-                <img src={img} alt={title} className="h-[25px] w-[25px] absolute left-[18px]" />
-                <span className="font-medium" style={{ color: appearance?.colors?.textPrimary }}>
+                <img src={img} alt={title} className={tw("h-[25px] w-[25px] absolute left-[18px]")} />
+                <span className={tw("font-medium")} style={{ color: appearance?.colors?.textPrimary }}>
                     {title}
                 </span>
             </>
-            <span className="sr-only">Sign in with {title}</span>
+            <span className={tw("sr-only")}>Sign in with {title}</span>
         </button>
     );
 }

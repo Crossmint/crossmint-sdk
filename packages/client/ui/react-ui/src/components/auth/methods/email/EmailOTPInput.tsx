@@ -6,6 +6,7 @@ import type { OtpEmailPayload } from "@/types/auth";
 import { AuthFormBackButton } from "../../AuthFormBackButton";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
 import { CountdownButton } from "@/components/common/CountdownButton";
+import { tw } from "@/twind-instance";
 
 export const EMAIL_VERIFICATION_TOKEN_LENGTH = 6;
 
@@ -62,8 +63,8 @@ export function EmailOTPInput({
                 ringColor={appearance?.colors?.accent}
             />
 
-            <div className="flex flex-col items-center justify-start w-full">
-                <div className="relative left-3">
+            <div className={tw("flex flex-col items-center justify-start w-full")}>
+                <div className={tw("relative left-3")}>
                     <EmailOtpIcon
                         customAccentColor={appearance?.colors?.accent}
                         customButtonBackgroundColor={appearance?.colors?.buttonBackground}
@@ -71,19 +72,19 @@ export function EmailOTPInput({
                     />
                 </div>
                 <p
-                    className="text-base font-normal mt-4 mb-1 text-center text-cm-text-primary"
+                    className={tw("text-base font-normal mt-4 mb-1 text-center text-cm-text-primary")}
                     style={{ color: appearance?.colors?.textPrimary }}
                 >
                     {"Check your email"}
                 </p>
                 <p
-                    className="text-center text-cm-text-secondary px-4"
+                    className={tw("text-center text-cm-text-secondary px-4")}
                     style={{ color: appearance?.colors?.textSecondary }}
                 >
                     A temporary login code has been sent to{" "}
                     {otpEmailData?.email ? otpEmailData.email : "your email address"}
                 </p>
-                <div className="py-8">
+                <div className={tw("py-8")}>
                     <InputOTP
                         maxLength={EMAIL_VERIFICATION_TOKEN_LENGTH}
                         value={token}
@@ -115,7 +116,7 @@ export function EmailOTPInput({
                     </InputOTP>
                 </div>
 
-                <div className="text-xs leading-tight text-cm-text-secondary text-center">
+                <div className={tw("text-xs leading-tight text-cm-text-secondary text-center")}>
                     <span style={{ color: appearance?.colors?.textSecondary }}>
                         Can't find the email? Check spam folder.
                         {"\n"}

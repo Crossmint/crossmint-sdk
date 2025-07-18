@@ -1,3 +1,5 @@
+import { tw } from "@/twind-instance";
+
 interface PhoneOtpIconProps {
     customAccentColor?: string;
     customButtonBackgroundColor?: string;
@@ -14,7 +16,7 @@ export function PhoneOtpIcon({
     const backgroundColor = customBackgroundColor || "#FFFFFF";
 
     return (
-        <div className="relative">
+        <div className={tw("relative")}>
             {/* Phone icon with SMS bubble */}
             <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
                 {/* Background circle */}

@@ -6,7 +6,6 @@ import { useCrossmint } from "@crossmint/client-sdk-react-base";
 
 import AuthFormDialog from "../components/auth/AuthFormDialog";
 import { AuthFormProvider } from "./auth/AuthFormProvider";
-import { TwindProvider } from "./TwindProvider";
 import type { AuthStatus, CrossmintAuthProviderProps } from "@/types/auth";
 import { DynamicWalletProvider } from "./dynamic/DynamicWalletProvider";
 import type { Chain, ExternalWalletSignerConfigForChain } from "@crossmint/wallets-sdk";
@@ -168,26 +167,26 @@ export function CrossmintAuthProviderInternal({
     );
 
     return (
-        <TwindProvider>
-            <AuthContext.Provider value={authContextValue}>
-                <AuthFormProvider
-                    setDialogOpen={(open, successfulLogin) => {
-                        setDialogOpen(open);
-                        if (successfulLogin) {
-                            // This will be triggered from the OTP form
-                            triggerHasJustLoggedIn();
-                        }
-                    }}
-                    preFetchOAuthUrls={getAuthStatus() === "logged-out" && prefetchOAuthUrls}
-                    initialState={{
-                        appearance,
-                        loginMethods,
-                        termsOfServiceText,
-                        authModalTitle,
-                        baseUrl: crossmintBaseUrl,
-                        defaultEmail,
-                    }}
-                >
+        <AuthContext.Provider value={authContextValue}>
+            <AuthFormProvider
+                setDialogOpen={(open, successfulLogin) => {
+                    setDialogOpen(open);
+                    if (successfulLogin) {
+                        // This will be triggered from the OTP form
+                        triggerHasJustLoggedIn();
+                    }
+                }}
+                preFetchOAuthUrls={getAuthStatus() === "logged-out" && prefetchOAuthUrls}
+                initialState={{
+                    appearance,
+                    loginMethods,
+                    termsOfServiceText,
+                    authModalTitle,
+                    baseUrl: crossmintBaseUrl,
+                    defaultEmail,
+                }}
+            >
+                <div className="crossmint-components">
                     {isWeb3Enabled ? (
                         <DynamicWalletProvider
                             apiKeyEnvironment={crossmint.apiKey.includes("production") ? "production" : "staging"}
@@ -205,8 +204,8 @@ export function CrossmintAuthProviderInternal({
                             <AuthFormDialog open={dialogOpen} />
                         </>
                     )}
-                </AuthFormProvider>
-            </AuthContext.Provider>
-        </TwindProvider>
+                </div>
+            </AuthFormProvider>
+        </AuthContext.Provider>
     );
 }
