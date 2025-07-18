@@ -1,15 +1,14 @@
 import type { ButtonHTMLAttributes } from "react";
 import { TwitterIcon } from "@/icons/twitter";
-import { useOAuthWindowListener } from "@/hooks/useOAuthWindowListener";
+import { useOAuthFlow } from "@/providers/auth/OAuthFlowProvider";
 import { Spinner } from "@/components/common/Spinner";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import { classNames } from "@/utils/classNames";
 import { tw } from "@/twind-instance";
 
 export function TwitterSignIn({ ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
-    const { step, appearance, isLoadingOauthUrlMap } = useAuthForm();
-    const { createPopupAndSetupListeners, isLoading: isLoadingOAuthWindow } = useOAuthWindowListener("twitter");
-    const isLoading = isLoadingOauthUrlMap || isLoadingOAuthWindow;
+    const { step, appearance } = useAuthForm();
+    const { startOAuthLogin, isLoading } = useOAuthFlow();
 
     if (step !== "initial") {
         return null;
@@ -27,7 +26,7 @@ export function TwitterSignIn({ ...props }: ButtonHTMLAttributes<HTMLButtonEleme
                 borderRadius: appearance?.borderRadius,
                 backgroundColor: appearance?.colors?.buttonBackground,
             }}
-            onClick={isLoading ? undefined : () => createPopupAndSetupListeners()}
+            onClick={isLoading ? undefined : () => startOAuthLogin("twitter")}
             {...props}
         >
             <>
