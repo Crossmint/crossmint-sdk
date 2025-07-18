@@ -1,10 +1,13 @@
-import { getEnvironmentForKey, isValidAddress } from "@crossmint/common-sdk-base";
+import { isValidAddress } from "@crossmint/common-sdk-base";
 import type {
     Activity,
     ApiClient,
     GetSignatureResponse,
-    GetTransactionSuccessResponse,
     GetBalanceSuccessResponse,
+    WalletLocator,
+    RegisterSignerPasskeyParams,
+    GetTransactionSuccessResponse,
+    GetTransactionsResponse,
 } from "../api";
 import type {
     PendingApproval,
@@ -14,6 +17,10 @@ import type {
     Transaction,
     Balances,
     TokenBalance,
+    TransactionInputOptions,
+    ApproveTransactionParams,
+    ApproveTransactionOptions,
+    Approval,
 } from "./types";
 import {
     InvalidSignerError,
@@ -49,7 +56,8 @@ export class Wallet<C extends Chain> {
     #options?: WalletOptions;
     #apiClient: ApiClient;
 
-    constructor({ chain, address, owner, signer, options }: WalletContructorType<C>, apiClient: ApiClient) {
+    constructor(args: WalletContructorType<C>, apiClient: ApiClient) {
+        const { chain, address, owner, signer, options } = args;
         this.#apiClient = apiClient;
         this.chain = chain;
         this.address = address;
@@ -78,7 +86,7 @@ export class Wallet<C extends Chain> {
      * Get the wallet balances - always includes USDC and native token (ETH/SOL)
      * @param {string[]} tokens - Additional tokens to request (optional: native token and usdc are always included)
      * @param {Chain[]} chains - The chains (optional)
-     * @returns {Promise<Balances>} The balances structured as { nativeToken, usdc, tokens }
+     * @returns {Promise<Balances>} The balances returns nativeToken, usdc, tokens
      * @throws {Error} If the balances cannot be retrieved
      */
     public async balances(tokens?: string[], chains?: Chain[]): Promise<Balances> {
@@ -107,15 +115,12 @@ export class Wallet<C extends Chain> {
         requestedTokens?: string[]
     ): Balances {
         const transformTokenBalance = (tokenData: GetBalanceSuccessResponse[number]): TokenBalance => {
-            let contractAddress: string | undefined;
-            const chainData = tokenData.forChain?.[this.chain];
-            if (chainData && "contractAddress" in chainData) {
-                contractAddress = chainData.contractAddress;
-            }
+            const chainData = tokenData.chains?.[this.chain];
+            const contractAddress = "contractAddress" in chainData ? chainData.contractAddress : undefined;
 
             return {
-                symbol: tokenData.token,
-                name: tokenData.token, // API doesn't provide name, using symbol as fallback
+                symbol: tokenData.symbol ?? "",
+                name: tokenData.symbol ?? "",
                 amount: tokenData.amount ?? "0",
                 contractAddress,
                 decimals: tokenData.decimals,
@@ -123,17 +128,14 @@ export class Wallet<C extends Chain> {
             };
         };
 
-        const nativeTokenData = apiResponse.find(
-            (token) => token.token === nativeTokenSymbol || token.token.toLowerCase().includes(nativeTokenSymbol)
-        );
-        const usdcData = apiResponse.find((token) => token.token.toLowerCase().includes("usdc"));
+        const nativeTokenData = apiResponse.find((token) => token.symbol === nativeTokenSymbol);
+        const usdcData = apiResponse.find((token) => token.symbol === "usdc");
 
         const otherTokens = apiResponse.filter((token) => {
-            const tokenLower = token.token.toLowerCase();
             return (
-                !tokenLower.includes(nativeTokenSymbol) &&
-                !tokenLower.includes("usdc") &&
-                requestedTokens?.some((reqToken) => tokenLower.includes(reqToken.toLowerCase()))
+                token.symbol !== nativeTokenSymbol &&
+                token.symbol !== "usdc" &&
+                requestedTokens?.includes(token.symbol ?? "")
             );
         });
 
@@ -161,7 +163,7 @@ export class Wallet<C extends Chain> {
      * @param {Object} params - The parameters
      * @param {number} params.perPage - The number of NFTs per page
      * @param {number} params.page - The page number
-     * @param {EvmWalletLocator} [params.locator] - The locator
+     * @param {WalletLocator} [params.locator] - The locator
      * @returns The NFTs
      * @experimental This API is experimental and may change in the future
      */
@@ -176,9 +178,27 @@ export class Wallet<C extends Chain> {
     /**
      * Get the wallet transactions
      * @returns The transactions
+     * @throws {Error} If the transactions cannot be retrieved
      */
-    public async experimental_transactions() {
-        return await this.#apiClient.getTransactions(this.walletLocator);
+    public async experimental_transactions(): Promise<GetTransactionsResponse> {
+        const response = await this.#apiClient.getTransactions(this.walletLocator);
+        if ("error" in response) {
+            throw new Error(`Failed to get transactions: ${JSON.stringify(response.message)}`);
+        }
+        return response;
+    }
+
+    /**
+     * Get a transaction by id
+     * @returns The transaction
+     * @throws {Error} If the transaction cannot be retrieved
+     */
+    public async experimental_transaction(transactionId: string): Promise<GetTransactionSuccessResponse> {
+        const response = await this.#apiClient.getTransaction(this.walletLocator, transactionId);
+        if ("error" in response) {
+            throw new Error(`Failed to get transaction: ${JSON.stringify(response.error)}`);
+        }
+        return response;
     }
 
     /**
@@ -200,29 +220,58 @@ export class Wallet<C extends Chain> {
      * @param {string | UserLocator} to - The recipient (address or user locator)
      * @param {string} token - The token (address or currency symbol)
      * @param {string} amount - The amount to send (decimal units)
+     * @param {TransactionInputOptions} options - The options for the transaction
      * @returns {Transaction} The transaction
      */
-    public async send(to: string | UserLocator, token: string, amount: string) {
+    public async send<T extends TransactionInputOptions | undefined = undefined>(
+        to: string | UserLocator,
+        token: string,
+        amount: string,
+        options?: T
+    ): Promise<Transaction<T extends { experimental_prepareOnly: true } ? true : false>> {
         const recipient = toRecipientLocator(to);
         const tokenLocator = toTokenLocator(token, this.chain);
-        const params = { recipient, amount };
-        const transactionCreationResponse = await this.#apiClient.send(this.walletLocator, tokenLocator, params);
+        const sendParams = { recipient, amount };
+        const transactionCreationResponse = await this.#apiClient.send(this.walletLocator, tokenLocator, sendParams);
+
         if ("message" in transactionCreationResponse) {
             throw new TransactionNotCreatedError(
                 `Failed to send token: ${JSON.stringify(transactionCreationResponse.message)}`
             );
         }
+
+        if (options?.experimental_prepareOnly) {
+            return {
+                hash: undefined,
+                explorerLink: undefined,
+                transactionId: transactionCreationResponse.id,
+            } as Transaction<T extends { experimental_prepareOnly: true } ? true : false>;
+        }
+
         return await this.approveAndWait(transactionCreationResponse.id);
     }
 
     /**
+     * Approve a transaction
+     * @param params - The parameters
+     * @param params.transactionId - The transaction id
+     * @param params.options - The options for the transaction
+     * @param params.options.experimental_approval - The approval
+     * @param params.options.additionalSigners - The additional signers
+     * @returns The transaction
+     */
+    public async approveTransaction(params: ApproveTransactionParams) {
+        return await this.approveAndWait(params.transactionId, params.options);
+    }
+
+    /**
      * Add a delegated signer to the wallet
-     * @param signer - The signer
+     * @param signer - The signer. For Solana, it must be a string. For EVM, it can be a string or a passkey.
      * @returns The delegated signer
      */
-    public async addDelegatedSigner({ signer }: { signer: string }) {
+    public async addDelegatedSigner(params: { signer: string | RegisterSignerPasskeyParams }) {
         const response = await this.#apiClient.registerSigner(this.walletLocator, {
-            signer: signer,
+            signer: params.signer,
             chain: this.chain === "solana" ? undefined : this.chain,
         });
 
@@ -256,7 +305,10 @@ export class Wallet<C extends Chain> {
             throw new WalletNotAvailableError(JSON.stringify(walletResponse));
         }
 
-        if (walletResponse.type !== "solana-smart-wallet" && walletResponse.type !== "evm-smart-wallet") {
+        if (
+            walletResponse.type !== "smart" ||
+            (walletResponse.chainType !== "evm" && walletResponse.chainType !== "solana")
+        ) {
             throw new WalletTypeNotSupportedError(`Wallet type ${walletResponse.type} not supported`);
         }
 
@@ -273,11 +325,11 @@ export class Wallet<C extends Chain> {
         );
     }
 
-    protected get walletLocator(): string {
+    protected get walletLocator(): WalletLocator {
         if (this.#apiClient.isServerSide) {
             return this.address;
         } else {
-            return `me:${this.isSolanaWallet ? "solana-smart-wallet" : "evm-smart-wallet"}`;
+            return `me:${this.chain === "solana" ? "solana" : "evm"}:smart`;
         }
     }
 
@@ -285,16 +337,16 @@ export class Wallet<C extends Chain> {
         return this.chain === "solana";
     }
 
-    protected async approveAndWait(transactionId: string, additionalSigners?: Signer[]) {
-        await this.approveTransaction(transactionId, additionalSigners);
+    protected async approveAndWait(transactionId: string, options?: ApproveTransactionOptions) {
+        await this.approveTransactionInternal(transactionId, options);
         await this.sleep(1_000); // Rule of thumb: tx won't be confirmed in less than 1 second
         return await this.waitForTransaction(transactionId);
     }
 
-    protected async approveTransaction(transactionId: string, additionalSigners?: Signer[]) {
+    protected async approveTransactionInternal(transactionId: string, options?: ApproveTransactionOptions) {
         const transaction = await this.#apiClient.getTransaction(this.walletLocator, transactionId);
 
-        if (transaction.error) {
+        if ("error" in transaction) {
             throw new TransactionNotAvailableError(JSON.stringify(transaction));
         }
 
@@ -305,22 +357,29 @@ export class Wallet<C extends Chain> {
             return transaction;
         }
 
+        // If an external signature is provided, use it to approve the transaction
+        if (options?.experimental_approval != null) {
+            const approvals = [options.experimental_approval];
+
+            return await this.executeApprovalWithErrorHandling(transactionId, approvals);
+        }
+
         const pendingApprovals = transaction.approvals?.pending;
 
         if (pendingApprovals == null) {
             return transaction;
         }
 
-        const signers = [...(additionalSigners ?? []), this.signer];
+        const signers = [...(options?.additionalSigners ?? []), this.signer];
 
         const signedApprovals = await Promise.all(
             pendingApprovals.map((pendingApproval) => {
-                const signer = signers.find((s) => s.locator() === pendingApproval.signer);
+                const signer = signers.find((s) => s.locator() === pendingApproval.signer.locator);
                 if (signer == null) {
                     throw new InvalidSignerError(`Signer ${pendingApproval.signer} not found in pending approvals`);
                 }
                 const transactionToSign =
-                    transaction.walletType === "solana-smart-wallet"
+                    transaction.chainType === "solana" && "transaction" in transaction.onChain
                         ? transaction.onChain.transaction
                         : pendingApproval.message;
 
@@ -328,11 +387,19 @@ export class Wallet<C extends Chain> {
             })
         );
 
-        const approvedTransaction = await this.#apiClient.approveTransaction(this.walletLocator, transaction.id, {
-            approvals: signedApprovals.map((signature) => ({
-                signer: this.signer.locator(),
+        const approvals = signedApprovals.map((signature) => {
+            return {
                 ...signature,
-            })),
+                signer: this.signer.locator(),
+            };
+        });
+
+        return await this.executeApprovalWithErrorHandling(transactionId, approvals);
+    }
+
+    private async executeApprovalWithErrorHandling(transactionId: string, approvals: Approval[]) {
+        const approvedTransaction = await this.#apiClient.approveTransaction(this.walletLocator, transactionId, {
+            approvals,
         });
 
         if (approvedTransaction.error) {
@@ -348,7 +415,7 @@ export class Wallet<C extends Chain> {
             throw new Error("Approving signatures is only supported for EVM smart wallets");
         }
 
-        const pendingApproval = pendingApprovals.find((approval) => approval.signer === this.signer.locator());
+        const pendingApproval = pendingApprovals.find((approval) => approval.signer.locator === this.signer.locator());
         if (!pendingApproval) {
             throw new InvalidSignerError(`Signer ${this.signer.locator()} not found in pending approvals`);
         }
@@ -372,11 +439,7 @@ export class Wallet<C extends Chain> {
 
         do {
             await new Promise((resolve) => setTimeout(resolve, STATUS_POLLING_INTERVAL_MS));
-            signatureResponse = await this.#apiClient.getSignature(
-                // @ts-ignore id type is wrong
-                this.walletLocator,
-                signatureId
-            );
+            signatureResponse = await this.#apiClient.getSignature(this.walletLocator, signatureId);
             if ("error" in signatureResponse) {
                 throw new SignatureNotAvailableError(JSON.stringify(signatureResponse));
             }
@@ -446,31 +509,14 @@ export class Wallet<C extends Chain> {
 
         return {
             hash: transactionHash,
-            explorerLink: toTxExplorerLink(transactionResponse, this.apiClient.crossmint.apiKey),
+            explorerLink: transactionResponse.onChain.explorerLink ?? "",
+            transactionId: transactionResponse.id,
         };
     }
 
     protected async sleep(ms: number) {
         return new Promise((resolve) => setTimeout(resolve, ms));
     }
-}
-
-function toTxExplorerLink(transactionResponse: GetTransactionSuccessResponse, apiKey: string) {
-    let explorerLink: string | undefined;
-    if (transactionResponse.walletType === "evm-smart-wallet") {
-        explorerLink = transactionResponse.onChain.explorerLink;
-    } else if (transactionResponse.walletType === "solana-smart-wallet") {
-        const queryParams = new URLSearchParams();
-        const env = getEnvironmentForKey(apiKey);
-        if (env !== "production") {
-            queryParams.append("cluster", "devnet");
-        }
-        explorerLink = `https://explorer.solana.com/tx/${transactionResponse.onChain.txId}?${queryParams.toString()}`;
-    }
-    if (explorerLink == null || explorerLink === "") {
-        explorerLink = "Explorer link not available";
-    }
-    return explorerLink;
 }
 
 function toRecipientLocator(to: string | UserLocator): string {

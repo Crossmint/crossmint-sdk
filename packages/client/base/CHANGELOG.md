@@ -1,5 +1,51 @@
 # @crossmint/client-sdk-base
 
+## 1.5.13
+
+### Patch Changes
+
+- Updated dependencies [4ea912c]
+  - @crossmint/common-sdk-base@0.8.5
+
+## 1.5.12
+
+### Patch Changes
+
+- Updated dependencies [deff029]
+- Updated dependencies [220e9c9]
+  - @crossmint/client-sdk-window@1.0.2
+
+## 1.5.11
+
+### Patch Changes
+
+- Updated dependencies [99171e9]
+- Updated dependencies [689e639]
+- Updated dependencies [b573834]
+  - @crossmint/client-sdk-window@1.0.1
+
+## 1.5.10
+
+### Patch Changes
+
+- Updated dependencies [fa8da3f]
+  - @crossmint/common-sdk-base@0.8.4
+
+## 1.5.9
+
+### Patch Changes
+
+- 174d730: checkout: order metadata
+- Updated dependencies [174d730]
+  - @crossmint/common-sdk-base@0.8.3
+
+## 1.5.8
+
+### Patch Changes
+
+- Updated dependencies [dabb284]
+  - @crossmint/common-sdk-base@0.8.2
+
 ## 1.5.7
 
 ### Patch Changes

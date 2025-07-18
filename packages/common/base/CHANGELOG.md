@@ -1,5 +1,29 @@
 # @crossmint/common-sdk-base
 
+## 0.8.5
+
+### Patch Changes
+
+- 4ea912c: SMS signer
+
+## 0.8.4
+
+### Patch Changes
+
+- fa8da3f: fix: world-chain string
+
+## 0.8.3
+
+### Patch Changes
+
+- 174d730: checkout: order metadata
+
+## 0.8.2
+
+### Patch Changes
+
+- dabb284: Fix createOnLogin wallet types based on chain
+
 ## 0.8.1
 
 ### Patch Changes

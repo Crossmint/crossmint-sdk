@@ -24,7 +24,6 @@ import type {
     RegisterSignerResponse,
     GetSignerResponse,
     WalletLocator,
-    EvmWalletLocator,
     SendParams,
     SendResponse,
     GetActivityResponse,
@@ -32,7 +31,8 @@ import type {
 import type { Chain } from "../chains/chains";
 
 class ApiClient extends CrossmintApiClient {
-    private apiPrefix = "api/2022-06-09/wallets";
+    private apiPrefix = "api/2025-06-09/wallets";
+    private legacyApiPrefix = "api/2022-06-09/wallets";
 
     constructor(crossmint: Crossmint) {
         super(crossmint, {
@@ -111,7 +111,7 @@ class ApiClient extends CrossmintApiClient {
         return response.json();
     }
 
-    async getSignature(walletLocator: EvmWalletLocator, signatureId: string): Promise<GetSignatureResponse> {
+    async getSignature(walletLocator: WalletLocator, signatureId: string): Promise<GetSignatureResponse> {
         const response = await this.get(`${this.apiPrefix}/${walletLocator}/signatures/${signatureId}`, {
             headers: this.headers,
         });
@@ -142,9 +142,13 @@ class ApiClient extends CrossmintApiClient {
     }
 
     async experimental_activity(walletLocator: WalletLocator, params: { chain: Chain }): Promise<GetActivityResponse> {
+        let legacyLocator = walletLocator;
+        if (!this.isServerSide) {
+            legacyLocator = `me:${params.chain === "solana" ? "solana-smart-wallet" : "evm-smart-wallet"}`;
+        }
         const queryParams = new URLSearchParams();
         queryParams.append("chain", params.chain.toString());
-        const response = await this.get(`${this.apiPrefix}/${walletLocator}/activity?${queryParams.toString()}`, {
+        const response = await this.get(`${this.legacyApiPrefix}/${legacyLocator}/activity?${queryParams.toString()}`, {
             headers: this.headers,
         });
         return response.json();
@@ -158,9 +162,9 @@ class ApiClient extends CrossmintApiClient {
         }
     ): Promise<GetBalanceResponse> {
         const queryParams = new URLSearchParams();
-        queryParams.append("tokenLocators", params.tokens.join(","));
+        queryParams.append("tokens", params.tokens.join(","));
         queryParams.append("chains", params.chains.join(","));
-        const response = await this.get(`api/unstable/wallets/${walletLocator}/balances?${queryParams.toString()}`, {
+        const response = await this.get(`${this.apiPrefix}/${walletLocator}/balances?${queryParams.toString()}`, {
             headers: this.headers,
         });
         return response.json();
@@ -182,7 +186,7 @@ class ApiClient extends CrossmintApiClient {
     }
 
     async send(walletLocator: WalletLocator, tokenLocator: string, params: SendParams): Promise<SendResponse> {
-        const response = await this.post(`api/unstable/wallets/${walletLocator}/tokens/${tokenLocator}/transfers`, {
+        const response = await this.post(`${this.apiPrefix}/${walletLocator}/tokens/${tokenLocator}/transfers`, {
             body: JSON.stringify(params),
             headers: this.headers,
         });

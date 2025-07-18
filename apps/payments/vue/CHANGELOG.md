@@ -1,5 +1,54 @@
 # @crossmint/client-sdk-vue-ui-starter
 
+## 1.1.73
+
+### Patch Changes
+
+- @crossmint/client-sdk-base@1.5.13
+- @crossmint/client-sdk-smart-wallet@0.3.25
+- @crossmint/client-sdk-vue-ui@1.1.59
+
+## 1.1.72
+
+### Patch Changes
+
+- @crossmint/client-sdk-base@1.5.12
+- @crossmint/client-sdk-vue-ui@1.1.58
+- @crossmint/client-sdk-smart-wallet@0.3.24
+
+## 1.1.71
+
+### Patch Changes
+
+- @crossmint/client-sdk-base@1.5.11
+- @crossmint/client-sdk-vue-ui@1.1.57
+- @crossmint/client-sdk-smart-wallet@0.3.23
+
+## 1.1.70
+
+### Patch Changes
+
+- @crossmint/client-sdk-base@1.5.10
+- @crossmint/client-sdk-smart-wallet@0.3.22
+- @crossmint/client-sdk-vue-ui@1.1.56
+
+## 1.1.69
+
+### Patch Changes
+
+- Updated dependencies [174d730]
+  - @crossmint/client-sdk-base@1.5.9
+  - @crossmint/client-sdk-vue-ui@1.1.55
+  - @crossmint/client-sdk-smart-wallet@0.3.21
+
+## 1.1.68
+
+### Patch Changes
+
+- @crossmint/client-sdk-base@1.5.8
+- @crossmint/client-sdk-smart-wallet@0.3.20
+- @crossmint/client-sdk-vue-ui@1.1.54
+
 ## 1.1.67
 
 ### Patch Changes

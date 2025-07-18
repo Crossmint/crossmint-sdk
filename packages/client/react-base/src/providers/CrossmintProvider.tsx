@@ -28,6 +28,9 @@ export function CrossmintProvider({
                 if (prop === "jwt" && target.jwt !== value) {
                     setVersion((v) => v + 1);
                 }
+                if (prop === "experimental_customAuth" && target.experimental_customAuth !== value) {
+                    setVersion((v) => v + 1);
+                }
                 return Reflect.set(target, prop, value);
             },
         })

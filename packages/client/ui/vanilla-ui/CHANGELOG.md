@@ -1,5 +1,49 @@
 # @crossmint/client-sdk-vanilla-ui
 
+## 1.1.59
+
+### Patch Changes
+
+- Updated dependencies [4ea912c]
+  - @crossmint/common-sdk-base@0.8.5
+  - @crossmint/client-sdk-base@1.5.13
+
+## 1.1.58
+
+### Patch Changes
+
+- @crossmint/client-sdk-base@1.5.12
+
+## 1.1.57
+
+### Patch Changes
+
+- @crossmint/client-sdk-base@1.5.11
+
+## 1.1.56
+
+### Patch Changes
+
+- Updated dependencies [fa8da3f]
+  - @crossmint/common-sdk-base@0.8.4
+  - @crossmint/client-sdk-base@1.5.10
+
+## 1.1.55
+
+### Patch Changes
+
+- Updated dependencies [174d730]
+  - @crossmint/client-sdk-base@1.5.9
+  - @crossmint/common-sdk-base@0.8.3
+
+## 1.1.54
+
+### Patch Changes
+
+- Updated dependencies [dabb284]
+  - @crossmint/common-sdk-base@0.8.2
+  - @crossmint/client-sdk-base@1.5.8
+
 ## 1.1.53
 
 ### Patch Changes

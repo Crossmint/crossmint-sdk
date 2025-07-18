@@ -1,5 +1,101 @@
 # expo-demo
 
+## 1.1.58
+
+### Patch Changes
+
+- Updated dependencies [5b2b5bf]
+- Updated dependencies [c13d001]
+  - @crossmint/wallets-sdk@0.10.16
+  - @crossmint/client-sdk-react-native-ui@0.9.1
+
+## 1.1.57
+
+### Patch Changes
+
+- Updated dependencies [a9e19b0]
+  - @crossmint/client-sdk-react-native-ui@0.9.0
+  - @crossmint/client-sdk-rn-window@0.3.3
+
+## 1.1.56
+
+### Patch Changes
+
+- Updated dependencies [4ea912c]
+  - @crossmint/wallets-sdk@0.10.15
+  - @crossmint/client-sdk-react-native-ui@0.8.10
+
+## 1.1.55
+
+### Patch Changes
+
+- @crossmint/client-sdk-rn-window@0.3.2
+- @crossmint/wallets-sdk@0.10.14
+- @crossmint/client-sdk-react-native-ui@0.8.9
+
+## 1.1.54
+
+### Patch Changes
+
+- @crossmint/client-sdk-rn-window@0.3.1
+- @crossmint/wallets-sdk@0.10.13
+- @crossmint/client-sdk-react-native-ui@0.8.8
+
+## 1.1.53
+
+### Patch Changes
+
+- Updated dependencies [ab31a54]
+- Updated dependencies [fa12984]
+  - @crossmint/client-sdk-rn-window@0.3.0
+  - @crossmint/client-sdk-react-native-ui@0.8.7
+  - @crossmint/wallets-sdk@0.10.12
+
+## 1.1.52
+
+### Patch Changes
+
+- Updated dependencies [b4fa1ce]
+  - @crossmint/wallets-sdk@0.10.11
+  - @crossmint/client-sdk-react-native-ui@0.8.6
+
+## 1.1.51
+
+### Patch Changes
+
+- Updated dependencies [21ed41d]
+  - @crossmint/wallets-sdk@0.10.10
+  - @crossmint/client-sdk-react-native-ui@0.8.5
+
+## 1.1.50
+
+### Patch Changes
+
+- Updated dependencies [b791894]
+- Updated dependencies [d567616]
+  - @crossmint/wallets-sdk@0.10.9
+  - @crossmint/client-sdk-react-native-ui@0.8.4
+
+## 1.1.49
+
+### Patch Changes
+
+- Updated dependencies [61d4d7d]
+- Updated dependencies [6e2ff2e]
+- Updated dependencies [16a6705]
+  - @crossmint/wallets-sdk@0.10.8
+  - @crossmint/client-sdk-react-native-ui@0.8.3
+
+## 1.1.48
+
+### Patch Changes
+
+- Updated dependencies [daaf328]
+- Updated dependencies [6a342c4]
+- Updated dependencies [dabb284]
+  - @crossmint/wallets-sdk@0.10.7
+  - @crossmint/client-sdk-react-native-ui@0.8.2
+
 ## 1.1.47
 
 ### Patch Changes

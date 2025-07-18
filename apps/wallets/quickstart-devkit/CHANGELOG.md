@@ -1,5 +1,71 @@
 # @crossmint/wallets-quickstart-devkit
 
+## 0.1.37
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@2.2.16
+
+## 0.1.36
+
+### Patch Changes
+
+- 4ea912c: SMS signer
+- Updated dependencies [35f60d1]
+- Updated dependencies [4ea912c]
+  - @crossmint/client-sdk-react-ui@2.2.15
+
+## 0.1.35
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@2.2.14
+
+## 0.1.34
+
+### Patch Changes
+
+- Updated dependencies [c7a5d49]
+  - @crossmint/client-sdk-react-ui@2.2.13
+
+## 0.1.33
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@2.2.12
+
+## 0.1.32
+
+### Patch Changes
+
+- Updated dependencies [174d730]
+  - @crossmint/client-sdk-react-ui@2.2.11
+
+## 0.1.31
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@2.2.10
+
+## 0.1.30
+
+### Patch Changes
+
+- Updated dependencies [c971473]
+  - @crossmint/client-sdk-react-ui@2.2.9
+
+## 0.1.29
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@2.2.8
+
+## 0.1.28
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@2.2.7
+
 ## 0.1.27
 
 ### Patch Changes

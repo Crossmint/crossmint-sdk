@@ -45,10 +45,6 @@
             "path": "packages/client/ui/react-ui"
         },
         {
-            "name": "⚛️🔒 Smart Wallet SDK Playground",
-            "path": "apps/wallets/smart-wallet/react"
-        },
-        {
             "name": "⚛️🔒 Smart Wallet + Auth Demo",
             "path": "apps/wallets/smart-wallet/next"
         },

@@ -1,5 +1,6 @@
 export * from "./hooks";
 export * from "./providers";
+export * from "./components";
 
 export type { CrossmintEvent, CrossmintEventMap } from "@crossmint/client-sdk-base";
 

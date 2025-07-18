@@ -62,7 +62,7 @@ export function WalletBalance() {
             </div>
 
             <div className="flex flex-col gap-2 mt-2">
-                {wallet?.chain !== "solana" ? (
+                {wallet?.chain === "solana" ? (
                     <a
                         href="https://faucet.solana.com"
                         target="_blank"

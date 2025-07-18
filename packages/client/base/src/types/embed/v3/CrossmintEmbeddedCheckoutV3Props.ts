@@ -1,7 +1,7 @@
 import type { Currency as FiatCurrency, Locale } from "@/types";
 import type { CryptoCurrency } from "@/types/CryptoCurrency";
 
-import type { BlockchainIncludingTestnet, PayerSupportedBlockchains } from "@crossmint/common-sdk-base";
+import type { BlockchainIncludingTestnet, PayerSupportedBlockchains, JSONObject } from "@crossmint/common-sdk-base";
 
 interface CrossmintEmbeddedCheckoutV3CommonProps {
     appearance?: EmbeddedCheckoutV3Appearance;
@@ -20,6 +20,7 @@ export interface CrossmintEmbeddedCheckoutV3NewOrderProps extends CrossmintEmbed
     lineItems: EmbeddedCheckoutV3LineItem | EmbeddedCheckoutV3LineItem[];
     recipient?: EmbeddedCheckoutV3Recipient;
     locale?: Locale;
+    metadata?: JSONObject;
 }
 
 export type CrossmintEmbeddedCheckoutV3Props =

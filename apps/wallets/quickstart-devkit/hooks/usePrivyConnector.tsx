@@ -24,7 +24,8 @@ export const useEVMPrivyConnector = () => {
                 if (privyJwt != null) {
                     experimental_setCustomAuth({
                         jwt: privyJwt,
-                        email: user?.email?.address,
+                        email: user?.email?.address ?? user?.google?.email,
+                        phone: user?.phone?.number,
                         externalWalletSigner: {
                             type: "external-wallet",
                             address: privyEmbeddedWallet?.address,
@@ -69,7 +70,7 @@ export const useSolanaPrivyConnector = () => {
                 if (privyJwt != null && privyEmbeddedWallet) {
                     experimental_setCustomAuth({
                         jwt: privyJwt,
-                        email: user?.email?.address,
+                        email: user?.email?.address ?? user?.google?.email,
                         externalWalletSigner: {
                             type: "external-wallet",
                             address: privyEmbeddedWallet?.address,

@@ -1,5 +1,20 @@
 # @crossmint/client-sdk-window
 
+## 1.0.2
+
+### Patch Changes
+
+- deff029: Reverted change
+- 220e9c9: Revert and fix code related to window source checking
+
+## 1.0.1
+
+### Patch Changes
+
+- 99171e9: Safe URL parsing
+- 689e639: Same source checking
+- b573834: Improve randomness source
+
 ## 1.0.0
 
 ### Major Changes

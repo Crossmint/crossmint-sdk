@@ -1,5 +1,85 @@
 # @crossmint/wallets-sdk
 
+## 0.10.16
+
+### Patch Changes
+
+- 5b2b5bf: Updated readme
+- c13d001: Expose approveTransaction method
+
+## 0.10.15
+
+### Patch Changes
+
+- 4ea912c: SMS signer
+- Updated dependencies [4ea912c]
+  - @crossmint/common-sdk-base@0.8.5
+
+## 0.10.14
+
+### Patch Changes
+
+- Updated dependencies [deff029]
+- Updated dependencies [220e9c9]
+  - @crossmint/client-sdk-window@1.0.2
+
+## 0.10.13
+
+### Patch Changes
+
+- Updated dependencies [99171e9]
+- Updated dependencies [689e639]
+- Updated dependencies [b573834]
+  - @crossmint/client-sdk-window@1.0.1
+
+## 0.10.12
+
+### Patch Changes
+
+- fa12984: Add experimental_transaction method
+- Updated dependencies [fa8da3f]
+  - @crossmint/common-sdk-base@0.8.4
+
+## 0.10.11
+
+### Patch Changes
+
+- b4fa1ce: fix activity api version
+- Updated dependencies [174d730]
+  - @crossmint/common-sdk-base@0.8.3
+
+## 0.10.10
+
+### Patch Changes
+
+- 21ed41d: Migrate to 2.5 rest api
+
+## 0.10.9
+
+### Patch Changes
+
+- b791894: Cleanup exports and update readme
+- d567616: Exposes WalletsApiClient to easily call any wallets endpoint
+
+## 0.10.8
+
+### Patch Changes
+
+- 61d4d7d: Expose new param options.experimental_prepareOnly on EVM/SOL wallet sendTransaction and send methods
+- 6e2ff2e: Add target origin when handshaking with the iframe
+- 16a6705: Pass owner prop through wallet instance
+
+## 0.10.7
+
+### Patch Changes
+
+- daaf328: Add EVM signing
+- 6a342c4: Move \_handshakeParent from signer to options config and rename to clientTEEConnection
+- dabb284: Fix createOnLogin wallet types based on chain
+- Updated dependencies [dabb284]
+  - @crossmint/common-sdk-base@0.8.2
+  - @crossmint/common-sdk-auth@1.0.39
+
 ## 0.10.6
 
 ### Patch Changes

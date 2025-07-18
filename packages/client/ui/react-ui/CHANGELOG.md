@@ -1,5 +1,127 @@
 # @crossmint/client-sdk-react-ui
 
+## 2.2.16
+
+### Patch Changes
+
+- Updated dependencies [5b2b5bf]
+- Updated dependencies [c13d001]
+  - @crossmint/wallets-sdk@0.10.16
+  - @crossmint/client-sdk-react-base@0.5.16
+
+## 2.2.15
+
+### Patch Changes
+
+- 35f60d1: 9 digits OTP
+- 4ea912c: SMS signer
+- Updated dependencies [4ea912c]
+- Updated dependencies [4ea912c]
+  - @crossmint/client-sdk-react-base@0.5.15
+  - @crossmint/common-sdk-base@0.8.5
+  - @crossmint/wallets-sdk@0.10.15
+  - @crossmint/client-sdk-auth@1.2.22
+  - @crossmint/client-sdk-base@1.5.13
+  - @crossmint/common-sdk-auth@1.0.44
+
+## 2.2.14
+
+### Patch Changes
+
+- Updated dependencies [deff029]
+- Updated dependencies [220e9c9]
+  - @crossmint/client-sdk-window@1.0.2
+  - @crossmint/client-sdk-base@1.5.12
+  - @crossmint/client-sdk-react-base@0.5.14
+  - @crossmint/wallets-sdk@0.10.14
+  - @crossmint/client-sdk-auth@1.2.21
+  - @crossmint/common-sdk-auth@1.0.43
+
+## 2.2.13
+
+### Patch Changes
+
+- c7a5d49: embed: iframe allow persona
+- Updated dependencies [99171e9]
+- Updated dependencies [689e639]
+- Updated dependencies [b573834]
+  - @crossmint/client-sdk-window@1.0.1
+  - @crossmint/client-sdk-base@1.5.11
+  - @crossmint/client-sdk-react-base@0.5.13
+  - @crossmint/wallets-sdk@0.10.13
+  - @crossmint/client-sdk-auth@1.2.20
+  - @crossmint/common-sdk-auth@1.0.42
+
+## 2.2.12
+
+### Patch Changes
+
+- Updated dependencies [fa8da3f]
+- Updated dependencies [fa12984]
+  - @crossmint/common-sdk-base@0.8.4
+  - @crossmint/wallets-sdk@0.10.12
+  - @crossmint/client-sdk-auth@1.2.19
+  - @crossmint/client-sdk-base@1.5.10
+  - @crossmint/client-sdk-react-base@0.5.12
+  - @crossmint/common-sdk-auth@1.0.41
+
+## 2.2.11
+
+### Patch Changes
+
+- 174d730: checkout: order metadata
+- Updated dependencies [174d730]
+- Updated dependencies [b4fa1ce]
+  - @crossmint/client-sdk-base@1.5.9
+  - @crossmint/common-sdk-base@0.8.3
+  - @crossmint/wallets-sdk@0.10.11
+  - @crossmint/client-sdk-auth@1.2.18
+  - @crossmint/client-sdk-react-base@0.5.11
+  - @crossmint/common-sdk-auth@1.0.40
+
+## 2.2.10
+
+### Patch Changes
+
+- Updated dependencies [21ed41d]
+- Updated dependencies [21ed41d]
+  - @crossmint/client-sdk-react-base@0.5.10
+  - @crossmint/wallets-sdk@0.10.10
+
+## 2.2.9
+
+### Patch Changes
+
+- c971473: Hides appleid code to support Chrome Extensions
+- Updated dependencies [b791894]
+- Updated dependencies [d567616]
+  - @crossmint/wallets-sdk@0.10.9
+  - @crossmint/client-sdk-react-base@0.5.9
+
+## 2.2.8
+
+### Patch Changes
+
+- Updated dependencies [61d4d7d]
+- Updated dependencies [6e2ff2e]
+- Updated dependencies [16a6705]
+  - @crossmint/wallets-sdk@0.10.8
+  - @crossmint/client-sdk-react-base@0.5.8
+
+## 2.2.7
+
+### Patch Changes
+
+- Updated dependencies [daaf328]
+- Updated dependencies [6a342c4]
+- Updated dependencies [dabb284]
+  - @crossmint/wallets-sdk@0.10.7
+  - @crossmint/client-sdk-react-base@0.5.7
+  - @crossmint/common-sdk-base@0.8.2
+  - @crossmint/client-sdk-auth@1.2.17
+  - @crossmint/client-sdk-base@1.5.8
+  - @crossmint/common-sdk-auth@1.0.39
+
 ## 2.2.6
 
 ### Patch Changes

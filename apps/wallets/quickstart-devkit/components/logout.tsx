@@ -1,5 +1,6 @@
 "use client";
 
+import { signOutUser } from "@/lib/firebase";
 import { useAuth } from "@crossmint/client-sdk-react-ui";
 import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
 import { usePrivy } from "@privy-io/react-auth";
@@ -52,6 +53,26 @@ export function PrivyLogoutButton() {
             }}
         >
             Log out (Privy)
+        </button>
+    );
+}
+
+export function FirebaseLogoutButton() {
+    const handleLogout = async () => {
+        try {
+            await signOutUser();
+            window.location.reload();
+        } catch (error) {
+            console.error("Error logging out:", error);
+        }
+    };
+
+    return (
+        <button
+            className="w-full py-2 px-4 rounded-md text-sm font-medium border bg-gray-50 hover:bg-gray-100 transition-colors"
+            onClick={handleLogout}
+        >
+            Log out (Firebase)
         </button>
     );
 }

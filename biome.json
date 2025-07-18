@@ -29,6 +29,9 @@
     "organizeImports": {
         "enabled": false
     },
+    "files": {
+        "maxSize": 2097152
+    },
     "linter": {
         "enabled": true,
         "rules": {

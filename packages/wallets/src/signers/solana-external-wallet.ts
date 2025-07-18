@@ -1,14 +1,15 @@
 import { PublicKey, VersionedTransaction } from "@solana/web3.js";
 import base58 from "bs58";
-import type { Signer, SolanaExternalWalletSignerConfig } from "./types";
+import type { ExternalWalletInternalSignerConfig, Signer } from "./types";
 import { TransactionFailedError } from "../utils/errors";
+import type { SolanaChain } from "@/chains/chains";
 
 export class SolanaExternalWalletSigner implements Signer {
     type = "external-wallet" as const;
     address: string;
     onSignTransaction?: (transaction: VersionedTransaction) => Promise<VersionedTransaction>;
 
-    constructor(config: SolanaExternalWalletSignerConfig) {
+    constructor(private config: ExternalWalletInternalSignerConfig<SolanaChain>) {
         if (config.address == null) {
             throw new Error("Please provide an address for the External Wallet Signer");
         }
@@ -17,7 +18,7 @@ export class SolanaExternalWalletSigner implements Signer {
     }
 
     locator() {
-        return `solana-keypair:${this.address}`;
+        return this.config.locator;
     }
 
     async signMessage() {

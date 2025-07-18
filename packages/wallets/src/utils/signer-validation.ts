@@ -1,27 +1,43 @@
 import { WalletCreationError } from "./errors";
 
-const signersDontMatchErrorMessage = (newPath: string, val1: unknown, val2: unknown) =>
-    `Wallet signer configuration mismatch at "${newPath}" - expected "${val2}" from existing wallet but found "${val1}"`;
+const signerConfigMismatchErrorMessage = (fieldPath: string, newValue: unknown, existingValue: unknown) =>
+    `Wallet signer configuration mismatch at "${fieldPath}" - expected "${existingValue}" from existing wallet but found "${newValue}"`;
 
-export function deepCompare(obj1: Record<string, unknown>, obj2: Record<string, unknown>, path = "") {
-    if (obj1 === obj2) {
+export function compareSignerConfigs(
+    newSignerConfig: Record<string, unknown>,
+    existingSignerConfig: Record<string, unknown>,
+    path = ""
+) {
+    if (newSignerConfig === existingSignerConfig) {
         return;
     }
-    if (obj1 == null || obj2 == null) {
-        throw new Error(`Cannot compare null or undefined objects at path: ${path}`);
+    if (newSignerConfig == null || existingSignerConfig == null) {
+        throw new Error(`Cannot compare null or undefined signer configs at path: ${path}`);
     }
-    for (const key of Object.keys(obj1)) {
-        const newPath = path ? `${path}.${key}` : key;
-        const val1 = obj1[key];
-        const val2 = obj2[key];
 
-        if (!(key in obj2)) {
-            throw new WalletCreationError(signersDontMatchErrorMessage(newPath, val1, val2));
+    // Only compare keys that exist in both objects
+    for (const key of Object.keys(newSignerConfig)) {
+        if (!(key in existingSignerConfig)) {
+            continue;
         }
-        if (typeof val1 === "object" && val1 !== null && typeof val2 === "object" && val2 !== null) {
-            deepCompare(val1 as Record<string, unknown>, val2 as Record<string, unknown>, newPath);
-        } else if (val1 !== val2) {
-            throw new WalletCreationError(signersDontMatchErrorMessage(newPath, val1, val2));
+
+        const fieldPath = path ? `${path}.${key}` : key;
+        const newValue = newSignerConfig[key];
+        const existingValue = existingSignerConfig[key];
+
+        if (
+            typeof newValue === "object" &&
+            newValue !== null &&
+            typeof existingValue === "object" &&
+            existingValue !== null
+        ) {
+            compareSignerConfigs(
+                newValue as Record<string, unknown>,
+                existingValue as Record<string, unknown>,
+                fieldPath
+            );
+        } else if (newValue !== existingValue) {
+            throw new WalletCreationError(signerConfigMismatchErrorMessage(fieldPath, newValue, existingValue));
         }
     }
 }
