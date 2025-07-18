@@ -6,9 +6,10 @@ import { environmentUrlConfig, signerInboundEvents, signerOutboundEvents } from 
 import { validateAPIKey } from "@crossmint/common-sdk-base";
 import { type CreateOnLogin, CrossmintWalletBaseProvider } from "@crossmint/client-sdk-react-base";
 import { useCrossmint } from "@/hooks";
+import { PhoneSignersDialog } from "@/components/signers/PhoneSignersDialog";
 
 const throwNotAvailable = (functionName: string) => () => {
-    throw new Error(`${functionName} is not available. Make sure you're using an email signer wallet.`);
+    throw new Error(`${functionName} is not available. Make sure you're using an email or phone signer wallet.`);
 };
 
 type CrossmintWalletEmailSignerContext = {
@@ -18,11 +19,25 @@ type CrossmintWalletEmailSignerContext = {
     reject: (error?: Error) => void;
 };
 
-// Create the auth context
+type CrossmintWalletPhoneSignerContext = {
+    needsAuth: boolean;
+    sendPhoneWithOtp: () => Promise<void>;
+    verifyPhoneOtp: (otp: string) => Promise<void>;
+    reject: (error?: Error) => void;
+};
+
+// Create the auth contexts
 export const CrossmintWalletEmailSignerContext = createContext<CrossmintWalletEmailSignerContext>({
     needsAuth: false,
     sendEmailWithOtp: throwNotAvailable("sendEmailWithOtp"),
     verifyOtp: throwNotAvailable("verifyOtp"),
+    reject: throwNotAvailable("reject"),
+});
+
+export const CrossmintWalletPhoneSignerContext = createContext<CrossmintWalletPhoneSignerContext>({
+    needsAuth: false,
+    sendPhoneWithOtp: throwNotAvailable("sendPhoneWithOtp"),
+    verifyPhoneOtp: throwNotAvailable("verifyPhoneOtp"),
     reject: throwNotAvailable("reject"),
 });
 
@@ -52,6 +67,12 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
     const sendEmailWithOtpRef = useRef<() => Promise<void>>(throwNotAvailable("sendEmailWithOtp"));
     const verifyOtpRef = useRef<(otp: string) => Promise<void>>(throwNotAvailable("verifyOtp"));
     const rejectRef = useRef<(error?: Error) => void>(throwNotAvailable("reject"));
+
+    const [phoneSignerDialogOpen, setPhoneSignerDialogOpen] = useState<boolean>(false);
+    const [phoneSignerDialogStep, setPhoneSignerDialogStep] = useState<"initial" | "otp">("initial");
+
+    const sendPhoneWithOtpRef = useRef<() => Promise<void>>(throwNotAvailable("sendPhoneWithOtp"));
+    const verifyPhoneOtpRef = useRef<(otp: string) => Promise<void>>(throwNotAvailable("verifyPhoneOtp"));
 
     const secureGlobals = useMemo(() => {
         if (appId != null) {
@@ -137,15 +158,42 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
         return webViewParentRef.current;
     };
 
+    const phonesigners_handleSendPhoneOTP = async () => {
+        try {
+            await sendPhoneWithOtpRef.current();
+            setPhoneSignerDialogStep("otp");
+        } catch (error) {
+            console.error("Failed to send phone OTP", error);
+            rejectRef.current(new Error("Failed to send phone OTP"));
+        }
+    };
+
+    const phonesigners_handleOTPSubmit = async (otp: string) => {
+        try {
+            await verifyPhoneOtpRef.current(otp);
+            setPhoneSignerDialogOpen(false);
+            setPhoneSignerDialogStep("initial");
+        } catch (error) {
+            console.error("Failed to verify phone OTP", error);
+            rejectRef.current(new Error("Failed to verify phone OTP"));
+        }
+    };
+
     const onAuthRequired = async (
         needsAuth: boolean,
-        sendEmailWithOtp: () => Promise<void>,
+        sendMessageWithOtp: () => Promise<void>,
         verifyOtp: (otp: string) => Promise<void>,
         reject: () => void
     ) => {
-        setNeedsAuthState(needsAuth);
-        sendEmailWithOtpRef.current = sendEmailWithOtp;
-        verifyOtpRef.current = verifyOtp;
+        if (createOnLogin?.signer.type === "phone" && createOnLogin.signer.phone) {
+            setPhoneSignerDialogOpen(needsAuth);
+            sendPhoneWithOtpRef.current = sendMessageWithOtp;
+            verifyPhoneOtpRef.current = verifyOtp;
+        } else {
+            setNeedsAuthState(needsAuth);
+            sendEmailWithOtpRef.current = sendMessageWithOtp;
+            verifyOtpRef.current = verifyOtp;
+        }
         rejectRef.current = reject;
     };
 
@@ -159,6 +207,16 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
         [needsAuthState]
     );
 
+    const phoneAuthContextValue = useMemo(
+        () => ({
+            needsAuth: phoneSignerDialogOpen,
+            sendPhoneWithOtp: sendPhoneWithOtpRef.current,
+            verifyPhoneOtp: verifyPhoneOtpRef.current,
+            reject: rejectRef.current,
+        }),
+        [phoneSignerDialogOpen]
+    );
+
     return (
         <CrossmintWalletBaseProvider
             createOnLogin={createOnLogin}
@@ -167,7 +225,9 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
             callbacks={callbacks}
         >
             <CrossmintWalletEmailSignerContext.Provider value={authContextValue}>
-                {children}
+                <CrossmintWalletPhoneSignerContext.Provider value={phoneAuthContextValue}>
+                    {children}
+                </CrossmintWalletPhoneSignerContext.Provider>
             </CrossmintWalletEmailSignerContext.Provider>
             <View
                 style={{
@@ -207,6 +267,18 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
                     originWhitelist={[environmentUrlConfig[parsedAPIKey.environment]]}
                 />
             </View>
+            {phoneSignerDialogOpen && createOnLogin?.signer.type === "phone" && createOnLogin.signer.phone != null ? (
+                <PhoneSignersDialog
+                    rejectRef={rejectRef}
+                    phone={createOnLogin.signer.phone}
+                    open={phoneSignerDialogOpen}
+                    setOpen={setPhoneSignerDialogOpen}
+                    step={phoneSignerDialogStep}
+                    onSubmitOTP={phonesigners_handleOTPSubmit}
+                    onResendOTPCode={phonesigners_handleSendPhoneOTP}
+                    onSubmitPhone={phonesigners_handleSendPhoneOTP}
+                />
+            ) : null}
         </CrossmintWalletBaseProvider>
     );
 }
