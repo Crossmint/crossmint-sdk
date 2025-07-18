@@ -1,13 +1,36 @@
-import { twind, cssom, tx as tx$, injectGlobal as injectGlobal$, keyframes as keyframes$, virtual } from "@twind/core";
+import { twind, cssom, virtual } from "@twind/core";
 import defineConfig from "./twind.config";
 
-// @ts-expect-error: sheet type is not correct https://twind.style/library-mode#recommended-pattern
-export const tw = /* #__PURE__ */ twind(
-    defineConfig,
-    // If SSR/build time, use virtual sheet to avoid "document is not defined" errors
-    typeof document === "undefined" ? virtual() : cssom("style[data-crossmint-sdk]")
-);
+// 1. Create layer declaration first
+if (typeof document !== "undefined") {
+    let layerStyle = document.querySelector("style[data-crossmint-layers]") as HTMLStyleElement;
+    if (!layerStyle) {
+        layerStyle = document.createElement("style");
+        layerStyle.setAttribute("data-crossmint-layers", "");
+        layerStyle.textContent = `@layer base, client, crossmint;`;
+        document.head.insertBefore(layerStyle, document.head.firstChild);
+    }
+}
 
-export const tx = /* #__PURE__ */ tx$.bind(tw);
-export const injectGlobal = /* #__PURE__ */ injectGlobal$.bind(tw);
-export const keyframes = /* #__PURE__ */ keyframes$.bind(tw);
+// 2. Create isolated stylesheet only to be used for the Crossmint SDK styles
+let sheet;
+if (typeof document === "undefined") {
+    sheet = virtual();
+} else {
+    let styleElement = document.querySelector("style[data-crossmint-sdk]") as HTMLStyleElement;
+    if (!styleElement) {
+        styleElement = document.createElement("style");
+        styleElement.setAttribute("data-crossmint-sdk", "");
+        document.head.appendChild(styleElement);
+    }
+    sheet = cssom(styleElement);
+}
+
+// 3. Create scoped config to ensure all classes are prefixed with cm-
+const scopedConfig = {
+    ...defineConfig,
+    hash: (className: string) => `cm-${className}`, // All classes become cm-text-sm, cm-bg-white, etc.
+};
+
+// @ts-expect-error: sheet type mismatch
+export const tw = twind(scopedConfig, sheet);
