@@ -19,6 +19,11 @@ export const EVMBlockchain = {
     BOSS: "boss",
     SHAPE: "shape",
     WORLDCHAIN: "world-chain",
+    ABSTRACT: "abstract",
+    APECHAIN: "apechain",
+    MANTLE: "mantle",
+    SCROLL: "scroll",
+    SEI_PACIFIC_1: "sei-pacific-1",
 } as const;
 export type EVMBlockchain = ObjectValues<typeof EVMBlockchain>;
 export const EVM_CHAINS = objectValues(EVMBlockchain);
@@ -39,6 +44,12 @@ export const EVMBlockchainTestnet = {
     HYPERSONIC_TESTNET: "hypersonic-testnet",
     STORY_TESTNET: "story-testnet",
     MODE_SEPOLIA: "mode-sepolia",
+    ABSTRACT_TESTNET: "abstract-testnet",
+    CURTIS: "curtis",
+    MANTLE_SEPOLIA: "mantle-sepolia",
+    SCROLL_SEPOLIA: "scroll-sepolia",
+    SEI_ATLANTIC_2_TESTNET: "sei-atlantic-2-testnet",
+    WORLD_CHAIN_SEPOLIA: "world-chain-sepolia",
 } as const;
 export type EVMBlockchainTestnet = ObjectValues<typeof EVMBlockchainTestnet>;
 export const EVM_BLOCKCHAIN_TESTNETS = objectValues(EVMBlockchainTestnet);

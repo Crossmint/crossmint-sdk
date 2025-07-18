@@ -37,6 +37,17 @@ export const BLOCKCHAIN_TO_COPY_NAME: Record<BlockchainIncludingTestnet, string>
     boss: "Boss",
     shape: "Shape",
     "world-chain": "Worldchain",
+    abstract: "Abstract",
+    apechain: "ApeChain",
+    mantle: "Mantle",
+    scroll: "Scroll",
+    "sei-pacific-1": "Sei Pacific",
+    "abstract-testnet": "Abstract Testnet",
+    curtis: "Curtis",
+    "mantle-sepolia": "Mantle Sepolia",
+    "scroll-sepolia": "Scroll Sepolia",
+    "sei-atlantic-2-testnet": "Sei Atlantic Testnet",
+    "world-chain-sepolia": "Worldchain Sepolia",
 };
 
 export function blockchainToDisplayName(blockchain: BlockchainIncludingTestnet) {
