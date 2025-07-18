@@ -50,6 +50,7 @@ export function CrossmintAuthProviderInternal({
     children,
     appearance,
     termsOfServiceText,
+    prefetchOAuthUrls = true,
     authModalTitle,
     onLoginSuccess,
     loginMethods = ["email", "google"],
@@ -70,7 +71,10 @@ export function CrossmintAuthProviderInternal({
         ExternalWalletSignerConfigForChain<Chain> | undefined
     >(undefined);
 
+    // Only create the CrossmintAuth instance once, even in StrictMode, as the constructor calls /refresh
+    // It can only be called once to avoid race conditions
     const crossmintAuthRef = useRef<CrossmintAuth | null>(null);
+    // biome-ignore lint/correctness/useExhaustiveDependencies: crossmint can't be a dependency because it updates with each jwt change
     const crossmintAuth = useMemo(() => {
         if (!crossmintAuthRef.current) {
             crossmintAuthRef.current = CrossmintAuth.from(crossmint, {
@@ -211,7 +215,7 @@ export function CrossmintAuthProviderInternal({
                         defaultEmail,
                     }}
                 >
-                    <OAuthFlowProvider>
+                    <OAuthFlowProvider prefetchOAuthUrls={getAuthStatus() === "logged-out" && prefetchOAuthUrls}>
                         <AuthWrapper loginWithOAuthRef={loginWithOAuthRef}>
                             {isWeb3Enabled ? (
                                 <DynamicWalletProvider

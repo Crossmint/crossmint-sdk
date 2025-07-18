@@ -26,7 +26,13 @@ export function useOAuthFlow() {
     return context;
 }
 
-export function OAuthFlowProvider({ children }: { children: ReactNode }) {
+export function OAuthFlowProvider({
+    children,
+    prefetchOAuthUrls,
+}: {
+    children: ReactNode;
+    prefetchOAuthUrls: boolean;
+}) {
     const { crossmintAuth, loginMethods } = useCrossmintAuth();
     const { setError } = useAuthForm();
 
@@ -58,8 +64,11 @@ export function OAuthFlowProvider({ children }: { children: ReactNode }) {
     }, [loginMethods, crossmintAuth, setError]);
 
     useEffect(() => {
-        preFetchAndSetOauthUrl();
-    }, [preFetchAndSetOauthUrl]);
+        // Only pre-fetch oauth urls if the user is not logged in
+        if (prefetchOAuthUrls) {
+            preFetchAndSetOauthUrl();
+        }
+    }, [preFetchAndSetOauthUrl, prefetchOAuthUrls]);
 
     const startOAuthLogin = useCallback(
         async (provider: OAuthProvider, providerLoginHint?: string) => {
