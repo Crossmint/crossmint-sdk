@@ -1,24 +1,18 @@
-import { VersionedTransaction } from "@solana/web3.js";
-import base58 from "bs58";
 import type { EmailInternalSignerConfig, PhoneInternalSignerConfig } from "../types";
-import { NonCustodialSigner, DEFAULT_EVENT_OPTIONS } from "./ncs-signer";
+import { DEFAULT_EVENT_OPTIONS, NonCustodialSigner } from "./ncs-signer";
 
-export class SolanaNonCustodialSigner extends NonCustodialSigner {
+export class StellarNonCustodialSigner extends NonCustodialSigner {
     constructor(config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
         super(config);
     }
 
     async signMessage() {
-        return await Promise.reject(new Error("signMessage method not implemented for email signer"));
+        return await Promise.reject(new Error("signMessage method not implemented for stellar signer"));
     }
 
     async signTransaction(transaction: string): Promise<{ signature: string }> {
         await this.handleAuthRequired();
         const jwt = this.getJwtOrThrow();
-
-        const transactionBytes = base58.decode(transaction);
-        const deserializedTransaction = VersionedTransaction.deserialize(transactionBytes);
-        const messageData = deserializedTransaction.message.serialize();
 
         const res = await this.config.clientTEEConnection?.sendAction({
             event: "request:sign",
@@ -30,7 +24,7 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
                 },
                 data: {
                     keyType: "ed25519",
-                    bytes: base58.encode(messageData),
+                    bytes: transaction,
                     encoding: "base58",
                 },
             },
@@ -44,7 +38,7 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
         if (res?.signature == null) {
             throw new Error("Failed to sign transaction");
         }
-        SolanaNonCustodialSigner.verifyPublicKeyFormat(res.publicKey);
+        StellarNonCustodialSigner.verifyPublicKeyFormat(res.publicKey);
         return { signature: res.signature.bytes };
     }
 

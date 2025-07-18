@@ -19,7 +19,7 @@ export type {
     WalletArgsFor,
     SolanaTransactionInput,
 } from "./wallets/types";
-export type { Chain, EVMChain, SolanaChain } from "./chains/chains";
+export type { Chain, EVMChain, SolanaChain, StellarChain } from "./chains/chains";
 
 // Signer configuration types
 export type {

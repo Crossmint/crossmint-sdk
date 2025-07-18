@@ -8045,6 +8045,97 @@
                         "required": ["chainType"],
                         "title": "Sui wallet creation input",
                         "description": "Sui wallet creation input"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "chainType": { "type": "string", "enum": ["stellar"] },
+                            "type": { "default": "smart", "type": "string", "enum": ["smart"] },
+                            "config": {
+                                "oneOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "adminSigner": {
+                                                "discriminator": { "propertyName": "type" },
+                                                "oneOf": [
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": "string",
+                                                                "enum": ["external-wallet"],
+                                                                "description": "Identifier for external wallet signer type"
+                                                            },
+                                                            "address": {
+                                                                "type": "string",
+                                                                "description": "The blockchain address of the external wallet"
+                                                            }
+                                                        },
+                                                        "required": ["type", "address"],
+                                                        "description": "An external wallet that can be used to sign transactions",
+                                                        "title": "External Wallet",
+                                                        "example": {
+                                                            "type": "external-wallet",
+                                                            "address": "GCFXW4Q2J3K4Q5Q6Q7Q8Q9Q0Q1Q2Q3Q4Q5Q6Q7Q8Q9Q0Q1Q2Q3Q4Q5Q6Q7Q8Q9Q0"
+                                                        }
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": "string",
+                                                                "enum": ["api-key"],
+                                                                "description": "Identifier for API key signer type"
+                                                            }
+                                                        },
+                                                        "required": ["type"],
+                                                        "description": "A custodial signer provided by Crossmint and backed by our secure infrastructure",
+                                                        "title": "API Key",
+                                                        "example": { "type": "api-key" }
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": "string",
+                                                                "enum": ["email"],
+                                                                "description": "Identifier for email signer type"
+                                                            },
+                                                            "email": {
+                                                                "type": "string",
+                                                                "description": "The email address for the signer"
+                                                            }
+                                                        },
+                                                        "required": ["type", "email"],
+                                                        "description": "An email-based signer that can be used to sign transactions",
+                                                        "title": "Email Signer",
+                                                        "example": { "type": "email", "email": "user@example.com" }
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "required": ["adminSigner"],
+                                        "additionalProperties": false
+                                    }
+                                ]
+                            },
+                            "owner": {
+                                "type": "string",
+                                "description": "A user locator can be of the format:\n- `email:<email>`\n- `userId:<userId>`\n- `phoneNumber:<phoneNumber>`\n- `twitter:<handle>`\n- `x:<handle>`",
+                                "example": [
+                                    "email:user@example.com",
+                                    "userId:507f1f77bcf86cd799439011",
+                                    "userId:did:example:cm4lr5piw0h6t1bjho0onryql",
+                                    "phoneNumber:+12125551234",
+                                    "twitter:johndoe",
+                                    "x:@johndoe"
+                                ]
+                            }
+                        },
+                        "required": ["chainType"],
+                        "title": "Stellar smart wallet creation input",
+                        "description": "Stellar smart wallet creation input"
                     }
                 ],
                 "example": {
@@ -24014,6 +24105,145 @@
                         },
                         "required": ["chainType", "type", "address"],
                         "title": "Sui wallet output"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "chainType": {
+                                "type": "string",
+                                "enum": ["stellar"],
+                                "description": "The blockchain type of the wallet"
+                            },
+                            "type": {
+                                "type": "string",
+                                "enum": ["smart"],
+                                "description": "The wallet type (smart)",
+                                "example": "smart"
+                            },
+                            "config": {
+                                "type": "object",
+                                "properties": {
+                                    "adminSigner": {
+                                        "discriminator": { "propertyName": "type" },
+                                        "oneOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "type": "string",
+                                                        "enum": ["external-wallet"],
+                                                        "description": "Identifier for external wallet signer type"
+                                                    },
+                                                    "address": {
+                                                        "type": "string",
+                                                        "description": "The blockchain address of the external wallet"
+                                                    },
+                                                    "locator": {
+                                                        "type": "string",
+                                                        "description": "The locator of the signer"
+                                                    }
+                                                },
+                                                "required": ["type", "address", "locator"],
+                                                "title": "External Wallet Signer",
+                                                "description": "Configuration for an external wallet signer",
+                                                "example": {
+                                                    "type": "external-wallet",
+                                                    "address": "0x1234567890123456789012345678901234567890",
+                                                    "locator": "external-wallet:0x1234567890123456789012345678901234567890"
+                                                }
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "type": "string",
+                                                        "enum": ["api-key"],
+                                                        "description": "Identifier for API key signer type"
+                                                    },
+                                                    "address": {
+                                                        "oneOf": [
+                                                            {
+                                                                "type": "string",
+                                                                "description": "An EVM address string"
+                                                            },
+                                                            {
+                                                                "type": "string",
+                                                                "description": "A base58-encoded Solana public key address"
+                                                            }
+                                                        ],
+                                                        "description": "The blockchain address of the custodial signer"
+                                                    },
+                                                    "locator": {
+                                                        "type": "string",
+                                                        "description": "The locator of the signer"
+                                                    }
+                                                },
+                                                "required": ["type", "address", "locator"],
+                                                "title": "API Key Signer",
+                                                "description": "Configuration for a custodial signer managed by Crossmint",
+                                                "example": {
+                                                    "type": "api-key",
+                                                    "address": "0x1234567890123456789012345678901234567890",
+                                                    "locator": "api-key:0x1234567890123456789012345678901234567890"
+                                                }
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "type": "string",
+                                                        "enum": ["email"],
+                                                        "description": "Identifier for email signer type"
+                                                    },
+                                                    "email": {
+                                                        "type": "string",
+                                                        "description": "The email address for the signer"
+                                                    },
+                                                    "locator": {
+                                                        "type": "string",
+                                                        "description": "The locator of the signer"
+                                                    }
+                                                },
+                                                "required": ["type", "email", "locator"],
+                                                "title": "Email Signer",
+                                                "description": "Configuration for an email signer",
+                                                "example": {
+                                                    "type": "email",
+                                                    "email": "user@example.com",
+                                                    "locator": "email:user@example.com"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                "required": ["adminSigner"],
+                                "description": "Stellar wallet type specific configuration settings"
+                            },
+                            "address": {
+                                "type": "string",
+                                "description": "The onchain address of the wallet",
+                                "example": "GABCD1234EXAMPLESTELLARADDRESS"
+                            },
+                            "owner": {
+                                "type": "string",
+                                "description": "The user that owns this wallet in format <locatorType>:<value>",
+                                "example": "email:test@example.com"
+                            },
+                            "createdAt": {
+                                "oneOf": [
+                                    {
+                                        "type": "number",
+                                        "description": "ISO 8601 formatted timestamp",
+                                        "example": "2024-01-01T00:00:00.000Z"
+                                    },
+                                    { "type": "string" }
+                                ],
+                                "description": "ISO timestamp of when the wallet was created",
+                                "example": "2024-01-01T00:00:00.000Z"
+                            }
+                        },
+                        "required": ["chainType", "type", "address"],
+                        "title": "Stellar wallet output"
                     }
                 ],
                 "description": "Complete wallet configuration including type-specific settings",
