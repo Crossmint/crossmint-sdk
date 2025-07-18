@@ -1,4 +1,4 @@
-import { EVMNonCustodialSigner, SolanaNonCustodialSigner } from "./non-custodial";
+import { EVMNonCustodialSigner, SolanaNonCustodialSigner, StellarNonCustodialSigner } from "./non-custodial";
 import { SolanaExternalWalletSigner } from "./solana-external-wallet";
 import { EVMExternalWalletSigner } from "./evm-external-wallet";
 import { PasskeySigner } from "./passkey";
@@ -11,7 +11,13 @@ export function assembleSigner<C extends Chain>(chain: C, config: InternalSigner
     switch (config.type) {
         case "email":
         case "phone":
-            return chain === "solana" ? new SolanaNonCustodialSigner(config) : new EVMNonCustodialSigner(config);
+            if (chain === "solana") {
+                return new SolanaNonCustodialSigner(config);
+            }
+            if (chain === "stellar") {
+                return new StellarNonCustodialSigner(config);
+            }
+            return new EVMNonCustodialSigner(config);
         case "api-key":
             return chain === "solana" ? new SolanaApiKeySigner(config) : new EVMApiKeySigner(config);
 

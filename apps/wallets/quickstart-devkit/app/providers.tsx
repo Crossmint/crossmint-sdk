@@ -185,3 +185,21 @@ function SolanaFirebaseProvider({ children }: { children: React.ReactNode }) {
         </CrossmintProvider>
     );
 }
+
+function StellarCrossmintAuthProvider({ children }: { children: React.ReactNode }) {
+    return (
+        <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_API_KEY || ""}>
+            <CrossmintAuthProvider
+                authModalTitle="Stellar Wallets Quickstart"
+                loginMethods={["google", "twitter", "email"]}
+            >
+                <CrossmintWalletProvider
+                    showPasskeyHelpers={false}
+                    createOnLogin={{ chain: "stellar", signer: { type: "email" } }}
+                >
+                    {children}
+                </CrossmintWalletProvider>
+            </CrossmintAuthProvider>
+        </CrossmintProvider>
+    );
+}
