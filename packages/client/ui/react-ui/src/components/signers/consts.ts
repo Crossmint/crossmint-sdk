@@ -1,1 +1,1 @@
-export const OTP_LENGTH = 9;
+export const OTP_LENGTH = 6;

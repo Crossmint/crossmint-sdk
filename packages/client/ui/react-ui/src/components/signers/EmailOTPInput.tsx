@@ -74,12 +74,7 @@ export function EmailOTPInput({ email, onSubmitOTP, onResendCode, appearance }: 
                 >
                     <InputOTPGroup>
                         {Array.from({ length: OTP_LENGTH }).map((_, index) => (
-                            <InputOTPSlot
-                                key={index}
-                                index={index}
-                                hasError={hasError}
-                                className="max-sm:w-7 max-sm:h-11 max-sm:text-xl max-sm:mx-0 h-12 w-9"
-                            />
+                            <InputOTPSlot key={index} index={index} hasError={hasError} />
                         ))}
                     </InputOTPGroup>
                 </InputOTP>
