@@ -1,14 +1,13 @@
 import type { ButtonHTMLAttributes } from "react";
 import { GoogleIcon } from "@/icons/google";
-import { useOAuthWindowListener } from "@/hooks/useOAuthWindowListener";
+import { useOAuthFlow } from "@/providers/auth/OAuthFlowProvider";
 import { Spinner } from "@/components/common/Spinner";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import { classNames } from "@/utils/classNames";
 
 export function GoogleSignIn({ ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
-    const { step, appearance, isLoadingOauthUrlMap } = useAuthForm();
-    const { createPopupAndSetupListeners, isLoading: isLoadingOAuthWindow } = useOAuthWindowListener("google");
-    const isLoading = isLoadingOauthUrlMap || isLoadingOAuthWindow;
+    const { step, appearance } = useAuthForm();
+    const { startOAuthLogin, isLoading } = useOAuthFlow();
 
     if (step !== "initial") {
         return null;
@@ -26,7 +25,7 @@ export function GoogleSignIn({ ...props }: ButtonHTMLAttributes<HTMLButtonElemen
                 borderRadius: appearance?.borderRadius,
                 backgroundColor: appearance?.colors?.buttonBackground,
             }}
-            onClick={isLoading ? undefined : () => createPopupAndSetupListeners()}
+            onClick={isLoading ? undefined : () => startOAuthLogin("google")}
             {...props}
         >
             <>
