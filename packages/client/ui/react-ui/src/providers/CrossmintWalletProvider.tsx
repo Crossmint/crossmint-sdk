@@ -69,6 +69,10 @@ export function CrossmintWalletProvider({
     const verifyPhoneOtpRef = useRef<(otp: string) => Promise<void>>(throwNotAvailable("verifyPhoneOtp"));
 
     const rejectRef = useRef<(error: Error) => void>(throwNotAvailable("reject"));
+    const phoneNumber =
+        createOnLogin?.signer.type === "phone" && createOnLogin?.signer.phone != null
+            ? createOnLogin.signer.phone
+            : experimental_customAuth?.phone;
 
     const createPasskeyPrompt = useCallback(
         (type: ValidPasskeyPromptType) => () =>
@@ -193,11 +197,11 @@ export function CrossmintWalletProvider({
                       document.body
                   )
                 : null}
-            {phoneSignerDialogOpen && experimental_customAuth?.phone != null
+            {phoneSignerDialogOpen && phoneNumber != null
                 ? createPortal(
                       <PhoneSignersDialog
                           rejectRef={rejectRef}
-                          phone={experimental_customAuth?.phone}
+                          phone={phoneNumber}
                           open={phoneSignerDialogOpen}
                           setOpen={setPhoneSignerDialogOpen}
                           step={phoneSignerDialogStep}
