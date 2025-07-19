@@ -1,5 +1,15 @@
 # @crossmint/common-sdk-base
 
+## 0.9.0
+
+### Minor Changes
+
+- bb25455: Add support for new blockchain chains including Abstract, ApeChain, Mantle, Scroll, Sei, Curtis, and World Chain variants
+
+### Patch Changes
+
+- bb25455: Adds more chains
+
 ## 0.8.5
 
 ### Patch Changes
