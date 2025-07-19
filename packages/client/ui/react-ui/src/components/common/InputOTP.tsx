@@ -4,6 +4,7 @@ import * as React from "react";
 import { OTPInput, OTPInputContext } from "input-otp";
 import { createContext, useContext } from "react";
 import { classNames } from "@/utils/classNames";
+import { tw } from "@/twind-instance";
 
 // Define the type for customStyles
 type CustomStyles = {
@@ -76,9 +77,9 @@ const InputOTPSlot = React.forwardRef<
         >
             {char}
             {hasFakeCaret && (
-                <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                <div className={tw("pointer-events-none absolute inset-0 flex items-center justify-center")}>
                     <div
-                        className="h-4 w-px animate-caret-blink duration-1000"
+                        className={tw("h-4 w-px animate-caret-blink duration-1000")}
                         style={{
                             height: "18px",
                             backgroundColor: customStyles?.textPrimary,

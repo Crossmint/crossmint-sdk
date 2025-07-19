@@ -3,6 +3,7 @@ import { Spinner } from "@/components/common/Spinner";
 import { useOAuthFlow } from "@/providers/auth/OAuthFlowProvider";
 import { GoogleIcon } from "@/icons/google";
 import { classNames } from "@/utils/classNames";
+import { tw } from "@/twind-instance";
 
 export function ContinueWithGoogle({ emailInput, appearance }: { emailInput: string; appearance?: UIConfig }) {
     const { startOAuthLogin, isLoading } = useOAuthFlow();
@@ -21,7 +22,7 @@ export function ContinueWithGoogle({ emailInput, appearance }: { emailInput: str
                 borderRadius: appearance?.borderRadius,
             }}
         >
-            <GoogleIcon className="max-h-[18px] max-w-[18px] h-[18px] w-[18px]" />
+            <GoogleIcon className={tw("max-h-[18px] max-w-[18px] h-[18px] w-[18px]")} />
             {isLoading ? (
                 <Spinner
                     style={{
@@ -32,7 +33,7 @@ export function ContinueWithGoogle({ emailInput, appearance }: { emailInput: str
                     }}
                 />
             ) : (
-                <span className="text-cm-accent" style={{ color: appearance?.colors?.accent }}>
+                <span className={tw("text-cm-accent")} style={{ color: appearance?.colors?.accent }}>
                     Continue
                 </span>
             )}

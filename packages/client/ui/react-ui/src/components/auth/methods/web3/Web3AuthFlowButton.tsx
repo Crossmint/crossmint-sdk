@@ -1,6 +1,7 @@
 import { ChevronRightIcon } from "@/icons/chevronRight";
 import { WalletIcon } from "@/icons/wallet";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
+import { tw } from "@/twind-instance";
 import { classNames } from "@/utils/classNames";
 
 export function Web3AuthFlowButton() {
@@ -28,17 +29,17 @@ export function Web3AuthFlowButton() {
             }}
         >
             <WalletIcon
-                className="h-[21px] w-[21px] absolute left-[20px]"
+                className={tw("h-[21px] w-[21px] absolute left-[20px]")}
                 style={{ color: appearance?.colors?.textPrimary }}
             />
-            <span className="font-medium" style={{ margin: "0px 32px", color: appearance?.colors?.textPrimary }}>
+            <span className={tw("font-medium")} style={{ margin: "0px 32px", color: appearance?.colors?.textPrimary }}>
                 Continue with a wallet
             </span>
             <ChevronRightIcon
-                className="h-[21px] w-[21px] absolute right-[20px]"
+                className={tw("h-[21px] w-[21px] absolute right-[20px]")}
                 style={{ color: appearance?.colors?.textSecondary }}
             />
-            <span className="sr-only">Continue with a wallet</span>
+            <span className={tw("sr-only")}>Continue with a wallet</span>
         </button>
     );
 }

@@ -13,7 +13,6 @@ import type { Chain, ExternalWalletSignerConfigForChain } from "@crossmint/walle
 import AuthFormDialog from "../components/auth/AuthFormDialog";
 import { AuthFormProvider } from "./auth/AuthFormProvider";
 import { OAuthFlowProvider, useOAuthFlow } from "./auth/OAuthFlowProvider";
-import { TwindProvider } from "./TwindProvider";
 import type { AuthStatus, CrossmintAuthProviderProps } from "@/types/auth";
 import { DynamicWalletProvider } from "./dynamic/DynamicWalletProvider";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
@@ -197,50 +196,46 @@ export function CrossmintAuthProviderInternal({
     );
 
     return (
-        <TwindProvider>
-            <AuthContext.Provider value={authContextValue}>
-                <AuthFormProvider
-                    setDialogOpen={(open, successfulLogin) => {
-                        setDialogOpen(open);
-                        if (successfulLogin) {
-                            triggerHasJustLoggedIn();
-                        }
-                    }}
-                    initialState={{
-                        appearance,
-                        loginMethods,
-                        termsOfServiceText,
-                        authModalTitle,
-                        baseUrl: crossmintBaseUrl,
-                        defaultEmail,
-                    }}
-                >
-                    <OAuthFlowProvider prefetchOAuthUrls={getAuthStatus() === "logged-out" && prefetchOAuthUrls}>
-                        <AuthWrapper loginWithOAuthRef={loginWithOAuthRef}>
-                            {isWeb3Enabled ? (
-                                <DynamicWalletProvider
-                                    apiKeyEnvironment={
-                                        crossmint.apiKey.includes("production") ? "production" : "staging"
-                                    }
-                                    loginMethods={loginMethods}
-                                    appearance={appearance}
-                                    onSdkLoaded={setDynamicSdkLoaded}
-                                    onWalletConnected={setExternalWalletSigner}
-                                >
-                                    {children}
-                                    <AuthFormDialog open={dialogOpen} />
-                                </DynamicWalletProvider>
-                            ) : (
-                                <>
-                                    {children}
-                                    <AuthFormDialog open={dialogOpen} />
-                                </>
-                            )}
-                        </AuthWrapper>
-                    </OAuthFlowProvider>
-                </AuthFormProvider>
-            </AuthContext.Provider>
-        </TwindProvider>
+        <AuthContext.Provider value={authContextValue}>
+            <AuthFormProvider
+                setDialogOpen={(open, successfulLogin) => {
+                    setDialogOpen(open);
+                    if (successfulLogin) {
+                        triggerHasJustLoggedIn();
+                    }
+                }}
+                initialState={{
+                    appearance,
+                    loginMethods,
+                    termsOfServiceText,
+                    authModalTitle,
+                    baseUrl: crossmintBaseUrl,
+                    defaultEmail,
+                }}
+            >
+                <OAuthFlowProvider prefetchOAuthUrls={getAuthStatus() === "logged-out" && prefetchOAuthUrls}>
+                    <AuthWrapper loginWithOAuthRef={loginWithOAuthRef}>
+                        {isWeb3Enabled ? (
+                            <DynamicWalletProvider
+                                apiKeyEnvironment={crossmint.apiKey.includes("production") ? "production" : "staging"}
+                                loginMethods={loginMethods}
+                                appearance={appearance}
+                                onSdkLoaded={setDynamicSdkLoaded}
+                                onWalletConnected={setExternalWalletSigner}
+                            >
+                                {children}
+                                <AuthFormDialog open={dialogOpen} />
+                            </DynamicWalletProvider>
+                        ) : (
+                            <>
+                                {children}
+                                <AuthFormDialog open={dialogOpen} />
+                            </>
+                        )}
+                    </AuthWrapper>
+                </OAuthFlowProvider>
+            </AuthFormProvider>
+        </AuthContext.Provider>
     );
 }
 

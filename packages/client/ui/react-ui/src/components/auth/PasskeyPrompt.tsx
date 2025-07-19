@@ -8,6 +8,7 @@ import PasskeyPromptLogo from "../../icons/passkeyPromptLogo";
 import { SecuredByCrossmint } from "../common/SecuredByCrossmint";
 import { Dialog, DialogContent, DialogTitle } from "../common/Dialog";
 import { classNames } from "@/utils/classNames";
+import { tw } from "@/twind-instance";
 
 type PasskeyPromptCoreProps = {
     title: string;
@@ -23,7 +24,7 @@ function PasskeyPromptCore({ title, content, primaryButton, secondaryAction, app
                 showCloseButton={false}
                 onInteractOutside={(e) => e.preventDefault()}
                 onOpenAutoFocus={(e) => e.preventDefault()}
-                className="!p-0 !min-[480px]:p-0"
+                className={tw("!p-0 !min-[480px]:p-0")}
                 style={{
                     borderRadius: appearance?.borderRadius,
                     backgroundColor: appearance?.colors?.background,
@@ -33,11 +34,15 @@ function PasskeyPromptCore({ title, content, primaryButton, secondaryAction, app
                     <DialogTitle>{title}</DialogTitle>
                 </VisuallyHidden>
 
-                <div className="relative pt-10 pb-[30px] px-6 !min-[480px]:px-10 flex flex-col gap-[10px] antialiased animate-none">
-                    <div className="flex justify-center left-1.5 relative">
+                <div
+                    className={tw(
+                        "relative pt-10 pb-[30px] px-6 !min-[480px]:px-10 flex flex-col gap-[10px] antialiased animate-none"
+                    )}
+                >
+                    <div className={tw("flex justify-center left-1.5 relative")}>
                         <PasskeyPromptLogo appearance={appearance} />
                     </div>
-                    <div className="flex justify-center">
+                    <div className={tw("flex justify-center")}>
                         <p
                             style={{
                                 fontSize: "1.125rem",
@@ -49,7 +54,7 @@ function PasskeyPromptCore({ title, content, primaryButton, secondaryAction, app
                             {title}
                         </p>
                     </div>
-                    <div className="mb-6">
+                    <div className={tw("mb-6")}>
                         <div
                             style={{
                                 fontWeight: "normal",
@@ -59,11 +64,11 @@ function PasskeyPromptCore({ title, content, primaryButton, secondaryAction, app
                             {content}
                         </div>
                     </div>
-                    <div className="flex flex-col gap-4 justify-center">
+                    <div className={tw("flex flex-col gap-4 justify-center")}>
                         {primaryButton}
                         {secondaryAction}
                     </div>
-                    <div className="flex justify-center pt-4">
+                    <div className={tw("flex justify-center pt-4")}>
                         <SecuredByCrossmint color={appearance?.colors?.textSecondary} />
                     </div>
                 </div>
@@ -92,16 +97,16 @@ export function PasskeyPrompt({ state, appearance }: PasskeyPromptProps) {
                     appearance={appearance}
                     content={
                         <>
-                            <div className="mb-3">You're about to create a wallet.</div>
-                            <div className="flex flex-col gap-2">
-                                <div className="flex gap-2">
+                            <div className={tw("mb-3")}>You're about to create a wallet.</div>
+                            <div className={tw("flex flex-col gap-2")}>
+                                <div className={tw("flex gap-2")}>
                                     <div>
                                         <PasskeyIcon />
                                     </div>
                                     Your wallet will be secured with a passkey
                                 </div>
 
-                                <div className="flex gap-2">
+                                <div className={tw("flex gap-2")}>
                                     <div>
                                         <FingerprintIcon />
                                     </div>
@@ -143,8 +148,8 @@ export function PasskeyPrompt({ state, appearance }: PasskeyPromptProps) {
                     title="Use Your Wallet"
                     appearance={appearance}
                     content={
-                        <div className="flex flex-col gap-2">
-                            <div className="flex gap-2">
+                        <div className={tw("flex flex-col gap-2")}>
+                            <div className={tw("flex gap-2")}>
                                 <div>
                                     <FingerprintIcon />
                                 </div>
@@ -243,10 +248,10 @@ const PrimaryButton = ({
             }}
             onClick={onClick}
         >
-            <span className="font-medium" style={{ margin: "0px 32px", color: appearance?.colors?.textPrimary }}>
+            <span className={tw("font-medium")} style={{ margin: "0px 32px", color: appearance?.colors?.textPrimary }}>
                 {children}
             </span>
-            <span className="sr-only">{children}</span>
+            <span className={tw("sr-only")}>{children}</span>
         </button>
     );
 };
