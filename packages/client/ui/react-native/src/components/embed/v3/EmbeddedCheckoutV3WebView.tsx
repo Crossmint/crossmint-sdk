@@ -11,6 +11,7 @@ import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
 import { userAgent } from "@/utils/embed/userAgent";
 import { PayerConnectionHandler } from "./crypto/PayerConnectionHandler";
 import type { PayerSupportedBlockchains } from "@crossmint/common-sdk-base";
+import { localEventEmitter, type LocalEventEmitterEvents } from "@/utils/eventEmitter";
 
 export function EmbeddedCheckoutV3WebView(props: CrossmintEmbeddedCheckoutV3Props) {
     const [webViewClient, setWebViewClient] = useState<WebViewParent<
@@ -63,8 +64,15 @@ export function EmbeddedCheckoutV3WebView(props: CrossmintEmbeddedCheckoutV3Prop
         const handleHeightChanged = (data: { height: number }) => setHeight(data.height);
         webViewClient.on("ui:height.changed", handleHeightChanged);
 
+        // Listen for order:updated events and re-emit as local event
+        const handleOrderUpdated = (data: LocalEventEmitterEvents["order:updated"]) => {
+            localEventEmitter.emit("order:updated", data);
+        };
+        webViewClient.on("order:updated", handleOrderUpdated);
+
         return () => {
             webViewClient.off("ui:height.changed");
+            webViewClient.off("order:updated");
         };
     }, [webViewClient]);
 

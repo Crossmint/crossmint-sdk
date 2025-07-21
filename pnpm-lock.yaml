@@ -764,6 +764,9 @@ importers:
       expo-web-browser:
         specifier: ~14.0.2
         version: 14.0.2(expo@52.0.46(46a24ztoubjv6c36qmshrzn7ii))(react-native@0.76.9(@babel/core@7.26.10)(@babel/preset-env@7.26.9(@babel/core@7.26.10))(@react-native-community/cli@13.6.4(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(@types/react@19.0.12)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10))
+      mitt:
+        specifier: 3.0.1
+        version: 3.0.1
       react:
         specifier: '>=17.0.2'
         version: 18.3.1
@@ -773,6 +776,9 @@ importers:
       react-native-webview:
         specifier: 13.12.5
         version: 13.12.5(react-native@0.76.9(@babel/core@7.26.10)(@babel/preset-env@7.26.9(@babel/core@7.26.10))(@react-native-community/cli@13.6.4(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(@types/react@19.0.12)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10))(react@18.3.1)
+      zod:
+        specifier: 3.22.4
+        version: 3.22.4
     devDependencies:
       '@types/react':
         specifier: 19.0.12
@@ -12661,6 +12667,9 @@ packages:
     peerDependenciesMeta:
       typescript:
         optional: true
+
+  mitt@3.0.1:
+    resolution: {integrity: sha512-vKivATfr97l2/QBCYAkXYDbrIWPM2IIKEl7YPhjCvKlG3kE2gm+uBo6nEXK3M5/Ffh/FLpKExzOQ3JJoJGFKBw==}
 
   mixme@0.5.10:
     resolution: {integrity: sha512-5H76ANWinB1H3twpJ6JY8uvAtpmFvHNArpilJAjXRKXSDDLPIMoZArw5SH0q9z+lLs8IrMw7Q2VWpWimFKFT1Q==}
@@ -36375,6 +36384,8 @@ snapshots:
   mipd@0.0.7(typescript@5.5.3):
     optionalDependencies:
       typescript: 5.5.3
+
+  mitt@3.0.1: {}
 
   mixme@0.5.10: {}
 
