@@ -82,7 +82,7 @@ export function EmailOTPInput({ email, onSubmitOTP, onResendCode, appearance }: 
                                 key={index}
                                 index={index}
                                 hasError={hasError}
-                                className={tw("max-sm:w-7 max-sm:h-11 max-sm:text-xl max-sm:mx-0 h-12 w-9")}
+                                className={tw("max-sm:w-7 max-sm:h-11 max-sm:text-xl max-sm:mx-0 sm:h-12 sm:w-9")}
                             />
                         ))}
                     </InputOTPGroup>
