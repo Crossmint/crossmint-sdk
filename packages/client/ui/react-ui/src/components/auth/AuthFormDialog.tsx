@@ -3,6 +3,7 @@ import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import { AuthForm } from "./AuthForm";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "../common/Dialog";
 import { useEffect } from "react";
+import { tw } from "@/twind-instance";
 
 export default function AuthFormDialog({ open }: { open: boolean }) {
     const { appearance, setDialogOpen } = useAuthForm();
@@ -18,7 +19,7 @@ export default function AuthFormDialog({ open }: { open: boolean }) {
                 onOpenAutoFocus={(e) => e.preventDefault()}
                 closeButtonColor={appearance?.colors?.textPrimary}
                 closeButtonRingColor={appearance?.colors?.accent}
-                className="!p-0 !min-[480px]:p-0"
+                className={tw("!p-0 !min-[480px]:p-0")}
                 style={{
                     borderRadius: appearance?.borderRadius,
                     backgroundColor: appearance?.colors?.background,
@@ -31,7 +32,7 @@ export default function AuthFormDialog({ open }: { open: boolean }) {
                     <DialogDescription>Sign in via Crossmint</DialogDescription>
                 </VisuallyHidden>
 
-                <AuthForm className="max-w-[448px]" />
+                <AuthForm className={tw("max-w-[448px]")} />
             </DialogContent>
         </Dialog>
     );

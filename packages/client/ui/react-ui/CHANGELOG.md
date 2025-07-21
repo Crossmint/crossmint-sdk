@@ -1,5 +1,28 @@
 # @crossmint/client-sdk-react-ui
 
+## 2.2.17
+
+### Patch Changes
+
+- 7a12798: Exposes an experimental way to login with oauth
+- Updated dependencies [da46b20]
+- Updated dependencies [2ad2a06]
+  - @crossmint/wallets-sdk@0.10.17
+  - @crossmint/client-sdk-window@1.0.3
+  - @crossmint/client-sdk-react-base@0.5.17
+  - @crossmint/client-sdk-base@1.5.14
+  - @crossmint/client-sdk-auth@1.2.23
+  - @crossmint/common-sdk-auth@1.0.45
+
+## 2.2.16
+
+### Patch Changes
+
+- Updated dependencies [5b2b5bf]
+- Updated dependencies [c13d001]
+  - @crossmint/wallets-sdk@0.10.16
+  - @crossmint/client-sdk-react-base@0.5.16
+
 ## 2.2.15
 
 ### Patch Changes

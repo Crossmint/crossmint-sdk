@@ -1,14 +1,14 @@
 import type { ButtonHTMLAttributes } from "react";
 import { GoogleIcon } from "@/icons/google";
-import { useOAuthWindowListener } from "@/hooks/useOAuthWindowListener";
+import { useOAuthFlow } from "@/providers/auth/OAuthFlowProvider";
 import { Spinner } from "@/components/common/Spinner";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import { classNames } from "@/utils/classNames";
+import { tw } from "@/twind-instance";
 
 export function GoogleSignIn({ ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
-    const { step, appearance, isLoadingOauthUrlMap } = useAuthForm();
-    const { createPopupAndSetupListeners, isLoading: isLoadingOAuthWindow } = useOAuthWindowListener("google");
-    const isLoading = isLoadingOauthUrlMap || isLoadingOAuthWindow;
+    const { step, appearance } = useAuthForm();
+    const { startOAuthLogin, isLoading } = useOAuthFlow();
 
     if (step !== "initial") {
         return null;
@@ -26,11 +26,11 @@ export function GoogleSignIn({ ...props }: ButtonHTMLAttributes<HTMLButtonElemen
                 borderRadius: appearance?.borderRadius,
                 backgroundColor: appearance?.colors?.buttonBackground,
             }}
-            onClick={isLoading ? undefined : () => createPopupAndSetupListeners()}
+            onClick={isLoading ? undefined : () => startOAuthLogin("google")}
             {...props}
         >
             <>
-                <GoogleIcon className="max-h-[25px] max-w-[25px] h-[25px] w-[25px] absolute left-[18px]" />
+                <GoogleIcon className={tw("max-h-[25px] max-w-[25px] h-[25px] w-[25px] absolute left-[18px]")} />
                 {isLoading ? (
                     <Spinner
                         style={{
@@ -40,14 +40,14 @@ export function GoogleSignIn({ ...props }: ButtonHTMLAttributes<HTMLButtonElemen
                     />
                 ) : (
                     <span
-                        className="font-medium"
+                        className={tw("font-medium")}
                         style={{ margin: "0px 32px", color: appearance?.colors?.textPrimary }}
                     >
                         Sign in with Google
                     </span>
                 )}
             </>
-            <span className="sr-only">Sign in with Google</span>
+            <span className={tw("sr-only")}>Sign in with Google</span>
         </button>
     );
 }

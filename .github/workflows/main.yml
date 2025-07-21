@@ -12,6 +12,10 @@ on:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
+permissions:
+    contents: write
+    pull-requests: write
+
 jobs:
     build-and-test:
         name: Build & Test
@@ -32,6 +36,9 @@ jobs:
         name: Release
         runs-on: ubuntu-latest
         needs: [build-and-test]
+        permissions:
+            contents: write
+            pull-requests: write
         steps:
             - uses: actions/checkout@v3
 
@@ -39,7 +46,7 @@ jobs:
               uses: ./.github/actions/pnpm-install
 
             - name: Create Release Pull Request or Publish
-              uses: changesets/action@v1
+              uses: changesets/action@v1.5.3
               with:
                   commit: "Release packages"
                   title: "Release packages"

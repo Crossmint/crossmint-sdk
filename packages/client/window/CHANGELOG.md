@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-window
 
+## 1.0.3
+
+### Patch Changes
+
+- 2ad2a06: Fix Window Transport Error
+
 ## 1.0.2
 
 ### Patch Changes

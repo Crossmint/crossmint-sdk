@@ -20,7 +20,9 @@ export class WalletFactory {
 
     public async getOrCreateWallet<C extends Chain>(args: WalletArgsFor<C>): Promise<Wallet<C>> {
         if (this.apiClient.isServerSide) {
-            throw new WalletCreationError("getOrCreateWallet is not supported on server side");
+            throw new WalletCreationError(
+                "getOrCreateWallet can only be called from client-side code.\n- Make sure you're running this in the browser (or another client environment), not on your server.\n- Use your Crossmint Client API Key (not a server key)."
+            );
         }
 
         const existingWallet = await this.apiClient.getWallet(`me:${this.getChainType(args.chain)}:smart`);

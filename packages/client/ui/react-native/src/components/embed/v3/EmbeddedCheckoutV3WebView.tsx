@@ -1,16 +1,17 @@
 import { useCrossmint } from "@crossmint/client-sdk-react-base";
 import { useEffect, useRef, useState } from "react";
 import { View } from "react-native";
-import { WebView, type WebViewMessageEvent } from "react-native-webview";
+import type { WebView, WebViewMessageEvent } from "react-native-webview";
 
 import { type CrossmintEmbeddedCheckoutV3Props, crossmintEmbeddedCheckoutV3Service } from "@crossmint/client-sdk-base";
-import { WebViewParent } from "@crossmint/client-sdk-rn-window";
+import { RNWebView, WebViewParent } from "@crossmint/client-sdk-rn-window";
 import { embeddedCheckoutV3IncomingEvents, embeddedCheckoutV3OutgoingEvents } from "@crossmint/client-sdk-base";
 
 import { createCrossmintApiClient } from "@/utils/createCrossmintApiClient";
 import { userAgent } from "@/utils/embed/userAgent";
 import { PayerConnectionHandler } from "./crypto/PayerConnectionHandler";
 import type { PayerSupportedBlockchains } from "@crossmint/common-sdk-base";
+import { localEventEmitter, type LocalEventEmitterEvents } from "@/utils/eventEmitter";
 
 export function EmbeddedCheckoutV3WebView(props: CrossmintEmbeddedCheckoutV3Props) {
     const [webViewClient, setWebViewClient] = useState<WebViewParent<
@@ -63,8 +64,15 @@ export function EmbeddedCheckoutV3WebView(props: CrossmintEmbeddedCheckoutV3Prop
         const handleHeightChanged = (data: { height: number }) => setHeight(data.height);
         webViewClient.on("ui:height.changed", handleHeightChanged);
 
+        // Listen for order:updated events and re-emit as local event
+        const handleOrderUpdated = (data: LocalEventEmitterEvents["order:updated"]) => {
+            localEventEmitter.emit("order:updated", data);
+        };
+        webViewClient.on("order:updated", handleOrderUpdated);
+
         return () => {
             webViewClient.off("ui:height.changed");
+            webViewClient.off("order:updated");
         };
     }, [webViewClient]);
 
@@ -76,8 +84,9 @@ export function EmbeddedCheckoutV3WebView(props: CrossmintEmbeddedCheckoutV3Prop
 
     return (
         <View style={{ flex: 1 }}>
-            <WebView
+            <RNWebView
                 ref={webViewRef}
+                globals={crossmint.appId ? { crossmintAppId: crossmint.appId } : undefined}
                 source={{ uri: embeddedCheckoutService.iframe.getUrl(memoizedProps.current) }}
                 onMessage={handleMessage}
                 style={{

@@ -39,6 +39,14 @@ export abstract class NonCustodialSigner implements Signer {
 
     protected async handleAuthRequired() {
         if (this.config.clientTEEConnection == null) {
+            if (this.config.onAuthRequired == null) {
+                throw new Error(
+                    `${this.type} signer requires the onAuthRequired callback to handle OTP verification. ` +
+                        `This callback manages the authentication flow (sending OTP and verifying user input). ` +
+                        `If using our React/React Native SDK, this is handled automatically by the provider. ` +
+                        `For other environments, implement: onAuthRequired: (needsAuth, sendOtp, verifyOtp, reject) => { /* your UI logic */ }`
+                );
+            }
             throw new Error("Handshake parent not initialized");
         }
 

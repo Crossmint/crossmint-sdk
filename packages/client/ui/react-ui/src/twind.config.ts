@@ -101,5 +101,4 @@ export default defineConfig({
             },
         ],
     ],
-    /* config */
 });

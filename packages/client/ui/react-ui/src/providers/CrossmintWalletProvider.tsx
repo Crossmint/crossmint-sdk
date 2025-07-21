@@ -4,7 +4,6 @@ import { createPortal } from "react-dom";
 import { CrossmintWalletBaseProvider, useCrossmint, type CreateOnLogin } from "@crossmint/client-sdk-react-base";
 
 import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
-import { TwindProvider } from "./TwindProvider";
 import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
 import { PhoneSignersDialog } from "@/components/signers/PhoneSignersDialog";
 
@@ -70,6 +69,10 @@ export function CrossmintWalletProvider({
     const verifyPhoneOtpRef = useRef<(otp: string) => Promise<void>>(throwNotAvailable("verifyPhoneOtp"));
 
     const rejectRef = useRef<(error: Error) => void>(throwNotAvailable("reject"));
+    const phoneNumber =
+        createOnLogin?.signer.type === "phone" && createOnLogin?.signer.phone != null
+            ? createOnLogin.signer.phone
+            : experimental_customAuth?.phone;
 
     const createPasskeyPrompt = useCallback(
         (type: ValidPasskeyPromptType) => () =>
@@ -171,50 +174,48 @@ export function CrossmintWalletProvider({
     };
 
     return (
-        <TwindProvider>
-            <CrossmintWalletBaseProvider
-                createOnLogin={createOnLogin}
-                onAuthRequired={onAuthRequired}
-                callbacks={getCallbacks()}
-            >
-                {children}
+        <CrossmintWalletBaseProvider
+            createOnLogin={createOnLogin}
+            onAuthRequired={onAuthRequired}
+            callbacks={getCallbacks()}
+        >
+            {children}
 
-                {emailSignerDialogOpen && experimental_customAuth?.email != null
-                    ? createPortal(
-                          <EmailSignersDialog
-                              rejectRef={rejectRef}
-                              email={experimental_customAuth?.email}
-                              open={emailSignerDialogOpen}
-                              setOpen={setEmailSignerDialogOpen}
-                              step={emailSignerDialogStep}
-                              onSubmitOTP={emailsigners_handleOTPSubmit}
-                              onResendOTPCode={emailsigners_handleSendEmailOTP}
-                              onSubmitEmail={emailsigners_handleSendEmailOTP}
-                              appearance={appearance}
-                          />,
-                          document.body
-                      )
-                    : null}
-                {phoneSignerDialogOpen && experimental_customAuth?.phone != null
-                    ? createPortal(
-                          <PhoneSignersDialog
-                              rejectRef={rejectRef}
-                              phone={experimental_customAuth?.phone}
-                              open={phoneSignerDialogOpen}
-                              setOpen={setPhoneSignerDialogOpen}
-                              step={phoneSignerDialogStep}
-                              onSubmitOTP={phonesigners_handleOTPSubmit}
-                              onResendOTPCode={phonesigners_handleSendPhoneOTP}
-                              onSubmitPhone={phonesigners_handleSendPhoneOTP}
-                              appearance={appearance}
-                          />,
-                          document.body
-                      )
-                    : null}
-                {passkeyPromptState.open
-                    ? createPortal(<PasskeyPrompt state={passkeyPromptState} appearance={appearance} />, document.body)
-                    : null}
-            </CrossmintWalletBaseProvider>
-        </TwindProvider>
+            {emailSignerDialogOpen && experimental_customAuth?.email != null
+                ? createPortal(
+                      <EmailSignersDialog
+                          rejectRef={rejectRef}
+                          email={experimental_customAuth?.email}
+                          open={emailSignerDialogOpen}
+                          setOpen={setEmailSignerDialogOpen}
+                          step={emailSignerDialogStep}
+                          onSubmitOTP={emailsigners_handleOTPSubmit}
+                          onResendOTPCode={emailsigners_handleSendEmailOTP}
+                          onSubmitEmail={emailsigners_handleSendEmailOTP}
+                          appearance={appearance}
+                      />,
+                      document.body
+                  )
+                : null}
+            {phoneSignerDialogOpen && phoneNumber != null
+                ? createPortal(
+                      <PhoneSignersDialog
+                          rejectRef={rejectRef}
+                          phone={phoneNumber}
+                          open={phoneSignerDialogOpen}
+                          setOpen={setPhoneSignerDialogOpen}
+                          step={phoneSignerDialogStep}
+                          onSubmitOTP={phonesigners_handleOTPSubmit}
+                          onResendOTPCode={phonesigners_handleSendPhoneOTP}
+                          onSubmitPhone={phonesigners_handleSendPhoneOTP}
+                          appearance={appearance}
+                      />,
+                      document.body
+                  )
+                : null}
+            {passkeyPromptState.open
+                ? createPortal(<PasskeyPrompt state={passkeyPromptState} appearance={appearance} />, document.body)
+                : null}
+        </CrossmintWalletBaseProvider>
     );
 }

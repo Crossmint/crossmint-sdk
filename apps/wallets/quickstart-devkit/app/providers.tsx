@@ -13,7 +13,7 @@ if (!crossmintApiKey) {
 
 export function Providers({ children }: { children: React.ReactNode }) {
     /* @TODO update to your desired provider here */
-    return <SolanaCrossmintAuthProvider>{children}</SolanaCrossmintAuthProvider>;
+    return <EVMCrossmintAuthProvider>{children}</EVMCrossmintAuthProvider>;
 }
 
 /* ============================================================ */
@@ -26,13 +26,16 @@ function EVMCrossmintAuthProvider({ children }: { children: React.ReactNode }) {
     }
     return (
         <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_API_KEY || ""}>
-            <CrossmintAuthProvider authModalTitle="EVM Wallets Quickstart" loginMethods={["google", "twitter"]}>
-                <CrossmintWalletProvider
+            <CrossmintAuthProvider
+                authModalTitle="EVM Wallets Quickstart"
+                // loginMethods={["google", "twitter", "email"]}
+            >
+                {/* <CrossmintWalletProvider
                     showPasskeyHelpers={false}
-                    createOnLogin={{ chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any, signer: { type: "email" } }}
-                >
-                    {children}
-                </CrossmintWalletProvider>
+                    createOnLogin={{ chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any, signer: { type: "passkey" } }}
+                > */}
+                {children}
+                {/* </CrossmintWalletProvider> */}
             </CrossmintAuthProvider>
         </CrossmintProvider>
     );

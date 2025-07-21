@@ -1,12 +1,10 @@
 import { useContext } from "react";
-import { AuthContext } from "../providers/CrossmintAuthProviderInternal";
+import { AuthContext } from "@/providers/CrossmintAuthProviderInternal";
 
-export function useCrossmintAuth() {
+export const useCrossmintAuth = () => {
     const context = useContext(AuthContext);
-
     if (!context) {
-        throw new Error("useCrossmintAuth must be used within a CrossmintAuthProvider");
+        throw new Error("useCrossmintAuth must be used within CrossmintAuthProvider");
     }
-
     return context;
-}
+};

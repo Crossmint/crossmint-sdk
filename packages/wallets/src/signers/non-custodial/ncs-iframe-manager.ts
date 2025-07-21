@@ -1,4 +1,4 @@
-import { IFrameWindow, type HandshakeParent } from "@crossmint/client-sdk-window";
+import { IFrameWindow, SignersWindowTransport, type HandshakeParent } from "@crossmint/client-sdk-window";
 import { environmentUrlConfig, signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
 import type { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
 
@@ -20,11 +20,15 @@ export class NcsIframeManager {
         iframeUrl.searchParams.set("targetOrigin", window.location.origin);
 
         const iframeElement = await this.createInvisibleIFrame(iframeUrl.toString());
-        this.handshakeParent = await IFrameWindow.init(iframeElement, {
-            targetOrigin: iframeUrl.origin,
-            incomingEvents: signerOutboundEvents,
-            outgoingEvents: signerInboundEvents,
-        });
+        this.handshakeParent = await IFrameWindow.init(
+            iframeElement,
+            {
+                targetOrigin: iframeUrl.origin,
+                incomingEvents: signerOutboundEvents,
+                outgoingEvents: signerInboundEvents,
+            },
+            SignersWindowTransport
+        );
 
         await this.handshakeParent.handshakeWithChild();
         return this.handshakeParent;

@@ -34,6 +34,17 @@ export const BLOCKCHAIN_TO_CHAIN_ID: Record<EVMBlockchainIncludingTestnet, numbe
     boss: 70701,
     shape: 360,
     "world-chain": 480,
+    abstract: 11124,
+    apechain: 33139,
+    mantle: 5000,
+    scroll: 534352,
+    "sei-pacific-1": 1329,
+    "abstract-testnet": 11155111,
+    curtis: 33111,
+    "mantle-sepolia": 5003,
+    "scroll-sepolia": 534351,
+    "sei-atlantic-2-testnet": 1328,
+    "world-chain-sepolia": 4801,
 };
 
 export function blockchainToChainId(blockchain: EVMBlockchainIncludingTestnet) {

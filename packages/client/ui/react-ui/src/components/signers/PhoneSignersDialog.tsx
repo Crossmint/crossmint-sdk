@@ -4,6 +4,7 @@ import type { UIConfig } from "@crossmint/common-sdk-base";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "../common/Dialog";
 import { PhoneOTPInput } from "./PhoneOTPInput";
 import { PhoneConfirmation } from "./PhoneConfirmation";
+import { tw } from "@/twind-instance";
 
 interface PhoneSignersDialogProps {
     phone: string;
@@ -44,7 +45,7 @@ export function PhoneSignersDialog({
             <DialogContent
                 onInteractOutside={(e) => e.preventDefault()}
                 onOpenAutoFocus={(e) => e.preventDefault()}
-                className="!p-0 !min-[480px]:p-0"
+                className={tw("!p-0 !min-[480px]:p-0")}
                 style={{
                     borderRadius: appearance?.borderRadius,
                     backgroundColor: appearance?.colors?.background,
@@ -57,17 +58,21 @@ export function PhoneSignersDialog({
                     <DialogDescription>Create a recovery key</DialogDescription>
                 </VisuallyHidden>
 
-                <div className="relative pt-10 pb-[30px] px-6 !min-[480px]:px-10 flex flex-col gap-[10px] antialiased animate-none max-w-[448px]">
+                <div
+                    className={tw(
+                        "relative pt-10 pb-[30px] px-6 !min-[480px]:px-10 flex flex-col gap-[10px] antialiased animate-none max-w-[448px]"
+                    )}
+                >
                     {step === "initial" ? (
-                        <div className="flex flex-col gap-4">
+                        <div className={tw("flex flex-col gap-4")}>
                             <h1
-                                className="text-2xl font-bold text-cm-text-primary"
+                                className={tw("text-2xl font-bold text-cm-text-primary")}
                                 style={{ color: appearance?.colors?.textPrimary }}
                             >
                                 Confirm it's you
                             </h1>
                             <p
-                                className="text-base font-normal mb-3 text-cm-text-secondary"
+                                className={tw("text-base font-normal mb-3 text-cm-text-secondary")}
                                 style={{ color: appearance?.colors?.textSecondary }}
                             >
                                 You're using this wallet for the first time on this device. Click 'Send code' to get a

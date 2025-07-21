@@ -4,11 +4,11 @@ import type { Transport, SimpleMessageEvent } from "./Transport";
 import { generateRandomString } from "../utils/generateRandomString";
 
 export class WindowTransport<OutgoingEvents extends EventMap = EventMap> implements Transport<OutgoingEvents> {
-    private listeners = new Map<string, (event: MessageEvent) => void>();
+    protected listeners = new Map<string, (event: MessageEvent) => void>();
 
     constructor(
-        private otherWindow: Window,
-        private targetOrigin: string | string[]
+        protected otherWindow: Window,
+        protected targetOrigin: string | string[]
     ) {}
 
     send<K extends keyof OutgoingEvents>(message: { event: K; data: z.infer<OutgoingEvents[K]> }): void {
