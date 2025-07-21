@@ -39,7 +39,7 @@ jobs:
               uses: ./.github/actions/pnpm-install
 
             - name: Create Release Pull Request or Publish
-              uses: changesets/action@v1
+              uses: changesets/action@v1.5.3
               with:
                   commit: "Release packages"
                   title: "Release packages"
