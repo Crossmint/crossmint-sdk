@@ -53,5 +53,5 @@ jobs:
                   publish: pnpm change:publish
                   version: pnpm change:version
               env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GITHUB_TOKEN: ${{ secrets.GH_PAT }}
                   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
