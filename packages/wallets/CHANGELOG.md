@@ -1,5 +1,18 @@
 # @crossmint/wallets-sdk
 
+## 0.11.0
+
+### Minor Changes
+
+- bb25455: Add support for new blockchain chains including Abstract, ApeChain, Mantle, Scroll, Sei, Curtis, and World Chain variants
+
+### Patch Changes
+
+- bb25455: Adds more chains
+- Updated dependencies [bb25455]
+- Updated dependencies [bb25455]
+  - @crossmint/common-sdk-base@0.9.0
+
 ## 0.10.17
 
 ### Patch Changes
