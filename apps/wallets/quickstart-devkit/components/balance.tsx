@@ -71,6 +71,10 @@ export function WalletBalance() {
                     >
                         + Get free test SOL
                     </a>
+                ) : wallet?.chain === "stellar" ? (
+                    <div className="flex items-center justify-center gap-1.5 text-sm py-1.5 px-3 rounded-md bg-accent/10 text-accent hover:bg-accent/20 transition-colors">
+                        XLM Faucet coming soon
+                    </div>
                 ) : (
                     <div className="flex items-center justify-center gap-1.5 text-sm py-1.5 px-3 rounded-md bg-accent/10 text-accent hover:bg-accent/20 transition-colors">
                         ETH Faucet coming soon

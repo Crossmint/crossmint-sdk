@@ -104,7 +104,7 @@ export function HomeContent() {
                     {/* <DynamicLabsLogoutButton /> */}
                     {/* <FirebaseLogoutButton /> */}
                 </div>
-                {wallet?.chain !== "solana" && <EVMTransferFunds />}
+                {wallet?.chain !== "solana" && wallet?.chain !== "stellar" && <EVMTransferFunds />}
                 {wallet?.chain === "solana" && <SolanaTransferFunds />}
                 <Permissions />
             </div>
