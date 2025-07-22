@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 0.11.1
+
+### Patch Changes
+
+- 2ee5dd6: Add a single approval method and deprecate approveTransaction
+
 ## 0.11.0
 
 ### Minor Changes
