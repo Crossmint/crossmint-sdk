@@ -1,7 +1,7 @@
 import bs58 from "bs58";
 import { isValidSolanaAddress } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain } from "../chains/chains";
-import type { ApproveTransactionOptions, SolanaTransactionInput, Transaction, TransactionInputOptions } from "./types";
+import type { ApproveOptions, SolanaTransactionInput, Transaction, TransactionInputOptions } from "./types";
 import { Wallet } from "./wallet";
 import { TransactionNotCreatedError } from "../utils/errors";
 import { SolanaExternalWalletSigner } from "@/signers/solana-external-wallet";
@@ -55,11 +55,11 @@ export class SolanaWallet extends Wallet<SolanaChain> {
                 })
         );
 
-        const options: ApproveTransactionOptions = {
+        const options: ApproveOptions = {
             additionalSigners: _additionalSigners,
         };
 
-        return await this.approveAndWait(createdTransaction.id, options);
+        return await this.approveTransactionAndWait(createdTransaction.id, options);
     }
 
     private async createTransaction({
