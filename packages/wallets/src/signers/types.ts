@@ -5,12 +5,14 @@ import type {
     Crossmint,
     EvmExternalWalletSignerConfig,
     SolanaExternalWalletSignerConfig,
+    StellarExternalWalletSignerConfig,
 } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain, StellarChain } from "../chains/chains";
 
 export type {
     EvmExternalWalletSignerConfig,
     SolanaExternalWalletSignerConfig,
+    StellarExternalWalletSignerConfig,
     GenericEIP1193Provider,
 } from "@crossmint/common-sdk-base";
 
@@ -50,9 +52,9 @@ export type NonCustodialSignerType = PhoneSignerConfig["type"] | EmailSignerConf
 
 export type ExternalWalletSignerConfigForChain<C extends Chain> = C extends SolanaChain
     ? SolanaExternalWalletSignerConfig
-    : // : C extends StellarChain
-      //   ? StellarExternalWalletSignerConfig
-      EvmExternalWalletSignerConfig;
+    : C extends StellarChain
+      ? StellarExternalWalletSignerConfig
+      : EvmExternalWalletSignerConfig;
 
 export type ApiKeySignerConfig = { type: "api-key" };
 

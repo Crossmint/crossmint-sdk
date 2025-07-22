@@ -13,7 +13,7 @@ if (!crossmintApiKey) {
 
 export function Providers({ children }: { children: React.ReactNode }) {
     /* @TODO update to your desired provider here */
-    return <EVMCrossmintAuthProvider>{children}</EVMCrossmintAuthProvider>;
+    return <StellarCrossmintAuthProvider>{children}</StellarCrossmintAuthProvider>;
 }
 
 /* ============================================================ */
@@ -30,12 +30,12 @@ function EVMCrossmintAuthProvider({ children }: { children: React.ReactNode }) {
                 authModalTitle="EVM Wallets Quickstart"
                 // loginMethods={["google", "twitter", "email"]}
             >
-                {/* <CrossmintWalletProvider
+                <CrossmintWalletProvider
                     showPasskeyHelpers={false}
-                    createOnLogin={{ chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any, signer: { type: "passkey" } }}
-                > */}
-                {children}
-                {/* </CrossmintWalletProvider> */}
+                    createOnLogin={{ chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any, signer: { type: "email" } }}
+                >
+                    {children}
+                </CrossmintWalletProvider>
             </CrossmintAuthProvider>
         </CrossmintProvider>
     );
@@ -194,11 +194,21 @@ function StellarCrossmintAuthProvider({ children }: { children: React.ReactNode 
         <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_API_KEY || ""}>
             <CrossmintAuthProvider
                 authModalTitle="Stellar Wallets Quickstart"
-                loginMethods={["google", "twitter", "email"]}
+                loginMethods={["google", "twitter", "email", "web3"]}
             >
                 <CrossmintWalletProvider
                     showPasskeyHelpers={false}
-                    createOnLogin={{ chain: "stellar", signer: { type: "email" } }}
+                    createOnLogin={{
+                        chain: "stellar",
+                        signer: {
+                            type: "external-wallet",
+                            address: "SDVCJTOK7XCEDAPAXB2T74WOUNTTRW5RUWWNCVI6LTCSGDYGPPYQXM7C",
+                        },
+                    }}
+                    // createOnLogin={{
+                    //     chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any,
+                    //     signer: { type: "external-wallet" },
+                    // }}
                 >
                     {children}
                 </CrossmintWalletProvider>

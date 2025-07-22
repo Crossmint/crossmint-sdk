@@ -6,6 +6,7 @@ import { EVMApiKeySigner } from "./evm-api-key";
 import { SolanaApiKeySigner } from "./solana-api-key";
 import type { Chain } from "../chains/chains";
 import type { InternalSignerConfig, Signer } from "./types";
+import { StellarExternalWalletSigner } from "./stellar-external-wallet";
 
 export function assembleSigner<C extends Chain>(chain: C, config: InternalSignerConfig<C>): Signer {
     switch (config.type) {
@@ -22,7 +23,13 @@ export function assembleSigner<C extends Chain>(chain: C, config: InternalSigner
             return chain === "solana" ? new SolanaApiKeySigner(config) : new EVMApiKeySigner(config);
 
         case "external-wallet":
-            return chain === "solana" ? new SolanaExternalWalletSigner(config) : new EVMExternalWalletSigner(config);
+            if (chain === "solana") {
+                return new SolanaExternalWalletSigner(config);
+            }
+            if (chain === "stellar") {
+                return new StellarExternalWalletSigner(config);
+            }
+            return new EVMExternalWalletSigner(config);
 
         case "passkey":
             return new PasskeySigner(config);
