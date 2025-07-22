@@ -118,7 +118,9 @@ export type PasskeySignResult = {
 
 export type SignerConfigForChain<C extends Chain> = C extends SolanaChain
     ? EmailSignerConfig | PhoneSignerConfig | BaseSignerConfig<C>
-    : EmailSignerConfig | PhoneSignerConfig | PasskeySignerConfig | BaseSignerConfig<C>;
+    : C extends StellarChain
+      ? EmailSignerConfig | PhoneSignerConfig | BaseSignerConfig<C>
+      : EmailSignerConfig | PhoneSignerConfig | PasskeySignerConfig | BaseSignerConfig<C>;
 
 ////////////////////////////////////////////////////////////
 // Signer base types
