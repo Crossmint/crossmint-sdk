@@ -51,7 +51,7 @@ export class EVMWallet extends Wallet<EVMChain> {
             } as Transaction<T["options"] extends { experimental_prepareOnly: true } ? true : false>;
         }
 
-        return await this.approveAndWait(createdTransaction.id);
+        return await this.approveTransactionAndWait(createdTransaction.id);
     }
 
     public async signMessage(message: string): Promise<string> {
@@ -67,10 +67,7 @@ export class EVMWallet extends Wallet<EVMChain> {
             throw new SignatureNotCreatedError(JSON.stringify(signatureCreationResponse));
         }
 
-        const signatureId = signatureCreationResponse.id;
-        const pendingApprovals = signatureCreationResponse.approvals?.pending || [];
-        await this.approveSignature(pendingApprovals, signatureId);
-        return await this.waitForSignature(signatureId);
+        return await this.approveSignatureAndWait(signatureCreationResponse.id);
     }
 
     public async signTypedData<
@@ -115,10 +112,7 @@ export class EVMWallet extends Wallet<EVMChain> {
             throw new SignatureNotCreatedError(JSON.stringify(signatureCreationResponse));
         }
 
-        const signatureId = signatureCreationResponse.id;
-        const pendingApprovals = signatureCreationResponse.approvals?.pending || [];
-        await this.approveSignature(pendingApprovals, signatureId);
-        return await this.waitForSignature(signatureId);
+        return await this.approveSignatureAndWait(signatureCreationResponse.id);
     }
 
     public getViemClient(params?: { transport?: HttpTransport }) {

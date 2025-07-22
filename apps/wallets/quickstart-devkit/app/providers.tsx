@@ -32,7 +32,7 @@ function EVMCrossmintAuthProvider({ children }: { children: React.ReactNode }) {
             >
                 <CrossmintWalletProvider
                     showPasskeyHelpers={false}
-                    createOnLogin={{ chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any, signer: { type: "passkey" } }}
+                    createOnLogin={{ chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any, signer: { type: "email" } }}
                 >
                     {children}
                 </CrossmintWalletProvider>

@@ -96,6 +96,12 @@ export class SignatureNotAvailableError extends CrossmintSDKError {
     }
 }
 
+export class SignatureFailedError extends CrossmintSDKError {
+    constructor(message: string, details?: string) {
+        super(message, WalletErrorCode.SIGNING_FAILED, details);
+    }
+}
+
 export class TransactionNotCreatedError extends CrossmintSDKError {
     constructor(message: string, details?: string) {
         super(message, WalletErrorCode.NO_TRANSACTION, details);
@@ -161,6 +167,7 @@ export type WalletError =
     | MessageSigningNotSupportedError
     | SignatureNotCreatedError
     | SignatureNotAvailableError
+    | SignatureFailedError
     | TransactionNotCreatedError
     | TransactionNotAvailableError
     | TransactionConfirmationTimeoutError

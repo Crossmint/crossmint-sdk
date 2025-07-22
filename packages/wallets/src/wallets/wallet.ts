@@ -10,7 +10,6 @@ import type {
     GetTransactionsResponse,
 } from "../api";
 import type {
-    PendingApproval,
     DelegatedSigner,
     WalletOptions,
     UserLocator,
@@ -18,12 +17,13 @@ import type {
     Balances,
     TokenBalance,
     TransactionInputOptions,
-    ApproveTransactionParams,
-    ApproveTransactionOptions,
+    ApproveParams,
+    ApproveOptions,
     Approval,
 } from "./types";
 import {
     InvalidSignerError,
+    SignatureFailedError,
     SignatureNotAvailableError,
     SigningFailedError,
     TransactionAwaitingApprovalError,
@@ -80,6 +80,15 @@ export class Wallet<C extends Chain> {
 
     protected get options(): WalletOptions | undefined {
         return this.#options;
+    }
+
+    /**
+     * Get the API client
+     * @returns The API client
+     * @experimental This API is experimental and may change in the future
+     */
+    public experimental_apiClient(): ApiClient {
+        return this.#apiClient;
     }
 
     /**
@@ -248,10 +257,11 @@ export class Wallet<C extends Chain> {
             } as Transaction<T extends { experimental_prepareOnly: true } ? true : false>;
         }
 
-        return await this.approveAndWait(transactionCreationResponse.id);
+        return await this.approveTransactionAndWait(transactionCreationResponse.id);
     }
 
     /**
+     * @deprecated Use `approve` instead.
      * Approve a transaction
      * @param params - The parameters
      * @param params.transactionId - The transaction id
@@ -260,14 +270,37 @@ export class Wallet<C extends Chain> {
      * @param params.options.additionalSigners - The additional signers
      * @returns The transaction
      */
-    public async approveTransaction(params: ApproveTransactionParams) {
-        return await this.approveAndWait(params.transactionId, params.options);
+    // TODO: Remove this method in the next major version
+    public async approveTransaction(params: ApproveParams) {
+        console.warn(
+            "approveTransaction is deprecated. Use approve instead. This method will be removed in the next major version."
+        );
+        return await this.approve(params);
+    }
+
+    /**
+     * Approve a transaction
+     * @param params - The parameters
+     * @param params.transactionId - The transaction id
+     * @param params.signatureId - The signature id
+     * @param params.options - The options for the transaction
+     * @param params.options.experimental_approval - The approval
+     * @param params.options.additionalSigners - The additional signers
+     * @returns The transaction
+     */
+    public async approve(params: ApproveParams) {
+        if (params.transactionId != null) {
+            return await this.approveTransactionAndWait(params.transactionId, params.options);
+        }
+        if (params.signatureId != null) {
+            return await this.approveSignatureAndWait(params.signatureId, params.options);
+        }
+        throw new Error("Either transactionId or signatureId must be provided");
     }
 
     /**
      * Add a delegated signer to the wallet
      * @param signer - The signer. For Solana, it must be a string. For EVM, it can be a string or a passkey.
-     * @returns The delegated signer
      */
     public async addDelegatedSigner(params: { signer: string | RegisterSignerPasskeyParams }) {
         const response = await this.#apiClient.registerSigner(this.walletLocator, {
@@ -282,14 +315,12 @@ export class Wallet<C extends Chain> {
         if ("transaction" in response) {
             // Solana has "transaction" in response
             const transactionId = response.transaction.id;
-            await this.approveAndWait(transactionId);
+            await this.approveTransactionAndWait(transactionId);
         } else {
             // EVM has "chains" in response
             const chainResponse = response.chains?.[this.chain];
             if (chainResponse?.status === "awaiting-approval") {
-                const pendingApproval = chainResponse.approvals?.pending || [];
-                await this.approveSignature(pendingApproval, chainResponse.id);
-                await this.waitForSignature(chainResponse.id);
+                await this.approveSignatureAndWait(chainResponse.id);
                 return;
             }
             if (chainResponse?.status === "pending") {
@@ -337,13 +368,71 @@ export class Wallet<C extends Chain> {
         return this.chain === "solana";
     }
 
-    protected async approveAndWait(transactionId: string, options?: ApproveTransactionOptions) {
+    protected async approveTransactionAndWait(transactionId: string, options?: ApproveOptions) {
         await this.approveTransactionInternal(transactionId, options);
         await this.sleep(1_000); // Rule of thumb: tx won't be confirmed in less than 1 second
         return await this.waitForTransaction(transactionId);
     }
 
-    protected async approveTransactionInternal(transactionId: string, options?: ApproveTransactionOptions) {
+    protected async approveSignatureAndWait(signatureId: string, options?: ApproveOptions) {
+        await this.approveSignatureInternal(signatureId, options);
+        await this.sleep(1_000); // Rule of thumb: signature won't be confirmed in less than 1 second
+        return await this.waitForSignature(signatureId);
+    }
+
+    protected async approveSignatureInternal(signatureId: string, options?: ApproveOptions) {
+        if (this.isSolanaWallet) {
+            throw new Error("Approving signatures is only supported for EVM smart wallets");
+        }
+
+        const signature = await this.#apiClient.getSignature(this.walletLocator, signatureId);
+
+        if ("error" in signature) {
+            throw new SignatureNotAvailableError(JSON.stringify(signature));
+        }
+
+        // API key signers approve automatically
+        if (this.signer.type === "api-key") {
+            return signature;
+        }
+
+        // If an external signature is provided, use it to approve the transaction
+        if (options?.experimental_approval != null) {
+            const approvals = [options.experimental_approval];
+
+            return await this.executeApproveSignatureWithErrorHandling(signatureId, approvals);
+        }
+
+        const pendingApprovals = signature.approvals?.pending;
+
+        if (pendingApprovals == null) {
+            return signature;
+        }
+
+        const signers = [...(options?.additionalSigners ?? []), this.signer];
+
+        const signedApprovals = await Promise.all(
+            pendingApprovals.map((pendingApproval) => {
+                const signer = signers.find((s) => s.locator() === pendingApproval.signer.locator);
+                if (signer == null) {
+                    throw new InvalidSignerError(`Signer ${pendingApproval.signer} not found in pending approvals`);
+                }
+
+                return signer.signMessage(pendingApproval.message);
+            })
+        );
+
+        const approvals = signedApprovals.map((signature) => {
+            return {
+                ...signature,
+                signer: this.signer.locator(),
+            };
+        });
+
+        return await this.executeApproveSignatureWithErrorHandling(signatureId, approvals);
+    }
+
+    protected async approveTransactionInternal(transactionId: string, options?: ApproveOptions) {
         const transaction = await this.#apiClient.getTransaction(this.walletLocator, transactionId);
 
         if ("error" in transaction) {
@@ -361,7 +450,7 @@ export class Wallet<C extends Chain> {
         if (options?.experimental_approval != null) {
             const approvals = [options.experimental_approval];
 
-            return await this.executeApprovalWithErrorHandling(transactionId, approvals);
+            return await this.executeApproveTransactionWithErrorHandling(transactionId, approvals);
         }
 
         const pendingApprovals = transaction.approvals?.pending;
@@ -394,10 +483,10 @@ export class Wallet<C extends Chain> {
             };
         });
 
-        return await this.executeApprovalWithErrorHandling(transactionId, approvals);
+        return await this.executeApproveTransactionWithErrorHandling(transactionId, approvals);
     }
 
-    private async executeApprovalWithErrorHandling(transactionId: string, approvals: Approval[]) {
+    private async executeApproveTransactionWithErrorHandling(transactionId: string, approvals: Approval[]) {
         const approvedTransaction = await this.#apiClient.approveTransaction(this.walletLocator, transactionId, {
             approvals,
         });
@@ -409,29 +498,16 @@ export class Wallet<C extends Chain> {
         return approvedTransaction;
     }
 
-    // This method is only applicable to EVM smart wallets
-    protected async approveSignature(pendingApprovals: Array<PendingApproval>, signatureId: string) {
-        if (this.isSolanaWallet) {
-            throw new Error("Approving signatures is only supported for EVM smart wallets");
-        }
-
-        const pendingApproval = pendingApprovals.find((approval) => approval.signer.locator === this.signer.locator());
-        if (!pendingApproval) {
-            throw new InvalidSignerError(`Signer ${this.signer.locator()} not found in pending approvals`);
-        }
-
-        const signature = await this.signer.signMessage(pendingApproval.message);
-
-        await this.#apiClient.approveSignature(this.walletLocator, signatureId, {
-            approvals: [
-                {
-                    signer: this.signer.locator(),
-                    ...signature,
-                },
-            ],
+    private async executeApproveSignatureWithErrorHandling(signatureId: string, approvals: Approval[]) {
+        const approvedSignature = await this.#apiClient.approveSignature(this.walletLocator, signatureId, {
+            approvals,
         });
 
-        return signature;
+        if (approvedSignature.error) {
+            throw new SignatureFailedError(JSON.stringify(approvedSignature));
+        }
+
+        return approvedSignature;
     }
 
     protected async waitForSignature(signatureId: string): Promise<string> {
