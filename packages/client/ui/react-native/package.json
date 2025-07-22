@@ -34,7 +34,6 @@
         "expo-secure-store": "~14.0.0",
         "expo-web-browser": "~14.0.2",
         "mitt": "3.0.1",
-        "react-native-webview": "13.13.5",
         "zod": "3.22.4"
     },
     "devDependencies": {
@@ -42,6 +41,7 @@
     },
     "peerDependencies": {
         "react": ">=17.0.2",
-        "react-native": ">=0.74.3"
+        "react-native": ">=0.74.3",
+        "react-native-webview": ">=13.13.5"
     }
 }
