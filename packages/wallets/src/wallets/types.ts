@@ -30,6 +30,14 @@ export type EVMTransactionInput = EVMTransactionInputBase &
         | { transaction: string }
     );
 
+export type StellarTransactionInput = {
+    contractId: string;
+    method: string;
+    memo?: string;
+    args: unknown[];
+    options?: TransactionInputOptions;
+};
+
 export type SolanaTransactionInput = {
     transaction: VersionedTransaction;
     additionalSigners?: Keypair[];

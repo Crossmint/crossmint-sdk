@@ -6,7 +6,7 @@ import type {
     EvmExternalWalletSignerConfig,
     SolanaExternalWalletSignerConfig,
 } from "@crossmint/common-sdk-base";
-import type { Chain, SolanaChain } from "../chains/chains";
+import type { Chain, SolanaChain, StellarChain } from "../chains/chains";
 
 export type {
     EvmExternalWalletSignerConfig,
@@ -50,7 +50,9 @@ export type NonCustodialSignerType = PhoneSignerConfig["type"] | EmailSignerConf
 
 export type ExternalWalletSignerConfigForChain<C extends Chain> = C extends SolanaChain
     ? SolanaExternalWalletSignerConfig
-    : EvmExternalWalletSignerConfig;
+    : // : C extends StellarChain
+      //   ? StellarExternalWalletSignerConfig
+      EvmExternalWalletSignerConfig;
 
 export type ApiKeySignerConfig = { type: "api-key" };
 

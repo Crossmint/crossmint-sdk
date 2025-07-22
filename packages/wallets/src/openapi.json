@@ -7412,6 +7412,66 @@
                             }
                         },
                         "required": ["params"]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "params": {
+                                "type": "object",
+                                "properties": {
+                                    "transaction": {
+                                        "type": "object",
+                                        "title": "Stellar contract call transaction parameters",
+                                        "description": "Parameters for a transaction to execute a smart contract function",
+                                        "properties": {
+                                            "type": {
+                                                "type": "string",
+                                                "enum": ["contract-call"],
+                                                "description": "The type of transaction to execute"
+                                            },
+                                            "contractId": {
+                                                "type": "string",
+                                                "description": "The recipient address for this transaction call"
+                                            },
+                                            "method": {
+                                                "type": "string",
+                                                "description": "The name of the function to call"
+                                            },
+                                            "memo": {
+                                                "type": "string",
+                                                "description": "The memo for the transaction"
+                                            },
+                                            "args": {
+                                                "type": "array",
+                                                "items": {},
+                                                "description": "The arguments to pass to the function"
+                                            }
+                                        },
+                                        "required": ["type", "contractId", "method", "args"],
+                                        "example": {
+                                            "type": "contract-call",
+                                            "contractId": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
+                                            "method": "transfer",
+                                            "args": {
+                                                "to": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
+                                                "from": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
+                                                "amount": "1000000000000000000"
+                                            }
+                                        }
+                                    },
+                                    "signer": {
+                                        "type": "string",
+                                        "title": "Signer Locator",
+                                        "description": "The locator for the signer who will submit this transaction."
+                                    }
+                                },
+                                "required": ["transaction"],
+                                "additionalProperties": false,
+                                "title": "Stellar contract call transaction parameters",
+                                "description": "Parameters for a transaction to execute a smart contract function on Stellar."
+                            }
+                        },
+                        "required": ["params"]
                     }
                 ],
                 "description": "Input schema for creating a new transaction. The parameters vary based on the wallet type (EVM vs Solana)."
