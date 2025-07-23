@@ -1,13 +1,11 @@
-import base58 from "bs58";
 import type { ExternalWalletInternalSignerConfig, Signer } from "./types";
-import { TransactionFailedError } from "../utils/errors";
 import type { StellarChain } from "@/chains/chains";
+import type { AssembledTransaction } from "@crossmint/stellar-sdk-wrapper";
 
 export class StellarExternalWalletSigner implements Signer {
     type = "external-wallet" as const;
     address: string;
-    // onSignTransaction?: (transaction: AssembledTransaction) => Promise<AssembledTransaction>; // TODO: Build issues
-    onSignStellarTransaction?: (transaction: string) => Promise<string>;
+    onSignStellarTransaction?: (transaction: AssembledTransaction) => Promise<AssembledTransaction>; // TODO: Build issues
 
     constructor(private config: ExternalWalletInternalSignerConfig<StellarChain>) {
         console.log("im in stellar external wallet signer: constructor");
@@ -15,7 +13,7 @@ export class StellarExternalWalletSigner implements Signer {
             throw new Error("Please provide an address for the External Wallet Signer");
         }
         this.address = config.address;
-        // this.onSignTransaction = config.onSignTransaction;
+        this.onSignStellarTransaction = config.onSignStellarTransaction;
     }
 
     locator() {
@@ -31,7 +29,9 @@ export class StellarExternalWalletSigner implements Signer {
         console.log("im in stellar external wallet signer: signTransaction");
         if (this.onSignStellarTransaction == null) {
             return await Promise.reject(
-                new Error("onSignTransaction method is required to sign transactions with a Solana external wallet")
+                new Error(
+                    "onSignStellarTransaction method is required to sign transactions with a Stellar external wallet"
+                )
             );
         }
         // const transactionBytes = base58.decode(transaction);

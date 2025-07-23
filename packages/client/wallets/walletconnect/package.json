@@ -22,8 +22,8 @@
     "style": "./dist/index.css",
     "files": ["dist", "LICENSE"],
     "scripts": {
-        "build": "tsup",
-        "dev": "tsup --watch"
+        "build": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsup",
+        "dev": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsup --watch"
     },
     "dependencies": {
         "@crossmint/common-sdk-base": "workspace:*",

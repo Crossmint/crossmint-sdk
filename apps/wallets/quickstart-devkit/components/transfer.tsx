@@ -255,11 +255,6 @@ export function StellarTransferFunds() {
     const [isLoading, setIsLoading] = useState(false);
     const [txLink, setTxLink] = useState<string | null>(null);
 
-    const isStellarAddressValid = (address: string) => {
-        // Stellar addresses start with "G" followed by 55 alphanumeric characters
-        return /^G[A-Z0-9]{55}$/.test(address);
-    };
-
     // async function handleOnTransfer() {
     //     if (wallet == null || token == null || recipient == null || amount == null) {
     //         alert("Transfer: missing required fields");

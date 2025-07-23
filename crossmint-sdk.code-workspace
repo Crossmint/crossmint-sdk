@@ -69,6 +69,10 @@
             "path": "packages/wallets"
         },
         {
+            "name": "🪪 @crossmint/stellar-sdk-wrapper",
+            "path": "packages/stellar-sdk-wrapper"
+        },
+        {
             "name": "🏁 Apps",
             "path": "apps"
         }
