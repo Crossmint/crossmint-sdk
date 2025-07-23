@@ -9,6 +9,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Button, Text, View, TextInput, StyleSheet, ScrollView, Alert } from "react-native";
 import * as Linking from "expo-linking";
 import { fundUSDC } from "@/utils/usdcFaucet";
+import { StellarWallet } from "@crossmint/wallets-sdk";
 
 export default function Index() {
     const { loginWithOAuth, user, logout, createAuthSession, jwt } = useCrossmintAuth();
@@ -80,7 +81,7 @@ export default function Index() {
         }
         setIsLoading(true);
         try {
-            await getOrCreateWallet({ chain: "solana", signer: { type: "email" } });
+            await getOrCreateWallet({ chain: "stellar", signer: { type: "email" } });
         } catch (error) {
             console.error("Error initializing wallet:", error);
         } finally {
@@ -135,8 +136,17 @@ export default function Index() {
         }
         setIsLoading(true);
         try {
-            const tx = await wallet.send(recipientAddress, "usdc", amount);
-            console.log(`Sent ${amount} USDC to ${recipientAddress}. Tx Link: ${tx.explorerLink}`);
+            const stellarWallet = StellarWallet.from(wallet);
+            const tx = await stellarWallet.sendTransaction({
+                contractId: "CDDIVUUFADOLUWIKZE73O5XJFC6MMQHC7AA5YKZDJV2YDPUCO6O3MN34",
+                method: "hello",
+                args: {
+                    caller: wallet.address,
+                },
+            });
+            console.log("the tx", tx);
+            // const tx = await wallet.send(recipientAddress, "usdc", amount);
+            // console.log(`Sent ${amount} USDC to ${recipientAddress}. Tx Link: ${tx.explorerLink}`);
             setTxLink(tx.explorerLink);
             setRecipientAddress("");
             setAmount("");

@@ -31,7 +31,6 @@ export class StellarExternalWalletSigner implements Signer {
             );
         }
 
-        console.log("transaction", transaction);
         const signedTx = await this.onSignStellarTransaction(transaction);
         return { signature: signedTx };
     }

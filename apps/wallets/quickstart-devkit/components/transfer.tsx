@@ -300,10 +300,10 @@ export function StellarTransferFunds() {
                 contractId: "CDDIVUUFADOLUWIKZE73O5XJFC6MMQHC7AA5YKZDJV2YDPUCO6O3MN34",
                 method: "hello",
                 args: {
-                    caller: "GCFXHS4GXL6BVUCXBWXGTITROWLVYXQKQLF4YH5O5JT3YZXCYPAFBJZB",
+                    caller: wallet.address,
                 },
             });
-            // setTxLink(tx.explorerLink);
+            setTxLink(tx.explorerLink);
             console.log("the tx", tx);
         } catch (err) {
             console.error("Transfer: ", err);

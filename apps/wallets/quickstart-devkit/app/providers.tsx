@@ -199,22 +199,21 @@ function StellarCrossmintAuthProvider({ children }: { children: React.ReactNode 
             >
                 <CrossmintWalletProvider
                     showPasskeyHelpers={false}
+                    // createOnLogin={{
+                    //     chain: "stellar",
+                    //     signer: {
+                    //         type: "external-wallet",
+                    //         onSignStellarTransaction: async (transaction) => {
+                    //             const keypair = Keypair.fromSecret(process.env.NEXT_PUBLIC_STELLAR_SECRET_KEY || "");
+                    //             const signature = keypair.sign(Buffer.from(transaction, "base64"));
+                    //             return await signature.toString("base64");
+                    //         },
+                    //     },
+                    // }}
                     createOnLogin={{
                         chain: "stellar",
-                        signer: {
-                            type: "external-wallet",
-                            address: "GCXVAV3EC2A25OHXWDQIUJAK6Y5BY2GDJIOI2DTFAIWSM4BJIFU5JYO2",
-                            onSignStellarTransaction: async (transaction) => {
-                                const keypair = Keypair.fromSecret(process.env.NEXT_PUBLIC_STELLAR_SECRET_KEY || "");
-                                const signature = keypair.sign(Buffer.from(transaction, "base64"));
-                                return await signature.toString("base64");
-                            },
-                        },
+                        signer: { type: "email" },
                     }}
-                    // createOnLogin={{
-                    //     chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any,
-                    //     signer: { type: "external-wallet" },
-                    // }}
                 >
                     {children}
                 </CrossmintWalletProvider>

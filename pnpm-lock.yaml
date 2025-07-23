@@ -423,6 +423,9 @@ importers:
       expo-constants:
         specifier: ~17.0.8
         version: 17.0.8(expo@52.0.46(tz6j44tf4tmm5rdruadnfs5u6u))(react-native@0.76.9(@babel/core@7.26.10)(@babel/preset-env@7.26.9(@babel/core@7.26.10))(@react-native-community/cli@13.6.4(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(@types/react@18.3.20)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10))
+      expo-device:
+        specifier: ~7.1.4
+        version: 7.1.4(expo@52.0.46(tz6j44tf4tmm5rdruadnfs5u6u))
       expo-font:
         specifier: ~13.0.4
         version: 13.0.4(expo@52.0.46(tz6j44tf4tmm5rdruadnfs5u6u))(react@18.3.1)
@@ -32355,6 +32358,11 @@ snapshots:
   expo-device@7.1.4(expo@52.0.46(46a24ztoubjv6c36qmshrzn7ii)):
     dependencies:
       expo: 52.0.46(46a24ztoubjv6c36qmshrzn7ii)
+      ua-parser-js: 0.7.40
+
+  expo-device@7.1.4(expo@52.0.46(tz6j44tf4tmm5rdruadnfs5u6u)):
+    dependencies:
+      expo: 52.0.46(tz6j44tf4tmm5rdruadnfs5u6u)
       ua-parser-js: 0.7.40
 
   expo-file-system@18.0.12(expo@52.0.46(46a24ztoubjv6c36qmshrzn7ii))(react-native@0.76.9(@babel/core@7.26.10)(@babel/preset-env@7.26.9(@babel/core@7.26.10))(@react-native-community/cli@13.6.4(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(@types/react@19.0.12)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10)):
