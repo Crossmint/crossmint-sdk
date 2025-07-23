@@ -28,7 +28,7 @@ function EVMCrossmintAuthProvider({ children }: { children: React.ReactNode }) {
         <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_API_KEY || ""}>
             <CrossmintAuthProvider
                 authModalTitle="EVM Wallets Quickstart"
-                // loginMethods={["google", "twitter", "email"]}
+                loginMethods={["google", "twitter", "email"]}
             >
                 <CrossmintWalletProvider
                     showPasskeyHelpers={false}

@@ -1,5 +1,29 @@
 # @crossmint/client-sdk-react-ui
 
+## 2.2.19
+
+### Patch Changes
+
+- Updated dependencies [2ee5dd6]
+  - @crossmint/wallets-sdk@0.11.1
+  - @crossmint/client-sdk-react-base@0.5.19
+
+## 2.2.18
+
+### Patch Changes
+
+- 5495e50: Fix phone number source
+- be2c5bf: Fixed style with non custodial signer ui
+- 946912e: Update our twind implementation to use library mode
+- Updated dependencies [bb25455]
+- Updated dependencies [bb25455]
+  - @crossmint/common-sdk-base@0.9.0
+  - @crossmint/wallets-sdk@0.11.0
+  - @crossmint/client-sdk-auth@1.2.24
+  - @crossmint/client-sdk-base@1.5.15
+  - @crossmint/client-sdk-react-base@0.5.18
+  - @crossmint/common-sdk-auth@1.0.46
+
 ## 2.2.17
 
 ### Patch Changes
