@@ -8,6 +8,7 @@ export { ApiClient as WalletsApiClient } from "./api";
 export { Wallet } from "./wallets/wallet";
 export { SolanaWallet } from "./wallets/solana";
 export { EVMWallet } from "./wallets/evm";
+export { StellarWallet } from "./wallets/stellar";
 
 // Core types
 export type {

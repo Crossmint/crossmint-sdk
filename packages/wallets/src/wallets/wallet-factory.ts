@@ -127,7 +127,7 @@ export class WalletFactory {
                     throw new WalletCreationError("External wallet signer does not match the wallet's signer type");
                 }
 
-                return { ...walletResponse.config.adminSigner, ...signerArgs };
+                return { ...walletResponse.config.adminSigner, ...signerArgs } as InternalSignerConfig<C>;
 
             case "passkey":
                 if (walletResponse.config?.adminSigner.type !== "passkey") {

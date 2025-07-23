@@ -141,7 +141,8 @@ export function CrossmintWalletBaseProvider({
             if (
                 (createOnLogin.signer.type === "email" && experimental_customAuth?.email == null) ||
                 (createOnLogin.signer.type === "external-wallet" &&
-                    experimental_customAuth?.externalWalletSigner == null)
+                    experimental_customAuth?.externalWalletSigner == null &&
+                    createOnLogin.signer.address == null)
             ) {
                 return;
             }

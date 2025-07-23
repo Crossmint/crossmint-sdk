@@ -34,7 +34,7 @@ export type StellarTransactionInput = {
     contractId: string;
     method: string;
     memo?: string;
-    args: unknown[];
+    args: Record<string, any>;
     options?: TransactionInputOptions;
 };
 

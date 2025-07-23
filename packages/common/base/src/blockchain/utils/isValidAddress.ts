@@ -10,7 +10,7 @@ export function isValidSolanaAddress(address: string): boolean {
 
 // Stellar address: starts with "G" followed by 56 alphanumeric characters
 export function isValidStellarAddress(address: string): boolean {
-    return /^G[A-Z0-9]{55}$/.test(address);
+    return /^[G|C][A-Z0-9]{55}$/.test(address);
 }
 
 // General: valid if EVM, Solana or Stellar

@@ -90,7 +90,18 @@ export class Wallet<C extends Chain> {
      * @throws {Error} If the balances cannot be retrieved
      */
     public async balances(tokens?: string[], chains?: Chain[]): Promise<Balances> {
-        const nativeToken = this.chain === "solana" ? "sol" : "eth";
+        let nativeToken: string;
+        switch (this.chain) {
+            case "solana":
+                nativeToken = "sol";
+                break;
+            case "stellar":
+                nativeToken = "xlm";
+                break;
+            default:
+                nativeToken = "eth";
+                break;
+        }
         const allTokens = [nativeToken, "usdc", ...(tokens ?? [])];
 
         const response = await this.#apiClient.getBalance(this.address, {
@@ -305,6 +316,10 @@ export class Wallet<C extends Chain> {
             throw new WalletNotAvailableError(JSON.stringify(walletResponse));
         }
 
+        if (this.chain === "stellar") {
+            return [];
+        }
+
         if (
             walletResponse.type !== "smart" ||
             (walletResponse.chainType !== "evm" && walletResponse.chainType !== "solana")
@@ -329,7 +344,13 @@ export class Wallet<C extends Chain> {
         if (this.#apiClient.isServerSide) {
             return this.address;
         } else {
-            return `me:${this.chain === "solana" ? "solana" : "evm"}:smart`;
+            if (this.chain === "stellar") {
+                return `me:stellar:smart`;
+            } else if (this.chain === "solana") {
+                return `me:solana:smart`;
+            } else {
+                return `me:evm:smart`;
+            }
         }
     }
 

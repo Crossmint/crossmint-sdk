@@ -13,7 +13,7 @@ import type {
     WalletNftsResponseDto,
     WalletV1Alpha2ErrorDto,
     WalletV1Alpha2TransactionErrorDto,
-    WalletV2025ResponseDto,
+    WalletV2025ResponseDtoReadable,
     WalletsMultipleTransactionV2025ResponseDto,
     WalletsSendTokenControllerSendToken2Response,
     WalletsSignatureV2025ResponseDto,
@@ -30,12 +30,12 @@ import type {
 } from "./gen/types.gen";
 
 export type CreateWalletParams = CreateWalletV2025Dto;
-export type GetWalletSuccessResponse = WalletV2025ResponseDto;
+export type GetWalletSuccessResponse = WalletV2025ResponseDtoReadable;
 export type CreateWalletResponse = GetWalletSuccessResponse | WalletV1Alpha2ErrorDto;
 export type GetWalletResponse = GetWalletSuccessResponse | WalletV1Alpha2ErrorDto;
 
 export type AdminSignerConfig = NonNullable<
-    Extract<CreateWalletV2025Dto, { chainType: "evm" | "solana" }>["config"]
+    Extract<CreateWalletV2025Dto, { chainType: "evm" | "solana" | "stellar"; config: { adminSigner: any } }>["config"]
 >["adminSigner"];
 
 export type CreateTransactionParams = CreateTransactionV2025Dto;

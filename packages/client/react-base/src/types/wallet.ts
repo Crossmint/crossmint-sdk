@@ -10,7 +10,7 @@ export type {
     Wallet,
 } from "@crossmint/wallets-sdk";
 
-export { EVMWallet, SolanaWallet } from "@crossmint/wallets-sdk";
+export { EVMWallet, SolanaWallet, StellarWallet } from "@crossmint/wallets-sdk";
 
 export type CreateOnLogin =
     | {

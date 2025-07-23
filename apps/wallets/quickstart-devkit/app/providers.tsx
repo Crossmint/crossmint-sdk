@@ -202,7 +202,7 @@ function StellarCrossmintAuthProvider({ children }: { children: React.ReactNode 
                         chain: "stellar",
                         signer: {
                             type: "external-wallet",
-                            address: "SDVCJTOK7XCEDAPAXB2T74WOUNTTRW5RUWWNCVI6LTCSGDYGPPYQXM7C",
+                            address: "GCFXHS4GXL6BVUCXBWXGTITROWLVYXQKQLF4YH5O5JT3YZXCYPAFBJZB",
                         },
                     }}
                     // createOnLogin={{
