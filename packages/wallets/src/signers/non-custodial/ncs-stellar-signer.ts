@@ -1,3 +1,4 @@
+import base58 from "bs58";
 import type { EmailInternalSignerConfig, PhoneInternalSignerConfig } from "../types";
 import { DEFAULT_EVENT_OPTIONS, NonCustodialSigner } from "./ncs-signer";
 
@@ -14,6 +15,9 @@ export class StellarNonCustodialSigner extends NonCustodialSigner {
         await this.handleAuthRequired();
         const jwt = this.getJwtOrThrow();
 
+        const transactionBuffer = Buffer.from(transaction, "base64");
+        const transactionBase58 = base58.encode(transactionBuffer);
+
         const res = await this.config.clientTEEConnection?.sendAction({
             event: "request:sign",
             responseEvent: "response:sign",
@@ -24,7 +28,7 @@ export class StellarNonCustodialSigner extends NonCustodialSigner {
                 },
                 data: {
                     keyType: "ed25519",
-                    bytes: transaction,
+                    bytes: transactionBase58,
                     encoding: "base58",
                 },
             },
@@ -39,7 +43,10 @@ export class StellarNonCustodialSigner extends NonCustodialSigner {
             throw new Error("Failed to sign transaction");
         }
         StellarNonCustodialSigner.verifyPublicKeyFormat(res.publicKey);
-        return { signature: res.signature.bytes };
+
+        const signatureBuffer = base58.decode(res.signature.bytes);
+        const signatureBase64 = Buffer.from(signatureBuffer).toString("base64");
+        return { signature: signatureBase64 };
     }
 
     static verifyPublicKeyFormat(publicKey: { encoding: string; keyType: string; bytes: string } | null) {
