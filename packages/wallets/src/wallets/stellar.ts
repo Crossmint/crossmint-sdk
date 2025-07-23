@@ -1,6 +1,6 @@
 import { isValidStellarAddress } from "@crossmint/common-sdk-base";
 import type { Chain, StellarChain } from "../chains/chains";
-import type { ApproveTransactionOptions, StellarTransactionInput, Transaction, TransactionInputOptions } from "./types";
+import type { ApproveOptions, StellarTransactionInput, Transaction, TransactionInputOptions } from "./types";
 import { Wallet } from "./wallet";
 import { TransactionNotCreatedError } from "../utils/errors";
 import type { CreateTransactionSuccessResponse } from "@/api";
@@ -40,26 +40,9 @@ export class StellarWallet extends Wallet<StellarChain> {
             } as Transaction<T extends { experimental_prepareOnly: true } ? true : false>;
         }
 
-        // const _additionalSigners = params.additionalSigners?.map(
-        //     (signer) =>
-        //         new SolanaExternalWalletSigner({
-        //             type: "external-wallet",
-        //             address: signer.publicKey.toString(),
-        //             locator: `external-wallet:${signer.publicKey.toString()}`,
-        //             onSignTransaction: (transaction) => {
-        //                 transaction.sign([signer]);
-        //                 return Promise.resolve(transaction);
-        //             },
-        //         })
-        // );
+        const options: ApproveOptions = {};
 
-        // const options: ApproveTransactionOptions = {
-        //     additionalSigners: _additionalSigners,
-        // };
-
-        const options: ApproveTransactionOptions = {};
-
-        return await this.approveAndWait(createdTransaction.id, options);
+        return await this.approveTransactionAndWait(createdTransaction.id, options);
     }
 
     private async createTransaction({

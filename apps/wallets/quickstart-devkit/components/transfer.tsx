@@ -299,12 +299,9 @@ export function StellarTransferFunds() {
             const tx = await stellarWallet.sendTransaction({
                 contractId: "CDDIVUUFADOLUWIKZE73O5XJFC6MMQHC7AA5YKZDJV2YDPUCO6O3MN34",
                 method: "hello",
-                args: [
-                    {
-                        caller: "GCFXHS4GXL6BVUCXBWXGTITROWLVYXQKQLF4YH5O5JT3YZXCYPAFBJZB",
-                    },
-                ],
-                options: { experimental_prepareOnly: true },
+                args: {
+                    caller: "GCFXHS4GXL6BVUCXBWXGTITROWLVYXQKQLF4YH5O5JT3YZXCYPAFBJZB",
+                },
             });
             // setTxLink(tx.explorerLink);
             console.log("the tx", tx);

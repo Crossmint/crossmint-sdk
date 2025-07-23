@@ -1,6 +1,5 @@
 import type { VersionedTransaction } from "@solana/web3.js";
 import type { Account, EIP1193Provider as ViemEIP1193Provider } from "viem";
-import type { AssembledTransaction } from "@crossmint/stellar-sdk-wrapper";
 
 export type BaseExternalWalletSignerConfig = {
     type: "external-wallet";
@@ -24,5 +23,5 @@ export type SolanaExternalWalletSignerConfig = BaseExternalWalletSignerConfig & 
 };
 
 export type StellarExternalWalletSignerConfig = BaseExternalWalletSignerConfig & {
-    onSignStellarTransaction?: (transaction: AssembledTransaction) => Promise<AssembledTransaction>;
+    onSignStellarTransaction?: (transaction: string) => Promise<string>;
 };

@@ -35,7 +35,7 @@ export type CreateWalletResponse = GetWalletSuccessResponse | WalletV1Alpha2Erro
 export type GetWalletResponse = GetWalletSuccessResponse | WalletV1Alpha2ErrorDto;
 
 export type AdminSignerConfig = NonNullable<
-    Extract<CreateWalletV2025Dto, { config: { adminSigner: any } }>["config"]
+    Extract<CreateWalletV2025Dto, { config: { adminSigner: Record<string, unknown> } }>["config"]
 >["adminSigner"];
 
 export type CreateTransactionParams = CreateTransactionV2025Dto;

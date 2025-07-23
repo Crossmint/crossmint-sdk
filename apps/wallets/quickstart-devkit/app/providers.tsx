@@ -5,6 +5,7 @@ import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
 import { DynamicContextProvider } from "@dynamic-labs/sdk-react-core";
 import { SolanaWalletConnectors } from "@dynamic-labs/solana";
 import { PrivyProvider } from "@privy-io/react-auth";
+import { Keypair } from "@stellar/stellar-sdk";
 
 const crossmintApiKey = process.env.NEXT_PUBLIC_CROSSMINT_API_KEY ?? "";
 if (!crossmintApiKey) {
@@ -202,7 +203,12 @@ function StellarCrossmintAuthProvider({ children }: { children: React.ReactNode 
                         chain: "stellar",
                         signer: {
                             type: "external-wallet",
-                            address: "GCFXHS4GXL6BVUCXBWXGTITROWLVYXQKQLF4YH5O5JT3YZXCYPAFBJZB",
+                            address: "GCXVAV3EC2A25OHXWDQIUJAK6Y5BY2GDJIOI2DTFAIWSM4BJIFU5JYO2",
+                            onSignStellarTransaction: async (transaction) => {
+                                const keypair = Keypair.fromSecret(process.env.NEXT_PUBLIC_STELLAR_SECRET_KEY || "");
+                                const signature = keypair.sign(Buffer.from(transaction, "base64"));
+                                return await signature.toString("base64");
+                            },
                         },
                     }}
                     // createOnLogin={{
