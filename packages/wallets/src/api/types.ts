@@ -35,7 +35,7 @@ export type CreateWalletResponse = GetWalletSuccessResponse | WalletV1Alpha2Erro
 export type GetWalletResponse = GetWalletSuccessResponse | WalletV1Alpha2ErrorDto;
 
 export type AdminSignerConfig = NonNullable<
-    Extract<CreateWalletV2025Dto, { chainType: "evm" | "solana" | "stellar"; config: { adminSigner: any } }>["config"]
+    Extract<CreateWalletV2025Dto, { config: { adminSigner: any } }>["config"]
 >["adminSigner"];
 
 export type CreateTransactionParams = CreateTransactionV2025Dto;
@@ -65,7 +65,7 @@ export type GetBalanceSuccessResponse = WalletBalanceV20250609ResponseDto;
 export type GetActivityResponse = WalletsV1Alpha2ActivityResponseDto | WalletV1Alpha2ErrorDto;
 export type Activity = WalletsV1Alpha2ActivityResponseDto;
 
-export type RegisterSignerChain = Extract<CreateSignerV2025InputDto, { chain: any }>["chain"];
+export type RegisterSignerChain = Extract<CreateSignerV2025InputDto, { chain: string }>["chain"];
 export type RegisterSignerPasskeyParams = Extract<CreateSignerV2025InputDto["signer"], { type: "passkey" }>;
 export type RegisterSignerParams = {
     signer: string | RegisterSignerPasskeyParams;
