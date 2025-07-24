@@ -24,7 +24,44 @@ npm install @react-native-async-storage/async-storage # For secure storage
 ## Usage
 
 1. Copy the relevant files to your React Native project
-2. Import and use the `AuthSetup` component in your main App component
+2. Import and use the `AuthSetup` component in your main App component:
+
+```typescript
+import AuthSetup from './path/to/AuthSetup';
+
+const App = () => {
+    const [authState, setAuthState] = useState({
+        user: null,
+        phoneNumber: null
+    });
+    const [firebaseJWT, setFirebaseJWT] = useState(null);
+    
+    // Your Firebase auth logic here
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const jwt = await user.getIdToken();
+                setAuthState({
+                    user: { uid: user.uid, email: user.email },
+                    phoneNumber: user.phoneNumber
+                });
+                setFirebaseJWT(jwt);
+            }
+        });
+        return unsubscribe;
+    }, []);
+    
+    return (
+        <CrossmintProvider apiKey={apiKey}>
+            <CrossmintWalletProvider>
+                <AuthSetup authState={authState} firebaseJWT={firebaseJWT} />
+                {/* Your app content */}
+            </CrossmintWalletProvider>
+        </CrossmintProvider>
+    );
+};
+```
+
 3. Use the `usePhoneOnboarding` hook in components that need phone authentication
 4. Customize the UI components to match your app's design
 
