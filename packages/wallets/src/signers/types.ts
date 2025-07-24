@@ -42,7 +42,7 @@ export type PhoneSignerConfig = {
     phone?: string;
     onAuthRequired?: (
         needsAuth: boolean,
-        sendOtp: () => Promise<void>,
+        sendEmailWithOtp: () => Promise<void>,
         verifyOtp: (otp: string) => Promise<void>,
         reject: () => void
     ) => Promise<void>;

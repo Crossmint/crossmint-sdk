@@ -36,7 +36,7 @@ export interface CrossmintWalletBaseProviderProps {
         onWalletCreationStart?: () => Promise<void>;
         onTransactionStart?: () => Promise<void>;
     };
-    onAuthRequired?: EmailSignerConfig["onAuthRequired"];
+    onAuthRequired?: EmailSignerConfig["onAuthRequired"] | PhoneSignerConfig["onAuthRequired"];
     clientTEEConnection?: () => HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
 }
 
