@@ -14,7 +14,7 @@ if (!crossmintApiKey) {
 
 export function Providers({ children }: { children: React.ReactNode }) {
     /* @TODO update to your desired provider here */
-    return <StellarCrossmintAuthProvider>{children}</StellarCrossmintAuthProvider>;
+    return <EVMCrossmintAuthProvider>{children}</EVMCrossmintAuthProvider>;
 }
 
 /* ============================================================ */
