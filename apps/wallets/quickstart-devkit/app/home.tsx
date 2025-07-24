@@ -63,7 +63,8 @@ export function HomeContent() {
             <div className="flex flex-col mb-8">
                 <Image src="/crossmint.svg" alt="Crossmint logo" priority width={150} height={150} className="mb-4" />
                 <h1 className="text-2xl font-semibold mb-2">
-                    Wallets Quickstart (Devkit) - {wallet?.chain === "solana" ? "Solana" : "EVM"}
+                    Wallets Quickstart (Devkit) -{" "}
+                    {wallet?.chain === "solana" ? "Solana" : wallet?.chain === "stellar" ? "Stellar" : "EVM"}
                 </h1>
                 <p className="text-gray-600 text-sm">The easiest way to build onchain</p>
             </div>
