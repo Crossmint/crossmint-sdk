@@ -1,7 +1,4 @@
-import type {
-    EmailInternalSignerConfig,
-    PhoneInternalSignerConfig,
-} from "../types";
+import type { EmailInternalSignerConfig, PhoneInternalSignerConfig } from "../types";
 import { DEFAULT_EVENT_OPTIONS, NonCustodialSigner } from "./ncs-signer";
 
 export class StellarNonCustodialSigner extends NonCustodialSigner {
@@ -10,9 +7,7 @@ export class StellarNonCustodialSigner extends NonCustodialSigner {
     }
 
     async signMessage() {
-        return await Promise.reject(
-            new Error("signMessage method not implemented for stellar signer")
-        );
+        return await Promise.reject(new Error("signMessage method not implemented for stellar signer"));
     }
 
     async signTransaction(payload: string): Promise<{ signature: string }> {
@@ -45,27 +40,18 @@ export class StellarNonCustodialSigner extends NonCustodialSigner {
         }
         StellarNonCustodialSigner.verifyPublicKeyFormat(res.publicKey);
         if (res.signature.encoding !== "base64") {
-            throw new Error(
-                "Wrong encoding for signature. Expected base64, got " +
-                    res.signature.encoding
-            );
+            throw new Error("Wrong encoding for signature. Expected base64, got " + res.signature.encoding);
         }
 
         return { signature: res.signature.bytes };
     }
 
-    static verifyPublicKeyFormat(
-        publicKey: { encoding: string; keyType: string; bytes: string } | null
-    ) {
+    static verifyPublicKeyFormat(publicKey: { encoding: string; keyType: string; bytes: string } | null) {
         if (publicKey == null) {
             throw new Error("No public key found");
         }
 
-        if (
-            publicKey.encoding !== "base58" ||
-            publicKey.keyType !== "ed25519" ||
-            publicKey.bytes == null
-        ) {
+        if (publicKey.encoding !== "base58" || publicKey.keyType !== "ed25519" || publicKey.bytes == null) {
             throw new Error(
                 "Not supported. Expected public key to be in base58 encoding and ed25519 key type. Got: " +
                     JSON.stringify(publicKey)

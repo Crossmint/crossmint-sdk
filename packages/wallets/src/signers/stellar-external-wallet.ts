@@ -6,13 +6,9 @@ export class StellarExternalWalletSigner implements Signer {
     address: string;
     onSignStellarTransaction?: (payload: string) => Promise<string>;
 
-    constructor(
-        private config: ExternalWalletInternalSignerConfig<StellarChain>
-    ) {
+    constructor(private config: ExternalWalletInternalSignerConfig<StellarChain>) {
         if (config.address == null) {
-            throw new Error(
-                "Please provide an address for the External Wallet Signer"
-            );
+            throw new Error("Please provide an address for the External Wallet Signer");
         }
         this.address = config.address;
         this.onSignStellarTransaction = config.onSignStellarTransaction;
@@ -23,11 +19,7 @@ export class StellarExternalWalletSigner implements Signer {
     }
 
     async signMessage() {
-        return await Promise.reject(
-            new Error(
-                "signMessage method not implemented for stellar external wallet signer"
-            )
-        );
+        return await Promise.reject(new Error("signMessage method not implemented for stellar external wallet signer"));
     }
 
     async signTransaction(payload: string) {
