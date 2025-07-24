@@ -61,7 +61,7 @@ export function CrossmintWalletProvider({
     const [needsAuthState, setNeedsAuthState] = useState<boolean>(false);
 
     // Email signer refs (for main wallet authentication)
-    const sendEmailWithOtpRef = useRef<() => Promise<void>>(throwNotAvailable("sendEmailWithOtp"));
+    const sendOtpRef = useRef<() => Promise<void>>(throwNotAvailable("sendOtp"));
     const verifyOtpRef = useRef<(otp: string) => Promise<void>>(throwNotAvailable("verifyOtp"));
 
     // Phone signer refs (for TEE handshake)
@@ -99,7 +99,7 @@ export function CrossmintWalletProvider({
 
     const emailsigners_handleSendEmailOTP = async () => {
         try {
-            await sendEmailWithOtpRef.current();
+            await sendOtpRef.current();
             setEmailSignerDialogStep("otp");
         } catch (error) {
             console.error("Failed to send email OTP", error);
@@ -166,7 +166,7 @@ export function CrossmintWalletProvider({
         } else {
             // Default email signer behavior
             setEmailSignerDialogOpen(needsAuth);
-            sendEmailWithOtpRef.current = sendMessageWithOtp;
+            sendOtpRef.current = sendMessageWithOtp;
             verifyOtpRef.current = verifyOtp;
         }
         setNeedsAuthState(needsAuth);
