@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.9.1
+
+### Patch Changes
+
+- 74a6281: Stellar SDK support
+
 ## 0.9.0
 
 ### Minor Changes

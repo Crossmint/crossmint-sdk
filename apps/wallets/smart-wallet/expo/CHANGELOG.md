@@ -1,5 +1,14 @@
 # expo-demo
 
+## 1.1.62
+
+### Patch Changes
+
+- 74a6281: Stellar SDK support
+- Updated dependencies [74a6281]
+  - @crossmint/client-sdk-react-native-ui@0.9.5
+  - @crossmint/wallets-sdk@0.11.2
+
 ## 1.1.61
 
 ### Patch Changes
