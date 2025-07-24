@@ -25,7 +25,7 @@ export class WalletFactory {
             );
         }
 
-        const existingWallet = await this.apiClient.getWallet(`me:${args.chain === "solana" ? "solana" : "evm"}:smart`);
+        const existingWallet = await this.apiClient.getWallet(`me:${this.getChainType(args.chain)}:smart`);
 
         if (existingWallet != null && !("error" in existingWallet)) {
             return this.createWalletInstance(existingWallet, args);
@@ -57,7 +57,7 @@ export class WalletFactory {
 
         const walletResponse = await this.apiClient.createWallet({
             type: "smart",
-            chainType: args.chain === "solana" ? "solana" : "evm",
+            chainType: this.getChainType(args.chain),
             config: {
                 adminSigner,
             },
@@ -95,7 +95,13 @@ export class WalletFactory {
         signerArgs: SignerConfigForChain<C>,
         options?: WalletOptions
     ): InternalSignerConfig<C> {
-        if (!(walletResponse.chainType === "evm" || walletResponse.chainType === "solana")) {
+        if (
+            !(
+                walletResponse.chainType === "evm" ||
+                walletResponse.chainType === "solana" ||
+                walletResponse.chainType === "stellar"
+            )
+        ) {
             throw new WalletCreationError(`Wallet type ${walletResponse.chainType} is not supported`);
         }
 
@@ -121,7 +127,7 @@ export class WalletFactory {
                     throw new WalletCreationError("External wallet signer does not match the wallet's signer type");
                 }
 
-                return { ...walletResponse.config.adminSigner, ...signerArgs };
+                return { ...walletResponse.config.adminSigner, ...signerArgs } as InternalSignerConfig<C>;
 
             case "passkey":
                 if (walletResponse.config?.adminSigner.type !== "passkey") {
@@ -226,7 +232,9 @@ export class WalletFactory {
 
         if (
             (args.chain === "solana" && existingWallet.chainType !== "solana") ||
-            (args.chain !== "solana" && existingWallet.chainType === "solana")
+            (args.chain !== "solana" && existingWallet.chainType === "solana") ||
+            (args.chain === "stellar" && existingWallet.chainType !== "stellar") ||
+            (args.chain !== "stellar" && existingWallet.chainType === "stellar")
         ) {
             throw new WalletCreationError(
                 `Wallet chain does not match existing wallet's chain. You must use chain: ${existingWallet.chainType}.`
@@ -248,5 +256,15 @@ export class WalletFactory {
             }
             compareSignerConfigs(adminSignerArgs, existingWalletSigner);
         }
+    }
+
+    private getChainType(chain: Chain): "solana" | "evm" | "stellar" {
+        if (chain === "solana") {
+            return "solana";
+        }
+        if (chain === "stellar") {
+            return "stellar";
+        }
+        return "evm";
     }
 }

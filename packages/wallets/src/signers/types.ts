@@ -5,12 +5,14 @@ import type {
     Crossmint,
     EvmExternalWalletSignerConfig,
     SolanaExternalWalletSignerConfig,
+    StellarExternalWalletSignerConfig,
 } from "@crossmint/common-sdk-base";
-import type { Chain, SolanaChain } from "../chains/chains";
+import type { Chain, SolanaChain, StellarChain } from "../chains/chains";
 
 export type {
     EvmExternalWalletSignerConfig,
     SolanaExternalWalletSignerConfig,
+    StellarExternalWalletSignerConfig,
     GenericEIP1193Provider,
 } from "@crossmint/common-sdk-base";
 
@@ -40,7 +42,7 @@ export type PhoneSignerConfig = {
     phone?: string;
     onAuthRequired?: (
         needsAuth: boolean,
-        sendOtp: () => Promise<void>,
+        sendEmailWithOtp: () => Promise<void>,
         verifyOtp: (otp: string) => Promise<void>,
         reject: () => void
     ) => Promise<void>;
@@ -50,7 +52,9 @@ export type NonCustodialSignerType = PhoneSignerConfig["type"] | EmailSignerConf
 
 export type ExternalWalletSignerConfigForChain<C extends Chain> = C extends SolanaChain
     ? SolanaExternalWalletSignerConfig
-    : EvmExternalWalletSignerConfig;
+    : C extends StellarChain
+      ? StellarExternalWalletSignerConfig
+      : EvmExternalWalletSignerConfig;
 
 export type ApiKeySignerConfig = { type: "api-key" };
 
@@ -114,7 +118,9 @@ export type PasskeySignResult = {
 
 export type SignerConfigForChain<C extends Chain> = C extends SolanaChain
     ? EmailSignerConfig | PhoneSignerConfig | BaseSignerConfig<C>
-    : EmailSignerConfig | PhoneSignerConfig | PasskeySignerConfig | BaseSignerConfig<C>;
+    : C extends StellarChain
+      ? EmailSignerConfig | PhoneSignerConfig | BaseSignerConfig<C>
+      : EmailSignerConfig | PhoneSignerConfig | PasskeySignerConfig | BaseSignerConfig<C>;
 
 ////////////////////////////////////////////////////////////
 // Signer base types

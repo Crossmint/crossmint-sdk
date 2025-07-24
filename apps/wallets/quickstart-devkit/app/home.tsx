@@ -4,7 +4,7 @@ import Image from "next/image";
 import { WalletBalance } from "../components/balance";
 import { Permissions } from "../components/permissions";
 import { CrossmintAuthLoginButton } from "../components/login";
-import { EVMTransferFunds, SolanaTransferFunds } from "@/components/transfer";
+import { EVMTransferFunds, SolanaTransferFunds, StellarTransferFunds } from "@/components/transfer";
 import { useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
 import { CrossmintAuthLogoutButton } from "@/components/logout";
 import { ApprovalTest } from "@/components/approval-test";
@@ -105,8 +105,9 @@ export function HomeContent() {
                     {/* <DynamicLabsLogoutButton /> */}
                     {/* <FirebaseLogoutButton /> */}
                 </div>
-                {wallet?.chain !== "solana" && <EVMTransferFunds />}
+                {wallet?.chain !== "solana" && wallet?.chain !== "stellar" && <EVMTransferFunds />}
                 {wallet?.chain === "solana" && <SolanaTransferFunds />}
+                {wallet?.chain === "stellar" && <StellarTransferFunds />}
                 <Permissions />
                 <ApprovalTest />
             </div>

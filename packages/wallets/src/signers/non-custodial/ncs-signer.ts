@@ -17,7 +17,10 @@ export abstract class NonCustodialSigner implements Signer {
         this.type = this.config.type;
     }
 
-    abstract locator(): string;
+    locator() {
+        return this.config.locator;
+    }
+
     abstract signMessage(message: string): Promise<BaseSignResult>;
 
     private async initialize() {
@@ -41,7 +44,7 @@ export abstract class NonCustodialSigner implements Signer {
                     `${this.type} signer requires the onAuthRequired callback to handle OTP verification. ` +
                         `This callback manages the authentication flow (sending OTP and verifying user input). ` +
                         `If using our React/React Native SDK, this is handled automatically by the provider. ` +
-                        `For other environments, implement: onAuthRequired: (needsAuth, sendOtp, verifyOtp, reject) => { /* your UI logic */ }`
+                        `For other environments, implement: onAuthRequired: (needsAuth, sendEmailWithOtp, verifyOtp, reject) => { /* your UI logic */ }`
                 );
             }
             throw new Error("Handshake parent not initialized");
