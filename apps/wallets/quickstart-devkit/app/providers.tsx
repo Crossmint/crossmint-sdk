@@ -14,7 +14,7 @@ if (!crossmintApiKey) {
 
 export function Providers({ children }: { children: React.ReactNode }) {
     /* @TODO update to your desired provider here */
-    return <StellarCrossmintAuthProvider>{children}</StellarCrossmintAuthProvider>;
+    return <EVMCrossmintAuthProvider>{children}</EVMCrossmintAuthProvider>;
 }
 
 /* ============================================================ */
@@ -199,17 +199,6 @@ function StellarCrossmintAuthProvider({ children }: { children: React.ReactNode 
             >
                 <CrossmintWalletProvider
                     showPasskeyHelpers={false}
-                    // createOnLogin={{
-                    //     chain: "stellar",
-                    //     signer: {
-                    //         type: "external-wallet",
-                    //         onSignStellarTransaction: async (transaction) => {
-                    //             const keypair = Keypair.fromSecret(process.env.NEXT_PUBLIC_STELLAR_SECRET_KEY || "");
-                    //             const signature = keypair.sign(Buffer.from(transaction, "base64"));
-                    //             return await signature.toString("base64");
-                    //         },
-                    //     },
-                    // }}
                     createOnLogin={{
                         chain: "stellar",
                         signer: { type: "email" },

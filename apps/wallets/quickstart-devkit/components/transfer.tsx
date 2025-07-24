@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useWallet, StellarWallet } from "@crossmint/client-sdk-react-ui";
+import { useWallet } from "@crossmint/client-sdk-react-ui";
 import { PublicKey } from "@solana/web3.js";
 import { isAddress } from "viem";
 
@@ -255,56 +255,24 @@ export function StellarTransferFunds() {
     const [isLoading, setIsLoading] = useState(false);
     const [txLink, setTxLink] = useState<string | null>(null);
 
-    // async function handleOnTransfer() {
-    //     if (wallet == null || token == null || recipient == null || amount == null) {
-    //         alert("Transfer: missing required fields");
-    //         return;
-    //     }
-
-    //     // Validate Stellar recipient address
-    //     if (!isStellarAddressValid(recipient)) {
-    //         alert("Transfer: Invalid Stellar recipient address");
-    //         return;
-    //     }
-
-    //     try {
-    //         setIsLoading(true);
-    //         const tx = await wallet.send(recipient, token, amount.toString());
-    //         setTxLink(tx.explorerLink);
-    //     } catch (err) {
-    //         console.error("Transfer: ", err);
-    //         alert("Transfer: " + err);
-    //     } finally {
-    //         setIsLoading(false);
-    //     }
-    // }
-
     async function handleOnTransfer() {
-        // if (wallet == null || token == null || recipient == null || amount == null) {
-        if (wallet == null) {
+        if (wallet == null || token == null || recipient == null || amount == null) {
             alert("Transfer: missing required fields");
             return;
         }
 
-        // Validate Stellar recipient address
-        // if (!isStellarAddressValid(recipient)) {
-        //     alert("Transfer: Invalid Stellar recipient address");
-        //     return;
-        // }
+        const isStellarAddressValid = (address: string) => /^[G|C][A-Z0-9]{55}$/.test(address);
 
-        const stellarWallet = StellarWallet.from(wallet);
+        // Validate Stellar recipient address
+        if (!isStellarAddressValid(recipient)) {
+            alert("Transfer: Invalid Stellar recipient address");
+            return;
+        }
 
         try {
             setIsLoading(true);
-            const tx = await stellarWallet.sendTransaction({
-                contractId: "CDDIVUUFADOLUWIKZE73O5XJFC6MMQHC7AA5YKZDJV2YDPUCO6O3MN34",
-                method: "hello",
-                args: {
-                    caller: wallet.address,
-                },
-            });
+            const tx = await wallet.send(recipient, token, amount.toString());
             setTxLink(tx.explorerLink);
-            console.log("the tx", tx);
         } catch (err) {
             console.error("Transfer: ", err);
             alert("Transfer: " + err);
