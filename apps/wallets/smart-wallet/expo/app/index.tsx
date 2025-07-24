@@ -9,7 +9,6 @@ import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Button, Text, View, TextInput, StyleSheet, ScrollView, Alert } from "react-native";
 import * as Linking from "expo-linking";
 import { fundUSDC } from "@/utils/usdcFaucet";
-import { StellarWallet } from "@crossmint/wallets-sdk";
 
 export default function Index() {
     const { loginWithOAuth, user, logout, createAuthSession, jwt } = useCrossmintAuth();
