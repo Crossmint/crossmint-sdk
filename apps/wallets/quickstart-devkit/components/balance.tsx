@@ -14,7 +14,7 @@ export function WalletBalance() {
                 return;
             }
             try {
-                const balances = await wallet.balances();
+                const balances = await wallet.balances(["usdxm"]);
                 setBalances(balances);
             } catch (error) {
                 console.error("Error fetching wallet balances:", error);
@@ -63,13 +63,28 @@ export function WalletBalance() {
             )}
 
             <div className="border-t my-1"></div>
-            <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                    <Image src="/usdc.svg" alt="USDC" width={24} height={24} />
-                    <p className="font-medium">USDC</p>
+            {wallet?.chain === "stellar" ? (
+                <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                        <Image src="/usdc.svg" alt="USDXM" width={24} height={24} />
+                        <p className="font-medium">USDXM</p>
+                    </div>
+                    <div className="text-gray-700 font-medium">
+                        ${" "}
+                        {formatBalance(
+                            balances?.tokens?.find((t) => t.symbol?.toLowerCase() === "usdxm")?.amount ?? "0"
+                        )}
+                    </div>
                 </div>
-                <div className="text-gray-700 font-medium">$ {formatBalance(balances?.usdc.amount ?? "0")}</div>
-            </div>
+            ) : (
+                <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                        <Image src="/usdc.svg" alt="USDC" width={24} height={24} />
+                        <p className="font-medium">USDC</p>
+                    </div>
+                    <div className="text-gray-700 font-medium">$ {formatBalance(balances?.usdc.amount ?? "0")}</div>
+                </div>
+            )}
 
             <div className="flex flex-col gap-2 mt-2">
                 {wallet?.chain === "solana" ? (

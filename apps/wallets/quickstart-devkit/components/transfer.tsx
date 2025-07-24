@@ -249,7 +249,7 @@ export function SolanaTransferFunds() {
 /* ============================================================ */
 export function StellarTransferFunds() {
     const { wallet } = useWallet();
-    const [token, setToken] = useState<"xlm" | "usdc" | null>("xlm");
+    const [token, setToken] = useState<"xlm" | "usdc" | "usdxm" | null>("xlm");
     const [recipient, setRecipient] = useState<string | null>(null);
     const [amount, setAmount] = useState<number | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -297,10 +297,10 @@ export function StellarTransferFunds() {
                                     type="radio"
                                     name="token"
                                     className="h-4 w-4"
-                                    checked={token === "usdc"}
-                                    onChange={() => setToken("usdc")}
+                                    checked={token === "usdxm"}
+                                    onChange={() => setToken("usdxm")}
                                 />
-                                <span>USDC</span>
+                                <span>USDXM</span>
                             </label>
                             <label className="flex items-center gap-2 cursor-pointer">
                                 <input
