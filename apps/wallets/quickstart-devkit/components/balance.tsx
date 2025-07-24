@@ -40,6 +40,16 @@ export function WalletBalance() {
                         {formatBalance(balances?.nativeToken.amount ?? "0")} SOL
                     </div>
                 </div>
+            ) : wallet?.chain === "stellar" ? (
+                <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                        <Image src="/xlm.svg" alt="Stellar" width={24} height={24} />
+                        <p className="font-medium">Stellar</p>
+                    </div>
+                    <div className="text-gray-700 font-medium">
+                        {formatBalance(balances?.nativeToken.amount ?? "0")} XLM
+                    </div>
+                </div>
             ) : (
                 <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
