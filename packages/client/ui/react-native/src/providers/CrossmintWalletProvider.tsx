@@ -13,7 +13,7 @@ const throwNotAvailable = (functionName: string) => () => {
 
 type CrossmintWalletEmailSignerContext = {
     needsAuth: boolean;
-    sendEmailWithOtp: () => Promise<void>;
+    sendOtp: () => Promise<void>;
     verifyOtp: (otp: string) => Promise<void>;
     reject: (error?: Error) => void;
 };
@@ -21,7 +21,7 @@ type CrossmintWalletEmailSignerContext = {
 // Create the auth context
 export const CrossmintWalletEmailSignerContext = createContext<CrossmintWalletEmailSignerContext>({
     needsAuth: false,
-    sendEmailWithOtp: throwNotAvailable("sendEmailWithOtp"),
+    sendOtp: throwNotAvailable("sendOtp"),
     verifyOtp: throwNotAvailable("verifyOtp"),
     reject: throwNotAvailable("reject"),
 });
@@ -49,7 +49,7 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
         null
     );
     const [needsAuthState, setNeedsAuthState] = useState<boolean>(false);
-    const sendEmailWithOtpRef = useRef<() => Promise<void>>(throwNotAvailable("sendEmailWithOtp"));
+    const sendOtpRef = useRef<() => Promise<void>>(throwNotAvailable("sendOtp"));
     const verifyOtpRef = useRef<(otp: string) => Promise<void>>(throwNotAvailable("verifyOtp"));
     const rejectRef = useRef<(error?: Error) => void>(throwNotAvailable("reject"));
 
@@ -139,12 +139,12 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
 
     const onAuthRequired = async (
         needsAuth: boolean,
-        sendEmailWithOtp: () => Promise<void>,
+        sendOtp: () => Promise<void>,
         verifyOtp: (otp: string) => Promise<void>,
         reject: () => void
     ) => {
         setNeedsAuthState(needsAuth);
-        sendEmailWithOtpRef.current = sendEmailWithOtp;
+        sendOtpRef.current = sendOtp;
         verifyOtpRef.current = verifyOtp;
         rejectRef.current = reject;
     };
@@ -152,7 +152,7 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
     const authContextValue = useMemo(
         () => ({
             needsAuth: needsAuthState,
-            sendEmailWithOtp: sendEmailWithOtpRef.current,
+            sendOtp: sendOtpRef.current,
             verifyOtp: verifyOtpRef.current,
             reject: rejectRef.current,
         }),

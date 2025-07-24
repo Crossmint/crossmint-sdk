@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useWallet } from "@crossmint/client-sdk-react-ui";
+import { StellarWallet, useWallet } from "@crossmint/client-sdk-react-ui";
 import { PublicKey } from "@solana/web3.js";
 import { isAddress } from "viem";
 
@@ -271,7 +271,18 @@ export function StellarTransferFunds() {
 
         try {
             setIsLoading(true);
-            const tx = await wallet.send(recipient, token, amount.toString());
+            const transaction = {
+                type: "contract-call",
+                contractId: "CDMUQY2ZHWIGXSTHPHX53ACR76OLXCCAAKQWQWUS2JNAH6SZEXMRU6R2",
+                method: "transfer",
+                args: {
+                    from: wallet.address,
+                    to: recipient,
+                    amount: amount,
+                },
+            };
+            const stellarWallet = StellarWallet.from(wallet);
+            const tx = await stellarWallet.sendTransaction(transaction);
             setTxLink(tx.explorerLink);
         } catch (err) {
             console.error("Transfer: ", err);

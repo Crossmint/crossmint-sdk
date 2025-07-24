@@ -31,7 +31,7 @@ export type EmailSignerConfig = {
     email?: string;
     onAuthRequired?: (
         needsAuth: boolean,
-        sendEmailWithOtp: () => Promise<void>,
+        sendOtp: () => Promise<void>,
         verifyOtp: (otp: string) => Promise<void>,
         reject: () => void
     ) => Promise<void>;
@@ -42,7 +42,7 @@ export type PhoneSignerConfig = {
     phone?: string;
     onAuthRequired?: (
         needsAuth: boolean,
-        sendEmailWithOtp: () => Promise<void>,
+        sendOtp: () => Promise<void>,
         verifyOtp: (otp: string) => Promise<void>,
         reject: () => void
     ) => Promise<void>;
