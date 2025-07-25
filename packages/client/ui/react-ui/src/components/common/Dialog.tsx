@@ -112,9 +112,8 @@ const DialogContainer = styled.dialog<{
         width: calc(100% - 16px);
         max-height: calc(100vh - 18px);
         border-radius: ${(props) => props.appearance?.borderRadius || "36px 36px 50px 50px"};
-        border-top: 1px solid ${(props) => props.appearance?.colors?.border || theme["cm-border"]};
         padding: 40px 30px;
-        justify-self: center;
+        margin: 0 auto;
         
         /* Mobile transition classes */
         .dialog-enter & {

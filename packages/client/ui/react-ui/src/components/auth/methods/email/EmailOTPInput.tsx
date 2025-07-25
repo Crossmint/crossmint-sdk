@@ -130,8 +130,9 @@ export function EmailOTPInput({
                 <Title appearance={appearance}>Check your email</Title>
 
                 <Description appearance={appearance}>
-                    A temporary login code has been sent to{" "}
-                    {otpEmailData?.email ? otpEmailData.email : "your email address"}
+                    A temporary login code has been sent to
+                    <br />
+                    {otpEmailData?.email ? <strong>{otpEmailData.email}</strong> : "your email address"}
                 </Description>
 
                 <OTPContainer>
