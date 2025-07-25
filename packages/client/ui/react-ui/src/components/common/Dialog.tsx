@@ -63,7 +63,7 @@ const DialogContainer = styled.dialog<{
     
     /* Modal styling */
     position: relative;
-    background-color: ${(props) => props.appearance?.colors?.background ||  theme["cm-background-primary"]};
+    background-color: ${(props) => props.appearance?.colors?.background || theme["cm-background-primary"]};
     border-radius: ${(props) => props.appearance?.borderRadius || "16px"};
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     width: 100%;
@@ -254,14 +254,7 @@ const Dialog: React.FC<DialogProps> = ({
     };
 
     return createPortal(
-        <CSSTransition
-            nodeRef={nodeRef}
-            in={open}
-            timeout={200}
-            classNames="dialog"
-            unmountOnExit
-            mountOnEnter
-        >
+        <CSSTransition nodeRef={nodeRef} in={open} timeout={200} classNames="dialog" unmountOnExit mountOnEnter>
             <Overlay ref={nodeRef} onClick={closeOnOverlayClick ? handleOverlayClick : undefined}>
                 <DialogContainer appearance={appearance} style={{ ...style }}>
                     {showCloseButton && (

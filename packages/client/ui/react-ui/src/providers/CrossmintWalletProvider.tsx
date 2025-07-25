@@ -1,6 +1,5 @@
 import { type ReactNode, useState, useCallback, useRef } from "react";
 import type { UIConfig } from "@crossmint/common-sdk-base";
-import { createPortal } from "react-dom";
 import { CrossmintWalletBaseProvider, useCrossmint, type CreateOnLogin } from "@crossmint/client-sdk-react-base";
 
 import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
@@ -18,13 +17,12 @@ type ValidPasskeyPromptType =
     | "create-wallet-error"
     | "transaction-error";
 
-type PasskeyPromptState =
-   {
-       open: boolean;
-       type?: ValidPasskeyPromptType;
-       primaryActionOnClick?: () => void;
-       secondaryActionOnClick?: () => void;
-    }
+type PasskeyPromptState = {
+    open: boolean;
+    type?: ValidPasskeyPromptType;
+    primaryActionOnClick?: () => void;
+    secondaryActionOnClick?: () => void;
+};
 
 type CrossmintWalletProviderProps = {
     children: ReactNode;

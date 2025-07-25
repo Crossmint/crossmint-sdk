@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import { AuthForm } from "./AuthForm";
 import { Dialog } from "../common/Dialog";

@@ -147,7 +147,14 @@ type PasskeyPromptCoreProps = {
     appearance?: UIConfig;
 };
 
-function PasskeyPromptCore({ title, content, primaryButton, secondaryAction, open, appearance }: PasskeyPromptCoreProps) {
+function PasskeyPromptCore({
+    title,
+    content,
+    primaryButton,
+    secondaryAction,
+    open,
+    appearance,
+}: PasskeyPromptCoreProps) {
     return (
         <Dialog open={open} appearance={appearance} showCloseButton={false}>
             <Container>
@@ -199,7 +206,7 @@ const PrimaryButtonComponent = ({
 
 export function PasskeyPrompt({ state, appearance }: PasskeyPromptProps) {
     if (!state.open || state.type == null) {
-        return null
+        return null;
     }
 
     switch (state.type) {
