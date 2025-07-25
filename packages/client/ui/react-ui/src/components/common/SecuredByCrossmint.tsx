@@ -1,10 +1,16 @@
+import styled from "@emotion/styled";
 import { SecuredByLeaf } from "@/icons/securedByLeaf";
-import { classNames } from "@/utils/classNames";
+import { theme } from "@/styles";
 
-export function SecuredByCrossmint({ color = "#67797F", className }: { color?: string; className?: string }) {
+const SecuredByCrossmintContainer = styled.div`
+    display: flex;
+`;
+const defaultColor = theme["cm-text-secondary"];
+
+export function SecuredByCrossmint({ color = defaultColor, style }: { color?: string; style?: React.CSSProperties }) {
     return (
-        <div className={classNames("flex", className)}>
+        <SecuredByCrossmintContainer style={style}>
             <SecuredByLeaf color={color} />
-        </div>
+        </SecuredByCrossmintContainer>
     );
 }

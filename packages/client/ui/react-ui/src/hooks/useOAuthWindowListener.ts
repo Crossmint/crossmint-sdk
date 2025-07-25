@@ -8,7 +8,8 @@ type OAuthUrlMap = Record<OAuthProvider, string>;
 
 export const useOAuthWindowListener = (oauthUrlMap: OAuthUrlMap, setError: (error: string | null) => void) => {
     const { crossmintAuth } = useCrossmintAuth();
-    const [isLoading, setIsLoading] = useState(false);
+    // Track which OAuth provider's window is currently being interacted with
+    const [activeOAuthProvider, setActiveOAuthProvider] = useState<OAuthProvider | null>(null);
     const childRef = useRef<ChildWindow<IncomingEvents, OutgoingEvents> | null>(null);
 
     useEffect(() => {
@@ -30,7 +31,7 @@ export const useOAuthWindowListener = (oauthUrlMap: OAuthUrlMap, setError: (erro
             if (childRef.current == null) {
                 throw new Error("Child window not initialized");
             }
-            setIsLoading(true);
+            setActiveOAuthProvider(provider);
             setError(null);
 
             const baseUrl = new URL(oauthUrlMap[provider]);
@@ -63,15 +64,15 @@ export const useOAuthWindowListener = (oauthUrlMap: OAuthUrlMap, setError: (erro
             const handleAuthMaterial = async (data: { oneTimeSecret: string }) => {
                 await crossmintAuth?.handleRefreshAuthMaterial(data.oneTimeSecret);
                 childRef.current?.off("authMaterialFromPopupCallback");
-                popup.window.close();
-                setIsLoading(false);
+                popup.window?.close();
+                setActiveOAuthProvider(null);
             };
 
             const handleError = (data: { error: string }) => {
                 setError(data.error);
                 childRef.current?.off("errorFromPopupCallback");
-                popup.window.close();
-                setIsLoading(false);
+                popup.window?.close();
+                setActiveOAuthProvider(null);
             };
 
             childRef.current.on("authMaterialFromPopupCallback", handleAuthMaterial);
@@ -81,7 +82,7 @@ export const useOAuthWindowListener = (oauthUrlMap: OAuthUrlMap, setError: (erro
             const checkWindowClosure = setInterval(() => {
                 if (popup.window?.closed) {
                     clearInterval(checkWindowClosure);
-                    setIsLoading(false);
+                    setActiveOAuthProvider(null);
                     childRef.current?.off("authMaterialFromPopupCallback");
                 }
             }, 2500); // Check every 2.5 seconds
@@ -91,7 +92,8 @@ export const useOAuthWindowListener = (oauthUrlMap: OAuthUrlMap, setError: (erro
 
     return {
         createPopupAndSetupListeners,
-        isLoading,
+        isLoading: activeOAuthProvider != null,
+        activeOAuthProvider,
     };
 };
 

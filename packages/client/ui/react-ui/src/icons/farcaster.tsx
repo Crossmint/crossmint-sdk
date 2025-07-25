@@ -1,4 +1,4 @@
-export const FarcasterIcon = ({ className }: { className?: string }) => {
+export const FarcasterIcon = ({ style }: { style?: React.CSSProperties }) => {
     return (
         <svg
             width="24"
@@ -6,7 +6,7 @@ export const FarcasterIcon = ({ className }: { className?: string }) => {
             viewBox="0 0 1000 1000"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className={className}
+            style={style}
         >
             <rect width="1000" height="1000" fill="#855DCD" />
             <path

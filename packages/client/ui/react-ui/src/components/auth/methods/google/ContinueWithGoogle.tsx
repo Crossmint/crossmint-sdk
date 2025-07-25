@@ -2,27 +2,60 @@ import type { UIConfig } from "@crossmint/common-sdk-base";
 import { Spinner } from "@/components/common/Spinner";
 import { useOAuthFlow } from "@/providers/auth/OAuthFlowProvider";
 import { GoogleIcon } from "@/icons/google";
-import { classNames } from "@/utils/classNames";
-import { tw } from "@/twind-instance";
+import styled from "@emotion/styled";
+import { theme, globalReset } from "@/styles";
+
+const ContinueButton = styled.button<{
+    appearance?: UIConfig;
+    isLoading?: boolean;
+}>`
+    ${globalReset}
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 32px;
+    padding: 0 10px;
+    border: 1px solid ${(props) => props.appearance?.colors?.border || theme["cm-border"]};
+    border-radius: ${(props) => props.appearance?.borderRadius || "12px"};
+    background-color: ${(props) => props.appearance?.colors?.buttonBackground || theme["cm-background-primary"]};
+    cursor: ${(props) => (props.isLoading ? "not-allowed" : "pointer")};
+    
+    /* Hover and focus states */
+    &:hover {
+        background-color: ${(props) => {
+            if (props.isLoading) {
+                return theme["cm-muted-primary"];
+            }
+            return theme["cm-hover"];
+        }};
+    }
+    
+    &:focus {
+        outline: none;
+        background-color: theme["cm-hover"];
+    }
+`;
+
+const ContinueText = styled.span<{ appearance?: UIConfig }>`
+    color: ${(props) => props.appearance?.colors?.accent || theme["cm-accent"]};
+    font-size: 14px;
+    font-weight: 400;
+`;
 
 export function ContinueWithGoogle({ emailInput, appearance }: { emailInput: string; appearance?: UIConfig }) {
-    const { startOAuthLogin, isLoading } = useOAuthFlow();
+    const { startOAuthLogin, activeOAuthProvider } = useOAuthFlow();
+    const isLoading = activeOAuthProvider === "google";
 
     return (
-        <button
+        <ContinueButton
             type="button"
-            className={classNames(
-                "flex items-center gap-2 justify-center h-[32px] px-2.5 border border-cm-border rounded-xl bg-cm-background-primary",
-                "hover:bg-cm-hover focus:bg-cm-hover outline-none",
-                isLoading ? "cursor-not-allowed hover:bg-cm-muted-primary" : ""
-            )}
+            appearance={appearance}
+            isLoading={isLoading}
             onClick={isLoading ? undefined : () => startOAuthLogin("google", emailInput.trim().toLowerCase())}
-            style={{
-                backgroundColor: appearance?.colors?.buttonBackground,
-                borderRadius: appearance?.borderRadius,
-            }}
         >
-            <GoogleIcon className={tw("max-h-[18px] max-w-[18px] h-[18px] w-[18px]")} />
+            <GoogleIcon style={{ height: "18px", width: "18px" }} />
             {isLoading ? (
                 <Spinner
                     style={{
@@ -33,10 +66,8 @@ export function ContinueWithGoogle({ emailInput, appearance }: { emailInput: str
                     }}
                 />
             ) : (
-                <span className={tw("text-cm-accent")} style={{ color: appearance?.colors?.accent }}>
-                    Continue
-                </span>
+                <ContinueText appearance={appearance}>Continue</ContinueText>
             )}
-        </button>
+        </ContinueButton>
     );
 }

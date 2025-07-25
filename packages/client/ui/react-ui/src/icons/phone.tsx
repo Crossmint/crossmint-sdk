@@ -1,4 +1,6 @@
-export default function X({ style }: { style?: React.CSSProperties }) {
+import type { SVGProps } from "react";
+
+export function PhoneIcon(props: SVGProps<SVGSVGElement>) {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -10,10 +12,10 @@ export default function X({ style }: { style?: React.CSSProperties }) {
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            style={style}
+            {...props}
         >
-            <path d="M18 6 6 18" />
-            <path d="m6 6 12 12" />
+            <rect width="14" height="20" x="5" y="2" rx="2" ry="2" />
+            <path d="M12 18h.01" />
         </svg>
     );
 }

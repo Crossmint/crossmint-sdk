@@ -1,58 +1,35 @@
-import { tw } from "@/twind-instance";
+import styled from "@emotion/styled";
+import { theme } from "@/styles";
 
 interface PhoneOtpIconProps {
     customAccentColor?: string;
-    customButtonBackgroundColor?: string;
     customBackgroundColor?: string;
 }
 
-export function PhoneOtpIcon({
-    customAccentColor,
-    customButtonBackgroundColor,
-    customBackgroundColor,
-}: PhoneOtpIconProps) {
-    const accentColor = customAccentColor || "#04AA6D";
-    const buttonBackgroundColor = customButtonBackgroundColor || "#eff6ff";
-    const backgroundColor = customBackgroundColor || "#FFFFFF";
+const Container = styled.div`
+    position: relative;
+`;
+
+export function PhoneOtpIcon({ customAccentColor, customBackgroundColor }: PhoneOtpIconProps) {
+    const accentColor = customAccentColor || theme["cm-accent"];
+    const backgroundColor = customBackgroundColor || theme["cm-background-primary"];
+    const lightAccent = `${accentColor}20`;
 
     return (
-        <div className={tw("relative")}>
-            {/* Phone icon with SMS bubble */}
-            <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-                {/* Background circle */}
-                <circle cx="40" cy="40" r="40" fill={backgroundColor} />
+        <Container>
+            <svg width="74" height="74" viewBox="0 0 74 74" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="37" cy="37" r="37" fill={lightAccent} />
 
-                {/* Phone outline */}
-                <rect
-                    x="25"
-                    y="15"
-                    width="30"
-                    height="50"
-                    rx="4"
-                    fill={buttonBackgroundColor}
-                    stroke={accentColor}
-                    strokeWidth="2"
-                />
+                <rect x="28" y="18" width="18" height="32" rx="3" fill={accentColor} />
+                <rect x="30" y="22" width="14" height="20" rx="1" fill={backgroundColor} />
+                <circle cx="37" cy="46" r="1.5" fill={backgroundColor} />
 
-                {/* Phone screen */}
-                <rect x="27" y="17" width="26" height="46" rx="2" fill={backgroundColor} />
-
-                {/* SMS bubble */}
-                <rect x="32" y="25" width="16" height="8" rx="4" fill={accentColor} />
-
-                {/* SMS dots */}
-                <circle cx="36" cy="29" r="1" fill={backgroundColor} />
-                <circle cx="40" cy="29" r="1" fill={backgroundColor} />
-                <circle cx="44" cy="29" r="1" fill={backgroundColor} />
-
-                {/* Phone button */}
-                <rect x="35" y="45" width="10" height="2" rx="1" fill={accentColor} />
-
-                {/* Signal waves */}
-                <path d="M55 30 Q60 30 60 35" stroke={accentColor} strokeWidth="2" fill="none" />
-                <path d="M55 35 Q62 35 62 40" stroke={accentColor} strokeWidth="2" fill="none" />
-                <path d="M55 40 Q64 40 64 45" stroke={accentColor} strokeWidth="2" fill="none" />
+                <circle cx="50" cy="28" r="8" fill={accentColor} />
+                <path d="M46 26h8c1.1 0 2 .9 2 2v4c0 1.1-.9 2-2 2h-8l-2 2v-10z" fill={backgroundColor} />
+                <circle cx="48" cy="30" r="0.8" fill={accentColor} />
+                <circle cx="50.5" cy="30" r="0.8" fill={accentColor} />
+                <circle cx="53" cy="30" r="0.8" fill={accentColor} />
             </svg>
-        </div>
+        </Container>
     );
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import type { UIConfig } from "@crossmint/common-sdk-base";
-import { classNames } from "@/utils/classNames";
+import styled from "@emotion/styled";
+import { theme, globalReset } from "@/styles";
 
 type CountdownButtonProps = {
     initialSeconds: number;
@@ -9,6 +10,50 @@ type CountdownButtonProps = {
     countdownCompleteText: string;
     handleOnClick: () => Promise<void>;
 };
+
+const StyledButton = styled.button<{
+    appearance?: UIConfig;
+    canResend?: boolean;
+    isLoading?: boolean;
+}>`
+    ${globalReset}
+    
+    /* Button styles */
+    font-size: 14px;
+    line-height: 1.3;
+    text-align: center;
+    margin-top: 8px;
+    transition: opacity 200ms ease;
+    border: none;
+    background: none;
+    border-radius: 4px;
+    
+    /* Conditional styling based on state */
+    cursor: ${(props) => (props.canResend && !props.isLoading ? "pointer" : "default")};
+    opacity: ${(props) => (props.canResend && !props.isLoading ? 1 : 0.5)};
+    color: ${(props) => {
+        if (props.canResend && !props.isLoading) {
+            return props.appearance?.colors?.textLink || "#1A73E8";
+        }
+        return props.appearance?.colors?.textSecondary || "#67797F";
+    }};
+    
+    /* Hover state for active button */
+    &:hover {
+        opacity: ${(props) => (props.canResend && !props.isLoading ? 0.8 : 0.5)};
+    }
+
+    /* Tab style for button (for accessibility) */
+    &:focus-visible {
+        outline: 2px solid ${(props) => props.appearance?.colors?.accent || theme["cm-accent"]};
+        outline-offset: 2px;
+    }
+    
+    /* Disabled state */
+    &:disabled {
+        cursor: default;
+    }
+`;
 
 export function CountdownButton({
     initialSeconds,
@@ -65,20 +110,14 @@ export function CountdownButton({
     };
 
     return (
-        <button
+        <StyledButton
             onClick={handleClick}
             disabled={!canResend || isLoading}
-            className={classNames(
-                "text-sm leading-tight text-center mt-2 transition-opacity",
-                canResend && !isLoading ? "cursor-pointer opacity-100" : "cursor-default opacity-50"
-            )}
-            style={{
-                color: canResend
-                    ? appearance?.colors?.textLink ?? "#1A73E8"
-                    : appearance?.colors?.textSecondary ?? "#67797F",
-            }}
+            appearance={appearance}
+            canResend={canResend}
+            isLoading={isLoading}
         >
             {canResend ? countdownCompleteText : countdownText(seconds)}
-        </button>
+        </StyledButton>
     );
 }

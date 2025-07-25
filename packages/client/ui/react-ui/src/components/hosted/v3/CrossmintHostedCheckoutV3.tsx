@@ -7,7 +7,7 @@ import {
     crossmintHostedCheckoutV3StylesService,
     type CrossmintHostedCheckoutV3Props,
 } from "@crossmint/client-sdk-base";
-import { classNames } from "@/utils/classNames";
+import clsx from "clsx";
 
 export type CrossmintHostedCheckoutV3ReactProps = CrossmintHostedCheckoutV3Props & JSX.IntrinsicElements["button"];
 
@@ -58,7 +58,7 @@ export function CrossmintHostedCheckout(props: CrossmintHostedCheckoutV3ReactPro
     return (
         <button
             onClick={_onClick}
-            className={classNames(stylesService.identifiers.buttonClassNames, className)}
+            className={clsx(stylesService.identifiers.buttonClassNames, className)}
             {...restButtonProps}
         >
             <CrossmintLogoV2

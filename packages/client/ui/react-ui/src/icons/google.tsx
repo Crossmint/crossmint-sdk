@@ -1,4 +1,4 @@
-export function GoogleIcon({ className }: { className?: string }) {
+export function GoogleIcon({ style }: { style?: React.CSSProperties }) {
     return (
         <svg
             width="25"
@@ -7,7 +7,7 @@ export function GoogleIcon({ className }: { className?: string }) {
             y="0px"
             viewBox="0 0 48 48"
             xmlns="http://www.w3.org/2000/svg"
-            className={className}
+            style={style}
         >
             <path
                 fill="#fbc02d"

@@ -14,6 +14,7 @@ const initialOAuthUrlMap: OAuthUrlMap = {
 interface OAuthFlowContextType {
     startOAuthLogin: (provider: OAuthProvider, providerLoginHint?: string) => Promise<void>;
     isLoading: boolean;
+    activeOAuthProvider: OAuthProvider | null;
 }
 
 const OAuthFlowContext = createContext<OAuthFlowContextType | undefined>(undefined);
@@ -39,10 +40,11 @@ export function OAuthFlowProvider({
     const [oauthUrlMap, setOauthUrlMap] = useState<OAuthUrlMap>(initialOAuthUrlMap);
     const [isLoadingOauthUrlMap, setIsLoadingOauthUrlMap] = useState(true);
 
-    const { createPopupAndSetupListeners, isLoading: isLoadingOAuthWindow } = useOAuthWindowListener(
-        oauthUrlMap,
-        setError
-    );
+    const {
+        createPopupAndSetupListeners,
+        isLoading: isLoadingOAuthWindow,
+        activeOAuthProvider,
+    } = useOAuthWindowListener(oauthUrlMap, setError);
 
     const preFetchAndSetOauthUrl = useCallback(async () => {
         setIsLoadingOauthUrlMap(true);
@@ -80,6 +82,7 @@ export function OAuthFlowProvider({
     const value: OAuthFlowContextType = {
         startOAuthLogin,
         isLoading: isLoadingOauthUrlMap || isLoadingOAuthWindow,
+        activeOAuthProvider,
     };
 
     return <OAuthFlowContext.Provider value={value}>{children}</OAuthFlowContext.Provider>;

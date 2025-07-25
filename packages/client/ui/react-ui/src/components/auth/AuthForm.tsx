@@ -1,4 +1,7 @@
+import type React from "react";
 import Color from "color";
+import styled from "@emotion/styled";
+import type { UIConfig } from "@crossmint/common-sdk-base";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import { EmailAuthFlow } from "./methods/email/EmailAuthFlow";
 import { Divider } from "../common/Divider";
@@ -6,52 +9,59 @@ import { GoogleSignIn } from "./methods/google/GoogleSignIn";
 import { FarcasterSignIn } from "./methods/farcaster/FarcasterSignIn";
 import { SecuredByCrossmint } from "../common/SecuredByCrossmint";
 import { FarcasterProvider } from "../../providers/auth/FarcasterProvider";
-import { classNames } from "@/utils/classNames";
 import { AlertIcon } from "@/icons/alert";
 import { TwitterSignIn } from "./methods/twitter/TwitterSignIn";
 import { Web3AuthFlow } from "./methods/web3/Web3AuthFlow";
-import { tw } from "@/twind-instance";
+import { theme } from "../../styles";
+import { DialogDescription, DialogTitle } from "../common/Dialog";
 
-export function AuthForm({ className }: { className?: string }) {
+const AuthFormContainer = styled.div`
+    position: relative;
+    padding: 40px 24px 30px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    -webkit-font-smoothing: antialiased;
+    animation: none;
+    
+    @media (min-width: 480px) {
+        padding: 40px 40px 30px 40px;
+    }
+`;
+
+const ErrorContainer = styled.div<{ appearance?: UIConfig }>`
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    border-radius: 8px;
+    padding: 8px;
+    gap: 8px;
+    margin-top: 34px;
+    background-color: ${(props) => new Color(props.appearance?.colors?.danger ?? theme["cm-danger"]).alpha(0.12).toString()};
+`;
+
+export function AuthForm({ style }: { style?: React.CSSProperties }) {
     const { step, appearance, loginMethods, baseUrl, error, termsOfServiceText, authModalTitle } = useAuthForm();
 
     return (
-        <div
-            className={classNames(
-                "relative pt-10 pb-[30px] px-6 !min-[480px]:px-10 flex flex-col gap-[10px] antialiased animate-none",
-                className
-            )}
-        >
+        <AuthFormContainer style={style}>
             {error != null ? (
-                <div
-                    className={tw("flex items-start justify-start w-full rounded-lg p-2 mt-4 bg-cm-danger-muted")}
-                    style={{
-                        backgroundColor: new Color(appearance?.colors?.danger ?? "#f44336").alpha(0.12).toString(),
-                    }}
-                >
-                    <div className={tw("min-w-[20px]")}>
-                        <AlertIcon customColor={appearance?.colors?.danger ?? "#f44336"} />
+                <ErrorContainer appearance={appearance}>
+                    <div style={{ minWidth: "20px" }}>
+                        <AlertIcon customColor={appearance?.colors?.danger ?? theme["cm-danger"]} />
                     </div>
-                    <p className={tw("ml-2 text-sm")} style={{ color: appearance?.colors?.danger ?? "#f44336" }}>
+                    <p style={{ fontSize: "14px", margin: 0, color: appearance?.colors?.danger ?? theme["cm-danger"] }}>
                         {error}
                     </p>
-                </div>
+                </ErrorContainer>
             ) : null}
 
             {step === "initial" ? (
                 <div>
-                    <h1
-                        className={tw("text-2xl font-bold text-cm-text-primary")}
-                        style={{ color: appearance?.colors?.textPrimary }}
-                    >
-                        {authModalTitle ?? "Sign in to Crossmint"}
-                    </h1>
-                    <p
-                        className={tw("text-base font-normal mb-3 text-cm-text-secondary")}
-                        style={{ color: appearance?.colors?.textSecondary }}
-                    >
+                    <DialogTitle appearance={appearance}>{authModalTitle ?? "Sign in to Crossmint"}</DialogTitle>
+                    <DialogDescription appearance={appearance}>
                         Access using one of the options below.
-                    </p>
+                    </DialogDescription>
                 </div>
             ) : null}
 
@@ -73,12 +83,16 @@ export function AuthForm({ className }: { className?: string }) {
 
             {step === "initial" && termsOfServiceText != null ? (
                 <div
-                    className={tw("text-sm text-center text-cm-text-secondary mt-2")}
-                    style={{ color: appearance?.colors?.textSecondary }}
+                    style={{
+                        fontSize: "0.875rem",
+                        textAlign: "center",
+                        marginTop: "0.5rem",
+                        color: appearance?.colors?.textSecondary ?? theme["cm-text-secondary"],
+                    }}
                 >
                     <style>{`
                         p a {
-                            color: ${appearance?.colors?.textLink ?? "#1A74E9"};
+                            color: ${appearance?.colors?.textLink ?? theme["cm-link"]};
                         }
                     `}</style>
                     {termsOfServiceText}
@@ -87,10 +101,10 @@ export function AuthForm({ className }: { className?: string }) {
 
             {step === "initial" || step === "otp" ? (
                 <SecuredByCrossmint
-                    className={tw("mt-1.5 md:mt-4 justify-center")}
-                    color={appearance?.colors?.textSecondary ?? "#67797F"}
+                    style={{ marginTop: "1rem", justifyContent: "center" }}
+                    color={appearance?.colors?.textSecondary ?? theme["cm-text-secondary"]}
                 />
             ) : null}
-        </div>
+        </AuthFormContainer>
     );
 }

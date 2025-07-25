@@ -1,15 +1,134 @@
 import { type FormEvent, useState } from "react";
 import Color from "color";
+import styled from "@emotion/styled";
+import { isEmailValid } from "@crossmint/common-sdk-auth";
+import type { UIConfig } from "@crossmint/common-sdk-base";
 
 import { Spinner } from "@/components/common/Spinner";
-import { classNames } from "@/utils/classNames";
 import { AlertIcon } from "../../../../icons/alert";
-import { isEmailValid } from "@crossmint/common-sdk-auth";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import type { OtpEmailPayload } from "@/types/auth";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
 import { ContinueWithGoogle } from "../google/ContinueWithGoogle";
-import { tw } from "@/twind-instance";
+import { ScreenReaderText } from "@/components/common/ScreenReaderText";
+import { theme, globalReset } from "@/styles";
+
+const Container = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    width: 100%;
+    border-radius: 8px;
+`;
+
+const InputContainer = styled.div`
+    width: 100%;
+`;
+
+const Label = styled.label<{ appearance?: UIConfig }>`
+    display: block;
+    margin-bottom: 5px;
+    color: ${(props) => props.appearance?.colors?.textPrimary || theme["cm-text-primary"]};
+    font-size: 14px;
+    font-weight: 400;
+`;
+
+const Form = styled.form`
+    position: relative;
+`;
+
+const EmailInput = styled.input<{
+    appearance?: UIConfig;
+    hasError?: boolean;
+    showGoogleButton?: boolean;
+}>`
+    ${globalReset}
+    
+    /* Base input styles */
+    display: flex;
+    flex-grow: 1;
+    text-align: left;
+    padding-left: 16px;
+    padding-right: ${(props) => (props.showGoogleButton ? "132px" : "80px")};
+    height: 58px;
+    width: 100%;
+    border: 1px solid;
+    border-color: ${(props) =>
+        props.hasError
+            ? props.appearance?.colors?.danger || theme["cm-danger"]
+            : props.appearance?.colors?.border || theme["cm-border"]};
+    border-radius: ${(props) => props.appearance?.borderRadius || "12px"};
+    background-color: ${(props) => props.appearance?.colors?.inputBackground || theme["cm-background-primary"]};
+    color: ${(props) => props.appearance?.colors?.textPrimary || theme["cm-text-primary"]};
+    font-size: 16px;
+    transition: border-color 200ms ease-in-out, box-shadow 200ms ease-in-out;
+    
+    &::placeholder {
+        font-weight: 400;
+        color: ${(props) => props.appearance?.colors?.textSecondary || theme["cm-text-secondary"]};
+    }
+    
+    &:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px ${(props) =>
+            new Color(props.appearance?.colors?.accent || theme["cm-accent"]).alpha(0.18).toString()};
+    }
+    
+    &:read-only {
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+`;
+
+const InputActions = styled.div`
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    padding-right: 16px;
+    aspect-ratio: 1/1;
+`;
+
+const SubmitButton = styled.button<{
+    appearance?: UIConfig;
+    disabled?: boolean;
+}>`
+    ${globalReset}
+    
+    font-weight: 500;
+    white-space: nowrap;
+    background-color: ${(props) => props.appearance?.colors?.inputBackground || theme["cm-background-primary"]};
+    color: ${(props) => props.appearance?.colors?.accent || theme["cm-accent"]};
+    cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
+    opacity: ${(props) => (props.disabled ? 0.6 : 1)};
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: opacity 200ms ease;
+    
+    &:hover:not(:disabled) {
+        opacity: 0.8;
+    }
+    
+    &:focus-visible {
+        outline: 2px solid ${(props) => props.appearance?.colors?.accent || theme["cm-accent"]};
+        outline-offset: 2px;
+    }
+
+    &:not(:disabled):focus-visible {
+        box-shadow: 0 0 0 2px ${(props) =>
+            new Color(props.appearance?.colors?.accent || theme["cm-accent"]).alpha(0.18).toString()};
+    }
+`;
+
+const ErrorText = styled.p<{ appearance?: UIConfig }>`
+    font-size: 12px;
+    color: ${(props) => props.appearance?.colors?.danger || theme["cm-danger"]};
+    margin: 8px 0 8px 0;
+`;
 
 export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEmailPayload) => void }) {
     const { crossmintAuth } = useCrossmintAuth();
@@ -49,100 +168,70 @@ export function EmailSignIn({ setOtpEmailData }: { setOtpEmailData: (data: OtpEm
     }
 
     return (
-        <>
-            <div className={tw("flex flex-col items-start justify-start w-full rounded-lg")}>
-                <div className={tw("w-full")}>
-                    <label
-                        className={tw("text-cm-text-primary block mb-[5px]")}
-                        style={{ color: appearance?.colors?.textPrimary }}
-                    >
-                        Email
-                    </label>
-                    <form
-                        role="form"
-                        className={tw("relative")}
-                        onSubmit={(e) => {
-                            // Prevent form submission if Google button should be shown
-                            if (showGoogleContinueButton) {
-                                e.preventDefault();
-                                return;
-                            }
-                            // Otherwise proceed with normal submission if email is valid
-                            if (isEmailValid(emailInput)) {
-                                handleOnSubmit(e);
-                            } else {
-                                e.preventDefault();
-                            }
+        <Container>
+            <InputContainer>
+                <Label appearance={appearance}>Email</Label>
+                <Form
+                    role="form"
+                    onSubmit={(e) => {
+                        if (showGoogleContinueButton) {
+                            e.preventDefault();
+                            return;
+                        }
+                        if (isEmailValid(emailInput)) {
+                            handleOnSubmit(e);
+                        } else {
+                            e.preventDefault();
+                        }
+                    }}
+                    noValidate
+                >
+                    <ScreenReaderText>Email</ScreenReaderText>
+                    <EmailInput
+                        id="emailInput"
+                        appearance={appearance}
+                        hasError={!!emailError}
+                        showGoogleButton={showGoogleContinueButton}
+                        type="email"
+                        placeholder="your@email.com"
+                        value={emailInput}
+                        onChange={(e) => {
+                            setEmailInput(e.target.value);
+                            setEmailError("");
+                            setError(null);
                         }}
-                        noValidate // we want to handle validation ourselves
-                    >
-                        <label htmlFor="emailInput" className={tw("sr-only")}>
-                            Email
-                        </label>
-                        <input
-                            className={classNames(
-                                "flex-grow text-cm-text-primary text-left pl-[16px] h-[58px] w-full border border-cm-border rounded-xl bg-cm-background-primary placeholder:text-md",
-                                "transition-none duration-200 ease-in-out",
-                                "focus:outline-none focus-ring-custom", // Add focus ring
-                                "placeholder:[color:var(--placeholder-color)]",
-                                emailError ? "border-red-500" : "",
-                                showGoogleContinueButton ? "pr-[132px]" : "pr-[80px]"
-                            )}
-                            style={{
-                                color: appearance?.colors?.textPrimary,
-                                borderRadius: appearance?.borderRadius,
-                                borderColor: emailError ? appearance?.colors?.danger : appearance?.colors?.border,
-                                backgroundColor: appearance?.colors?.inputBackground,
-                                // @ts-expect-error Add custom placeholder & ring color to tailwind
-                                "--placeholder-color": appearance?.colors?.textSecondary ?? "#67797F",
-                                "--focus-ring-color": new Color(appearance?.colors?.accent ?? "#04AA6D")
-                                    .alpha(0.18)
-                                    .toString(),
-                            }}
-                            type="email"
-                            placeholder="your@email.com"
-                            value={emailInput}
-                            onChange={(e) => {
-                                setEmailInput(e.target.value);
-                                setEmailError("");
-                                setError(null);
-                            }}
-                            readOnly={isLoading}
-                            aria-describedby="emailError"
-                        />
-                        <div className={tw("absolute inset-y-0 right-0 flex items-center pr-4")}>
-                            {emailError && <AlertIcon customColor={appearance?.colors?.danger} />}
-                            {isLoading && (
-                                <Spinner
-                                    style={{
-                                        color: appearance?.colors?.textSecondary,
-                                        fill: appearance?.colors?.textPrimary,
-                                    }}
-                                />
-                            )}
-                            {showGoogleContinueButton ? (
-                                <ContinueWithGoogle emailInput={emailInput} appearance={appearance} />
-                            ) : !emailError && !isLoading ? (
-                                <button
-                                    type="submit"
-                                    className={classNames(
-                                        "font-medium text-cm-accent text-nowrap bg-cm-background-primary",
-                                        !isEmailValid(emailInput) ? "!cursor-not-allowed opacity-60" : "cursor-pointer"
-                                    )}
-                                    style={{
-                                        color: appearance?.colors?.accent,
-                                        backgroundColor: appearance?.colors?.inputBackground,
-                                    }}
-                                    disabled={!isEmailValid(emailInput) || isLoading}
-                                >
-                                    Submit
-                                </button>
-                            ) : null}
-                        </div>
-                    </form>
-                    {emailError && <p className={tw("text-xs text-red-500 mb-2 pt-2")}>{emailError}</p>}
-                </div>
-            </div>
-        </>
+                        readOnly={isLoading}
+                        aria-describedby="emailError"
+                    />
+                    <InputActions>
+                        {emailError && <AlertIcon customColor={appearance?.colors?.danger} />}
+                        {isLoading && (
+                            <Spinner
+                                style={{
+                                    color: appearance?.colors?.textSecondary,
+                                    fill: appearance?.colors?.textPrimary,
+                                }}
+                            />
+                        )}
+                        {showGoogleContinueButton ? (
+                            <ContinueWithGoogle emailInput={emailInput} appearance={appearance} />
+                        ) : !emailError && !isLoading ? (
+                            <SubmitButton
+                                type="submit"
+                                appearance={appearance}
+                                disabled={!isEmailValid(emailInput) || isLoading}
+                            >
+                                Submit
+                            </SubmitButton>
+                        ) : null}
+                    </InputActions>
+                </Form>
+                {emailError && (
+                    <ErrorText appearance={appearance} id="emailError">
+                        {emailError}
+                    </ErrorText>
+                )}
+            </InputContainer>
+        </Container>
     );
 }
