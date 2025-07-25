@@ -1,14 +1,12 @@
-import bs58 from "bs58";
-import { isValidSolanaAddress } from "@crossmint/common-sdk-base";
-import type { Chain, SolanaChain } from "../chains/chains";
-import type { ApproveOptions, SolanaTransactionInput, Transaction, TransactionInputOptions } from "./types";
+import { isValidStellarAddress } from "@crossmint/common-sdk-base";
+import type { Chain, StellarChain } from "../chains/chains";
+import type { ApproveOptions, StellarTransactionInput, Transaction, TransactionInputOptions } from "./types";
 import { Wallet } from "./wallet";
 import { TransactionNotCreatedError } from "../utils/errors";
-import { SolanaExternalWalletSigner } from "@/signers/solana-external-wallet";
 import type { CreateTransactionSuccessResponse } from "@/api";
 
-export class SolanaWallet extends Wallet<SolanaChain> {
-    constructor(wallet: Wallet<SolanaChain>) {
+export class StellarWallet extends Wallet<StellarChain> {
+    constructor(wallet: Wallet<StellarChain>) {
         super(
             {
                 chain: wallet.chain,
@@ -22,15 +20,15 @@ export class SolanaWallet extends Wallet<SolanaChain> {
     }
 
     static from(wallet: Wallet<Chain>) {
-        if (!isValidSolanaAddress(wallet.address)) {
-            throw new Error("Wallet is not a Solana wallet");
+        if (!isValidStellarAddress(wallet.address)) {
+            throw new Error("Wallet is not a Stellar wallet");
         }
 
-        return new SolanaWallet(wallet as Wallet<SolanaChain>);
+        return new StellarWallet(wallet as Wallet<StellarChain>);
     }
 
     public async sendTransaction<T extends TransactionInputOptions | undefined = undefined>(
-        params: SolanaTransactionInput & { options?: T }
+        params: StellarTransactionInput & { options?: T }
     ): Promise<Transaction<T extends { experimental_prepareOnly: true } ? true : false>> {
         const createdTransaction = await this.createTransaction(params);
 
@@ -42,34 +40,28 @@ export class SolanaWallet extends Wallet<SolanaChain> {
             } as Transaction<T extends { experimental_prepareOnly: true } ? true : false>;
         }
 
-        const _additionalSigners = params.additionalSigners?.map(
-            (signer) =>
-                new SolanaExternalWalletSigner({
-                    type: "external-wallet",
-                    address: signer.publicKey.toString(),
-                    locator: `external-wallet:${signer.publicKey.toString()}`,
-                    onSignTransaction: (transaction) => {
-                        transaction.sign([signer]);
-                        return Promise.resolve(transaction);
-                    },
-                })
-        );
-
-        const options: ApproveOptions = {
-            additionalSigners: _additionalSigners,
-        };
+        const options: ApproveOptions = {};
 
         return await this.approveTransactionAndWait(createdTransaction.id, options);
     }
 
     private async createTransaction({
-        transaction,
+        contractId,
+        method,
+        memo,
+        args,
         options,
-    }: SolanaTransactionInput): Promise<CreateTransactionSuccessResponse> {
+    }: StellarTransactionInput): Promise<CreateTransactionSuccessResponse> {
         const signer = options?.experimental_signer ?? this.signer.locator();
         const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
             params: {
-                transaction: bs58.encode(transaction.serialize()),
+                transaction: {
+                    type: "contract-call",
+                    contractId,
+                    method,
+                    memo,
+                    args,
+                },
                 signer,
             },
         });

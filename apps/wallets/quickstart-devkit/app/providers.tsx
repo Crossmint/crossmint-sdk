@@ -32,7 +32,7 @@ function EVMCrossmintAuthProvider({ children }: { children: React.ReactNode }) {
             >
                 <CrossmintWalletProvider
                     showPasskeyHelpers={false}
-                    createOnLogin={{ chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any, signer: { type: "passkey" } }}
+                    createOnLogin={{ chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any, signer: { type: "email" } }}
                 >
                     {children}
                 </CrossmintWalletProvider>
@@ -185,6 +185,27 @@ function SolanaFirebaseProvider({ children }: { children: React.ReactNode }) {
             <CrossmintWalletProvider createOnLogin={{ chain: "solana", signer: { type: "email" } }}>
                 {children}
             </CrossmintWalletProvider>
+        </CrossmintProvider>
+    );
+}
+
+function StellarCrossmintAuthProvider({ children }: { children: React.ReactNode }) {
+    return (
+        <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_API_KEY || ""}>
+            <CrossmintAuthProvider
+                authModalTitle="Stellar Wallets Quickstart"
+                loginMethods={["google", "twitter", "email", "web3"]}
+            >
+                <CrossmintWalletProvider
+                    showPasskeyHelpers={false}
+                    createOnLogin={{
+                        chain: "stellar",
+                        signer: { type: "email" },
+                    }}
+                >
+                    {children}
+                </CrossmintWalletProvider>
+            </CrossmintAuthProvider>
         </CrossmintProvider>
     );
 }

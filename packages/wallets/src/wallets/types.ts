@@ -30,6 +30,14 @@ export type EVMTransactionInput = EVMTransactionInputBase &
         | { transaction: string }
     );
 
+export type StellarTransactionInput = {
+    contractId: string;
+    method: string;
+    memo?: string;
+    args: Record<string, any>;
+    options?: TransactionInputOptions;
+};
+
 export type SolanaTransactionInput = {
     transaction: VersionedTransaction;
     additionalSigners?: Keypair[];
@@ -104,14 +112,15 @@ export type Transaction<TPrepareOnly extends boolean = false> = TPrepareOnly ext
           transactionId: string;
       };
 
-export type ApproveTransactionOptions = {
+export type ApproveOptions = {
     experimental_approval?: Approval;
     additionalSigners?: Signer[];
 };
 
-export type ApproveTransactionParams = {
-    transactionId: string;
-    options?: ApproveTransactionOptions;
+export type ApproveParams = {
+    transactionId?: string;
+    signatureId?: string;
+    options?: ApproveOptions;
 };
 
 export type Approval = (BaseSignResult | PasskeySignResult) & {

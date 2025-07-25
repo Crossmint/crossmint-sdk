@@ -1,5 +1,21 @@
 # @crossmint/client-sdk-walletconnect
 
+## 1.2.24
+
+### Patch Changes
+
+- 74a6281: Stellar SDK support
+- Updated dependencies [74a6281]
+  - @crossmint/common-sdk-base@0.9.1
+
+## 1.2.23
+
+### Patch Changes
+
+- Updated dependencies [bb25455]
+- Updated dependencies [bb25455]
+  - @crossmint/common-sdk-base@0.9.0
+
 ## 1.2.22
 
 ### Patch Changes

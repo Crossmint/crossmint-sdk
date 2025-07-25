@@ -1,5 +1,41 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.9.5
+
+### Patch Changes
+
+- 74a6281: Stellar SDK support
+- Updated dependencies [74a6281]
+  - @crossmint/client-sdk-react-base@0.5.20
+  - @crossmint/common-sdk-base@0.9.1
+  - @crossmint/wallets-sdk@0.11.2
+  - @crossmint/client-sdk-auth@1.2.25
+  - @crossmint/client-sdk-base@1.5.16
+  - @crossmint/common-sdk-auth@1.0.47
+
+## 0.9.4
+
+### Patch Changes
+
+- Updated dependencies [2ee5dd6]
+  - @crossmint/wallets-sdk@0.11.1
+  - @crossmint/client-sdk-react-base@0.5.19
+
+## 0.9.3
+
+### Patch Changes
+
+- 5e829bd: feat: rn useCrossmintCheckout
+- be2c5bf: removed unused file
+- Updated dependencies [bb25455]
+- Updated dependencies [bb25455]
+  - @crossmint/common-sdk-base@0.9.0
+  - @crossmint/wallets-sdk@0.11.0
+  - @crossmint/client-sdk-auth@1.2.24
+  - @crossmint/client-sdk-base@1.5.15
+  - @crossmint/client-sdk-react-base@0.5.18
+  - @crossmint/common-sdk-auth@1.0.46
+
 ## 0.9.2
 
 ### Patch Changes

@@ -21,3 +21,7 @@ export type EvmExternalWalletSignerConfig = BaseExternalWalletSignerConfig & {
 export type SolanaExternalWalletSignerConfig = BaseExternalWalletSignerConfig & {
     onSignTransaction?: (transaction: VersionedTransaction) => Promise<VersionedTransaction>;
 };
+
+export type StellarExternalWalletSignerConfig = BaseExternalWalletSignerConfig & {
+    onSignStellarTransaction?: (transaction: string) => Promise<string>;
+};

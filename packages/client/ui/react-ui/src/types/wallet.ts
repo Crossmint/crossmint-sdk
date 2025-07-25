@@ -7,5 +7,6 @@ export {
     type Transaction,
     EVMWallet,
     SolanaWallet,
+    StellarWallet,
     Wallet,
 } from "@crossmint/wallets-sdk";

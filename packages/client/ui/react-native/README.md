@@ -1,12 +1,12 @@
 # Crossmint React Native SDK
 
-> **Create chain-agnostic wallets for your React Native apps in minutes**  
+> **Create chain-agnostic wallets for your React Native apps in minutes**
 > Supports Solana, 20+ EVM chains (Polygon, Base, etc.), with secure mobile authentication.
 
 ## 🚀 Quick Start
 
 ```bash
-pnpm add @crossmint/client-sdk-react-native-ui expo-secure-store expo-web-browser
+pnpm add @crossmint/client-sdk-react-native-ui expo-secure-store expo-web-browser expo-device
 ```
 
 ### 1. Setup Providers
@@ -77,9 +77,9 @@ export default function MainApp() {
   if (!user) {
     return (
       <View style={{ padding: 20 }}>
-        <Button 
-          title="Login with Google" 
-          onPress={() => loginWithOAuth("google")} 
+        <Button
+          title="Login with Google"
+          onPress={() => loginWithOAuth("google")}
         />
       </View>
     );
@@ -90,9 +90,9 @@ export default function MainApp() {
       <View style={{ padding: 20 }}>
         <Text>Welcome {user.email}!</Text>
         <Text>Wallet: {wallet?.address}</Text>
-        <Button 
-          title="Send 1 USDC" 
-          onPress={() => wallet?.send(recipient, "usdc", "1.0")} 
+        <Button
+          title="Send 1 USDC"
+          onPress={() => wallet?.send(recipient, "usdc", "1.0")}
         />
         <Button title="Logout" onPress={logout} />
       </View>
@@ -201,4 +201,4 @@ EXPO_PUBLIC_CROSSMINT_API_KEY=your_api_key_here
 
 ---
 
-**Questions?** Visit our [documentation](https://docs.crossmint.com/introduction/about-crossmint) or contact our support team. 
+**Questions?** Visit our [documentation](https://docs.crossmint.com/introduction/about-crossmint) or contact our support team.

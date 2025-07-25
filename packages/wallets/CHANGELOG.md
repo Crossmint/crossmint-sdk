@@ -1,5 +1,32 @@
 # @crossmint/wallets-sdk
 
+## 0.11.2
+
+### Patch Changes
+
+- 74a6281: Stellar SDK support
+- Updated dependencies [74a6281]
+  - @crossmint/common-sdk-base@0.9.1
+
+## 0.11.1
+
+### Patch Changes
+
+- 2ee5dd6: Add a single approval method and deprecate approveTransaction
+
+## 0.11.0
+
+### Minor Changes
+
+- bb25455: Add support for new blockchain chains including Abstract, ApeChain, Mantle, Scroll, Sei, Curtis, and World Chain variants
+
+### Patch Changes
+
+- bb25455: Adds more chains
+- Updated dependencies [bb25455]
+- Updated dependencies [bb25455]
+  - @crossmint/common-sdk-base@0.9.0
+
 ## 0.10.17
 
 ### Patch Changes

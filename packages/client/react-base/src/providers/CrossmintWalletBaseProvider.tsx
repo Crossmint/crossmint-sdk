@@ -36,7 +36,7 @@ export interface CrossmintWalletBaseProviderProps {
         onWalletCreationStart?: () => Promise<void>;
         onTransactionStart?: () => Promise<void>;
     };
-    onAuthRequired?: EmailSignerConfig["onAuthRequired"];
+    onAuthRequired?: EmailSignerConfig["onAuthRequired"] | PhoneSignerConfig["onAuthRequired"];
     clientTEEConnection?: () => HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
 }
 
@@ -141,7 +141,8 @@ export function CrossmintWalletBaseProvider({
             if (
                 (createOnLogin.signer.type === "email" && experimental_customAuth?.email == null) ||
                 (createOnLogin.signer.type === "external-wallet" &&
-                    experimental_customAuth?.externalWalletSigner == null)
+                    experimental_customAuth?.externalWalletSigner == null &&
+                    createOnLogin.signer.address == null)
             ) {
                 return;
             }

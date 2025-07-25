@@ -121,6 +121,7 @@ export function toViemChain(chain: EVMSmartWalletChain): ViemChain {
 }
 
 export type SolanaChain = "solana";
+export type StellarChain = "stellar";
 export type EVMChain = EVMSmartWalletChain;
 
-export type Chain = SolanaChain | EVMChain;
+export type Chain = SolanaChain | EVMChain | StellarChain;

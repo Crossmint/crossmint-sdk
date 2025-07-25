@@ -1,7 +1,7 @@
 {
     "name": "expo-demo",
     "main": "expo-router/entry",
-    "version": "1.1.59",
+    "version": "1.1.62",
     "scripts": {
         "start": "expo start",
         "reset-project": "node ./scripts/reset-project.js",
@@ -29,6 +29,7 @@
         "expo": "~52.0.46",
         "expo-blur": "~14.0.3",
         "expo-constants": "~17.0.8",
+        "expo-device": "~7.1.4",
         "expo-font": "~13.0.4",
         "expo-haptics": "~14.0.1",
         "expo-linking": "~7.0.5",
