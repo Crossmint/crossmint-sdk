@@ -1,6 +1,29 @@
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
-import { tw } from "@/twind-instance";
 import type { UIConfig } from "@crossmint/common-sdk-base";
+import styled from "@emotion/styled";
+import { theme } from "../../styles";
+
+const DividerContainer = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 8px 0px 12px;
+`;
+
+const DividerLine = styled.span`
+    width: 100%;
+    height: 1px;
+    background-color: ${theme["cm-border"]};
+`;
+
+const DividerText = styled.p`
+    color: ${theme["cm-text-primary"]};
+    font-size: 14px;
+    font-weight: 400;
+    margin: 1px;
+    padding: 0 8px;
+`;
 
 export function Divider({ appearance, text }: { appearance?: UIConfig; text?: string }) {
     const { step } = useAuthForm();
@@ -10,23 +33,12 @@ export function Divider({ appearance, text }: { appearance?: UIConfig; text?: st
     }
 
     return (
-        <div className={tw("flex items-center justify-center w-full pt-2 pb-3")}>
-            <span
-                className={tw("w-full h-[1px] bg-cm-border")}
-                style={{ backgroundColor: appearance?.colors?.border }}
-            />
+        <DividerContainer>
+            <DividerLine style={{ backgroundColor: appearance?.colors?.border }} />
             {text != null ? (
-                <p
-                    className={tw("flex-none px-2 text-sm text-cm-text-primary")}
-                    style={{ color: appearance?.colors?.textSecondary }}
-                >
-                    {text}
-                </p>
+                <DividerText style={{ color: appearance?.colors?.textSecondary }}>{text}</DividerText>
             ) : null}
-            <span
-                className={tw("w-full h-[1px] bg-cm-border")}
-                style={{ backgroundColor: appearance?.colors?.border }}
-            />
-        </div>
+            <DividerLine style={{ backgroundColor: appearance?.colors?.border }} />
+        </DividerContainer>
     );
 }

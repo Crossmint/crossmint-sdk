@@ -19,15 +19,12 @@ type ValidPasskeyPromptType =
     | "transaction-error";
 
 type PasskeyPromptState =
-    | {
-          open: true;
-          type: ValidPasskeyPromptType;
-          primaryActionOnClick: () => void;
-          secondaryActionOnClick?: () => void;
-      }
-    | {
-          open: false;
-      };
+   {
+       open: boolean;
+       type?: ValidPasskeyPromptType;
+       primaryActionOnClick?: () => void;
+       secondaryActionOnClick?: () => void;
+    }
 
 type CrossmintWalletProviderProps = {
     children: ReactNode;
@@ -180,42 +177,29 @@ export function CrossmintWalletProvider({
             callbacks={getCallbacks()}
         >
             {children}
-
-            {emailSignerDialogOpen && experimental_customAuth?.email != null
-                ? createPortal(
-                      <EmailSignersDialog
-                          rejectRef={rejectRef}
-                          email={experimental_customAuth?.email}
-                          open={emailSignerDialogOpen}
-                          setOpen={setEmailSignerDialogOpen}
-                          step={emailSignerDialogStep}
-                          onSubmitOTP={emailsigners_handleOTPSubmit}
-                          onResendOTPCode={emailsigners_handleSendEmailOTP}
-                          onSubmitEmail={emailsigners_handleSendEmailOTP}
-                          appearance={appearance}
-                      />,
-                      document.body
-                  )
-                : null}
-            {phoneSignerDialogOpen && phoneNumber != null
-                ? createPortal(
-                      <PhoneSignersDialog
-                          rejectRef={rejectRef}
-                          phone={phoneNumber}
-                          open={phoneSignerDialogOpen}
-                          setOpen={setPhoneSignerDialogOpen}
-                          step={phoneSignerDialogStep}
-                          onSubmitOTP={phonesigners_handleOTPSubmit}
-                          onResendOTPCode={phonesigners_handleSendPhoneOTP}
-                          onSubmitPhone={phonesigners_handleSendPhoneOTP}
-                          appearance={appearance}
-                      />,
-                      document.body
-                  )
-                : null}
-            {passkeyPromptState.open
-                ? createPortal(<PasskeyPrompt state={passkeyPromptState} appearance={appearance} />, document.body)
-                : null}
+            <EmailSignersDialog
+                rejectRef={rejectRef}
+                email={experimental_customAuth?.email}
+                open={emailSignerDialogOpen && experimental_customAuth?.email != null}
+                setOpen={setEmailSignerDialogOpen}
+                step={emailSignerDialogStep}
+                onSubmitOTP={emailsigners_handleOTPSubmit}
+                onResendOTPCode={emailsigners_handleSendEmailOTP}
+                onSubmitEmail={emailsigners_handleSendEmailOTP}
+                appearance={appearance}
+            />
+            <PhoneSignersDialog
+                rejectRef={rejectRef}
+                phone={phoneNumber}
+                open={phoneSignerDialogOpen && phoneNumber != null}
+                setOpen={setPhoneSignerDialogOpen}
+                step={phoneSignerDialogStep}
+                onSubmitOTP={phonesigners_handleOTPSubmit}
+                onResendOTPCode={phonesigners_handleSendPhoneOTP}
+                onSubmitPhone={phonesigners_handleSendPhoneOTP}
+                appearance={appearance}
+            />
+            <PasskeyPrompt state={passkeyPromptState} appearance={appearance} />
         </CrossmintWalletBaseProvider>
     );
 }

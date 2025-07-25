@@ -1,78 +1,173 @@
 import type { ReactNode } from "react";
 import type { UIConfig } from "@crossmint/common-sdk-base";
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import styled from "@emotion/styled";
 
 import FingerprintIcon from "../../icons/fingerprint";
 import PasskeyIcon from "../../icons/passkey";
 import PasskeyPromptLogo from "../../icons/passkeyPromptLogo";
 import { SecuredByCrossmint } from "../common/SecuredByCrossmint";
-import { Dialog, DialogContent, DialogTitle } from "../common/Dialog";
-import { classNames } from "@/utils/classNames";
-import { tw } from "@/twind-instance";
+import { Dialog } from "../common/Dialog";
+import { theme } from "@/styles";
+
+const Container = styled.div`
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    -webkit-font-smoothing: antialiased;
+`;
+
+const LogoContainer = styled.div`
+    display: flex;
+    justify-content: center;
+    position: relative;
+    left: 6px;
+`;
+
+const TitleContainer = styled.div`
+    display: flex;
+    justify-content: center;
+`;
+
+const Title = styled.p<{ appearance?: UIConfig }>`
+    font-size: 18px;
+    line-height: 28px;
+    font-weight: bold;
+    color: ${(props) => props.appearance?.colors?.textPrimary || theme["cm-text-primary"]};
+    margin: 0;
+`;
+
+const ContentContainer = styled.div`
+    margin-bottom: 24px;
+`;
+
+const ContentText = styled.div<{ appearance?: UIConfig }>`
+    font-weight: normal;
+    color: ${(props) => props.appearance?.colors?.textSecondary || theme["cm-text-secondary"]};
+    line-height: 1.5;
+`;
+
+const ButtonContainer = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    justify-content: center;
+`;
+
+const SecuredContainer = styled.div`
+    display: flex;
+    justify-content: center;
+    padding-top: 16px;
+`;
+
+const FeatureList = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+`;
+
+const FeatureItem = styled.div`
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+`;
+
+const IconContainer = styled.div`
+    flex-shrink: 0;
+`;
+
+const ContentSection = styled.div`
+    margin-bottom: 12px;
+`;
+
+const PrimaryButton = styled.button<{ appearance?: UIConfig }>`
+    position: relative;
+    display: flex;
+    font-size: 16px;
+    padding: 16px;
+    background-color: ${(props) => props.appearance?.colors?.buttonBackground || theme["cm-muted-primary"]};
+    color: ${(props) => props.appearance?.colors?.textPrimary || theme["cm-text-primary"]};
+    align-items: center;
+    width: 100%;
+    border-radius: ${(props) => props.appearance?.borderRadius || "12px"};
+    justify-content: center;
+    transition: all 200ms ease;
+    border: none;
+    cursor: pointer;
+    
+    &:hover {
+        background-color: ${(props) => props.appearance?.colors?.backgroundSecondary || theme["cm-hover"]};
+    }
+    
+    &:focus {
+        background-color: ${(props) => props.appearance?.colors?.backgroundSecondary || theme["cm-hover"]};
+        outline: none;
+    }
+`;
+
+const ButtonText = styled.span<{ appearance?: UIConfig }>`
+    font-weight: 500;
+    margin: 0 32px;
+    color: ${(props) => props.appearance?.colors?.textPrimary || theme["cm-text-primary"]};
+`;
+
+const ScreenReaderText = styled.span`
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+`;
+
+const TroubleshootLink = styled.a<{ appearance?: UIConfig }>`
+    padding: 14px;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: bold;
+    background-color: ${(props) => props.appearance?.colors?.inputBackground || theme["cm-muted-primary"]};
+    color: ${(props) => props.appearance?.colors?.textSecondary || theme["cm-text-primary"]};
+    transition: opacity 200ms ease;
+    
+    &:hover {
+        opacity: 0.8;
+    }
+`;
 
 type PasskeyPromptCoreProps = {
+    open: boolean;
     title: string;
     content: ReactNode;
     primaryButton: ReactNode;
     secondaryAction?: ReactNode;
     appearance?: UIConfig;
 };
-function PasskeyPromptCore({ title, content, primaryButton, secondaryAction, appearance }: PasskeyPromptCoreProps) {
-    return (
-        <Dialog modal={false} open onOpenChange={() => {}}>
-            <DialogContent
-                showCloseButton={false}
-                onInteractOutside={(e) => e.preventDefault()}
-                onOpenAutoFocus={(e) => e.preventDefault()}
-                className={tw("!p-0 !min-[480px]:p-0")}
-                style={{
-                    borderRadius: appearance?.borderRadius,
-                    backgroundColor: appearance?.colors?.background,
-                }}
-            >
-                <VisuallyHidden asChild>
-                    <DialogTitle>{title}</DialogTitle>
-                </VisuallyHidden>
 
-                <div
-                    className={tw(
-                        "relative pt-10 pb-[30px] px-6 !min-[480px]:px-10 flex flex-col gap-[10px] antialiased animate-none"
-                    )}
-                >
-                    <div className={tw("flex justify-center left-1.5 relative")}>
-                        <PasskeyPromptLogo appearance={appearance} />
-                    </div>
-                    <div className={tw("flex justify-center")}>
-                        <p
-                            style={{
-                                fontSize: "1.125rem",
-                                lineHeight: "1.75rem",
-                                fontWeight: "bold",
-                                color: appearance?.colors?.textPrimary || "#20343E",
-                            }}
-                        >
-                            {title}
-                        </p>
-                    </div>
-                    <div className={tw("mb-6")}>
-                        <div
-                            style={{
-                                fontWeight: "normal",
-                                color: appearance?.colors?.textSecondary || "#67797F",
-                            }}
-                        >
-                            {content}
-                        </div>
-                    </div>
-                    <div className={tw("flex flex-col gap-4 justify-center")}>
-                        {primaryButton}
-                        {secondaryAction}
-                    </div>
-                    <div className={tw("flex justify-center pt-4")}>
-                        <SecuredByCrossmint color={appearance?.colors?.textSecondary} />
-                    </div>
-                </div>
-            </DialogContent>
+function PasskeyPromptCore({ title, content, primaryButton, secondaryAction, open, appearance }: PasskeyPromptCoreProps) {
+    return (
+        <Dialog open={open} appearance={appearance} showCloseButton={false}>
+            <Container>
+                <LogoContainer>
+                    <PasskeyPromptLogo appearance={appearance} />
+                </LogoContainer>
+                <TitleContainer>
+                    <Title appearance={appearance}>{title}</Title>
+                </TitleContainer>
+                <ContentContainer>
+                    <ContentText appearance={appearance}>{content}</ContentText>
+                </ContentContainer>
+                <ButtonContainer>
+                    {primaryButton}
+                    {secondaryAction}
+                </ButtonContainer>
+                <SecuredContainer>
+                    <SecuredByCrossmint color={appearance?.colors?.textSecondary} />
+                </SecuredContainer>
+            </Container>
         </Dialog>
     );
 }
@@ -81,44 +176,62 @@ type PromptType = "create-wallet" | "transaction" | "not-supported" | "create-wa
 
 type PasskeyPromptProps = {
     state: {
-        type: PromptType;
-        primaryActionOnClick: () => void;
+        open: boolean;
+        type?: PromptType;
+        primaryActionOnClick?: () => void;
         secondaryActionOnClick?: () => void;
     };
     appearance?: UIConfig;
 };
+
+const PrimaryButtonComponent = ({
+    appearance,
+    onClick,
+    children,
+}: { appearance?: UIConfig; onClick?: () => void; children: ReactNode }) => {
+    return (
+        <PrimaryButton appearance={appearance} onClick={onClick}>
+            <ButtonText appearance={appearance}>{children}</ButtonText>
+            <ScreenReaderText>{children}</ScreenReaderText>
+        </PrimaryButton>
+    );
+};
+
 export function PasskeyPrompt({ state, appearance }: PasskeyPromptProps) {
-    // These components are currently assembled based on the mockups.
+    if (!state.open || state.type == null) {
+        return null
+    }
+
     switch (state.type) {
         case "create-wallet":
             return (
                 <PasskeyPromptCore
+                    open={state.open}
                     title="Create Your Wallet"
                     appearance={appearance}
                     content={
                         <>
-                            <div className={tw("mb-3")}>You're about to create a wallet.</div>
-                            <div className={tw("flex flex-col gap-2")}>
-                                <div className={tw("flex gap-2")}>
-                                    <div>
+                            <ContentSection>You're about to create a wallet.</ContentSection>
+                            <FeatureList>
+                                <FeatureItem>
+                                    <IconContainer>
                                         <PasskeyIcon />
-                                    </div>
+                                    </IconContainer>
                                     Your wallet will be secured with a passkey
-                                </div>
-
-                                <div className={tw("flex gap-2")}>
-                                    <div>
+                                </FeatureItem>
+                                <FeatureItem>
+                                    <IconContainer>
                                         <FingerprintIcon />
-                                    </div>
+                                    </IconContainer>
                                     Your device will ask you for your fingerprint, face, or screen lock to set it up
-                                </div>
-                            </div>
+                                </FeatureItem>
+                            </FeatureList>
                         </>
                     }
                     primaryButton={
-                        <PrimaryButton appearance={appearance} onClick={state.primaryActionOnClick}>
+                        <PrimaryButtonComponent appearance={appearance} onClick={state.primaryActionOnClick}>
                             Create Wallet
-                        </PrimaryButton>
+                        </PrimaryButtonComponent>
                     }
                 />
             );
@@ -126,6 +239,7 @@ export function PasskeyPrompt({ state, appearance }: PasskeyPromptProps) {
         case "create-wallet-error":
             return (
                 <PasskeyPromptCore
+                    open={state.open}
                     title="Wallet Creation Failed"
                     appearance={appearance}
                     content={
@@ -135,9 +249,9 @@ export function PasskeyPrompt({ state, appearance }: PasskeyPromptProps) {
                         </div>
                     }
                     primaryButton={
-                        <PrimaryButton appearance={appearance} onClick={state.primaryActionOnClick}>
+                        <PrimaryButtonComponent appearance={appearance} onClick={state.primaryActionOnClick}>
                             Try again
-                        </PrimaryButton>
+                        </PrimaryButtonComponent>
                     }
                 />
             );
@@ -145,25 +259,26 @@ export function PasskeyPrompt({ state, appearance }: PasskeyPromptProps) {
         case "transaction":
             return (
                 <PasskeyPromptCore
+                    open={state.open}
                     title="Use Your Wallet"
                     appearance={appearance}
                     content={
-                        <div className={tw("flex flex-col gap-2")}>
-                            <div className={tw("flex gap-2")}>
-                                <div>
+                        <FeatureList>
+                            <FeatureItem>
+                                <IconContainer>
                                     <FingerprintIcon />
-                                </div>
+                                </IconContainer>
                                 <span>
                                     Your device will ask you for your fingerprint, face, or screen lock to authorize
                                     this action.
                                 </span>
-                            </div>
-                        </div>
+                            </FeatureItem>
+                        </FeatureList>
                     }
                     primaryButton={
-                        <PrimaryButton appearance={appearance} onClick={state.primaryActionOnClick}>
+                        <PrimaryButtonComponent appearance={appearance} onClick={state.primaryActionOnClick}>
                             Use Wallet
-                        </PrimaryButton>
+                        </PrimaryButtonComponent>
                     }
                 />
             );
@@ -171,6 +286,7 @@ export function PasskeyPrompt({ state, appearance }: PasskeyPromptProps) {
         case "transaction-error":
             return (
                 <PasskeyPromptCore
+                    open={state.open}
                     title="Wallet Access Failed"
                     appearance={appearance}
                     content={
@@ -180,28 +296,19 @@ export function PasskeyPrompt({ state, appearance }: PasskeyPromptProps) {
                         </div>
                     }
                     primaryButton={
-                        <PrimaryButton appearance={appearance} onClick={state.primaryActionOnClick}>
+                        <PrimaryButtonComponent appearance={appearance} onClick={state.primaryActionOnClick}>
                             Try again
-                        </PrimaryButton>
+                        </PrimaryButtonComponent>
                     }
                     secondaryAction={
-                        <a
-                            href="https://docs.crossmint.com/wallets/smart-wallets/users/troubleshoot"
+                        <TroubleshootLink
+                            href="https://docs.crossmint.com/wallets/signers-and-custody#passkey"
                             rel="noopener noreferrer"
                             target="_blank"
-                            style={{
-                                padding: "0.875rem",
-                                width: "100%",
-                                textAlign: "center",
-                                textDecoration: "none",
-                                borderRadius: "0.5rem",
-                                fontWeight: "bold",
-                                backgroundColor: appearance?.colors?.inputBackground || "#F0F2F4",
-                                color: appearance?.colors?.textSecondary || "#00150D",
-                            }}
+                            appearance={appearance}
                         >
                             Troubleshoot
-                        </a>
+                        </TroubleshootLink>
                     }
                 />
             );
@@ -209,6 +316,7 @@ export function PasskeyPrompt({ state, appearance }: PasskeyPromptProps) {
         case "not-supported":
             return (
                 <PasskeyPromptCore
+                    open={state.open}
                     title="Passkeys Not Supported on This Device"
                     appearance={appearance}
                     content={
@@ -218,9 +326,9 @@ export function PasskeyPrompt({ state, appearance }: PasskeyPromptProps) {
                         </div>
                     }
                     primaryButton={
-                        <PrimaryButton appearance={appearance} onClick={state.primaryActionOnClick}>
+                        <PrimaryButtonComponent appearance={appearance} onClick={state.primaryActionOnClick}>
                             Understood
-                        </PrimaryButton>
+                        </PrimaryButtonComponent>
                     }
                 />
             );
@@ -229,29 +337,3 @@ export function PasskeyPrompt({ state, appearance }: PasskeyPromptProps) {
             return null;
     }
 }
-
-const PrimaryButton = ({
-    appearance,
-    onClick,
-    children,
-}: { appearance?: UIConfig; onClick: () => void; children: ReactNode }) => {
-    return (
-        <button
-            className={classNames(
-                "relative flex text-base p-4 bg-cm-muted-primary text-cm-text-primary items-center w-full rounded-xl justify-center",
-                "transition-colors duration-200 ease-in-out",
-                "hover:bg-cm-hover focus:bg-cm-hover outline-none"
-            )}
-            style={{
-                borderRadius: appearance?.borderRadius,
-                backgroundColor: appearance?.colors?.buttonBackground,
-            }}
-            onClick={onClick}
-        >
-            <span className={tw("font-medium")} style={{ margin: "0px 32px", color: appearance?.colors?.textPrimary }}>
-                {children}
-            </span>
-            <span className={tw("sr-only")}>{children}</span>
-        </button>
-    );
-};

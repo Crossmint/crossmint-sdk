@@ -3,50 +3,106 @@
 import * as React from "react";
 import { OTPInput, OTPInputContext } from "input-otp";
 import { createContext, useContext } from "react";
-import { classNames } from "@/utils/classNames";
-import { tw } from "@/twind-instance";
+import styled from "@emotion/styled";
+import { keyframes } from "@emotion/react";
+import type { UIConfig } from "@crossmint/common-sdk-base";
+import { theme } from "@/styles";
 
-// Define the type for customStyles
-type CustomStyles = {
-    textPrimary: string;
-    inputBackground: string;
-    buttonBackground: string;
-    accent: string;
-    danger: string;
-    border: string;
-    borderRadius?: string;
-};
-
-// Create a context for customStyles
-const CustomStylesContext = createContext<CustomStyles | undefined>(undefined);
+const CustomStylesContext = createContext<UIConfig | undefined>(undefined);
 
 type InputOTPProps = React.ComponentPropsWithoutRef<typeof OTPInput> & {
-    customStyles?: CustomStyles;
+    appearance?: UIConfig;
 };
 type InputOTPRef = React.ElementRef<typeof OTPInput>;
+
+const OTPContainer = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    &:has(:disabled) {
+        opacity: 0.5;
+    }
+`;
+
+const OTPInputStyled = styled(OTPInput)`
+    &:disabled {
+        cursor: not-allowed;
+    }
+`;
 
 const InputOTP: React.ForwardRefExoticComponent<InputOTPProps & React.RefAttributes<InputOTPRef>> = React.forwardRef<
     InputOTPRef,
     InputOTPProps
->(({ className, containerClassName, customStyles, ...props }, ref) => (
-    <CustomStylesContext.Provider value={customStyles}>
-        <OTPInput
-            autoFocus
-            ref={ref}
-            containerClassName={classNames("flex items-center gap-2 has-[:disabled]:opacity-50", containerClassName)}
-            className={classNames("disabled:cursor-not-allowed", className)}
-            {...props}
-        />
+>(({ appearance, ...props }, ref) => (
+    <CustomStylesContext.Provider value={appearance}>
+        <OTPContainer>
+            <OTPInputStyled autoFocus ref={ref} {...props} />
+        </OTPContainer>
     </CustomStylesContext.Provider>
 ));
 InputOTP.displayName = "InputOTP";
 
+const GroupContainer = styled.div`
+    display: flex;
+    gap: 8px;
+    align-items: center;
+`;
+
 const InputOTPGroup = React.forwardRef<React.ElementRef<"div">, React.ComponentPropsWithoutRef<"div">>(
-    ({ className, ...props }, ref) => (
-        <div ref={ref} className={classNames("flex gap-2 items-center", className)} {...props} />
-    )
+    ({ ...props }, ref) => <GroupContainer ref={ref} {...props} />
 );
 InputOTPGroup.displayName = "InputOTPGroup";
+
+const caretBlink = keyframes`
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+`;
+
+const SlotContainer = styled.div<{
+    appearance?: UIConfig;
+    hasError?: boolean;
+    isActive?: boolean;
+    hasChar?: boolean;
+}>`
+    position: relative;
+    display: flex;
+    height: 56px;
+    width: 48px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid;
+    font-size: 18px;
+    transition: all 200ms ease;
+    border-radius: ${(props) => props.appearance?.borderRadius || "6px"};
+    border-color: ${(props) =>
+        props.hasError
+            ? props.appearance?.colors?.danger || theme["cm-danger"]
+            : props.appearance?.colors?.border || theme["cm-border"]};
+    background-color: ${(props) =>
+        props.hasChar
+            ? props.appearance?.colors?.buttonBackground || theme["cm-muted-primary"]
+            : props.appearance?.colors?.inputBackground || theme["cm-background-primary"]};
+    color: ${(props) => props.appearance?.colors?.textPrimary || theme["cm-text-primary"]};
+    box-shadow: ${(props) => (props.isActive ? `0 0 0 2px ${props.appearance?.colors?.accent || theme["cm-accent"]}` : "none")};
+    z-index: ${(props) => (props.isActive ? 10 : 1)};
+`;
+
+const CaretContainer = styled.div`
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+`;
+
+const Caret = styled.div<{ appearance?: UIConfig }>`
+    height: 18px;
+    width: 1px;
+    background-color: ${(props) => props.appearance?.colors?.textPrimary || theme["cm-text-primary"]};
+    animation: ${caretBlink} 1000ms infinite;
+`;
 
 const InputOTPSlot = React.forwardRef<
     React.ElementRef<"div">,
@@ -54,40 +110,27 @@ const InputOTPSlot = React.forwardRef<
         index: number;
         hasError?: boolean;
     }
->(({ index, className, hasError, ...props }, ref) => {
+>(({ index, hasError, ...props }, ref) => {
     const inputOTPContext = React.useContext(OTPInputContext);
     const { char, hasFakeCaret, isActive } = inputOTPContext.slots[index];
-    const customStyles = useContext(CustomStylesContext);
+    const appearance = useContext(CustomStylesContext);
 
     return (
-        <div
+        <SlotContainer
             ref={ref}
-            className={classNames(
-                "relative flex h-14 w-12 items-center bg-cm-muted-primary justify-center border border-cm-border text-lg transition-all rounded-md text-cm-text-primary",
-                isActive && `z-10 ring-2 ring-offset-background`,
-                className
-            )}
-            style={{
-                borderRadius: customStyles?.borderRadius,
-                borderColor: hasError ? customStyles?.danger : customStyles?.border,
-                boxShadow: isActive ? `0 0 0 2px ${customStyles?.accent}` : "none",
-                backgroundColor: char ? customStyles?.buttonBackground : customStyles?.inputBackground,
-            }}
+            appearance={appearance}
+            hasError={hasError}
+            isActive={isActive}
+            hasChar={!!char}
             {...props}
         >
             {char}
             {hasFakeCaret && (
-                <div className={tw("pointer-events-none absolute inset-0 flex items-center justify-center")}>
-                    <div
-                        className={tw("h-4 w-px animate-caret-blink duration-1000")}
-                        style={{
-                            height: "18px",
-                            backgroundColor: customStyles?.textPrimary,
-                        }}
-                    />
-                </div>
+                <CaretContainer>
+                    <Caret appearance={appearance} />
+                </CaretContainer>
             )}
-        </div>
+        </SlotContainer>
     );
 });
 InputOTPSlot.displayName = "InputOTPSlot";

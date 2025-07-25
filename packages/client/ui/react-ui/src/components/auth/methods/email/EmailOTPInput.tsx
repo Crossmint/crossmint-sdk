@@ -1,4 +1,6 @@
 import { useState } from "react";
+import styled from "@emotion/styled";
+import type { UIConfig } from "@crossmint/common-sdk-base";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/common/InputOTP";
 import { EmailOtpIcon } from "@/icons/emailOTP";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
@@ -6,9 +8,62 @@ import type { OtpEmailPayload } from "@/types/auth";
 import { AuthFormBackButton } from "../../AuthFormBackButton";
 import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
 import { CountdownButton } from "@/components/common/CountdownButton";
-import { tw } from "@/twind-instance";
+import { theme } from "@/styles";
 
-export const EMAIL_VERIFICATION_TOKEN_LENGTH = 6;
+const Container = styled.div`
+    display: flex;
+    flex-direction: column;
+`;
+
+const ContentContainer = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+`;
+
+const IconContainer = styled.div`
+    position: relative;
+    left: 12px;
+`;
+
+const Title = styled.p<{ appearance?: UIConfig }>`
+    font-size: 16px;
+    font-weight: 400;
+    margin: 16px 0 4px 0;
+    text-align: center;
+    color: ${(props) => props.appearance?.colors?.textPrimary || theme["cm-text-primary"]};
+`;
+
+const Description = styled.p<{ appearance?: UIConfig }>`
+    text-align: center;
+    padding: 0 16px;
+    margin: 0;
+    color: ${(props) => props.appearance?.colors?.textSecondary || theme["cm-text-secondary"]};
+    font-size: 14px;
+    line-height: 1.4;
+`;
+
+const OTPContainer = styled.div`
+    padding: 32px 0;
+`;
+
+const StyledInputOTPSlot = styled(InputOTPSlot)`
+    @media (max-width: 379px) {
+        width: 40px;
+        height: 56px;
+        font-size: 28px;
+        margin: 0;
+    }
+`;
+
+const HelpText = styled.div<{ appearance?: UIConfig }>`
+    font-size: 12px;
+    line-height: 1.3;
+    text-align: center;
+    color: ${(props) => props.appearance?.colors?.textSecondary || theme["cm-text-secondary"]};
+`;
 
 export function EmailOTPInput({
     otpEmailData,
@@ -56,37 +111,32 @@ export function EmailOTPInput({
     };
 
     return (
-        <div>
+        <Container>
             <AuthFormBackButton
                 onClick={handleOnBack}
                 iconColor={appearance?.colors?.textPrimary}
                 ringColor={appearance?.colors?.accent}
             />
 
-            <div className={tw("flex flex-col items-center justify-start w-full")}>
-                <div className={tw("relative left-3")}>
+            <ContentContainer>
+                <IconContainer>
                     <EmailOtpIcon
                         customAccentColor={appearance?.colors?.accent}
                         customButtonBackgroundColor={appearance?.colors?.buttonBackground}
                         customBackgroundColor={appearance?.colors?.background}
                     />
-                </div>
-                <p
-                    className={tw("text-base font-normal mt-4 mb-1 text-center text-cm-text-primary")}
-                    style={{ color: appearance?.colors?.textPrimary }}
-                >
-                    {"Check your email"}
-                </p>
-                <p
-                    className={tw("text-center text-cm-text-secondary px-4")}
-                    style={{ color: appearance?.colors?.textSecondary }}
-                >
+                </IconContainer>
+
+                <Title appearance={appearance}>Check your email</Title>
+
+                <Description appearance={appearance}>
                     A temporary login code has been sent to{" "}
                     {otpEmailData?.email ? otpEmailData.email : "your email address"}
-                </p>
-                <div className={tw("py-8")}>
+                </Description>
+
+                <OTPContainer>
                     <InputOTP
-                        maxLength={EMAIL_VERIFICATION_TOKEN_LENGTH}
+                        maxLength={6}
                         value={token}
                         onChange={(val) => {
                             setToken(val);
@@ -95,34 +145,24 @@ export function EmailOTPInput({
                         }}
                         onComplete={handleOnSubmitOTP}
                         disabled={loading}
-                        customStyles={{
-                            accent: appearance?.colors?.accent ?? "#04AA6D",
-                            danger: appearance?.colors?.danger ?? "#f44336",
-                            border: appearance?.colors?.border ?? "#E5E7EB",
-                            textPrimary: appearance?.colors?.textPrimary ?? "#909ca3",
-                            buttonBackground: appearance?.colors?.buttonBackground ?? "#eff6ff",
-                            inputBackground: appearance?.colors?.inputBackground ?? "#FFFFFF",
-                            borderRadius: appearance?.borderRadius,
-                        }}
+                        appearance={appearance}
                     >
                         <InputOTPGroup>
-                            <InputOTPSlot index={0} hasError={hasError} />
-                            <InputOTPSlot index={1} hasError={hasError} />
-                            <InputOTPSlot index={2} hasError={hasError} />
-                            <InputOTPSlot index={3} hasError={hasError} />
-                            <InputOTPSlot index={4} hasError={hasError} />
-                            <InputOTPSlot index={5} hasError={hasError} />
+                            <StyledInputOTPSlot index={0} hasError={hasError} />
+                            <StyledInputOTPSlot index={1} hasError={hasError} />
+                            <StyledInputOTPSlot index={2} hasError={hasError} />
+                            <StyledInputOTPSlot index={3} hasError={hasError} />
+                            <StyledInputOTPSlot index={4} hasError={hasError} />
+                            <StyledInputOTPSlot index={5} hasError={hasError} />
                         </InputOTPGroup>
                     </InputOTP>
-                </div>
+                </OTPContainer>
 
-                <div className={tw("text-xs leading-tight text-cm-text-secondary text-center")}>
-                    <span style={{ color: appearance?.colors?.textSecondary }}>
-                        Can't find the email? Check spam folder.
-                        {"\n"}
-                        Some emails may take several minutes to arrive.
-                    </span>
-                </div>
+                <HelpText appearance={appearance}>
+                    Can't find the email? Check spam folder.
+                    <br />
+                    Some emails may take several minutes to arrive.
+                </HelpText>
 
                 <CountdownButton
                     initialSeconds={60}
@@ -131,7 +171,7 @@ export function EmailOTPInput({
                     countdownCompleteText="Re-send code"
                     handleOnClick={handleOnResendCode}
                 />
-            </div>
-        </div>
+            </ContentContainer>
+        </Container>
     );
 }

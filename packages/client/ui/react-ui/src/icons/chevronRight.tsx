@@ -1,6 +1,6 @@
 import type React from "react";
 
-export function ChevronRightIcon({ className, style }: { className?: string; style?: React.CSSProperties }) {
+export function ChevronRightIcon({ style }: { style?: React.CSSProperties }) {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -12,7 +12,6 @@ export function ChevronRightIcon({ className, style }: { className?: string; sty
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className={className}
             style={style}
         >
             <path d="m9 18 6-6-6-6" />

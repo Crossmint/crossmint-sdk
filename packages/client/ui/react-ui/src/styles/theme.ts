@@ -6,5 +6,6 @@ export const theme = {
     "cm-hover": "#E9ECF0",
     "cm-border": "#D9D9D9",
     "cm-link": "#1A74E9",
-    "cm-accent": "#04AA6D",
+    "cm-accent": "#4CAF50", // old 04AA6D
+    "cm-danger": "#f44336",
 } as const;
