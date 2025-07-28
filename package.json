@@ -47,6 +47,8 @@
         "overrides": {
             "axios@0": "0.30.0",
             "elliptic@6": "6.6.1",
+            "form-data@3": "3.0.4",
+            "form-data@4": "4.0.4",
             "path-to-regexp@0": "0.1.12",
             "pbkdf2": "3.1.3",
             "react-native": "0.76.9",
