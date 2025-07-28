@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 2.3.0
+
+### Minor Changes
+
+- 6eb4438: Replace tailwind styles with emotion
+
 ## 2.2.20
 
 ### Patch Changes
