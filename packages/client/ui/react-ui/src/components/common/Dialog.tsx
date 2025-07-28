@@ -55,7 +55,7 @@ const Overlay = styled.div`
     }
 `;
 
-const DialogContainer = styled.dialog<{
+const DialogContainer = styled.div<{
     appearance?: UIConfig;
 }>`
     ${globalReset}
@@ -255,7 +255,7 @@ const Dialog: React.FC<DialogProps> = ({
     return createPortal(
         <CSSTransition nodeRef={nodeRef} in={open} timeout={200} classNames="dialog" unmountOnExit mountOnEnter>
             <Overlay ref={nodeRef} onClick={closeOnOverlayClick ? handleOverlayClick : undefined}>
-                <DialogContainer appearance={appearance} style={{ ...style }}>
+                <DialogContainer appearance={appearance} role="dialog" aria-modal="true" style={{ ...style }}>
                     {showCloseButton && (
                         <CloseButton onClick={() => setDialogOpen?.(false)} appearance={appearance}>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
