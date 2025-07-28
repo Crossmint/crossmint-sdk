@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/auth-ssr-nextjs-demo",
-    "version": "0.4.98",
+    "version": "0.4.99",
     "private": true,
     "scripts": {
         "dev": "next dev",
