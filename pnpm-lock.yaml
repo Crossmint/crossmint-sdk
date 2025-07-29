@@ -2386,6 +2386,9 @@ packages:
   '@dynamic-labs/assert-package-version@4.25.6':
     resolution: {integrity: sha512-0egmM9B+MGP9NEan/3lDOX5OYY60iDu5CubktQZ8bCnqA9wRVz250MODUVuuDcfkadmpTCkxA/UWBpvhFDkmgA==}
 
+  '@dynamic-labs/assert-package-version@4.25.7':
+    resolution: {integrity: sha512-eVEA6AX7hQqu3Mhzir3ECHpbc+CAunPvjMIDFk+W9jO8Qi9qeGL6fLIhsNGh7n36G7gBh7N2Sa/Ga8N2p1j2tg==}
+
   '@dynamic-labs/assert-package-version@4.8.3':
     resolution: {integrity: sha512-Ub7/FRIEJFD3HC6oz4dS0beGJB18AlV+NRiuLmCN2I+z92htZFc6m1jHUJhq3/cj6IWWmuYz1rRK8tHHaTQoog==}
 
@@ -2446,11 +2449,14 @@ packages:
   '@dynamic-labs/logger@4.25.6':
     resolution: {integrity: sha512-JqzePQaQRj+MmoeZkg1Iw5HK+8TstXqrIf9zLgKM09YNcfp1LaGX1fXGZ3/hWZQhT2/DnYiChr7+FomCNlh+YA==}
 
+  '@dynamic-labs/logger@4.25.7':
+    resolution: {integrity: sha512-ddx9t1yzuD+Z5eeQ6U3q8iPXz7Es581R0Rylhj1Cjo9ssCwXJLE7uTvDC+wx7wtr0wzPW2KJiuYSreGl5blS0A==}
+
   '@dynamic-labs/logger@4.8.3':
     resolution: {integrity: sha512-X7HKG/u1EVOKAYp5MiJkOBWFf2qC+5wP61r+i8rgPw5I1fUTG2mV2hrc63QEO8VtTcvqGsTqz2djwu64vegzFg==}
 
-  '@dynamic-labs/message-transport@4.25.6':
-    resolution: {integrity: sha512-mU/VgFJSg/dJpYOcyPJSGMIGNA+igZTJRnv58EPYHwzIlj0+jJE70DSLdbDmjNV3p4+0Gl/hskBezxLQbyv7Fw==}
+  '@dynamic-labs/message-transport@4.25.7':
+    resolution: {integrity: sha512-L1cIcG6C+AzbW/YcNcqcrOgDghI27DksklnxkwYHFv7HPtxB0iSZvDFSErVwXYFkjxM4HJqJwreLVTSTy3GtNw==}
 
   '@dynamic-labs/multi-wallet@4.25.6':
     resolution: {integrity: sha512-6OxGkesE14v8Fkbv7hh+JNmNK5kap2q7OIEuzS/F4uou04Q02ZgZVDszjKEk5t1yxkbnh5Du4tw5jTyhxKlGlA==}
@@ -2512,11 +2518,17 @@ packages:
   '@dynamic-labs/types@4.25.6':
     resolution: {integrity: sha512-++14/bRv+N1V4qKY0MxivRodKuM7abj4tSYLM4ap6QV/RHJUc8+jLFAkqC/vSHoY3w0InajrcsQmKDtbDlGizA==}
 
+  '@dynamic-labs/types@4.25.7':
+    resolution: {integrity: sha512-M42ltR73KggAWniqPKHjGmHh4ID3oDljBeRlbpbgZO6bTlLv7/IHHJiAdLRCAkr/39qSXEv+1rzjofmACFp/Nw==}
+
   '@dynamic-labs/types@4.8.3':
     resolution: {integrity: sha512-M8FrDQJyo4BQ+AcmgkvyYH3frqcqvQ0FxuVesETv9RtwxqbUnUo71wTEPBCYnq1FzxM4XKQjIVdtJMXZ+3wkLw==}
 
   '@dynamic-labs/utils@4.25.6':
     resolution: {integrity: sha512-xeOUS5hbJPhZQhy51C8D8V4+GxBDGTFzNGxUMR0YwolSzt8UWIhhmHyWVO3vSjORMXNyvpFGMMb7K9DagGMS8A==}
+
+  '@dynamic-labs/utils@4.25.7':
+    resolution: {integrity: sha512-/iWk7JsiKgX32i0Th4XRtqyJpD9pos9p0/54kEBY3/8fqLEKtzoVyetBOxUcC4td4cMbnw7NB9o0mE8nbuvRlA==}
 
   '@dynamic-labs/utils@4.8.3':
     resolution: {integrity: sha512-AhitQvOpR90BVpLq92Ip8x7sHVJZZ0sm5jnpDn8NUJzDWvZ3AxvU+nuwz10npS5T8lbj7WACbNgDOHhiEqUieQ==}
@@ -2553,6 +2565,9 @@ packages:
 
   '@dynamic-labs/webauthn@4.25.6':
     resolution: {integrity: sha512-ilymsQP/LdoEcVOpQtoW7/6WwsMLn/nkqxqBJrnp5T7nuho3uKmLt/8YcKPs0nhNyzBeSIieskepfauEMY+xkA==}
+
+  '@dynamic-labs/webauthn@4.25.7':
+    resolution: {integrity: sha512-zHTls8ZkqLh80IpzmSREZEFPDfmmYW0BmNusaNLpXnK4jVvh4CM8YzpR16HmE5C4MaHhB1aNnjVDwUPdtzEbBg==}
 
   '@dynamic-labs/webauthn@4.8.3':
     resolution: {integrity: sha512-qphZpXofDFm2PwMumHBeyyrpIN8Wp0YJ33GT0rJ41yW14dF+cWIquK9yG4eROlzc7zyXawKchXL/2g/i4gc9vw==}
@@ -18882,7 +18897,7 @@ snapshots:
     dependencies:
       '@dynamic-labs-wallet/core': 0.0.124
       '@dynamic-labs/logger': 4.25.6
-      '@dynamic-labs/message-transport': 4.25.6
+      '@dynamic-labs/message-transport': 4.25.7
       uuid: 11.1.0
     transitivePeerDependencies:
       - debug
@@ -18897,6 +18912,10 @@ snapshots:
   '@dynamic-labs/assert-package-version@4.25.6':
     dependencies:
       '@dynamic-labs/logger': 4.25.6
+
+  '@dynamic-labs/assert-package-version@4.25.7':
+    dependencies:
+      '@dynamic-labs/logger': 4.25.7
 
   '@dynamic-labs/assert-package-version@4.8.3':
     dependencies:
@@ -19370,19 +19389,23 @@ snapshots:
     dependencies:
       eventemitter3: 5.0.1
 
+  '@dynamic-labs/logger@4.25.7':
+    dependencies:
+      eventemitter3: 5.0.1
+
   '@dynamic-labs/logger@4.8.3':
     dependencies:
       eventemitter3: 5.0.1
 
-  '@dynamic-labs/message-transport@4.25.6':
+  '@dynamic-labs/message-transport@4.25.7':
     dependencies:
       '@dynamic-labs-sdk/client': 0.0.1-alpha.19
-      '@dynamic-labs/assert-package-version': 4.25.6
-      '@dynamic-labs/logger': 4.25.6
+      '@dynamic-labs/assert-package-version': 4.25.7
+      '@dynamic-labs/logger': 4.25.7
       '@dynamic-labs/sdk-api-core': 0.0.728
-      '@dynamic-labs/types': 4.25.6
-      '@dynamic-labs/utils': 4.25.6
-      '@dynamic-labs/webauthn': 4.25.6
+      '@dynamic-labs/types': 4.25.7
+      '@dynamic-labs/utils': 4.25.7
+      '@dynamic-labs/webauthn': 4.25.7
       '@vue/reactivity': 3.5.13
       eventemitter3: 5.0.1
 
@@ -19764,6 +19787,11 @@ snapshots:
       '@dynamic-labs/assert-package-version': 4.25.6
       '@dynamic-labs/sdk-api-core': 0.0.728
 
+  '@dynamic-labs/types@4.25.7':
+    dependencies:
+      '@dynamic-labs/assert-package-version': 4.25.7
+      '@dynamic-labs/sdk-api-core': 0.0.728
+
   '@dynamic-labs/types@4.8.3':
     dependencies:
       '@dynamic-labs/assert-package-version': 4.8.3
@@ -19775,6 +19803,16 @@ snapshots:
       '@dynamic-labs/logger': 4.25.6
       '@dynamic-labs/sdk-api-core': 0.0.728
       '@dynamic-labs/types': 4.25.6
+      buffer: 6.0.3
+      eventemitter3: 5.0.1
+      tldts: 6.0.16
+
+  '@dynamic-labs/utils@4.25.7':
+    dependencies:
+      '@dynamic-labs/assert-package-version': 4.25.7
+      '@dynamic-labs/logger': 4.25.7
+      '@dynamic-labs/sdk-api-core': 0.0.728
+      '@dynamic-labs/types': 4.25.7
       buffer: 6.0.3
       eventemitter3: 5.0.1
       tldts: 6.0.16
@@ -20047,6 +20085,13 @@ snapshots:
     dependencies:
       '@dynamic-labs/assert-package-version': 4.25.6
       '@dynamic-labs/logger': 4.25.6
+      '@simplewebauthn/browser': 13.1.0
+      '@simplewebauthn/types': 12.0.0
+
+  '@dynamic-labs/webauthn@4.25.7':
+    dependencies:
+      '@dynamic-labs/assert-package-version': 4.25.7
+      '@dynamic-labs/logger': 4.25.7
       '@simplewebauthn/browser': 13.1.0
       '@simplewebauthn/types': 12.0.0
 
@@ -26124,7 +26169,7 @@ snapshots:
   '@solana/web3.js@1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10)':
     dependencies:
       '@babel/runtime': 7.27.0
-      '@noble/curves': 1.9.4
+      '@noble/curves': 1.9.0
       '@noble/hashes': 1.8.0
       '@solana/buffer-layout': 4.0.1
       agentkeepalive: 4.6.0
