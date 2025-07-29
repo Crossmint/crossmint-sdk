@@ -7,7 +7,7 @@
     "author": "Paella Labs Inc",
     "files": ["public", "src", ".env", "LICENSE", "package.json", "README.md", "tsconfig.json", "yarn.lock"],
     "scripts": {
-        "build": "echo 'skipping build'",
+        "build": "if [ \"$CI\" = \"true\" ]; then echo 'Skipping build in CI'; exit 0; else CI=false react-scripts build; fi",
         "eject": "react-scripts eject",
         "start": "react-scripts start"
     },
