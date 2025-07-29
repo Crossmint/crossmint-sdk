@@ -1,9 +1,10 @@
 import {
     useCrossmintAuth,
     useWallet,
-    useWalletEmailSigner,
+    useWalletOtpSigner,
     useCrossmint,
     type Balances,
+    StellarWallet,
 } from "@crossmint/client-sdk-react-native-ui";
 import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Button, Text, View, TextInput, StyleSheet, ScrollView, Alert } from "react-native";
@@ -15,7 +16,7 @@ export default function Index() {
     const { experimental_customAuth } = useCrossmint();
     const loggedInUserEmail = experimental_customAuth?.email ?? null;
     const { wallet, getOrCreateWallet, status: walletStatus } = useWallet();
-    const { needsAuth, sendEmailWithOtp, verifyOtp } = useWalletEmailSigner();
+    const { needsAuth, sendOtp, verifyOtp } = useWalletOtpSigner();
     const walletAddress = useMemo(() => wallet?.address, [wallet]);
     const url = Linking.useURL();
 
@@ -80,7 +81,8 @@ export default function Index() {
         }
         setIsLoading(true);
         try {
-            await getOrCreateWallet({ chain: "stellar", signer: { type: "email" } });
+            // await getOrCreateWallet({ chain: "stellar", signer: { type: "email" } });
+            await getOrCreateWallet({ chain: "stellar", signer: { type: "phone", phone: "+13472008361" } });
         } catch (error) {
             console.error("Error initializing wallet:", error);
         } finally {
@@ -113,7 +115,7 @@ export default function Index() {
             return;
         }
         setIsInOtpFlow(true);
-        await handleAction(sendEmailWithOtp);
+        await handleAction(sendOtp);
     };
 
     const handleVerifyOtpInput = async () => {
@@ -135,7 +137,19 @@ export default function Index() {
         }
         setIsLoading(true);
         try {
-            const tx = await wallet.send(recipientAddress, "usdc", amount);
+            const transaction = {
+                type: "contract-call",
+                contractId: "CDMUQY2ZHWIGXSTHPHX53ACR76OLXCCAAKQWQWUS2JNAH6SZEXMRU6R2",
+                method: "transfer",
+                args: {
+                    from: wallet.address,
+                    to: recipientAddress,
+                    amount,
+                },
+            };
+            const stellarWallet = StellarWallet.from(wallet);
+            const tx = await stellarWallet.sendTransaction(transaction);
+            // const tx = await wallet.send(recipientAddress, "usdc", amount);
             console.log(`Sent ${amount} USDC to ${recipientAddress}. Tx Link: ${tx.explorerLink}`);
             setTxLink(tx.explorerLink);
             setRecipientAddress("");
