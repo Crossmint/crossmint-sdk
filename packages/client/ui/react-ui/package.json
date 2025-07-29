@@ -41,7 +41,7 @@
         "bs58": "5.0.0",
         "clsx": "2.1.1",
         "color": "4.2.3",
-        "input-otp": "1.2.4",
+        "input-otp": "1.4.2",
         "lodash.isequal": "4.5.0",
         "ox": "0.6.9",
         "react-jss": "10.10.0",
