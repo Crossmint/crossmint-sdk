@@ -27,7 +27,7 @@ export function FirebaseUIPhoneAuth() {
     }, []);
 
     useEffect(() => {
-        if (firebaseui === null) {
+        if (firebaseui == null) {
             return;
         }
 
@@ -39,7 +39,7 @@ export function FirebaseUIPhoneAuth() {
 
         // We track the auth state to reset firebaseUi if the user signs out.
         const unregisterAuthObserver = onAuthStateChanged(firebaseAuth, (user) => {
-            if (!user && userSignedIn) {
+            if (user == null && userSignedIn) {
                 firebaseUiWidget.reset();
                 setUserSignedIn(!!user);
             }
