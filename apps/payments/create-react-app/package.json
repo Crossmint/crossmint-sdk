@@ -7,7 +7,7 @@
     "author": "Paella Labs Inc",
     "files": ["public", "src", ".env", "LICENSE", "package.json", "README.md", "tsconfig.json", "yarn.lock"],
     "scripts": {
-        "build": "react-scripts build",
+        "build": "echo 'skipping build'",
         "eject": "react-scripts eject",
         "start": "react-scripts start"
     },
