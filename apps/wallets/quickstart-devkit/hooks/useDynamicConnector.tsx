@@ -5,6 +5,7 @@ import { useCrossmint, useWallet as useCrossmintWallet } from "@crossmint/client
 import { getAuthToken, useDynamicContext, useIsLoggedIn } from "@dynamic-labs/sdk-react-core";
 import { isSolanaWallet } from "@dynamic-labs/solana";
 import { isEthereumWallet } from "@dynamic-labs/ethereum";
+import type { VersionedTransaction } from "@solana/web3.js";
 
 /* ============================================================ */
 /*                    EVM DYNAMIC CONNECTOR                     */
@@ -72,7 +73,9 @@ export const useSolanaDynamicConnector = () => {
                     externalWalletSigner: {
                         type: "external-wallet",
                         address: dynamicPrimaryWallet.address,
-                        onSignTransaction: dynamicSigner.signTransaction,
+                        onSignTransaction: async (transaction: VersionedTransaction) => {
+                            return await dynamicSigner.signTransaction(transaction);
+                        },
                     },
                 });
             } catch (error) {
