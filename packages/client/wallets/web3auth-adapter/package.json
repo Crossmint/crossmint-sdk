@@ -24,10 +24,10 @@
         "@web3auth/base": "7.3.2",
         "@web3auth/ethereum-provider": "7.3.2",
         "@web3auth/single-factor-auth": "7.3.0",
-        "viem": "2.23.6"
+        "viem": "2.33.1"
     },
     "devDependencies": {
-        "@types/node": "20.12.7",
+        "@types/node": "20.14.8",
         "ts-node": "10.9.2"
     }
 }
