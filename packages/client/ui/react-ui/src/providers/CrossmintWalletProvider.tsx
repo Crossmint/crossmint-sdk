@@ -53,7 +53,7 @@ export function CrossmintWalletProvider({
     const [phoneSignerDialogOpen, setPhoneSignerDialogOpen] = useState<boolean>(false);
     const [phoneSignerDialogStep, setPhoneSignerDialogStep] = useState<"initial" | "otp">("initial");
 
-    const [needsAuthState, setNeedsAuthState] = useState<boolean>(false);
+    const needsAuthRef = useRef<boolean>(false);
 
     // Email signer refs (for main wallet authentication)
     const sendEmailWithOtpRef = useRef<() => Promise<void>>(throwNotAvailable("sendEmailWithOtp"));
@@ -164,7 +164,7 @@ export function CrossmintWalletProvider({
             sendEmailWithOtpRef.current = sendMessageWithOtp;
             verifyOtpRef.current = verifyOtp;
         }
-        setNeedsAuthState(needsAuth);
+        needsAuthRef.current = needsAuth;
         rejectRef.current = reject;
     };
 

@@ -1,4 +1,4 @@
-import { type ReactNode, useCallback, useEffect, useRef, useState, useMemo, createContext } from "react";
+import { type ReactNode, useCallback, useEffect, useRef, useMemo, createContext } from "react";
 import { View } from "react-native";
 import type { WebView, WebViewMessageEvent } from "react-native-webview";
 import { RNWebView, WebViewParent } from "@crossmint/client-sdk-rn-window";
@@ -48,7 +48,7 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
     const webViewParentRef = useRef<WebViewParent<typeof signerOutboundEvents, typeof signerInboundEvents> | null>(
         null
     );
-    const [needsAuthState, setNeedsAuthState] = useState<boolean>(false);
+    const needsAuthRef = useRef<boolean>(false);
     const sendEmailWithOtpRef = useRef<() => Promise<void>>(throwNotAvailable("sendEmailWithOtp"));
     const verifyOtpRef = useRef<(otp: string) => Promise<void>>(throwNotAvailable("verifyOtp"));
     const rejectRef = useRef<(error?: Error) => void>(throwNotAvailable("reject"));
@@ -143,7 +143,7 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
         verifyOtp: (otp: string) => Promise<void>,
         reject: () => void
     ) => {
-        setNeedsAuthState(needsAuth);
+        needsAuthRef.current = needsAuth;
         sendEmailWithOtpRef.current = sendEmailWithOtp;
         verifyOtpRef.current = verifyOtp;
         rejectRef.current = reject;
@@ -151,12 +151,12 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
 
     const authContextValue = useMemo(
         () => ({
-            needsAuth: needsAuthState,
+            needsAuth: needsAuthRef.current,
             sendEmailWithOtp: sendEmailWithOtpRef.current,
             verifyOtp: verifyOtpRef.current,
             reject: rejectRef.current,
         }),
-        [needsAuthState]
+        []
     );
 
     return (
