@@ -52,7 +52,7 @@ export function HomeContent() {
                     <CrossmintAuthLoginButton />
                     {/* <PrivyLoginButton /> */}
                     {/* <DynamicLabsLoginButton /> */}
-                    {/* <FirebaseLoginButton /> */}
+                    {/* <FirebaseLoginButton authMethod="google" /> */}
                 </div>
             </div>
         );
