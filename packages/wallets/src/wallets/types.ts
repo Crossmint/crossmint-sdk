@@ -1,10 +1,18 @@
 import type { Keypair, VersionedTransaction } from "@solana/web3.js";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
-import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
+import type {
+    signerInboundEvents,
+    signerOutboundEvents,
+} from "@crossmint/client-signers";
 import type { Abi } from "abitype";
 import type { CreateTransactionSuccessResponse } from "../api";
 import type { Chain } from "../chains/chains";
-import type { SignerConfigForChain, Signer, BaseSignResult, PasskeySignResult } from "../signers/types";
+import type {
+    SignerConfigForChain,
+    Signer,
+    BaseSignResult,
+    PasskeySignResult,
+} from "../signers/types";
 
 export type { Activity } from "../api/types";
 
@@ -33,7 +41,10 @@ export type EVMTransactionInput = EVMTransactionInputBase &
 export type StellarTransactionInput = {
     contractId: string;
     method: string;
-    memo?: string;
+    memo?: {
+        type: "text" | "id";
+        value: string;
+    };
     args: Record<string, any>;
     options?: TransactionInputOptions;
 };
@@ -68,7 +79,10 @@ export type Callbacks = {
 
 export type WalletOptions = {
     experimental_callbacks?: Callbacks;
-    clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
+    clientTEEConnection?: HandshakeParent<
+        typeof signerOutboundEvents,
+        typeof signerInboundEvents
+    >;
 };
 
 export type WalletArgsFor<C extends Chain> = {
@@ -100,17 +114,18 @@ export type UserLocator =
     | { phone: string }
     | { userId: string };
 
-export type Transaction<TPrepareOnly extends boolean = false> = TPrepareOnly extends true
-    ? {
-          hash?: string;
-          explorerLink?: string;
-          transactionId: string;
-      }
-    : {
-          hash: string;
-          explorerLink: string;
-          transactionId: string;
-      };
+export type Transaction<TPrepareOnly extends boolean = false> =
+    TPrepareOnly extends true
+        ? {
+              hash?: string;
+              explorerLink?: string;
+              transactionId: string;
+          }
+        : {
+              hash: string;
+              explorerLink: string;
+              transactionId: string;
+          };
 
 export type ApproveOptions = {
     experimental_approval?: Approval;
