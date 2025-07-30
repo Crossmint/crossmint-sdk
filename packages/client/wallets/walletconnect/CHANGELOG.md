@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-walletconnect
 
+## 1.2.25
+
+### Patch Changes
+
+- 52791f9: patch bumped @solana/web3.js
+- Updated dependencies [52791f9]
+  - @crossmint/common-sdk-base@0.9.2
+
 ## 1.2.24
 
 ### Patch Changes

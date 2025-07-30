@@ -1,5 +1,21 @@
 # @crossmint/client-sdk-react-ui
 
+## 2.3.1
+
+### Patch Changes
+
+- 6559e0c: Makes sure needsAuth is up to date
+- 48a6d9f: Improved dialog a11y
+- 52791f9: Update dependencies to resolve peer dep warnings
+- Updated dependencies [6559e0c]
+- Updated dependencies [52791f9]
+  - @crossmint/wallets-sdk@0.11.3
+  - @crossmint/client-sdk-base@1.5.17
+  - @crossmint/common-sdk-base@0.9.2
+  - @crossmint/client-sdk-react-base@0.5.21
+  - @crossmint/client-sdk-auth@1.2.26
+  - @crossmint/common-sdk-auth@1.0.48
+
 ## 2.3.0
 
 ### Minor Changes

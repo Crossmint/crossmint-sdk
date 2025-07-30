@@ -1,5 +1,21 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.9.6
+
+### Patch Changes
+
+- 6559e0c: Makes sure needsAuth is up to date
+- 52791f9: patch bumped @solana/web3.js
+- cc09e73: Export useCrossmintCheckout hook and CrossmintCheckoutProvider from React Native package
+- Updated dependencies [6559e0c]
+- Updated dependencies [52791f9]
+  - @crossmint/wallets-sdk@0.11.3
+  - @crossmint/client-sdk-base@1.5.17
+  - @crossmint/common-sdk-base@0.9.2
+  - @crossmint/client-sdk-react-base@0.5.21
+  - @crossmint/client-sdk-auth@1.2.26
+  - @crossmint/common-sdk-auth@1.0.48
+
 ## 0.9.5
 
 ### Patch Changes
