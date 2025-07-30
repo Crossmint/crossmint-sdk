@@ -1,5 +1,14 @@
 # @crossmint/wallets-sdk
 
+## 0.11.3
+
+### Patch Changes
+
+- 6559e0c: Makes sure needsAuth is up to date
+- 52791f9: patch bumped @solana/web3.js
+- Updated dependencies [52791f9]
+  - @crossmint/common-sdk-base@0.9.2
+
 ## 0.11.2
 
 ### Patch Changes
