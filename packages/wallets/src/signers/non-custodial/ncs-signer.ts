@@ -177,6 +177,15 @@ export abstract class NonCustodialSigner implements Signer {
 
             if (response?.status === "success") {
                 this._needsAuth = false;
+                // We call onAuthRequired again so the needsAuth state is updated for the dev
+                if (this.config.onAuthRequired != null) {
+                    await this.config.onAuthRequired(
+                        this._needsAuth,
+                        () => this.sendMessageWithOtp(),
+                        (otp) => this.verifyOtp(otp),
+                        () => this._authPromise?.reject(new AuthRejectedError())
+                    );
+                }
                 this._authPromise?.resolve();
                 return;
             }
