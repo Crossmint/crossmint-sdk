@@ -18,6 +18,7 @@ export type {
     EVMTransactionInput,
     Transaction,
     WalletArgsFor,
+    Signature,
     SolanaTransactionInput,
 } from "./wallets/types";
 export type { Chain, EVMChain, SolanaChain, StellarChain } from "./chains/chains";
