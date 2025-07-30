@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useWallet } from "@crossmint/client-sdk-react-ui";
+import { type Signature, type Transaction, useWallet } from "@crossmint/client-sdk-react-ui";
 import { PublicKey } from "@solana/web3.js";
 import { isAddress } from "viem";
 
@@ -24,7 +24,7 @@ export function ApprovalTest() {
     const [isCreatingTransaction, setIsCreatingTransaction] = useState(false);
     const [isApprovingTransaction, setIsApprovingTransaction] = useState(false);
     const [isApprovingSignature, setIsApprovingSignature] = useState(false);
-    const [approvalResult, setApprovalResult] = useState<any>(null);
+    const [approvalResult, setApprovalResult] = useState<Transaction<false> | Signature<false> | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     const isEVMWallet = wallet?.chain !== "solana";
@@ -56,6 +56,43 @@ export function ApprovalTest() {
             setError("Invalid recipient address");
             return;
         }
+
+        // const evmWallet = EVMWallet.from(wallet);
+        // const txn = await evmWallet.sendTransaction({
+        //     transaction: "0x",
+        //     options: { experimental_prepareOnly: true },
+        // });
+
+        // const sigSigned = await evmWallet.signTypedData({
+        //     chain: "apechain",
+        //     types: {
+        //         EIP712Domain: [
+        //             { name: "name", type: "string" },
+        //             { name: "version", type: "string" },
+        //             { name: "chainId", type: "uint256" },
+        //             { name: "verifyingContract", type: "address" },
+        //         ],
+        //     },
+        //     domain: {
+        //         name: "Test",
+        //         version: "1",
+        //         chainId: BigInt(1),
+        //         verifyingContract: "0x0000000000000000000000000000000000000000",
+        //     },
+        //     primaryType: "EIP712Domain",
+        //     message: {
+        //         name: "Test",
+        //         version: "1",
+        //         chainId: BigInt(1),
+        //         verifyingContract: "0x0000000000000000000000000000000000000000",
+        //     },
+        //     options: { experimental_prepareOnly: false },
+        // });
+
+        // const sigMessage = await evmWallet.signMessage({
+        //     message: "Hello, world!",
+        //     options: { experimental_prepareOnly: true },
+        // });
 
         try {
             setIsCreatingTransaction(true);
@@ -91,11 +128,7 @@ export function ApprovalTest() {
             setError(null);
 
             const result = await wallet.approve({ transactionId });
-            setApprovalResult({
-                type: "transaction",
-                id: transactionId,
-                result,
-            });
+            setApprovalResult(result);
         } catch (err: any) {
             console.error("Failed to approve transaction:", err);
             setError(`Failed to approve transaction: ${err.message || err}`);
@@ -116,11 +149,8 @@ export function ApprovalTest() {
             setError(null);
 
             const result = await wallet.approve({ signatureId: manualSignatureId });
-            setApprovalResult({
-                type: "signature",
-                id: manualSignatureId,
-                result,
-            });
+
+            setApprovalResult(result);
         } catch (err: any) {
             console.error("Failed to approve signature:", err);
             setError(`Failed to approve signature: ${err.message || err}`);
@@ -294,20 +324,23 @@ export function ApprovalTest() {
             </div>
 
             {/* Results Display */}
-            {approvalResult && (
+            {approvalResult != null && (
                 <div className="border rounded-lg p-4 bg-gray-50">
                     <h3 className="font-medium mb-3">Approval Result</h3>
                     <div className="space-y-2">
                         <p className="text-sm">
-                            <strong>Type:</strong> {approvalResult.type}
+                            <strong>Type:</strong> {"transactionId" in approvalResult ? "Transaction" : "Signature"}
                         </p>
                         <p className="text-sm">
-                            <strong>ID:</strong> {approvalResult.id}
+                            <strong>ID:</strong>{" "}
+                            {"transactionId" in approvalResult
+                                ? approvalResult.transactionId
+                                : approvalResult.signatureId}
                         </p>
                         <div className="text-sm">
                             <strong>Result:</strong>
                             <pre className="mt-1 p-2 bg-gray-100 rounded text-xs overflow-auto">
-                                {JSON.stringify(approvalResult.result, null, 2)}
+                                {JSON.stringify(approvalResult, null, 2)}
                             </pre>
                         </div>
                     </div>
