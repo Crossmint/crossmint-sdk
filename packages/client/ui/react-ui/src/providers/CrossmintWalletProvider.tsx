@@ -106,7 +106,6 @@ export function CrossmintWalletProvider({
         try {
             await verifyOtpRef.current(otp);
             setEmailSignerDialogOpen(false);
-            setEmailSignerDialogStep("initial");
         } catch (error) {
             console.error("Failed to verify OTP", error);
             rejectRef.current(new Error("Failed to verify OTP"));
@@ -128,7 +127,6 @@ export function CrossmintWalletProvider({
         try {
             await verifyPhoneOtpRef.current(otp);
             setPhoneSignerDialogOpen(false);
-            setPhoneSignerDialogStep("initial");
         } catch (error) {
             console.error("Failed to verify phone OTP", error);
             rejectRef.current(new Error("Failed to verify phone OTP"));
