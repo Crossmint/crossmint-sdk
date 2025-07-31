@@ -1,7 +1,7 @@
 import type { MutableRefObject } from "react";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import { Dialog, DialogDescription, DialogTitle } from "../common/Dialog";
-import { BaseOTPInput } from "./BaseOTPInput";
+import { BaseCodeInput } from "./BaseCodeInput";
 import { BaseConfirmation } from "./BaseConfirmation";
 import { PhoneIcon } from "@/icons/phone";
 import { PhoneOtpIcon } from "@/icons/phoneOTP";
@@ -49,7 +49,7 @@ export function PhoneSignersDialog({
             ) : null}
 
             {step === "otp" ? (
-                <BaseOTPInput
+                <BaseCodeInput
                     contactInfo={phone ?? ""}
                     contactType="phone"
                     icon={

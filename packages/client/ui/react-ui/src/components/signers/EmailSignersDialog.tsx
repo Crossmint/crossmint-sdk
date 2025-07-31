@@ -1,7 +1,7 @@
 import type { MutableRefObject } from "react";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import { Dialog, DialogDescription, DialogTitle } from "../common/Dialog";
-import { BaseOTPInput } from "./BaseOTPInput";
+import { BaseCodeInput } from "./BaseCodeInput";
 import { EmailOtpIcon } from "@/icons/emailOTP";
 import { BaseConfirmation } from "./BaseConfirmation";
 import { MailIcon } from "@/icons/mail";
@@ -49,7 +49,7 @@ export function EmailSignersDialog({
             ) : null}
 
             {step === "otp" ? (
-                <BaseOTPInput
+                <BaseCodeInput
                     contactInfo={email ?? ""}
                     contactType="email"
                     icon={
