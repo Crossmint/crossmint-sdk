@@ -1,6 +1,7 @@
 export const PaymentErrors = {
     MINT_CONFIG_INVALID: "payments:mint-config.invalid",
     PAYMENT_METHOD_INVALID: "payments:payment-method.invalid",
+    EMAIL_INVALID: "payments:email.invalid",
     CLIENT_ID_INVALID: "payments:client-id.invalid",
     REQUIRED_RECIPIENT: "payments:recipient.required",
     MINTING_CONTRACT_MISSING: "payments:minting-contract.missing",
