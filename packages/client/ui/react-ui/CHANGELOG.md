@@ -1,5 +1,15 @@
 # @crossmint/client-sdk-react-ui
 
+## 2.3.3
+
+### Patch Changes
+
+- 57e4202: Improved email/phone signer input UI
+- 4728def: Exported Signature type
+- Updated dependencies [4728def]
+  - @crossmint/wallets-sdk@0.11.5
+  - @crossmint/client-sdk-react-base@0.5.23
+
 ## 2.3.2
 
 ### Patch Changes
