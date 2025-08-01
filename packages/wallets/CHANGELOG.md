@@ -1,5 +1,12 @@
 # @crossmint/wallets-sdk
 
+## 0.11.5
+
+### Patch Changes
+
+- 4728def: - Support correct return type based on input for `approve` method.
+  - Add a `experimental_prepareOnly` option for `signTypedData` and `signMessage`.
+
 ## 0.11.4
 
 ### Patch Changes
