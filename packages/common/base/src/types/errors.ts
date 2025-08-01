@@ -34,7 +34,7 @@ export const ValidationErrors = {
     WALLET_ADDRESS_REQUIRED: "validation:wallet-address.required",
     INVALID_EMAIL: "validation:email.invalid",
     TOKENN_ENVIRONMENT_MISMATCH: "validation:token.environment-mismatch",
-    UNSUPPORTED_TOKEN: "validation:token:unsupported",
+    UNSUPPORTED_TOKEN: "validation:token.unsupported",
 } as const;
 
 export const LimitErrors = {
