@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/common-sdk-base",
-    "version": "0.9.2",
+    "version": "0.9.3",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
