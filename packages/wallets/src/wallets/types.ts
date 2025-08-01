@@ -9,14 +9,13 @@ import type { SignerConfigForChain, Signer, BaseSignResult, PasskeySignResult } 
 
 export type { Activity } from "../api/types";
 
-export type TransactionInputOptions = {
-    experimental_prepareOnly?: boolean;
+export type PrepareOnly<T extends boolean = boolean> = { experimental_prepareOnly: T };
+
+export type TransactionInputOptions = PrepareOnly & {
     experimental_signer?: string;
 };
 
-export type SignatureInputOptions = {
-    experimental_prepareOnly?: boolean;
-};
+export type SignatureInputOptions = PrepareOnly;
 
 export type SignMessageInput = {
     message: string;

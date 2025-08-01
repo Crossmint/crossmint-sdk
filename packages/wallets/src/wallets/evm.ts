@@ -3,6 +3,7 @@ import { isValidEvmAddress } from "@crossmint/common-sdk-base";
 import type {
     EVMTransactionInput,
     FormattedEVMTransaction,
+    PrepareOnly,
     Signature,
     SignMessageInput,
     SignTypedDataInput,
@@ -39,7 +40,7 @@ export class EVMWallet extends Wallet<EVMChain> {
 
     public async sendTransaction<T extends EVMTransactionInput>(
         params: T
-    ): Promise<Transaction<T["options"] extends { experimental_prepareOnly: true } ? true : false>> {
+    ): Promise<Transaction<T["options"] extends PrepareOnly<true> ? true : false>> {
         const builtTransaction = this.buildTransaction(params);
         const createdTransaction = await this.createTransaction(builtTransaction, params.options);
 
@@ -48,7 +49,7 @@ export class EVMWallet extends Wallet<EVMChain> {
                 hash: undefined,
                 explorerLink: undefined,
                 transactionId: createdTransaction.id,
-            } as Transaction<T["options"] extends { experimental_prepareOnly: true } ? true : false>;
+            } as Transaction<T["options"] extends PrepareOnly<true> ? true : false>;
         }
 
         return await this.approveTransactionAndWait(createdTransaction.id);
@@ -56,7 +57,7 @@ export class EVMWallet extends Wallet<EVMChain> {
 
     public async signMessage<T extends SignMessageInput>(
         params: T
-    ): Promise<Signature<T["options"] extends { experimental_prepareOnly: true } ? true : false>> {
+    ): Promise<Signature<T["options"] extends PrepareOnly<true> ? true : false>> {
         const signatureCreationResponse = await this.apiClient.createSignature(this.walletLocator, {
             type: "message",
             params: {
@@ -73,7 +74,7 @@ export class EVMWallet extends Wallet<EVMChain> {
             return {
                 signature: undefined,
                 signatureId: signatureCreationResponse.id,
-            } as Signature<T["options"] extends { experimental_prepareOnly: true } ? true : false>;
+            } as Signature<T["options"] extends PrepareOnly<true> ? true : false>;
         }
 
         return await this.approveSignatureAndWait(signatureCreationResponse.id);
@@ -81,7 +82,7 @@ export class EVMWallet extends Wallet<EVMChain> {
 
     public async signTypedData<T extends SignTypedDataInput>(
         params: T
-    ): Promise<Signature<T["options"] extends { experimental_prepareOnly: true } ? true : false>> {
+    ): Promise<Signature<T["options"] extends PrepareOnly<true> ? true : false>> {
         const { domain, message, primaryType, types, chain } = params;
         if (!domain || !message || !types || !chain) {
             throw new InvalidTypedDataError("Invalid typed data");
@@ -120,7 +121,7 @@ export class EVMWallet extends Wallet<EVMChain> {
             return {
                 signature: undefined,
                 signatureId: signatureCreationResponse.id,
-            } as Signature<T["options"] extends { experimental_prepareOnly: true } ? true : false>;
+            } as Signature<T["options"] extends PrepareOnly<true> ? true : false>;
         }
 
         return await this.approveSignatureAndWait(signatureCreationResponse.id);

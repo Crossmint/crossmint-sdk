@@ -22,6 +22,7 @@ import type {
     Approval,
     Signature,
     ApproveResult,
+    PrepareOnly,
 } from "./types";
 import {
     InvalidSignerError,
@@ -250,7 +251,7 @@ export class Wallet<C extends Chain> {
         token: string,
         amount: string,
         options?: T
-    ): Promise<Transaction<T extends { experimental_prepareOnly: true } ? true : false>> {
+    ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
         const recipient = toRecipientLocator(to);
         const tokenLocator = toTokenLocator(token, this.chain);
         const sendParams = { recipient, amount };
@@ -267,7 +268,7 @@ export class Wallet<C extends Chain> {
                 hash: undefined,
                 explorerLink: undefined,
                 transactionId: transactionCreationResponse.id,
-            } as Transaction<T extends { experimental_prepareOnly: true } ? true : false>;
+            } as Transaction<T extends PrepareOnly<true> ? true : false>;
         }
 
         return await this.approveTransactionAndWait(transactionCreationResponse.id);
