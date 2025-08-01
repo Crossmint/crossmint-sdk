@@ -2138,7 +2138,9 @@
                             "sui:sui",
                             "sui:0x123...xyz",
                             "aptos:apt",
-                            "aptos:0x123...xyz"
+                            "aptos:0x123...xyz",
+                            "stellar:CA5...XYZ",
+                            "stellar:usdc:GA5...VN"
                         ],
                         "schema": {
                             "type": "string"
@@ -2363,7 +2365,9 @@
                             "sui:sui",
                             "sui:0x123...xyz",
                             "aptos:apt",
-                            "aptos:0x123...xyz"
+                            "aptos:0x123...xyz",
+                            "stellar:CA5...XYZ",
+                            "stellar:usdc:GA5...VN"
                         ],
                         "schema": {
                             "type": "string"
@@ -2972,7 +2976,9 @@
                             "sui:sui",
                             "sui:0x123...xyz",
                             "aptos:apt",
-                            "aptos:0x123...xyz"
+                            "aptos:0x123...xyz",
+                            "stellar:CA5...XYZ",
+                            "stellar:usdc:GA5...VN"
                         ],
                         "schema": {
                             "type": "string"
@@ -3899,7 +3905,9 @@
                             "sui:sui",
                             "sui:0x123...xyz",
                             "aptos:apt",
-                            "aptos:0x123...xyz"
+                            "aptos:0x123...xyz",
+                            "stellar:CA5...XYZ",
+                            "stellar:usdc:GA5...VN"
                         ],
                         "schema": {
                             "type": "string"
@@ -8677,9 +8685,148 @@
                             }
                         },
                         "required": ["params"]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "params": {
+                                "type": "object",
+                                "properties": {
+                                    "transaction": {
+                                        "oneOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "type": "string",
+                                                        "enum": ["contract-call"],
+                                                        "description": "The type of transaction to execute"
+                                                    },
+                                                    "contractId": {
+                                                        "type": "string",
+                                                        "description": "The recipient address for this transaction call",
+                                                        "example": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
+                                                    },
+                                                    "method": {
+                                                        "type": "string",
+                                                        "description": "The name of the function to call"
+                                                    },
+                                                    "memo": {
+                                                        "discriminator": {
+                                                            "propertyName": "type"
+                                                        },
+                                                        "oneOf": [
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "type": {
+                                                                        "type": "string",
+                                                                        "enum": ["text"],
+                                                                        "description": "The type of memo"
+                                                                    },
+                                                                    "value": {
+                                                                        "type": "string",
+                                                                        "maxLength": 28,
+                                                                        "description": "The value of the memo (max 28 bytes)"
+                                                                    }
+                                                                },
+                                                                "required": ["type", "value"]
+                                                            },
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "type": {
+                                                                        "type": "string",
+                                                                        "enum": ["id"],
+                                                                        "description": "The type of memo"
+                                                                    },
+                                                                    "value": {
+                                                                        "type": "string",
+                                                                        "description": "The value of the memo (64-bit unsigned integer)"
+                                                                    }
+                                                                },
+                                                                "required": ["type", "value"]
+                                                            }
+                                                        ],
+                                                        "description": "The memo for the transaction",
+                                                        "example": {
+                                                            "type": "text",
+                                                            "value": "Hello, world!"
+                                                        }
+                                                    },
+                                                    "args": {
+                                                        "type": "object",
+                                                        "additionalProperties": {},
+                                                        "description": "The arguments to pass to the function"
+                                                    }
+                                                },
+                                                "required": ["type", "contractId", "method", "args"],
+                                                "title": "Stellar contract call transaction parameters",
+                                                "description": "Parameters for a transaction to execute a smart contract function",
+                                                "example": {
+                                                    "type": "contract-call",
+                                                    "contractId": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
+                                                    "method": "transfer",
+                                                    "args": {
+                                                        "to": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
+                                                        "from": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
+                                                        "amount": "1000000000000000000"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "type": "string",
+                                                        "enum": ["serialized-transaction"],
+                                                        "description": "The type of transaction to execute"
+                                                    },
+                                                    "serializedTransaction": {
+                                                        "type": "string",
+                                                        "description": "The XDR base64-encoded serialized transaction to execute"
+                                                    },
+                                                    "contractId": {
+                                                        "type": "string",
+                                                        "description": "The recipient address for this transaction call",
+                                                        "example": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
+                                                    }
+                                                },
+                                                "required": ["type", "serializedTransaction", "contractId"],
+                                                "title": "Stellar serialized transaction parameters",
+                                                "description": "Parameters for a transaction to execute a serialized transaction",
+                                                "example": {
+                                                    "type": "serialized-transaction",
+                                                    "serializedTransaction": "AQAAAAB2YWx1ZQ==",
+                                                    "contractId": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
+                                                }
+                                            }
+                                        ],
+                                        "description": "Stellar transaction to execute"
+                                    },
+                                    "signer": {
+                                        "type": "string",
+                                        "title": "Signer Locator",
+                                        "description": "The locator for the signer who will submit this transaction. Defaults to the admin signer.",
+                                        "example": [
+                                            "passkey:cWtP7gmZbd98HbKUuGXx5Q",
+                                            "api-key:123456789",
+                                            "external-wallet:0x1234567890123456789012345678901234567890",
+                                            "email:test@example.com",
+                                            "phone:+1234567890"
+                                        ]
+                                    }
+                                },
+                                "required": ["transaction"],
+                                "additionalProperties": false,
+                                "title": "Stellar smart wallet",
+                                "description": "Parameters for a transaction from a Stellar Smart Wallet"
+                            }
+                        },
+                        "required": ["params"]
                     }
                 ],
-                "description": "Input schema for creating a new transaction. The parameters vary based on the wallet type (EVM vs Solana).",
+                "description": "Input schema for creating a new transaction. The parameters vary based on the wallet type (EVM vs Solana vs Stellar).",
                 "example": {
                     "params": {
                         "calls": [
@@ -9441,8 +9588,47 @@
                                                         "description": "The name of the function to call"
                                                     },
                                                     "memo": {
-                                                        "type": "string",
-                                                        "description": "The memo for the transaction"
+                                                        "discriminator": {
+                                                            "propertyName": "type"
+                                                        },
+                                                        "oneOf": [
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "type": {
+                                                                        "type": "string",
+                                                                        "enum": ["text"],
+                                                                        "description": "The type of memo"
+                                                                    },
+                                                                    "value": {
+                                                                        "type": "string",
+                                                                        "maxLength": 28,
+                                                                        "description": "The value of the memo (max 28 bytes)"
+                                                                    }
+                                                                },
+                                                                "required": ["type", "value"]
+                                                            },
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "type": {
+                                                                        "type": "string",
+                                                                        "enum": ["id"],
+                                                                        "description": "The type of memo"
+                                                                    },
+                                                                    "value": {
+                                                                        "type": "string",
+                                                                        "description": "The value of the memo (64-bit unsigned integer)"
+                                                                    }
+                                                                },
+                                                                "required": ["type", "value"]
+                                                            }
+                                                        ],
+                                                        "description": "The memo for the transaction",
+                                                        "example": {
+                                                            "type": "text",
+                                                            "value": "Hello, world!"
+                                                        }
                                                     },
                                                     "args": {
                                                         "type": "object",
@@ -9499,12 +9685,10 @@
                                         "title": "Signer Locator",
                                         "description": "The locator for the signer who will submit this transaction. Defaults to the admin signer.",
                                         "example": [
-                                            "evm-keypair:0x1234567890123456789012345678901234567890",
-                                            "evm-passkey:credential-id-123",
-                                            "evm-fireblocks-custodial:0x1234567890123456789012345678901234567890",
-                                            "solana-keypair:DUSTawucrTsGU8hcqRdHDCbuYhCPADMLM2VcCb8VnFnQ",
-                                            "solana-fireblocks-custodial:DUSTawucrTsGU8hcqRdHDCbuYhCPADMLM2VcCb8VnFnQ",
-                                            "email:user@example.com",
+                                            "passkey:cWtP7gmZbd98HbKUuGXx5Q",
+                                            "api-key:123456789",
+                                            "external-wallet:0x1234567890123456789012345678901234567890",
+                                            "email:test@example.com",
                                             "phone:+1234567890"
                                         ]
                                     }
@@ -13044,6 +13228,49 @@
                         "type": "string",
                         "description": "Amount of tokens to transfer (in decimal value)",
                         "example": "42.69"
+                    },
+                    "memo": {
+                        "discriminator": {
+                            "propertyName": "type"
+                        },
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": ["text"],
+                                        "description": "The type of memo"
+                                    },
+                                    "value": {
+                                        "type": "string",
+                                        "maxLength": 28,
+                                        "description": "The value of the memo (max 28 bytes)"
+                                    }
+                                },
+                                "required": ["type", "value"]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": ["id"],
+                                        "description": "The type of memo"
+                                    },
+                                    "value": {
+                                        "type": "string",
+                                        "description": "The value of the memo (64-bit unsigned integer)"
+                                    }
+                                },
+                                "required": ["type", "value"]
+                            }
+                        ],
+                        "description": "Memo for the transaction. Only supported for Stellar",
+                        "example": {
+                            "type": "text",
+                            "value": "Hello, world!"
+                        }
                     }
                 },
                 "required": ["recipient"],
@@ -13706,6 +13933,10 @@
                                 "scorpio",
                                 "taurus",
                                 "virgo",
+                                "ani",
+                                "blob",
+                                "boatkid",
+                                "ufd",
                                 "sol",
                                 "sui",
                                 "apt",
@@ -17996,8 +18227,47 @@
                                                                     "description": "The name of the function to call"
                                                                 },
                                                                 "memo": {
-                                                                    "type": "string",
-                                                                    "description": "The memo for the transaction"
+                                                                    "discriminator": {
+                                                                        "propertyName": "type"
+                                                                    },
+                                                                    "oneOf": [
+                                                                        {
+                                                                            "type": "object",
+                                                                            "properties": {
+                                                                                "type": {
+                                                                                    "type": "string",
+                                                                                    "enum": ["text"],
+                                                                                    "description": "The type of memo"
+                                                                                },
+                                                                                "value": {
+                                                                                    "type": "string",
+                                                                                    "maxLength": 28,
+                                                                                    "description": "The value of the memo (max 28 bytes)"
+                                                                                }
+                                                                            },
+                                                                            "required": ["type", "value"]
+                                                                        },
+                                                                        {
+                                                                            "type": "object",
+                                                                            "properties": {
+                                                                                "type": {
+                                                                                    "type": "string",
+                                                                                    "enum": ["id"],
+                                                                                    "description": "The type of memo"
+                                                                                },
+                                                                                "value": {
+                                                                                    "type": "string",
+                                                                                    "description": "The value of the memo (64-bit unsigned integer)"
+                                                                                }
+                                                                            },
+                                                                            "required": ["type", "value"]
+                                                                        }
+                                                                    ],
+                                                                    "description": "The memo for the transaction",
+                                                                    "example": {
+                                                                        "type": "text",
+                                                                        "value": "Hello, world!"
+                                                                    }
                                                                 },
                                                                 "args": {
                                                                     "type": "object",
@@ -18054,12 +18324,10 @@
                                                     "title": "Signer Locator",
                                                     "description": "The locator for the signer who will submit this transaction. Defaults to the admin signer.",
                                                     "example": [
-                                                        "evm-keypair:0x1234567890123456789012345678901234567890",
-                                                        "evm-passkey:credential-id-123",
-                                                        "evm-fireblocks-custodial:0x1234567890123456789012345678901234567890",
-                                                        "solana-keypair:DUSTawucrTsGU8hcqRdHDCbuYhCPADMLM2VcCb8VnFnQ",
-                                                        "solana-fireblocks-custodial:DUSTawucrTsGU8hcqRdHDCbuYhCPADMLM2VcCb8VnFnQ",
-                                                        "email:user@example.com",
+                                                        "passkey:cWtP7gmZbd98HbKUuGXx5Q",
+                                                        "api-key:123456789",
+                                                        "external-wallet:0x1234567890123456789012345678901234567890",
+                                                        "email:test@example.com",
                                                         "phone:+1234567890"
                                                     ]
                                                 }
@@ -18070,8 +18338,18 @@
                                             "type": "object",
                                             "properties": {
                                                 "transaction": {
-                                                    "type": "string",
-                                                    "description": "The Stellar Transaction Envelope in XDR format"
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "method": {
+                                                            "type": "string"
+                                                        },
+                                                        "tx": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": ["method", "tx"],
+                                                    "title": "Stellar on-chain transaction",
+                                                    "description": "The Stellar Transaction Envelope"
                                                 },
                                                 "txId": {
                                                     "type": "string",
@@ -18081,19 +18359,9 @@
                                                     "type": "number",
                                                     "description": "The ledger number where the transaction was included"
                                                 },
-                                                "simulation": {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "success": {
-                                                            "type": "boolean",
-                                                            "description": "Whether the transaction was successful"
-                                                        },
-                                                        "result": {
-                                                            "description": "The Transaction Result in XDR format"
-                                                        }
-                                                    },
-                                                    "required": ["success"],
-                                                    "description": "The simulation result"
+                                                "expiration": {
+                                                    "type": "number",
+                                                    "description": "The expiration of the transaction"
                                                 },
                                                 "result": {
                                                     "description": "The Transaction Result in XDR format"
@@ -18103,7 +18371,7 @@
                                                     "description": "Optional link to view the transaction in an explorer"
                                                 }
                                             },
-                                            "required": ["transaction", "simulation"],
+                                            "required": ["transaction", "expiration"],
                                             "title": "Stellar on-chain data"
                                         },
                                         "id": {
@@ -22104,8 +22372,47 @@
                                                         "description": "The name of the function to call"
                                                     },
                                                     "memo": {
-                                                        "type": "string",
-                                                        "description": "The memo for the transaction"
+                                                        "discriminator": {
+                                                            "propertyName": "type"
+                                                        },
+                                                        "oneOf": [
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "type": {
+                                                                        "type": "string",
+                                                                        "enum": ["text"],
+                                                                        "description": "The type of memo"
+                                                                    },
+                                                                    "value": {
+                                                                        "type": "string",
+                                                                        "maxLength": 28,
+                                                                        "description": "The value of the memo (max 28 bytes)"
+                                                                    }
+                                                                },
+                                                                "required": ["type", "value"]
+                                                            },
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "type": {
+                                                                        "type": "string",
+                                                                        "enum": ["id"],
+                                                                        "description": "The type of memo"
+                                                                    },
+                                                                    "value": {
+                                                                        "type": "string",
+                                                                        "description": "The value of the memo (64-bit unsigned integer)"
+                                                                    }
+                                                                },
+                                                                "required": ["type", "value"]
+                                                            }
+                                                        ],
+                                                        "description": "The memo for the transaction",
+                                                        "example": {
+                                                            "type": "text",
+                                                            "value": "Hello, world!"
+                                                        }
                                                     },
                                                     "args": {
                                                         "type": "object",
@@ -22162,12 +22469,10 @@
                                         "title": "Signer Locator",
                                         "description": "The locator for the signer who will submit this transaction. Defaults to the admin signer.",
                                         "example": [
-                                            "evm-keypair:0x1234567890123456789012345678901234567890",
-                                            "evm-passkey:credential-id-123",
-                                            "evm-fireblocks-custodial:0x1234567890123456789012345678901234567890",
-                                            "solana-keypair:DUSTawucrTsGU8hcqRdHDCbuYhCPADMLM2VcCb8VnFnQ",
-                                            "solana-fireblocks-custodial:DUSTawucrTsGU8hcqRdHDCbuYhCPADMLM2VcCb8VnFnQ",
-                                            "email:user@example.com",
+                                            "passkey:cWtP7gmZbd98HbKUuGXx5Q",
+                                            "api-key:123456789",
+                                            "external-wallet:0x1234567890123456789012345678901234567890",
+                                            "email:test@example.com",
                                             "phone:+1234567890"
                                         ]
                                     }
@@ -22178,8 +22483,18 @@
                                 "type": "object",
                                 "properties": {
                                     "transaction": {
-                                        "type": "string",
-                                        "description": "The Stellar Transaction Envelope in XDR format"
+                                        "type": "object",
+                                        "properties": {
+                                            "method": {
+                                                "type": "string"
+                                            },
+                                            "tx": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["method", "tx"],
+                                        "title": "Stellar on-chain transaction",
+                                        "description": "The Stellar Transaction Envelope"
                                     },
                                     "txId": {
                                         "type": "string",
@@ -22189,19 +22504,9 @@
                                         "type": "number",
                                         "description": "The ledger number where the transaction was included"
                                     },
-                                    "simulation": {
-                                        "type": "object",
-                                        "properties": {
-                                            "success": {
-                                                "type": "boolean",
-                                                "description": "Whether the transaction was successful"
-                                            },
-                                            "result": {
-                                                "description": "The Transaction Result in XDR format"
-                                            }
-                                        },
-                                        "required": ["success"],
-                                        "description": "The simulation result"
+                                    "expiration": {
+                                        "type": "number",
+                                        "description": "The expiration of the transaction"
                                     },
                                     "result": {
                                         "description": "The Transaction Result in XDR format"
@@ -22211,7 +22516,7 @@
                                         "description": "Optional link to view the transaction in an explorer"
                                     }
                                 },
-                                "required": ["transaction", "simulation"],
+                                "required": ["transaction", "expiration"],
                                 "title": "Stellar on-chain data"
                             },
                             "id": {
@@ -31831,6 +32136,32 @@
                                                     "type": "email",
                                                     "email": "user@example.com",
                                                     "locator": "email:user@example.com"
+                                                }
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "type": {
+                                                        "type": "string",
+                                                        "enum": ["phone"],
+                                                        "description": "Identifier for phone signer type"
+                                                    },
+                                                    "phone": {
+                                                        "type": "string",
+                                                        "description": "The phone number for the signer in E164 format"
+                                                    },
+                                                    "locator": {
+                                                        "type": "string",
+                                                        "description": "The locator of the signer"
+                                                    }
+                                                },
+                                                "required": ["type", "phone", "locator"],
+                                                "title": "Phone Signer",
+                                                "description": "Configuration for a phone signer",
+                                                "example": {
+                                                    "type": "phone",
+                                                    "phone": "+1234567890",
+                                                    "locator": "phone:+1234567890"
                                                 }
                                             }
                                         ]
