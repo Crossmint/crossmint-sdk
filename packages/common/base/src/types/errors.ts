@@ -25,19 +25,26 @@ export const PaymentErrors = {
     TRANSACTION_ERROR_GENERIC: "payments:transaction-error.generic",
     CONTRACT_EXECUTION_REVERTED_GENERIC: "payments:contract-execution-reverted.generic",
     EMBEDDED_CHECKOUT_NOT_ENABLED: "payments:embedded-checkout.not-enabled",
-
-    PAYMENT_AMOUNT_MISSING: "payments:payment-amount.missing",
-    PAYMENT_SINGLE_PURCHASE_LIMIT_EXCEEDED: "payments:payment-single-purchase-limit.exceeded",
-    PAYMENT_DAILY_TRANSACTION_LIMIT_EXCEEDED: "payments:payment-daily-transaction-limit.exceeded",
-    TOKEN_DAILY_VOLUME_LIMIT_EXCEEDED: "payments:token-daily-volume-limit.exceeded",
-    WALLET_ADDRESS_MISSING: "payments:wallet-address.missing",
-    EMAIL_INVALID: "payments:email.invalid",
-    PROJECT_ADDON_REQUIRED: "payments:project-addon.required",
-    ASSET_NOT_AVAILABLE_IN_ENVIRONMENT: "payments:asset.not-available-in-environment",
-    UNSUPPORTED_TOKEN: "payments:token.unsupported",
-    PROJECT_FEATURE_NOT_ENABLED: "payments:project-feature.not-enabled",
 } as const;
 export type PaymentErrors = (typeof PaymentErrors)[keyof typeof PaymentErrors];
+
+export const ValidationErrors = {
+    AMOUNT_REQUIRED: "validation:amount.required",
+    WALLET_ADDRESS_REQUIRED: "validation:wallet-address.required",
+    INVALID_EMAIL: "validation:email.invalid",
+    TOKENN_ENVIRONMENT_MISMATCH: "validation:token.environment-mismatch",
+    UNSUPPORTED_TOKEN: "validation:token:unsupported",
+} as const;
+
+export const LimitErrors = {
+    SINGLE_PURCHASE_EXCEEDED: "limits:single-purchase.exceeded",
+    DAILY_TRANSACTION_EXCEEDED: "limits:daily-transaction.exceeded",
+    TOKEN_DAILY_VOLUME_EXCEEDED: "limits:token-daily-volume.exceeded",
+} as const;
+
+export const ProjectErrors = {
+    ADDON_REQUIRED: "project:addon.required",
+} as const;
 
 export const SmartWalletErrorCode = {
     TRANSFER: "smart-wallet:transfer",
@@ -73,6 +80,9 @@ export const CrossmintErrors = {
     ...PaymentErrors,
     ...SmartWalletErrorCode,
     ...WalletErrorCode,
+    ...ValidationErrors,
+    ...LimitErrors,
+    ...ProjectErrors,
     NOT_AUTHORIZED: "not-authorized",
     CROSSMINT_SERVICE: "crossmint-service",
     JWT_EXPIRED: "not-authorized.jwt-expired",
