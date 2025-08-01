@@ -115,6 +115,9 @@ export function EmbeddedCheckoutV3WebView(props: CrossmintEmbeddedCheckoutV3Prop
                 allowUniversalAccessFromFileURLs={true}
                 geolocationEnabled={true}
                 userAgent={userAgent}
+                javaScriptCanOpenWindowsAutomatically={true}
+                setSupportMultipleWindows={true}
+                paymentRequestEnabled={true}
             />
             {memoizedProps.current.payment.crypto.enabled ? (
                 memoizedProps.current.payment.crypto.payer != null ? (
