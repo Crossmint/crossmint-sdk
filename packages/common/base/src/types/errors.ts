@@ -33,7 +33,7 @@ export const ValidationErrors = {
     AMOUNT_REQUIRED: "validation:amount.required",
     WALLET_ADDRESS_REQUIRED: "validation:wallet-address.required",
     INVALID_EMAIL: "validation:email.invalid",
-    TOKENN_ENVIRONMENT_MISMATCH: "validation:token.environment-mismatch",
+    TOKEN_ENVIRONMENT_MISMATCH: "validation:token.environment-mismatch",
     UNSUPPORTED_TOKEN: "validation:token.unsupported",
 } as const;
 
