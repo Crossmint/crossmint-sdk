@@ -5,6 +5,7 @@ export {
     type Chain,
     type DelegatedSigner,
     type Transaction,
+    type Signature,
     EVMWallet,
     SolanaWallet,
     StellarWallet,

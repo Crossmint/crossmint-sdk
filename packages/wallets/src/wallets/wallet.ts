@@ -20,6 +20,9 @@ import type {
     ApproveParams,
     ApproveOptions,
     Approval,
+    Signature,
+    ApproveResult,
+    PrepareOnly,
 } from "./types";
 import {
     InvalidSignerError,
@@ -248,7 +251,7 @@ export class Wallet<C extends Chain> {
         token: string,
         amount: string,
         options?: T
-    ): Promise<Transaction<T extends { experimental_prepareOnly: true } ? true : false>> {
+    ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
         const recipient = toRecipientLocator(to);
         const tokenLocator = toTokenLocator(token, this.chain);
         const sendParams = { recipient, amount };
@@ -265,7 +268,7 @@ export class Wallet<C extends Chain> {
                 hash: undefined,
                 explorerLink: undefined,
                 transactionId: transactionCreationResponse.id,
-            } as Transaction<T extends { experimental_prepareOnly: true } ? true : false>;
+            } as Transaction<T extends PrepareOnly<true> ? true : false>;
         }
 
         return await this.approveTransactionAndWait(transactionCreationResponse.id);
@@ -290,21 +293,22 @@ export class Wallet<C extends Chain> {
     }
 
     /**
-     * Approve a transaction
+     * Approve a transaction or signature
      * @param params - The parameters
-     * @param params.transactionId - The transaction id
+     * @param params.transactionId - The transaction id or
      * @param params.signatureId - The signature id
      * @param params.options - The options for the transaction
      * @param params.options.experimental_approval - The approval
      * @param params.options.additionalSigners - The additional signers
-     * @returns The transaction
+     * @returns The transaction or signature
      */
-    public async approve(params: ApproveParams) {
+
+    public async approve<T extends ApproveParams>(params: T): Promise<ApproveResult<T>> {
         if (params.transactionId != null) {
-            return await this.approveTransactionAndWait(params.transactionId, params.options);
+            return (await this.approveTransactionAndWait(params.transactionId, params.options)) as ApproveResult<T>;
         }
         if (params.signatureId != null) {
-            return await this.approveSignatureAndWait(params.signatureId, params.options);
+            return (await this.approveSignatureAndWait(params.signatureId, params.options)) as ApproveResult<T>;
         }
         throw new Error("Either transactionId or signatureId must be provided");
     }
@@ -531,7 +535,7 @@ export class Wallet<C extends Chain> {
         return approvedSignature;
     }
 
-    protected async waitForSignature(signatureId: string): Promise<string> {
+    protected async waitForSignature(signatureId: string): Promise<Signature<false>> {
         let signatureResponse: GetSignatureResponse | null = null;
 
         do {
@@ -550,7 +554,10 @@ export class Wallet<C extends Chain> {
             throw new SignatureNotAvailableError("Signature not available");
         }
 
-        return signatureResponse.outputSignature;
+        return {
+            signature: signatureResponse.outputSignature,
+            signatureId,
+        };
     }
 
     protected async waitForTransaction(
@@ -565,7 +572,7 @@ export class Wallet<C extends Chain> {
             backoffMultiplier?: number;
             maxBackoffMs?: number;
         } = {}
-    ): Promise<Transaction> {
+    ): Promise<Transaction<false>> {
         const startTime = Date.now();
         let transactionResponse;
 
