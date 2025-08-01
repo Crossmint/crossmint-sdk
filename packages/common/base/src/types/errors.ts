@@ -26,16 +26,16 @@ export const PaymentErrors = {
     CONTRACT_EXECUTION_REVERTED_GENERIC: "payments:contract-execution-reverted.generic",
     EMBEDDED_CHECKOUT_NOT_ENABLED: "payments:embedded-checkout.not-enabled",
 
-    PAYMENT_AMOUNT_MISSING: "payment_amount_missing",
-    PAYMENT_SINGLE_PURCHASE_LIMIT_EXCEEDED: "payment_single_purchase_limit_exceeded",
-    PAYMENT_DAILY_TRANSACTION_LIMIT_EXCEEDED: "payment_daily_transaction_limit_exceeded",
-    TOKEN_DAILY_VOLUME_LIMIT_EXCEEDED: "token_daily_volume_limit_exceeded",
-    WALLET_ADDRESS_MISSING: "wallet_address_missing",
-    EMAIL_INVALID: "email_invalid",
-    PROJECT_ADDON_REQUIRED: "project_addon_required",
-    ASSET_NOT_AVAILABLE_IN_ENVIRONMENT: "asset_not_available_in_environment",
-    UNSUPPORTED_TOKEN: "unsupported_token",
-    PROJECT_FEATURE_NOT_ENABLED: "project_feature_not_enabled",
+    PAYMENT_AMOUNT_MISSING: "payments:payment-amount.missing",
+    PAYMENT_SINGLE_PURCHASE_LIMIT_EXCEEDED: "payments:payment-single-purchase-limit.exceeded",
+    PAYMENT_DAILY_TRANSACTION_LIMIT_EXCEEDED: "payments:payment-daily-transaction-limit.exceeded",
+    TOKEN_DAILY_VOLUME_LIMIT_EXCEEDED: "payments:token-daily-volume-limit.exceeded",
+    WALLET_ADDRESS_MISSING: "payments:wallet-address.missing",
+    EMAIL_INVALID: "payments:email.invalid",
+    PROJECT_ADDON_REQUIRED: "payments:project-addon.required",
+    ASSET_NOT_AVAILABLE_IN_ENVIRONMENT: "payments:asset.not-available-in-environment",
+    UNSUPPORTED_TOKEN: "payments:token.unsupported",
+    PROJECT_FEATURE_NOT_ENABLED: "payments:project-feature.not-enabled",
 } as const;
 export type PaymentErrors = (typeof PaymentErrors)[keyof typeof PaymentErrors];
 
