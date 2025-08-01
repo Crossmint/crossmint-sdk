@@ -62,7 +62,11 @@ export function EmailSignersDialog({
                         </div>
                     }
                     title="Check your email"
-                    description={`A temporary login code has been sent to <strong>${email}</strong>`}
+                    description={
+                        <>
+                            A temporary login code has been sent to <strong>{email}</strong>
+                        </>
+                    }
                     helpText={`Can't find the email? Check spam folder. \nSome emails may take several minutes to arrive.`}
                     onSubmitOTP={onSubmitOTP}
                     onResendCode={onResendOTPCode}

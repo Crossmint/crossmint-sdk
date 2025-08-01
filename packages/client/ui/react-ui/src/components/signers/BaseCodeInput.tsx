@@ -13,7 +13,7 @@ interface BaseCodeInputProps {
     contactType: "email" | "phone";
     icon: ReactNode;
     title: string;
-    description: string;
+    description: ReactNode;
     helpText: string;
     onSubmitOTP: (token: string) => Promise<void>;
     onResendCode?: () => Promise<void>;
@@ -192,8 +192,7 @@ export function BaseCodeInput({
 
             <Title appearance={appearance}>{title}</Title>
 
-            {/* biome-ignore lint/security/noDangerouslySetInnerHtml: Fine for this case */}
-            <Description appearance={appearance} dangerouslySetInnerHTML={{ __html: description }} />
+            <Description appearance={appearance}>{description}</Description>
 
             <InputContainer>
                 <Form
