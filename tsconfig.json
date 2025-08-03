@@ -1,0 +1,19 @@
+{
+    "extends": "./tsconfig.base.json",
+    "compilerOptions": {},
+    "files": [],
+    "references": [
+        { "path": "./packages/common/base" },
+        { "path": "./packages/common/auth" },
+        { "path": "./packages/client/window" },
+        { "path": "./packages/client/signers" },
+        { "path": "./packages/client/base" },
+        { "path": "./packages/client/auth" },
+        { "path": "./packages/client/verifiable-credentials" },
+        { "path": "./packages/client/rn-window" },
+        { "path": "./packages/wallets" },
+        { "path": "./packages/client/react-base" },
+        { "path": "./packages/server" },
+        { "path": "./packages/client/ui/react-ui" }
+    ]
+}
