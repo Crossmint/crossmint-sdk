@@ -13,5 +13,4 @@ export const treeShakableConfig: Options = {
     shims: true,
     minify: process.env.NODE_ENV === "production",
     sourcemap: true,
-    onSuccess: "tsc --emitDeclarationOnly --declarationMap --outDir dist --skipLibCheck || true",
 };

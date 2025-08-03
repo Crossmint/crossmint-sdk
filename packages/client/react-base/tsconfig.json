@@ -8,6 +8,13 @@
         },
         "jsx": "react-jsx"
     },
+    "references": [
+        { "path": "../../common/base" },
+        { "path": "../base" },
+        { "path": "../window" },
+        { "path": "../signers" },
+        { "path": "../../wallets" }
+    ],
     "include": ["src/**/*"],
     "exclude": ["__tests__"]
 }

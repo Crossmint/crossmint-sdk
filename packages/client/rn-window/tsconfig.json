@@ -8,5 +8,6 @@
             "@/*": ["src/*"]
         }
     },
-    "include": ["src/**/*"]
+    "references": [{ "path": "../window" }],
+    "include": ["src/**/*.ts", "src/**/*.tsx"]
 }
