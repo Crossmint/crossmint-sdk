@@ -27,9 +27,9 @@
     "dependencies": {
         "@crossmint/client-sdk-base": "workspace:*",
         "@crossmint/client-sdk-react-ui": "workspace:*",
-        "@dynamic-labs/ethereum": "4.8.3",
+        "@dynamic-labs/ethereum": "4.25.9",
         "@dynamic-labs/sdk-react-core": "4.8.3",
-        "@dynamic-labs/solana": "4.8.3",
+        "@dynamic-labs/solana": "4.25.9",
         "next": "14.2.25",
         "react": "18.3.1",
         "react-dom": "18.3.1"

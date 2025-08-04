@@ -10,9 +10,9 @@
     },
     "dependencies": {
         "@crossmint/client-sdk-react-ui": "workspace:*",
-        "@dynamic-labs/ethereum": "4.25.6",
+        "@dynamic-labs/ethereum": "4.25.9",
         "@dynamic-labs/sdk-react-core": "4.25.6",
-        "@dynamic-labs/solana": "4.25.6",
+        "@dynamic-labs/solana": "4.25.9",
         "@firebase/auth": "1.10.8",
         "@privy-io/react-auth": "2.13.0",
         "@solana/spl-token": "0.4.13",
