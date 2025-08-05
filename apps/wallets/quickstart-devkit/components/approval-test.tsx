@@ -8,9 +8,12 @@ import { isAddress } from "viem";
 export function ApprovalTest() {
     const { wallet } = useWallet();
 
+    const isEVMWallet = wallet?.chain !== "solana";
+    const isSolanaWallet = wallet?.chain === "solana";
+
     // State for creating transactions that need approval
     const [prepareTransfer, setPrepareTransfer] = useState({
-        token: "eth" as "eth" | "usdc" | "sol",
+        token: (isEVMWallet ? "eth" : "sol") as "eth" | "usdc" | "sol",
         recipient: "",
         amount: "",
     });
@@ -26,9 +29,6 @@ export function ApprovalTest() {
     const [isApprovingSignature, setIsApprovingSignature] = useState(false);
     const [approvalResult, setApprovalResult] = useState<Transaction<false> | Signature<false> | null>(null);
     const [error, setError] = useState<string | null>(null);
-
-    const isEVMWallet = wallet?.chain !== "solana";
-    const isSolanaWallet = wallet?.chain === "solana";
 
     // Validate address based on chain
     const isValidAddress = (address: string) => {

@@ -139,7 +139,8 @@ export class Wallet<C extends Chain> {
     ): Balances {
         const transformTokenBalance = (tokenData: GetBalanceSuccessResponse[number]): TokenBalance => {
             const chainData = tokenData.chains?.[this.chain];
-            const contractAddress = "contractAddress" in chainData ? chainData.contractAddress : undefined;
+            const contractAddress =
+                chainData != null && "contractAddress" in chainData ? chainData.contractAddress : undefined;
 
             return {
                 symbol: tokenData.symbol ?? "",
@@ -270,6 +271,7 @@ export class Wallet<C extends Chain> {
                 transactionId: transactionCreationResponse.id,
             } as Transaction<T extends PrepareOnly<true> ? true : false>;
         }
+        console.log("transactionCreationResponse", transactionCreationResponse);
 
         return await this.approveTransactionAndWait(transactionCreationResponse.id);
     }
