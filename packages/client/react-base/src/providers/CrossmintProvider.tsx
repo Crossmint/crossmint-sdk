@@ -1,12 +1,8 @@
 import { type ReactNode, createContext, useCallback, useMemo, useRef, useState } from "react";
-import { type Crossmint, type CrossmintConfig, type CustomAuth, createCrossmint } from "@crossmint/common-sdk-base";
-import isEqual from "lodash.isequal";
+import { type Crossmint, type CrossmintConfig, createCrossmint } from "@crossmint/common-sdk-base";
 
 export interface CrossmintContext {
     crossmint: Crossmint;
-    experimental_setCustomAuth: (customAuthParams?: CustomAuth) => void;
-    experimental_customAuth?: CustomAuth;
-    /** @deprecated Use experimental_setCustomAuth instead.*/
     setJwt: (jwt: string | undefined) => void;
 }
 
@@ -28,9 +24,6 @@ export function CrossmintProvider({
                 if (prop === "jwt" && target.jwt !== value) {
                     setVersion((v) => v + 1);
                 }
-                if (prop === "experimental_customAuth" && target.experimental_customAuth !== value) {
-                    setVersion((v) => v + 1);
-                }
                 return Reflect.set(target, prop, value);
             },
         })
@@ -42,26 +35,14 @@ export function CrossmintProvider({
         }
     }, []);
 
-    const experimental_setCustomAuth = useCallback((customAuthParams?: CustomAuth) => {
-        // Maintains backward compatibility in case crossmint.jwt is being used.
-        if (crossmintRef.current.jwt != customAuthParams?.jwt) {
-            crossmintRef.current.jwt = customAuthParams?.jwt;
-        }
-        if (!isEqual(customAuthParams, crossmintRef.current.experimental_customAuth)) {
-            crossmintRef.current.experimental_customAuth = customAuthParams;
-        }
-    }, []);
-
     const value = useMemo(
         () => ({
             get crossmint() {
                 return crossmintRef.current;
             },
-            experimental_setCustomAuth,
-            experimental_customAuth: crossmintRef.current.experimental_customAuth,
             setJwt,
         }),
-        [experimental_setCustomAuth, setJwt, version]
+        [setJwt, version]
     );
 
     return <CrossmintContext.Provider value={value}>{children}</CrossmintContext.Provider>;

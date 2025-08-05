@@ -31,6 +31,8 @@ export function HomeContent() {
     const { status: crossminAuthStatus } = useAuth();
     const isLoading = status === "in-progress" || crossminAuthStatus === "initializing";
 
+    console.log("wallet", wallet);
+
     const walletAddress = wallet?.address;
     const isLoggedIn = wallet != null && status === "loaded";
 

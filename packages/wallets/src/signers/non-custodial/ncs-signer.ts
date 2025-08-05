@@ -17,6 +17,14 @@ export abstract class NonCustodialSigner implements Signer {
         this.type = this.config.type;
     }
 
+    get email(): string | undefined {
+        return this.config.type === "email" ? this.config.email : undefined;
+    }
+
+    get phone(): string | undefined {
+        return this.config.type === "phone" ? this.config.phone : undefined;
+    }
+
     locator() {
         return this.config.locator;
     }
@@ -56,7 +64,7 @@ export abstract class NonCustodialSigner implements Signer {
             responseEvent: "response:get-status",
             data: {
                 authData: {
-                    jwt: this.config.crossmint.experimental_customAuth?.jwt ?? "",
+                    jwt: this.config.crossmint.jwt ?? "",
                     apiKey: this.config.crossmint.apiKey,
                 },
             },
@@ -96,7 +104,7 @@ export abstract class NonCustodialSigner implements Signer {
     }
 
     protected getJwtOrThrow() {
-        const jwt = this.config.crossmint.experimental_customAuth?.jwt;
+        const jwt = this.config.crossmint.jwt;
         if (jwt == null) {
             throw new Error("JWT is required");
         }
@@ -127,7 +135,7 @@ export abstract class NonCustodialSigner implements Signer {
             responseEvent: "response:start-onboarding",
             data: {
                 authData: {
-                    jwt: this.config.crossmint.experimental_customAuth?.jwt ?? "",
+                    jwt: this.config.crossmint.jwt ?? "",
                     apiKey: this.config.crossmint.apiKey,
                 },
                 data: { authId },
@@ -165,7 +173,7 @@ export abstract class NonCustodialSigner implements Signer {
                 responseEvent: "response:complete-onboarding",
                 data: {
                     authData: {
-                        jwt: this.config.crossmint.experimental_customAuth?.jwt ?? "",
+                        jwt: this.config.crossmint.jwt ?? "",
                         apiKey: this.config.crossmint.apiKey,
                     },
                     data: {

@@ -58,15 +58,7 @@ function EVMPrivyProvider({ children }: { children: React.ReactNode }) {
             }}
         >
             <CrossmintProvider apiKey={crossmintApiKey}>
-                <CrossmintWalletProvider
-                    showPasskeyHelpers={false}
-                    createOnLogin={{
-                        chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any,
-                        signer: { type: "email" },
-                    }}
-                >
-                    {children}
-                </CrossmintWalletProvider>
+                <CrossmintWalletProvider showPasskeyHelpers={false}>{children}</CrossmintWalletProvider>
             </CrossmintProvider>
         </PrivyProvider>
     );
@@ -97,11 +89,7 @@ function EVMFirebaseProvider({ children }: { children: React.ReactNode }) {
     }
     return (
         <CrossmintProvider apiKey={crossmintApiKey}>
-            <CrossmintWalletProvider
-                createOnLogin={{ chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any, signer: { type: "email" } }}
-            >
-                {children}
-            </CrossmintWalletProvider>
+            <CrossmintWalletProvider>{children}</CrossmintWalletProvider>
         </CrossmintProvider>
     );
 }
@@ -144,12 +132,7 @@ function SolanaPrivyProvider({ children }: { children: React.ReactNode }) {
             }}
         >
             <CrossmintProvider apiKey={crossmintApiKey}>
-                <CrossmintWalletProvider
-                    showPasskeyHelpers={false}
-                    createOnLogin={{ chain: "solana", signer: { type: "external-wallet" } }}
-                >
-                    {children}
-                </CrossmintWalletProvider>
+                <CrossmintWalletProvider showPasskeyHelpers={false}>{children}</CrossmintWalletProvider>
             </CrossmintProvider>
         </PrivyProvider>
     );
@@ -171,9 +154,7 @@ function SolanaDynamicLabsProvider({
             }}
         >
             <CrossmintProvider apiKey={crossmintApiKey}>
-                <CrossmintWalletProvider createOnLogin={{ chain: "solana", signer: { type: "external-wallet" } }}>
-                    {children}
-                </CrossmintWalletProvider>
+                <CrossmintWalletProvider>{children}</CrossmintWalletProvider>
             </CrossmintProvider>
         </DynamicContextProvider>
     );
@@ -182,9 +163,7 @@ function SolanaDynamicLabsProvider({
 function SolanaFirebaseProvider({ children }: { children: React.ReactNode }) {
     return (
         <CrossmintProvider apiKey={crossmintApiKey}>
-            <CrossmintWalletProvider createOnLogin={{ chain: "solana", signer: { type: "email" } }}>
-                {children}
-            </CrossmintWalletProvider>
+            <CrossmintWalletProvider>{children}</CrossmintWalletProvider>
         </CrossmintProvider>
     );
 }

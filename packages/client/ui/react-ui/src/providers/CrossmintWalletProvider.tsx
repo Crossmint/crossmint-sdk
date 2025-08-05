@@ -1,10 +1,11 @@
-import { type ReactNode, useState, useCallback, useRef } from "react";
+import { type ReactNode, useState, useCallback, useRef, useEffect, useContext } from "react";
 import type { UIConfig } from "@crossmint/common-sdk-base";
-import { CrossmintWalletBaseProvider, useCrossmint, type CreateOnLogin } from "@crossmint/client-sdk-react-base";
+import { CrossmintWalletBaseProvider, type CreateOnLogin } from "@crossmint/client-sdk-react-base";
 
 import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
 import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
 import { PhoneSignersDialog } from "@/components/signers/PhoneSignersDialog";
+import { AuthContext } from "./CrossmintAuthProviderInternal";
 
 const throwNotAvailable = (functionName: string) => () => {
     throw new Error(`${functionName} is not available. Make sure you're using an email or phone signer wallet.`);
@@ -42,7 +43,8 @@ export function CrossmintWalletProvider({
     createOnLogin,
     callbacks,
 }: CrossmintWalletProviderProps) {
-    const { experimental_customAuth } = useCrossmint();
+    const authContext = useContext(AuthContext);
+
     const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
 
     // Email signer state (for main wallet authentication)
@@ -64,10 +66,42 @@ export function CrossmintWalletProvider({
     const verifyPhoneOtpRef = useRef<(otp: string) => Promise<void>>(throwNotAvailable("verifyPhoneOtp"));
 
     const rejectRef = useRef<(error: Error) => void>(throwNotAvailable("reject"));
-    const phoneNumber =
-        createOnLogin?.signer.type === "phone" && createOnLogin?.signer.phone != null
-            ? createOnLogin.signer.phone
-            : experimental_customAuth?.phone;
+
+    // When using createOnLogin, we need to set the signer email from Crossmint Auth
+    const processedCreateOnLogin = useRef<CreateOnLogin | undefined>(undefined);
+    useEffect(() => {
+        const processCreateOnLogin = async () => {
+            if (createOnLogin == null) {
+                processedCreateOnLogin.current = undefined;
+                return;
+            }
+
+            if (authContext == null) {
+                throw new Error("CrossmintWalletProvider with createOnLogin must be used within CrossmintAuthProvider");
+            }
+
+            if (authContext.user && createOnLogin.signer.type === "email") {
+                if (authContext.user.email == null) {
+                    await authContext.getUser();
+                }
+
+                processedCreateOnLogin.current = {
+                    ...createOnLogin,
+                    signer: {
+                        ...createOnLogin.signer,
+                        email: authContext.user.email,
+                    },
+                };
+            } else {
+                processedCreateOnLogin.current = createOnLogin;
+            }
+        };
+
+        processCreateOnLogin().catch((error) => {
+            console.error("Error processing createOnLogin:", error);
+            throw error;
+        });
+    }, [createOnLogin, authContext, authContext?.user]);
 
     const createPasskeyPrompt = useCallback(
         (type: ValidPasskeyPromptType) => () =>
@@ -139,7 +173,7 @@ export function CrossmintWalletProvider({
         let onWalletCreationStart = callbacks?.onWalletCreationStart;
         let onTransactionStart = callbacks?.onTransactionStart;
 
-        if (createOnLogin?.signer.type === "passkey" && showPasskeyHelpers) {
+        if (processedCreateOnLogin.current?.signer.type === "passkey" && showPasskeyHelpers) {
             onWalletCreationStart = createPasskeyPrompt("create-wallet");
             onTransactionStart = createPasskeyPrompt("transaction");
         }
@@ -147,6 +181,7 @@ export function CrossmintWalletProvider({
         return { onWalletCreationStart, onTransactionStart };
     };
 
+    // biome-ignore lint/suspicious/useAwait: not needed here as we only assign to refs
     const onAuthRequired = async (
         needsAuth: boolean,
         sendMessageWithOtp: () => Promise<void>,
@@ -154,7 +189,7 @@ export function CrossmintWalletProvider({
         reject: () => void
     ) => {
         // Check if we're dealing with a phone signer
-        if (createOnLogin?.signer.type === "phone" && createOnLogin.signer.phone) {
+        if (processedCreateOnLogin.current?.signer.type === "phone" && processedCreateOnLogin.current.signer.phone) {
             setPhoneSignerDialogOpen(needsAuth);
             sendPhoneWithOtpRef.current = sendMessageWithOtp;
             verifyPhoneOtpRef.current = verifyOtp;
@@ -170,15 +205,14 @@ export function CrossmintWalletProvider({
 
     return (
         <CrossmintWalletBaseProvider
-            createOnLogin={createOnLogin}
+            createOnLogin={processedCreateOnLogin.current}
             onAuthRequired={onAuthRequired}
             callbacks={getCallbacks()}
         >
             {children}
             <EmailSignersDialog
                 rejectRef={rejectRef}
-                email={experimental_customAuth?.email}
-                open={emailSignerDialogOpen && experimental_customAuth?.email != null}
+                open={emailSignerDialogOpen}
                 setOpen={setEmailSignerDialogOpen}
                 step={emailSignerDialogStep}
                 onSubmitOTP={emailsigners_handleOTPSubmit}
@@ -186,17 +220,20 @@ export function CrossmintWalletProvider({
                 onSubmitEmail={emailsigners_handleSendEmailOTP}
                 appearance={appearance}
             />
-            <PhoneSignersDialog
-                rejectRef={rejectRef}
-                phone={phoneNumber}
-                open={phoneSignerDialogOpen && phoneNumber != null}
-                setOpen={setPhoneSignerDialogOpen}
-                step={phoneSignerDialogStep}
-                onSubmitOTP={phonesigners_handleOTPSubmit}
-                onResendOTPCode={phonesigners_handleSendPhoneOTP}
-                onSubmitPhone={phonesigners_handleSendPhoneOTP}
-                appearance={appearance}
-            />
+
+            {processedCreateOnLogin.current != null && "phone" in processedCreateOnLogin.current.signer ? (
+                <PhoneSignersDialog
+                    rejectRef={rejectRef}
+                    open={phoneSignerDialogOpen}
+                    setOpen={setPhoneSignerDialogOpen}
+                    step={phoneSignerDialogStep}
+                    onSubmitOTP={phonesigners_handleOTPSubmit}
+                    onResendOTPCode={phonesigners_handleSendPhoneOTP}
+                    onSubmitPhone={phonesigners_handleSendPhoneOTP}
+                    appearance={appearance}
+                />
+            ) : null}
+
             <PasskeyPrompt state={passkeyPromptState} appearance={appearance} />
         </CrossmintWalletBaseProvider>
     );

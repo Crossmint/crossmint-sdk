@@ -2,7 +2,7 @@
 
 A Typescript SDK to interact with Crossmint Wallets. This SDK enables developers to easily create and manage wallets on Solana and EVM chains.
 
-Get a Crossmint client API key from [here](https://docs.crossmint.com/introduction/platform/api-keys/client-side) and add it to your `.env` file. Make sure your API key has all scopes for `Wallet API`, and `Users`.  
+Get a Crossmint client API key from [here](https://docs.crossmint.com/introduction/platform/api-keys/client-side) and add it to your `.env` file. Make sure your API key has all scopes for `Wallet API`, and `Users`.
 
 ## Installation
 
@@ -17,13 +17,11 @@ import { CrossmintWallets, createCrossmint } from "@crossmint/wallets-sdk";
 
 const crossmint = createCrossmint({
     apiKey: "<your-client-OR-server-api-key>",
-    experimental_customAuth: {
-        jwt: "<your-jwt>", // required for client-side calls, optional for server-side calls
-    },
+    jwt: "<your-jwt>", // required for client-side calls, optional for server-side calls
 });
 const crossmintWallets = CrossmintWallets.from(crossmint);
 const wallet = await crossmintWallets.getOrCreateWallet({
-    chain: "<your-chain>",  
+    chain: "<your-chain>",
     signer: {
         type: "email",
         email: "<your-email>",
@@ -34,7 +32,7 @@ const wallet = await crossmintWallets.getOrCreateWallet({
                 // Once the user provides the OTP, pass it to verifyOtp(otp).
                 // NOTE: If using our React/React Native SDK, this is handled automatically by the provider.
             }
-        }, 
+        },
     },
 });
 
