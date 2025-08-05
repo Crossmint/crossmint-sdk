@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 0.11.6
+
+### Patch Changes
+
+- bd70d30: Fixes fetching balances in solana
+
 ## 0.11.5
 
 ### Patch Changes
