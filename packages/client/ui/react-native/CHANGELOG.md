@@ -1,5 +1,14 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.9.9
+
+### Patch Changes
+
+- bd70d30: Revers back to needsAuth being a state
+- Updated dependencies [bd70d30]
+  - @crossmint/wallets-sdk@0.11.6
+  - @crossmint/client-sdk-react-base@0.5.24
+
 ## 0.9.8
 
 ### Patch Changes
