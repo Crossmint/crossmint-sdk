@@ -5,7 +5,9 @@ export {
     type Chain,
     type DelegatedSigner,
     type Transaction,
+    type Signature,
     EVMWallet,
     SolanaWallet,
+    StellarWallet,
     Wallet,
 } from "@crossmint/wallets-sdk";

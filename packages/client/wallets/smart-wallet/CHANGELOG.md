@@ -1,5 +1,30 @@
 # @crossmint/client-sdk-smart-wallet
 
+## 0.3.30
+
+### Patch Changes
+
+- Updated dependencies [6960177]
+  - @crossmint/common-sdk-base@0.9.3
+  - @crossmint/client-sdk-base@1.5.18
+
+## 0.3.29
+
+### Patch Changes
+
+- Updated dependencies [52791f9]
+  - @crossmint/client-sdk-base@1.5.17
+  - @crossmint/common-sdk-base@0.9.2
+
+## 0.3.28
+
+### Patch Changes
+
+- 74a6281: Stellar SDK support
+- Updated dependencies [74a6281]
+  - @crossmint/common-sdk-base@0.9.1
+  - @crossmint/client-sdk-base@1.5.16
+
 ## 0.3.27
 
 ### Patch Changes

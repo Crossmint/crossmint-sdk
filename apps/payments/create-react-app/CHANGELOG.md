@@ -1,5 +1,55 @@
 # @crossmint/client-sdk-react-ui-starter
 
+## 1.3.129
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@2.3.4
+
+## 1.3.128
+
+### Patch Changes
+
+- Updated dependencies [57e4202]
+- Updated dependencies [4728def]
+  - @crossmint/client-sdk-react-ui@2.3.3
+
+## 1.3.127
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@2.3.2
+
+## 1.3.126
+
+### Patch Changes
+
+- Updated dependencies [6559e0c]
+- Updated dependencies [48a6d9f]
+- Updated dependencies [52791f9]
+  - @crossmint/client-sdk-react-ui@2.3.1
+
+## 1.3.125
+
+### Patch Changes
+
+- Updated dependencies [6eb4438]
+  - @crossmint/client-sdk-react-ui@2.3.0
+
+## 1.3.124
+
+### Patch Changes
+
+- 74a6281: Stellar SDK support
+- Updated dependencies [74a6281]
+  - @crossmint/client-sdk-react-ui@2.2.20
+
+## 1.3.123
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@2.2.19
+
 ## 1.3.122
 
 ### Patch Changes

@@ -8,6 +8,7 @@ export { ApiClient as WalletsApiClient } from "./api";
 export { Wallet } from "./wallets/wallet";
 export { SolanaWallet } from "./wallets/solana";
 export { EVMWallet } from "./wallets/evm";
+export { StellarWallet } from "./wallets/stellar";
 
 // Core types
 export type {
@@ -17,9 +18,10 @@ export type {
     EVMTransactionInput,
     Transaction,
     WalletArgsFor,
+    Signature,
     SolanaTransactionInput,
 } from "./wallets/types";
-export type { Chain, EVMChain, SolanaChain } from "./chains/chains";
+export type { Chain, EVMChain, SolanaChain, StellarChain } from "./chains/chains";
 
 // Signer configuration types
 export type {
@@ -29,4 +31,5 @@ export type {
     ExternalWalletSignerConfigForChain,
     SignerConfigForChain,
     SolanaExternalWalletSignerConfig,
+    StellarExternalWalletSignerConfig,
 } from "./signers/types";

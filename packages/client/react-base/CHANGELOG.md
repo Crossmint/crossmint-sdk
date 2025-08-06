@@ -1,5 +1,55 @@
 # @crossmint/client-sdk-react-base
 
+## 0.5.24
+
+### Patch Changes
+
+- Updated dependencies [bd70d30]
+  - @crossmint/wallets-sdk@0.11.6
+
+## 0.5.23
+
+### Patch Changes
+
+- Updated dependencies [4728def]
+  - @crossmint/wallets-sdk@0.11.5
+
+## 0.5.22
+
+### Patch Changes
+
+- Updated dependencies [6960177]
+  - @crossmint/common-sdk-base@0.9.3
+  - @crossmint/client-sdk-base@1.5.18
+  - @crossmint/wallets-sdk@0.11.4
+
+## 0.5.21
+
+### Patch Changes
+
+- Updated dependencies [6559e0c]
+- Updated dependencies [52791f9]
+  - @crossmint/wallets-sdk@0.11.3
+  - @crossmint/client-sdk-base@1.5.17
+  - @crossmint/common-sdk-base@0.9.2
+
+## 0.5.20
+
+### Patch Changes
+
+- 74a6281: Stellar SDK support
+- Updated dependencies [74a6281]
+  - @crossmint/common-sdk-base@0.9.1
+  - @crossmint/wallets-sdk@0.11.2
+  - @crossmint/client-sdk-base@1.5.16
+
+## 0.5.19
+
+### Patch Changes
+
+- Updated dependencies [2ee5dd6]
+  - @crossmint/wallets-sdk@0.11.1
+
 ## 0.5.18
 
 ### Patch Changes

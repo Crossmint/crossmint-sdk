@@ -1,5 +1,78 @@
 # @crossmint/client-sdk-react-ui
 
+## 2.3.4
+
+### Patch Changes
+
+- Updated dependencies [bd70d30]
+  - @crossmint/wallets-sdk@0.11.6
+  - @crossmint/client-sdk-react-base@0.5.24
+
+## 2.3.3
+
+### Patch Changes
+
+- 57e4202: Improved email/phone signer input UI
+- 4728def: Exported Signature type
+- Updated dependencies [4728def]
+  - @crossmint/wallets-sdk@0.11.5
+  - @crossmint/client-sdk-react-base@0.5.23
+
+## 2.3.2
+
+### Patch Changes
+
+- Updated dependencies [6960177]
+  - @crossmint/common-sdk-base@0.9.3
+  - @crossmint/client-sdk-auth@1.2.27
+  - @crossmint/client-sdk-base@1.5.18
+  - @crossmint/client-sdk-react-base@0.5.22
+  - @crossmint/common-sdk-auth@1.0.49
+  - @crossmint/wallets-sdk@0.11.4
+
+## 2.3.1
+
+### Patch Changes
+
+- 6559e0c: Makes sure needsAuth is up to date
+- 48a6d9f: Improved dialog a11y
+- 52791f9: Update dependencies to resolve peer dep warnings
+- Updated dependencies [6559e0c]
+- Updated dependencies [52791f9]
+  - @crossmint/wallets-sdk@0.11.3
+  - @crossmint/client-sdk-base@1.5.17
+  - @crossmint/common-sdk-base@0.9.2
+  - @crossmint/client-sdk-react-base@0.5.21
+  - @crossmint/client-sdk-auth@1.2.26
+  - @crossmint/common-sdk-auth@1.0.48
+
+## 2.3.0
+
+### Minor Changes
+
+- 6eb4438: Replace tailwind styles with emotion
+
+## 2.2.20
+
+### Patch Changes
+
+- 74a6281: Stellar SDK support
+- Updated dependencies [74a6281]
+  - @crossmint/client-sdk-react-base@0.5.20
+  - @crossmint/common-sdk-base@0.9.1
+  - @crossmint/wallets-sdk@0.11.2
+  - @crossmint/client-sdk-auth@1.2.25
+  - @crossmint/client-sdk-base@1.5.16
+  - @crossmint/common-sdk-auth@1.0.47
+
+## 2.2.19
+
+### Patch Changes
+
+- Updated dependencies [2ee5dd6]
+  - @crossmint/wallets-sdk@0.11.1
+  - @crossmint/client-sdk-react-base@0.5.19
+
 ## 2.2.18
 
 ### Patch Changes

@@ -1,4 +1,4 @@
-export function LeftArrowIcon({ className, style }: { className?: string; style?: React.CSSProperties }) {
+export function LeftArrowIcon({ style }: { style?: React.CSSProperties }) {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -10,7 +10,6 @@ export function LeftArrowIcon({ className, style }: { className?: string; style?
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className={className}
             style={style}
         >
             <path d="m12 19-7-7 7-7" />

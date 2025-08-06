@@ -1,5 +1,27 @@
 # @crossmint/client-sdk-base
 
+## 1.5.18
+
+### Patch Changes
+
+- Updated dependencies [6960177]
+  - @crossmint/common-sdk-base@0.9.3
+
+## 1.5.17
+
+### Patch Changes
+
+- 52791f9: patch bumped @solana/web3.js
+- Updated dependencies [52791f9]
+  - @crossmint/common-sdk-base@0.9.2
+
+## 1.5.16
+
+### Patch Changes
+
+- Updated dependencies [74a6281]
+  - @crossmint/common-sdk-base@0.9.1
+
 ## 1.5.15
 
 ### Patch Changes

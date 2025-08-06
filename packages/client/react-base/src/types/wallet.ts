@@ -1,5 +1,5 @@
 import type { UIConfig } from "@crossmint/common-sdk-base";
-import type { EVMChain, SignerConfigForChain, SolanaChain } from "@crossmint/wallets-sdk";
+import type { EVMChain, SignerConfigForChain, SolanaChain, StellarChain } from "@crossmint/wallets-sdk";
 
 export type {
     Balances,
@@ -10,7 +10,7 @@ export type {
     Wallet,
 } from "@crossmint/wallets-sdk";
 
-export { EVMWallet, SolanaWallet } from "@crossmint/wallets-sdk";
+export { EVMWallet, SolanaWallet, StellarWallet } from "@crossmint/wallets-sdk";
 
 export type CreateOnLogin =
     | {
@@ -21,6 +21,11 @@ export type CreateOnLogin =
     | {
           chain: EVMChain;
           signer: SignerConfigForChain<EVMChain>;
+          owner?: string;
+      }
+    | {
+          chain: StellarChain;
+          signer: SignerConfigForChain<StellarChain>;
           owner?: string;
       };
 

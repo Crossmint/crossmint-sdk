@@ -1,5 +1,57 @@
 # expo-demo
 
+## 1.1.66
+
+### Patch Changes
+
+- Updated dependencies [bd70d30]
+- Updated dependencies [bd70d30]
+  - @crossmint/client-sdk-react-native-ui@0.9.9
+  - @crossmint/wallets-sdk@0.11.6
+
+## 1.1.65
+
+### Patch Changes
+
+- Updated dependencies [4728def]
+- Updated dependencies [4728def]
+  - @crossmint/wallets-sdk@0.11.5
+  - @crossmint/client-sdk-react-native-ui@0.9.8
+
+## 1.1.64
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-native-ui@0.9.7
+- @crossmint/wallets-sdk@0.11.4
+
+## 1.1.63
+
+### Patch Changes
+
+- Updated dependencies [6559e0c]
+- Updated dependencies [52791f9]
+- Updated dependencies [cc09e73]
+  - @crossmint/client-sdk-react-native-ui@0.9.6
+  - @crossmint/wallets-sdk@0.11.3
+
+## 1.1.62
+
+### Patch Changes
+
+- 74a6281: Stellar SDK support
+- Updated dependencies [74a6281]
+  - @crossmint/client-sdk-react-native-ui@0.9.5
+  - @crossmint/wallets-sdk@0.11.2
+
+## 1.1.61
+
+### Patch Changes
+
+- Updated dependencies [2ee5dd6]
+  - @crossmint/wallets-sdk@0.11.1
+  - @crossmint/client-sdk-react-native-ui@0.9.4
+
 ## 1.1.60
 
 ### Patch Changes

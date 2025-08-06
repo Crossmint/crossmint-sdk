@@ -8,10 +8,6 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
         super(config);
     }
 
-    locator() {
-        return this.config.locator;
-    }
-
     async signMessage() {
         return await Promise.reject(new Error("signMessage method not implemented for email signer"));
     }

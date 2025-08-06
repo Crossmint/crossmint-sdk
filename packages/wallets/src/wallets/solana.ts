@@ -1,7 +1,13 @@
 import bs58 from "bs58";
 import { isValidSolanaAddress } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain } from "../chains/chains";
-import type { ApproveTransactionOptions, SolanaTransactionInput, Transaction, TransactionInputOptions } from "./types";
+import type {
+    ApproveOptions,
+    PrepareOnly,
+    SolanaTransactionInput,
+    Transaction,
+    TransactionInputOptions,
+} from "./types";
 import { Wallet } from "./wallet";
 import { TransactionNotCreatedError } from "../utils/errors";
 import { SolanaExternalWalletSigner } from "@/signers/solana-external-wallet";
@@ -31,7 +37,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
 
     public async sendTransaction<T extends TransactionInputOptions | undefined = undefined>(
         params: SolanaTransactionInput & { options?: T }
-    ): Promise<Transaction<T extends { experimental_prepareOnly: true } ? true : false>> {
+    ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
         const createdTransaction = await this.createTransaction(params);
 
         if (params.options?.experimental_prepareOnly) {
@@ -39,7 +45,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
                 hash: undefined,
                 explorerLink: undefined,
                 transactionId: createdTransaction.id,
-            } as Transaction<T extends { experimental_prepareOnly: true } ? true : false>;
+            } as Transaction<T extends PrepareOnly<true> ? true : false>;
         }
 
         const _additionalSigners = params.additionalSigners?.map(
@@ -55,11 +61,11 @@ export class SolanaWallet extends Wallet<SolanaChain> {
                 })
         );
 
-        const options: ApproveTransactionOptions = {
+        const options: ApproveOptions = {
             additionalSigners: _additionalSigners,
         };
 
-        return await this.approveAndWait(createdTransaction.id, options);
+        return await this.approveTransactionAndWait(createdTransaction.id, options);
     }
 
     private async createTransaction({

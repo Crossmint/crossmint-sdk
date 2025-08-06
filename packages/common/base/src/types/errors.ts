@@ -29,6 +29,24 @@ export const PaymentErrors = {
 } as const;
 export type PaymentErrors = (typeof PaymentErrors)[keyof typeof PaymentErrors];
 
+export const ValidationErrors = {
+    AMOUNT_REQUIRED: "validation:amount.required",
+    WALLET_ADDRESS_REQUIRED: "validation:wallet-address.required",
+    INVALID_EMAIL: "validation:email.invalid",
+    TOKEN_ENVIRONMENT_MISMATCH: "validation:token.environment-mismatch",
+    UNSUPPORTED_TOKEN: "validation:token.unsupported",
+} as const;
+
+export const LimitErrors = {
+    SINGLE_PURCHASE_EXCEEDED: "limits:single-purchase.exceeded",
+    DAILY_TRANSACTION_EXCEEDED: "limits:daily-transaction.exceeded",
+    TOKEN_DAILY_VOLUME_EXCEEDED: "limits:token-daily-volume.exceeded",
+} as const;
+
+export const ProjectErrors = {
+    ADDON_REQUIRED: "project:addon.required",
+} as const;
+
 export const SmartWalletErrorCode = {
     TRANSFER: "smart-wallet:transfer",
     SMART_WALLETS_NOT_ENABLED: "smart-wallet:not-enabled",
@@ -63,6 +81,9 @@ export const CrossmintErrors = {
     ...PaymentErrors,
     ...SmartWalletErrorCode,
     ...WalletErrorCode,
+    ...ValidationErrors,
+    ...LimitErrors,
+    ...ProjectErrors,
     NOT_AUTHORIZED: "not-authorized",
     CROSSMINT_SERVICE: "crossmint-service",
     JWT_EXPIRED: "not-authorized.jwt-expired",

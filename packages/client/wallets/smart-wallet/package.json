@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-smart-wallet",
-    "version": "0.3.27",
+    "version": "0.3.30",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
@@ -23,7 +23,7 @@
         "@crossmint/client-sdk-base": "workspace:*",
         "@crossmint/common-sdk-base": "workspace:*",
         "ox": "0.6.9",
-        "viem": "2.23.6"
+        "viem": "2.33.1"
     },
     "devDependencies": {
         "typedoc": "0.26.5",

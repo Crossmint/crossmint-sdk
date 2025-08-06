@@ -30,7 +30,7 @@
         "enabled": false
     },
     "files": {
-        "maxSize": 2097152
+        "maxSize": 2200000
     },
     "linter": {
         "enabled": true,

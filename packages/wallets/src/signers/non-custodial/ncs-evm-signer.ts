@@ -8,10 +8,6 @@ export class EVMNonCustodialSigner extends NonCustodialSigner {
         super(config);
     }
 
-    locator() {
-        return this.config.locator;
-    }
-
     async signMessage(message: string) {
         const messageRaw = isHex(message) ? (message as Hex) : toHex(message);
         const messageToSign = PersonalMessage.getSignPayload(messageRaw);

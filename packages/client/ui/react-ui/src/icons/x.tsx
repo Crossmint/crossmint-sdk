@@ -1,4 +1,4 @@
-export default function X({ className }: { className?: string }) {
+export default function X({ style }: { style?: React.CSSProperties }) {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -10,7 +10,7 @@ export default function X({ className }: { className?: string }) {
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className={className}
+            style={style}
         >
             <path d="M18 6 6 18" />
             <path d="m6 6 12 12" />

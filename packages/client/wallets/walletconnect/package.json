@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-walletconnect",
-    "version": "1.2.23",
+    "version": "1.2.26",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Inc",
@@ -22,8 +22,8 @@
     "style": "./dist/index.css",
     "files": ["dist", "LICENSE"],
     "scripts": {
-        "build": "tsup",
-        "dev": "tsup --watch"
+        "build": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsup",
+        "dev": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsup --watch"
     },
     "dependencies": {
         "@crossmint/common-sdk-base": "workspace:*",
@@ -42,7 +42,7 @@
         "@crossmint/client-sdk-aa": "1.0.0-alpha.1",
         "@ethersproject/abstract-provider": "5.7.0",
         "@ethersproject/providers": "5.7.2",
-        "@solana/web3.js": "1.98.0",
+        "@solana/web3.js": "1.98.1",
         "@types/react": "^18.3.0",
         "@types/react-dom": "^18.3.0",
         "autoprefixer": "10.4.17",
