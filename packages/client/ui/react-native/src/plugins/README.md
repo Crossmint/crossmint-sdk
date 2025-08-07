@@ -19,7 +19,7 @@ npm install @crossmint/client-sdk-react-native-ui
   "expo": {
     "plugins": [
       [
-        "@crossmint/client-sdk-react-native-ui/plugins/withGooglePay",
+        "@crossmint/client-sdk-react-native-ui",
         {
           "enableGooglePay": true
         }
@@ -36,7 +36,7 @@ export default {
   expo: {
     plugins: [
       [
-        "@crossmint/client-sdk-react-native-ui/plugins/withGooglePay",
+        "@crossmint/client-sdk-react-native-ui",
         {
           enableGooglePay: true
         }
@@ -97,5 +97,5 @@ The WebKit dependency must be added manually to your app's build.gradle file as 
 
 ### Plugin Path
 
-When referencing this plugin in your app configuration, use the path:
-`@crossmint/client-sdk-react-native-ui/plugins/withGooglePay`
+When referencing this plugin in your app configuration, use the package name:
+`@crossmint/client-sdk-react-native-ui`

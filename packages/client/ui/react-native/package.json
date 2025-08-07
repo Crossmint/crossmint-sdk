@@ -8,11 +8,7 @@
     "type": "module",
     "exports": {
         "import": "./dist/index.js",
-        "require": "./dist/index.cjs",
-        "./plugins/withGooglePay": {
-            "import": "./dist/plugins/withGooglePay.js",
-            "require": "./dist/plugins/withGooglePay.cjs"
-        }
+        "require": "./dist/index.cjs"
     },
     "main": "./dist/index.cjs",
     "module": "./dist/index.js",
