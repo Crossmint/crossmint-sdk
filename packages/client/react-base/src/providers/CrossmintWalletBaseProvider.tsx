@@ -53,6 +53,11 @@ export function CrossmintWalletBaseProvider({
 
     const getOrCreateWallet = useCallback(
         async <C extends Chain>(args: WalletArgsFor<C>) => {
+            console.log("getOrCreateWallet", args);
+            console.log("crossmint.jwt", crossmint.jwt);
+            console.log("walletStatus", walletStatus);
+            console.log("wallet", wallet);
+
             if (crossmint.jwt == null || walletStatus === "in-progress") {
                 return undefined;
             }
@@ -68,7 +73,9 @@ export function CrossmintWalletBaseProvider({
                 const _onTransactionStart = args.options?.experimental_callbacks?.onTransactionStart;
 
                 if (args?.signer?.type === "email") {
+                    console.log("args.signer.type === email");
                     const email = args.signer.email;
+                    console.log("email", email);
                     const _onAuthRequired = args.signer.onAuthRequired ?? onAuthRequired;
 
                     if (email == null) {
@@ -79,6 +86,7 @@ export function CrossmintWalletBaseProvider({
                         email,
                         onAuthRequired: _onAuthRequired,
                     };
+                    console.log("args.signer", args.signer);
                 }
 
                 if (args?.signer?.type === "phone") {
@@ -104,6 +112,7 @@ export function CrossmintWalletBaseProvider({
                     args.signer = signer as SignerConfigForChain<C>;
                 }
 
+                console.log("creating wallet");
                 const wallet = await wallets.getOrCreateWallet<C>({
                     chain: args.chain,
                     signer: args.signer,
@@ -116,6 +125,7 @@ export function CrossmintWalletBaseProvider({
                         },
                     },
                 });
+                console.log("wallet", wallet);
                 setWallet(wallet);
                 setWalletStatus("loaded");
                 return wallet;
@@ -130,10 +140,11 @@ export function CrossmintWalletBaseProvider({
     );
 
     useEffect(() => {
-        if (createOnLogin != null) {
+        console.log("createOnLogin", createOnLogin);
+        if (createOnLogin != null && crossmint.jwt != null) {
             getOrCreateWallet(createOnLogin);
         }
-    }, [createOnLogin, getOrCreateWallet]);
+    }, [createOnLogin, getOrCreateWallet, crossmint.jwt]);
 
     useEffect(() => {
         if (crossmint.jwt == null && walletStatus !== "not-loaded") {
