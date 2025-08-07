@@ -6,5 +6,17 @@ export type { CrossmintEvent, CrossmintEventMap } from "@crossmint/client-sdk-ba
 
 export type { SDKExternalUser, OAuthProvider } from "@crossmint/common-sdk-auth";
 
+export {
+    type Activity,
+    type Balances,
+    type Chain,
+    type DelegatedSigner,
+    type Transaction,
+    type Signature,
+    EVMWallet,
+    SolanaWallet,
+    Wallet,
+} from "@crossmint/wallets-sdk";
+
 export { default } from "./plugins/withGooglePay";
 export type { GooglePayPluginProps } from "./plugins/withGooglePay";
