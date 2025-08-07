@@ -6,17 +6,37 @@ The Google Pay plugin configures your React Native app to support Google Pay pay
 
 ### Usage
 
-1. Install the plugin in your app config:
+1. Install the Crossmint React Native SDK:
 
-```typescript
-// app.config.ts
-import { withGooglePay } from '@crossmint/client-sdk-react-native-ui';
+```bash
+npm install @crossmint/client-sdk-react-native-ui
+```
 
+2. Add the plugin to your `app.json` or `app.config.js`:
+
+```json
+{
+  "expo": {
+    "plugins": [
+      [
+        "@crossmint/client-sdk-react-native-ui/plugins/withGooglePay",
+        {
+          "enableGooglePay": true
+        }
+      ]
+    ]
+  }
+}
+```
+
+Or in `app.config.js`:
+
+```javascript
 export default {
   expo: {
     plugins: [
       [
-        withGooglePay,
+        "@crossmint/client-sdk-react-native-ui/plugins/withGooglePay",
         {
           enableGooglePay: true
         }
@@ -61,6 +81,10 @@ When `enableGooglePay` is true, the plugin:
 
 3. Requires manual addition of WebKit dependency for payment processing.
 
+### Configuration Options
+
+- `enableGooglePay` (boolean, optional): When set to `true`, enables Google Pay configuration. Defaults to `false`.
+
 ### Requirements
 
 - Expo SDK 52.0.0 or higher
@@ -70,3 +94,8 @@ When `enableGooglePay` is true, the plugin:
 ### Notes
 
 The WebKit dependency must be added manually to your app's build.gradle file as React Native/Expo config plugins cannot automatically modify gradle dependencies. This dependency is required for proper payment processing within WebView components.
+
+### Plugin Path
+
+When referencing this plugin in your app configuration, use the path:
+`@crossmint/client-sdk-react-native-ui/plugins/withGooglePay`
