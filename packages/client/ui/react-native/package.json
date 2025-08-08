@@ -42,7 +42,6 @@
     },
     "peerDependencies": {
         "@expo/config-plugins": ">=9.0.0",
-        "expo": ">=52.0.0",
         "react": ">=17.0.2",
         "react-native": ">=0.74.3",
         "react-native-webview": ">=13.13.5 <13.15.0"

@@ -4,7 +4,7 @@ export interface GooglePayPluginProps {
     enableGooglePay?: boolean;
 }
 
-const withGooglePay: ConfigPlugin<GooglePayPluginProps> = (config, options: GooglePayPluginProps = {}) => {
+export const withGooglePay: ConfigPlugin<GooglePayPluginProps> = (config, options: GooglePayPluginProps = {}) => {
     if (!options.enableGooglePay) {
         return config;
     }
@@ -96,5 +96,3 @@ const withGooglePay: ConfigPlugin<GooglePayPluginProps> = (config, options: Goog
         return config;
     });
 };
-
-export default withGooglePay;
