@@ -1,4 +1,4 @@
-import { ConfigPlugin, withAndroidManifest } from "@expo/config-plugins";
+import { type ConfigPlugin, withAndroidManifest } from "@expo/config-plugins";
 
 export interface GooglePayPluginProps {
     enableGooglePay?: boolean;
