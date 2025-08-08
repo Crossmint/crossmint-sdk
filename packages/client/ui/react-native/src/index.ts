@@ -17,3 +17,5 @@ export {
     SolanaWallet,
     Wallet,
 } from "@crossmint/wallets-sdk";
+
+export * from "./plugins";
