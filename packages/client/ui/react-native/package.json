@@ -13,7 +13,7 @@
     "main": "./dist/index.cjs",
     "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
-    "files": ["dist", "LICENSE"],
+    "files": ["dist", "app.plugin.cjs", "LICENSE"],
     "scripts": {
         "build": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsup",
         "dev": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsup --watch"
