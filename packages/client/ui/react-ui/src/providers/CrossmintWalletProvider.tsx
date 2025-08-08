@@ -71,19 +71,14 @@ export function CrossmintWalletProvider({
     const [processedCreateOnLogin, setProcessedCreateOnLogin] = useState<CreateOnLogin | undefined>(undefined);
     useEffect(() => {
         const processCreateOnLogin = async () => {
-            console.log("processCreateOnLogin", createOnLogin);
             if (createOnLogin == null) {
                 setProcessedCreateOnLogin(undefined);
                 return;
             }
 
-            console.log("authContext", authContext);
             if (authContext == null) {
                 throw new Error("CrossmintWalletProvider with createOnLogin must be used within CrossmintAuthProvider");
             }
-
-            console.log("authContext.user", authContext.user);
-            console.log("createOnLogin.signer.type", createOnLogin.signer.type);
 
             if (createOnLogin.signer.type === "email") {
                 // For email signers using createOnLogin, we must populate createOnLogin.signer.email with the email of the user
@@ -94,9 +89,6 @@ export function CrossmintWalletProvider({
                 if (authContext.user.email == null) {
                     await authContext.getUser();
                 }
-
-                console.log("authContext.user.email", authContext.user.email);
-
                 const processed = {
                     ...createOnLogin,
                     signer: {
@@ -104,13 +96,18 @@ export function CrossmintWalletProvider({
                         email: authContext.user.email,
                     },
                 };
-
-                console.log("processedCreateOnLogin", processed);
+                setProcessedCreateOnLogin(processed);
+            } else if (createOnLogin.signer.type === "external-wallet") {
+                if (authContext.experimental_externalWalletSigner == null) {
+                    return;
+                }
+                const processed = {
+                    ...createOnLogin,
+                    signer: authContext.experimental_externalWalletSigner,
+                };
                 setProcessedCreateOnLogin(processed);
             } else {
                 // For other signer types, we can use the createOnLogin as is
-                console.log("processedCreateOnLogin else");
-                console.log("processedCreateOnLogin", createOnLogin);
                 setProcessedCreateOnLogin(createOnLogin);
             }
         };

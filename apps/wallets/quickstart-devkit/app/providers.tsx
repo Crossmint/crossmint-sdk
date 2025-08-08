@@ -28,11 +28,14 @@ function EVMCrossmintAuthProvider({ children }: { children: React.ReactNode }) {
         <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_API_KEY || ""}>
             <CrossmintAuthProvider
                 authModalTitle="EVM Wallets Quickstart"
-                loginMethods={["google", "twitter", "email"]}
+                loginMethods={["google", "twitter", "email", "web3:evm-only"]}
             >
                 <CrossmintWalletProvider
                     showPasskeyHelpers={false}
-                    createOnLogin={{ chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any, signer: { type: "email" } }}
+                    createOnLogin={{
+                        chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any,
+                        signer: { type: "external-wallet" },
+                    }}
                 >
                     {children}
                 </CrossmintWalletProvider>
@@ -49,7 +52,7 @@ function EVMPrivyProvider({ children }: { children: React.ReactNode }) {
         <PrivyProvider
             appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID}
             config={{
-                loginMethods: ["email", "google"],
+                loginMethods: ["email", "google", "wallet"],
                 embeddedWallets: {
                     ethereum: {
                         createOnLogin: "users-without-wallets",

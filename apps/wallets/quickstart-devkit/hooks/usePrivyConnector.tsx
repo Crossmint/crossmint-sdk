@@ -21,6 +21,7 @@ export const useEVMPrivyConnector = () => {
         const syncPrivyJwt = async () => {
             try {
                 const privyJwt = await getAccessToken();
+                console.log("privyJwt", privyJwt);
                 if (privyJwt != null) {
                     setJwt(privyJwt);
                 }
@@ -30,6 +31,9 @@ export const useEVMPrivyConnector = () => {
             }
         };
 
+        console.log("ready", ready);
+        console.log("authenticated", authenticated);
+        console.log("privyEmbeddedWallet", privyEmbeddedWallet);
         if (ready && authenticated && privyEmbeddedWallet) {
             syncPrivyJwt();
         }
@@ -40,7 +44,8 @@ export const useEVMPrivyConnector = () => {
             return;
         }
 
-        const signerType = getEVMSignerType(user, privyEmbeddedWallet);
+        const signerType = getSignerType(user, privyEmbeddedWallet);
+        console.log("signerType", signerType);
         if (!signerType) {
             console.warn("No suitable signer type found for EVM wallet creation");
             return;
@@ -72,7 +77,7 @@ export const useEVMPrivyConnector = () => {
         crossmintWallet,
         crossmintWalletStatus,
         isLoading: crossmintWalletStatus === "in-progress" || !privyReady,
-        signerType: getEVMSignerType(user, privyEmbeddedWallet),
+        signerType: getSignerType(user, privyEmbeddedWallet),
     };
 };
 
@@ -110,22 +115,22 @@ export const useSolanaPrivyConnector = () => {
             return;
         }
 
-        const signerType = getSolanaSignerType(user, privyEmbeddedWallet);
+        const signerType = getSignerType(user, privyEmbeddedWallet);
         if (!signerType) {
             console.warn("No suitable signer type found for Solana wallet creation");
             return;
         }
 
         switch (signerType) {
-            case "external-wallet":
-                if (privyEmbeddedWallet?.address) {
-                    createExternalWalletSolana(getOrCreateWallet, privyEmbeddedWallet);
-                }
-                break;
             case "email":
                 const email = user?.email?.address ?? user?.google?.email;
                 if (email) {
                     createEmailWallet(getOrCreateWallet, "solana" as Chain, email);
+                }
+                break;
+            case "external-wallet":
+                if (privyEmbeddedWallet?.address) {
+                    createExternalWalletSolana(getOrCreateWallet, privyEmbeddedWallet);
                 }
                 break;
         }
@@ -136,7 +141,7 @@ export const useSolanaPrivyConnector = () => {
         crossmintWallet,
         crossmintWalletStatus,
         isLoading: crossmintWalletStatus === "in-progress" || !privyReady,
-        signerType: getSolanaSignerType(user, privyEmbeddedWallet),
+        signerType: getSignerType(user, privyEmbeddedWallet),
     };
 };
 
@@ -162,6 +167,7 @@ const createPhoneWallet = async (getOrCreateWallet: any, chain: Chain, phone: st
 // Helper function to create email-based wallet
 const createEmailWallet = async (getOrCreateWallet: any, chain: Chain, email: string) => {
     try {
+        console.log("creating email wallet", email, chain);
         await getOrCreateWallet({
             chain,
             signer: {
@@ -210,28 +216,15 @@ const createExternalWalletSolana = async (getOrCreateWallet: any, privyEmbeddedW
 };
 
 // Helper function to determine the best signer type for EVM
-const getEVMSignerType = (user: any, privyEmbeddedWallet: any) => {
-    // Priority: external-wallet > phone > email
+const getSignerType = (user: any, privyEmbeddedWallet: any) => {
+    if (user?.email?.address || user?.google?.email) {
+        return "email";
+    }
     if (privyEmbeddedWallet?.address) {
         return "external-wallet";
     }
     if (user?.phone?.number) {
         return "phone";
-    }
-    if (user?.email?.address || user?.google?.email) {
-        return "email";
-    }
-    return null;
-};
-
-// Helper function to determine the best signer type for Solana
-const getSolanaSignerType = (user: any, privyEmbeddedWallet: any) => {
-    // Priority: external-wallet > email (Solana doesn't support phone)
-    if (privyEmbeddedWallet?.address) {
-        return "external-wallet";
-    }
-    if (user?.email?.address || user?.google?.email) {
-        return "email";
     }
     return null;
 };

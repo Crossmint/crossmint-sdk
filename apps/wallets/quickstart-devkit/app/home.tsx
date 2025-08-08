@@ -3,11 +3,12 @@
 import Image from "next/image";
 import { WalletBalance } from "../components/balance";
 import { Permissions } from "../components/permissions";
-import { CrossmintAuthLoginButton } from "../components/login";
+import { CrossmintAuthLoginButton, PrivyLoginButton } from "../components/login";
 import { EVMTransferFunds, SolanaTransferFunds, StellarTransferFunds } from "@/components/transfer";
 import { useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
-import { CrossmintAuthLogoutButton } from "@/components/logout";
+import { CrossmintAuthLogoutButton, PrivyLogoutButton } from "@/components/logout";
 import { ApprovalTest } from "@/components/approval-test";
+import { useEVMPrivyConnector } from "@/hooks/usePrivyConnector";
 // import { useEVMPrivyConnector, useSolanaPrivyConnector } from "@/hooks/usePrivyConnector";
 // import { useEVMDynamicConnector, useSolanaDynamicConnector } from "@/hooks/useDynamicConnector";
 
