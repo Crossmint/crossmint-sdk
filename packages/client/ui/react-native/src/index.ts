@@ -18,5 +18,4 @@ export {
     Wallet,
 } from "@crossmint/wallets-sdk";
 
-export { withGooglePay } from "./plugins";
-export type { GooglePayPluginProps } from "./plugins";
+export * from "./plugins";
