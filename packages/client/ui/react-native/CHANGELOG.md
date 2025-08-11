@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.10.1
+
+### Patch Changes
+
+- f51fb0a: Fix Expo plugin configuration to ensure proper setup in Expo projects.
+
 ## 0.10.0
 
 ### Minor Changes
