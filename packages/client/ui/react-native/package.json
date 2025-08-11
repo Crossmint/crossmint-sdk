@@ -5,8 +5,8 @@
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
     "sideEffects": false,
-    "main": "./dist/index.cjs",
-    "module": "./dist/index.js",
+    "main": "./dist/index.js",
+    "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
     "files": ["dist", "app.plugin.js", "LICENSE"],
     "scripts": {

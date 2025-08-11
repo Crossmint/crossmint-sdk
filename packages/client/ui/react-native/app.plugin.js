@@ -1,1 +1,1 @@
-module.exports = require("./dist/plugin/withGooglePay.cjs");
+module.exports = require("./dist/plugin/withGooglePay");
