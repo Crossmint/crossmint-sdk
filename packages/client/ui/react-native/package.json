@@ -5,15 +5,10 @@
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
     "sideEffects": false,
-    "type": "module",
-    "exports": {
-        "import": "./dist/index.js",
-        "require": "./dist/index.cjs"
-    },
-    "main": "./dist/index.cjs",
-    "module": "./dist/index.js",
+    "main": "./dist/index.js",
+    "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
-    "files": ["dist", "app.plugin.cjs", "LICENSE"],
+    "files": ["dist", "app.plugin.js", "LICENSE"],
     "scripts": {
         "build": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsup",
         "dev": "cross-env NODE_OPTIONS='--max-old-space-size=8192' tsup --watch"
