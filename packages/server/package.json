@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/server-sdk",
-    "version": "1.2.39",
+    "version": "1.2.40",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
