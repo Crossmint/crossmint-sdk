@@ -54,7 +54,7 @@ export function EVMTransferFunds() {
                             <label className="flex items-center gap-2 cursor-pointer">
                                 <input
                                     type="radio"
-                                    name="token"
+                                    name="eth"
                                     className="h-4 w-4"
                                     checked={token === "eth"}
                                     onChange={() => setToken("eth")}
@@ -64,7 +64,7 @@ export function EVMTransferFunds() {
                             <label className="flex items-center gap-2 cursor-pointer">
                                 <input
                                     type="radio"
-                                    name="token"
+                                    name="usdc"
                                     className="h-4 w-4"
                                     checked={token === "usdc"}
                                     onChange={() => setToken("usdc")}
@@ -77,6 +77,7 @@ export function EVMTransferFunds() {
                         <label className="text-sm font-medium">Amount</label>
                         <input
                             type="number"
+                            data-testid="amount"
                             className="w-full px-3 py-2 border rounded-md text-sm"
                             placeholder="0.00"
                             onChange={(e) => setAmount(Number(e.target.value))}
@@ -87,6 +88,7 @@ export function EVMTransferFunds() {
                     <label className="text-sm font-medium">Recipient wallet</label>
                     <input
                         type="text"
+                        data-testid="recipient-wallet-address"
                         className="w-full px-3 py-2 border rounded-md text-sm"
                         placeholder="Enter wallet address"
                         onChange={(e) => setRecipient(e.target.value)}
@@ -100,6 +102,7 @@ export function EVMTransferFunds() {
                             ? "bg-gray-200 text-gray-500 cursor-not-allowed"
                             : "bg-accent text-white hover:bg-accent/80"
                     }`}
+                    data-testid="transfer-button"
                     onClick={handleOnTransfer}
                     disabled={isLoading}
                 >
@@ -108,6 +111,7 @@ export function EVMTransferFunds() {
                 {txLink != null && !isLoading && (
                     <a
                         href={txLink}
+                        data-testid="successful-tx-link"
                         className="text-sm text-gray-500 text-center"
                         target="_blank"
                         rel="noopener noreferrer"
@@ -201,6 +205,7 @@ export function SolanaTransferFunds() {
                         <label className="text-sm font-medium">Amount</label>
                         <input
                             type="number"
+                            data-testid="amount"
                             className="w-full px-3 py-2 border rounded-md text-sm"
                             placeholder="0.00"
                             onChange={(e) => setAmount(Number(e.target.value))}
@@ -211,6 +216,7 @@ export function SolanaTransferFunds() {
                     <label className="text-sm font-medium">Recipient wallet</label>
                     <input
                         type="text"
+                        data-testid="recipient-wallet-address"
                         className="w-full px-3 py-2 border rounded-md text-sm"
                         placeholder="Enter wallet address"
                         onChange={(e) => setRecipient(e.target.value)}
@@ -224,6 +230,7 @@ export function SolanaTransferFunds() {
                             ? "bg-gray-200 text-gray-500 cursor-not-allowed"
                             : "bg-accent text-white hover:bg-accent/80"
                     }`}
+                    data-testid="transfer-button"
                     onClick={handleOnTransfer}
                     disabled={isLoading}
                 >
@@ -232,6 +239,7 @@ export function SolanaTransferFunds() {
                 {txLink != null && !isLoading && (
                     <a
                         href={txLink}
+                        data-testid="successful-tx-link"
                         className="text-sm text-gray-500 text-center"
                         target="_blank"
                         rel="noopener noreferrer"
@@ -349,6 +357,7 @@ export function StellarTransferFunds() {
                 {txLink != null && !isLoading && (
                     <a
                         href={txLink}
+                        data-testid="successful-tx-link"
                         className="text-sm text-gray-500 text-center"
                         target="_blank"
                         rel="noopener noreferrer"
