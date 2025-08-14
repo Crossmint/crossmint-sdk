@@ -1,5 +1,6 @@
 // Environment variables and configuration
 export const AUTH_CONFIG = {
+    crossmintApiKey: process.env.TESTS_CROSSMINT_API_KEY || "",
     mailosaurApiKey: process.env.MAILOSAUR_API_KEY || "",
     mailosaurServerId: process.env.MAILOSAUR_SERVER_ID || "",
     mailosaurPhoneNumber: process.env.MAILOSAUR_PHONE_NUMBER || "",
@@ -9,9 +10,14 @@ export const AUTH_CONFIG = {
 };
 
 // Validation
-if (!AUTH_CONFIG.mailosaurApiKey || !AUTH_CONFIG.mailosaurServerId || !AUTH_CONFIG.mailosaurPhoneNumber) {
+if (
+    !AUTH_CONFIG.mailosaurApiKey ||
+    !AUTH_CONFIG.mailosaurServerId ||
+    !AUTH_CONFIG.mailosaurPhoneNumber ||
+    !AUTH_CONFIG.crossmintApiKey
+) {
     throw new Error(
-        "MAILOSAUR_API_KEY, MAILOSAUR_SERVER_ID, and MAILOSAUR_PHONE_NUMBER environment variables must be set to run tests"
+        "MAILOSAUR_API_KEY, MAILOSAUR_SERVER_ID, MAILOSAUR_PHONE_NUMBER, and TESTS_CROSSMINT_API_KEY environment variables must be set to run tests"
     );
 }
 
@@ -74,6 +80,7 @@ export function buildTestUrl(config: TestConfiguration): string {
     url.searchParams.set("chain", config.chain);
     url.searchParams.set("signer", config.signer);
     url.searchParams.set("chainId", config.chainId);
+    url.searchParams.set("crossmintApiKey", AUTH_CONFIG.crossmintApiKey);
     if (config.signer === "phone" && config.phoneNumber != null) {
         url.searchParams.set("phoneNumber", config.phoneNumber);
     }

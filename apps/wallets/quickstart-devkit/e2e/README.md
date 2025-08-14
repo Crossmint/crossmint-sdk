@@ -21,6 +21,7 @@ Tests are configured to:
 | `MAILOSAUR_API_KEY` | ✅ | Your Mailosaur API key |
 | `MAILOSAUR_SERVER_ID` | ✅ | Your Mailosaur server ID |
 | `MAILOSAUR_PHONE_NUMBER` | ✅ | Your Mailosaur phone number |
+| `TESTS_CROSSMINT_API_KEY` | ✅ | Your Crossmint API key for e2e testing |
 | `PLAYWRIGHT_BASE_URL` | ❌ | App URL (defaults to http://localhost:3000) |
 
 ---
