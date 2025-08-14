@@ -1,5 +1,17 @@
 # @crossmint/client-sdk-nextjs-starter
 
+## 1.5.0
+
+### Minor Changes
+
+- 40917df: v2 checkout: deprecate
+
+### Patch Changes
+
+- Updated dependencies [40917df]
+  - @crossmint/client-sdk-react-ui@2.4.0
+  - @crossmint/client-sdk-base@1.6.0
+
 ## 1.4.116
 
 ### Patch Changes
