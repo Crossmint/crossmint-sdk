@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { CrossmintAuthProvider, CrossmintProvider, CrossmintWalletProvider } from "@crossmint/client-sdk-react-ui";
 import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
 import { DynamicContextProvider } from "@dynamic-labs/sdk-react-core";
@@ -13,16 +14,15 @@ if (!crossmintApiKey) {
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
-    const searchParams = useSearchParams();
-    const chainType = searchParams.get("chain");
-
-    /* Ignore this, it's used for e2e testing. Do not remove this. */
-    if (chainType != null) {
-        return <QueryParamsProvider>{children}</QueryParamsProvider>;
-    } else {
-        /* @TODO update to your desired provider here */
-        return <EVMCrossmintAuthProvider>{children}</EVMCrossmintAuthProvider>;
-    }
+    /* 
+    @TODO update to your desired provider inside QueryParamsProvider. 
+    (Ignore this, it's used for e2e testing - Do not remove this)
+    */
+    return (
+        <Suspense>
+            <QueryParamsProvider>{children}</QueryParamsProvider>
+        </Suspense>
+    );
 }
 
 /* ============================================================ */
@@ -33,6 +33,7 @@ function EVMCrossmintAuthProvider({ children, createOnLogin }: { children: React
         console.error("NEXT_PUBLIC_EVM_CHAIN is not set");
         return;
     }
+
     return (
         <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_API_KEY || ""}>
             <CrossmintAuthProvider
@@ -235,8 +236,6 @@ function QueryParamsProvider({ children }: { children: React.ReactNode }) {
     const signerType = searchParams.get("signer");
     const chainId = searchParams.get("chainId") || process.env.NEXT_PUBLIC_EVM_CHAIN;
     const phoneNumber = searchParams.get("phoneNumber");
-
-    console.log("🔧 Provider Config: ", { providerType, chainType, signerType, chainId, phoneNumber });
 
     if (chainType === "evm") {
         switch (providerType) {
