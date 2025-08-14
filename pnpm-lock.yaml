@@ -4627,10 +4627,6 @@ packages:
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
 
-  '@pkgr/core@0.2.4':
-    resolution: {integrity: sha512-ROFF39F6ZrnzSUEmQQZUar0Jt4xVoP9WnDRdWwF4NNcXs3xBTLgBUDoOwW141y1jP+S8nahIbdxbFC7IShw9Iw==}
-    engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
-
   '@playwright/test@1.54.2':
     resolution: {integrity: sha512-A+znathYxPf+72riFd1r1ovOLqsIIB0jKIoPjyK2kqEIe30/6jF6BC7QNluHuwUmsD2tv1XZVugN8GqfTMOxsA==}
     engines: {node: '>=18'}
@@ -17940,7 +17936,7 @@ snapshots:
       '@babel/parser': 7.27.0
       '@babel/template': 7.27.0
       '@babel/types': 7.27.0
-      debug: 4.4.0
+      debug: 4.4.1
       globals: 11.12.0
     transitivePeerDependencies:
       - supports-color
@@ -20641,7 +20637,7 @@ snapshots:
   '@expo/env@0.4.2':
     dependencies:
       chalk: 4.1.2
-      debug: 4.4.0
+      debug: 4.4.1
       dotenv: 16.4.5
       dotenv-expand: 11.0.7
       getenv: 1.0.0
@@ -20773,7 +20769,7 @@ snapshots:
   '@expo/server@0.5.3':
     dependencies:
       abort-controller: 3.0.0
-      debug: 4.4.0
+      debug: 4.4.1
       source-map-support: 0.5.21
       undici: 6.21.2
     transitivePeerDependencies:
@@ -23243,7 +23239,7 @@ snapshots:
       '@paulmillr/qr': 0.2.1
       bowser: 2.11.0
       cross-fetch: 4.1.0(encoding@0.1.13)
-      debug: 4.4.0
+      debug: 4.4.1
       eciesjs: 0.4.14
       eth-rpc-errors: 4.0.3
       eventemitter2: 6.4.9
@@ -23678,8 +23674,6 @@ snapshots:
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
-
-  '@pkgr/core@0.2.4': {}
 
   '@playwright/test@1.54.2':
     dependencies:
@@ -26895,7 +26889,7 @@ snapshots:
       '@typescript-eslint/scope-manager': 5.62.0
       '@typescript-eslint/type-utils': 5.62.0(eslint@8.57.1)(typescript@5.3.3)
       '@typescript-eslint/utils': 5.62.0(eslint@8.57.1)(typescript@5.3.3)
-      debug: 4.4.0
+      debug: 4.4.1
       eslint: 8.57.1
       graphemer: 1.4.0
       ignore: 5.3.2
@@ -26940,7 +26934,7 @@ snapshots:
       '@typescript-eslint/scope-manager': 5.62.0
       '@typescript-eslint/types': 5.62.0
       '@typescript-eslint/typescript-estree': 5.62.0(typescript@5.3.3)
-      debug: 4.4.0
+      debug: 4.4.1
       eslint: 8.57.1
     optionalDependencies:
       typescript: 5.3.3
@@ -26999,7 +26993,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/typescript-estree': 6.21.0(typescript@5.5.3)
       '@typescript-eslint/utils': 6.21.0(eslint@8.57.1)(typescript@5.5.3)
-      debug: 4.4.0
+      debug: 4.4.1
       eslint: 8.57.1
       ts-api-utils: 1.4.3(typescript@5.5.3)
     optionalDependencies:
@@ -27029,7 +27023,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/types': 6.21.0
       '@typescript-eslint/visitor-keys': 6.21.0
-      debug: 4.4.0
+      debug: 4.4.1
       globby: 11.1.0
       is-glob: 4.0.3
       minimatch: 9.0.3
@@ -27044,7 +27038,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/types': 6.21.0
       '@typescript-eslint/visitor-keys': 6.21.0
-      debug: 4.4.0
+      debug: 4.4.1
       globby: 11.1.0
       is-glob: 4.0.3
       minimatch: 9.0.3
