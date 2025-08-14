@@ -1,4 +1,3 @@
-import type { UpdatableEmbeddedCheckoutParams } from "@/types/embed";
 import type { EmptyObject } from "@/types/system";
 
 import type { Blockchain } from "@crossmint/common-sdk-base";
@@ -12,7 +11,7 @@ interface IncomingInternalEventMap {
 }
 
 interface OutgoingInternalEventMap {
-    [CrossmintInternalEvents.PARAMS_UPDATE]: UpdatableEmbeddedCheckoutParams;
+    [CrossmintInternalEvents.PARAMS_UPDATE]: any;
     [CrossmintInternalEvents.CRYPTO_PAYMENT_USER_ACCEPTED]: { txId: string };
     [CrossmintInternalEvents.CRYPTO_PAYMENT_USER_REJECTED]: EmptyObject;
 }
