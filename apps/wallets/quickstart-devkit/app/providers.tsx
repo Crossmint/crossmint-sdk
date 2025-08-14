@@ -5,6 +5,7 @@ import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
 import { DynamicContextProvider } from "@dynamic-labs/sdk-react-core";
 import { SolanaWalletConnectors } from "@dynamic-labs/solana";
 import { PrivyProvider } from "@privy-io/react-auth";
+import { useSearchParams } from "next/navigation";
 
 const crossmintApiKey = process.env.NEXT_PUBLIC_CROSSMINT_API_KEY ?? "";
 if (!crossmintApiKey) {
@@ -12,14 +13,22 @@ if (!crossmintApiKey) {
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
-    /* @TODO update to your desired provider here */
-    return <EVMCrossmintAuthProvider>{children}</EVMCrossmintAuthProvider>;
+    const searchParams = useSearchParams();
+    const chainType = searchParams.get("chain");
+
+    /* Ignore this, it's used for e2e testing. Do not remove this. */
+    if (chainType != null) {
+        return <QueryParamsProvider>{children}</QueryParamsProvider>;
+    } else {
+        /* @TODO update to your desired provider here */
+        return <EVMCrossmintAuthProvider>{children}</EVMCrossmintAuthProvider>;
+    }
 }
 
 /* ============================================================ */
 /*                    ALL EVM WALLET PROVIDERS                  */
 /* ============================================================ */
-function EVMCrossmintAuthProvider({ children }: { children: React.ReactNode }) {
+function EVMCrossmintAuthProvider({ children, createOnLogin }: { children: React.ReactNode; createOnLogin?: any }) {
     if (!process.env.NEXT_PUBLIC_EVM_CHAIN) {
         console.error("NEXT_PUBLIC_EVM_CHAIN is not set");
         return;
@@ -32,7 +41,11 @@ function EVMCrossmintAuthProvider({ children }: { children: React.ReactNode }) {
             >
                 <CrossmintWalletProvider
                     showPasskeyHelpers={false}
-                    createOnLogin={{ chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any, signer: { type: "email" } }}
+                    createOnLogin={
+                        createOnLogin != null
+                            ? createOnLogin
+                            : { chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any, signer: { type: "email" } }
+                    }
                 >
                     {children}
                 </CrossmintWalletProvider>
@@ -109,7 +122,7 @@ function EVMFirebaseProvider({ children }: { children: React.ReactNode }) {
 /* ============================================================ */
 /*                    ALL SOLANA WALLET PROVIDERS               */
 /* ============================================================ */
-function SolanaCrossmintAuthProvider({ children }: { children: React.ReactNode }) {
+function SolanaCrossmintAuthProvider({ children, createOnLogin }: { children: React.ReactNode; createOnLogin?: any }) {
     return (
         <CrossmintProvider apiKey={process.env.NEXT_PUBLIC_CROSSMINT_API_KEY || ""}>
             <CrossmintAuthProvider
@@ -118,7 +131,9 @@ function SolanaCrossmintAuthProvider({ children }: { children: React.ReactNode }
             >
                 <CrossmintWalletProvider
                     showPasskeyHelpers={false}
-                    createOnLogin={{ chain: "solana", signer: { type: "email" } }}
+                    createOnLogin={
+                        createOnLogin != null ? createOnLogin : { chain: "solana", signer: { type: "email" } }
+                    }
                 >
                     {children}
                 </CrossmintWalletProvider>
@@ -208,4 +223,58 @@ function StellarCrossmintAuthProvider({ children }: { children: React.ReactNode 
             </CrossmintAuthProvider>
         </CrossmintProvider>
     );
+}
+
+// This provider is used for testing and development purposes
+// It allows you to specify the provider, chain, signer, and chainId via URL params
+function QueryParamsProvider({ children }: { children: React.ReactNode }) {
+    const searchParams = useSearchParams();
+
+    const providerType = searchParams.get("provider") || "crossmint"; // default to crossmint
+    const chainType = searchParams.get("chain");
+    const signerType = searchParams.get("signer");
+    const chainId = searchParams.get("chainId") || process.env.NEXT_PUBLIC_EVM_CHAIN;
+    const phoneNumber = searchParams.get("phoneNumber");
+
+    console.log("🔧 Provider Config: ", { providerType, chainType, signerType, chainId, phoneNumber });
+
+    if (chainType === "evm") {
+        switch (providerType) {
+            case "privy":
+                return <EVMPrivyProvider>{children}</EVMPrivyProvider>;
+            case "dynamic":
+                return <EVMDynamicLabsProvider>{children}</EVMDynamicLabsProvider>;
+            case "firebase":
+                return <EVMFirebaseProvider>{children}</EVMFirebaseProvider>;
+            case "crossmint":
+            default:
+                const createOnLogin: any = { chain: chainId, signer: { type: signerType } };
+                if (signerType === "phone" && phoneNumber != null) {
+                    createOnLogin.signer = { type: signerType, phone: decodeURIComponent(phoneNumber) };
+                }
+                return <EVMCrossmintAuthProvider createOnLogin={createOnLogin}>{children}</EVMCrossmintAuthProvider>;
+        }
+    } else if (chainType === "solana") {
+        switch (providerType) {
+            case "privy":
+                return <SolanaPrivyProvider>{children}</SolanaPrivyProvider>;
+            case "dynamic":
+                return <SolanaDynamicLabsProvider>{children}</SolanaDynamicLabsProvider>;
+            case "firebase":
+                return <SolanaFirebaseProvider>{children}</SolanaFirebaseProvider>;
+            case "crossmint":
+            default:
+                const createOnLogin: any = { chain: "solana", signer: { type: signerType } };
+                if (signerType === "phone" && phoneNumber != null) {
+                    createOnLogin.signer = { type: signerType, phone: decodeURIComponent(phoneNumber) };
+                }
+                return (
+                    <SolanaCrossmintAuthProvider createOnLogin={createOnLogin}>{children}</SolanaCrossmintAuthProvider>
+                );
+        }
+    } else if (chainType === "stellar") {
+        return <StellarCrossmintAuthProvider>{children}</StellarCrossmintAuthProvider>;
+    }
+
+    return <EVMCrossmintAuthProvider>{children}</EVMCrossmintAuthProvider>;
 }
