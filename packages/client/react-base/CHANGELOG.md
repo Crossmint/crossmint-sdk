@@ -1,5 +1,12 @@
 # @crossmint/client-sdk-react-base
 
+## 0.5.25
+
+### Patch Changes
+
+- Updated dependencies [40917df]
+  - @crossmint/client-sdk-base@1.6.0
+
 ## 0.5.24
 
 ### Patch Changes
