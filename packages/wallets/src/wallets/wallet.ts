@@ -271,7 +271,6 @@ export class Wallet<C extends Chain> {
                 transactionId: transactionCreationResponse.id,
             } as Transaction<T extends PrepareOnly<true> ? true : false>;
         }
-        console.log("transactionCreationResponse", transactionCreationResponse);
 
         return await this.approveTransactionAndWait(transactionCreationResponse.id);
     }
