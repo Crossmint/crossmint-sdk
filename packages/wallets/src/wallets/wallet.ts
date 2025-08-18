@@ -118,7 +118,7 @@ export class Wallet<C extends Chain> {
 
         const response = await this.#apiClient.getBalance(this.address, {
             chains: chains ?? [this.chain],
-            tokens: allTokens.map((token) => token.toLowerCase()),
+            tokens: allTokens,
         });
 
         if ("error" in response) {
