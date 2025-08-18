@@ -118,14 +118,7 @@ export class Wallet<C extends Chain> {
 
         const response = await this.#apiClient.getBalance(this.address, {
             chains: chains ?? [this.chain],
-            tokens: allTokens.map((token) => {
-                // If it's already a token locator, leave it as-is
-                if (isTokenLocator(token)) {
-                    return token;
-                }
-                // Otherwise, treat as currency symbol and lowercase
-                return token.toLowerCase();
-            }),
+            tokens: allTokens,
         });
 
         if ("error" in response) {
@@ -652,10 +645,6 @@ function toRecipientLocator(to: string | UserLocator): string {
         return `userId:${to.userId}`;
     }
     throw new Error("Invalid recipient locator");
-}
-
-function isTokenLocator(token: string): boolean {
-    return token.includes(":");
 }
 
 function toTokenLocator(token: string, chain: string): string {
