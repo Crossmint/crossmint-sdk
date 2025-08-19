@@ -1,5 +1,14 @@
 # @crossmint/client-sdk-react-ui
 
+## 2.4.1
+
+### Patch Changes
+
+- 84e66df: Bumped dynamic version
+- Updated dependencies [9a1bc3b]
+  - @crossmint/wallets-sdk@0.11.7
+  - @crossmint/client-sdk-react-base@0.5.26
+
 ## 2.4.0
 
 ### Minor Changes
