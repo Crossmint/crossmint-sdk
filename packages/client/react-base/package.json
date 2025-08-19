@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-react-base",
-    "version": "0.5.25",
+    "version": "0.5.26",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",

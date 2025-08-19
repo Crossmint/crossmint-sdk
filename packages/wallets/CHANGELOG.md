@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 0.11.7
+
+### Patch Changes
+
+- 9a1bc3b: Fix fetch balance for Solana tokens
+
 ## 0.11.6
 
 ### Patch Changes
