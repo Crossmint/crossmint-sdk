@@ -1,5 +1,18 @@
 # @crossmint/client-sdk-base
 
+## 1.6.0
+
+### Minor Changes
+
+- 40917df: v2 checkout: deprecate
+
+## 1.5.18
+
+### Patch Changes
+
+- Updated dependencies [6960177]
+  - @crossmint/common-sdk-base@0.9.3
+
 ## 1.5.17
 
 ### Patch Changes

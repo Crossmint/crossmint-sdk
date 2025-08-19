@@ -1,5 +1,25 @@
 # @crossmint/wallets-sdk
 
+## 0.11.6
+
+### Patch Changes
+
+- bd70d30: Fixes fetching balances in solana
+
+## 0.11.5
+
+### Patch Changes
+
+- 4728def: - Support correct return type based on input for `approve` method.
+  - Add a `experimental_prepareOnly` option for `signTypedData` and `signMessage`.
+
+## 0.11.4
+
+### Patch Changes
+
+- Updated dependencies [6960177]
+  - @crossmint/common-sdk-base@0.9.3
+
 ## 0.11.3
 
 ### Patch Changes

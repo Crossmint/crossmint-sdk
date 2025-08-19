@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.9.3
+
+### Patch Changes
+
+- 6960177: Adding more payment error codes
+
 ## 0.9.2
 
 ### Patch Changes

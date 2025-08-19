@@ -1,7 +1,7 @@
 import type { MutableRefObject } from "react";
 import type { UIConfig } from "@crossmint/common-sdk-base";
 import { Dialog, DialogDescription, DialogTitle } from "../common/Dialog";
-import { BaseOTPInput } from "./BaseOTPInput";
+import { BaseCodeInput } from "./BaseCodeInput";
 import { EmailOtpIcon } from "@/icons/emailOTP";
 import { BaseConfirmation } from "./BaseConfirmation";
 import { MailIcon } from "@/icons/mail";
@@ -54,7 +54,7 @@ export function EmailSignersDialog({
             ) : null}
 
             {step === "otp" ? (
-                <BaseOTPInput
+                <BaseCodeInput
                     contactInfo={email ?? ""}
                     contactType="email"
                     icon={
@@ -67,7 +67,11 @@ export function EmailSignersDialog({
                         </div>
                     }
                     title="Check your email"
-                    description={`A temporary login code has been sent to <strong>${email}</strong>`}
+                    description={
+                        <>
+                            A temporary login code has been sent to <strong>{email}</strong>
+                        </>
+                    }
                     helpText={`Can't find the email? Check spam folder. \nSome emails may take several minutes to arrive.`}
                     onSubmitOTP={onSubmitOTP}
                     onResendCode={onResendOTPCode}

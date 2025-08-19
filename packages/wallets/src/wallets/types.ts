@@ -1,17 +1,37 @@
 import type { Keypair, VersionedTransaction } from "@solana/web3.js";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
+import type { TypedData, TypedDataDefinition } from "viem";
 import type { Abi } from "abitype";
 import type { CreateTransactionSuccessResponse } from "../api";
-import type { Chain } from "../chains/chains";
+import type { Chain, EVMSmartWalletChain } from "../chains/chains";
 import type { SignerConfigForChain, Signer, BaseSignResult, PasskeySignResult } from "../signers/types";
 
 export type { Activity } from "../api/types";
 
-export type TransactionInputOptions = {
-    experimental_prepareOnly?: boolean;
+export type PrepareOnly<T extends boolean = boolean> = { experimental_prepareOnly: T };
+
+export type TransactionInputOptions = PrepareOnly & {
     experimental_signer?: string;
 };
+
+export type SignatureInputOptions = PrepareOnly;
+
+export type SignMessageInput = {
+    message: string;
+    options?: SignatureInputOptions;
+};
+
+export type SignTypedDataInput = TypedDataDefinition<TypedData, string> & {
+    chain: EVMSmartWalletChain;
+    options?: SignatureInputOptions;
+};
+
+export type ApproveResult<T extends ApproveParams> = T extends { transactionId: string }
+    ? Transaction<false>
+    : T extends { signatureId: string }
+      ? Signature<false>
+      : Error;
 
 type EVMTransactionInputBase = {
     options?: TransactionInputOptions;
@@ -110,6 +130,16 @@ export type Transaction<TPrepareOnly extends boolean = false> = TPrepareOnly ext
           hash: string;
           explorerLink: string;
           transactionId: string;
+      };
+
+export type Signature<TPrepareOnly extends boolean = false> = TPrepareOnly extends true
+    ? {
+          signature?: string;
+          signatureId: string;
+      }
+    : {
+          signature: string;
+          signatureId: string;
       };
 
 export type ApproveOptions = {

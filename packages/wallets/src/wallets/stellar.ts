@@ -1,6 +1,12 @@
 import { isValidStellarAddress } from "@crossmint/common-sdk-base";
 import type { Chain, StellarChain } from "../chains/chains";
-import type { ApproveOptions, StellarTransactionInput, Transaction, TransactionInputOptions } from "./types";
+import type {
+    ApproveOptions,
+    PrepareOnly,
+    StellarTransactionInput,
+    Transaction,
+    TransactionInputOptions,
+} from "./types";
 import { Wallet } from "./wallet";
 import { TransactionNotCreatedError } from "../utils/errors";
 import type { CreateTransactionSuccessResponse } from "@/api";
@@ -29,7 +35,7 @@ export class StellarWallet extends Wallet<StellarChain> {
 
     public async sendTransaction<T extends TransactionInputOptions | undefined = undefined>(
         params: StellarTransactionInput & { options?: T }
-    ): Promise<Transaction<T extends { experimental_prepareOnly: true } ? true : false>> {
+    ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
         const createdTransaction = await this.createTransaction(params);
 
         if (params.options?.experimental_prepareOnly) {
@@ -37,7 +43,7 @@ export class StellarWallet extends Wallet<StellarChain> {
                 hash: undefined,
                 explorerLink: undefined,
                 transactionId: createdTransaction.id,
-            } as Transaction<T extends { experimental_prepareOnly: true } ? true : false>;
+            } as Transaction<T extends PrepareOnly<true> ? true : false>;
         }
 
         const options: ApproveOptions = {};

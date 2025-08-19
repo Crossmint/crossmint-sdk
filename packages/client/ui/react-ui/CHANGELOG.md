@@ -1,5 +1,49 @@
 # @crossmint/client-sdk-react-ui
 
+## 2.4.0
+
+### Minor Changes
+
+- 40917df: v2 checkout: deprecate
+
+### Patch Changes
+
+- Updated dependencies [40917df]
+  - @crossmint/client-sdk-base@1.6.0
+  - @crossmint/client-sdk-auth@1.2.28
+  - @crossmint/client-sdk-react-base@0.5.25
+  - @crossmint/common-sdk-auth@1.0.50
+
+## 2.3.4
+
+### Patch Changes
+
+- Updated dependencies [bd70d30]
+  - @crossmint/wallets-sdk@0.11.6
+  - @crossmint/client-sdk-react-base@0.5.24
+
+## 2.3.3
+
+### Patch Changes
+
+- 57e4202: Improved email/phone signer input UI
+- 4728def: Exported Signature type
+- Updated dependencies [4728def]
+  - @crossmint/wallets-sdk@0.11.5
+  - @crossmint/client-sdk-react-base@0.5.23
+
+## 2.3.2
+
+### Patch Changes
+
+- Updated dependencies [6960177]
+  - @crossmint/common-sdk-base@0.9.3
+  - @crossmint/client-sdk-auth@1.2.27
+  - @crossmint/client-sdk-base@1.5.18
+  - @crossmint/client-sdk-react-base@0.5.22
+  - @crossmint/common-sdk-auth@1.0.49
+  - @crossmint/wallets-sdk@0.11.4
+
 ## 2.3.1
 
 ### Patch Changes

@@ -1,5 +1,63 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.10.2
+
+### Patch Changes
+
+- Updated dependencies [40917df]
+  - @crossmint/client-sdk-base@1.6.0
+  - @crossmint/client-sdk-auth@1.2.28
+  - @crossmint/client-sdk-react-base@0.5.25
+  - @crossmint/common-sdk-auth@1.0.50
+
+## 0.10.1
+
+### Patch Changes
+
+- f51fb0a: Fix Expo plugin configuration to ensure proper setup in Expo projects.
+
+## 0.10.0
+
+### Minor Changes
+
+- 84d44c9: feat: add Google Pay config plugin for React Native SDK
+
+  - Add withGooglePay Expo config plugin with enableGooglePay option
+  - Automatically adds Google Pay meta-data to AndroidManifest.xml when enabled
+  - Adds required queries for Google Pay payment intents
+  - Includes comprehensive documentation and usage instructions
+  - Exports plugin from main React Native SDK package
+
+## 0.9.9
+
+### Patch Changes
+
+- bd70d30: Revers back to needsAuth being a state
+- Updated dependencies [bd70d30]
+  - @crossmint/wallets-sdk@0.11.6
+  - @crossmint/client-sdk-react-base@0.5.24
+
+## 0.9.8
+
+### Patch Changes
+
+- 4728def: Exported Signature type
+- Updated dependencies [4728def]
+  - @crossmint/wallets-sdk@0.11.5
+  - @crossmint/client-sdk-react-base@0.5.23
+
+## 0.9.7
+
+### Patch Changes
+
+- Updated dependencies [6960177]
+  - @crossmint/common-sdk-base@0.9.3
+  - @crossmint/client-sdk-auth@1.2.27
+  - @crossmint/client-sdk-base@1.5.18
+  - @crossmint/client-sdk-react-base@0.5.22
+  - @crossmint/common-sdk-auth@1.0.49
+  - @crossmint/wallets-sdk@0.11.4
+
 ## 0.9.6
 
 ### Patch Changes

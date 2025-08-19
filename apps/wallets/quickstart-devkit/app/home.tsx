@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useState } from "react";
 import { WalletBalance } from "../components/balance";
 import { Permissions } from "../components/permissions";
 import { CrossmintAuthLoginButton, PrivyLoginButton } from "../components/login";
@@ -36,6 +37,7 @@ export function HomeContent() {
 
     const walletAddress = wallet?.address;
     const isLoggedIn = wallet != null && status === "loaded";
+    const [copiedAddress, setCopiedAddress] = useState(false);
 
     if (isLoading) {
         return (
@@ -78,26 +80,32 @@ export function HomeContent() {
                         <div>
                             <h2 className="text-lg font-medium">Your wallet</h2>
                             <div className="flex items-center gap-2">
-                                <p className="text-[15px] text-gray-500">
+                                <p
+                                    className="text-[15px] text-gray-500"
+                                    data-testid={`wallet-address:${walletAddress}`}
+                                >
                                     {walletAddress ? `${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}` : ""}
                                 </p>
                                 <button
-                                    onClick={() => {
-                                        if (walletAddress) {
-                                            navigator.clipboard.writeText(walletAddress);
-                                            const button = document.activeElement as HTMLButtonElement;
-                                            button.disabled = true;
-                                            const originalContent = button.innerHTML;
-                                            button.innerHTML = `<img src="/check.svg" alt="Check" width="16" height="16" />`;
-                                            setTimeout(() => {
-                                                button.innerHTML = originalContent;
-                                                button.disabled = false;
-                                            }, 2000);
+                                    onClick={async () => {
+                                        if (!walletAddress) {
+                                            return;
+                                        }
+                                        try {
+                                            await navigator.clipboard.writeText(walletAddress);
+                                            setCopiedAddress(true);
+                                            setTimeout(() => setCopiedAddress(false), 2000);
+                                        } catch (err) {
+                                            console.error("Failed to copy:", err);
                                         }
                                     }}
-                                    className="text-gray-500 hover:text-gray-700"
+                                    className="text-gray-500 hover:text-gray-700 transition-colors"
                                 >
-                                    <Image src="/copy.svg" alt="Copy" width={16} height={16} />
+                                    {copiedAddress ? (
+                                        <Image src="/circle-check-big.svg" alt="Copied" width={16} height={16} />
+                                    ) : (
+                                        <Image src="/copy.svg" alt="Copy" width={16} height={16} />
+                                    )}
                                 </button>
                             </div>
                         </div>
