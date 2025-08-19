@@ -6,21 +6,14 @@ import { useAuth } from "@/hooks";
 import { CrossmintAuthProviderInternal } from "./CrossmintAuthProviderInternal";
 
 function CrossmintAuthSync({ children }: { children: ReactNode }) {
-    const { experimental_setCustomAuth, experimental_customAuth } = useCrossmint();
+    const { crossmint, setJwt } = useCrossmint();
     const { user, jwt, experimental_externalWalletSigner } = useAuth();
 
     useEffect(() => {
-        if (jwt == null && experimental_customAuth?.jwt != null) {
-            experimental_setCustomAuth(undefined);
-        }
-        if (experimental_externalWalletSigner != null || user?.email != null) {
-            experimental_setCustomAuth({
-                jwt,
-                email: user?.email,
-                externalWalletSigner: experimental_externalWalletSigner,
-            });
+        if (jwt == null && crossmint.jwt != null) {
+            setJwt(undefined);
         } else {
-            experimental_setCustomAuth({ jwt });
+            setJwt(jwt);
         }
     }, [experimental_externalWalletSigner, jwt, user]);
 

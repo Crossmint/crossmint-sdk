@@ -2,7 +2,6 @@ import {
     useCrossmintAuth,
     useWallet,
     useWalletEmailSigner,
-    useCrossmint,
     type Balances,
 } from "@crossmint/client-sdk-react-native-ui";
 import { useEffect, useMemo, useState } from "react";
@@ -12,8 +11,6 @@ import { fundUSDC } from "@/utils/usdcFaucet";
 
 export default function Index() {
     const { loginWithOAuth, user, logout, createAuthSession, jwt } = useCrossmintAuth();
-    const { experimental_customAuth } = useCrossmint();
-    const loggedInUserEmail = experimental_customAuth?.email ?? null;
     const { wallet, getOrCreateWallet, status: walletStatus } = useWallet();
     const { needsAuth, sendEmailWithOtp, verifyOtp } = useWalletEmailSigner();
     const walletAddress = useMemo(() => wallet?.address, [wallet]);
@@ -74,13 +71,13 @@ export default function Index() {
     };
 
     async function initWallet() {
-        if (user == null) {
+        if (user?.email == null) {
             console.log("User not logged in");
             return;
         }
         setIsLoading(true);
         try {
-            await getOrCreateWallet({ chain: "stellar", signer: { type: "email" } });
+            await getOrCreateWallet({ chain: "stellar", signer: { type: "email", email: user.email } });
         } catch (error) {
             console.error("Error initializing wallet:", error);
         } finally {
@@ -108,7 +105,7 @@ export default function Index() {
     }
 
     const handleSendOtpEmail = async () => {
-        if (typeof loggedInUserEmail !== "string") {
+        if (typeof user?.email !== "string") {
             Alert.alert("Error", "User email is not available.");
             return;
         }
@@ -192,7 +189,7 @@ export default function Index() {
             {isInOtpFlow && (
                 <View style={styles.section}>
                     <Text style={{ fontWeight: "bold", marginBottom: 10 }}>Email OTP Verification (required)</Text>
-                    <Button title="Send OTP Email" onPress={handleSendOtpEmail} disabled={loggedInUserEmail == null} />
+                    <Button title="Send OTP Email" onPress={handleSendOtpEmail} disabled={user?.email == null} />
                     <TextInput
                         placeholder="Enter OTP from Email"
                         value={otp}

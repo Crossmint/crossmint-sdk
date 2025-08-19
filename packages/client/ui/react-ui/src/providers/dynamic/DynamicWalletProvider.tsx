@@ -4,12 +4,13 @@ import { isEthereumWallet } from "@dynamic-labs/ethereum";
 import { isSolanaWallet } from "@dynamic-labs/solana";
 import type { SignableMessage } from "viem";
 import type { VersionedTransaction } from "@solana/web3.js";
-import type { Chain, ExternalWalletSignerConfigForChain } from "@crossmint/wallets-sdk";
 import type {
-    APIKeyEnvironmentPrefix,
+    Chain,
+    ExternalWalletSignerConfigForChain,
     EvmExternalWalletSignerConfig,
     SolanaExternalWalletSignerConfig,
-} from "@crossmint/common-sdk-base";
+} from "@crossmint/wallets-sdk";
+import type { APIKeyEnvironmentPrefix } from "@crossmint/common-sdk-base";
 import DynamicContextProviderWrapper from "@/components/dynamic-xyz/DynamicContextProviderWrapper";
 import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
 import { SolanaWalletConnectors } from "@dynamic-labs/solana";

@@ -50,8 +50,6 @@ export class WalletFactory {
     public async createWallet<C extends Chain>(args: WalletArgsFor<C>): Promise<Wallet<C>> {
         await args.options?.experimental_callbacks?.onWalletCreationStart?.();
 
-        this.mutateSignerFromCustomAuth(args, true);
-
         const adminSigner =
             args.signer.type === "passkey" ? await this.createPasskeyAdminSigner(args.signer) : args.signer;
 
@@ -201,31 +199,10 @@ export class WalletFactory {
         };
     }
 
-    private mutateSignerFromCustomAuth<C extends Chain>(args: WalletArgsFor<C>, isNewWalletSigner = false): void {
-        const { experimental_customAuth } = this.apiClient.crossmint;
-        if (args.signer.type === "email" && experimental_customAuth?.email != null) {
-            args.signer.email = args.signer.email ?? experimental_customAuth.email;
-        }
-        if (args.signer.type === "phone" && experimental_customAuth?.phone != null) {
-            args.signer.phone = args.signer.phone ?? experimental_customAuth.phone;
-        }
-        if (args.signer.type === "external-wallet" && experimental_customAuth?.externalWalletSigner != null) {
-            args.signer = isNewWalletSigner
-                ? ({
-                      type: "external-wallet",
-                      address: experimental_customAuth.externalWalletSigner.address,
-                  } as SignerConfigForChain<C>)
-                : (experimental_customAuth.externalWalletSigner as SignerConfigForChain<C>);
-        }
-        return;
-    }
-
     private validateExistingWalletConfig<C extends Chain>(
         existingWallet: GetWalletSuccessResponse,
         args: WalletArgsFor<C>
     ): void {
-        this.mutateSignerFromCustomAuth(args);
-
         if (args.owner != null && existingWallet.owner != null && args.owner !== existingWallet.owner) {
             throw new WalletCreationError("Wallet owner does not match existing wallet's linked user");
         }

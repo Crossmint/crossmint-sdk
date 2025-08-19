@@ -16,20 +16,17 @@ export type CrossmintAuthProviderProps = {
 };
 
 function CrossmintAuthSync({ children }: { children: ReactNode }) {
-    const { experimental_setCustomAuth, experimental_customAuth } = useCrossmint();
-    const { user, jwt } = useAuth();
+    const { crossmint, setJwt } = useCrossmint();
+    const { jwt } = useAuth();
 
     useEffect(() => {
-        if (jwt == null && experimental_customAuth?.jwt != null) {
-            experimental_setCustomAuth(undefined);
+        if (jwt == null && crossmint.jwt != null) {
+            setJwt(undefined);
         }
         if (jwt != null) {
-            experimental_setCustomAuth({
-                jwt,
-                email: user?.email,
-            });
+            setJwt(jwt);
         }
-    }, [experimental_setCustomAuth, jwt, user]);
+    }, [setJwt, jwt, crossmint]);
 
     return children;
 }

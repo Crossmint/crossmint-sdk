@@ -1,20 +1,38 @@
 import type { WebAuthnP256 } from "ox";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
-import type {
-    Crossmint,
-    EvmExternalWalletSignerConfig,
-    SolanaExternalWalletSignerConfig,
-    StellarExternalWalletSignerConfig,
-} from "@crossmint/common-sdk-base";
+import type { Crossmint } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain, StellarChain } from "../chains/chains";
+import type { VersionedTransaction } from "@solana/web3.js";
+import type { Account, EIP1193Provider as ViemEIP1193Provider } from "viem";
 
-export type {
-    EvmExternalWalletSignerConfig,
-    SolanaExternalWalletSignerConfig,
-    StellarExternalWalletSignerConfig,
-    GenericEIP1193Provider,
-} from "@crossmint/common-sdk-base";
+////////////////////////////////////////////////////////////
+// External wallet signer config
+////////////////////////////////////////////////////////////
+export type BaseExternalWalletSignerConfig = {
+    type: "external-wallet";
+    address?: string;
+};
+
+// Generic EIP1193 Provider interface that should work with different implementations
+export interface GenericEIP1193Provider {
+    request(args: { method: string; params?: any[] }): Promise<any>;
+    on(event: string, listener: (...args: any[]) => void): void;
+    removeListener(event: string, listener: (...args: any[]) => void): void;
+}
+
+export type EvmExternalWalletSignerConfig = BaseExternalWalletSignerConfig & {
+    provider?: GenericEIP1193Provider | ViemEIP1193Provider;
+    viemAccount?: Account;
+};
+
+export type SolanaExternalWalletSignerConfig = BaseExternalWalletSignerConfig & {
+    onSignTransaction?: (transaction: VersionedTransaction) => Promise<VersionedTransaction>;
+};
+
+export type StellarExternalWalletSignerConfig = BaseExternalWalletSignerConfig & {
+    onSignStellarTransaction?: (transaction: string) => Promise<string>;
+};
 
 ////////////////////////////////////////////////////////////
 // Signer configs
@@ -28,6 +46,7 @@ export class AuthRejectedError extends Error {
 
 export type EmailSignerConfig = {
     type: "email";
+    // Optional to support createOnLogin with Crossmint Auth
     email?: string;
     onAuthRequired?: (
         needsAuth: boolean,
@@ -39,6 +58,7 @@ export type EmailSignerConfig = {
 
 export type PhoneSignerConfig = {
     type: "phone";
+    // Optional to support createOnLogin with Crossmint Auth
     phone?: string;
     onAuthRequired?: (
         needsAuth: boolean,
@@ -138,4 +158,8 @@ export interface Signer<T extends keyof SignResultMap = keyof SignResultMap> {
     locator(): string;
     signMessage(message: string): Promise<SignResultMap[T]>;
     signTransaction(transaction: string): Promise<SignResultMap[T]>;
+    // Identifier properties for each signer type
+    address?: string; // for external-wallet and api-key signers
+    email?: string; // for email signers
+    phone?: string; // for phone signers
 }

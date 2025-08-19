@@ -5,9 +5,9 @@ import { BaseCodeInput } from "./BaseCodeInput";
 import { EmailOtpIcon } from "@/icons/emailOTP";
 import { BaseConfirmation } from "./BaseConfirmation";
 import { MailIcon } from "@/icons/mail";
+import { useWallet } from "@/hooks";
 
 interface EmailSignersDialogProps {
-    email?: string;
     open: boolean;
     setOpen: (open: boolean) => void;
     step: "initial" | "otp";
@@ -19,7 +19,6 @@ interface EmailSignersDialogProps {
 }
 
 export function EmailSignersDialog({
-    email,
     open,
     setOpen,
     step,
@@ -29,6 +28,12 @@ export function EmailSignersDialog({
     rejectRef,
     appearance,
 }: EmailSignersDialogProps) {
+    const { wallet } = useWallet();
+    if (wallet?.signer.type !== "email") {
+        return null;
+    }
+    const email = wallet?.signer.email;
+
     function handleOnCancel(isOpen?: boolean) {
         if (open || isOpen) {
             rejectRef.current?.(new Error());

@@ -8,7 +8,7 @@ import { onAuthStateChange } from "@/lib/firebase";
 export const useFirebaseConnector = () => {
     const { wallet: crossmintWallet, status: crossmintWalletStatus } = useCrossmintWallet();
 
-    const { experimental_setCustomAuth } = useCrossmint();
+    const { setJwt } = useCrossmint();
     const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -22,17 +22,17 @@ export const useFirebaseConnector = () => {
 
             try {
                 const token = await user.getIdToken();
-                experimental_setCustomAuth({ jwt: token, email: user.email ?? "", phone: user.phoneNumber ?? "" });
+                setJwt(token);
             } catch (error) {
                 console.error("Failed to get Firebase JWT:", error);
-                experimental_setCustomAuth(undefined);
+                setJwt(undefined);
             } finally {
                 setIsLoading(false);
             }
         });
 
         return () => unsubscribe?.();
-    }, [firebaseUser]);
+    }, [setJwt]);
 
     return {
         user: firebaseUser,

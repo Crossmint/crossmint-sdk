@@ -5,9 +5,9 @@ import { BaseCodeInput } from "./BaseCodeInput";
 import { BaseConfirmation } from "./BaseConfirmation";
 import { PhoneIcon } from "@/icons/phone";
 import { PhoneOtpIcon } from "@/icons/phoneOTP";
+import { useWallet } from "@/hooks";
 
 interface PhoneSignersDialogProps {
-    phone?: string;
     open: boolean;
     setOpen: (open: boolean) => void;
     step: "initial" | "otp";
@@ -19,7 +19,6 @@ interface PhoneSignersDialogProps {
 }
 
 export function PhoneSignersDialog({
-    phone,
     open,
     setOpen,
     step,
@@ -29,6 +28,12 @@ export function PhoneSignersDialog({
     rejectRef,
     appearance,
 }: PhoneSignersDialogProps) {
+    const { wallet } = useWallet();
+    if (wallet?.signer.type !== "phone") {
+        return null;
+    }
+    const phone = wallet?.signer.phone;
+
     function handleOnCancel(isOpen?: boolean) {
         if (open || isOpen) {
             rejectRef.current?.(new Error());
