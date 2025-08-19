@@ -49,12 +49,11 @@ export async function transferFunds(page: Page, recipientAddress: string, amount
 
         const txnResponse = await page.waitForRequest(
             (request) =>
-                request
-                    .url()
-                    .startsWith("https://staging.crossmint.com/api/2025-06-09/wallets/me:evm:smart/transactions/"),
+                /https:\/\/staging\.crossmint\.com\/api\/2025-06-09\/wallets\/me:[^:]+:smart\/transactions\//.test(
+                    request.url()
+                ),
             { timeout: 60000 }
         );
-
         let txnResponseJson: any = null;
         try {
             txnResponseJson = await txnResponse.response().then((res) => res?.json());
