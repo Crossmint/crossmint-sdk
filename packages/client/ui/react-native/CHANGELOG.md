@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.10.3
+
+### Patch Changes
+
+- Updated dependencies [9a1bc3b]
+  - @crossmint/wallets-sdk@0.11.7
+  - @crossmint/client-sdk-react-base@0.5.26
+
 ## 0.10.2
 
 ### Patch Changes
