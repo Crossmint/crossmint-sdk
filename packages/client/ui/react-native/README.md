@@ -195,6 +195,19 @@ EXPO_PUBLIC_CROSSMINT_API_KEY=your_api_key_here
 }
 ```
 
+### 🚀 Production Setup
+
+When moving to production, ensure you:
+
+1. Create a [production API key](https://docs.crossmint.com/introduction/platform/api-keys/client-side)
+2. **Critical**: Add your mobile app identifiers to the production API key:
+   - iOS: Bundle ID (e.g., `com.company.appname`)
+   - Android: Package name (e.g., `com.company.appname`)
+
+⚠️ **Important**: Production strictly enforces mobile app identifier whitelisting, unlike staging. Missing this step will cause silent request failures in production even if everything works in staging.
+
+See [Mobile App Identifiers documentation](https://docs.crossmint.com/introduction/platform/api-keys/client-side#mobile-app-identifiers) for complete setup instructions.
+
 ## 📚 Examples & Documentation
 
 - **[Wallets Expo Quickstart](https://github.com/Crossmint/wallets-expo-quickstart)** - Create and interact with Crossmint wallets using Crossmint Auth for React Native.
