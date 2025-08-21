@@ -3,7 +3,7 @@ import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
 import type { Abi } from "abitype";
 import type { CreateTransactionSuccessResponse } from "../api";
-import type { Chain } from "../chains/chains";
+import type { Chain, StellarChain } from "../chains/chains";
 import type { SignerConfigForChain, Signer, BaseSignResult, PasskeySignResult } from "../signers/types";
 
 export type { Activity } from "../api/types";
@@ -66,6 +66,10 @@ export type Callbacks = {
     onTransactionStart?: () => Promise<void>;
 };
 
+export type StellarWalletPlugin = string;
+
+export type WalletPlugin<C extends Chain> = C extends StellarChain ? StellarWalletPlugin : never;
+
 export type WalletOptions = {
     experimental_callbacks?: Callbacks;
     clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
@@ -75,6 +79,7 @@ export type WalletArgsFor<C extends Chain> = {
     chain: C;
     signer: SignerConfigForChain<C>;
     owner?: string;
+    plugins?: WalletPlugin<C>[];
     options?: WalletOptions;
 };
 
