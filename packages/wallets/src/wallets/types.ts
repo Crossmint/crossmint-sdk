@@ -4,7 +4,6 @@ import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/clien
 import type { TypedData, TypedDataDefinition } from "viem";
 import type { Abi } from "abitype";
 import type { CreateTransactionSuccessResponse } from "../api";
-import type { Chain, StellarChain } from "../chains/chains";
 import type { Chain, EVMSmartWalletChain, StellarChain } from "../chains/chains";
 import type { SignerConfigForChain, Signer, BaseSignResult, PasskeySignResult } from "../signers/types";
 
