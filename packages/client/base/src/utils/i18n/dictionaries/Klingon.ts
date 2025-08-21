@@ -1,10 +1,13 @@
 const Klingon = {
-    crossmintPayButtonService: {
-        CONNECTING: "yImej...",
-        BUY: "Crossmint vItlhutlh",
-        BUY_WITH_ETH: "ETH vItlhutlh",
-        BUY_WITH_SOL: "SOL vItlhutlh",
-        BUY_WITH_CREDIT_CARD: "QelI'qam vItlhutlh",
+    hostedCheckoutV3: {
+        paymentVariant: {
+            pay: "{0} lo' DIch",
+            buy: "{0} lo' je'",
+            subscribe: "{0} lo' nugh",
+        },
+        crossmint: "Crossmint",
+        crypto: "DIch nugh",
+        card: "naQ",
     },
 };
 export default Klingon;

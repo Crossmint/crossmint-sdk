@@ -4,11 +4,6 @@ export * from "./embed";
 export * from "./system";
 export * from "./CryptoCurrency";
 
-export enum clientNames {
-    reactUi = "client-sdk-react-ui",
-    vanillaUi = "client-sdk-vanilla-ui",
-}
-
 export const BaseUrls = {
     prod: "https://www.crossmint.com",
     staging: "https://staging.crossmint.com",

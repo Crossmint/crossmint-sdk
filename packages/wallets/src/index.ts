@@ -19,6 +19,7 @@ export type {
     Transaction,
     WalletArgsFor,
     WalletPlugin,
+    Signature,
     SolanaTransactionInput,
 } from "./wallets/types";
 export type { Chain, EVMChain, SolanaChain, StellarChain } from "./chains/chains";

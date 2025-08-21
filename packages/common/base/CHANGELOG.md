@@ -1,5 +1,17 @@
 # @crossmint/common-sdk-base
 
+## 0.9.3
+
+### Patch Changes
+
+- 6960177: Adding more payment error codes
+
+## 0.9.2
+
+### Patch Changes
+
+- 52791f9: patch bumped @solana/web3.js
+
 ## 0.9.1
 
 ### Patch Changes

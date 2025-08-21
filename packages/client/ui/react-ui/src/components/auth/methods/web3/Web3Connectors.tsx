@@ -1,7 +1,25 @@
+import styled from "@emotion/styled";
+import { DynamicEmbeddedWidget } from "@dynamic-labs/sdk-react-core";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import { AuthFormBackButton } from "../../AuthFormBackButton";
-import { DynamicEmbeddedWidget } from "@dynamic-labs/sdk-react-core";
-import { tw } from "@/twind-instance";
+
+const Container = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+`;
+
+const ContentContainer = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+`;
+
+const WidgetContainer = styled.div`
+    /* Widget container styles */
+    min-height: 325px;
+`;
 
 export function Web3Connectors() {
     const { appearance, step, setStep } = useAuthForm();
@@ -14,13 +32,13 @@ export function Web3Connectors() {
                     iconColor={appearance?.colors?.textPrimary}
                     ringColor={appearance?.colors?.accent}
                 />
-                <div className={tw("flex flex-col items-center")}>
-                    <div className={tw("flex flex-col gap-[10px] w-full")}>
-                        <div className={tw("widget-container")}>
+                <Container>
+                    <ContentContainer>
+                        <WidgetContainer>
                             <DynamicEmbeddedWidget background="none" />
-                        </div>
-                    </div>
-                </div>
+                        </WidgetContainer>
+                    </ContentContainer>
+                </Container>
             </>
         );
     }

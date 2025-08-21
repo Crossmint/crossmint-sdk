@@ -1,5 +1,40 @@
 # @crossmint/wallets-sdk
 
+## 0.11.7
+
+### Patch Changes
+
+- 9a1bc3b: Fix fetch balance for Solana tokens
+
+## 0.11.6
+
+### Patch Changes
+
+- bd70d30: Fixes fetching balances in solana
+
+## 0.11.5
+
+### Patch Changes
+
+- 4728def: - Support correct return type based on input for `approve` method.
+  - Add a `experimental_prepareOnly` option for `signTypedData` and `signMessage`.
+
+## 0.11.4
+
+### Patch Changes
+
+- Updated dependencies [6960177]
+  - @crossmint/common-sdk-base@0.9.3
+
+## 0.11.3
+
+### Patch Changes
+
+- 6559e0c: Makes sure needsAuth is up to date
+- 52791f9: patch bumped @solana/web3.js
+- Updated dependencies [52791f9]
+  - @crossmint/common-sdk-base@0.9.2
+
 ## 0.11.2
 
 ### Patch Changes

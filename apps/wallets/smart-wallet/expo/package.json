@@ -1,7 +1,7 @@
 {
     "name": "expo-demo",
     "main": "expo-router/entry",
-    "version": "1.1.62",
+    "version": "1.1.70",
     "scripts": {
         "start": "expo start",
         "reset-project": "node ./scripts/reset-project.js",
@@ -23,7 +23,7 @@
         "@react-navigation/bottom-tabs": "^7.2.0",
         "@react-navigation/native": "^7.0.14",
         "@solana/spl-memo": "0.2.5",
-        "@solana/web3.js": "1.98.0",
+        "@solana/web3.js": "1.98.1",
         "bs58": "^5.0.0",
         "buffer": "^6.0.3",
         "expo": "~52.0.46",
@@ -51,7 +51,7 @@
         "react-native-web": "~0.19.13",
         "react-native-webview": "13.12.5",
         "stream-browserify": "^3.0.0",
-        "viem": "2.23.6"
+        "viem": "2.33.1"
     },
     "devDependencies": {
         "@babel/core": "^7.25.2",

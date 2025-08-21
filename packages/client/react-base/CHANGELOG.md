@@ -1,5 +1,52 @@
 # @crossmint/client-sdk-react-base
 
+## 0.5.26
+
+### Patch Changes
+
+- Updated dependencies [9a1bc3b]
+  - @crossmint/wallets-sdk@0.11.7
+
+## 0.5.25
+
+### Patch Changes
+
+- Updated dependencies [40917df]
+  - @crossmint/client-sdk-base@1.6.0
+
+## 0.5.24
+
+### Patch Changes
+
+- Updated dependencies [bd70d30]
+  - @crossmint/wallets-sdk@0.11.6
+
+## 0.5.23
+
+### Patch Changes
+
+- Updated dependencies [4728def]
+  - @crossmint/wallets-sdk@0.11.5
+
+## 0.5.22
+
+### Patch Changes
+
+- Updated dependencies [6960177]
+  - @crossmint/common-sdk-base@0.9.3
+  - @crossmint/client-sdk-base@1.5.18
+  - @crossmint/wallets-sdk@0.11.4
+
+## 0.5.21
+
+### Patch Changes
+
+- Updated dependencies [6559e0c]
+- Updated dependencies [52791f9]
+  - @crossmint/wallets-sdk@0.11.3
+  - @crossmint/client-sdk-base@1.5.17
+  - @crossmint/common-sdk-base@0.9.2
+
 ## 0.5.20
 
 ### Patch Changes

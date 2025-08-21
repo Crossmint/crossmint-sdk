@@ -1,4 +1,3 @@
-import base58 from "bs58";
 import type { EmailInternalSignerConfig, PhoneInternalSignerConfig } from "../types";
 import { DEFAULT_EVENT_OPTIONS, NonCustodialSigner } from "./ncs-signer";
 
@@ -11,12 +10,9 @@ export class StellarNonCustodialSigner extends NonCustodialSigner {
         return await Promise.reject(new Error("signMessage method not implemented for stellar signer"));
     }
 
-    async signTransaction(transaction: string): Promise<{ signature: string }> {
+    async signTransaction(payload: string): Promise<{ signature: string }> {
         await this.handleAuthRequired();
         const jwt = this.getJwtOrThrow();
-
-        const transactionBuffer = Buffer.from(transaction, "base64");
-        const transactionBase58 = base58.encode(transactionBuffer);
 
         const res = await this.config.clientTEEConnection?.sendAction({
             event: "request:sign",
@@ -28,8 +24,8 @@ export class StellarNonCustodialSigner extends NonCustodialSigner {
                 },
                 data: {
                     keyType: "ed25519",
-                    bytes: transactionBase58,
-                    encoding: "base58",
+                    bytes: payload,
+                    encoding: "base64",
                 },
             },
             options: DEFAULT_EVENT_OPTIONS,
@@ -43,10 +39,11 @@ export class StellarNonCustodialSigner extends NonCustodialSigner {
             throw new Error("Failed to sign transaction");
         }
         StellarNonCustodialSigner.verifyPublicKeyFormat(res.publicKey);
+        if (res.signature.encoding !== "base64") {
+            throw new Error("Wrong encoding for signature. Expected base64, got " + res.signature.encoding);
+        }
 
-        const signatureBuffer = base58.decode(res.signature.bytes);
-        const signatureBase64 = Buffer.from(signatureBuffer).toString("base64");
-        return { signature: signatureBase64 };
+        return { signature: res.signature.bytes };
     }
 
     static verifyPublicKeyFormat(publicKey: { encoding: string; keyType: string; bytes: string } | null) {
