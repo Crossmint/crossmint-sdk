@@ -18,6 +18,7 @@ export type {
     EVMTransactionInput,
     Transaction,
     WalletArgsFor,
+    WalletPlugin,
     Signature,
     SolanaTransactionInput,
 } from "./wallets/types";
