@@ -58,6 +58,7 @@ export class WalletFactory {
             chainType: this.getChainType(args.chain),
             config: {
                 adminSigner,
+                ...(args?.plugins ? { plugins: args.plugins } : {}),
             },
             owner: args.owner ?? undefined,
         } as CreateWalletParams);
