@@ -76,9 +76,7 @@ export function WalletBalance() {
                         <Image src="/usdc.svg" alt="USDC" width={24} height={24} />
                         <p className="font-medium">USDC</p>
                     </div>
-                    <div className="text-gray-700 font-medium">
-                        $ {formatBalance(balances?.usdc.amount ?? "0")}
-                    </div>
+                    <div className="text-gray-700 font-medium">$ {formatBalance(balances?.usdc.amount ?? "0")}</div>
                 </div>
             )}
 
