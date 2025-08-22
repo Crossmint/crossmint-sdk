@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 0.11.8
+
+### Patch Changes
+
+- 6546b1b: Add plugins to stellar smart wallets
+
 ## 0.11.7
 
 ### Patch Changes
