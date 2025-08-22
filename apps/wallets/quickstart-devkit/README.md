@@ -44,11 +44,14 @@ cp .env.template .env
 3. Get a Crossmint API key from [here](https://docs.crossmint.com/introduction/platform/api-keys/client-side) and add it to the `.env` file.
 ```bash
 NEXT_PUBLIC_CROSSMINT_API_KEY=your_api_key
+NEXT_PUBLIC_CHAIN=solana
 ```
+
+4. (Optional) Set your preferred blockchain by updating `NEXT_PUBLIC_CHAIN` in the `.env` file. Supported values: `solana`, `stellar`, or any EVM chain like `optimism-sepolia`.
 
 for testing anything regarding BYOA, you'll need an API key. 
 
-4. Run the development server:
+5. Run the development server:
 ```bash
 npm run dev
 # or
