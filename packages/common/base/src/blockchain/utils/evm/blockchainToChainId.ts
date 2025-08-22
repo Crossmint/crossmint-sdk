@@ -45,6 +45,8 @@ export const BLOCKCHAIN_TO_CHAIN_ID: Record<EVMBlockchainIncludingTestnet, numbe
     "scroll-sepolia": 534351,
     "sei-atlantic-2-testnet": 1328,
     "world-chain-sepolia": 4801,
+    flow: 1230,
+    "flow-testnet": 1231,
 };
 
 export function blockchainToChainId(blockchain: EVMBlockchainIncludingTestnet) {

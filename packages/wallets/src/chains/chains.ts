@@ -17,6 +17,8 @@ import {
     zora,
     zoraSepolia,
     sepolia,
+    flowMainnet,
+    flowTestnet,
 } from "viem/chains";
 
 import { story } from "./definitions/story";
@@ -28,6 +30,7 @@ const TESTNET_AA_CHAINS = [
     Blockchain.BASE_SEPOLIA,
     Blockchain.CURTIS,
     Blockchain.ETHEREUM_SEPOLIA,
+    Blockchain.FLOW_TESTNET,
     Blockchain.MANTLE_SEPOLIA,
     Blockchain.MODE_SEPOLIA,
     Blockchain.OPTIMISM_SEPOLIA,
@@ -46,6 +49,7 @@ const PRODUCTION_AA_CHAINS = [
     Blockchain.ARBITRUMNOVA,
     Blockchain.BASE,
     Blockchain.BSC,
+    Blockchain.FLOW,
     Blockchain.MANTLE,
     Blockchain.MODE,
     Blockchain.OPTIMISM,
@@ -100,6 +104,10 @@ export function toViemChain(chain: EVMSmartWalletChain): ViemChain {
             return zoraSepolia;
         case Blockchain.ETHEREUM_SEPOLIA:
             return sepolia;
+        case Blockchain.FLOW:
+            return flowMainnet;
+        case Blockchain.FLOW_TESTNET:
+            return flowTestnet;
         case Blockchain.ABSTRACT:
         case Blockchain.ABSTRACT_TESTNET:
         case Blockchain.APECHAIN:
