@@ -51,9 +51,9 @@ export class StellarNonCustodialSigner extends NonCustodialSigner {
             throw new Error("No public key found");
         }
 
-        if (publicKey.encoding !== "base58" || publicKey.keyType !== "ed25519" || publicKey.bytes == null) {
+        if (publicKey.encoding !== "base64" || publicKey.keyType !== "ed25519" || publicKey.bytes == null) {
             throw new Error(
-                "Not supported. Expected public key to be in base58 encoding and ed25519 key type. Got: " +
+                "Not supported. Expected public key to be in base64 encoding and ed25519 key type. Got: " +
                     JSON.stringify(publicKey)
             );
         }
