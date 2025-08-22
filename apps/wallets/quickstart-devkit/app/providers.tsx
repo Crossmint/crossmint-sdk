@@ -14,8 +14,8 @@ if (!crossmintApiKey) {
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
-    /* 
-    @TODO update to your desired provider inside QueryParamsProvider. 
+    /*
+    @TODO update to your desired provider inside QueryParamsProvider.
     (Ignore this, it's used for e2e testing - Do not remove this)
     */
     return (
@@ -243,7 +243,7 @@ function QueryParamsProvider({ children }: { children: React.ReactNode }) {
 
     const providerType = searchParams.get("provider") || "crossmint"; // default to crossmint
     const chainType = searchParams.get("chain");
-    const signerType = searchParams.get("signer");
+    const signerType = searchParams.get("signer") || "email";
     const chainId = searchParams.get("chainId") || process.env.NEXT_PUBLIC_EVM_CHAIN;
     const phoneNumber = searchParams.get("phoneNumber");
     const crossmintApiKey = searchParams.get("crossmintApiKey") || undefined;

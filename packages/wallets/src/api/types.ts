@@ -13,7 +13,7 @@ import type {
     WalletNftsResponseDto,
     WalletV1Alpha2ErrorDto,
     WalletV1Alpha2TransactionErrorDto,
-    WalletV2025ResponseDtoReadable,
+    WalletV2025ResponseDto,
     WalletsMultipleTransactionV2025ResponseDto,
     WalletsSendTokenControllerSendToken2Response,
     WalletsSignatureV2025ResponseDto,
@@ -30,7 +30,7 @@ import type {
 } from "./gen/types.gen";
 
 export type CreateWalletParams = CreateWalletV2025Dto;
-export type GetWalletSuccessResponse = WalletV2025ResponseDtoReadable;
+export type GetWalletSuccessResponse = WalletV2025ResponseDto;
 export type CreateWalletResponse = GetWalletSuccessResponse | WalletV1Alpha2ErrorDto;
 export type GetWalletResponse = GetWalletSuccessResponse | WalletV1Alpha2ErrorDto;
 
