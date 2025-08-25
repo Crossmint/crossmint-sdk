@@ -494,7 +494,12 @@ export class Wallet<C extends Chain> {
                     throw new InvalidSignerError(`Signer ${pendingApproval.signer} not found in pending approvals`);
                 }
 
-                return signer.signTransaction(pendingApproval.message);
+                const transactionToSign =
+                    transaction.chainType === "solana" && "transaction" in transaction.onChain
+                        ? (transaction.onChain.transaction as string) // in Solana, the transaction is a string
+                        : pendingApproval.message;
+
+                return signer.signTransaction(transactionToSign);
             })
         );
 
