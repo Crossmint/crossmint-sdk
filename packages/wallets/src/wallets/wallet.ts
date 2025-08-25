@@ -144,7 +144,7 @@ export class Wallet<C extends Chain> {
 
             return {
                 symbol: tokenData.symbol ?? "",
-                name: tokenData.symbol ?? "",
+                name: tokenData.name ?? "",
                 amount: tokenData.amount ?? "0",
                 contractAddress,
                 decimals: tokenData.decimals,
