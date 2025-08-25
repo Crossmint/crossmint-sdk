@@ -328,11 +328,11 @@ export class Wallet<C extends Chain> {
             throw new Error(`Failed to register signer: ${JSON.stringify(response.message)}`);
         }
 
-        if ("transaction" in response) {
+        if ("transaction" in response && response.transaction != null) {
             // Solana has "transaction" in response
             const transactionId = response.transaction.id;
             await this.approveTransactionAndWait(transactionId);
-        } else {
+        } else if ("chains" in response) {
             // EVM has "chains" in response
             const chainResponse = response.chains?.[this.chain];
             if (chainResponse?.status === "awaiting-approval") {
@@ -493,9 +493,10 @@ export class Wallet<C extends Chain> {
                 if (signer == null) {
                     throw new InvalidSignerError(`Signer ${pendingApproval.signer} not found in pending approvals`);
                 }
+
                 const transactionToSign =
                     transaction.chainType === "solana" && "transaction" in transaction.onChain
-                        ? transaction.onChain.transaction
+                        ? (transaction.onChain.transaction as string) // in Solana, the transaction is a string
                         : pendingApproval.message;
 
                 return signer.signTransaction(transactionToSign);

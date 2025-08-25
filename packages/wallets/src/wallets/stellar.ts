@@ -65,7 +65,7 @@ export class StellarWallet extends Wallet<StellarChain> {
                     type: "contract-call",
                     contractId,
                     method,
-                    memo,
+                    memo: memo != null ? { type: "text", value: memo } : undefined,
                     args,
                 },
                 signer,

@@ -222,7 +222,7 @@ function QueryParamsProvider({ children }: { children: React.ReactNode }) {
 
     const providerType = searchParams.get("provider") || "crossmint"; // default to crossmint
     const chainType = searchParams.get("chain");
-    const signerType = searchParams.get("signer");
+    const signerType = searchParams.get("signer") || "email";
     const chainId = searchParams.get("chainId") || process.env.NEXT_PUBLIC_EVM_CHAIN;
     const phoneNumber = searchParams.get("phoneNumber");
     const crossmintApiKey = searchParams.get("crossmintApiKey") || undefined;
