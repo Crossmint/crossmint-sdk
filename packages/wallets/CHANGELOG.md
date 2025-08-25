@@ -1,5 +1,13 @@
 # @crossmint/wallets-sdk
 
+## 0.11.9
+
+### Patch Changes
+
+- 2be90b6: Adds Flow chain
+- Updated dependencies [2be90b6]
+  - @crossmint/common-sdk-base@0.9.4
+
 ## 0.11.8
 
 ### Patch Changes
