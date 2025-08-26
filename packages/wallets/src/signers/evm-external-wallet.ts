@@ -4,7 +4,7 @@ import type { EVMChain } from "@/chains/chains";
 
 export class EVMExternalWalletSigner implements Signer {
     type = "external-wallet" as const;
-    address: string;
+    private _address: string;
     provider?: GenericEIP1193Provider | ViemEIP1193Provider;
     viemAccount?: Account;
 
@@ -12,9 +12,13 @@ export class EVMExternalWalletSigner implements Signer {
         if (config.address == null) {
             throw new Error("Please provide an address for the External Wallet Signer");
         }
-        this.address = config.address;
+        this._address = config.address;
         this.provider = config.provider;
         this.viemAccount = config.viemAccount;
+    }
+
+    address() {
+        return this._address;
     }
 
     locator() {
@@ -25,7 +29,7 @@ export class EVMExternalWalletSigner implements Signer {
         if (this.provider != null) {
             const signature = await this.provider.request({
                 method: "personal_sign",
-                params: [message, this.address] as any,
+                params: [message, this._address] as any,
             });
             if (signature == null) {
                 throw new Error(
