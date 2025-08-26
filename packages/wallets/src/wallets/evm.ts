@@ -59,11 +59,11 @@ export class EVMWallet extends Wallet<EVMChain> {
         params: T
     ): Promise<Signature<T["options"] extends PrepareOnly<true> ? true : false>> {
         const signatureCreationResponse = await this.apiClient.createSignature(this.walletLocator, {
-            type: "evm-message" as any,
+            type: "message",
             params: {
                 message: params.message,
                 signer: this.signer.locator(),
-                chain: this.chain as any,
+                chain: this.chain,
             },
         });
         if ("error" in signatureCreationResponse) {
@@ -94,7 +94,7 @@ export class EVMWallet extends Wallet<EVMChain> {
         }
 
         const signatureCreationResponse = await this.apiClient.createSignature(this.walletLocator, {
-            type: "evm-typed-data" as any,
+            type: "typed-data",
             params: {
                 typedData: {
                     domain: {
@@ -109,7 +109,7 @@ export class EVMWallet extends Wallet<EVMChain> {
                     types: types as unknown as Record<string, Array<{ name: string; type: string }>>,
                 },
                 signer: this.signer.locator(),
-                chain: chain as any,
+                chain,
                 isSmartWalletSignature: false,
             },
         });
@@ -142,7 +142,7 @@ export class EVMWallet extends Wallet<EVMChain> {
         const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
             params: {
                 signer,
-                chain: this.chain as any,
+                chain: this.chain,
                 calls: [transaction],
             },
         });

@@ -2,21 +2,22 @@ import type { Address } from "viem";
 
 import type {
     BalanceControllerGetBalanceForLocator2Error,
-    CreateSignatureRequestDto,
-    CreateSignerInputDto,
-    CreateTransactionDto,
-    CreateWalletDto,
-    DelegatedSignerDto,
+    CreateSignatureV2025Dto,
+    CreateSignerV2025InputDto,
+    CreateTransactionV2025Dto,
+    CreateWalletV2025Dto,
+    DelegatedSignerV2025Dto,
     SendTokenDto,
-    SubmitApprovalDto,
-    WalletBalanceResponseDto,
+    SubmitApprovalV2025Dto,
+    WalletBalanceV20250609ResponseDto,
+    WalletNftsResponseDto,
     WalletV1Alpha2ErrorDto,
     WalletV1Alpha2TransactionErrorDto,
-    WalletV1Alpha2ResponseDto,
-    WalletsV1Alpha2MultipleSignatureResponseDto,
+    WalletV2025ResponseDto,
+    WalletsMultipleTransactionV2025ResponseDto,
     WalletsSendTokenControllerSendToken2Response,
-    WalletsV1Alpha2SignatureResponseDto,
-    WalletsV1Alpha2TransactionResponseDto,
+    WalletsSignatureV2025ResponseDto,
+    WalletsTransactionV2025ResponseDto,
     WalletsV1Alpha2ActivityResponseDto,
     WalletsV1ControllerCreateDelegatedSigner4Error,
     WalletsV1ControllerCreateSignatureRequest4Error,
@@ -28,71 +29,58 @@ import type {
     WalletsV1ControllerSubmitSignatureApprovals4Error,
 } from "./gen/types.gen";
 
-export type CreateWalletParams =
-    | CreateWalletDto
-    | (CreateWalletDto & {
-          type: "solana-smart-wallet";
-          config?: {
-              adminSigner?:
-                  | {
-                        type: "solana-keypair";
-                        address: string;
-                    }
-                  | {
-                        type: "solana-fireblocks-custodial";
-                    };
-              delegatedSigners?: Array<{
-                  signer: string;
-              }>;
-          };
-      });
-export type GetWalletSuccessResponse = WalletV1Alpha2ResponseDto;
+export type CreateWalletParams = CreateWalletV2025Dto & {
+    config?: {
+        delegatedSigners?: Array<{
+            signer: string;
+        }>;
+    };
+};
+export type GetWalletSuccessResponse = WalletV2025ResponseDto;
 export type CreateWalletResponse = GetWalletSuccessResponse | WalletV1Alpha2ErrorDto;
 export type GetWalletResponse = GetWalletSuccessResponse | WalletV1Alpha2ErrorDto;
 
 export type AdminSignerConfig = NonNullable<
-    Extract<CreateWalletDto, { config: { adminSigner: Record<string, unknown> } }>["config"]
+    Extract<CreateWalletV2025Dto, { config: { adminSigner: Record<string, unknown> } }>["config"]
 >["adminSigner"];
 
-export type CreateTransactionParams = CreateTransactionDto;
-export type CreateTransactionSuccessResponse = WalletsV1Alpha2TransactionResponseDto;
+export type CreateTransactionParams = CreateTransactionV2025Dto;
+export type CreateTransactionSuccessResponse = WalletsTransactionV2025ResponseDto;
 export type CreateTransactionResponse = CreateTransactionSuccessResponse | WalletV1Alpha2TransactionErrorDto;
-export type ApproveTransactionParams = SubmitApprovalDto;
-export type ApproveTransactionResponse =
-    | WalletsV1Alpha2TransactionResponseDto
-    | WalletsV1ControllerSubmitApprovals4Error;
-export type GetTransactionResponse = WalletsV1Alpha2TransactionResponseDto | WalletsV1ControllerGetTransaction4Error;
-export type GetTransactionSuccessResponse = WalletsV1Alpha2TransactionResponseDto;
+export type ApproveTransactionParams = SubmitApprovalV2025Dto;
+export type ApproveTransactionResponse = WalletsTransactionV2025ResponseDto | WalletsV1ControllerSubmitApprovals4Error;
+export type GetTransactionResponse = WalletsTransactionV2025ResponseDto | WalletsV1ControllerGetTransaction4Error;
+export type GetTransactionSuccessResponse = WalletsTransactionV2025ResponseDto;
 
-export type CreateSignatureParams = CreateSignatureRequestDto;
+export type CreateSignatureParams = CreateSignatureV2025Dto;
 export type CreateSignatureResponse =
-    | WalletsV1Alpha2SignatureResponseDto
+    | WalletsSignatureV2025ResponseDto
     | WalletsV1ControllerCreateSignatureRequest4Error;
-export type ApproveSignatureParams = SubmitApprovalDto;
+export type ApproveSignatureParams = SubmitApprovalV2025Dto;
 export type ApproveSignatureResponse =
-    | WalletsV1Alpha2SignatureResponseDto
+    | WalletsSignatureV2025ResponseDto
     | WalletsV1ControllerSubmitSignatureApprovals4Error;
-export type GetSignatureResponse = WalletsV1Alpha2SignatureResponseDto | WalletsV1ControllerGetSignature4Error;
+export type GetSignatureResponse = WalletsSignatureV2025ResponseDto | WalletsV1ControllerGetSignature4Error;
 
 export type GetTransactionsResponse =
-    | WalletsV1Alpha2MultipleSignatureResponseDto
+    | WalletsMultipleTransactionV2025ResponseDto
     | WalletsV1ControllerGetTransactionsWithoutChain4Error;
-export type GetNftsResponse = any; // TODO: Find correct type
-export type GetBalanceResponse = WalletBalanceResponseDto | BalanceControllerGetBalanceForLocator2Error;
-export type GetBalanceSuccessResponse = WalletBalanceResponseDto;
+export type GetNftsResponse = WalletNftsResponseDto;
+export type GetBalanceResponse = WalletBalanceV20250609ResponseDto | BalanceControllerGetBalanceForLocator2Error;
+export type GetBalanceSuccessResponse = WalletBalanceV20250609ResponseDto;
 export type GetActivityResponse = WalletsV1Alpha2ActivityResponseDto | WalletV1Alpha2ErrorDto;
 export type Activity = WalletsV1Alpha2ActivityResponseDto;
 
-export type RegisterSignerChain = Extract<CreateSignerInputDto, { chain: string }>["chain"];
-export type RegisterSignerPasskeyParams = Extract<CreateSignerInputDto["signer"], { type: "passkey" }>;
+export type RegisterSignerChain = Extract<CreateSignerV2025InputDto, { chain: string }>["chain"];
+export type RegisterSignerPasskeyParams = Extract<CreateSignerV2025InputDto["signer"], { type: "passkey" }>;
 export type RegisterSignerParams = {
     signer: string | RegisterSignerPasskeyParams;
     chain?: RegisterSignerChain;
 };
-export type RegisterSignerResponse = DelegatedSignerDto | WalletsV1ControllerCreateDelegatedSigner4Error;
-export type GetSignerResponse = DelegatedSignerDto | WalletsV1ControllerGetDelegatedSigner4Error;
-export type GetDelegatedSignersResponse = Array<DelegatedSignerDto> | WalletsV1ControllerGetDelegatedSigner4Error;
-export type DelegatedSigner = DelegatedSignerDto;
+export type RegisterSignerResponse = DelegatedSignerV2025Dto | WalletsV1ControllerCreateDelegatedSigner4Error;
+export type GetSignerResponse = DelegatedSignerV2025Dto | WalletsV1ControllerGetDelegatedSigner4Error;
+export type GetDelegatedSignersResponse = Array<DelegatedSignerV2025Dto> | WalletsV1ControllerGetDelegatedSigner4Error;
+export type DelegatedSigner = DelegatedSignerV2025Dto;
 
 export type SendParams = SendTokenDto;
 export type SendResponse = WalletsSendTokenControllerSendToken2Response;
