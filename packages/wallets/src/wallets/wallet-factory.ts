@@ -52,16 +52,26 @@ export class WalletFactory {
 
         this.mutateSignerFromCustomAuth(args, true);
 
+        if (args.delegatedSigners && args.chain !== "solana") {
+            throw new WalletCreationError("Delegated signers are only supported for Solana smart wallets");
+        }
+
         const adminSigner =
             args.signer.type === "passkey" ? await this.createPasskeyAdminSigner(args.signer) : args.signer;
+
+        const config: any = {
+            adminSigner,
+            ...(args?.plugins ? { plugins: args.plugins } : {}),
+        };
+
+        if (args.chain === "solana" && args.delegatedSigners) {
+            config.delegatedSigners = args.delegatedSigners.map((signer) => ({ signer }));
+        }
 
         const walletResponse = await this.apiClient.createWallet({
             type: "smart",
             chainType: this.getChainType(args.chain),
-            config: {
-                adminSigner,
-                ...(args?.plugins ? { plugins: args.plugins } : {}),
-            },
+            config,
             owner: args.owner ?? undefined,
         } as CreateWalletParams);
 
@@ -256,6 +266,27 @@ export class WalletFactory {
                 );
             }
             compareSignerConfigs(adminSignerArgs, existingWalletSigner);
+        }
+
+        if (args.delegatedSigners && args.chain === "solana") {
+            const existingDelegatedSigners = (existingWallet?.config as any)?.delegatedSigners;
+            if (existingDelegatedSigners) {
+                const existingSignerAddresses = existingDelegatedSigners.map((s: any) => s.locator);
+                const providedSignerAddresses = args.delegatedSigners;
+
+                const missingSigners = providedSignerAddresses.filter(
+                    (addr: string) =>
+                        !existingSignerAddresses.some((existing: string) =>
+                            existing.endsWith(addr.replace("external-wallet:", ""))
+                        )
+                );
+
+                if (missingSigners.length > 0) {
+                    throw new WalletCreationError(
+                        `Provided delegated signers do not match existing wallet's delegated signers. Missing: ${missingSigners.join(", ")}`
+                    );
+                }
+            }
         }
     }
 

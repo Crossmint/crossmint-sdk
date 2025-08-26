@@ -29,7 +29,13 @@ import type {
     WalletsV1ControllerSubmitSignatureApprovals4Error,
 } from "./gen/types.gen";
 
-export type CreateWalletParams = CreateWalletV2025Dto;
+export type CreateWalletParams = CreateWalletV2025Dto & {
+    config?: {
+        delegatedSigners?: Array<{
+            signer: string;
+        }>;
+    };
+};
 export type GetWalletSuccessResponse = WalletV2025ResponseDto;
 export type CreateWalletResponse = GetWalletSuccessResponse | WalletV1Alpha2ErrorDto;
 export type GetWalletResponse = GetWalletSuccessResponse | WalletV1Alpha2ErrorDto;

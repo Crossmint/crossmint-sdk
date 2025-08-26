@@ -10,7 +10,6 @@ import type {
     GetTransactionsResponse,
 } from "../api";
 import type {
-    DelegatedSigner,
     WalletOptions,
     UserLocator,
     Transaction,
@@ -346,7 +345,7 @@ export class Wallet<C extends Chain> {
         }
     }
 
-    public async delegatedSigners(): Promise<DelegatedSigner[]> {
+    public async delegatedSigners(): Promise<string[]> {
         const walletResponse = await this.#apiClient.getWallet(this.walletLocator);
         if ("error" in walletResponse) {
             throw new WalletNotAvailableError(JSON.stringify(walletResponse));
@@ -369,9 +368,7 @@ export class Wallet<C extends Chain> {
                 const colonIndex = signer.locator.indexOf(":");
                 // If there's a colon, keep everything after it; otherwise treat the whole string as "rest"
                 const address = colonIndex >= 0 ? signer.locator.slice(colonIndex + 1) : signer.locator;
-                return {
-                    signer: `external-wallet:${address}`,
-                };
+                return address;
             }) ?? []
         );
     }
