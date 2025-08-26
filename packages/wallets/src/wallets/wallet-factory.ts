@@ -50,10 +50,6 @@ export class WalletFactory {
             throw new WalletCreationError("Delegated signers are only supported for Solana smart wallets");
         }
 
-        if (args.delegatedSigners) {
-            this.validateDelegatedSigners(args.delegatedSigners, args.signer);
-        }
-
         const adminSigner =
             args.signer.type === "passkey" ? await this.createPasskeyAdminSigner(args.signer) : args.signer;
 
@@ -271,8 +267,6 @@ export class WalletFactory {
         }
 
         if (args.delegatedSigners && args.chain === "solana") {
-            this.validateDelegatedSigners(args.delegatedSigners, args.signer);
-
             const existingDelegatedSigners = ((existingWallet as any)?.config as any)?.delegatedSigners;
             if (existingDelegatedSigners) {
                 const existingSignerAddresses = existingDelegatedSigners.map((s: any) => s.locator);
@@ -291,54 +285,6 @@ export class WalletFactory {
                     );
                 }
             }
-        }
-    }
-
-    private validateDelegatedSigners<C extends Chain>(
-        delegatedSigners: string[],
-        adminSigner: SignerConfigForChain<C>
-    ): void {
-        if (delegatedSigners.length > 10) {
-            throw new WalletCreationError("Maximum of 10 delegated signers allowed");
-        }
-
-        for (const signer of delegatedSigners) {
-            if (!signer.startsWith("external-wallet:")) {
-                throw new WalletCreationError(
-                    `Invalid delegated signer format: ${signer}. Must start with "external-wallet:"`
-                );
-            }
-
-            const address = signer.replace("external-wallet:", "");
-            if (!this.isValidSolanaAddress(address)) {
-                throw new WalletCreationError(`Invalid Solana address: ${address}`);
-            }
-        }
-
-        if (adminSigner.type === "external-wallet") {
-            const adminAddress = adminSigner.address;
-            const duplicateAdmin = delegatedSigners.some(
-                (signer) => signer.replace("external-wallet:", "") === adminAddress
-            );
-            if (duplicateAdmin) {
-                throw new WalletCreationError("Admin signer cannot be added as a delegated signer");
-            }
-        }
-
-        const uniqueSigners = new Set(delegatedSigners);
-        if (uniqueSigners.size !== delegatedSigners.length) {
-            throw new WalletCreationError("Duplicate delegated signers are not allowed");
-        }
-    }
-
-    private isValidSolanaAddress(address: string): boolean {
-        try {
-            if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address)) {
-                return false;
-            }
-            return address.length >= 32 && address.length <= 44;
-        } catch {
-            return false;
         }
     }
 
