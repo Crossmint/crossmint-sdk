@@ -138,28 +138,31 @@ export class Wallet<C extends Chain> {
         requestedTokens?: string[]
     ): Balances {
         const transformTokenBalance = (tokenData: GetBalanceSuccessResponse[number]): TokenBalance => {
-            const chainData = tokenData.chains?.[this.chain];
+            const chainData = (tokenData as any).chains?.[this.chain];
             const contractAddress =
                 chainData != null && "contractAddress" in chainData ? chainData.contractAddress : undefined;
 
             return {
-                symbol: tokenData.symbol ?? "",
-                name: tokenData.name ?? "",
-                amount: tokenData.amount ?? "0",
+                symbol: (tokenData as any).symbol ?? tokenData.token ?? "",
+                name: (tokenData as any).name ?? tokenData.token ?? "",
+                amount: (tokenData as any).amount ?? "0",
                 contractAddress,
                 decimals: tokenData.decimals,
-                rawAmount: tokenData.rawAmount ?? "0",
+                rawAmount: (tokenData as any).rawAmount ?? "0",
             };
         };
 
-        const nativeTokenData = apiResponse.find((token) => token.symbol === nativeTokenSymbol);
-        const usdcData = apiResponse.find((token) => token.symbol === "usdc");
+        const nativeTokenData = apiResponse.find(
+            (token) => (token as any).symbol === nativeTokenSymbol || token.token === nativeTokenSymbol
+        );
+        const usdcData = apiResponse.find((token) => (token as any).symbol === "usdc" || token.token === "usdc");
 
         const otherTokens = apiResponse.filter((token) => {
+            const tokenSymbol = (token as any).symbol ?? token.token;
             return (
-                token.symbol !== nativeTokenSymbol &&
-                token.symbol !== "usdc" &&
-                requestedTokens?.includes(token.symbol ?? "")
+                tokenSymbol !== nativeTokenSymbol &&
+                tokenSymbol !== "usdc" &&
+                requestedTokens?.includes(tokenSymbol ?? "")
             );
         });
 
@@ -321,7 +324,7 @@ export class Wallet<C extends Chain> {
     public async addDelegatedSigner(params: { signer: string | RegisterSignerPasskeyParams }) {
         const response = await this.#apiClient.registerSigner(this.walletLocator, {
             signer: params.signer,
-            chain: this.chain === "solana" || this.chain === "stellar" ? undefined : this.chain,
+            chain: this.chain === "solana" || this.chain === "stellar" ? undefined : (this.chain as any),
         });
 
         if ("error" in response) {
@@ -357,15 +360,15 @@ export class Wallet<C extends Chain> {
         }
 
         if (
-            walletResponse.type !== "smart" ||
-            (walletResponse.chainType !== "evm" && walletResponse.chainType !== "solana")
+            !walletResponse.type.includes("smart") ||
+            ((walletResponse as any).chainType !== "evm" && (walletResponse as any).chainType !== "solana")
         ) {
             throw new WalletTypeNotSupportedError(`Wallet type ${walletResponse.type} not supported`);
         }
 
         // Map wallet-type to simply wallet
         return (
-            walletResponse?.config?.delegatedSigners?.map((signer) => {
+            (walletResponse as any)?.config?.delegatedSigners?.map((signer: any) => {
                 const colonIndex = signer.locator.indexOf(":");
                 // If there's a colon, keep everything after it; otherwise treat the whole string as "rest"
                 const address = colonIndex >= 0 ? signer.locator.slice(colonIndex + 1) : signer.locator;
@@ -439,7 +442,7 @@ export class Wallet<C extends Chain> {
 
         const signedApprovals = await Promise.all(
             pendingApprovals.map((pendingApproval) => {
-                const signer = signers.find((s) => s.locator() === pendingApproval.signer.locator);
+                const signer = signers.find((s) => s.locator() === (pendingApproval.signer as any).locator);
                 if (signer == null) {
                     throw new InvalidSignerError(`Signer ${pendingApproval.signer} not found in pending approvals`);
                 }
@@ -489,14 +492,14 @@ export class Wallet<C extends Chain> {
 
         const signedApprovals = await Promise.all(
             pendingApprovals.map((pendingApproval) => {
-                const signer = signers.find((s) => s.locator() === pendingApproval.signer.locator);
+                const signer = signers.find((s) => s.locator() === (pendingApproval.signer as any).locator);
                 if (signer == null) {
                     throw new InvalidSignerError(`Signer ${pendingApproval.signer} not found in pending approvals`);
                 }
 
                 const transactionToSign =
-                    transaction.chainType === "solana" && "transaction" in transaction.onChain
-                        ? (transaction.onChain.transaction as string) // in Solana, the transaction is a string
+                    (transaction as any).chainType === "solana" && "transaction" in (transaction as any).onChain
+                        ? ((transaction as any).onChain.transaction as string) // in Solana, the transaction is a string
                         : pendingApproval.message;
 
                 return signer.signTransaction(transactionToSign);
@@ -515,7 +518,7 @@ export class Wallet<C extends Chain> {
 
     private async executeApproveTransactionWithErrorHandling(transactionId: string, approvals: Approval[]) {
         const approvedTransaction = await this.#apiClient.approveTransaction(this.walletLocator, transactionId, {
-            approvals,
+            approvals: approvals as any,
         });
 
         if (approvedTransaction.error) {
@@ -527,7 +530,7 @@ export class Wallet<C extends Chain> {
 
     private async executeApproveSignatureWithErrorHandling(signatureId: string, approvals: Approval[]) {
         const approvedSignature = await this.#apiClient.approveSignature(this.walletLocator, signatureId, {
-            approvals,
+            approvals: approvals as any,
         });
 
         if (approvedSignature.error) {
@@ -615,7 +618,7 @@ export class Wallet<C extends Chain> {
 
         return {
             hash: transactionHash,
-            explorerLink: transactionResponse.onChain.explorerLink ?? "",
+            explorerLink: (transactionResponse.onChain as any).explorerLink ?? "",
             transactionId: transactionResponse.id,
         };
     }
