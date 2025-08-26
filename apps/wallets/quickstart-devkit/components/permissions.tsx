@@ -18,7 +18,7 @@ export function Permissions() {
         const fetchPermissions = async () => {
             if (wallet != null) {
                 const signers = await wallet.delegatedSigners();
-                setPermissions(signers);
+                setPermissions(signers.map((signer) => ({ signer })));
             }
         };
         fetchPermissions();
@@ -36,7 +36,7 @@ export function Permissions() {
             setIsLoading(true);
             await wallet.addDelegatedSigner({ signer: newSigner });
             const signers = await wallet.delegatedSigners();
-            setPermissions(signers);
+            setPermissions(signers.map((signer) => ({ signer })));
         } catch (err) {
             console.error("Permissions: ", err);
             alert(`Permissions: ${err}`);
