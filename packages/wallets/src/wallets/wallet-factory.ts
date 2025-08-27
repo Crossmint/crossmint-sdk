@@ -17,7 +17,7 @@ import type { WalletArgsFor, WalletOptions } from "./types";
 import { compareSignerConfigs } from "../utils/signer-validation";
 
 const DELEGATED_SIGNER_MISMATCH_ERROR =
-    "When 'delegatedSigners' is provided to a method that fetches an existing wallet, that wallet must have matching delegated signers.";
+    "When the 'delegatedSigners' argument is provided to a method that fetches an existing wallet, that wallet must have matching delegated signers.";
 
 export class WalletFactory {
     constructor(private readonly apiClient: ApiClient) {}
