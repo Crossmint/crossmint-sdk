@@ -6,14 +6,18 @@ import type {
     CreateWalletParams,
     GetWalletSuccessResponse,
     RegisterSignerPasskeyParams,
+    DelegatedSigner as DelegatedSignerResponse,
 } from "../api";
 import { WalletCreationError, WalletNotAvailableError } from "../utils/errors";
 import type { Chain } from "../chains/chains";
 import type { InternalSignerConfig, SignerConfigForChain } from "../signers/types";
 import { Wallet } from "./wallet";
 import { assembleSigner } from "../signers";
-import type { WalletArgsFor, WalletOptions } from "./types";
-import { compareSignerConfigs } from "@/utils/signer-validation";
+import type { DelegatedSigner, WalletArgsFor, WalletOptions } from "./types";
+import { compareSignerConfigs } from "../utils/signer-validation";
+
+const DELEGATED_SIGNER_MISMATCH_ERROR =
+    "When 'delegatedSigners' is provided to a method that may fetch an existing wallet, each specified delegated signer must exist in that wallet's configuration.";
 
 export class WalletFactory {
     constructor(private readonly apiClient: ApiClient) {}
@@ -59,6 +63,9 @@ export class WalletFactory {
             config: {
                 adminSigner,
                 ...(args?.plugins ? { plugins: args.plugins } : {}),
+                ...(args.chain === "solana" && args.delegatedSigners != null
+                    ? { delegatedSigners: args.delegatedSigners }
+                    : {}),
             },
             owner: args.owner ?? undefined,
         } as CreateWalletParams);
@@ -235,6 +242,46 @@ export class WalletFactory {
                 );
             }
             compareSignerConfigs(adminSignerArgs, existingWalletSigner);
+        }
+
+        if (args.delegatedSigners != null && args.chain === "solana") {
+            this.validateDelegatedSigners(existingWallet, args.delegatedSigners);
+        }
+    }
+
+    private validateDelegatedSigners(
+        existingWallet: GetWalletSuccessResponse,
+        inputDelegatedSigners: Array<DelegatedSigner>
+    ): void {
+        const existingDelegatedSigners = (existingWallet?.config as any)?.delegatedSigners as
+            | DelegatedSignerResponse[]
+            | undefined;
+
+        // If no delegated signers specified in input, no validation needed
+        if (inputDelegatedSigners.length === 0) {
+            return;
+        }
+
+        // If input has delegated signers but wallet has none, that's an error
+        if (existingDelegatedSigners == null || existingDelegatedSigners.length === 0) {
+            throw new WalletCreationError(
+                `${inputDelegatedSigners.length} delegated signer(s) specified, but wallet "${existingWallet.address}" has no delegated signers. ${DELEGATED_SIGNER_MISMATCH_ERROR}`
+            );
+        }
+
+        // Check that each input delegated signer exists in the wallet
+        // (wallet can have additional signers that weren't specified in input)
+        for (const argSigner of inputDelegatedSigners) {
+            const matchingExistingSigner = existingDelegatedSigners.find(
+                (existingSigner) => existingSigner.locator === argSigner.signer
+            );
+
+            if (matchingExistingSigner == null) {
+                const walletSigners = existingDelegatedSigners.map((s) => s.locator).join(", ");
+                throw new WalletCreationError(
+                    `Delegated signer '${argSigner.signer}' does not exist in wallet "${existingWallet.address}". Available delegated signers: ${walletSigners}. ${DELEGATED_SIGNER_MISMATCH_ERROR}`
+                );
+            }
         }
     }
 

@@ -101,6 +101,7 @@ export type WalletArgsFor<C extends Chain> = {
     owner?: string;
     plugins?: WalletPlugin<C>[];
     options?: WalletOptions;
+    delegatedSigners?: C extends "solana" ? Array<DelegatedSigner> : never;
 };
 
 export type TokenBalance = {
