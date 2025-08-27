@@ -6,6 +6,7 @@ import type {
     CreateWalletParams,
     GetWalletSuccessResponse,
     RegisterSignerPasskeyParams,
+    DelegatedSigner as DelegatedSignerResponse,
 } from "../api";
 import { WalletCreationError, WalletNotAvailableError } from "../utils/errors";
 import type { Chain } from "../chains/chains";
@@ -13,7 +14,7 @@ import type { InternalSignerConfig, SignerConfigForChain } from "../signers/type
 import { Wallet } from "./wallet";
 import { assembleSigner } from "../signers";
 import type { WalletArgsFor, WalletOptions } from "./types";
-import { compareSignerConfigs } from "@/utils/signer-validation";
+import { compareSignerConfigs } from "../utils/signer-validation";
 
 export class WalletFactory {
     constructor(private readonly apiClient: ApiClient) {}
@@ -263,6 +264,37 @@ export class WalletFactory {
                 );
             }
             compareSignerConfigs(adminSignerArgs, existingWalletSigner);
+        }
+
+        // Validate delegated signers for Solana smart wallets
+        if (args.delegatedSigners != null && args.chain === "solana") {
+            const existingDelegatedSigners = (existingWallet?.config as any)?.delegatedSigners as
+                | DelegatedSignerResponse[]
+                | undefined;
+
+            if (existingDelegatedSigners == null) {
+                throw new WalletCreationError(
+                    "Wallet does not have delegated signers, but delegated signers were provided in the config"
+                );
+            }
+
+            if (args.delegatedSigners.length !== existingDelegatedSigners.length) {
+                throw new WalletCreationError(
+                    `Number of delegated signers does not match. Expected ${existingDelegatedSigners.length}, but got ${args.delegatedSigners.length}`
+                );
+            }
+
+            for (const argSigner of args.delegatedSigners) {
+                const matchingExistingSigner = existingDelegatedSigners.find(
+                    (existingSigner) => existingSigner.locator === argSigner.signer
+                );
+
+                if (matchingExistingSigner == null) {
+                    throw new WalletCreationError(
+                        `Delegated signer '${argSigner.signer}' was not found in the existing wallet's delegated signers`
+                    );
+                }
+            }
         }
     }
 
