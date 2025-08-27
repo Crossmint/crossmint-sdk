@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 0.12.1
+
+### Patch Changes
+
+- f179ab8: Add ability to specify delegate signers for Solana Smart wallets upon creation
+
 ## 0.12.0
 
 ### Minor Changes
