@@ -277,7 +277,7 @@ export class WalletFactory {
             if (existingDelegatedSigners == null || existingDelegatedSigners.length === 0) {
                 if (args.delegatedSigners.length > 0) {
                     throw new WalletCreationError(
-                        `${args.delegatedSigners.length} delegated signer(s) specified, but wallet "${existingWallet.address}" has no delegated signers.\n${DELEGATED_SIGNER_MISMATCH_ERROR}`
+                        `${args.delegatedSigners.length} delegated signer(s) specified, but wallet "${existingWallet.address}" has no delegated signers. ${DELEGATED_SIGNER_MISMATCH_ERROR}`
                     );
                 }
 
@@ -286,7 +286,7 @@ export class WalletFactory {
 
             if (args.delegatedSigners.length !== existingDelegatedSigners.length) {
                 throw new WalletCreationError(
-                    `${args.delegatedSigners.length} delegated signer(s) specified, but wallet "${existingWallet.address}" has ${existingDelegatedSigners.length} delegated signers.\n${DELEGATED_SIGNER_MISMATCH_ERROR}`
+                    `${args.delegatedSigners.length} delegated signer(s) specified, but wallet "${existingWallet.address}" has ${existingDelegatedSigners.length} delegated signers. ${DELEGATED_SIGNER_MISMATCH_ERROR}`
                 );
             }
 
@@ -298,7 +298,7 @@ export class WalletFactory {
                 if (matchingExistingSigner == null) {
                     const walletSigners = existingDelegatedSigners.map((s) => s.locator).join(", ");
                     throw new WalletCreationError(
-                        `Delegated signer '${argSigner.signer}' is not valid for wallet "${existingWallet.address}". This wallet's delegated signers are: ${walletSigners}.\n${DELEGATED_SIGNER_MISMATCH_ERROR}`
+                        `Delegated signer '${argSigner.signer}' is not valid for wallet "${existingWallet.address}". This wallet's delegated signers are: ${walletSigners}. ${DELEGATED_SIGNER_MISMATCH_ERROR}`
                     );
                 }
             }
