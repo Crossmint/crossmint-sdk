@@ -72,6 +72,7 @@ export type PasskeySignerConfig = {
 ////////////////////////////////////////////////////////////
 type BaseInternalSignerConfig = {
     locator: string;
+    address: string;
     crossmint: Crossmint;
     clientTEEConnection?: HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
 };
@@ -136,6 +137,7 @@ type SignResultMap = {
 export interface Signer<T extends keyof SignResultMap = keyof SignResultMap> {
     type: T;
     locator(): string;
+    address?(): string;
     signMessage(message: string): Promise<SignResultMap[T]>;
     signTransaction(transaction: string): Promise<SignResultMap[T]>;
 }

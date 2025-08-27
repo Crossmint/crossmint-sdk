@@ -6,15 +6,19 @@ import type { SolanaChain } from "@/chains/chains";
 
 export class SolanaExternalWalletSigner implements Signer {
     type = "external-wallet" as const;
-    address: string;
+    private _address: string;
     onSignTransaction?: (transaction: VersionedTransaction) => Promise<VersionedTransaction>;
 
     constructor(private config: ExternalWalletInternalSignerConfig<SolanaChain>) {
         if (config.address == null) {
             throw new Error("Please provide an address for the External Wallet Signer");
         }
-        this.address = config.address;
+        this._address = config.address;
         this.onSignTransaction = config.onSignTransaction;
+    }
+
+    address() {
+        return this._address;
     }
 
     locator() {
@@ -36,7 +40,7 @@ export class SolanaExternalWalletSigner implements Signer {
         // Sign the transaction (we can't use signMessage on transactions, so we need to sign the transaction directly)
         const signedTxn = await this.onSignTransaction(deserializedTransaction);
         // Get the signature from the signed transaction
-        const externalWalletPublicKey = new PublicKey(this.address);
+        const externalWalletPublicKey = new PublicKey(this._address);
         const signerIndex = signedTxn.message.staticAccountKeys.findIndex((key) => key.equals(externalWalletPublicKey));
         if (signerIndex === -1) {
             throw new TransactionFailedError("Wallet public key not found in transaction signers");
