@@ -287,9 +287,9 @@ export class WalletFactory {
                 throw new WalletCreationError(
                     `${inputDelegatedSigners.length} delegated signer(s) specified, but wallet "${existingWallet.address}" has no delegated signers. ${DELEGATED_SIGNER_MISMATCH_ERROR}`
                 );
+            } else {
+                return; // Both wallet and args have no delegated signers, no further validation needed
             }
-            // Both wallet and args have no delegated signers - this is valid
-            return;
         }
 
         if (inputDelegatedSigners.length !== existingDelegatedSigners.length) {
