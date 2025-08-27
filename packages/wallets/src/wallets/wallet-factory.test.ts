@@ -107,12 +107,12 @@ describe("WalletFactory - Delegated Signers Validation", () => {
 
             await expect(walletFactory.getOrCreateWallet(mockValidSolanaArgs)).rejects.toThrow(
                 new WalletCreationError(
-                    `2 delegated signer(s) specified, but wallet "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM" has no delegated signers. When the 'delegatedSigners' argument is provided to a method that fetches an existing wallet, that wallet must have matching delegated signers.`
+                    `2 delegated signer(s) specified, but wallet "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM" has no delegated signers. When 'delegatedSigners' is provided to a method that may fetch an existing wallet, each specified delegated signer must exist in that wallet's configuration.`
                 )
             );
         });
 
-        it("should throw error when number of delegated signers does not match", async () => {
+        it("should allow subset of delegated signers (wallet can have more than specified)", async () => {
             // Mock getWallet to return wallet with delegated signers
             mockApiClient.getWallet.mockResolvedValue(mockWalletWithDelegatedSigners);
 
@@ -123,40 +123,13 @@ describe("WalletFactory - Delegated Signers Validation", () => {
                     address: "AdminSignerAddress123",
                 },
                 delegatedSigners: [
-                    // Only providing 1 signer when wallet has 2
+                    // Only providing 1 signer when wallet has 2 - this should now be allowed
                     { signer: "external-wallet:EbXL4e6XgbcC7s33cD5EZtyn5nixRDsieBjPQB7zf448" },
                 ],
             };
 
-            await expect(walletFactory.getOrCreateWallet(argsWithFewerSigners)).rejects.toThrow(
-                new WalletCreationError(
-                    `1 delegated signer(s) specified, but wallet "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM" has 2 delegated signers. When the 'delegatedSigners' argument is provided to a method that fetches an existing wallet, that wallet must have matching delegated signers.`
-                )
-            );
-        });
-
-        it("should throw error when number of delegated signers does not match (more provided)", async () => {
-            // Mock getWallet to return wallet with delegated signers
-            mockApiClient.getWallet.mockResolvedValue(mockWalletWithDelegatedSigners);
-
-            const argsWithMoreSigners: WalletArgsFor<"solana"> = {
-                chain: "solana",
-                signer: {
-                    type: "external-wallet",
-                    address: "AdminSignerAddress123",
-                },
-                delegatedSigners: [
-                    { signer: "external-wallet:EbXL4e6XgbcC7s33cD5EZtyn5nixRDsieBjPQB7zf448" },
-                    { signer: "external-wallet:9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM" },
-                    { signer: "external-wallet:ExtraSignerAddress123" }, // Extra signer
-                ],
-            };
-
-            await expect(walletFactory.getOrCreateWallet(argsWithMoreSigners)).rejects.toThrow(
-                new WalletCreationError(
-                    `3 delegated signer(s) specified, but wallet "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM" has 2 delegated signers. When the 'delegatedSigners' argument is provided to a method that fetches an existing wallet, that wallet must have matching delegated signers.`
-                )
-            );
+            // This should not throw an error since the specified signer exists in the wallet
+            await expect(walletFactory.getOrCreateWallet(argsWithFewerSigners)).resolves.toBeDefined();
         });
 
         it("should throw error when a delegated signer is not found in existing wallet", async () => {
@@ -177,7 +150,7 @@ describe("WalletFactory - Delegated Signers Validation", () => {
 
             await expect(walletFactory.getOrCreateWallet(argsWithNonMatchingSigner)).rejects.toThrow(
                 new WalletCreationError(
-                    `Delegated signer 'external-wallet:NonExistentSignerAddress123' is not valid for wallet "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM". This wallet's delegated signers are: external-wallet:EbXL4e6XgbcC7s33cD5EZtyn5nixRDsieBjPQB7zf448, external-wallet:9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM. When the 'delegatedSigners' argument is provided to a method that fetches an existing wallet, that wallet must have matching delegated signers.`
+                    `Delegated signer 'external-wallet:NonExistentSignerAddress123' does not exist in wallet "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM". Available delegated signers: external-wallet:EbXL4e6XgbcC7s33cD5EZtyn5nixRDsieBjPQB7zf448, external-wallet:9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM. When 'delegatedSigners' is provided to a method that may fetch an existing wallet, each specified delegated signer must exist in that wallet's configuration.`
                 )
             );
         });
@@ -213,7 +186,7 @@ describe("WalletFactory - Delegated Signers Validation", () => {
             await expect(walletFactory.getOrCreateWallet(argsWithEmptyDelegatedSigners)).resolves.toBeDefined();
         });
 
-        it("should throw error when args has empty array but wallet has signers", async () => {
+        it("should allow empty array when wallet has signers (no validation needed)", async () => {
             // Mock getWallet to return wallet with delegated signers
             mockApiClient.getWallet.mockResolvedValue(mockWalletWithDelegatedSigners);
 
@@ -226,11 +199,8 @@ describe("WalletFactory - Delegated Signers Validation", () => {
                 delegatedSigners: [], // Empty array
             };
 
-            await expect(walletFactory.getOrCreateWallet(argsWithEmptyDelegatedSigners)).rejects.toThrow(
-                new WalletCreationError(
-                    `0 delegated signer(s) specified, but wallet "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM" has 2 delegated signers. When the 'delegatedSigners' argument is provided to a method that fetches an existing wallet, that wallet must have matching delegated signers.`
-                )
-            );
+            // This should not throw an error since no delegated signers were specified
+            await expect(walletFactory.getOrCreateWallet(argsWithEmptyDelegatedSigners)).resolves.toBeDefined();
         });
 
         it("should maintain order independence when comparing delegated signers", async () => {
