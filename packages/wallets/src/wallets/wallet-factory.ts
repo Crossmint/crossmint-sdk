@@ -147,11 +147,12 @@ export class WalletFactory {
                     throw new WalletCreationError("Email signer does not match the wallet's signer type");
                 }
 
-                const { locator, email } = walletResponse.config.adminSigner;
+                const { locator, email, address } = walletResponse.config.adminSigner;
                 return {
                     type: "email",
                     email,
                     locator,
+                    address,
                     crossmint: this.apiClient.crossmint,
                     onAuthRequired: signerArgs.onAuthRequired,
                     clientTEEConnection: options?.clientTEEConnection,
@@ -163,11 +164,12 @@ export class WalletFactory {
                     throw new WalletCreationError("Phone signer does not match the wallet's signer type");
                 }
 
-                const { locator, phone } = walletResponse.config.adminSigner;
+                const { locator, phone, address } = walletResponse.config.adminSigner;
                 return {
                     type: "phone",
                     phone,
                     locator,
+                    address,
                     crossmint: this.apiClient.crossmint,
                     onAuthRequired: signerArgs.onAuthRequired,
                     clientTEEConnection: options?.clientTEEConnection,

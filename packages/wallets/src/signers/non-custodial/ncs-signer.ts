@@ -29,6 +29,10 @@ export abstract class NonCustodialSigner implements Signer {
         return this.config.locator;
     }
 
+    address() {
+        return this.config.address;
+    }
+
     abstract signMessage(message: string): Promise<BaseSignResult>;
 
     private async initialize() {
@@ -89,7 +93,10 @@ export abstract class NonCustodialSigner implements Signer {
                     this._needsAuth,
                     () => this.sendMessageWithOtp(),
                     (otp) => this.verifyOtp(otp),
-                    () => reject(new AuthRejectedError())
+                    () => {
+                        reject(new AuthRejectedError());
+                        this._needsAuth = false;
+                    }
                 );
             } catch (error) {
                 reject(error as Error);
