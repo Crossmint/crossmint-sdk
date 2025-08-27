@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 0.12.0
+
+### Minor Changes
+
+- 96d002e: Exposes the address for different signers that support it
+
 ## 0.11.9
 
 ### Patch Changes
