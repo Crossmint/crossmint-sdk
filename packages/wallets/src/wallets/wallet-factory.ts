@@ -234,11 +234,7 @@ export class WalletFactory {
     ): void {
         this.mutateSignerFromCustomAuth(args);
 
-        if (
-            args.owner != null &&
-            existingWallet.owner != null &&
-            args.owner.toLowerCase() !== existingWallet.owner.toLowerCase()
-        ) {
+        if (args.owner != null && existingWallet.owner != null && args.owner !== existingWallet.owner) {
             throw new WalletCreationError("Wallet owner does not match existing wallet's linked user");
         }
 
