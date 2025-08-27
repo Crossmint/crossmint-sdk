@@ -1,5 +1,11 @@
 # @crossmint/client-signers
 
+## 0.0.19
+
+### Patch Changes
+
+- d1fa5c0: Adds export-signer event for export frame
+
 ## 0.0.18
 
 ### Patch Changes
