@@ -124,17 +124,23 @@ export const SignPayloadSchema = {
     ),
 };
 
-export const ExportKeysPayloadSchema = {
+export const ExportSignerPayloadSchema = {
     request: AuthenticatedEventRequest.extend({
         data: z
             .object({
-                keyTypes: z.array(KeyTypeSchema).default(KEY_TYPES).describe("Types of cryptographic keys to export"),
+                scheme: z
+                    .union([z.literal("ed25519"), z.literal("secp256k1")])
+                    .describe("The cryptographic scheme to use"),
+                encoding: z
+                    .union([z.literal("base58"), z.literal("hex")])
+                    .describe("Encoding format for the private key"),
             })
-            .describe("Data needed to export keys"),
+            .describe("Data needed to export the signer"),
     }),
     response: ResultResponse(
         z.object({
-            publicKeys: PublicKeyMappingSchema.describe("The public keys of the signer for the active user"),
+            // No privateKey field - the private key is handled within the iframe
+            // and copied to clipboard when the button is clicked
         })
     ),
 };
