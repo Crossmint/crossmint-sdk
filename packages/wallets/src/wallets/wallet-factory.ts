@@ -52,7 +52,7 @@ export class WalletFactory {
 
         this.mutateSignerFromCustomAuth(args, true);
 
-        if (args.delegatedSigners && args.chain !== "solana") {
+        if (args.delegatedSigners != null && args.chain !== "solana") {
             throw new WalletCreationError("Delegated signers are only supported for Solana smart wallets");
         }
 
