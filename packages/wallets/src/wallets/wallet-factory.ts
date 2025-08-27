@@ -277,7 +277,7 @@ export class WalletFactory {
             if (existingDelegatedSigners == null || existingDelegatedSigners.length === 0) {
                 if (args.delegatedSigners.length > 0) {
                     throw new WalletCreationError(
-                        `${args.delegatedSigners.length} delegated signer(s) were specified, but wallet "${existingWallet.address}" has no delegated signers.\n${DELEGATED_SIGNER_MISMATCH_ERROR}`
+                        `${args.delegatedSigners.length} delegated signer(s) specified, but wallet "${existingWallet.address}" has no delegated signers.\n${DELEGATED_SIGNER_MISMATCH_ERROR}`
                     );
                 }
 
@@ -286,7 +286,7 @@ export class WalletFactory {
 
             if (args.delegatedSigners.length !== existingDelegatedSigners.length) {
                 throw new WalletCreationError(
-                    `${args.delegatedSigners.length} delegated signer(s) were specified, but wallet "${existingWallet.address}" has ${existingDelegatedSigners.length} delegated signers.\n${DELEGATED_SIGNER_MISMATCH_ERROR}`
+                    `${args.delegatedSigners.length} delegated signer(s) specified, but wallet "${existingWallet.address}" has ${existingDelegatedSigners.length} delegated signers.\n${DELEGATED_SIGNER_MISMATCH_ERROR}`
                 );
             }
 
