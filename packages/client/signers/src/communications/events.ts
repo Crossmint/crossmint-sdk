@@ -6,7 +6,7 @@ import {
     SignPayloadSchema,
     StartOnboardingPayloadSchema,
     CompleteOnboardingPayloadSchema,
-    ExportKeysPayloadSchema,
+    ExportSignerPayloadSchema,
 } from "./schemas";
 
 export const SIGNER_EVENTS = [
@@ -15,7 +15,7 @@ export const SIGNER_EVENTS = [
     "sign",
     "get-status",
     "get-attestation",
-    "export-keys",
+    "export-signer",
 ] as const;
 export type SignerIFrameEventName = (typeof SIGNER_EVENTS)[number];
 
@@ -25,7 +25,7 @@ export const signerInboundEvents = {
     "request:complete-onboarding": CompleteOnboardingPayloadSchema.request,
     "request:sign": SignPayloadSchema.request,
     "request:get-status": GetStatusPayloadSchema.request,
-    "request:export-keys": ExportKeysPayloadSchema.request,
+    "request:export-signer": ExportSignerPayloadSchema.request,
 } as const;
 
 export const signerOutboundEvents = {
@@ -34,7 +34,7 @@ export const signerOutboundEvents = {
     "response:complete-onboarding": CompleteOnboardingPayloadSchema.response,
     "response:sign": SignPayloadSchema.response,
     "response:get-status": GetStatusPayloadSchema.response,
-    "response:export-keys": ExportKeysPayloadSchema.response,
+    "response:export-signer": ExportSignerPayloadSchema.response,
 } as const;
 
 export type SignerInputEvent<E extends SignerIFrameEventName> = z.infer<(typeof signerInboundEvents)[`request:${E}`]>;
