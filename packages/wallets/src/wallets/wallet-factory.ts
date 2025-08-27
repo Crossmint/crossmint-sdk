@@ -52,6 +52,10 @@ export class WalletFactory {
 
         this.mutateSignerFromCustomAuth(args, true);
 
+        if (args.delegatedSigners && args.chain !== "solana") {
+            throw new WalletCreationError("Delegated signers are only supported for Solana smart wallets");
+        }
+
         const adminSigner =
             args.signer.type === "passkey" ? await this.createPasskeyAdminSigner(args.signer) : args.signer;
 
@@ -61,6 +65,9 @@ export class WalletFactory {
             config: {
                 adminSigner,
                 ...(args?.plugins ? { plugins: args.plugins } : {}),
+                ...(args.chain === "solana" && args.delegatedSigners != null
+                    ? { delegatedSigners: args.delegatedSigners }
+                    : {}),
             },
             owner: args.owner ?? undefined,
         } as CreateWalletParams);
@@ -227,7 +234,11 @@ export class WalletFactory {
     ): void {
         this.mutateSignerFromCustomAuth(args);
 
-        if (args.owner != null && existingWallet.owner != null && args.owner !== existingWallet.owner) {
+        if (
+            args.owner != null &&
+            existingWallet.owner != null &&
+            args.owner.toLowerCase() !== existingWallet.owner.toLowerCase()
+        ) {
             throw new WalletCreationError("Wallet owner does not match existing wallet's linked user");
         }
 
