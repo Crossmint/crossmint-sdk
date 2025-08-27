@@ -269,7 +269,6 @@ export class WalletFactory {
             compareSignerConfigs(adminSignerArgs, existingWalletSigner);
         }
 
-        // Validate delegated signers for Solana smart wallets
         if (args.delegatedSigners != null && args.chain === "solana") {
             const existingDelegatedSigners = (existingWallet?.config as any)?.delegatedSigners as
                 | DelegatedSignerResponse[]
