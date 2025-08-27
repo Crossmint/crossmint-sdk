@@ -107,7 +107,7 @@ describe("WalletFactory - Delegated Signers Validation", () => {
 
             await expect(walletFactory.getOrCreateWallet(mockValidSolanaArgs)).rejects.toThrow(
                 new WalletCreationError(
-                    `2 delegated signer(s) were specified, but wallet "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM" has no delegated signers.\nWhen 'delegatedSigners' is provided to a method that may fetch an existing wallet, that wallet must have exactly matching delegated signers.`
+                    `2 delegated signer(s) were specified, but wallet "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM" has no delegated signers.\nWhen 'delegatedSigners' is provided to a method that fetches an existing wallet, that wallet must have matching delegated signers.`
                 )
             );
         });
@@ -130,7 +130,7 @@ describe("WalletFactory - Delegated Signers Validation", () => {
 
             await expect(walletFactory.getOrCreateWallet(argsWithFewerSigners)).rejects.toThrow(
                 new WalletCreationError(
-                    `1 delegated signer(s) were specified, but wallet "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM" has 2 delegated signers.\nWhen 'delegatedSigners' is provided to a method that may fetch an existing wallet, that wallet must have exactly matching delegated signers.`
+                    `1 delegated signer(s) were specified, but wallet "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM" has 2 delegated signers.\nWhen 'delegatedSigners' is provided to a method that fetches an existing wallet, that wallet must have matching delegated signers.`
                 )
             );
         });
@@ -154,7 +154,7 @@ describe("WalletFactory - Delegated Signers Validation", () => {
 
             await expect(walletFactory.getOrCreateWallet(argsWithMoreSigners)).rejects.toThrow(
                 new WalletCreationError(
-                    `3 delegated signer(s) were specified, but wallet "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM" has 2 delegated signers.\nWhen 'delegatedSigners' is provided to a method that may fetch an existing wallet, that wallet must have exactly matching delegated signers.`
+                    `3 delegated signer(s) were specified, but wallet "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM" has 2 delegated signers.\nWhen 'delegatedSigners' is provided to a method that fetches an existing wallet, that wallet must have matching delegated signers.`
                 )
             );
         });
@@ -177,7 +177,7 @@ describe("WalletFactory - Delegated Signers Validation", () => {
 
             await expect(walletFactory.getOrCreateWallet(argsWithNonMatchingSigner)).rejects.toThrow(
                 new WalletCreationError(
-                    `Delegated signer 'external-wallet:NonExistentSignerAddress123' is not valid for wallet "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM". This wallet's delegated signers are: external-wallet:EbXL4e6XgbcC7s33cD5EZtyn5nixRDsieBjPQB7zf448, external-wallet:9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM.\nWhen 'delegatedSigners' is provided to a method that may fetch an existing wallet, that wallet must have exactly matching delegated signers.`
+                    `Delegated signer 'external-wallet:NonExistentSignerAddress123' is not valid for wallet "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM". This wallet's delegated signers are: external-wallet:EbXL4e6XgbcC7s33cD5EZtyn5nixRDsieBjPQB7zf448, external-wallet:9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM.\nWhen 'delegatedSigners' is provided to a method that fetches an existing wallet, that wallet must have matching delegated signers.`
                 )
             );
         });
@@ -228,7 +228,7 @@ describe("WalletFactory - Delegated Signers Validation", () => {
 
             await expect(walletFactory.getOrCreateWallet(argsWithEmptyDelegatedSigners)).rejects.toThrow(
                 new WalletCreationError(
-                    `0 delegated signer(s) were specified, but wallet "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM" has 2 delegated signers.\nWhen 'delegatedSigners' is provided to a method that may fetch an existing wallet, that wallet must have exactly matching delegated signers.`
+                    `0 delegated signer(s) were specified, but wallet "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM" has 2 delegated signers.\nWhen 'delegatedSigners' is provided to a method that fetches an existing wallet, that wallet must have matching delegated signers.`
                 )
             );
         });
