@@ -4,6 +4,7 @@ import {
     useWalletEmailSigner,
     useCrossmint,
     type Balances,
+    ExportPrivateKeyButton,
 } from "@crossmint/client-sdk-react-native-ui";
 import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Button, Text, View, TextInput, StyleSheet, ScrollView, Alert } from "react-native";
@@ -168,6 +169,10 @@ export default function Index() {
             <View style={styles.section}>
                 <Button title="Init Wallet" onPress={initWallet} disabled={isLoading} />
                 <Button title="Get $5 USDC" onPress={onHandleFundUSDC} disabled={isLoading} />
+            </View>
+
+            <View style={styles.section}>
+                <ExportPrivateKeyButton />
             </View>
 
             <View style={styles.section}>

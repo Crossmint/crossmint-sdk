@@ -33,4 +33,7 @@ export type {
     SignerConfigForChain,
     SolanaExternalWalletSignerConfig,
     StellarExternalWalletSignerConfig,
+    ExportableSigner,
+    isExportableSigner,
+    ExportSignerTEEConnection,
 } from "./signers/types";

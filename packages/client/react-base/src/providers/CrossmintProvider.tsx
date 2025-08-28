@@ -39,6 +39,11 @@ export function CrossmintProvider({
     const setJwt = useCallback((jwt: string | undefined) => {
         if (jwt !== crossmintRef.current.jwt) {
             crossmintRef.current.jwt = jwt;
+            if (crossmintRef.current.experimental_customAuth == null) {
+                crossmintRef.current.experimental_customAuth = { jwt };
+            } else {
+                crossmintRef.current.experimental_customAuth.jwt = jwt;
+            }
         }
     }, []);
 

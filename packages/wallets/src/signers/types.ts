@@ -1,6 +1,11 @@
 import type { WebAuthnP256 } from "ox";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
-import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
+import type {
+    exportSignerInboundEvents,
+    exportSignerOutboundEvents,
+    signerInboundEvents,
+    signerOutboundEvents,
+} from "@crossmint/client-signers";
 import type {
     Crossmint,
     EvmExternalWalletSignerConfig,
@@ -8,6 +13,17 @@ import type {
     StellarExternalWalletSignerConfig,
 } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain, StellarChain } from "../chains/chains";
+
+export type ExportPrivateKeyPayload = {
+    authData: { jwt: string; apiKey: string };
+    scheme: "secp256k1" | "ed25519";
+    encoding: "base58" | "hex" | "strkey";
+};
+
+export type ExportSignerTEEConnection = HandshakeParent<
+    typeof exportSignerOutboundEvents,
+    typeof exportSignerInboundEvents
+>;
 
 export type {
     EvmExternalWalletSignerConfig,
@@ -140,4 +156,12 @@ export interface Signer<T extends keyof SignResultMap = keyof SignResultMap> {
     address?(): string;
     signMessage(message: string): Promise<SignResultMap[T]>;
     signTransaction(transaction: string): Promise<SignResultMap[T]>;
+}
+
+export interface ExportableSigner extends Signer {
+    _exportPrivateKey: () => Promise<ExportPrivateKeyPayload>;
+}
+
+export function isExportableSigner(signer: Signer): signer is ExportableSigner {
+    return (signer as ExportableSigner)._exportPrivateKey !== undefined;
 }
