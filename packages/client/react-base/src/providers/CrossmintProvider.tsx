@@ -6,7 +6,6 @@ export interface CrossmintContext {
     crossmint: Crossmint;
     experimental_setCustomAuth: (customAuthParams?: CustomAuth) => void;
     experimental_customAuth?: CustomAuth;
-    /** @deprecated Use experimental_setCustomAuth instead.*/
     setJwt: (jwt: string | undefined) => void;
 }
 
