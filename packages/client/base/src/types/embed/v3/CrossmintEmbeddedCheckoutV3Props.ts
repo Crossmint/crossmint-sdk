@@ -1,7 +1,9 @@
 import type { Currency as FiatCurrency, Locale } from "@/types";
 import type { CryptoCurrency } from "@/types/CryptoCurrency";
 
-import type { BlockchainIncludingTestnet, PayerSupportedBlockchains, JSONObject } from "@crossmint/common-sdk-base";
+import type { BlockchainIncludingTestnet, PayerSupportedBlockchains } from "@crossmint/common-sdk-base";
+
+type JSONObject = Record<string, any>;
 
 interface CrossmintEmbeddedCheckoutV3CommonProps {
     appearance?: EmbeddedCheckoutV3Appearance;
@@ -85,6 +87,7 @@ export type EmbeddedCheckoutV3AppearanceVariables = {
         backgroundPrimary?: string;
         textPrimary?: string;
         textSecondary?: string;
+        connectWalletButtonText?: string;
         danger?: string;
         warning?: string;
         accent?: string;
