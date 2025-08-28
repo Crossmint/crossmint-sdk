@@ -1,4 +1,10 @@
-import type { BaseSignResult, EmailInternalSignerConfig, PhoneInternalSignerConfig, Signer } from "../types";
+import type {
+    BaseSignResult,
+    EmailInternalSignerConfig,
+    ExportSignerTEEConnection,
+    PhoneInternalSignerConfig,
+    Signer,
+} from "../types";
 import { AuthRejectedError } from "../types";
 import { NcsIframeManager } from "./ncs-iframe-manager";
 import { validateAPIKey } from "@crossmint/common-sdk-base";
@@ -85,9 +91,18 @@ export abstract class NonCustodialSigner implements Signer {
                     this._needsAuth,
                     () => this.sendMessageWithOtp(),
                     (otp) => this.verifyOtp(otp),
-                    () => {
+                    async () => {
                         reject(new AuthRejectedError());
                         this._needsAuth = false;
+                        // We call onAuthRequired again so the needsAuth state is updated for the dev
+                        if (this.config.onAuthRequired != null) {
+                            await this.config.onAuthRequired(
+                                this._needsAuth,
+                                () => this.sendMessageWithOtp(),
+                                (otp) => this.verifyOtp(otp),
+                                () => this._authPromise?.reject(new AuthRejectedError())
+                            );
+                        }
                     }
                 );
             } catch (error) {
@@ -208,6 +223,48 @@ export abstract class NonCustodialSigner implements Signer {
             throw err;
         }
     }
+
+    /**
+     * Export the private key for this signer
+     * @throws {Error} If signer is not authenticated
+     */
+    async _exportPrivateKey(exportTEEConnection: ExportSignerTEEConnection): Promise<void> {
+        console.log("[exportPrivateKey] starting");
+        await this.handleAuthRequired();
+        console.log("[exportPrivateKey] auth not required");
+        const jwt = this.getJwtOrThrow();
+        console.log("[exportPrivateKey] jwt", jwt);
+
+        const { scheme, encoding } = this.getChainKeyParams();
+        console.log("[exportPrivateKey] scheme", scheme);
+        console.log("[exportPrivateKey] encoding", encoding);
+
+        const response = await exportTEEConnection.sendAction({
+            event: "request:export-signer",
+            responseEvent: "response:export-signer",
+            data: {
+                authData: {
+                    jwt,
+                    apiKey: this.config.crossmint.apiKey,
+                },
+                data: {
+                    scheme,
+                    encoding,
+                },
+            },
+            options: DEFAULT_EVENT_OPTIONS,
+        });
+
+        if (response?.status === "error") {
+            throw new Error(response.error || "Failed to export private key");
+        }
+    }
+
+    /**
+     * Get the appropriate scheme and encoding based on the chain
+     * Must be implemented by concrete classes
+     */
+    protected abstract getChainKeyParams(): { scheme: "secp256k1" | "ed25519"; encoding: "base58" | "hex" | "strkey" };
 }
 
 export const DEFAULT_EVENT_OPTIONS = {
