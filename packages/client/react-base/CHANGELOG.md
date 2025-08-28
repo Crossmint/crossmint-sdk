@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-base
 
+## 0.5.32
+
+### Patch Changes
+
+- bae4c29: Deprecated customAuth in favor of setJwt
+
 ## 0.5.31
 
 ### Patch Changes
