@@ -83,7 +83,7 @@ export class EVMWallet extends Wallet<EVMChain> {
     public async signTypedData<T extends SignTypedDataInput>(
         params: T
     ): Promise<Signature<T["options"] extends PrepareOnly<true> ? true : false>> {
-        const { domain, message, primaryType, types, chain } = params;
+        const { domain, message, primaryType, types, chain, isSmartWalletSignature = false } = params;
         if (!domain || !message || !types || !chain) {
             throw new InvalidTypedDataError("Invalid typed data");
         }
@@ -110,7 +110,7 @@ export class EVMWallet extends Wallet<EVMChain> {
                 },
                 signer: this.signer.locator(),
                 chain,
-                isSmartWalletSignature: false,
+                isSmartWalletSignature,
             },
         });
         if ("error" in signatureCreationResponse) {

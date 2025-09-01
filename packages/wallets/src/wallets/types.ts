@@ -25,6 +25,7 @@ export type SignMessageInput = {
 export type SignTypedDataInput = TypedDataDefinition<TypedData, string> & {
     chain: EVMSmartWalletChain;
     options?: SignatureInputOptions;
+    isSmartWalletSignature?: boolean;
 };
 
 export type ApproveResult<T extends ApproveParams> = T extends { transactionId: string }
