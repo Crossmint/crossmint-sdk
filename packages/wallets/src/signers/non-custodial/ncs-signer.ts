@@ -41,6 +41,37 @@ export abstract class NonCustodialSigner implements Signer {
 
     abstract signTransaction(transaction: string): Promise<{ signature: string }>;
 
+    /**
+     * Retrieves the public key from the non-custodial signer
+     * @returns The secp256k1 public key
+     * @throws Error if handshake parent is not initialized or if retrieval fails
+     */
+    public async getPublicKey(): Promise<string> {
+        if (this.config.clientTEEConnection == null) {
+            throw new Error("Handshake parent not initialized");
+        }
+
+        const handshakeParent = this.config.clientTEEConnection;
+
+        const response = await handshakeParent.sendAction({
+            event: "request:get-status",
+            responseEvent: "response:get-status",
+            data: {
+                authData: {
+                    jwt: this.config.crossmint.experimental_customAuth?.jwt ?? "",
+                    apiKey: this.config.crossmint.apiKey,
+                },
+            },
+            options: DEFAULT_EVENT_OPTIONS,
+        });
+
+        if (response?.status === "success" && response.signerStatus === "ready") {
+            return response.publicKeys.secp256k1;
+        }
+
+        throw new Error("Failed to get public key");
+    }
+
     protected async handleAuthRequired() {
         if (this.config.clientTEEConnection == null) {
             if (this.config.onAuthRequired == null) {
