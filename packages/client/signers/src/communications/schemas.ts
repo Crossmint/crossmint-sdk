@@ -132,7 +132,7 @@ export const ExportSignerPayloadSchema = {
                     .union([z.literal("ed25519"), z.literal("secp256k1")])
                     .describe("The cryptographic scheme to use"),
                 encoding: z
-                    .union([z.literal("base58"), z.literal("hex")])
+                    .union([z.literal("base58"), z.literal("hex"), z.literal("strkey")])
                     .describe("Encoding format for the private key"),
             })
             .describe("Data needed to export the signer"),
