@@ -41,12 +41,10 @@ export abstract class NonCustodialSigner implements Signer {
 
     abstract signTransaction(transaction: string): Promise<{ signature: string }>;
 
-    /**
-     * Retrieves the public key from the non-custodial signer
-     * @returns The secp256k1 public key
-     * @throws Error if handshake parent is not initialized or if retrieval fails
-     */
-    public async getPublicKey(): Promise<string> {
+    public async getPublicKey(): Promise<{
+        secp256k1?: { bytes: string; encoding: string };
+        ed25519?: { bytes: string; encoding: string };
+    }> {
         if (this.config.clientTEEConnection == null) {
             throw new Error("Handshake parent not initialized");
         }
@@ -66,11 +64,10 @@ export abstract class NonCustodialSigner implements Signer {
         });
 
         if (response?.status === "success" && response.signerStatus === "ready") {
-            const publicKey = response.publicKeys.secp256k1;
-            if (!publicKey) {
-                throw new Error("secp256k1 public key not found in response");
+            if (!response.publicKeys || Object.keys(response.publicKeys).length === 0) {
+                throw new Error("No public keys found in response");
             }
-            return publicKey.bytes;
+            return response.publicKeys;
         }
 
         throw new Error("Failed to get public key");
