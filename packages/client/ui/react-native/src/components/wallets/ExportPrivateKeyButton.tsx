@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { View, Text, StyleSheet, Alert } from "react-native";
-import { WebView } from "react-native-webview";
+import { WebView, type WebViewNavigationEvent } from "react-native-webview";
 import { useWallet, useCrossmint } from "@crossmint/client-sdk-react-base";
 import { environmentUrlConfig } from "@crossmint/client-signers";
 import { isExportableSigner } from "@crossmint/wallets-sdk";
@@ -33,15 +33,16 @@ export function ExportPrivateKeyButton({ onClick }: ExportPrivateKeyButtonProps)
         }
     }, [crossmint]);
 
-    const handleWebViewLoad = useCallback(async () => {
-        if (wallet == null || webViewRef.current == null) {
-            return;
-        }
+    const handleWebViewLoadEnd = useCallback(
+        async (event: WebViewNavigationEvent) => {
+            if (wallet == null || webViewRef.current == null || event.nativeEvent.loading) {
+                return;
+            }
 
-        try {
-            // WebView has loaded, now trigger the export
-            if (isExportableSigner(wallet.signer)) {
-                /*
+            try {
+                // WebView has loaded, now trigger the export
+                if (isExportableSigner(wallet.signer)) {
+                    /*
                 const connection = new WebViewParent(webViewRef, {
                     incomingEvents: exportSignerOutboundEvents,
                     outgoingEvents: exportSignerInboundEvents,
@@ -49,19 +50,30 @@ export function ExportPrivateKeyButton({ onClick }: ExportPrivateKeyButtonProps)
                 await connection.handshakeWithChild();
                 await wallet.signer._exportPrivateKey(connection);
                 */
-                const payload = await wallet.signer._exportPrivateKey();
-                const message = {
-                    type: "request:export-signer",
-                    ...payload,
-                };
-                webViewRef.current.postMessage(JSON.stringify(message));
-                onClick?.();
+                    const payload = await wallet.signer._exportPrivateKey();
+                    const message = {
+                        type: "request:export-signer",
+                        ...payload,
+                    };
+                    const origin = frameUrl.split("/").slice(0, 3).join("/");
+                    const script = `
+                    window.CrossmintFrameReady.then(() => {
+                        window.postMessage(${JSON.stringify(message)}, "${origin}");
+                    }).catch(e => {
+                        console.error("[Crossmint] Error waiting for CrossmintFrameReady:", e);
+                    });
+                    true;
+                `;
+                    webViewRef.current.injectJavaScript(script);
+                    onClick?.();
+                }
+            } catch (error) {
+                console.error("Failed to export private key:", error);
+                Alert.alert("Export Failed", "Failed to export private key. Please try again.");
             }
-        } catch (error) {
-            console.error("Failed to export private key:", error);
-            Alert.alert("Export Failed", "Failed to export private key. Please try again.");
-        }
-    }, [wallet, onClick]);
+        },
+        [wallet, onClick, frameUrl]
+    );
 
     const handleWebViewError = useCallback((syntheticEvent: { nativeEvent: unknown }) => {
         const { nativeEvent } = syntheticEvent;
@@ -81,7 +93,7 @@ export function ExportPrivateKeyButton({ onClick }: ExportPrivateKeyButtonProps)
                 style={styles.webView}
                 javaScriptEnabled={true}
                 domStorageEnabled={true}
-                onLoad={handleWebViewLoad}
+                onLoadEnd={handleWebViewLoadEnd}
                 onError={handleWebViewError}
                 onHttpError={handleWebViewError}
                 startInLoadingState={true}

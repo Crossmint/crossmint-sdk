@@ -69,6 +69,8 @@ export function ExportPrivateKeyButton({ onClick, appearance }: ExportPrivateKey
                     type: "request:export-signer",
                     ...payload,
                 };
+                console.log("sending message", message);
+                console.log("contentWindow", iframeRef.current.contentWindow);
                 iframeRef.current.contentWindow?.postMessage(message, frameUrl);
                 onClick?.();
             }
