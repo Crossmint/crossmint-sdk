@@ -1,5 +1,13 @@
 # @crossmint/wallets-sdk
 
+## 0.12.3
+
+### Patch Changes
+
+- ecce8c1: Removed filtering of tokens that don't have a symbol
+- Updated dependencies [7338667]
+  - @crossmint/client-signers@0.0.20
+
 ## 0.12.2
 
 ### Patch Changes

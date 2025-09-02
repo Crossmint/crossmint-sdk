@@ -1,5 +1,11 @@
 # @crossmint/client-signers
 
+## 0.0.20
+
+### Patch Changes
+
+- 7338667: Separates export-signer event so it can be used in a separate frame page
+
 ## 0.0.19
 
 ### Patch Changes
