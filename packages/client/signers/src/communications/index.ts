@@ -1,9 +1,17 @@
-export { signerInboundEvents, signerOutboundEvents } from "./events";
+export {
+    signerInboundEvents,
+    signerOutboundEvents,
+    exportSignerInboundEvents,
+    exportSignerOutboundEvents,
+} from "./events";
 
 export type {
     SignerIFrameEventName,
     SignerInputEvent,
     SignerOutputEvent,
+    ExportSignerEventName,
+    ExportSignerInputEvent,
+    ExportSignerOutputEvent,
 } from "./events";
 
 export { environmentUrlConfig } from "./urls";
