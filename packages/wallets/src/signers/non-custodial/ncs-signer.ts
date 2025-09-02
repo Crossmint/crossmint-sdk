@@ -66,7 +66,11 @@ export abstract class NonCustodialSigner implements Signer {
         });
 
         if (response?.status === "success" && response.signerStatus === "ready") {
-            return response.publicKeys.secp256k1;
+            const publicKey = response.publicKeys.secp256k1;
+            if (!publicKey) {
+                throw new Error("secp256k1 public key not found in response");
+            }
+            return publicKey.bytes;
         }
 
         throw new Error("Failed to get public key");
