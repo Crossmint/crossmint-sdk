@@ -23,7 +23,7 @@ function CrossmintProviders({ children }: { children: ReactNode }) {
 
     return (
         <CrossmintProvider apiKey={process.env.EXPO_PUBLIC_CROSSMINT_API_KEY ?? ""} overrideBaseUrl="">
-            <CrossmintAuthProvider appSchema={appScheme}>
+            <CrossmintAuthProvider>
                 <CrossmintWalletProvider>{children}</CrossmintWalletProvider>
             </CrossmintAuthProvider>
         </CrossmintProvider>
