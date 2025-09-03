@@ -4,7 +4,7 @@ import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/clien
 import type { TypedData, TypedDataDefinition } from "viem";
 import type { Abi } from "abitype";
 import type { CreateTransactionSuccessResponse } from "../api";
-import type { Chain, EVMSmartWalletChain, StellarChain } from "../chains/chains";
+import type { Chain, EVMSmartWalletChain, SolanaChain, StellarChain } from "../chains/chains";
 import type { SignerConfigForChain, Signer, BaseSignResult, PasskeySignResult } from "../signers/types";
 
 export type { Activity } from "../api/types";
@@ -104,19 +104,37 @@ export type WalletArgsFor<C extends Chain> = {
     delegatedSigners?: C extends "solana" ? Array<DelegatedSigner> : never;
 };
 
-export type TokenBalance = {
-    symbol: "sol" | "eth" | "usdc" | string;
-    name: string;
-    amount: string;
-    contractAddress?: string;
-    decimals?: number;
-    rawAmount?: string;
-};
+export type TokenBalance<C extends Chain = Chain> = C extends SolanaChain
+    ? {
+          symbol: "sol" | "usdc" | string;
+          name: string;
+          amount: string;
+          mintAddress?: string;
+          decimals?: number;
+          rawAmount?: string;
+      }
+    : C extends StellarChain
+      ? {
+            symbol: "xlm" | "usdc" | string;
+            name: string;
+            amount: string;
+            contractId?: string;
+            decimals?: number;
+            rawAmount?: string;
+        }
+      : {
+            symbol: "eth" | "usdc" | string;
+            name: string;
+            amount: string;
+            contractAddress?: string;
+            decimals?: number;
+            rawAmount?: string;
+        };
 
-export type Balances = {
-    nativeToken: TokenBalance;
-    usdc: TokenBalance;
-    tokens: TokenBalance[];
+export type Balances<C extends Chain = Chain> = {
+    nativeToken: TokenBalance<C>;
+    usdc: TokenBalance<C>;
+    tokens: TokenBalance<C>[];
 };
 
 export type UserLocator =

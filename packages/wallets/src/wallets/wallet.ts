@@ -101,7 +101,7 @@ export class Wallet<C extends Chain> {
      * @returns {Promise<Balances>} The balances returns nativeToken, usdc, tokens
      * @throws {Error} If the balances cannot be retrieved
      */
-    public async balances(tokens?: string[], chains?: Chain[]): Promise<Balances> {
+    public async balances(tokens?: string[], chains?: Chain[]): Promise<Balances<C>> {
         let nativeToken: string;
         switch (this.chain) {
             case "solana":
@@ -134,22 +134,44 @@ export class Wallet<C extends Chain> {
      */
     private transformBalanceResponse(
         apiResponse: GetBalanceSuccessResponse,
-        nativeTokenSymbol: TokenBalance["symbol"],
+        nativeTokenSymbol: TokenBalance<C>["symbol"],
         requestedTokens?: string[]
-    ): Balances {
-        const transformTokenBalance = (tokenData: GetBalanceSuccessResponse[number]): TokenBalance => {
+    ): Balances<C> {
+        const transformTokenBalance = (tokenData: GetBalanceSuccessResponse[number]): TokenBalance<C> => {
             const chainData = tokenData.chains?.[this.chain];
-            const contractAddress =
-                chainData != null && "contractAddress" in chainData ? chainData.contractAddress : undefined;
 
-            return {
-                symbol: tokenData.symbol ?? "",
-                name: tokenData.name ?? "",
-                amount: tokenData.amount ?? "0",
-                contractAddress,
-                decimals: tokenData.decimals,
-                rawAmount: tokenData.rawAmount ?? "0",
-            };
+            if (this.isSolanaWallet) {
+                const mintAddress = chainData != null && "mintHash" in chainData ? chainData.mintHash : undefined;
+                return {
+                    symbol: tokenData.symbol ?? "",
+                    name: tokenData.name ?? "",
+                    amount: tokenData.amount ?? "0",
+                    mintAddress,
+                    decimals: tokenData.decimals,
+                    rawAmount: tokenData.rawAmount ?? "0",
+                } as TokenBalance<C>;
+            } else if (this.chain === "stellar") {
+                const contractId = chainData != null && "contractId" in chainData ? chainData.contractId : undefined;
+                return {
+                    symbol: tokenData.symbol ?? "",
+                    name: tokenData.name ?? "",
+                    amount: tokenData.amount ?? "0",
+                    contractId,
+                    decimals: tokenData.decimals,
+                    rawAmount: tokenData.rawAmount ?? "0",
+                } as TokenBalance<C>;
+            } else {
+                const contractAddress =
+                    chainData != null && "contractAddress" in chainData ? chainData.contractAddress : undefined;
+                return {
+                    symbol: tokenData.symbol ?? "",
+                    name: tokenData.name ?? "",
+                    amount: tokenData.amount ?? "0",
+                    contractAddress,
+                    decimals: tokenData.decimals,
+                    rawAmount: tokenData.rawAmount ?? "0",
+                } as TokenBalance<C>;
+            }
         };
 
         const nativeTokenData = apiResponse.find((token) => token.symbol === nativeTokenSymbol);
@@ -159,14 +181,36 @@ export class Wallet<C extends Chain> {
             return token.symbol !== nativeTokenSymbol && token.symbol !== "usdc";
         });
 
-        const createDefaultToken = (symbol: TokenBalance["symbol"]): TokenBalance => ({
-            symbol,
-            name: symbol,
-            amount: "0",
-            contractAddress: undefined,
-            decimals: 0,
-            rawAmount: "0",
-        });
+        const createDefaultToken = (symbol: TokenBalance<C>["symbol"]): TokenBalance<C> => {
+            if (this.isSolanaWallet) {
+                return {
+                    symbol,
+                    name: symbol,
+                    amount: "0",
+                    mintAddress: undefined,
+                    decimals: 0,
+                    rawAmount: "0",
+                } as TokenBalance<C>;
+            } else if (this.chain === "stellar") {
+                return {
+                    symbol,
+                    name: symbol,
+                    amount: "0",
+                    contractId: undefined,
+                    decimals: 0,
+                    rawAmount: "0",
+                } as TokenBalance<C>;
+            } else {
+                return {
+                    symbol,
+                    name: symbol,
+                    amount: "0",
+                    contractAddress: undefined,
+                    decimals: 0,
+                    rawAmount: "0",
+                } as TokenBalance<C>;
+            }
+        };
 
         return {
             nativeToken:
