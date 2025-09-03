@@ -50,11 +50,18 @@ export type EVMTransactionInput = EVMTransactionInputBase &
         | { transaction: string }
     );
 
-export type StellarTransactionInput = {
-    contractId: string;
-    method: string;
-    memo?: string;
-    args: Record<string, any>;
+export type StellarTransactionInput = (
+    | {
+          contractId: string;
+          method: string;
+          memo?: string;
+          args: Record<string, any>;
+      }
+    | {
+          serializedTransaction: string;
+          contractId: string;
+      }
+) & {
     options?: TransactionInputOptions;
 };
 
