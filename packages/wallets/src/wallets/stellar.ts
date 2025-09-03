@@ -51,23 +51,32 @@ export class StellarWallet extends Wallet<StellarChain> {
         return await this.approveTransactionAndWait(createdTransaction.id, options);
     }
 
-    private async createTransaction({
-        contractId,
-        method,
-        memo,
-        args,
-        options,
-    }: StellarTransactionInput): Promise<CreateTransactionSuccessResponse> {
+    private async createTransaction(params: StellarTransactionInput): Promise<CreateTransactionSuccessResponse> {
+        const { contractId, options } = params;
         const signer = options?.experimental_signer ?? this.signer.locator();
+
+        let transaction: any;
+
+        if ("serializedTransaction" in params) {
+            transaction = {
+                type: "serialized-transaction",
+                serializedTransaction: params.serializedTransaction,
+                contractId,
+            };
+        } else {
+            const { method, memo, args } = params;
+            transaction = {
+                type: "contract-call",
+                contractId,
+                method,
+                memo: memo != null ? { type: "text", value: memo } : undefined,
+                args,
+            };
+        }
+
         const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
             params: {
-                transaction: {
-                    type: "contract-call",
-                    contractId,
-                    method,
-                    memo: memo != null ? { type: "text", value: memo } : undefined,
-                    args,
-                },
+                transaction,
                 signer,
             },
         });
