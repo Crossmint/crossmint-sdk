@@ -60,7 +60,7 @@ export function CrossmintWalletBaseProvider({
     const getSignerPublicKey = useCallback(async (): Promise<SignerPublicKey | null> => {
         const signer = wallet?.signer;
         if (!(signer instanceof NonCustodialSigner)) {
-            return null;
+            throw new Error("getSignerPublicKey is not available. Make sure you're using a non-custodial signer.");
         }
         return await signer.getPublicKey();
     }, [wallet]);
