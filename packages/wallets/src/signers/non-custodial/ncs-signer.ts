@@ -74,6 +74,8 @@ export abstract class NonCustodialSigner implements Signer {
         if (signerResponse.signerStatus === "ready") {
             this._needsAuth = false;
             return;
+        } else {
+            this._needsAuth = true;
         }
 
         const { promise, resolve, reject } = this.createAuthPromise();
