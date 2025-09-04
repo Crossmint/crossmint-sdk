@@ -66,8 +66,8 @@ export abstract class NonCustodialSigner implements Signer {
         });
 
         if (response?.status !== "success") {
-            console.error("[getPublicKey] Failed to get signer status:", response);
-            throw new Error("Failed to get signer status");
+            console.error("[getPublicKey] Failed to get signer public key:", response);
+            throw new Error("Failed to get signer public key");
         }
 
         if (response.signerStatus === "ready") {
