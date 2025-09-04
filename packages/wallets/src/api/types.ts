@@ -84,3 +84,10 @@ type SolanaAddress = string;
 type EvmWalletLocator = `me:evm:${WalletType}` | Address;
 type SolanaWalletLocator = `me:solana:${WalletType}` | SolanaAddress;
 export type WalletLocator = EvmWalletLocator | SolanaWalletLocator;
+
+export type KeyType = "secp256k1" | "ed25519";
+export type DerivePublicKeyResponse = {
+    bytes: string;
+    encoding: "hex" | "base58";
+    keyType: KeyType;
+};

@@ -1,10 +1,4 @@
-import type {
-    BaseSignResult,
-    EmailInternalSignerConfig,
-    PhoneInternalSignerConfig,
-    SignerPublicKey,
-    Signer,
-} from "../types";
+import type { BaseSignResult, EmailInternalSignerConfig, PhoneInternalSignerConfig, Signer } from "../types";
 import { AuthRejectedError } from "../types";
 import { NcsIframeManager } from "./ncs-iframe-manager";
 import { validateAPIKey } from "@crossmint/common-sdk-base";
@@ -46,52 +40,6 @@ export abstract class NonCustodialSigner implements Signer {
     }
 
     abstract signTransaction(transaction: string): Promise<{ signature: string }>;
-
-    public async getPublicKey(): Promise<SignerPublicKey | null> {
-        if (this.config.clientTEEConnection == null) {
-            throw new Error("Handshake parent not initialized");
-        }
-
-        const handshakeParent = this.config.clientTEEConnection;
-        const response = await handshakeParent.sendAction({
-            event: "request:get-status",
-            responseEvent: "response:get-status",
-            data: {
-                authData: {
-                    jwt: this.config.crossmint.experimental_customAuth?.jwt ?? "",
-                    apiKey: this.config.crossmint.apiKey,
-                },
-            },
-            options: DEFAULT_EVENT_OPTIONS,
-        });
-
-        if (response?.status !== "success") {
-            console.error("[getPublicKey] Failed to get signer status:", response);
-            throw new Error("Failed to get signer status");
-        }
-
-        if (response.signerStatus === "ready") {
-            this._needsAuth = false;
-
-            if (!response.publicKeys || Object.keys(response.publicKeys).length === 0) {
-                console.error("[getPublicKey] No public keys found in response:", response);
-                throw new Error("No public keys found in response");
-            }
-
-            return response.publicKeys;
-        }
-
-        if (response.signerStatus === "new-device") {
-            this._needsAuth = true;
-
-            await this.handleAuthRequired();
-
-            return await this.getPublicKey();
-        }
-
-        console.error("[getPublicKey] Unexpected signer status:", response);
-        throw new Error("Failed to get public key");
-    }
 
     protected async handleAuthRequired() {
         if (this.config.clientTEEConnection == null) {

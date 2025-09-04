@@ -7,8 +7,6 @@ import {
     type Wallet,
     type WalletArgsFor,
     type PhoneSignerConfig,
-    type SignerPublicKey,
-    NonCustodialSigner,
 } from "@crossmint/wallets-sdk";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
@@ -21,7 +19,6 @@ export type CrossmintWalletBaseContext = {
     getOrCreateWallet: <C extends Chain>(props: WalletArgsFor<C>) => Promise<Wallet<Chain> | undefined>;
     onAuthRequired?: EmailSignerConfig["onAuthRequired"] | PhoneSignerConfig["onAuthRequired"];
     clientTEEConnection?: () => HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
-    getSignerPublicKey?: () => Promise<SignerPublicKey | null>;
 };
 
 export const CrossmintWalletBaseContext = createContext<CrossmintWalletBaseContext>({
@@ -30,7 +27,6 @@ export const CrossmintWalletBaseContext = createContext<CrossmintWalletBaseConte
     getOrCreateWallet: () => Promise.resolve(undefined),
     onAuthRequired: undefined,
     clientTEEConnection: undefined,
-    getSignerPublicKey: undefined,
 });
 
 export interface CrossmintWalletBaseProviderProps {
@@ -56,14 +52,6 @@ export function CrossmintWalletBaseProvider({
     );
     const [wallet, setWallet] = useState<Wallet<Chain> | undefined>(undefined);
     const [walletStatus, setWalletStatus] = useState<"not-loaded" | "in-progress" | "loaded" | "error">("not-loaded");
-
-    const getSignerPublicKey = useCallback(async (): Promise<SignerPublicKey | null> => {
-        const signer = wallet?.signer;
-        if (!(signer instanceof NonCustodialSigner)) {
-            return null;
-        }
-        return await signer.getPublicKey();
-    }, [wallet]);
 
     const getOrCreateWallet = useCallback(
         async <C extends Chain>(args: WalletArgsFor<C>) => {
@@ -183,9 +171,8 @@ export function CrossmintWalletBaseProvider({
             getOrCreateWallet,
             onAuthRequired,
             clientTEEConnection,
-            getSignerPublicKey,
         }),
-        [getOrCreateWallet, wallet, walletStatus, onAuthRequired, clientTEEConnection, getSignerPublicKey]
+        [getOrCreateWallet, wallet, walletStatus, onAuthRequired, clientTEEConnection]
     );
 
     return <CrossmintWalletBaseContext.Provider value={contextValue}>{children}</CrossmintWalletBaseContext.Provider>;

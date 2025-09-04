@@ -8,6 +8,7 @@ import type {
     RegisterSignerPasskeyParams,
     GetTransactionSuccessResponse,
     GetTransactionsResponse,
+    DerivePublicKeyResponse,
 } from "../api";
 import type {
     DelegatedSigner,
@@ -240,6 +241,23 @@ export class Wallet<C extends Chain> {
     }
 
     /**
+     * Derive a public key for the wallet signer
+     * @returns The public key
+     * @experimental This API is experimental and may change in the future
+     * @throws {Error} If the public key cannot be derived
+     */
+    public async experimental_derivePublicKey(): Promise<DerivePublicKeyResponse> {
+        const response = await this.#apiClient.experimental_derivePublicKey(
+            this.signer.locator(),
+            this.isSolanaWallet || this.isStellarWallet ? "ed25519" : "secp256k1"
+        );
+        if ("error" in response) {
+            throw new Error(`Failed to derive public key: ${JSON.stringify(response.error)}`);
+        }
+        return response;
+    }
+
+    /**
      * Send a token to a wallet or user locator
      * @param {string | UserLocator} to - The recipient (address or user locator)
      * @param {string} token - The token (address or currency symbol)
@@ -392,6 +410,10 @@ export class Wallet<C extends Chain> {
 
     protected get isSolanaWallet(): boolean {
         return this.chain === "solana";
+    }
+
+    protected get isStellarWallet(): boolean {
+        return this.chain === "stellar";
     }
 
     protected async approveTransactionAndWait(transactionId: string, options?: ApproveOptions) {
