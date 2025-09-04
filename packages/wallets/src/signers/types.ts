@@ -123,6 +123,11 @@ export type SignerConfigForChain<C extends Chain> = C extends SolanaChain
       ? EmailSignerConfig | PhoneSignerConfig | BaseSignerConfig<C>
       : EmailSignerConfig | PhoneSignerConfig | PasskeySignerConfig | BaseSignerConfig<C>;
 
+export type SignerPublicKey = {
+    secp256k1?: { bytes: string; encoding: string };
+    ed25519?: { bytes: string; encoding: string };
+};
+
 ////////////////////////////////////////////////////////////
 // Signer base types
 ////////////////////////////////////////////////////////////

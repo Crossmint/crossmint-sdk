@@ -24,6 +24,14 @@ export type {
 } from "./wallets/types";
 export type { Chain, EVMChain, SolanaChain, StellarChain } from "./chains/chains";
 
+// Non-Custodial Signers
+export {
+    NonCustodialSigner,
+    SolanaNonCustodialSigner,
+    EVMNonCustodialSigner,
+    StellarNonCustodialSigner,
+} from "./signers/non-custodial";
+
 // Signer configuration types
 export type {
     EmailSignerConfig,
@@ -33,4 +41,5 @@ export type {
     SignerConfigForChain,
     SolanaExternalWalletSignerConfig,
     StellarExternalWalletSignerConfig,
+    SignerPublicKey,
 } from "./signers/types";
