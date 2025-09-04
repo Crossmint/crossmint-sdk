@@ -157,11 +157,7 @@ export class Wallet<C extends Chain> {
         const usdcData = apiResponse.find((token) => token.symbol === "usdc");
 
         const otherTokens = apiResponse.filter((token) => {
-            return (
-                token.symbol !== nativeTokenSymbol &&
-                token.symbol !== "usdc" &&
-                requestedTokens?.includes(token.symbol ?? "")
-            );
+            return token.symbol !== nativeTokenSymbol && token.symbol !== "usdc";
         });
 
         const createDefaultToken = (symbol: TokenBalance["symbol"]): TokenBalance => ({
