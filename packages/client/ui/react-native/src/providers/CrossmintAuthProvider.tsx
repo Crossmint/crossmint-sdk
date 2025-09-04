@@ -3,6 +3,7 @@ import type { StorageProvider } from "@crossmint/client-sdk-auth";
 
 import { useAuth, useCrossmint } from "../hooks";
 import { CrossmintAuthProviderInternal } from "./CrossmintAuthProviderInternal";
+import Constants from "expo-constants";
 
 export type CrossmintAuthProviderProps = {
     prefetchOAuthUrls?: boolean;
@@ -32,8 +33,10 @@ function CrossmintAuthSync({ children }: { children: ReactNode }) {
 }
 
 export function CrossmintAuthProvider({ children, ...props }: CrossmintAuthProviderProps) {
+    const appSchema = props.appSchema ?? Constants.expoConfig?.scheme;
+
     return (
-        <CrossmintAuthProviderInternal {...props}>
+        <CrossmintAuthProviderInternal {...props} appSchema={appSchema}>
             <CrossmintAuthSync>{children}</CrossmintAuthSync>
         </CrossmintAuthProviderInternal>
     );
