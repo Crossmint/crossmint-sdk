@@ -73,7 +73,7 @@ export abstract class NonCustodialSigner implements Signer {
         if (response.signerStatus === "ready") {
             this._needsAuth = false;
 
-            if (!response.publicKeys || Object.keys(response.publicKeys).length === 0) {
+            if (response.publicKeys == null || Object.keys(response.publicKeys).length === 0) {
                 console.error("[getPublicKey] No public keys found in response:", response);
                 throw new Error("No public keys found in response");
             }
