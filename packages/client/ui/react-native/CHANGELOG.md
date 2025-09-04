@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.10.11
+
+### Patch Changes
+
+- c154c1d: Adding the app scheme to the auth provider
+
 ## 0.10.10
 
 ### Patch Changes
