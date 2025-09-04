@@ -27,6 +27,8 @@ import type {
     SendParams,
     SendResponse,
     GetActivityResponse,
+    KeyType,
+    DerivePublicKeyResponse,
 } from "./types";
 import type { Chain } from "../chains/chains";
 
@@ -149,6 +151,14 @@ class ApiClient extends CrossmintApiClient {
         const queryParams = new URLSearchParams();
         queryParams.append("chain", params.chain.toString());
         const response = await this.get(`${this.legacyApiPrefix}/${legacyLocator}/activity?${queryParams.toString()}`, {
+            headers: this.headers,
+        });
+        return response.json();
+    }
+
+    async experimental_derivePublicKey(authId: string, keyType: KeyType): Promise<DerivePublicKeyResponse> {
+        const response = await this.post("api/v1/signers/derive-public-key", {
+            body: JSON.stringify({ authId, keyType }),
             headers: this.headers,
         });
         return response.json();
