@@ -36,7 +36,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
     }
 
     public async sendTransaction<T extends TransactionInputOptions | undefined = undefined>(
-        params: SolanaTransactionInput & { options?: T }
+        params: SolanaTransactionInput
     ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
         const createdTransaction = await this.createTransaction(params);
 

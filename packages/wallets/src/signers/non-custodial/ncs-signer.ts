@@ -74,6 +74,8 @@ export abstract class NonCustodialSigner implements Signer {
         if (signerResponse.signerStatus === "ready") {
             this._needsAuth = false;
             return;
+        } else {
+            this._needsAuth = true;
         }
 
         const { promise, resolve, reject } = this.createAuthPromise();
@@ -85,9 +87,18 @@ export abstract class NonCustodialSigner implements Signer {
                     this._needsAuth,
                     () => this.sendMessageWithOtp(),
                     (otp) => this.verifyOtp(otp),
-                    () => {
-                        reject(new AuthRejectedError());
+                    async () => {
                         this._needsAuth = false;
+                        // We call onAuthRequired again so the needsAuth state is updated for the dev
+                        if (this.config.onAuthRequired != null) {
+                            await this.config.onAuthRequired(
+                                this._needsAuth,
+                                () => this.sendMessageWithOtp(),
+                                (otp) => this.verifyOtp(otp),
+                                () => this._authPromise?.reject(new AuthRejectedError())
+                            );
+                        }
+                        reject(new AuthRejectedError());
                     }
                 );
             } catch (error) {

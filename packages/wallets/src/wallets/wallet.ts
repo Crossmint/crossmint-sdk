@@ -251,7 +251,11 @@ export class Wallet<C extends Chain> {
     ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
         const recipient = toRecipientLocator(to);
         const tokenLocator = toTokenLocator(token, this.chain);
-        const sendParams = { recipient, amount };
+        const sendParams = {
+            recipient,
+            amount,
+            ...(options?.experimental_signer != null ? { signer: options.experimental_signer } : {}),
+        };
         const transactionCreationResponse = await this.#apiClient.send(this.walletLocator, tokenLocator, sendParams);
 
         if ("message" in transactionCreationResponse) {
