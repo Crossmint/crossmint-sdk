@@ -64,4 +64,11 @@ export class EVMNonCustodialSigner extends NonCustodialSigner {
             );
         }
     }
+
+    protected getChainKeyParams(): { scheme: "secp256k1"; encoding: "hex" } {
+        return {
+            scheme: "secp256k1",
+            encoding: "hex",
+        };
+    }
 }
