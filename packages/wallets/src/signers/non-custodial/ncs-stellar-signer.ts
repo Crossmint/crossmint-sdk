@@ -60,11 +60,6 @@ export class StellarNonCustodialSigner extends NonCustodialSigner {
     }
 
     protected getChainKeyParams(): { scheme: "ed25519"; encoding: "strkey" } {
-        console.log("stellar getChainKeyParams");
-        console.log("returning strkey", {
-            scheme: "ed25519",
-            encoding: "strkey",
-        });
         return {
             scheme: "ed25519",
             encoding: "strkey",

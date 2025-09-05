@@ -91,18 +91,9 @@ export abstract class NonCustodialSigner implements Signer {
                     this._needsAuth,
                     () => this.sendMessageWithOtp(),
                     (otp) => this.verifyOtp(otp),
-                    async () => {
+                    () => {
                         reject(new AuthRejectedError());
                         this._needsAuth = false;
-                        // We call onAuthRequired again so the needsAuth state is updated for the dev
-                        if (this.config.onAuthRequired != null) {
-                            await this.config.onAuthRequired(
-                                this._needsAuth,
-                                () => this.sendMessageWithOtp(),
-                                (otp) => this.verifyOtp(otp),
-                                () => this._authPromise?.reject(new AuthRejectedError())
-                            );
-                        }
                     }
                 );
             } catch (error) {
@@ -229,15 +220,10 @@ export abstract class NonCustodialSigner implements Signer {
      * @throws {Error} If signer is not authenticated
      */
     async _exportPrivateKey(exportTEEConnection: ExportSignerTEEConnection): Promise<void> {
-        console.log("[exportPrivateKey] starting");
         await this.handleAuthRequired();
-        console.log("[exportPrivateKey] auth not required");
         const jwt = this.getJwtOrThrow();
-        console.log("[exportPrivateKey] jwt", jwt);
 
         const { scheme, encoding } = this.getChainKeyParams();
-        console.log("[exportPrivateKey] scheme", scheme);
-        console.log("[exportPrivateKey] encoding", encoding);
 
         const response = await exportTEEConnection.sendAction({
             event: "request:export-signer",

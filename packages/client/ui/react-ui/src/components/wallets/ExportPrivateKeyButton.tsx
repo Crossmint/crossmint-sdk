@@ -9,7 +9,6 @@ import { isExportableSigner } from "@crossmint/wallets-sdk";
 import { IFrameWindow, SignersWindowTransport } from "@crossmint/client-sdk-window";
 
 interface ExportPrivateKeyButtonProps {
-    onClick?: () => void;
     appearance?: UIConfig;
 }
 
@@ -25,13 +24,12 @@ const ExportFrame = styled.iframe<{ appearance?: UIConfig }>`
     box-shadow: none;
 `;
 
-export function ExportPrivateKeyButton({ onClick, appearance }: ExportPrivateKeyButtonProps) {
+export function ExportPrivateKeyButton({ appearance }: ExportPrivateKeyButtonProps) {
     const { wallet } = useWallet();
     const { crossmint } = useCrossmint();
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [frameUrl, setFrameUrl] = useState<string>("");
 
-    // Get the TEE URL from the crossmint context
     useEffect(() => {
         if (crossmint != null) {
             try {
@@ -54,7 +52,6 @@ export function ExportPrivateKeyButton({ onClick, appearance }: ExportPrivateKey
         }
 
         try {
-            // Iframe has loaded, now trigger the export
             if (isExportableSigner(wallet.signer)) {
                 const connection = await IFrameWindow.init(
                     iframeRef.current,
@@ -67,12 +64,11 @@ export function ExportPrivateKeyButton({ onClick, appearance }: ExportPrivateKey
                 );
                 await connection.handshakeWithChild();
                 await wallet.signer._exportPrivateKey(connection);
-                onClick?.();
             }
         } catch (error) {
             console.error("Failed to export private key:", error);
         }
-    }, [wallet, onClick, frameUrl]);
+    }, [wallet, frameUrl]);
 
     if (frameUrl.toString() === "" || wallet == null || !isExportableSigner(wallet.signer)) {
         return null;

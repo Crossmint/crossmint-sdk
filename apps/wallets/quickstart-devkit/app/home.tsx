@@ -6,7 +6,7 @@ import { WalletBalance } from "../components/balance";
 import { Permissions } from "../components/permissions";
 import { CrossmintAuthLoginButton } from "../components/login";
 import { EVMTransferFunds, SolanaTransferFunds, StellarTransferFunds } from "@/components/transfer";
-import { ExportPrivateKeyButton, useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
+import { useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
 import { CrossmintAuthLogoutButton } from "@/components/logout";
 import { ApprovalTest } from "@/components/approval-test";
 // import { useEVMPrivyConnector, useSolanaPrivyConnector } from "@/hooks/usePrivyConnector";
@@ -118,9 +118,6 @@ export function HomeContent() {
                 {wallet?.chain === "solana" && <SolanaTransferFunds />}
                 {wallet?.chain === "stellar" && <StellarTransferFunds />}
                 <Permissions />
-                <div className="bg-white flex flex-col gap-3 justify-between rounded-xl border shadow-sm p-5 overflow-hidden">
-                    <ExportPrivateKeyButton />
-                </div>
                 <ApprovalTest />
             </div>
         </div>

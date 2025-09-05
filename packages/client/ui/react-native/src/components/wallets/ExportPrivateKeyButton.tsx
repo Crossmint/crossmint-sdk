@@ -9,11 +9,10 @@ import type { UIConfig } from "@crossmint/common-sdk-base";
 import { WebViewParent, RNWebView } from "@crossmint/client-sdk-rn-window";
 
 interface ExportPrivateKeyButtonProps {
-    onClick?: () => void;
     appearance?: UIConfig;
 }
 
-export function ExportPrivateKeyButton({ onClick }: ExportPrivateKeyButtonProps) {
+export function ExportPrivateKeyButton({ appearance }: ExportPrivateKeyButtonProps) {
     const { wallet } = useWallet();
     const { crossmint } = useCrossmint();
     const webViewRef = useRef<WebView>(null);
@@ -52,14 +51,13 @@ export function ExportPrivateKeyButton({ onClick }: ExportPrivateKeyButtonProps)
                     connectionRef.current = connection;
                     await connection.handshakeWithChild();
                     await wallet.signer._exportPrivateKey(connection);
-                    onClick?.();
                 }
             } catch (error) {
                 console.error("Failed to export private key:", error);
                 Alert.alert("Export Failed", "Failed to export private key. Please try again.");
             }
         },
-        [wallet, onClick]
+        [wallet]
     );
 
     const handleWebViewError = useCallback((syntheticEvent: { nativeEvent: unknown }) => {

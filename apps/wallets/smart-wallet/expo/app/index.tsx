@@ -172,7 +172,7 @@ export default function Index() {
             </View>
 
             <View style={styles.section}>
-                <ExportPrivateKeyButton onClick={() => {}} />
+                <ExportPrivateKeyButton />
             </View>
 
             <View style={styles.section}>
