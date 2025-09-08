@@ -24,7 +24,6 @@ export function getUrlProviderByBlockchain(chain: EVMBlockchainIncludingTestnet)
         ["zora", null],
         ["arbitrumnova", "https://arbitrum-nova-rpc.publicnode.com"],
         ["astar-zkevm", "https://rpc.startale.com/astar-zkevm"],
-        ["apex", null],
     ]).get(chain)!;
 
     if (url == null) {
@@ -57,7 +56,6 @@ export function getBlockExplorerByBlockchain(chain: EVMBlockchainIncludingTestne
         ["zora", "https://explorer.zora.energy"],
         ["arbitrumnova", "https://nova.arbiscan.io/"],
         ["astar-zkevm", "https://astar-zkevm.explorer.startale.com"],
-        ["apex", "https://explorer.apex.proofofplay.com/"],
     ]).get(chain)!;
 
     if (blockExplorer == null) {
@@ -90,7 +88,6 @@ export function getTickerByBlockchain(chain: EVMBlockchainIncludingTestnet) {
         ["zora", null],
         ["arbitrumnova", "ETH"],
         ["astar-zkevm", "ETH"],
-        ["apex", null],
     ]).get(chain)!;
 
     if (ticker == null) {
@@ -123,7 +120,6 @@ export function getTickerNameByBlockchain(chain: EVMBlockchainIncludingTestnet) 
         ["zora", null],
         ["arbitrumnova", "ETHEREUM"],
         ["astar-zkevm", "ETHEREUM"],
-        ["apex", null],
     ]).get(chain)!;
 
     if (tickerName == null) {
