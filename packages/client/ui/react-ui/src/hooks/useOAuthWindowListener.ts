@@ -34,6 +34,10 @@ export const useOAuthWindowListener = (oauthUrlMap: OAuthUrlMap, setError: (erro
             setActiveOAuthProvider(provider);
             setError(null);
 
+            console.log("createPopupAndSetupListeners", provider, providerLoginHint);
+            console.log("oauthUrlMap", oauthUrlMap);
+            console.log("oauthUrlMap[provider]", oauthUrlMap[provider]);
+
             const baseUrl = new URL(oauthUrlMap[provider]);
 
             // The provider_login_hint is a parameter that can be used to pre-fill the email field of the OAuth provider to allow auto-login if session exists.

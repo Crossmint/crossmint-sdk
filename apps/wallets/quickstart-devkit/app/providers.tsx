@@ -262,6 +262,7 @@ function QueryParamsProvider({ children }: { children: React.ReactNode }) {
                 if (signerType === "phone" && phoneNumber != null) {
                     createOnLogin.signer = { type: signerType, phone: decodeURIComponent(phoneNumber) };
                 }
+                console.log("createOnLogin", createOnLogin);
                 return (
                     <EVMCrossmintAuthProvider apiKey={crossmintApiKey} createOnLogin={createOnLogin}>
                         {children}
