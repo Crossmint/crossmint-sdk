@@ -1,10 +1,9 @@
 import type { CrossmintWalletConnectEVMWallet } from "@/types/wallet";
 import type { TransactionRequest } from "@ethersproject/abstract-provider";
 
-import type { EVMAAWallet } from "@crossmint/client-sdk-aa";
-
 export class WalletConnectEVMAAWallet implements CrossmintWalletConnectEVMWallet {
-    constructor(private aaWallet: EVMAAWallet) {}
+    // TODO: Wallets team to ensure removing this class
+    constructor(private aaWallet: any) {}
 
     getSupportedChains() {
         return [this.aaWallet.chain];
