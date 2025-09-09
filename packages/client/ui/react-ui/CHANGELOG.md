@@ -1,5 +1,18 @@
 # @crossmint/client-sdk-react-ui
 
+## 2.4.10
+
+### Patch Changes
+
+- 04c5808: Removing apex and boss
+- Updated dependencies [04c5808]
+  - @crossmint/common-sdk-base@0.9.5
+  - @crossmint/client-sdk-auth@1.2.30
+  - @crossmint/client-sdk-base@1.6.2
+  - @crossmint/client-sdk-react-base@0.5.35
+  - @crossmint/common-sdk-auth@1.0.52
+  - @crossmint/wallets-sdk@0.12.5
+
 ## 2.4.9
 
 ### Patch Changes
