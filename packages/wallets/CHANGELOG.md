@@ -1,5 +1,12 @@
 # @crossmint/wallets-sdk
 
+## 0.12.4
+
+### Patch Changes
+
+- 08c2d57: Supports signer param in #send
+- 08c2d57: Sets needsAuth to false when rejecting otp flow
+
 ## 0.12.3
 
 ### Patch Changes

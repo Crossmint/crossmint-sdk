@@ -1,5 +1,14 @@
 # @crossmint/client-sdk-react-base
 
+## 0.5.34
+
+### Patch Changes
+
+- 08c2d57: Pass through delegatedSigners on wallet creation
+- Updated dependencies [08c2d57]
+- Updated dependencies [08c2d57]
+  - @crossmint/wallets-sdk@0.12.4
+
 ## 0.5.33
 
 ### Patch Changes
