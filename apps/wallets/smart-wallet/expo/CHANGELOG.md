@@ -1,5 +1,12 @@
 # expo-demo
 
+## 1.1.79
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-native-ui@0.10.12
+- @crossmint/wallets-sdk@0.12.5
+
 ## 1.1.78
 
 ### Patch Changes
