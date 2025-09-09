@@ -12,7 +12,7 @@ import { fundUSDC } from "@/utils/usdcFaucet";
 export default function Index() {
     const { loginWithOAuth, user, logout, createAuthSession, jwt } = useCrossmintAuth();
     const { wallet, getOrCreateWallet, status: walletStatus } = useWallet();
-    const { needsAuth, sendEmailWithOtp, verifyOtp } = useWalletEmailSigner();
+    const { needsAuth, sendEmailWithOtp, verifyOtp, reject } = useWalletEmailSigner();
     const walletAddress = useMemo(() => wallet?.address, [wallet]);
     const url = Linking.useURL();
 
@@ -22,7 +22,6 @@ export default function Index() {
     // Email signer states
     const [otp, setOtp] = useState("");
     const [txLink, setTxLink] = useState<string | null>(null);
-    const [isInOtpFlow, setIsInOtpFlow] = useState(false);
     const [uiError, setUiError] = useState<string | null>(null);
     const [recipientAddress, setRecipientAddress] = useState("");
     const [amount, setAmount] = useState<string>("");
@@ -32,12 +31,6 @@ export default function Index() {
             createAuthSession(url);
         }
     }, [url, createAuthSession]);
-
-    useEffect(() => {
-        if (needsAuth && !isInOtpFlow) {
-            setIsInOtpFlow(true);
-        }
-    }, [needsAuth, isInOtpFlow]);
 
     useEffect(() => {
         async function fetchBalances() {
@@ -109,7 +102,7 @@ export default function Index() {
             Alert.alert("Error", "User email is not available.");
             return;
         }
-        setIsInOtpFlow(true);
+
         await handleAction(sendEmailWithOtp);
     };
 
@@ -121,7 +114,6 @@ export default function Index() {
         await handleAction(async () => {
             await verifyOtp(otp);
             setOtp("");
-            setIsInOtpFlow(false);
         });
     };
 
@@ -137,7 +129,6 @@ export default function Index() {
             setTxLink(tx.explorerLink);
             setRecipientAddress("");
             setAmount("");
-            setIsInOtpFlow(false);
         } catch (error) {
             console.log("error sending usdc", error);
         } finally {
@@ -186,7 +177,7 @@ export default function Index() {
                 />
             </View>
 
-            {isInOtpFlow && (
+            {needsAuth && (
                 <View style={styles.section}>
                     <Text style={{ fontWeight: "bold", marginBottom: 10 }}>Email OTP Verification (required)</Text>
                     <Button title="Send OTP Email" onPress={handleSendOtpEmail} disabled={user?.email == null} />
@@ -199,6 +190,7 @@ export default function Index() {
                         autoCapitalize="none"
                     />
                     <Button title="Verify OTP" onPress={handleVerifyOtpInput} disabled={!otp || isLoading} />
+                    <Button title="Reject" onPress={() => reject(new Error("Rejected OTP"))} />
                 </View>
             )}
 

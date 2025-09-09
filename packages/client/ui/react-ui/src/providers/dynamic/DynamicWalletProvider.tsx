@@ -192,7 +192,7 @@ export function DynamicWalletProvider({
                             let signature = rawSignature;
                             if (type === "solana") {
                                 const signatureBuffer = Buffer.from(rawSignature, "base64");
-                                signature = base58.encode(signatureBuffer);
+                                signature = base58.encode(Uint8Array.from(signatureBuffer));
                             }
 
                             const authResponse = await crossmintAuth.authenticateSmartWallet(address, type, signature);

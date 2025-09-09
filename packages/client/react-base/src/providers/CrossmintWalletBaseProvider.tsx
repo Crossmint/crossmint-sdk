@@ -118,6 +118,7 @@ export function CrossmintWalletBaseProvider({
                     signer: args.signer,
                     owner: args.owner,
                     plugins: args.plugins,
+                    delegatedSigners: args.delegatedSigners,
                     options: {
                         clientTEEConnection: clientTEEConnection?.(),
                         experimental_callbacks: {
