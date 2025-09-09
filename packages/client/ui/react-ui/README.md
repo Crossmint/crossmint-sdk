@@ -1,17 +1,98 @@
-# Crossmint React SDK
+<div align="center">
+  <h1 align="center">Crossmint React UI SDK</h1>
 
+  <p align="center">
+    Create chain-agnostic wallets for your users in minutes with React components
+    <br />
+    <a href="https://docs.crossmint.com/sdk-reference/introduction"><strong>Explore the docs »</strong></a>
+    <br />
+    <br />
+    <a href="https://playground.crossmint.com/">View Demo</a>
+    ·
+    <a href="https://github.com/Crossmint/crossmint-sdk/issues">Report Bug</a>
+    ·
+    <a href="https://github.com/Crossmint/crossmint-sdk/issues">Request Feature</a>
+  </p>
+</div>
 
-> **Create chain-agnostic wallets for your users in minutes**  
-> Supports Solana, 20+ EVM chains (Polygon, Base, etc.), with custodial and non-custodial options.
+<details>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li><a href="#about-the-project">About The Project</a>
+      <ul>
+        <li><a href="#why-crossmint-react-ui">Why Crossmint React UI?</a></li>
+        <li><a href="#core-features">Core Features</a></li>
+      </ul>
+    </li>
+    <li><a href="#getting-started">Getting Started</a>
+      <ul>
+        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#installation">Installation</a></li>
+        <li><a href="#quick-start">Quick Start</a></li>
+      </ul>
+    </li>
+    <li><a href="#authentication">Authentication</a>
+      <ul>
+        <li><a href="#supported-login-methods">Supported Login Methods</a></li>
+        <li><a href="#provider-configuration">Provider Configuration</a></li>
+      </ul>
+    </li>
+    <li><a href="#wallets">Wallets</a>
+      <ul>
+        <li><a href="#multi-chain-support">Multi-Chain Support</a></li>
+        <li><a href="#wallet-creation-options">Wallet Creation Options</a></li>
+        <li><a href="#using-wallets">Using Wallets</a></li>
+      </ul>
+    </li>
+    <li><a href="#ui-components">UI Components</a></li>
+    <li><a href="#react-native">React Native</a></li>
+    <li><a href="#environment-setup">Environment Setup</a></li>
+    <li><a href="#examples--documentation">Examples & Documentation</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ol>
+</details>
 
-## 🚀 Quick Start
+## About The Project
+
+The Crossmint React UI SDK provides ready-to-use React components and hooks for seamless blockchain integration. Build complete Web3 experiences with authentication, wallets, and NFT functionality without the complexity of managing blockchain infrastructure.
+
+Supports Solana, 20+ EVM chains (Polygon, Base, etc.), with custodial and non-custodial options.
+
+### Why Crossmint React UI?
+
+- 🚀 **Quick Integration**: Get started in minutes with pre-built React components
+- 💻 **Developer-First**: Complete TypeScript support with intuitive React patterns
+- 🔒 **Secure**: Enterprise-grade security for all blockchain interactions
+- 💳 **Fiat-First**: Enable users to participate in Web3 without cryptocurrency
+- 🎨 **Customizable**: Flexible UI components that match your brand
+- 🆓 **Free to Start**: Start developing at no cost
+
+### Core Features
+
+- 🔐 **Authentication**: Email OTP, social logins, Web3 wallets
+- 👛 **Embedded Wallets**: Multi-chain wallet creation and management
+- 🎨 **UI Components**: Ready-to-use NFT collection and detail views
+- 🔗 **Multi-Chain**: Unified API across Solana and 20+ EVM chains
+- ⚛️ **React Native**: Dedicated package for mobile development
+
+## Getting Started
+
+### Prerequisites
+
+Make sure you have:
+- Node.js installed
+- A Crossmint developer account ([Sign up](https://www.crossmint.com/))
+- API key from the [Crossmint Console](https://www.crossmint.com/console)
+
+### Installation
 
 ```bash
 pnpm add @crossmint/client-sdk-react-ui
 ```
 
+### Quick Start
 
-### 1. Setup Providers
+#### 1. Setup Providers
 
 **Option A: With Crossmint Authentication (Recommended)**
 
@@ -75,7 +156,7 @@ export default function App({ children }) {
 }
 ```
 
-### 2. Use Authentication & Wallets
+#### 2. Use Authentication & Wallets
 
 ```tsx
 import { useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
@@ -105,7 +186,7 @@ export default function MyComponent() {
 }
 ```
 
-## 🔐 Authentication
+## Authentication
 
 ### Supported Login Methods
 - **Email OTP**: Passwordless sign-in with verification code
@@ -131,7 +212,7 @@ export default function MyComponent() {
 >
 ```
 
-## 💳 Wallets
+## Wallets
 
 ### Multi-Chain Support
 - **Solana**: Native SOL, SPL tokens
@@ -169,7 +250,7 @@ const customWallet = await getOrCreateWallet({
 });
 ```
 
-## 🎨 UI Components
+## UI Components
 
 Ready-to-use components for displaying wallet content:
 
@@ -186,16 +267,15 @@ import {
 <CrossmintNFTDetail {...props} />
 ```
 
-## 📱 React Native
+## React Native
 
 For React Native apps, use our dedicated [npm package](https://www.npmjs.com/package/@crossmint/client-sdk-react-native-ui).
-
 
 ```bash
 pnpm add @crossmint/client-sdk-react-native-ui
 ```
 
-## 🛠️ Environment Setup
+## Environment Setup
 
 1. Get your API key from [Crossmint Console](https://staging.crossmint.com/console/projects/apiKeys)
 
@@ -204,10 +284,17 @@ pnpm add @crossmint/client-sdk-react-native-ui
 NEXT_PUBLIC_CROSSMINT_API_KEY=your_api_key_here
 ```
 
-## 📚 Examples & Documentation
+## Examples & Documentation
 
-- **[Quickstarts](https://www.crossmint.com/quickstarts)** - Find your quickstart for your use case.
+- **[Quickstarts](https://www.crossmint.com/quickstarts)** - Find your quickstart for your use case
+- **[React SDK Documentation](https://docs.crossmint.com/sdk-reference/introduction)** - Complete API reference
+- **[Authentication Guide](https://docs.crossmint.com/authentication/overview)** - Authentication setup and customization
+- **[Wallet Integration](https://docs.crossmint.com/wallets/overview)** - Wallet creation and management
 
----
+## Contact
 
-**Questions?** Visit our [documentation](https://docs.crossmint.com/introduction/about-crossmint) or contact our support team. 
+To get in touch with the Crossmint team, please visit our [contact page](https://www.crossmint.com/contact) or reach out on [X](https://x.com/crossmint).
+
+For questions about this SDK, visit our [documentation](https://docs.crossmint.com/introduction/about-crossmint) or contact our support team.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
