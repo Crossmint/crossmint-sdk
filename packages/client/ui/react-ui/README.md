@@ -7,7 +7,7 @@
     <a href="https://docs.crossmint.com/wallets/quickstarts/react"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://playground.crossmint.com/">View Demo</a>
+    <a href="https://wallets.demos-crossmint.com/">View Demo</a>
     ·
     <a href="https://github.com/Crossmint/crossmint-sdk/issues">Report Bug</a>
     ·
