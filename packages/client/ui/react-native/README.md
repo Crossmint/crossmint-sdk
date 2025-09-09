@@ -4,10 +4,10 @@
   <p align="center">
     Create chain-agnostic wallets for your React Native apps in minutes
     <br />
-    <a href="https://docs.crossmint.com/sdk-reference/introduction"><strong>Explore the docs »</strong></a>
+    <a href="https://docs.crossmint.com/wallets/quickstarts/react-native"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://playground.crossmint.com/">View Demo</a>
+    <a href="https://github.com/Crossmint/wallets-expo-quickstart">View Demo</a>
     ·
     <a href="https://github.com/Crossmint/crossmint-sdk/issues">Report Bug</a>
     ·
@@ -61,7 +61,7 @@ Supports Solana, 20+ EVM chains (Polygon, Base, etc.), with secure mobile authen
 - 📱 **Mobile-First**: Built specifically for React Native with secure native storage
 - 🔒 **Secure**: Uses Expo SecureStore for encrypted authentication token storage
 - 💻 **Developer-First**: Complete TypeScript support with React Native patterns
-- 💳 **Fiat-First**: Enable users to participate in Web3 without cryptocurrency
+- 🌐 **Familiar Web2 APIs**: Powered by our wallets SDK with intuitive, web-friendly interfaces
 - 🆓 **Free to Start**: Start developing at no cost
 
 ### Core Features

@@ -4,7 +4,7 @@
   <p align="center">
     Create chain-agnostic wallets for your users in minutes with React components
     <br />
-    <a href="https://docs.crossmint.com/sdk-reference/introduction"><strong>Explore the docs »</strong></a>
+    <a href="https://docs.crossmint.com/wallets/quickstarts/react"><strong>Explore the docs »</strong></a>
     <br />
     <br />
     <a href="https://playground.crossmint.com/">View Demo</a>
@@ -63,7 +63,7 @@ Supports Solana, 20+ EVM chains (Polygon, Base, etc.), with custodial and non-cu
 - 🚀 **Quick Integration**: Get started in minutes with pre-built React components
 - 💻 **Developer-First**: Complete TypeScript support with intuitive React patterns
 - 🔒 **Secure**: Enterprise-grade security for all blockchain interactions
-- 💳 **Fiat-First**: Enable users to participate in Web3 without cryptocurrency
+- 🌐 **Familiar Web2 APIs**: Powered by our wallets SDK with intuitive, web-friendly interfaces
 - 🎨 **Customizable**: Flexible UI components that match your brand
 - 🆓 **Free to Start**: Start developing at no cost
 
