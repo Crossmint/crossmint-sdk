@@ -1,5 +1,16 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.10.11
+
+### Patch Changes
+
+- c154c1d: Adding the app scheme to the auth provider
+- Updated dependencies [08c2d57]
+- Updated dependencies [08c2d57]
+- Updated dependencies [08c2d57]
+  - @crossmint/wallets-sdk@0.12.4
+  - @crossmint/client-sdk-react-base@0.5.34
+
 ## 0.10.10
 
 ### Patch Changes
