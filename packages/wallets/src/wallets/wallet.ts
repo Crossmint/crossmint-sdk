@@ -352,13 +352,11 @@ export class Wallet<C extends Chain> {
             throw new WalletNotAvailableError(JSON.stringify(walletResponse));
         }
 
-        if (this.chain === "stellar") {
-            return [];
-        }
-
         if (
             walletResponse.type !== "smart" ||
-            (walletResponse.chainType !== "evm" && walletResponse.chainType !== "solana")
+            (walletResponse.chainType !== "evm" &&
+                walletResponse.chainType !== "solana" &&
+                walletResponse.chainType !== "stellar")
         ) {
             throw new WalletTypeNotSupportedError(`Wallet type ${walletResponse.type} not supported`);
         }
