@@ -1,5 +1,15 @@
 # @crossmint/wallets-sdk
 
+## 0.13.0
+
+### Minor Changes
+
+- 544c9bd: Add serialized transaction support for Stellar wallets
+
+### Patch Changes
+
+- 9a4fa46: Supports fetching delegated signers in Stellar
+
 ## 0.12.5
 
 ### Patch Changes
