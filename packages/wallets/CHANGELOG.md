@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 0.13.1
+
+### Patch Changes
+
+- 0b915b2: Adds support for delegated signers on wallet creation in EVM + Stellar
+
 ## 0.13.0
 
 ### Minor Changes

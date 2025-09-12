@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-react-base
 
+## 0.5.37
+
+### Patch Changes
+
+- 0b915b2: Adds support for delegated signers on wallet creation in EVM + Stellar
+- Updated dependencies [0b915b2]
+  - @crossmint/wallets-sdk@0.13.1
+
 ## 0.5.36
 
 ### Patch Changes
