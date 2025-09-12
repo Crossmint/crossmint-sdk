@@ -63,9 +63,7 @@ export class WalletFactory {
             config: {
                 adminSigner,
                 ...(args?.plugins ? { plugins: args.plugins } : {}),
-                ...(args.chain === "solana" && args.delegatedSigners != null
-                    ? { delegatedSigners: args.delegatedSigners }
-                    : {}),
+                ...(args.delegatedSigners != null ? { delegatedSigners: args.delegatedSigners } : {}),
             },
             owner: args.owner ?? undefined,
         } as CreateWalletParams);
@@ -244,7 +242,7 @@ export class WalletFactory {
             compareSignerConfigs(adminSignerArgs, existingWalletSigner);
         }
 
-        if (args.delegatedSigners != null && args.chain === "solana") {
+        if (args.delegatedSigners != null) {
             this.validateDelegatedSigners(existingWallet, args.delegatedSigners);
         }
     }
