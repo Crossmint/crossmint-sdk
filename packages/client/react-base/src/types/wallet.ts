@@ -1,5 +1,12 @@
 import type { UIConfig } from "@crossmint/common-sdk-base";
-import type { EVMChain, SignerConfigForChain, SolanaChain, StellarChain, WalletPlugin } from "@crossmint/wallets-sdk";
+import type {
+    DelegatedSigner,
+    EVMChain,
+    SignerConfigForChain,
+    SolanaChain,
+    StellarChain,
+    WalletPlugin,
+} from "@crossmint/wallets-sdk";
 
 export type {
     Balances,
@@ -19,18 +26,21 @@ export type CreateOnLogin =
           signer: SignerConfigForChain<SolanaChain>;
           owner?: string;
           plugins?: WalletPlugin<SolanaChain>[];
+          delegatedSigners?: Array<DelegatedSigner>;
       }
     | {
           chain: EVMChain;
           signer: SignerConfigForChain<EVMChain>;
           owner?: string;
           plugins?: WalletPlugin<EVMChain>[];
+          delegatedSigners?: Array<DelegatedSigner>;
       }
     | {
           chain: StellarChain;
           signer: SignerConfigForChain<StellarChain>;
           owner?: string;
           plugins?: WalletPlugin<StellarChain>[];
+          delegatedSigners?: Array<DelegatedSigner>;
       };
 
 export type BaseCrossmintWalletProviderProps = {
