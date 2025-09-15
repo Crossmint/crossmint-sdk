@@ -8110,7 +8110,7 @@
                             "params": {
                                 "type": "object",
                                 "properties": {
-                                    "transaction": {
+                                    "serializedTransaction": {
                                         "type": "string",
                                         "description": "Base58 encoded serialized Solana transaction",
                                         "example": "4hXTCkRzt9WyecNzV1XPgCDfGAZzQKNxLXgynz5QDuWWPSAZBZSHptvWRL3BjCvzUXRdKvHL2b7yGrRQcWyaqsaBCncVG7BFggS8w9snUts67BSh3EqKpXLUm5UMHfD7ZBe9GhARjbNQMLJ1QD3Spr6oMTBU6EhdB4RD8CP2xUxr2u3d6fos36PD98XS6oX8TQjLpsMwncs5DAMiD4nNnR8NBfyghGCWvCVifVwvA8B8TJxE1aiyiv2L429BCWfyzAme5sZW8rDb14NeCQHhZbtNqfXhcp2tAnaAT"
@@ -8401,7 +8401,7 @@
                                                 {
                                                     "type": "object",
                                                     "properties": {
-                                                        "transaction": {
+                                                        "serializedTransaction": {
                                                             "description": "Serialized EVM transaction"
                                                         }
                                                     },
@@ -8494,7 +8494,7 @@
                             "params": {
                                 "type": "object",
                                 "properties": {
-                                    "transaction": {
+                                    "serializedTransaction": {
                                         "type": "string",
                                         "description": "Base58 encoded serialized Solana transaction",
                                         "example": "4hXTCkRzt9WyecNzV1XPgCDfGAZzQKNxLXgynz5QDuWWPSAZBZSHptvWRL3BjCvzUXRdKvHL2b7yGrRQcWyaqsaBCncVG7BFggS8w9snUts67BSh3EqKpXLUm5UMHfD7ZBe9GhARjbNQMLJ1QD3Spr6oMTBU6EhdB4RD8CP2xUxr2u3d6fos36PD98XS6oX8TQjLpsMwncs5DAMiD4nNnR8NBfyghGCWvCVifVwvA8B8TJxE1aiyiv2L429BCWfyzAme5sZW8rDb14NeCQHhZbtNqfXhcp2tAnaAT"
@@ -8861,7 +8861,7 @@
                             "params": {
                                 "type": "object",
                                 "properties": {
-                                    "transaction": {
+                                    "serializedTransaction": {
                                         "oneOf": [
                                             {
                                                 "type": "object",
@@ -8951,7 +8951,7 @@
                                                         "enum": ["serialized-transaction"],
                                                         "description": "The type of transaction to execute"
                                                     },
-                                                    "transaction": {
+                                                    "serializedTransaction": {
                                                         "type": "string",
                                                         "description": "The XDR base64-encoded serialized transaction to execute"
                                                     },
@@ -8961,12 +8961,12 @@
                                                         "example": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
                                                     }
                                                 },
-                                                "required": ["type", "transaction", "contractId"],
+                                                "required": ["type", "serializedTransaction", "contractId"],
                                                 "title": "Stellar serialized transaction parameters",
                                                 "description": "Parameters for a transaction to execute a serialized transaction",
                                                 "example": {
                                                     "type": "serialized-transaction",
-                                                    "transaction": "AQAAAAB2YWx1ZQ==",
+                                                    "serializedTransaction": "AQAAAAB2YWx1ZQ==",
                                                     "contractId": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
                                                 }
                                             }
@@ -9018,7 +9018,7 @@
                             "params": {
                                 "type": "object",
                                 "properties": {
-                                    "transaction": {
+                                    "serializedTransaction": {
                                         "type": "string",
                                         "description": "Base58 encoded serialized Solana transaction"
                                     },
@@ -9064,7 +9064,7 @@
                             "params": {
                                 "type": "object",
                                 "properties": {
-                                    "transaction": {
+                                    "serializedTransaction": {
                                         "type": "string",
                                         "description": "Base58 encoded serialized Solana transaction"
                                     },
@@ -9333,7 +9333,7 @@
                                                 {
                                                     "type": "object",
                                                     "properties": {
-                                                        "transaction": {
+                                                        "serializedTransaction": {
                                                             "description": "Serialized EVM transaction"
                                                         }
                                                     },
@@ -9740,7 +9740,7 @@
                             "params": {
                                 "type": "object",
                                 "properties": {
-                                    "transaction": {
+                                    "serializedTransaction": {
                                         "oneOf": [
                                             {
                                                 "type": "object",
@@ -9830,7 +9830,7 @@
                                                         "enum": ["serialized-transaction"],
                                                         "description": "The type of transaction to execute"
                                                     },
-                                                    "transaction": {
+                                                    "serializedTransaction": {
                                                         "type": "string",
                                                         "description": "The XDR base64-encoded serialized transaction to execute"
                                                     },
@@ -9840,12 +9840,12 @@
                                                         "example": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
                                                     }
                                                 },
-                                                "required": ["type", "transaction", "contractId"],
+                                                "required": ["type", "serializedTransaction", "contractId"],
                                                 "title": "Stellar serialized transaction parameters",
                                                 "description": "Parameters for a transaction to execute a serialized transaction",
                                                 "example": {
                                                     "type": "serialized-transaction",
-                                                    "transaction": "AQAAAAB2YWx1ZQ==",
+                                                    "serializedTransaction": "AQAAAAB2YWx1ZQ==",
                                                     "contractId": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
                                                 }
                                             }
@@ -11980,13 +11980,13 @@
                                     "phone:+1234567890"
                                 ]
                             },
-                            "transaction": {
+                            "serializedTransaction": {
                                 "type": "object",
                                 "properties": {
                                     "onChain": {
                                         "type": "object",
                                         "properties": {
-                                            "transaction": {
+                                            "serializedTransaction": {
                                                 "type": "string"
                                             },
                                             "lastValidBlockHeight": {
@@ -12227,7 +12227,7 @@
                             "type": "solana-keypair",
                             "address": "DzaYNi6XtWt9DNwFV61bzWEiaSxfTgWbFDgFmurJzwdo",
                             "locator": "solana-keypair:DzaYNi6XtWt9DNwFV61bzWEiaSxfTgWbFDgFmurJzwdo",
-                            "transaction": {
+                            "serializedTransaction": {
                                 "onChain": {
                                     "transaction": "4B9yzZoEV45cngasy9dP2MVxhZ2iro72eqdKitTj62pqFYHk4wVoR4NCc3xkEamWbFGXLjVotyPrDqEn11WUYHoq98b5aKCSDUrLWaQDZgb3xLxF1EvaY82Vui7Ntbv682tYnu5Ngnv4Eun1wrDJ6r4aRsUSQ3XF3jvNq8bRMn4HavBjPyErQSgXX9ytCDKntCEQcY3wfMHYbRFg5zgFU1QCqhuoLa5oBpZLCUYT8DCYu3Ado7W4xzP5aCAAwVd2tj8iAnwJEujQvBnr7wWkf2mCS1cNoCTbCFAvNVaVaau6vXBWKZqS7sDNmUD3KLQVqLwxhLLNeRuvUTkD5VQ5D21VcDiYWQWQTuYYAcQ3RUhn4Vt4ymijgRGbUXZHoeN26UHoGSBFJJ7gjqCruAtFXQZxHRDKSWN9jhYXugPYVVXSpGFA5BYWBuztUtEMF4u96tk6YTgPGdkTgrQybkNxRwbVCbpsKRG1kAbjQgBxDLAX89eMCZVbzWXnAgGA6aDBQPLAyQru8awZBDasrirnxCSQq9cWwMLePQGhY5gJZykswFKtyYF4CHeto",
                                     "lastValidBlockHeight": 343486121
@@ -12466,7 +12466,7 @@
                             {
                                 "type": "object",
                                 "properties": {
-                                    "transaction": {
+                                    "serializedTransaction": {
                                         "type": "object",
                                         "properties": {
                                             "chainType": {
@@ -12476,7 +12476,7 @@
                                             "onChain": {
                                                 "type": "object",
                                                 "properties": {
-                                                    "transaction": {
+                                                    "serializedTransaction": {
                                                         "type": "string"
                                                     },
                                                     "lastValidBlockHeight": {
@@ -12937,7 +12937,7 @@
                             "type": "external-wallet",
                             "address": "DzaYNi6XtWt9DNwFV61bzWEiaSxfTgWbFDgFmurJzwdo",
                             "locator": "external-wallet:DzaYNi6XtWt9DNwFV61bzWEiaSxfTgWbFDgFmurJzwdo",
-                            "transaction": {
+                            "serializedTransaction": {
                                 "chainType": "solana",
                                 "walletType": "smart",
                                 "onChain": {
@@ -13836,7 +13836,7 @@
                                             }
                                         ]
                                     },
-                                    "transaction": {
+                                    "serializedTransaction": {
                                         "type": "object",
                                         "properties": {
                                             "chainType": {
@@ -13846,7 +13846,7 @@
                                             "onChain": {
                                                 "type": "object",
                                                 "properties": {
-                                                    "transaction": {
+                                                    "serializedTransaction": {
                                                         "type": "object",
                                                         "properties": {
                                                             "method": {
@@ -14335,11 +14335,11 @@
                                     "address": "CCRBPM5HBMVLORGVXROAGIRHIGJC73PSFK3FKBB6KNRJBLHNJPBOI3AB"
                                 }
                             ],
-                            "transaction": {
+                            "serializedTransaction": {
                                 "chainType": "stellar",
                                 "walletType": "smart",
                                 "onChain": {
-                                    "transaction": {
+                                    "serializedTransaction": {
                                         "method": "add_signer",
                                         "tx": "AAAAAQAAAAAAAAAA6Cv7SC/8UqMRajXVpHLVebgTI8cw0uhptVAJN6tV/+gNtr9lA7hE6QAOwAgAAAABAAAAAAAAAAEksa3so67z/hhpBWMPQdw+PT2ms33JDRSDbYjqW683yQAAABFkZXBsb3lfaWRlbXBvdGVudAAAAAAAAAIAAAASAAAAAAAAAADoK/tIL/xSoxFqNdWkctV5uBMjxzDS6Gm1UAk3q1X/6AAAABEAAAABAAAAAwAAAA8AAAAQY29uc3RydWN0b3JfYXJncwAAABAAAAABAAAAAgAAABAAAAABAAAAAQAAABAAAAABAAAAAwAAAA8AAAAHRWQyNTUxOQAAAAARAAAAAQAAAAEAAAAPAAAACnB1YmxpY19rZXkAAAAAAA0AAAAgyLZLslvAtPSvrch4dTYQT5Q6NI/DdJtTWQmkH7gbreIAAAAQAAAAAQAAAAEAAAAPAAAABUFkbWluAAAAAAAAEAAAAAEAAAAAAAAADwAAAARzYWx0AAAADQAAACBRdLqIKRSPYpduY8VwZmLfFmD5nTDM10wNlHCbyfvOCAAAAA8AAAAJd2FzbV9oYXNoAAAAAAAADQAAACA9PARHNRwk5Pra7OFAiMck10LoFypYcCLZzWWvnOkIngAAAAA="
                                     },
@@ -17283,7 +17283,7 @@
                                                             {
                                                                 "type": "object",
                                                                 "properties": {
-                                                                    "transaction": {
+                                                                    "serializedTransaction": {
                                                                         "description": "Serialized EVM transaction"
                                                                     }
                                                                 },
@@ -18765,7 +18765,7 @@
                                         "params": {
                                             "type": "object",
                                             "properties": {
-                                                "transaction": {
+                                                "serializedTransaction": {
                                                     "type": "string",
                                                     "description": "Base58 encoded serialized Solana transaction"
                                                 },
@@ -19018,7 +19018,7 @@
                                         "onChain": {
                                             "type": "object",
                                             "properties": {
-                                                "transaction": {
+                                                "serializedTransaction": {
                                                     "type": "string"
                                                 },
                                                 "lastValidBlockHeight": {
@@ -19485,7 +19485,7 @@
                                         "params": {
                                             "type": "object",
                                             "properties": {
-                                                "transaction": {
+                                                "serializedTransaction": {
                                                     "type": "string",
                                                     "description": "Base58 encoded serialized Solana transaction"
                                                 },
@@ -19600,7 +19600,7 @@
                                         "onChain": {
                                             "type": "object",
                                             "properties": {
-                                                "transaction": {
+                                                "serializedTransaction": {
                                                     "type": "string"
                                                 },
                                                 "lastValidBlockHeight": {
@@ -20067,7 +20067,7 @@
                                         "params": {
                                             "type": "object",
                                             "properties": {
-                                                "transaction": {
+                                                "serializedTransaction": {
                                                     "oneOf": [
                                                         {
                                                             "type": "object",
@@ -20157,7 +20157,7 @@
                                                                     "enum": ["serialized-transaction"],
                                                                     "description": "The type of transaction to execute"
                                                                 },
-                                                                "transaction": {
+                                                                "serializedTransaction": {
                                                                     "type": "string",
                                                                     "description": "The XDR base64-encoded serialized transaction to execute"
                                                                 },
@@ -20167,12 +20167,12 @@
                                                                     "example": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
                                                                 }
                                                             },
-                                                            "required": ["type", "transaction", "contractId"],
+                                                            "required": ["type", "serializedTransaction", "contractId"],
                                                             "title": "Stellar serialized transaction parameters",
                                                             "description": "Parameters for a transaction to execute a serialized transaction",
                                                             "example": {
                                                                 "type": "serialized-transaction",
-                                                                "transaction": "AQAAAAB2YWx1ZQ==",
+                                                                "serializedTransaction": "AQAAAAB2YWx1ZQ==",
                                                                 "contractId": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
                                                             }
                                                         }
@@ -20197,7 +20197,7 @@
                                         "onChain": {
                                             "type": "object",
                                             "properties": {
-                                                "transaction": {
+                                                "serializedTransaction": {
                                                     "type": "object",
                                                     "properties": {
                                                         "method": {
@@ -21748,7 +21748,7 @@
                                                 {
                                                     "type": "object",
                                                     "properties": {
-                                                        "transaction": {
+                                                        "serializedTransaction": {
                                                             "description": "Serialized EVM transaction"
                                                         }
                                                     },
@@ -23204,7 +23204,7 @@
                             "params": {
                                 "type": "object",
                                 "properties": {
-                                    "transaction": {
+                                    "serializedTransaction": {
                                         "type": "string",
                                         "description": "Base58 encoded serialized Solana transaction"
                                     },
@@ -23457,7 +23457,7 @@
                             "onChain": {
                                 "type": "object",
                                 "properties": {
-                                    "transaction": {
+                                    "serializedTransaction": {
                                         "type": "string"
                                     },
                                     "lastValidBlockHeight": {
@@ -23916,7 +23916,7 @@
                             "params": {
                                 "type": "object",
                                 "properties": {
-                                    "transaction": {
+                                    "serializedTransaction": {
                                         "type": "string",
                                         "description": "Base58 encoded serialized Solana transaction"
                                     },
@@ -24031,7 +24031,7 @@
                             "onChain": {
                                 "type": "object",
                                 "properties": {
-                                    "transaction": {
+                                    "serializedTransaction": {
                                         "type": "string"
                                     },
                                     "lastValidBlockHeight": {
@@ -24490,7 +24490,7 @@
                             "params": {
                                 "type": "object",
                                 "properties": {
-                                    "transaction": {
+                                    "serializedTransaction": {
                                         "oneOf": [
                                             {
                                                 "type": "object",
@@ -24580,7 +24580,7 @@
                                                         "enum": ["serialized-transaction"],
                                                         "description": "The type of transaction to execute"
                                                     },
-                                                    "transaction": {
+                                                    "serializedTransaction": {
                                                         "type": "string",
                                                         "description": "The XDR base64-encoded serialized transaction to execute"
                                                     },
@@ -24590,12 +24590,12 @@
                                                         "example": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
                                                     }
                                                 },
-                                                "required": ["type", "transaction", "contractId"],
+                                                "required": ["type", "serializedTransaction", "contractId"],
                                                 "title": "Stellar serialized transaction parameters",
                                                 "description": "Parameters for a transaction to execute a serialized transaction",
                                                 "example": {
                                                     "type": "serialized-transaction",
-                                                    "transaction": "AQAAAAB2YWx1ZQ==",
+                                                    "serializedTransaction": "AQAAAAB2YWx1ZQ==",
                                                     "contractId": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
                                                 }
                                             }
@@ -24620,7 +24620,7 @@
                             "onChain": {
                                 "type": "object",
                                 "properties": {
-                                    "transaction": {
+                                    "serializedTransaction": {
                                         "type": "object",
                                         "properties": {
                                             "method": {
@@ -26304,7 +26304,7 @@
                                                 {
                                                     "type": "object",
                                                     "properties": {
-                                                        "transaction": {
+                                                        "serializedTransaction": {
                                                             "description": "Serialized EVM transaction"
                                                         }
                                                     },
@@ -26681,7 +26681,7 @@
                             "params": {
                                 "type": "object",
                                 "properties": {
-                                    "transaction": {
+                                    "serializedTransaction": {
                                         "type": "string",
                                         "description": "Base58 encoded serialized Solana transaction",
                                         "example": "4hXTCkRzt9WyecNzV1XPgCDfGAZzQKNxLXgynz5QDuWWPSAZBZSHptvWRL3BjCvzUXRdKvHL2b7yGrRQcWyaqsaBCncVG7BFggS8w9snUts67BSh3EqKpXLUm5UMHfD7ZBe9GhARjbNQMLJ1QD3Spr6oMTBU6EhdB4RD8CP2xUxr2u3d6fos36PD98XS6oX8TQjLpsMwncs5DAMiD4nNnR8NBfyghGCWvCVifVwvA8B8TJxE1aiyiv2L429BCWfyzAme5sZW8rDb14NeCQHhZbtNqfXhcp2tAnaAT"
@@ -26711,7 +26711,7 @@
                             "onChain": {
                                 "type": "object",
                                 "properties": {
-                                    "transaction": {
+                                    "serializedTransaction": {
                                         "type": "string"
                                     },
                                     "lastValidBlockHeight": {
@@ -27517,7 +27517,7 @@
                             "params": {
                                 "type": "object",
                                 "properties": {
-                                    "transaction": {
+                                    "serializedTransaction": {
                                         "type": "string",
                                         "description": "Base58 encoded serialized Solana transaction",
                                         "example": "4hXTCkRzt9WyecNzV1XPgCDfGAZzQKNxLXgynz5QDuWWPSAZBZSHptvWRL3BjCvzUXRdKvHL2b7yGrRQcWyaqsaBCncVG7BFggS8w9snUts67BSh3EqKpXLUm5UMHfD7ZBe9GhARjbNQMLJ1QD3Spr6oMTBU6EhdB4RD8CP2xUxr2u3d6fos36PD98XS6oX8TQjLpsMwncs5DAMiD4nNnR8NBfyghGCWvCVifVwvA8B8TJxE1aiyiv2L429BCWfyzAme5sZW8rDb14NeCQHhZbtNqfXhcp2tAnaAT"
@@ -27598,7 +27598,7 @@
                             "onChain": {
                                 "type": "object",
                                 "properties": {
-                                    "transaction": {
+                                    "serializedTransaction": {
                                         "type": "string"
                                     },
                                     "lastValidBlockHeight": {
@@ -28115,7 +28115,7 @@
                                                 {
                                                     "type": "object",
                                                     "properties": {
-                                                        "transaction": {
+                                                        "serializedTransaction": {
                                                             "description": "Serialized EVM transaction"
                                                         }
                                                     },
@@ -28492,7 +28492,7 @@
                             "params": {
                                 "type": "object",
                                 "properties": {
-                                    "transaction": {
+                                    "serializedTransaction": {
                                         "type": "string",
                                         "description": "Base58 encoded serialized Solana transaction",
                                         "example": "4hXTCkRzt9WyecNzV1XPgCDfGAZzQKNxLXgynz5QDuWWPSAZBZSHptvWRL3BjCvzUXRdKvHL2b7yGrRQcWyaqsaBCncVG7BFggS8w9snUts67BSh3EqKpXLUm5UMHfD7ZBe9GhARjbNQMLJ1QD3Spr6oMTBU6EhdB4RD8CP2xUxr2u3d6fos36PD98XS6oX8TQjLpsMwncs5DAMiD4nNnR8NBfyghGCWvCVifVwvA8B8TJxE1aiyiv2L429BCWfyzAme5sZW8rDb14NeCQHhZbtNqfXhcp2tAnaAT"
@@ -28522,7 +28522,7 @@
                             "onChain": {
                                 "type": "object",
                                 "properties": {
-                                    "transaction": {
+                                    "serializedTransaction": {
                                         "type": "string"
                                     },
                                     "lastValidBlockHeight": {
@@ -29328,7 +29328,7 @@
                             "params": {
                                 "type": "object",
                                 "properties": {
-                                    "transaction": {
+                                    "serializedTransaction": {
                                         "type": "string",
                                         "description": "Base58 encoded serialized Solana transaction",
                                         "example": "4hXTCkRzt9WyecNzV1XPgCDfGAZzQKNxLXgynz5QDuWWPSAZBZSHptvWRL3BjCvzUXRdKvHL2b7yGrRQcWyaqsaBCncVG7BFggS8w9snUts67BSh3EqKpXLUm5UMHfD7ZBe9GhARjbNQMLJ1QD3Spr6oMTBU6EhdB4RD8CP2xUxr2u3d6fos36PD98XS6oX8TQjLpsMwncs5DAMiD4nNnR8NBfyghGCWvCVifVwvA8B8TJxE1aiyiv2L429BCWfyzAme5sZW8rDb14NeCQHhZbtNqfXhcp2tAnaAT"
@@ -29409,7 +29409,7 @@
                             "onChain": {
                                 "type": "object",
                                 "properties": {
-                                    "transaction": {
+                                    "serializedTransaction": {
                                         "type": "string"
                                     },
                                     "lastValidBlockHeight": {
@@ -29957,7 +29957,7 @@
                                                             {
                                                                 "type": "object",
                                                                 "properties": {
-                                                                    "transaction": {
+                                                                    "serializedTransaction": {
                                                                         "description": "Serialized EVM transaction"
                                                                     }
                                                                 },
@@ -30334,7 +30334,7 @@
                                         "params": {
                                             "type": "object",
                                             "properties": {
-                                                "transaction": {
+                                                "serializedTransaction": {
                                                     "type": "string",
                                                     "description": "Base58 encoded serialized Solana transaction",
                                                     "example": "4hXTCkRzt9WyecNzV1XPgCDfGAZzQKNxLXgynz5QDuWWPSAZBZSHptvWRL3BjCvzUXRdKvHL2b7yGrRQcWyaqsaBCncVG7BFggS8w9snUts67BSh3EqKpXLUm5UMHfD7ZBe9GhARjbNQMLJ1QD3Spr6oMTBU6EhdB4RD8CP2xUxr2u3d6fos36PD98XS6oX8TQjLpsMwncs5DAMiD4nNnR8NBfyghGCWvCVifVwvA8B8TJxE1aiyiv2L429BCWfyzAme5sZW8rDb14NeCQHhZbtNqfXhcp2tAnaAT"
@@ -30364,7 +30364,7 @@
                                         "onChain": {
                                             "type": "object",
                                             "properties": {
-                                                "transaction": {
+                                                "serializedTransaction": {
                                                     "type": "string"
                                                 },
                                                 "lastValidBlockHeight": {
@@ -31180,7 +31180,7 @@
                                         "params": {
                                             "type": "object",
                                             "properties": {
-                                                "transaction": {
+                                                "serializedTransaction": {
                                                     "type": "string",
                                                     "description": "Base58 encoded serialized Solana transaction",
                                                     "example": "4hXTCkRzt9WyecNzV1XPgCDfGAZzQKNxLXgynz5QDuWWPSAZBZSHptvWRL3BjCvzUXRdKvHL2b7yGrRQcWyaqsaBCncVG7BFggS8w9snUts67BSh3EqKpXLUm5UMHfD7ZBe9GhARjbNQMLJ1QD3Spr6oMTBU6EhdB4RD8CP2xUxr2u3d6fos36PD98XS6oX8TQjLpsMwncs5DAMiD4nNnR8NBfyghGCWvCVifVwvA8B8TJxE1aiyiv2L429BCWfyzAme5sZW8rDb14NeCQHhZbtNqfXhcp2tAnaAT"
@@ -31261,7 +31261,7 @@
                                         "onChain": {
                                             "type": "object",
                                             "properties": {
-                                                "transaction": {
+                                                "serializedTransaction": {
                                                     "type": "string"
                                                 },
                                                 "lastValidBlockHeight": {
@@ -32514,13 +32514,13 @@
                                                         "phone:+1234567890"
                                                     ]
                                                 },
-                                                "transaction": {
+                                                "serializedTransaction": {
                                                     "type": "object",
                                                     "properties": {
                                                         "onChain": {
                                                             "type": "object",
                                                             "properties": {
-                                                                "transaction": {
+                                                                "serializedTransaction": {
                                                                     "type": "string"
                                                                 },
                                                                 "lastValidBlockHeight": {
@@ -32771,7 +32771,7 @@
                                                 "type": "solana-keypair",
                                                 "address": "DzaYNi6XtWt9DNwFV61bzWEiaSxfTgWbFDgFmurJzwdo",
                                                 "locator": "solana-keypair:DzaYNi6XtWt9DNwFV61bzWEiaSxfTgWbFDgFmurJzwdo",
-                                                "transaction": {
+                                                "serializedTransaction": {
                                                     "onChain": {
                                                         "transaction": "4B9yzZoEV45cngasy9dP2MVxhZ2iro72eqdKitTj62pqFYHk4wVoR4NCc3xkEamWbFGXLjVotyPrDqEn11WUYHoq98b5aKCSDUrLWaQDZgb3xLxF1EvaY82Vui7Ntbv682tYnu5Ngnv4Eun1wrDJ6r4aRsUSQ3XF3jvNq8bRMn4HavBjPyErQSgXX9ytCDKntCEQcY3wfMHYbRFg5zgFU1QCqhuoLa5oBpZLCUYT8DCYu3Ado7W4xzP5aCAAwVd2tj8iAnwJEujQvBnr7wWkf2mCS1cNoCTbCFAvNVaVaau6vXBWKZqS7sDNmUD3KLQVqLwxhLLNeRuvUTkD5VQ5D21VcDiYWQWQTuYYAcQ3RUhn4Vt4ymijgRGbUXZHoeN26UHoGSBFJJ7gjqCruAtFXQZxHRDKSWN9jhYXugPYVVXSpGFA5BYWBuztUtEMF4u96tk6YTgPGdkTgrQybkNxRwbVCbpsKRG1kAbjQgBxDLAX89eMCZVbzWXnAgGA6aDBQPLAyQru8awZBDasrirnxCSQq9cWwMLePQGhY5gJZykswFKtyYF4CHeto",
                                                         "lastValidBlockHeight": 343486121
@@ -33825,7 +33825,7 @@
                                                 {
                                                     "type": "object",
                                                     "properties": {
-                                                        "transaction": {
+                                                        "serializedTransaction": {
                                                             "type": "object",
                                                             "properties": {
                                                                 "chainType": {
@@ -33835,7 +33835,7 @@
                                                                 "onChain": {
                                                                     "type": "object",
                                                                     "properties": {
-                                                                        "transaction": {
+                                                                        "serializedTransaction": {
                                                                             "type": "string"
                                                                         },
                                                                         "lastValidBlockHeight": {
@@ -34371,7 +34371,7 @@
                                                 "type": "external-wallet",
                                                 "address": "DzaYNi6XtWt9DNwFV61bzWEiaSxfTgWbFDgFmurJzwdo",
                                                 "locator": "external-wallet:DzaYNi6XtWt9DNwFV61bzWEiaSxfTgWbFDgFmurJzwdo",
-                                                "transaction": {
+                                                "serializedTransaction": {
                                                     "chainType": "solana",
                                                     "walletType": "smart",
                                                     "onChain": {
@@ -34902,7 +34902,7 @@
                                                                 }
                                                             ]
                                                         },
-                                                        "transaction": {
+                                                        "serializedTransaction": {
                                                             "type": "object",
                                                             "properties": {
                                                                 "chainType": {
@@ -34912,7 +34912,7 @@
                                                                 "onChain": {
                                                                     "type": "object",
                                                                     "properties": {
-                                                                        "transaction": {
+                                                                        "serializedTransaction": {
                                                                             "type": "object",
                                                                             "properties": {
                                                                                 "method": {
@@ -35476,11 +35476,11 @@
                                                         "address": "CCRBPM5HBMVLORGVXROAGIRHIGJC73PSFK3FKBB6KNRJBLHNJPBOI3AB"
                                                     }
                                                 ],
-                                                "transaction": {
+                                                "serializedTransaction": {
                                                     "chainType": "stellar",
                                                     "walletType": "smart",
                                                     "onChain": {
-                                                        "transaction": {
+                                                        "serializedTransaction": {
                                                             "method": "add_signer",
                                                             "tx": "AAAAAQAAAAAAAAAA6Cv7SC/8UqMRajXVpHLVebgTI8cw0uhptVAJN6tV/+gNtr9lA7hE6QAOwAgAAAABAAAAAAAAAAEksa3so67z/hhpBWMPQdw+PT2ms33JDRSDbYjqW683yQAAABFkZXBsb3lfaWRlbXBvdGVudAAAAAAAAAIAAAASAAAAAAAAAADoK/tIL/xSoxFqNdWkctV5uBMjxzDS6Gm1UAk3q1X/6AAAABEAAAABAAAAAwAAAA8AAAAQY29uc3RydWN0b3JfYXJncwAAABAAAAABAAAAAgAAABAAAAABAAAAAQAAABAAAAABAAAAAwAAAA8AAAAHRWQyNTUxOQAAAAARAAAAAQAAAAEAAAAPAAAACnB1YmxpY19rZXkAAAAAAA0AAAAgyLZLslvAtPSvrch4dTYQT5Q6NI/DdJtTWQmkH7gbreIAAAAQAAAAAQAAAAEAAAAPAAAABUFkbWluAAAAAAAAEAAAAAEAAAAAAAAADwAAAARzYWx0AAAADQAAACBRdLqIKRSPYpduY8VwZmLfFmD5nTDM10wNlHCbyfvOCAAAAA8AAAAJd2FzbV9oYXNoAAAAAAAADQAAACA9PARHNRwk5Pra7OFAiMck10LoFypYcCLZzWWvnOkIngAAAAA="
                                                         },
