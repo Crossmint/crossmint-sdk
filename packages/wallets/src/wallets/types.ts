@@ -58,7 +58,7 @@ export type StellarTransactionInput = (
           args: Record<string, any>;
       }
     | {
-          serializedTransaction: string;
+          transaction: string;
           contractId: string;
       }
 ) & {
