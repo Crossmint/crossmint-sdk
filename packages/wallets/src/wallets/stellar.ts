@@ -57,10 +57,10 @@ export class StellarWallet extends Wallet<StellarChain> {
 
         let transaction: any;
 
-        if ("serializedTransaction" in params) {
+        if ("transaction" in params) {
             transaction = {
                 type: "serialized-transaction",
-                serializedTransaction: params.serializedTransaction,
+                transaction: params.transaction,
                 contractId,
             };
         } else {

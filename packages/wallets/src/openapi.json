@@ -8951,7 +8951,7 @@
                                                         "enum": ["serialized-transaction"],
                                                         "description": "The type of transaction to execute"
                                                     },
-                                                    "serializedTransaction": {
+                                                    "transaction": {
                                                         "type": "string",
                                                         "description": "The XDR base64-encoded serialized transaction to execute"
                                                     },
@@ -8961,12 +8961,12 @@
                                                         "example": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
                                                     }
                                                 },
-                                                "required": ["type", "serializedTransaction", "contractId"],
+                                                "required": ["type", "transaction", "contractId"],
                                                 "title": "Stellar serialized transaction parameters",
                                                 "description": "Parameters for a transaction to execute a serialized transaction",
                                                 "example": {
                                                     "type": "serialized-transaction",
-                                                    "serializedTransaction": "AQAAAAB2YWx1ZQ==",
+                                                    "transaction": "AQAAAAB2YWx1ZQ==",
                                                     "contractId": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
                                                 }
                                             }
@@ -9830,7 +9830,7 @@
                                                         "enum": ["serialized-transaction"],
                                                         "description": "The type of transaction to execute"
                                                     },
-                                                    "serializedTransaction": {
+                                                    "transaction": {
                                                         "type": "string",
                                                         "description": "The XDR base64-encoded serialized transaction to execute"
                                                     },
@@ -9840,12 +9840,12 @@
                                                         "example": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
                                                     }
                                                 },
-                                                "required": ["type", "serializedTransaction", "contractId"],
+                                                "required": ["type", "transaction", "contractId"],
                                                 "title": "Stellar serialized transaction parameters",
                                                 "description": "Parameters for a transaction to execute a serialized transaction",
                                                 "example": {
                                                     "type": "serialized-transaction",
-                                                    "serializedTransaction": "AQAAAAB2YWx1ZQ==",
+                                                    "transaction": "AQAAAAB2YWx1ZQ==",
                                                     "contractId": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
                                                 }
                                             }
@@ -20157,7 +20157,7 @@
                                                                     "enum": ["serialized-transaction"],
                                                                     "description": "The type of transaction to execute"
                                                                 },
-                                                                "serializedTransaction": {
+                                                                "transaction": {
                                                                     "type": "string",
                                                                     "description": "The XDR base64-encoded serialized transaction to execute"
                                                                 },
@@ -20167,12 +20167,12 @@
                                                                     "example": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
                                                                 }
                                                             },
-                                                            "required": ["type", "serializedTransaction", "contractId"],
+                                                            "required": ["type", "transaction", "contractId"],
                                                             "title": "Stellar serialized transaction parameters",
                                                             "description": "Parameters for a transaction to execute a serialized transaction",
                                                             "example": {
                                                                 "type": "serialized-transaction",
-                                                                "serializedTransaction": "AQAAAAB2YWx1ZQ==",
+                                                                "transaction": "AQAAAAB2YWx1ZQ==",
                                                                 "contractId": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
                                                             }
                                                         }
@@ -24580,7 +24580,7 @@
                                                         "enum": ["serialized-transaction"],
                                                         "description": "The type of transaction to execute"
                                                     },
-                                                    "serializedTransaction": {
+                                                    "transaction": {
                                                         "type": "string",
                                                         "description": "The XDR base64-encoded serialized transaction to execute"
                                                     },
@@ -24590,12 +24590,12 @@
                                                         "example": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
                                                     }
                                                 },
-                                                "required": ["type", "serializedTransaction", "contractId"],
+                                                "required": ["type", "transaction", "contractId"],
                                                 "title": "Stellar serialized transaction parameters",
                                                 "description": "Parameters for a transaction to execute a serialized transaction",
                                                 "example": {
                                                     "type": "serialized-transaction",
-                                                    "serializedTransaction": "AQAAAAB2YWx1ZQ==",
+                                                    "transaction": "AQAAAAB2YWx1ZQ==",
                                                     "contractId": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
                                                 }
                                             }
