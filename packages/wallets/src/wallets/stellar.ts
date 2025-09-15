@@ -76,7 +76,7 @@ export class StellarWallet extends Wallet<StellarChain> {
 
         const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
             params: {
-                serializedTransaction: transaction,
+                transaction,
                 signer,
             },
         });

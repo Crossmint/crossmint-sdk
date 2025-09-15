@@ -328,9 +328,9 @@ export class Wallet<C extends Chain> {
             throw new Error(`Failed to register signer: ${JSON.stringify(response.message)}`);
         }
 
-        if ("serializedTransaction" in response && response.serializedTransaction != null) {
-            // Solana has "serializedTransaction" in response
-            const transactionId = response.serializedTransaction.id;
+        if ("transaction" in response && response.transaction != null) {
+            // Solana has "transaction" in response
+            const transactionId = response.transaction.id;
             await this.approveTransactionAndWait(transactionId);
         } else if ("chains" in response) {
             // EVM has "chains" in response
