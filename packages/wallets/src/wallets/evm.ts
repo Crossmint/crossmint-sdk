@@ -155,7 +155,7 @@ export class EVMWallet extends Wallet<EVMChain> {
 
     private buildTransaction(params: EVMTransactionInput): FormattedEVMTransaction {
         if ("transaction" in params) {
-            return { transaction: params.transaction };
+            return { serializedTransaction: params.transaction };
         }
 
         if (params.abi == null) {
