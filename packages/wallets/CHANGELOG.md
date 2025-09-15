@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 0.14.0
+
+### Minor Changes
+
+- c18048b: Rename `serializedTransaction` parameter to `transaction` in Stellar wallet sendTransaction method
+
 ## 0.13.1
 
 ### Patch Changes
