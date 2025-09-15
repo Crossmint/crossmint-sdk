@@ -77,7 +77,7 @@ export type FormattedEVMTransaction =
           value: string;
           data: string;
       }
-    | { serializedTransaction: string };
+    | { transaction: string };
 
 export type DelegatedSigner = {
     signer: string;

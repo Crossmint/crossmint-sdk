@@ -75,7 +75,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
         const signer = options?.experimental_signer ?? this.signer.locator();
         const transactionCreationResponse = await this.apiClient.createTransaction(this.walletLocator, {
             params: {
-                serializedTransaction: bs58.encode(transaction.serialize()),
+                transaction: bs58.encode(transaction.serialize()),
                 signer,
             },
         });
