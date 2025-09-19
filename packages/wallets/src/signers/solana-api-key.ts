@@ -5,7 +5,7 @@ export class SolanaApiKeySigner implements Signer {
 
     constructor(private readonly config: ApiKeyInternalSignerConfig) {}
 
-    get address(): string {
+    address() {
         return this.config.address;
     }
 

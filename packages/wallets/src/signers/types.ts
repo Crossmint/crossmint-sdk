@@ -161,7 +161,6 @@ export interface Signer<T extends keyof SignResultMap = keyof SignResultMap> {
     signMessage(message: string): Promise<SignResultMap[T]>;
     signTransaction(transaction: string): Promise<SignResultMap[T]>;
     // Identifier properties for each signer type
-    address?: string; // for external-wallet and api-key signers
     email?: string; // for email signers
     phone?: string; // for phone signers
 }

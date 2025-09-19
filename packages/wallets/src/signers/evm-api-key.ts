@@ -6,7 +6,7 @@ export class EVMApiKeySigner implements Signer {
     constructor(private readonly config: ApiKeyInternalSignerConfig) {}
 
     // Identifier property
-    get address(): string {
+    address() {
         return this.config.address;
     }
 

@@ -207,7 +207,7 @@ importers:
         version: 4.8.3(@types/react@18.3.1)(react-dom@18.3.1(react@18.3.1))(react-native@0.76.9(@babel/core@7.26.10)(@types/react@18.3.1)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10))(react@18.3.1)
       '@dynamic-labs/solana':
         specifier: 4.8.3
-        version: 4.8.3(@babel/core@7.26.10)(@types/react@18.3.1)(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)
+        version: 4.8.3(@babel/core@7.26.10)(@types/react@18.3.1)(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)
       next:
         specifier: 14.2.25
         version: 14.2.25(@babel/core@7.26.10)(@playwright/test@1.54.2)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -227,12 +227,6 @@ importers:
       '@types/react-dom':
         specifier: 18.3.0
         version: 18.3.0
-      '@zerodev/passkey-validator':
-        specifier: 5.4.0
-        version: 5.4.0(@zerodev/sdk@5.1.12(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(@zerodev/webauthn-key@5.3.1(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.0.34(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))
-      '@zerodev/webauthn-key':
-        specifier: 5.3.1
-        version: 5.3.1(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))
       eslint-config-next:
         specifier: 13.4.19
         version: 13.4.19(eslint@8.57.1)(typescript@5.8.2)
@@ -767,16 +761,16 @@ importers:
         version: link:../../../wallets
       '@dynamic-labs/ethereum':
         specifier: 4.28.0
-        version: 4.28.0(@babel/core@7.26.10)(@types/react@18.3.20)(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))(zod@3.22.4)
+        version: 4.28.0(@babel/core@7.26.10)(@types/react@18.3.20)(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))(zod@3.22.4)
       '@dynamic-labs/sdk-react-core':
         specifier: 4.28.0
         version: 4.28.0(@types/react@18.3.20)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@dynamic-labs/solana':
         specifier: 4.28.0
-        version: 4.28.0(@babel/core@7.26.10)(@types/react@18.3.20)(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))(zod@3.22.4)
+        version: 4.28.0(@babel/core@7.26.10)(@types/react@18.3.20)(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))(zod@3.22.4)
       '@dynamic-labs/sui':
         specifier: 4.28.0
-        version: 4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))
+        version: 4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))
       '@emotion/react':
         specifier: ^11.11.0
         version: 11.14.0(@types/react@18.3.20)(react@18.3.1)
@@ -969,7 +963,7 @@ importers:
     devDependencies:
       '@crossmint/client-sdk-aa':
         specifier: 1.0.0-alpha.1
-        version: 1.0.0-alpha.1(@babel/runtime@7.27.0)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.8.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)
+        version: 1.0.0-alpha.1(@babel/runtime@7.27.0)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.8.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(@types/bn.js@5.1.6)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)
       '@ethersproject/abstract-provider':
         specifier: 5.7.0
         version: 5.7.0
@@ -1000,31 +994,6 @@ importers:
       tailwindcss:
         specifier: 3.4.1
         version: 3.4.1(ts-node@10.9.2(@types/node@20.14.8)(typescript@5.8.2))
-
-  packages/client/wallets/web3auth-adapter:
-    dependencies:
-      '@crossmint/common-sdk-base':
-        specifier: workspace:*
-        version: link:../../../common/base
-      '@web3auth/base':
-        specifier: 7.3.2
-        version: 7.3.2(@babel/runtime@7.27.0)(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      '@web3auth/ethereum-provider':
-        specifier: 7.3.2
-        version: 7.3.2(@babel/runtime@7.27.0)(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      '@web3auth/single-factor-auth':
-        specifier: 7.3.0
-        version: 7.3.0(@babel/runtime@7.27.0)(@types/bn.js@5.1.6)(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      viem:
-        specifier: 2.33.1
-        version: 2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)
-    devDependencies:
-      '@types/node':
-        specifier: 20.14.8
-        version: 20.14.8
-      ts-node:
-        specifier: 10.9.2
-        version: 10.9.2(@types/node@20.14.8)(typescript@5.8.2)
 
   packages/client/window:
     dependencies:
@@ -2305,8 +2274,8 @@ packages:
   '@dynamic-labs/sdk-react-core@4.25.9':
     resolution: {integrity: sha512-0CSYUF/KKN0UuFsxZaDRnrCa/BlYSBKEP483PCqG77zDjwVHIqQSivwFQI0DZIiAVgvj8PpWdf3aTqeTw1sk9g==}
     peerDependencies:
-      react: '>=18.0.0 <20.0.0'
-      react-dom: '>=18.0.0 <20.0.0'
+      react: 19.1.0
+      react-dom: 19.1.0
 
   '@dynamic-labs/sdk-react-core@4.28.0':
     resolution: {integrity: sha512-STgQokbNeAbtc5m5kCJKKHY4/cLAwuDgi/cr9TguQYqCW2UaMp5s6P90YyLEgohKXwf7aK075yDPFrzFRQDpAg==}
@@ -3540,8 +3509,8 @@ packages:
   '@hcaptcha/react-hcaptcha@1.4.4':
     resolution: {integrity: sha512-Aen217LDnf5ywbPSwBG5CsoqBLIHIAS9lhj3zQjXJuO13doQ6/ubkCWNuY8jmwYLefoFt3V3MrZmCdKDaFoTuQ==}
     peerDependencies:
-      react: '>= 16.3.0'
-      react-dom: '>= 16.3.0'
+      react: 19.1.0
+      react-dom: 19.1.0
 
   '@headlessui/react@1.7.18':
     resolution: {integrity: sha512-4i5DOrzwN4qSgNsL4Si61VMkUcWbcSKueUV7sFhpHzQcSShdlHENE5+QBntMSRvHt8NyoFO2AGG8si9lq+w4zQ==}
@@ -5578,9 +5547,6 @@ packages:
   '@simplewebauthn/browser@7.4.0':
     resolution: {integrity: sha512-qqCZ99lFWjtyza8NCtCpRm3GU5u8/QFeBfMgW5+U/E8Qyc4lvUcuJ8JTbrhksVQLZWSY1c/6Xw11QZ5e+D1hNw==}
 
-  '@simplewebauthn/browser@8.3.7':
-    resolution: {integrity: sha512-ZtRf+pUEgOCvjrYsbMsJfiHOdKcrSZt2zrAnIIpfmA06r0FxBovFYq0rJ171soZbe13KmWzAoLKjSxVW7KxCdQ==}
-
   '@simplewebauthn/browser@9.0.1':
     resolution: {integrity: sha512-wD2WpbkaEP4170s13/HUxPcAV5y4ZXaKo1TfNklS5zDefPinIgXOpgz1kpEvobAsaLPa2KeH7AKKX/od1mrBJw==}
 
@@ -5592,10 +5558,6 @@ packages:
 
   '@simplewebauthn/typescript-types@7.4.0':
     resolution: {integrity: sha512-8/ZjHeUPe210Bt5oyaOIGx4h8lHdsQs19BiOT44gi/jBEgK7uBGA0Fy7NRsyh777al3m6WM0mBf0UR7xd4R7WQ==}
-    deprecated: This package has been renamed to @simplewebauthn/types. Please install @simplewebauthn/types instead to ensure you receive future updates.
-
-  '@simplewebauthn/typescript-types@8.3.4':
-    resolution: {integrity: sha512-38xtca0OqfRVNloKBrFB5LEM6PN5vzFbJG6rAutPVrtGHFYxPdiV3btYWq0eAZAZmP+dqFPYJxJWeJrGfmYHng==}
     deprecated: This package has been renamed to @simplewebauthn/types. Please install @simplewebauthn/types instead to ensure you receive future updates.
 
   '@sinclair/typebox@0.27.8':
@@ -5984,6 +5946,7 @@ packages:
 
   '@thumbmarkjs/thumbmarkjs@0.16.0':
     resolution: {integrity: sha512-NKyqCvP6DZKlRf6aGfnKS6Kntn2gnuBxa/ztstjy+oo1t23EHzQ54shtli0yV5WAtygmK1tti/uL2C2p/kW3HQ==}
+    deprecated: Please upgrade to v1
 
   '@tootallnate/once@2.0.0':
     resolution: {integrity: sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==}
@@ -6947,14 +6910,6 @@ packages:
       permissionless: ^0.0.34
       viem: ^2.0.0
 
-  '@zerodev/passkey-validator@5.4.0':
-    resolution: {integrity: sha512-H4oLEq0acAEWI2xYcBuy/da/i1ypSZTUBcRStW9A4mXha6dii7QZ9slJoG3HSqpmPm3BR1hBDENTAkG3nN81ZA==}
-    peerDependencies:
-      '@zerodev/sdk': ^5.2.1
-      '@zerodev/webauthn-key': ^5.3.0
-      permissionless: ^0.1.18
-      viem: ^2.16.3
-
   '@zerodev/sdk@5.1.12':
     resolution: {integrity: sha512-osX5WTpLzVdjXpJKCJ5B0n5Wq9OO7sLydJ1tRzobP7bg5Dfy1444nUmS/1pzGtBTNP5NTmehLfPEWZDjzCs+0A==}
     peerDependencies:
@@ -6966,11 +6921,6 @@ packages:
       '@zerodev/sdk': ^5.1.0
       permissionless: ^0.0.34
       viem: ^2.0.0
-
-  '@zerodev/webauthn-key@5.3.1':
-    resolution: {integrity: sha512-8s/gdKppXgh15wrER50nAIhaD/QTEwecN288RbXI+TWVmdwzuLOpbMuzfgBvisfiE1kNJlfYEl9qos7aKm6EkQ==}
-    peerDependencies:
-      viem: ^2.16.3
 
   '@zod/core@0.1.0':
     resolution: {integrity: sha512-hSXsufqjH7u8DiJPT0KY1rFWIhjkdXGM8MhMLwzaeOMhxMA4bzjWLQwSoAToJunUTVrpmfdo4dUFzNaU219+VQ==}
@@ -16345,7 +16295,7 @@ snapshots:
 
   '@cosmjs/utils@0.30.1': {}
 
-  '@crossmint/client-sdk-aa@1.0.0-alpha.1(@babel/runtime@7.27.0)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.8.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)':
+  '@crossmint/client-sdk-aa@1.0.0-alpha.1(@babel/runtime@7.27.0)(@ethersproject/contracts@5.7.0)(@ethersproject/hash@5.8.0)(@ethersproject/providers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@ethersproject/wallet@5.7.0)(@types/bn.js@5.1.6)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)':
     dependencies:
       '@ambire/signature-validator': 1.3.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@crossmint/common-sdk-base': 0.0.12
@@ -16636,14 +16586,14 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@dynamic-labs/embedded-wallet-solana@4.28.0(@babel/core@7.26.10)(@types/react@18.3.20)(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)':
+  '@dynamic-labs/embedded-wallet-solana@4.28.0(@babel/core@7.26.10)(@types/react@18.3.20)(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)':
     dependencies:
       '@dynamic-labs/assert-package-version': 4.28.0
       '@dynamic-labs/embedded-wallet': 4.28.0(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@dynamic-labs/logger': 4.28.0
       '@dynamic-labs/rpc-providers': 4.28.0
       '@dynamic-labs/sdk-api-core': 0.0.753
-      '@dynamic-labs/solana-core': 4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)
+      '@dynamic-labs/solana-core': 4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)
       '@dynamic-labs/types': 4.28.0
       '@dynamic-labs/utils': 4.28.0
       '@dynamic-labs/wallet-book': 4.28.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -16670,14 +16620,14 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@dynamic-labs/embedded-wallet-solana@4.8.3(@babel/core@7.26.10)(@types/react@18.3.1)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)':
+  '@dynamic-labs/embedded-wallet-solana@4.8.3(@babel/core@7.26.10)(@types/react@18.3.1)(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)':
     dependencies:
       '@dynamic-labs/assert-package-version': 4.8.3
       '@dynamic-labs/embedded-wallet': 4.8.3(encoding@0.1.13)(react-dom@18.2.0(react@18.3.1))(react@18.3.1)
       '@dynamic-labs/logger': 4.8.3
       '@dynamic-labs/rpc-providers': 4.8.3
       '@dynamic-labs/sdk-api-core': 0.0.638
-      '@dynamic-labs/solana-core': 4.8.3(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@18.2.0(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)
+      '@dynamic-labs/solana-core': 4.8.3(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@18.2.0(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)
       '@dynamic-labs/types': 4.8.3
       '@dynamic-labs/utils': 4.8.3
       '@dynamic-labs/wallet-book': 4.8.3(react-dom@18.2.0(react@18.3.1))(react@18.3.1)
@@ -16875,7 +16825,7 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@dynamic-labs/ethereum@4.28.0(@babel/core@7.26.10)(@types/react@18.3.20)(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))(zod@3.22.4)':
+  '@dynamic-labs/ethereum@4.28.0(@babel/core@7.26.10)(@types/react@18.3.20)(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))(zod@3.22.4)':
     dependencies:
       '@coinbase/wallet-sdk': 4.3.7(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)
       '@dynamic-labs/assert-package-version': 4.28.0
@@ -16885,7 +16835,7 @@ snapshots:
       '@dynamic-labs/rpc-providers': 4.28.0
       '@dynamic-labs/types': 4.28.0
       '@dynamic-labs/utils': 4.28.0
-      '@dynamic-labs/waas-evm': 4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)
+      '@dynamic-labs/waas-evm': 4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)
       '@dynamic-labs/wallet-book': 4.28.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@dynamic-labs/wallet-connector-core': 4.28.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@metamask/sdk': 0.33.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10)
@@ -17236,7 +17186,7 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@dynamic-labs/solana-core@4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)':
+  '@dynamic-labs/solana-core@4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)':
     dependencies:
       '@dynamic-labs/assert-package-version': 4.28.0
       '@dynamic-labs/rpc-providers': 4.28.0
@@ -17245,7 +17195,7 @@ snapshots:
       '@dynamic-labs/utils': 4.28.0
       '@dynamic-labs/wallet-book': 4.28.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@dynamic-labs/wallet-connector-core': 4.28.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@solana/spl-token': 0.4.12(@solana/web3.js@1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10)
+      '@solana/spl-token': 0.4.12(@solana/web3.js@1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)(utf-8-validate@5.0.10)
       '@solana/web3.js': 1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10)
       eventemitter3: 5.0.1
     transitivePeerDependencies:
@@ -17257,7 +17207,7 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@dynamic-labs/solana-core@4.8.3(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@18.2.0(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)':
+  '@dynamic-labs/solana-core@4.8.3(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@18.2.0(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)':
     dependencies:
       '@dynamic-labs/assert-package-version': 4.8.3
       '@dynamic-labs/rpc-providers': 4.8.3
@@ -17266,7 +17216,7 @@ snapshots:
       '@dynamic-labs/utils': 4.8.3
       '@dynamic-labs/wallet-book': 4.8.3(react-dom@18.2.0(react@18.3.1))(react@18.3.1)
       '@dynamic-labs/wallet-connector-core': 4.8.3(react-dom@18.2.0(react@18.3.1))(react@18.3.1)
-      '@solana/spl-token': 0.4.12(@solana/web3.js@1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10)
+      '@solana/spl-token': 0.4.12(@solana/web3.js@1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)(utf-8-validate@5.0.10)
       '@solana/web3.js': 1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10)
       eventemitter3: 5.0.1
     transitivePeerDependencies:
@@ -17278,7 +17228,7 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@dynamic-labs/solana-core@4.8.3(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)':
+  '@dynamic-labs/solana-core@4.8.3(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)':
     dependencies:
       '@dynamic-labs/assert-package-version': 4.8.3
       '@dynamic-labs/rpc-providers': 4.8.3
@@ -17287,7 +17237,7 @@ snapshots:
       '@dynamic-labs/utils': 4.8.3
       '@dynamic-labs/wallet-book': 4.8.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@dynamic-labs/wallet-connector-core': 4.8.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@solana/spl-token': 0.4.12(@solana/web3.js@1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10)
+      '@solana/spl-token': 0.4.12(@solana/web3.js@1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)(utf-8-validate@5.0.10)
       '@solana/web3.js': 1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10)
       eventemitter3: 5.0.1
     transitivePeerDependencies:
@@ -17338,17 +17288,17 @@ snapshots:
       - viem
       - zod
 
-  '@dynamic-labs/solana@4.28.0(@babel/core@7.26.10)(@types/react@18.3.20)(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))(zod@3.22.4)':
+  '@dynamic-labs/solana@4.28.0(@babel/core@7.26.10)(@types/react@18.3.20)(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))(zod@3.22.4)':
     dependencies:
       '@dynamic-labs/assert-package-version': 4.28.0
-      '@dynamic-labs/embedded-wallet-solana': 4.28.0(@babel/core@7.26.10)(@types/react@18.3.20)(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)
+      '@dynamic-labs/embedded-wallet-solana': 4.28.0(@babel/core@7.26.10)(@types/react@18.3.20)(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)
       '@dynamic-labs/logger': 4.28.0
       '@dynamic-labs/rpc-providers': 4.28.0
       '@dynamic-labs/sdk-api-core': 0.0.753
-      '@dynamic-labs/solana-core': 4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)
+      '@dynamic-labs/solana-core': 4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)
       '@dynamic-labs/types': 4.28.0
       '@dynamic-labs/utils': 4.28.0
-      '@dynamic-labs/waas-svm': 4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))
+      '@dynamic-labs/waas-svm': 4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))
       '@dynamic-labs/wallet-book': 4.28.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@dynamic-labs/wallet-connector-core': 4.28.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@solana/web3.js': 1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10)
@@ -17377,14 +17327,14 @@ snapshots:
       - viem
       - zod
 
-  '@dynamic-labs/solana@4.8.3(@babel/core@7.26.10)(@types/react@18.3.1)(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)':
+  '@dynamic-labs/solana@4.8.3(@babel/core@7.26.10)(@types/react@18.3.1)(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)':
     dependencies:
       '@dynamic-labs/assert-package-version': 4.8.3
-      '@dynamic-labs/embedded-wallet-solana': 4.8.3(@babel/core@7.26.10)(@types/react@18.3.1)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)
+      '@dynamic-labs/embedded-wallet-solana': 4.8.3(@babel/core@7.26.10)(@types/react@18.3.1)(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)
       '@dynamic-labs/logger': 4.8.3
       '@dynamic-labs/rpc-providers': 4.8.3
       '@dynamic-labs/sdk-api-core': 0.0.638
-      '@dynamic-labs/solana-core': 4.8.3(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)
+      '@dynamic-labs/solana-core': 4.8.3(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)
       '@dynamic-labs/types': 4.8.3
       '@dynamic-labs/utils': 4.8.3
       '@dynamic-labs/wallet-book': 4.8.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -17466,11 +17416,11 @@ snapshots:
       - react-dom
       - typescript
 
-  '@dynamic-labs/sui@4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))':
+  '@dynamic-labs/sui@4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))':
     dependencies:
       '@dynamic-labs/assert-package-version': 4.28.0
       '@dynamic-labs/sui-core': 4.28.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)
-      '@dynamic-labs/waas-sui': 4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))
+      '@dynamic-labs/waas-sui': 4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))
       '@dynamic-labs/wallet-connector-core': 4.28.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       text-encoding: 0.7.0
     transitivePeerDependencies:
@@ -17585,7 +17535,7 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@dynamic-labs/waas-evm@4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)':
+  '@dynamic-labs/waas-evm@4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)':
     dependencies:
       '@dynamic-labs/assert-package-version': 4.28.0
       '@dynamic-labs/ethereum-core': 4.28.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))
@@ -17593,7 +17543,7 @@ snapshots:
       '@dynamic-labs/sdk-api-core': 0.0.753
       '@dynamic-labs/types': 4.28.0
       '@dynamic-labs/utils': 4.28.0
-      '@dynamic-labs/waas': 4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))
+      '@dynamic-labs/waas': 4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))
       '@dynamic-labs/wallet-connector-core': 4.28.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       viem: 2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)
     transitivePeerDependencies:
@@ -17609,7 +17559,7 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@dynamic-labs/waas-sui@4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))':
+  '@dynamic-labs/waas-sui@4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))':
     dependencies:
       '@dynamic-labs-wallet/browser-wallet-client': 0.0.137
       '@dynamic-labs/assert-package-version': 4.28.0
@@ -17619,7 +17569,7 @@ snapshots:
       '@dynamic-labs/sui-core': 4.28.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)
       '@dynamic-labs/types': 4.28.0
       '@dynamic-labs/utils': 4.28.0
-      '@dynamic-labs/waas': 4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))
+      '@dynamic-labs/waas': 4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))
       '@dynamic-labs/wallet-book': 4.28.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@dynamic-labs/wallet-connector-core': 4.28.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@mysten/sui': 1.24.0(typescript@5.8.2)
@@ -17664,16 +17614,16 @@ snapshots:
       - utf-8-validate
       - viem
 
-  '@dynamic-labs/waas-svm@4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))':
+  '@dynamic-labs/waas-svm@4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))':
     dependencies:
       '@dynamic-labs/assert-package-version': 4.28.0
       '@dynamic-labs/logger': 4.28.0
       '@dynamic-labs/rpc-providers': 4.28.0
       '@dynamic-labs/sdk-api-core': 0.0.753
-      '@dynamic-labs/solana-core': 4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)
+      '@dynamic-labs/solana-core': 4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)
       '@dynamic-labs/types': 4.28.0
       '@dynamic-labs/utils': 4.28.0
-      '@dynamic-labs/waas': 4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))
+      '@dynamic-labs/waas': 4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))
       '@dynamic-labs/wallet-connector-core': 4.28.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@solana/web3.js': 1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10)
       bs58: 5.0.0
@@ -17714,13 +17664,13 @@ snapshots:
       - utf-8-validate
       - viem
 
-  '@dynamic-labs/waas@4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))':
+  '@dynamic-labs/waas@4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))':
     dependencies:
       '@dynamic-labs-wallet/browser-wallet-client': 0.0.137
       '@dynamic-labs/assert-package-version': 4.28.0
       '@dynamic-labs/ethereum-core': 4.28.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))
       '@dynamic-labs/sdk-api-core': 0.0.753
-      '@dynamic-labs/solana-core': 4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)
+      '@dynamic-labs/solana-core': 4.28.0(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)(utf-8-validate@5.0.10)
       '@dynamic-labs/sui-core': 4.28.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.2)
       '@dynamic-labs/utils': 4.28.0
       '@dynamic-labs/wallet-book': 4.28.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -23556,10 +23506,6 @@ snapshots:
     dependencies:
       '@simplewebauthn/typescript-types': 7.4.0
 
-  '@simplewebauthn/browser@8.3.7':
-    dependencies:
-      '@simplewebauthn/typescript-types': 8.3.4
-
   '@simplewebauthn/browser@9.0.1':
     dependencies:
       '@simplewebauthn/types': 9.0.1
@@ -23569,8 +23515,6 @@ snapshots:
   '@simplewebauthn/types@9.0.1': {}
 
   '@simplewebauthn/typescript-types@7.4.0': {}
-
-  '@simplewebauthn/typescript-types@8.3.4': {}
 
   '@sinclair/typebox@0.27.8': {}
 
@@ -23678,11 +23622,12 @@ snapshots:
       fastestsmallesttextencoderdecoder: 1.0.22
       typescript: 5.5.3
 
-  '@solana/codecs-strings@2.0.0-rc.1(typescript@5.8.2)':
+  '@solana/codecs-strings@2.0.0-rc.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)':
     dependencies:
       '@solana/codecs-core': 2.0.0-rc.1(typescript@5.8.2)
       '@solana/codecs-numbers': 2.0.0-rc.1(typescript@5.8.2)
       '@solana/errors': 2.0.0-rc.1(typescript@5.8.2)
+      fastestsmallesttextencoderdecoder: 1.0.22
       typescript: 5.8.2
 
   '@solana/codecs@2.0.0-rc.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.5.3)':
@@ -23696,13 +23641,13 @@ snapshots:
     transitivePeerDependencies:
       - fastestsmallesttextencoderdecoder
 
-  '@solana/codecs@2.0.0-rc.1(typescript@5.8.2)':
+  '@solana/codecs@2.0.0-rc.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)':
     dependencies:
       '@solana/codecs-core': 2.0.0-rc.1(typescript@5.8.2)
       '@solana/codecs-data-structures': 2.0.0-rc.1(typescript@5.8.2)
       '@solana/codecs-numbers': 2.0.0-rc.1(typescript@5.8.2)
-      '@solana/codecs-strings': 2.0.0-rc.1(typescript@5.8.2)
-      '@solana/options': 2.0.0-rc.1(typescript@5.8.2)
+      '@solana/codecs-strings': 2.0.0-rc.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)
+      '@solana/options': 2.0.0-rc.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)
       typescript: 5.8.2
     transitivePeerDependencies:
       - fastestsmallesttextencoderdecoder
@@ -23742,12 +23687,12 @@ snapshots:
     transitivePeerDependencies:
       - fastestsmallesttextencoderdecoder
 
-  '@solana/options@2.0.0-rc.1(typescript@5.8.2)':
+  '@solana/options@2.0.0-rc.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)':
     dependencies:
       '@solana/codecs-core': 2.0.0-rc.1(typescript@5.8.2)
       '@solana/codecs-data-structures': 2.0.0-rc.1(typescript@5.8.2)
       '@solana/codecs-numbers': 2.0.0-rc.1(typescript@5.8.2)
-      '@solana/codecs-strings': 2.0.0-rc.1(typescript@5.8.2)
+      '@solana/codecs-strings': 2.0.0-rc.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)
       '@solana/errors': 2.0.0-rc.1(typescript@5.8.2)
       typescript: 5.8.2
     transitivePeerDependencies:
@@ -23758,9 +23703,9 @@ snapshots:
       '@solana/web3.js': 1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.5.3)(utf-8-validate@5.0.10)
       buffer: 6.0.3
 
-  '@solana/spl-token-group@0.0.7(@solana/web3.js@1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(typescript@5.8.2)':
+  '@solana/spl-token-group@0.0.7(@solana/web3.js@1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)':
     dependencies:
-      '@solana/codecs': 2.0.0-rc.1(typescript@5.8.2)
+      '@solana/codecs': 2.0.0-rc.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)
       '@solana/web3.js': 1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
       - fastestsmallesttextencoderdecoder
@@ -23774,17 +23719,17 @@ snapshots:
       - fastestsmallesttextencoderdecoder
       - typescript
 
-  '@solana/spl-token-group@0.0.7(@solana/web3.js@1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10))(typescript@5.8.2)':
+  '@solana/spl-token-group@0.0.7(@solana/web3.js@1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10))(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)':
     dependencies:
-      '@solana/codecs': 2.0.0-rc.1(typescript@5.8.2)
+      '@solana/codecs': 2.0.0-rc.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)
       '@solana/web3.js': 1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
       - fastestsmallesttextencoderdecoder
       - typescript
 
-  '@solana/spl-token-metadata@0.1.6(@solana/web3.js@1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(typescript@5.8.2)':
+  '@solana/spl-token-metadata@0.1.6(@solana/web3.js@1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)':
     dependencies:
-      '@solana/codecs': 2.0.0-rc.1(typescript@5.8.2)
+      '@solana/codecs': 2.0.0-rc.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)
       '@solana/web3.js': 1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
       - fastestsmallesttextencoderdecoder
@@ -23798,20 +23743,20 @@ snapshots:
       - fastestsmallesttextencoderdecoder
       - typescript
 
-  '@solana/spl-token-metadata@0.1.6(@solana/web3.js@1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10))(typescript@5.8.2)':
+  '@solana/spl-token-metadata@0.1.6(@solana/web3.js@1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10))(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)':
     dependencies:
-      '@solana/codecs': 2.0.0-rc.1(typescript@5.8.2)
+      '@solana/codecs': 2.0.0-rc.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)
       '@solana/web3.js': 1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
       - fastestsmallesttextencoderdecoder
       - typescript
 
-  '@solana/spl-token@0.4.12(@solana/web3.js@1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10)':
+  '@solana/spl-token@0.4.12(@solana/web3.js@1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)(utf-8-validate@5.0.10)':
     dependencies:
       '@solana/buffer-layout': 4.0.1
       '@solana/buffer-layout-utils': 0.2.0(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10)
-      '@solana/spl-token-group': 0.0.7(@solana/web3.js@1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(typescript@5.8.2)
-      '@solana/spl-token-metadata': 0.1.6(@solana/web3.js@1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(typescript@5.8.2)
+      '@solana/spl-token-group': 0.0.7(@solana/web3.js@1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)
+      '@solana/spl-token-metadata': 0.1.6(@solana/web3.js@1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)
       '@solana/web3.js': 1.98.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10)
       buffer: 6.0.3
     transitivePeerDependencies:
@@ -23836,12 +23781,12 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@solana/spl-token@0.4.12(@solana/web3.js@1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10)':
+  '@solana/spl-token@0.4.12(@solana/web3.js@1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)(utf-8-validate@5.0.10)':
     dependencies:
       '@solana/buffer-layout': 4.0.1
       '@solana/buffer-layout-utils': 0.2.0(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10)
-      '@solana/spl-token-group': 0.0.7(@solana/web3.js@1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10))(typescript@5.8.2)
-      '@solana/spl-token-metadata': 0.1.6(@solana/web3.js@1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10))(typescript@5.8.2)
+      '@solana/spl-token-group': 0.0.7(@solana/web3.js@1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10))(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)
+      '@solana/spl-token-metadata': 0.1.6(@solana/web3.js@1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10))(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)
       '@solana/web3.js': 1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10)
       buffer: 6.0.3
     transitivePeerDependencies:
@@ -27352,20 +27297,6 @@ snapshots:
       permissionless: 0.0.34(viem@2.8.16(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))
       viem: 2.8.16(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)
 
-  '@zerodev/passkey-validator@5.4.0(@zerodev/sdk@5.1.12(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(@zerodev/webauthn-key@5.3.1(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(permissionless@0.0.34(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)))(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))':
-    dependencies:
-      '@noble/curves': 1.9.0
-      '@simplewebauthn/browser': 8.3.7
-      '@zerodev/sdk': 5.1.12(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))
-      '@zerodev/webauthn-key': 5.3.1(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))
-      permissionless: 0.0.34(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))
-      viem: 2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)
-
-  '@zerodev/sdk@5.1.12(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))':
-    dependencies:
-      permissionless: 0.0.34(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))
-      viem: 2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)
-
   '@zerodev/sdk@5.1.12(viem@2.8.16(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))':
     dependencies:
       permissionless: 0.0.34(viem@2.8.16(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))
@@ -27377,12 +27308,6 @@ snapshots:
       merkletreejs: 0.3.11
       permissionless: 0.0.34(viem@2.8.16(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))
       viem: 2.8.16(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)
-
-  '@zerodev/webauthn-key@5.3.1(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4))':
-    dependencies:
-      '@noble/curves': 1.9.0
-      '@simplewebauthn/browser': 8.3.7
-      viem: 2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)
 
   '@zod/core@0.1.0': {}
 
@@ -33799,10 +33724,6 @@ snapshots:
       estree-walker: 3.0.3
       is-reference: 3.0.3
 
-  permissionless@0.0.34(viem@2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)):
-    dependencies:
-      viem: 2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)
-
   permissionless@0.0.34(viem@2.8.16(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)):
     dependencies:
       viem: 2.8.16(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)
@@ -36395,6 +36316,7 @@ snapshots:
       typescript: 5.8.2
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
+    optional: true
 
   ts-node@10.9.2(@types/node@22.7.5)(typescript@5.5.3):
     dependencies:

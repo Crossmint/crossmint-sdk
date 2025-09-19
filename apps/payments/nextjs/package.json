@@ -38,8 +38,6 @@
         "@next/bundle-analyzer": "15.0.3",
         "@types/react": "18.3.1",
         "@types/react-dom": "18.3.0",
-        "@zerodev/passkey-validator": "5.4.0",
-        "@zerodev/webauthn-key": "5.3.1",
         "eslint-config-next": "13.4.19"
     }
 }
