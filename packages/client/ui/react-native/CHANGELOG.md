@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.10.16
+
+### Patch Changes
+
+- 3ba747f: Remove RN WebView Caching
+
 ## 0.10.15
 
 ### Patch Changes
