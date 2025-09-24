@@ -1,14 +1,8 @@
-import { type ReactNode, createContext, useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { type ReactNode, createContext, useEffect, useMemo, useState, useCallback } from "react";
 import * as WebBrowser from "expo-web-browser";
-import { CrossmintAuth, type StorageProvider } from "@crossmint/client-sdk-auth";
-import {
-    type AuthMaterialWithUser,
-    type SDKExternalUser,
-    type OAuthProvider,
-    SESSION_PREFIX,
-} from "@crossmint/common-sdk-auth";
-
-import { useCrossmint } from "../hooks";
+import type { StorageProvider } from "@crossmint/client-sdk-auth";
+import type { AuthMaterialWithUser, SDKExternalUser, OAuthProvider } from "@crossmint/common-sdk-auth";
+import { CrossmintAuthBaseProvider, useCrossmintAuthBase, type AuthStatus } from "@crossmint/client-sdk-react-base";
 import { SecureStorage } from "../utils/SecureStorage";
 import { Platform } from "react-native";
 import Constants from "expo-constants";
@@ -19,10 +13,8 @@ const initialOAuthUrlMap: OAuthUrlMap = {
     twitter: null,
 };
 
-type AuthStatus = "logged-in" | "logged-out" | "in-progress" | "initializing";
-
 export type AuthContextType = {
-    crossmintAuth?: CrossmintAuth;
+    crossmintAuth?: any;
     logout: () => void;
     jwt?: string;
     user?: SDKExternalUser;
@@ -64,14 +56,31 @@ export function CrossmintAuthProviderInternal({
     customStorageProvider,
     appSchema,
 }: InternalCrossmintAuthProviderProps) {
-    const { crossmint } = useCrossmint("CrossmintAuthProvider must be used within CrossmintProvider");
-    const [user, setUser] = useState<SDKExternalUser | undefined>(undefined);
-    const [jwt, setJwt] = useState<string | undefined>(undefined);
-
-    const [oauthUrlMap, setOauthUrlMap] = useState<OAuthUrlMap>(initialOAuthUrlMap);
-    const crossmintAuthRef = useRef<CrossmintAuth | null>(null);
     const storageProvider = useMemo(() => customStorageProvider ?? new SecureStorage(), [customStorageProvider]);
-    const [initialized, setInitialized] = useState(false);
+
+    return (
+        <CrossmintAuthBaseProvider
+            onLoginSuccess={onLoginSuccess}
+            refreshRoute={refreshRoute}
+            logoutRoute={logoutRoute}
+            storageProvider={storageProvider}
+        >
+            <CrossmintAuthProviderInternalContent appSchema={appSchema}>
+                {children}
+            </CrossmintAuthProviderInternalContent>
+        </CrossmintAuthBaseProvider>
+    );
+}
+
+function CrossmintAuthProviderInternalContent({
+    children,
+    appSchema,
+}: {
+    children: ReactNode;
+    appSchema?: string | string[];
+}) {
+    const baseAuth = useCrossmintAuthBase();
+    const [oauthUrlMap, setOauthUrlMap] = useState<OAuthUrlMap>(initialOAuthUrlMap);
     const [inProgress, setInProgress] = useState(false);
 
     const singleAppSchema = Array.isArray(appSchema) ? appSchema[0] : appSchema;
@@ -81,67 +90,12 @@ export function CrossmintAuthProviderInternal({
         !!Constants.expoVersion;
     const resolvedAppSchema = isRunningInExpoGo ? "exp://127.0.0.1:8081" : singleAppSchema;
 
-    // biome-ignore lint/correctness/useExhaustiveDependencies: crossmint can't be a dependency because it updates with each jwt change
-    const crossmintAuth = useMemo(() => {
-        if (!crossmintAuthRef.current) {
-            const config = {
-                callbacks: {
-                    onLogout: () => {
-                        setUser(undefined);
-                        setJwt(undefined);
-                    },
-                    onTokenRefresh: (authMaterial: AuthMaterialWithUser) => {
-                        setUser(authMaterial.user);
-                        setJwt(authMaterial.jwt);
-                    },
-                },
-                refreshRoute,
-                logoutRoute,
-                storageProvider,
-            };
-
-            crossmintAuthRef.current = CrossmintAuth.from(crossmint, config);
-        }
-        return crossmintAuthRef.current;
-    }, [storageProvider]);
-
-    const triggerHasJustLoggedIn = useCallback(() => {
-        onLoginSuccess?.();
-    }, [onLoginSuccess]);
-
-    useEffect(() => {
-        if (jwt == null) {
-            storageProvider
-                ?.get(SESSION_PREFIX)
-                .then((jwt) => {
-                    if (jwt != null) {
-                        setJwt(jwt);
-                    }
-                })
-                .finally(() => {
-                    setInitialized(true);
-                });
-        } else {
-            setInitialized(true);
-        }
-    }, [jwt, storageProvider]);
-
-    useEffect(() => {
-        if (jwt != null) {
-            triggerHasJustLoggedIn();
-        }
-    }, [jwt, triggerHasJustLoggedIn]);
-
-    const logout = () => {
-        crossmintAuth.logout();
-    };
-
     const preFetchAndSetOauthUrl = useCallback(async () => {
         try {
             const oauthProviders = Object.keys(initialOAuthUrlMap);
 
             const oauthPromiseList = oauthProviders.map(async (provider) => {
-                const url = await crossmintAuth?.getOAuthUrl(provider as OAuthProvider, {
+                const url = await baseAuth.crossmintAuth?.getOAuthUrl(provider as OAuthProvider, {
                     appSchema: resolvedAppSchema,
                 });
                 return { [provider]: url };
@@ -152,47 +106,36 @@ export function CrossmintAuthProviderInternal({
         } catch (error) {
             console.error(error);
         }
-    }, [crossmintAuth]);
+    }, [baseAuth.crossmintAuth, resolvedAppSchema]);
 
     useEffect(() => {
-        if (user == null) {
+        if (baseAuth.user == null) {
             preFetchAndSetOauthUrl();
         }
-    }, [preFetchAndSetOauthUrl, user]);
+    }, [preFetchAndSetOauthUrl, baseAuth.user]);
 
     const getAuthStatus = (): AuthStatus => {
-        if (!initialized) {
+        if (baseAuth.status === "initializing") {
             return "initializing";
         }
         if (inProgress) {
             return "in-progress";
         }
-        if (jwt != null) {
+        if (baseAuth.jwt != null) {
             return "logged-in";
         }
         return "logged-out";
-    };
-
-    const getUser = async () => {
-        if (jwt == null) {
-            console.log("User not logged in");
-            return;
-        }
-
-        const user = await crossmintAuth.getUser();
-        setUser(user);
-        return user;
     };
 
     const loginWithOAuth = async (provider: OAuthProvider) => {
         try {
             setInProgress(true);
             const oauthUrl =
-                oauthUrlMap[provider] ?? (await crossmintAuth.getOAuthUrl(provider, { appSchema: resolvedAppSchema }));
+                oauthUrlMap[provider] ??
+                (await baseAuth.crossmintAuth?.getOAuthUrl(provider, { appSchema: resolvedAppSchema }));
 
             await WebBrowser.warmUpAsync();
             const baseUrl = new URL(oauthUrl);
-            // Add prompt=select_account for Google OAuth to force account picker
             if (provider === "google") {
                 baseUrl.searchParams.append("provider_prompt", "select_account");
             }
@@ -209,6 +152,8 @@ export function CrossmintAuthProviderInternal({
         } catch (error) {
             console.error("[CrossmintAuthProvider] Error during OAuth login:", error);
             throw new Error(`Error during OAuth login: ${error}`);
+        } finally {
+            setInProgress(false);
         }
     };
 
@@ -221,7 +166,7 @@ export function CrossmintAuthProviderInternal({
             if (oneTimeSecret != null) {
                 try {
                     setInProgress(true);
-                    const authMaterial = await crossmintAuth.handleRefreshAuthMaterial(oneTimeSecret);
+                    const authMaterial = await baseAuth.crossmintAuth?.handleRefreshAuthMaterial(oneTimeSecret);
                     return authMaterial;
                 } catch (error) {
                     throw error;
@@ -231,18 +176,18 @@ export function CrossmintAuthProviderInternal({
             }
             return null;
         },
-        [crossmintAuth]
+        [baseAuth.crossmintAuth]
     );
 
     return (
         <AuthContext.Provider
             value={{
-                crossmintAuth,
-                logout,
-                jwt,
-                user,
+                crossmintAuth: baseAuth.crossmintAuth,
+                logout: baseAuth.logout,
+                jwt: baseAuth.jwt,
+                user: baseAuth.user,
                 status: getAuthStatus(),
-                getUser,
+                getUser: baseAuth.getUser,
                 loginWithOAuth,
                 createAuthSession,
             }}
