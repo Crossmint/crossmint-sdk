@@ -203,6 +203,8 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
                     incognito={false}
                     setSupportMultipleWindows={false}
                     originWhitelist={[environmentUrlConfig[parsedAPIKey.environment]]}
+                    cacheEnabled={false}
+                    cacheMode="LOAD_NO_CACHE"
                 />
             </View>
         </CrossmintWalletBaseProvider>
