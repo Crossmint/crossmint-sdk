@@ -683,7 +683,6 @@
                                 "arbitrum-sepolia",
                                 "avalanche-fuji",
                                 "curtis",
-                                "barret-testnet",
                                 "base-goerli",
                                 "base-sepolia",
                                 "bsc-testnet",
@@ -732,8 +731,6 @@
                                 "arbitrumnova",
                                 "astar-zkevm",
                                 "apechain",
-                                "apex",
-                                "boss",
                                 "hedera",
                                 "coti",
                                 "lightlink",
@@ -1880,7 +1877,6 @@
                                 "arbitrum-sepolia",
                                 "avalanche-fuji",
                                 "curtis",
-                                "barret-testnet",
                                 "base-goerli",
                                 "base-sepolia",
                                 "bsc-testnet",
@@ -1929,8 +1925,6 @@
                                 "arbitrumnova",
                                 "astar-zkevm",
                                 "apechain",
-                                "apex",
-                                "boss",
                                 "hedera",
                                 "coti",
                                 "lightlink",
@@ -2214,7 +2208,6 @@
                                 "arbitrum-sepolia",
                                 "avalanche-fuji",
                                 "curtis",
-                                "barret-testnet",
                                 "base-goerli",
                                 "base-sepolia",
                                 "bsc-testnet",
@@ -2263,8 +2256,6 @@
                                 "arbitrumnova",
                                 "astar-zkevm",
                                 "apechain",
-                                "apex",
-                                "boss",
                                 "hedera",
                                 "coti",
                                 "lightlink",
@@ -2306,6 +2297,66 @@
                     },
                     "404": {
                         "description": "Returns an error if a wallet with the specified type not found for the authenticated user",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WalletV1Alpha2ErrorDTO"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/unstable/wallets/CROSSMINT/balances": {
+            "get": {
+                "operationId": "BalanceUnstableController-getBalanceForCrossmintLocator-2",
+                "summary": "Get Project Wallet Balance",
+                "description": "Get the balance of a project wallet for a given chain and currency\n\n**API scope required**: `wallets:balance.read`",
+                "parameters": [
+                    {
+                        "name": "X-API-KEY",
+                        "in": "header",
+                        "description": "API key required for authentication",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "chains",
+                        "required": false,
+                        "in": "query",
+                        "description": "The blockchain(s) to query. Comma-separated list of chains",
+                        "example": "ethereum,polygon,stellar",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "tokens",
+                        "required": true,
+                        "in": "query",
+                        "description": "The tokens to query. Comma-separated list of either tokens or token locator strings",
+                        "example": "eth,base:0x123,solana:sol,stellar:xlm",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Returns the balance of the project wallet for the given chain and currency",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WalletBalanceUnstableResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Returns an error (400) if the wallet locator is invalid or if the address type is not supported",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2532,7 +2583,6 @@
                                 "arbitrum-sepolia",
                                 "avalanche-fuji",
                                 "curtis",
-                                "barret-testnet",
                                 "base-goerli",
                                 "base-sepolia",
                                 "bsc-testnet",
@@ -2581,8 +2631,6 @@
                                 "arbitrumnova",
                                 "astar-zkevm",
                                 "apechain",
-                                "apex",
-                                "boss",
                                 "hedera",
                                 "coti",
                                 "lightlink",
@@ -3609,6 +3657,46 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/SchemaHolderClass"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/2025-06-09/wallets/CROSSMINT": {
+            "get": {
+                "operationId": "WalletsV2025Controller-getProjectWallet-2",
+                "summary": "Get Project Wallet",
+                "description": "Retrieves a project wallet by \n\n**API scope required**: `wallets.read`",
+                "parameters": [
+                    {
+                        "name": "X-API-KEY",
+                        "in": "header",
+                        "description": "API key required for authentication",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The record has been successfully retreived.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WalletV2025ResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Returns an error if a wallet with the specified locator not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WalletV1Alpha2ErrorDTO"
                                 }
                             }
                         }
@@ -5415,7 +5503,6 @@
                                 "arbitrum-sepolia",
                                 "avalanche-fuji",
                                 "curtis",
-                                "barret-testnet",
                                 "base-goerli",
                                 "base-sepolia",
                                 "bsc-testnet",
@@ -5464,8 +5551,6 @@
                                 "arbitrumnova",
                                 "astar-zkevm",
                                 "apechain",
-                                "apex",
-                                "boss",
                                 "hedera",
                                 "coti",
                                 "lightlink",
@@ -6466,7 +6551,6 @@
                                 "arbitrum-sepolia",
                                 "avalanche-fuji",
                                 "curtis",
-                                "barret-testnet",
                                 "base-goerli",
                                 "base-sepolia",
                                 "bsc-testnet",
@@ -6515,8 +6599,6 @@
                                 "arbitrumnova",
                                 "astar-zkevm",
                                 "apechain",
-                                "apex",
-                                "boss",
                                 "hedera",
                                 "coti",
                                 "lightlink",
@@ -6819,7 +6901,6 @@
                                             "arbitrum-sepolia",
                                             "avalanche-fuji",
                                             "curtis",
-                                            "barret-testnet",
                                             "base-goerli",
                                             "base-sepolia",
                                             "bsc-testnet",
@@ -6868,8 +6949,6 @@
                                             "arbitrumnova",
                                             "astar-zkevm",
                                             "apechain",
-                                            "apex",
-                                            "boss",
                                             "hedera",
                                             "coti",
                                             "lightlink",
@@ -6995,7 +7074,6 @@
                                             "arbitrum-sepolia",
                                             "avalanche-fuji",
                                             "curtis",
-                                            "barret-testnet",
                                             "base-goerli",
                                             "base-sepolia",
                                             "bsc-testnet",
@@ -7044,8 +7122,6 @@
                                             "arbitrumnova",
                                             "astar-zkevm",
                                             "apechain",
-                                            "apex",
-                                            "boss",
                                             "hedera",
                                             "coti",
                                             "lightlink",
@@ -7145,7 +7221,6 @@
                                             "arbitrum-sepolia",
                                             "avalanche-fuji",
                                             "curtis",
-                                            "barret-testnet",
                                             "base-goerli",
                                             "base-sepolia",
                                             "bsc-testnet",
@@ -7194,8 +7269,6 @@
                                             "arbitrumnova",
                                             "astar-zkevm",
                                             "apechain",
-                                            "apex",
-                                            "boss",
                                             "hedera",
                                             "coti",
                                             "lightlink",
@@ -7298,7 +7371,6 @@
                                             "arbitrum-sepolia",
                                             "avalanche-fuji",
                                             "curtis",
-                                            "barret-testnet",
                                             "base-goerli",
                                             "base-sepolia",
                                             "bsc-testnet",
@@ -7347,8 +7419,6 @@
                                             "arbitrumnova",
                                             "astar-zkevm",
                                             "apechain",
-                                            "apex",
-                                            "boss",
                                             "hedera",
                                             "coti",
                                             "lightlink",
@@ -7462,6 +7532,48 @@
                                                 "x": "38035223810536273945556366218149112558607829411547667975304293530457502824247",
                                                 "y": "91117823763706733837104303008228095481082989039135234750508288790583476078729"
                                             }
+                                        }
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "type": "string",
+                                                "enum": ["email"],
+                                                "description": "Identifier for email signer type"
+                                            },
+                                            "email": {
+                                                "type": "string",
+                                                "description": "The email address for the signer"
+                                            }
+                                        },
+                                        "required": ["type", "email"],
+                                        "description": "An email-based signer that can be used to sign transactions",
+                                        "title": "Email Signer",
+                                        "example": {
+                                            "type": "email",
+                                            "email": "user@example.com"
+                                        }
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "type": "string",
+                                                "enum": ["phone"],
+                                                "description": "Identifier for phone signer type"
+                                            },
+                                            "phone": {
+                                                "type": "string",
+                                                "description": "The phone number for the signer in E164 format"
+                                            }
+                                        },
+                                        "required": ["type", "phone"],
+                                        "description": "An phone-based signer that can be used to sign transactions",
+                                        "title": "Phone Signer",
+                                        "example": {
+                                            "type": "phone",
+                                            "phone": "+1234567890"
                                         }
                                     }
                                 ],
@@ -8763,7 +8875,6 @@
                                             "arbitrum-sepolia",
                                             "avalanche-fuji",
                                             "curtis",
-                                            "barret-testnet",
                                             "base-goerli",
                                             "base-sepolia",
                                             "bsc-testnet",
@@ -8812,8 +8923,6 @@
                                             "arbitrumnova",
                                             "astar-zkevm",
                                             "apechain",
-                                            "apex",
-                                            "boss",
                                             "hedera",
                                             "coti",
                                             "lightlink",
@@ -8862,116 +8971,93 @@
                                 "type": "object",
                                 "properties": {
                                     "transaction": {
-                                        "oneOf": [
-                                            {
-                                                "type": "object",
-                                                "properties": {
-                                                    "type": {
-                                                        "type": "string",
-                                                        "enum": ["contract-call"],
-                                                        "description": "The type of transaction to execute"
-                                                    },
-                                                    "contractId": {
-                                                        "type": "string",
-                                                        "description": "The recipient address for this transaction call",
-                                                        "example": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
-                                                    },
-                                                    "method": {
-                                                        "type": "string",
-                                                        "description": "The name of the function to call"
-                                                    },
-                                                    "memo": {
-                                                        "discriminator": {
-                                                            "propertyName": "type"
-                                                        },
-                                                        "oneOf": [
-                                                            {
-                                                                "type": "object",
-                                                                "properties": {
-                                                                    "type": {
-                                                                        "type": "string",
-                                                                        "enum": ["text"],
-                                                                        "description": "The type of memo"
-                                                                    },
-                                                                    "value": {
-                                                                        "type": "string",
-                                                                        "maxLength": 28,
-                                                                        "description": "The value of the memo (max 28 bytes)"
-                                                                    }
-                                                                },
-                                                                "required": ["type", "value"]
-                                                            },
-                                                            {
-                                                                "type": "object",
-                                                                "properties": {
-                                                                    "type": {
-                                                                        "type": "string",
-                                                                        "enum": ["id"],
-                                                                        "description": "The type of memo"
-                                                                    },
-                                                                    "value": {
-                                                                        "type": "string",
-                                                                        "description": "The value of the memo (64-bit unsigned integer)"
-                                                                    }
-                                                                },
-                                                                "required": ["type", "value"]
-                                                            }
-                                                        ],
-                                                        "description": "The memo for the transaction",
-                                                        "example": {
-                                                            "type": "text",
-                                                            "value": "Hello, world!"
-                                                        }
-                                                    },
-                                                    "args": {
-                                                        "type": "object",
-                                                        "additionalProperties": {},
-                                                        "description": "The arguments to pass to the function"
-                                                    }
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "type": "string",
+                                                "enum": ["contract-call"],
+                                                "description": "The type of transaction to execute"
+                                            },
+                                            "contractId": {
+                                                "type": "string",
+                                                "description": "The recipient address for this transaction call",
+                                                "example": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
+                                            },
+                                            "method": {
+                                                "type": "string",
+                                                "description": "The name of the function to call"
+                                            },
+                                            "memo": {
+                                                "discriminator": {
+                                                    "propertyName": "type"
                                                 },
-                                                "required": ["type", "contractId", "method", "args"],
-                                                "title": "Stellar contract call transaction parameters",
-                                                "description": "Parameters for a transaction to execute a smart contract function",
-                                                "example": {
-                                                    "type": "contract-call",
-                                                    "contractId": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
-                                                    "method": "transfer",
-                                                    "args": {
-                                                        "to": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
-                                                        "from": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
-                                                        "amount": "1000000000000000000"
+                                                "oneOf": [
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": "string",
+                                                                "enum": ["text"]
+                                                            },
+                                                            "value": {
+                                                                "type": "string",
+                                                                "maxLength": 28
+                                                            }
+                                                        },
+                                                        "required": ["type", "value"]
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": "string",
+                                                                "enum": ["id"]
+                                                            },
+                                                            "value": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "required": ["type", "value"]
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": "string",
+                                                                "enum": ["hash"]
+                                                            },
+                                                            "value": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "required": ["type", "value"]
                                                     }
+                                                ],
+                                                "description": "The memo for the transaction",
+                                                "example": {
+                                                    "type": "text",
+                                                    "value": "Hello, world!"
                                                 }
                                             },
-                                            {
+                                            "args": {
                                                 "type": "object",
-                                                "properties": {
-                                                    "type": {
-                                                        "type": "string",
-                                                        "enum": ["serialized-transaction"],
-                                                        "description": "The type of transaction to execute"
-                                                    },
-                                                    "serializedTransaction": {
-                                                        "type": "string",
-                                                        "description": "The XDR base64-encoded serialized transaction to execute"
-                                                    },
-                                                    "contractId": {
-                                                        "type": "string",
-                                                        "description": "The recipient address for this transaction call",
-                                                        "example": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
-                                                    }
-                                                },
-                                                "required": ["type", "serializedTransaction", "contractId"],
-                                                "title": "Stellar serialized transaction parameters",
-                                                "description": "Parameters for a transaction to execute a serialized transaction",
-                                                "example": {
-                                                    "type": "serialized-transaction",
-                                                    "serializedTransaction": "AQAAAAB2YWx1ZQ==",
-                                                    "contractId": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
-                                                }
+                                                "additionalProperties": {},
+                                                "description": "The arguments to pass to the function"
                                             }
-                                        ],
-                                        "description": "Stellar transaction to execute"
+                                        },
+                                        "required": ["type", "contractId", "method", "args"],
+                                        "title": "Stellar contract call transaction parameters",
+                                        "description": "Stellar transaction to execute",
+                                        "example": {
+                                            "type": "contract-call",
+                                            "contractId": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
+                                            "method": "transfer",
+                                            "args": {
+                                                "to": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
+                                                "from": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
+                                                "amount": "1000000000000000000"
+                                            }
+                                        }
                                     },
                                     "signer": {
                                         "type": "string",
@@ -9640,7 +9726,6 @@
                                             "arbitrum-sepolia",
                                             "avalanche-fuji",
                                             "curtis",
-                                            "barret-testnet",
                                             "base-goerli",
                                             "base-sepolia",
                                             "bsc-testnet",
@@ -9689,8 +9774,6 @@
                                             "arbitrumnova",
                                             "astar-zkevm",
                                             "apechain",
-                                            "apex",
-                                            "boss",
                                             "hedera",
                                             "coti",
                                             "lightlink",
@@ -9741,116 +9824,93 @@
                                 "type": "object",
                                 "properties": {
                                     "transaction": {
-                                        "oneOf": [
-                                            {
-                                                "type": "object",
-                                                "properties": {
-                                                    "type": {
-                                                        "type": "string",
-                                                        "enum": ["contract-call"],
-                                                        "description": "The type of transaction to execute"
-                                                    },
-                                                    "contractId": {
-                                                        "type": "string",
-                                                        "description": "The recipient address for this transaction call",
-                                                        "example": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
-                                                    },
-                                                    "method": {
-                                                        "type": "string",
-                                                        "description": "The name of the function to call"
-                                                    },
-                                                    "memo": {
-                                                        "discriminator": {
-                                                            "propertyName": "type"
-                                                        },
-                                                        "oneOf": [
-                                                            {
-                                                                "type": "object",
-                                                                "properties": {
-                                                                    "type": {
-                                                                        "type": "string",
-                                                                        "enum": ["text"],
-                                                                        "description": "The type of memo"
-                                                                    },
-                                                                    "value": {
-                                                                        "type": "string",
-                                                                        "maxLength": 28,
-                                                                        "description": "The value of the memo (max 28 bytes)"
-                                                                    }
-                                                                },
-                                                                "required": ["type", "value"]
-                                                            },
-                                                            {
-                                                                "type": "object",
-                                                                "properties": {
-                                                                    "type": {
-                                                                        "type": "string",
-                                                                        "enum": ["id"],
-                                                                        "description": "The type of memo"
-                                                                    },
-                                                                    "value": {
-                                                                        "type": "string",
-                                                                        "description": "The value of the memo (64-bit unsigned integer)"
-                                                                    }
-                                                                },
-                                                                "required": ["type", "value"]
-                                                            }
-                                                        ],
-                                                        "description": "The memo for the transaction",
-                                                        "example": {
-                                                            "type": "text",
-                                                            "value": "Hello, world!"
-                                                        }
-                                                    },
-                                                    "args": {
-                                                        "type": "object",
-                                                        "additionalProperties": {},
-                                                        "description": "The arguments to pass to the function"
-                                                    }
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "type": "string",
+                                                "enum": ["contract-call"],
+                                                "description": "The type of transaction to execute"
+                                            },
+                                            "contractId": {
+                                                "type": "string",
+                                                "description": "The recipient address for this transaction call",
+                                                "example": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
+                                            },
+                                            "method": {
+                                                "type": "string",
+                                                "description": "The name of the function to call"
+                                            },
+                                            "memo": {
+                                                "discriminator": {
+                                                    "propertyName": "type"
                                                 },
-                                                "required": ["type", "contractId", "method", "args"],
-                                                "title": "Stellar contract call transaction parameters",
-                                                "description": "Parameters for a transaction to execute a smart contract function",
-                                                "example": {
-                                                    "type": "contract-call",
-                                                    "contractId": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
-                                                    "method": "transfer",
-                                                    "args": {
-                                                        "to": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
-                                                        "from": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
-                                                        "amount": "1000000000000000000"
+                                                "oneOf": [
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": "string",
+                                                                "enum": ["text"]
+                                                            },
+                                                            "value": {
+                                                                "type": "string",
+                                                                "maxLength": 28
+                                                            }
+                                                        },
+                                                        "required": ["type", "value"]
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": "string",
+                                                                "enum": ["id"]
+                                                            },
+                                                            "value": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "required": ["type", "value"]
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": "string",
+                                                                "enum": ["hash"]
+                                                            },
+                                                            "value": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "required": ["type", "value"]
                                                     }
+                                                ],
+                                                "description": "The memo for the transaction",
+                                                "example": {
+                                                    "type": "text",
+                                                    "value": "Hello, world!"
                                                 }
                                             },
-                                            {
+                                            "args": {
                                                 "type": "object",
-                                                "properties": {
-                                                    "type": {
-                                                        "type": "string",
-                                                        "enum": ["serialized-transaction"],
-                                                        "description": "The type of transaction to execute"
-                                                    },
-                                                    "serializedTransaction": {
-                                                        "type": "string",
-                                                        "description": "The XDR base64-encoded serialized transaction to execute"
-                                                    },
-                                                    "contractId": {
-                                                        "type": "string",
-                                                        "description": "The recipient address for this transaction call",
-                                                        "example": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
-                                                    }
-                                                },
-                                                "required": ["type", "serializedTransaction", "contractId"],
-                                                "title": "Stellar serialized transaction parameters",
-                                                "description": "Parameters for a transaction to execute a serialized transaction",
-                                                "example": {
-                                                    "type": "serialized-transaction",
-                                                    "serializedTransaction": "AQAAAAB2YWx1ZQ==",
-                                                    "contractId": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
-                                                }
+                                                "additionalProperties": {},
+                                                "description": "The arguments to pass to the function"
                                             }
-                                        ],
-                                        "description": "Stellar transaction to execute"
+                                        },
+                                        "required": ["type", "contractId", "method", "args"],
+                                        "title": "Stellar contract call transaction parameters",
+                                        "description": "Stellar transaction to execute",
+                                        "example": {
+                                            "type": "contract-call",
+                                            "contractId": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
+                                            "method": "transfer",
+                                            "args": {
+                                                "to": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
+                                                "from": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
+                                                "amount": "1000000000000000000"
+                                            }
+                                        }
                                     },
                                     "signer": {
                                         "type": "string",
@@ -10082,6 +10142,48 @@
                                                                     "x": "38035223810536273945556366218149112558607829411547667975304293530457502824247",
                                                                     "y": "91117823763706733837104303008228095481082989039135234750508288790583476078729"
                                                                 }
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "enum": ["email"],
+                                                                    "description": "Identifier for email signer type"
+                                                                },
+                                                                "email": {
+                                                                    "type": "string",
+                                                                    "description": "The email address for the signer"
+                                                                }
+                                                            },
+                                                            "required": ["type", "email"],
+                                                            "description": "An email-based signer that can be used to sign transactions",
+                                                            "title": "Email Signer",
+                                                            "example": {
+                                                                "type": "email",
+                                                                "email": "user@example.com"
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "type": {
+                                                                    "type": "string",
+                                                                    "enum": ["phone"],
+                                                                    "description": "Identifier for phone signer type"
+                                                                },
+                                                                "phone": {
+                                                                    "type": "string",
+                                                                    "description": "The phone number for the signer in E164 format"
+                                                                }
+                                                            },
+                                                            "required": ["type", "phone"],
+                                                            "description": "An phone-based signer that can be used to sign transactions",
+                                                            "title": "Phone Signer",
+                                                            "example": {
+                                                                "type": "phone",
+                                                                "phone": "+1234567890"
                                                             }
                                                         }
                                                     ],
@@ -14391,7 +14493,6 @@
                                     "arbitrum-sepolia",
                                     "avalanche-fuji",
                                     "base-sepolia",
-                                    "barret-testnet",
                                     "ethereum-sepolia",
                                     "optimism-sepolia",
                                     "polygon-amoy",
@@ -14624,6 +14725,7 @@
                             },
                             "amount": {
                                 "type": "string",
+                                "pattern": "^\\d+(?:\\.\\d*)?$",
                                 "description": "Amount of tokens to transfer (in decimal value)",
                                 "example": "42.69"
                             },
@@ -14637,13 +14739,11 @@
                                         "properties": {
                                             "type": {
                                                 "type": "string",
-                                                "enum": ["text"],
-                                                "description": "The type of memo"
+                                                "enum": ["text"]
                                             },
                                             "value": {
                                                 "type": "string",
-                                                "maxLength": 28,
-                                                "description": "The value of the memo (max 28 bytes)"
+                                                "maxLength": 28
                                             }
                                         },
                                         "required": ["type", "value"]
@@ -14653,12 +14753,23 @@
                                         "properties": {
                                             "type": {
                                                 "type": "string",
-                                                "enum": ["id"],
-                                                "description": "The type of memo"
+                                                "enum": ["id"]
                                             },
                                             "value": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["type", "value"]
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
                                                 "type": "string",
-                                                "description": "The value of the memo (64-bit unsigned integer)"
+                                                "enum": ["hash"]
+                                            },
+                                            "value": {
+                                                "type": "string"
                                             }
                                         },
                                         "required": ["type", "value"]
@@ -14685,6 +14796,7 @@
                             },
                             "amount": {
                                 "type": "string",
+                                "pattern": "^\\d+(?:\\.\\d*)?$",
                                 "description": "Amount of tokens to transfer (in decimal value)",
                                 "example": "42.69"
                             },
@@ -14698,13 +14810,11 @@
                                         "properties": {
                                             "type": {
                                                 "type": "string",
-                                                "enum": ["text"],
-                                                "description": "The type of memo"
+                                                "enum": ["text"]
                                             },
                                             "value": {
                                                 "type": "string",
-                                                "maxLength": 28,
-                                                "description": "The value of the memo (max 28 bytes)"
+                                                "maxLength": 28
                                             }
                                         },
                                         "required": ["type", "value"]
@@ -14714,12 +14824,23 @@
                                         "properties": {
                                             "type": {
                                                 "type": "string",
-                                                "enum": ["id"],
-                                                "description": "The type of memo"
+                                                "enum": ["id"]
                                             },
                                             "value": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["type", "value"]
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
                                                 "type": "string",
-                                                "description": "The value of the memo (64-bit unsigned integer)"
+                                                "enum": ["hash"]
+                                            },
+                                            "value": {
+                                                "type": "string"
                                             }
                                         },
                                         "required": ["type", "value"]
@@ -14757,6 +14878,7 @@
                     },
                     "amount": {
                         "type": "string",
+                        "pattern": "^\\d+(?:\\.\\d*)?$",
                         "description": "Amount of tokens to transfer (in decimal format)",
                         "example": "42.69"
                     }
@@ -14779,6 +14901,7 @@
                     },
                     "amount": {
                         "type": "string",
+                        "pattern": "^\\d+(?:\\.\\d*)?$",
                         "description": "Amount of tokens to transfer (in decimal value)",
                         "example": "42.69"
                     },
@@ -14792,13 +14915,11 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "enum": ["text"],
-                                        "description": "The type of memo"
+                                        "enum": ["text"]
                                     },
                                     "value": {
                                         "type": "string",
-                                        "maxLength": 28,
-                                        "description": "The value of the memo (max 28 bytes)"
+                                        "maxLength": 28
                                     }
                                 },
                                 "required": ["type", "value"]
@@ -14808,12 +14929,23 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "enum": ["id"],
-                                        "description": "The type of memo"
+                                        "enum": ["id"]
                                     },
                                     "value": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["type", "value"]
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
                                         "type": "string",
-                                        "description": "The value of the memo (64-bit unsigned integer)"
+                                        "enum": ["hash"]
+                                    },
+                                    "value": {
+                                        "type": "string"
                                     }
                                 },
                                 "required": ["type", "value"]
@@ -15343,15 +15475,25 @@
                                 "usdf",
                                 "weth",
                                 "degen",
-                                "brett",
-                                "toshi",
                                 "eurc",
                                 "superverse",
                                 "pirate",
                                 "wld",
+                                "xmeme",
+                                "brett",
+                                "toshi",
+                                "keycat",
+                                "doginme",
+                                "ski",
+                                "russell",
+                                "miggles",
+                                "benji",
+                                "mochi",
+                                "$mfer",
+                                "tybg",
+                                "toby",
                                 "bonk",
                                 "trump",
-                                "xmeme",
                                 "fartcoin",
                                 "clanker",
                                 "giga",
@@ -15496,6 +15638,7 @@
                                 "worthless",
                                 "clippy",
                                 "nailong",
+                                "67coin",
                                 "uranus",
                                 "usdm1",
                                 "sol",
@@ -15932,7 +16075,6 @@
                                 "arbitrum-sepolia",
                                 "avalanche-fuji",
                                 "curtis",
-                                "barret-testnet",
                                 "base-goerli",
                                 "base-sepolia",
                                 "bsc-testnet",
@@ -15981,8 +16123,6 @@
                                 "arbitrumnova",
                                 "astar-zkevm",
                                 "apechain",
-                                "apex",
-                                "boss",
                                 "hedera",
                                 "coti",
                                 "lightlink",
@@ -16324,7 +16464,6 @@
                                                         "arbitrum-sepolia",
                                                         "avalanche-fuji",
                                                         "curtis",
-                                                        "barret-testnet",
                                                         "base-goerli",
                                                         "base-sepolia",
                                                         "bsc-testnet",
@@ -16373,8 +16512,6 @@
                                                         "arbitrumnova",
                                                         "astar-zkevm",
                                                         "apechain",
-                                                        "apex",
-                                                        "boss",
                                                         "hedera",
                                                         "coti",
                                                         "lightlink",
@@ -16471,7 +16608,6 @@
                                                         "arbitrum-sepolia",
                                                         "avalanche-fuji",
                                                         "curtis",
-                                                        "barret-testnet",
                                                         "base-goerli",
                                                         "base-sepolia",
                                                         "bsc-testnet",
@@ -16520,8 +16656,6 @@
                                                         "arbitrumnova",
                                                         "astar-zkevm",
                                                         "apechain",
-                                                        "apex",
-                                                        "boss",
                                                         "hedera",
                                                         "coti",
                                                         "lightlink",
@@ -18208,7 +18342,6 @@
                                                         "arbitrum-sepolia",
                                                         "avalanche-fuji",
                                                         "curtis",
-                                                        "barret-testnet",
                                                         "base-goerli",
                                                         "base-sepolia",
                                                         "bsc-testnet",
@@ -18257,8 +18390,6 @@
                                                         "arbitrumnova",
                                                         "astar-zkevm",
                                                         "apechain",
-                                                        "apex",
-                                                        "boss",
                                                         "hedera",
                                                         "coti",
                                                         "lightlink",
@@ -20068,116 +20199,93 @@
                                             "type": "object",
                                             "properties": {
                                                 "transaction": {
-                                                    "oneOf": [
-                                                        {
-                                                            "type": "object",
-                                                            "properties": {
-                                                                "type": {
-                                                                    "type": "string",
-                                                                    "enum": ["contract-call"],
-                                                                    "description": "The type of transaction to execute"
-                                                                },
-                                                                "contractId": {
-                                                                    "type": "string",
-                                                                    "description": "The recipient address for this transaction call",
-                                                                    "example": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
-                                                                },
-                                                                "method": {
-                                                                    "type": "string",
-                                                                    "description": "The name of the function to call"
-                                                                },
-                                                                "memo": {
-                                                                    "discriminator": {
-                                                                        "propertyName": "type"
-                                                                    },
-                                                                    "oneOf": [
-                                                                        {
-                                                                            "type": "object",
-                                                                            "properties": {
-                                                                                "type": {
-                                                                                    "type": "string",
-                                                                                    "enum": ["text"],
-                                                                                    "description": "The type of memo"
-                                                                                },
-                                                                                "value": {
-                                                                                    "type": "string",
-                                                                                    "maxLength": 28,
-                                                                                    "description": "The value of the memo (max 28 bytes)"
-                                                                                }
-                                                                            },
-                                                                            "required": ["type", "value"]
-                                                                        },
-                                                                        {
-                                                                            "type": "object",
-                                                                            "properties": {
-                                                                                "type": {
-                                                                                    "type": "string",
-                                                                                    "enum": ["id"],
-                                                                                    "description": "The type of memo"
-                                                                                },
-                                                                                "value": {
-                                                                                    "type": "string",
-                                                                                    "description": "The value of the memo (64-bit unsigned integer)"
-                                                                                }
-                                                                            },
-                                                                            "required": ["type", "value"]
-                                                                        }
-                                                                    ],
-                                                                    "description": "The memo for the transaction",
-                                                                    "example": {
-                                                                        "type": "text",
-                                                                        "value": "Hello, world!"
-                                                                    }
-                                                                },
-                                                                "args": {
-                                                                    "type": "object",
-                                                                    "additionalProperties": {},
-                                                                    "description": "The arguments to pass to the function"
-                                                                }
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "type": {
+                                                            "type": "string",
+                                                            "enum": ["contract-call"],
+                                                            "description": "The type of transaction to execute"
+                                                        },
+                                                        "contractId": {
+                                                            "type": "string",
+                                                            "description": "The recipient address for this transaction call",
+                                                            "example": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
+                                                        },
+                                                        "method": {
+                                                            "type": "string",
+                                                            "description": "The name of the function to call"
+                                                        },
+                                                        "memo": {
+                                                            "discriminator": {
+                                                                "propertyName": "type"
                                                             },
-                                                            "required": ["type", "contractId", "method", "args"],
-                                                            "title": "Stellar contract call transaction parameters",
-                                                            "description": "Parameters for a transaction to execute a smart contract function",
-                                                            "example": {
-                                                                "type": "contract-call",
-                                                                "contractId": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
-                                                                "method": "transfer",
-                                                                "args": {
-                                                                    "to": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
-                                                                    "from": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
-                                                                    "amount": "1000000000000000000"
+                                                            "oneOf": [
+                                                                {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "type": {
+                                                                            "type": "string",
+                                                                            "enum": ["text"]
+                                                                        },
+                                                                        "value": {
+                                                                            "type": "string",
+                                                                            "maxLength": 28
+                                                                        }
+                                                                    },
+                                                                    "required": ["type", "value"]
+                                                                },
+                                                                {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "type": {
+                                                                            "type": "string",
+                                                                            "enum": ["id"]
+                                                                        },
+                                                                        "value": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["type", "value"]
+                                                                },
+                                                                {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "type": {
+                                                                            "type": "string",
+                                                                            "enum": ["hash"]
+                                                                        },
+                                                                        "value": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "required": ["type", "value"]
                                                                 }
+                                                            ],
+                                                            "description": "The memo for the transaction",
+                                                            "example": {
+                                                                "type": "text",
+                                                                "value": "Hello, world!"
                                                             }
                                                         },
-                                                        {
+                                                        "args": {
                                                             "type": "object",
-                                                            "properties": {
-                                                                "type": {
-                                                                    "type": "string",
-                                                                    "enum": ["serialized-transaction"],
-                                                                    "description": "The type of transaction to execute"
-                                                                },
-                                                                "serializedTransaction": {
-                                                                    "type": "string",
-                                                                    "description": "The XDR base64-encoded serialized transaction to execute"
-                                                                },
-                                                                "contractId": {
-                                                                    "type": "string",
-                                                                    "description": "The recipient address for this transaction call",
-                                                                    "example": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
-                                                                }
-                                                            },
-                                                            "required": ["type", "serializedTransaction", "contractId"],
-                                                            "title": "Stellar serialized transaction parameters",
-                                                            "description": "Parameters for a transaction to execute a serialized transaction",
-                                                            "example": {
-                                                                "type": "serialized-transaction",
-                                                                "serializedTransaction": "AQAAAAB2YWx1ZQ==",
-                                                                "contractId": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
-                                                            }
+                                                            "additionalProperties": {},
+                                                            "description": "The arguments to pass to the function"
                                                         }
-                                                    ],
-                                                    "description": "Stellar transaction to execute"
+                                                    },
+                                                    "required": ["type", "contractId", "method", "args"],
+                                                    "title": "Stellar contract call transaction parameters",
+                                                    "description": "Stellar transaction to execute",
+                                                    "example": {
+                                                        "type": "contract-call",
+                                                        "contractId": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
+                                                        "method": "transfer",
+                                                        "args": {
+                                                            "to": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
+                                                            "from": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
+                                                            "amount": "1000000000000000000"
+                                                        }
+                                                    }
                                                 },
                                                 "signer": {
                                                     "type": "string",
@@ -20822,7 +20930,6 @@
                                             "arbitrum-sepolia",
                                             "avalanche-fuji",
                                             "curtis",
-                                            "barret-testnet",
                                             "base-goerli",
                                             "base-sepolia",
                                             "bsc-testnet",
@@ -20871,8 +20978,6 @@
                                             "arbitrumnova",
                                             "astar-zkevm",
                                             "apechain",
-                                            "apex",
-                                            "boss",
                                             "hedera",
                                             "coti",
                                             "lightlink",
@@ -20964,7 +21069,6 @@
                                             "arbitrum-sepolia",
                                             "avalanche-fuji",
                                             "curtis",
-                                            "barret-testnet",
                                             "base-goerli",
                                             "base-sepolia",
                                             "bsc-testnet",
@@ -21013,8 +21117,6 @@
                                             "arbitrumnova",
                                             "astar-zkevm",
                                             "apechain",
-                                            "apex",
-                                            "boss",
                                             "hedera",
                                             "coti",
                                             "lightlink",
@@ -22655,7 +22757,6 @@
                                             "arbitrum-sepolia",
                                             "avalanche-fuji",
                                             "curtis",
-                                            "barret-testnet",
                                             "base-goerli",
                                             "base-sepolia",
                                             "bsc-testnet",
@@ -22704,8 +22805,6 @@
                                             "arbitrumnova",
                                             "astar-zkevm",
                                             "apechain",
-                                            "apex",
-                                            "boss",
                                             "hedera",
                                             "coti",
                                             "lightlink",
@@ -24491,116 +24590,93 @@
                                 "type": "object",
                                 "properties": {
                                     "transaction": {
-                                        "oneOf": [
-                                            {
-                                                "type": "object",
-                                                "properties": {
-                                                    "type": {
-                                                        "type": "string",
-                                                        "enum": ["contract-call"],
-                                                        "description": "The type of transaction to execute"
-                                                    },
-                                                    "contractId": {
-                                                        "type": "string",
-                                                        "description": "The recipient address for this transaction call",
-                                                        "example": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
-                                                    },
-                                                    "method": {
-                                                        "type": "string",
-                                                        "description": "The name of the function to call"
-                                                    },
-                                                    "memo": {
-                                                        "discriminator": {
-                                                            "propertyName": "type"
-                                                        },
-                                                        "oneOf": [
-                                                            {
-                                                                "type": "object",
-                                                                "properties": {
-                                                                    "type": {
-                                                                        "type": "string",
-                                                                        "enum": ["text"],
-                                                                        "description": "The type of memo"
-                                                                    },
-                                                                    "value": {
-                                                                        "type": "string",
-                                                                        "maxLength": 28,
-                                                                        "description": "The value of the memo (max 28 bytes)"
-                                                                    }
-                                                                },
-                                                                "required": ["type", "value"]
-                                                            },
-                                                            {
-                                                                "type": "object",
-                                                                "properties": {
-                                                                    "type": {
-                                                                        "type": "string",
-                                                                        "enum": ["id"],
-                                                                        "description": "The type of memo"
-                                                                    },
-                                                                    "value": {
-                                                                        "type": "string",
-                                                                        "description": "The value of the memo (64-bit unsigned integer)"
-                                                                    }
-                                                                },
-                                                                "required": ["type", "value"]
-                                                            }
-                                                        ],
-                                                        "description": "The memo for the transaction",
-                                                        "example": {
-                                                            "type": "text",
-                                                            "value": "Hello, world!"
-                                                        }
-                                                    },
-                                                    "args": {
-                                                        "type": "object",
-                                                        "additionalProperties": {},
-                                                        "description": "The arguments to pass to the function"
-                                                    }
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "type": "string",
+                                                "enum": ["contract-call"],
+                                                "description": "The type of transaction to execute"
+                                            },
+                                            "contractId": {
+                                                "type": "string",
+                                                "description": "The recipient address for this transaction call",
+                                                "example": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
+                                            },
+                                            "method": {
+                                                "type": "string",
+                                                "description": "The name of the function to call"
+                                            },
+                                            "memo": {
+                                                "discriminator": {
+                                                    "propertyName": "type"
                                                 },
-                                                "required": ["type", "contractId", "method", "args"],
-                                                "title": "Stellar contract call transaction parameters",
-                                                "description": "Parameters for a transaction to execute a smart contract function",
-                                                "example": {
-                                                    "type": "contract-call",
-                                                    "contractId": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
-                                                    "method": "transfer",
-                                                    "args": {
-                                                        "to": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
-                                                        "from": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
-                                                        "amount": "1000000000000000000"
+                                                "oneOf": [
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": "string",
+                                                                "enum": ["text"]
+                                                            },
+                                                            "value": {
+                                                                "type": "string",
+                                                                "maxLength": 28
+                                                            }
+                                                        },
+                                                        "required": ["type", "value"]
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": "string",
+                                                                "enum": ["id"]
+                                                            },
+                                                            "value": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "required": ["type", "value"]
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "type": {
+                                                                "type": "string",
+                                                                "enum": ["hash"]
+                                                            },
+                                                            "value": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "required": ["type", "value"]
                                                     }
+                                                ],
+                                                "description": "The memo for the transaction",
+                                                "example": {
+                                                    "type": "text",
+                                                    "value": "Hello, world!"
                                                 }
                                             },
-                                            {
+                                            "args": {
                                                 "type": "object",
-                                                "properties": {
-                                                    "type": {
-                                                        "type": "string",
-                                                        "enum": ["serialized-transaction"],
-                                                        "description": "The type of transaction to execute"
-                                                    },
-                                                    "serializedTransaction": {
-                                                        "type": "string",
-                                                        "description": "The XDR base64-encoded serialized transaction to execute"
-                                                    },
-                                                    "contractId": {
-                                                        "type": "string",
-                                                        "description": "The recipient address for this transaction call",
-                                                        "example": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
-                                                    }
-                                                },
-                                                "required": ["type", "serializedTransaction", "contractId"],
-                                                "title": "Stellar serialized transaction parameters",
-                                                "description": "Parameters for a transaction to execute a serialized transaction",
-                                                "example": {
-                                                    "type": "serialized-transaction",
-                                                    "serializedTransaction": "AQAAAAB2YWx1ZQ==",
-                                                    "contractId": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J"
-                                                }
+                                                "additionalProperties": {},
+                                                "description": "The arguments to pass to the function"
                                             }
-                                        ],
-                                        "description": "Stellar transaction to execute"
+                                        },
+                                        "required": ["type", "contractId", "method", "args"],
+                                        "title": "Stellar contract call transaction parameters",
+                                        "description": "Stellar transaction to execute",
+                                        "example": {
+                                            "type": "contract-call",
+                                            "contractId": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
+                                            "method": "transfer",
+                                            "args": {
+                                                "to": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
+                                                "from": "GB3KQJ6N2YIE62YVO67X7W5TQK6Q5ZZ4P2LUVK2U6AU26CJQ626J",
+                                                "amount": "1000000000000000000"
+                                            }
+                                        }
                                     },
                                     "signer": {
                                         "type": "string",
@@ -25216,7 +25292,6 @@
                                                         "arbitrum-sepolia",
                                                         "avalanche-fuji",
                                                         "curtis",
-                                                        "barret-testnet",
                                                         "base-goerli",
                                                         "base-sepolia",
                                                         "bsc-testnet",
@@ -25265,8 +25340,6 @@
                                                         "arbitrumnova",
                                                         "astar-zkevm",
                                                         "apechain",
-                                                        "apex",
-                                                        "boss",
                                                         "hedera",
                                                         "coti",
                                                         "lightlink",
@@ -25375,7 +25448,6 @@
                                                         "arbitrum-sepolia",
                                                         "avalanche-fuji",
                                                         "curtis",
-                                                        "barret-testnet",
                                                         "base-goerli",
                                                         "base-sepolia",
                                                         "bsc-testnet",
@@ -25424,8 +25496,6 @@
                                                         "arbitrumnova",
                                                         "astar-zkevm",
                                                         "apechain",
-                                                        "apex",
-                                                        "boss",
                                                         "hedera",
                                                         "coti",
                                                         "lightlink",
@@ -25675,7 +25745,6 @@
                                             "arbitrum-sepolia",
                                             "avalanche-fuji",
                                             "curtis",
-                                            "barret-testnet",
                                             "base-goerli",
                                             "base-sepolia",
                                             "bsc-testnet",
@@ -25724,8 +25793,6 @@
                                             "arbitrumnova",
                                             "astar-zkevm",
                                             "apechain",
-                                            "apex",
-                                            "boss",
                                             "hedera",
                                             "coti",
                                             "lightlink",
@@ -25829,7 +25896,6 @@
                                             "arbitrum-sepolia",
                                             "avalanche-fuji",
                                             "curtis",
-                                            "barret-testnet",
                                             "base-goerli",
                                             "base-sepolia",
                                             "bsc-testnet",
@@ -25878,8 +25944,6 @@
                                             "arbitrumnova",
                                             "astar-zkevm",
                                             "apechain",
-                                            "apex",
-                                            "boss",
                                             "hedera",
                                             "coti",
                                             "lightlink",
@@ -27183,7 +27247,6 @@
                                             "arbitrum-sepolia",
                                             "avalanche-fuji",
                                             "curtis",
-                                            "barret-testnet",
                                             "base-goerli",
                                             "base-sepolia",
                                             "bsc-testnet",
@@ -27232,8 +27295,6 @@
                                             "arbitrumnova",
                                             "astar-zkevm",
                                             "apechain",
-                                            "apex",
-                                            "boss",
                                             "hedera",
                                             "coti",
                                             "lightlink",
@@ -28994,7 +29055,6 @@
                                             "arbitrum-sepolia",
                                             "avalanche-fuji",
                                             "curtis",
-                                            "barret-testnet",
                                             "base-goerli",
                                             "base-sepolia",
                                             "bsc-testnet",
@@ -29043,8 +29103,6 @@
                                             "arbitrumnova",
                                             "astar-zkevm",
                                             "apechain",
-                                            "apex",
-                                            "boss",
                                             "hedera",
                                             "coti",
                                             "lightlink",
@@ -30846,7 +30904,6 @@
                                                         "arbitrum-sepolia",
                                                         "avalanche-fuji",
                                                         "curtis",
-                                                        "barret-testnet",
                                                         "base-goerli",
                                                         "base-sepolia",
                                                         "bsc-testnet",
@@ -30895,8 +30952,6 @@
                                                         "arbitrumnova",
                                                         "astar-zkevm",
                                                         "apechain",
-                                                        "apex",
-                                                        "boss",
                                                         "hedera",
                                                         "coti",
                                                         "lightlink",
@@ -33408,6 +33463,84 @@
                                                         },
                                                         "validatorContractVersion": "0.2.0",
                                                         "locator": "passkey:cWtP7gmZbd98HbKUuGXx5Q"
+                                                    }
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "type": {
+                                                            "type": "string",
+                                                            "enum": ["email"],
+                                                            "description": "Identifier for email signer type"
+                                                        },
+                                                        "email": {
+                                                            "type": "string",
+                                                            "description": "The email address for the signer"
+                                                        },
+                                                        "locator": {
+                                                            "type": "string",
+                                                            "description": "The locator of the signer"
+                                                        },
+                                                        "address": {
+                                                            "oneOf": [
+                                                                {
+                                                                    "type": "string",
+                                                                    "description": "An EVM address string"
+                                                                },
+                                                                {
+                                                                    "type": "string"
+                                                                }
+                                                            ],
+                                                            "description": "The address of the signer"
+                                                        }
+                                                    },
+                                                    "required": ["type", "email", "locator", "address"],
+                                                    "title": "Email Signer",
+                                                    "description": "Configuration for an email signer",
+                                                    "example": {
+                                                        "type": "email",
+                                                        "email": "user@example.com",
+                                                        "locator": "email:user@example.com",
+                                                        "address": "0x1234567890abcdef..."
+                                                    }
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "type": {
+                                                            "type": "string",
+                                                            "enum": ["phone"],
+                                                            "description": "Identifier for phone signer type"
+                                                        },
+                                                        "phone": {
+                                                            "type": "string",
+                                                            "description": "The phone number for the signer in E164 format"
+                                                        },
+                                                        "locator": {
+                                                            "type": "string",
+                                                            "description": "The locator of the signer"
+                                                        },
+                                                        "address": {
+                                                            "oneOf": [
+                                                                {
+                                                                    "type": "string",
+                                                                    "description": "An EVM address string"
+                                                                },
+                                                                {
+                                                                    "type": "string"
+                                                                }
+                                                            ],
+                                                            "description": "The address of the signer"
+                                                        }
+                                                    },
+                                                    "required": ["type", "phone", "locator", "address"],
+                                                    "title": "Phone Signer",
+                                                    "description": "Configuration for a phone signer",
+                                                    "example": {
+                                                        "type": "phone",
+                                                        "phone": "+1234567890",
+                                                        "locator": "phone:+1234567890",
+                                                        "address": "0x1234567890abcdef..."
                                                     }
                                                 }
                                             ]
