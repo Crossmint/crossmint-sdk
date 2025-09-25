@@ -27,8 +27,11 @@ export class WebViewParent<IncomingEvents extends EventMap, OutgoingEvents exten
      * Should be passed to the React Native WebView's onMessage prop to forward events into the transport
      */
     public handleMessage = (event: WebViewMessageEvent): void => {
+        console.log("[WebViewParent] handleMessage() called");
         if (this.transport instanceof RNWebViewTransport) {
             this.transport.handleMessage(event);
+        } else {
+            console.error("[WebViewParent] Transport is not an instance of RNWebViewTransport");
         }
     };
 }
