@@ -16,6 +16,7 @@ const initialOAuthUrlMap: OAuthUrlMap = {
 
 const defaultContextValue: RNAuthContext = {
     crossmintAuth: undefined,
+    login: () => {},
     logout: () => {},
     jwt: undefined,
     user: undefined,
@@ -162,6 +163,7 @@ function CrossmintAuthProviderContent({
                 user: baseAuth.user,
                 status: getAuthStatus(),
                 getUser: baseAuth.getUser,
+                login: () => {},
                 loginWithOAuth,
                 createAuthSession,
             }}

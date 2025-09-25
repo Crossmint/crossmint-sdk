@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { UIConfig } from "@crossmint/common-sdk-base";
-import type { CrossmintAuthBaseContextType } from "@crossmint/client-sdk-react-base";
+import type { CrossmintAuthBaseProviderProps, LoginMethod } from "@crossmint/client-sdk-react-base";
 
 export type {
     CrossmintAuthBaseProviderProps as BaseCrossmintAuthProviderProps,
@@ -14,13 +14,11 @@ export type OtpEmailPayload = {
     emailId: string;
 };
 
-export interface CrossmintAuthProviderProps extends CrossmintAuthBaseContextType {
+export interface CrossmintAuthProviderProps extends CrossmintAuthBaseProviderProps {
     appearance?: UIConfig;
     authModalTitle?: string;
-    children?: ReactNode;
-    logoutRoute?: string;
-    onLoginSuccess?: () => void;
+    children: ReactNode;
+    loginMethods?: LoginMethod[];
     prefetchOAuthUrls?: boolean;
-    refreshRoute?: string;
     termsOfServiceText?: string | ReactNode;
 }

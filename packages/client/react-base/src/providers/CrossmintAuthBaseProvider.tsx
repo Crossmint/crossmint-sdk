@@ -9,6 +9,7 @@ export const CrossmintAuthBaseContext = createContext<CrossmintAuthBaseContextTy
     logout: () => {},
     status: "initializing",
     getUser: () => {},
+    login: () => {},
 });
 
 export function useCrossmintAuthBase(): CrossmintAuthBaseContextType {
@@ -136,6 +137,7 @@ export function CrossmintAuthBaseProvider({
             user,
             status: getStatus(),
             getUser,
+            login: () => {},
         }),
         [crossmintAuth, logout, jwt, user, initialized, getUser, getStatus]
     );

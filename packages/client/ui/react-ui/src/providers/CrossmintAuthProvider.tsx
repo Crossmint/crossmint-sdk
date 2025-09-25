@@ -39,10 +39,7 @@ function CrossmintAuthProviderContent({
     authModalTitle,
     onLoginSuccess,
     loginMethods = ["email", "google"],
-}: Omit<
-    CrossmintAuthProviderProps,
-    "refreshRoute" | "logoutRoute" | "status" | "getUser" | "logout" | "loginWithOAuth" | "createAuthSession"
->) {
+}: CrossmintAuthProviderProps) {
     const baseAuth = useCrossmintAuthBase();
     const { crossmint, experimental_setCustomAuth, experimental_customAuth } = useCrossmint(
         "CrossmintAuthProvider must be used within CrossmintProvider"

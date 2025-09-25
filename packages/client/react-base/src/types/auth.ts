@@ -7,7 +7,7 @@ export type LoginMethod = "email" | "google" | "farcaster" | "twitter" | "web3" 
 
 export type CrossmintAuthBaseContextType = {
     crossmintAuth?: any;
-    login?: (defaultEmail?: string | MouseEvent) => void;
+    login: (defaultEmail?: string | MouseEvent) => void;
     logout: () => void;
     jwt?: string;
     user?: SDKExternalUser;
