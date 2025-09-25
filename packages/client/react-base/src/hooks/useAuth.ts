@@ -4,7 +4,7 @@ import type { CrossmintAuthBaseContextType } from "@/types";
 
 export function useCrossmintAuth(): CrossmintAuthBaseContextType {
     const context = useContext(CrossmintAuthBaseContext);
-    if (!context) {
+    if (context == null) {
         throw new Error("useCrossmintAuth must be used within a CrossmintAuthProvider");
     }
     return context;

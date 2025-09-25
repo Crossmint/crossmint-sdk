@@ -10,7 +10,7 @@ interface RNCrossmintAuthContext extends CrossmintAuthBaseContextType {
 
 export function useCrossmintAuth(): RNCrossmintAuthContext {
     const context = useContext(AuthContext);
-    if (!context) {
+    if (context == null) {
         throw new Error("useCrossmintAuth must be used within a CrossmintAuthProvider");
     }
     return context;

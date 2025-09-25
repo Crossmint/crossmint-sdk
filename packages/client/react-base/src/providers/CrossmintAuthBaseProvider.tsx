@@ -13,7 +13,7 @@ export const CrossmintAuthBaseContext = createContext<CrossmintAuthBaseContextTy
 
 export function useCrossmintAuthBase(): CrossmintAuthBaseContextType {
     const context = useContext(CrossmintAuthBaseContext);
-    if (!context) {
+    if (context == null) {
         throw new Error("useCrossmintAuthBase must be used within CrossmintAuthBaseProvider");
     }
     return context;

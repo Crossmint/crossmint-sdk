@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 import type { UIConfig } from "@crossmint/common-sdk-base";
-import type { BaseCrossmintAuthProviderProps, LoginMethod } from "@/types/auth";
+import type { LoginMethod } from "@crossmint/client-sdk-react-base";
+import type { BaseCrossmintAuthProviderProps } from "@/types/auth";
 
 type AuthStep = "initial" | "otp" | "qrCode" | "web3" | "web3/metamask" | "web3/walletconnect";
 
