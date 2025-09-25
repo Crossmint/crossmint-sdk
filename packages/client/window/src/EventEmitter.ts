@@ -61,6 +61,7 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
     }
 
     send<K extends keyof OutgoingEvents>(event: K, data: z.infer<OutgoingEvents[K]>) {
+        console.log("[EventEmitter] Sending data:", data);
         const result = this.outgoingEvents[event].safeParse(data);
         if (result.success) {
             this.transport.send({ event, data });
@@ -103,6 +104,7 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
             }, timeoutMs);
 
             const responseListenerId = this.on(responseEvent, (data) => {
+                console.log("[EventEmitter] Received data:", data);
                 if (options?.condition && !options.condition(data)) {
                     return;
                 }
