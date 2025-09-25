@@ -582,6 +582,9 @@ importers:
 
   packages/client/react-base:
     dependencies:
+      '@crossmint/client-sdk-auth':
+        specifier: workspace:*
+        version: link:../auth
       '@crossmint/client-sdk-base':
         specifier: workspace:*
         version: link:../base
@@ -591,6 +594,9 @@ importers:
       '@crossmint/client-signers':
         specifier: workspace:*
         version: link:../signers
+      '@crossmint/common-sdk-auth':
+        specifier: workspace:*
+        version: link:../../common/auth
       '@crossmint/common-sdk-base':
         specifier: workspace:*
         version: link:../../common/base
@@ -20327,7 +20333,7 @@ snapshots:
       nocache: 3.0.4
       pretty-format: 26.6.2
       serve-static: 1.16.2
-      ws: 8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      ws: 7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
       - bufferutil
       - encoding

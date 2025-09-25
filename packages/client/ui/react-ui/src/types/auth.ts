@@ -1,5 +1,11 @@
 import type { ReactNode } from "react";
 import type { UIConfig } from "@crossmint/common-sdk-base";
+import type { CrossmintAuthBaseProviderProps, LoginMethod } from "@crossmint/client-sdk-react-base";
+
+export type {
+    CrossmintAuthBaseProviderProps as BaseCrossmintAuthProviderProps,
+    AuthStatus,
+} from "@crossmint/client-sdk-react-base";
 
 export type { BaseCrossmintWalletProviderProps } from "@crossmint/client-sdk-react-base";
 
@@ -8,17 +14,11 @@ export type OtpEmailPayload = {
     emailId: string;
 };
 
-export type LoginMethod = "email" | "google" | "farcaster" | "twitter" | "web3" | "web3:evm-only" | "web3:solana-only";
-export type AuthStatus = "logged-in" | "logged-out" | "in-progress" | "initializing";
-
-export type CrossmintAuthProviderProps = {
+export interface CrossmintAuthProviderProps extends CrossmintAuthBaseProviderProps {
     appearance?: UIConfig;
-    termsOfServiceText?: string | ReactNode;
-    prefetchOAuthUrls?: boolean;
-    onLoginSuccess?: () => void;
     authModalTitle?: string;
     children: ReactNode;
     loginMethods?: LoginMethod[];
-    refreshRoute?: string;
-    logoutRoute?: string;
-};
+    prefetchOAuthUrls?: boolean;
+    termsOfServiceText?: string | ReactNode;
+}

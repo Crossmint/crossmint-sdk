@@ -8,7 +8,7 @@ import { Spinner } from "@/components/common/Spinner";
 import { AlertIcon } from "../../../../icons/alert";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import type { OtpEmailPayload } from "@/types/auth";
-import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
+import { useCrossmintAuth } from "@/hooks";
 import { ContinueWithGoogle } from "../google/ContinueWithGoogle";
 import { ScreenReaderText } from "@/components/common/ScreenReaderText";
 import { theme, globalReset } from "@/styles";

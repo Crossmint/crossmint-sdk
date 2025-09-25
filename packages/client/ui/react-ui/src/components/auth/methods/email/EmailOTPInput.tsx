@@ -6,7 +6,7 @@ import { EmailOtpIcon } from "@/icons/emailOTP";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import type { OtpEmailPayload } from "@/types/auth";
 import { AuthFormBackButton } from "../../AuthFormBackButton";
-import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
+import { useCrossmintAuth } from "@/hooks";
 import { CountdownButton } from "@/components/common/CountdownButton";
 import { theme } from "@/styles";
 

@@ -6,7 +6,7 @@ import { FarcasterIcon } from "@/icons/farcaster";
 import { useAuthForm } from "@/providers/auth/AuthFormProvider";
 import { Spinner } from "@/components/common/Spinner";
 import { AuthFormBackButton } from "../../AuthFormBackButton";
-import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
+import { useCrossmintAuth } from "@/hooks";
 import { OAuthButton } from "@/components/common/OAuthButton";
 import { theme } from "@/styles";
 

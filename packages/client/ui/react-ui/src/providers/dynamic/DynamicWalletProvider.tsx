@@ -5,17 +5,17 @@ import { isSolanaWallet } from "@dynamic-labs/solana";
 import type { SignableMessage } from "viem";
 import type { VersionedTransaction } from "@solana/web3.js";
 import type { Chain, ExternalWalletSignerConfigForChain } from "@crossmint/wallets-sdk";
+import base58 from "bs58";
 import type {
     APIKeyEnvironmentPrefix,
     EvmExternalWalletSignerConfig,
     SolanaExternalWalletSignerConfig,
 } from "@crossmint/common-sdk-base";
-import DynamicContextProviderWrapper from "@/components/dynamic-xyz/DynamicContextProviderWrapper";
 import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
 import { SolanaWalletConnectors } from "@dynamic-labs/solana";
+import DynamicContextProviderWrapper from "@/components/dynamic-xyz/DynamicContextProviderWrapper";
 import { dynamicChainToCrossmintChain } from "@/utils/dynamic/dynamicChainToCrossmintChain";
-import { useCrossmintAuth } from "@/hooks/useCrossmintAuth";
-import base58 from "bs58";
+import { useCrossmintAuth } from "@/hooks";
 
 type DynamicWalletProviderProps = {
     children: ReactNode;
