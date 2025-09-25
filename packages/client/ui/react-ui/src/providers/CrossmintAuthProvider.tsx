@@ -1,4 +1,5 @@
-import { type MouseEvent, useEffect, useMemo, useState, useCallback, createContext } from "react";
+import type React from "react";
+import { type MouseEvent, useEffect, useMemo, useState, useCallback, createContext, useRef } from "react";
 import { validateApiKeyAndGetCrossmintBaseUrl } from "@crossmint/common-sdk-base";
 import type { OAuthProvider } from "@crossmint/common-sdk-auth";
 import {
@@ -44,7 +45,6 @@ function CrossmintAuthProviderContent({
     const { crossmint, experimental_setCustomAuth, experimental_customAuth } = useCrossmint(
         "CrossmintAuthProvider must be used within CrossmintProvider"
     );
-    const { startOAuthLogin } = useOAuthFlow();
 
     const crossmintBaseUrl = validateApiKeyAndGetCrossmintBaseUrl(crossmint.apiKey);
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -54,6 +54,9 @@ function CrossmintAuthProviderContent({
     const [externalWalletSigner, setExternalWalletSigner] = useState<
         ExternalWalletSignerConfigForChain<Chain> | undefined
     >(undefined);
+
+    // Ref to hold the OAuth login function that will be assigned by AuthWrapper
+    const loginWithOAuthRef = useRef<((provider: OAuthProvider) => Promise<void>) | null>(null);
 
     // Handle auth sync with Crossmint
     useEffect(() => {
@@ -115,9 +118,9 @@ function CrossmintAuthProviderContent({
                 console.log("User already logged in");
                 return;
             }
-            await startOAuthLogin(provider);
+            await loginWithOAuthRef.current?.(provider);
         },
-        [baseAuth.jwt, startOAuthLogin]
+        [baseAuth.jwt]
     );
 
     const uiAuthContextValue = useMemo(
@@ -151,27 +154,59 @@ function CrossmintAuthProviderContent({
                 }}
             >
                 <OAuthFlowProvider prefetchOAuthUrls={getAuthStatus() === "logged-out" && prefetchOAuthUrls}>
-                    {isWeb3Enabled ? (
-                        <DynamicWalletProvider
-                            apiKeyEnvironment={crossmint.apiKey.includes("production") ? "production" : "staging"}
-                            loginMethods={loginMethods}
-                            appearance={appearance}
-                            onSdkLoaded={setDynamicSdkLoaded}
-                            onWalletConnected={setExternalWalletSigner}
-                        >
-                            {children}
-                            <AuthFormDialog open={dialogOpen} />
-                        </DynamicWalletProvider>
-                    ) : (
-                        <>
-                            {children}
-                            <AuthFormDialog open={dialogOpen} />
-                        </>
-                    )}
+                    <AuthWrapper loginWithOAuthRef={loginWithOAuthRef}>
+                        {isWeb3Enabled ? (
+                            <DynamicWalletProvider
+                                apiKeyEnvironment={crossmint.apiKey.includes("production") ? "production" : "staging"}
+                                loginMethods={loginMethods}
+                                appearance={appearance}
+                                onSdkLoaded={setDynamicSdkLoaded}
+                                onWalletConnected={setExternalWalletSigner}
+                            >
+                                {children}
+                                <AuthFormDialog open={dialogOpen} />
+                            </DynamicWalletProvider>
+                        ) : (
+                            <>
+                                {children}
+                                <AuthFormDialog open={dialogOpen} />
+                            </>
+                        )}
+                    </AuthWrapper>
                 </OAuthFlowProvider>
             </AuthFormProvider>
         </AuthContext.Provider>
     );
+}
+
+// This wrapper is needed in order to assign the OAuth login function to the ref
+// so that it can be used in the AuthFormProvider above.
+function AuthWrapper({
+    children,
+    loginWithOAuthRef,
+}: {
+    children: React.ReactNode;
+    loginWithOAuthRef: React.MutableRefObject<((provider: OAuthProvider) => Promise<void>) | null>;
+}) {
+    const { startOAuthLogin } = useOAuthFlow();
+    const baseAuth = useCrossmintAuthBase();
+
+    const loginWithOAuth = useCallback(
+        async (provider: OAuthProvider) => {
+            if (baseAuth.jwt != null) {
+                console.log("User already logged in");
+                return;
+            }
+            await startOAuthLogin(provider);
+        },
+        [baseAuth.jwt, startOAuthLogin]
+    );
+
+    useEffect(() => {
+        loginWithOAuthRef.current = loginWithOAuth;
+    }, [loginWithOAuth, loginWithOAuthRef]);
+
+    return <>{children}</>;
 }
 
 export function CrossmintAuthProvider({
