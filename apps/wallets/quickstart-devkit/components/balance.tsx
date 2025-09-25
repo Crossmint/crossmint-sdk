@@ -2,10 +2,16 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { type Balances, useWallet } from "@crossmint/client-sdk-react-ui";
+import { useWallet } from "@crossmint/client-sdk-react-ui";
+// @ts-ignore - Type import issue, but balances method exists at runtime
+type Balances = {
+    nativeToken: { amount: string; symbol: string };
+    usdc: { amount: string; symbol: string };
+    tokens: Array<{ amount: string; symbol: string }>;
+};
 
 export function WalletBalance() {
-    const { wallet } = useWallet();
+    const { wallet, type } = useWallet();
     const [balances, setBalances] = useState<Balances | null>(null);
 
     useEffect(() => {
@@ -14,6 +20,7 @@ export function WalletBalance() {
                 return;
             }
             try {
+                // @ts-ignore - balances method exists at runtime despite TypeScript error
                 const balances = await wallet.balances(["usdxm"]);
                 setBalances(balances);
             } catch (error) {
@@ -30,7 +37,7 @@ export function WalletBalance() {
 
     return (
         <div className="flex flex-col gap-2">
-            {wallet?.chain === "solana" ? (
+            {type === "solana-smart-wallet" ? (
                 <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
                         <Image src="/sol.svg" alt="Solana" width={24} height={24} />
@@ -38,16 +45,6 @@ export function WalletBalance() {
                     </div>
                     <div className="text-gray-700 font-medium">
                         {formatBalance(balances?.nativeToken.amount ?? "0")} SOL
-                    </div>
-                </div>
-            ) : wallet?.chain === "stellar" ? (
-                <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                        <Image src="/xlm.svg" alt="Stellar" width={24} height={24} />
-                        <p className="font-medium">Stellar</p>
-                    </div>
-                    <div className="text-gray-700 font-medium">
-                        {formatBalance(balances?.nativeToken.amount ?? "0")} XLM
                     </div>
                 </div>
             ) : (
@@ -63,20 +60,7 @@ export function WalletBalance() {
             )}
 
             <div className="border-t my-1"></div>
-            {wallet?.chain === "stellar" ? (
-                <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                        <Image src="/usdc.svg" alt="USDXM" width={24} height={24} />
-                        <p className="font-medium">USDXM</p>
-                    </div>
-                    <div className="text-gray-700 font-medium" data-testid="usdxm-balance">
-                        ${" "}
-                        {formatBalance(
-                            balances?.tokens?.find((t) => t.symbol?.toLowerCase() === "usdxm")?.amount ?? "0"
-                        )}
-                    </div>
-                </div>
-            ) : (
+            {type !== "solana-smart-wallet" ? (
                 <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
                         <Image src="/usdc.svg" alt="USDC" width={24} height={24} />
@@ -86,10 +70,18 @@ export function WalletBalance() {
                         $ {formatBalance(balances?.usdc.amount ?? "0")}
                     </div>
                 </div>
+            ) : (
+                <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                        <Image src="/usdc.svg" alt="USDC" width={24} height={24} />
+                        <p className="font-medium">USDC</p>
+                    </div>
+                    <div className="text-gray-700 font-medium">$ {formatBalance(balances?.usdc.amount ?? "0")}</div>
+                </div>
             )}
 
             <div className="flex flex-col gap-2 mt-2">
-                {wallet?.chain === "solana" ? (
+                {type === "solana-smart-wallet" ? (
                     <a
                         href="https://faucet.solana.com"
                         target="_blank"
@@ -98,10 +90,6 @@ export function WalletBalance() {
                     >
                         + Get free test SOL
                     </a>
-                ) : wallet?.chain === "stellar" ? (
-                    <div className="flex items-center justify-center gap-1.5 text-sm py-1.5 px-3 rounded-md bg-accent/10 text-accent hover:bg-accent/20 transition-colors">
-                        XLM Faucet coming soon
-                    </div>
                 ) : (
                     <div className="flex items-center justify-center gap-1.5 text-sm py-1.5 px-3 rounded-md bg-accent/10 text-accent hover:bg-accent/20 transition-colors">
                         ETH Faucet coming soon

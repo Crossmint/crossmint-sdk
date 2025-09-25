@@ -5,7 +5,7 @@ import { useState } from "react";
 import { WalletBalance } from "../components/balance";
 import { Permissions } from "../components/permissions";
 import { CrossmintAuthLoginButton } from "../components/login";
-import { EVMTransferFunds, SolanaTransferFunds, StellarTransferFunds } from "@/components/transfer";
+import { EVMTransferFunds, SolanaTransferFunds } from "@/components/transfer";
 import { useAuth, useWallet } from "@crossmint/client-sdk-react-ui";
 import { CrossmintAuthLogoutButton } from "@/components/logout";
 import { ApprovalTest } from "@/components/approval-test";
@@ -28,7 +28,7 @@ export function HomeContent() {
     //     crossmintWalletStatus: status,
     //     isLoading,
     // } = useEVMDynamicConnector();
-    const { wallet, status } = useWallet();
+    const { wallet, status, type } = useWallet();
     const { status: crossminAuthStatus } = useAuth();
     const isLoading = status === "in-progress" || crossminAuthStatus === "initializing";
 
@@ -65,8 +65,7 @@ export function HomeContent() {
             <div className="flex flex-col mb-8">
                 <Image src="/crossmint.svg" alt="Crossmint logo" priority width={150} height={150} className="mb-4" />
                 <h1 className="text-2xl font-semibold mb-2">
-                    Wallets Quickstart (Devkit) -{" "}
-                    {wallet?.chain === "solana" ? "Solana" : wallet?.chain === "stellar" ? "Stellar" : "EVM"}
+                    Wallets Quickstart (Devkit) - {type === "solana-smart-wallet" ? "Solana" : "EVM"}
                 </h1>
                 <p className="text-gray-600 text-sm">The easiest way to build onchain</p>
             </div>
@@ -114,9 +113,8 @@ export function HomeContent() {
                     {/* <DynamicLabsLogoutButton /> */}
                     {/* <FirebaseLogoutButton /> */}
                 </div>
-                {wallet?.chain !== "solana" && wallet?.chain !== "stellar" && <EVMTransferFunds />}
-                {wallet?.chain === "solana" && <SolanaTransferFunds />}
-                {wallet?.chain === "stellar" && <StellarTransferFunds />}
+                {type !== "solana-smart-wallet" && <EVMTransferFunds />}
+                {type === "solana-smart-wallet" && <SolanaTransferFunds />}
                 <Permissions />
                 <ApprovalTest />
             </div>
