@@ -1,5 +1,12 @@
 # @crossmint/wallets-sdk
 
+## 0.14.1
+
+### Patch Changes
+
+- Updated dependencies [b9fd4ed]
+  - @crossmint/client-sdk-window@1.0.4
+
 ## 0.14.0
 
 ### Minor Changes

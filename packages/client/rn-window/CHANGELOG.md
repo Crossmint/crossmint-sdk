@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-rn-window
 
+## 0.3.5
+
+### Patch Changes
+
+- b9fd4ed: Temporary logs
+- Updated dependencies [b9fd4ed]
+  - @crossmint/client-sdk-window@1.0.4
+
 ## 0.3.4
 
 ### Patch Changes

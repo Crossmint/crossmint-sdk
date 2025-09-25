@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-window
 
+## 1.0.4
+
+### Patch Changes
+
+- b9fd4ed: Temporary logs
+
 ## 1.0.3
 
 ### Patch Changes
