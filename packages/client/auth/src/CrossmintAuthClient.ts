@@ -147,12 +147,7 @@ export class CrossmintAuthClient extends CrossmintAuth {
             this.scheduleNextRefresh(authMaterial.jwt);
             return authMaterial;
         } catch (error) {
-            // Only log errors that aren't authentication errors to reduce noise
-            if (error instanceof CrossmintAuthenticationError) {
-                console.debug("Auth refresh failed:", error.message);
-            } else {
-                console.error("Unexpected error during auth refresh:", error);
-            }
+            console.error(error);
             await this.logout();
             return null;
         } finally {
