@@ -1,29 +1,15 @@
-import {
-    createContext,
-    type ReactNode,
-    useCallback,
-    useContext,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-    type MouseEvent,
-} from "react";
+import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { CrossmintAuth, getCookie, type StorageProvider } from "@crossmint/client-sdk-auth";
+import { type SDKExternalUser, SESSION_PREFIX } from "@crossmint/common-sdk-auth";
 import { useCrossmint } from "../hooks";
+import type { AuthStatus, CrossmintAuthBaseContextType } from "@/types";
 
-export type AuthStatus = "logged-in" | "logged-out" | "in-progress" | "initializing";
-
-export type CrossmintAuthBaseContextType = {
-    crossmintAuth?: any;
-    login: (defaultEmail?: string | MouseEvent) => void;
-    logout: () => void;
-    jwt?: string;
-    user?: any;
-    status: AuthStatus;
-    getUser: () => void;
-};
-
-export const CrossmintAuthBaseContext = createContext<CrossmintAuthBaseContextType | undefined>(undefined);
+export const CrossmintAuthBaseContext = createContext<CrossmintAuthBaseContextType | undefined>({
+    crossmintAuth: undefined,
+    logout: () => {},
+    status: "initializing",
+    getUser: () => {},
+});
 
 export function useCrossmintAuthBase(): CrossmintAuthBaseContextType {
     const context = useContext(CrossmintAuthBaseContext);
@@ -38,7 +24,7 @@ export interface CrossmintAuthBaseProviderProps {
     onLoginSuccess?: () => void;
     refreshRoute?: string;
     logoutRoute?: string;
-    storageProvider?: any;
+    storageProvider?: StorageProvider;
 }
 
 export function CrossmintAuthBaseProvider({
@@ -49,22 +35,23 @@ export function CrossmintAuthBaseProvider({
     storageProvider,
 }: CrossmintAuthBaseProviderProps) {
     const { crossmint } = useCrossmint("CrossmintAuthBaseProvider must be used within CrossmintProvider");
-    const [user, setUser] = useState<any | undefined>(undefined);
+    const [user, setUser] = useState<SDKExternalUser | undefined>(undefined);
     const [jwt, setJwt] = useState<string | undefined>(undefined);
     const [initialized, setInitialized] = useState(false);
 
     const crossmintAuthRef = useRef<any | null>(null);
-    const crossmintAuth = useMemo(() => {
+
+    // Initialize auth client in useEffect to avoid state updates during render
+    useEffect(() => {
         if (!crossmintAuthRef.current) {
             try {
-                const { CrossmintAuth } = require("@crossmint/client-sdk-auth");
                 crossmintAuthRef.current = CrossmintAuth.from(crossmint, {
                     callbacks: {
                         onLogout: () => {
                             setUser(undefined);
                             setJwt(undefined);
                         },
-                        onTokenRefresh: (authMaterial: any) => {
+                        onTokenRefresh: (authMaterial) => {
                             setUser(authMaterial.user);
                             setJwt(authMaterial.jwt);
                         },
@@ -77,8 +64,9 @@ export function CrossmintAuthBaseProvider({
                 console.error("Failed to initialize CrossmintAuth:", error);
             }
         }
-        return crossmintAuthRef.current;
     }, [crossmint, refreshRoute, logoutRoute, storageProvider]);
+
+    const crossmintAuth = crossmintAuthRef.current;
 
     const triggerHasJustLoggedIn = useCallback(() => {
         onLoginSuccess?.();
@@ -88,8 +76,8 @@ export function CrossmintAuthBaseProvider({
         if (jwt == null) {
             if (storageProvider) {
                 storageProvider
-                    .get?.("crossmint-session")
-                    .then((jwt: string) => {
+                    .get?.(SESSION_PREFIX)
+                    .then((jwt) => {
                         if (jwt != null) {
                             setJwt(jwt);
                         }
@@ -99,8 +87,7 @@ export function CrossmintAuthBaseProvider({
                     });
             } else {
                 try {
-                    const { getCookie } = require("@crossmint/client-sdk-auth");
-                    const jwt = getCookie("crossmint-session");
+                    const jwt = getCookie(SESSION_PREFIX);
                     setJwt(jwt);
                 } catch (error) {
                     console.error("Failed to get cookie:", error);
@@ -118,8 +105,6 @@ export function CrossmintAuthBaseProvider({
         }
     }, [jwt, triggerHasJustLoggedIn]);
 
-    const login = useCallback((defaultEmail?: string | MouseEvent) => {}, []);
-
     const logout = useCallback(() => {
         crossmintAuth?.logout();
     }, [crossmintAuth]);
@@ -135,17 +120,24 @@ export function CrossmintAuthBaseProvider({
         return user;
     }, [jwt, crossmintAuth]);
 
+    const getStatus = useCallback((): AuthStatus => {
+        if (!initialized) {
+            return "initializing";
+        }
+
+        return jwt != null ? "logged-in" : "logged-out";
+    }, [jwt, initialized]);
+
     const contextValue = useMemo(
         () => ({
             crossmintAuth,
-            login,
             logout,
             jwt,
             user,
-            status: initialized ? (jwt != null ? "logged-in" : "logged-out") : ("initializing" as AuthStatus),
+            status: getStatus(),
             getUser,
         }),
-        [crossmintAuth, login, logout, jwt, user, initialized, getUser]
+        [crossmintAuth, logout, jwt, user, initialized, getUser, getStatus]
     );
 
     return <CrossmintAuthBaseContext.Provider value={contextValue}>{children}</CrossmintAuthBaseContext.Provider>;

@@ -1,10 +1,18 @@
 import { useContext } from "react";
-import { AuthContext } from "@/providers/CrossmintAuthProviderInternal";
+import type { CrossmintAuthBaseContextType } from "@crossmint/client-sdk-react-base";
+import type { OAuthProvider } from "@crossmint/common-sdk-auth";
+import { AuthContext } from "@/providers";
 
-export function useAuth() {
+export interface CrossmintAuthContext extends CrossmintAuthBaseContextType {
+    experimental_loginWithOAuth: (provider: OAuthProvider) => Promise<void>;
+}
+
+export function useCrossmintAuth(): CrossmintAuthContext {
     const context = useContext(AuthContext);
-    if (context === undefined) {
-        throw new Error("useAuth must be used within an AuthProvider");
+    if (!context) {
+        throw new Error("useCrossmintAuth must be used within a CrossmintAuthProvider");
     }
     return context;
 }
+
+export const useAuth = useCrossmintAuth;

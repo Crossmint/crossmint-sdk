@@ -1,8 +1,8 @@
+import { useEffect, useRef, useState, useCallback } from "react";
 import type { OAuthProvider } from "@crossmint/common-sdk-auth";
 import { ChildWindow, PopupWindow } from "@crossmint/client-sdk-window";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useCrossmintAuth } from "@/hooks";
 import { z } from "zod";
-import { useCrossmintAuth } from "./useCrossmintAuth";
 
 type OAuthUrlMap = Record<OAuthProvider, string>;
 
