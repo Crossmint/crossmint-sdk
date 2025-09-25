@@ -2,7 +2,7 @@ import { render, fireEvent } from "@testing-library/react";
 import { beforeEach } from "vitest";
 import { AuthFormProvider, useAuthForm } from "./AuthFormProvider";
 import { describe, expect, it, vi } from "vitest";
-import type { LoginMethod } from "@/types/auth";
+import type { LoginMethod } from "@crossmint/client-sdk-react-base";
 
 // Mock component to test the AuthFormProvider
 function TestComponent() {

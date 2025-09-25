@@ -15,6 +15,9 @@ import { type CancellableTask, queueTask } from "@crossmint/client-sdk-base";
 import { getJWTExpiration, TIME_BEFORE_EXPIRING_JWT_IN_SECONDS } from "./utils";
 import { type StorageProvider, getDefaultStorageProvider } from "./utils/storage";
 
+// Global flag to prevent multiple concurrent initial refresh calls across all instances
+let globalInitialRefreshInProgress = false;
+
 export type CrossmintAuthClientConfig = CrossmintAuthOptions & {
     callbacks?: CrossmintAuthClientCallbacks;
     logoutRoute?: string;
@@ -39,7 +42,22 @@ export class CrossmintAuthClient extends CrossmintAuth {
         const authClient = new CrossmintAuthClient(crossmint, CrossmintAuth.defaultApiClient(crossmint), config);
         // In case an instance is created on the server, we can't refresh as this stores cookies
         if (typeof window !== "undefined") {
-            authClient.handleRefreshAuthMaterial();
+            // Only start initial refresh if one isn't already in progress globally
+            // This handles React StrictMode creating multiple instances (in Dev mode)
+            if (!globalInitialRefreshInProgress) {
+                globalInitialRefreshInProgress = true;
+                setTimeout(() => {
+                    authClient
+                        .handleRefreshAuthMaterial()
+                        .catch((error) => {
+                            console.debug("Initial auth refresh failed:", error);
+                        })
+                        .finally(() => {
+                            // Reset the flag so future legitimate refreshes can happen
+                            globalInitialRefreshInProgress = false;
+                        });
+                }, 0);
+            }
         }
         return authClient;
     }
@@ -111,10 +129,12 @@ export class CrossmintAuthClient extends CrossmintAuth {
                 return null;
             }
 
-            // Create new refresh promise if none exists
+            // Create new refresh promise if none exists or return existing one for concurrent calls
             if (this.refreshPromise == null) {
                 this.refreshPromise = this.refreshAuthMaterial(refreshToken);
             }
+
+            // Await the shared promise - this handles concurrent calls to the same refresh
             const authMaterial = await this.refreshPromise;
 
             // If a custom refresh route is set, storing in cookies is handled in the server

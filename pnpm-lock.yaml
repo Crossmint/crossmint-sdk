@@ -582,6 +582,9 @@ importers:
 
   packages/client/react-base:
     dependencies:
+      '@crossmint/client-sdk-auth':
+        specifier: workspace:*
+        version: link:../auth
       '@crossmint/client-sdk-base':
         specifier: workspace:*
         version: link:../base
@@ -591,6 +594,9 @@ importers:
       '@crossmint/client-signers':
         specifier: workspace:*
         version: link:../signers
+      '@crossmint/common-sdk-auth':
+        specifier: workspace:*
+        version: link:../../common/auth
       '@crossmint/common-sdk-base':
         specifier: workspace:*
         version: link:../../common/base

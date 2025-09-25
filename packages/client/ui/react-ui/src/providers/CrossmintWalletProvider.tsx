@@ -1,11 +1,10 @@
 import { type ReactNode, useState, useCallback, useRef, useEffect, useContext } from "react";
 import type { UIConfig } from "@crossmint/common-sdk-base";
-import { CrossmintWalletBaseProvider, type CreateOnLogin } from "@crossmint/client-sdk-react-base";
+import { CrossmintWalletBaseProvider, type CreateOnLogin, CrossmintAuthBaseContext } from "@crossmint/client-sdk-react-base";
 
 import { PasskeyPrompt } from "@/components/auth/PasskeyPrompt";
 import { EmailSignersDialog } from "@/components/signers/EmailSignersDialog";
 import { PhoneSignersDialog } from "@/components/signers/PhoneSignersDialog";
-import { AuthContext } from "./CrossmintAuthProviderInternal";
 
 const throwNotAvailable = (functionName: string) => () => {
     throw new Error(`${functionName} is not available. Make sure you're using an email or phone signer wallet.`);
@@ -43,7 +42,7 @@ export function CrossmintWalletProvider({
     createOnLogin,
     callbacks,
 }: CrossmintWalletProviderProps) {
-    const authContext = useContext(AuthContext);
+    const authContext = useContext(CrossmintAuthBaseContext);
 
     const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
 
