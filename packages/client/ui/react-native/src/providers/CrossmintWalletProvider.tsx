@@ -193,6 +193,8 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
                     onHttpError={(syntheticEvent) => {
                         console.error("[CrossmintWalletProvider] WebView HTTP error:", syntheticEvent.nativeEvent);
                     }}
+                    onContentProcessDidTerminate={() => webviewRef.current?.reload()}
+                    onRenderProcessGone={() => webviewRef.current?.reload()}
                     style={{
                         width: 1,
                         height: 1,
@@ -203,8 +205,8 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
                     incognito={false}
                     setSupportMultipleWindows={false}
                     originWhitelist={[environmentUrlConfig[parsedAPIKey.environment]]}
-                    cacheEnabled={false}
-                    cacheMode="LOAD_NO_CACHE"
+                    cacheEnabled={true}
+                    cacheMode="LOAD_DEFAULT"
                 />
             </View>
         </CrossmintWalletBaseProvider>
