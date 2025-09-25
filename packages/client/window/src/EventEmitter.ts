@@ -95,6 +95,7 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
         return new Promise((resolve, reject) => {
             let interval: ReturnType<typeof setInterval> | undefined = undefined;
             const timer = setTimeout(() => {
+                this.off(responseListenerId);
                 reject(
                     `Timed out waiting for ${String(responseEvent)} event${
                         options?.condition ? ", with condition," : ""
