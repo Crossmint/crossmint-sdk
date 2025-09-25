@@ -102,7 +102,6 @@ function CrossmintAuthProviderContent({
     };
 
     const loginWithOAuth = async (provider: OAuthProvider) => {
-        console.log("loginWithOAuth", provider);
         try {
             setInProgress(true);
             const oauthUrl =
