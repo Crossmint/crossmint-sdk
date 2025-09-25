@@ -115,6 +115,7 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
                 console.log(
                     `[EventEmitter] sendAction() - Timeout reached for response event: ${String(responseEvent)}`
                 );
+                this.off(responseListenerId);
                 reject(
                     `Timed out waiting for ${String(responseEvent)} event${
                         options?.condition ? ", with condition," : ""
