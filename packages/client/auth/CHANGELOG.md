@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-auth
 
+## 1.2.32
+
+### Patch Changes
+
+- fe31db3: Fixed issue with double auth api requests in react strict mode
+  - @crossmint/client-sdk-base@1.6.4
+  - @crossmint/common-sdk-auth@1.0.54
+
 ## 1.2.31
 
 ### Patch Changes
