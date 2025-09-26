@@ -12,11 +12,20 @@ const INJECTED_BRIDGE_JS = `
         info: console.info,
     };
 
+    // Function to get timestamp
+    const getTimestamp = () => {
+        return new Date().toISOString();
+    };
+
     // Function to send messages to RN
     const postToRN = (type, args) => {
         try {
+            // Add timestamp to the beginning of args
+            const timestamp = getTimestamp();
+            const timestampedArgs = ['[' + timestamp + ']'].concat(args);
+
             // Attempt to serialize arguments, handling potential circular references safely
-            const serializedArgs = args.map(arg => {
+            const serializedArgs = timestampedArgs.map(arg => {
                  // Basic type checking and string conversion
                 if (typeof arg === 'function') {
                     return '[Function]';
@@ -43,7 +52,7 @@ const INJECTED_BRIDGE_JS = `
                 return String(arg); // Convert primitive types to string directly
             });
              var seen = new Set(); // Declare seen here for the final stringify
-            const message = JSON.stringify({ type: \`console.\${type}\`, data: serializedArgs });
+            const message = JSON.stringify({ type: 'console.' + type, data: serializedArgs });
             if (window.ReactNativeWebView && typeof window.ReactNativeWebView.postMessage === 'function') {
                  window.ReactNativeWebView.postMessage(message);
             } else {
@@ -57,19 +66,23 @@ const INJECTED_BRIDGE_JS = `
 
     // Override console methods
     console.log = (...args) => {
-        originalConsole.log.apply(console, args); // Call original console.log
+        const timestamp = getTimestamp();
+        originalConsole.log('[' + timestamp + ']', ...args); // Call original console.log with timestamp
         postToRN('log', args);
     };
     console.error = (...args) => {
-        originalConsole.error.apply(console, args); // Call original console.error
+        const timestamp = getTimestamp();
+        originalConsole.error('[' + timestamp + ']', ...args); // Call original console.error with timestamp
         postToRN('error', args);
     };
     console.warn = (...args) => {
-        originalConsole.warn.apply(console, args); // Call original console.warn
+        const timestamp = getTimestamp();
+        originalConsole.warn('[' + timestamp + ']', ...args); // Call original console.warn with timestamp
         postToRN('warn', args);
     };
     console.info = (...args) => {
-        originalConsole.info.apply(console, args); // Call original console.info
+        const timestamp = getTimestamp();
+        originalConsole.info('[' + timestamp + ']', ...args); // Call original console.info with timestamp
         postToRN('info', args);
     };
 
