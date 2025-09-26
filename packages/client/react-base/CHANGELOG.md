@@ -1,5 +1,21 @@
 # @crossmint/client-sdk-react-base
 
+## 0.6.0
+
+### Minor Changes
+
+- fe31db3: Consolidated auth logic into CrossmintAuthBaseProvider and refactored platform packages to extend it.
+
+### Patch Changes
+
+- Updated dependencies [fe31db3]
+- Updated dependencies [1034e0f]
+  - @crossmint/client-sdk-auth@1.2.32
+  - @crossmint/client-sdk-window@1.0.5
+  - @crossmint/wallets-sdk@0.14.2
+  - @crossmint/client-sdk-base@1.6.4
+  - @crossmint/common-sdk-auth@1.0.54
+
 ## 0.5.39
 
 ### Patch Changes
