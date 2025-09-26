@@ -1,10 +1,4 @@
-import {
-    useCrossmintAuth,
-    useWallet,
-    useWalletEmailSigner,
-    useCrossmint,
-    type Balances,
-} from "@crossmint/client-sdk-react-native-ui";
+import { useCrossmintAuth, useWallet, type Balances } from "@crossmint/client-sdk-react-native-ui";
 import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Button, Text, View, TextInput, StyleSheet, ScrollView, Alert } from "react-native";
 import * as Linking from "expo-linking";
@@ -12,10 +6,10 @@ import { fundUSDC } from "@/utils/usdcFaucet";
 
 export default function Index() {
     const { loginWithOAuth, user, logout, createAuthSession, jwt } = useCrossmintAuth();
-    const { experimental_customAuth } = useCrossmint();
-    const loggedInUserEmail = experimental_customAuth?.email ?? null;
-    const { wallet, getOrCreateWallet, status: walletStatus } = useWallet();
-    const { needsAuth, sendEmailWithOtp, verifyOtp, reject } = useWalletEmailSigner();
+    // const { experimental_customAuth } = useCrossmint();
+    // const loggedInUserEmail = experimental_customAuth?.email ?? null;
+    const { wallet, status: walletStatus } = useWallet();
+    // const { needsAuth, sendEmailWithOtp, verifyOtp, reject } = useWalletEmailSigner();
     const walletAddress = useMemo(() => wallet?.address, [wallet]);
     const url = Linking.useURL();
 
@@ -23,9 +17,9 @@ export default function Index() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
     // Email signer states
-    const [otp, setOtp] = useState("");
+    // const [otp, setOtp] = useState("");
     const [txLink, setTxLink] = useState<string | null>(null);
-    const [uiError, setUiError] = useState<string | null>(null);
+    // const [uiError, setUiError] = useState<string | null>(null);
     const [recipientAddress, setRecipientAddress] = useState("");
     const [amount, setAmount] = useState<string>("");
 
@@ -50,36 +44,36 @@ export default function Index() {
         fetchBalances();
     }, [wallet]);
 
-    const handleAction = async (action: () => Promise<any> | void) => {
-        setIsLoading(true);
-        setUiError(null);
-        setTxLink(null);
-        try {
-            await action();
-        } catch (e: any) {
-            console.error(e);
-            const message = e.message || "An unexpected error occurred.";
-            setUiError(message);
-            Alert.alert("Error", message);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    // const handleAction = async (action: () => Promise<any> | void) => {
+    //     setIsLoading(true);
+    //     setUiError(null);
+    //     setTxLink(null);
+    //     try {
+    //         await action();
+    //     } catch (e: any) {
+    //         console.error(e);
+    //         const message = e.message || "An unexpected error occurred.";
+    //         setUiError(message);
+    //         Alert.alert("Error", message);
+    //     } finally {
+    //         setIsLoading(false);
+    //     }
+    // };
 
-    async function initWallet() {
-        if (user == null) {
-            console.log("User not logged in");
-            return;
-        }
-        setIsLoading(true);
-        try {
-            await getOrCreateWallet({ chain: "base-sepolia", signer: { type: "email" } });
-        } catch (error) {
-            console.error("Error initializing wallet:", error);
-        } finally {
-            setIsLoading(false);
-        }
-    }
+    // async function initWallet() {
+    //     if (user == null) {
+    //         console.log("User not logged in");
+    //         return;
+    //     }
+    //     setIsLoading(true);
+    //     try {
+    //         await getOrCreateWallet({ chain: "base-sepolia", signer: { type: "email" } });
+    //     } catch (error) {
+    //         console.error("Error initializing wallet:", error);
+    //     } finally {
+    //         setIsLoading(false);
+    //     }
+    // }
 
     async function onHandleFundUSDC() {
         if (walletAddress == null) {
@@ -100,25 +94,25 @@ export default function Index() {
         }
     }
 
-    const handleSendOtpEmail = async () => {
-        if (typeof loggedInUserEmail !== "string") {
-            Alert.alert("Error", "User email is not available.");
-            return;
-        }
+    // const handleSendOtpEmail = async () => {
+    //     if (typeof loggedInUserEmail !== "string") {
+    //         Alert.alert("Error", "User email is not available.");
+    //         return;
+    //     }
 
-        await handleAction(sendEmailWithOtp);
-    };
+    //     await handleAction(sendEmailWithOtp);
+    // };
 
-    const handleVerifyOtpInput = async () => {
-        if (!otp || !verifyOtp) {
-            Alert.alert("Error", "Please enter the OTP and ensure email signer is available.");
-            return;
-        }
-        await handleAction(async () => {
-            await verifyOtp(otp);
-            setOtp("");
-        });
-    };
+    // const handleVerifyOtpInput = async () => {
+    //     if (!otp || !verifyOtp) {
+    //         Alert.alert("Error", "Please enter the OTP and ensure email signer is available.");
+    //         return;
+    //     }
+    //     await handleAction(async () => {
+    //         await verifyOtp(otp);
+    //         setOtp("");
+    //     });
+    // };
 
     async function sendUSDC() {
         if (walletStatus !== "loaded" || wallet == null) {
@@ -147,40 +141,45 @@ export default function Index() {
                 <Text style={{ fontWeight: "bold" }}>User: {user?.email}</Text>
                 <Text>Wallet: {walletAddress}</Text>
                 <Text>Auth Status: {walletStatus}</Text>
-                <Text>Needs OTP Auth: {needsAuth ? "Yes" : "No"}</Text>
+                {/* <Text>Needs OTP Auth: {needsAuth ? "Yes" : "No"}</Text> */}
                 <Text>
                     Native Token Balance: ({balances?.nativeToken.symbol}) {balances?.nativeToken.amount}
                 </Text>
                 <Text>USDC Balance: {balances?.usdc.amount}</Text>
-                {uiError && <Text style={styles.errorText}>Last Action Error: {uiError}</Text>}
+                {/* {uiError && <Text style={styles.errorText}>Last Action Error: {uiError}</Text>} */}
                 {txLink && <Text>Last Tx Link: {txLink}</Text>}
             </View>
 
             <View style={styles.section}>
-                <Button title="Init Wallet" onPress={initWallet} disabled={isLoading} />
-                <Button title="Get $5 USDC" onPress={onHandleFundUSDC} disabled={isLoading} />
+                {/* <Button title="Init Wallet" onPress={initWallet} disabled={isLoading} /> */}
+                {walletAddress != null && (
+                    <Button title="Get $5 USDC" onPress={onHandleFundUSDC} disabled={isLoading} />
+                )}
             </View>
 
             <View style={styles.section}>
-                <Button
-                    title="Login with Google"
-                    onPress={() => {
-                        console.log("login with google");
-                        loginWithOAuth("google");
-                    }}
-                    disabled={isLoading}
-                />
-                <Button
-                    title="Logout"
-                    onPress={() => {
-                        console.log("logout");
-                        logout();
-                    }}
-                    disabled={isLoading}
-                />
+                {user == null ? (
+                    <Button
+                        title="Login with Google"
+                        onPress={() => {
+                            console.log("login with google");
+                            loginWithOAuth("google");
+                        }}
+                        disabled={isLoading}
+                    />
+                ) : (
+                    <Button
+                        title="Logout"
+                        onPress={() => {
+                            console.log("logout");
+                            logout();
+                        }}
+                        disabled={isLoading}
+                    />
+                )}
             </View>
 
-            {needsAuth && (
+            {/* {needsAuth && (
                 <View style={styles.section}>
                     <Text style={{ fontWeight: "bold", marginBottom: 10 }}>Email OTP Verification (required)</Text>
                     <Button title="Send OTP Email" onPress={handleSendOtpEmail} disabled={loggedInUserEmail == null} />
@@ -195,7 +194,7 @@ export default function Index() {
                     <Button title="Verify OTP" onPress={handleVerifyOtpInput} disabled={!otp || isLoading} />
                     <Button title="Reject" onPress={() => reject(new Error("Rejected OTP"))} />
                 </View>
-            )}
+            )} */}
 
             {walletAddress != null && (
                 <View style={styles.section}>
