@@ -5,7 +5,7 @@ test("getOrCreateWallet succeeds and returns an address", async ({ page }) => {
     expect(apiKey).toBeTruthy();
 
     const chain = process.env.E2E_CHAIN || "base-sepolia";
-    const signerType = process.env.E2E_SIGNER_TYPE || "evm-api-key";
+    const signerType = process.env.E2E_SIGNER_TYPE || "api-key";
 
     const url = `/index.html?apiKey=${encodeURIComponent(apiKey!)}&chain=${encodeURIComponent(chain)}&signerType=${encodeURIComponent(signerType)}`;
 

@@ -6,17 +6,19 @@ function getParam(name: string) {
 
 const apiKey = getParam("apiKey");
 const chain = getParam("chain") || "base-sepolia";
-const signerType = getParam("signerType") || "evm-api-key";
+const signerType = getParam("signerType") || "api-key";
 
 async function run() {
     const result: any = { success: false, error: null, address: null };
     try {
         const wallets = await CrossmintWallets.from({ apiKey });
         let signer: any;
-        if (signerType === "evm-api-key") {
+        if (signerType === "api-key") {
             signer = { type: "apiKey" };
-        } else {
+        } else if (signerType === "email") {
             signer = { type: "email", email: "test@example.com" };
+        } else {
+            signer = { type: "apiKey" };
         }
         const wallet = await wallets.getOrCreateWallet({ chain, signer });
         result.success = Boolean(wallet?.address);

@@ -12,4 +12,4 @@ Run
 
 Notes
 - Tests hit Crossmint staging using your API key.
-- Default chain is base-sepolia and signer is evm api key.
+- Default chain is base-sepolia and signer is api-key.
