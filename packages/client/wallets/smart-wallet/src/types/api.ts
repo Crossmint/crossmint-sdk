@@ -134,7 +134,7 @@ export type CreateSignatureParams =
           params: {
               chain: SmartWalletChain;
               signer: Signer;
-              isSmartWalletSignature: boolean;
+              isSmartWalletSignature?: boolean;
               typedData: {
                   domain: TypedDataDomain;
                   message: Record<string, unknown>;
