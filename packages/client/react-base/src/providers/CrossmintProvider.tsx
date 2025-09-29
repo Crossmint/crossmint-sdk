@@ -53,7 +53,7 @@ export function CrossmintProvider({
     }, []);
 
     const experimental_setCustomAuth = useCallback((customAuthParams?: CustomAuth) => {
-        if (!crossmintRef.current) {
+        if (crossmintRef.current == null) {
             throw new Error("CrossmintProvider is not initialized");
         }
         // Maintains backward compatibility in case crossmint.jwt is being used.
