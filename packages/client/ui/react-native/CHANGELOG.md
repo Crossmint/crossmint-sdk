@@ -1,5 +1,31 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.11.1
+
+### Patch Changes
+
+- Updated dependencies [635b217]
+  - @crossmint/wallets-sdk@0.14.3
+  - @crossmint/client-sdk-react-base@0.6.1
+
+## 0.11.0
+
+### Minor Changes
+
+- fe31db3: Consolidated auth logic into CrossmintAuthBaseProvider and refactored platform packages to extend it.
+
+### Patch Changes
+
+- Updated dependencies [fe31db3]
+- Updated dependencies [fe31db3]
+- Updated dependencies [1034e0f]
+  - @crossmint/client-sdk-react-base@0.6.0
+  - @crossmint/client-sdk-auth@1.2.32
+  - @crossmint/client-sdk-rn-window@0.3.6
+  - @crossmint/wallets-sdk@0.14.2
+  - @crossmint/client-sdk-base@1.6.4
+  - @crossmint/common-sdk-auth@1.0.54
+
 ## 0.10.17
 
 ### Patch Changes

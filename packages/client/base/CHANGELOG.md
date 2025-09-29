@@ -1,5 +1,12 @@
 # @crossmint/client-sdk-base
 
+## 1.6.4
+
+### Patch Changes
+
+- Updated dependencies [1034e0f]
+  - @crossmint/client-sdk-window@1.0.5
+
 ## 1.6.3
 
 ### Patch Changes

@@ -1,5 +1,19 @@
 # @crossmint/wallets-sdk
 
+## 0.14.3
+
+### Patch Changes
+
+- 635b217: Fix a bug of typedData not being properly managed for smart wallets in EVM
+
+## 0.14.2
+
+### Patch Changes
+
+- 1034e0f: Minor issues with retries in event handling
+- Updated dependencies [1034e0f]
+  - @crossmint/client-sdk-window@1.0.5
+
 ## 0.14.1
 
 ### Patch Changes
