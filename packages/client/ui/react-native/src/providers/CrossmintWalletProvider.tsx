@@ -38,11 +38,17 @@ export interface CrossmintWalletProviderProps {
 export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: CrossmintWalletProviderProps) {
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
     const { apiKey, appId } = crossmint;
-    const parsedAPIKey = validateAPIKey(apiKey);
-    if (!parsedAPIKey.isValid) {
-        throw new Error("Invalid API key");
-    }
-    const frameUrl = environmentUrlConfig[parsedAPIKey.environment];
+    const parsedAPIKey = useMemo(() => {
+        const result = validateAPIKey(apiKey);
+        if (!result.isValid) {
+            throw new Error("Invalid API key");
+        }
+        return result;
+    }, [apiKey]);
+
+    const frameUrl = useMemo(() => {
+        return environmentUrlConfig[parsedAPIKey.environment];
+    }, [parsedAPIKey.environment]);
 
     const webviewRef = useRef<WebView>(null);
     const webViewParentRef = useRef<WebViewParent<typeof signerOutboundEvents, typeof signerInboundEvents> | null>(
