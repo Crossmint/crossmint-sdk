@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.11.2
+
+### Patch Changes
+
+- 8179d74: Improve render process by using memoization
+- Updated dependencies [8179d74]
+  - @crossmint/client-sdk-react-base@0.6.2
+
 ## 0.11.1
 
 ### Patch Changes

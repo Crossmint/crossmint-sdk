@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-base
 
+## 0.6.2
+
+### Patch Changes
+
+- 8179d74: Improve render process by using memoization
+
 ## 0.6.1
 
 ### Patch Changes
