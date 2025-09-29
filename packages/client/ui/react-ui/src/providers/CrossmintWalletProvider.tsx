@@ -68,6 +68,10 @@ export function CrossmintWalletProvider({
         createOnLogin?.signer.type === "phone" && createOnLogin?.signer.phone != null
             ? createOnLogin.signer.phone
             : experimental_customAuth?.phone;
+    const email =
+        createOnLogin?.signer.type === "email" && createOnLogin?.signer.email != null
+            ? createOnLogin.signer.email
+            : experimental_customAuth?.email;
 
     const createPasskeyPrompt = useCallback(
         (type: ValidPasskeyPromptType) => () =>
@@ -175,8 +179,8 @@ export function CrossmintWalletProvider({
             {children}
             <EmailSignersDialog
                 rejectRef={rejectRef}
-                email={experimental_customAuth?.email}
-                open={emailSignerDialogOpen && experimental_customAuth?.email != null}
+                email={email}
+                open={emailSignerDialogOpen && email != null}
                 setOpen={setEmailSignerDialogOpen}
                 step={emailSignerDialogStep}
                 onSubmitOTP={emailsigners_handleOTPSubmit}
