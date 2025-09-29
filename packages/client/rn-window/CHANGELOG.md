@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-rn-window
 
+## 0.3.6
+
+### Patch Changes
+
+- 1034e0f: Minor issues with retries in event handling
+- Updated dependencies [1034e0f]
+  - @crossmint/client-sdk-window@1.0.5
+
 ## 0.3.5
 
 ### Patch Changes
