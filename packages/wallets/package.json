@@ -17,7 +17,7 @@
     "scripts": {
         "build": "pnpm generate && tsup",
         "dev": "tsup --watch",
-        "test:vitest": "vitest run --passWithNoTests",
+        "test:vitest": "vitest run -c ./vitest.config.ts --passWithNoTests",
         "openapi-ts": "openapi-ts",
         "generate": "pnpm run openapi-ts",
         "generate:docs": "typedoc",
