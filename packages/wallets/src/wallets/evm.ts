@@ -110,7 +110,6 @@ export class EVMWallet extends Wallet<EVMChain> {
                 },
                 signer: this.signer.locator(),
                 chain,
-                isSmartWalletSignature: false,
             },
         });
         if ("error" in signatureCreationResponse) {
