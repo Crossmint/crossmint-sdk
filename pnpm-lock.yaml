@@ -1083,6 +1083,12 @@ importers:
       '@hey-api/openapi-ts':
         specifier: 0.69.2
         version: 0.69.2(typescript@5.8.2)
+      '@playwright/test':
+        specifier: 1.54.2
+        version: 1.54.2
+      dotenv:
+        specifier: ^16.3.1
+        version: 16.4.5
       typedoc:
         specifier: 0.26.5
         version: 0.26.5(typescript@5.8.2)
@@ -1092,6 +1098,9 @@ importers:
       typedoc-plugin-markdown:
         specifier: 4.2.3
         version: 4.2.3(typedoc@0.26.5(typescript@5.8.2))
+      vite:
+        specifier: ^5.4.0
+        version: 5.4.19(@types/node@22.7.5)(lightningcss@1.30.1)(terser@5.39.0)
 
 packages:
 
