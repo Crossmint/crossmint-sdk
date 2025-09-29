@@ -17,7 +17,8 @@
         "clean:node_modules": "pnpm dlx rimraf \"**/node_modules\" --glob",
         "lint": "biome check --diagnostic-level=error --max-diagnostics=200",
         "lint:fix": "biome check --write",
-        "test:vitest": "pnpm turbo test:vitest"
+        "test:vitest": "pnpm turbo test:vitest",
+        "test:e2e:wallets": "pnpm -w --filter @crossmint/wallets-sdk run test:e2e"
     },
     "devDependencies": {
         "@biomejs/biome": "1.8.3",

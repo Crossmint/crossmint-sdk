@@ -1,0 +1,38 @@
+name: Wallets E2E
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+env:
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    env:
+      CROSSMINT_STAGING_API_KEY: ${{ secrets.CROSSMINT_STAGING_API_KEY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js, PNPM, and install dependencies
+        uses: ./.github/actions/pnpm-install
+
+      - name: Build libs
+        run: pnpm build:libs
+
+      - name: Install Playwright browsers
+        run: pnpm --filter @crossmint/wallets-sdk exec playwright install --with-deps
+
+      - name: Run Wallets E2E
+        run: pnpm -w --filter @crossmint/wallets-sdk run test:e2e
+
+      - name: Upload Playwright HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wallets-e2e-report
+          path: packages/wallets/playwright-report

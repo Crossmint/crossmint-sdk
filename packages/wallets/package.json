@@ -17,10 +17,13 @@
     "scripts": {
         "build": "pnpm generate && tsup",
         "dev": "tsup --watch",
-        "test:vitest": "vitest run --passWithNoTests",
+        "test:vitest": "vitest run -c ./vitest.config.ts --passWithNoTests",
         "openapi-ts": "openapi-ts",
         "generate": "pnpm run openapi-ts",
-        "generate:docs": "typedoc"
+        "generate:docs": "typedoc",
+        "e2e:serve": "vite --config ./e2e/vite.config.ts",
+        "test:e2e": "dotenv -e ./e2e/.env -- pnpm exec playwright test --config ./e2e/playwright.config.ts",
+        "test:e2e:ui": "dotenv -e ./e2e/.env -- pnpm exec playwright test --ui --config ./e2e/playwright.config.ts"
     },
     "dependencies": {
         "@crossmint/client-sdk-window": "workspace:*",
@@ -39,6 +42,10 @@
         "@hey-api/openapi-ts": "0.69.2",
         "typedoc": "0.26.5",
         "typedoc-plugin-frontmatter": "1.0.0",
-        "typedoc-plugin-markdown": "4.2.3"
+        "typedoc-plugin-markdown": "4.2.3",
+        "@playwright/test": "1.54.2",
+        "vite": "^5.4.0",
+        "dotenv": "^16.3.1",
+        "dotenv-cli": "^7.4.1"
     }
 }

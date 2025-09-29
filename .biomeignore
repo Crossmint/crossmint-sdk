@@ -1,0 +1,8 @@
+node_modules
+dist
+coverage
+**/coverage
+**/dist
+**/node_modules
+packages/wallets/test-results
+packages/wallets/playwright-report
