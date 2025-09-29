@@ -24,7 +24,7 @@ export function CrossmintProvider({
 }) {
     const [version, setVersion] = useState(0);
     const crossmintRef = useRef<Crossmint | null>(null);
-    if (!crossmintRef.current) {
+    if (crossmintRef.current == null) {
         crossmintRef.current = new Proxy<Crossmint>(createCrossmint({ apiKey, overrideBaseUrl, appId, extensionId }), {
             set(target, prop, value) {
                 if (prop === "jwt" && target.jwt !== value) {
@@ -39,7 +39,7 @@ export function CrossmintProvider({
     }
 
     const setJwt = useCallback((jwt: string | undefined) => {
-        if (!crossmintRef.current) {
+        if (crossmintRef.current == null) {
             throw new Error("CrossmintProvider is not initialized");
         }
         if (jwt !== crossmintRef.current.jwt) {
