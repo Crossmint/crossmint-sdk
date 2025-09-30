@@ -10,6 +10,7 @@ interface CrossmintEmbeddedCheckoutV3CommonProps {
 
 export interface CrossmintEmbeddedCheckoutV3ExistingOrderProps extends CrossmintEmbeddedCheckoutV3CommonProps {
     orderId: string;
+    clientSecret?: string;
     lineItems?: never;
     recipient?: never;
     locale?: never;
