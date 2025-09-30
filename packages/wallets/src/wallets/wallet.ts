@@ -399,8 +399,20 @@ export class Wallet<C extends Chain> {
     }
 
     protected async approveSignatureAndWait(signatureId: string, options?: ApproveOptions) {
-        await this.approveSignatureInternal(signatureId, options);
-        await this.sleep(1_000); // Rule of thumb: signature won't be confirmed in less than 1 second
+        const signatureResponse = await this.approveSignatureInternal(signatureId, options);
+
+        if (
+            !("error" in signatureResponse) &&
+            signatureResponse.status === "success" &&
+            signatureResponse.outputSignature
+        ) {
+            return {
+                signature: signatureResponse.outputSignature,
+                signatureId,
+            };
+        }
+
+        await this.sleep(1_000);
         return await this.waitForSignature(signatureId);
     }
 
