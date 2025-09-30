@@ -13,13 +13,13 @@ export class PasskeySigner implements Signer {
         return this.config.locator;
     }
 
-    async signMessage(message: string): Promise<PasskeySignResult> {
+    async sign(payload: string): Promise<PasskeySignResult> {
         if (this.config.onSignWithPasskey) {
-            return await this.config.onSignWithPasskey(message);
+            return await this.config.onSignWithPasskey(payload);
         }
         const { signature, metadata } = await WebAuthnP256.sign({
             credentialId: this.id,
-            challenge: message as `0x${string}`,
+            challenge: payload as `0x${string}`,
         });
 
         return {
@@ -31,7 +31,11 @@ export class PasskeySigner implements Signer {
         };
     }
 
+    async signMessage(message: string): Promise<PasskeySignResult> {
+        return await this.sign(message);
+    }
+
     async signTransaction(transaction: string) {
-        return await this.signMessage(transaction);
+        return await this.sign(transaction);
     }
 }

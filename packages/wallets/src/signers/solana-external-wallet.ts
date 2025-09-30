@@ -25,6 +25,10 @@ export class SolanaExternalWalletSigner implements Signer {
         return this.config.locator;
     }
 
+    async sign(payload: string) {
+        return await Promise.reject(new Error("sign method not implemented for solana external wallet signer"));
+    }
+
     async signMessage() {
         return await Promise.reject(new Error("signMessage method not implemented for solana external wallet signer"));
     }

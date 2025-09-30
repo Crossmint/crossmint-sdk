@@ -1,4 +1,4 @@
-import type { ExternalWalletInternalSignerConfig, Signer } from "./types";
+import type { BaseSignResult, ExternalWalletInternalSignerConfig, PasskeySignResult, Signer } from "./types";
 import type { StellarChain } from "@/chains/chains";
 
 export class StellarExternalWalletSigner implements Signer {
@@ -20,6 +20,10 @@ export class StellarExternalWalletSigner implements Signer {
 
     locator() {
         return this.config.locator;
+    }
+
+    async sign(payload: string) {
+            return await Promise.reject(new Error("signMessage method not implemented for stellar external wallet signer"));
     }
 
     async signMessage() {

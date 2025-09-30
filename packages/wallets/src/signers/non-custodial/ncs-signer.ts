@@ -26,6 +26,7 @@ export abstract class NonCustodialSigner implements Signer {
         return this.config.address;
     }
 
+    abstract sign(payload: string): Promise<BaseSignResult>;
     abstract signMessage(message: string): Promise<BaseSignResult>;
 
     private async initialize() {

@@ -8,7 +8,13 @@ export class EVMNonCustodialSigner extends NonCustodialSigner {
         super(config);
     }
 
-    async signMessage(message: string) {
+    async signMessage(message: string, raw?: boolean,) {
+        if (raw && message) {
+            if (!isHex(message)){
+                throw new Error("Invalid hex string in signMessage raw argument");
+            }
+            return await this.sign(message);
+        }
         const messageRaw = isHex(message) ? (message as Hex) : toHex(message);
         const messageToSign = PersonalMessage.getSignPayload(messageRaw);
         return await this.sign(messageToSign);
@@ -18,11 +24,11 @@ export class EVMNonCustodialSigner extends NonCustodialSigner {
         return await this.sign(transaction);
     }
 
-    private async sign(raw: string): Promise<{ signature: string }> {
+      async sign(payload: string): Promise<{ signature: string }> {
         await this.handleAuthRequired();
         const jwt = this.getJwtOrThrow();
 
-        const hexString = raw.replace("0x", "");
+        const hexString = payload.replace("0x", "");
 
         const res = await this.config.clientTEEConnection?.sendAction({
             event: "request:sign",
