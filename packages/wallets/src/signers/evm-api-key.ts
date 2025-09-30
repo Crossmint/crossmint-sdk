@@ -9,7 +9,7 @@ export class EVMApiKeySigner implements Signer {
         return this.config.locator;
     }
 
-    async sign(){
+    async sign() {
         return await Promise.reject(
             new Error(
                 "API key signers do not support direct transaction signing - transaction are handled automatically by the backend"

@@ -49,8 +49,7 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
             throw new Error("Failed to sign payload");
         }
         SolanaNonCustodialSigner.verifyPublicKeyFormat(res.publicKey);
-       return {signature: res.signature.bytes};
-
+        return { signature: res.signature.bytes };
     }
 
     static verifyPublicKeyFormat(publicKey: { encoding: string; keyType: string; bytes: string } | null) {

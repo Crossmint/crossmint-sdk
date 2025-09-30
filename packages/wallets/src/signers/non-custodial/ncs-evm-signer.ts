@@ -8,9 +8,9 @@ export class EVMNonCustodialSigner extends NonCustodialSigner {
         super(config);
     }
 
-    async signMessage(message: string, raw?: boolean,) {
+    async signMessage(message: string, raw?: boolean) {
         if (raw && message) {
-            if (!isHex(message)){
+            if (!isHex(message)) {
                 throw new Error("Invalid hex string in signMessage raw argument");
             }
             return await this.sign(message);
@@ -24,7 +24,7 @@ export class EVMNonCustodialSigner extends NonCustodialSigner {
         return await this.sign(transaction);
     }
 
-      async sign(payload: string): Promise<{ signature: string }> {
+    async sign(payload: string): Promise<{ signature: string }> {
         await this.handleAuthRequired();
         const jwt = this.getJwtOrThrow();
 

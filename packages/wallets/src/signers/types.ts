@@ -139,6 +139,6 @@ export interface Signer<T extends keyof SignResultMap = keyof SignResultMap> {
     locator(): string;
     address?(): string;
     sign(payload: string): Promise<SignResultMap[T]>;
-    signMessage?(message: string): Promise<SignResultMap[T]>;
+    signMessage(message: string): Promise<SignResultMap[T]>;
     signTransaction(transaction: string): Promise<SignResultMap[T]>;
 }
