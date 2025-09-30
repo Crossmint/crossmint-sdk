@@ -404,7 +404,7 @@ export class Wallet<C extends Chain> {
         if (
             !("error" in signatureResponse) &&
             signatureResponse.status === "success" &&
-            signatureResponse.outputSignature
+            signatureResponse.outputSignature != null
         ) {
             return {
                 signature: signatureResponse.outputSignature,
