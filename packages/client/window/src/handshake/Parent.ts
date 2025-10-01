@@ -40,9 +40,7 @@ export class HandshakeParent<IncomingEvents extends EventMap, OutgoingEvents ext
         console.log("[HandshakeParent] handshakeWithChild() called");
 
         if (this.isConnected) {
-            console.log(
-                "[HandshakeParent] Already connected to child, skipping handshake. Forcing handshake with child"
-            );
+            console.log("[HandshakeParent] Already connected to child, skipping handshake");
             return;
         }
 
