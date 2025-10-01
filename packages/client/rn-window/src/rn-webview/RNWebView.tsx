@@ -112,10 +112,10 @@ const INJECTED_BRIDGE_JS = `
  * This provides maximum security by restricting to known, safe values
  */
 const AllowedGlobalsSchema = z
-  .object({
-    crossmintAppId: z.string().optional(),
-  })
-  .strict();
+    .object({
+        crossmintAppId: z.string().optional(),
+    })
+    .strict();
 export type SafeInjectableGlobals = z.infer<typeof AllowedGlobalsSchema>;
 
 /**
@@ -123,24 +123,23 @@ export type SafeInjectableGlobals = z.infer<typeof AllowedGlobalsSchema>;
  * This prevents code injection by only allowing known, safe globals
  */
 function createSafeGlobalsScript(globals: SafeInjectableGlobals): string {
-  const validatedGlobals = AllowedGlobalsSchema.parse(globals);
-  const assignments = Object.entries(validatedGlobals)
-    .filter(([, value]) => value != null) // Only assign defined values
-    .map(([key, value]) => {
-      // Safely serialize the value
-      const safeValue = JSON.stringify(value);
-      return `window.${key} = ${safeValue};`;
-    });
+    const validatedGlobals = AllowedGlobalsSchema.parse(globals);
+    const assignments = Object.entries(validatedGlobals)
+        .filter(([, value]) => value != null) // Only assign defined values
+        .map(([key, value]) => {
+            // Safely serialize the value
+            const safeValue = JSON.stringify(value);
+            return `window.${key} = ${safeValue};`;
+        });
 
-  return assignments.join("\n");
+    return assignments.join("\n");
 }
 
 export interface RNWebViewProps extends WebViewProps {
-  globals?: SafeInjectableGlobals;
+    globals?: SafeInjectableGlobals;
 }
 
-export const RNWebView = React.forwardRef<WebView, RNWebViewProps>(
-  ({ globals, ...props }, ref) => {
+export const RNWebView = React.forwardRef<WebView, RNWebViewProps>(({ globals, ...props }, ref) => {
     const safeGlobalsScript = globals ? createSafeGlobalsScript(globals) : "";
 
     const combinedInjectedJs = `
@@ -148,14 +147,7 @@ export const RNWebView = React.forwardRef<WebView, RNWebViewProps>(
         ${safeGlobalsScript}
     `;
 
-    return (
-      <WebView
-        ref={ref}
-        {...props}
-        injectedJavaScriptBeforeContentLoaded={combinedInjectedJs}
-      />
-    );
-  }
-);
+    return <WebView ref={ref} {...props} injectedJavaScriptBeforeContentLoaded={combinedInjectedJs} />;
+});
 
 RNWebView.displayName = "RNWebView";
