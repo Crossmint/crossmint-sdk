@@ -39,8 +39,6 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
     const { apiKey, appId } = crossmint;
 
-    const needsWebView = createOnLogin?.signer.type === "email" || createOnLogin?.signer.type === "phone";
-
     const parsedAPIKey = useMemo(() => {
         const result = validateAPIKey(apiKey);
         if (!result.isValid) {
@@ -61,6 +59,14 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
     // Use useState only for needsAuth since it needs to trigger re-renders
     const [needsAuth, setNeedsAuth] = useState<boolean>(false);
 
+    const [needsWebView, setNeedsWebView] = useState<boolean>(false);
+
+    useEffect(() => {
+        if (createOnLogin?.signer.type === "email" || createOnLogin?.signer.type === "phone") {
+            setNeedsWebView(true);
+        }
+    }, [createOnLogin?.signer.type]);
+
     // Keep functions as refs to avoid unnecessary re-renders
     const sendEmailWithOtpRef = useRef<() => Promise<void>>(throwNotAvailable("sendEmailWithOtp"));
     const verifyOtpRef = useRef<(otp: string) => Promise<void>>(throwNotAvailable("verifyOtp"));
@@ -80,7 +86,7 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
                 outgoingEvents: signerInboundEvents,
             });
         }
-    }, []);
+    }, [needsWebView, webviewRef.current]);
 
     const onWebViewLoad = useCallback(async () => {
         const parent = webViewParentRef.current;
@@ -171,12 +177,20 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
         [needsAuth]
     );
 
+    const handleWalletSignerSet = (signerType: string) => {
+        console.log("handleWalletSignerSet", signerType);
+        setNeedsWebView(signerType === "email" || signerType === "phone");
+    };
+
+    console.log("render needsWebView", needsWebView);
+
     return (
         <CrossmintWalletBaseProvider
             createOnLogin={createOnLogin}
             onAuthRequired={onAuthRequired}
-            clientTEEConnection={needsWebView ? getClientTEEConnection : undefined}
+            clientTEEConnection={getClientTEEConnection}
             callbacks={callbacks}
+            onWalletSignerSet={handleWalletSignerSet}
         >
             <CrossmintWalletEmailSignerContext.Provider value={authContextValue}>
                 {children}
