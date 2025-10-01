@@ -698,9 +698,6 @@ importers:
       '@crossmint/wallets-sdk':
         specifier: workspace:*
         version: link:../../../wallets
-      '@solana/web3.js':
-        specifier: 1.98.1
-        version: 1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10)
       bs58:
         specifier: ^5.0.0
         version: 5.0.0
@@ -735,6 +732,9 @@ importers:
       '@expo/config-plugins':
         specifier: ^9.0.17
         version: 9.0.17
+      '@solana/web3.js':
+        specifier: 1.98.1
+        version: 1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10)
       '@types/react':
         specifier: 19.0.12
         version: 19.0.12
@@ -792,9 +792,6 @@ importers:
       '@mysten/sui':
         specifier: 1.24.0
         version: 1.24.0(typescript@5.8.2)
-      '@solana/web3.js':
-        specifier: 1.98.1
-        version: 1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10)
       bs58:
         specifier: 5.0.0
         version: 5.0.0
@@ -826,6 +823,9 @@ importers:
         specifier: 3.22.4
         version: 3.22.4
     devDependencies:
+      '@solana/web3.js':
+        specifier: 1.98.1
+        version: 1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10)
       '@testing-library/react':
         specifier: ^16.0.1
         version: 16.3.0(@testing-library/dom@9.3.4)(@types/react-dom@18.3.0)(@types/react@18.3.20)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1015,9 +1015,6 @@ importers:
 
   packages/common/base:
     dependencies:
-      '@solana/web3.js':
-        specifier: 1.98.1
-        version: 1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10)
       bs58:
         specifier: 5.0.0
         version: 5.0.0
@@ -1028,6 +1025,9 @@ importers:
         specifier: 2.33.1
         version: 2.33.1(bufferutil@4.0.9)(typescript@5.8.2)(utf-8-validate@5.0.10)(zod@3.22.4)
     devDependencies:
+      '@solana/web3.js':
+        specifier: 1.98.1
+        version: 1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10)
       '@types/bs58':
         specifier: ^4.0.4
         version: 4.0.4
@@ -1058,9 +1058,6 @@ importers:
       '@hey-api/client-fetch':
         specifier: 0.8.1
         version: 0.8.1
-      '@solana/web3.js':
-        specifier: 1.98.1
-        version: 1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10)
       '@stellar/stellar-sdk':
         specifier: v14.0.0-rc.3
         version: 14.0.0-rc.3
@@ -1083,6 +1080,9 @@ importers:
       '@hey-api/openapi-ts':
         specifier: 0.69.2
         version: 0.69.2(typescript@5.8.2)
+      '@solana/web3.js':
+        specifier: 1.98.1
+        version: 1.98.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.2)(utf-8-validate@5.0.10)
       typedoc:
         specifier: 0.26.5
         version: 0.26.5(typescript@5.8.2)

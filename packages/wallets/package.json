@@ -27,7 +27,6 @@
         "@crossmint/client-signers": "workspace:*",
         "@crossmint/common-sdk-base": "workspace:*",
         "@hey-api/client-fetch": "0.8.1",
-        "@solana/web3.js": "1.98.1",
         "@stellar/stellar-sdk": "v14.0.0-rc.3",
         "abitype": "1.0.8",
         "bs58": "5.0.0",
@@ -37,8 +36,12 @@
     },
     "devDependencies": {
         "@hey-api/openapi-ts": "0.69.2",
+        "@solana/web3.js": "1.98.1",
         "typedoc": "0.26.5",
         "typedoc-plugin-frontmatter": "1.0.0",
         "typedoc-plugin-markdown": "4.2.3"
+    },
+    "peerDependencies": {
+        "@solana/web3.js": ">=1.95.0"
     }
 }
