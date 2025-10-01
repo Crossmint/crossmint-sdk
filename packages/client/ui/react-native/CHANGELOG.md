@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.11.6
+
+### Patch Changes
+
+- a6d69d1: Fix a WebView reload bug in which it would fail to initialize after a reload
+
 ## 0.11.5
 
 ### Patch Changes
