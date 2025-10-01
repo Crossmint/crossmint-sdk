@@ -77,7 +77,7 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
         const parent = webViewParentRef.current;
         if (parent != null) {
             try {
-                await parent.handshakeWithChild();
+                await parent.handshakeWithChild({ force: true });
             } catch (e) {
                 console.error("[CrossmintWalletProvider] Handshake error:", e);
             }

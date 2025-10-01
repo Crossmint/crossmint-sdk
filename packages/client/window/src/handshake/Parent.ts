@@ -36,12 +36,17 @@ export class HandshakeParent<IncomingEvents extends EventMap, OutgoingEvents ext
         this.handshakeOptions = { ...DEFAULT_HANDSHAKE_OPTIONS, ...options?.handshakeOptions };
     }
 
-    async handshakeWithChild() {
+    async handshakeWithChild(options?: { force?: boolean }) {
         console.log("[HandshakeParent] handshakeWithChild() called");
 
         if (this.isConnected) {
-            console.log("[HandshakeParent] Already connected to child, skipping handshake");
-            return;
+            if (options?.force !== true) {
+                console.log("[HandshakeParent] Already connected to child, skipping handshake");
+                return;
+            }
+            console.log(
+                "[HandshakeParent] Already connected to child, skipping handshake. Forcing handshake with child"
+            );
         }
 
         const requestVerificationId = generateRandomString();
