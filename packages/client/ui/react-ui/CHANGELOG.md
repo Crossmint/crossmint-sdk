@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-ui
 
+## 2.5.5
+
+### Patch Changes
+
+- 621a4a9: Fix: Modal OTP not showing under certain signer setups
+
 ## 2.5.4
 
 ### Patch Changes
