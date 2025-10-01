@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-rn-window
 
+## 0.3.7
+
+### Patch Changes
+
+- bbc7229: Add debug logs in RN
+
 ## 0.3.6
 
 ### Patch Changes
