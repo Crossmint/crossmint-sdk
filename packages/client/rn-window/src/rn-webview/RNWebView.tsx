@@ -10,6 +10,7 @@ const INJECTED_BRIDGE_JS = `
         error: console.error,
         warn: console.warn,
         info: console.info,
+        debug: console.debug,
     };
 
     // Function to get timestamp
@@ -84,6 +85,11 @@ const INJECTED_BRIDGE_JS = `
         const timestamp = getTimestamp();
         originalConsole.info('[' + timestamp + ']', ...args); // Call original console.info with timestamp
         postToRN('info', args);
+    };
+    console.debug = (...args) => {
+        const timestamp = getTimestamp();
+        originalConsole.debug('[' + timestamp + ']', ...args); // Call original console.debug with timestamp
+        postToRN('debug', args);
     };
 
     // Existing message handler from RN
