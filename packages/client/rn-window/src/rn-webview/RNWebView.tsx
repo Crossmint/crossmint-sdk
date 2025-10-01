@@ -10,6 +10,7 @@ const INJECTED_BRIDGE_JS = `
         error: console.error,
         warn: console.warn,
         info: console.info,
+        debug: console.debug,
     };
 
     // Function to get timestamp
@@ -85,6 +86,11 @@ const INJECTED_BRIDGE_JS = `
         originalConsole.info('[' + timestamp + ']', ...args); // Call original console.info with timestamp
         postToRN('info', args);
     };
+    console.debug = (...args) => {
+        const timestamp = getTimestamp();
+        originalConsole.debug('[' + timestamp + ']', ...args); // Call original console.debug with timestamp
+        postToRN('debug', args);
+    };
 
     // Existing message handler from RN
     window.onMessageFromRN = function(messageStr) {
@@ -106,10 +112,10 @@ const INJECTED_BRIDGE_JS = `
  * This provides maximum security by restricting to known, safe values
  */
 const AllowedGlobalsSchema = z
-    .object({
-        crossmintAppId: z.string().optional(),
-    })
-    .strict();
+  .object({
+    crossmintAppId: z.string().optional(),
+  })
+  .strict();
 export type SafeInjectableGlobals = z.infer<typeof AllowedGlobalsSchema>;
 
 /**
@@ -117,23 +123,24 @@ export type SafeInjectableGlobals = z.infer<typeof AllowedGlobalsSchema>;
  * This prevents code injection by only allowing known, safe globals
  */
 function createSafeGlobalsScript(globals: SafeInjectableGlobals): string {
-    const validatedGlobals = AllowedGlobalsSchema.parse(globals);
-    const assignments = Object.entries(validatedGlobals)
-        .filter(([, value]) => value != null) // Only assign defined values
-        .map(([key, value]) => {
-            // Safely serialize the value
-            const safeValue = JSON.stringify(value);
-            return `window.${key} = ${safeValue};`;
-        });
+  const validatedGlobals = AllowedGlobalsSchema.parse(globals);
+  const assignments = Object.entries(validatedGlobals)
+    .filter(([, value]) => value != null) // Only assign defined values
+    .map(([key, value]) => {
+      // Safely serialize the value
+      const safeValue = JSON.stringify(value);
+      return `window.${key} = ${safeValue};`;
+    });
 
-    return assignments.join("\n");
+  return assignments.join("\n");
 }
 
 export interface RNWebViewProps extends WebViewProps {
-    globals?: SafeInjectableGlobals;
+  globals?: SafeInjectableGlobals;
 }
 
-export const RNWebView = React.forwardRef<WebView, RNWebViewProps>(({ globals, ...props }, ref) => {
+export const RNWebView = React.forwardRef<WebView, RNWebViewProps>(
+  ({ globals, ...props }, ref) => {
     const safeGlobalsScript = globals ? createSafeGlobalsScript(globals) : "";
 
     const combinedInjectedJs = `
@@ -141,7 +148,14 @@ export const RNWebView = React.forwardRef<WebView, RNWebViewProps>(({ globals, .
         ${safeGlobalsScript}
     `;
 
-    return <WebView ref={ref} {...props} injectedJavaScriptBeforeContentLoaded={combinedInjectedJs} />;
-});
+    return (
+      <WebView
+        ref={ref}
+        {...props}
+        injectedJavaScriptBeforeContentLoaded={combinedInjectedJs}
+      />
+    );
+  }
+);
 
 RNWebView.displayName = "RNWebView";
