@@ -1,5 +1,22 @@
 # expo-demo
 
+## 1.1.88
+
+### Patch Changes
+
+- Updated dependencies [bbc7229]
+- Updated dependencies [9812c0c]
+  - @crossmint/client-sdk-rn-window@0.3.7
+  - @crossmint/wallets-sdk@0.15.0
+  - @crossmint/client-sdk-react-native-ui@0.11.3
+
+## 1.1.87
+
+### Patch Changes
+
+- Updated dependencies [8179d74]
+  - @crossmint/client-sdk-react-native-ui@0.11.2
+
 ## 1.1.86
 
 ### Patch Changes

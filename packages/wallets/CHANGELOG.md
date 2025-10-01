@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 0.15.0
+
+### Minor Changes
+
+- 9812c0c: Skip unnecessary polling when signature is already complete. For non-custodial wallets, the backend now returns completed signatures directly from createSignatureRequest(), allowing the SDK to return the signature immediately without waiting.
+
 ## 0.14.3
 
 ### Patch Changes
