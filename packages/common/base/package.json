@@ -27,5 +27,8 @@
     },
     "devDependencies": {
         "@types/bs58": "^4.0.4"
+    },
+    "peerDependencies": {
+        "@solana/web3.js": "^1.98.1"
     }
 }
