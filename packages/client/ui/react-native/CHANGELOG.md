@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.11.4
+
+### Patch Changes
+
+- d4f5356: Revert feat(wallets): avoid loading webview until necessary for email/phone signers
+
 ## 0.11.3
 
 ### Patch Changes
