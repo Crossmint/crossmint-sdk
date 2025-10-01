@@ -142,6 +142,7 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
         parent.handleMessage(event);
     }, []);
 
+    // Get the handshake parent for email signer
     const getClientTEEConnection = () => {
         if (webViewParentRef.current == null) {
             throw new Error("WebView not ready or handshake incomplete");
