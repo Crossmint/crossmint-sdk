@@ -42,6 +42,6 @@
         "typedoc-plugin-markdown": "4.2.3"
     },
     "peerDependencies": {
-        "@solana/web3.js": "1.98.1"
+        "@solana/web3.js": "^1.98.1"
     }
 }
