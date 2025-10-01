@@ -6,6 +6,10 @@ export class StellarNonCustodialSigner extends NonCustodialSigner {
         super(config);
     }
 
+    async sign() {
+        return Promise.reject(new Error("sign method not implemented for stellar signer"));
+    }
+
     async signMessage() {
         return await Promise.reject(new Error("signMessage method not implemented for stellar signer"));
     }
