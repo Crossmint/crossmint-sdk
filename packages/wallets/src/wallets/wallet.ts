@@ -141,11 +141,11 @@ export class Wallet<C extends Chain> {
             const chainData = tokenData.chains?.[this.chain];
 
             let chainSpecificField = {};
-            if (this.chain === "solana" && chainData && "mintHash" in chainData) {
+            if (this.chain === "solana" && chainData != null && "mintHash" in chainData) {
                 chainSpecificField = { mintHash: chainData.mintHash };
-            } else if (this.chain === "stellar" && chainData && "contractId" in chainData) {
+            } else if (this.chain === "stellar" && chainData != null && "contractId" in chainData) {
                 chainSpecificField = { contractId: chainData.contractId };
-            } else if (chainData && "contractAddress" in chainData) {
+            } else if (chainData != null && "contractAddress" in chainData) {
                 chainSpecificField = { contractAddress: chainData.contractAddress };
             }
 
