@@ -249,6 +249,7 @@ export class Wallet<C extends Chain> {
         amount: string,
         options?: T
     ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
+        await this.preAuthIfNeeded();
         const recipient = toRecipientLocator(to);
         const tokenLocator = toTokenLocator(token, this.chain);
         const sendParams = {
@@ -384,6 +385,15 @@ export class Wallet<C extends Chain> {
                 return `me:solana:smart`;
             } else {
                 return `me:evm:smart`;
+            }
+        }
+    }
+
+    protected async preAuthIfNeeded(): Promise<void> {
+        const signerAny = this.signer as any;
+        if (this.signer.type === "email" || this.signer.type === "phone") {
+            if (typeof signerAny?.ensureAuthenticated === "function") {
+                await signerAny.ensureAuthenticated();
             }
         }
     }
