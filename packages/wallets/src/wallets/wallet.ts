@@ -42,7 +42,7 @@ import {
 import { STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
 import type { Chain } from "../chains/chains";
 import type { Signer } from "../signers/types";
-import { NonCustodialSigner } from "@/signers/non-custodial";
+import { NonCustodialSigner } from "../signers/non-custodial";
 
 type WalletContructorType<C extends Chain> = {
     chain: C;
