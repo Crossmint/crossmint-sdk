@@ -134,7 +134,7 @@ export class Wallet<C extends Chain> {
      */
     private transformBalanceResponse(
         apiResponse: GetBalanceSuccessResponse,
-        nativeTokenSymbol: string,
+        nativeTokenSymbol: TokenBalance["symbol"],
         requestedTokens?: string[]
     ): Balances<C> {
         const transformTokenBalance = (tokenData: GetBalanceSuccessResponse[number]): TokenBalance<C> => {
@@ -166,7 +166,7 @@ export class Wallet<C extends Chain> {
             return token.symbol !== nativeTokenSymbol && token.symbol !== "usdc";
         });
 
-        const createDefaultToken = (symbol: string): TokenBalance<C> => {
+        const createDefaultToken = (symbol: TokenBalance["symbol"]): TokenBalance<C> => {
             const baseToken = {
                 symbol,
                 name: symbol,
