@@ -175,13 +175,19 @@ export class Wallet<C extends Chain> {
                 rawAmount: "0",
             };
 
+            let chainSpecificField = {};
             if (this.chain === "solana") {
-                return { ...baseToken, mintHash: undefined } as TokenBalance<C>;
+                chainSpecificField = { mintHash: undefined };
             } else if (this.chain === "stellar") {
-                return { ...baseToken, contractId: undefined } as TokenBalance<C>;
+                chainSpecificField = { contractId: undefined };
             } else {
-                return { ...baseToken, contractAddress: undefined } as TokenBalance<C>;
+                chainSpecificField = { contractAddress: undefined };
             }
+
+            return {
+                ...baseToken,
+                ...chainSpecificField,
+            } as TokenBalance<C>;
         };
 
         return {
