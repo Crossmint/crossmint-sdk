@@ -111,19 +111,22 @@ export type WalletArgsFor<C extends Chain> = {
     delegatedSigners?: Array<DelegatedSigner>;
 };
 
-export type TokenBalance = {
+export type TokenBalance<C extends Chain = Chain> = {
     symbol: "sol" | "eth" | "usdc" | string;
     name: string;
     amount: string;
-    contractAddress?: string;
     decimals?: number;
     rawAmount?: string;
-};
+} & (C extends "solana"
+    ? { mintHash?: string }
+    : C extends "stellar"
+      ? { contractId?: string }
+      : { contractAddress?: string });
 
-export type Balances = {
-    nativeToken: TokenBalance;
-    usdc: TokenBalance;
-    tokens: TokenBalance[];
+export type Balances<C extends Chain = Chain> = {
+    nativeToken: TokenBalance<C>;
+    usdc: TokenBalance<C>;
+    tokens: TokenBalance<C>[];
 };
 
 export type UserLocator =

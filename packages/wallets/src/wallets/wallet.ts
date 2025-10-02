@@ -98,10 +98,10 @@ export class Wallet<C extends Chain> {
      * Get the wallet balances - always includes USDC and native token (ETH/SOL)
      * @param {string[]} tokens - Additional tokens to request (optional: native token and usdc are always included)
      * @param {Chain[]} chains - The chains (optional)
-     * @returns {Promise<Balances>} The balances returns nativeToken, usdc, tokens
+     * @returns {Promise<Balances<C>>} The balances returns nativeToken, usdc, tokens
      * @throws {Error} If the balances cannot be retrieved
      */
-    public async balances(tokens?: string[], chains?: Chain[]): Promise<Balances> {
+    public async balances(tokens?: string[], chains?: Chain[]): Promise<Balances<C>> {
         let nativeToken: string;
         switch (this.chain) {
             case "solana":
@@ -134,22 +134,29 @@ export class Wallet<C extends Chain> {
      */
     private transformBalanceResponse(
         apiResponse: GetBalanceSuccessResponse,
-        nativeTokenSymbol: TokenBalance["symbol"],
+        nativeTokenSymbol: TokenBalance<C>["symbol"],
         requestedTokens?: string[]
-    ): Balances {
-        const transformTokenBalance = (tokenData: GetBalanceSuccessResponse[number]): TokenBalance => {
+    ): Balances<C> {
+        const transformTokenBalance = (tokenData: GetBalanceSuccessResponse[number]): TokenBalance<C> => {
             const chainData = tokenData.chains?.[this.chain];
-            const contractAddress =
-                chainData != null && "contractAddress" in chainData ? chainData.contractAddress : undefined;
+
+            let chainSpecificField = {};
+            if (this.chain === "solana" && chainData && "mintHash" in chainData) {
+                chainSpecificField = { mintHash: chainData.mintHash };
+            } else if (this.chain === "stellar" && chainData && "contractId" in chainData) {
+                chainSpecificField = { contractId: chainData.contractId };
+            } else if (chainData && "contractAddress" in chainData) {
+                chainSpecificField = { contractAddress: chainData.contractAddress };
+            }
 
             return {
                 symbol: tokenData.symbol ?? "",
                 name: tokenData.name ?? "",
                 amount: tokenData.amount ?? "0",
-                contractAddress,
                 decimals: tokenData.decimals,
                 rawAmount: tokenData.rawAmount ?? "0",
-            };
+                ...chainSpecificField,
+            } as TokenBalance<C>;
         };
 
         const nativeTokenData = apiResponse.find((token) => token.symbol === nativeTokenSymbol);
@@ -159,14 +166,23 @@ export class Wallet<C extends Chain> {
             return token.symbol !== nativeTokenSymbol && token.symbol !== "usdc";
         });
 
-        const createDefaultToken = (symbol: TokenBalance["symbol"]): TokenBalance => ({
-            symbol,
-            name: symbol,
-            amount: "0",
-            contractAddress: undefined,
-            decimals: 0,
-            rawAmount: "0",
-        });
+        const createDefaultToken = (symbol: TokenBalance<C>["symbol"]): TokenBalance<C> => {
+            const baseToken = {
+                symbol,
+                name: symbol,
+                amount: "0",
+                decimals: 0,
+                rawAmount: "0",
+            };
+
+            if (this.chain === "solana") {
+                return { ...baseToken, mintHash: undefined } as TokenBalance<C>;
+            } else if (this.chain === "stellar") {
+                return { ...baseToken, contractId: undefined } as TokenBalance<C>;
+            } else {
+                return { ...baseToken, contractAddress: undefined } as TokenBalance<C>;
+            }
+        };
 
         return {
             nativeToken:
