@@ -155,6 +155,20 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
         return webViewParentRef.current;
     };
 
+    const waitForClientTEEConnection = async () => {
+        let attempts = 0;
+        const maxAttempts = 100; // 5 seconds total with 50ms intervals
+        while (webViewParentRef.current == null && attempts < maxAttempts) {
+            await new Promise((resolve) => setTimeout(resolve, 50));
+            attempts++;
+        }
+
+        if (webViewParentRef.current == null) {
+            throw new Error("WebView not ready or handshake incomplete");
+        }
+        return webViewParentRef.current;
+    };
+
     const onAuthRequired = async (
         needsAuth: boolean,
         sendEmailWithOtp: () => Promise<void>,
@@ -178,17 +192,15 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
     );
 
     const handleWalletSignerSet = (signerType: string) => {
-        console.log("handleWalletSignerSet", signerType);
         setNeedsWebView(signerType === "email" || signerType === "phone");
     };
-
-    console.log("render needsWebView", needsWebView);
 
     return (
         <CrossmintWalletBaseProvider
             createOnLogin={createOnLogin}
             onAuthRequired={onAuthRequired}
             clientTEEConnection={getClientTEEConnection}
+            getClientTEEConnection={waitForClientTEEConnection}
             callbacks={callbacks}
             onWalletSignerSet={handleWalletSignerSet}
         >

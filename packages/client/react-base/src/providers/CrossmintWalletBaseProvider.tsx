@@ -38,6 +38,7 @@ export interface CrossmintWalletBaseProviderProps {
     };
     onAuthRequired?: EmailSignerConfig["onAuthRequired"] | PhoneSignerConfig["onAuthRequired"];
     clientTEEConnection?: () => HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
+    getClientTEEConnection?: () => Promise<HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>>;
     onWalletSignerSet?: (signerType: string) => void;
 }
 
@@ -47,6 +48,7 @@ export function CrossmintWalletBaseProvider({
     callbacks,
     onAuthRequired,
     clientTEEConnection,
+    getClientTEEConnection,
     onWalletSignerSet,
 }: CrossmintWalletBaseProviderProps) {
     const { crossmint, experimental_customAuth } = useCrossmint(
@@ -66,6 +68,7 @@ export function CrossmintWalletBaseProvider({
             }
 
             try {
+                onWalletSignerSet?.(args.signer.type);
                 setWalletStatus("in-progress");
                 const wallets = CrossmintWallets.from(crossmint);
 
@@ -114,8 +117,15 @@ export function CrossmintWalletBaseProvider({
                     args.signer = signer as SignerConfigForChain<C>;
                 }
 
-                onWalletSignerSet?.(args.signer.type);
-
+                let _clientTEEConnection;
+                if (args.signer.type === "email" || args.signer.type === "phone") {
+                    try {
+                        _clientTEEConnection = clientTEEConnection?.();
+                    } catch {
+                        console.log("Failed to get client TEE connection, getting from getClientTEEConnection");
+                        _clientTEEConnection = await getClientTEEConnection?.();
+                    }
+                }
                 const wallet = await wallets.getOrCreateWallet<C>({
                     chain: args.chain,
                     signer: args.signer,
@@ -123,7 +133,7 @@ export function CrossmintWalletBaseProvider({
                     plugins: args.plugins,
                     delegatedSigners: args.delegatedSigners,
                     options: {
-                        clientTEEConnection: clientTEEConnection?.(),
+                        clientTEEConnection: _clientTEEConnection,
                         experimental_callbacks: {
                             onWalletCreationStart: _onWalletCreationStart ?? callbacks?.onWalletCreationStart,
                             onTransactionStart: _onTransactionStart ?? callbacks?.onTransactionStart,
