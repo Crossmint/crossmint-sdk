@@ -42,6 +42,7 @@ import {
 import { STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
 import type { Chain } from "../chains/chains";
 import type { Signer } from "../signers/types";
+import { NonCustodialSigner } from "@/signers/non-custodial";
 
 type WalletContructorType<C extends Chain> = {
     chain: C;
@@ -390,11 +391,8 @@ export class Wallet<C extends Chain> {
     }
 
     protected async preAuthIfNeeded(): Promise<void> {
-        const signerAny = this.signer as any;
-        if (this.signer.type === "email" || this.signer.type === "phone") {
-            if (typeof signerAny?.ensureAuthenticated === "function") {
-                await signerAny.ensureAuthenticated();
-            }
+        if (this.signer instanceof NonCustodialSigner) {
+            await this.signer.ensureAuthenticated();
         }
     }
 
