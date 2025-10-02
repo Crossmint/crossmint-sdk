@@ -38,8 +38,7 @@ export interface CrossmintWalletBaseProviderProps {
     };
     onAuthRequired?: EmailSignerConfig["onAuthRequired"] | PhoneSignerConfig["onAuthRequired"];
     clientTEEConnection?: () => HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
-    getClientTEEConnection?: () => Promise<HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>>;
-    onWalletSignerSet?: (signerType: string) => void;
+    initializeWebView?: () => Promise<void>;
 }
 
 export function CrossmintWalletBaseProvider({
@@ -48,8 +47,7 @@ export function CrossmintWalletBaseProvider({
     callbacks,
     onAuthRequired,
     clientTEEConnection,
-    getClientTEEConnection,
-    onWalletSignerSet,
+    initializeWebView,
 }: CrossmintWalletBaseProviderProps) {
     const { crossmint, experimental_customAuth } = useCrossmint(
         "CrossmintWalletBaseProvider must be used within CrossmintProvider"
@@ -63,12 +61,10 @@ export function CrossmintWalletBaseProvider({
                 return undefined;
             }
             if (wallet != null) {
-                onWalletSignerSet?.(wallet.signer.type);
                 return wallet;
             }
 
             try {
-                onWalletSignerSet?.(args.signer.type);
                 setWalletStatus("in-progress");
                 const wallets = CrossmintWallets.from(crossmint);
 
@@ -117,14 +113,8 @@ export function CrossmintWalletBaseProvider({
                     args.signer = signer as SignerConfigForChain<C>;
                 }
 
-                let _clientTEEConnection;
                 if (args.signer.type === "email" || args.signer.type === "phone") {
-                    try {
-                        _clientTEEConnection = clientTEEConnection?.();
-                    } catch {
-                        console.log("Failed to get client TEE connection, getting from getClientTEEConnection");
-                        _clientTEEConnection = await getClientTEEConnection?.();
-                    }
+                    await initializeWebView?.();
                 }
                 const wallet = await wallets.getOrCreateWallet<C>({
                     chain: args.chain,
@@ -133,7 +123,7 @@ export function CrossmintWalletBaseProvider({
                     plugins: args.plugins,
                     delegatedSigners: args.delegatedSigners,
                     options: {
-                        clientTEEConnection: _clientTEEConnection,
+                        clientTEEConnection: clientTEEConnection?.(),
                         experimental_callbacks: {
                             onWalletCreationStart: _onWalletCreationStart ?? callbacks?.onWalletCreationStart,
                             onTransactionStart: _onTransactionStart ?? callbacks?.onTransactionStart,
