@@ -114,12 +114,7 @@ export function CrossmintWalletBaseProvider({
                 }
 
                 if (args.signer.type === "email" || args.signer.type === "phone") {
-                    if (!initializeWebView) {
-                        throw new Error(
-                            "initializeWebView callback is required for email and phone signers but was not provided"
-                        );
-                    }
-                    await initializeWebView();
+                    await initializeWebView?.();
                 }
                 const wallet = await wallets.getOrCreateWallet<C>({
                     chain: args.chain,
