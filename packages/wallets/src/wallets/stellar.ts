@@ -36,6 +36,7 @@ export class StellarWallet extends Wallet<StellarChain> {
     public async sendTransaction<T extends TransactionInputOptions | undefined = undefined>(
         params: StellarTransactionInput & { options?: T }
     ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
+        await this.preAuthIfNeeded();
         const createdTransaction = await this.createTransaction(params);
 
         if (params.options?.experimental_prepareOnly) {

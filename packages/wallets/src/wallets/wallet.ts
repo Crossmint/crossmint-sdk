@@ -42,6 +42,7 @@ import {
 import { STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
 import type { Chain } from "../chains/chains";
 import type { Signer } from "../signers/types";
+import { NonCustodialSigner } from "../signers/non-custodial";
 
 type WalletContructorType<C extends Chain> = {
     chain: C;
@@ -271,6 +272,7 @@ export class Wallet<C extends Chain> {
         amount: string,
         options?: T
     ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
+        await this.preAuthIfNeeded();
         const recipient = toRecipientLocator(to);
         const tokenLocator = toTokenLocator(token, this.chain);
         const sendParams = {
@@ -407,6 +409,12 @@ export class Wallet<C extends Chain> {
             } else {
                 return `me:evm:smart`;
             }
+        }
+    }
+
+    protected async preAuthIfNeeded(): Promise<void> {
+        if (this.signer instanceof NonCustodialSigner) {
+            await this.signer.ensureAuthenticated();
         }
     }
 
