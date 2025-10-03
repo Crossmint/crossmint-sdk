@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-rn-window
 
+## 0.3.8
+
+### Patch Changes
+
+- c03813a: rn: bump webview for google pay
+
 ## 0.3.7
 
 ### Patch Changes
