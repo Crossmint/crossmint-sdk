@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.11.8
+
+### Patch Changes
+
+- c03813a: rn: bump webview for google pay
+- Updated dependencies [c03813a]
+  - @crossmint/client-sdk-rn-window@0.3.8
+
 ## 0.11.7
 
 ### Patch Changes
