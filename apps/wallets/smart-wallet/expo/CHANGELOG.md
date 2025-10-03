@@ -1,5 +1,14 @@
 # expo-demo
 
+## 1.1.93
+
+### Patch Changes
+
+- c03813a: rn: bump webview for google pay
+- Updated dependencies [c03813a]
+  - @crossmint/client-sdk-react-native-ui@0.11.8
+  - @crossmint/client-sdk-rn-window@0.3.8
+
 ## 1.1.92
 
 ### Patch Changes
