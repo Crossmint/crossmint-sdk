@@ -1,5 +1,14 @@
 # @crossmint/wallets-sdk
 
+## 0.15.1
+
+### Patch Changes
+
+- 1080158: Add @solana/web3.js as peer dependency to resolve VersionedTransaction type mismatches. Users with different @solana/web3.js versions will now use the exact SDK version (1.98.1) to ensure type compatibility.
+- 758d224: Pre-initialize signer before creating a transaction
+- Updated dependencies [1080158]
+  - @crossmint/common-sdk-base@0.9.6
+
 ## 0.15.0
 
 ### Minor Changes
