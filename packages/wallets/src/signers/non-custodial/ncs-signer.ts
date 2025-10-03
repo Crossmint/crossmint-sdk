@@ -163,6 +163,10 @@ export abstract class NonCustodialSigner implements Signer {
         }
     }
 
+    public async ensureAuthenticated(): Promise<void> {
+        await this.handleAuthRequired();
+    }
+
     protected getJwtOrThrow() {
         const jwt = this.config.crossmint.jwt;
         if (jwt == null) {
