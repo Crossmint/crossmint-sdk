@@ -1,5 +1,18 @@
 # @crossmint/client-sdk-react-base
 
+## 0.6.5
+
+### Patch Changes
+
+- 78711c2: Add optional initializeWebView callback prop to CrossmintWalletBaseProviderProps interface to support conditional WebView initialization
+- Updated dependencies [1080158]
+- Updated dependencies [758d224]
+  - @crossmint/wallets-sdk@0.15.1
+  - @crossmint/common-sdk-base@0.9.6
+  - @crossmint/client-sdk-auth@1.2.34
+  - @crossmint/client-sdk-base@1.7.1
+  - @crossmint/common-sdk-auth@1.0.56
+
 ## 0.6.4
 
 ### Patch Changes

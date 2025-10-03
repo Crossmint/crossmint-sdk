@@ -1,5 +1,21 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.11.7
+
+### Patch Changes
+
+- 1080158: Add @solana/web3.js as peer dependency to resolve VersionedTransaction type mismatches. Users with different @solana/web3.js versions will now use the exact SDK version (1.98.1) to ensure type compatibility.
+- 78711c2: Optimize WebView loading to only initialize when email or phone signer is used, avoiding unnecessary background polling for passkey and external wallet signers
+- Updated dependencies [78711c2]
+- Updated dependencies [1080158]
+- Updated dependencies [758d224]
+  - @crossmint/client-sdk-react-base@0.6.5
+  - @crossmint/wallets-sdk@0.15.1
+  - @crossmint/common-sdk-base@0.9.6
+  - @crossmint/client-sdk-auth@1.2.34
+  - @crossmint/client-sdk-base@1.7.1
+  - @crossmint/common-sdk-auth@1.0.56
+
 ## 0.11.6
 
 ### Patch Changes
