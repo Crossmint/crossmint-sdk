@@ -65,9 +65,15 @@ export type StellarTransactionInput = (
     options?: TransactionInputOptions;
 };
 
-export type SolanaTransactionInput = {
-    transaction: VersionedTransaction;
-    additionalSigners?: Keypair[];
+export type SolanaTransactionInput = (
+    | {
+          transaction: VersionedTransaction;
+          additionalSigners?: Keypair[];
+      }
+    | {
+          serializedTransaction: string;
+      }
+) & {
     options?: TransactionInputOptions;
 };
 
