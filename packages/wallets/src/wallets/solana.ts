@@ -50,22 +50,18 @@ export class SolanaWallet extends Wallet<SolanaChain> {
             } as Transaction<T extends PrepareOnly<true> ? true : false>;
         }
 
-        let _additionalSigners: SolanaExternalWalletSigner[] | undefined;
-
-        if ("transaction" in params && params.additionalSigners) {
-            _additionalSigners = params.additionalSigners.map(
-                (signer) =>
-                    new SolanaExternalWalletSigner({
-                        type: "external-wallet",
-                        address: signer.publicKey.toString(),
-                        locator: `external-wallet:${signer.publicKey.toString()}`,
-                        onSignTransaction: (transaction: VersionedTransaction) => {
-                            transaction.sign([signer]);
-                            return Promise.resolve(transaction);
-                        },
-                    })
-            );
-        }
+        const _additionalSigners = params.additionalSigners?.map(
+            (signer) =>
+                new SolanaExternalWalletSigner({
+                    type: "external-wallet",
+                    address: signer.publicKey.toString(),
+                    locator: `external-wallet:${signer.publicKey.toString()}`,
+                    onSignTransaction: (transaction: VersionedTransaction) => {
+                        transaction.sign([signer]);
+                        return Promise.resolve(transaction);
+                    },
+                })
+        );
 
         const options: ApproveOptions = {
             additionalSigners: _additionalSigners,
