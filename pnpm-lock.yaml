@@ -12,6 +12,7 @@ overrides:
   path-to-regexp@0: 0.1.12
   pbkdf2: 3.1.3
   react-native: 0.76.9
+  tar-fs@2: 2.1.4
   trim@0: 0.0.3
   ws@7: 7.5.10
   ws@8: 8.18.2
@@ -12694,8 +12695,8 @@ packages:
     resolution: {integrity: sha512-GNzQvQTOIP6RyTfE2Qxb8ZVlNmw0n88vp1szwWRimP02mnTsx3Wtn5qRdqY9w2XduFNUgvOwhNnQsjwCp+kqaQ==}
     engines: {node: '>=6'}
 
-  tar-fs@2.1.3:
-    resolution: {integrity: sha512-090nwYJDmlhwFwEW3QQl+vaNnxsO2yVsd45eTKRBzSzu+hlb1w2K9inVq5b0ngXuLVqQ4ApvsUHHnu/zQNkWAg==}
+  tar-fs@2.1.4:
+    resolution: {integrity: sha512-mDAjwmZdh7LTT6pNleZ05Yt65HC3E+NiQzl672vQG38jIrehtJk/J3mNwIg+vShQPcLF/LV7CMnDW6vjj6sfYQ==}
 
   tar-stream@2.2.0:
     resolution: {integrity: sha512-ujeqbceABgwMZxEJnk2HDY2DlnUZ+9oEcb1KzTVfYHio0UE6dG71n60d8D2I4qNvleWrrXpmjpt7vZeF1LnMZQ==}
@@ -20687,7 +20688,7 @@ snapshots:
       remark-mdx-frontmatter: 1.1.1
       semver: 7.7.1
       set-cookie-parser: 2.7.1
-      tar-fs: 2.1.3
+      tar-fs: 2.1.4
       tsconfig-paths: 4.2.0
       valibot: 0.41.0(typescript@5.5.3)
       vite-node: 3.2.4(@types/node@22.7.5)(lightningcss@1.30.1)(terser@5.39.0)
@@ -33153,7 +33154,7 @@ snapshots:
 
   tapable@2.2.1: {}
 
-  tar-fs@2.1.3:
+  tar-fs@2.1.4:
     dependencies:
       chownr: 1.1.4
       mkdirp-classic: 0.5.3
