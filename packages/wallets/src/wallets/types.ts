@@ -17,6 +17,8 @@ export type TransactionInputOptions = PrepareOnly & {
 
 export type SignatureInputOptions = PrepareOnly;
 
+export type AddDelegatedSignerOptions = PrepareOnly;
+
 export type SignMessageInput = {
     message: string;
     options?: SignatureInputOptions;

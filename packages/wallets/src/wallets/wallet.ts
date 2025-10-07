@@ -10,6 +10,7 @@ import type {
     GetTransactionsResponse,
 } from "../api";
 import type {
+    AddDelegatedSignerOptions,
     DelegatedSigner,
     WalletOptions,
     UserLocator,
@@ -344,12 +345,10 @@ export class Wallet<C extends Chain> {
      * @param options - The options for the operation
      * @param options.experimental_prepareOnly - If true, returns the transaction/signature ID without auto-approving
      */
-    public async addDelegatedSigner<T extends { experimental_prepareOnly?: boolean } | undefined = undefined>(params: {
+    public async addDelegatedSigner<T extends AddDelegatedSignerOptions | undefined = undefined>(params: {
         signer: string | RegisterSignerPasskeyParams;
         options?: T;
-    }): Promise<
-        T extends { experimental_prepareOnly: true } ? { transactionId?: string; signatureId?: string } : void
-    > {
+    }): Promise<T extends PrepareOnly<true> ? { transactionId?: string; signatureId?: string } : void> {
         const response = await this.#apiClient.registerSigner(this.walletLocator, {
             signer: params.signer,
             chain: this.chain === "solana" || this.chain === "stellar" ? undefined : this.chain,
