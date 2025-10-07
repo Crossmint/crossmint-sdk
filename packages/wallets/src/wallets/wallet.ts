@@ -10,6 +10,8 @@ import type {
     GetTransactionsResponse,
 } from "../api";
 import type {
+    AddDelegatedSignerOptions,
+    AddDelegatedSignerReturnType,
     DelegatedSigner,
     WalletOptions,
     UserLocator,
@@ -341,8 +343,13 @@ export class Wallet<C extends Chain> {
     /**
      * Add a delegated signer to the wallet
      * @param signer - The signer. For Solana, it must be a string. For EVM, it can be a string or a passkey.
+     * @param options - The options for the operation
+     * @param options.experimental_prepareOnly - If true, returns the transaction/signature ID without auto-approving
      */
-    public async addDelegatedSigner(params: { signer: string | RegisterSignerPasskeyParams }) {
+    public async addDelegatedSigner<T extends AddDelegatedSignerOptions | undefined = undefined>(params: {
+        signer: string | RegisterSignerPasskeyParams;
+        options?: T;
+    }): Promise<T extends PrepareOnly<true> ? AddDelegatedSignerReturnType<C> : void> {
         const response = await this.#apiClient.registerSigner(this.walletLocator, {
             signer: params.signer,
             chain: this.chain === "solana" || this.chain === "stellar" ? undefined : this.chain,
@@ -352,22 +359,42 @@ export class Wallet<C extends Chain> {
             throw new Error(`Failed to register signer: ${JSON.stringify(response.message)}`);
         }
 
-        if ("transaction" in response && response.transaction != null) {
-            // Solana has "transaction" in response
+        if (this.chain === "solana" || this.chain === "stellar") {
+            if (!("transaction" in response) || response.transaction == null) {
+                throw new Error("Expected transaction in response for Solana/Stellar chain");
+            }
+
             const transactionId = response.transaction.id;
+
+            if (params.options?.experimental_prepareOnly) {
+                return { transactionId } as any;
+            }
+
             await this.approveTransactionAndWait(transactionId);
-        } else if ("chains" in response) {
-            // EVM has "chains" in response
-            const chainResponse = response.chains?.[this.chain];
-            if (chainResponse?.status === "awaiting-approval") {
-                await this.approveSignatureAndWait(chainResponse.id);
-                return;
-            }
-            if (chainResponse?.status === "pending") {
-                await this.waitForSignature(chainResponse.id);
-                return;
-            }
+            return undefined as any;
         }
+
+        if (!("chains" in response)) {
+            throw new Error("Expected chains in response for EVM chain");
+        }
+
+        const chainResponse = response.chains?.[this.chain];
+
+        if (params.options?.experimental_prepareOnly) {
+            const signatureId = chainResponse?.status !== "success" ? chainResponse?.id : undefined;
+            return { signatureId } as any;
+        }
+
+        if (chainResponse?.status === "awaiting-approval") {
+            await this.approveSignatureAndWait(chainResponse.id);
+            return undefined as any;
+        }
+        if (chainResponse?.status === "pending") {
+            await this.waitForSignature(chainResponse.id);
+            return undefined as any;
+        }
+
+        return undefined as any;
     }
 
     public async delegatedSigners(): Promise<DelegatedSigner[]> {
