@@ -1,5 +1,12 @@
 # @crossmint/wallets-sdk
 
+## 0.16.0
+
+### Minor Changes
+
+- 615b84b: Add experimental_prepareOnly support to addDelegatedSigner method
+- d09fa2c: Add serialized transaction support for Solana wallets
+
 ## 0.15.1
 
 ### Patch Changes
