@@ -1,6 +1,5 @@
 import bs58 from "bs58";
 import { isValidSolanaAddress } from "@crossmint/common-sdk-base";
-import type { VersionedTransaction } from "@solana/web3.js";
 import type { Chain, SolanaChain } from "../chains/chains";
 import type {
     ApproveOptions,
@@ -56,7 +55,7 @@ export class SolanaWallet extends Wallet<SolanaChain> {
                     type: "external-wallet",
                     address: signer.publicKey.toString(),
                     locator: `external-wallet:${signer.publicKey.toString()}`,
-                    onSignTransaction: (transaction: VersionedTransaction) => {
+                    onSignTransaction: (transaction) => {
                         transaction.sign([signer]);
                         return Promise.resolve(transaction);
                     },
