@@ -1,5 +1,113 @@
 # @crossmint/client-sdk-react-base
 
+## 0.6.5
+
+### Patch Changes
+
+- 78711c2: Add optional initializeWebView callback prop to CrossmintWalletBaseProviderProps interface to support conditional WebView initialization
+- Updated dependencies [1080158]
+- Updated dependencies [758d224]
+  - @crossmint/wallets-sdk@0.15.1
+  - @crossmint/common-sdk-base@0.9.6
+  - @crossmint/client-sdk-auth@1.2.34
+  - @crossmint/client-sdk-base@1.7.1
+  - @crossmint/common-sdk-auth@1.0.56
+
+## 0.6.4
+
+### Patch Changes
+
+- Updated dependencies [105513c]
+  - @crossmint/client-sdk-base@1.7.0
+  - @crossmint/client-sdk-auth@1.2.33
+  - @crossmint/common-sdk-auth@1.0.55
+
+## 0.6.3
+
+### Patch Changes
+
+- Updated dependencies [9812c0c]
+  - @crossmint/wallets-sdk@0.15.0
+
+## 0.6.2
+
+### Patch Changes
+
+- 8179d74: Improve render process by using memoization
+
+## 0.6.1
+
+### Patch Changes
+
+- Updated dependencies [635b217]
+  - @crossmint/wallets-sdk@0.14.3
+
+## 0.6.0
+
+### Minor Changes
+
+- fe31db3: Consolidated auth logic into CrossmintAuthBaseProvider and refactored platform packages to extend it.
+
+### Patch Changes
+
+- Updated dependencies [fe31db3]
+- Updated dependencies [1034e0f]
+  - @crossmint/client-sdk-auth@1.2.32
+  - @crossmint/client-sdk-window@1.0.5
+  - @crossmint/wallets-sdk@0.14.2
+  - @crossmint/client-sdk-base@1.6.4
+  - @crossmint/common-sdk-auth@1.0.54
+
+## 0.5.39
+
+### Patch Changes
+
+- Updated dependencies [b9fd4ed]
+  - @crossmint/client-sdk-window@1.0.4
+  - @crossmint/client-sdk-base@1.6.3
+  - @crossmint/wallets-sdk@0.14.1
+
+## 0.5.38
+
+### Patch Changes
+
+- Updated dependencies [c18048b]
+  - @crossmint/wallets-sdk@0.14.0
+
+## 0.5.37
+
+### Patch Changes
+
+- 0b915b2: Adds support for delegated signers on wallet creation in EVM + Stellar
+- Updated dependencies [0b915b2]
+  - @crossmint/wallets-sdk@0.13.1
+
+## 0.5.36
+
+### Patch Changes
+
+- Updated dependencies [9a4fa46]
+- Updated dependencies [544c9bd]
+  - @crossmint/wallets-sdk@0.13.0
+
+## 0.5.35
+
+### Patch Changes
+
+- Updated dependencies [04c5808]
+  - @crossmint/common-sdk-base@0.9.5
+  - @crossmint/client-sdk-base@1.6.2
+  - @crossmint/wallets-sdk@0.12.5
+
+## 0.5.34
+
+### Patch Changes
+
+- 08c2d57: Pass through delegatedSigners on wallet creation
+- Updated dependencies [08c2d57]
+- Updated dependencies [08c2d57]
+  - @crossmint/wallets-sdk@0.12.4
+
 ## 0.5.33
 
 ### Patch Changes

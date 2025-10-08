@@ -1,8 +1,8 @@
+import { useEffect, useRef, useState, useCallback } from "react";
 import type { OAuthProvider } from "@crossmint/common-sdk-auth";
 import { ChildWindow, PopupWindow } from "@crossmint/client-sdk-window";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useCrossmintAuth } from "@/hooks";
 import { z } from "zod";
-import { useCrossmintAuth } from "./useCrossmintAuth";
 
 type OAuthUrlMap = Record<OAuthProvider, string>;
 
@@ -33,6 +33,10 @@ export const useOAuthWindowListener = (oauthUrlMap: OAuthUrlMap, setError: (erro
             }
             setActiveOAuthProvider(provider);
             setError(null);
+
+            console.log("createPopupAndSetupListeners", provider, providerLoginHint);
+            console.log("oauthUrlMap", oauthUrlMap);
+            console.log("oauthUrlMap[provider]", oauthUrlMap[provider]);
 
             const baseUrl = new URL(oauthUrlMap[provider]);
 

@@ -1,6 +1,6 @@
 {
     "name": "@crossmint/client-sdk-react-base",
-    "version": "0.5.33",
+    "version": "0.6.5",
     "repository": "https://github.com/Crossmint/crossmint-sdk",
     "license": "Apache-2.0",
     "author": "Paella Labs Inc",
@@ -20,7 +20,9 @@
         "test:vitest": "vitest run"
     },
     "dependencies": {
+        "@crossmint/common-sdk-auth": "workspace:*",
         "@crossmint/common-sdk-base": "workspace:*",
+        "@crossmint/client-sdk-auth": "workspace:*",
         "@crossmint/client-sdk-base": "workspace:*",
         "@crossmint/client-sdk-window": "workspace:*",
         "@crossmint/client-signers": "workspace:*",

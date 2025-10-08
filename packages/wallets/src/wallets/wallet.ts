@@ -10,6 +10,8 @@ import type {
     GetTransactionsResponse,
 } from "../api";
 import type {
+    AddDelegatedSignerOptions,
+    AddDelegatedSignerReturnType,
     DelegatedSigner,
     WalletOptions,
     UserLocator,
@@ -42,6 +44,7 @@ import {
 import { STATUS_POLLING_INTERVAL_MS } from "../utils/constants";
 import type { Chain } from "../chains/chains";
 import type { Signer } from "../signers/types";
+import { NonCustodialSigner } from "../signers/non-custodial";
 
 type WalletContructorType<C extends Chain> = {
     chain: C;
@@ -98,10 +101,10 @@ export class Wallet<C extends Chain> {
      * Get the wallet balances - always includes USDC and native token (ETH/SOL)
      * @param {string[]} tokens - Additional tokens to request (optional: native token and usdc are always included)
      * @param {Chain[]} chains - The chains (optional)
-     * @returns {Promise<Balances>} The balances returns nativeToken, usdc, tokens
+     * @returns {Promise<Balances<C>>} The balances returns nativeToken, usdc, tokens
      * @throws {Error} If the balances cannot be retrieved
      */
-    public async balances(tokens?: string[], chains?: Chain[]): Promise<Balances> {
+    public async balances(tokens?: string[], chains?: Chain[]): Promise<Balances<C>> {
         let nativeToken: string;
         switch (this.chain) {
             case "solana":
@@ -136,20 +139,27 @@ export class Wallet<C extends Chain> {
         apiResponse: GetBalanceSuccessResponse,
         nativeTokenSymbol: TokenBalance["symbol"],
         requestedTokens?: string[]
-    ): Balances {
-        const transformTokenBalance = (tokenData: GetBalanceSuccessResponse[number]): TokenBalance => {
+    ): Balances<C> {
+        const transformTokenBalance = (tokenData: GetBalanceSuccessResponse[number]): TokenBalance<C> => {
             const chainData = tokenData.chains?.[this.chain];
-            const contractAddress =
-                chainData != null && "contractAddress" in chainData ? chainData.contractAddress : undefined;
+
+            let chainSpecificField = {};
+            if (this.chain === "solana" && chainData != null && "mintHash" in chainData) {
+                chainSpecificField = { mintHash: chainData.mintHash };
+            } else if (this.chain === "stellar" && chainData != null && "contractId" in chainData) {
+                chainSpecificField = { contractId: chainData.contractId };
+            } else if (chainData != null && "contractAddress" in chainData) {
+                chainSpecificField = { contractAddress: chainData.contractAddress };
+            }
 
             return {
                 symbol: tokenData.symbol ?? "",
                 name: tokenData.name ?? "",
                 amount: tokenData.amount ?? "0",
-                contractAddress,
                 decimals: tokenData.decimals,
                 rawAmount: tokenData.rawAmount ?? "0",
-            };
+                ...chainSpecificField,
+            } as TokenBalance<C>;
         };
 
         const nativeTokenData = apiResponse.find((token) => token.symbol === nativeTokenSymbol);
@@ -159,14 +169,29 @@ export class Wallet<C extends Chain> {
             return token.symbol !== nativeTokenSymbol && token.symbol !== "usdc";
         });
 
-        const createDefaultToken = (symbol: TokenBalance["symbol"]): TokenBalance => ({
-            symbol,
-            name: symbol,
-            amount: "0",
-            contractAddress: undefined,
-            decimals: 0,
-            rawAmount: "0",
-        });
+        const createDefaultToken = (symbol: TokenBalance["symbol"]): TokenBalance<C> => {
+            const baseToken = {
+                symbol,
+                name: symbol,
+                amount: "0",
+                decimals: 0,
+                rawAmount: "0",
+            };
+
+            let chainSpecificField = {};
+            if (this.chain === "solana") {
+                chainSpecificField = { mintHash: undefined };
+            } else if (this.chain === "stellar") {
+                chainSpecificField = { contractId: undefined };
+            } else {
+                chainSpecificField = { contractAddress: undefined };
+            }
+
+            return {
+                ...baseToken,
+                ...chainSpecificField,
+            } as TokenBalance<C>;
+        };
 
         return {
             nativeToken:
@@ -249,9 +274,14 @@ export class Wallet<C extends Chain> {
         amount: string,
         options?: T
     ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
+        await this.preAuthIfNeeded();
         const recipient = toRecipientLocator(to);
         const tokenLocator = toTokenLocator(token, this.chain);
-        const sendParams = { recipient, amount };
+        const sendParams = {
+            recipient,
+            amount,
+            ...(options?.experimental_signer != null ? { signer: options.experimental_signer } : {}),
+        };
         const transactionCreationResponse = await this.#apiClient.send(this.walletLocator, tokenLocator, sendParams);
 
         if ("message" in transactionCreationResponse) {
@@ -313,8 +343,13 @@ export class Wallet<C extends Chain> {
     /**
      * Add a delegated signer to the wallet
      * @param signer - The signer. For Solana, it must be a string. For EVM, it can be a string or a passkey.
+     * @param options - The options for the operation
+     * @param options.experimental_prepareOnly - If true, returns the transaction/signature ID without auto-approving
      */
-    public async addDelegatedSigner(params: { signer: string | RegisterSignerPasskeyParams }) {
+    public async addDelegatedSigner<T extends AddDelegatedSignerOptions | undefined = undefined>(params: {
+        signer: string | RegisterSignerPasskeyParams;
+        options?: T;
+    }): Promise<T extends PrepareOnly<true> ? AddDelegatedSignerReturnType<C> : void> {
         const response = await this.#apiClient.registerSigner(this.walletLocator, {
             signer: params.signer,
             chain: this.chain === "solana" || this.chain === "stellar" ? undefined : this.chain,
@@ -324,22 +359,42 @@ export class Wallet<C extends Chain> {
             throw new Error(`Failed to register signer: ${JSON.stringify(response.message)}`);
         }
 
-        if ("transaction" in response && response.transaction != null) {
-            // Solana has "transaction" in response
+        if (this.chain === "solana" || this.chain === "stellar") {
+            if (!("transaction" in response) || response.transaction == null) {
+                throw new Error("Expected transaction in response for Solana/Stellar chain");
+            }
+
             const transactionId = response.transaction.id;
+
+            if (params.options?.experimental_prepareOnly) {
+                return { transactionId } as any;
+            }
+
             await this.approveTransactionAndWait(transactionId);
-        } else if ("chains" in response) {
-            // EVM has "chains" in response
-            const chainResponse = response.chains?.[this.chain];
-            if (chainResponse?.status === "awaiting-approval") {
-                await this.approveSignatureAndWait(chainResponse.id);
-                return;
-            }
-            if (chainResponse?.status === "pending") {
-                await this.waitForSignature(chainResponse.id);
-                return;
-            }
+            return undefined as any;
         }
+
+        if (!("chains" in response)) {
+            throw new Error("Expected chains in response for EVM chain");
+        }
+
+        const chainResponse = response.chains?.[this.chain];
+
+        if (params.options?.experimental_prepareOnly) {
+            const signatureId = chainResponse?.status !== "success" ? chainResponse?.id : undefined;
+            return { signatureId } as any;
+        }
+
+        if (chainResponse?.status === "awaiting-approval") {
+            await this.approveSignatureAndWait(chainResponse.id);
+            return undefined as any;
+        }
+        if (chainResponse?.status === "pending") {
+            await this.waitForSignature(chainResponse.id);
+            return undefined as any;
+        }
+
+        return undefined as any;
     }
 
     public async delegatedSigners(): Promise<DelegatedSigner[]> {
@@ -348,13 +403,11 @@ export class Wallet<C extends Chain> {
             throw new WalletNotAvailableError(JSON.stringify(walletResponse));
         }
 
-        if (this.chain === "stellar") {
-            return [];
-        }
-
         if (
             walletResponse.type !== "smart" ||
-            (walletResponse.chainType !== "evm" && walletResponse.chainType !== "solana")
+            (walletResponse.chainType !== "evm" &&
+                walletResponse.chainType !== "solana" &&
+                walletResponse.chainType !== "stellar")
         ) {
             throw new WalletTypeNotSupportedError(`Wallet type ${walletResponse.type} not supported`);
         }
@@ -386,6 +439,12 @@ export class Wallet<C extends Chain> {
         }
     }
 
+    protected async preAuthIfNeeded(): Promise<void> {
+        if (this.signer instanceof NonCustodialSigner) {
+            await this.signer.ensureAuthenticated();
+        }
+    }
+
     protected get isSolanaWallet(): boolean {
         return this.chain === "solana";
     }
@@ -397,8 +456,20 @@ export class Wallet<C extends Chain> {
     }
 
     protected async approveSignatureAndWait(signatureId: string, options?: ApproveOptions) {
-        await this.approveSignatureInternal(signatureId, options);
-        await this.sleep(1_000); // Rule of thumb: signature won't be confirmed in less than 1 second
+        const signatureResponse = await this.approveSignatureInternal(signatureId, options);
+
+        if (
+            !("error" in signatureResponse) &&
+            signatureResponse.status === "success" &&
+            signatureResponse.outputSignature != null
+        ) {
+            return {
+                signature: signatureResponse.outputSignature,
+                signatureId,
+            };
+        }
+
+        await this.sleep(1_000);
         return await this.waitForSignature(signatureId);
     }
 

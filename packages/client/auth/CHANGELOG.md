@@ -1,5 +1,46 @@
 # @crossmint/client-sdk-auth
 
+## 1.2.34
+
+### Patch Changes
+
+- Updated dependencies [1080158]
+  - @crossmint/common-sdk-base@0.9.6
+  - @crossmint/client-sdk-base@1.7.1
+  - @crossmint/common-sdk-auth@1.0.56
+
+## 1.2.33
+
+### Patch Changes
+
+- Updated dependencies [105513c]
+  - @crossmint/client-sdk-base@1.7.0
+  - @crossmint/common-sdk-auth@1.0.55
+
+## 1.2.32
+
+### Patch Changes
+
+- fe31db3: Fixed issue with double auth api requests in react strict mode
+  - @crossmint/client-sdk-base@1.6.4
+  - @crossmint/common-sdk-auth@1.0.54
+
+## 1.2.31
+
+### Patch Changes
+
+- @crossmint/client-sdk-base@1.6.3
+- @crossmint/common-sdk-auth@1.0.53
+
+## 1.2.30
+
+### Patch Changes
+
+- Updated dependencies [04c5808]
+  - @crossmint/common-sdk-base@0.9.5
+  - @crossmint/client-sdk-base@1.6.2
+  - @crossmint/common-sdk-auth@1.0.52
+
 ## 1.2.29
 
 ### Patch Changes

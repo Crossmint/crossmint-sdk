@@ -1,5 +1,77 @@
 # @crossmint/wallets-sdk
 
+## 0.15.1
+
+### Patch Changes
+
+- 1080158: Add @solana/web3.js as peer dependency to resolve VersionedTransaction type mismatches. Users with different @solana/web3.js versions will now use the exact SDK version (1.98.1) to ensure type compatibility.
+- 758d224: Pre-initialize signer before creating a transaction
+- Updated dependencies [1080158]
+  - @crossmint/common-sdk-base@0.9.6
+
+## 0.15.0
+
+### Minor Changes
+
+- 9812c0c: Skip unnecessary polling when signature is already complete. For non-custodial wallets, the backend now returns completed signatures directly from createSignatureRequest(), allowing the SDK to return the signature immediately without waiting.
+
+## 0.14.3
+
+### Patch Changes
+
+- 635b217: Fix a bug of typedData not being properly managed for smart wallets in EVM
+
+## 0.14.2
+
+### Patch Changes
+
+- 1034e0f: Minor issues with retries in event handling
+- Updated dependencies [1034e0f]
+  - @crossmint/client-sdk-window@1.0.5
+
+## 0.14.1
+
+### Patch Changes
+
+- Updated dependencies [b9fd4ed]
+  - @crossmint/client-sdk-window@1.0.4
+
+## 0.14.0
+
+### Minor Changes
+
+- c18048b: Rename `serializedTransaction` parameter to `transaction` in Stellar wallet sendTransaction method
+
+## 0.13.1
+
+### Patch Changes
+
+- 0b915b2: Adds support for delegated signers on wallet creation in EVM + Stellar
+
+## 0.13.0
+
+### Minor Changes
+
+- 544c9bd: Add serialized transaction support for Stellar wallets
+
+### Patch Changes
+
+- 9a4fa46: Supports fetching delegated signers in Stellar
+
+## 0.12.5
+
+### Patch Changes
+
+- Updated dependencies [04c5808]
+  - @crossmint/common-sdk-base@0.9.5
+
+## 0.12.4
+
+### Patch Changes
+
+- 08c2d57: Supports signer param in #send
+- 08c2d57: Sets needsAuth to false when rejecting otp flow
+
 ## 0.12.3
 
 ### Patch Changes

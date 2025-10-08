@@ -1,5 +1,20 @@
 # @crossmint/client-sdk-walletconnect
 
+## 1.2.29
+
+### Patch Changes
+
+- Updated dependencies [1080158]
+  - @crossmint/common-sdk-base@0.9.6
+
+## 1.2.28
+
+### Patch Changes
+
+- 04c5808: Removing apex and boss
+- Updated dependencies [04c5808]
+  - @crossmint/common-sdk-base@0.9.5
+
 ## 1.2.27
 
 ### Patch Changes

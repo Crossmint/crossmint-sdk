@@ -17,6 +17,7 @@ export abstract class NonCustodialSigner implements Signer {
         resolve: () => void;
         reject: (error: Error) => void;
     } | null = null;
+    private _initializationPromise: Promise<void> | null = null;
 
     constructor(protected config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
         this.initialize();
@@ -47,21 +48,59 @@ export abstract class NonCustodialSigner implements Signer {
 
     abstract signTransaction(transaction: string): Promise<{ signature: string }>;
 
-    protected async handleAuthRequired() {
+    private async getTEEConnection() {
         if (this.config.clientTEEConnection == null) {
-            if (this.config.onAuthRequired == null) {
-                throw new Error(
-                    `${this.type} signer requires the onAuthRequired callback to handle OTP verification. ` +
-                        `This callback manages the authentication flow (sending OTP and verifying user input). ` +
-                        `If using our React/React Native SDK, this is handled automatically by the provider. ` +
-                        `For other environments, implement: onAuthRequired: (needsAuth, sendEmailWithOtp, verifyOtp, reject) => { /* your UI logic */ }`
-                );
+            // If there's already an initialization in progress, wait for it
+            if (this._initializationPromise) {
+                await this._initializationPromise;
+                return this.config.clientTEEConnection!;
             }
-            throw new Error("Handshake parent not initialized");
+
+            // Start initialization and store the promise to prevent concurrent initializations
+            this._initializationPromise = this.initializeTEEConnection();
+
+            try {
+                await this._initializationPromise;
+            } finally {
+                // Clear the promise after completion (success or failure)
+                this._initializationPromise = null;
+            }
+        }
+
+        return this.config.clientTEEConnection!;
+    }
+
+    private async initializeTEEConnection(): Promise<void> {
+        console.warn("TEE connection is not initialized, initializing now...");
+
+        const parsedAPIKey = validateAPIKey(this.config.crossmint.apiKey);
+        if (!parsedAPIKey.isValid) {
+            throw new Error("Invalid API key");
+        }
+        const iframeManager = new NcsIframeManager({ environment: parsedAPIKey.environment });
+        this.config.clientTEEConnection = await iframeManager.initialize();
+
+        if (this.config.clientTEEConnection == null) {
+            throw new Error("Failed to initialize TEE connection");
+        }
+
+        console.log("TEE connection initialized successfully");
+    }
+
+    protected async handleAuthRequired() {
+        const clientTEEConnection = await this.getTEEConnection();
+
+        if (this.config.onAuthRequired == null) {
+            throw new Error(
+                `${this.type} signer requires the onAuthRequired callback to handle OTP verification. ` +
+                    `This callback manages the authentication flow (sending OTP and verifying user input). ` +
+                    `If using our React/React Native SDK, this is handled automatically by the provider. ` +
+                    `For other environments, implement: onAuthRequired: (needsAuth, sendEmailWithOtp, verifyOtp, reject) => { /* your UI logic */ }`
+            );
         }
 
         // Determine if we need to authenticate the user via OTP or not
-        const signerResponse = await this.config.clientTEEConnection?.sendAction({
+        const signerResponse = await clientTEEConnection.sendAction({
             event: "request:get-status",
             responseEvent: "response:get-status",
             data: {
@@ -70,7 +109,10 @@ export abstract class NonCustodialSigner implements Signer {
                     apiKey: this.config.crossmint.apiKey,
                 },
             },
-            options: DEFAULT_EVENT_OPTIONS,
+            options: {
+                ...DEFAULT_EVENT_OPTIONS,
+                maxRetries: 5,
+            },
         });
 
         if (signerResponse?.status !== "success") {
@@ -80,6 +122,8 @@ export abstract class NonCustodialSigner implements Signer {
         if (signerResponse.signerStatus === "ready") {
             this._needsAuth = false;
             return;
+        } else {
+            this._needsAuth = true;
         }
 
         const { promise, resolve, reject } = this.createAuthPromise();
@@ -91,9 +135,18 @@ export abstract class NonCustodialSigner implements Signer {
                     this._needsAuth,
                     () => this.sendMessageWithOtp(),
                     (otp) => this.verifyOtp(otp),
-                    () => {
-                        reject(new AuthRejectedError());
+                    async () => {
                         this._needsAuth = false;
+                        // We call onAuthRequired again so the needsAuth state is updated for the dev
+                        if (this.config.onAuthRequired != null) {
+                            await this.config.onAuthRequired(
+                                this._needsAuth,
+                                () => this.sendMessageWithOtp(),
+                                (otp) => this.verifyOtp(otp),
+                                () => this._authPromise?.reject(new AuthRejectedError())
+                            );
+                        }
+                        reject(new AuthRejectedError());
                     }
                 );
             } catch (error) {
@@ -106,6 +159,10 @@ export abstract class NonCustodialSigner implements Signer {
         } catch (error) {
             throw error;
         }
+    }
+
+    public async ensureAuthenticated(): Promise<void> {
+        await this.handleAuthRequired();
     }
 
     protected getJwtOrThrow() {
@@ -129,11 +186,7 @@ export abstract class NonCustodialSigner implements Signer {
     }
 
     private async sendMessageWithOtp() {
-        if (this.config.clientTEEConnection == null) {
-            throw new Error("Handshake parent not initialized");
-        }
-
-        const handshakeParent = this.config.clientTEEConnection;
+        const handshakeParent = await this.getTEEConnection();
         const authId = this.getAuthId();
         const response = await handshakeParent.sendAction({
             event: "request:start-onboarding",
@@ -145,7 +198,10 @@ export abstract class NonCustodialSigner implements Signer {
                 },
                 data: { authId },
             },
-            options: DEFAULT_EVENT_OPTIONS,
+            options: {
+                ...DEFAULT_EVENT_OPTIONS,
+                maxRetries: 3,
+            },
         });
 
         if (response?.status === "success" && response.signerStatus === "ready") {
@@ -167,11 +223,7 @@ export abstract class NonCustodialSigner implements Signer {
     }
 
     private async verifyOtp(encryptedOtp: string) {
-        if (this.config.clientTEEConnection == null) {
-            throw new Error("Handshake parent not initialized");
-        }
-
-        const handshakeParent = this.config.clientTEEConnection;
+        const handshakeParent = await this.getTEEConnection();
         try {
             const response = await handshakeParent.sendAction({
                 event: "request:complete-onboarding",
@@ -185,7 +237,10 @@ export abstract class NonCustodialSigner implements Signer {
                         onboardingAuthentication: { encryptedOtp },
                     },
                 },
-                options: DEFAULT_EVENT_OPTIONS,
+                options: {
+                    ...DEFAULT_EVENT_OPTIONS,
+                    maxRetries: 3,
+                },
             });
 
             if (response?.status === "success") {
