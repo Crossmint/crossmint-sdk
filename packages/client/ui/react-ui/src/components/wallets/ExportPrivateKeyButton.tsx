@@ -80,7 +80,7 @@ export function ExportPrivateKeyButton({ appearance }: ExportPrivateKeyButtonPro
             src={frameUrl.toString()}
             appearance={appearance}
             title="Export Private Key"
-            allow="clipboard-read; clipboard-write"
+            allow="clipboard-write"
             onLoad={handleIframeLoad}
         />
     );
