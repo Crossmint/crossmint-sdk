@@ -275,7 +275,7 @@ export class Wallet<C extends Chain> {
         options?: T
     ): Promise<Transaction<T extends PrepareOnly<true> ? true : false>> {
         await this.preAuthIfNeeded();
-        const recipient = toRecipientLocator(to);
+        const recipient = toRecipientLocator(to, this.chain);
         const tokenLocator = toTokenLocator(token, this.chain);
         const sendParams = {
             recipient,
@@ -692,24 +692,24 @@ export class Wallet<C extends Chain> {
     }
 }
 
-function toRecipientLocator(to: string | UserLocator): string {
+function toRecipientLocator(to: string | UserLocator, chain: string): string {
     if (typeof to === "string") {
         return to;
     }
     if ("email" in to) {
-        return `email:${to.email}`;
+        return `email:${to.email}:${chain}`;
     }
     if ("x" in to) {
-        return `x:${to.x}`;
+        return `x:${to.x}:${chain}`;
     }
     if ("twitter" in to) {
-        return `twitter:${to.twitter}`;
+        return `twitter:${to.twitter}:${chain}`;
     }
     if ("phone" in to) {
-        return `phoneNumber:${to.phone}`;
+        return `phoneNumber:${to.phone}:${chain}`;
     }
     if ("userId" in to) {
-        return `userId:${to.userId}`;
+        return `userId:${to.userId}:${chain}`;
     }
     throw new Error("Invalid recipient locator");
 }
