@@ -5,12 +5,120 @@ import { useWallet } from "@crossmint/client-sdk-react-ui";
 import { PublicKey } from "@solana/web3.js";
 import { isAddress } from "viem";
 
+const isEmailValid = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+};
+
+const isValidXHandle = (handle: string): boolean => {
+    // X handles should start with @ and contain only alphanumeric characters and underscores
+    // Length between 1 and 15 characters (excluding @)
+    const xHandleRegex = /^@?[A-Za-z0-9_]{1,15}$/;
+    return xHandleRegex.test(handle);
+};
+
+/* ============================================================ */
+/*                    RECIPIENT SELECTOR COMPONENT              */
+/* ============================================================ */
+type RecipientType = "address" | "email" | "x";
+
+interface RecipientSelectorProps {
+    recipientType: RecipientType;
+    setRecipientType: (type: RecipientType) => void;
+    setRecipient: (value: string | null) => void;
+    name: string;
+    addressPlaceholder?: string;
+    testId?: string;
+}
+
+function RecipientSelector({
+    recipientType,
+    setRecipientType,
+    setRecipient,
+    name,
+    addressPlaceholder = "Enter wallet address",
+    testId = "recipient-wallet-address",
+}: RecipientSelectorProps) {
+    const getLabel = () => {
+        switch (recipientType) {
+            case "address":
+                return "Recipient wallet";
+            case "email":
+                return "Recipient email";
+            case "x":
+                return "Recipient X handle";
+        }
+    };
+
+    const getPlaceholder = () => {
+        switch (recipientType) {
+            case "address":
+                return addressPlaceholder;
+            case "email":
+                return "Enter email address";
+            case "x":
+                return "Enter X handle";
+        }
+    };
+
+    return (
+        <>
+            <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium">Recipient type</label>
+                <div className="flex gap-3">
+                    <label className="flex items-center gap-1 cursor-pointer">
+                        <input
+                            type="radio"
+                            name={name}
+                            className="h-4 w-4"
+                            checked={recipientType === "address"}
+                            onChange={() => setRecipientType("address")}
+                        />
+                        <span>Wallet Address</span>
+                    </label>
+                    <label className="flex items-center gap-1 cursor-pointer">
+                        <input
+                            type="radio"
+                            name={name}
+                            className="h-4 w-4"
+                            checked={recipientType === "email"}
+                            onChange={() => setRecipientType("email")}
+                        />
+                        <span>Email</span>
+                    </label>
+                    <label className="flex items-center gap-1 cursor-pointer">
+                        <input
+                            type="radio"
+                            name={name}
+                            className="h-4 w-4"
+                            checked={recipientType === "x"}
+                            onChange={() => setRecipientType("x")}
+                        />
+                        <span>X Handle</span>
+                    </label>
+                </div>
+            </div>
+            <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium">{getLabel()}</label>
+                <input
+                    type="text"
+                    data-testid={testId}
+                    className="w-full px-3 py-2 border rounded-md text-sm"
+                    placeholder={getPlaceholder()}
+                    onChange={(e) => setRecipient(e.target.value)}
+                />
+            </div>
+        </>
+    );
+}
+
 /* ============================================================ */
 /*                    EVM WALLET TRANSFER                        */
 /* ============================================================ */
 export function EVMTransferFunds() {
     const { wallet } = useWallet();
     const [token, setToken] = useState<"eth" | "usdc" | null>(null);
+    const [recipientType, setRecipientType] = useState<"address" | "email" | "x">("address");
     const [recipient, setRecipient] = useState<string | null>(null);
     const [amount, setAmount] = useState<number | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -22,15 +130,28 @@ export function EVMTransferFunds() {
             return;
         }
 
-        // Validate EVM recipient address
-        if (!isAddress(recipient)) {
+        // Validate recipient based on type
+        if (recipientType === "address" && !isAddress(recipient)) {
             alert("Transfer: Invalid recipient address");
+            return;
+        }
+
+        if (recipientType === "email" && !isEmailValid(recipient)) {
+            alert("Transfer: Invalid email address");
+            return;
+        }
+
+        if (recipientType === "x" && !isValidXHandle(recipient)) {
+            alert("Transfer: Invalid X handle");
             return;
         }
 
         try {
             setIsLoading(true);
-            const tx = await wallet.send(recipient, token, amount.toString());
+            // Prepare recipient based on type
+            const recipientParam =
+                recipientType === "email" ? { email: recipient } : recipientType === "x" ? { x: recipient } : recipient;
+            const tx = await wallet.send(recipientParam, token, amount.toString());
             setTxLink(tx.explorerLink);
         } catch (err) {
             console.error("Transfer: ", err);
@@ -84,16 +205,12 @@ export function EVMTransferFunds() {
                         />
                     </div>
                 </div>
-                <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium">Recipient wallet</label>
-                    <input
-                        type="text"
-                        data-testid="recipient-wallet-address"
-                        className="w-full px-3 py-2 border rounded-md text-sm"
-                        placeholder="Enter wallet address"
-                        onChange={(e) => setRecipient(e.target.value)}
-                    />
-                </div>
+                <RecipientSelector
+                    recipientType={recipientType}
+                    setRecipientType={setRecipientType}
+                    setRecipient={setRecipient}
+                    name="evm-recipient-type"
+                />
             </div>
             <div className="flex flex-col gap-2 w-full">
                 <button
@@ -130,6 +247,7 @@ export function EVMTransferFunds() {
 export function SolanaTransferFunds() {
     const { wallet } = useWallet();
     const [token, setToken] = useState<"sol" | "usdc" | null>("sol");
+    const [recipientType, setRecipientType] = useState<"address" | "email" | "x">("address");
     const [recipient, setRecipient] = useState<string | null>(null);
     const [amount, setAmount] = useState<number | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -139,7 +257,7 @@ export function SolanaTransferFunds() {
         try {
             new PublicKey(address);
             return true;
-        } catch (error) {
+        } catch {
             return false;
         }
     };
@@ -150,15 +268,28 @@ export function SolanaTransferFunds() {
             return;
         }
 
-        // Validate Solana recipient address
-        if (token === "sol" && !isSolanaAddressValid(recipient)) {
+        // Validate recipient based on type
+        if (recipientType === "address" && token === "sol" && !isSolanaAddressValid(recipient)) {
             alert("Transfer: Invalid Solana recipient address");
+            return;
+        }
+
+        if (recipientType === "email" && !isEmailValid(recipient)) {
+            alert("Transfer: Invalid email address");
+            return;
+        }
+
+        if (recipientType === "x" && !isValidXHandle(recipient)) {
+            alert("Transfer: Invalid X handle");
             return;
         }
 
         try {
             setIsLoading(true);
-            const tx = await wallet.send(recipient, token, amount.toString());
+            // Prepare recipient based on type
+            const recipientParam =
+                recipientType === "email" ? { email: recipient } : recipientType === "x" ? { x: recipient } : recipient;
+            const tx = await wallet.send(recipientParam, token, amount.toString());
             setTxLink(tx.explorerLink);
         } catch (err) {
             console.error("Transfer: ", err);
@@ -212,16 +343,12 @@ export function SolanaTransferFunds() {
                         />
                     </div>
                 </div>
-                <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium">Recipient wallet</label>
-                    <input
-                        type="text"
-                        data-testid="recipient-wallet-address"
-                        className="w-full px-3 py-2 border rounded-md text-sm"
-                        placeholder="Enter wallet address"
-                        onChange={(e) => setRecipient(e.target.value)}
-                    />
-                </div>
+                <RecipientSelector
+                    recipientType={recipientType}
+                    setRecipientType={setRecipientType}
+                    setRecipient={setRecipient}
+                    name="solana-recipient-type"
+                />
             </div>
             <div className="flex flex-col gap-2 w-full">
                 <button
@@ -258,6 +385,7 @@ export function SolanaTransferFunds() {
 export function StellarTransferFunds() {
     const { wallet } = useWallet();
     const [token, setToken] = useState<"xlm" | "usdc" | "usdxm" | null>("xlm");
+    const [recipientType, setRecipientType] = useState<"address" | "email" | "x">("address");
     const [recipient, setRecipient] = useState<string | null>(null);
     const [amount, setAmount] = useState<number | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -271,15 +399,28 @@ export function StellarTransferFunds() {
 
         const isStellarAddressValid = (address: string) => /^[G|C][A-Z0-9]{55}$/.test(address);
 
-        // Validate Stellar recipient address
-        if (!isStellarAddressValid(recipient)) {
+        // Validate recipient based on type
+        if (recipientType === "address" && !isStellarAddressValid(recipient)) {
             alert("Transfer: Invalid Stellar recipient address");
+            return;
+        }
+
+        if (recipientType === "email" && !isEmailValid(recipient)) {
+            alert("Transfer: Invalid email address");
+            return;
+        }
+
+        if (recipientType === "x" && !isValidXHandle(recipient)) {
+            alert("Transfer: Invalid X handle");
             return;
         }
 
         try {
             setIsLoading(true);
-            const tx = await wallet.send(recipient, token, amount.toString());
+            // Prepare recipient based on type
+            const recipientParam =
+                recipientType === "email" ? { email: recipient } : recipientType === "x" ? { x: recipient } : recipient;
+            const tx = await wallet.send(recipientParam, token, amount.toString());
             setTxLink(tx.explorerLink);
         } catch (err) {
             console.error("Transfer: ", err);
@@ -332,15 +473,13 @@ export function StellarTransferFunds() {
                         />
                     </div>
                 </div>
-                <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium">Recipient wallet</label>
-                    <input
-                        type="text"
-                        className="w-full px-3 py-2 border rounded-md text-sm"
-                        placeholder="Enter Stellar address (G...)"
-                        onChange={(e) => setRecipient(e.target.value)}
-                    />
-                </div>
+                <RecipientSelector
+                    recipientType={recipientType}
+                    setRecipientType={setRecipientType}
+                    setRecipient={setRecipient}
+                    name="stellar-recipient-type"
+                    addressPlaceholder="Enter Stellar address (G...)"
+                />
             </div>
             <div className="flex flex-col gap-2 w-full">
                 <button
