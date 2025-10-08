@@ -49,7 +49,7 @@ function EVMCrossmintAuthProvider({
                     createOnLogin={
                         createOnLogin != null
                             ? createOnLogin
-                            : { chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any, signer: { type: "email" } }
+                            : { chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any, signer: { type: "api-key" } }
                     }
                 >
                     {children}
