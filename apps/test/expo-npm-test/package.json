@@ -15,10 +15,10 @@
         "preset": "jest-expo"
     },
     "dependencies": {
-        "@crossmint/client-sdk-react-native-ui": "workspace:*",
-        "@crossmint/client-sdk-rn-window": "workspace:*",
-        "@crossmint/client-signers": "workspace:*",
-        "@crossmint/wallets-sdk": "workspace:*",
+        "@crossmint/client-sdk-react-native-ui": "0.11.8",
+        "@crossmint/client-sdk-rn-window": "0.3.8",
+        "@crossmint/client-signers": "0.0.20",
+        "@crossmint/wallets-sdk": "0.15.1",
         "@expo/vector-icons": "^15.0.2",
         "@react-navigation/bottom-tabs": "^7.2.0",
         "@react-navigation/native": "^7.0.14",
