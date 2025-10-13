@@ -10,7 +10,7 @@ export class RNWebViewTransport<OutgoingEvents extends EventMap = EventMap> impl
     private isWebView: boolean;
     private globalListenerAttached = false;
 
-    constructor(private webviewRef?: RefObject<WebView>) {
+    constructor(private webviewRef?: RefObject<WebView | null>) {
         this.isWebView = typeof (window as any).ReactNativeWebView !== "undefined";
     }
 
