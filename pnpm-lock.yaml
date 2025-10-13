@@ -705,18 +705,6 @@ importers:
       bs58:
         specifier: ^5.0.0
         version: 5.0.0
-      expo-constants:
-        specifier: ~17.0.8
-        version: 17.0.8(expo@52.0.47(zl236d6jhup6oohjs6jiwdcs3y))(react-native@0.76.9(@babel/core@7.26.10)(@babel/preset-env@7.26.9(@babel/core@7.26.10))(@react-native-community/cli@13.6.4(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(@types/react@19.0.12)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10))
-      expo-device:
-        specifier: ~7.1.4
-        version: 7.1.4(expo@52.0.47(zl236d6jhup6oohjs6jiwdcs3y))
-      expo-secure-store:
-        specifier: ~14.0.0
-        version: 14.0.1(expo@52.0.47(zl236d6jhup6oohjs6jiwdcs3y))
-      expo-web-browser:
-        specifier: ~14.0.2
-        version: 14.0.2(expo@52.0.47(zl236d6jhup6oohjs6jiwdcs3y))(react-native@0.76.9(@babel/core@7.26.10)(@babel/preset-env@7.26.9(@babel/core@7.26.10))(@react-native-community/cli@13.6.4(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(@types/react@19.0.12)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10))
       mitt:
         specifier: 3.0.1
         version: 3.0.1
@@ -739,6 +727,18 @@ importers:
       '@types/react':
         specifier: 19.0.12
         version: 19.0.12
+      expo-constants:
+        specifier: ~17.0.8
+        version: 17.0.8(expo@52.0.47(zl236d6jhup6oohjs6jiwdcs3y))(react-native@0.76.9(@babel/core@7.26.10)(@babel/preset-env@7.26.9(@babel/core@7.26.10))(@react-native-community/cli@13.6.4(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(@types/react@19.0.12)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10))
+      expo-device:
+        specifier: ~7.1.4
+        version: 7.1.4(expo@52.0.47(zl236d6jhup6oohjs6jiwdcs3y))
+      expo-secure-store:
+        specifier: ~14.0.0
+        version: 14.0.1(expo@52.0.47(zl236d6jhup6oohjs6jiwdcs3y))
+      expo-web-browser:
+        specifier: ~14.0.2
+        version: 14.0.2(expo@52.0.47(zl236d6jhup6oohjs6jiwdcs3y))(react-native@0.76.9(@babel/core@7.26.10)(@babel/preset-env@7.26.9(@babel/core@7.26.10))(@react-native-community/cli@13.6.4(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))(@types/react@19.0.12)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@5.0.10))
 
   packages/client/ui/react-ui:
     dependencies:
@@ -3081,7 +3081,7 @@ packages:
 
   '@expo/bunyan@4.0.1':
     resolution: {integrity: sha512-+Lla7nYSiHZirgK+U/uYzsLv/X+HaJienbD5AKX1UQZHYfWaP+9uuQluRB4GrEVWF0GZ7vEVp/jzaOT9k/SQlg==}
-    engines: {'0': node >=0.10.0}
+    engines: {node: '>=0.10.0'}
 
   '@expo/cli@0.22.26':
     resolution: {integrity: sha512-I689wc8Fn/AX7aUGiwrh3HnssiORMJtR2fpksX+JIe8Cj/EDleblYMSwRPd0025wrwOV9UN1KM/RuEt/QjCS3Q==}
@@ -14675,7 +14675,7 @@ snapshots:
     dependencies:
       '@babel/core': 7.26.10
       '@babel/helper-compilation-targets': 7.27.0
-      '@babel/helper-plugin-utils': 7.26.5
+      '@babel/helper-plugin-utils': 7.27.1
       '@babel/plugin-transform-parameters': 7.25.9(@babel/core@7.26.10)
 
   '@babel/plugin-transform-object-super@7.25.9(@babel/core@7.26.10)':
@@ -14702,7 +14702,7 @@ snapshots:
   '@babel/plugin-transform-parameters@7.25.9(@babel/core@7.26.10)':
     dependencies:
       '@babel/core': 7.26.10
-      '@babel/helper-plugin-utils': 7.26.5
+      '@babel/helper-plugin-utils': 7.27.1
 
   '@babel/plugin-transform-private-methods@7.25.9(@babel/core@7.26.10)':
     dependencies:

@@ -24,19 +24,23 @@
         "@crossmint/wallets-sdk": "workspace:*",
         "@solana/web3.js": "1.98.1",
         "bs58": "^5.0.0",
-        "expo-constants": "~17.0.8",
-        "expo-device": "~7.1.4",
-        "expo-secure-store": "~14.0.0",
-        "expo-web-browser": "~14.0.2",
         "mitt": "3.0.1",
         "zod": "3.22.4"
     },
     "devDependencies": {
         "@expo/config-plugins": "^9.0.17",
-        "@types/react": "19.0.12"
+        "@types/react": "19.0.12",
+        "expo-constants": "~17.0.8",
+        "expo-device": "~7.1.4",
+        "expo-secure-store": "~14.0.0",
+        "expo-web-browser": "~14.0.2"
     },
     "peerDependencies": {
         "@expo/config-plugins": ">=9.0.0",
+        "expo-constants": ">=17 <19",
+        "expo-device": ">=7 <9",
+        "expo-secure-store": ">=14 <16",
+        "expo-web-browser": ">=14 <16",
         "@solana/web3.js": "^1.98.1",
         "react": ">=17.0.2",
         "react-native": ">=0.74.3",
