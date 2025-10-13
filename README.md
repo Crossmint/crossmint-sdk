@@ -54,56 +54,58 @@ The Crossmint SDK is a powerful collection of packages designed to simplify bloc
 
 ### Why Crossmint?
 
--   🚀 **Quick Integration**: All our tools have 5-min quickstarts
--   💻 **Developer-First**: Build end-to-end blockchain solutions without deep Web3 expertise
--   🔒 **Secure**: Enterprise-grade security for all blockchain interactions
--   💳 **Fiat-First**: Enable users to participate in Web3 without cryptocurrency
--   🆓 **Free to Start**: Start developing at no cost
+- 🚀 **Quick Integration**: All our tools have 5-min quickstarts
+- 💻 **Developer-First**: Build end-to-end blockchain solutions without deep Web3 expertise
+- 🔒 **Secure**: Enterprise-grade security for all blockchain interactions
+- 💳 **Fiat-First**: Enable users to participate in Web3 without cryptocurrency
+- 🆓 **Free to Start**: Start developing at no cost
 
 ### Core Features
 
--   💳 NFT checkout: with credit card and cross-chain
--   🔐 Authentication and session management
--   👛 Embedded wallets
--   📜 Verifiable credentials
+- 💳 NFT checkout: with credit card and cross-chain
+- 🔐 Authentication and session management
+- 👛 Embedded wallets
+- 📜 Verifiable credentials
 
 ## Package Overview
 
 ### Wallet SDK
 
--   `@crossmint/wallets-sdk`: Universal Wallet SDK.
+- `@crossmint/wallets-sdk`: Universal Wallet SDK.
 
 ### Client-Side Packages
 
--   `@crossmint/client-sdk-react-ui`: React SDK, with UI components.
+- `@crossmint/client-sdk-react-ui`: React SDK, with UI components.
 
--   `@crossmint/client-sdk-react-native-ui`: React Native SDK.
--   `@crossmint/client-sdk-auth`: Headless typescript SDK for managing auth and user profiles.
--   `@crossmint/client-sdk-verifiable-credentials`: Headless typescript SDK for Verifiable Credentials.
+- `@crossmint/client-sdk-react-native-ui`: React Native SDK.
+	
+- `@crossmint/client-sdk-auth`: Headless typescript SDK for managing auth and user profiles.
+	
+- `@crossmint/client-sdk-verifiable-credentials`: Headless typescript SDK for Verifiable Credentials.
 
--   `@crossmint/client-sdk-smart-wallet` [DEPRECATED]: Headless typescript SDK for smart wallets.
+- `@crossmint/client-sdk-smart-wallet` [DEPRECATED]: Headless typescript SDK for smart wallets.
 
--   `@crossmint/wallets-sdk`: Headless typescript SDK for EVM + Solana MPC / Smart Wallets.
-
+- `@crossmint/wallets-sdk`: Headless typescript SDK for EVM + Solana MPC / Smart Wallets.
+	
 Other:
-
--   `@crossmint/client-sdk-base`: Core client-side functionality and essential building blocks for Crossmint integration. Typically you don't need to integrate against this directly.
+	
+- `@crossmint/client-sdk-base`: Core client-side functionality and essential building blocks for Crossmint integration. Typically you don't need to integrate against this directly.
 
 ### Server-Side Packages
 
--   `@crossmint/server-sdk`: Server-side SDK.
+- `@crossmint/server-sdk`: Server-side SDK.
 
 ### Demo Applications
 
--   [🔒 Wallets Quickstart)](https://github.com/Crossmint/wallets-quickstart): Create and interact with Crossmint wallets. This quickstart uses Crossmint Auth and uses your email as a signer for that wallet. [Demo](https://wallets.demos-crossmint.com/)
--   [💳 Hosted Checkout Quickstart)](https://github.com/Crossmint/hosted-checkout-quickstart): Allow your customers to buy NFTs with credit card and crypto payments, using Crossmint's hosted checkout. This quickstart provides a seamless integration for accepting payments in your dApp. [Demo](https://hosted-checkout.demos-crossmint.com/)
--   [🏦 Fintech Quickstart)](https://github.com/Crossmint/fintech-starter-app): Create your own Fintech app in minutes using Crossmint wallets and onramp. [Demo](https://fintech-starter-app.demos-crossmint.com/)
+- [🔒 Wallets Quickstart)](https://github.com/Crossmint/wallets-quickstart): Create and interact with Crossmint wallets. This quickstart uses Crossmint Auth and uses your email as a signer for that wallet. [Demo](https://wallets.demos-crossmint.com/)
+- [💳 Hosted Checkout Quickstart)](https://github.com/Crossmint/hosted-checkout-quickstart): Allow your customers to buy NFTs with credit card and crypto payments, using Crossmint's hosted checkout. This quickstart provides a seamless integration for accepting payments in your dApp. [Demo](https://hosted-checkout.demos-crossmint.com/)
+- [🏦 Fintech Quickstart)](https://github.com/Crossmint/fintech-starter-app): Create your own Fintech app in minutes using Crossmint wallets and onramp. [Demo](https://fintech-starter-app.demos-crossmint.com/)
 
 ## Getting Started
 
 To get started with the SDK, install the packages you need into your project.
 
-ie.
+ie. 
 `pnpm add @crossmint/wallets-sdk`
 
 Then, import the package you need.
@@ -125,20 +127,17 @@ pnpm
 ### Installation
 
 1. Clone the repository:
-
 ```shell
 git clone https://github.com/Crossmint/crossmint-sdk.git
 ```
 
 2. Install dependencies:
-
 ```shell
 cd crossmint-sdk
 pnpm install
 ```
 
 3. Build all packages:
-
 ```shell
 pnpm build
 ```
@@ -149,14 +148,12 @@ When modifying packages locally:
 
 1. Make your changes in the relevant package
 2. Rebuild the modified package:
-
 ```shell
 # Inside the package directory
 pnpm build
 ```
 
 3. Reinstall dependencies in your project:
-
 ```shell
 # From the root directory
 pnpm install
