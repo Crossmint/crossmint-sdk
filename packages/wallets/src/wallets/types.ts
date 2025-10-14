@@ -125,7 +125,6 @@ export type WalletArgsFor<C extends Chain> = {
     owner?: string;
     plugins?: WalletPlugin<C>[];
     options?: WalletOptions;
-    delegatedSigners?: Array<DelegatedSigner>;
     onCreateConfig?: OnCreateConfig<C>;
 };
 

@@ -50,16 +50,8 @@ export class WalletFactory {
     public async createWallet<C extends Chain>(args: WalletArgsFor<C>): Promise<Wallet<C>> {
         await args.options?.experimental_callbacks?.onWalletCreationStart?.();
 
-        let adminSignerConfig: SignerConfigForChain<C>;
-        let delegatedSigners: Array<DelegatedSigner> | undefined;
-
-        if (args.onCreateConfig) {
-            adminSignerConfig = args.onCreateConfig.adminSigner;
-            delegatedSigners = args.onCreateConfig.delegatedSigners;
-        } else {
-            adminSignerConfig = args.signer;
-            delegatedSigners = args.delegatedSigners;
-        }
+        const adminSignerConfig = args.onCreateConfig ? args.onCreateConfig.adminSigner : args.signer;
+        const delegatedSigners = args.onCreateConfig?.delegatedSigners;
 
         this.mutateSignerFromCustomAuth({ ...args, signer: adminSignerConfig }, true);
 
@@ -241,13 +233,6 @@ export class WalletFactory {
         existingWallet: GetWalletSuccessResponse,
         args: WalletArgsFor<C>
     ): void {
-        const expectedAdminSigner = args.onCreateConfig ? args.onCreateConfig.adminSigner : args.signer;
-        const expectedDelegatedSigners = args.onCreateConfig
-            ? args.onCreateConfig.delegatedSigners
-            : args.delegatedSigners;
-
-        this.mutateSignerFromCustomAuth({ ...args, signer: expectedAdminSigner });
-
         if (args.owner != null && existingWallet.owner != null && args.owner !== existingWallet.owner) {
             throw new WalletCreationError("Wallet owner does not match existing wallet's linked user");
         }
@@ -267,19 +252,37 @@ export class WalletFactory {
             return;
         }
 
-        const existingWalletSigner = (existingWallet?.config as any)?.adminSigner as AdminSignerConfig;
+        if (args.onCreateConfig) {
+            const expectedAdminSigner = args.onCreateConfig.adminSigner;
+            const existingWalletSigner = (existingWallet?.config as any)?.adminSigner as AdminSignerConfig;
 
-        if (expectedAdminSigner != null && existingWalletSigner != null) {
-            if (expectedAdminSigner.type !== existingWalletSigner.type) {
-                throw new WalletCreationError(
-                    "The wallet signer type provided in the wallet config does not match the existing wallet's adminSigner type"
-                );
+            this.mutateSignerFromCustomAuth({ ...args, signer: expectedAdminSigner });
+
+            if (expectedAdminSigner != null && existingWalletSigner != null) {
+                if (expectedAdminSigner.type !== existingWalletSigner.type) {
+                    throw new WalletCreationError(
+                        "The wallet signer type provided in onCreateConfig does not match the existing wallet's adminSigner type"
+                    );
+                }
+                compareSignerConfigs(expectedAdminSigner, existingWalletSigner);
             }
-            compareSignerConfigs(expectedAdminSigner, existingWalletSigner);
-        }
 
-        if (expectedDelegatedSigners != null) {
-            this.validateDelegatedSigners(existingWallet, expectedDelegatedSigners);
+            if (args.onCreateConfig.delegatedSigners != null) {
+                this.validateDelegatedSigners(existingWallet, args.onCreateConfig.delegatedSigners);
+            }
+        } else {
+            const existingWalletSigner = (existingWallet?.config as any)?.adminSigner as AdminSignerConfig;
+
+            this.mutateSignerFromCustomAuth(args);
+
+            if (args.signer != null && existingWalletSigner != null) {
+                if (args.signer.type !== existingWalletSigner.type) {
+                    throw new WalletCreationError(
+                        "The wallet signer type provided does not match the existing wallet's adminSigner type"
+                    );
+                }
+                compareSignerConfigs(args.signer, existingWalletSigner);
+            }
         }
 
         this.validateSignerCanUseWallet(existingWallet, args.signer);

@@ -28,7 +28,6 @@ export type CreateOnLogin =
           signer: SignerConfigForChain<SolanaChain>;
           owner?: string;
           plugins?: WalletPlugin<SolanaChain>[];
-          delegatedSigners?: Array<DelegatedSigner>;
           onCreateConfig?: OnCreateConfig<SolanaChain>;
       }
     | {
@@ -36,7 +35,6 @@ export type CreateOnLogin =
           signer: SignerConfigForChain<EVMChain>;
           owner?: string;
           plugins?: WalletPlugin<EVMChain>[];
-          delegatedSigners?: Array<DelegatedSigner>;
           onCreateConfig?: OnCreateConfig<EVMChain>;
       }
     | {
@@ -44,7 +42,6 @@ export type CreateOnLogin =
           signer: SignerConfigForChain<StellarChain>;
           owner?: string;
           plugins?: WalletPlugin<StellarChain>[];
-          delegatedSigners?: Array<DelegatedSigner>;
           onCreateConfig?: OnCreateConfig<StellarChain>;
       };
 
