@@ -253,10 +253,12 @@ export class WalletFactory {
         }
 
         if (args.onCreateConfig) {
-            const expectedAdminSigner = args.onCreateConfig.adminSigner;
+            let expectedAdminSigner = args.onCreateConfig.adminSigner;
             const existingWalletSigner = (existingWallet?.config as any)?.adminSigner as AdminSignerConfig;
 
-            this.mutateSignerFromCustomAuth({ ...args, signer: expectedAdminSigner });
+            const tempArgs = { ...args, signer: expectedAdminSigner };
+            this.mutateSignerFromCustomAuth(tempArgs);
+            expectedAdminSigner = tempArgs.signer;
 
             if (expectedAdminSigner != null && existingWalletSigner != null) {
                 if (expectedAdminSigner.type !== existingWalletSigner.type) {
