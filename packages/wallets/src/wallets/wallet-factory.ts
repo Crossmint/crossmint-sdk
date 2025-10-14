@@ -233,7 +233,7 @@ export class WalletFactory {
 
     private validateExistingWalletConfig<C extends Chain>(
         existingWallet: GetWalletSuccessResponse,
-        args: WalletArgsFor<C>
+        args: WalletArgsFor<C> | WalletCreateArgs<C>
     ): void {
         if (args.owner != null && existingWallet.owner != null && args.owner !== existingWallet.owner) {
             throw new WalletCreationError("Wallet owner does not match existing wallet's linked user");
@@ -254,7 +254,7 @@ export class WalletFactory {
             return;
         }
 
-        if (args.onCreateConfig) {
+        if ("onCreateConfig" in args) {
             let expectedAdminSigner = args.onCreateConfig.adminSigner;
             const existingWalletSigner = (existingWallet?.config as any)?.adminSigner as AdminSignerConfig;
 
