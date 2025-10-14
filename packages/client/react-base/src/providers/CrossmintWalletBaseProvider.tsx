@@ -205,7 +205,9 @@ export function CrossmintWalletBaseProvider({
                     await initializeWebView?.();
                 }
 
-                const walletLocator = `me:${wallets["getChainType"](args.chain)}:smart`;
+                const chainType =
+                    args.chain === "solana" ? "solana" : args.chain === "stellar" ? "stellar" : "evm";
+                const walletLocator = `me:${chainType}:smart`;
                 const wallet = await wallets.getWallet<C>(walletLocator, {
                     chain: args.chain,
                     signer,

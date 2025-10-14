@@ -16,6 +16,7 @@ export type {
     Balances,
     DelegatedSigner,
     EVMTransactionInput,
+    OnCreateConfig,
     Transaction,
     WalletArgsFor,
     WalletPlugin,
