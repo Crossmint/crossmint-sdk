@@ -186,9 +186,7 @@ export function CrossmintWalletBaseProvider({
 
                 await initializeWebViewIfNeeded(resolvedSigner);
 
-                const chainType = args.chain === "solana" ? "solana" : args.chain === "stellar" ? "stellar" : "evm";
-                const walletLocator = `me:${chainType}:smart`;
-                const wallet = await wallets.getWallet<C>(walletLocator, {
+                const wallet = await wallets.getClientSideWallet<C>({
                     chain: args.chain,
                     signer: resolvedSigner,
                     options: {

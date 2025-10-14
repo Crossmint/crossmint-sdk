@@ -33,6 +33,15 @@ export class CrossmintWallets {
     }
 
     /**
+     * Get an existing wallet by its locator, can only be called on the client side
+     * @param options - Wallet options
+     * @returns A wallet if found, throws WalletNotAvailableError if not found
+     */
+    public async getClientSideWallet<C extends Chain>(options: WalletArgsFor<C>): Promise<Wallet<C>> {
+        return await this.walletFactory.getClientSideWallet(options);
+    }
+
+    /**
      * Get an existing wallet by its locator, can only be called on the server side
      * @param walletLocator - Wallet locator
      * @param options - Wallet options
