@@ -17,6 +17,9 @@ export type CrossmintWalletBaseContext = {
     wallet: Wallet<Chain> | undefined;
     status: "not-loaded" | "in-progress" | "loaded" | "error";
     getOrCreateWallet: <C extends Chain>(props: WalletArgsFor<C>) => Promise<Wallet<Chain> | undefined>;
+    getWallet: <C extends Chain>(
+        props: Pick<WalletArgsFor<C>, "chain" | "signer">
+    ) => Promise<Wallet<Chain> | undefined>;
     onAuthRequired?: EmailSignerConfig["onAuthRequired"] | PhoneSignerConfig["onAuthRequired"];
     clientTEEConnection?: () => HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
 };
@@ -25,6 +28,7 @@ export const CrossmintWalletBaseContext = createContext<CrossmintWalletBaseConte
     wallet: undefined,
     status: "not-loaded",
     getOrCreateWallet: () => Promise.resolve(undefined),
+    getWallet: () => Promise.resolve(undefined),
     onAuthRequired: undefined,
     clientTEEConnection: undefined,
 });
@@ -122,6 +126,7 @@ export function CrossmintWalletBaseProvider({
                     owner: args.owner,
                     plugins: args.plugins,
                     delegatedSigners: args.delegatedSigners,
+                    onCreateConfig: args.onCreateConfig,
                     options: {
                         clientTEEConnection: clientTEEConnection?.(),
                         experimental_callbacks: {
@@ -141,6 +146,81 @@ export function CrossmintWalletBaseProvider({
             }
         },
         [crossmint, experimental_customAuth]
+    );
+
+    const getWallet = useCallback(
+        async <C extends Chain>(args: Pick<WalletArgsFor<C>, "chain" | "signer">) => {
+            if (experimental_customAuth?.jwt == null) {
+                return undefined;
+            }
+
+            try {
+                const wallets = CrossmintWallets.from(crossmint);
+
+                let signer = args.signer;
+
+                if (signer.type === "email") {
+                    const email = signer.email ?? experimental_customAuth?.email;
+                    const _onAuthRequired = signer.onAuthRequired ?? onAuthRequired;
+
+                    if (email == null) {
+                        throw new Error(
+                            "Email not found in experimental_customAuth or signer. Please set email in experimental_customAuth or signer."
+                        );
+                    }
+                    signer = {
+                        ...signer,
+                        email,
+                        onAuthRequired: _onAuthRequired,
+                    };
+                }
+
+                if (signer.type === "phone") {
+                    const phone = signer.phone ?? experimental_customAuth?.phone;
+                    const _onAuthRequired = signer.onAuthRequired ?? onAuthRequired;
+
+                    if (phone == null) {
+                        throw new Error("Phone not found in signer. Please set phone in signer.");
+                    }
+                    signer = {
+                        ...signer,
+                        phone,
+                        onAuthRequired: _onAuthRequired,
+                    };
+                }
+
+                if (signer.type === "external-wallet") {
+                    const resolvedSigner =
+                        signer.address != null ? signer : experimental_customAuth.externalWalletSigner;
+
+                    if (resolvedSigner == null) {
+                        throw new Error(
+                            "External wallet config not found in experimental_customAuth or signer. Please set it in experimental_customAuth or signer."
+                        );
+                    }
+                    signer = resolvedSigner as SignerConfigForChain<C>;
+                }
+
+                if (signer.type === "email" || signer.type === "phone") {
+                    await initializeWebView?.();
+                }
+
+                const walletLocator = `me:${wallets["getChainType"](args.chain)}:smart`;
+                const wallet = await wallets.getWallet<C>(walletLocator, {
+                    chain: args.chain,
+                    signer,
+                    options: {
+                        clientTEEConnection: clientTEEConnection?.(),
+                        experimental_callbacks: callbacks,
+                    },
+                });
+                return wallet;
+            } catch (error) {
+                console.error("Failed to get wallet:", error);
+                return undefined;
+            }
+        },
+        [crossmint, experimental_customAuth, onAuthRequired, clientTEEConnection, callbacks, initializeWebView]
     );
 
     useEffect(() => {
@@ -175,10 +255,11 @@ export function CrossmintWalletBaseProvider({
             wallet,
             status: walletStatus,
             getOrCreateWallet,
+            getWallet,
             onAuthRequired,
             clientTEEConnection,
         }),
-        [getOrCreateWallet, wallet, walletStatus, onAuthRequired, clientTEEConnection]
+        [getOrCreateWallet, getWallet, wallet, walletStatus, onAuthRequired, clientTEEConnection]
     );
 
     return <CrossmintWalletBaseContext.Provider value={contextValue}>{children}</CrossmintWalletBaseContext.Provider>;

@@ -95,6 +95,11 @@ export type DelegatedSigner = {
     signer: string;
 };
 
+export type OnCreateConfig<C extends Chain> = {
+    adminSigner: SignerConfigForChain<C>;
+    delegatedSigners?: Array<DelegatedSigner>;
+};
+
 // Approvals
 export type PendingApproval = NonNullable<
     NonNullable<CreateTransactionSuccessResponse["approvals"]>["pending"]
@@ -121,6 +126,7 @@ export type WalletArgsFor<C extends Chain> = {
     plugins?: WalletPlugin<C>[];
     options?: WalletOptions;
     delegatedSigners?: Array<DelegatedSigner>;
+    onCreateConfig?: OnCreateConfig<C>;
 };
 
 type ChainExtras = {

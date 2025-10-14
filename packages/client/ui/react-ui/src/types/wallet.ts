@@ -1,4 +1,4 @@
-export type { BaseCrossmintWalletProviderProps } from "@crossmint/client-sdk-react-base";
+export type { BaseCrossmintWalletProviderProps, OnCreateConfig } from "@crossmint/client-sdk-react-base";
 export {
     type Activity,
     type Balances,

@@ -39,10 +39,6 @@ export class WalletFactory {
     }
 
     public async getWallet<C extends Chain>(walletLocator: string, args: WalletArgsFor<C>): Promise<Wallet<C>> {
-        if (!this.apiClient.isServerSide) {
-            throw new WalletCreationError("getWallet is not supported on client side, use getOrCreateWallet instead");
-        }
-
         const existingWallet = await this.apiClient.getWallet(walletLocator);
         if ("error" in existingWallet) {
             throw new WalletNotAvailableError(JSON.stringify(existingWallet));
@@ -54,10 +50,23 @@ export class WalletFactory {
     public async createWallet<C extends Chain>(args: WalletArgsFor<C>): Promise<Wallet<C>> {
         await args.options?.experimental_callbacks?.onWalletCreationStart?.();
 
-        this.mutateSignerFromCustomAuth(args, true);
+        let adminSignerConfig: SignerConfigForChain<C>;
+        let delegatedSigners: Array<DelegatedSigner> | undefined;
+
+        if (args.onCreateConfig) {
+            adminSignerConfig = args.onCreateConfig.adminSigner;
+            delegatedSigners = args.onCreateConfig.delegatedSigners;
+        } else {
+            adminSignerConfig = args.signer;
+            delegatedSigners = args.delegatedSigners;
+        }
+
+        this.mutateSignerFromCustomAuth({ ...args, signer: adminSignerConfig }, true);
 
         const adminSigner =
-            args.signer.type === "passkey" ? await this.createPasskeyAdminSigner(args.signer) : args.signer;
+            adminSignerConfig.type === "passkey"
+                ? await this.createPasskeyAdminSigner(adminSignerConfig)
+                : adminSignerConfig;
 
         const walletResponse = await this.apiClient.createWallet({
             type: "smart",
@@ -65,7 +74,7 @@ export class WalletFactory {
             config: {
                 adminSigner,
                 ...(args?.plugins ? { plugins: args.plugins } : {}),
-                ...(args.delegatedSigners != null ? { delegatedSigners: args.delegatedSigners } : {}),
+                ...(delegatedSigners != null ? { delegatedSigners } : {}),
             },
             owner: args.owner ?? undefined,
         } as CreateWalletParams);
@@ -232,7 +241,12 @@ export class WalletFactory {
         existingWallet: GetWalletSuccessResponse,
         args: WalletArgsFor<C>
     ): void {
-        this.mutateSignerFromCustomAuth(args);
+        const expectedAdminSigner = args.onCreateConfig ? args.onCreateConfig.adminSigner : args.signer;
+        const expectedDelegatedSigners = args.onCreateConfig
+            ? args.onCreateConfig.delegatedSigners
+            : args.delegatedSigners;
+
+        this.mutateSignerFromCustomAuth({ ...args, signer: expectedAdminSigner });
 
         if (args.owner != null && existingWallet.owner != null && args.owner !== existingWallet.owner) {
             throw new WalletCreationError("Wallet owner does not match existing wallet's linked user");
@@ -253,21 +267,67 @@ export class WalletFactory {
             return;
         }
 
-        const adminSignerArgs = args.signer;
         const existingWalletSigner = (existingWallet?.config as any)?.adminSigner as AdminSignerConfig;
 
-        if (adminSignerArgs != null && existingWalletSigner != null) {
-            if (adminSignerArgs.type !== existingWalletSigner.type) {
+        if (expectedAdminSigner != null && existingWalletSigner != null) {
+            if (expectedAdminSigner.type !== existingWalletSigner.type) {
                 throw new WalletCreationError(
                     "The wallet signer type provided in the wallet config does not match the existing wallet's adminSigner type"
                 );
             }
-            compareSignerConfigs(adminSignerArgs, existingWalletSigner);
+            compareSignerConfigs(expectedAdminSigner, existingWalletSigner);
         }
 
-        if (args.delegatedSigners != null) {
-            this.validateDelegatedSigners(existingWallet, args.delegatedSigners);
+        if (expectedDelegatedSigners != null) {
+            this.validateDelegatedSigners(existingWallet, expectedDelegatedSigners);
         }
+
+        this.validateSignerCanUseWallet(existingWallet, args.signer);
+    }
+
+    private validateSignerCanUseWallet<C extends Chain>(
+        wallet: GetWalletSuccessResponse,
+        signer: SignerConfigForChain<C>
+    ): void {
+        const adminSigner = (wallet.config as any)?.adminSigner as AdminSignerConfig;
+        const delegatedSigners = ((wallet.config as any)?.delegatedSigners as DelegatedSignerResponse[]) || [];
+
+        if (adminSigner != null && signer.type === adminSigner.type) {
+            try {
+                compareSignerConfigs(signer, adminSigner);
+                return;
+            } catch {}
+        }
+
+        const signerLocator = this.getSignerLocator(signer);
+        const isDelegated = delegatedSigners.some((ds) => ds.locator === signerLocator);
+
+        if (isDelegated) {
+            return;
+        }
+
+        throw new WalletCreationError(
+            `Signer cannot use wallet "${wallet.address}". The provided signer is neither the admin nor a delegated signer.`
+        );
+    }
+
+    private getSignerLocator<C extends Chain>(signer: SignerConfigForChain<C>): string {
+        if (signer.type === "external-wallet") {
+            return `external-wallet:${signer.address}`;
+        }
+        if (signer.type === "email" && signer.email) {
+            return `email:${signer.email}`;
+        }
+        if (signer.type === "phone" && signer.phone) {
+            return `phone:${signer.phone}`;
+        }
+        if (signer.type === "passkey" && signer.name) {
+            return `passkey:${signer.name}`;
+        }
+        if (signer.type === "api-key") {
+            return "api-key";
+        }
+        return signer.type;
     }
 
     private validateDelegatedSigners(
