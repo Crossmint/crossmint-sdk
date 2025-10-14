@@ -49,7 +49,11 @@ function EVMCrossmintAuthProvider({
                     createOnLogin={
                         createOnLogin != null
                             ? createOnLogin
-                            : { chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any, signer: { type: "email" } }
+                            : {
+                                  chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any,
+                                  signer: { type: "email" },
+                                  onCreateConfig: { adminSigner: { type: "email" } },
+                              }
                     }
                 >
                     {children}
@@ -81,6 +85,7 @@ function EVMPrivyProvider({ children, apiKey }: { children: React.ReactNode; api
                     createOnLogin={{
                         chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any,
                         signer: { type: "email" },
+                        onCreateConfig: { adminSigner: { type: "email" } },
                     }}
                 >
                     {children}
@@ -116,7 +121,11 @@ function EVMFirebaseProvider({ children, apiKey }: { children: React.ReactNode; 
     return (
         <CrossmintProvider apiKey={apiKey ?? crossmintApiKey}>
             <CrossmintWalletProvider
-                createOnLogin={{ chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any, signer: { type: "email" } }}
+                createOnLogin={{
+                    chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any,
+                    signer: { type: "email" },
+                    onCreateConfig: { adminSigner: { type: "email" } },
+                }}
             >
                 {children}
             </CrossmintWalletProvider>
@@ -141,7 +150,13 @@ function SolanaCrossmintAuthProvider({
                 <CrossmintWalletProvider
                     showPasskeyHelpers={false}
                     createOnLogin={
-                        createOnLogin != null ? createOnLogin : { chain: "solana", signer: { type: "email" } }
+                        createOnLogin != null
+                            ? createOnLogin
+                            : {
+                                  chain: "solana",
+                                  signer: { type: "email" },
+                                  onCreateConfig: { adminSigner: { type: "email" } },
+                              }
                     }
                 >
                     {children}
@@ -170,7 +185,11 @@ function SolanaPrivyProvider({ children, apiKey }: { children: React.ReactNode; 
             <CrossmintProvider apiKey={apiKey ?? crossmintApiKey}>
                 <CrossmintWalletProvider
                     showPasskeyHelpers={false}
-                    createOnLogin={{ chain: "solana", signer: { type: "external-wallet" } }}
+                    createOnLogin={{
+                        chain: "solana",
+                        signer: { type: "external-wallet" },
+                        onCreateConfig: { adminSigner: { type: "external-wallet" } },
+                    }}
                 >
                     {children}
                 </CrossmintWalletProvider>
@@ -197,7 +216,13 @@ function SolanaDynamicLabsProvider({
             }}
         >
             <CrossmintProvider apiKey={apiKey ?? crossmintApiKey}>
-                <CrossmintWalletProvider createOnLogin={{ chain: "solana", signer: { type: "external-wallet" } }}>
+                <CrossmintWalletProvider
+                    createOnLogin={{
+                        chain: "solana",
+                        signer: { type: "external-wallet" },
+                        onCreateConfig: { adminSigner: { type: "external-wallet" } },
+                    }}
+                >
                     {children}
                 </CrossmintWalletProvider>
             </CrossmintProvider>
@@ -208,7 +233,13 @@ function SolanaDynamicLabsProvider({
 function SolanaFirebaseProvider({ children, apiKey }: { children: React.ReactNode; apiKey?: string }) {
     return (
         <CrossmintProvider apiKey={apiKey ?? crossmintApiKey}>
-            <CrossmintWalletProvider createOnLogin={{ chain: "solana", signer: { type: "email" } }}>
+            <CrossmintWalletProvider
+                createOnLogin={{
+                    chain: "solana",
+                    signer: { type: "email" },
+                    onCreateConfig: { adminSigner: { type: "email" } },
+                }}
+            >
                 {children}
             </CrossmintWalletProvider>
         </CrossmintProvider>
@@ -227,9 +258,12 @@ function StellarCrossmintAuthProvider({ children, apiKey }: { children: React.Re
                     createOnLogin={{
                         chain: "stellar",
                         signer: { type: "email" },
-                        delegatedSigners: [
-                            { signer: "external-wallet:GDUNAPJW6JYL4JEBFR7B5RZZD6B4TOUEWPFTT3V47IHI7QJPA43UFEY6" },
-                        ],
+                        onCreateConfig: {
+                            adminSigner: { type: "email" },
+                            delegatedSigners: [
+                                { signer: "external-wallet:GDUNAPJW6JYL4JEBFR7B5RZZD6B4TOUEWPFTT3V47IHI7QJPA43UFEY6" },
+                            ],
+                        },
                     }}
                 >
                     {children}
@@ -261,9 +295,14 @@ function QueryParamsProvider({ children }: { children: React.ReactNode }) {
                 return <EVMFirebaseProvider>{children}</EVMFirebaseProvider>;
             case "crossmint":
             default:
-                const createOnLogin: any = { chain: chainId, signer: { type: signerType } };
+                const createOnLogin: any = {
+                    chain: chainId,
+                    signer: { type: signerType },
+                    onCreateConfig: { adminSigner: { type: signerType } },
+                };
                 if (signerType === "phone" && phoneNumber != null) {
                     createOnLogin.signer = { type: signerType, phone: decodeURIComponent(phoneNumber) };
+                    createOnLogin.onCreateConfig.adminSigner = { type: signerType, phone: decodeURIComponent(phoneNumber) };
                 }
                 return (
                     <EVMCrossmintAuthProvider apiKey={crossmintApiKey} createOnLogin={createOnLogin}>
@@ -281,9 +320,14 @@ function QueryParamsProvider({ children }: { children: React.ReactNode }) {
                 return <SolanaFirebaseProvider>{children}</SolanaFirebaseProvider>;
             case "crossmint":
             default:
-                const createOnLogin: any = { chain: "solana", signer: { type: signerType } };
+                const createOnLogin: any = {
+                    chain: "solana",
+                    signer: { type: signerType },
+                    onCreateConfig: { adminSigner: { type: signerType } },
+                };
                 if (signerType === "phone" && phoneNumber != null) {
                     createOnLogin.signer = { type: signerType, phone: decodeURIComponent(phoneNumber) };
+                    createOnLogin.onCreateConfig.adminSigner = { type: signerType, phone: decodeURIComponent(phoneNumber) };
                 }
                 return (
                     <SolanaCrossmintAuthProvider apiKey={crossmintApiKey} createOnLogin={createOnLogin}>

@@ -57,6 +57,9 @@ function CrossmintProviders({ children }: { children: ReactNode }) {
                     createOnLogin={{
                         chain: walletType === "solana-smart-wallet" ? "solana" : (process.env.NEXT_PUBLIC_CHAIN as any),
                         signer: { type: "api-key" },
+                        onCreateConfig: {
+                            adminSigner: { type: "api-key" },
+                        },
                     }}
                 >
                     {children}
