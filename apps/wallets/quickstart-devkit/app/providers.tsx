@@ -302,7 +302,10 @@ function QueryParamsProvider({ children }: { children: React.ReactNode }) {
                 };
                 if (signerType === "phone" && phoneNumber != null) {
                     createOnLogin.signer = { type: signerType, phone: decodeURIComponent(phoneNumber) };
-                    createOnLogin.onCreateConfig.adminSigner = { type: signerType, phone: decodeURIComponent(phoneNumber) };
+                    createOnLogin.onCreateConfig.adminSigner = {
+                        type: signerType,
+                        phone: decodeURIComponent(phoneNumber),
+                    };
                 }
                 return (
                     <EVMCrossmintAuthProvider apiKey={crossmintApiKey} createOnLogin={createOnLogin}>
@@ -327,7 +330,10 @@ function QueryParamsProvider({ children }: { children: React.ReactNode }) {
                 };
                 if (signerType === "phone" && phoneNumber != null) {
                     createOnLogin.signer = { type: signerType, phone: decodeURIComponent(phoneNumber) };
-                    createOnLogin.onCreateConfig.adminSigner = { type: signerType, phone: decodeURIComponent(phoneNumber) };
+                    createOnLogin.onCreateConfig.adminSigner = {
+                        type: signerType,
+                        phone: decodeURIComponent(phoneNumber),
+                    };
                 }
                 return (
                     <SolanaCrossmintAuthProvider apiKey={crossmintApiKey} createOnLogin={createOnLogin}>
