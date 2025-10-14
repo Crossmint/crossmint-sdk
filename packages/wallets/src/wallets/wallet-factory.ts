@@ -29,7 +29,9 @@ export class WalletFactory {
             );
         }
 
-        const existingWallet = await this.apiClient.getWallet(`me:${this.getChainType(args.chain)}:smart`);
+        const locator = this.getWalletLocator<C>(args);
+
+        const existingWallet = await this.apiClient.getWallet(locator);
 
         if (existingWallet != null && !("error" in existingWallet)) {
             return this.createWalletInstance(existingWallet, args);
@@ -68,6 +70,7 @@ export class WalletFactory {
                 ...(args.delegatedSigners != null ? { delegatedSigners: args.delegatedSigners } : {}),
             },
             owner: args.owner ?? undefined,
+            alias: args.alias ?? undefined,
         } as CreateWalletParams);
 
         if ("error" in walletResponse) {
@@ -91,6 +94,7 @@ export class WalletFactory {
                 owner: walletResponse.owner,
                 signer: assembleSigner(args.chain, signerConfig),
                 options: args.options,
+                alias: args.alias,
             },
             this.apiClient
         );
@@ -186,6 +190,10 @@ export class WalletFactory {
             default:
                 throw new Error("Invalid signer type");
         }
+    }
+
+    private getWalletLocator<C extends Chain>(args: WalletArgsFor<C>): string {
+        return `me:${this.getChainType(args.chain)}:smart` + (args.alias != null ? `:alias:${args.alias}` : "");
     }
 
     private async createPasskeyAdminSigner<C extends Chain>(
