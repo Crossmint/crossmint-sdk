@@ -1,14 +1,5 @@
 import type { UIConfig } from "@crossmint/common-sdk-base";
-import type {
-    DelegatedSigner,
-    EVMChain,
-    OnCreateConfig,
-    SignerConfigForChain,
-    SolanaChain,
-    StellarChain,
-    WalletCreateArgs,
-    WalletPlugin,
-} from "@crossmint/wallets-sdk";
+import type { EVMChain, SolanaChain, StellarChain, WalletCreateArgs } from "@crossmint/wallets-sdk";
 
 export type {
     Balances,

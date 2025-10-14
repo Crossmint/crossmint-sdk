@@ -176,5 +176,4 @@ describe("WalletFactory - OnCreateConfig Support", () => {
             );
         });
     });
-
 });
