@@ -109,6 +109,7 @@ export type WalletArgsFor<C extends Chain> = {
     plugins?: WalletPlugin<C>[];
     options?: WalletOptions;
     delegatedSigners?: Array<DelegatedSigner>;
+    alias?: string;
 };
 
 type ChainExtras = {
