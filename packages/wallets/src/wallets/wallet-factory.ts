@@ -50,10 +50,12 @@ export class WalletFactory {
     public async createWallet<C extends Chain>(args: WalletCreateArgs<C>): Promise<Wallet<C>> {
         await args.options?.experimental_callbacks?.onWalletCreationStart?.();
 
-        const adminSignerConfig = args.onCreateConfig.adminSigner;
+        let adminSignerConfig = args.onCreateConfig.adminSigner;
         const delegatedSigners = args.onCreateConfig.delegatedSigners;
 
-        this.mutateSignerFromCustomAuth({ ...args, signer: adminSignerConfig }, true);
+        const tempArgs = { ...args, signer: adminSignerConfig };
+        this.mutateSignerFromCustomAuth(tempArgs, true);
+        adminSignerConfig = tempArgs.signer;
 
         const adminSigner =
             adminSignerConfig.type === "passkey"
