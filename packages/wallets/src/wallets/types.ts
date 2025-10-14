@@ -128,6 +128,10 @@ export type WalletArgsFor<C extends Chain> = {
     onCreateConfig?: OnCreateConfig<C>;
 };
 
+export type WalletCreateArgs<C extends Chain> = WalletArgsFor<C> & {
+    onCreateConfig: OnCreateConfig<C>;
+};
+
 type ChainExtras = {
     solana: { mintHash?: string };
     stellar: { contractId?: string };

@@ -3,7 +3,7 @@ import { ApiClient } from "./api";
 import { WalletFactory } from "./wallets/wallet-factory";
 import type { Wallet } from "./wallets/wallet";
 import type { Chain } from "./chains/chains";
-import type { WalletArgsFor } from "./wallets/types";
+import type { WalletArgsFor, WalletCreateArgs } from "./wallets/types";
 
 export class CrossmintWallets {
     private readonly walletFactory: WalletFactory;
@@ -28,7 +28,7 @@ export class CrossmintWallets {
      * @param options - Wallet options
      * @returns An existing wallet or a new wallet
      */
-    public async getOrCreateWallet<C extends Chain>(options: WalletArgsFor<C>): Promise<Wallet<C>> {
+    public async getOrCreateWallet<C extends Chain>(options: WalletCreateArgs<C>): Promise<Wallet<C>> {
         return await this.walletFactory.getOrCreateWallet(options);
     }
 
@@ -47,7 +47,7 @@ export class CrossmintWallets {
      * @param options - Wallet options
      * @returns A new wallet
      */
-    public async createWallet<C extends Chain>(options: WalletArgsFor<C>): Promise<Wallet<C>> {
+    public async createWallet<C extends Chain>(options: WalletCreateArgs<C>): Promise<Wallet<C>> {
         return await this.walletFactory.createWallet(options);
     }
 }

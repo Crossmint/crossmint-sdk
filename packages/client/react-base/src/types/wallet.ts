@@ -6,6 +6,7 @@ import type {
     SignerConfigForChain,
     SolanaChain,
     StellarChain,
+    WalletCreateArgs,
     WalletPlugin,
 } from "@crossmint/wallets-sdk";
 
@@ -22,28 +23,7 @@ export type {
 
 export { EVMWallet, SolanaWallet, StellarWallet } from "@crossmint/wallets-sdk";
 
-export type CreateOnLogin =
-    | {
-          chain: SolanaChain;
-          signer: SignerConfigForChain<SolanaChain>;
-          owner?: string;
-          plugins?: WalletPlugin<SolanaChain>[];
-          onCreateConfig?: OnCreateConfig<SolanaChain>;
-      }
-    | {
-          chain: EVMChain;
-          signer: SignerConfigForChain<EVMChain>;
-          owner?: string;
-          plugins?: WalletPlugin<EVMChain>[];
-          onCreateConfig?: OnCreateConfig<EVMChain>;
-      }
-    | {
-          chain: StellarChain;
-          signer: SignerConfigForChain<StellarChain>;
-          owner?: string;
-          plugins?: WalletPlugin<StellarChain>[];
-          onCreateConfig?: OnCreateConfig<StellarChain>;
-      };
+export type CreateOnLogin = WalletCreateArgs<SolanaChain> | WalletCreateArgs<EVMChain> | WalletCreateArgs<StellarChain>;
 
 export type BaseCrossmintWalletProviderProps = {
     createOnLogin?: CreateOnLogin;

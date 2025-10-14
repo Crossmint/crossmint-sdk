@@ -13,7 +13,7 @@ import type { Chain } from "../chains/chains";
 import type { InternalSignerConfig, SignerConfigForChain } from "../signers/types";
 import { Wallet } from "./wallet";
 import { assembleSigner } from "../signers";
-import type { DelegatedSigner, WalletArgsFor, WalletOptions } from "./types";
+import type { DelegatedSigner, WalletArgsFor, WalletCreateArgs, WalletOptions } from "./types";
 import { compareSignerConfigs } from "../utils/signer-validation";
 
 const DELEGATED_SIGNER_MISMATCH_ERROR =
@@ -22,7 +22,7 @@ const DELEGATED_SIGNER_MISMATCH_ERROR =
 export class WalletFactory {
     constructor(private readonly apiClient: ApiClient) {}
 
-    public async getOrCreateWallet<C extends Chain>(args: WalletArgsFor<C>): Promise<Wallet<C>> {
+    public async getOrCreateWallet<C extends Chain>(args: WalletCreateArgs<C>): Promise<Wallet<C>> {
         if (this.apiClient.isServerSide) {
             throw new WalletCreationError(
                 "getOrCreateWallet can only be called from client-side code.\n- Make sure you're running this in the browser (or another client environment), not on your server.\n- Use your Crossmint Client API Key (not a server key)."
@@ -47,11 +47,11 @@ export class WalletFactory {
         return this.createWalletInstance(existingWallet, args);
     }
 
-    public async createWallet<C extends Chain>(args: WalletArgsFor<C>): Promise<Wallet<C>> {
+    public async createWallet<C extends Chain>(args: WalletCreateArgs<C>): Promise<Wallet<C>> {
         await args.options?.experimental_callbacks?.onWalletCreationStart?.();
 
-        const adminSignerConfig = args.onCreateConfig ? args.onCreateConfig.adminSigner : args.signer;
-        const delegatedSigners = args.onCreateConfig?.delegatedSigners;
+        const adminSignerConfig = args.onCreateConfig.adminSigner;
+        const delegatedSigners = args.onCreateConfig.delegatedSigners;
 
         this.mutateSignerFromCustomAuth({ ...args, signer: adminSignerConfig }, true);
 
@@ -269,19 +269,6 @@ export class WalletFactory {
 
             if (args.onCreateConfig.delegatedSigners != null) {
                 this.validateDelegatedSigners(existingWallet, args.onCreateConfig.delegatedSigners);
-            }
-        } else {
-            const existingWalletSigner = (existingWallet?.config as any)?.adminSigner as AdminSignerConfig;
-
-            this.mutateSignerFromCustomAuth(args);
-
-            if (args.signer != null && existingWalletSigner != null) {
-                if (args.signer.type !== existingWalletSigner.type) {
-                    throw new WalletCreationError(
-                        "The wallet signer type provided does not match the existing wallet's adminSigner type"
-                    );
-                }
-                compareSignerConfigs(args.signer, existingWalletSigner);
             }
         }
 

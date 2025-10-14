@@ -6,6 +6,7 @@ import {
     type SignerConfigForChain,
     type Wallet,
     type WalletArgsFor,
+    type WalletCreateArgs,
     type PhoneSignerConfig,
 } from "@crossmint/wallets-sdk";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
@@ -16,7 +17,7 @@ import type { CreateOnLogin } from "@/types";
 export type CrossmintWalletBaseContext = {
     wallet: Wallet<Chain> | undefined;
     status: "not-loaded" | "in-progress" | "loaded" | "error";
-    getOrCreateWallet: <C extends Chain>(props: WalletArgsFor<C>) => Promise<Wallet<Chain> | undefined>;
+    getOrCreateWallet: <C extends Chain>(props: WalletCreateArgs<C>) => Promise<Wallet<Chain> | undefined>;
     getWallet: <C extends Chain>(
         props: Pick<WalletArgsFor<C>, "chain" | "signer">
     ) => Promise<Wallet<Chain> | undefined>;
@@ -60,7 +61,7 @@ export function CrossmintWalletBaseProvider({
     const [walletStatus, setWalletStatus] = useState<"not-loaded" | "in-progress" | "loaded" | "error">("not-loaded");
 
     const getOrCreateWallet = useCallback(
-        async <C extends Chain>(args: WalletArgsFor<C>) => {
+        async <C extends Chain>(args: WalletCreateArgs<C>) => {
             if (experimental_customAuth?.jwt == null || walletStatus === "in-progress") {
                 return undefined;
             }

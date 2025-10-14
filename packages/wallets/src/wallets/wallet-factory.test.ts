@@ -177,31 +177,4 @@ describe("WalletFactory - OnCreateConfig Support", () => {
         });
     });
 
-    describe("Backward compatibility without onCreateConfig", () => {
-        it("should use signer as admin when onCreateConfig is not provided", async () => {
-            mockApiClient.getWallet.mockResolvedValue({ error: "not found" });
-            mockApiClient.createWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
-
-            const args: WalletArgsFor<"solana"> = {
-                chain: "solana",
-                signer: {
-                    type: "external-wallet",
-                    address: "AdminSignerAddress123",
-                },
-            };
-
-            await walletFactory.getOrCreateWallet(args);
-
-            expect(mockApiClient.createWallet).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    config: expect.objectContaining({
-                        adminSigner: expect.objectContaining({
-                            type: "external-wallet",
-                            address: "AdminSignerAddress123",
-                        }),
-                    }),
-                })
-            );
-        });
-    });
 });
