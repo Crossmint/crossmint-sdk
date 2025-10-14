@@ -293,9 +293,11 @@ function SolanaFirebaseProvider({
 function StellarCrossmintAuthProvider({
     children,
     apiKey,
+    createOnLogin,
 }: {
     children: React.ReactNode;
     apiKey?: string;
+    createOnLogin?: any;
 }) {
     return (
         <CrossmintProvider apiKey={apiKey ?? crossmintApiKey}>
@@ -305,16 +307,20 @@ function StellarCrossmintAuthProvider({
             >
                 <CrossmintWalletProvider
                     showPasskeyHelpers={false}
-                    createOnLogin={{
-                        chain: "stellar",
-                        signer: { type: "email", email: "user@example.com" },
-                        ...ALIAS_CONFIG,
-                        delegatedSigners: [
-                            {
-                                signer: "external-wallet:GDUNAPJW6JYL4JEBFR7B5RZZD6B4TOUEWPFTT3V47IHI7QJPA43UFEY6",
-                            },
-                        ],
-                    }}
+                    createOnLogin={
+                        createOnLogin != null
+                            ? createOnLogin
+                            : {
+                                  chain: "stellar",
+                                  signer: { type: "email", email: "user@example.com" },
+                                  ...ALIAS_CONFIG,
+                                  delegatedSigners: [
+                                      {
+                                          signer: "external-wallet:GDUNAPJW6JYL4JEBFR7B5RZZD6B4TOUEWPFTT3V47IHI7QJPA43UFEY6",
+                                      },
+                                  ],
+                              }
+                    }
                 >
                     {children}
                 </CrossmintWalletProvider>
@@ -391,7 +397,6 @@ function QueryParamsProvider({ children }: { children: React.ReactNode }) {
                 );
         }
     } else if (chainType === "stellar") {
-        console.log("Alias: ", alias);
         const createOnLogin: any = {
             chain: "stellar",
             signer: { type: signerType },
