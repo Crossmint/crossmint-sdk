@@ -128,7 +128,7 @@ export type WalletArgsFor<C extends Chain> = {
 };
 
 export type WalletCreateArgs<C extends Chain> = WalletArgsFor<C> & {
-    onCreateConfig: OnCreateConfig<C>;
+    onCreateConfig?: OnCreateConfig<C>;
 };
 
 type ChainExtras = {

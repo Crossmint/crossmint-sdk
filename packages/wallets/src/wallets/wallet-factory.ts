@@ -62,9 +62,9 @@ export class WalletFactory {
     public async createWallet<C extends Chain>(args: WalletCreateArgs<C>): Promise<Wallet<C>> {
         await args.options?.experimental_callbacks?.onWalletCreationStart?.();
 
-        let adminSignerConfig = args.onCreateConfig.adminSigner;
+        let adminSignerConfig = args.onCreateConfig?.adminSigner ?? args.signer;
         const delegatedSigners = await Promise.all(
-            args.onCreateConfig.delegatedSigners?.map(
+            args.onCreateConfig?.delegatedSigners?.map(
                 async (signer): Promise<DelegatedSigner | RegisterSignerParams> => {
                     if (signer.type === "passkey") {
                         return { signer: await this.createPasskeyAdminSigner(signer) };
@@ -280,7 +280,7 @@ export class WalletFactory {
         }
 
         if ("onCreateConfig" in args) {
-            let expectedAdminSigner = args.onCreateConfig.adminSigner;
+            let expectedAdminSigner = args.onCreateConfig?.adminSigner ?? args.signer;
             const existingWalletSigner = (existingWallet?.config as any)?.adminSigner as AdminSignerConfig;
 
             const tempArgs = { ...args, signer: expectedAdminSigner };
@@ -296,7 +296,7 @@ export class WalletFactory {
                 compareSignerConfigs(expectedAdminSigner, existingWalletSigner);
             }
 
-            if (args.onCreateConfig.delegatedSigners != null) {
+            if (args.onCreateConfig?.delegatedSigners != null) {
                 this.validateDelegatedSigners(existingWallet, args.onCreateConfig.delegatedSigners);
             }
         }

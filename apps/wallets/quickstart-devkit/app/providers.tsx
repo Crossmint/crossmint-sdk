@@ -52,7 +52,6 @@ function EVMCrossmintAuthProvider({
                             : {
                                   chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any,
                                   signer: { type: "email" },
-                                  onCreateConfig: { adminSigner: { type: "email" } },
                               }
                     }
                 >
@@ -85,7 +84,6 @@ function EVMPrivyProvider({ children, apiKey }: { children: React.ReactNode; api
                     createOnLogin={{
                         chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any,
                         signer: { type: "email" },
-                        onCreateConfig: { adminSigner: { type: "email" } },
                     }}
                 >
                     {children}
@@ -124,7 +122,6 @@ function EVMFirebaseProvider({ children, apiKey }: { children: React.ReactNode; 
                 createOnLogin={{
                     chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any,
                     signer: { type: "email" },
-                    onCreateConfig: { adminSigner: { type: "email" } },
                 }}
             >
                 {children}
@@ -155,7 +152,6 @@ function SolanaCrossmintAuthProvider({
                             : {
                                   chain: "solana",
                                   signer: { type: "email" },
-                                  onCreateConfig: { adminSigner: { type: "email" } },
                               }
                     }
                 >
@@ -188,7 +184,6 @@ function SolanaPrivyProvider({ children, apiKey }: { children: React.ReactNode; 
                     createOnLogin={{
                         chain: "solana",
                         signer: { type: "external-wallet" },
-                        onCreateConfig: { adminSigner: { type: "external-wallet" } },
                     }}
                 >
                     {children}
@@ -220,7 +215,6 @@ function SolanaDynamicLabsProvider({
                     createOnLogin={{
                         chain: "solana",
                         signer: { type: "external-wallet" },
-                        onCreateConfig: { adminSigner: { type: "external-wallet" } },
                     }}
                 >
                     {children}
@@ -237,7 +231,6 @@ function SolanaFirebaseProvider({ children, apiKey }: { children: React.ReactNod
                 createOnLogin={{
                     chain: "solana",
                     signer: { type: "email" },
-                    onCreateConfig: { adminSigner: { type: "email" } },
                 }}
             >
                 {children}
@@ -301,14 +294,9 @@ function QueryParamsProvider({ children }: { children: React.ReactNode }) {
                 const createOnLogin: any = {
                     chain: chainId,
                     signer: { type: signerType },
-                    onCreateConfig: { adminSigner: { type: signerType } },
                 };
                 if (signerType === "phone" && phoneNumber != null) {
                     createOnLogin.signer = { type: signerType, phone: decodeURIComponent(phoneNumber) };
-                    createOnLogin.onCreateConfig.adminSigner = {
-                        type: signerType,
-                        phone: decodeURIComponent(phoneNumber),
-                    };
                 }
                 return (
                     <EVMCrossmintAuthProvider apiKey={crossmintApiKey} createOnLogin={createOnLogin}>
@@ -329,14 +317,9 @@ function QueryParamsProvider({ children }: { children: React.ReactNode }) {
                 const createOnLogin: any = {
                     chain: "solana",
                     signer: { type: signerType },
-                    onCreateConfig: { adminSigner: { type: signerType } },
                 };
                 if (signerType === "phone" && phoneNumber != null) {
                     createOnLogin.signer = { type: signerType, phone: decodeURIComponent(phoneNumber) };
-                    createOnLogin.onCreateConfig.adminSigner = {
-                        type: signerType,
-                        phone: decodeURIComponent(phoneNumber),
-                    };
                 }
                 return (
                     <SolanaCrossmintAuthProvider apiKey={crossmintApiKey} createOnLogin={createOnLogin}>
