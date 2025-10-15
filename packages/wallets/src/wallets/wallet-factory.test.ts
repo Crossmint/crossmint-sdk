@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi, type MockedFunction } 
 import { WalletFactory } from "./wallet-factory";
 import { WalletCreationError } from "../utils/errors";
 import type { ApiClient, GetWalletSuccessResponse } from "../api";
-import type { WalletArgsFor } from "./types";
+import type { WalletArgsFor, WalletCreateArgs } from "./types";
 
 type MockedApiClient = {
     isServerSide: boolean;
@@ -59,7 +59,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
             mockApiClient.getWallet.mockResolvedValue({ error: "not found" });
             mockApiClient.createWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
 
-            const args: WalletArgsFor<"solana"> = {
+            const args: WalletCreateArgs<"solana"> = {
                 chain: "solana",
                 signer: {
                     type: "external-wallet",
@@ -70,7 +70,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
                         type: "external-wallet",
                         address: "AdminSignerAddress123",
                     },
-                    delegatedSigners: [{ signer: "external-wallet:DelegatedSignerAddress456" }],
+                    delegatedSigners: [{ type: "external-wallet", address: "DelegatedSignerAddress456" }],
                 },
             };
 
@@ -92,7 +92,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
         it("should validate existing wallet against onCreateConfig admin signer", async () => {
             mockApiClient.getWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
 
-            const args: WalletArgsFor<"solana"> = {
+            const args: WalletCreateArgs<"solana"> = {
                 chain: "solana",
                 signer: {
                     type: "external-wallet",
@@ -103,7 +103,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
                         type: "external-wallet",
                         address: "AdminSignerAddress123",
                     },
-                    delegatedSigners: [{ signer: "external-wallet:DelegatedSignerAddress456" }],
+                    delegatedSigners: [{ type: "external-wallet", address: "DelegatedSignerAddress456" }],
                 },
             };
 
@@ -133,7 +133,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
         it("should validate that signer can use the wallet when onCreateConfig is provided", async () => {
             mockApiClient.getWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
 
-            const argsWithValidDelegatedSigner: WalletArgsFor<"solana"> = {
+            const argsWithValidDelegatedSigner: WalletCreateArgs<"solana"> = {
                 chain: "solana",
                 signer: {
                     type: "external-wallet",
@@ -144,7 +144,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
                         type: "external-wallet",
                         address: "AdminSignerAddress123",
                     },
-                    delegatedSigners: [{ signer: "external-wallet:DelegatedSignerAddress456" }],
+                    delegatedSigners: [{ type: "external-wallet", address: "DelegatedSignerAddress456" }],
                 },
             };
 
@@ -154,7 +154,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
         it("should throw error when signer cannot use wallet with onCreateConfig", async () => {
             mockApiClient.getWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
 
-            const argsWithInvalidSigner: WalletArgsFor<"solana"> = {
+            const argsWithInvalidSigner: WalletCreateArgs<"solana"> = {
                 chain: "solana",
                 signer: {
                     type: "external-wallet",
@@ -165,7 +165,7 @@ describe("WalletFactory - OnCreateConfig Support", () => {
                         type: "external-wallet",
                         address: "AdminSignerAddress123",
                     },
-                    delegatedSigners: [{ signer: "external-wallet:DelegatedSignerAddress456" }],
+                    delegatedSigners: [{ type: "external-wallet", address: "DelegatedSignerAddress456" }],
                 },
             };
 
