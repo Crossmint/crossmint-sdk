@@ -280,7 +280,9 @@ export class Wallet<C extends Chain> {
         const sendParams = {
             recipient,
             amount,
-            ...(options?.experimental_signer != null ? { signer: options.experimental_signer } : {}),
+            ...(options?.experimental_signer != null
+                ? { signer: options.experimental_signer }
+                : { signer: this.signer.locator() }),
         };
         const transactionCreationResponse = await this.#apiClient.send(this.walletLocator, tokenLocator, sendParams);
 

@@ -97,7 +97,7 @@ export type DelegatedSigner = {
 
 export type OnCreateConfig<C extends Chain> = {
     adminSigner: SignerConfigForChain<C>;
-    delegatedSigners?: Array<DelegatedSigner>;
+    delegatedSigners?: Array<SignerConfigForChain<C>>;
 };
 
 // Approvals

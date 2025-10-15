@@ -7,6 +7,7 @@ import type {
     GetWalletSuccessResponse,
     RegisterSignerPasskeyParams,
     DelegatedSigner as DelegatedSignerResponse,
+    RegisterSignerParams,
 } from "../api";
 import { WalletCreationError, WalletNotAvailableError } from "../utils/errors";
 import type { Chain } from "../chains/chains";
@@ -62,7 +63,16 @@ export class WalletFactory {
         await args.options?.experimental_callbacks?.onWalletCreationStart?.();
 
         let adminSignerConfig = args.onCreateConfig.adminSigner;
-        const delegatedSigners = args.onCreateConfig.delegatedSigners;
+        const delegatedSigners = await Promise.all(
+            args.onCreateConfig.delegatedSigners?.map(
+                async (signer): Promise<DelegatedSigner | RegisterSignerParams> => {
+                    if (signer.type === "passkey") {
+                        return { signer: await this.createPasskeyAdminSigner(signer) };
+                    }
+                    return { signer: this.getSignerLocator(signer) };
+                }
+            ) ?? []
+        );
 
         const tempArgs = { ...args, signer: adminSignerConfig };
         this.mutateSignerFromCustomAuth(tempArgs, true);
@@ -131,49 +141,40 @@ export class WalletFactory {
 
         switch (signerArgs.type) {
             case "api-key": {
-                if (walletResponse.config?.adminSigner.type !== "api-key") {
-                    throw new WalletCreationError("API key signer does not match the wallet's signer type");
-                }
+                const walletSigner = this.getWalletSigner(walletResponse, "api-key");
 
                 return {
                     type: "api-key",
-                    address: walletResponse.config.adminSigner.address,
-                    locator: walletResponse.config.adminSigner.locator,
+                    address: walletSigner.address,
+                    locator: walletSigner.locator,
                 };
             }
 
-            case "external-wallet":
-                if (walletResponse.config?.adminSigner.type !== "external-wallet") {
-                    throw new WalletCreationError("External wallet signer does not match the wallet's signer type");
-                }
+            case "external-wallet": {
+                const walletSigner = this.getWalletSigner(walletResponse, "external-wallet");
 
-                return { ...walletResponse.config.adminSigner, ...signerArgs } as InternalSignerConfig<C>;
-
-            case "passkey":
-                if (walletResponse.config?.adminSigner.type !== "passkey") {
-                    throw new WalletCreationError("Passkey signer does not match the wallet's signer type");
-                }
+                return { ...walletSigner, ...signerArgs } as InternalSignerConfig<C>;
+            }
+            case "passkey": {
+                const walletSigner = this.getWalletSigner(walletResponse, "passkey");
 
                 return {
                     type: "passkey",
-                    id: walletResponse.config.adminSigner.id,
-                    name: walletResponse.config.adminSigner.name,
-                    locator: walletResponse.config.adminSigner.locator,
+                    id: walletSigner.id,
+                    name: walletSigner.name,
+                    locator: walletSigner.locator,
                     onCreatePasskey: signerArgs.onCreatePasskey,
                     onSignWithPasskey: signerArgs.onSignWithPasskey,
                 };
-
+            }
             case "email": {
-                if (walletResponse.config?.adminSigner.type !== "email") {
-                    throw new WalletCreationError("Email signer does not match the wallet's signer type");
-                }
+                const walletSigner = this.getWalletSigner(walletResponse, "email");
 
-                const { locator, email, address } = walletResponse.config.adminSigner;
                 return {
                     type: "email",
-                    email,
-                    locator,
-                    address,
+                    email: walletSigner.email,
+                    locator: "locator" in walletSigner ? walletSigner.locator : this.getSignerLocator(signerArgs),
+                    address: "address" in walletSigner ? walletSigner.address : walletResponse.address,
                     crossmint: this.apiClient.crossmint,
                     onAuthRequired: signerArgs.onAuthRequired,
                     clientTEEConnection: options?.clientTEEConnection,
@@ -181,16 +182,13 @@ export class WalletFactory {
             }
 
             case "phone": {
-                if (walletResponse.config?.adminSigner.type !== "phone") {
-                    throw new WalletCreationError("Phone signer does not match the wallet's signer type");
-                }
+                const walletSigner = this.getWalletSigner(walletResponse, "phone");
 
-                const { locator, phone, address } = walletResponse.config.adminSigner;
                 return {
                     type: "phone",
-                    phone,
-                    locator,
-                    address,
+                    phone: walletSigner.phone,
+                    locator: "locator" in walletSigner ? walletSigner.locator : this.getSignerLocator(signerArgs),
+                    address: "address" in walletSigner ? walletSigner.address : walletResponse.address,
                     crossmint: this.apiClient.crossmint,
                     onAuthRequired: signerArgs.onAuthRequired,
                     clientTEEConnection: options?.clientTEEConnection,
@@ -200,6 +198,22 @@ export class WalletFactory {
             default:
                 throw new Error("Invalid signer type");
         }
+    }
+
+    private getWalletSigner<C extends Chain, T extends SignerConfigForChain<C>["type"]>(
+        wallet: GetWalletSuccessResponse,
+        signerType: T
+    ): Extract<AdminSignerConfig | DelegatedSignerResponse, { type: T }> {
+        const adminSigner = (wallet.config as any)?.adminSigner as AdminSignerConfig;
+        const delegatedSigners = ((wallet.config as any)?.delegatedSigners as DelegatedSignerResponse[]) || [];
+        if (adminSigner?.type === signerType) {
+            return adminSigner as Extract<AdminSignerConfig, { type: T }>;
+        }
+        const delegatedSigner = delegatedSigners.find((ds) => ds.type === signerType);
+        if (delegatedSigner != null) {
+            return delegatedSigner as Extract<DelegatedSignerResponse, { type: T }>;
+        }
+        throw new WalletCreationError(`${signerType} signer does not match the wallet's signer type`);
     }
 
     private async createPasskeyAdminSigner<C extends Chain>(
@@ -304,11 +318,13 @@ export class WalletFactory {
             } catch {}
         }
 
-        const signerLocator = this.getSignerLocator(signer);
-        const isDelegated = delegatedSigners.some((ds) => ds.locator === signerLocator);
+        const delegatedSigner = delegatedSigners.find((ds) => ds.type === signer.type);
 
-        if (isDelegated) {
-            return;
+        if (delegatedSigner != null) {
+            try {
+                compareSignerConfigs(signer, delegatedSigner);
+                return;
+            } catch {}
         }
 
         throw new WalletCreationError(
@@ -316,7 +332,7 @@ export class WalletFactory {
         );
     }
 
-    private getSignerLocator<C extends Chain>(signer: SignerConfigForChain<C>): string {
+    private getSignerLocator<C extends Chain>(signer: SignerConfigForChain<C> | RegisterSignerPasskeyParams): string {
         if (signer.type === "external-wallet") {
             return `external-wallet:${signer.address}`;
         }
@@ -326,8 +342,8 @@ export class WalletFactory {
         if (signer.type === "phone" && signer.phone) {
             return `phone:${signer.phone}`;
         }
-        if (signer.type === "passkey" && signer.name) {
-            return `passkey:${signer.name}`;
+        if (signer.type === "passkey" && "id" in signer) {
+            return `passkey:${signer.id}`;
         }
         if (signer.type === "api-key") {
             return "api-key";
@@ -335,9 +351,9 @@ export class WalletFactory {
         return signer.type;
     }
 
-    private validateDelegatedSigners(
+    private validateDelegatedSigners<C extends Chain>(
         existingWallet: GetWalletSuccessResponse,
-        inputDelegatedSigners: Array<DelegatedSigner>
+        inputDelegatedSigners: Array<SignerConfigForChain<C>>
     ): void {
         const existingDelegatedSigners = (existingWallet?.config as any)?.delegatedSigners as
             | DelegatedSignerResponse[]
@@ -355,19 +371,28 @@ export class WalletFactory {
             );
         }
 
-        // Check that each input delegated signer exists in the wallet
-        // (wallet can have additional signers that weren't specified in input)
-        for (const argSigner of inputDelegatedSigners) {
+        for (const inputSigner of inputDelegatedSigners) {
             const matchingExistingSigner = existingDelegatedSigners.find(
-                (existingSigner) => existingSigner.locator === argSigner.signer
+                (existingSigner) => existingSigner.type === inputSigner.type
             );
 
             if (matchingExistingSigner == null) {
                 const walletSigners = existingDelegatedSigners.map((s) => s.locator).join(", ");
                 throw new WalletCreationError(
-                    `Delegated signer '${argSigner.signer}' does not exist in wallet "${existingWallet.address}". Available delegated signers: ${walletSigners}. ${DELEGATED_SIGNER_MISMATCH_ERROR}`
+                    `Delegated signer '${inputSigner.type}' does not exist in wallet "${existingWallet.address}". Available delegated signers: ${walletSigners}. ${DELEGATED_SIGNER_MISMATCH_ERROR}`
                 );
             }
+
+            if (inputSigner.type !== matchingExistingSigner.type) {
+                throw new WalletCreationError(
+                    `Delegated signer type mismatch for '${inputSigner.type}'. Expected type '${matchingExistingSigner.type}' from existing wallet but found '${inputSigner.type}'`
+                );
+            }
+
+            compareSignerConfigs(
+                inputSigner as Record<string, unknown>,
+                matchingExistingSigner as Record<string, unknown>
+            );
         }
     }
 
