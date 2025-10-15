@@ -383,12 +383,6 @@ export class WalletFactory {
                 );
             }
 
-            if (inputSigner.type !== matchingExistingSigner.type) {
-                throw new WalletCreationError(
-                    `Delegated signer type mismatch for '${inputSigner.type}'. Expected type '${matchingExistingSigner.type}' from existing wallet but found '${inputSigner.type}'`
-                );
-            }
-
             compareSignerConfigs(
                 inputSigner as Record<string, unknown>,
                 matchingExistingSigner as Record<string, unknown>
