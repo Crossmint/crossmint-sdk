@@ -28,10 +28,9 @@ export async function generateShadowSigner(chain: Chain): Promise<ShadowSignerRe
         const keyPair = (await window.crypto.subtle.generateKey(
             {
                 name: "Ed25519",
-                // @ts-expect-error - Ed25519 is not in TypeScript's lib yet but is supported in modern browsers
                 namedCurve: "Ed25519",
-            },
-            false, // non-extractable
+            } as any,
+            false,
             ["sign", "verify"]
         )) as CryptoKeyPair;
 
