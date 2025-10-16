@@ -1,0 +1,105 @@
+import { WebAuthnP256 } from "ox";
+import { encode as encodeBase58 } from "bs58";
+import type { Chain } from "../chains/chains";
+import type { RegisterSignerParams } from "../api/types";
+
+const SHADOW_SIGNER_STORAGE_KEY = "crossmint_shadow_signer";
+
+export type ShadowSignerData = {
+    chain: Chain;
+    walletAddress: string;
+    publicKey: string;
+    createdAt: number;
+};
+
+export type ShadowSignerResult = {
+    delegatedSigner: RegisterSignerParams;
+    publicKey: string;
+};
+
+/**
+ * Generate a shadow signer for the given chain.
+ * For Solana/Stellar: Creates an ed25519 keypair and returns external-wallet signer
+ * For EVM chains: Creates a p256 passkey credential
+ * For Flow: Throws an error (not supported)
+ */
+export async function generateShadowSigner(chain: Chain): Promise<ShadowSignerResult> {
+    if (chain === "solana" || chain === "stellar") {
+        const keyPair = (await window.crypto.subtle.generateKey(
+            {
+                name: "Ed25519",
+                // @ts-expect-error - Ed25519 is not in TypeScript's lib yet but is supported in modern browsers
+                namedCurve: "Ed25519",
+            },
+            false, // non-extractable
+            ["sign", "verify"]
+        )) as CryptoKeyPair;
+
+        const publicKeyBuffer = await window.crypto.subtle.exportKey("raw", keyPair.publicKey);
+        const publicKeyBase58 = encodeBase58(new Uint8Array(publicKeyBuffer));
+
+        return {
+            delegatedSigner: { signer: `external-wallet:${publicKeyBase58}` },
+            publicKey: publicKeyBase58,
+        };
+    }
+
+    if (chain === "flow" || chain === "flow-testnet") {
+        throw new Error("Shadow signers are not supported on Flow chains");
+    }
+
+    const passkeyName = `Shadow Signer ${Date.now()}`;
+    const credential = await WebAuthnP256.createCredential({ name: passkeyName });
+
+    return {
+        delegatedSigner: {
+            signer: {
+                type: "passkey",
+                id: credential.id,
+                name: passkeyName,
+                publicKey: {
+                    x: credential.publicKey.x.toString(),
+                    y: credential.publicKey.y.toString(),
+                },
+            },
+            chain: chain as any, // RegisterSignerChain type
+        },
+        publicKey: credential.id,
+    };
+}
+
+/**
+ * Store shadow signer metadata in localStorage
+ */
+export function storeShadowSigner(walletAddress: string, chain: Chain, publicKey: string): void {
+    const data: ShadowSignerData = {
+        chain,
+        walletAddress,
+        publicKey,
+        createdAt: Date.now(),
+    };
+
+    localStorage.setItem(`${SHADOW_SIGNER_STORAGE_KEY}_${walletAddress}`, JSON.stringify(data));
+}
+
+/**
+ * Retrieve shadow signer metadata from localStorage
+ */
+export function getShadowSigner(walletAddress: string): ShadowSignerData | null {
+    const stored = localStorage.getItem(`${SHADOW_SIGNER_STORAGE_KEY}_${walletAddress}`);
+    return stored ? JSON.parse(stored) : null;
+}
+
+/**
+ * Check if a shadow signer exists for the given wallet
+ */
+export function hasShadowSigner(walletAddress: string): boolean {
+    return getShadowSigner(walletAddress) !== null;
+}
+
+/**
+ * Remove shadow signer metadata from localStorage
+ */
+export function removeShadowSigner(walletAddress: string): void {
+    localStorage.removeItem(`${SHADOW_SIGNER_STORAGE_KEY}_${walletAddress}`);
+}

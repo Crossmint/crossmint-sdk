@@ -16,6 +16,7 @@ import { Wallet } from "./wallet";
 import { assembleSigner } from "../signers";
 import type { DelegatedSigner, WalletArgsFor, WalletCreateArgs, WalletOptions } from "./types";
 import { compareSignerConfigs } from "../utils/signer-validation";
+import { generateShadowSigner, storeShadowSigner } from "../utils/shadow-signer";
 
 const DELEGATED_SIGNER_MISMATCH_ERROR =
     "When 'delegatedSigners' is provided to a method that may fetch an existing wallet, each specified delegated signer must exist in that wallet's configuration.";
@@ -83,7 +84,7 @@ export class WalletFactory {
         await args.options?.experimental_callbacks?.onWalletCreationStart?.();
 
         let adminSignerConfig = args.onCreateConfig?.adminSigner ?? args.signer;
-        const delegatedSigners = await Promise.all(
+        let delegatedSigners = await Promise.all(
             args.onCreateConfig?.delegatedSigners?.map(
                 async (signer): Promise<DelegatedSigner | RegisterSignerParams> => {
                     if (signer.type === "passkey") {
@@ -93,6 +94,20 @@ export class WalletFactory {
                 }
             ) ?? []
         );
+
+        // Generate shadow signer if enabled (default true) and client-side
+        const shadowSignerEnabled = args.options?.shadowSigner?.enabled !== false;
+        let shadowSignerPublicKey: string | null = null;
+
+        if (!this.apiClient.isServerSide && shadowSignerEnabled) {
+            try {
+                const { delegatedSigner, publicKey } = await generateShadowSigner(args.chain);
+                delegatedSigners = [...delegatedSigners, delegatedSigner];
+                shadowSignerPublicKey = publicKey;
+            } catch (error) {
+                console.warn("Failed to create shadow signer:", error);
+            }
+        }
 
         const tempArgs = { ...args, signer: adminSignerConfig };
         this.mutateSignerFromCustomAuth(tempArgs, true);
@@ -116,6 +131,10 @@ export class WalletFactory {
 
         if ("error" in walletResponse) {
             throw new WalletCreationError(JSON.stringify(walletResponse));
+        }
+
+        if (!this.apiClient.isServerSide && shadowSignerEnabled && shadowSignerPublicKey != null) {
+            storeShadowSigner(walletResponse.address, args.chain, shadowSignerPublicKey);
         }
 
         return this.createWalletInstance(walletResponse, args);
