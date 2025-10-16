@@ -45,6 +45,7 @@ export interface CrossmintWalletBaseProviderProps {
      * Defaults to false.
      */
     experimental_headlessSigningFlow?: boolean;
+    initializeWebView?: () => Promise<void>;
 }
 
 export function CrossmintWalletBaseProvider({
@@ -54,6 +55,7 @@ export function CrossmintWalletBaseProvider({
     onAuthRequired,
     clientTEEConnection,
     experimental_headlessSigningFlow = false,
+    initializeWebView,
 }: CrossmintWalletBaseProviderProps) {
     const { crossmint, experimental_customAuth } = useCrossmint(
         "CrossmintWalletBaseProvider must be used within CrossmintProvider"
@@ -119,6 +121,9 @@ export function CrossmintWalletBaseProvider({
                     args.signer = signer as SignerConfigForChain<C>;
                 }
 
+                if (args.signer.type === "email" || args.signer.type === "phone") {
+                    await initializeWebView?.();
+                }
                 const wallet = await wallets.getOrCreateWallet<C>({
                     chain: args.chain,
                     signer: args.signer,

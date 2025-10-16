@@ -17,6 +17,12 @@ export type TransactionInputOptions = PrepareOnly & {
 
 export type SignatureInputOptions = PrepareOnly;
 
+export type AddDelegatedSignerOptions = PrepareOnly;
+
+export type AddDelegatedSignerReturnType<C extends Chain> = C extends "solana" | "stellar"
+    ? { transactionId: string }
+    : { signatureId: string };
+
 export type SignMessageInput = {
     message: string;
     options?: SignatureInputOptions;
@@ -65,8 +71,14 @@ export type StellarTransactionInput = (
     options?: TransactionInputOptions;
 };
 
-export type SolanaTransactionInput = {
-    transaction: VersionedTransaction;
+export type SolanaTransactionInput = (
+    | {
+          transaction: VersionedTransaction;
+      }
+    | {
+          serializedTransaction: string;
+      }
+) & {
     additionalSigners?: Keypair[];
     options?: TransactionInputOptions;
 };
@@ -111,19 +123,26 @@ export type WalletArgsFor<C extends Chain> = {
     delegatedSigners?: Array<DelegatedSigner>;
 };
 
-export type TokenBalance = {
+type ChainExtras = {
+    solana: { mintHash?: string };
+    stellar: { contractId?: string };
+    evm: { contractAddress?: string };
+};
+
+type ChainToExtrasKey<C extends Chain> = C extends "solana" ? "solana" : C extends "stellar" ? "stellar" : "evm";
+
+export type TokenBalance<C extends Chain = Chain> = {
     symbol: "sol" | "eth" | "usdc" | string;
     name: string;
     amount: string;
-    contractAddress?: string;
     decimals?: number;
     rawAmount?: string;
-};
+} & ChainExtras[ChainToExtrasKey<C>];
 
-export type Balances = {
-    nativeToken: TokenBalance;
-    usdc: TokenBalance;
-    tokens: TokenBalance[];
+export type Balances<C extends Chain = Chain> = {
+    nativeToken: TokenBalance<C>;
+    usdc: TokenBalance<C>;
+    tokens: TokenBalance<C>[];
 };
 
 export type UserLocator =

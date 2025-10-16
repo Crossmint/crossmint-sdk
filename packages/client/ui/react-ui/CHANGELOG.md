@@ -1,5 +1,86 @@
 # @crossmint/client-sdk-react-ui
 
+## 2.5.7
+
+### Patch Changes
+
+- Updated dependencies [615b84b]
+- Updated dependencies [d09fa2c]
+  - @crossmint/wallets-sdk@0.16.0
+  - @crossmint/client-sdk-react-base@0.6.6
+
+## 2.5.6
+
+### Patch Changes
+
+- 1080158: Add @solana/web3.js as peer dependency to resolve VersionedTransaction type mismatches. Users with different @solana/web3.js versions will now use the exact SDK version (1.98.1) to ensure type compatibility.
+- Updated dependencies [78711c2]
+- Updated dependencies [1080158]
+- Updated dependencies [758d224]
+  - @crossmint/client-sdk-react-base@0.6.5
+  - @crossmint/wallets-sdk@0.15.1
+  - @crossmint/common-sdk-base@0.9.6
+  - @crossmint/client-sdk-auth@1.2.34
+  - @crossmint/client-sdk-base@1.7.1
+  - @crossmint/common-sdk-auth@1.0.56
+
+## 2.5.5
+
+### Patch Changes
+
+- 621a4a9: Fix: Modal OTP not showing under certain signer setups
+
+## 2.5.4
+
+### Patch Changes
+
+- Updated dependencies [105513c]
+  - @crossmint/client-sdk-base@1.7.0
+  - @crossmint/client-sdk-auth@1.2.33
+  - @crossmint/client-sdk-react-base@0.6.4
+  - @crossmint/common-sdk-auth@1.0.55
+
+## 2.5.3
+
+### Patch Changes
+
+- Updated dependencies [9812c0c]
+  - @crossmint/wallets-sdk@0.15.0
+  - @crossmint/client-sdk-react-base@0.6.3
+
+## 2.5.2
+
+### Patch Changes
+
+- Updated dependencies [8179d74]
+  - @crossmint/client-sdk-react-base@0.6.2
+
+## 2.5.1
+
+### Patch Changes
+
+- Updated dependencies [635b217]
+  - @crossmint/wallets-sdk@0.14.3
+  - @crossmint/client-sdk-react-base@0.6.1
+
+## 2.5.0
+
+### Minor Changes
+
+- fe31db3: Consolidated auth logic into CrossmintAuthBaseProvider and refactored platform packages to extend it.
+
+### Patch Changes
+
+- Updated dependencies [fe31db3]
+- Updated dependencies [fe31db3]
+- Updated dependencies [1034e0f]
+  - @crossmint/client-sdk-react-base@0.6.0
+  - @crossmint/client-sdk-auth@1.2.32
+  - @crossmint/client-sdk-window@1.0.5
+  - @crossmint/wallets-sdk@0.14.2
+  - @crossmint/client-sdk-base@1.6.4
+  - @crossmint/common-sdk-auth@1.0.54
+
 ## 2.4.14
 
 ### Patch Changes

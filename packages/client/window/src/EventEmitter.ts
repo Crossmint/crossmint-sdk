@@ -14,6 +14,7 @@ export interface EventEmitterOptions<
 export interface SendActionOptions<IncomingEvents extends EventMap, R extends keyof IncomingEvents> {
     timeoutMs?: number;
     intervalMs?: number;
+    maxRetries?: number;
     condition?: (data: z.infer<IncomingEvents[R]>) => boolean;
 }
 export type SendActionArgs<
@@ -107,14 +108,19 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
     }: SendActionArgs<IncomingEvents, OutgoingEvents, K, R>): Promise<z.infer<IncomingEvents[R]>> {
         console.log("[EventEmitter] sendAction() - Data to send:", data);
         const timeoutMs = options?.timeoutMs ?? 7000;
+        const maxRetries = options?.maxRetries;
 
         return new Promise((resolve, reject) => {
             let interval: ReturnType<typeof setInterval> | undefined = undefined;
+            let retryCount = 0;
 
             const timer = setTimeout(() => {
                 console.log(
                     `[EventEmitter] sendAction() - Timeout reached for response event: ${String(responseEvent)}`
                 );
+                if (interval) {
+                    clearInterval(interval);
+                }
                 this.off(responseListenerId);
                 reject(
                     `Timed out waiting for ${String(responseEvent)} event${
@@ -157,6 +163,25 @@ export class EventEmitter<IncomingEvents extends EventMap, OutgoingEvents extend
             if (options?.intervalMs) {
                 console.log(`[EventEmitter] sendAction() - Setting up interval with intervalMs: ${options.intervalMs}`);
                 interval = setInterval(() => {
+                    if (maxRetries !== undefined && retryCount >= maxRetries) {
+                        console.log(
+                            `[EventEmitter] sendAction() - Max retries (${maxRetries}) reached for event: ${String(event)}`
+                        );
+                        clearInterval(interval!);
+                        clearTimeout(timer);
+                        this.off(responseListenerId);
+                        reject(
+                            `Max retries (${maxRetries}) reached waiting for ${String(responseEvent)} event${
+                                options?.condition ? ", with condition" : ""
+                            }`
+                        );
+                        return;
+                    }
+
+                    retryCount++;
+                    console.log(
+                        `[EventEmitter] sendAction() - Retry attempt ${retryCount}/${maxRetries ?? "∞"} for event: ${String(event)}`
+                    );
                     this.send(event, data);
                 }, options?.intervalMs);
             }

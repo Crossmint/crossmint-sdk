@@ -41,6 +41,7 @@ export class EVMWallet extends Wallet<EVMChain> {
     public async sendTransaction<T extends EVMTransactionInput>(
         params: T
     ): Promise<Transaction<T["options"] extends PrepareOnly<true> ? true : false>> {
+        await this.preAuthIfNeeded();
         const builtTransaction = this.buildTransaction(params);
         const createdTransaction = await this.createTransaction(builtTransaction, params.options);
 
@@ -58,6 +59,7 @@ export class EVMWallet extends Wallet<EVMChain> {
     public async signMessage<T extends SignMessageInput>(
         params: T
     ): Promise<Signature<T["options"] extends PrepareOnly<true> ? true : false>> {
+        await this.preAuthIfNeeded();
         const signatureCreationResponse = await this.apiClient.createSignature(this.walletLocator, {
             type: "message",
             params: {
@@ -83,6 +85,7 @@ export class EVMWallet extends Wallet<EVMChain> {
     public async signTypedData<T extends SignTypedDataInput>(
         params: T
     ): Promise<Signature<T["options"] extends PrepareOnly<true> ? true : false>> {
+        await this.preAuthIfNeeded();
         const { domain, message, primaryType, types, chain } = params;
         if (!domain || !message || !types || !chain) {
             throw new InvalidTypedDataError("Invalid typed data");
@@ -110,7 +113,6 @@ export class EVMWallet extends Wallet<EVMChain> {
                 },
                 signer: this.signer.locator(),
                 chain,
-                isSmartWalletSignature: false,
             },
         });
         if ("error" in signatureCreationResponse) {

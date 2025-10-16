@@ -1,5 +1,91 @@
 # expo-demo
 
+## 1.1.94
+
+### Patch Changes
+
+- Updated dependencies [615b84b]
+- Updated dependencies [ff7db5a]
+- Updated dependencies [7f3f16a]
+- Updated dependencies [d09fa2c]
+  - @crossmint/wallets-sdk@0.16.0
+  - @crossmint/client-sdk-react-native-ui@0.11.9
+  - @crossmint/client-sdk-rn-window@0.3.9
+
+## 1.1.93
+
+### Patch Changes
+
+- c03813a: rn: bump webview for google pay
+- Updated dependencies [c03813a]
+  - @crossmint/client-sdk-react-native-ui@0.11.8
+  - @crossmint/client-sdk-rn-window@0.3.8
+
+## 1.1.92
+
+### Patch Changes
+
+- Updated dependencies [1080158]
+- Updated dependencies [758d224]
+- Updated dependencies [78711c2]
+  - @crossmint/wallets-sdk@0.15.1
+  - @crossmint/client-sdk-react-native-ui@0.11.7
+
+## 1.1.91
+
+### Patch Changes
+
+- Updated dependencies [a6d69d1]
+  - @crossmint/client-sdk-react-native-ui@0.11.6
+
+## 1.1.90
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-native-ui@0.11.5
+
+## 1.1.89
+
+### Patch Changes
+
+- Updated dependencies [d4f5356]
+  - @crossmint/client-sdk-react-native-ui@0.11.4
+
+## 1.1.88
+
+### Patch Changes
+
+- Updated dependencies [bbc7229]
+- Updated dependencies [9812c0c]
+  - @crossmint/client-sdk-rn-window@0.3.7
+  - @crossmint/wallets-sdk@0.15.0
+  - @crossmint/client-sdk-react-native-ui@0.11.3
+
+## 1.1.87
+
+### Patch Changes
+
+- Updated dependencies [8179d74]
+  - @crossmint/client-sdk-react-native-ui@0.11.2
+
+## 1.1.86
+
+### Patch Changes
+
+- Updated dependencies [635b217]
+  - @crossmint/wallets-sdk@0.14.3
+  - @crossmint/client-sdk-react-native-ui@0.11.1
+
+## 1.1.85
+
+### Patch Changes
+
+- Updated dependencies [fe31db3]
+- Updated dependencies [1034e0f]
+  - @crossmint/client-sdk-react-native-ui@0.11.0
+  - @crossmint/client-sdk-rn-window@0.3.6
+  - @crossmint/wallets-sdk@0.14.2
+
 ## 1.1.84
 
 ### Patch Changes

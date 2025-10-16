@@ -1,5 +1,25 @@
 # @crossmint/client-sdk-base
 
+## 1.7.1
+
+### Patch Changes
+
+- Updated dependencies [1080158]
+  - @crossmint/common-sdk-base@0.9.6
+
+## 1.7.0
+
+### Minor Changes
+
+- 105513c: Adding clientSecret attribute to CrossmintEmbeddedCheckoutV3ExistingOrderProps
+
+## 1.6.4
+
+### Patch Changes
+
+- Updated dependencies [1034e0f]
+  - @crossmint/client-sdk-window@1.0.5
+
 ## 1.6.3
 
 ### Patch Changes

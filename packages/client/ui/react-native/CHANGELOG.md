@@ -1,5 +1,107 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.11.9
+
+### Patch Changes
+
+- ff7db5a: Move expo dependencies as peer dependencies for more flexible expo versioning.
+- Updated dependencies [615b84b]
+- Updated dependencies [7f3f16a]
+- Updated dependencies [d09fa2c]
+  - @crossmint/wallets-sdk@0.16.0
+  - @crossmint/client-sdk-rn-window@0.3.9
+  - @crossmint/client-sdk-react-base@0.6.6
+
+## 0.11.8
+
+### Patch Changes
+
+- c03813a: rn: bump webview for google pay
+- Updated dependencies [c03813a]
+  - @crossmint/client-sdk-rn-window@0.3.8
+
+## 0.11.7
+
+### Patch Changes
+
+- 1080158: Add @solana/web3.js as peer dependency to resolve VersionedTransaction type mismatches. Users with different @solana/web3.js versions will now use the exact SDK version (1.98.1) to ensure type compatibility.
+- 78711c2: Optimize WebView loading to only initialize when email or phone signer is used, avoiding unnecessary background polling for passkey and external wallet signers
+- Updated dependencies [78711c2]
+- Updated dependencies [1080158]
+- Updated dependencies [758d224]
+  - @crossmint/client-sdk-react-base@0.6.5
+  - @crossmint/wallets-sdk@0.15.1
+  - @crossmint/common-sdk-base@0.9.6
+  - @crossmint/client-sdk-auth@1.2.34
+  - @crossmint/client-sdk-base@1.7.1
+  - @crossmint/common-sdk-auth@1.0.56
+
+## 0.11.6
+
+### Patch Changes
+
+- a6d69d1: Fix a WebView reload bug in which it would fail to initialize after a reload
+
+## 0.11.5
+
+### Patch Changes
+
+- Updated dependencies [105513c]
+  - @crossmint/client-sdk-base@1.7.0
+  - @crossmint/client-sdk-auth@1.2.33
+  - @crossmint/client-sdk-react-base@0.6.4
+  - @crossmint/common-sdk-auth@1.0.55
+
+## 0.11.4
+
+### Patch Changes
+
+- d4f5356: Revert feat(wallets): avoid loading webview until necessary for email/phone signers
+
+## 0.11.3
+
+### Patch Changes
+
+- Updated dependencies [bbc7229]
+- Updated dependencies [9812c0c]
+  - @crossmint/client-sdk-rn-window@0.3.7
+  - @crossmint/wallets-sdk@0.15.0
+  - @crossmint/client-sdk-react-base@0.6.3
+
+## 0.11.2
+
+### Patch Changes
+
+- 8179d74: Improve render process by using memoization
+- Updated dependencies [8179d74]
+  - @crossmint/client-sdk-react-base@0.6.2
+
+## 0.11.1
+
+### Patch Changes
+
+- Updated dependencies [635b217]
+  - @crossmint/wallets-sdk@0.14.3
+  - @crossmint/client-sdk-react-base@0.6.1
+
+## 0.11.0
+
+### Minor Changes
+
+- fe31db3: Consolidated auth logic into CrossmintAuthBaseProvider and refactored platform packages to extend it.
+
+### Patch Changes
+
+- Updated dependencies [fe31db3]
+- Updated dependencies [fe31db3]
+- Updated dependencies [1034e0f]
+  - @crossmint/client-sdk-react-base@0.6.0
+  - @crossmint/client-sdk-auth@1.2.32
+  - @crossmint/client-sdk-rn-window@0.3.6
+  - @crossmint/wallets-sdk@0.14.2
+  - @crossmint/client-sdk-base@1.6.4
+  - @crossmint/common-sdk-auth@1.0.54
+
 ## 0.10.17
 
 ### Patch Changes

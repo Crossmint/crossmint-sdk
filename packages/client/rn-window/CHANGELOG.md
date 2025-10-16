@@ -1,5 +1,31 @@
 # @crossmint/client-sdk-rn-window
 
+## 0.3.9
+
+### Patch Changes
+
+- 7f3f16a: Improve type definition for refst to accept null and have better compatibility with react types ^19
+
+## 0.3.8
+
+### Patch Changes
+
+- c03813a: rn: bump webview for google pay
+
+## 0.3.7
+
+### Patch Changes
+
+- bbc7229: Add debug logs in RN
+
+## 0.3.6
+
+### Patch Changes
+
+- 1034e0f: Minor issues with retries in event handling
+- Updated dependencies [1034e0f]
+  - @crossmint/client-sdk-window@1.0.5
+
 ## 0.3.5
 
 ### Patch Changes

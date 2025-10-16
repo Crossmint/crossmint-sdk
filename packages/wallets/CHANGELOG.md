@@ -1,5 +1,41 @@
 # @crossmint/wallets-sdk
 
+## 0.16.0
+
+### Minor Changes
+
+- 615b84b: Add experimental_prepareOnly support to addDelegatedSigner method
+- d09fa2c: Add serialized transaction support for Solana wallets
+
+## 0.15.1
+
+### Patch Changes
+
+- 1080158: Add @solana/web3.js as peer dependency to resolve VersionedTransaction type mismatches. Users with different @solana/web3.js versions will now use the exact SDK version (1.98.1) to ensure type compatibility.
+- 758d224: Pre-initialize signer before creating a transaction
+- Updated dependencies [1080158]
+  - @crossmint/common-sdk-base@0.9.6
+
+## 0.15.0
+
+### Minor Changes
+
+- 9812c0c: Skip unnecessary polling when signature is already complete. For non-custodial wallets, the backend now returns completed signatures directly from createSignatureRequest(), allowing the SDK to return the signature immediately without waiting.
+
+## 0.14.3
+
+### Patch Changes
+
+- 635b217: Fix a bug of typedData not being properly managed for smart wallets in EVM
+
+## 0.14.2
+
+### Patch Changes
+
+- 1034e0f: Minor issues with retries in event handling
+- Updated dependencies [1034e0f]
+  - @crossmint/client-sdk-window@1.0.5
+
 ## 0.14.1
 
 ### Patch Changes
