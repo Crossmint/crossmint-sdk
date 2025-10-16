@@ -39,18 +39,38 @@ export class WalletFactory {
         return this.createWallet(args);
     }
 
-    public async getClientSideWallet<C extends Chain>(args: WalletArgsFor<C>): Promise<Wallet<C>> {
-        const existingWallet = await this.apiClient.getWallet(`me:${this.getChainType(args.chain)}:smart`);
-        if ("error" in existingWallet) {
-            throw new WalletNotAvailableError(JSON.stringify(existingWallet));
-        }
-        return this.createWalletInstance(existingWallet, args);
-    }
+    // Client-side
+    public async getWallet<C extends Chain>(args: WalletArgsFor<C>): Promise<Wallet<C>>;
+    // Server-side
+    public async getWallet<C extends Chain>(walletLocator: string, args: WalletArgsFor<C>): Promise<Wallet<C>>;
+    public async getWallet<C extends Chain>(
+        argsOrLocator: string | WalletArgsFor<C>,
+        maybeArgs?: WalletArgsFor<C>
+    ): Promise<Wallet<C>> {
+        let walletLocator: string;
+        let args: WalletArgsFor<C>;
 
-    public async getWallet<C extends Chain>(walletLocator: string, args: WalletArgsFor<C>): Promise<Wallet<C>> {
-        if (!this.apiClient.isServerSide) {
-            throw new WalletCreationError("getWallet is not supported on client side, use getOrCreateWallet instead");
+        if (typeof argsOrLocator === "string") {
+            if (!this.apiClient.isServerSide) {
+                throw new WalletCreationError(
+                    "getWallet with walletLocator is not supported on client side, use getOrCreateWallet instead"
+                );
+            }
+            if (maybeArgs == null) {
+                throw new WalletCreationError("Args parameter is required when walletLocator is provided");
+            }
+            walletLocator = argsOrLocator;
+            args = maybeArgs;
+        } else {
+            if (this.apiClient.isServerSide) {
+                throw new WalletCreationError(
+                    "getWallet on server side requires a walletLocator parameter. Use getWallet(walletLocator, args) instead."
+                );
+            }
+            args = argsOrLocator;
+            walletLocator = `me:${this.getChainType(args.chain)}:smart`;
         }
+
         const existingWallet = await this.apiClient.getWallet(walletLocator);
         if ("error" in existingWallet) {
             throw new WalletNotAvailableError(JSON.stringify(existingWallet));
