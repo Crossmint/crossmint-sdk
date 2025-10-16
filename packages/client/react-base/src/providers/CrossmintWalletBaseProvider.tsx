@@ -12,6 +12,7 @@ import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
 import { useCrossmint } from "@/hooks";
 import type { CreateOnLogin } from "@/types";
+import { cloneDeep } from "lodash";
 
 export type CrossmintWalletBaseContext = {
     wallet: Wallet<Chain> | undefined;
@@ -57,6 +58,8 @@ export function CrossmintWalletBaseProvider({
 
     const getOrCreateWallet = useCallback(
         async <C extends Chain>(args: WalletArgsFor<C>) => {
+            // Deep clone the args object to avoid mutating the original object
+            const argsCopy = cloneDeep(args);
             if (experimental_customAuth?.jwt == null || walletStatus === "in-progress") {
                 return undefined;
             }
@@ -68,60 +71,62 @@ export function CrossmintWalletBaseProvider({
                 setWalletStatus("in-progress");
                 const wallets = CrossmintWallets.from(crossmint);
 
-                const _onWalletCreationStart = args.options?.experimental_callbacks?.onWalletCreationStart;
-                const _onTransactionStart = args.options?.experimental_callbacks?.onTransactionStart;
+                const _onWalletCreationStart = argsCopy.options?.experimental_callbacks?.onWalletCreationStart;
+                const _onTransactionStart = argsCopy.options?.experimental_callbacks?.onTransactionStart;
 
-                if (args?.signer?.type === "email") {
-                    const email = args.signer.email ?? experimental_customAuth?.email;
-                    const _onAuthRequired = args.signer.onAuthRequired ?? onAuthRequired;
+                if (argsCopy?.signer?.type === "email") {
+                    const email = argsCopy.signer.email ?? experimental_customAuth?.email;
+                    const _onAuthRequired = argsCopy.signer.onAuthRequired ?? onAuthRequired;
 
                     if (email == null) {
                         throw new Error(
                             "Email not found in experimental_customAuth or signer. Please set email in experimental_customAuth or signer."
                         );
                     }
-                    args.signer = {
-                        ...args.signer,
+                    argsCopy.signer = {
+                        ...argsCopy.signer,
                         email,
                         onAuthRequired: _onAuthRequired,
                     };
                 }
 
-                if (args?.signer?.type === "phone") {
-                    const phone = args.signer.phone ?? experimental_customAuth?.phone;
-                    const _onAuthRequired = args.signer.onAuthRequired ?? onAuthRequired;
+                if (argsCopy?.signer?.type === "phone") {
+                    const phone = argsCopy.signer.phone ?? experimental_customAuth?.phone;
+                    const _onAuthRequired = argsCopy.signer.onAuthRequired ?? onAuthRequired;
 
                     if (phone == null) {
                         throw new Error("Phone not found in signer. Please set phone in signer.");
                     }
-                    args.signer = {
-                        ...args.signer,
+                    argsCopy.signer = {
+                        ...argsCopy.signer,
                         phone,
                         onAuthRequired: _onAuthRequired,
                     };
                 }
 
-                if (args?.signer?.type === "external-wallet") {
+                if (argsCopy?.signer?.type === "external-wallet") {
                     const signer =
-                        args.signer?.address != null ? args.signer : experimental_customAuth.externalWalletSigner;
+                        argsCopy.signer?.address != null
+                            ? argsCopy.signer
+                            : experimental_customAuth.externalWalletSigner;
 
                     if (signer == null) {
                         throw new Error(
                             "External wallet config not found in experimental_customAuth or signer. Please set it in experimental_customAuth or signer."
                         );
                     }
-                    args.signer = signer as SignerConfigForChain<C>;
+                    argsCopy.signer = signer as SignerConfigForChain<C>;
                 }
 
-                if (args.signer.type === "email" || args.signer.type === "phone") {
+                if (argsCopy.signer.type === "email" || argsCopy.signer.type === "phone") {
                     await initializeWebView?.();
                 }
                 const wallet = await wallets.getOrCreateWallet<C>({
-                    chain: args.chain,
-                    signer: args.signer,
-                    owner: args.owner,
-                    plugins: args.plugins,
-                    delegatedSigners: args.delegatedSigners,
+                    chain: argsCopy.chain,
+                    signer: argsCopy.signer,
+                    owner: argsCopy.owner,
+                    plugins: argsCopy.plugins,
+                    delegatedSigners: argsCopy.delegatedSigners,
                     options: {
                         clientTEEConnection: clientTEEConnection?.(),
                         experimental_callbacks: {
