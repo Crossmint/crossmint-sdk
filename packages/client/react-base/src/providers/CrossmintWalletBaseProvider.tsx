@@ -12,7 +12,7 @@ import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
 import { useCrossmint } from "@/hooks";
 import type { CreateOnLogin } from "@/types";
-import { cloneDeep } from "lodash";
+import cloneDeep from "lodash.clonedeep";
 
 export type CrossmintWalletBaseContext = {
     wallet: Wallet<Chain> | undefined;
