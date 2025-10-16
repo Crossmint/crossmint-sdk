@@ -403,10 +403,7 @@ export class WalletFactory {
                 );
             }
 
-            compareSignerConfigs(
-                inputSigner as Record<string, unknown>,
-                matchingExistingSigner as Record<string, unknown>
-            );
+            compareSignerConfigs(inputSigner, matchingExistingSigner);
         }
     }
 
