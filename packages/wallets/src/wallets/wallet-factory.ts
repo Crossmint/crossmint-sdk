@@ -87,7 +87,7 @@ export class WalletFactory {
             args.onCreateConfig?.delegatedSigners?.map(
                 async (signer): Promise<DelegatedSigner | RegisterSignerParams> => {
                     if (signer.type === "passkey") {
-                        return { signer: await this.createPasskeyAdminSigner(signer) };
+                        return { signer: await this.createPasskeySigner(signer) };
                     }
                     return { signer: this.getSignerLocator(signer) };
                 }
@@ -100,7 +100,7 @@ export class WalletFactory {
 
         const adminSigner =
             adminSignerConfig.type === "passkey"
-                ? await this.createPasskeyAdminSigner(adminSignerConfig)
+                ? await this.createPasskeySigner(adminSignerConfig)
                 : adminSignerConfig;
 
         const walletResponse = await this.apiClient.createWallet({
@@ -236,7 +236,7 @@ export class WalletFactory {
         throw new WalletCreationError(`${signerType} signer does not match the wallet's signer type`);
     }
 
-    private async createPasskeyAdminSigner<C extends Chain>(
+    private async createPasskeySigner<C extends Chain>(
         signer: SignerConfigForChain<C>
     ): Promise<RegisterSignerPasskeyParams> {
         if (signer.type !== "passkey") {
