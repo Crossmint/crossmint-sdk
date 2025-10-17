@@ -21,7 +21,6 @@ export type ShadowSignerResult = {
  * Generate a shadow signer for the given chain.
  * For Solana/Stellar: Creates an ed25519 keypair and returns external-wallet signer
  * For EVM chains: Creates a p256 passkey credential
- * For Flow: Throws an error (not supported)
  */
 export async function generateShadowSigner(chain: Chain): Promise<ShadowSignerResult> {
     if (chain === "solana" || chain === "stellar") {
@@ -43,10 +42,6 @@ export async function generateShadowSigner(chain: Chain): Promise<ShadowSignerRe
         };
     }
 
-    if (chain === "flow" || chain === "flow-testnet") {
-        throw new Error("Shadow signers are not supported on Flow chains");
-    }
-
     const passkeyName = `Shadow Signer ${Date.now()}`;
     const credential = await WebAuthnP256.createCredential({ name: passkeyName });
 
@@ -61,7 +56,7 @@ export async function generateShadowSigner(chain: Chain): Promise<ShadowSignerRe
                     y: credential.publicKey.y.toString(),
                 },
             },
-            chain: chain as any, // RegisterSignerChain type
+            chain: chain as any,
         },
         publicKey: credential.id,
     };
