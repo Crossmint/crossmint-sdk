@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-base
 
+## 0.6.7
+
+### Patch Changes
+
+- 5d4ecf6: Do not mutate config for createOnLogin prop
+
 ## 0.6.6
 
 ### Patch Changes
