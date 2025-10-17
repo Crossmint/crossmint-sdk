@@ -66,6 +66,9 @@ export async function generateShadowSigner(chain: Chain): Promise<ShadowSignerRe
  * Store shadow signer metadata in localStorage
  */
 export function storeShadowSigner(walletAddress: string, chain: Chain, publicKey: string): void {
+    if (typeof localStorage === "undefined") {
+        return;
+    }
     const data: ShadowSignerData = {
         chain,
         walletAddress,
@@ -80,6 +83,9 @@ export function storeShadowSigner(walletAddress: string, chain: Chain, publicKey
  * Retrieve shadow signer metadata from localStorage
  */
 export function getShadowSigner(walletAddress: string): ShadowSignerData | null {
+    if (typeof localStorage === "undefined") {
+        return null;
+    }
     const stored = localStorage.getItem(`${SHADOW_SIGNER_STORAGE_KEY}_${walletAddress}`);
     return stored ? JSON.parse(stored) : null;
 }
@@ -95,5 +101,8 @@ export function hasShadowSigner(walletAddress: string): boolean {
  * Remove shadow signer metadata from localStorage
  */
 export function removeShadowSigner(walletAddress: string): void {
+    if (typeof localStorage === "undefined") {
+        return;
+    }
     localStorage.removeItem(`${SHADOW_SIGNER_STORAGE_KEY}_${walletAddress}`);
 }
