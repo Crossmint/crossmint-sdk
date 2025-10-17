@@ -227,9 +227,15 @@ function StellarCrossmintAuthProvider({ children, apiKey }: { children: React.Re
                     createOnLogin={{
                         chain: "stellar",
                         signer: { type: "email" },
-                        delegatedSigners: [
-                            { signer: "external-wallet:GDUNAPJW6JYL4JEBFR7B5RZZD6B4TOUEWPFTT3V47IHI7QJPA43UFEY6" },
-                        ],
+                        onCreateConfig: {
+                            adminSigner: { type: "email" },
+                            delegatedSigners: [
+                                {
+                                    type: "external-wallet",
+                                    address: "GDUNAPJW6JYL4JEBFR7B5RZZD6B4TOUEWPFTT3V47IHI7QJPA43UFEY6",
+                                },
+                            ],
+                        },
                     }}
                 >
                     {children}
