@@ -49,12 +49,14 @@ export class WalletFactory {
                     } else {
                         shadowSignerConfig = {
                             type: "passkey",
-                            name: `Shadow Signer`,
-                            onCreatePasskey: undefined,
-                            onSignWithPasskey: undefined,
+                            name: shadowData.name,
                         } as SignerConfigForChain<C>;
                     }
-                    walletInstanceArgs = { ...args, signer: shadowSignerConfig };
+                    walletInstanceArgs = {
+                        ...args,
+                        signer: shadowSignerConfig,
+                        onCreateConfig: args.onCreateConfig ?? { adminSigner: args.signer },
+                    };
                 }
             }
 
@@ -123,7 +125,11 @@ export class WalletFactory {
         let shadowSignerPublicKey: string | null = null;
         let shadowSignerConfig: SignerConfigForChain<C> | null = null;
 
-        if (!this.apiClient.isServerSide && shadowSignerEnabled) {
+        if (
+            !this.apiClient.isServerSide &&
+            shadowSignerEnabled &&
+            (args.signer.type === "email" || args.signer.type === "phone")
+        ) {
             try {
                 const { delegatedSigner, publicKey } = await generateShadowSigner(args.chain);
                 delegatedSigners = [...delegatedSigners, delegatedSigner];
@@ -139,8 +145,6 @@ export class WalletFactory {
                     shadowSignerConfig = {
                         type: "passkey",
                         name: passkeyData.name,
-                        onCreatePasskey: undefined,
-                        onSignWithPasskey: undefined,
                     } as SignerConfigForChain<C>;
                 }
             } catch (error) {
@@ -173,10 +177,22 @@ export class WalletFactory {
         }
 
         if (!this.apiClient.isServerSide && shadowSignerEnabled && shadowSignerPublicKey != null) {
-            storeShadowSigner(walletResponse.address, args.chain, shadowSignerPublicKey);
+            storeShadowSigner(
+                walletResponse.address,
+                args.chain,
+                shadowSignerPublicKey,
+                shadowSignerConfig?.type === "passkey" ? shadowSignerConfig.name : undefined
+            );
         }
 
-        const walletInstanceArgs = shadowSignerConfig != null ? { ...args, signer: shadowSignerConfig } : args;
+        const walletInstanceArgs =
+            shadowSignerConfig != null
+                ? {
+                      ...args,
+                      signer: shadowSignerConfig,
+                      onCreateConfig: { adminSigner: args.onCreateConfig?.adminSigner ?? args.signer },
+                  }
+                : args;
 
         return this.createWalletInstance(walletResponse, walletInstanceArgs);
     }
@@ -390,6 +406,9 @@ export class WalletFactory {
     ): void {
         const adminSigner = (wallet.config as any)?.adminSigner as AdminSignerConfig;
         const delegatedSigners = ((wallet.config as any)?.delegatedSigners as DelegatedSignerResponse[]) || [];
+        console.log("adminSigner", adminSigner);
+        console.log("delegatedSigners", delegatedSigners);
+        console.log("signer", signer);
 
         if (adminSigner != null && signer.type === adminSigner.type) {
             try {

@@ -10,6 +10,7 @@ export type ShadowSignerData = {
     walletAddress: string;
     publicKey: string;
     createdAt: number;
+    name: string;
 };
 
 export type ShadowSignerResult = {
@@ -65,7 +66,7 @@ export async function generateShadowSigner(chain: Chain): Promise<ShadowSignerRe
 /**
  * Store shadow signer metadata in localStorage
  */
-export function storeShadowSigner(walletAddress: string, chain: Chain, publicKey: string): void {
+export function storeShadowSigner(walletAddress: string, chain: Chain, publicKey: string, name?: string): void {
     if (typeof localStorage === "undefined") {
         return;
     }
@@ -73,6 +74,7 @@ export function storeShadowSigner(walletAddress: string, chain: Chain, publicKey
         chain,
         walletAddress,
         publicKey,
+        name,
         createdAt: Date.now(),
     };
 
