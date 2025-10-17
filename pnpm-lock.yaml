@@ -611,10 +611,16 @@ importers:
       '@crossmint/wallets-sdk':
         specifier: workspace:*
         version: link:../../wallets
+      lodash.clonedeep:
+        specifier: 4.5.0
+        version: 4.5.0
       lodash.isequal:
         specifier: 4.5.0
         version: 4.5.0
     devDependencies:
+      '@types/lodash.clonedeep':
+        specifier: 4.5.6
+        version: 4.5.6
       '@types/lodash.isequal':
         specifier: 4.5.6
         version: 4.5.6
@@ -5953,6 +5959,9 @@ packages:
   '@types/json5@0.0.29':
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
 
+  '@types/lodash.clonedeep@4.5.6':
+    resolution: {integrity: sha512-cE1jYr2dEg1wBImvXlNtp0xDoS79rfEdGozQVgliDZj1uERH4k+rmEMTudP9b4VQ8O6nRb5gPqft0QzEQGMQgA==}
+
   '@types/lodash.isequal@4.5.6':
     resolution: {integrity: sha512-Ww4UGSe3DmtvLLJm2F16hDwEQSv7U0Rr8SujLUA2wHI2D2dm8kPu6Et+/y303LfjTIwSBKXB/YTUcAKpem/XEg==}
 
@@ -9789,6 +9798,9 @@ packages:
 
   lodash.camelcase@4.3.0:
     resolution: {integrity: sha512-TwuEnCnxbc3rAvhf/LbG7tJUDzhqXyFnv3dtzLOPgCG/hODL7WFnsbwktkD7yUV0RrreP/l1PALq/YSg6VvjlA==}
+
+  lodash.clonedeep@4.5.0:
+    resolution: {integrity: sha512-H5ZhCF25riFd9uB5UCkVKo61m3S/xZk1x4wA6yp/L3RFP6Z/eHH1ymQcGLo7J3GMPfm0V/7m1tryHuGVxpqEBQ==}
 
   lodash.debounce@4.0.8:
     resolution: {integrity: sha512-FT1yDzDYEoYWhnSGnpE/4Kj1fLZkDFyqRb7fNt6FdYOSxlUWAtp42Eh6Wb0rGIv/m9Bgo7x4GhQbm5Ys4SG5ow==}
@@ -13725,7 +13737,7 @@ snapshots:
 
   '@babel/helper-annotate-as-pure@7.27.3':
     dependencies:
-      '@babel/types': 7.27.6
+      '@babel/types': 7.28.5
 
   '@babel/helper-compilation-targets@7.27.0':
     dependencies:
@@ -13784,7 +13796,7 @@ snapshots:
   '@babel/helper-member-expression-to-functions@7.25.9':
     dependencies:
       '@babel/traverse': 7.27.4
-      '@babel/types': 7.27.6
+      '@babel/types': 7.28.5
     transitivePeerDependencies:
       - supports-color
 
@@ -13813,11 +13825,11 @@ snapshots:
 
   '@babel/helper-optimise-call-expression@7.25.9':
     dependencies:
-      '@babel/types': 7.27.6
+      '@babel/types': 7.28.5
 
   '@babel/helper-optimise-call-expression@7.27.1':
     dependencies:
-      '@babel/types': 7.27.6
+      '@babel/types': 7.28.5
 
   '@babel/helper-plugin-utils@7.26.5': {}
 
@@ -13860,7 +13872,7 @@ snapshots:
   '@babel/helper-skip-transparent-expression-wrappers@7.27.1':
     dependencies:
       '@babel/traverse': 7.28.5
-      '@babel/types': 7.27.6
+      '@babel/types': 7.28.5
     transitivePeerDependencies:
       - supports-color
 
@@ -13880,7 +13892,7 @@ snapshots:
     dependencies:
       '@babel/template': 7.27.2
       '@babel/traverse': 7.27.4
-      '@babel/types': 7.27.6
+      '@babel/types': 7.28.5
     transitivePeerDependencies:
       - supports-color
 
@@ -18120,8 +18132,8 @@ snapshots:
 
   '@jridgewell/source-map@0.3.6':
     dependencies:
-      '@jridgewell/gen-mapping': 0.3.8
-      '@jridgewell/trace-mapping': 0.3.25
+      '@jridgewell/gen-mapping': 0.3.13
+      '@jridgewell/trace-mapping': 0.3.31
 
   '@jridgewell/sourcemap-codec@1.5.0': {}
 
@@ -19909,7 +19921,7 @@ snapshots:
   '@react-native/codegen@0.81.5(@babel/core@7.26.10)':
     dependencies:
       '@babel/core': 7.26.10
-      '@babel/parser': 7.27.5
+      '@babel/parser': 7.28.5
       glob: 7.2.3
       hermes-parser: 0.29.1
       invariant: 2.2.4
@@ -21970,6 +21982,10 @@ snapshots:
   '@types/json-schema@7.0.15': {}
 
   '@types/json5@0.0.29': {}
+
+  '@types/lodash.clonedeep@4.5.6':
+    dependencies:
+      '@types/lodash': 4.17.16
 
   '@types/lodash.isequal@4.5.6':
     dependencies:
@@ -28475,6 +28491,8 @@ snapshots:
 
   lodash.camelcase@4.3.0: {}
 
+  lodash.clonedeep@4.5.0: {}
+
   lodash.debounce@4.0.8: {}
 
   lodash.isequal@4.5.0: {}
@@ -28884,7 +28902,7 @@ snapshots:
   metro-source-map@0.83.2:
     dependencies:
       '@babel/traverse': 7.27.4
-      '@babel/traverse--for-generate-function-map': '@babel/traverse@7.27.4'
+      '@babel/traverse--for-generate-function-map': '@babel/traverse@7.28.5'
       '@babel/types': 7.27.6
       flow-enums-runtime: 0.0.6
       invariant: 2.2.4
@@ -28899,7 +28917,7 @@ snapshots:
   metro-source-map@0.83.3:
     dependencies:
       '@babel/traverse': 7.27.4
-      '@babel/traverse--for-generate-function-map': '@babel/traverse@7.27.4'
+      '@babel/traverse--for-generate-function-map': '@babel/traverse@7.28.5'
       '@babel/types': 7.27.6
       flow-enums-runtime: 0.0.6
       invariant: 2.2.4
@@ -28947,7 +28965,7 @@ snapshots:
   metro-transform-plugins@0.83.3:
     dependencies:
       '@babel/core': 7.26.10
-      '@babel/generator': 7.27.5
+      '@babel/generator': 7.28.5
       '@babel/template': 7.27.2
       '@babel/traverse': 7.27.4
       flow-enums-runtime: 0.0.6
@@ -28978,9 +28996,9 @@ snapshots:
   metro-transform-worker@0.83.3(bufferutil@4.0.9)(utf-8-validate@5.0.10):
     dependencies:
       '@babel/core': 7.26.10
-      '@babel/generator': 7.27.5
-      '@babel/parser': 7.27.5
-      '@babel/types': 7.27.6
+      '@babel/generator': 7.28.5
+      '@babel/parser': 7.28.5
+      '@babel/types': 7.28.5
       flow-enums-runtime: 0.0.6
       metro: 0.83.3(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       metro-babel-transformer: 0.83.3

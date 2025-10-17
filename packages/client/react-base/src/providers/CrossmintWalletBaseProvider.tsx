@@ -12,6 +12,7 @@ import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
 import { useCrossmint } from "@/hooks";
 import type { CreateOnLogin } from "@/types";
+import cloneDeep from "lodash.clonedeep";
 
 export type CrossmintWalletBaseContext = {
     wallet: Wallet<Chain> | undefined;
@@ -54,6 +55,7 @@ export function CrossmintWalletBaseProvider({
     const [walletStatus, setWalletStatus] = useState<"not-loaded" | "in-progress" | "loaded" | "error">("not-loaded");
 
     const getOrCreateWallet = useCallback(
+<<<<<<< HEAD
         async <C extends Chain>(args: WalletArgsFor<C>) => {
             console.log("getOrCreateWallet", args);
             console.log("crossmint.jwt", crossmint.jwt);
@@ -61,6 +63,12 @@ export function CrossmintWalletBaseProvider({
             console.log("wallet", wallet);
 
             if (crossmint.jwt == null || walletStatus === "in-progress") {
+=======
+        async <C extends Chain>(_args: WalletArgsFor<C>) => {
+            // Deep clone the args object to avoid mutating the original object
+            const args = cloneDeep(_args);
+            if (experimental_customAuth?.jwt == null || walletStatus === "in-progress") {
+>>>>>>> 5d4ecf6a8de4 (react-sdk: Fix args being mutated  (#1457))
                 return undefined;
             }
             if (wallet != null) {
