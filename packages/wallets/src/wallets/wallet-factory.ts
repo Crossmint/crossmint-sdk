@@ -62,7 +62,9 @@ export class WalletFactory {
                 );
             }
             if (maybeArgs == null) {
-                throw new WalletCreationError("Wallet configuration (chain, signer, etc.) is required when using walletLocator");
+                throw new WalletCreationError(
+                    "Wallet configuration (chain, signer, etc.) is required when using walletLocator"
+                );
             }
             walletLocator = argsOrLocator;
             args = maybeArgs;
