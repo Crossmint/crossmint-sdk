@@ -48,6 +48,8 @@ export const BLOCKCHAIN_TO_COPY_NAME: Record<BlockchainIncludingTestnet, string>
     "world-chain-sepolia": "Worldchain Sepolia",
     flow: "Flow",
     "flow-testnet": "Flow Testnet",
+    plume: "Plume",
+    "plume-testnet": "Plume Testnet",
 };
 
 export function blockchainToDisplayName(blockchain: BlockchainIncludingTestnet) {

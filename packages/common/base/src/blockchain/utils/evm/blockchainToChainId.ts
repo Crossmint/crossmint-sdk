@@ -45,6 +45,8 @@ export const BLOCKCHAIN_TO_CHAIN_ID: Record<EVMBlockchainIncludingTestnet, numbe
     "world-chain-sepolia": 4801,
     flow: 1230,
     "flow-testnet": 1231,
+    plume: 98865,
+    "plume-testnet": 161221135,
 };
 
 export function blockchainToChainId(blockchain: EVMBlockchainIncludingTestnet) {

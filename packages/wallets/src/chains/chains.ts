@@ -19,6 +19,8 @@ import {
     sepolia,
     flowMainnet,
     flowTestnet,
+    plume,
+    plumeTestnet,
 } from "viem/chains";
 
 import { story } from "./definitions/story";
@@ -34,6 +36,7 @@ const TESTNET_AA_CHAINS = [
     Blockchain.MANTLE_SEPOLIA,
     Blockchain.MODE_SEPOLIA,
     Blockchain.OPTIMISM_SEPOLIA,
+    Blockchain.PLUME_TESTNET,
     Blockchain.POLYGON_AMOY,
     Blockchain.SCROLL_SEPOLIA,
     Blockchain.SEI_ATLANTIC_2_TESTNET,
@@ -53,6 +56,7 @@ const PRODUCTION_AA_CHAINS = [
     Blockchain.MANTLE,
     Blockchain.MODE,
     Blockchain.OPTIMISM,
+    Blockchain.PLUME,
     Blockchain.POLYGON,
     Blockchain.SCROLL,
     Blockchain.SEI_PACIFIC_1,
@@ -108,6 +112,10 @@ export function toViemChain(chain: EVMSmartWalletChain): ViemChain {
             return flowMainnet;
         case Blockchain.FLOW_TESTNET:
             return flowTestnet;
+        case Blockchain.PLUME_TESTNET:
+            return plumeTestnet;
+        case Blockchain.PLUME:
+            return plume;
         case Blockchain.ABSTRACT:
         case Blockchain.ABSTRACT_TESTNET:
         case Blockchain.APECHAIN:
