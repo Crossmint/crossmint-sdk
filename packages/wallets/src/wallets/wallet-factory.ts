@@ -135,7 +135,7 @@ export class WalletFactory {
                         address: publicKey,
                     } as SignerConfigForChain<C>;
                 } else {
-                    const passkeyData = (delegatedSigner.signer as RegisterSignerPasskeyParams);
+                    const passkeyData = delegatedSigner.signer as RegisterSignerPasskeyParams;
                     shadowSignerConfig = {
                         type: "passkey",
                         name: passkeyData.name,
@@ -176,9 +176,7 @@ export class WalletFactory {
             storeShadowSigner(walletResponse.address, args.chain, shadowSignerPublicKey);
         }
 
-        const walletInstanceArgs = shadowSignerConfig != null 
-            ? { ...args, signer: shadowSignerConfig }
-            : args;
+        const walletInstanceArgs = shadowSignerConfig != null ? { ...args, signer: shadowSignerConfig } : args;
 
         return this.createWalletInstance(walletResponse, walletInstanceArgs);
     }
