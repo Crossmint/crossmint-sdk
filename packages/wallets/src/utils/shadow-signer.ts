@@ -1,4 +1,5 @@
 import { encode as encodeBase58 } from "bs58";
+import { StrKey } from "@stellar/stellar-sdk";
 import type { Chain } from "../chains/chains";
 import type { RegisterSignerParams } from "../api/types";
 
@@ -19,7 +20,6 @@ export type ShadowSignerResult = {
 /**
  * Generate a shadow signer for the given chain.
  * For Solana/Stellar: Creates an ed25519 keypair and returns external-wallet signer
- * For EVM chains: Creates a p256 passkey credential
  */
 export async function generateShadowSigner(chain: Chain): Promise<ShadowSignerResult> {
     if (chain === "solana" || chain === "stellar") {
@@ -33,11 +33,20 @@ export async function generateShadowSigner(chain: Chain): Promise<ShadowSignerRe
         )) as CryptoKeyPair;
 
         const publicKeyBuffer = await window.crypto.subtle.exportKey("raw", keyPair.publicKey);
-        const publicKeyBase58 = encodeBase58(new Uint8Array(publicKeyBuffer));
+        const publicKeyBytes = new Uint8Array(publicKeyBuffer);
+
+        let encodedPublicKey: string;
+        if (chain === "stellar") {
+            // Stellar uses StrKey encoding (Base32 with version byte and checksum)
+            encodedPublicKey = StrKey.encodeEd25519PublicKey(Buffer.from(publicKeyBytes));
+        } else {
+            // Solana uses Base58 encoding
+            encodedPublicKey = encodeBase58(publicKeyBytes);
+        }
 
         return {
-            delegatedSigner: { signer: `external-wallet:${publicKeyBase58}` },
-            publicKey: publicKeyBase58,
+            delegatedSigner: { signer: `external-wallet:${encodedPublicKey}` },
+            publicKey: encodedPublicKey,
         };
     }
     // TODO: Add support for EVM chains
