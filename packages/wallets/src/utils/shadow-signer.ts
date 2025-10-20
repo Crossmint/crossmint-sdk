@@ -47,7 +47,7 @@ export async function generateShadowSigner(chain: Chain): Promise<ShadowSignerRe
 /**
  * Store shadow signer metadata in localStorage
  */
-export function storeShadowSigner(walletAddress: string, chain: Chain, publicKey: string, name?: string): void {
+export function storeShadowSigner(walletAddress: string, chain: Chain, publicKey: string): void {
     if (typeof localStorage === "undefined") {
         return;
     }

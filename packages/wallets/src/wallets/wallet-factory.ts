@@ -34,24 +34,17 @@ export class WalletFactory {
         const existingWallet = await this.apiClient.getWallet(`me:${this.getChainType(args.chain)}:smart`);
 
         if (existingWallet != null && !("error" in existingWallet)) {
-            const shadowSignerEnabled = args.options?.shadowSigner?.enabled !== false;
+            const shadowSignerEnabled =
+                (args.chain === "solana" || args.chain === "stellar") && args.options?.shadowSigner?.enabled !== false;
             let walletInstanceArgs = args;
 
             if (shadowSignerEnabled) {
                 const shadowData = getShadowSigner(existingWallet.address);
                 if (shadowData != null) {
-                    let shadowSignerConfig: SignerConfigForChain<C>;
-                    if (args.chain === "solana" || args.chain === "stellar") {
-                        shadowSignerConfig = {
-                            type: "external-wallet",
-                            address: shadowData.publicKey,
-                        } as SignerConfigForChain<C>;
-                    } else {
-                        shadowSignerConfig = {
-                            type: "passkey",
-                            name: shadowData.name,
-                        } as SignerConfigForChain<C>;
-                    }
+                    const shadowSignerConfig = {
+                        type: "external-wallet",
+                        address: shadowData.publicKey,
+                    } as SignerConfigForChain<C>;
                     walletInstanceArgs = {
                         ...args,
                         signer: shadowSignerConfig,
@@ -121,7 +114,8 @@ export class WalletFactory {
             ) ?? []
         );
 
-        const shadowSignerEnabled = args.options?.shadowSigner?.enabled !== false;
+        const shadowSignerEnabled =
+            (args.chain === "solana" || args.chain === "stellar") && args.options?.shadowSigner?.enabled !== false;
         let shadowSignerPublicKey: string | null = null;
         let shadowSignerConfig: SignerConfigForChain<C> | null = null;
 
@@ -135,18 +129,11 @@ export class WalletFactory {
                 delegatedSigners = [...delegatedSigners, delegatedSigner];
                 shadowSignerPublicKey = publicKey;
 
-                if (args.chain === "solana" || args.chain === "stellar") {
-                    shadowSignerConfig = {
-                        type: "external-wallet",
-                        address: publicKey,
-                    } as SignerConfigForChain<C>;
-                } else {
-                    const passkeyData = delegatedSigner.signer as RegisterSignerPasskeyParams;
-                    shadowSignerConfig = {
-                        type: "passkey",
-                        name: passkeyData.name,
-                    } as SignerConfigForChain<C>;
-                }
+                shadowSignerConfig = {
+                    type: "external-wallet",
+                    address: publicKey,
+                } as SignerConfigForChain<C>;
+                delegatedSigners = [...delegatedSigners, { signer: this.getSignerLocator(shadowSignerConfig) }];
             } catch (error) {
                 console.warn("Failed to create shadow signer:", error);
             }
@@ -177,12 +164,7 @@ export class WalletFactory {
         }
 
         if (!this.apiClient.isServerSide && shadowSignerEnabled && shadowSignerPublicKey != null) {
-            storeShadowSigner(
-                walletResponse.address,
-                args.chain,
-                shadowSignerPublicKey,
-                shadowSignerConfig?.type === "passkey" ? shadowSignerConfig.name : undefined
-            );
+            storeShadowSigner(walletResponse.address, args.chain, shadowSignerPublicKey);
         }
 
         const walletInstanceArgs =
