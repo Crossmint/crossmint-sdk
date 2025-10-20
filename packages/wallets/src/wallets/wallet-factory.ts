@@ -355,15 +355,6 @@ export class WalletFactory {
             delegatedSigners.filter((s) => s.type === "passkey").length +
             ((adminSigner as any)?.type === "passkey" ? 1 : 0);
 
-        console.log("numberOfPasskeySigners", numberOfPasskeySigners);
-        console.log("adminSigner", adminSigner);
-        console.log("signer", signer);
-        console.log(
-            "this.isMatchingPasskeySigner(signer, adminSigner, numberOfPasskeySigners)",
-            this.isMatchingPasskeySigner(signer, adminSigner, numberOfPasskeySigners)
-        );
-        console.log("this.getSignerLocator(signer)", this.getSignerLocator(signer));
-
         if (
             adminSigner != null &&
             (this.isMatchingPasskeySigner(signer, adminSigner, numberOfPasskeySigners) ||
