@@ -20,6 +20,7 @@ export type CrossmintWalletBaseContext = {
     getOrCreateWallet: <C extends Chain>(props: WalletArgsFor<C>) => Promise<Wallet<Chain> | undefined>;
     onAuthRequired?: EmailSignerConfig["onAuthRequired"] | PhoneSignerConfig["onAuthRequired"];
     clientTEEConnection?: () => HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
+    experimental_headlessSigningFlow?: boolean;
 };
 
 export const CrossmintWalletBaseContext = createContext<CrossmintWalletBaseContext>({
@@ -28,6 +29,7 @@ export const CrossmintWalletBaseContext = createContext<CrossmintWalletBaseConte
     getOrCreateWallet: () => Promise.resolve(undefined),
     onAuthRequired: undefined,
     clientTEEConnection: undefined,
+    experimental_headlessSigningFlow: false,
 });
 
 export interface CrossmintWalletBaseProviderProps {
@@ -39,6 +41,11 @@ export interface CrossmintWalletBaseProviderProps {
     };
     onAuthRequired?: EmailSignerConfig["onAuthRequired"] | PhoneSignerConfig["onAuthRequired"];
     clientTEEConnection?: () => HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
+    /**
+     * If true, disables automatic UI rendering and uses onAuthRequired callback instead.
+     * Defaults to false.
+     */
+    experimental_headlessSigningFlow?: boolean;
     initializeWebView?: () => Promise<void>;
 }
 
@@ -48,6 +55,7 @@ export function CrossmintWalletBaseProvider({
     callbacks,
     onAuthRequired,
     clientTEEConnection,
+    experimental_headlessSigningFlow = false,
     initializeWebView,
 }: CrossmintWalletBaseProviderProps) {
     const { crossmint, experimental_customAuth } = useCrossmint(
@@ -180,8 +188,9 @@ export function CrossmintWalletBaseProvider({
             getOrCreateWallet,
             onAuthRequired,
             clientTEEConnection,
+            experimental_headlessSigningFlow,
         }),
-        [getOrCreateWallet, wallet, walletStatus, onAuthRequired, clientTEEConnection]
+        [getOrCreateWallet, wallet, walletStatus, onAuthRequired, clientTEEConnection, experimental_headlessSigningFlow]
     );
 
     return <CrossmintWalletBaseContext.Provider value={contextValue}>{children}</CrossmintWalletBaseContext.Provider>;
