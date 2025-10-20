@@ -63,6 +63,7 @@ export type BaseSignerConfig<C extends Chain> = ExternalWalletSignerConfigForCha
 export type PasskeySignerConfig = {
     type: "passkey";
     name?: string;
+    id?: string;
     onCreatePasskey?: (name: string) => Promise<{ id: string; publicKey: { x: string; y: string } }>;
     onSignWithPasskey?: (message: string) => Promise<PasskeySignResult>;
 };

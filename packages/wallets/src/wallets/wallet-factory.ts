@@ -11,11 +11,12 @@ import type {
 } from "../api";
 import { WalletCreationError, WalletNotAvailableError } from "../utils/errors";
 import type { Chain } from "../chains/chains";
-import type { InternalSignerConfig, SignerConfigForChain } from "../signers/types";
+import type { InternalSignerConfig, PasskeySignerConfig, SignerConfigForChain } from "../signers/types";
 import { Wallet } from "./wallet";
 import { assembleSigner } from "../signers";
 import type { DelegatedSigner, WalletArgsFor, WalletCreateArgs, WalletOptions } from "./types";
 import { compareSignerConfigs } from "../utils/signer-validation";
+import { DelegatedSignerV2025Dto } from "@/api/gen/types.gen";
 
 const DELEGATED_SIGNER_MISMATCH_ERROR =
     "When 'delegatedSigners' is provided to a method that may fetch an existing wallet, each specified delegated signer must exist in that wallet's configuration.";
@@ -390,11 +391,22 @@ export class WalletFactory {
                 `${inputDelegatedSigners.length} delegated signer(s) specified, but wallet "${existingWallet.address}" has no delegated signers. ${DELEGATED_SIGNER_MISMATCH_ERROR}`
             );
         }
+        const existingPasskeyIds = existingDelegatedSigners.filter((s) => s.type === "passkey").length;
 
         for (const inputSigner of inputDelegatedSigners) {
-            const matchingExistingSigner = existingDelegatedSigners.find(
-                (existingSigner) => existingSigner.type === inputSigner.type
-            );
+            const matchingExistingSigner = existingDelegatedSigners.find((existingSigner) => {
+                if (inputSigner.type === "passkey") {
+                    if (inputSigner.id == null && existingPasskeyIds === 1) {
+                        return existingSigner.type === "passkey";
+                    }
+                    if (inputSigner.id == null && existingPasskeyIds > 1) {
+                        throw new WalletCreationError(
+                            "When creating a wallet with multiple passkeys, you must provide the passkey ID for each passkey."
+                        );
+                    }
+                }
+                return existingSigner.locator === this.getSignerLocator(inputSigner);
+            });
 
             if (matchingExistingSigner == null) {
                 const walletSigners = existingDelegatedSigners.map((s) => s.locator).join(", ");
