@@ -63,7 +63,7 @@ export class WalletFactory {
             }
             if (maybeArgs == null) {
                 throw new WalletCreationError(
-                    "Wallet configuration (chain, signer, etc.) is required when using walletLocator"
+                    "Wallet configuration is required when using walletLocator: https://docs.crossmint.com/sdk-reference/wallets/type-aliases/WalletArgsFor"
                 );
             }
             walletLocator = argsOrLocator;
@@ -329,15 +329,7 @@ export class WalletFactory {
             }
 
             if (args.onCreateConfig?.delegatedSigners != null) {
-                const numberOfPasskeySigners =
-                    args.onCreateConfig.delegatedSigners?.filter((s) => s.type === "passkey").length +
-                    (config.adminSigner?.type === "passkey" ? 1 : 0);
-
-                this.validateDelegatedSigners(
-                    existingWallet,
-                    args.onCreateConfig.delegatedSigners,
-                    numberOfPasskeySigners
-                );
+                this.validateDelegatedSigners(existingWallet, args.onCreateConfig.delegatedSigners);
             }
         }
 
@@ -351,13 +343,10 @@ export class WalletFactory {
         const config = wallet.config as SmartWalletConfig;
         const adminSigner = config?.adminSigner;
         const delegatedSigners = config?.delegatedSigners || [];
-        const numberOfPasskeySigners =
-            delegatedSigners.filter((s) => s.type === "passkey").length +
-            ((adminSigner as any)?.type === "passkey" ? 1 : 0);
 
         if (
             adminSigner != null &&
-            (this.isMatchingPasskeySigner(signer, adminSigner, numberOfPasskeySigners) ||
+            (this.isMatchingPasskeySigner(signer, adminSigner, config) ||
                 this.getSignerLocator(signer) === (adminSigner as PasskeySignerConfig).locator)
         ) {
             try {
@@ -367,9 +356,7 @@ export class WalletFactory {
         }
 
         const delegatedSigner = delegatedSigners.find(
-            (ds) =>
-                this.isMatchingPasskeySigner(signer, ds, numberOfPasskeySigners) ||
-                this.getSignerLocator(signer) === ds.locator
+            (ds) => this.isMatchingPasskeySigner(signer, ds, config) || this.getSignerLocator(signer) === ds.locator
         );
 
         if (delegatedSigner != null) {
@@ -405,8 +392,7 @@ export class WalletFactory {
 
     private validateDelegatedSigners<C extends Chain>(
         existingWallet: GetWalletSuccessResponse,
-        inputDelegatedSigners: Array<SignerConfigForChain<C>>,
-        numberOfPasskeySigners: number
+        inputDelegatedSigners: Array<SignerConfigForChain<C>>
     ): void {
         const config = existingWallet.config as SmartWalletConfig;
         const existingDelegatedSigners = config?.delegatedSigners;
@@ -424,10 +410,9 @@ export class WalletFactory {
         }
 
         inputDelegatedSigners.forEach((s) => this.mutateSignerFromCustomAuth({ signer: s } as WalletArgsFor<C>));
-
         for (const inputSigner of inputDelegatedSigners) {
             const matchingExistingSigner = existingDelegatedSigners.find((existingSigner) => {
-                if (this.isMatchingPasskeySigner(inputSigner, existingSigner, numberOfPasskeySigners)) {
+                if (this.isMatchingPasskeySigner(inputSigner, existingSigner, config)) {
                     return true;
                 }
                 return existingSigner.locator === this.getSignerLocator(inputSigner);
@@ -452,8 +437,11 @@ export class WalletFactory {
     private isMatchingPasskeySigner<C extends Chain>(
         inputSigner: SignerConfigForChain<C>,
         existingSigner: SmartWalletConfig["adminSigner"] | DelegatedSignerResponse,
-        numberOfPasskeySigners: number
+        walletConfig: SmartWalletConfig
     ): boolean {
+        const numberOfPasskeySigners =
+            (walletConfig.delegatedSigners?.filter((s) => s.type === "passkey").length ?? 0) +
+            (walletConfig.adminSigner.type === "passkey" ? 1 : 0);
         if (inputSigner.type === "passkey") {
             if (inputSigner.id == null && numberOfPasskeySigners === 1) {
                 return existingSigner.type === "passkey";
