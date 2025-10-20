@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi, type MockedFunction } 
 import { WalletFactory } from "./wallet-factory";
 import { WalletCreationError } from "../utils/errors";
 import type { ApiClient, GetWalletSuccessResponse } from "../api";
-import type { WalletArgsFor } from "./types";
+import type { WalletArgsFor, WalletCreateArgs } from "./types";
 
 type MockedApiClient = {
     isServerSide: boolean;
@@ -11,12 +11,11 @@ type MockedApiClient = {
     createWallet: MockedFunction<ApiClient["createWallet"]>;
 };
 
-describe("WalletFactory - Delegated Signers Validation", () => {
+describe("WalletFactory - OnCreateConfig Support", () => {
     let walletFactory: WalletFactory;
     let mockApiClient: MockedApiClient;
 
-    // Mock wallet response with delegated signers
-    const mockWalletWithDelegatedSigners = {
+    const mockWalletWithAdminAndDelegated = {
         chainType: "solana" as const,
         type: "smart" as const,
         address: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
@@ -30,46 +29,13 @@ describe("WalletFactory - Delegated Signers Validation", () => {
             delegatedSigners: [
                 {
                     type: "external-wallet" as const,
-                    address: "EbXL4e6XgbcC7s33cD5EZtyn5nixRDsieBjPQB7zf448",
-                    locator: "external-wallet:EbXL4e6XgbcC7s33cD5EZtyn5nixRDsieBjPQB7zf448",
-                },
-                {
-                    type: "external-wallet" as const,
-                    address: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
-                    locator: "external-wallet:9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
+                    address: "DelegatedSignerAddress456",
+                    locator: "external-wallet:DelegatedSignerAddress456",
                 },
             ],
         },
         createdAt: Date.now(),
     } as GetWalletSuccessResponse;
-
-    // Mock wallet response without delegated signers
-    const mockWalletWithoutDelegatedSigners = {
-        chainType: "solana" as const,
-        type: "smart" as const,
-        address: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
-        owner: "test-owner",
-        config: {
-            adminSigner: {
-                type: "external-wallet" as const,
-                address: "AdminSignerAddress123",
-                locator: "external-wallet:AdminSignerAddress123",
-            },
-        },
-        createdAt: Date.now(),
-    } as GetWalletSuccessResponse;
-
-    const mockValidSolanaArgs: WalletArgsFor<"solana"> = {
-        chain: "solana",
-        signer: {
-            type: "external-wallet",
-            address: "AdminSignerAddress123",
-        },
-        delegatedSigners: [
-            { signer: "external-wallet:EbXL4e6XgbcC7s33cD5EZtyn5nixRDsieBjPQB7zf448" },
-            { signer: "external-wallet:9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM" },
-        ],
-    };
 
     beforeEach(() => {
         vi.resetAllMocks();
@@ -88,539 +54,348 @@ describe("WalletFactory - Delegated Signers Validation", () => {
         vi.restoreAllMocks();
     });
 
-    describe("Happy Path", () => {
-        it("should successfully validate matching delegated signers", async () => {
-            // Mock getWallet to return existing wallet with delegated signers
-            mockApiClient.getWallet.mockResolvedValue(mockWalletWithDelegatedSigners);
+    describe("getOrCreateWallet with onCreateConfig", () => {
+        it("should create wallet with onCreateConfig admin signer when wallet does not exist", async () => {
+            mockApiClient.getWallet.mockResolvedValue({ error: true, message: "not found" });
+            mockApiClient.createWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
 
-            // This should not throw an error
-            await expect(walletFactory.getOrCreateWallet(mockValidSolanaArgs)).resolves.toBeDefined();
-
-            expect(mockApiClient.getWallet).toHaveBeenCalledWith("me:solana:smart");
-        });
-    });
-
-    describe("Error Cases", () => {
-        it("should throw error when delegated signers are provided but wallet has none", async () => {
-            // Mock getWallet to return wallet without delegated signers
-            mockApiClient.getWallet.mockResolvedValue(mockWalletWithoutDelegatedSigners);
-
-            await expect(walletFactory.getOrCreateWallet(mockValidSolanaArgs)).rejects.toThrow(
-                new WalletCreationError(
-                    `2 delegated signer(s) specified, but wallet "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM" has no delegated signers. When 'delegatedSigners' is provided to a method that may fetch an existing wallet, each specified delegated signer must exist in that wallet's configuration.`
-                )
-            );
-        });
-
-        it("should allow subset of delegated signers (wallet can have more than specified)", async () => {
-            // Mock getWallet to return wallet with delegated signers
-            mockApiClient.getWallet.mockResolvedValue(mockWalletWithDelegatedSigners);
-
-            const argsWithFewerSigners: WalletArgsFor<"solana"> = {
+            const args: WalletCreateArgs<"solana"> = {
                 chain: "solana",
                 signer: {
                     type: "external-wallet",
-                    address: "AdminSignerAddress123",
+                    address: "DelegatedSignerAddress456",
                 },
-                delegatedSigners: [
-                    // Only providing 1 signer when wallet has 2 - this should now be allowed
-                    { signer: "external-wallet:EbXL4e6XgbcC7s33cD5EZtyn5nixRDsieBjPQB7zf448" },
-                ],
+                onCreateConfig: {
+                    adminSigner: {
+                        type: "external-wallet",
+                        address: "AdminSignerAddress123",
+                    },
+                    delegatedSigners: [{ type: "external-wallet", address: "DelegatedSignerAddress456" }],
+                },
             };
 
-            // This should not throw an error since the specified signer exists in the wallet
-            await expect(walletFactory.getOrCreateWallet(argsWithFewerSigners)).resolves.toBeDefined();
+            await walletFactory.getOrCreateWallet(args);
+
+            expect(mockApiClient.createWallet).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    config: expect.objectContaining({
+                        adminSigner: expect.objectContaining({
+                            type: "external-wallet",
+                            address: "AdminSignerAddress123",
+                        }),
+                        delegatedSigners: [{ signer: "external-wallet:DelegatedSignerAddress456" }],
+                    }),
+                })
+            );
         });
 
-        it("should throw error when a delegated signer is not found in existing wallet", async () => {
-            // Mock getWallet to return wallet with delegated signers
-            mockApiClient.getWallet.mockResolvedValue(mockWalletWithDelegatedSigners);
+        it("should validate existing wallet against onCreateConfig admin signer", async () => {
+            mockApiClient.getWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
 
-            const argsWithNonMatchingSigner: WalletArgsFor<"solana"> = {
+            const args: WalletCreateArgs<"solana"> = {
                 chain: "solana",
                 signer: {
                     type: "external-wallet",
-                    address: "AdminSignerAddress123",
+                    address: "DelegatedSignerAddress456",
                 },
-                delegatedSigners: [
-                    { signer: "external-wallet:EbXL4e6XgbcC7s33cD5EZtyn5nixRDsieBjPQB7zf448" }, // This exists
-                    { signer: "external-wallet:NonExistentSignerAddress123" }, // This doesn't exist
-                ],
+                onCreateConfig: {
+                    adminSigner: {
+                        type: "external-wallet",
+                        address: "AdminSignerAddress123",
+                    },
+                    delegatedSigners: [{ type: "external-wallet", address: "DelegatedSignerAddress456" }],
+                },
             };
 
-            await expect(walletFactory.getOrCreateWallet(argsWithNonMatchingSigner)).rejects.toThrow(
-                new WalletCreationError(
-                    `Delegated signer 'external-wallet:NonExistentSignerAddress123' does not exist in wallet "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM". Available delegated signers: external-wallet:EbXL4e6XgbcC7s33cD5EZtyn5nixRDsieBjPQB7zf448, external-wallet:9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM. When 'delegatedSigners' is provided to a method that may fetch an existing wallet, each specified delegated signer must exist in that wallet's configuration.`
-                )
-            );
+            await expect(walletFactory.getOrCreateWallet(args)).resolves.toBeDefined();
         });
-    });
 
-    describe("Edge Cases", () => {
-        it("should handle empty delegated signers array in both args and wallet", async () => {
-            // Mock wallet with empty delegated signers array
-            const walletWithEmptyDelegatedSigners = {
-                chainType: "solana" as const,
-                type: "smart" as const,
-                address: mockWalletWithDelegatedSigners.address,
-                owner: mockWalletWithDelegatedSigners.owner,
-                config: {
-                    adminSigner: (mockWalletWithDelegatedSigners.config as any)?.adminSigner,
-                    delegatedSigners: [],
-                },
-                createdAt: mockWalletWithDelegatedSigners.createdAt,
-            } as GetWalletSuccessResponse;
+        it("should throw error when onCreateConfig admin signer does not match existing wallet", async () => {
+            mockApiClient.getWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
 
-            mockApiClient.getWallet.mockResolvedValue(walletWithEmptyDelegatedSigners);
-
-            const argsWithEmptyDelegatedSigners: WalletArgsFor<"solana"> = {
+            const args: WalletCreateArgs<"solana"> = {
                 chain: "solana",
                 signer: {
                     type: "external-wallet",
-                    address: "AdminSignerAddress123",
+                    address: "DelegatedSignerAddress456",
                 },
-                delegatedSigners: [], // Empty array
+                onCreateConfig: {
+                    adminSigner: {
+                        type: "external-wallet",
+                        address: "WrongAdminAddress",
+                    },
+                },
             };
 
-            // This should not throw an error (both are empty)
-            await expect(walletFactory.getOrCreateWallet(argsWithEmptyDelegatedSigners)).resolves.toBeDefined();
+            await expect(walletFactory.getOrCreateWallet(args)).rejects.toThrow(WalletCreationError);
         });
 
-        it("should allow empty array when wallet has signers (no validation needed)", async () => {
-            // Mock getWallet to return wallet with delegated signers
-            mockApiClient.getWallet.mockResolvedValue(mockWalletWithDelegatedSigners);
+        it("should validate that signer can use the wallet when onCreateConfig is provided", async () => {
+            mockApiClient.getWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
 
-            const argsWithEmptyDelegatedSigners: WalletArgsFor<"solana"> = {
+            const argsWithValidDelegatedSigner: WalletCreateArgs<"solana"> = {
                 chain: "solana",
                 signer: {
                     type: "external-wallet",
-                    address: "AdminSignerAddress123",
+                    address: "DelegatedSignerAddress456",
                 },
-                delegatedSigners: [], // Empty array
+                onCreateConfig: {
+                    adminSigner: {
+                        type: "external-wallet",
+                        address: "AdminSignerAddress123",
+                    },
+                    delegatedSigners: [{ type: "external-wallet", address: "DelegatedSignerAddress456" }],
+                },
             };
 
-            // This should not throw an error since no delegated signers were specified
-            await expect(walletFactory.getOrCreateWallet(argsWithEmptyDelegatedSigners)).resolves.toBeDefined();
+            await expect(walletFactory.getOrCreateWallet(argsWithValidDelegatedSigner)).resolves.toBeDefined();
         });
 
-        it("should maintain order independence when comparing delegated signers", async () => {
-            // Mock getWallet to return wallet with delegated signers
-            mockApiClient.getWallet.mockResolvedValue(mockWalletWithDelegatedSigners);
+        it("should throw error when signer cannot use wallet with onCreateConfig", async () => {
+            mockApiClient.getWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
 
-            // Provide delegated signers in different order
-            const argsWithDifferentOrder: WalletArgsFor<"solana"> = {
+            const argsWithInvalidSigner: WalletCreateArgs<"solana"> = {
                 chain: "solana",
                 signer: {
                     type: "external-wallet",
-                    address: "AdminSignerAddress123",
+                    address: "UnauthorizedSignerAddress",
                 },
-                delegatedSigners: [
-                    // Reversed order from wallet response
-                    { signer: "external-wallet:9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM" },
-                    { signer: "external-wallet:EbXL4e6XgbcC7s33cD5EZtyn5nixRDsieBjPQB7zf448" },
-                ],
+                onCreateConfig: {
+                    adminSigner: {
+                        type: "external-wallet",
+                        address: "AdminSignerAddress123",
+                    },
+                    delegatedSigners: [{ type: "external-wallet", address: "DelegatedSignerAddress456" }],
+                },
             };
 
-            // This should not throw an error (order shouldn't matter, only presence)
-            await expect(walletFactory.getOrCreateWallet(argsWithDifferentOrder)).resolves.toBeDefined();
-        });
-    });
-});
-
-describe("WalletFactory - EVM Delegated Signers Validation", () => {
-    let walletFactory: WalletFactory;
-    let mockApiClient: MockedApiClient;
-
-    // Mock EVM wallet response with delegated signers
-    const mockEvmWalletWithDelegatedSigners = {
-        chainType: "evm" as const,
-        type: "smart" as const,
-        address: "0x1234567890123456789012345678901234567890",
-        owner: "test-owner",
-        config: {
-            adminSigner: {
-                type: "external-wallet" as const,
-                address: "0xAdminSignerAddress123456789012345678901234",
-                locator: "external-wallet:0xAdminSignerAddress123456789012345678901234",
-            },
-            delegatedSigners: [
-                {
-                    type: "external-wallet" as const,
-                    address: "0xEbXL4e6XgbcC7s33cD5EZtyn5nixRDsieBjPQB7z",
-                    locator: "external-wallet:0xEbXL4e6XgbcC7s33cD5EZtyn5nixRDsieBjPQB7z",
-                },
-                {
-                    type: "external-wallet" as const,
-                    address: "0x9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYt",
-                    locator: "external-wallet:0x9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYt",
-                },
-            ],
-        },
-        createdAt: Date.now(),
-    } as GetWalletSuccessResponse;
-
-    // Mock EVM wallet response without delegated signers
-    const mockEvmWalletWithoutDelegatedSigners = {
-        chainType: "evm" as const,
-        type: "smart" as const,
-        address: "0x1234567890123456789012345678901234567890",
-        owner: "test-owner",
-        config: {
-            adminSigner: {
-                type: "external-wallet" as const,
-                address: "0xAdminSignerAddress123456789012345678901234",
-                locator: "external-wallet:0xAdminSignerAddress123456789012345678901234",
-            },
-        },
-        createdAt: Date.now(),
-    } as GetWalletSuccessResponse;
-
-    const mockValidEvmArgs: WalletArgsFor<"base-sepolia"> = {
-        chain: "base-sepolia",
-        signer: {
-            type: "external-wallet",
-            address: "0xAdminSignerAddress123456789012345678901234",
-        },
-        delegatedSigners: [
-            { signer: "external-wallet:0xEbXL4e6XgbcC7s33cD5EZtyn5nixRDsieBjPQB7z" },
-            { signer: "external-wallet:0x9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYt" },
-        ],
-    };
-
-    beforeEach(() => {
-        vi.resetAllMocks();
-
-        mockApiClient = {
-            isServerSide: false,
-            crossmint: { projectId: "test-project" },
-            getWallet: vi.fn(),
-            createWallet: vi.fn(),
-        };
-
-        walletFactory = new WalletFactory(mockApiClient as unknown as ApiClient);
-    });
-
-    afterEach(() => {
-        vi.restoreAllMocks();
-    });
-
-    describe("Happy Path", () => {
-        it("should successfully validate matching delegated signers", async () => {
-            mockApiClient.getWallet.mockResolvedValue(mockEvmWalletWithDelegatedSigners);
-
-            await expect(walletFactory.getOrCreateWallet(mockValidEvmArgs)).resolves.toBeDefined();
-
-            expect(mockApiClient.getWallet).toHaveBeenCalledWith("me:evm:smart");
-        });
-    });
-
-    describe("Error Cases", () => {
-        it("should throw error when delegated signers are provided but wallet has none", async () => {
-            mockApiClient.getWallet.mockResolvedValue(mockEvmWalletWithoutDelegatedSigners);
-
-            await expect(walletFactory.getOrCreateWallet(mockValidEvmArgs)).rejects.toThrow(
+            await expect(walletFactory.getOrCreateWallet(argsWithInvalidSigner)).rejects.toThrow(
                 new WalletCreationError(
-                    `2 delegated signer(s) specified, but wallet "0x1234567890123456789012345678901234567890" has no delegated signers. When 'delegatedSigners' is provided to a method that may fetch an existing wallet, each specified delegated signer must exist in that wallet's configuration.`
-                )
-            );
-        });
-
-        it("should allow subset of delegated signers (wallet can have more than specified)", async () => {
-            mockApiClient.getWallet.mockResolvedValue(mockEvmWalletWithDelegatedSigners);
-
-            const argsWithFewerSigners: WalletArgsFor<"base-sepolia"> = {
-                chain: "base-sepolia",
-                signer: {
-                    type: "external-wallet",
-                    address: "0xAdminSignerAddress123456789012345678901234",
-                },
-                delegatedSigners: [{ signer: "external-wallet:0xEbXL4e6XgbcC7s33cD5EZtyn5nixRDsieBjPQB7z" }],
-            };
-
-            await expect(walletFactory.getOrCreateWallet(argsWithFewerSigners)).resolves.toBeDefined();
-        });
-
-        it("should throw error when a delegated signer is not found in existing wallet", async () => {
-            mockApiClient.getWallet.mockResolvedValue(mockEvmWalletWithDelegatedSigners);
-
-            const argsWithNonMatchingSigner: WalletArgsFor<"base-sepolia"> = {
-                chain: "base-sepolia",
-                signer: {
-                    type: "external-wallet",
-                    address: "0xAdminSignerAddress123456789012345678901234",
-                },
-                delegatedSigners: [
-                    { signer: "external-wallet:0xEbXL4e6XgbcC7s33cD5EZtyn5nixRDsieBjPQB7z" },
-                    { signer: "external-wallet:0xNonExistentSignerAddress123456789012345678" },
-                ],
-            };
-
-            await expect(walletFactory.getOrCreateWallet(argsWithNonMatchingSigner)).rejects.toThrow(
-                new WalletCreationError(
-                    `Delegated signer 'external-wallet:0xNonExistentSignerAddress123456789012345678' does not exist in wallet "0x1234567890123456789012345678901234567890". Available delegated signers: external-wallet:0xEbXL4e6XgbcC7s33cD5EZtyn5nixRDsieBjPQB7z, external-wallet:0x9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYt. When 'delegatedSigners' is provided to a method that may fetch an existing wallet, each specified delegated signer must exist in that wallet's configuration.`
+                    `Signer cannot use wallet "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM". The provided signer is neither the admin nor a delegated signer.`
                 )
             );
         });
     });
 
-    describe("Edge Cases", () => {
-        it("should handle empty delegated signers array in both args and wallet", async () => {
-            const walletWithEmptyDelegatedSigners = {
-                chainType: "evm" as const,
-                type: "smart" as const,
-                address: mockEvmWalletWithDelegatedSigners.address,
-                owner: mockEvmWalletWithDelegatedSigners.owner,
-                config: {
-                    adminSigner: (mockEvmWalletWithDelegatedSigners.config as any)?.adminSigner,
-                    delegatedSigners: [],
-                },
-                createdAt: mockEvmWalletWithDelegatedSigners.createdAt,
-            } as GetWalletSuccessResponse;
+    describe("getWallet - Unified client and server side usage", () => {
+        describe("Client-side usage", () => {
+            beforeEach(() => {
+                mockApiClient.isServerSide = false;
+            });
 
-            mockApiClient.getWallet.mockResolvedValue(walletWithEmptyDelegatedSigners);
+            it("should fetch wallet with single parameter (args only)", async () => {
+                mockApiClient.getWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
 
-            const argsWithEmptyDelegatedSigners: WalletArgsFor<"base-sepolia"> = {
-                chain: "base-sepolia",
-                signer: {
-                    type: "external-wallet",
-                    address: "0xAdminSignerAddress123456789012345678901234",
-                },
-                delegatedSigners: [],
-            };
+                const args: WalletArgsFor<"solana"> = {
+                    chain: "solana",
+                    signer: {
+                        type: "external-wallet",
+                        address: "AdminSignerAddress123",
+                    },
+                };
 
-            await expect(walletFactory.getOrCreateWallet(argsWithEmptyDelegatedSigners)).resolves.toBeDefined();
+                const wallet = await walletFactory.getWallet(args);
+
+                expect(mockApiClient.getWallet).toHaveBeenCalledWith("me:solana:smart");
+                expect(wallet).toBeDefined();
+                expect(wallet.address).toBe("9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM");
+            });
+
+            it("should construct correct locator for EVM chains", async () => {
+                const evmWallet = {
+                    chainType: "evm" as const,
+                    type: "smart" as const,
+                    address: "0x123",
+                    owner: "test-owner",
+                    config: {
+                        adminSigner: {
+                            type: "external-wallet" as const,
+                            address: "AdminSignerAddress123",
+                            locator: "external-wallet:AdminSignerAddress123",
+                        },
+                    },
+                    createdAt: Date.now(),
+                } as GetWalletSuccessResponse;
+                mockApiClient.getWallet.mockResolvedValue(evmWallet);
+
+                const args: WalletArgsFor<"base"> = {
+                    chain: "base",
+                    signer: {
+                        type: "external-wallet",
+                        address: "AdminSignerAddress123",
+                    },
+                };
+
+                await walletFactory.getWallet(args);
+
+                expect(mockApiClient.getWallet).toHaveBeenCalledWith("me:evm:smart");
+            });
+
+            it("should construct correct locator for Stellar chains", async () => {
+                const stellarWallet = {
+                    chainType: "stellar" as const,
+                    type: "smart" as const,
+                    address: "GTEST123",
+                    owner: "test-owner",
+                    config: {
+                        adminSigner: {
+                            type: "external-wallet" as const,
+                            address: "AdminSignerAddress123",
+                            locator: "external-wallet:AdminSignerAddress123",
+                        },
+                    },
+                    createdAt: Date.now(),
+                } as GetWalletSuccessResponse;
+                mockApiClient.getWallet.mockResolvedValue(stellarWallet);
+
+                const args: WalletArgsFor<"stellar"> = {
+                    chain: "stellar",
+                    signer: {
+                        type: "external-wallet",
+                        address: "AdminSignerAddress123",
+                    },
+                };
+
+                await walletFactory.getWallet(args);
+
+                expect(mockApiClient.getWallet).toHaveBeenCalledWith("me:stellar:smart");
+            });
+
+            it("should throw error when trying to use walletLocator parameter on client side", async () => {
+                const args: WalletArgsFor<"solana"> = {
+                    chain: "solana",
+                    signer: {
+                        type: "external-wallet",
+                        address: "AdminSignerAddress123",
+                    },
+                };
+
+                await expect(walletFactory.getWallet("email:user@example.com:solana:smart", args)).rejects.toThrow(
+                    new WalletCreationError(
+                        "getWallet with walletLocator is not supported on client side, use getOrCreateWallet instead"
+                    )
+                );
+            });
+
+            it("should throw error when wallet not found", async () => {
+                mockApiClient.getWallet.mockResolvedValue({ error: true, message: "not found" });
+
+                const args: WalletArgsFor<"solana"> = {
+                    chain: "solana",
+                    signer: {
+                        type: "external-wallet",
+                        address: "AdminSignerAddress123",
+                    },
+                };
+
+                await expect(walletFactory.getWallet(args)).rejects.toThrow();
+            });
         });
 
-        it("should allow empty array when wallet has signers (no validation needed)", async () => {
-            mockApiClient.getWallet.mockResolvedValue(mockEvmWalletWithDelegatedSigners);
+        describe("Server-side usage", () => {
+            beforeEach(() => {
+                mockApiClient.isServerSide = true;
+            });
 
-            const argsWithEmptyDelegatedSigners: WalletArgsFor<"base-sepolia"> = {
-                chain: "base-sepolia",
-                signer: {
-                    type: "external-wallet",
-                    address: "0xAdminSignerAddress123456789012345678901234",
-                },
-                delegatedSigners: [],
-            };
+            it("should fetch wallet with walletLocator parameter", async () => {
+                mockApiClient.getWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
 
-            await expect(walletFactory.getOrCreateWallet(argsWithEmptyDelegatedSigners)).resolves.toBeDefined();
-        });
+                const walletLocator = "email:user@example.com:solana:smart";
+                const args: WalletArgsFor<"solana"> = {
+                    chain: "solana",
+                    signer: {
+                        type: "external-wallet",
+                        address: "AdminSignerAddress123",
+                    },
+                };
 
-        it("should maintain order independence when comparing delegated signers", async () => {
-            mockApiClient.getWallet.mockResolvedValue(mockEvmWalletWithDelegatedSigners);
+                const wallet = await walletFactory.getWallet(walletLocator, args);
 
-            const argsWithDifferentOrder: WalletArgsFor<"base-sepolia"> = {
-                chain: "base-sepolia",
-                signer: {
-                    type: "external-wallet",
-                    address: "0xAdminSignerAddress123456789012345678901234",
-                },
-                delegatedSigners: [
-                    { signer: "external-wallet:0x9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYt" },
-                    { signer: "external-wallet:0xEbXL4e6XgbcC7s33cD5EZtyn5nixRDsieBjPQB7z" },
-                ],
-            };
+                expect(mockApiClient.getWallet).toHaveBeenCalledWith(walletLocator);
+                expect(wallet).toBeDefined();
+                expect(wallet.address).toBe("9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM");
+            });
 
-            await expect(walletFactory.getOrCreateWallet(argsWithDifferentOrder)).resolves.toBeDefined();
-        });
-    });
-});
+            it("should work with different walletLocator formats", async () => {
+                mockApiClient.getWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
 
-describe("WalletFactory - Stellar Delegated Signers Validation", () => {
-    let walletFactory: WalletFactory;
-    let mockApiClient: MockedApiClient;
+                const testCases = [
+                    "email:user@example.com:solana:smart",
+                    "phone:+1234567890:evm:smart",
+                    "external-wallet:0x123:evm:smart",
+                ];
 
-    // Mock Stellar wallet response with delegated signers
-    const mockStellarWalletWithDelegatedSigners = {
-        chainType: "stellar" as const,
-        type: "smart" as const,
-        address: "GCKFBEIYTKP6RCZX6LRQW2JVAVLMGGVSNESWKN7L2YGQNI2DCOHVHJVY",
-        owner: "test-owner",
-        config: {
-            adminSigner: {
-                type: "external-wallet" as const,
-                address: "GADMINSGNERADDRESS123456789012345678901234567890123456",
-                locator: "external-wallet:GADMINSGNERADDRESS123456789012345678901234567890123456",
-            },
-            delegatedSigners: [
-                {
-                    type: "external-wallet" as const,
-                    address: "GEBXL4E6XGBCC7S33CD5EZTYN5NIXRDSIEBJPQB7ZF448ABCDEFGH",
-                    locator: "external-wallet:GEBXL4E6XGBCC7S33CD5EZTYN5NIXRDSIEBJPQB7ZF448ABCDEFGH",
-                },
-                {
-                    type: "external-wallet" as const,
-                    address: "G9WZDXWBBMKG8ZTBNMQUXVQRAYRZZDSGYLDVL9ZYTAWWABCDEFGH",
-                    locator: "external-wallet:G9WZDXWBBMKG8ZTBNMQUXVQRAYRZZDSGYLDVL9ZYTAWWABCDEFGH",
-                },
-            ],
-        },
-        createdAt: Date.now(),
-    } as GetWalletSuccessResponse;
+                const args: WalletArgsFor<"solana"> = {
+                    chain: "solana",
+                    signer: {
+                        type: "external-wallet",
+                        address: "AdminSignerAddress123",
+                    },
+                };
 
-    // Mock Stellar wallet response without delegated signers
-    const mockStellarWalletWithoutDelegatedSigners = {
-        chainType: "stellar" as const,
-        type: "smart" as const,
-        address: "GCKFBEIYTKP6RCZX6LRQW2JVAVLMGGVSNESWKN7L2YGQNI2DCOHVHJVY",
-        owner: "test-owner",
-        config: {
-            adminSigner: {
-                type: "external-wallet" as const,
-                address: "GADMINSGNERADDRESS123456789012345678901234567890123456",
-                locator: "external-wallet:GADMINSGNERADDRESS123456789012345678901234567890123456",
-            },
-        },
-        createdAt: Date.now(),
-    } as GetWalletSuccessResponse;
+                for (const locator of testCases) {
+                    await walletFactory.getWallet(locator, args);
+                    expect(mockApiClient.getWallet).toHaveBeenCalledWith(locator);
+                }
+            });
 
-    const mockValidStellarArgs: WalletArgsFor<"stellar"> = {
-        chain: "stellar",
-        signer: {
-            type: "external-wallet",
-            address: "GADMINSGNERADDRESS123456789012345678901234567890123456",
-        },
-        delegatedSigners: [
-            { signer: "external-wallet:GEBXL4E6XGBCC7S33CD5EZTYN5NIXRDSIEBJPQB7ZF448ABCDEFGH" },
-            { signer: "external-wallet:G9WZDXWBBMKG8ZTBNMQUXVQRAYRZZDSGYLDVL9ZYTAWWABCDEFGH" },
-        ],
-    };
+            it("should throw error when walletLocator is not provided on server side", async () => {
+                const args: WalletArgsFor<"solana"> = {
+                    chain: "solana",
+                    signer: {
+                        type: "external-wallet",
+                        address: "AdminSignerAddress123",
+                    },
+                };
 
-    beforeEach(() => {
-        vi.resetAllMocks();
+                await expect(walletFactory.getWallet(args)).rejects.toThrow(
+                    new WalletCreationError(
+                        "getWallet on server side requires a walletLocator parameter. Use getWallet(walletLocator, args) instead."
+                    )
+                );
+            });
 
-        mockApiClient = {
-            isServerSide: false,
-            crossmint: { projectId: "test-project" },
-            getWallet: vi.fn(),
-            createWallet: vi.fn(),
-        };
+            it("should throw error when wallet not found", async () => {
+                mockApiClient.getWallet.mockResolvedValue({ error: true, message: "not found" });
 
-        walletFactory = new WalletFactory(mockApiClient as unknown as ApiClient);
-    });
+                const args: WalletArgsFor<"solana"> = {
+                    chain: "solana",
+                    signer: {
+                        type: "external-wallet",
+                        address: "AdminSignerAddress123",
+                    },
+                };
 
-    afterEach(() => {
-        vi.restoreAllMocks();
-    });
+                await expect(walletFactory.getWallet("email:user@example.com:solana:smart", args)).rejects.toThrow();
+            });
 
-    describe("Happy Path", () => {
-        it("should successfully validate matching delegated signers", async () => {
-            mockApiClient.getWallet.mockResolvedValue(mockStellarWalletWithDelegatedSigners);
+            it("should validate signer can use the wallet", async () => {
+                mockApiClient.getWallet.mockResolvedValue(mockWalletWithAdminAndDelegated);
 
-            await expect(walletFactory.getOrCreateWallet(mockValidStellarArgs)).resolves.toBeDefined();
+                const validArgs: WalletArgsFor<"solana"> = {
+                    chain: "solana",
+                    signer: {
+                        type: "external-wallet",
+                        address: "AdminSignerAddress123",
+                    },
+                };
 
-            expect(mockApiClient.getWallet).toHaveBeenCalledWith("me:stellar:smart");
-        });
-    });
+                await expect(
+                    walletFactory.getWallet("email:user@example.com:solana:smart", validArgs)
+                ).resolves.toBeDefined();
 
-    describe("Error Cases", () => {
-        it("should throw error when delegated signers are provided but wallet has none", async () => {
-            mockApiClient.getWallet.mockResolvedValue(mockStellarWalletWithoutDelegatedSigners);
+                const invalidArgs: WalletArgsFor<"solana"> = {
+                    chain: "solana",
+                    signer: {
+                        type: "external-wallet",
+                        address: "UnauthorizedAddress",
+                    },
+                };
 
-            await expect(walletFactory.getOrCreateWallet(mockValidStellarArgs)).rejects.toThrow(
-                new WalletCreationError(
-                    `2 delegated signer(s) specified, but wallet "GCKFBEIYTKP6RCZX6LRQW2JVAVLMGGVSNESWKN7L2YGQNI2DCOHVHJVY" has no delegated signers. When 'delegatedSigners' is provided to a method that may fetch an existing wallet, each specified delegated signer must exist in that wallet's configuration.`
-                )
-            );
-        });
-
-        it("should allow subset of delegated signers (wallet can have more than specified)", async () => {
-            mockApiClient.getWallet.mockResolvedValue(mockStellarWalletWithDelegatedSigners);
-
-            const argsWithFewerSigners: WalletArgsFor<"stellar"> = {
-                chain: "stellar",
-                signer: {
-                    type: "external-wallet",
-                    address: "GADMINSGNERADDRESS123456789012345678901234567890123456",
-                },
-                delegatedSigners: [{ signer: "external-wallet:GEBXL4E6XGBCC7S33CD5EZTYN5NIXRDSIEBJPQB7ZF448ABCDEFGH" }],
-            };
-
-            await expect(walletFactory.getOrCreateWallet(argsWithFewerSigners)).resolves.toBeDefined();
-        });
-
-        it("should throw error when a delegated signer is not found in existing wallet", async () => {
-            mockApiClient.getWallet.mockResolvedValue(mockStellarWalletWithDelegatedSigners);
-
-            const argsWithNonMatchingSigner: WalletArgsFor<"stellar"> = {
-                chain: "stellar",
-                signer: {
-                    type: "external-wallet",
-                    address: "GADMINSGNERADDRESS123456789012345678901234567890123456",
-                },
-                delegatedSigners: [
-                    { signer: "external-wallet:GEBXL4E6XGBCC7S33CD5EZTYN5NIXRDSIEBJPQB7ZF448ABCDEFGH" },
-                    { signer: "external-wallet:GNONEXISTENTSIGNERADDRESS123456789012345678901234567890" },
-                ],
-            };
-
-            await expect(walletFactory.getOrCreateWallet(argsWithNonMatchingSigner)).rejects.toThrow(
-                new WalletCreationError(
-                    `Delegated signer 'external-wallet:GNONEXISTENTSIGNERADDRESS123456789012345678901234567890' does not exist in wallet "GCKFBEIYTKP6RCZX6LRQW2JVAVLMGGVSNESWKN7L2YGQNI2DCOHVHJVY". Available delegated signers: external-wallet:GEBXL4E6XGBCC7S33CD5EZTYN5NIXRDSIEBJPQB7ZF448ABCDEFGH, external-wallet:G9WZDXWBBMKG8ZTBNMQUXVQRAYRZZDSGYLDVL9ZYTAWWABCDEFGH. When 'delegatedSigners' is provided to a method that may fetch an existing wallet, each specified delegated signer must exist in that wallet's configuration.`
-                )
-            );
-        });
-    });
-
-    describe("Edge Cases", () => {
-        it("should handle empty delegated signers array in both args and wallet", async () => {
-            const walletWithEmptyDelegatedSigners = {
-                chainType: "stellar" as const,
-                type: "smart" as const,
-                address: mockStellarWalletWithDelegatedSigners.address,
-                owner: mockStellarWalletWithDelegatedSigners.owner,
-                config: {
-                    adminSigner: (mockStellarWalletWithDelegatedSigners.config as any)?.adminSigner,
-                    delegatedSigners: [],
-                },
-                createdAt: mockStellarWalletWithDelegatedSigners.createdAt,
-            } as GetWalletSuccessResponse;
-
-            mockApiClient.getWallet.mockResolvedValue(walletWithEmptyDelegatedSigners);
-
-            const argsWithEmptyDelegatedSigners: WalletArgsFor<"stellar"> = {
-                chain: "stellar",
-                signer: {
-                    type: "external-wallet",
-                    address: "GADMINSGNERADDRESS123456789012345678901234567890123456",
-                },
-                delegatedSigners: [],
-            };
-
-            await expect(walletFactory.getOrCreateWallet(argsWithEmptyDelegatedSigners)).resolves.toBeDefined();
-        });
-
-        it("should allow empty array when wallet has signers (no validation needed)", async () => {
-            mockApiClient.getWallet.mockResolvedValue(mockStellarWalletWithDelegatedSigners);
-
-            const argsWithEmptyDelegatedSigners: WalletArgsFor<"stellar"> = {
-                chain: "stellar",
-                signer: {
-                    type: "external-wallet",
-                    address: "GADMINSGNERADDRESS123456789012345678901234567890123456",
-                },
-                delegatedSigners: [],
-            };
-
-            await expect(walletFactory.getOrCreateWallet(argsWithEmptyDelegatedSigners)).resolves.toBeDefined();
-        });
-
-        it("should maintain order independence when comparing delegated signers", async () => {
-            mockApiClient.getWallet.mockResolvedValue(mockStellarWalletWithDelegatedSigners);
-
-            const argsWithDifferentOrder: WalletArgsFor<"stellar"> = {
-                chain: "stellar",
-                signer: {
-                    type: "external-wallet",
-                    address: "GADMINSGNERADDRESS123456789012345678901234567890123456",
-                },
-                delegatedSigners: [
-                    { signer: "external-wallet:G9WZDXWBBMKG8ZTBNMQUXVQRAYRZZDSGYLDVL9ZYTAWWABCDEFGH" },
-                    { signer: "external-wallet:GEBXL4E6XGBCC7S33CD5EZTYN5NIXRDSIEBJPQB7ZF448ABCDEFGH" },
-                ],
-            };
-
-            await expect(walletFactory.getOrCreateWallet(argsWithDifferentOrder)).resolves.toBeDefined();
+                await expect(
+                    walletFactory.getWallet("email:user@example.com:solana:smart", invalidArgs)
+                ).rejects.toThrow(WalletCreationError);
+            });
         });
     });
 });
