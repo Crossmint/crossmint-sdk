@@ -1,4 +1,3 @@
-import { WebAuthnP256 } from "ox";
 import { encode as encodeBase58 } from "bs58";
 import type { Chain } from "../chains/chains";
 import type { RegisterSignerParams } from "../api/types";
@@ -10,7 +9,6 @@ export type ShadowSignerData = {
     walletAddress: string;
     publicKey: string;
     createdAt: number;
-    name: string;
 };
 
 export type ShadowSignerResult = {
@@ -42,25 +40,8 @@ export async function generateShadowSigner(chain: Chain): Promise<ShadowSignerRe
             publicKey: publicKeyBase58,
         };
     }
-
-    const passkeyName = `Shadow Signer ${Date.now()}`;
-    const credential = await WebAuthnP256.createCredential({ name: passkeyName });
-
-    return {
-        delegatedSigner: {
-            signer: {
-                type: "passkey",
-                id: credential.id,
-                name: passkeyName,
-                publicKey: {
-                    x: credential.publicKey.x.toString(),
-                    y: credential.publicKey.y.toString(),
-                },
-            },
-            chain: chain as any,
-        },
-        publicKey: credential.id,
-    };
+    // TODO: Add support for EVM chains
+    throw new Error("Unsupported chain");
 }
 
 /**
@@ -74,7 +55,6 @@ export function storeShadowSigner(walletAddress: string, chain: Chain, publicKey
         chain,
         walletAddress,
         publicKey,
-        name,
         createdAt: Date.now(),
     };
 
