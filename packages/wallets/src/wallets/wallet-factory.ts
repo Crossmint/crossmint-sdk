@@ -21,6 +21,11 @@ import { DelegatedSignerV2025Dto } from "@/api/gen/types.gen";
 const DELEGATED_SIGNER_MISMATCH_ERROR =
     "When 'delegatedSigners' is provided to a method that may fetch an existing wallet, each specified delegated signer must exist in that wallet's configuration.";
 
+type SmartWalletConfig = {
+    adminSigner: AdminSignerConfig;
+    delegatedSigners?: DelegatedSignerResponse[];
+};
+
 export class WalletFactory {
     constructor(private readonly apiClient: ApiClient) {}
 
@@ -58,7 +63,9 @@ export class WalletFactory {
                 );
             }
             if (maybeArgs == null) {
-                throw new WalletCreationError("Args parameter is required when walletLocator is provided");
+                throw new WalletCreationError(
+                    "Wallet configuration (chain, signer, etc.) is required when using walletLocator"
+                );
             }
             walletLocator = argsOrLocator;
             args = maybeArgs;
@@ -225,8 +232,9 @@ export class WalletFactory {
         wallet: GetWalletSuccessResponse,
         signerType: T
     ): Extract<AdminSignerConfig | DelegatedSignerResponse, { type: T }> {
-        const adminSigner = (wallet.config as any)?.adminSigner as AdminSignerConfig;
-        const delegatedSigners = ((wallet.config as any)?.delegatedSigners as DelegatedSignerResponse[]) || [];
+        const config = wallet.config as SmartWalletConfig;
+        const adminSigner = config?.adminSigner;
+        const delegatedSigners = config?.delegatedSigners || [];
         if (adminSigner?.type === signerType) {
             return adminSigner as Extract<AdminSignerConfig, { type: T }>;
         }
@@ -302,7 +310,8 @@ export class WalletFactory {
 
         if ("onCreateConfig" in args) {
             let expectedAdminSigner = args.onCreateConfig?.adminSigner ?? args.signer;
-            const existingWalletSigner = (existingWallet.config as any)?.adminSigner as AdminSignerConfig;
+            const config = existingWallet.config as SmartWalletConfig;
+            const existingWalletSigner = config?.adminSigner;
 
             const tempArgs = { ...args, signer: expectedAdminSigner };
             this.mutateSignerFromCustomAuth(tempArgs);
@@ -329,8 +338,9 @@ export class WalletFactory {
         wallet: GetWalletSuccessResponse,
         signer: SignerConfigForChain<C>
     ): void {
-        const adminSigner = (wallet.config as any)?.adminSigner as AdminSignerConfig;
-        const delegatedSigners = ((wallet.config as any)?.delegatedSigners as DelegatedSignerResponse[]) || [];
+        const config = wallet.config as SmartWalletConfig;
+        const adminSigner = config?.adminSigner;
+        const delegatedSigners = config?.delegatedSigners || [];
 
         if (adminSigner != null && signer.type === adminSigner.type) {
             try {
@@ -376,9 +386,8 @@ export class WalletFactory {
         existingWallet: GetWalletSuccessResponse,
         inputDelegatedSigners: Array<SignerConfigForChain<C>>
     ): void {
-        const existingDelegatedSigners = (existingWallet?.config as any)?.delegatedSigners as
-            | DelegatedSignerResponse[]
-            | undefined;
+        const config = existingWallet.config as SmartWalletConfig;
+        const existingDelegatedSigners = config?.delegatedSigners;
 
         // If no delegated signers specified in input, no validation needed
         if (inputDelegatedSigners.length === 0) {
