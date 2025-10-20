@@ -64,6 +64,7 @@ export type PasskeySignerConfig = {
     type: "passkey";
     name?: string;
     id?: string;
+    locator?: string;
     onCreatePasskey?: (name: string) => Promise<{ id: string; publicKey: { x: string; y: string } }>;
     onSignWithPasskey?: (message: string) => Promise<PasskeySignResult>;
 };
