@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 0.16.1
+
+### Patch Changes
+
+- a2c15a8: Fixed OTP verification error propagation
+
 ## 0.16.0
 
 ### Minor Changes
