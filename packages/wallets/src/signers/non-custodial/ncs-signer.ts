@@ -180,7 +180,7 @@ export abstract class NonCustodialSigner implements Signer {
         return { promise, resolve: resolvePromise, reject: rejectPromise };
     }
 
-    private async sendMessageWithOtp(): Promise<void> {
+    private async sendMessageWithOtp() {
         const handshakeParent = await this.getTEEConnection();
         const authId = this.getAuthId();
         const response = await handshakeParent.sendAction({
@@ -219,7 +219,7 @@ export abstract class NonCustodialSigner implements Signer {
         return `phone:${this.config.phone}`;
     }
 
-    private async verifyOtp(encryptedOtp: string): Promise<void> {
+    private async verifyOtp(encryptedOtp: string) {
         let response: SignerOutputEvent<"complete-onboarding">;
         try {
             const handshakeParent = await this.getTEEConnection();
@@ -243,9 +243,8 @@ export abstract class NonCustodialSigner implements Signer {
         } catch (err) {
             console.error("[verifyOtp] Error sending OTP validation request:", err);
             this._needsAuth = true;
-            const error = err as Error;
-            this._authPromise?.reject(error);
-            throw error;
+            this._authPromise?.reject(err as Error);
+            throw err;
         }
 
         if (response?.status === "success") {
