@@ -123,7 +123,7 @@ export function CrossmintWalletBaseProvider({
     );
 
     const getOrCreateWallet = useCallback(
-        async <C extends Chain>(_args: WalletArgsFor<C>) => {
+        async <C extends Chain>(_args: WalletCreateArgs<C>) => {
             // Deep clone the args object to avoid mutating the original object
             const args = cloneDeep(_args);
             if (experimental_customAuth?.jwt == null || walletStatus === "in-progress") {

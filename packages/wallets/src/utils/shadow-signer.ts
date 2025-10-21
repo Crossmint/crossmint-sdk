@@ -4,6 +4,8 @@ import type { Chain } from "../chains/chains";
 import type { RegisterSignerParams } from "../api/types";
 
 const SHADOW_SIGNER_STORAGE_KEY = "crossmint_shadow_signer";
+const SHADOW_SIGNER_DB_NAME = "crossmint_shadow_keys";
+const SHADOW_SIGNER_DB_STORE = "keys";
 
 export type ShadowSignerData = {
     chain: Chain;
@@ -15,12 +17,23 @@ export type ShadowSignerData = {
 export type ShadowSignerResult = {
     delegatedSigner: RegisterSignerParams;
     publicKey: string;
+    privateKey: CryptoKey;
 };
 
-/**
- * Generate a shadow signer for the given chain.
- * For Solana/Stellar: Creates an ed25519 keypair and returns external-wallet signer
- */
+async function openDB(): Promise<IDBDatabase> {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(SHADOW_SIGNER_DB_NAME, 1);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve(request.result);
+        request.onupgradeneeded = (event) => {
+            const db = (event.target as IDBOpenDBRequest).result;
+            if (!db.objectStoreNames.contains(SHADOW_SIGNER_DB_STORE)) {
+                db.createObjectStore(SHADOW_SIGNER_DB_STORE);
+            }
+        };
+    });
+}
+
 export async function generateShadowSigner(chain: Chain): Promise<ShadowSignerResult> {
     if (chain === "solana" || chain === "stellar") {
         const keyPair = (await window.crypto.subtle.generateKey(
@@ -47,19 +60,33 @@ export async function generateShadowSigner(chain: Chain): Promise<ShadowSignerRe
         return {
             delegatedSigner: { signer: `external-wallet:${encodedPublicKey}` },
             publicKey: encodedPublicKey,
+            privateKey: keyPair.privateKey,
         };
     }
     // TODO: Add support for EVM chains
     throw new Error("Unsupported chain");
 }
 
-/**
- * Store shadow signer metadata in localStorage
- */
-export function storeShadowSigner(walletAddress: string, chain: Chain, publicKey: string): void {
-    if (typeof localStorage === "undefined") {
+export async function storeShadowSigner(
+    walletAddress: string,
+    chain: Chain,
+    publicKey: string,
+    privateKey: CryptoKey
+): Promise<void> {
+    if (typeof localStorage === "undefined" || typeof indexedDB === "undefined") {
         return;
     }
+
+    const db = await openDB();
+    const tx = db.transaction([SHADOW_SIGNER_DB_STORE], "readwrite");
+    const store = tx.objectStore(SHADOW_SIGNER_DB_STORE);
+    store.put(privateKey, walletAddress);
+
+    await new Promise<void>((resolve, reject) => {
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+    });
+
     const data: ShadowSignerData = {
         chain,
         walletAddress,
@@ -70,9 +97,6 @@ export function storeShadowSigner(walletAddress: string, chain: Chain, publicKey
     localStorage.setItem(`${SHADOW_SIGNER_STORAGE_KEY}_${walletAddress}`, JSON.stringify(data));
 }
 
-/**
- * Retrieve shadow signer metadata from localStorage
- */
 export function getShadowSigner(walletAddress: string): ShadowSignerData | null {
     if (typeof localStorage === "undefined") {
         return null;
@@ -81,19 +105,27 @@ export function getShadowSigner(walletAddress: string): ShadowSignerData | null 
     return stored ? JSON.parse(stored) : null;
 }
 
-/**
- * Check if a shadow signer exists for the given wallet
- */
-export function hasShadowSigner(walletAddress: string): boolean {
-    return getShadowSigner(walletAddress) !== null;
+export async function getShadowSignerPrivateKey(walletAddress: string): Promise<CryptoKey | null> {
+    if (typeof indexedDB === "undefined") {
+        return null;
+    }
+
+    try {
+        const db = await openDB();
+        const tx = db.transaction([SHADOW_SIGNER_DB_STORE], "readonly");
+        const store = tx.objectStore(SHADOW_SIGNER_DB_STORE);
+        const request = store.get(walletAddress);
+
+        return new Promise((resolve, reject) => {
+            request.onsuccess = () => resolve(request.result || null);
+            request.onerror = () => reject(request.error);
+        });
+    } catch (error) {
+        console.warn("Failed to retrieve shadow signer private key:", error);
+        return null;
+    }
 }
 
-/**
- * Remove shadow signer metadata from localStorage
- */
-export function removeShadowSigner(walletAddress: string): void {
-    if (typeof localStorage === "undefined") {
-        return;
-    }
-    localStorage.removeItem(`${SHADOW_SIGNER_STORAGE_KEY}_${walletAddress}`);
+export function hasShadowSigner(walletAddress: string): boolean {
+    return getShadowSigner(walletAddress) !== null;
 }
