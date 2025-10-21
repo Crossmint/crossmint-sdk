@@ -6,7 +6,7 @@ export type LocalEventEmitterEvents = {
         order?: Order;
         orderClientSecret?: string;
     };
-    "order:creation-error": {
+    "order:creation-failed": {
         errorMessage: string;
     };
 };

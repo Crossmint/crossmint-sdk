@@ -15,7 +15,7 @@ export const embeddedCheckoutV3IncomingEvents = {
         order: z.any().optional(),
         orderClientSecret: z.string().optional(),
     }),
-    "order:creation-error": z.object({
+    "order:creation-failed": z.object({
         errorMessage: z.string(),
     }),
 };
