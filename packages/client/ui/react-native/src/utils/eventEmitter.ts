@@ -6,6 +6,9 @@ export type LocalEventEmitterEvents = {
         order?: Order;
         orderClientSecret?: string;
     };
+    "order:creation-error": {
+        errorMessage: string;
+    };
 };
 
 // Create a singleton instance for global use

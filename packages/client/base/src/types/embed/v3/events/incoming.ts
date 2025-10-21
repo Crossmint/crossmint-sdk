@@ -15,5 +15,8 @@ export const embeddedCheckoutV3IncomingEvents = {
         order: z.any().optional(),
         orderClientSecret: z.string().optional(),
     }),
+    "order:creation-error": z.object({
+        errorMessage: z.string(),
+    }),
 };
 export type EmbeddedCheckoutV3IncomingEventMap = typeof embeddedCheckoutV3IncomingEvents;
