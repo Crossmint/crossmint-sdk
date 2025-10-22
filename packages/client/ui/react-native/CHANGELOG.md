@@ -1,5 +1,19 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.11.12
+
+### Patch Changes
+
+- 84d2bfd: Adding order creation failed event
+- Updated dependencies [fb1cfdb]
+- Updated dependencies [84d2bfd]
+  - @crossmint/common-sdk-base@0.9.7
+  - @crossmint/wallets-sdk@0.16.2
+  - @crossmint/client-sdk-base@1.7.2
+  - @crossmint/client-sdk-auth@1.2.35
+  - @crossmint/client-sdk-react-base@0.6.9
+  - @crossmint/common-sdk-auth@1.0.57
+
 ## 0.11.11
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @crossmint/wallets-sdk
 
+## 0.16.2
+
+### Patch Changes
+
+- fb1cfdb: Adds Plume to supported chains
+- Updated dependencies [fb1cfdb]
+  - @crossmint/common-sdk-base@0.9.7
+
 ## 0.16.1
 
 ### Patch Changes
