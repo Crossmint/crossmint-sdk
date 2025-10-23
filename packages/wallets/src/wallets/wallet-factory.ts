@@ -491,15 +491,12 @@ export class WalletFactory {
         shadowSignerPublicKey: string | null;
         shadowSignerPrivateKey: CryptoKey | null;
     }> {
-        const {
-            delegatedSigners,
-            shadowSignerPublicKey,
-            shadowSignerPrivateKey,
-        } = await this.addShadowSignerToDelegatedSignersIfNeeded(
-            args,
-            adminSigner,
-            args.onCreateConfig?.delegatedSigners
-        );
+        const { delegatedSigners, shadowSignerPublicKey, shadowSignerPrivateKey } =
+            await this.addShadowSignerToDelegatedSignersIfNeeded(
+                args,
+                adminSigner,
+                args.onCreateConfig?.delegatedSigners
+            );
 
         const registeredDelegatedSigners = await this.registerDelegatedSigners(delegatedSigners);
 
