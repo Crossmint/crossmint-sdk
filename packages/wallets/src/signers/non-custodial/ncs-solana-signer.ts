@@ -6,19 +6,14 @@ import type {
     PhoneInternalSignerConfig,
 } from "../types";
 import { NonCustodialSigner, DEFAULT_EVENT_OPTIONS } from "./ncs-signer";
-import { getShadowSigner, getShadowSignerPrivateKey, type ShadowSignerData } from "@/utils/shadow-signer";
+import { getShadowSignerPrivateKey, type ShadowSignerData } from "@/utils/shadow-signer";
 import { SolanaExternalWalletSigner } from "../solana-external-wallet";
 import type { SolanaChain } from "@/chains/chains";
 
 export class SolanaNonCustodialSigner extends NonCustodialSigner {
-    private shadowSigner: SolanaExternalWalletSigner | null = null;
-
     constructor(config: EmailInternalSignerConfig | PhoneInternalSignerConfig, walletAddress: string) {
         super(config);
-        const shadowSigner = getShadowSigner(walletAddress);
-        if (shadowSigner != null) {
-            this.shadowSigner = new SolanaExternalWalletSigner(this.getShadowSignerConfig(shadowSigner, walletAddress));
-        }
+        this.initializeShadowSigner(walletAddress, SolanaExternalWalletSigner);
     }
 
     async signMessage() {
@@ -77,14 +72,14 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
         }
     }
 
-    private getShadowSignerConfig(
+    protected getShadowSignerConfig(
         shadowData: ShadowSignerData,
         walletAddress: string
     ): ExternalWalletInternalSignerConfig<SolanaChain> {
         return {
             type: "external-wallet",
             address: shadowData.publicKey,
-            locator: `external-wallet-${shadowData.publicKey}`,
+            locator: `external-wallet:${shadowData.publicKey}`,
             onSignTransaction: async (transaction) => {
                 const privateKey = await getShadowSignerPrivateKey(walletAddress);
                 if (!privateKey) {
