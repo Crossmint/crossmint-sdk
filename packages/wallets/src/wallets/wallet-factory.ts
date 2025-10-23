@@ -26,7 +26,7 @@ import { Wallet } from "./wallet";
 import { assembleSigner } from "../signers";
 import type { DelegatedSigner, WalletArgsFor, WalletCreateArgs, WalletOptions } from "./types";
 import { compareSignerConfigs } from "../utils/signer-validation";
-import { generateShadowSigner, storeShadowSigner } from "../utils/shadow-signer";
+import { generateShadowSigner, storeShadowSigner } from "@/signers/shadow-signer";
 
 const DELEGATED_SIGNER_MISMATCH_ERROR =
     "When 'delegatedSigners' is provided to a method that may fetch an existing wallet, each specified delegated signer must exist in that wallet's configuration.";
