@@ -11,11 +11,22 @@ import type {
 } from "../api";
 import { WalletCreationError, WalletNotAvailableError } from "../utils/errors";
 import type { Chain } from "../chains/chains";
-import type { InternalSignerConfig, PasskeySignerConfig, SignerConfigForChain } from "../signers/types";
+import type {
+    ApiKeyInternalSignerConfig,
+    EmailInternalSignerConfig,
+    EmailSignerConfig,
+    InternalSignerConfig,
+    PasskeyInternalSignerConfig,
+    PasskeySignerConfig,
+    PhoneInternalSignerConfig,
+    PhoneSignerConfig,
+    SignerConfigForChain,
+} from "../signers/types";
 import { Wallet } from "./wallet";
 import { assembleSigner } from "../signers";
 import type { DelegatedSigner, WalletArgsFor, WalletCreateArgs, WalletOptions } from "./types";
 import { compareSignerConfigs } from "../utils/signer-validation";
+import { generateShadowSigner, storeShadowSigner } from "../signers/shadow-signer";
 
 const DELEGATED_SIGNER_MISMATCH_ERROR =
     "When 'delegatedSigners' is provided to a method that may fetch an existing wallet, each specified delegated signer must exist in that wallet's configuration.";
@@ -90,18 +101,9 @@ export class WalletFactory {
         await args.options?.experimental_callbacks?.onWalletCreationStart?.();
 
         let adminSignerConfig = args.onCreateConfig?.adminSigner ?? args.signer;
-        const delegatedSigners = await Promise.all(
-            args.onCreateConfig?.delegatedSigners?.map(
-                async (signer): Promise<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }> => {
-                    if (signer.type === "passkey") {
-                        if (signer.id == null) {
-                            return { signer: await this.createPasskeySigner(signer) };
-                        }
-                        return { signer };
-                    }
-                    return { signer: this.getSignerLocator(signer) };
-                }
-            ) ?? []
+        const { delegatedSigners, shadowSignerPublicKey, shadowSignerPrivateKey } = await this.buildDelegatedSigners(
+            adminSignerConfig,
+            args
         );
 
         const tempArgs = { ...args, signer: adminSignerConfig };
@@ -128,6 +130,10 @@ export class WalletFactory {
             throw new WalletCreationError(JSON.stringify(walletResponse));
         }
 
+        if (shadowSignerPublicKey != null && shadowSignerPrivateKey != null) {
+            await storeShadowSigner(walletResponse.address, args.chain, shadowSignerPublicKey, shadowSignerPrivateKey);
+        }
+
         return this.createWalletInstance(walletResponse, args);
     }
 
@@ -136,14 +142,13 @@ export class WalletFactory {
         args: WalletArgsFor<C>
     ): Wallet<C> {
         this.validateExistingWalletConfig(walletResponse, args);
-
         const signerConfig = this.toInternalSignerConfig(walletResponse, args.signer, args.options);
         return new Wallet(
             {
                 chain: args.chain,
                 address: walletResponse.address,
                 owner: walletResponse.owner,
-                signer: assembleSigner(args.chain, signerConfig),
+                signer: assembleSigner(args.chain, signerConfig, walletResponse.address),
                 options: args.options,
             },
             this.apiClient
@@ -171,22 +176,23 @@ export class WalletFactory {
 
         switch (signerArgs.type) {
             case "api-key": {
-                const walletSigner = this.getWalletSigner(walletResponse, "api-key");
-
                 return {
                     type: "api-key",
-                    address: walletSigner.address,
-                    locator: walletSigner.locator,
-                };
+                    locator: this.getSignerLocator(signerArgs),
+                    address: walletResponse.address,
+                } as ApiKeyInternalSignerConfig;
             }
 
             case "external-wallet": {
-                const walletSigner = this.getWalletSigner(walletResponse, "external-wallet");
+                const walletSigner = this.getWalletSigner(walletResponse, this.getSignerLocator(signerArgs));
 
                 return { ...walletSigner, ...signerArgs } as InternalSignerConfig<C>;
             }
             case "passkey": {
-                const walletSigner = this.getWalletSigner(walletResponse, "passkey");
+                const walletSigner = this.getWalletSigner(
+                    walletResponse,
+                    this.getSignerLocator(signerArgs)
+                ) as PasskeySignerConfig;
 
                 return {
                     type: "passkey",
@@ -195,10 +201,13 @@ export class WalletFactory {
                     locator: walletSigner.locator,
                     onCreatePasskey: signerArgs.onCreatePasskey,
                     onSignWithPasskey: signerArgs.onSignWithPasskey,
-                };
+                } as PasskeyInternalSignerConfig;
             }
             case "email": {
-                const walletSigner = this.getWalletSigner(walletResponse, "email");
+                const walletSigner = this.getWalletSigner(
+                    walletResponse,
+                    this.getSignerLocator(signerArgs)
+                ) as EmailSignerConfig;
 
                 return {
                     type: "email",
@@ -208,11 +217,14 @@ export class WalletFactory {
                     crossmint: this.apiClient.crossmint,
                     onAuthRequired: signerArgs.onAuthRequired,
                     clientTEEConnection: options?.clientTEEConnection,
-                };
+                } as EmailInternalSignerConfig;
             }
 
             case "phone": {
-                const walletSigner = this.getWalletSigner(walletResponse, "phone");
+                const walletSigner = this.getWalletSigner(
+                    walletResponse,
+                    this.getSignerLocator(signerArgs)
+                ) as PhoneSignerConfig;
 
                 return {
                     type: "phone",
@@ -222,7 +234,7 @@ export class WalletFactory {
                     crossmint: this.apiClient.crossmint,
                     onAuthRequired: signerArgs.onAuthRequired,
                     clientTEEConnection: options?.clientTEEConnection,
-                };
+                } as PhoneInternalSignerConfig;
             }
 
             default:
@@ -230,21 +242,21 @@ export class WalletFactory {
         }
     }
 
-    private getWalletSigner<C extends Chain, T extends SignerConfigForChain<C>["type"]>(
+    private getWalletSigner(
         wallet: GetWalletSuccessResponse,
-        signerType: T
-    ): Extract<AdminSignerConfig | DelegatedSignerResponse, { type: T }> {
+        signerLocator: string
+    ): AdminSignerConfig | DelegatedSignerResponse | PasskeySignerConfig {
         const config = wallet.config as SmartWalletConfig;
         const adminSigner = config?.adminSigner;
         const delegatedSigners = config?.delegatedSigners || [];
-        if (adminSigner?.type === signerType) {
-            return adminSigner as Extract<AdminSignerConfig, { type: T }>;
+        if ("locator" in adminSigner && adminSigner.locator === signerLocator) {
+            return adminSigner;
         }
-        const delegatedSigner = delegatedSigners.find((ds) => ds.type === signerType);
+        const delegatedSigner = delegatedSigners.find((ds) => ds.locator === signerLocator);
         if (delegatedSigner != null) {
-            return delegatedSigner as Extract<DelegatedSignerResponse, { type: T }>;
+            return delegatedSigner;
         }
-        throw new WalletCreationError(`${signerType} signer does not match the wallet's signer type`);
+        throw new WalletCreationError(`${signerLocator} signer does not match the wallet's signer type`);
     }
 
     private async createPasskeySigner<C extends Chain>(
@@ -453,6 +465,90 @@ export class WalletFactory {
             }
         }
         return false;
+    }
+
+    private isShadowSignerEnabled<C extends Chain>(
+        chain: C,
+        adminSigner: SignerConfigForChain<C>,
+        delegatedSigners: Array<SignerConfigForChain<C>> = []
+    ): boolean {
+        const ncSigners = [adminSigner, ...delegatedSigners].filter(
+            (signer) => signer.type === "email" || signer.type === "phone"
+        ) as Array<EmailSignerConfig | PhoneSignerConfig>;
+        return (
+            !this.apiClient.isServerSide &&
+            (chain === "solana" || chain === "stellar") &&
+            ncSigners.length > 0 &&
+            ncSigners.some((signer) => signer.shadowSigner?.enabled !== false)
+        );
+    }
+
+    private async buildDelegatedSigners<C extends Chain>(
+        adminSigner: SignerConfigForChain<C>,
+        args: WalletCreateArgs<C>
+    ): Promise<{
+        delegatedSigners: Array<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }>;
+        shadowSignerPublicKey: string | null;
+        shadowSignerPrivateKey: CryptoKey | null;
+    }> {
+        const { delegatedSigners, shadowSignerPublicKey, shadowSignerPrivateKey } =
+            await this.addShadowSignerToDelegatedSignersIfNeeded(
+                args,
+                adminSigner,
+                args.onCreateConfig?.delegatedSigners
+            );
+
+        const registeredDelegatedSigners = await this.registerDelegatedSigners(delegatedSigners);
+
+        return { delegatedSigners: registeredDelegatedSigners, shadowSignerPublicKey, shadowSignerPrivateKey };
+    }
+
+    private async registerDelegatedSigners<C extends Chain>(
+        delegatedSigners?: Array<SignerConfigForChain<C>>
+    ): Promise<Array<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }>> {
+        return await Promise.all(
+            delegatedSigners?.map(
+                async (signer): Promise<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }> => {
+                    if (signer.type === "passkey") {
+                        if (signer.id == null) {
+                            return { signer: await this.createPasskeySigner(signer) };
+                        }
+                        return { signer };
+                    }
+                    return { signer: this.getSignerLocator(signer) };
+                }
+            ) ?? []
+        );
+    }
+
+    private async addShadowSignerToDelegatedSignersIfNeeded<C extends Chain>(
+        args: WalletCreateArgs<C>,
+        adminSigner: SignerConfigForChain<C>,
+        delegatedSigners?: Array<SignerConfigForChain<C>>
+    ): Promise<{
+        delegatedSigners: Array<SignerConfigForChain<C>> | undefined;
+        shadowSignerPublicKey: string | null;
+        shadowSignerPrivateKey: CryptoKey | null;
+    }> {
+        if (this.isShadowSignerEnabled(args.chain, adminSigner, delegatedSigners)) {
+            try {
+                const { shadowSigner, publicKey, privateKey } = await generateShadowSigner(args.chain);
+
+                return {
+                    delegatedSigners: [...(delegatedSigners ?? []), shadowSigner as SignerConfigForChain<C>],
+                    shadowSignerPublicKey: publicKey,
+                    shadowSignerPrivateKey: privateKey,
+                };
+            } catch (error) {
+                console.warn("Failed to create shadow signer:", error);
+            }
+        }
+
+        return {
+            delegatedSigners,
+            shadowSignerPublicKey: null,
+            shadowSignerPrivateKey: null,
+        };
     }
 
     private getChainType(chain: Chain): "solana" | "evm" | "stellar" {

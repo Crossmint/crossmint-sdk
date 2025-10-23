@@ -8,15 +8,19 @@ import type { Chain } from "../chains/chains";
 import type { InternalSignerConfig, Signer } from "./types";
 import { StellarExternalWalletSigner } from "./stellar-external-wallet";
 
-export function assembleSigner<C extends Chain>(chain: C, config: InternalSignerConfig<C>): Signer {
+export function assembleSigner<C extends Chain>(
+    chain: C,
+    config: InternalSignerConfig<C>,
+    walletAddress: string
+): Signer {
     switch (config.type) {
         case "email":
         case "phone":
             if (chain === "solana") {
-                return new SolanaNonCustodialSigner(config);
+                return new SolanaNonCustodialSigner(config, walletAddress);
             }
             if (chain === "stellar") {
-                return new StellarNonCustodialSigner(config);
+                return new StellarNonCustodialSigner(config, walletAddress);
             }
             return new EVMNonCustodialSigner(config);
         case "api-key":
