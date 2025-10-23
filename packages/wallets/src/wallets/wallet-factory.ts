@@ -22,18 +22,11 @@ import type {
     PhoneSignerConfig,
     SignerConfigForChain,
 } from "../signers/types";
-import type { SolanaExternalWalletSignerConfig, StellarExternalWalletSignerConfig } from "../signers/types";
 import { Wallet } from "./wallet";
 import { assembleSigner } from "../signers";
 import type { DelegatedSigner, WalletArgsFor, WalletCreateArgs, WalletOptions } from "./types";
 import { compareSignerConfigs } from "../utils/signer-validation";
-import {
-    generateShadowSigner,
-    storeShadowSigner,
-    getShadowSigner,
-    getShadowSignerPrivateKey,
-} from "../utils/shadow-signer";
-import { PublicKey } from "@solana/web3.js";
+import { generateShadowSigner, storeShadowSigner } from "../utils/shadow-signer";
 
 const DELEGATED_SIGNER_MISMATCH_ERROR =
     "When 'delegatedSigners' is provided to a method that may fetch an existing wallet, each specified delegated signer must exist in that wallet's configuration.";
@@ -56,12 +49,7 @@ export class WalletFactory {
         const existingWallet = await this.apiClient.getWallet(`me:${this.getChainType(args.chain)}:smart`);
 
         if (existingWallet != null && !("error" in existingWallet)) {
-            const shadowSignerEnabled = this.isShadowSignerEnabled(args.chain, args.options);
-            const walletInstanceArgs = shadowSignerEnabled
-                ? this.setShadowSignerAsSigner(existingWallet.address, args)
-                : args;
-
-            return this.createWalletInstance(existingWallet, walletInstanceArgs);
+            return this.createWalletInstance(existingWallet, args);
         }
 
         return this.createWallet(args);
@@ -168,11 +156,7 @@ export class WalletFactory {
             await storeShadowSigner(walletResponse.address, args.chain, shadowSignerPublicKey, shadowSignerPrivateKey);
         }
 
-        const walletInstanceArgs = shadowSignerEnabled
-            ? this.setShadowSignerAsSigner(walletResponse.address, args)
-            : args;
-
-        return this.createWalletInstance(walletResponse, walletInstanceArgs);
+        return this.createWalletInstance(walletResponse, args);
     }
 
     private createWalletInstance<C extends Chain>(
@@ -186,7 +170,7 @@ export class WalletFactory {
                 chain: args.chain,
                 address: walletResponse.address,
                 owner: walletResponse.owner,
-                signer: assembleSigner(args.chain, signerConfig),
+                signer: assembleSigner(args.chain, signerConfig, walletResponse.address),
                 options: args.options,
             },
             this.apiClient
@@ -541,77 +525,6 @@ export class WalletFactory {
             shadowSignerPublicKey: null,
             shadowSignerPrivateKey: null,
         };
-    }
-
-    private setShadowSignerAsSigner<C extends Chain>(
-        walletAddress: string,
-        args: WalletCreateArgs<C>
-    ): WalletCreateArgs<C> {
-        const shadowData = getShadowSigner(walletAddress);
-        if (shadowData != null) {
-            if (args.chain === "solana") {
-                const shadowSignerConfig: SolanaExternalWalletSignerConfig = {
-                    type: "external-wallet",
-                    address: shadowData.publicKey,
-                    onSignTransaction: async (transaction) => {
-                        const privateKey = await getShadowSignerPrivateKey(walletAddress);
-                        if (!privateKey) {
-                            throw new Error("Shadow signer private key not found");
-                        }
-
-                        const messageBytes = new Uint8Array(transaction.message.serialize());
-                        const signatureBuffer = await window.crypto.subtle.sign(
-                            { name: "Ed25519" },
-                            privateKey,
-                            messageBytes
-                        );
-
-                        const signature = new Uint8Array(signatureBuffer);
-                        transaction.addSignature(new PublicKey(shadowData.publicKey), signature);
-
-                        return transaction;
-                    },
-                };
-
-                return {
-                    ...args,
-                    signer: shadowSignerConfig as SignerConfigForChain<C>,
-                    onCreateConfig: args.onCreateConfig ?? { adminSigner: args.signer },
-                };
-            } else if (args.chain === "stellar") {
-                const shadowSignerConfig: StellarExternalWalletSignerConfig = {
-                    type: "external-wallet",
-                    address: shadowData.publicKey,
-                    onSignStellarTransaction: async (payload) => {
-                        const privateKey = await getShadowSignerPrivateKey(walletAddress);
-                        if (!privateKey) {
-                            throw new Error("Shadow signer private key not found");
-                        }
-
-                        const transactionString = typeof payload === "string" ? payload : (payload as any).tx;
-
-                        const messageBytes = Uint8Array.from(atob(transactionString), (c) => c.charCodeAt(0));
-
-                        const signatureBuffer = await window.crypto.subtle.sign(
-                            { name: "Ed25519" },
-                            privateKey,
-                            messageBytes
-                        );
-
-                        const signature = new Uint8Array(signatureBuffer);
-                        const signatureBase64 = btoa(String.fromCharCode(...signature));
-                        return signatureBase64;
-                    },
-                };
-
-                return {
-                    ...args,
-                    signer: shadowSignerConfig as SignerConfigForChain<C>,
-                    onCreateConfig: args.onCreateConfig ?? { adminSigner: args.signer },
-                };
-            }
-        }
-        return args;
     }
 
     private getChainType(chain: Chain): "solana" | "evm" | "stellar" {
