@@ -6,7 +6,7 @@ import type {
 import { NonCustodialSigner, DEFAULT_EVENT_OPTIONS } from "./ncs-signer";
 import { PersonalMessage } from "ox";
 import { isHex, toHex, type Hex } from "viem";
-import type { EVMChain } from "@/chains/chains";
+import type { EVMChain } from "../../chains/chains";
 
 export class EVMNonCustodialSigner extends NonCustodialSigner {
     constructor(config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {

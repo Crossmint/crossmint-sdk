@@ -6,9 +6,9 @@ import type {
     PhoneInternalSignerConfig,
 } from "../types";
 import { NonCustodialSigner, DEFAULT_EVENT_OPTIONS } from "./ncs-signer";
-import { getShadowSignerPrivateKey, type ShadowSignerData } from "@/signers/shadow-signer";
+import { getShadowSignerPrivateKey, type ShadowSignerData } from "../shadow-signer";
 import { SolanaExternalWalletSigner } from "../solana-external-wallet";
-import type { SolanaChain } from "@/chains/chains";
+import type { SolanaChain } from "../../chains/chains";
 
 export class SolanaNonCustodialSigner extends NonCustodialSigner {
     constructor(config: EmailInternalSignerConfig | PhoneInternalSignerConfig, walletAddress: string) {
@@ -82,7 +82,7 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
             locator: `external-wallet:${shadowData.publicKey}`,
             onSignTransaction: async (transaction) => {
                 const privateKey = await getShadowSignerPrivateKey(walletAddress);
-                if (!privateKey) {
+                if (privateKey == null) {
                     throw new Error("Shadow signer private key not found");
                 }
 

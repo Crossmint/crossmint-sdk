@@ -26,7 +26,7 @@ import { Wallet } from "./wallet";
 import { assembleSigner } from "../signers";
 import type { DelegatedSigner, WalletArgsFor, WalletCreateArgs, WalletOptions } from "./types";
 import { compareSignerConfigs } from "../utils/signer-validation";
-import { generateShadowSigner, storeShadowSigner } from "@/signers/shadow-signer";
+import { generateShadowSigner, storeShadowSigner } from "../signers/shadow-signer";
 
 const DELEGATED_SIGNER_MISMATCH_ERROR =
     "When 'delegatedSigners' is provided to a method that may fetch an existing wallet, each specified delegated signer must exist in that wallet's configuration.";
@@ -492,7 +492,7 @@ export class WalletFactory {
         shadowSignerPrivateKey: CryptoKey | null;
     }> {
         const {
-            delegatedSigners: updatedDelegatedSigners,
+            delegatedSigners,
             shadowSignerPublicKey,
             shadowSignerPrivateKey,
         } = await this.addShadowSignerToDelegatedSignersIfNeeded(
@@ -501,8 +501,16 @@ export class WalletFactory {
             args.onCreateConfig?.delegatedSigners
         );
 
-        const delegatedSigners = await Promise.all(
-            updatedDelegatedSigners?.map(
+        const registeredDelegatedSigners = await this.registerDelegatedSigners(delegatedSigners);
+
+        return { delegatedSigners: registeredDelegatedSigners, shadowSignerPublicKey, shadowSignerPrivateKey };
+    }
+
+    private async registerDelegatedSigners<C extends Chain>(
+        delegatedSigners?: Array<SignerConfigForChain<C>>
+    ): Promise<Array<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }>> {
+        return await Promise.all(
+            delegatedSigners?.map(
                 async (signer): Promise<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }> => {
                     if (signer.type === "passkey") {
                         if (signer.id == null) {
@@ -514,8 +522,6 @@ export class WalletFactory {
                 }
             ) ?? []
         );
-
-        return { delegatedSigners, shadowSignerPublicKey, shadowSignerPrivateKey };
     }
 
     private async addShadowSignerToDelegatedSignersIfNeeded<C extends Chain>(
