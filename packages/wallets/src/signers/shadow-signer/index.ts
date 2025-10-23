@@ -130,5 +130,5 @@ export async function getShadowSignerPrivateKey(walletAddress: string): Promise<
 }
 
 export function hasShadowSigner(walletAddress: string): boolean {
-    return getShadowSigner(walletAddress) !== null;
+    return getShadowSigner(walletAddress) !== null && getShadowSignerPrivateKey(walletAddress) !== null;
 }

@@ -6,7 +6,7 @@ import type {
     PhoneInternalSignerConfig,
 } from "../types";
 import { NonCustodialSigner, DEFAULT_EVENT_OPTIONS } from "./ncs-signer";
-import { getShadowSignerPrivateKey } from "@/signers/shadow-signer";
+import { getShadowSignerPrivateKey, type ShadowSignerData } from "@/signers/shadow-signer";
 import { SolanaExternalWalletSigner } from "../solana-external-wallet";
 import type { SolanaChain } from "@/chains/chains";
 
