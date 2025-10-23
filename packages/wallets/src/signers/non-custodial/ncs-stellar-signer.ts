@@ -1,4 +1,4 @@
-import { getShadowSignerPrivateKey, type ShadowSignerData } from "@/utils/shadow-signer";
+import { getShadowSignerPrivateKey } from "@/signers/shadow-signer";
 import type {
     EmailInternalSignerConfig,
     ExternalWalletInternalSignerConfig,

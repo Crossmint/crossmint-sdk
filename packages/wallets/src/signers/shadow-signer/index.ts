@@ -1,6 +1,6 @@
 import { encode as encodeBase58 } from "bs58";
 import { StrKey } from "@stellar/stellar-sdk";
-import type { Chain } from "../chains/chains";
+import type { Chain } from "@/chains/chains";
 import type { BaseExternalWalletSignerConfig } from "@crossmint/common-sdk-base";
 
 const SHADOW_SIGNER_STORAGE_KEY = "crossmint_shadow_signer";
