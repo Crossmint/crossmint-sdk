@@ -1,7 +1,6 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import type { ShadowSignerData, ShadowSignerStorage } from "./shadow-signer";
+import type { ShadowSignerData, ShadowSignerStorage } from ".";
 
-export class ReactNativeShadowSignerStorage implements ShadowSignerStorage {
+export class BrowserShadowSignerStorage implements ShadowSignerStorage {
     private readonly SHADOW_SIGNER_DB_NAME = "crossmint_shadow_keys";
     private readonly SHADOW_SIGNER_DB_STORE = "keys";
     private readonly SHADOW_SIGNER_STORAGE_KEY = "crossmint_shadow_signer";
@@ -21,6 +20,10 @@ export class ReactNativeShadowSignerStorage implements ShadowSignerStorage {
     }
 
     async storePrivateKey(walletAddress: string, privateKey: CryptoKey): Promise<void> {
+        if (typeof indexedDB === "undefined") {
+            return;
+        }
+
         const db = await this.openDB();
         const tx = db.transaction([this.SHADOW_SIGNER_DB_STORE], "readwrite");
         const store = tx.objectStore(this.SHADOW_SIGNER_DB_STORE);
@@ -33,6 +36,10 @@ export class ReactNativeShadowSignerStorage implements ShadowSignerStorage {
     }
 
     async getPrivateKey(walletAddress: string): Promise<CryptoKey | null> {
+        if (typeof indexedDB === "undefined") {
+            return null;
+        }
+
         try {
             const db = await this.openDB();
             const tx = db.transaction([this.SHADOW_SIGNER_DB_STORE], "readonly");
@@ -50,6 +57,10 @@ export class ReactNativeShadowSignerStorage implements ShadowSignerStorage {
     }
 
     async removePrivateKey(walletAddress: string): Promise<void> {
+        if (typeof indexedDB === "undefined") {
+            return;
+        }
+
         const db = await this.openDB();
         const tx = db.transaction([this.SHADOW_SIGNER_DB_STORE], "readwrite");
         const store = tx.objectStore(this.SHADOW_SIGNER_DB_STORE);
@@ -61,17 +72,26 @@ export class ReactNativeShadowSignerStorage implements ShadowSignerStorage {
         });
     }
 
-    async storeMetadata(walletAddress: string, data: ShadowSignerData): Promise<void> {
-        await AsyncStorage.setItem(`${this.SHADOW_SIGNER_STORAGE_KEY}_${walletAddress}`, JSON.stringify(data));
+    storeMetadata(walletAddress: string, data: ShadowSignerData): Promise<void> {
+        if (typeof localStorage === "undefined") {
+            return Promise.resolve();
+        }
+
+        localStorage.setItem(`${this.SHADOW_SIGNER_STORAGE_KEY}_${walletAddress}`, JSON.stringify(data));
+        return Promise.resolve();
     }
 
-    async getMetadata(walletAddress: string): Promise<ShadowSignerData | null> {
+    getMetadata(walletAddress: string): Promise<ShadowSignerData | null> {
+        if (typeof localStorage === "undefined") {
+            return Promise.resolve(null);
+        }
+
         try {
-            const stored = await AsyncStorage.getItem(`${this.SHADOW_SIGNER_STORAGE_KEY}_${walletAddress}`);
-            return stored ? JSON.parse(stored) : null;
+            const stored = localStorage.getItem(`${this.SHADOW_SIGNER_STORAGE_KEY}_${walletAddress}`);
+            return Promise.resolve(stored ? JSON.parse(stored) : null);
         } catch (error) {
-            console.warn("Failed to retrieve metadata from AsyncStorage:", error);
-            return null;
+            console.warn("Failed to retrieve metadata from localStorage:", error);
+            return Promise.resolve(null);
         }
     }
 }

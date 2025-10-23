@@ -32,7 +32,7 @@ import {
     storeShadowSigner,
     getShadowSigner,
     getShadowSignerPrivateKey,
-} from "../utils/shadow-signer";
+} from "../signers/shadow-signers";
 import { PublicKey } from "@solana/web3.js";
 
 const DELEGATED_SIGNER_MISMATCH_ERROR =

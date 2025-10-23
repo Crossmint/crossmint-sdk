@@ -1,6 +1,6 @@
 import { encode as encodeBase58 } from "bs58";
-import type { Chain } from "../chains/chains";
-import type { RegisterSignerParams } from "../api/types";
+import type { Chain } from "@/chains/chains";
+import type { RegisterSignerParams } from "@/api/types";
 import { encodeEd25519PublicKey } from "./encodeEd25519PublicKey";
 import { BrowserShadowSignerStorage } from "./shadow-signer-storage-browser";
 import { ReactNativeShadowSignerStorage } from "./shadow-signer-storage-rn";
