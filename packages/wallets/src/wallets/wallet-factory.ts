@@ -115,7 +115,7 @@ export class WalletFactory {
             ) ?? []
         );
 
-        const shadowSignerEnabled = this.isShadowSignerEnabled(args.chain, args.options);
+        const shadowSignerEnabled = this.isShadowSignerEnabled(args.chain, args.signer);
         const {
             delegatedSigners: updatedDelegatedSigners,
             shadowSignerPublicKey,
@@ -489,8 +489,11 @@ export class WalletFactory {
         return false;
     }
 
-    private isShadowSignerEnabled(chain: Chain, options?: WalletOptions): boolean {
-        return (chain === "solana" || chain === "stellar") && options?.shadowSigner?.enabled !== false;
+    private isShadowSignerEnabled(chain: Chain, signer: SignerConfigForChain<C>): boolean {
+        if ((chain === "solana" || chain === "stellar") && (signer.type === "email" || signer.type === "phone")) {
+            return signer.shadowSigner?.enabled !== false;
+        }
+        return false;
     }
 
     private async addShadowSignerToDelegatedSignersIfNeeded<C extends Chain>(
@@ -508,10 +511,10 @@ export class WalletFactory {
             (args.signer.type === "email" || args.signer.type === "phone")
         ) {
             try {
-                const { delegatedSigner, publicKey, privateKey } = await generateShadowSigner(args.chain);
+                const { shadowSigner, publicKey, privateKey } = await generateShadowSigner(args.chain);
 
                 return {
-                    delegatedSigners: [...delegatedSigners, delegatedSigner],
+                    delegatedSigners: [...delegatedSigners, shadowSigner],
                     shadowSignerPublicKey: publicKey,
                     shadowSignerPrivateKey: privateKey,
                 };

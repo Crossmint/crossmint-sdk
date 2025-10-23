@@ -15,7 +15,7 @@ export type ShadowSignerData = {
 };
 
 export type ShadowSignerResult = {
-    delegatedSigner: RegisterSignerParams;
+    shadowSigner: RegisterSignerParams;
     publicKey: string;
     privateKey: CryptoKey;
 };
@@ -58,7 +58,7 @@ export async function generateShadowSigner(chain: Chain): Promise<ShadowSignerRe
         }
 
         return {
-            delegatedSigner: { signer: `external-wallet:${encodedPublicKey}` },
+            shadowSigner: { signer: `external-wallet:${encodedPublicKey}` },
             publicKey: encodedPublicKey,
             privateKey: keyPair.privateKey,
         };
