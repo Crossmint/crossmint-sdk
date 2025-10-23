@@ -58,7 +58,7 @@ export class WalletFactory {
         if (existingWallet != null && !("error" in existingWallet)) {
             const shadowSignerEnabled = this.isShadowSignerEnabled(args.chain, args.options);
             const walletInstanceArgs = shadowSignerEnabled
-                ? this.setShadowSignerAsSigner(existingWallet.address, args)
+                ? await this.setShadowSignerAsSigner(existingWallet.address, args)
                 : args;
 
             return this.createWalletInstance(existingWallet, walletInstanceArgs);
@@ -169,7 +169,7 @@ export class WalletFactory {
         }
 
         const walletInstanceArgs = shadowSignerEnabled
-            ? this.setShadowSignerAsSigner(walletResponse.address, args)
+            ? await this.setShadowSignerAsSigner(walletResponse.address, args)
             : args;
 
         return this.createWalletInstance(walletResponse, walletInstanceArgs);
@@ -543,11 +543,11 @@ export class WalletFactory {
         };
     }
 
-    private setShadowSignerAsSigner<C extends Chain>(
+    private async setShadowSignerAsSigner<C extends Chain>(
         walletAddress: string,
         args: WalletCreateArgs<C>
-    ): WalletCreateArgs<C> {
-        const shadowData = getShadowSigner(walletAddress);
+    ): Promise<WalletCreateArgs<C>> {
+        const shadowData = await getShadowSigner(walletAddress);
         if (shadowData != null) {
             if (args.chain === "solana") {
                 const shadowSignerConfig: SolanaExternalWalletSignerConfig = {
@@ -555,8 +555,8 @@ export class WalletFactory {
                     address: shadowData.publicKey,
                     onSignTransaction: async (transaction) => {
                         const privateKey = await getShadowSignerPrivateKey(walletAddress);
-                        if (!privateKey) {
-                            throw new Error("Shadow signer private key not found");
+                        if (!privateKey || !(privateKey instanceof CryptoKey)) {
+                            throw new Error("Shadow signer private key not found or invalid type");
                         }
 
                         const messageBytes = new Uint8Array(transaction.message.serialize());
@@ -584,8 +584,8 @@ export class WalletFactory {
                     address: shadowData.publicKey,
                     onSignStellarTransaction: async (payload) => {
                         const privateKey = await getShadowSignerPrivateKey(walletAddress);
-                        if (!privateKey) {
-                            throw new Error("Shadow signer private key not found");
+                        if (!privateKey || !(privateKey instanceof CryptoKey)) {
+                            throw new Error("Shadow signer private key not found or invalid type");
                         }
 
                         const transactionString = typeof payload === "string" ? payload : (payload as any).tx;
