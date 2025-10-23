@@ -29,6 +29,9 @@ export class AuthRejectedError extends Error {
 export type EmailSignerConfig = {
     type: "email";
     email?: string;
+    shadowSigner?: {
+        enabled: boolean;
+    };
     onAuthRequired?: (
         needsAuth: boolean,
         sendEmailWithOtp: () => Promise<void>,
@@ -40,6 +43,9 @@ export type EmailSignerConfig = {
 export type PhoneSignerConfig = {
     type: "phone";
     phone?: string;
+    shadowSigner?: {
+        enabled: boolean;
+    };
     onAuthRequired?: (
         needsAuth: boolean,
         sendEmailWithOtp: () => Promise<void>,

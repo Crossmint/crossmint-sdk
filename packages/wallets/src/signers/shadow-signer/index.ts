@@ -1,9 +1,9 @@
 import { encode as encodeBase58 } from "bs58";
 import type { Chain } from "@/chains/chains";
-import type { RegisterSignerParams } from "@/api/types";
 import { encodeEd25519PublicKey } from "./encodeEd25519PublicKey";
 import { BrowserShadowSignerStorage } from "./shadow-signer-storage-browser";
 import { ReactNativeShadowSignerStorage } from "./shadow-signer-storage-rn";
+import type { BaseExternalWalletSignerConfig } from "@crossmint/common-sdk-base";
 
 export type ShadowSignerData = {
     chain: Chain;
@@ -13,7 +13,7 @@ export type ShadowSignerData = {
 };
 
 export type ShadowSignerResult = {
-    delegatedSigner: RegisterSignerParams;
+    shadowSigner: BaseExternalWalletSignerConfig;
     publicKey: string;
     privateKey: CryptoKey;
 };
@@ -42,7 +42,7 @@ function getStorage(): ShadowSignerStorage {
     return storageInstance;
 }
 
-export async function generateShadowSigner(chain: Chain): Promise<ShadowSignerResult> {
+export async function generateShadowSigner<C extends Chain>(chain: C): Promise<ShadowSignerResult> {
     if (chain === "solana" || chain === "stellar") {
         const keyPair = (await window.crypto.subtle.generateKey(
             {
@@ -64,7 +64,10 @@ export async function generateShadowSigner(chain: Chain): Promise<ShadowSignerRe
         }
 
         return {
-            delegatedSigner: { signer: `external-wallet:${encodedPublicKey}` },
+            shadowSigner: {
+                type: "external-wallet",
+                address: encodedPublicKey,
+            },
             publicKey: encodedPublicKey,
             privateKey: keyPair.privateKey,
         };
@@ -117,6 +120,5 @@ export async function getShadowSignerPrivateKey(walletAddress: string): Promise<
 }
 
 export async function hasShadowSigner(walletAddress: string): Promise<boolean> {
-    const signer = await getShadowSigner(walletAddress);
-    return signer !== null;
+    return (await getShadowSigner(walletAddress)) !== null && (await getShadowSignerPrivateKey(walletAddress)) !== null;
 }

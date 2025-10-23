@@ -1,8 +1,17 @@
-import type { BaseSignResult, EmailInternalSignerConfig, PhoneInternalSignerConfig, Signer } from "../types";
+import type {
+    BaseSignResult,
+    EmailInternalSignerConfig,
+    ExternalWalletInternalSignerConfig,
+    PhoneInternalSignerConfig,
+    Signer,
+} from "../types";
 import { AuthRejectedError } from "../types";
 import { NcsIframeManager } from "./ncs-iframe-manager";
 import { validateAPIKey } from "@crossmint/common-sdk-base";
 import type { SignerOutputEvent } from "@crossmint/client-signers";
+import { getShadowSigner, hasShadowSigner, type ShadowSignerData } from "@/signers/shadow-signer";
+import type { Chain } from "@/chains/chains";
+import type { ExternalWalletSigner } from "../external-wallet-signer";
 
 export abstract class NonCustodialSigner implements Signer {
     public readonly type: "email" | "phone";
@@ -13,6 +22,7 @@ export abstract class NonCustodialSigner implements Signer {
         reject: (error: Error) => void;
     } | null = null;
     private _initializationPromise: Promise<void> | null = null;
+    protected shadowSigner: ExternalWalletSigner<Chain> | null = null;
 
     constructor(protected config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
         this.initialize();
@@ -20,10 +30,16 @@ export abstract class NonCustodialSigner implements Signer {
     }
 
     locator() {
+        if (this.shadowSigner != null) {
+            return this.shadowSigner.locator();
+        }
         return this.config.locator;
     }
 
     address() {
+        if (this.shadowSigner != null) {
+            return this.shadowSigner.address();
+        }
         return this.config.address;
     }
 
@@ -83,6 +99,10 @@ export abstract class NonCustodialSigner implements Signer {
     }
 
     protected async handleAuthRequired() {
+        if (this.shadowSigner != null) {
+            return;
+        }
+
         const clientTEEConnection = await this.getTEEConnection();
 
         if (this.config.onAuthRequired == null) {
@@ -266,6 +286,25 @@ export abstract class NonCustodialSigner implements Signer {
         const error = new Error(errorMessage);
         this._authPromise?.reject(error);
         throw error;
+    }
+
+    protected abstract getShadowSignerConfig(
+        shadowSigner: ShadowSignerData,
+        walletAddress: string
+    ): ExternalWalletInternalSignerConfig<Chain>;
+
+    protected async initializeShadowSigner<C extends Chain>(
+        walletAddress: string,
+        ExternalWalletSignerClass: new (config: ExternalWalletInternalSignerConfig<C>) => ExternalWalletSigner<C>
+    ) {
+        if (await hasShadowSigner(walletAddress)) {
+            const shadowSigner = await getShadowSigner(walletAddress);
+            if (shadowSigner != null && this.config.shadowSigner?.enabled !== false) {
+                this.shadowSigner = new ExternalWalletSignerClass(
+                    this.getShadowSignerConfig(shadowSigner, walletAddress) as ExternalWalletInternalSignerConfig<C>
+                );
+            }
+        }
     }
 }
 
