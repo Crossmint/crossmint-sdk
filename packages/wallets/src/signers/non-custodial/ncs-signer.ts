@@ -206,7 +206,9 @@ export abstract class NonCustodialSigner implements Signer {
 
         if (response?.status === "error") {
             console.error("[sendMessageWithOtp] Failed to send OTP:", response);
-            this._authPromise?.reject(new Error(response.error || "Failed to initiate OTP process."));
+            const error = new Error(response.error || "Failed to initiate OTP process.");
+            this._authPromise?.reject(error);
+            throw error;
         }
     }
 

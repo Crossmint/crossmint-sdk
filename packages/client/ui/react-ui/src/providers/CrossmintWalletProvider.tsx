@@ -102,7 +102,7 @@ export function CrossmintWalletProvider({
             setEmailSignerDialogStep("otp");
         } catch (error) {
             console.error("Failed to send email OTP", error);
-            rejectRef.current(new Error("Failed to send email OTP"));
+            throw error;
         }
     };
 
@@ -112,7 +112,7 @@ export function CrossmintWalletProvider({
             setEmailSignerDialogOpen(false);
         } catch (error) {
             console.error("Failed to verify OTP", error);
-            rejectRef.current(new Error("Failed to verify OTP"));
+            throw error;
         }
     };
 
@@ -123,7 +123,7 @@ export function CrossmintWalletProvider({
             setPhoneSignerDialogStep("otp");
         } catch (error) {
             console.error("Failed to send phone OTP", error);
-            rejectRef.current(new Error("Failed to send phone OTP"));
+            throw error;
         }
     };
 
@@ -133,7 +133,7 @@ export function CrossmintWalletProvider({
             setPhoneSignerDialogOpen(false);
         } catch (error) {
             console.error("Failed to verify phone OTP", error);
-            rejectRef.current(new Error("Failed to verify phone OTP"));
+            throw error;
         }
     };
 
