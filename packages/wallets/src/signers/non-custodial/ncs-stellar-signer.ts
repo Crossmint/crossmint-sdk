@@ -14,7 +14,7 @@ export class StellarNonCustodialSigner extends NonCustodialSigner {
         super(config);
 
         const shadowSigner = getShadowSigner(walletAddress);
-        if (shadowSigner != null) {
+        if (shadowSigner != null && config.shadowSigner?.enabled !== false) {
             this.shadowSigner = new StellarExternalWalletSigner(
                 this.getShadowSignerConfig(shadowSigner, walletAddress)
             );

@@ -1,7 +1,7 @@
 import { encode as encodeBase58 } from "bs58";
 import { StrKey } from "@stellar/stellar-sdk";
 import type { Chain } from "../chains/chains";
-import type { RegisterSignerParams } from "../api/types";
+import type { BaseExternalWalletSignerConfig } from "@crossmint/common-sdk-base";
 
 const SHADOW_SIGNER_STORAGE_KEY = "crossmint_shadow_signer";
 const SHADOW_SIGNER_DB_NAME = "crossmint_shadow_keys";
@@ -14,8 +14,8 @@ export type ShadowSignerData = {
     createdAt: number;
 };
 
-export type ShadowSignerResult = {
-    shadowSigner: RegisterSignerParams;
+export type ShadowSignerResult<C extends Chain> = {
+    shadowSigner: BaseExternalWalletSignerConfig;
     publicKey: string;
     privateKey: CryptoKey;
 };
@@ -34,7 +34,7 @@ async function openDB(): Promise<IDBDatabase> {
     });
 }
 
-export async function generateShadowSigner(chain: Chain): Promise<ShadowSignerResult> {
+export async function generateShadowSigner<C extends Chain>(chain: C): Promise<ShadowSignerResult<C>> {
     if (chain === "solana" || chain === "stellar") {
         const keyPair = (await window.crypto.subtle.generateKey(
             {
@@ -58,7 +58,10 @@ export async function generateShadowSigner(chain: Chain): Promise<ShadowSignerRe
         }
 
         return {
-            shadowSigner: { signer: `external-wallet:${encodedPublicKey}` },
+            shadowSigner: {
+                type: "external-wallet",
+                address: encodedPublicKey,
+            },
             publicKey: encodedPublicKey,
             privateKey: keyPair.privateKey,
         };

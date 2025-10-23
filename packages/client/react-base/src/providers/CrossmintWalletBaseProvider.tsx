@@ -45,9 +45,6 @@ export interface CrossmintWalletBaseProviderProps {
     onAuthRequired?: EmailSignerConfig["onAuthRequired"] | PhoneSignerConfig["onAuthRequired"];
     clientTEEConnection?: () => HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
     initializeWebView?: () => Promise<void>;
-    shadowSigner?: {
-        enabled?: boolean;
-    };
 }
 
 export function CrossmintWalletBaseProvider({
@@ -57,7 +54,6 @@ export function CrossmintWalletBaseProvider({
     onAuthRequired,
     clientTEEConnection,
     initializeWebView,
-    shadowSigner,
 }: CrossmintWalletBaseProviderProps) {
     const { crossmint, experimental_customAuth } = useCrossmint(
         "CrossmintWalletBaseProvider must be used within CrossmintProvider"
@@ -152,7 +148,6 @@ export function CrossmintWalletBaseProvider({
                     onCreateConfig: args.onCreateConfig,
                     options: {
                         clientTEEConnection: clientTEEConnection?.(),
-                        shadowSigner: shadowSigner,
                         experimental_callbacks: {
                             onWalletCreationStart: _onWalletCreationStart ?? callbacks?.onWalletCreationStart,
                             onTransactionStart: _onTransactionStart ?? callbacks?.onTransactionStart,
@@ -199,7 +194,6 @@ export function CrossmintWalletBaseProvider({
                     signer: resolvedSigner,
                     options: {
                         clientTEEConnection: clientTEEConnection?.(),
-                        shadowSigner: shadowSigner,
                         experimental_callbacks: callbacks,
                     },
                 });

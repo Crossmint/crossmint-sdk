@@ -46,7 +46,7 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
                 },
                 data: {
                     keyType: "ed25519",
-                    bytes: base58.encode(messageData),
+                    bytes: base58.encode(new Uint8Array(messageData)),
                     encoding: "base58",
                 },
             },
