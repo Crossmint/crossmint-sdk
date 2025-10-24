@@ -9,8 +9,8 @@ import { AuthRejectedError } from "../types";
 import { NcsIframeManager } from "./ncs-iframe-manager";
 import { validateAPIKey } from "@crossmint/common-sdk-base";
 import type { SignerOutputEvent } from "@crossmint/client-signers";
-import { getShadowSigner, hasShadowSigner, type ShadowSignerData } from "@/signers/shadow-signer";
-import type { Chain } from "@/chains/chains";
+import { getShadowSigner, hasShadowSigner, type ShadowSignerData } from "../shadow-signer";
+import type { Chain } from "../../chains/chains";
 import type { ExternalWalletSigner } from "../external-wallet-signer";
 import type { ShadowSignerStorage } from "@/signers/shadow-signer";
 

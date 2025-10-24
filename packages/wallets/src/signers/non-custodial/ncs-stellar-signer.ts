@@ -1,4 +1,4 @@
-import { getShadowSignerPrivateKey, type ShadowSignerData } from "@/signers/shadow-signer";
+import { getShadowSignerPrivateKey, type ShadowSignerData } from "../shadow-signer";
 import type {
     EmailInternalSignerConfig,
     ExternalWalletInternalSignerConfig,
@@ -6,7 +6,7 @@ import type {
 } from "../types";
 import { DEFAULT_EVENT_OPTIONS, NonCustodialSigner } from "./ncs-signer";
 import { StellarExternalWalletSigner } from "../stellar-external-wallet";
-import type { StellarChain } from "@/chains/chains";
+import type { StellarChain } from "../../chains/chains";
 import type { ShadowSignerStorage } from "@/signers/shadow-signer";
 
 export class StellarNonCustodialSigner extends NonCustodialSigner {
@@ -85,7 +85,7 @@ export class StellarNonCustodialSigner extends NonCustodialSigner {
             locator: `external-wallet:${shadowData.publicKey}`,
             onSignStellarTransaction: async (payload) => {
                 const privateKey = await getShadowSignerPrivateKey(walletAddress, this.shadowSignerStorage);
-                if (!privateKey) {
+                if (privateKey == null) {
                     throw new Error("Shadow signer private key not found");
                 }
 
