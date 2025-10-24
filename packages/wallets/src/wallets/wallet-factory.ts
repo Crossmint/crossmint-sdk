@@ -131,7 +131,13 @@ export class WalletFactory {
         }
 
         if (shadowSignerPublicKey != null && shadowSignerPrivateKey != null) {
-            await storeShadowSigner(walletResponse.address, args.chain, shadowSignerPublicKey, shadowSignerPrivateKey);
+            await storeShadowSigner(
+                walletResponse.address,
+                args.chain,
+                shadowSignerPublicKey,
+                shadowSignerPrivateKey,
+                args.options?.shadowSignerStorage
+            );
         }
 
         return this.createWalletInstance(walletResponse, args);
@@ -148,7 +154,12 @@ export class WalletFactory {
                 chain: args.chain,
                 address: walletResponse.address,
                 owner: walletResponse.owner,
-                signer: assembleSigner(args.chain, signerConfig, walletResponse.address),
+                signer: assembleSigner(
+                    args.chain,
+                    signerConfig,
+                    walletResponse.address,
+                    args.options?.shadowSignerStorage
+                ),
                 options: args.options,
             },
             this.apiClient

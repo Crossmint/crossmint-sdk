@@ -6,6 +6,7 @@ import { environmentUrlConfig, signerInboundEvents, signerOutboundEvents } from 
 import { validateAPIKey } from "@crossmint/common-sdk-base";
 import { type CreateOnLogin, CrossmintWalletBaseProvider } from "@crossmint/client-sdk-react-base";
 import { useCrossmint } from "@/hooks";
+import { ReactNativeShadowSignerStorage } from "@/utils/ShadowSignerStorage";
 
 const throwNotAvailable = (functionName: string) => () => {
     throw new Error(`${functionName} is not available. Make sure you're using an email signer wallet.`);
@@ -50,6 +51,8 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
     const frameUrl = useMemo(() => {
         return environmentUrlConfig[parsedAPIKey.environment];
     }, [parsedAPIKey.environment]);
+
+    const shadowSignerStorage = useMemo(() => new ReactNativeShadowSignerStorage(), []);
 
     const webviewRef = useRef<WebView>(null);
     const webViewParentRef = useRef<WebViewParent<typeof signerOutboundEvents, typeof signerInboundEvents> | null>(
@@ -193,6 +196,7 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
             clientTEEConnection={getClientTEEConnection}
             initializeWebView={initializeWebView}
             callbacks={callbacks}
+            shadowSignerStorage={shadowSignerStorage}
         >
             <CrossmintWalletEmailSignerContext.Provider value={authContextValue}>
                 {children}

@@ -12,6 +12,7 @@ import type { SignerOutputEvent } from "@crossmint/client-signers";
 import { getShadowSigner, hasShadowSigner, type ShadowSignerData } from "@/signers/shadow-signer";
 import type { Chain } from "@/chains/chains";
 import type { ExternalWalletSigner } from "../external-wallet-signer";
+import type { ShadowSignerStorage } from "@/signers/shadow-signer";
 
 export abstract class NonCustodialSigner implements Signer {
     public readonly type: "email" | "phone";
@@ -23,8 +24,13 @@ export abstract class NonCustodialSigner implements Signer {
     } | null = null;
     private _initializationPromise: Promise<void> | null = null;
     protected shadowSigner: ExternalWalletSigner<Chain> | null = null;
+    protected shadowSignerStorage?: ShadowSignerStorage;
 
-    constructor(protected config: EmailInternalSignerConfig | PhoneInternalSignerConfig) {
+    constructor(
+        protected config: EmailInternalSignerConfig | PhoneInternalSignerConfig,
+        shadowSignerStorage?: ShadowSignerStorage
+    ) {
+        this.shadowSignerStorage = shadowSignerStorage;
         this.initialize();
         this.type = this.config.type;
     }
@@ -297,8 +303,8 @@ export abstract class NonCustodialSigner implements Signer {
         walletAddress: string,
         ExternalWalletSignerClass: new (config: ExternalWalletInternalSignerConfig<C>) => ExternalWalletSigner<C>
     ) {
-        if (await hasShadowSigner(walletAddress)) {
-            const shadowSigner = await getShadowSigner(walletAddress);
+        if (await hasShadowSigner(walletAddress, this.shadowSignerStorage)) {
+            const shadowSigner = await getShadowSigner(walletAddress, this.shadowSignerStorage);
             if (shadowSigner != null && this.config.shadowSigner?.enabled !== false) {
                 this.shadowSigner = new ExternalWalletSignerClass(
                     this.getShadowSignerConfig(shadowSigner, walletAddress) as ExternalWalletInternalSignerConfig<C>

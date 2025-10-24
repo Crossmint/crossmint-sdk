@@ -7,10 +7,15 @@ import type {
 import { DEFAULT_EVENT_OPTIONS, NonCustodialSigner } from "./ncs-signer";
 import { StellarExternalWalletSigner } from "../stellar-external-wallet";
 import type { StellarChain } from "@/chains/chains";
+import type { ShadowSignerStorage } from "@/signers/shadow-signer";
 
 export class StellarNonCustodialSigner extends NonCustodialSigner {
-    constructor(config: EmailInternalSignerConfig | PhoneInternalSignerConfig, walletAddress: string) {
-        super(config);
+    constructor(
+        config: EmailInternalSignerConfig | PhoneInternalSignerConfig,
+        walletAddress: string,
+        shadowSignerStorage?: ShadowSignerStorage
+    ) {
+        super(config, shadowSignerStorage);
         this.initializeShadowSigner(walletAddress, StellarExternalWalletSigner);
     }
 
@@ -79,12 +84,12 @@ export class StellarNonCustodialSigner extends NonCustodialSigner {
             address: shadowData.publicKey,
             locator: `external-wallet:${shadowData.publicKey}`,
             onSignStellarTransaction: async (payload) => {
-                const privateKey = await getShadowSignerPrivateKey(walletAddress);
+                const privateKey = await getShadowSignerPrivateKey(walletAddress, this.shadowSignerStorage);
                 if (!privateKey) {
                     throw new Error("Shadow signer private key not found");
                 }
 
-                const transactionString = typeof payload === "string" ? payload : (payload as any).tx;
+                const transactionString = typeof payload === "string" ? payload : (payload as { tx: string }).tx;
 
                 const messageBytes = Uint8Array.from(atob(transactionString), (c) => c.charCodeAt(0));
 

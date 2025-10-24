@@ -9,10 +9,15 @@ import { NonCustodialSigner, DEFAULT_EVENT_OPTIONS } from "./ncs-signer";
 import { getShadowSignerPrivateKey, type ShadowSignerData } from "@/signers/shadow-signer";
 import { SolanaExternalWalletSigner } from "../solana-external-wallet";
 import type { SolanaChain } from "@/chains/chains";
+import type { ShadowSignerStorage } from "@/signers/shadow-signer";
 
 export class SolanaNonCustodialSigner extends NonCustodialSigner {
-    constructor(config: EmailInternalSignerConfig | PhoneInternalSignerConfig, walletAddress: string) {
-        super(config);
+    constructor(
+        config: EmailInternalSignerConfig | PhoneInternalSignerConfig,
+        walletAddress: string,
+        shadowSignerStorage?: ShadowSignerStorage
+    ) {
+        super(config, shadowSignerStorage);
         this.initializeShadowSigner(walletAddress, SolanaExternalWalletSigner);
     }
 
@@ -41,7 +46,7 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
                 },
                 data: {
                     keyType: "ed25519",
-                    bytes: base58.encode(messageData),
+                    bytes: base58.encode(new Uint8Array(messageData)),
                     encoding: "base58",
                 },
             },
@@ -81,7 +86,7 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
             address: shadowData.publicKey,
             locator: `external-wallet:${shadowData.publicKey}`,
             onSignTransaction: async (transaction) => {
-                const privateKey = await getShadowSignerPrivateKey(walletAddress);
+                const privateKey = await getShadowSignerPrivateKey(walletAddress, this.shadowSignerStorage);
                 if (!privateKey) {
                     throw new Error("Shadow signer private key not found");
                 }

@@ -2,7 +2,6 @@ import { encode as encodeBase58 } from "bs58";
 import type { Chain } from "@/chains/chains";
 import { encodeEd25519PublicKey } from "./encodeEd25519PublicKey";
 import { BrowserShadowSignerStorage } from "./shadow-signer-storage-browser";
-import { ReactNativeShadowSignerStorage } from "./shadow-signer-storage-rn";
 import type { BaseExternalWalletSignerConfig } from "@crossmint/common-sdk-base";
 
 export type ShadowSignerData = {
@@ -34,7 +33,7 @@ function getStorage(): ShadowSignerStorage {
         const isExpo = typeof global !== "undefined" && (global as { expo?: unknown }).expo;
 
         if (isReactNative || isExpo) {
-            storageInstance = new ReactNativeShadowSignerStorage();
+            throw new Error("ReactNativeShadowSignerStorage must be provided explicitly for React Native environments");
         } else {
             storageInstance = new BrowserShadowSignerStorage();
         }
@@ -80,11 +79,12 @@ export async function storeShadowSigner(
     walletAddress: string,
     chain: Chain,
     publicKey: string,
-    privateKey: CryptoKey
+    privateKey: CryptoKey,
+    storage?: ShadowSignerStorage
 ): Promise<void> {
-    const storage = getStorage();
+    const storageInstance = storage ?? getStorage();
     try {
-        await storage.storePrivateKey(walletAddress, privateKey);
+        await storageInstance.storePrivateKey(walletAddress, privateKey);
 
         const data: ShadowSignerData = {
             chain,
@@ -93,32 +93,41 @@ export async function storeShadowSigner(
             createdAt: Date.now(),
         };
 
-        await storage.storeMetadata(walletAddress, data);
+        await storageInstance.storeMetadata(walletAddress, data);
     } catch (error) {
         console.warn("Failed to store shadow signer:", error);
     }
 }
 
-export async function getShadowSigner(walletAddress: string): Promise<ShadowSignerData | null> {
-    const storage = getStorage();
+export async function getShadowSigner(
+    walletAddress: string,
+    storage?: ShadowSignerStorage
+): Promise<ShadowSignerData | null> {
+    const storageInstance = storage ?? getStorage();
     try {
-        return await storage.getMetadata(walletAddress);
+        return await storageInstance.getMetadata(walletAddress);
     } catch (error) {
         console.warn("Failed to get shadow signer:", error);
         return null;
     }
 }
 
-export async function getShadowSignerPrivateKey(walletAddress: string): Promise<CryptoKey | null> {
-    const storage = getStorage();
+export async function getShadowSignerPrivateKey(
+    walletAddress: string,
+    storage?: ShadowSignerStorage
+): Promise<CryptoKey | null> {
+    const storageInstance = storage ?? getStorage();
     try {
-        return await storage.getPrivateKey(walletAddress);
+        return await storageInstance.getPrivateKey(walletAddress);
     } catch (error) {
         console.warn("Failed to retrieve shadow signer private key:", error);
         return null;
     }
 }
 
-export async function hasShadowSigner(walletAddress: string): Promise<boolean> {
-    return (await getShadowSigner(walletAddress)) !== null && (await getShadowSignerPrivateKey(walletAddress)) !== null;
+export async function hasShadowSigner(walletAddress: string, storage?: ShadowSignerStorage): Promise<boolean> {
+    return (
+        (await getShadowSigner(walletAddress, storage)) !== null &&
+        (await getShadowSignerPrivateKey(walletAddress, storage)) !== null
+    );
 }
