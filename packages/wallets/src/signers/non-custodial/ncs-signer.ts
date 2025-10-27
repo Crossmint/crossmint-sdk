@@ -13,6 +13,7 @@ import { getShadowSigner, hasShadowSigner, type ShadowSignerData } from "../shad
 import type { Chain } from "../../chains/chains";
 import type { ExternalWalletSigner } from "../external-wallet-signer";
 import type { ShadowSignerStorage } from "@/signers/shadow-signer";
+import { getStorage } from "../shadow-signer";
 
 export abstract class NonCustodialSigner implements Signer {
     public readonly type: "email" | "phone";
@@ -30,7 +31,7 @@ export abstract class NonCustodialSigner implements Signer {
         protected config: EmailInternalSignerConfig | PhoneInternalSignerConfig,
         shadowSignerStorage?: ShadowSignerStorage
     ) {
-        this.shadowSignerStorage = shadowSignerStorage;
+        this.shadowSignerStorage = shadowSignerStorage ?? getStorage();
         this.initialize();
         this.type = this.config.type;
     }
@@ -105,6 +106,7 @@ export abstract class NonCustodialSigner implements Signer {
     }
 
     protected async handleAuthRequired() {
+        console.log("Shadow signer is not null", this.shadowSigner);
         if (this.shadowSigner != null) {
             return;
         }
@@ -303,12 +305,17 @@ export abstract class NonCustodialSigner implements Signer {
         walletAddress: string,
         ExternalWalletSignerClass: new (config: ExternalWalletInternalSignerConfig<C>) => ExternalWalletSigner<C>
     ) {
+        console.log("initializeShadowSigner", walletAddress, this.shadowSignerStorage);
+        console.log("hasShadowSigner", await hasShadowSigner(walletAddress, this.shadowSignerStorage));
         if (await hasShadowSigner(walletAddress, this.shadowSignerStorage)) {
             const shadowSigner = await getShadowSigner(walletAddress, this.shadowSignerStorage);
+            console.log("shadowSigner", shadowSigner);
             if (shadowSigner != null && this.config.shadowSigner?.enabled !== false) {
+                console.log("creating shadow signer", shadowSigner);
                 this.shadowSigner = new ExternalWalletSignerClass(
                     this.getShadowSignerConfig(shadowSigner, walletAddress) as ExternalWalletInternalSignerConfig<C>
                 );
+                console.log("shadowSigner created", this.shadowSigner);
             }
         }
     }

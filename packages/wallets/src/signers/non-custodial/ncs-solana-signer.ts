@@ -6,7 +6,7 @@ import type {
     PhoneInternalSignerConfig,
 } from "../types";
 import { NonCustodialSigner, DEFAULT_EVENT_OPTIONS } from "./ncs-signer";
-import { getShadowSignerPrivateKey, type ShadowSignerData } from "../shadow-signer";
+import type { ShadowSignerData } from "../shadow-signer";
 import { SolanaExternalWalletSigner } from "../solana-external-wallet";
 import type { SolanaChain } from "../../chains/chains";
 import type { ShadowSignerStorage } from "@/signers/shadow-signer";
@@ -77,24 +77,20 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
         }
     }
 
-    protected getShadowSignerConfig(
-        shadowData: ShadowSignerData,
-        walletAddress: string
-    ): ExternalWalletInternalSignerConfig<SolanaChain> {
+    protected getShadowSignerConfig(shadowData: ShadowSignerData): ExternalWalletInternalSignerConfig<SolanaChain> {
         return {
             type: "external-wallet",
             address: shadowData.publicKey,
             locator: `external-wallet:${shadowData.publicKey}`,
             onSignTransaction: async (transaction) => {
-                const privateKey = await getShadowSignerPrivateKey(walletAddress, this.shadowSignerStorage);
-                if (privateKey == null) {
-                    throw new Error("Shadow signer private key not found");
+                if (!this.shadowSignerStorage) {
+                    throw new Error("Shadow signer storage not available");
                 }
 
                 const messageBytes = new Uint8Array(transaction.message.serialize());
-                const signatureBuffer = await window.crypto.subtle.sign({ name: "Ed25519" }, privateKey, messageBytes);
 
-                const signature = new Uint8Array(signatureBuffer);
+                const signature = await this.shadowSignerStorage.sign(shadowData.publicKeyBase64, messageBytes);
+
                 transaction.addSignature(new PublicKey(shadowData.publicKey), signature);
 
                 return transaction;

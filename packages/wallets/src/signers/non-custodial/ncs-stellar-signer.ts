@@ -1,4 +1,4 @@
-import { getShadowSignerPrivateKey, type ShadowSignerData } from "../shadow-signer";
+import type { ShadowSignerData } from "../shadow-signer";
 import type {
     EmailInternalSignerConfig,
     ExternalWalletInternalSignerConfig,
@@ -75,27 +75,21 @@ export class StellarNonCustodialSigner extends NonCustodialSigner {
         }
     }
 
-    protected getShadowSignerConfig(
-        shadowData: ShadowSignerData,
-        walletAddress: string
-    ): ExternalWalletInternalSignerConfig<StellarChain> {
+    protected getShadowSignerConfig(shadowData: ShadowSignerData): ExternalWalletInternalSignerConfig<StellarChain> {
         return {
             type: "external-wallet",
             address: shadowData.publicKey,
             locator: `external-wallet:${shadowData.publicKey}`,
             onSignStellarTransaction: async (payload) => {
-                const privateKey = await getShadowSignerPrivateKey(walletAddress, this.shadowSignerStorage);
-                if (privateKey == null) {
-                    throw new Error("Shadow signer private key not found");
+                if (!this.shadowSignerStorage) {
+                    throw new Error("Shadow signer storage not available");
                 }
 
                 const transactionString = typeof payload === "string" ? payload : (payload as { tx: string }).tx;
-
                 const messageBytes = Uint8Array.from(atob(transactionString), (c) => c.charCodeAt(0));
 
-                const signatureBuffer = await window.crypto.subtle.sign({ name: "Ed25519" }, privateKey, messageBytes);
+                const signature = await this.shadowSignerStorage.sign(shadowData.publicKeyBase64, messageBytes);
 
-                const signature = new Uint8Array(signatureBuffer);
                 const signatureBase64 = btoa(String.fromCharCode(...signature));
                 return signatureBase64;
             },

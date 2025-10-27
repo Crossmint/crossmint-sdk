@@ -6,7 +6,7 @@ import { environmentUrlConfig, signerInboundEvents, signerOutboundEvents } from 
 import { validateAPIKey } from "@crossmint/common-sdk-base";
 import { type CreateOnLogin, CrossmintWalletBaseProvider } from "@crossmint/client-sdk-react-base";
 import { useCrossmint } from "@/hooks";
-import { ReactNativeShadowSignerStorage } from "@/utils/ShadowSignerStorage";
+import { WebViewShadowSignerStorage } from "@/utils/WebViewShadowSignerStorage";
 
 const throwNotAvailable = (functionName: string) => () => {
     throw new Error(`${functionName} is not available. Make sure you're using an email signer wallet.`);
@@ -52,12 +52,14 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
         return environmentUrlConfig[parsedAPIKey.environment];
     }, [parsedAPIKey.environment]);
 
-    const shadowSignerStorage = useMemo(() => new ReactNativeShadowSignerStorage(), []);
+    const shadowSignerStorage = useMemo(() => new WebViewShadowSignerStorage(), []);
 
     const webviewRef = useRef<WebView>(null);
     const webViewParentRef = useRef<WebViewParent<typeof signerOutboundEvents, typeof signerInboundEvents> | null>(
         null
     );
+
+    const shadowSignerWebViewRef = useRef<WebView>(null);
 
     // Use useState only for needsAuth since it needs to trigger re-renders
     const [needsAuth, setNeedsAuth] = useState<boolean>(false);
@@ -97,6 +99,13 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
         }
     }, []);
 
+    const onShadowSignerWebViewLoad = useCallback(() => {
+        if (shadowSignerStorage instanceof WebViewShadowSignerStorage && shadowSignerWebViewRef.current) {
+            console.log("[ShadowSignerStorage] WebView loaded, injecting storage handler...");
+            shadowSignerStorage.initialize(shadowSignerWebViewRef);
+        }
+    }, [shadowSignerStorage]);
+
     const handleMessage = useCallback((event: WebViewMessageEvent) => {
         const parent = webViewParentRef.current;
         if (parent == null) {
@@ -117,7 +126,7 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
                             return argStr;
                         }
                         return JSON.parse(argStr);
-                    } catch (e) {
+                    } catch {
                         return argStr;
                     }
                 });
@@ -146,6 +155,15 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
         parent.handleMessage(event);
     }, []);
 
+    const handleShadowSignerMessage = useCallback(
+        (event: WebViewMessageEvent) => {
+            if (shadowSignerStorage instanceof WebViewShadowSignerStorage) {
+                shadowSignerStorage.handleMessage(event);
+            }
+        },
+        [shadowSignerStorage]
+    );
+
     const getClientTEEConnection = () => {
         if (webViewParentRef.current == null) {
             throw new Error("WebView not ready or handshake incomplete");
@@ -155,15 +173,26 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
 
     const initializeWebView = async () => {
         setNeedsWebView(true);
+
+        // Wait for both WebViews to be ready
         let attempts = 0;
         const maxAttempts = 100; // 5 seconds total with 50ms intervals
+
+        // Wait for email/phone signer WebView
         while (webViewParentRef.current == null && attempts < maxAttempts) {
             await new Promise((resolve) => setTimeout(resolve, 50));
             attempts++;
         }
 
         if (webViewParentRef.current == null) {
-            throw new Error("WebView not ready or handshake incomplete");
+            throw new Error("Email/Phone signer WebView not ready or handshake incomplete");
+        }
+
+        // Wait for shadow signer WebView if using WebViewShadowSignerStorage
+        if (shadowSignerStorage instanceof WebViewShadowSignerStorage) {
+            console.log("[initializeWebView] Waiting for shadow signer WebView to be ready...");
+            // The storage has a ready promise that resolves when injected
+            await shadowSignerStorage.waitForReady();
         }
     };
 
@@ -173,6 +202,7 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
         verifyOtp: (otp: string) => Promise<void>,
         reject: () => void
     ) => {
+        console.log("onAuthRequired", needsAuth);
         setNeedsAuth(needsAuth);
         sendEmailWithOtpRef.current = sendEmailWithOtp;
         verifyOtpRef.current = verifyOtp;
@@ -234,6 +264,37 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
                         incognito={false}
                         setSupportMultipleWindows={false}
                         originWhitelist={[environmentUrlConfig[parsedAPIKey.environment]]}
+                        cacheEnabled={true}
+                        cacheMode="LOAD_DEFAULT"
+                    />
+                </View>
+            )}
+            {needsWebView && (
+                <View
+                    style={{
+                        position: "absolute",
+                        width: 0,
+                        height: 0,
+                        overflow: "hidden",
+                    }}
+                >
+                    <RNWebView
+                        ref={shadowSignerWebViewRef}
+                        source={{
+                            html: "<html><head></head><body></body></html>",
+                            baseUrl: "https://crossmint-shadow-signer.local",
+                        }}
+                        onLoadEnd={onShadowSignerWebViewLoad}
+                        onMessage={handleShadowSignerMessage}
+                        onError={(syntheticEvent) => {
+                            console.error("[ShadowSignerStorage] WebView error:", syntheticEvent.nativeEvent);
+                        }}
+                        style={{
+                            width: 1,
+                            height: 1,
+                        }}
+                        javaScriptEnabled={true}
+                        incognito={false}
                         cacheEnabled={true}
                         cacheMode="LOAD_DEFAULT"
                     />

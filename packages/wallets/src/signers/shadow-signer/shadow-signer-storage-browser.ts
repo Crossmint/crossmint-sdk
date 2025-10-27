@@ -19,7 +19,40 @@ export class BrowserShadowSignerStorage implements ShadowSignerStorage {
         });
     }
 
-    async storePrivateKey(walletAddress: string, privateKey: CryptoKey): Promise<void> {
+    async keyGenerator(chain: string): Promise<string> {
+        if (chain === "solana" || chain === "stellar") {
+            const keyPair = (await window.crypto.subtle.generateKey(
+                {
+                    name: "Ed25519",
+                    namedCurve: "Ed25519",
+                } as AlgorithmIdentifier,
+                false,
+                ["sign", "verify"]
+            )) as CryptoKeyPair;
+
+            const publicKeyBuffer = await window.crypto.subtle.exportKey("raw", keyPair.publicKey);
+            const publicKeyBytes = new Uint8Array(publicKeyBuffer);
+            const publicKeyBase64 = Buffer.from(publicKeyBytes).toString("base64");
+
+            await this.storePrivateKeyByPublicKey(publicKeyBase64, keyPair.privateKey);
+
+            return publicKeyBase64;
+        }
+        throw new Error("Unsupported chain for browser shadow signer");
+    }
+
+    async sign(publicKeyBase64: string, data: Uint8Array): Promise<Uint8Array> {
+        const privateKey = await this.getPrivateKeyByPublicKey(publicKeyBase64);
+        if (!privateKey) {
+            throw new Error(`No private key found for public key: ${publicKeyBase64}`);
+        }
+
+        const signature = await window.crypto.subtle.sign({ name: "Ed25519" }, privateKey, data as BufferSource);
+
+        return new Uint8Array(signature);
+    }
+
+    private async storePrivateKeyByPublicKey(publicKey: string, privateKey: CryptoKey): Promise<void> {
         if (typeof indexedDB === "undefined") {
             return;
         }
@@ -27,7 +60,7 @@ export class BrowserShadowSignerStorage implements ShadowSignerStorage {
         const db = await this.openDB();
         const tx = db.transaction([this.SHADOW_SIGNER_DB_STORE], "readwrite");
         const store = tx.objectStore(this.SHADOW_SIGNER_DB_STORE);
-        store.put(privateKey, walletAddress);
+        store.put(privateKey, publicKey);
 
         return new Promise<void>((resolve, reject) => {
             tx.oncomplete = () => resolve();
@@ -35,7 +68,7 @@ export class BrowserShadowSignerStorage implements ShadowSignerStorage {
         });
     }
 
-    async getPrivateKey(walletAddress: string): Promise<CryptoKey | null> {
+    private async getPrivateKeyByPublicKey(publicKey: string): Promise<CryptoKey | null> {
         if (typeof indexedDB === "undefined") {
             return null;
         }
@@ -44,7 +77,7 @@ export class BrowserShadowSignerStorage implements ShadowSignerStorage {
             const db = await this.openDB();
             const tx = db.transaction([this.SHADOW_SIGNER_DB_STORE], "readonly");
             const store = tx.objectStore(this.SHADOW_SIGNER_DB_STORE);
-            const request = store.get(walletAddress);
+            const request = store.get(publicKey);
 
             return new Promise((resolve, reject) => {
                 request.onsuccess = () => resolve(request.result || null);
@@ -54,22 +87,6 @@ export class BrowserShadowSignerStorage implements ShadowSignerStorage {
             console.warn("Failed to retrieve private key from IndexedDB:", error);
             return null;
         }
-    }
-
-    async removePrivateKey(walletAddress: string): Promise<void> {
-        if (typeof indexedDB === "undefined") {
-            return;
-        }
-
-        const db = await this.openDB();
-        const tx = db.transaction([this.SHADOW_SIGNER_DB_STORE], "readwrite");
-        const store = tx.objectStore(this.SHADOW_SIGNER_DB_STORE);
-        store.delete(walletAddress);
-
-        return new Promise<void>((resolve, reject) => {
-            tx.oncomplete = () => resolve();
-            tx.onerror = () => reject(tx.error);
-        });
     }
 
     storeMetadata(walletAddress: string, data: ShadowSignerData): Promise<void> {
