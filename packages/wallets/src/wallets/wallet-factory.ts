@@ -26,7 +26,7 @@ import { Wallet } from "./wallet";
 import { assembleSigner } from "../signers";
 import type { DelegatedSigner, WalletArgsFor, WalletCreateArgs, WalletOptions } from "./types";
 import { compareSignerConfigs } from "../utils/signer-validation";
-import { generateShadowSigner, storeShadowSigner } from "@/signers/shadow-signer";
+import { generateShadowSigner, storeShadowSigner } from "../signers/shadow-signer";
 
 const DELEGATED_SIGNER_MISMATCH_ERROR =
     "When 'delegatedSigners' is provided to a method that may fetch an existing wallet, each specified delegated signer must exist in that wallet's configuration.";
@@ -498,23 +498,27 @@ export class WalletFactory {
                 args.onCreateConfig?.delegatedSigners
             );
 
-        const updatedDelegatedSigners = await Promise.all(
-            delegatedSigners?.map((signer) => this.assembleDelegatedSigner(signer)) ?? []
-        );
+        const registeredDelegatedSigners = await this.registerDelegatedSigners(delegatedSigners);
 
-        return { delegatedSigners: updatedDelegatedSigners, shadowSignerPublicKey, shadowSignerPrivateKey };
+        return { delegatedSigners: registeredDelegatedSigners, shadowSignerPublicKey, shadowSignerPrivateKey };
     }
 
-    private async assembleDelegatedSigner<C extends Chain>(
-        signer: SignerConfigForChain<C>
-    ): Promise<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }> {
-        if (signer.type === "passkey") {
-            if (signer.id == null) {
-                return { signer: await this.createPasskeySigner(signer) };
-            }
-            return { signer };
-        }
-        return { signer: this.getSignerLocator(signer) };
+    private async registerDelegatedSigners<C extends Chain>(
+        delegatedSigners?: Array<SignerConfigForChain<C>>
+    ): Promise<Array<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }>> {
+        return await Promise.all(
+            delegatedSigners?.map(
+                async (signer): Promise<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }> => {
+                    if (signer.type === "passkey") {
+                        if (signer.id == null) {
+                            return { signer: await this.createPasskeySigner(signer) };
+                        }
+                        return { signer };
+                    }
+                    return { signer: this.getSignerLocator(signer) };
+                }
+            ) ?? []
+        );
     }
 
     private async addShadowSignerToDelegatedSignersIfNeeded<C extends Chain>(
