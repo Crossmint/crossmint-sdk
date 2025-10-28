@@ -8,6 +8,7 @@ import type {
 import { AuthRejectedError } from "../types";
 import { NcsIframeManager } from "./ncs-iframe-manager";
 import { validateAPIKey } from "@crossmint/common-sdk-base";
+import type { SignerOutputEvent } from "@crossmint/client-signers";
 
 export abstract class NonCustodialSigner implements Signer {
     public readonly type: "email" | "phone";
@@ -223,9 +224,10 @@ export abstract class NonCustodialSigner implements Signer {
     }
 
     private async verifyOtp(encryptedOtp: string) {
-        const handshakeParent = await this.getTEEConnection();
+        let response: SignerOutputEvent<"complete-onboarding">;
         try {
-            const response = await handshakeParent.sendAction({
+            const handshakeParent = await this.getTEEConnection();
+            response = await handshakeParent.sendAction({
                 event: "request:complete-onboarding",
                 responseEvent: "response:complete-onboarding",
                 data: {
@@ -242,32 +244,34 @@ export abstract class NonCustodialSigner implements Signer {
                     maxRetries: 3,
                 },
             });
-
-            if (response?.status === "success") {
-                this._needsAuth = false;
-                // We call onAuthRequired again so the needsAuth state is updated for the dev
-                if (this.config.onAuthRequired != null) {
-                    await this.config.onAuthRequired(
-                        this._needsAuth,
-                        () => this.sendMessageWithOtp(),
-                        (otp) => this.verifyOtp(otp),
-                        () => this._authPromise?.reject(new AuthRejectedError())
-                    );
-                }
-                this._authPromise?.resolve();
-                return;
-            }
-
-            console.error("[verifyOtp] Failed to validate OTP:", response);
-            this._needsAuth = true;
-            const errorMessage = response?.status === "error" ? response.error : "Failed to validate encrypted OTP";
-            this._authPromise?.reject(new Error(errorMessage));
         } catch (err) {
             console.error("[verifyOtp] Error sending OTP validation request:", err);
             this._needsAuth = true;
             this._authPromise?.reject(err as Error);
             throw err;
         }
+
+        if (response?.status === "success") {
+            this._needsAuth = false;
+            // We call onAuthRequired again so the needsAuth state is updated for the dev
+            if (this.config.onAuthRequired != null) {
+                await this.config.onAuthRequired(
+                    this._needsAuth,
+                    () => this.sendMessageWithOtp(),
+                    (otp) => this.verifyOtp(otp),
+                    () => this._authPromise?.reject(new AuthRejectedError())
+                );
+            }
+            this._authPromise?.resolve();
+            return;
+        }
+
+        console.error("[verifyOtp] Failed to validate OTP:", response);
+        this._needsAuth = true;
+        const errorMessage = response?.status === "error" ? response.error : "Failed to validate encrypted OTP";
+        const error = new Error(errorMessage);
+        this._authPromise?.reject(error);
+        throw error;
     }
 
     /**

@@ -136,7 +136,7 @@ describe("RNWebView Security", () => {
                 style: { width: 100 },
                 injectedJavaScriptBeforeContentLoaded: expect.stringContaining('window.crossmintAppId = "test";'),
             }),
-            expect.any(Object)
+            undefined
         );
     });
 });

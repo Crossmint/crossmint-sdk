@@ -12,6 +12,7 @@ import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
 import { useCrossmint } from "@/hooks";
 import type { CreateOnLogin } from "@/types";
+import cloneDeep from "lodash.clonedeep";
 
 export type CrossmintWalletBaseContext = {
     wallet: Wallet<Chain> | undefined;
@@ -56,7 +57,9 @@ export function CrossmintWalletBaseProvider({
     const [walletStatus, setWalletStatus] = useState<"not-loaded" | "in-progress" | "loaded" | "error">("not-loaded");
 
     const getOrCreateWallet = useCallback(
-        async <C extends Chain>(args: WalletArgsFor<C>) => {
+        async <C extends Chain>(_args: WalletArgsFor<C>) => {
+            // Deep clone the args object to avoid mutating the original object
+            const args = cloneDeep(_args);
             if (experimental_customAuth?.jwt == null || walletStatus === "in-progress") {
                 return undefined;
             }
@@ -122,6 +125,7 @@ export function CrossmintWalletBaseProvider({
                     owner: args.owner,
                     plugins: args.plugins,
                     delegatedSigners: args.delegatedSigners,
+                    alias: args.alias,
                     options: {
                         clientTEEConnection: clientTEEConnection?.(),
                         experimental_callbacks: {

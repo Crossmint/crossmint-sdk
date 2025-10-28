@@ -1,5 +1,41 @@
 # @crossmint/wallets-quickstart-devkit
 
+## 0.2.0
+
+### Minor Changes
+
+- 4ab93e0: Add wallet aliasing
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@2.5.11
+
+## 0.1.72
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@2.5.10
+
+## 0.1.71
+
+### Patch Changes
+
+- Updated dependencies [a2c15a8]
+  - @crossmint/client-sdk-react-ui@2.5.9
+
+## 0.1.70
+
+### Patch Changes
+
+- Updated dependencies [5d4ecf6]
+  - @crossmint/client-sdk-react-ui@2.5.8
+
+## 0.1.69
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@2.5.7
+
 ## 0.1.68
 
 ### Patch Changes
