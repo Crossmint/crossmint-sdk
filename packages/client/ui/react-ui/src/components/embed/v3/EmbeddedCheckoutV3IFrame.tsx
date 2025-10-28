@@ -61,6 +61,8 @@ export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props
         };
     }, [iframeClient]);
 
+    console.log("[EmbeddedCheckoutV3IFrame] memoizedProps", memoizedProps.current);
+    console.log("[EmbeddedCheckoutV3IFrame] iframeClient", iframeClient);
     return (
         <>
             <iframe

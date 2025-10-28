@@ -11,6 +11,9 @@ export const embeddedCheckoutV3IncomingEvents = {
         chain: z.string(),
         serializedTransaction: z.string(),
     }),
+    "crypto:sign-message": z.object({
+        message: z.string(),
+    }),
     "order:updated": z.object({
         order: z.any().optional(),
         orderClientSecret: z.string().optional(),
