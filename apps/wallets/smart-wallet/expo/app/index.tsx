@@ -127,7 +127,7 @@ export default function Index() {
         }
         setIsLoading(true);
         try {
-            const tx = await wallet.send(recipientAddress, "xlm", amount);
+            const tx = await wallet.send(recipientAddress, "usdc", amount);
             console.log(`Sent ${amount} USDC to ${recipientAddress}. Tx Link: ${tx.explorerLink}`);
             setTxLink(tx.explorerLink);
             setRecipientAddress("");
