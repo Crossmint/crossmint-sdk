@@ -106,7 +106,6 @@ const InputActions = styled.div`
     display: flex;
     align-items: center;
     padding-right: 16px;
-    aspect-ratio: 1/1;
 `;
 
 const SubmitButton = styled.button<{
