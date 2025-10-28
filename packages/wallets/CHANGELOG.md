@@ -1,5 +1,11 @@
 # @crossmint/wallets-sdk
 
+## 0.17.0
+
+### Minor Changes
+
+- 4ab93e0: Add wallet aliasing
+
 ## 0.16.2
 
 ### Patch Changes

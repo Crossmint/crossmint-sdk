@@ -1,5 +1,16 @@
 # @crossmint/client-sdk-react-base
 
+## 0.7.0
+
+### Minor Changes
+
+- 4ab93e0: Add wallet aliasing
+
+### Patch Changes
+
+- Updated dependencies [4ab93e0]
+  - @crossmint/wallets-sdk@0.17.0
+
 ## 0.6.9
 
 ### Patch Changes
