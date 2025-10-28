@@ -153,10 +153,18 @@ function _CryptoWalletConnectionHandler({ iframeClient }: Parameters<typeof Cryp
                 return;
             }
 
-            const signature = await primaryWallet.signMessage(message);
-            iframeClient.send("crypto:sign-message:success", {
-                signature: signature!,
-            });
+            try {
+                const signature = await primaryWallet.signMessage(message);
+                if (signature == null) {
+                    throw new Error("Failed to sign message");
+                }
+                iframeClient.send("crypto:sign-message:success", {
+                    signature,
+                });
+            } catch (error) {
+                console.error("[CryptoWalletConnectionHandler] failed to sign message", error);
+                iframeClient.send("crypto:sign-message:failed", { error: (error as Error).message });
+            }
         });
 
         return () => {
