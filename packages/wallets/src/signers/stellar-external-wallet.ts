@@ -1,25 +1,13 @@
-import type { ExternalWalletInternalSignerConfig, Signer } from "./types";
+import type { ExternalWalletInternalSignerConfig } from "./types";
 import type { StellarChain } from "@/chains/chains";
+import { ExternalWalletSigner } from "./external-wallet-signer";
 
-export class StellarExternalWalletSigner implements Signer {
-    type = "external-wallet" as const;
-    private _address: string;
+export class StellarExternalWalletSigner extends ExternalWalletSigner<StellarChain> {
     onSignStellarTransaction?: (payload: string) => Promise<string>;
 
-    constructor(private config: ExternalWalletInternalSignerConfig<StellarChain>) {
-        if (config.address == null) {
-            throw new Error("Please provide an address for the External Wallet Signer");
-        }
-        this._address = config.address;
+    constructor(config: ExternalWalletInternalSignerConfig<StellarChain>) {
+        super(config);
         this.onSignStellarTransaction = config.onSignStellarTransaction;
-    }
-
-    address() {
-        return this._address;
-    }
-
-    locator() {
-        return this.config.locator;
     }
 
     async signMessage() {
