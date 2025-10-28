@@ -19,8 +19,6 @@ export default function Index() {
     const walletAddress = useMemo(() => wallet?.address, [wallet]);
     const url = Linking.useURL();
 
-    console.log("wallet", wallet);
-
     const [balances, setBalances] = useState<Balances | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
 

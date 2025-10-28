@@ -47,7 +47,7 @@ export class WalletFactory {
         }
 
         const existingWallet = await this.apiClient.getWallet(`me:${this.getChainType(args.chain)}:smart`);
-        console.log("existingWallet", existingWallet);
+
         if (existingWallet != null && !("error" in existingWallet)) {
             return this.createWalletInstance(existingWallet, args);
         }
@@ -98,7 +98,6 @@ export class WalletFactory {
     }
 
     public async createWallet<C extends Chain>(args: WalletCreateArgs<C>): Promise<Wallet<C>> {
-        console.log("createWallet", args);
         await args.options?.experimental_callbacks?.onWalletCreationStart?.();
 
         let adminSignerConfig = args.onCreateConfig?.adminSigner ?? args.signer;

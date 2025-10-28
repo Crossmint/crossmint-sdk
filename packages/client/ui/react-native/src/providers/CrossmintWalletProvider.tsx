@@ -174,11 +174,9 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
     const initializeWebView = async () => {
         setNeedsWebView(true);
 
-        // Wait for both WebViews to be ready
         let attempts = 0;
         const maxAttempts = 100; // 5 seconds total with 50ms intervals
 
-        // Wait for email/phone signer WebView
         while (webViewParentRef.current == null && attempts < maxAttempts) {
             await new Promise((resolve) => setTimeout(resolve, 50));
             attempts++;
@@ -188,10 +186,8 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
             throw new Error("Email/Phone signer WebView not ready or handshake incomplete");
         }
 
-        // Wait for shadow signer WebView if using WebViewShadowSignerStorage
         if (shadowSignerStorage instanceof WebViewShadowSignerStorage) {
             console.log("[initializeWebView] Waiting for shadow signer WebView to be ready...");
-            // The storage has a ready promise that resolves when injected
             await shadowSignerStorage.waitForReady();
         }
     };
@@ -202,7 +198,6 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
         verifyOtp: (otp: string) => Promise<void>,
         reject: () => void
     ) => {
-        console.log("onAuthRequired", needsAuth);
         setNeedsAuth(needsAuth);
         sendEmailWithOtpRef.current = sendEmailWithOtp;
         verifyOtpRef.current = verifyOtp;

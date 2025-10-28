@@ -142,6 +142,7 @@ export function CrossmintWalletBaseProvider({
                 const resolvedSigner = resolveSignerConfig(args.signer) as SignerConfigForChain<C>;
 
                 await initializeWebViewIfNeeded(resolvedSigner);
+
                 const wallet = await wallets.getOrCreateWallet<C>({
                     chain: args.chain,
                     signer: resolvedSigner,

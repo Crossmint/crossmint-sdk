@@ -18,7 +18,7 @@ export type ShadowSignerResult = {
 };
 
 export interface ShadowSignerStorage {
-    keyGenerator(chain: string): Promise<string>;
+    keyGenerator(): Promise<string>;
     sign(publicKey: string, data: Uint8Array): Promise<Uint8Array>;
     storeMetadata(walletAddress: string, data: ShadowSignerData): Promise<void>;
     getMetadata(walletAddress: string): Promise<ShadowSignerData | null>;
@@ -46,14 +46,16 @@ export async function generateShadowSigner<C extends Chain>(
 ): Promise<ShadowSignerResult & { publicKeyBase64: string }> {
     const storageInstance = storage ?? getStorage();
     if (chain === "solana" || chain === "stellar") {
-        const publicKeyBase64 = await storageInstance.keyGenerator(chain);
+        const publicKeyBase64 = await storageInstance.keyGenerator();
         const publicKeyBuffer = Buffer.from(publicKeyBase64, "base64");
         const publicKeyBytes = new Uint8Array(publicKeyBuffer);
 
         let encodedPublicKey: string;
         if (chain === "stellar") {
+            // Stellar uses Ed25519 encoding (Base32 with version byte and checksum)
             encodedPublicKey = encodeEd25519PublicKey(publicKeyBytes);
         } else {
+            // Solana uses Base58 encoding
             encodedPublicKey = encodeBase58(publicKeyBytes);
         }
 
@@ -107,7 +109,7 @@ export async function getShadowSigner(
         console.log("[getShadowSigner] Result:", result ? "found" : "not found");
         return result;
     } catch (error) {
-        console.error("[getShadowSigner] Failed to get shadow signer:", error);
+        console.warn("[getShadowSigner] Failed to get shadow signer:", error);
         return null;
     }
 }

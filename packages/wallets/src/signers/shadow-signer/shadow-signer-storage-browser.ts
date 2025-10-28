@@ -19,26 +19,23 @@ export class BrowserShadowSignerStorage implements ShadowSignerStorage {
         });
     }
 
-    async keyGenerator(chain: string): Promise<string> {
-        if (chain === "solana" || chain === "stellar") {
-            const keyPair = (await window.crypto.subtle.generateKey(
-                {
-                    name: "Ed25519",
-                    namedCurve: "Ed25519",
-                } as AlgorithmIdentifier,
-                false,
-                ["sign", "verify"]
-            )) as CryptoKeyPair;
+    async keyGenerator(): Promise<string> {
+        const keyPair = (await window.crypto.subtle.generateKey(
+            {
+                name: "Ed25519",
+                namedCurve: "Ed25519",
+            } as AlgorithmIdentifier,
+            false,
+            ["sign", "verify"]
+        )) as CryptoKeyPair;
 
-            const publicKeyBuffer = await window.crypto.subtle.exportKey("raw", keyPair.publicKey);
-            const publicKeyBytes = new Uint8Array(publicKeyBuffer);
-            const publicKeyBase64 = Buffer.from(publicKeyBytes).toString("base64");
+        const publicKeyBuffer = await window.crypto.subtle.exportKey("raw", keyPair.publicKey);
+        const publicKeyBytes = new Uint8Array(publicKeyBuffer);
+        const publicKeyBase64 = Buffer.from(publicKeyBytes).toString("base64");
 
-            await this.storePrivateKeyByPublicKey(publicKeyBase64, keyPair.privateKey);
+        await this.storePrivateKeyByPublicKey(publicKeyBase64, keyPair.privateKey);
 
-            return publicKeyBase64;
-        }
-        throw new Error("Unsupported chain for browser shadow signer");
+        return publicKeyBase64;
     }
 
     async sign(publicKeyBase64: string, data: Uint8Array): Promise<Uint8Array> {
