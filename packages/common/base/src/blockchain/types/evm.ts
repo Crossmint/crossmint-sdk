@@ -23,6 +23,7 @@ export const EVMBlockchain = {
     SCROLL: "scroll",
     SEI_PACIFIC_1: "sei-pacific-1",
     FLOW: "flow",
+    PLUME: "plume",
 } as const;
 export type EVMBlockchain = ObjectValues<typeof EVMBlockchain>;
 export const EVM_CHAINS = objectValues(EVMBlockchain);
@@ -50,6 +51,7 @@ export const EVMBlockchainTestnet = {
     SEI_ATLANTIC_2_TESTNET: "sei-atlantic-2-testnet",
     WORLD_CHAIN_SEPOLIA: "world-chain-sepolia",
     FLOW_TESTNET: "flow-testnet",
+    PLUME_TESTNET: "plume-testnet",
 } as const;
 export type EVMBlockchainTestnet = ObjectValues<typeof EVMBlockchainTestnet>;
 export const EVM_BLOCKCHAIN_TESTNETS = objectValues(EVMBlockchainTestnet);
