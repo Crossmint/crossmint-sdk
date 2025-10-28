@@ -491,31 +491,30 @@ export class WalletFactory {
         shadowSignerPublicKey: string | null;
         shadowSignerPrivateKey: CryptoKey | null;
     }> {
-        const {
-            delegatedSigners: updatedDelegatedSigners,
-            shadowSignerPublicKey,
-            shadowSignerPrivateKey,
-        } = await this.addShadowSignerToDelegatedSignersIfNeeded(
-            args,
-            adminSigner,
-            args.onCreateConfig?.delegatedSigners
+        const { delegatedSigners, shadowSignerPublicKey, shadowSignerPrivateKey } =
+            await this.addShadowSignerToDelegatedSignersIfNeeded(
+                args,
+                adminSigner,
+                args.onCreateConfig?.delegatedSigners
+            );
+
+        const updatedDelegatedSigners = await Promise.all(
+            delegatedSigners?.map((signer) => this.assembleDelegatedSigner(signer)) ?? []
         );
 
-        const delegatedSigners = await Promise.all(
-            updatedDelegatedSigners?.map(
-                async (signer): Promise<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }> => {
-                    if (signer.type === "passkey") {
-                        if (signer.id == null) {
-                            return { signer: await this.createPasskeySigner(signer) };
-                        }
-                        return { signer };
-                    }
-                    return { signer: this.getSignerLocator(signer) };
-                }
-            ) ?? []
-        );
+        return { delegatedSigners: updatedDelegatedSigners, shadowSignerPublicKey, shadowSignerPrivateKey };
+    }
 
-        return { delegatedSigners, shadowSignerPublicKey, shadowSignerPrivateKey };
+    private async assembleDelegatedSigner<C extends Chain>(
+        signer: SignerConfigForChain<C>
+    ): Promise<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }> {
+        if (signer.type === "passkey") {
+            if (signer.id == null) {
+                return { signer: await this.createPasskeySigner(signer) };
+            }
+            return { signer };
+        }
+        return { signer: this.getSignerLocator(signer) };
     }
 
     private async addShadowSignerToDelegatedSignersIfNeeded<C extends Chain>(

@@ -80,7 +80,7 @@ export class StellarNonCustodialSigner extends NonCustodialSigner {
             locator: `external-wallet:${shadowData.publicKey}`,
             onSignStellarTransaction: async (payload) => {
                 const privateKey = await getShadowSignerPrivateKey(walletAddress);
-                if (!privateKey) {
+                if (privateKey == null) {
                     throw new Error("Shadow signer private key not found");
                 }
 
