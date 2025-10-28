@@ -1,4 +1,10 @@
-import type { BaseSignResult, EmailInternalSignerConfig, PhoneInternalSignerConfig, Signer } from "../types";
+import type {
+    BaseSignResult,
+    EmailInternalSignerConfig,
+    ExportSignerTEEConnection,
+    PhoneInternalSignerConfig,
+    Signer,
+} from "../types";
 import { AuthRejectedError } from "../types";
 import { NcsIframeManager } from "./ncs-iframe-manager";
 import { validateAPIKey } from "@crossmint/common-sdk-base";
@@ -275,6 +281,43 @@ export abstract class NonCustodialSigner implements Signer {
         this._authPromise?.reject(error);
         throw error;
     }
+
+    /**
+     * Export the private key for this signer
+     * @throws {Error} If signer is not authenticated
+     */
+    async _exportPrivateKey(exportTEEConnection: ExportSignerTEEConnection): Promise<void> {
+        await this.handleAuthRequired();
+        const jwt = this.getJwtOrThrow();
+
+        const { scheme, encoding } = this.getChainKeyParams();
+
+        const response = await exportTEEConnection.sendAction({
+            event: "request:export-signer",
+            responseEvent: "response:export-signer",
+            data: {
+                authData: {
+                    jwt,
+                    apiKey: this.config.crossmint.apiKey,
+                },
+                data: {
+                    scheme,
+                    encoding,
+                },
+            },
+            options: DEFAULT_EVENT_OPTIONS,
+        });
+
+        if (response?.status === "error") {
+            throw new Error(response.error || "Failed to export private key");
+        }
+    }
+
+    /**
+     * Get the appropriate scheme and encoding based on the chain
+     * Must be implemented by concrete classes
+     */
+    protected abstract getChainKeyParams(): { scheme: "secp256k1" | "ed25519"; encoding: "base58" | "hex" | "strkey" };
 }
 
 export const DEFAULT_EVENT_OPTIONS = {

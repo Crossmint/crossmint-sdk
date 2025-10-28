@@ -1,6 +1,6 @@
 import type { WebAuthnP256 } from "ox";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
-import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
+import type { signerInboundEvents, signerOutboundEvents, exportSignerInboundEvents, exportSignerOutboundEvents } from "@crossmint/client-signers";
 import type { Crossmint } from "@crossmint/common-sdk-base";
 import type { Chain, SolanaChain, StellarChain } from "../chains/chains";
 import type { VersionedTransaction } from "@solana/web3.js";
@@ -164,3 +164,16 @@ export interface Signer<T extends keyof SignResultMap = keyof SignResultMap> {
     email?: string; // for email signers
     phone?: string; // for phone signers
 }
+
+export interface ExportableSigner extends Signer {
+    _exportPrivateKey: (exportTEEConnection: ExportSignerTEEConnection) => Promise<void>;
+}
+
+export function isExportableSigner(signer: Signer): signer is ExportableSigner {
+    return (signer as ExportableSigner)._exportPrivateKey !== undefined;
+}
+
+export type ExportSignerTEEConnection = HandshakeParent<
+    typeof exportSignerOutboundEvents,
+    typeof exportSignerInboundEvents
+>;
