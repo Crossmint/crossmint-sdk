@@ -1,5 +1,13 @@
 # @crossmint/server-sdk
 
+## 1.2.47
+
+### Patch Changes
+
+- Updated dependencies [fb1cfdb]
+  - @crossmint/common-sdk-base@0.9.7
+  - @crossmint/common-sdk-auth@1.0.57
+
 ## 1.2.46
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @crossmint/client-sdk-base
 
+## 1.7.2
+
+### Patch Changes
+
+- 84d2bfd: Adding order creation failed event
+- Updated dependencies [fb1cfdb]
+  - @crossmint/common-sdk-base@0.9.7
+
 ## 1.7.1
 
 ### Patch Changes
