@@ -8,6 +8,13 @@ import { SolanaWalletConnectors } from "@dynamic-labs/solana";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { useSearchParams } from "next/navigation";
 
+const ALIAS_CONFIG =
+    process.env.NEXT_PUBLIC_WALLET_ALIAS != null
+        ? {
+              alias: process.env.NEXT_PUBLIC_WALLET_ALIAS,
+          }
+        : {};
+
 const crossmintApiKey = process.env.NEXT_PUBLIC_CROSSMINT_API_KEY ?? "";
 if (!crossmintApiKey) {
     throw new Error("NEXT_PUBLIC_CROSSMINT_API_KEY is not set");
@@ -32,7 +39,11 @@ function EVMCrossmintAuthProvider({
     children,
     apiKey,
     createOnLogin,
-}: { children: React.ReactNode; apiKey?: string; createOnLogin?: any }) {
+}: {
+    children: React.ReactNode;
+    apiKey?: string;
+    createOnLogin?: any;
+}) {
     if (!process.env.NEXT_PUBLIC_EVM_CHAIN) {
         console.error("NEXT_PUBLIC_EVM_CHAIN is not set");
         return;
@@ -49,7 +60,11 @@ function EVMCrossmintAuthProvider({
                     createOnLogin={
                         createOnLogin != null
                             ? createOnLogin
-                            : { chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any, signer: { type: "email" } }
+                            : {
+                                  chain: process.env.NEXT_PUBLIC_EVM_CHAIN as any,
+                                  signer: { type: "email" },
+                                  ...ALIAS_CONFIG,
+                              }
                     }
                 >
                     {children}
@@ -59,7 +74,13 @@ function EVMCrossmintAuthProvider({
     );
 }
 
-function EVMPrivyProvider({ children, apiKey }: { children: React.ReactNode; apiKey?: string }) {
+function EVMPrivyProvider({
+    children,
+    apiKey,
+}: {
+    children: React.ReactNode;
+    apiKey?: string;
+}) {
     if (!process.env.NEXT_PUBLIC_PRIVY_APP_ID) {
         throw new Error("NEXT_PUBLIC_PRIVY_APP_ID is not set");
     }
@@ -82,7 +103,13 @@ function EVMPrivyProvider({ children, apiKey }: { children: React.ReactNode; api
     );
 }
 
-function EVMDynamicLabsProvider({ children, apiKey }: { children: React.ReactNode; apiKey?: string }) {
+function EVMDynamicLabsProvider({
+    children,
+    apiKey,
+}: {
+    children: React.ReactNode;
+    apiKey?: string;
+}) {
     if (!process.env.NEXT_PUBLIC_DYNAMIC_ENV_ID) {
         throw new Error("NEXT_PUBLIC_DYNAMIC_ENV_ID is not set");
     }
@@ -100,7 +127,13 @@ function EVMDynamicLabsProvider({ children, apiKey }: { children: React.ReactNod
     );
 }
 
-function EVMFirebaseProvider({ children, apiKey }: { children: React.ReactNode; apiKey?: string }) {
+function EVMFirebaseProvider({
+    children,
+    apiKey,
+}: {
+    children: React.ReactNode;
+    apiKey?: string;
+}) {
     if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
         console.error("Make sure to set all firebase .env vars for Firebase BYOA");
         return;
@@ -119,7 +152,11 @@ function SolanaCrossmintAuthProvider({
     children,
     apiKey,
     createOnLogin,
-}: { children: React.ReactNode; apiKey?: string; createOnLogin?: any }) {
+}: {
+    children: React.ReactNode;
+    apiKey?: string;
+    createOnLogin?: any;
+}) {
     return (
         <CrossmintProvider apiKey={apiKey ?? crossmintApiKey}>
             <CrossmintAuthProvider
@@ -129,7 +166,13 @@ function SolanaCrossmintAuthProvider({
                 <CrossmintWalletProvider
                     showPasskeyHelpers={false}
                     createOnLogin={
-                        createOnLogin != null ? createOnLogin : { chain: "solana", signer: { type: "email" } }
+                        createOnLogin != null
+                            ? createOnLogin
+                            : {
+                                  chain: "solana",
+                                  signer: { type: "email" },
+                                  ...ALIAS_CONFIG,
+                              }
                     }
                 >
                     {children}
@@ -139,7 +182,13 @@ function SolanaCrossmintAuthProvider({
     );
 }
 
-function SolanaPrivyProvider({ children, apiKey }: { children: React.ReactNode; apiKey?: string }) {
+function SolanaPrivyProvider({
+    children,
+    apiKey,
+}: {
+    children: React.ReactNode;
+    apiKey?: string;
+}) {
     if (!process.env.NEXT_PUBLIC_PRIVY_APP_ID) {
         throw new Error("NEXT_PUBLIC_PRIVY_APP_ID is not set");
     }
@@ -186,7 +235,13 @@ function SolanaDynamicLabsProvider({
     );
 }
 
-function SolanaFirebaseProvider({ children, apiKey }: { children: React.ReactNode; apiKey?: string }) {
+function SolanaFirebaseProvider({
+    children,
+    apiKey,
+}: {
+    children: React.ReactNode;
+    apiKey?: string;
+}) {
     return (
         <CrossmintProvider apiKey={apiKey ?? crossmintApiKey}>
             <CrossmintWalletProvider>{children}</CrossmintWalletProvider>
@@ -194,7 +249,15 @@ function SolanaFirebaseProvider({ children, apiKey }: { children: React.ReactNod
     );
 }
 
-function StellarCrossmintAuthProvider({ children, apiKey }: { children: React.ReactNode; apiKey?: string }) {
+function StellarCrossmintAuthProvider({
+    children,
+    apiKey,
+    createOnLogin,
+}: {
+    children: React.ReactNode;
+    apiKey?: string;
+    createOnLogin?: any;
+}) {
     return (
         <CrossmintProvider apiKey={apiKey ?? crossmintApiKey}>
             <CrossmintAuthProvider
@@ -203,13 +266,20 @@ function StellarCrossmintAuthProvider({ children, apiKey }: { children: React.Re
             >
                 <CrossmintWalletProvider
                     showPasskeyHelpers={false}
-                    createOnLogin={{
-                        chain: "stellar",
-                        signer: { type: "email" },
-                        delegatedSigners: [
-                            { signer: "external-wallet:GDUNAPJW6JYL4JEBFR7B5RZZD6B4TOUEWPFTT3V47IHI7QJPA43UFEY6" },
-                        ],
-                    }}
+                    createOnLogin={
+                        createOnLogin != null
+                            ? createOnLogin
+                            : {
+                                  chain: "stellar",
+                                  signer: { type: "email", email: "user@example.com" },
+                                  ...ALIAS_CONFIG,
+                                  delegatedSigners: [
+                                      {
+                                          signer: "external-wallet:GDUNAPJW6JYL4JEBFR7B5RZZD6B4TOUEWPFTT3V47IHI7QJPA43UFEY6",
+                                      },
+                                  ],
+                              }
+                    }
                 >
                     {children}
                 </CrossmintWalletProvider>
@@ -229,6 +299,7 @@ function QueryParamsProvider({ children }: { children: React.ReactNode }) {
     const chainId = searchParams.get("chainId") || process.env.NEXT_PUBLIC_EVM_CHAIN;
     const phoneNumber = searchParams.get("phoneNumber");
     const crossmintApiKey = searchParams.get("crossmintApiKey") || undefined;
+    const alias = searchParams.get("alias") || undefined;
 
     if (chainType === "evm") {
         switch (providerType) {
@@ -240,9 +311,16 @@ function QueryParamsProvider({ children }: { children: React.ReactNode }) {
                 return <EVMFirebaseProvider>{children}</EVMFirebaseProvider>;
             case "crossmint":
             default:
-                const createOnLogin: any = { chain: chainId, signer: { type: signerType } };
+                const createOnLogin: any = {
+                    chain: chainId,
+                    signer: { type: signerType },
+                    ...(alias != null ? { alias } : {}),
+                };
                 if (signerType === "phone" && phoneNumber != null) {
-                    createOnLogin.signer = { type: signerType, phone: decodeURIComponent(phoneNumber) };
+                    createOnLogin.signer = {
+                        type: signerType,
+                        phone: decodeURIComponent(phoneNumber),
+                    };
                 }
                 return (
                     <EVMCrossmintAuthProvider apiKey={crossmintApiKey} createOnLogin={createOnLogin}>
@@ -260,9 +338,16 @@ function QueryParamsProvider({ children }: { children: React.ReactNode }) {
                 return <SolanaFirebaseProvider>{children}</SolanaFirebaseProvider>;
             case "crossmint":
             default:
-                const createOnLogin: any = { chain: "solana", signer: { type: signerType } };
+                const createOnLogin: any = {
+                    chain: "solana",
+                    signer: { type: signerType },
+                    ...(alias != null ? { alias } : {}),
+                };
                 if (signerType === "phone" && phoneNumber != null) {
-                    createOnLogin.signer = { type: signerType, phone: decodeURIComponent(phoneNumber) };
+                    createOnLogin.signer = {
+                        type: signerType,
+                        phone: decodeURIComponent(phoneNumber),
+                    };
                 }
                 return (
                     <SolanaCrossmintAuthProvider apiKey={crossmintApiKey} createOnLogin={createOnLogin}>
@@ -271,7 +356,22 @@ function QueryParamsProvider({ children }: { children: React.ReactNode }) {
                 );
         }
     } else if (chainType === "stellar") {
-        return <StellarCrossmintAuthProvider>{children}</StellarCrossmintAuthProvider>;
+        const createOnLogin: any = {
+            chain: "stellar",
+            signer: { type: signerType },
+            ...(alias != null ? { alias } : {}),
+        };
+        if (signerType === "phone" && phoneNumber != null) {
+            createOnLogin.signer = {
+                type: signerType,
+                phone: decodeURIComponent(phoneNumber),
+            };
+        }
+        return (
+            <StellarCrossmintAuthProvider apiKey={crossmintApiKey} createOnLogin={createOnLogin}>
+                {children}
+            </StellarCrossmintAuthProvider>
+        );
     }
 
     return <EVMCrossmintAuthProvider>{children}</EVMCrossmintAuthProvider>;
