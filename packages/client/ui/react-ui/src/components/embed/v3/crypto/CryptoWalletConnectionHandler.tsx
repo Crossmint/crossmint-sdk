@@ -153,14 +153,11 @@ function _CryptoWalletConnectionHandler({ iframeClient }: Parameters<typeof Cryp
                 return;
             }
 
-            console.log("[CryptoWalletConnectionHandler] signMessage", message);
             const signature = await primaryWallet.signMessage(message);
-            console.log("[CryptoWalletConnectionHandler] signature", signature);
             iframeClient.send("crypto:sign-message:success", {
                 signature: signature!,
             });
         });
-        console.log("[CryptoWalletConnectionHandler] signMessageListener", signMessageListener);
 
         return () => {
             iframeClient.off(signTransactionListener);
