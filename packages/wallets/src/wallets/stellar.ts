@@ -20,6 +20,7 @@ export class StellarWallet extends Wallet<StellarChain> {
                 owner: wallet.owner,
                 signer: wallet.signer,
                 options: Wallet.getOptions(wallet),
+                alias: wallet.alias,
             },
             Wallet.getApiClient(wallet)
         );
