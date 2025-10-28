@@ -126,14 +126,13 @@ export class WalletFactory {
         if ("error" in walletResponse) {
             throw new WalletCreationError(JSON.stringify(walletResponse));
         }
-
-        if (shadowSignerPublicKey != null && shadowSignerPublicKeyBase64 != null && args.options?.shadowSignerStorage) {
+        if (shadowSignerPublicKey != null && shadowSignerPublicKeyBase64 != null) {
             await storeShadowSigner(
                 walletResponse.address,
                 args.chain,
                 shadowSignerPublicKey,
                 shadowSignerPublicKeyBase64,
-                args.options.shadowSignerStorage
+                args.options?.shadowSignerStorage
             );
         }
 

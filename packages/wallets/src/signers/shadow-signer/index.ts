@@ -24,20 +24,15 @@ export interface ShadowSignerStorage {
     getMetadata(walletAddress: string): Promise<ShadowSignerData | null>;
 }
 
-let storageInstance: ShadowSignerStorage | null = null;
-
 export function getStorage(): ShadowSignerStorage {
-    if (!storageInstance) {
-        const isReactNative = typeof navigator !== "undefined" && navigator.product === "ReactNative";
-        const isExpo = typeof global !== "undefined" && (global as { expo?: unknown }).expo;
+    const isReactNative = typeof navigator !== "undefined" && navigator.product === "ReactNative";
+    const isExpo = typeof global !== "undefined" && (global as { expo?: unknown }).expo;
 
-        if (isReactNative || isExpo) {
-            throw new Error("ReactNativeShadowSignerStorage must be provided explicitly for React Native environments");
-        } else {
-            storageInstance = new BrowserShadowSignerStorage();
-        }
+    if (isReactNative || isExpo) {
+        throw new Error("ReactNativeShadowSignerStorage must be provided explicitly for React Native environments");
+    } else {
+        return new BrowserShadowSignerStorage();
     }
-    return storageInstance;
 }
 
 export async function generateShadowSigner<C extends Chain>(
@@ -77,8 +72,9 @@ export async function storeShadowSigner(
     chain: Chain,
     publicKey: string,
     publicKeyBase64: string,
-    storage: ShadowSignerStorage
+    storage?: ShadowSignerStorage
 ): Promise<void> {
+    const storageInstance = storage ?? getStorage();
     try {
         console.log("[storeShadowSigner] Storing metadata for wallet:", walletAddress, "publicKey:", publicKey);
 
@@ -90,7 +86,7 @@ export async function storeShadowSigner(
             createdAt: Date.now(),
         };
 
-        await storage.storeMetadata(walletAddress, data);
+        await storageInstance.storeMetadata(walletAddress, data);
         console.log("[storeShadowSigner] Metadata stored successfully");
     } catch (error) {
         console.error("Failed to store shadow signer metadata:", error);
