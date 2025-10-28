@@ -1,102 +1,93 @@
-function webviewStorageInjectedCode() {
-    const DB_NAME = "crossmint_shadow_keys";
-    const STORE_NAME = "keys";
-    let db: IDBDatabase | null = null;
+// Plain JavaScript string - no function stringification
+export const SHADOW_SIGNER_STORAGE_INJECTED_JS = `
+(function() {
+    console.log("[CrossmintShadowSigner] Starting injection...");
+    
+    var DB_NAME = "crossmint_shadow_keys";
+    var STORE_NAME = "keys";
+    var db = null;
 
     // Open IndexedDB
-    async function openDB(): Promise<IDBDatabase> {
+    function openDB() {
         if (db) {
-            return db;
+            return Promise.resolve(db);
         }
-        return new Promise((resolve, reject) => {
-            const request = indexedDB.open(DB_NAME, 1);
-            request.onerror = () => reject(request.error);
-            request.onsuccess = () => {
+        return new Promise(function(resolve, reject) {
+            var request = indexedDB.open(DB_NAME, 1);
+            request.onerror = function() { reject(request.error); };
+            request.onsuccess = function() {
                 db = request.result;
                 resolve(db);
             };
-            request.onupgradeneeded = (event) => {
-                const db = (event.target as IDBOpenDBRequest).result;
-                if (!db.objectStoreNames.contains(STORE_NAME)) {
-                    db.createObjectStore(STORE_NAME);
+            request.onupgradeneeded = function(event) {
+                var database = event.target.result;
+                if (!database.objectStoreNames.contains(STORE_NAME)) {
+                    database.createObjectStore(STORE_NAME);
                 }
             };
         });
     }
 
     openDB()
-        .then(() => {
+        .then(function() {
             console.log("[CrossmintShadowSigner] IndexedDB ready for non-extractable key storage");
         })
-        .catch((e) => {
+        .catch(function(e) {
             console.error("[CrossmintShadowSigner] IndexedDB init failed:", e);
         });
 
-    (window as unknown as Record<string, unknown>).__crossmintShadowSignerStorage = async function (
-        operation: string,
-        params: Record<string, unknown>
-    ): Promise<Record<string, unknown>> {
+    window.__crossmintShadowSignerStorage = async function(operation, params) {
+        console.log("[CrossmintShadowSigner] Function called with operation:", operation);
         try {
             await openDB();
-            let result: Record<string, unknown>;
+            var result;
 
             switch (operation) {
-                case "generate": {
+                case "generate":
                     console.log("[CrossmintShadowSigner] Generating new Ed25519 key pair (non-extractable)...");
 
-                    const keyPair = (await crypto.subtle.generateKey(
-                        { name: "Ed25519", namedCurve: "Ed25519" } as EcKeyGenParams,
+                    var keyPair = await crypto.subtle.generateKey(
+                        { name: "Ed25519", namedCurve: "Ed25519" },
                         false,
                         ["sign", "verify"]
-                    )) as CryptoKeyPair;
-
-                    const publicKeyBuffer = await crypto.subtle.exportKey("raw", keyPair.publicKey);
-                    const publicKeyBytes = new Uint8Array(publicKeyBuffer);
-
-                    const publicKeyBase64 = btoa(String.fromCharCode.apply(null, Array.from(publicKeyBytes)));
-
-                    console.log(
-                        "[CrossmintShadowSigner] Key pair generated, storing in IndexedDB with public key as index..."
                     );
+
+                    var publicKeyBuffer = await crypto.subtle.exportKey("raw", keyPair.publicKey);
+                    var publicKeyBytes = new Uint8Array(publicKeyBuffer);
+                    var publicKeyBase64 = btoa(String.fromCharCode.apply(null, Array.from(publicKeyBytes)));
+
+                    console.log("[CrossmintShadowSigner] Key pair generated, storing in IndexedDB...");
 
                     if (!db) {
                         throw new Error("Database not initialized");
                     }
-                    const tx = db.transaction([STORE_NAME], "readwrite");
+                    var tx = db.transaction([STORE_NAME], "readwrite");
                     tx.objectStore(STORE_NAME).put(keyPair.privateKey, publicKeyBase64);
-                    await new Promise<void>((resolve, reject) => {
-                        tx.oncomplete = () => {
-                            resolve();
-                        };
-                        tx.onerror = () => {
-                            reject(tx.error);
-                        };
+                    await new Promise(function(resolve, reject) {
+                        tx.oncomplete = function() { resolve(); };
+                        tx.onerror = function() { reject(tx.error); };
                     });
 
-                    console.log("[CrossmintShadowSigner] Private key stored in IndexedDB[publicKey]");
+                    console.log("[CrossmintShadowSigner] Private key stored in IndexedDB");
                     console.log("[CrossmintShadowSigner] ✅ Key generation complete");
 
                     result = { publicKeyBytes: Array.from(publicKeyBytes) };
                     break;
-                }
 
-                case "sign": {
-                    const { publicKey, messageBytes } = params;
+                case "sign":
+                    var publicKey = params.publicKey;
+                    var messageBytes = params.messageBytes;
 
                     console.log("[CrossmintShadowSigner] Retrieving key from IndexedDB for signing...");
 
                     if (!db) {
                         throw new Error("Database not initialized");
                     }
-                    const tx = db.transaction([STORE_NAME], "readonly");
-                    const request = tx.objectStore(STORE_NAME).get(publicKey as string);
-                    const privateKey = await new Promise<CryptoKey>((resolve, reject) => {
-                        request.onsuccess = () => {
-                            resolve(request.result);
-                        };
-                        request.onerror = () => {
-                            reject(request.error);
-                        };
+                    var tx = db.transaction([STORE_NAME], "readonly");
+                    var request = tx.objectStore(STORE_NAME).get(publicKey);
+                    var privateKey = await new Promise(function(resolve, reject) {
+                        request.onsuccess = function() { resolve(request.result); };
+                        request.onerror = function() { reject(request.error); };
                     });
 
                     if (!privateKey) {
@@ -105,16 +96,15 @@ function webviewStorageInjectedCode() {
 
                     console.log("[CrossmintShadowSigner] Key retrieved, signing...");
 
-                    const signature = await crypto.subtle.sign(
-                        { name: "Ed25519" } as AlgorithmIdentifier,
+                    var signature = await crypto.subtle.sign(
+                        { name: "Ed25519" },
                         privateKey,
-                        new Uint8Array(messageBytes as number[])
+                        new Uint8Array(messageBytes)
                     );
 
                     console.log("[CrossmintShadowSigner] ✅ Signing complete");
                     result = { signatureBytes: Array.from(new Uint8Array(signature)) };
                     break;
-                }
 
                 default:
                     throw new Error("Unknown operation: " + operation);
@@ -128,8 +118,7 @@ function webviewStorageInjectedCode() {
     };
 
     console.log("[CrossmintShadowSigner] Storage handler installed in WebView");
-}
-
-// Convert function to string and wrap as IIFE
-// The 'true;' at the end is required by React Native WebView's injectJavaScript
-export const SHADOW_SIGNER_STORAGE_INJECTED_JS = `(${webviewStorageInjectedCode.toString()})();\ntrue;`;
+    console.log("[CrossmintShadowSigner] Function type:", typeof window.__crossmintShadowSignerStorage);
+})();
+true;
+`;
