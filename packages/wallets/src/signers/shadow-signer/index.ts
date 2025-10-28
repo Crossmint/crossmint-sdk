@@ -63,7 +63,7 @@ export async function generateShadowSigner<C extends Chain>(
                 address: encodedPublicKey,
             },
             publicKey: encodedPublicKey,
-            publicKeyBase64, // For IndexedDB lookup
+            publicKeyBase64,
         };
     }
     // TODO: Add support for EVM chains
@@ -83,8 +83,8 @@ export async function storeShadowSigner(
         const data: ShadowSignerData = {
             chain,
             walletAddress,
-            publicKey, // Chain-specific (Base58/G-address) for external wallet
-            publicKeyBase64, // Base64 for IndexedDB lookup
+            publicKey,
+            publicKeyBase64,
             createdAt: Date.now(),
         };
 
@@ -113,8 +113,6 @@ export async function getShadowSigner(
 }
 
 export async function hasShadowSigner(walletAddress: string, storage?: ShadowSignerStorage): Promise<boolean> {
-    console.log("[hasShadowSigner] Checking for wallet:", walletAddress);
-    const result = (await getShadowSigner(walletAddress, storage)) !== null;
-    console.log("[hasShadowSigner] Result:", result);
-    return result;
+    const shadowSigner = await getShadowSigner(walletAddress, storage);
+    return shadowSigner !== null;
 }
