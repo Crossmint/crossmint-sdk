@@ -50,6 +50,7 @@ type WalletContructorType<C extends Chain> = {
     chain: C;
     address: string;
     owner?: string;
+    alias?: string;
     signer: Signer;
     options?: WalletOptions;
 };
@@ -58,18 +59,20 @@ export class Wallet<C extends Chain> {
     chain: C;
     address: string;
     owner?: string;
+    alias?: string;
     signer: Signer;
     #options?: WalletOptions;
     #apiClient: ApiClient;
 
     constructor(args: WalletContructorType<C>, apiClient: ApiClient) {
-        const { chain, address, owner, signer, options } = args;
+        const { chain, address, owner, signer, options, alias } = args;
         this.#apiClient = apiClient;
         this.chain = chain;
         this.address = address;
         this.owner = owner;
         this.signer = signer;
         this.#options = options;
+        this.alias = alias;
     }
 
     protected static getApiClient<C extends Chain>(wallet: Wallet<C>): ApiClient {
@@ -429,13 +432,20 @@ export class Wallet<C extends Chain> {
         if (this.#apiClient.isServerSide) {
             return this.address;
         } else {
-            if (this.chain === "stellar") {
-                return `me:stellar:smart`;
-            } else if (this.chain === "solana") {
-                return `me:solana:smart`;
-            } else {
-                return `me:evm:smart`;
+            let baseLocator: string;
+            switch (this.chain) {
+                case "stellar":
+                    baseLocator = `me:stellar:smart`;
+                    break;
+                case "solana":
+                    baseLocator = `me:solana:smart`;
+                    break;
+                default:
+                    baseLocator = `me:evm:smart`;
+                    break;
             }
+            const aliasLocatorPart = this.alias != null ? `:alias:${this.alias}` : "";
+            return baseLocator + aliasLocatorPart;
         }
     }
 

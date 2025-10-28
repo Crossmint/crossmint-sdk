@@ -1,5 +1,34 @@
 # @crossmint/client-sdk-nextjs-starter
 
+## 1.5.26
+
+### Patch Changes
+
+- @crossmint/client-sdk-react-ui@2.5.11
+
+## 1.5.25
+
+### Patch Changes
+
+- 84d2bfd: Adding order creation failed event
+- Updated dependencies [84d2bfd]
+  - @crossmint/client-sdk-base@1.7.2
+  - @crossmint/client-sdk-react-ui@2.5.10
+
+## 1.5.24
+
+### Patch Changes
+
+- Updated dependencies [a2c15a8]
+  - @crossmint/client-sdk-react-ui@2.5.9
+
+## 1.5.23
+
+### Patch Changes
+
+- Updated dependencies [5d4ecf6]
+  - @crossmint/client-sdk-react-ui@2.5.8
+
 ## 1.5.22
 
 ### Patch Changes

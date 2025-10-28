@@ -27,6 +27,7 @@ export type CreateOnLogin =
           owner?: string;
           plugins?: WalletPlugin<SolanaChain>[];
           delegatedSigners?: Array<DelegatedSigner>;
+          alias?: string;
       }
     | {
           chain: EVMChain;
@@ -34,6 +35,7 @@ export type CreateOnLogin =
           owner?: string;
           plugins?: WalletPlugin<EVMChain>[];
           delegatedSigners?: Array<DelegatedSigner>;
+          alias?: string;
       }
     | {
           chain: StellarChain;
@@ -41,6 +43,7 @@ export type CreateOnLogin =
           owner?: string;
           plugins?: WalletPlugin<StellarChain>[];
           delegatedSigners?: Array<DelegatedSigner>;
+          alias?: string;
       };
 
 export type BaseCrossmintWalletProviderProps = {
