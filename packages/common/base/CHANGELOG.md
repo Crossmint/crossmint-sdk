@@ -1,5 +1,11 @@
 # @crossmint/common-sdk-base
 
+## 0.9.7
+
+### Patch Changes
+
+- fb1cfdb: Adds Plume to supported chains
+
 ## 0.9.6
 
 ### Patch Changes
