@@ -1,5 +1,12 @@
 # @crossmint/client-sdk-walletconnect
 
+## 1.2.30
+
+### Patch Changes
+
+- Updated dependencies [fb1cfdb]
+  - @crossmint/common-sdk-base@0.9.7
+
 ## 1.2.29
 
 ### Patch Changes

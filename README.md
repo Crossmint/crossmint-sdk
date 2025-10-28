@@ -120,7 +120,7 @@ For more information on how to use the SDK, see the [Crossmint SDK Documentation
 ### Prerequisites
 
 ```shell
-node >= 20.18.3
+node >= 20.19.4
 pnpm
 ```
 

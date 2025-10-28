@@ -1,5 +1,26 @@
 # @crossmint/wallets-sdk
 
+## 0.16.2
+
+### Patch Changes
+
+- fb1cfdb: Adds Plume to supported chains
+- Updated dependencies [fb1cfdb]
+  - @crossmint/common-sdk-base@0.9.7
+
+## 0.16.1
+
+### Patch Changes
+
+- a2c15a8: Fixed OTP verification error propagation
+
+## 0.16.0
+
+### Minor Changes
+
+- 615b84b: Add experimental_prepareOnly support to addDelegatedSigner method
+- d09fa2c: Add serialized transaction support for Solana wallets
+
 ## 0.15.1
 
 ### Patch Changes

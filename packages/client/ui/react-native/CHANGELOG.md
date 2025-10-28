@@ -1,5 +1,48 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.11.12
+
+### Patch Changes
+
+- 84d2bfd: Adding order creation failed event
+- Updated dependencies [fb1cfdb]
+- Updated dependencies [84d2bfd]
+  - @crossmint/common-sdk-base@0.9.7
+  - @crossmint/wallets-sdk@0.16.2
+  - @crossmint/client-sdk-base@1.7.2
+  - @crossmint/client-sdk-auth@1.2.35
+  - @crossmint/client-sdk-react-base@0.6.9
+  - @crossmint/common-sdk-auth@1.0.57
+
+## 0.11.11
+
+### Patch Changes
+
+- a2c15a8: Fixed OTP verification error propagation
+- Updated dependencies [a2c15a8]
+  - @crossmint/wallets-sdk@0.16.1
+  - @crossmint/client-sdk-react-base@0.6.8
+
+## 0.11.10
+
+### Patch Changes
+
+- 5d4ecf6: Do not mutate config for createOnLogin prop
+- Updated dependencies [5d4ecf6]
+  - @crossmint/client-sdk-react-base@0.6.7
+
+## 0.11.9
+
+### Patch Changes
+
+- ff7db5a: Move expo dependencies as peer dependencies for more flexible expo versioning.
+- Updated dependencies [615b84b]
+- Updated dependencies [7f3f16a]
+- Updated dependencies [d09fa2c]
+  - @crossmint/wallets-sdk@0.16.0
+  - @crossmint/client-sdk-rn-window@0.3.9
+  - @crossmint/client-sdk-react-base@0.6.6
+
 ## 0.11.8
 
 ### Patch Changes

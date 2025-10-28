@@ -15,7 +15,7 @@ export class WebViewParent<IncomingEvents extends EventMap, OutgoingEvents exten
      * @param options Optional EventEmitter and handshake options
      */
     constructor(
-        webviewRef: RefObject<WebView>,
+        webviewRef: RefObject<WebView | null>,
         options?: EventEmitterWithHandshakeOptions<IncomingEvents, OutgoingEvents>
     ) {
         const transport = new RNWebViewTransport<OutgoingEvents>(webviewRef);

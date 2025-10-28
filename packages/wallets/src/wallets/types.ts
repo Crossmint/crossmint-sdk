@@ -17,6 +17,12 @@ export type TransactionInputOptions = PrepareOnly & {
 
 export type SignatureInputOptions = PrepareOnly;
 
+export type AddDelegatedSignerOptions = PrepareOnly;
+
+export type AddDelegatedSignerReturnType<C extends Chain> = C extends "solana" | "stellar"
+    ? { transactionId: string }
+    : { signatureId: string };
+
 export type SignMessageInput = {
     message: string;
     options?: SignatureInputOptions;
@@ -65,8 +71,14 @@ export type StellarTransactionInput = (
     options?: TransactionInputOptions;
 };
 
-export type SolanaTransactionInput = {
-    transaction: VersionedTransaction;
+export type SolanaTransactionInput = (
+    | {
+          transaction: VersionedTransaction;
+      }
+    | {
+          serializedTransaction: string;
+      }
+) & {
     additionalSigners?: Keypair[];
     options?: TransactionInputOptions;
 };
