@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-base
 
+## 1.7.3
+
+### Patch Changes
+
+- 2cae54d: PaymentMethodManagement: alpha
+
 ## 1.7.2
 
 ### Patch Changes
