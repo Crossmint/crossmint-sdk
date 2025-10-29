@@ -15,5 +15,11 @@ export const embeddedCheckoutV3OutgoingEvents = {
     "crypto:send-transaction:failed": z.object({
         error: z.string(),
     }),
+    "crypto:sign-message:success": z.object({
+        signature: z.string(),
+    }),
+    "crypto:sign-message:failed": z.object({
+        error: z.string(),
+    }),
 };
 export type EmbeddedCheckoutV3OutgoingEventMap = typeof embeddedCheckoutV3OutgoingEvents;
