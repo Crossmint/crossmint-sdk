@@ -15,6 +15,7 @@ import type {
     ApiKeyInternalSignerConfig,
     EmailInternalSignerConfig,
     EmailSignerConfig,
+    EVM256KeypairSignerConfig,
     InternalSignerConfig,
     PasskeyInternalSignerConfig,
     PasskeySignerConfig,
@@ -191,6 +192,11 @@ export class WalletFactory {
             }
 
             case "external-wallet": {
+                const walletSigner = this.getWalletSigner(walletResponse, this.getSignerLocator(signerArgs));
+
+                return { ...walletSigner, ...signerArgs } as InternalSignerConfig<C>;
+            }
+            case "evm-p256-keypair": {
                 const walletSigner = this.getWalletSigner(walletResponse, this.getSignerLocator(signerArgs));
 
                 return { ...walletSigner, ...signerArgs } as InternalSignerConfig<C>;
@@ -406,6 +412,9 @@ export class WalletFactory {
         if (signer.type === "api-key") {
             return "api-key";
         }
+        if (signer.type === "evm-p256-keypair") {
+            return `evm-p256-keypair:${signer.chain}:${signer.publicKey}`;
+        }
         return signer.type;
     }
 
@@ -475,7 +484,6 @@ export class WalletFactory {
     }
 
     private isShadowSignerEnabled<C extends Chain>(
-        chain: C,
         adminSigner: SignerConfigForChain<C>,
         delegatedSigners: Array<SignerConfigForChain<C>> = []
     ): boolean {
@@ -484,7 +492,6 @@ export class WalletFactory {
         ) as Array<EmailSignerConfig | PhoneSignerConfig>;
         return (
             !this.apiClient.isServerSide &&
-            (chain === "solana" || chain === "stellar") &&
             ncSigners.length > 0 &&
             ncSigners.some((signer) => signer.shadowSigner?.enabled !== false)
         );
@@ -494,9 +501,11 @@ export class WalletFactory {
         adminSigner: SignerConfigForChain<C>,
         args: WalletCreateArgs<C>
     ): Promise<{
-        delegatedSigners: Array<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }>;
+        delegatedSigners: Array<
+            DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig | EVM256KeypairSignerConfig }
+        >;
         shadowSignerPublicKey: string | null;
-        shadowSignerPublicKeyBase64: string | null;
+        shadowSignerPublicKeyBase64?: string | null;
     }> {
         const { delegatedSigners, shadowSignerPublicKey, shadowSignerPublicKeyBase64 } =
             await this.addShadowSignerToDelegatedSignersIfNeeded(
@@ -511,14 +520,23 @@ export class WalletFactory {
 
     private async registerDelegatedSigners<C extends Chain>(
         delegatedSigners?: Array<SignerConfigForChain<C>>
-    ): Promise<Array<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }>> {
+    ): Promise<
+        Array<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig | EVM256KeypairSignerConfig }>
+    > {
         return await Promise.all(
             delegatedSigners?.map(
-                async (signer): Promise<DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig }> => {
+                async (
+                    signer
+                ): Promise<
+                    DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig | EVM256KeypairSignerConfig }
+                > => {
                     if (signer.type === "passkey") {
                         if (signer.id == null) {
                             return { signer: await this.createPasskeySigner(signer) };
                         }
+                        return { signer };
+                    }
+                    if (signer.type === "evm-p256-keypair") {
                         return { signer };
                     }
                     return { signer: this.getSignerLocator(signer) };
@@ -534,9 +552,9 @@ export class WalletFactory {
     ): Promise<{
         delegatedSigners: Array<SignerConfigForChain<C>> | undefined;
         shadowSignerPublicKey: string | null;
-        shadowSignerPublicKeyBase64: string | null;
+        shadowSignerPublicKeyBase64?: string | null;
     }> {
-        if (this.isShadowSignerEnabled(args.chain, adminSigner, delegatedSigners)) {
+        if (this.isShadowSignerEnabled(adminSigner, delegatedSigners)) {
             try {
                 const { shadowSigner, publicKey, publicKeyBase64 } = await generateShadowSigner(
                     args.chain,

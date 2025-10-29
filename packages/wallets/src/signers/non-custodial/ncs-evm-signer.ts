@@ -1,20 +1,18 @@
-import type {
-    EmailInternalSignerConfig,
-    ExternalWalletInternalSignerConfig,
-    PhoneInternalSignerConfig,
-} from "../types";
+import type { EmailInternalSignerConfig, PhoneInternalSignerConfig, EVM256KeypairInternalSignerConfig } from "../types";
 import { NonCustodialSigner, DEFAULT_EVENT_OPTIONS } from "./ncs-signer";
 import { PersonalMessage } from "ox";
 import { isHex, toHex, type Hex } from "viem";
-import type { EVMChain } from "../../chains/chains";
-import type { ShadowSignerStorage } from "@/signers/shadow-signer";
+import type { ShadowSignerData, ShadowSignerStorage } from "@/signers/shadow-signer";
+import { EVM256KeypairSigner } from "../evm-p256-keypair";
 
 export class EVMNonCustodialSigner extends NonCustodialSigner {
     constructor(
         config: EmailInternalSignerConfig | PhoneInternalSignerConfig,
+        walletAddress: string,
         shadowSignerStorage?: ShadowSignerStorage
     ) {
         super(config, shadowSignerStorage);
+        this.initializeShadowSigner(walletAddress, EVM256KeypairSigner);
     }
 
     async signMessage(message: string) {
@@ -24,6 +22,9 @@ export class EVMNonCustodialSigner extends NonCustodialSigner {
     }
 
     async signTransaction(transaction: string): Promise<{ signature: string }> {
+        if (this.shadowSigner != null) {
+            return await this.shadowSigner.signTransaction(transaction);
+        }
         return await this.sign(transaction);
     }
 
@@ -74,7 +75,18 @@ export class EVMNonCustodialSigner extends NonCustodialSigner {
         }
     }
 
-    protected getShadowSignerConfig(): ExternalWalletInternalSignerConfig<EVMChain> {
-        throw new Error("Shadow signer not implemented for EVM chains");
+    protected getShadowSignerConfig(
+        shadowSigner: ShadowSignerData,
+        _walletAddress: string
+    ): EVM256KeypairInternalSignerConfig {
+        return {
+            type: "evm-p256-keypair",
+            publicKey: shadowSigner.publicKey,
+            chain: shadowSigner.chain,
+            locator: `evm-p256-keypair:${shadowSigner.chain}:${shadowSigner.publicKey}`,
+            onSignTransaction: async (pubKey: string, data: Uint8Array) => {
+                return await this.shadowSignerStorage.sign(pubKey, data);
+            },
+        };
     }
 }

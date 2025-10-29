@@ -44,13 +44,33 @@ export const SHADOW_SIGNER_STORAGE_INJECTED_JS = `
 
             switch (operation) {
                 case "generate":
-                    console.log("[CrossmintShadowSigner] Generating new Ed25519 key pair (non-extractable)...");
+                    var chain = params.chain || "solana";
+                    var isEVM = chain !== "solana" && chain !== "stellar";
+                    
+                    console.log("[CrossmintShadowSigner] Generating new key pair for chain:", chain, "isEVM:", isEVM);
 
-                    var keyPair = await crypto.subtle.generateKey(
-                        { name: "Ed25519", namedCurve: "Ed25519" },
-                        false,
-                        ["sign", "verify"]
-                    );
+                    var keyPair;
+                    var algorithm;
+                    
+                    if (isEVM) {
+                        // For EVM chains, use P256 (secp256r1)
+                        keyPair = await crypto.subtle.generateKey(
+                            { name: "ECDSA", namedCurve: "P-256" },
+                            false,
+                            ["sign", "verify"]
+                        );
+                        algorithm = "P-256";
+                        console.log("[CrossmintShadowSigner] Generated P-256 key pair (non-extractable)");
+                    } else {
+                        // For Solana/Stellar, use Ed25519
+                        keyPair = await crypto.subtle.generateKey(
+                            { name: "Ed25519", namedCurve: "Ed25519" },
+                            false,
+                            ["sign", "verify"]
+                        );
+                        algorithm = "Ed25519";
+                        console.log("[CrossmintShadowSigner] Generated Ed25519 key pair (non-extractable)");
+                    }
 
                     var publicKeyBuffer = await crypto.subtle.exportKey("raw", keyPair.publicKey);
                     var publicKeyBytes = new Uint8Array(publicKeyBuffer);
@@ -63,12 +83,13 @@ export const SHADOW_SIGNER_STORAGE_INJECTED_JS = `
                     }
                     var tx = db.transaction([STORE_NAME], "readwrite");
                     tx.objectStore(STORE_NAME).put(keyPair.privateKey, publicKeyBase64);
+                    tx.objectStore(STORE_NAME).put(algorithm, publicKeyBase64 + "_algorithm");
                     await new Promise(function(resolve, reject) {
                         tx.oncomplete = function() { resolve(); };
                         tx.onerror = function() { reject(tx.error); };
                     });
 
-                    console.log("[CrossmintShadowSigner] Private key stored in IndexedDB");
+                    console.log("[CrossmintShadowSigner] Private key and algorithm stored in IndexedDB");
                     console.log("[CrossmintShadowSigner] ✅ Key generation complete");
 
                     result = { publicKeyBytes: Array.from(publicKeyBytes) };
@@ -84,23 +105,41 @@ export const SHADOW_SIGNER_STORAGE_INJECTED_JS = `
                         throw new Error("Database not initialized");
                     }
                     var tx = db.transaction([STORE_NAME], "readonly");
-                    var request = tx.objectStore(STORE_NAME).get(publicKey);
+                    var keyRequest = tx.objectStore(STORE_NAME).get(publicKey);
+                    var algorithmRequest = tx.objectStore(STORE_NAME).get(publicKey + "_algorithm");
+                    
                     var privateKey = await new Promise(function(resolve, reject) {
-                        request.onsuccess = function() { resolve(request.result); };
-                        request.onerror = function() { reject(request.error); };
+                        keyRequest.onsuccess = function() { resolve(keyRequest.result); };
+                        keyRequest.onerror = function() { reject(keyRequest.error); };
+                    });
+
+                    var algorithm = await new Promise(function(resolve, reject) {
+                        algorithmRequest.onsuccess = function() { resolve(algorithmRequest.result); };
+                        algorithmRequest.onerror = function() { resolve("Ed25519"); }; // Default to Ed25519
                     });
 
                     if (!privateKey) {
                         throw new Error("Private key not found for public key: " + publicKey);
                     }
 
-                    console.log("[CrossmintShadowSigner] Key retrieved, signing...");
+                    console.log("[CrossmintShadowSigner] Key retrieved, signing with algorithm:", algorithm);
 
-                    var signature = await crypto.subtle.sign(
-                        { name: "Ed25519" },
-                        privateKey,
-                        new Uint8Array(messageBytes)
-                    );
+                    var signature;
+                    if (algorithm === "P-256") {
+                        // For P256, use ECDSA with SHA-256
+                        signature = await crypto.subtle.sign(
+                            { name: "ECDSA", hash: { name: "SHA-256" } },
+                            privateKey,
+                            new Uint8Array(messageBytes)
+                        );
+                    } else {
+                        // Default to Ed25519
+                        signature = await crypto.subtle.sign(
+                            { name: "Ed25519" },
+                            privateKey,
+                            new Uint8Array(messageBytes)
+                        );
+                    }
 
                     console.log("[CrossmintShadowSigner] ✅ Signing complete");
                     result = { signatureBytes: Array.from(new Uint8Array(signature)) };

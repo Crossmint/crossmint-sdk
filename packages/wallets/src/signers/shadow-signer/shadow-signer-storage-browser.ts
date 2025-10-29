@@ -1,5 +1,5 @@
 import type { ShadowSignerData, ShadowSignerStorage } from ".";
-
+import type { Chain } from "../../chains/chains";
 export class BrowserShadowSignerStorage implements ShadowSignerStorage {
     private readonly SHADOW_SIGNER_DB_NAME = "crossmint_shadow_keys";
     private readonly SHADOW_SIGNER_DB_STORE = "keys";
@@ -19,12 +19,32 @@ export class BrowserShadowSignerStorage implements ShadowSignerStorage {
         });
     }
 
-    async keyGenerator(): Promise<string> {
+    async keyGenerator(chain: Chain): Promise<string> {
+        if (chain === "solana" || chain === "stellar") {
+            const keyPair = (await window.crypto.subtle.generateKey(
+                {
+                    name: "Ed25519",
+                    namedCurve: "Ed25519",
+                } as AlgorithmIdentifier,
+                false,
+                ["sign", "verify"]
+            )) as CryptoKeyPair;
+
+            const publicKeyBuffer = await window.crypto.subtle.exportKey("raw", keyPair.publicKey);
+            const publicKeyBytes = new Uint8Array(publicKeyBuffer);
+            const publicKeyBase64 = Buffer.from(publicKeyBytes).toString("base64");
+
+            await this.storePrivateKeyByPublicKey(publicKeyBase64, keyPair.privateKey);
+
+            return publicKeyBase64;
+        }
+
+        // For EVM chains, use P256 (secp256r1)
         const keyPair = (await window.crypto.subtle.generateKey(
             {
-                name: "Ed25519",
-                namedCurve: "Ed25519",
-            } as AlgorithmIdentifier,
+                name: "ECDSA",
+                namedCurve: "P-256",
+            },
             false,
             ["sign", "verify"]
         )) as CryptoKeyPair;
@@ -34,6 +54,7 @@ export class BrowserShadowSignerStorage implements ShadowSignerStorage {
         const publicKeyBase64 = Buffer.from(publicKeyBytes).toString("base64");
 
         await this.storePrivateKeyByPublicKey(publicKeyBase64, keyPair.privateKey);
+        await this.storeKeyAlgorithm(publicKeyBase64, "P-256");
 
         return publicKeyBase64;
     }
@@ -44,6 +65,22 @@ export class BrowserShadowSignerStorage implements ShadowSignerStorage {
             throw new Error(`No private key found for public key: ${publicKeyBase64}`);
         }
 
+        const algorithm = await this.getKeyAlgorithm(publicKeyBase64);
+
+        if (algorithm === "P-256") {
+            // For P256, use ECDSA with SHA-256
+            const signature = await window.crypto.subtle.sign(
+                {
+                    name: "ECDSA",
+                    hash: { name: "SHA-256" },
+                },
+                privateKey,
+                data as BufferSource
+            );
+            return new Uint8Array(signature);
+        }
+
+        // Default to Ed25519 for Solana/Stellar
         const signature = await window.crypto.subtle.sign({ name: "Ed25519" }, privateKey, data as BufferSource);
 
         return new Uint8Array(signature);
@@ -82,6 +119,43 @@ export class BrowserShadowSignerStorage implements ShadowSignerStorage {
             });
         } catch (error) {
             console.warn("Failed to retrieve private key from IndexedDB:", error);
+            return null;
+        }
+    }
+
+    private async storeKeyAlgorithm(publicKey: string, algorithm: string): Promise<void> {
+        if (typeof indexedDB === "undefined") {
+            return;
+        }
+
+        const db = await this.openDB();
+        const tx = db.transaction([this.SHADOW_SIGNER_DB_STORE], "readwrite");
+        const store = tx.objectStore(this.SHADOW_SIGNER_DB_STORE);
+        store.put(algorithm, `${publicKey}_algorithm`);
+
+        return new Promise<void>((resolve, reject) => {
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error);
+        });
+    }
+
+    private async getKeyAlgorithm(publicKey: string): Promise<string | null> {
+        if (typeof indexedDB === "undefined") {
+            return null;
+        }
+
+        try {
+            const db = await this.openDB();
+            const tx = db.transaction([this.SHADOW_SIGNER_DB_STORE], "readonly");
+            const store = tx.objectStore(this.SHADOW_SIGNER_DB_STORE);
+            const request = store.get(`${publicKey}_algorithm`);
+
+            return new Promise((resolve, reject) => {
+                request.onsuccess = () => resolve(request.result || null);
+                request.onerror = () => reject(request.error);
+            });
+        } catch (error) {
+            console.warn("Failed to retrieve key algorithm from IndexedDB:", error);
             return null;
         }
     }

@@ -161,8 +161,8 @@ true;
         }
     }
 
-    async keyGenerator(): Promise<string> {
-        const publicKeyBytes = await this.generateKeyInWebView();
+    async keyGenerator(chain: string): Promise<string> {
+        const publicKeyBytes = await this.generateKeyInWebView(chain);
         const publicKeyBase64 = Buffer.from(publicKeyBytes).toString("base64");
 
         return publicKeyBase64;
@@ -172,8 +172,8 @@ true;
         return await this.signInWebView(publicKeyBase64, data);
     }
 
-    private async generateKeyInWebView(): Promise<Uint8Array> {
-        const response = await this.callWebViewFunction("generate", {});
+    private async generateKeyInWebView(chain: string): Promise<Uint8Array> {
+        const response = await this.callWebViewFunction("generate", { chain });
         const publicKeyBytes = response.publicKeyBytes as number[];
         return new Uint8Array(publicKeyBytes);
     }

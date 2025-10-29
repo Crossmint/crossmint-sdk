@@ -3,6 +3,7 @@ import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
 import type {
     Crossmint,
+    EVM256KeypairSignerConfig,
     EvmExternalWalletSignerConfig,
     SolanaExternalWalletSignerConfig,
     StellarExternalWalletSignerConfig,
@@ -10,6 +11,7 @@ import type {
 import type { Chain, SolanaChain, StellarChain } from "../chains/chains";
 
 export type {
+    EVM256KeypairSignerConfig,
     EvmExternalWalletSignerConfig,
     SolanaExternalWalletSignerConfig,
     StellarExternalWalletSignerConfig,
@@ -64,7 +66,10 @@ export type ExternalWalletSignerConfigForChain<C extends Chain> = C extends Sola
 
 export type ApiKeySignerConfig = { type: "api-key" };
 
-export type BaseSignerConfig<C extends Chain> = ExternalWalletSignerConfigForChain<C> | ApiKeySignerConfig;
+export type BaseSignerConfig<C extends Chain> =
+    | ExternalWalletSignerConfigForChain<C>
+    | ApiKeySignerConfig
+    | (C extends SolanaChain | StellarChain ? never : EVM256KeypairSignerConfig);
 
 export type PasskeySignerConfig = {
     type: "passkey";
@@ -103,12 +108,18 @@ export type ExternalWalletInternalSignerConfig<C extends Chain> = ExternalWallet
     locator: string;
 };
 
+export type EVM256KeypairInternalSignerConfig = EVM256KeypairSignerConfig & {
+    locator: string;
+    onSignTransaction: (publicKeyBase64: string, data: Uint8Array) => Promise<Uint8Array>;
+};
+
 export type InternalSignerConfig<C extends Chain> =
     | EmailInternalSignerConfig
     | PhoneInternalSignerConfig
     | PasskeyInternalSignerConfig
     | ApiKeyInternalSignerConfig
-    | ExternalWalletInternalSignerConfig<C>;
+    | ExternalWalletInternalSignerConfig<C>
+    | EVM256KeypairInternalSignerConfig;
 
 ////////////////////////////////////////////////////////////
 // Signers
@@ -139,6 +150,7 @@ type SignResultMap = {
     phone: BaseSignResult;
     "api-key": BaseSignResult;
     "external-wallet": BaseSignResult;
+    "evm-p256-keypair": BaseSignResult;
     passkey: PasskeySignResult;
 };
 
