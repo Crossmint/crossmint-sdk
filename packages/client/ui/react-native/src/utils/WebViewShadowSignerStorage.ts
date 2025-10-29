@@ -25,7 +25,7 @@ export class WebViewShadowSignerStorage implements ShadowSignerStorage {
     }
 
     private injectStorageHandler(): void {
-        if (this.isInjected || !this.webViewRef?.current) {
+        if (this.isInjected || this.webViewRef?.current == null) {
             return;
         }
 
@@ -88,7 +88,7 @@ export class WebViewShadowSignerStorage implements ShadowSignerStorage {
         params: Record<string, unknown>
     ): Promise<Record<string, unknown>> {
         const webView = this.webViewRef?.current;
-        if (!webView) {
+        if (webView == null) {
             throw new Error("WebView not available. Make sure to initialize() with a WebView ref.");
         }
 
@@ -147,7 +147,7 @@ true;
 
             console.log("[WebViewShadowSignerStorage] Retrieved raw metadata:", stored);
 
-            if (!stored) {
+            if (stored == null) {
                 return null;
             }
 

@@ -40,7 +40,7 @@ export class BrowserShadowSignerStorage implements ShadowSignerStorage {
 
     async sign(publicKeyBase64: string, data: Uint8Array): Promise<Uint8Array> {
         const privateKey = await this.getPrivateKeyByPublicKey(publicKeyBase64);
-        if (!privateKey) {
+        if (privateKey == null) {
             throw new Error(`No private key found for public key: ${publicKeyBase64}`);
         }
 

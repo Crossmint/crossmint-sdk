@@ -81,7 +81,7 @@ export class StellarNonCustodialSigner extends NonCustodialSigner {
             address: shadowData.publicKey,
             locator: `external-wallet:${shadowData.publicKey}`,
             onSignStellarTransaction: async (payload) => {
-                if (!this.shadowSignerStorage) {
+                if (this.shadowSignerStorage == null) {
                     throw new Error("Shadow signer storage not available");
                 }
 

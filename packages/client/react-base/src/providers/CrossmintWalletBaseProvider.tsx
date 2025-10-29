@@ -8,13 +8,13 @@ import {
     type WalletArgsFor,
     type WalletCreateArgs,
     type PhoneSignerConfig,
+    type ShadowSignerStorage,
 } from "@crossmint/wallets-sdk";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
 import { useCrossmint } from "@/hooks";
 import type { CreateOnLogin } from "@/types";
 import cloneDeep from "lodash.clonedeep";
-import type { ShadowSignerStorage } from "@crossmint/wallets-sdk";
 
 export type CrossmintWalletBaseContext = {
     wallet: Wallet<Chain> | undefined;

@@ -46,7 +46,7 @@ export const SHADOW_SIGNER_STORAGE_INJECTED_JS = `
                     break;
 
                 case "sign":
-                    if (!params) {
+                    if (params == null) {
                         throw new Error("Sign operation requires params");
                     }
                     
