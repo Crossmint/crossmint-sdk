@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Button, Text, View, TextInput, StyleSheet, ScrollView, Alert } from "react-native";
 import * as Linking from "expo-linking";
 import { fundUSDC } from "@/utils/usdcFaucet";
-import { HeadlessSigning } from "@/components/headless-signing";
+// import { HeadlessSigning } from "@/components/headless-signing";
 
 export default function Index() {
     const { loginWithOAuth, user, logout, createAuthSession, jwt } = useAuth();
@@ -126,7 +126,7 @@ export default function Index() {
             1. import and uncomment <HeadlessSigning/>
             2. add 'experimental_headlessSigningFlow' to CrossmintWalletProvider in _layout.tsx
             3. remove 'createOnLogin' from CrossmintWalletProvider in _layout.tsx */}
-            <HeadlessSigning />
+            {/* <HeadlessSigning /> */}
 
             {walletAddress != null && (
                 <View style={styles.section}>
