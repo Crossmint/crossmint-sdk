@@ -1,5 +1,15 @@
 # @crossmint/wallets-sdk
 
+## 0.18.0
+
+### Minor Changes
+
+- 8fc9ed9: Adds support for exporting email and phone signer private keys
+
+### Patch Changes
+
+- 28e6fd3: Fix email signer validation to normalize Gmail addresses before comparison. Users with dotted Gmail addresses (e.g., jer.coffey@gmail.com) can now retrieve wallets without validation errors.
+
 ## 0.17.0
 
 ### Minor Changes
