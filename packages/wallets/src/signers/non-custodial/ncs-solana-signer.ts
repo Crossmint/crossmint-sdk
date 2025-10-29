@@ -2,8 +2,7 @@ import { VersionedTransaction } from "@solana/web3.js";
 import base58 from "bs58";
 import type { EmailInternalSignerConfig, PhoneInternalSignerConfig } from "../types";
 import { NonCustodialSigner, DEFAULT_EVENT_OPTIONS } from "./ncs-signer";
-import { SolanaShadowSigner } from "../shadow-signer";
-import type { ShadowSignerStorage } from "@/signers/shadow-signer";
+import { SolanaShadowSigner, type ShadowSignerStorage } from "../shadow-signer";
 
 export class SolanaNonCustodialSigner extends NonCustodialSigner {
     constructor(

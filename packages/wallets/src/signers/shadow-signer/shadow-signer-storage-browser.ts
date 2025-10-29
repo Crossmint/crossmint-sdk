@@ -1,4 +1,4 @@
-import type { ShadowSignerData, ShadowSignerStorage } from ".";
+import type { ShadowSignerData, ShadowSignerStorage } from "./utils";
 
 export class BrowserShadowSignerStorage implements ShadowSignerStorage {
     private readonly SHADOW_SIGNER_DB_NAME = "crossmint_shadow_keys";

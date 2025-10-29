@@ -3,8 +3,7 @@ import { AuthRejectedError } from "../types";
 import { NcsIframeManager } from "./ncs-iframe-manager";
 import { validateAPIKey } from "@crossmint/common-sdk-base";
 import type { SignerOutputEvent } from "@crossmint/client-signers";
-import type { ShadowSignerStorage } from "@/signers/shadow-signer";
-import { getStorage, type ShadowSigner } from "../shadow-signer";
+import { getStorage, type ShadowSignerStorage, type ShadowSigner } from "../shadow-signer";
 import type { Chain } from "../../chains/chains";
 
 export abstract class NonCustodialSigner implements Signer {

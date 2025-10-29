@@ -7,7 +7,7 @@ import {
     hasShadowSigner as checkStorageForShadowSigner,
     type ShadowSignerData,
     type ShadowSignerStorage,
-} from "./index";
+} from "./utils";
 
 export abstract class ShadowSigner<C extends Chain> {
     protected storage: ShadowSignerStorage;

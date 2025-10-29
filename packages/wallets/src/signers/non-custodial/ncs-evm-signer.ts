@@ -7,7 +7,7 @@ import { NonCustodialSigner, DEFAULT_EVENT_OPTIONS } from "./ncs-signer";
 import { PersonalMessage } from "ox";
 import { isHex, toHex, type Hex } from "viem";
 import type { EVMChain } from "../../chains/chains";
-import type { ShadowSignerStorage } from "@/signers/shadow-signer";
+import type { ShadowSignerStorage } from "../shadow-signer";
 
 export class EVMNonCustodialSigner extends NonCustodialSigner {
     constructor(

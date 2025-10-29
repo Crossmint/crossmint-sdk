@@ -73,7 +73,7 @@ export default function Index() {
         }
         setIsLoading(true);
         try {
-            await getOrCreateWallet({ chain: "solana", signer: { type: "email" } });
+            await getOrCreateWallet({ chain: "base-sepolia", signer: { type: "email" } });
         } catch (error) {
             console.error("Error initializing wallet:", error);
         } finally {

@@ -1,7 +1,6 @@
 import type { EmailInternalSignerConfig, PhoneInternalSignerConfig } from "../types";
 import { DEFAULT_EVENT_OPTIONS, NonCustodialSigner } from "./ncs-signer";
-import { StellarShadowSigner } from "../shadow-signer";
-import type { ShadowSignerStorage } from "@/signers/shadow-signer";
+import { StellarShadowSigner, type ShadowSignerStorage } from "../shadow-signer";
 
 export class StellarNonCustodialSigner extends NonCustodialSigner {
     constructor(
