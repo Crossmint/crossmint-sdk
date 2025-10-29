@@ -1,21 +1,10 @@
-import type {
-    BaseSignResult,
-    EmailInternalSignerConfig,
-    EVM256KeypairInternalSignerConfig,
-    ExternalWalletInternalSignerConfig,
-    PhoneInternalSignerConfig,
-    Signer,
-} from "../types";
+import type { BaseSignResult, EmailInternalSignerConfig, PhoneInternalSignerConfig, Signer } from "../types";
 import { AuthRejectedError } from "../types";
 import { NcsIframeManager } from "./ncs-iframe-manager";
 import { validateAPIKey } from "@crossmint/common-sdk-base";
 import type { SignerOutputEvent } from "@crossmint/client-signers";
-import { getShadowSigner, hasShadowSigner, type ShadowSignerData } from "../shadow-signer";
+import { getStorage, type ShadowSignerStorage, type ShadowSigner } from "../shadow-signer";
 import type { Chain } from "../../chains/chains";
-import type { ExternalWalletSigner } from "../external-wallet-signer";
-import type { ShadowSignerStorage } from "@/signers/shadow-signer";
-import { getStorage } from "../shadow-signer";
-import type { EVM256KeypairSigner } from "../evm-p256-keypair";
 
 export abstract class NonCustodialSigner implements Signer {
     public readonly type: "email" | "phone";
@@ -26,8 +15,8 @@ export abstract class NonCustodialSigner implements Signer {
         reject: (error: Error) => void;
     } | null = null;
     private _initializationPromise: Promise<void> | null = null;
-    protected shadowSigner: ExternalWalletSigner<Chain> | EVM256KeypairSigner | null = null;
-    protected shadowSignerStorage: ShadowSignerStorage;
+    protected shadowSigner?: ShadowSigner<Chain>;
+    protected shadowSignerStorage?: ShadowSignerStorage;
 
     constructor(
         protected config: EmailInternalSignerConfig | PhoneInternalSignerConfig,
@@ -39,14 +28,14 @@ export abstract class NonCustodialSigner implements Signer {
     }
 
     locator() {
-        if (this.shadowSigner != null) {
+        if (this.shadowSigner?.hasShadowSigner()) {
             return this.shadowSigner.locator();
         }
         return this.config.locator;
     }
 
     address() {
-        if (this.shadowSigner != null) {
+        if (this.shadowSigner?.hasShadowSigner()) {
             return this.shadowSigner.address();
         }
         return this.config.address;
@@ -73,7 +62,10 @@ export abstract class NonCustodialSigner implements Signer {
             // If there's already an initialization in progress, wait for it
             if (this._initializationPromise) {
                 await this._initializationPromise;
-                return this.config.clientTEEConnection!;
+                if (this.config.clientTEEConnection == null) {
+                    throw new Error("Failed to initialize TEE connection");
+                }
+                return this.config.clientTEEConnection;
             }
 
             // Start initialization and store the promise to prevent concurrent initializations
@@ -87,7 +79,10 @@ export abstract class NonCustodialSigner implements Signer {
             }
         }
 
-        return this.config.clientTEEConnection!;
+        if (this.config.clientTEEConnection == null) {
+            throw new Error("TEE connection is not initialized");
+        }
+        return this.config.clientTEEConnection;
     }
 
     private async initializeTEEConnection(): Promise<void> {
@@ -108,7 +103,7 @@ export abstract class NonCustodialSigner implements Signer {
     }
 
     protected async handleAuthRequired() {
-        if (this.shadowSigner != null) {
+        if (this.shadowSigner?.hasShadowSigner()) {
             return;
         }
 
@@ -295,32 +290,6 @@ export abstract class NonCustodialSigner implements Signer {
         const error = new Error(errorMessage);
         this._authPromise?.reject(error);
         throw error;
-    }
-
-    protected abstract getShadowSignerConfig(
-        shadowSigner: ShadowSignerData,
-        walletAddress: string
-    ): ExternalWalletInternalSignerConfig<Chain> | EVM256KeypairInternalSignerConfig;
-
-    protected async initializeShadowSigner<C extends Chain>(
-        walletAddress: string,
-        ExternalWalletSignerClass:
-            | (new (
-                  config: ExternalWalletInternalSignerConfig<C>
-              ) => ExternalWalletSigner<C>)
-            | (new (
-                  config: EVM256KeypairInternalSignerConfig
-              ) => EVM256KeypairSigner)
-    ) {
-        if (await hasShadowSigner(walletAddress, this.shadowSignerStorage)) {
-            const shadowSigner = await getShadowSigner(walletAddress, this.shadowSignerStorage);
-            if (shadowSigner != null && this.config.shadowSigner?.enabled !== false) {
-                const signerConfig = this.getShadowSignerConfig(shadowSigner, walletAddress);
-                this.shadowSigner = new ExternalWalletSignerClass(
-                    signerConfig as ExternalWalletInternalSignerConfig<C> & EVM256KeypairInternalSignerConfig
-                ) as ExternalWalletSigner<C> | EVM256KeypairSigner;
-            }
-        }
     }
 }
 

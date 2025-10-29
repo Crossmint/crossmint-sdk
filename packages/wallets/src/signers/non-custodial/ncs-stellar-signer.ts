@@ -1,13 +1,6 @@
-import type { ShadowSignerData } from "../shadow-signer";
-import type {
-    EmailInternalSignerConfig,
-    ExternalWalletInternalSignerConfig,
-    PhoneInternalSignerConfig,
-} from "../types";
+import type { EmailInternalSignerConfig, PhoneInternalSignerConfig } from "../types";
 import { DEFAULT_EVENT_OPTIONS, NonCustodialSigner } from "./ncs-signer";
-import { StellarExternalWalletSigner } from "../stellar-external-wallet";
-import type { StellarChain } from "../../chains/chains";
-import type { ShadowSignerStorage } from "@/signers/shadow-signer";
+import { StellarShadowSigner, type ShadowSignerStorage } from "../shadow-signer";
 
 export class StellarNonCustodialSigner extends NonCustodialSigner {
     constructor(
@@ -16,7 +9,11 @@ export class StellarNonCustodialSigner extends NonCustodialSigner {
         shadowSignerStorage?: ShadowSignerStorage
     ) {
         super(config, shadowSignerStorage);
-        this.initializeShadowSigner(walletAddress, StellarExternalWalletSigner);
+        this.shadowSigner = new StellarShadowSigner(
+            walletAddress,
+            this.shadowSignerStorage,
+            this.config.shadowSigner?.enabled !== false
+        );
     }
 
     async signMessage() {
@@ -24,7 +21,7 @@ export class StellarNonCustodialSigner extends NonCustodialSigner {
     }
 
     async signTransaction(payload: string): Promise<{ signature: string }> {
-        if (this.shadowSigner != null) {
+        if (this.shadowSigner?.hasShadowSigner()) {
             return await this.shadowSigner.signTransaction(payload);
         }
         await this.handleAuthRequired();
@@ -73,26 +70,5 @@ export class StellarNonCustodialSigner extends NonCustodialSigner {
                     JSON.stringify(publicKey)
             );
         }
-    }
-
-    protected getShadowSignerConfig(shadowData: ShadowSignerData): ExternalWalletInternalSignerConfig<StellarChain> {
-        return {
-            type: "external-wallet",
-            address: shadowData.publicKey,
-            locator: `external-wallet:${shadowData.publicKey}`,
-            onSignStellarTransaction: async (payload) => {
-                if (!this.shadowSignerStorage) {
-                    throw new Error("Shadow signer storage not available");
-                }
-
-                const transactionString = typeof payload === "string" ? payload : (payload as { tx: string }).tx;
-                const messageBytes = Uint8Array.from(atob(transactionString), (c) => c.charCodeAt(0));
-
-                const signature = await this.shadowSignerStorage.sign(shadowData.publicKeyBase64, messageBytes);
-
-                const signatureBase64 = btoa(String.fromCharCode(...signature));
-                return signatureBase64;
-            },
-        };
     }
 }

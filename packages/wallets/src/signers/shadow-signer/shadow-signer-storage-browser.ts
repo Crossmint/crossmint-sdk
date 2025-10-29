@@ -1,5 +1,6 @@
-import type { ShadowSignerData, ShadowSignerStorage } from ".";
+import type { ShadowSignerData, ShadowSignerStorage } from "./utils";
 import type { Chain } from "../../chains/chains";
+
 export class BrowserShadowSignerStorage implements ShadowSignerStorage {
     private readonly SHADOW_SIGNER_DB_NAME = "crossmint_shadow_keys";
     private readonly SHADOW_SIGNER_DB_STORE = "keys";
@@ -35,6 +36,7 @@ export class BrowserShadowSignerStorage implements ShadowSignerStorage {
             const publicKeyBase64 = Buffer.from(publicKeyBytes).toString("base64");
 
             await this.storePrivateKeyByPublicKey(publicKeyBase64, keyPair.privateKey);
+            await this.storeKeyAlgorithm(publicKeyBase64, "Ed25519");
 
             return publicKeyBase64;
         }
@@ -61,7 +63,7 @@ export class BrowserShadowSignerStorage implements ShadowSignerStorage {
 
     async sign(publicKeyBase64: string, data: Uint8Array): Promise<Uint8Array> {
         const privateKey = await this.getPrivateKeyByPublicKey(publicKeyBase64);
-        if (!privateKey) {
+        if (privateKey == null) {
             throw new Error(`No private key found for public key: ${publicKeyBase64}`);
         }
 

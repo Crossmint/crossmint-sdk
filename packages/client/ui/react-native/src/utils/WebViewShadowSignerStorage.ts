@@ -25,7 +25,7 @@ export class WebViewShadowSignerStorage implements ShadowSignerStorage {
     }
 
     private injectStorageHandler(): void {
-        if (this.isInjected || !this.webViewRef?.current) {
+        if (this.isInjected || this.webViewRef?.current == null) {
             return;
         }
 
@@ -88,7 +88,7 @@ export class WebViewShadowSignerStorage implements ShadowSignerStorage {
         params: Record<string, unknown>
     ): Promise<Record<string, unknown>> {
         const webView = this.webViewRef?.current;
-        if (!webView) {
+        if (webView == null) {
             throw new Error("WebView not available. Make sure to initialize() with a WebView ref.");
         }
 
@@ -147,7 +147,7 @@ true;
 
             console.log("[WebViewShadowSignerStorage] Retrieved raw metadata:", stored);
 
-            if (!stored) {
+            if (stored == null) {
                 return null;
             }
 
@@ -162,20 +162,15 @@ true;
     }
 
     async keyGenerator(chain: string): Promise<string> {
-        const publicKeyBytes = await this.generateKeyInWebView(chain);
-        const publicKeyBase64 = Buffer.from(publicKeyBytes).toString("base64");
-
-        return publicKeyBase64;
+        return await this.generateKeyInWebView(chain);
     }
 
     async sign(publicKeyBase64: string, data: Uint8Array): Promise<Uint8Array> {
         return await this.signInWebView(publicKeyBase64, data);
     }
 
-    private async generateKeyInWebView(chain: string): Promise<Uint8Array> {
-        const response = await this.callWebViewFunction("generate", { chain });
-        const publicKeyBytes = response.publicKeyBytes as number[];
-        return new Uint8Array(publicKeyBytes);
+    private async generateKeyInWebView(chain: string): Promise<string> {
+        return (await this.callWebViewFunction("generate", { chain })).publicKeyBase64 as string;
     }
 
     private async signInWebView(publicKeyBase64: string, data: Uint8Array): Promise<Uint8Array> {
