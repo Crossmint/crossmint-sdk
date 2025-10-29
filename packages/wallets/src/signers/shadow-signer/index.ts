@@ -1,6 +1,6 @@
 import { encode as encodeBase58 } from "bs58";
 import type { Chain } from "@/chains/chains";
-import { encodeEd25519PublicKey } from "./encodeEd25519PublicKey";
+import { encodeEd25519PublicKey } from "../../utils/encodeEd25519PublicKey";
 import { BrowserShadowSignerStorage } from "./shadow-signer-storage-browser";
 import type { BaseExternalWalletSignerConfig } from "@crossmint/common-sdk-base";
 
