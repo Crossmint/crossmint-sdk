@@ -1,3 +1,4 @@
+import { isEmailValid } from "@crossmint/common-sdk-auth";
 import { WalletCreationError } from "./errors";
 
 const signerConfigMismatchErrorMessage = (fieldPath: string, newValue: unknown, existingValue: unknown) =>
@@ -36,7 +37,7 @@ function normalizeEmail(email: string): string {
  * logic as the backend (e.g., Gmail addresses with dots are normalized).
  */
 function normalizeValueForComparison(value: unknown): unknown {
-    if (typeof value === "string" && value.includes("@")) {
+    if (typeof value === "string" && isEmailValid(value)) {
         return normalizeEmail(value);
     }
     return value;
