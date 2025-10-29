@@ -7,8 +7,9 @@ import {
     type ShadowSignerData,
     type ShadowSignerStorage,
 } from "./utils";
+import type { InternalSignerConfig } from "../types";
 
-export abstract class ShadowSigner<C extends Chain, S extends Signer, Config> {
+export abstract class ShadowSigner<C extends Chain, S extends Signer, Config extends InternalSignerConfig<C>> {
     protected storage: ShadowSignerStorage;
     protected signer: S | null = null;
 
