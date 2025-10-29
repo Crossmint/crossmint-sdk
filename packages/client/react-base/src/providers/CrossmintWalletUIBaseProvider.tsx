@@ -11,7 +11,7 @@ export interface CrossmintWalletUIBaseProviderProps {
     children: ReactNode;
     appearance?: UIConfig;
     createOnLogin?: CreateOnLogin;
-    experimental_headlessSigningFlow?: boolean;
+    headlessSigningFlow?: boolean;
     showPasskeyHelpers?: boolean;
     callbacks?: {
         onWalletCreationStart?: () => Promise<void>;
@@ -79,7 +79,7 @@ export function CrossmintWalletUIBaseProvider({
     children,
     appearance,
     createOnLogin,
-    experimental_headlessSigningFlow = false,
+    headlessSigningFlow = false,
     showPasskeyHelpers = true,
     callbacks,
     initializeWebView,
@@ -177,7 +177,7 @@ export function CrossmintWalletUIBaseProvider({
             clientTEEConnection={clientTEEConnection}
         >
             {children}
-            {!experimental_headlessSigningFlow && renderUI != null && renderUI(uiRenderProps)}
+            {!headlessSigningFlow && renderUI != null && renderUI(uiRenderProps)}
         </CrossmintWalletBaseProvider>
     );
 }

@@ -124,7 +124,7 @@ export default function Index() {
 
             {/* To test headless signing, 
             1. import and uncomment <HeadlessSigning/>
-            2. add 'experimental_headlessSigningFlow' to CrossmintWalletProvider in _layout.tsx
+            2. add 'headlessSigningFlow' to CrossmintWalletProvider in _layout.tsx
             3. remove 'createOnLogin' from CrossmintWalletProvider in _layout.tsx */}
             {/* <HeadlessSigning /> */}
 

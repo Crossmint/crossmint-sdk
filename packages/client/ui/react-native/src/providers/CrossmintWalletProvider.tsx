@@ -17,7 +17,7 @@ export interface CrossmintWalletProviderProps {
     children: ReactNode;
     createOnLogin?: CreateOnLogin;
     appearance?: UIConfig;
-    experimental_headlessSigningFlow?: boolean;
+    headlessSigningFlow?: boolean;
     callbacks?: {
         onWalletCreationStart?: () => Promise<void>;
         onTransactionStart?: () => Promise<void>;
@@ -28,7 +28,7 @@ function CrossmintWalletProviderInternal({
     children,
     createOnLogin,
     appearance,
-    experimental_headlessSigningFlow = false,
+    headlessSigningFlow = false,
     callbacks,
 }: CrossmintWalletProviderProps) {
     const { crossmint } = useCrossmint("CrossmintWalletProvider must be used within CrossmintProvider");
@@ -166,10 +166,10 @@ function CrossmintWalletProviderInternal({
         <CrossmintWalletUIBaseProvider
             createOnLogin={createOnLogin}
             appearance={appearance}
-            experimental_headlessSigningFlow={experimental_headlessSigningFlow}
+            headlessSigningFlow={headlessSigningFlow}
             initializeWebView={initializeWebView}
             callbacks={callbacks}
-            renderUI={experimental_headlessSigningFlow ? undefined : renderNativeUI}
+            renderUI={headlessSigningFlow ? undefined : renderNativeUI}
             clientTEEConnection={getClientTEEConnection}
         >
             {children}

@@ -15,7 +15,7 @@ export interface CrossmintWalletProviderProps {
     showPasskeyHelpers?: boolean;
     appearance?: UIConfig;
     createOnLogin?: CreateOnLogin;
-    experimental_headlessSigningFlow?: boolean;
+    headlessSigningFlow?: boolean;
     callbacks?: {
         onWalletCreationStart?: () => Promise<void>;
         onTransactionStart?: () => Promise<void>;
@@ -37,17 +37,17 @@ export function CrossmintWalletProvider({
     showPasskeyHelpers = true,
     appearance,
     createOnLogin,
-    experimental_headlessSigningFlow = false,
+    headlessSigningFlow = false,
     callbacks,
 }: CrossmintWalletProviderProps) {
     return (
         <CrossmintWalletUIBaseProvider
             createOnLogin={createOnLogin}
             appearance={appearance}
-            experimental_headlessSigningFlow={experimental_headlessSigningFlow}
+            headlessSigningFlow={headlessSigningFlow}
             showPasskeyHelpers={showPasskeyHelpers}
             callbacks={callbacks}
-            renderUI={experimental_headlessSigningFlow ? undefined : renderWebUI}
+            renderUI={headlessSigningFlow ? undefined : renderWebUI}
         >
             {children}
         </CrossmintWalletUIBaseProvider>
