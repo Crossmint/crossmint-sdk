@@ -192,7 +192,7 @@ function CrossmintWalletProviderInternal({
                 </>
             );
         },
-        [frameUrl, secureGlobals, onWebViewLoad, handleMessage, parsedAPIKey.environment]
+        [frameUrl, secureGlobals, onWebViewLoad, handleMessage, parsedAPIKey.environment, needsWebView]
     );
 
     const initializeWebView = async () => {
