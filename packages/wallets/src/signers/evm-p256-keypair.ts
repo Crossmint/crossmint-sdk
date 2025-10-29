@@ -1,6 +1,5 @@
 import type { Signer, EVM256KeypairInternalSignerConfig } from "./types";
-import { concat, toHex, sha256 } from "viem";
-
+import { keccak256, sha256, toHex } from "viem";
 export class EVM256KeypairSigner implements Signer {
     type = "evm-p256-keypair" as const;
     private publicKey: string;
@@ -48,20 +47,31 @@ export class EVM256KeypairSigner implements Signer {
         });
 
         // 2. Create authenticatorData
-        const rpIdHashHex = sha256(toHex(new TextEncoder().encode(STUB_ORIGIN)));
-        const flags = toHex(new Uint8Array([0x05]));
-        const signCount = toHex(new Uint8Array([0x00, 0x00, 0x00, 0x00]));
-        const authenticatorData = concat([rpIdHashHex, flags, signCount]);
+        // IMPORTANT: Use keccak256 for rpIdHash to match backend (line 182 in backend)
+        const originBytes = new TextEncoder().encode(STUB_ORIGIN);
+        const rpIdHash = keccak256(toHex(originBytes));
 
-        // 3. Create signature message
-        const clientDataHash = sha256(toHex(new TextEncoder().encode(clientDataJSON)));
-        const signatureMessage = concat([authenticatorData, clientDataHash]);
+        // flags: 0x05 = User Present (0x01) + User Verified (0x04)
+        const flags = "05";
+
+        // signCount: 4 bytes, all zeros
+        const signCount = "00000000";
+
+        const authenticatorData = (rpIdHash + flags + signCount) as `0x${string}`;
+
+        // 3. Create signature message: authenticatorData + sha256(clientDataJSON)
+        // This matches what the backend expects and what WebAuthn spec requires
+        const clientDataJSONBytes = new TextEncoder().encode(clientDataJSON);
+        const clientDataHash = sha256(toHex(clientDataJSONBytes));
+
+        const signatureMessage = (authenticatorData + clientDataHash.slice(2)) as `0x${string}`;
 
         // 4. Sign with P256 private key
+        // Web Crypto API will internally do: sign(sha256(signatureMessage))
         const signatureMessageBytes = new Uint8Array(Buffer.from(signatureMessage.slice(2), "hex"));
         const signatureBytes = await this.onSignTransaction(this.publicKey, signatureMessageBytes);
 
-        // 5. Return r + s as hex string (backend will encode to WebAuthn)
+        // 5. Return r + s as hex string
         const rHex = Buffer.from(signatureBytes.slice(0, 32)).toString("hex").padStart(64, "0");
         const sHex = Buffer.from(signatureBytes.slice(32, 64)).toString("hex").padStart(64, "0");
 

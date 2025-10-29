@@ -2,7 +2,7 @@ import { encode as encodeBase58 } from "bs58";
 import type { Chain } from "@/chains/chains";
 import { encodeEd25519PublicKey } from "../../utils/encodeEd25519PublicKey";
 import { BrowserShadowSignerStorage } from "./shadow-signer-storage-browser";
-import type { BaseExternalWalletSignerConfig } from "@crossmint/common-sdk-base";
+import type { BaseExternalWalletSignerConfig, EVM256KeypairSignerConfig } from "@crossmint/common-sdk-base";
 
 export type ShadowSignerData = {
     chain: Chain;
@@ -13,7 +13,7 @@ export type ShadowSignerData = {
 };
 
 export type ShadowSignerResult = {
-    shadowSigner: BaseExternalWalletSignerConfig;
+    shadowSigner: BaseExternalWalletSignerConfig | EVM256KeypairSignerConfig;
     publicKey: string;
 };
 
@@ -68,8 +68,9 @@ export async function generateShadowSigner<C extends Chain>(
     // For EVM chains, the public key is the base64 P256 public key
     return {
         shadowSigner: {
-            type: "external-wallet",
-            address: publicKeyBase64,
+            type: "evm-p256-keypair",
+            publicKey: publicKeyBase64,
+            chain,
         },
         publicKey: publicKeyBase64,
         publicKeyBase64,

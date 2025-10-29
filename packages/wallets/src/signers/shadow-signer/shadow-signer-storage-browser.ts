@@ -36,7 +36,6 @@ export class BrowserShadowSignerStorage implements ShadowSignerStorage {
             const publicKeyBase64 = Buffer.from(publicKeyBytes).toString("base64");
 
             await this.storePrivateKeyByPublicKey(publicKeyBase64, keyPair.privateKey);
-            await this.storeKeyAlgorithm(publicKeyBase64, "Ed25519");
 
             return publicKeyBase64;
         }
@@ -56,7 +55,6 @@ export class BrowserShadowSignerStorage implements ShadowSignerStorage {
         const publicKeyBase64 = Buffer.from(publicKeyBytes).toString("base64");
 
         await this.storePrivateKeyByPublicKey(publicKeyBase64, keyPair.privateKey);
-        await this.storeKeyAlgorithm(publicKeyBase64, "P-256");
 
         return publicKeyBase64;
     }
@@ -67,9 +65,9 @@ export class BrowserShadowSignerStorage implements ShadowSignerStorage {
             throw new Error(`No private key found for public key: ${publicKeyBase64}`);
         }
 
-        const algorithm = await this.getKeyAlgorithm(publicKeyBase64);
+        const algorithmName = privateKey.algorithm.name;
 
-        if (algorithm === "P-256") {
+        if (algorithmName === "ECDSA") {
             // For P256, use ECDSA with SHA-256
             const signature = await window.crypto.subtle.sign(
                 {
@@ -121,43 +119,6 @@ export class BrowserShadowSignerStorage implements ShadowSignerStorage {
             });
         } catch (error) {
             console.warn("Failed to retrieve private key from IndexedDB:", error);
-            return null;
-        }
-    }
-
-    private async storeKeyAlgorithm(publicKey: string, algorithm: string): Promise<void> {
-        if (typeof indexedDB === "undefined") {
-            return;
-        }
-
-        const db = await this.openDB();
-        const tx = db.transaction([this.SHADOW_SIGNER_DB_STORE], "readwrite");
-        const store = tx.objectStore(this.SHADOW_SIGNER_DB_STORE);
-        store.put(algorithm, `${publicKey}_algorithm`);
-
-        return new Promise<void>((resolve, reject) => {
-            tx.oncomplete = () => resolve();
-            tx.onerror = () => reject(tx.error);
-        });
-    }
-
-    private async getKeyAlgorithm(publicKey: string): Promise<string | null> {
-        if (typeof indexedDB === "undefined") {
-            return null;
-        }
-
-        try {
-            const db = await this.openDB();
-            const tx = db.transaction([this.SHADOW_SIGNER_DB_STORE], "readonly");
-            const store = tx.objectStore(this.SHADOW_SIGNER_DB_STORE);
-            const request = store.get(`${publicKey}_algorithm`);
-
-            return new Promise((resolve, reject) => {
-                request.onsuccess = () => resolve(request.result || null);
-                request.onerror = () => reject(request.error);
-            });
-        } catch (error) {
-            console.warn("Failed to retrieve key algorithm from IndexedDB:", error);
             return null;
         }
     }
