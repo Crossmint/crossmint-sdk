@@ -4,6 +4,10 @@ import { encodeEd25519PublicKey } from "../../utils/encodeEd25519PublicKey";
 import { BrowserShadowSignerStorage } from "./shadow-signer-storage-browser";
 import type { BaseExternalWalletSignerConfig } from "@crossmint/common-sdk-base";
 
+export { ShadowSigner } from "./shadow-signer";
+export { SolanaShadowSigner } from "./solana-shadow-signer";
+export { StellarShadowSigner } from "./stellar-shadow-signer";
+
 export type ShadowSignerData = {
     chain: Chain;
     walletAddress: string;

@@ -1,14 +1,8 @@
-import { PublicKey, VersionedTransaction } from "@solana/web3.js";
+import { VersionedTransaction } from "@solana/web3.js";
 import base58 from "bs58";
-import type {
-    EmailInternalSignerConfig,
-    ExternalWalletInternalSignerConfig,
-    PhoneInternalSignerConfig,
-} from "../types";
+import type { EmailInternalSignerConfig, PhoneInternalSignerConfig } from "../types";
 import { NonCustodialSigner, DEFAULT_EVENT_OPTIONS } from "./ncs-signer";
-import type { ShadowSignerData } from "../shadow-signer";
-import { SolanaExternalWalletSigner } from "../solana-external-wallet";
-import type { SolanaChain } from "../../chains/chains";
+import { SolanaShadowSigner } from "../shadow-signer";
 import type { ShadowSignerStorage } from "@/signers/shadow-signer";
 
 export class SolanaNonCustodialSigner extends NonCustodialSigner {
@@ -18,7 +12,11 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
         shadowSignerStorage?: ShadowSignerStorage
     ) {
         super(config, shadowSignerStorage);
-        this.initializeShadowSigner(walletAddress, SolanaExternalWalletSigner);
+        this.shadowSigner = new SolanaShadowSigner(
+            walletAddress,
+            this.shadowSignerStorage,
+            this.config.shadowSigner?.enabled !== false
+        );
     }
 
     async signMessage() {
@@ -26,7 +24,7 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
     }
 
     async signTransaction(transaction: string): Promise<{ signature: string }> {
-        if (this.shadowSigner != null) {
+        if (this.shadowSigner?.hasShadowSigner()) {
             return await this.shadowSigner.signTransaction(transaction);
         }
         await this.handleAuthRequired();
@@ -75,26 +73,5 @@ export class SolanaNonCustodialSigner extends NonCustodialSigner {
                     JSON.stringify(publicKey)
             );
         }
-    }
-
-    protected getShadowSignerConfig(shadowData: ShadowSignerData): ExternalWalletInternalSignerConfig<SolanaChain> {
-        return {
-            type: "external-wallet",
-            address: shadowData.publicKey,
-            locator: `external-wallet:${shadowData.publicKey}`,
-            onSignTransaction: async (transaction) => {
-                if (!this.shadowSignerStorage) {
-                    throw new Error("Shadow signer storage not available");
-                }
-
-                const messageBytes = new Uint8Array(transaction.message.serialize());
-
-                const signature = await this.shadowSignerStorage.sign(shadowData.publicKeyBase64, messageBytes);
-
-                transaction.addSignature(new PublicKey(shadowData.publicKey), signature);
-
-                return transaction;
-            },
-        };
     }
 }
