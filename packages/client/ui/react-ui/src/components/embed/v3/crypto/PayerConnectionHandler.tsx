@@ -33,10 +33,26 @@ export function PayerConnectionHandler({
             }
         );
 
+        const signMessageListener = iframeClient.on("crypto:sign-message", async ({ message }) => {
+            try {
+                if (payer.handleSignMessage == null) {
+                    throw new Error("handleSignMessage is not implemented on payer");
+                }
+
+                const signature = await payer.handleSignMessage(message);
+                iframeClient.send("crypto:sign-message:success", { signature });
+                return;
+            } catch (error) {
+                console.error("[PayerConnectionHandler] failed to sign message", error);
+                iframeClient.send("crypto:sign-message:failed", { error: (error as Error).message });
+            }
+        });
+
         return () => {
             iframeClient.off(signTransactionListener);
+            iframeClient.off(signMessageListener);
         };
-    }, [iframeClient]);
+    }, [iframeClient, payer]);
 
     return null;
 }
