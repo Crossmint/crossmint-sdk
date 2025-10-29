@@ -131,69 +131,22 @@ function CrossmintWalletProviderInternal({
     }, []);
 
     // Get the handshake parent for signer connection
-    const getClientTEEConnection = useCallback(() => {
+    const getClientTEEConnection = () => {
         if (webViewParentRef.current == null) {
             throw new Error("WebView not ready or handshake incomplete");
         }
         return webViewParentRef.current;
-    }, []);
+    };
 
     // Render React Native UI components
-    const renderNativeUI = useCallback(
-        ({ emailSignerProps, phoneSignerProps }: UIRenderProps) => {
-            return (
-                <>
-                    <EmailSignersDialog {...emailSignerProps} />
-                    <PhoneSignersDialog {...phoneSignerProps} />
-                    {needsWebView && (
-                        <View
-                            style={{
-                                position: "absolute",
-                                width: 0,
-                                height: 0,
-                                overflow: "hidden",
-                            }}
-                        >
-                            <RNWebView
-                                ref={webviewRef}
-                                source={{ uri: frameUrl }}
-                                globals={secureGlobals}
-                                onLoadEnd={onWebViewLoad}
-                                onMessage={handleMessage}
-                                onError={(syntheticEvent) => {
-                                    console.error(
-                                        "[CrossmintWalletProvider] WebView error:",
-                                        syntheticEvent.nativeEvent
-                                    );
-                                }}
-                                onHttpError={(syntheticEvent) => {
-                                    console.error(
-                                        "[CrossmintWalletProvider] WebView HTTP error:",
-                                        syntheticEvent.nativeEvent
-                                    );
-                                }}
-                                onContentProcessDidTerminate={() => webviewRef.current?.reload()}
-                                onRenderProcessGone={() => webviewRef.current?.reload()}
-                                style={{
-                                    width: 1,
-                                    height: 1,
-                                }}
-                                javaScriptCanOpenWindowsAutomatically={false}
-                                thirdPartyCookiesEnabled={false}
-                                sharedCookiesEnabled={false}
-                                incognito={false}
-                                setSupportMultipleWindows={false}
-                                originWhitelist={[environmentUrlConfig[parsedAPIKey.environment]]}
-                                cacheEnabled={true}
-                                cacheMode="LOAD_DEFAULT"
-                            />
-                        </View>
-                    )}
-                </>
-            );
-        },
-        [frameUrl, secureGlobals, onWebViewLoad, handleMessage, parsedAPIKey.environment, needsWebView]
-    );
+    const renderNativeUI = ({ emailSignerProps, phoneSignerProps }: UIRenderProps) => {
+        return (
+            <>
+                <EmailSignersDialog {...emailSignerProps} />
+                <PhoneSignersDialog {...phoneSignerProps} />
+            </>
+        );
+    };
 
     const initializeWebView = async () => {
         setNeedsWebView(true);
@@ -220,6 +173,45 @@ function CrossmintWalletProviderInternal({
             clientTEEConnection={getClientTEEConnection}
         >
             {children}
+
+            {needsWebView && (
+                <View
+                    style={{
+                        position: "absolute",
+                        width: 0,
+                        height: 0,
+                        overflow: "hidden",
+                    }}
+                >
+                    <RNWebView
+                        ref={webviewRef}
+                        source={{ uri: frameUrl }}
+                        globals={secureGlobals}
+                        onLoadEnd={onWebViewLoad}
+                        onMessage={handleMessage}
+                        onError={(syntheticEvent) => {
+                            console.error("[CrossmintWalletProvider] WebView error:", syntheticEvent.nativeEvent);
+                        }}
+                        onHttpError={(syntheticEvent) => {
+                            console.error("[CrossmintWalletProvider] WebView HTTP error:", syntheticEvent.nativeEvent);
+                        }}
+                        onContentProcessDidTerminate={() => webviewRef.current?.reload()}
+                        onRenderProcessGone={() => webviewRef.current?.reload()}
+                        style={{
+                            width: 1,
+                            height: 1,
+                        }}
+                        javaScriptCanOpenWindowsAutomatically={false}
+                        thirdPartyCookiesEnabled={false}
+                        sharedCookiesEnabled={false}
+                        incognito={false}
+                        setSupportMultipleWindows={false}
+                        originWhitelist={[environmentUrlConfig[parsedAPIKey.environment]]}
+                        cacheEnabled={true}
+                        cacheMode="LOAD_DEFAULT"
+                    />
+                </View>
+            )}
         </CrossmintWalletUIBaseProvider>
     );
 }

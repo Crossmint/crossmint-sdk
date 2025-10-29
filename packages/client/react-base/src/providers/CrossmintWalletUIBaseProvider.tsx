@@ -175,7 +175,6 @@ export function CrossmintWalletUIBaseProvider({
             onAuthRequired={signerAuth.onAuthRequired}
             initializeWebView={initializeWebView}
             callbacks={getCallbacks()}
-            experimental_headlessSigningFlow={experimental_headlessSigningFlow}
             clientTEEConnection={clientTEEConnection}
         >
             {children}

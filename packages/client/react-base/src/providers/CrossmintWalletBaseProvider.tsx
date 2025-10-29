@@ -20,7 +20,12 @@ export type CrossmintWalletBaseContext = {
     getOrCreateWallet: <C extends Chain>(props: WalletArgsFor<C>) => Promise<Wallet<Chain> | undefined>;
     onAuthRequired?: EmailSignerConfig["onAuthRequired"] | PhoneSignerConfig["onAuthRequired"];
     clientTEEConnection?: () => HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
-    experimental_headlessSigningFlow?: boolean;
+    emailSignerState: {
+        needsAuth: boolean;
+        sendEmailWithOtp: (() => Promise<void>) | null;
+        verifyOtp: ((otp: string) => Promise<void>) | null;
+        reject: ((error?: Error) => void) | null;
+    };
 };
 
 export const CrossmintWalletBaseContext = createContext<CrossmintWalletBaseContext>({
@@ -29,7 +34,12 @@ export const CrossmintWalletBaseContext = createContext<CrossmintWalletBaseConte
     getOrCreateWallet: () => Promise.resolve(undefined),
     onAuthRequired: undefined,
     clientTEEConnection: undefined,
-    experimental_headlessSigningFlow: false,
+    emailSignerState: {
+        needsAuth: false,
+        sendEmailWithOtp: null,
+        verifyOtp: null,
+        reject: null,
+    },
 });
 
 export interface CrossmintWalletBaseProviderProps {
@@ -45,7 +55,6 @@ export interface CrossmintWalletBaseProviderProps {
      * If true, disables automatic UI rendering and uses onAuthRequired callback instead.
      * Defaults to false.
      */
-    experimental_headlessSigningFlow?: boolean;
     initializeWebView?: () => Promise<void>;
 }
 
@@ -55,7 +64,6 @@ export function CrossmintWalletBaseProvider({
     callbacks,
     onAuthRequired,
     clientTEEConnection,
-    experimental_headlessSigningFlow = false,
     initializeWebView,
 }: CrossmintWalletBaseProviderProps) {
     const { crossmint, experimental_customAuth } = useCrossmint(
@@ -63,6 +71,38 @@ export function CrossmintWalletBaseProvider({
     );
     const [wallet, setWallet] = useState<Wallet<Chain> | undefined>(undefined);
     const [walletStatus, setWalletStatus] = useState<"not-loaded" | "in-progress" | "loaded" | "error">("not-loaded");
+
+    // Add email signer state
+    const [emailSignerState, setEmailSignerState] = useState({
+        needsAuth: false,
+        sendEmailWithOtp: null as (() => Promise<void>) | null,
+        verifyOtp: null as ((otp: string) => Promise<void>) | null,
+        reject: null as ((error?: Error) => void) | null,
+    });
+
+    // Create a wrapped onAuthRequired that updates our state
+    const wrappedOnAuthRequired = useCallback(
+        async (
+            needsAuth: boolean,
+            sendEmailWithOtp: () => Promise<void>,
+            verifyOtp: (otp: string) => Promise<void>,
+            reject: () => void
+        ) => {
+            // Update email signer state
+            setEmailSignerState({
+                needsAuth,
+                sendEmailWithOtp,
+                verifyOtp,
+                reject,
+            });
+
+            // Call the original onAuthRequired if provided
+            if (onAuthRequired) {
+                return await onAuthRequired(needsAuth, sendEmailWithOtp, verifyOtp, reject);
+            }
+        },
+        [onAuthRequired]
+    );
 
     const getOrCreateWallet = useCallback(
         async <C extends Chain>(_args: WalletArgsFor<C>) => {
@@ -84,7 +124,7 @@ export function CrossmintWalletBaseProvider({
 
                 if (args?.signer?.type === "email") {
                     const email = args.signer.email ?? experimental_customAuth?.email;
-                    const _onAuthRequired = args.signer.onAuthRequired ?? onAuthRequired;
+                    const _onAuthRequired = args.signer.onAuthRequired ?? wrappedOnAuthRequired;
 
                     if (email == null) {
                         throw new Error(
@@ -100,7 +140,7 @@ export function CrossmintWalletBaseProvider({
 
                 if (args?.signer?.type === "phone") {
                     const phone = args.signer.phone ?? experimental_customAuth?.phone;
-                    const _onAuthRequired = args.signer.onAuthRequired ?? onAuthRequired;
+                    const _onAuthRequired = args.signer.onAuthRequired ?? wrappedOnAuthRequired;
 
                     if (phone == null) {
                         throw new Error("Phone not found in signer. Please set phone in signer.");
@@ -152,7 +192,17 @@ export function CrossmintWalletBaseProvider({
                 return undefined;
             }
         },
-        [crossmint, experimental_customAuth]
+        [
+            crossmint,
+            experimental_customAuth,
+            wrappedOnAuthRequired,
+            walletStatus,
+            wallet,
+            callbacks?.onWalletCreationStart,
+            callbacks?.onTransactionStart,
+            clientTEEConnection,
+            initializeWebView,
+        ]
     );
 
     useEffect(() => {
@@ -187,11 +237,11 @@ export function CrossmintWalletBaseProvider({
             wallet,
             status: walletStatus,
             getOrCreateWallet,
-            onAuthRequired,
+            onAuthRequired: wrappedOnAuthRequired,
             clientTEEConnection,
-            experimental_headlessSigningFlow,
+            emailSignerState,
         }),
-        [getOrCreateWallet, wallet, walletStatus, onAuthRequired, clientTEEConnection, experimental_headlessSigningFlow]
+        [getOrCreateWallet, wallet, walletStatus, wrappedOnAuthRequired, clientTEEConnection, emailSignerState]
     );
 
     return <CrossmintWalletBaseContext.Provider value={contextValue}>{children}</CrossmintWalletBaseContext.Provider>;
