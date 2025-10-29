@@ -167,7 +167,6 @@ export function CrossmintWalletUIBaseProvider({
             appearance,
         },
     };
-    console.log("uiRenderProps", uiRenderProps);
 
     return (
         <CrossmintWalletBaseProvider
