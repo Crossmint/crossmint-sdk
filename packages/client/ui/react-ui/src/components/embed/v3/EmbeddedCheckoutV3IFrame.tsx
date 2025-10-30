@@ -21,6 +21,7 @@ const CryptoWalletConnectionHandler = lazy(() =>
 export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props) {
     const [iframeClient, setIframeClient] = useState<EmbeddedCheckoutV3IFrameEmitter | null>(null);
     const [height, setHeight] = useState(0);
+    const [eventEnableCrypto, setEventEnableCrypto] = useState(false);
 
     const initialChainRef = useRef(props.payment.crypto.payer?.initialChain);
 
@@ -61,6 +62,20 @@ export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props
         };
     }, [iframeClient]);
 
+    useEffect(() => {
+        if (iframeClient == null) {
+            return;
+        }
+        const onCryptoLoadListener = iframeClient.on("crypto:load", () => {
+            setEventEnableCrypto(true);
+            iframeClient.send("crypto:load.success", {});
+        });
+
+        return () => {
+            iframeClient.off(onCryptoLoadListener);
+        };
+    }, [iframeClient]);
+
     return (
         <>
             <iframe
@@ -85,7 +100,7 @@ export function EmbeddedCheckoutV3IFrame(props: CrossmintEmbeddedCheckoutV3Props
                     backgroundColor: "transparent",
                 }}
             />
-            {memoizedProps.current.payment.crypto.enabled ? (
+            {eventEnableCrypto || memoizedProps.current.payment.crypto.enabled ? (
                 memoizedProps.current.payment.crypto.payer != null ? (
                     <PayerConnectionHandler
                         payer={memoizedProps.current.payment.crypto.payer}

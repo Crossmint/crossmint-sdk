@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const embeddedCheckoutV3OutgoingEvents = {
+    "crypto:load.success": z.object({}),
     "crypto:connect-wallet.failed": z.object({
         error: z.string(),
     }),

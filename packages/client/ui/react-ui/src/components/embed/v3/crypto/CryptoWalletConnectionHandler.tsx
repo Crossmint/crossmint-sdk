@@ -19,6 +19,7 @@ export function CryptoWalletConnectionHandler(props: {
 }) {
     const { iframeClient, apiKeyEnvironment } = props;
 
+    console.log("[CryptoWalletConnectionHandler] CryptoWalletConnectionHandler");
     return (
         <DynamicContextProviderWrapper
             apiKeyEnvironment={apiKeyEnvironment}
@@ -106,6 +107,7 @@ export function CryptoWalletConnectionHandler(props: {
 function _CryptoWalletConnectionHandler({ iframeClient }: Parameters<typeof CryptoWalletConnectionHandler>[0]) {
     const [showDynamicModal, setShowDynamicModal] = useState(false);
     const { primaryWallet } = useDynamicContext();
+    console.log("[CryptoWalletConnectionHandler] _CryptoWalletConnectionHandler", primaryWallet);
 
     useEffect(() => {
         if (iframeClient == null) {
