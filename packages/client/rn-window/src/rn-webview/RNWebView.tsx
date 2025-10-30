@@ -139,7 +139,77 @@ export interface RNWebViewProps extends WebViewProps {
     globals?: SafeInjectableGlobals;
 }
 
-export const RNWebView = React.forwardRef<WebView, RNWebViewProps>(({ globals, ...props }, ref) => {
+/**
+ * Restricted ref interface that excludes injectJavaScript to prevent arbitrary code injection
+ * Only exposes safe WebView methods that don't allow code injection
+ */
+export interface RNWebViewRef {
+    /**
+     * Go back one page in the webview's history.
+     */
+    goBack: () => void;
+
+    /**
+     * Go forward one page in the webview's history.
+     */
+    goForward: () => void;
+
+    /**
+     * Reloads the current page.
+     */
+    reload: () => void;
+
+    /**
+     * Stop loading the current page.
+     */
+    stopLoading: () => void;
+
+    /**
+     * Focuses on WebView rendered page.
+     */
+    requestFocus: () => void;
+
+    /**
+     * Posts a message to WebView.
+     */
+    postMessage: (message: string) => void;
+
+    /**
+     * (Android only)
+     * Removes the autocomplete popup from the currently focused form field, if present.
+     */
+    clearFormData?: () => void;
+
+    /**
+     * Clears the resource cache. Note that the cache is per-application, so this will clear the cache for all WebViews used.
+     */
+    clearCache?: (includeDiskFiles: boolean) => void;
+
+    /**
+     * (Android only)
+     * Tells this WebView to clear its internal back/forward list.
+     */
+    clearHistory?: () => void;
+}
+
+/**
+ * Internal ref type that includes injectJavaScript for legitimate internal use
+ * This should only be used by internal transport mechanisms, not exposed to external users
+ * @internal
+ */
+export interface RNWebViewInternalRef extends RNWebViewRef {
+    /**
+     * Executes the JavaScript string.
+     * @internal - Only available for internal transport mechanisms
+     */
+    injectJavaScript: (script: string) => void;
+}
+
+export const RNWebView = React.forwardRef<RNWebViewRef, RNWebViewProps>(({ globals, ...props }, ref) => {
+    // Internal ref to the actual WebView - this is what we pass to the underlying component
+    // This is kept separate from the public ref to prevent external access to injectJavaScript
+    const internalRef = React.useRef<WebView>(null);
+
     const safeGlobalsScript = globals ? createSafeGlobalsScript(globals) : "";
 
     const combinedInjectedJs = `
@@ -147,7 +217,80 @@ export const RNWebView = React.forwardRef<WebView, RNWebViewProps>(({ globals, .
         ${safeGlobalsScript}
     `;
 
-    return <WebView ref={ref} {...props} injectedJavaScriptBeforeContentLoaded={combinedInjectedJs} />;
+    // Extract JavaScript injection props to prevent them from being passed through
+    // Only our combinedInjectedJs should be injected
+    const {
+        injectedJavaScript,
+        injectedJavaScriptBeforeContentLoaded,
+        injectedJavaScriptForMainFrameOnly,
+        ...restProps
+    } = props;
+
+    // Use useImperativeHandle to create a restricted ref interface
+    // that excludes injectJavaScript to prevent arbitrary code injection
+    React.useImperativeHandle(
+        ref,
+        (): RNWebViewRef => {
+            const webView = internalRef.current;
+            if (!webView) {
+                // Return a minimal object if ref is not yet available
+                // This matches the WebView interface but without injectJavaScript
+                return {
+                    goBack: () => {
+                        // No-op when ref not available
+                    },
+                    goForward: () => {
+                        // No-op when ref not available
+                    },
+                    reload: () => {
+                        // No-op when ref not available
+                    },
+                    stopLoading: () => {
+                        // No-op when ref not available
+                    },
+                    requestFocus: () => {
+                        // No-op when ref not available
+                    },
+                    postMessage: () => {
+                        // No-op when ref not available
+                    },
+                    clearFormData: () => {
+                        // No-op when ref not available
+                    },
+                    clearCache: () => {
+                        // No-op when ref not available
+                    },
+                    clearHistory: () => {
+                        // No-op when ref not available
+                    },
+                };
+            }
+
+            // Explicitly return only the safe methods, excluding injectJavaScript
+            return {
+                goBack: webView.goBack,
+                goForward: webView.goForward,
+                reload: webView.reload,
+                stopLoading: webView.stopLoading,
+                requestFocus: webView.requestFocus,
+                postMessage: webView.postMessage,
+                clearFormData: webView.clearFormData,
+                clearCache: webView.clearCache,
+                clearHistory: webView.clearHistory,
+            };
+        },
+        []
+    );
+
+    return (
+        <WebView
+            ref={internalRef}
+            {...restProps}
+            injectedJavaScriptBeforeContentLoaded={combinedInjectedJs}
+            injectedJavaScript={undefined}
+            injectedJavaScriptForMainFrameOnly={undefined}
+        />
+    );
 });
 
 RNWebView.displayName = "RNWebView";
