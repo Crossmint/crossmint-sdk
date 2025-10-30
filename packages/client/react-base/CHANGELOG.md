@@ -1,5 +1,11 @@
 # @crossmint/client-sdk-react-base
 
+## 0.7.3
+
+### Patch Changes
+
+- cc7ffd4: Consolidated UI state within base provider.
+
 ## 0.7.2
 
 ### Patch Changes

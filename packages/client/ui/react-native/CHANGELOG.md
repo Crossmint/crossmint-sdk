@@ -1,5 +1,16 @@
 # @crossmint/client-sdk-react-native-ui
 
+## 0.13.0
+
+### Minor Changes
+
+- cc7ffd4: Added new built-in UI for email and phone signers, can use 'headlessSigningFlow' to disable.
+
+### Patch Changes
+
+- Updated dependencies [cc7ffd4]
+  - @crossmint/client-sdk-react-base@0.7.3
+
 ## 0.12.1
 
 ### Patch Changes
