@@ -1,6 +1,5 @@
 import type { ShadowSignerStorage, ShadowSignerData } from "@crossmint/wallets-sdk";
 import { SecureStorage } from "./SecureStorage";
-import { SHADOW_SIGNER_STORAGE_INJECTED_JS } from "./webview-storage-injected";
 import type { RefObject } from "react";
 import type { WebView } from "react-native-webview";
 import * as SecureStore from "expo-secure-store";
@@ -9,7 +8,7 @@ export class WebViewShadowSignerStorage implements ShadowSignerStorage {
     private readonly SHADOW_SIGNER_STORAGE_KEY = "crossmint_shadow_signer";
     private secureStorage = new SecureStorage();
     private webViewRef: RefObject<WebView | null> | null = null;
-    private isInjected = false;
+    private sendCommandViaHash: ((hash: string) => void) | null = null;
     private readyPromise: Promise<void>;
     private readyResolve: (() => void) | null = null;
 
@@ -19,29 +18,18 @@ export class WebViewShadowSignerStorage implements ShadowSignerStorage {
         });
     }
 
-    initialize(webViewRef: RefObject<WebView | null>): void {
+    initialize(webViewRef: RefObject<WebView | null>, sendCommandViaHash?: (hash: string) => void): void {
         this.webViewRef = webViewRef;
-        this.injectStorageHandler();
-    }
-
-    private injectStorageHandler(): void {
-        if (this.isInjected || this.webViewRef?.current == null) {
-            return;
+        if (sendCommandViaHash) {
+            this.sendCommandViaHash = sendCommandViaHash;
         }
-
-        try {
-            this.webViewRef.current.injectJavaScript(SHADOW_SIGNER_STORAGE_INJECTED_JS);
-            this.isInjected = true;
-            console.log("[WebViewShadowSignerStorage] Storage handler injected into WebView");
-
-            if (this.readyResolve) {
-                this.readyResolve();
-                this.readyResolve = null;
-            }
-        } catch (error) {
-            console.error("[WebViewShadowSignerStorage] Failed to inject storage handler:", error);
+        if (this.readyResolve) {
+            this.readyResolve();
+            this.readyResolve = null;
         }
     }
+
+    // No runtime JS injection; handler is pre-injected by the WebView
 
     async waitForReady(): Promise<void> {
         await this.readyPromise;
@@ -87,10 +75,10 @@ export class WebViewShadowSignerStorage implements ShadowSignerStorage {
         operation: string,
         params: Record<string, unknown>
     ): Promise<Record<string, unknown>> {
-        const webView = this.webViewRef?.current;
-        if (webView == null) {
-            throw new Error("WebView not available. Make sure to initialize() with a WebView ref.");
+        if (this.sendCommandViaHash == null) {
+            throw new Error("Shadow signer command channel not initialized");
         }
+        const send = this.sendCommandViaHash;
 
         const id = `shadow_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
@@ -102,27 +90,10 @@ export class WebViewShadowSignerStorage implements ShadowSignerStorage {
 
             this.pendingRequests.set(id, { resolve, reject, timeout });
 
-            const script = `
-(async function() {
-    try {
-        const result = await window.__crossmintShadowSignerStorage('${operation}', ${JSON.stringify(params)});
-        window.ReactNativeWebView.postMessage(JSON.stringify({
-            type: 'SHADOW_SIGNER_RESPONSE',
-            id: '${id}',
-            result: result
-        }));
-    } catch (error) {
-        window.ReactNativeWebView.postMessage(JSON.stringify({
-            type: 'SHADOW_SIGNER_RESPONSE',
-            id: '${id}',
-            error: error.message || String(error)
-        }));
-    }
-})();
-true;
-            `;
-
-            webView.injectJavaScript(script);
+            const payload = { id, operation, params };
+            const b64 = btoa(JSON.stringify(payload));
+            const hash = `#cmShadow=${encodeURIComponent(b64)}`;
+            send(hash);
         });
     }
 

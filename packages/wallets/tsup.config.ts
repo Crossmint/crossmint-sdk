@@ -25,7 +25,27 @@ const config: Options = {
         });
 
         // Read the compiled JavaScript
-        const jsContent = readFileSync(join(outDir, "shadow-signer-storage-browser.js"), "utf-8");
+        const jsRaw = readFileSync(join(outDir, "shadow-signer-storage-browser.js"), "utf-8");
+
+        // Generate a robust Buffer polyfill from the existing 'buffer/' package
+        const polyfillBuild = await build({
+            stdin: {
+                contents: `import { Buffer } from "buffer/";\n(function(){ if (typeof window !== 'undefined' && typeof (window as any).Buffer === 'undefined') { (window as any).Buffer = Buffer as any; } })();`,
+                resolveDir: process.cwd(),
+                sourcefile: "polyfill-buffer.ts",
+                loader: "ts",
+            },
+            bundle: true,
+            minify: true,
+            format: "iife",
+            platform: "browser",
+            target: "es2020",
+            write: false,
+        });
+
+        const polyfills = polyfillBuild.outputFiles?.[0]?.text ?? "";
+
+        const jsContent = polyfills + "\n" + jsRaw;
 
         // Create TypeScript file that exports the script as a string
         const tsContent = `// Auto-generated file - do not edit manually
