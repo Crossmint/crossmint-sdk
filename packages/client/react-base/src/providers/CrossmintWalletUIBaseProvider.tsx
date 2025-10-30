@@ -76,7 +76,7 @@ export function CrossmintWalletUIBaseProvider({
     children,
     appearance,
     createOnLogin,
-    headlessSigningFlow = false,
+    headlessSigningFlow,
     showPasskeyHelpers = true,
     callbacks,
     initializeWebView,
