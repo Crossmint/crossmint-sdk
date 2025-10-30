@@ -1,9 +1,4 @@
-import {
-    useWallet,
-    useAuth
-    type Balances,
-    ExportPrivateKeyButton,
-} from "@crossmint/client-sdk-react-native-ui";
+import { useWallet, useAuth, type Balances, ExportPrivateKeyButton } from "@crossmint/client-sdk-react-native-ui";
 import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Button, Text, View, TextInput, StyleSheet, ScrollView, Alert } from "react-native";
 import * as Linking from "expo-linking";
