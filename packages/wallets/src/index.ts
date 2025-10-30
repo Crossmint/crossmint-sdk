@@ -25,6 +25,7 @@ export type {
 export type { Chain, EVMChain, SolanaChain, StellarChain } from "./chains/chains";
 
 // Signer configuration types
+export { isExportableSigner } from "./signers/types";
 export type {
     EmailSignerConfig,
     PhoneSignerConfig,
@@ -33,4 +34,6 @@ export type {
     SignerConfigForChain,
     SolanaExternalWalletSignerConfig,
     StellarExternalWalletSignerConfig,
+    ExportableSigner,
+    ExportSignerTEEConnection,
 } from "./signers/types";

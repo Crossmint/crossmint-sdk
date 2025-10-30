@@ -1,5 +1,30 @@
 # @crossmint/client-sdk-react-ui
 
+## 2.6.1
+
+### Patch Changes
+
+- Updated dependencies [2cae54d]
+  - @crossmint/client-sdk-base@1.7.3
+  - @crossmint/client-sdk-auth@1.2.36
+  - @crossmint/client-sdk-react-base@0.7.2
+  - @crossmint/common-sdk-auth@1.0.58
+  - @crossmint/wallets-sdk@0.18.1
+
+## 2.6.0
+
+### Minor Changes
+
+- 8fc9ed9: Adds ExportPrivateKey component to get the email or phone signer private key
+
+### Patch Changes
+
+- 7a1f5ca: Fix Submit button display for Firefox in Login and Verify OTP
+- Updated dependencies [8fc9ed9]
+- Updated dependencies [28e6fd3]
+  - @crossmint/wallets-sdk@0.18.0
+  - @crossmint/client-sdk-react-base@0.7.1
+
 ## 2.5.11
 
 ### Patch Changes
