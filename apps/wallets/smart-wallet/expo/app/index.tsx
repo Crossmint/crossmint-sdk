@@ -1,31 +1,24 @@
-import {
-    useCrossmintAuth,
-    useWallet,
-    useWalletEmailSigner,
-    type Balances,
-    ExportPrivateKeyButton,
-} from "@crossmint/client-sdk-react-native-ui";
+import { useWallet, useAuth, type Balances } from "@crossmint/client-sdk-react-native-ui";
 import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Button, Text, View, TextInput, StyleSheet, ScrollView, Alert } from "react-native";
 import * as Linking from "expo-linking";
 import { fundUSDC } from "@/utils/usdcFaucet";
+import { HeadlessSigning } from "@/components/headless-signing";
 
 export default function Index() {
-    const { loginWithOAuth, user, logout, createAuthSession, jwt } = useCrossmintAuth();
-    const { wallet, getOrCreateWallet, status: walletStatus } = useWallet();
-    const { needsAuth, sendEmailWithOtp, verifyOtp, reject } = useWalletEmailSigner();
+    const { loginWithOAuth, user, logout, createAuthSession, jwt } = useAuth();
+    const { wallet, status: walletStatus } = useWallet();
     const walletAddress = useMemo(() => wallet?.address, [wallet]);
     const url = Linking.useURL();
 
     const [balances, setBalances] = useState<Balances | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
-    // Email signer states
-    const [otp, setOtp] = useState("");
     const [txLink, setTxLink] = useState<string | null>(null);
-    const [uiError, setUiError] = useState<string | null>(null);
     const [recipientAddress, setRecipientAddress] = useState("");
     const [amount, setAmount] = useState<string>("");
+
+    console.log("wallet", wallet);
 
     useEffect(() => {
         if (url != null) {
@@ -48,37 +41,6 @@ export default function Index() {
         fetchBalances();
     }, [wallet]);
 
-    const handleAction = async (action: () => Promise<any> | void) => {
-        setIsLoading(true);
-        setUiError(null);
-        setTxLink(null);
-        try {
-            await action();
-        } catch (e: any) {
-            console.error(e);
-            const message = e.message || "An unexpected error occurred.";
-            setUiError(message);
-            Alert.alert("Error", message);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    async function initWallet() {
-        if (user?.email == null) {
-            console.log("User not logged in");
-            return;
-        }
-        setIsLoading(true);
-        try {
-            await getOrCreateWallet({ chain: "stellar", signer: { type: "email", email: user.email } });
-        } catch (error) {
-            console.error("Error initializing wallet:", error);
-        } finally {
-            setIsLoading(false);
-        }
-    }
-
     async function onHandleFundUSDC() {
         if (walletAddress == null) {
             console.log("Wallet address not found");
@@ -97,26 +59,6 @@ export default function Index() {
             setIsLoading(false);
         }
     }
-
-    const handleSendOtpEmail = async () => {
-        if (typeof user?.email !== "string") {
-            Alert.alert("Error", "User email is not available.");
-            return;
-        }
-
-        await handleAction(sendEmailWithOtp);
-    };
-
-    const handleVerifyOtpInput = async () => {
-        if (!otp || !verifyOtp) {
-            Alert.alert("Error", "Please enter the OTP and ensure email signer is available.");
-            return;
-        }
-        await handleAction(async () => {
-            await verifyOtp(otp);
-            setOtp("");
-        });
-    };
 
     async function sendUSDC() {
         if (walletStatus !== "loaded" || wallet == null) {
@@ -145,59 +87,47 @@ export default function Index() {
                 <Text style={{ fontWeight: "bold" }}>User: {user?.email}</Text>
                 <Text>Wallet: {walletAddress}</Text>
                 <Text>Auth Status: {walletStatus}</Text>
-                <Text>Needs OTP Auth: {needsAuth ? "Yes" : "No"}</Text>
                 <Text>
                     Native Token Balance: ({balances?.nativeToken.symbol}) {balances?.nativeToken.amount}
                 </Text>
                 <Text>USDC Balance: {balances?.usdc.amount}</Text>
-                {uiError && <Text style={styles.errorText}>Last Action Error: {uiError}</Text>}
                 {txLink && <Text>Last Tx Link: {txLink}</Text>}
             </View>
 
             <View style={styles.section}>
-                <Button title="Init Wallet" onPress={initWallet} disabled={isLoading} />
-                <Button title="Get $5 USDC" onPress={onHandleFundUSDC} disabled={isLoading} />
+                {walletAddress != null && (
+                    <Button title="Get $5 USDC" onPress={onHandleFundUSDC} disabled={isLoading} />
+                )}
+                {/* <ExportPrivateKeyButton /> */}
             </View>
 
             <View style={styles.section}>
-                <ExportPrivateKeyButton />
-            </View>
-
-            <View style={styles.section}>
-                <Button
-                    title="Login with Google"
-                    onPress={() => {
-                        console.log("login with google");
-                        loginWithOAuth("google");
-                    }}
-                    disabled={isLoading}
-                />
-                <Button
-                    title="Logout"
-                    onPress={() => {
-                        console.log("logout");
-                        logout();
-                    }}
-                    disabled={isLoading}
-                />
-            </View>
-
-            {needsAuth && (
-                <View style={styles.section}>
-                    <Text style={{ fontWeight: "bold", marginBottom: 10 }}>Email OTP Verification (required)</Text>
-                    <Button title="Send OTP Email" onPress={handleSendOtpEmail} disabled={user?.email == null} />
-                    <TextInput
-                        placeholder="Enter OTP from Email"
-                        value={otp}
-                        onChangeText={setOtp}
-                        style={styles.input}
-                        keyboardType="numeric"
-                        autoCapitalize="none"
+                {user == null ? (
+                    <Button
+                        title="Login with Google"
+                        onPress={() => {
+                            console.log("login with google");
+                            loginWithOAuth("google");
+                        }}
+                        disabled={isLoading}
                     />
-                    <Button title="Verify OTP" onPress={handleVerifyOtpInput} disabled={!otp || isLoading} />
-                    <Button title="Reject" onPress={() => reject(new Error("Rejected OTP"))} />
-                </View>
-            )}
+                ) : (
+                    <Button
+                        title="Logout"
+                        onPress={() => {
+                            console.log("logout");
+                            logout();
+                        }}
+                        disabled={isLoading}
+                    />
+                )}
+            </View>
+
+            {/* To test headless signing, 
+            1. import and uncomment <HeadlessSigning/>
+            2. add 'headlessSigningFlow' to CrossmintWalletProvider in _layout.tsx
+            3. remove 'createOnLogin' from CrossmintWalletProvider in _layout.tsx */}
+            <HeadlessSigning />
 
             {walletAddress != null && (
                 <View style={styles.section}>
@@ -251,9 +181,5 @@ const styles = StyleSheet.create({
         padding: 10,
         marginBottom: 10,
         borderRadius: 5,
-    },
-    errorText: {
-        color: "red",
-        marginTop: 5,
     },
 });
