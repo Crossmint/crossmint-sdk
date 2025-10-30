@@ -1,6 +1,6 @@
 import type { ShadowSignerStorage, ShadowSignerData } from "@crossmint/wallets-sdk";
 import { SecureStorage } from "./SecureStorage";
-import { SHADOW_SIGNER_STORAGE_INJECTED_JS } from "./webview-storage-injected";
+import { SHADOW_SIGNER_STORAGE_INJECTED_JS } from "./webview-shadow-signer-storage-injected";
 import type { RefObject } from "react";
 import type { WebView } from "react-native-webview";
 import * as SecureStore from "expo-secure-store";
