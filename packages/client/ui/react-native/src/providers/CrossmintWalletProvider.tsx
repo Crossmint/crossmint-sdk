@@ -1,12 +1,14 @@
 import { type ReactNode, useCallback, useEffect, useRef, useMemo, createContext, useState } from "react";
 import { View } from "react-native";
 import type { WebView, WebViewMessageEvent } from "react-native-webview";
+import { WebView as RNRawWebView } from "react-native-webview";
 import { RNWebView, WebViewParent } from "@crossmint/client-sdk-rn-window";
 import { environmentUrlConfig, signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
 import { validateAPIKey } from "@crossmint/common-sdk-base";
 import { type CreateOnLogin, CrossmintWalletBaseProvider } from "@crossmint/client-sdk-react-base";
 import { useCrossmint } from "@/hooks";
 import { WebViewShadowSignerStorage } from "@/utils/WebViewShadowSignerStorage";
+import { SHADOW_SIGNER_STORAGE_INJECTED_JS } from "@/utils/webview-shadow-signer-storage-injected";
 
 const throwNotAvailable = (functionName: string) => () => {
     throw new Error(`${functionName} is not available. Make sure you're using an email signer wallet.`);
@@ -60,6 +62,8 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
     );
 
     const shadowSignerWebViewRef = useRef<WebView>(null);
+    const [shadowSignerHash, setShadowSignerHash] = useState<string>("");
+    const shadowSignerBaseUrl = "https://crossmint-shadow-signer.local";
 
     // Use useState only for needsAuth since it needs to trigger re-renders
     const [needsAuth, setNeedsAuth] = useState<boolean>(false);
@@ -101,8 +105,8 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
 
     const onShadowSignerWebViewLoad = useCallback(() => {
         if (shadowSignerStorage instanceof WebViewShadowSignerStorage && shadowSignerWebViewRef.current) {
-            console.log("[ShadowSignerStorage] WebView loaded, injecting storage handler...");
-            shadowSignerStorage.initialize(shadowSignerWebViewRef);
+            console.log("[ShadowSignerStorage] WebView loaded (pre-injected script)");
+            shadowSignerStorage.initialize(shadowSignerWebViewRef, (hash: string) => setShadowSignerHash(hash));
         }
     }, [shadowSignerStorage]);
 
@@ -273,11 +277,11 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
                         overflow: "hidden",
                     }}
                 >
-                    <RNWebView
+                    <RNRawWebView
                         ref={shadowSignerWebViewRef}
                         source={{
                             html: "<html><head></head><body></body></html>",
-                            baseUrl: "https://crossmint-shadow-signer.local",
+                            baseUrl: `${shadowSignerBaseUrl}${shadowSignerHash}`,
                         }}
                         onLoadEnd={onShadowSignerWebViewLoad}
                         onMessage={handleShadowSignerMessage}
@@ -292,6 +296,7 @@ export function CrossmintWalletProvider({ children, createOnLogin, callbacks }: 
                         incognito={false}
                         cacheEnabled={true}
                         cacheMode="LOAD_DEFAULT"
+                        injectedJavaScriptBeforeContentLoaded={SHADOW_SIGNER_STORAGE_INJECTED_JS}
                     />
                 </View>
             )}
