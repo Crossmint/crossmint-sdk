@@ -7,8 +7,15 @@
     "sideEffects": false,
     "type": "module",
     "exports": {
-        "import": "./dist/index.js",
-        "require": "./dist/index.cjs"
+        ".": {
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs"
+        },
+        "./dist/injected/shadow-signer-storage-browser-script": {
+            "import": "./dist/injected/shadow-signer-storage-browser-script.js",
+            "require": "./dist/injected/shadow-signer-storage-browser-script.js",
+            "types": "./dist/injected/shadow-signer-storage-browser-script.d.ts"
+        }
     },
     "main": "./dist/index.cjs",
     "module": "./dist/index.js",
@@ -30,6 +37,7 @@
         "@solana/web3.js": "1.98.1",
         "@stellar/stellar-sdk": "v14.0.0-rc.3",
         "abitype": "1.0.8",
+        "base32.js": "0.1.0",
         "bs58": "5.0.0",
         "ox": "0.6.9",
         "tweetnacl": "1.0.3",

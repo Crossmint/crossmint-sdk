@@ -8,6 +8,7 @@ import {
     type WalletArgsFor,
     type WalletCreateArgs,
     type PhoneSignerConfig,
+    type ShadowSignerStorage,
 } from "@crossmint/wallets-sdk";
 import type { HandshakeParent } from "@crossmint/client-sdk-window";
 import type { signerInboundEvents, signerOutboundEvents } from "@crossmint/client-signers";
@@ -45,6 +46,7 @@ export interface CrossmintWalletBaseProviderProps {
     onAuthRequired?: EmailSignerConfig["onAuthRequired"] | PhoneSignerConfig["onAuthRequired"];
     clientTEEConnection?: () => HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
     initializeWebView?: () => Promise<void>;
+    shadowSignerStorage?: ShadowSignerStorage;
 }
 
 export function CrossmintWalletBaseProvider({
@@ -54,6 +56,7 @@ export function CrossmintWalletBaseProvider({
     onAuthRequired,
     clientTEEConnection,
     initializeWebView,
+    shadowSignerStorage,
 }: CrossmintWalletBaseProviderProps) {
     const { crossmint, experimental_customAuth } = useCrossmint(
         "CrossmintWalletBaseProvider must be used within CrossmintProvider"
@@ -152,6 +155,7 @@ export function CrossmintWalletBaseProvider({
                             onWalletCreationStart: _onWalletCreationStart ?? callbacks?.onWalletCreationStart,
                             onTransactionStart: _onTransactionStart ?? callbacks?.onTransactionStart,
                         },
+                        shadowSignerStorage,
                     },
                 });
                 setWallet(wallet);
@@ -173,6 +177,7 @@ export function CrossmintWalletBaseProvider({
             initializeWebViewIfNeeded,
             clientTEEConnection,
             callbacks,
+            shadowSignerStorage,
         ]
     );
 
@@ -195,6 +200,7 @@ export function CrossmintWalletBaseProvider({
                     options: {
                         clientTEEConnection: clientTEEConnection?.(),
                         experimental_callbacks: callbacks,
+                        shadowSignerStorage,
                     },
                 });
                 return wallet;
@@ -210,6 +216,7 @@ export function CrossmintWalletBaseProvider({
             initializeWebViewIfNeeded,
             clientTEEConnection,
             callbacks,
+            shadowSignerStorage,
         ]
     );
 
