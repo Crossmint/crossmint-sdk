@@ -130,7 +130,6 @@ function CrossmintWalletProviderInternal({
         parent.handleMessage(event);
     }, []);
 
-    // Get the handshake parent for signer connection
     const getClientTEEConnection = () => {
         if (webViewParentRef.current == null) {
             throw new Error("WebView not ready or handshake incomplete");
@@ -138,7 +137,6 @@ function CrossmintWalletProviderInternal({
         return webViewParentRef.current;
     };
 
-    // Render React Native UI components
     const renderNativeUI = ({ emailSignerProps, phoneSignerProps }: UIRenderProps) => {
         return (
             <>

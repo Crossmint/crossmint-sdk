@@ -51,10 +51,6 @@ export interface CrossmintWalletBaseProviderProps {
     };
     onAuthRequired?: EmailSignerConfig["onAuthRequired"] | PhoneSignerConfig["onAuthRequired"];
     clientTEEConnection?: () => HandshakeParent<typeof signerOutboundEvents, typeof signerInboundEvents>;
-    /**
-     * If true, disables automatic UI rendering and uses onAuthRequired callback instead.
-     * Defaults to false.
-     */
     initializeWebView?: () => Promise<void>;
 }
 
@@ -72,7 +68,6 @@ export function CrossmintWalletBaseProvider({
     const [wallet, setWallet] = useState<Wallet<Chain> | undefined>(undefined);
     const [walletStatus, setWalletStatus] = useState<"not-loaded" | "in-progress" | "loaded" | "error">("not-loaded");
 
-    // Add email signer state
     const [emailSignerState, setEmailSignerState] = useState({
         needsAuth: false,
         sendEmailWithOtp: null as (() => Promise<void>) | null,
@@ -80,7 +75,6 @@ export function CrossmintWalletBaseProvider({
         reject: null as ((error?: Error) => void) | null,
     });
 
-    // Create a wrapped onAuthRequired that updates our state
     const wrappedOnAuthRequired = useCallback(
         async (
             needsAuth: boolean,
@@ -88,7 +82,6 @@ export function CrossmintWalletBaseProvider({
             verifyOtp: (otp: string) => Promise<void>,
             reject: () => void
         ) => {
-            // Update email signer state
             setEmailSignerState({
                 needsAuth,
                 sendEmailWithOtp,
@@ -96,7 +89,6 @@ export function CrossmintWalletBaseProvider({
                 reject,
             });
 
-            // Call the original onAuthRequired if provided
             if (onAuthRequired) {
                 return await onAuthRequired(needsAuth, sendEmailWithOtp, verifyOtp, reject);
             }

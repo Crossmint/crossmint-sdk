@@ -23,7 +23,6 @@ export interface CrossmintWalletUIBaseProviderProps {
 }
 
 export interface UIRenderProps {
-    // Email signer props
     emailSignerProps: {
         email?: string;
         open: boolean;
@@ -36,7 +35,6 @@ export interface UIRenderProps {
         appearance?: UIConfig;
     };
 
-    // Phone signer props
     phoneSignerProps: {
         phone?: string;
         open: boolean;
@@ -49,7 +47,6 @@ export interface UIRenderProps {
         appearance?: UIConfig;
     };
 
-    // Passkey prompt props (for web)
     passkeyPromptProps?: {
         state: {
             open: boolean;
@@ -89,10 +86,8 @@ export function CrossmintWalletUIBaseProvider({
     const { experimental_customAuth } = useCrossmint();
     const [passkeyPromptState, setPasskeyPromptState] = useState<PasskeyPromptState>({ open: false });
 
-    // Use the shared signer auth hook
     const signerAuth = useSignerAuth(createOnLogin);
 
-    // Get email and phone from context
     const email =
         createOnLogin?.signer.type === "email" && createOnLogin?.signer.email != null
             ? createOnLogin.signer.email
@@ -138,7 +133,6 @@ export function CrossmintWalletUIBaseProvider({
         return { onWalletCreationStart, onTransactionStart };
     }, [callbacks, createOnLogin?.signer.type, showPasskeyHelpers, createPasskeyPrompt]);
 
-    // Prepare UI render props
     const uiRenderProps: UIRenderProps = {
         emailSignerProps: {
             email,

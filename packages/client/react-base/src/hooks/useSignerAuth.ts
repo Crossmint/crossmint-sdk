@@ -9,19 +9,16 @@ export type SignerType = "email" | "phone";
 export type DialogStep = "initial" | "otp";
 
 export interface SignerAuthState {
-    // Email signer state
     emailSignerDialogOpen: boolean;
     emailSignerDialogStep: DialogStep;
     setEmailSignerDialogOpen: (open: boolean) => void;
     setEmailSignerDialogStep: (step: DialogStep) => void;
 
-    // Phone signer state
     phoneSignerDialogOpen: boolean;
     phoneSignerDialogStep: DialogStep;
     setPhoneSignerDialogOpen: (open: boolean) => void;
     setPhoneSignerDialogStep: (step: DialogStep) => void;
 
-    // Shared auth functions
     sendEmailWithOtpRef: MutableRefObject<() => Promise<void>>;
     verifyOtpRef: MutableRefObject<(otp: string) => Promise<void>>;
     sendPhoneWithOtpRef: MutableRefObject<() => Promise<void>>;
@@ -30,17 +27,14 @@ export interface SignerAuthState {
 }
 
 export interface SignerAuthHandlers {
-    // Email handlers
     emailsigners_handleSendEmailOTP: () => Promise<void>;
     emailsigners_handleOTPSubmit: (otp: string) => Promise<void>;
     emailsigners_handleResendOTP: () => Promise<void>;
 
-    // Phone handlers
     phonesigners_handleSendPhoneOTP: () => Promise<void>;
     phonesigners_handleOTPSubmit: (otp: string) => Promise<void>;
     phonesigners_handleResendOTP: () => Promise<void>;
 
-    // Main auth handler
     onAuthRequired: (
         needsAuth: boolean,
         sendMessageWithOtp: () => Promise<void>,
@@ -50,20 +44,17 @@ export interface SignerAuthHandlers {
 }
 
 export function useSignerAuth(createOnLogin?: CreateOnLogin): SignerAuthState & SignerAuthHandlers {
-    // Dialog states
     const [emailSignerDialogOpen, setEmailSignerDialogOpen] = useState<boolean>(false);
     const [emailSignerDialogStep, setEmailSignerDialogStep] = useState<DialogStep>("initial");
     const [phoneSignerDialogOpen, setPhoneSignerDialogOpen] = useState<boolean>(false);
     const [phoneSignerDialogStep, setPhoneSignerDialogStep] = useState<DialogStep>("initial");
 
-    // Function refs
     const sendEmailWithOtpRef = useRef<() => Promise<void>>(throwNotAvailable("sendEmailWithOtp"));
     const verifyOtpRef = useRef<(otp: string) => Promise<void>>(throwNotAvailable("verifyOtp"));
     const sendPhoneWithOtpRef = useRef<() => Promise<void>>(throwNotAvailable("sendPhoneWithOtp"));
     const verifyPhoneOtpRef = useRef<(otp: string) => Promise<void>>(throwNotAvailable("verifyPhoneOtp"));
     const rejectRef = useRef<(error?: Error) => void>(throwNotAvailable("reject"));
 
-    // Email authentication handlers
     const emailsigners_handleSendEmailOTP = useCallback(async () => {
         try {
             await sendEmailWithOtpRef.current();
@@ -125,7 +116,6 @@ export function useSignerAuth(createOnLogin?: CreateOnLogin): SignerAuthState & 
         }
     }, []);
 
-    // Main auth required handler
     const onAuthRequired = useCallback(
         async (
             needsAuth: boolean,
@@ -133,13 +123,11 @@ export function useSignerAuth(createOnLogin?: CreateOnLogin): SignerAuthState & 
             verifyOtp: (otp: string) => Promise<void>,
             reject: () => void
         ): Promise<void> => {
-            // Check if we're dealing with a phone signer
             if (createOnLogin?.signer.type === "phone" && createOnLogin.signer.phone) {
                 setPhoneSignerDialogOpen(needsAuth);
                 sendPhoneWithOtpRef.current = sendMessageWithOtp;
                 verifyPhoneOtpRef.current = verifyOtp;
             } else {
-                // Default email signer behavior
                 setEmailSignerDialogOpen(needsAuth);
                 sendEmailWithOtpRef.current = sendMessageWithOtp;
                 verifyOtpRef.current = verifyOtp;
@@ -150,7 +138,6 @@ export function useSignerAuth(createOnLogin?: CreateOnLogin): SignerAuthState & 
     );
 
     return {
-        // State
         emailSignerDialogOpen,
         emailSignerDialogStep,
         setEmailSignerDialogOpen,
@@ -160,14 +147,12 @@ export function useSignerAuth(createOnLogin?: CreateOnLogin): SignerAuthState & 
         setPhoneSignerDialogOpen,
         setPhoneSignerDialogStep,
 
-        // Refs
         sendEmailWithOtpRef,
         verifyOtpRef,
         sendPhoneWithOtpRef,
         verifyPhoneOtpRef,
         rejectRef,
 
-        // Handlers
         emailsigners_handleSendEmailOTP,
         emailsigners_handleOTPSubmit,
         emailsigners_handleResendOTP,

@@ -12,10 +12,6 @@ export type EmailSignerFunctions = {
     reject: (error: Error) => void;
 };
 
-/**
- * Hook for accessing email signer authentication functions.
- * Provides access to email OTP authentication flow for headless implementations.
- */
 export function useWalletEmailSigner(): EmailSignerFunctions {
     const context = useContext(CrossmintWalletBaseContext);
 

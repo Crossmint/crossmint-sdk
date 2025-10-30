@@ -64,7 +64,6 @@ export function BaseCodeInput({
         setError(null);
         try {
             await onResendCode();
-            // Start cooldown
             setResendCooldown(60);
             const timer = setInterval(() => {
                 setResendCooldown((prev) => {
