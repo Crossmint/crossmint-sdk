@@ -4,8 +4,12 @@ import type { ExternalWalletInternalSignerConfig } from "../types";
 import type { ShadowSignerData } from "./utils";
 import { StellarExternalWalletSigner } from "../stellar-external-wallet";
 
-export class StellarShadowSigner extends ShadowSigner<StellarChain> {
-    protected getExternalWalletSignerClass() {
+export class StellarShadowSigner extends ShadowSigner<
+    StellarChain,
+    StellarExternalWalletSigner,
+    ExternalWalletInternalSignerConfig<StellarChain>
+> {
+    protected getSignerClass() {
         return StellarExternalWalletSigner;
     }
 

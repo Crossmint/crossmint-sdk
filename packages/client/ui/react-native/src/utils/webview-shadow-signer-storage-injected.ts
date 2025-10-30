@@ -48,10 +48,9 @@ export const SHADOW_SIGNER_STORAGE_INJECTED_JS = `
             switch (operation) {
                 case "generate":
                     console.log("[CrossmintShadowSigner] Generating new Ed25519 key pair (non-extractable)...");
-                    var publicKeyBase64 = await storage.keyGenerator();
-                    var publicKeyBytes = Array.from(atob(publicKeyBase64).split('').map(function(c){return c.charCodeAt(0);}));
+                    var publicKeyBase64 = await storage.keyGenerator(params.chain);
                     console.log("[CrossmintShadowSigner] ✅ Key generation complete");
-                    result = { publicKeyBytes: publicKeyBytes };
+                    result = { publicKeyBase64 };
                     break;
                 case "sign":
                     if (params == null) { throw new Error("Sign operation requires params"); }

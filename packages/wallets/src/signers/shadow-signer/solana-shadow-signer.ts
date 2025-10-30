@@ -5,8 +5,12 @@ import type { ExternalWalletInternalSignerConfig } from "../types";
 import type { ShadowSignerData } from "./utils";
 import { SolanaExternalWalletSigner } from "../solana-external-wallet";
 
-export class SolanaShadowSigner extends ShadowSigner<SolanaChain> {
-    protected getExternalWalletSignerClass() {
+export class SolanaShadowSigner extends ShadowSigner<
+    SolanaChain,
+    SolanaExternalWalletSigner,
+    ExternalWalletInternalSignerConfig<SolanaChain>
+> {
+    protected getSignerClass() {
         return SolanaExternalWalletSigner;
     }
 

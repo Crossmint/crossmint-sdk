@@ -2,7 +2,7 @@ import { encode as encodeBase58 } from "bs58";
 import type { Chain } from "@/chains/chains";
 import { encodeEd25519PublicKey } from "../../utils/encodeEd25519PublicKey";
 import { BrowserShadowSignerStorage } from "./shadow-signer-storage-browser";
-import type { BaseExternalWalletSignerConfig } from "@crossmint/common-sdk-base";
+import type { BaseExternalWalletSignerConfig, EVM256KeypairSignerConfig } from "@crossmint/common-sdk-base";
 
 export type ShadowSignerData = {
     chain: Chain;
@@ -13,12 +13,12 @@ export type ShadowSignerData = {
 };
 
 export type ShadowSignerResult = {
-    shadowSigner: BaseExternalWalletSignerConfig;
+    shadowSigner: BaseExternalWalletSignerConfig | EVM256KeypairSignerConfig;
     publicKey: string;
 };
 
 export interface ShadowSignerStorage {
-    keyGenerator(): Promise<string>;
+    keyGenerator(chain: Chain): Promise<string>;
     sign(publicKey: string, data: Uint8Array): Promise<Uint8Array>;
     storeMetadata(walletAddress: string, data: ShadowSignerData): Promise<void>;
     getMetadata(walletAddress: string): Promise<ShadowSignerData | null>;
@@ -40,8 +40,9 @@ export async function generateShadowSigner<C extends Chain>(
     storage?: ShadowSignerStorage
 ): Promise<ShadowSignerResult & { publicKeyBase64: string }> {
     const storageInstance = storage ?? getStorage();
+    const publicKeyBase64 = await storageInstance.keyGenerator(chain);
+
     if (chain === "solana" || chain === "stellar") {
-        const publicKeyBase64 = await storageInstance.keyGenerator();
         const publicKeyBuffer = Buffer.from(publicKeyBase64, "base64");
         const publicKeyBytes = new Uint8Array(publicKeyBuffer);
 
@@ -65,8 +66,17 @@ export async function generateShadowSigner<C extends Chain>(
             publicKeyBase64,
         };
     }
-    // TODO: Add support for EVM chains
-    throw new Error("Unsupported chain");
+
+    // For EVM chains, the public key is the base64 P256 public key
+    return {
+        shadowSigner: {
+            type: "evm-p256-keypair",
+            publicKey: publicKeyBase64,
+            chain,
+        },
+        publicKey: publicKeyBase64,
+        publicKeyBase64,
+    };
 }
 
 export async function storeShadowSigner(

@@ -15,7 +15,7 @@ export abstract class NonCustodialSigner implements Signer {
         reject: (error: Error) => void;
     } | null = null;
     private _initializationPromise: Promise<void> | null = null;
-    protected shadowSigner?: ShadowSigner<Chain>;
+    protected shadowSigner?: ShadowSigner<Chain, Signer, any>;
     protected shadowSignerStorage?: ShadowSignerStorage;
 
     constructor(
