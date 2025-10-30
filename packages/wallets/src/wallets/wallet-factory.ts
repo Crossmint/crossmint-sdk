@@ -505,7 +505,7 @@ export class WalletFactory {
             DelegatedSigner | RegisterSignerParams | { signer: PasskeySignerConfig | EVM256KeypairSignerConfig }
         >;
         shadowSignerPublicKey: string | null;
-        shadowSignerPublicKeyBase64?: string | null;
+        shadowSignerPublicKeyBase64: string | null;
     }> {
         const { delegatedSigners, shadowSignerPublicKey, shadowSignerPublicKeyBase64 } =
             await this.addShadowSignerToDelegatedSignersIfNeeded(
@@ -552,7 +552,7 @@ export class WalletFactory {
     ): Promise<{
         delegatedSigners: Array<SignerConfigForChain<C>> | undefined;
         shadowSignerPublicKey: string | null;
-        shadowSignerPublicKeyBase64?: string | null;
+        shadowSignerPublicKeyBase64: string | null;
     }> {
         if (this.isShadowSignerEnabled(adminSigner, delegatedSigners)) {
             try {
