@@ -4,6 +4,7 @@ export const embeddedCheckoutV3IncomingEvents = {
     "ui:height.changed": z.object({
         height: z.number(),
     }),
+    "crypto:load": z.object({}),
     "crypto:connect-wallet.show": z.object({
         show: z.boolean(),
     }),
