@@ -1,5 +1,9 @@
-import { CrossmintWalletEmailSignerContext } from "@/providers/CrossmintWalletProvider";
-import { useContext } from "react";
+import { useCallback, useContext } from "react";
+import { CrossmintWalletBaseContext } from "@crossmint/client-sdk-react-base";
+
+const throwNotAvailable = (functionName: string) => () => {
+    throw new Error(`${functionName} is not available. Make sure you're using an email signer wallet.`);
+};
 
 export type EmailSignerFunctions = {
     needsAuth: boolean;
@@ -9,20 +13,45 @@ export type EmailSignerFunctions = {
 };
 
 export function useWalletEmailSigner(): EmailSignerFunctions {
-    const context = useContext(CrossmintWalletEmailSignerContext);
+    const context = useContext(CrossmintWalletBaseContext);
 
     if (context == null) {
         throw new Error("useWalletEmailSigner must be used within CrossmintWalletProvider");
     }
 
-    if (!context.sendEmailWithOtp || !context.verifyOtp || !context.reject) {
-        throw new Error("Email signer functions are not available. Make sure you're using an email signer wallet.");
-    }
+    const { emailSignerState } = context;
+
+    const sendEmailWithOtp = useCallback(async () => {
+        if (!emailSignerState.sendEmailWithOtp) {
+            throwNotAvailable("sendEmailWithOtp")();
+        }
+        return await emailSignerState.sendEmailWithOtp?.();
+    }, [emailSignerState.sendEmailWithOtp]);
+
+    const verifyOtp = useCallback(
+        async (otp: string) => {
+            if (!emailSignerState.verifyOtp) {
+                throwNotAvailable("verifyOtp")();
+            }
+            return await emailSignerState.verifyOtp?.(otp);
+        },
+        [emailSignerState.verifyOtp]
+    );
+
+    const reject = useCallback(
+        (error: Error) => {
+            if (!emailSignerState.reject) {
+                throwNotAvailable("reject")();
+            }
+            emailSignerState.reject?.(error);
+        },
+        [emailSignerState.reject]
+    );
 
     return {
-        needsAuth: context.needsAuth,
-        sendEmailWithOtp: context.sendEmailWithOtp,
-        verifyOtp: context.verifyOtp,
-        reject: context.reject,
+        needsAuth: emailSignerState.needsAuth,
+        sendEmailWithOtp,
+        verifyOtp,
+        reject,
     };
 }
