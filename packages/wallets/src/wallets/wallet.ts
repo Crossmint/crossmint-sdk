@@ -455,8 +455,12 @@ export class Wallet<C extends Chain> {
         }
     }
 
-    protected get isSolanaWallet(): boolean {
+    protected isSolanaWallet(): boolean {
         return this.chain === "solana";
+    }
+
+    protected isStellarWallet(): boolean {
+        return this.chain === "stellar";
     }
 
     protected async approveTransactionAndWait(transactionId: string, options?: ApproveOptions) {
@@ -484,7 +488,7 @@ export class Wallet<C extends Chain> {
     }
 
     protected async approveSignatureInternal(signatureId: string, options?: ApproveOptions) {
-        if (this.isSolanaWallet) {
+        if (this.isSolanaWallet() || this.isStellarWallet()) {
             throw new Error("Approving signatures is only supported for EVM smart wallets");
         }
 
@@ -521,7 +525,7 @@ export class Wallet<C extends Chain> {
                     throw new InvalidSignerError(`Signer ${pendingApproval.signer} not found in pending approvals`);
                 }
 
-                return signer.signMessage(pendingApproval.message);
+                return signer.sign(pendingApproval.message);
             })
         );
 
