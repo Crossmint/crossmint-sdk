@@ -50,20 +50,6 @@ const ErrorResponse = z.object({
 const ResultResponse = <T extends z.ZodTypeAny>(schema: T) =>
     ErrorResponse.or(z.object({ status: z.literal("success") }).and(schema));
 
-export const GetAttestationPayloadSchema = {
-    request: z.object({
-        challenge: z.string().describe("Challenge string for attestation verification"), // TODO: Actually use this
-    }),
-    response: ResultResponse(
-        z.object({
-            // attestationDocument: z.object({
-            //     quote: z.string(),
-            // })
-            attestationDocument: z.record(z.string(), z.any()).describe("Document containing the quote"), // TODO: Refine
-        })
-    ),
-};
-
 export const StartOnboardingPayloadSchema = {
     request: AuthenticatedEventRequest.extend({
         data: z
