@@ -130,3 +130,10 @@ export const ExportSignerPayloadSchema = {
         })
     ),
 };
+
+export const IndexedDBFatalErrorSchema = z.object({
+    error: z.string().describe("Error message describing the IndexedDB failure"),
+    operation: z.string().optional().describe("The operation that was being attempted"),
+    phase: z.enum(["pre-flight-check"]).describe("The phase where the error occurred"),
+    canRetry: z.boolean().describe("Whether the operation can be retried after WebView reload"),
+});

@@ -70,6 +70,31 @@ function CrossmintWalletProviderInternal({
         }
     }, [needsWebView, webviewRef.current]);
 
+    useEffect(() => {
+        if (webViewParentRef.current != null) {
+            const handleIndexedDBFatalError = async (data: {
+                error: string;
+                operation?: string;
+                phase: "pre-flight-check";
+                canRetry: boolean;
+            }) => {
+                console.error("[CrossmintWalletProvider] Fatal IndexedDB error:", data);
+
+                if (data.canRetry && webviewRef.current != null) {
+                    console.log("[CrossmintWalletProvider] Reloading WebView to recover from IndexedDB failure");
+                    webviewRef.current.reload();
+                    await onWebViewLoad();
+                }
+            };
+
+            webViewParentRef.current.on("error:indexeddb-fatal", handleIndexedDBFatalError);
+
+            return () => {
+                webViewParentRef.current?.off("error:indexeddb-fatal", handleIndexedDBFatalError);
+            };
+        }
+    }, [webViewParentRef.current, onWebViewLoad]);
+
     const onWebViewLoad = useCallback(async () => {
         const parent = webViewParentRef.current;
         if (parent != null) {

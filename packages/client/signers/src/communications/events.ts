@@ -6,6 +6,7 @@ import {
     StartOnboardingPayloadSchema,
     CompleteOnboardingPayloadSchema,
     ExportSignerPayloadSchema,
+    IndexedDBFatalErrorSchema,
 } from "./schemas";
 
 export const SIGNER_EVENTS = ["start-onboarding", "complete-onboarding", "sign", "get-status"] as const;
@@ -23,6 +24,7 @@ export const signerOutboundEvents = {
     "response:complete-onboarding": CompleteOnboardingPayloadSchema.response,
     "response:sign": SignPayloadSchema.response,
     "response:get-status": GetStatusPayloadSchema.response,
+    "error:indexeddb-fatal": IndexedDBFatalErrorSchema,
 } as const;
 export type SignerInputEvent<E extends SignerIFrameEventName> = z.infer<(typeof signerInboundEvents)[`request:${E}`]>;
 export type SignerOutputEvent<E extends SignerIFrameEventName> = z.infer<
