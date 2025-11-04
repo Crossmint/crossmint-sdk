@@ -51,7 +51,6 @@ function CrossmintWalletProviderInternal({
     const webViewParentRef = useRef<WebViewParent<typeof signerOutboundEvents, typeof signerInboundEvents> | null>(
         null
     );
-    const retriedOnceRef = useRef<boolean>(false);
 
     const [needsWebView, setNeedsWebView] = useState<boolean>(false);
 
@@ -98,22 +97,17 @@ function CrossmintWalletProviderInternal({
                     "status" in response &&
                     response.status === "error" &&
                     "code" in response &&
-                    response.code === "indexeddb-fatal" &&
-                    !retriedOnceRef.current
+                    response.code === "indexeddb-fatal"
                 ) {
                     console.log("[CrossmintWalletProvider] IndexedDB fatal error detected, reloading WebView");
-                    retriedOnceRef.current = true;
 
                     webviewRef.current?.reload();
                     await onWebViewLoad();
 
                     console.log(`[CrossmintWalletProvider] Retrying operation: ${String(args.event)}`);
-                    const retryResponse = await originalSendAction(args);
-                    retriedOnceRef.current = false;
-                    return retryResponse;
+                    return await originalSendAction(args);
                 }
 
-                retriedOnceRef.current = false;
                 return response;
             };
 
