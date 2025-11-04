@@ -62,6 +62,18 @@ function CrossmintWalletProviderInternal({
         return {};
     }, [appId]);
 
+    const onWebViewLoad = useCallback(async () => {
+        const parent = webViewParentRef.current;
+        if (parent != null) {
+            try {
+                parent.isConnected = false;
+                await parent.handshakeWithChild();
+            } catch (e) {
+                console.error("[CrossmintWalletProvider] Handshake error:", e);
+            }
+        }
+    }, []);
+
     useEffect(() => {
         if (webviewRef.current != null && webViewParentRef.current == null) {
             const parent = new WebViewParent(webviewRef as RefObject<WebView>, {
@@ -107,19 +119,7 @@ function CrossmintWalletProviderInternal({
 
             webViewParentRef.current = parent;
         }
-    }, [needsWebView, webviewRef.current, onWebViewLoad]);
-
-    const onWebViewLoad = useCallback(async () => {
-        const parent = webViewParentRef.current;
-        if (parent != null) {
-            try {
-                parent.isConnected = false;
-                await parent.handshakeWithChild();
-            } catch (e) {
-                console.error("[CrossmintWalletProvider] Handshake error:", e);
-            }
-        }
-    }, []);
+    }, [needsWebView, onWebViewLoad]);
 
     const handleMessage = useCallback((event: WebViewMessageEvent) => {
         const parent = webViewParentRef.current;
