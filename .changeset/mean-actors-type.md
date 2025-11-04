@@ -2,4 +2,4 @@
 "@crossmint/client-sdk-react-native-ui": patch
 ---
 
-Remove unnecessary retriedOnceRef from IndexedDB error retry logic. The wrapper naturally retries once per call without needing a shared ref, preventing potential cross-call interference.
+Add IndexedDB error recovery for React Native WebView: automatically detect 'indexeddb-fatal' error responses, reload the WebView, re-establish handshake, and retry the operation once. Also enforce a 15s minimum timeout during recovery to allow sufficient time for WebView reload and handshake completion.
