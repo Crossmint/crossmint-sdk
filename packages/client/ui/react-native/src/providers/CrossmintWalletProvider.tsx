@@ -88,11 +88,10 @@ function CrossmintWalletProviderInternal({
                 error: string;
                 operation?: string;
                 phase: "pre-flight-check";
-                canRetry: boolean;
             }) => {
                 console.error("[CrossmintWalletProvider] Fatal IndexedDB error:", data);
 
-                if (data.canRetry && webviewRef.current != null) {
+                if (webviewRef.current != null) {
                     console.log("[CrossmintWalletProvider] Reloading WebView to recover from IndexedDB failure");
                     webviewRef.current.reload();
                     await onWebViewLoad();
